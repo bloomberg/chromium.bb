@@ -20,16 +20,19 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "rlz/lib/financial_ping.h"
+#include "rlz/lib/lib_values.h"
 #include "rlz/lib/net_response_check.h"
 #include "rlz/lib/rlz_lib.h"
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/test/rlz_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include <Windows.h>
@@ -41,7 +44,6 @@
 #include "base/threading/thread.h"
 #include "net/url_request/url_request_test_util.h"
 #endif
-
 
 class MachineDealCodeHelper
 #if defined(OS_WIN)
@@ -64,6 +66,37 @@ class MachineDealCodeHelper
 
 class RlzLibTest : public RlzLibTestBase {
  protected:
+  void FakeGoodPingResponse(rlz_lib::Product product,
+                            const rlz_lib::AccessPoint* access_points,
+                            const char* product_signature,
+                            const char* product_brand,
+                            const char* product_id,
+                            const char* product_lang,
+                            bool exclude_machine_id,
+                            net::FakeURLFetcherFactory* factory) {
+    const char kGoodPingResponses[] =
+        "version: 3.0.914.7250\r\n"
+        "url: "
+        "http://www.corp.google.com/~av/45/opt/SearchWithGoogleUpdate.exe\r\n"
+        "launch-action: custom-action\r\n"
+        "launch-target: SearchWithGoogleUpdate.exe\r\n"
+        "signature: c08a3f4438e1442c4fe5678ee147cf6c5516e5d62bb64e\r\n"
+        "rlz: 1R1_____en__252\r\n"
+        "rlzXX: 1R1_____en__250\r\n"
+        "rlzT4  1T4_____en__251\r\n"
+        "rlzT4: 1T4_____en__252\r\n"
+        "rlz\r\n"
+        "crc32: D6FD55A3";
+    std::string request;
+    EXPECT_TRUE(rlz_lib::FinancialPing::FormRequest(
+        product, access_points, product_signature, product_brand, product_id,
+        product_lang, exclude_machine_id, &request));
+    GURL url = GURL(base::StringPrintf(
+        "https://%s%s", rlz_lib::kFinancialServer, request.c_str()));
+    factory->SetFakeResponse(url, kGoodPingResponses, net::HTTP_OK,
+                             net::URLRequestStatus::SUCCESS);
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
@@ -455,9 +488,9 @@ class URLRequestRAII {
 };
 
 TEST_F(RlzLibTest, SendFinancialPing) {
-  // We don't really check a value or result in this test. All this does is
-  // attempt to ping the financial server, which you can verify in Fiddler.
-  // TODO: Make this a measurable test.
+  // rlz_lib::SendFinancialPing fails when this is set.
+  if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
+    return;
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 #if defined(OS_MACOSX)
@@ -495,10 +528,18 @@ TEST_F(RlzLibTest, SendFinancialPing) {
     {rlz_lib::IETB_SEARCH_BOX, rlz_lib::NO_ACCESS_POINT,
      rlz_lib::NO_ACCESS_POINT};
 
-  std::string request;
-  rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points,
-      "swg", "GGLA", "SwgProductId1234", "en-UK", false,
-      /*skip_time_check=*/true);
+  // Excluding machine id from requests so that a stable URL is used and
+  // this test can use FakeURLFetcherFactory.
+  net::FakeURLFetcherFactory factory(nullptr);
+  FakeGoodPingResponse(rlz_lib::TOOLBAR_NOTIFIER, points, "swg", "GGLA",
+                       "SwgProductId1234", "en-UK",
+                       /* exclude_machine_id */ true, &factory);
+
+  EXPECT_TRUE(rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points,
+                                         "swg", "GGLA", "SwgProductId1234",
+                                         "en-UK",
+                                         /* exclude_machine_id */ true,
+                                         /* skip_time_check */true));
 }
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)

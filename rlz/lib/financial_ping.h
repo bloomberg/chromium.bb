@@ -20,6 +20,13 @@ namespace rlz_lib {
 
 class FinancialPing {
  public:
+  // Return values of the PingServer() method.
+  enum PingResponse {
+    PING_SUCCESSFUL,  // Ping sent and response processed successfully.
+    PING_FAILURE,     // Ping not sent.
+    PING_SHUTDOWN     // Ping not sent because chrome is shutting down.
+  };
+
   // Form the HTTP request to send to the PSO server.
   // Will look something like:
   // /pso/ping?as=swg&brand=GGLD&id=124&hl=en&
@@ -47,7 +54,7 @@ class FinancialPing {
   static bool ClearLastPingTime(Product product);
 
   // Ping the financial server with request. Writes to RlzValueStore.
-  static bool PingServer(const char* request, std::string* response);
+  static PingResponse PingServer(const char* request, std::string* response);
 
   // Returns the time relative to a fixed point in the past in multiples of
   // 100 ns stepts. The point in the past is arbitrary but can't change, as the
