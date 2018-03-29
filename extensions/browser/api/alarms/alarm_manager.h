@@ -78,38 +78,38 @@ class AlarmManager : public BrowserContextKeyedAPI,
   // Override the default delegate. Callee assumes onwership. Used for testing.
   void set_delegate(Delegate* delegate) { delegate_.reset(delegate); }
 
-  typedef base::Callback<void()> AddAlarmCallback;
+  using AddAlarmCallback = base::OnceClosure;
   // Adds |alarm| for the given extension, and starts the timer. Invokes
   // |callback| when done.
   void AddAlarm(const std::string& extension_id,
                 std::unique_ptr<Alarm> alarm,
-                const AddAlarmCallback& callback);
+                AddAlarmCallback callback);
 
-  typedef base::Callback<void(Alarm*)> GetAlarmCallback;
+  using GetAlarmCallback = base::OnceCallback<void(Alarm*)>;
   // Passes the alarm with the given name, or NULL if none exists, to
   // |callback|.
   void GetAlarm(const std::string& extension_id,
                 const std::string& name,
-                const GetAlarmCallback& callback);
+                GetAlarmCallback callback);
 
-  typedef base::Callback<void(const AlarmList*)> GetAllAlarmsCallback;
+  using GetAllAlarmsCallback = base::OnceCallback<void(const AlarmList*)>;
   // Passes the list of pending alarms for the given extension, or
   // NULL if none exist, to |callback|.
   void GetAllAlarms(const std::string& extension_id,
-                    const GetAllAlarmsCallback& callback);
+                    GetAllAlarmsCallback callback);
 
-  typedef base::Callback<void(bool)> RemoveAlarmCallback;
+  using RemoveAlarmCallback = base::OnceCallback<void(bool)>;
   // Cancels and removes the alarm with the given name. Invokes |callback| when
   // done.
   void RemoveAlarm(const std::string& extension_id,
                    const std::string& name,
-                   const RemoveAlarmCallback& callback);
+                   RemoveAlarmCallback callback);
 
-  typedef base::Callback<void()> RemoveAllAlarmsCallback;
+  using RemoveAllAlarmsCallback = base::OnceClosure;
   // Cancels and removes all alarms for the given extension. Invokes |callback|
   // when done.
   void RemoveAllAlarms(const std::string& extension_id,
-                       const RemoveAllAlarmsCallback& callback);
+                       RemoveAllAlarmsCallback callback);
 
   // Replaces AlarmManager's clock with |clock|.
   void SetClockForTesting(base::Clock* clock);
@@ -138,7 +138,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
 
   using AlarmMap = std::map<ExtensionId, AlarmList>;
 
-  using ReadyAction = base::Callback<void(const std::string&)>;
+  using ReadyAction = base::OnceCallback<void(const std::string&)>;
   using ReadyQueue = base::queue<ReadyAction>;
   using ReadyMap = std::map<ExtensionId, ReadyQueue>;
 
@@ -148,25 +148,25 @@ class AlarmManager : public BrowserContextKeyedAPI,
 
   // Part of AddAlarm that is executed after alarms are loaded.
   void AddAlarmWhenReady(std::unique_ptr<Alarm> alarm,
-                         const AddAlarmCallback& callback,
+                         AddAlarmCallback callback,
                          const std::string& extension_id);
 
   // Part of GetAlarm that is executed after alarms are loaded.
   void GetAlarmWhenReady(const std::string& name,
-                         const GetAlarmCallback& callback,
+                         GetAlarmCallback callback,
                          const std::string& extension_id);
 
   // Part of GetAllAlarms that is executed after alarms are loaded.
-  void GetAllAlarmsWhenReady(const GetAllAlarmsCallback& callback,
+  void GetAllAlarmsWhenReady(GetAllAlarmsCallback callback,
                              const std::string& extension_id);
 
   // Part of RemoveAlarm that is executed after alarms are loaded.
   void RemoveAlarmWhenReady(const std::string& name,
-                            const RemoveAlarmCallback& callback,
+                            RemoveAlarmCallback callback,
                             const std::string& extension_id);
 
   // Part of RemoveAllAlarms that is executed after alarms are loaded.
-  void RemoveAllAlarmsWhenReady(const RemoveAllAlarmsCallback& callback,
+  void RemoveAllAlarmsWhenReady(RemoveAllAlarmsCallback callback,
                                 const std::string& extension_id);
 
   // Helper to return the iterators within the AlarmMap and AlarmList for the
@@ -206,7 +206,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
 
   // Executes |action| for given extension, making sure that the extension's
   // alarm data has been synced from the storage.
-  void RunWhenReady(const std::string& extension_id, const ReadyAction& action);
+  void RunWhenReady(const std::string& extension_id, ReadyAction action);
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
