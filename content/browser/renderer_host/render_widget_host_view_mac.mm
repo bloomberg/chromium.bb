@@ -794,14 +794,6 @@ void RenderWidgetHostViewMac::CopyFromSurface(
       src_subrect, dst_size, std::move(callback));
 }
 
-void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
-  if (host())
-    host()->ForwardMouseEvent(event);
-
-  if (event.GetType() == WebInputEvent::kMouseLeave)
-    ns_view_bridge_->SetTooltipText(base::string16());
-}
-
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
   needs_begin_frames_ = needs_begin_frames;
   UpdateNeedsBeginFramesInternal();
@@ -1372,6 +1364,64 @@ void RenderWidgetHostViewMac::OnNSViewDisplayChanged(
     const display::Display& display) {
   display_ = display;
   UpdateNSViewAndDisplayProperties();
+}
+
+void RenderWidgetHostViewMac::OnNSViewRouteOrProcessMouseEvent(
+    const blink::WebMouseEvent& const_web_event) {
+  blink::WebMouseEvent web_event = const_web_event;
+  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  if (ShouldRouteEvent(web_event)) {
+    host()->delegate()->GetInputEventRouter()->RouteMouseEvent(this, &web_event,
+                                                               latency_info);
+  } else {
+    ProcessMouseEvent(web_event, latency_info);
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewRouteOrProcessWheelEvent(
+    const blink::WebMouseWheelEvent& const_web_event) {
+  blink::WebMouseWheelEvent web_event = const_web_event;
+  ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  if (wheel_scroll_latching_enabled()) {
+    mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+        web_event, ShouldRouteEvent(web_event));
+    if (web_event.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
+      // A wheel end event is scheduled and will get dispatched if momentum
+      // phase doesn't start in 100ms. Don't sent the wheel end event
+      // immediately.
+      return;
+    }
+  }
+  if (ShouldRouteEvent(web_event)) {
+    host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
+        this, &web_event, latency_info);
+  } else {
+    ProcessMouseWheelEvent(web_event, latency_info);
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewForwardMouseEvent(
+    const blink::WebMouseEvent& web_event) {
+  if (host())
+    host()->ForwardMouseEvent(web_event);
+
+  if (web_event.GetType() == WebInputEvent::kMouseLeave)
+    ns_view_bridge_->SetTooltipText(base::string16());
+}
+
+void RenderWidgetHostViewMac::OnNSViewForwardWheelEvent(
+    const blink::WebMouseWheelEvent& const_web_event) {
+  blink::WebMouseWheelEvent web_event = const_web_event;
+  if (wheel_scroll_latching_enabled()) {
+    mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(web_event,
+                                                                   false);
+  } else {
+    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+    host()->ForwardWheelEventWithLatencyInfo(web_event, latency_info);
+  }
 }
 
 Class GetRenderWidgetHostViewCocoaClassForTesting() {

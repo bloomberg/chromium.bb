@@ -327,7 +327,7 @@ void ExtractUnderlines(NSAttributedString* string,
   WebMouseEvent web_event = WebMouseEventBuilder::Build(event, self);
   web_event.SetModifiers(web_event.GetModifiers() |
                          WebInputEvent::kRelativeMotionEvent);
-  renderWidgetHostView_->ForwardMouseEvent(web_event);
+  client_->OnNSViewForwardMouseEvent(web_event);
 }
 
 - (BOOL)shouldIgnoreMouseEvent:(NSEvent*)theEvent {
@@ -400,12 +400,12 @@ void ExtractUnderlines(NSAttributedString* string,
 
   if ([self shouldIgnoreMouseEvent:theEvent]) {
     // If this is the first such event, send a mouse exit to the host view.
-    if (!mouseEventWasIgnored_ && renderWidgetHostView_->host()) {
+    if (!mouseEventWasIgnored_ && !clientWasDestroyed_) {
       WebMouseEvent exitEvent =
           WebMouseEventBuilder::Build(theEvent, self, pointerType_);
       exitEvent.SetType(WebInputEvent::kMouseLeave);
       exitEvent.button = WebMouseEvent::Button::kNoButton;
-      renderWidgetHostView_->ForwardMouseEvent(exitEvent);
+      client_->OnNSViewForwardMouseEvent(exitEvent);
     }
     mouseEventWasIgnored_ = YES;
     return;
@@ -414,21 +414,12 @@ void ExtractUnderlines(NSAttributedString* string,
   if (mouseEventWasIgnored_) {
     // If this is the first mouse event after a previous event that was ignored
     // due to the hitTest, send a mouse enter event to the host view.
-    if (renderWidgetHostView_->host()) {
+    if (!clientWasDestroyed_) {
       WebMouseEvent enterEvent =
           WebMouseEventBuilder::Build(theEvent, self, pointerType_);
       enterEvent.SetType(WebInputEvent::kMouseMove);
       enterEvent.button = WebMouseEvent::Button::kNoButton;
-      ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
-      latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-      if (renderWidgetHostView_->ShouldRouteEvent(enterEvent)) {
-        renderWidgetHostView_->host()
-            ->delegate()
-            ->GetInputEventRouter()
-            ->RouteMouseEvent(renderWidgetHostView_, &enterEvent, latency_info);
-      } else {
-        renderWidgetHostView_->ProcessMouseEvent(enterEvent, latency_info);
-      }
+      client_->OnNSViewRouteOrProcessMouseEvent(enterEvent);
     }
   }
   mouseEventWasIgnored_ = NO;
@@ -459,16 +450,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
   WebMouseEvent event =
       WebMouseEventBuilder::Build(theEvent, self, pointerType_);
-  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-  if (renderWidgetHostView_->ShouldRouteEvent(event)) {
-    renderWidgetHostView_->host()
-        ->delegate()
-        ->GetInputEventRouter()
-        ->RouteMouseEvent(renderWidgetHostView_, &event, latency_info);
-  } else {
-    renderWidgetHostView_->ProcessMouseEvent(event, latency_info);
-  }
+  client_->OnNSViewRouteOrProcessMouseEvent(event);
 }
 
 - (void)tabletEvent:(NSEvent*)theEvent {
@@ -816,19 +798,11 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
   }
 
-  if (renderWidgetHostView_->host()) {
+  if (!clientWasDestroyed_) {
     // History-swiping is not possible if the logic reaches this point.
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
     webEvent.rails_mode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    if (renderWidgetHostView_->wheel_scroll_latching_enabled()) {
-      renderWidgetHostView_->mouse_wheel_phase_handler_
-          .AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
-    } else {
-      ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-      latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-      renderWidgetHostView_->host()->ForwardWheelEventWithLatencyInfo(
-          webEvent, latency_info);
-    }
+    client_->OnNSViewForwardWheelEvent(webEvent);
   }
 
   if (endWheelMonitor_) {
@@ -1105,32 +1079,10 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 
   // This is responsible for content scrolling!
-  if (renderWidgetHostView_->host()) {
+  if (!clientWasDestroyed_) {
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
     webEvent.rails_mode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-    if (renderWidgetHostView_->wheel_scroll_latching_enabled()) {
-      renderWidgetHostView_->mouse_wheel_phase_handler_
-          .AddPhaseIfNeededAndScheduleEndEvent(
-              webEvent, renderWidgetHostView_->ShouldRouteEvent(webEvent));
-      if (webEvent.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
-        // A wheel end event is scheduled and will get dispatched if momentum
-        // phase doesn't start in 100ms. Don't sent the wheel end event
-        // immediately.
-        return;
-      }
-    }
-
-    if (renderWidgetHostView_->ShouldRouteEvent(webEvent)) {
-      renderWidgetHostView_->host()
-          ->delegate()
-          ->GetInputEventRouter()
-          ->RouteMouseWheelEvent(renderWidgetHostView_, &webEvent,
-                                 latency_info);
-    } else {
-      renderWidgetHostView_->ProcessMouseWheelEvent(webEvent, latency_info);
-    }
+    client_->OnNSViewRouteOrProcessWheelEvent(webEvent);
   }
 }
 
@@ -1919,8 +1871,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
     WebMouseEvent event(WebInputEvent::kMouseUp, WebInputEvent::kNoModifiers,
                         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     event.button = WebMouseEvent::Button::kLeft;
-    renderWidgetHostView_->ForwardMouseEvent(event);
-
+    client_->OnNSViewForwardMouseEvent(event);
     hasOpenMouseDown_ = NO;
   }
 }
