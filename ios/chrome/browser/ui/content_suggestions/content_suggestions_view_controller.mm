@@ -220,9 +220,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (@available(iOS 10, *)) {
-    self.collectionView.prefetchingEnabled = NO;
-  }
+  self.collectionView.prefetchingEnabled = NO;
   if (@available(iOS 11, *)) {
     // Use automatic behavior as each element takes the safe area into account
     // separately and the overscroll action does not work well with content
