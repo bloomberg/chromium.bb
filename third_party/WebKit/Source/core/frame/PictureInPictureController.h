@@ -18,7 +18,6 @@ class CORE_EXPORT PictureInPictureController
     : public GarbageCollectedFinalized<PictureInPictureController>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureController);
-  WTF_MAKE_NONCOPYABLE(PictureInPictureController);
 
  public:
   static const char kSupplementName[];
@@ -47,6 +46,8 @@ class CORE_EXPORT PictureInPictureController
 
  protected:
   explicit PictureInPictureController(Document&);
+
+  DISALLOW_COPY_AND_ASSIGN(PictureInPictureController);
 };
 
 }  // namespace blink

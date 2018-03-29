@@ -18,7 +18,6 @@ class LayoutBox;
 // This represents a request to perform layout on a child. It is an opaque
 // object from the web developers point of view.
 class CustomLayoutFragmentRequest : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(CustomLayoutFragmentRequest);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -39,6 +38,8 @@ class CustomLayoutFragmentRequest : public ScriptWrappable {
  private:
   Member<CustomLayoutChild> child_;
   const CustomLayoutConstraintsOptions options_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomLayoutFragmentRequest);
 };
 
 }  // namespace blink
