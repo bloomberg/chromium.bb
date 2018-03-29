@@ -3276,6 +3276,9 @@ crbug.com/825444 [ Mac ] media/video-rotation.html [ Crash Failure Pass ]
 crbug.com/794338 [ Linux Win Android ] media/video-rotation.html [ Failure Pass ]
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
+# TODO(senorblanco): rebaseline after Skia roll
+crbug.com/802896 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ Failure Pass ]
+
 # TODO(lukasza): Remove these once CORB is enabled by default.
 crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
