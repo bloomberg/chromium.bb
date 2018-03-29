@@ -3134,6 +3134,8 @@ jumbo_split_static_library("browser") {
       "notifications/screen_lock_notification_blocker.cc",
       "notifications/screen_lock_notification_blocker.h",
       "platform_util.cc",
+      "policy/cloud/machine_level_user_cloud_policy_helper.cc",
+      "policy/cloud/machine_level_user_cloud_policy_helper.h",
       "policy/cloud/user_policy_signin_service.cc",
       "policy/cloud/user_policy_signin_service.h",
       "profiles/avatar_menu.cc",
