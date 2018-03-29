@@ -35,7 +35,7 @@
   ]);
 
   function dumpSearchResults(next) {
-    var searchConfig = new Search.SearchConfig('sources.search-in-files', 'window.foo f:foo', true, false);
+    var searchConfig = new Search.SearchConfig('window.foo f:foo', true, false);
     SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
   }
 

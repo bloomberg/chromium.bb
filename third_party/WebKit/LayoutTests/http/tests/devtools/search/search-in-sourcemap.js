@@ -19,12 +19,12 @@
 
   var query = 'color: blue';
   TestRunner.addResult('\nSearching for: "' + query + '"');
-  var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
+  var searchConfig = new Search.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
   await new Promise(x => SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, x));
 
   var query = 'window.foo';
   TestRunner.addResult('\nSearching for: "' + query + '"');
-  var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
+  var searchConfig = new Search.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
   await new Promise(x => SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, x));
 
   TestRunner.completeTest();

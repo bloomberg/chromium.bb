@@ -1,38 +1,38 @@
 Tests search in network requests
 
 Ignore case, regexp
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=0(1 match)
-     1request0-dosearch-doSearch-d.Search
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=2(1 match)
-     1request2-doSearch
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=3(1 match)
-     1request3-dosearch
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=4(1 match)
-     1request4-doSearch
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=5(1 match)
-     1request5-d.Search
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=6(1 match)
-     1request6-dosearch-doSearch
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=8(1 match)
-     1request8-doSearch
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=9(1 match)
-     1request9-dosearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=01
+  1request0-dosearch-doSearch-d.Search
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=21
+  1request2-doSearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=31
+  1request3-dosearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=41
+  1request4-doSearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=51
+  1request5-d.Search
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=61
+  1request6-dosearch-doSearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=81
+  1request8-doSearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=91
+  1request9-dosearch
 
 Ignore case, No regexp
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=0(1 match)
-     1request0-dosearch-doSearch-d.Search
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=5(1 match)
-     1request5-d.Search
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=01
+  1…earch-doSearch-d.Search
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=51
+  1request5-d.Search
 
 Case sensitive, regexp
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=0(1 match)
-     1request0-dosearch-doSearch-d.Search
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=3(1 match)
-     1request3-dosearch
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=6(1 match)
-     1request6-dosearch-doSearch
-  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=9(1 match)
-     1request9-dosearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=01
+  1request0-dosearch-doSearch-d.Search
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=31
+  1request3-dosearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=61
+  1request6-dosearch-doSearch
+  http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=91
+  1request9-dosearch
 
 Clicking on search result
 Selected tab: response, URL: http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=9
