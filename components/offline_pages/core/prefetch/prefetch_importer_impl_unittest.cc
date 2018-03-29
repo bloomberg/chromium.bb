@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/prefetch/prefetch_importer_impl.h"
+#include "components/offline_pages/core/prefetch/prefetch_importer_impl.h"
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -60,11 +58,6 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   DISALLOW_COPY_AND_ASSIGN(TestOfflinePageModel);
 };
 
-std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
-    content::BrowserContext* context) {
-  return std::make_unique<TestOfflinePageModel>();
-}
-
 }  // namespace
 
 class PrefetchImporterImplTest : public testing::Test {
@@ -72,21 +65,10 @@ class PrefetchImporterImplTest : public testing::Test {
   PrefetchImporterImplTest() = default;
   ~PrefetchImporterImplTest() override = default;
 
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    profile_ = std::make_unique<TestingProfile>();
-
-    OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile(), BuildTestOfflinePageModel);
-    RunUntilIdle();
-  }
-
-  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void ImportArchive(int64_t offline_id, const base::FilePath& file_path) {
-    PrefetchImporterImpl importer(dispatcher(), profile(),
-                                  background_task_runner());
+    PrefetchImporterImpl importer(dispatcher(), &model_, task_runner_);
 
     PrefetchArchiveInfo archive;
     archive.offline_id = offline_id;
@@ -97,25 +79,20 @@ class PrefetchImporterImplTest : public testing::Test {
     archive.file_path = file_path;
     archive.file_size = kTestFileSize;
     importer.ImportArchive(archive);
-    RunUntilIdle();
+    task_runner_->RunUntilIdle();
   }
 
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner() {
-    return base::ThreadTaskRunnerHandle::Get();
-  }
   base::FilePath temp_dir_path() const { return temp_dir_.GetPath(); }
-  Profile* profile() { return profile_.get(); }
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
-
-  TestOfflinePageModel* offline_page_model() {
-    return static_cast<TestOfflinePageModel*>(
-        OfflinePageModelFactory::GetForBrowserContext(profile()));
-  }
+  TestOfflinePageModel* offline_page_model() { return &model_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_ =
+      new base::TestSimpleTaskRunner;
+  base::ThreadTaskRunnerHandle task_runner_handle_{task_runner_};
+
+  TestOfflinePageModel model_;
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<TestingProfile> profile_;
   TestPrefetchDispatcher dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchImporterImplTest);

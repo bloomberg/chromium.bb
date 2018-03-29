@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_PREFETCH_IMPORTER_IMPL_H_
-#define CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_PREFETCH_IMPORTER_IMPL_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_IMPORTER_IMPL_H_
+#define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_IMPORTER_IMPL_H_
 
 #include <memory>
 
@@ -15,12 +15,8 @@ namespace base {
 class TaskRunner;
 }
 
-namespace content {
-class BrowserContext;
-}
-
 namespace offline_pages {
-
+class OfflinePageModel;
 enum class AddPageResult;
 struct OfflinePageItem;
 
@@ -28,7 +24,7 @@ struct OfflinePageItem;
 class PrefetchImporterImpl : public PrefetchImporter {
  public:
   PrefetchImporterImpl(PrefetchDispatcher* dispatcher,
-                       content::BrowserContext* context,
+                       OfflinePageModel* context,
                        scoped_refptr<base::TaskRunner> background_task_runner);
   ~PrefetchImporterImpl() override;
 
@@ -38,11 +34,10 @@ class PrefetchImporterImpl : public PrefetchImporter {
   std::set<int64_t> GetOutstandingImports() const override;
 
  private:
-  void OnMoveFileDone(const OfflinePageItem& offline_page,
-                      bool success);
+  void OnMoveFileDone(const OfflinePageItem& offline_page, bool success);
   void OnPageAdded(AddPageResult result, int64_t offline_id);
 
-  content::BrowserContext* context_;
+  OfflinePageModel* offline_page_model_;
   scoped_refptr<base::TaskRunner> background_task_runner_;
   std::set<int64_t> outstanding_import_offline_ids_;
   base::WeakPtrFactory<PrefetchImporterImpl> weak_ptr_factory_;
@@ -52,4 +47,4 @@ class PrefetchImporterImpl : public PrefetchImporter {
 
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_PREFETCH_IMPORTER_IMPL_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_IMPORTER_IMPL_H_

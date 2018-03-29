@@ -3714,8 +3714,6 @@ jumbo_split_static_library("browser") {
       "offline_pages/prefetch/prefetch_background_task_scheduler.h",
       "offline_pages/prefetch/prefetch_configuration_impl.cc",
       "offline_pages/prefetch/prefetch_configuration_impl.h",
-      "offline_pages/prefetch/prefetch_importer_impl.cc",
-      "offline_pages/prefetch/prefetch_importer_impl.h",
       "offline_pages/prefetch/prefetch_instance_id_proxy.cc",
       "offline_pages/prefetch/prefetch_instance_id_proxy.h",
       "offline_pages/prefetch/prefetch_service_factory.cc",
