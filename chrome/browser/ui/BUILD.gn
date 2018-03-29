@@ -2111,6 +2111,8 @@ split_static_library("ui") {
       "webui/settings/chromeos/google_assistant_handler.h",
       "webui/settings/chromeos/internet_handler.cc",
       "webui/settings/chromeos/internet_handler.h",
+      "webui/settings/chromeos/smb_handler.cc",
+      "webui/settings/chromeos/smb_handler.h",
       "webui/version_handler_chromeos.cc",
       "webui/version_handler_chromeos.h",
       "window_sizer/window_sizer_ash.cc",

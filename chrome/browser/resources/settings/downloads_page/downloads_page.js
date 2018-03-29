@@ -40,6 +40,35 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    // <if expr="chromeos">
+    /**
+     * Whether Smb Shares settings should be fetched and displayed.
+     * @private
+     */
+    enableSmbSettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableNativeSmbSetting');
+      },
+      readOnly: true,
+    },
+    // </if>
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        const map = new Map();
+        // <if expr="chromeos">
+        if (settings.routes.SMB_SHARES) {
+          map.set(settings.routes.SMB_SHARES.path, '#smbShares .subpage-arrow');
+        }
+        // </if>
+        return map;
+      },
+    },
+
   },
 
   /** @private {?settings.DownloadsBrowserProxy} */
@@ -62,6 +91,14 @@ Polymer({
       this.browserProxy_.selectDownloadLocation();
     });
   },
+
+  // <if expr="chromeos">
+  /** @private */
+  onTapSmbShares_: function() {
+    settings.navigateTo(settings.routes.SMB_SHARES);
+  },
+  // </if>
+
 
   // <if expr="chromeos">
   /**

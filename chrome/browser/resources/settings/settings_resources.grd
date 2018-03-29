@@ -559,6 +559,26 @@
                  file="downloads_page/downloads_page.js"
                  type="chrome_html"
                  preprocess="true" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_SMB_BROWSER_PROXY_HTML"
+                   file="downloads_page/smb_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_SMB_BROWSER_PROXY_JS"
+                   file="downloads_page/smb_browser_proxy.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_SMB_SHARES_PAGE_HTML"
+                   file="downloads_page/smb_shares_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_SMB_SHARES_PAGE_JS"
+                   file="downloads_page/smb_shares_page.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_ADD_SMB_SHARE_DIALOG_HTML"
+                   file="downloads_page/add_smb_share_dialog.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_ADD_SMB_SHARE_DIALOG_JS"
+                   file="downloads_page/add_smb_share_dialog.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_I18n_SETUP_HTML"
                  file="i18n_setup.html"
                  type="chrome_html" />
