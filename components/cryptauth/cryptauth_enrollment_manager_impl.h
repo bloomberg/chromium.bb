@@ -33,6 +33,45 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
                                        public SyncScheduler::Delegate,
                                        public CryptAuthGCMManager::Observer {
  public:
+  class Factory {
+   public:
+    static std::unique_ptr<CryptAuthEnrollmentManager> NewInstance(
+        base::Clock* clock,
+        std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
+        std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
+        const GcmDeviceInfo& device_info,
+        CryptAuthGCMManager* gcm_manager,
+        PrefService* pref_service);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
+        base::Clock* clock,
+        std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
+        std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
+        const GcmDeviceInfo& device_info,
+        CryptAuthGCMManager* gcm_manager,
+        PrefService* pref_service);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
+  ~CryptAuthEnrollmentManagerImpl() override;
+
+  // CryptAuthEnrollmentManager:
+  void Start() override;
+  void ForceEnrollmentNow(InvocationReason invocation_reason) override;
+  bool IsEnrollmentValid() const override;
+  base::Time GetLastEnrollmentTime() const override;
+  base::TimeDelta GetTimeToNextAttempt() const override;
+  bool IsEnrollmentInProgress() const override;
+  bool IsRecoveringFromFailure() const override;
+  std::string GetUserPublicKey() const override;
+  std::string GetUserPrivateKey() const override;
+
+ protected:
   // Creates the manager:
   // |clock|: Used to determine the time between sync attempts.
   // |enroller_factory|: Creates CryptAuthEnroller instances to perform each
@@ -54,20 +93,6 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service);
 
-  ~CryptAuthEnrollmentManagerImpl() override;
-
-  // CryptAuthEnrollmentManager:
-  void Start() override;
-  void ForceEnrollmentNow(InvocationReason invocation_reason) override;
-  bool IsEnrollmentValid() const override;
-  base::Time GetLastEnrollmentTime() const override;
-  base::TimeDelta GetTimeToNextAttempt() const override;
-  bool IsEnrollmentInProgress() const override;
-  bool IsRecoveringFromFailure() const override;
-  std::string GetUserPublicKey() const override;
-  std::string GetUserPrivateKey() const override;
-
- protected:
   void SetSyncSchedulerForTest(std::unique_ptr<SyncScheduler> sync_scheduler);
 
  private:

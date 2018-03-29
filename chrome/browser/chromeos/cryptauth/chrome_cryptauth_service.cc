@@ -134,18 +134,18 @@ class CryptAuthEnrollerFactoryImpl
 std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
     Profile* profile) {
   std::unique_ptr<cryptauth::CryptAuthGCMManager> gcm_manager =
-      std::make_unique<cryptauth::CryptAuthGCMManagerImpl>(
+      cryptauth::CryptAuthGCMManagerImpl::Factory::NewInstance(
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager =
-      std::make_unique<cryptauth::CryptAuthDeviceManagerImpl>(
+      cryptauth::CryptAuthDeviceManagerImpl::Factory::NewInstance(
           base::DefaultClock::GetInstance(),
           CreateCryptAuthClientFactoryImpl(profile), gcm_manager.get(),
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager =
-      std::make_unique<cryptauth::CryptAuthEnrollmentManagerImpl>(
+      cryptauth::CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
           base::DefaultClock::GetInstance(),
           std::make_unique<CryptAuthEnrollerFactoryImpl>(profile),
           CreateSecureMessageDelegateImpl(), GetGcmDeviceInfo(),
