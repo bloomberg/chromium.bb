@@ -7,13 +7,14 @@
 
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/view.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
 // FocusRing is a View that is designed to act as an indicator of focus for its
 // parent. It is a stand-alone view that paints to a layer which extends beyond
 // the bounds of its parent view.
-class FocusRing : public View {
+class VIEWS_EXPORT FocusRing : public View {
  public:
   static const char kViewClassName[];
 

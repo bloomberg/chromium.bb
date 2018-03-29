@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
+#include "chrome/browser/ui/views/chrome_platform_style.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
@@ -98,6 +99,7 @@
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -181,10 +183,10 @@ void LocationBarView::Init() {
   // not prepared for that.
   DCHECK(GetWidget());
 
-  // Make sure children with layers are clipped. See http://crbug.com/589497
+  // Note that children with layers are *not* clipped, because focus rings have
+  // to draw outside the parent's bounds.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetMasksToBounds(true);
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
@@ -456,6 +458,8 @@ void LocationBarView::Layout() {
   if (!IsInitialized())
     return;
 
+  View::Layout();
+
   selected_keyword_view_->SetVisible(false);
   location_icon_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
@@ -703,6 +707,16 @@ bool LocationBarView::IsVirtualKeyboardVisible() {
 int LocationBarView::GetAvailableTextHeight() {
   return std::max(0, GetLayoutConstant(LOCATION_BAR_HEIGHT) -
                          2 * GetTotalVerticalPadding());
+}
+
+void LocationBarView::OnOmniboxFocused() {
+  if (ChromePlatformStyle::ShouldOmniboxUseFocusRing())
+    views::FocusRing::Install(this);
+}
+
+void LocationBarView::OnOmniboxBlurred() {
+  if (ChromePlatformStyle::ShouldOmniboxUseFocusRing())
+    views::FocusRing::Uninstall(this);
 }
 
 // static
@@ -1040,7 +1054,8 @@ void LocationBarView::OnFocus() {
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (show_focus_rect_ && omnibox_view_->HasFocus()) {
+  if (show_focus_rect_ && omnibox_view_->HasFocus() &&
+      !ChromePlatformStyle::ShouldOmniboxUseFocusRing()) {
     static_cast<BackgroundWith1PxBorder*>(background())
         ->PaintFocusRing(canvas, GetNativeTheme(), GetLocalBounds());
   }
