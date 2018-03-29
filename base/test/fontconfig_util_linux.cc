@@ -64,18 +64,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Impact.ttf</glob>
     </acceptfont>
     <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf</glob>
     </acceptfont>
     <acceptfont>
