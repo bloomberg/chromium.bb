@@ -359,6 +359,7 @@ executable("demo") {
 
 test("aura_unittests") {
   sources = [
+    "../compositor_extra/shadow_unittest.cc",
     "gestures/gesture_recognizer_unittest.cc",
     "hit_test_data_provider_aura_unittest.cc",
     "mus/drag_drop_controller_mus_unittest.cc",
@@ -393,6 +394,7 @@ test("aura_unittests") {
     "//testing/gtest",
     "//ui/base:test_support",
     "//ui/compositor:test_support",
+    "//ui/compositor_extra",
     "//ui/display:test_support",
     "//ui/events:gesture_detection",
     "//ui/events:test_support",

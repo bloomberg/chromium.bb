@@ -37,6 +37,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
@@ -46,7 +47,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace {
@@ -840,7 +841,7 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   widget_window->SetBounds(target_bounds - fade_out_direction);
   widget_window->SetName("OverviewModeSelector");
 
-  selector_shadow_ = std::make_unique<::wm::Shadow>();
+  selector_shadow_ = std::make_unique<ui::Shadow>();
   selector_shadow_->Init(kWindowSelectionShadowElevation);
   selector_shadow_->layer()->SetVisible(true);
   selection_widget_->GetLayer()->SetMasksToBounds(false);

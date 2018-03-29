@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/shadow.h"
+#include "ui/compositor_extra/shadow.h"
 
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -10,7 +10,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/shadow_util.h"
 
-namespace wm {
+namespace ui {
 
 namespace {
 
@@ -173,4 +173,4 @@ void Shadow::UpdateLayerBounds() {
                 blur_region.height()));
 }
 
-}  // namespace wm
+}  // namespace ui

@@ -19,12 +19,12 @@
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace views {
-class Widget;
+namespace ui {
+class Shadow;
 }
 
-namespace wm {
-class Shadow;
+namespace views {
+class Widget;
 }
 
 namespace ash {
@@ -257,7 +257,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   std::unique_ptr<views::Widget> selection_widget_;
 
   // Shadow around the selector.
-  std::unique_ptr<::wm::Shadow> selector_shadow_;
+  std::unique_ptr<ui::Shadow> selector_shadow_;
 
   // Current selected window position.
   size_t selected_index_;

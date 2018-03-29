@@ -16,8 +16,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
-#include "ui/wm/core/shadow.h"
-#include "ui/wm/core/shadow_controller.h"
 #endif
 
 namespace {

@@ -22,12 +22,12 @@ namespace gfx {
 class SlideAnimation;
 }
 
-namespace views {
-class ImageButton;
+namespace ui {
+class Shadow;
 }
 
-namespace wm {
-class Shadow;
+namespace views {
+class ImageButton;
 }
 
 namespace ash {
@@ -371,7 +371,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
-  std::unique_ptr<::wm::Shadow> shadow_;
+  std::unique_ptr<ui::Shadow> shadow_;
 
   bool event_on_title_ = false;
 

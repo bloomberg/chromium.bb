@@ -1208,6 +1208,7 @@ component("ash") {
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/compositor",
+    "//ui/compositor_extra",
     "//ui/display",
     "//ui/display/manager",
     "//ui/display/types",
