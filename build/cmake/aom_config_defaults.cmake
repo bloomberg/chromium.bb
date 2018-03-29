@@ -18,6 +18,7 @@ set(RESTRICT "" CACHE STRING "Sets RESTRICT value for current target.")
 # CPUs.
 set(ARCH_ARM 0 CACHE NUMBER "Enables ARM architecture.")
 set(ARCH_MIPS 0 CACHE NUMBER "Enables MIPS architecture.")
+set(ARCH_PPC 0 CACHE NUMBER "Enables PPC architecture.")
 set(ARCH_X86 0 CACHE NUMBER "Enables X86 architecture.")
 set(ARCH_X86_64 0 CACHE NUMBER "Enables X86_64 architecture.")
 
@@ -30,6 +31,9 @@ set(HAVE_DSPR2 0 CACHE NUMBER "Enables DSPR2 optimizations.")
 set(HAVE_MIPS32 0 CACHE NUMBER "Enables MIPS32 optimizations.")
 set(HAVE_MIPS64 0 CACHE NUMBER "Enables MIPS64 optimizations. ")
 set(HAVE_MSA 0 CACHE NUMBER "Enables MSA optimizations.")
+
+# PPC optimization flags.
+set(HAVE_VSX 0 CACHE NUMBER "Enables VSX optimizations.")
 
 # x86/x86_64 optimization flags.
 set(HAVE_AVX 0 CACHE NUMBER "Enables AVX optimizations.")
