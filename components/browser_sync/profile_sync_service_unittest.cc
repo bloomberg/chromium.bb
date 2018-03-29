@@ -859,12 +859,13 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_EQ(syncer::CONFIGURE_REASON_CATCH_UP, configure_reason);
 
   // Simulate browser restart. First configuration is a regular one.
-  service()->Shutdown();
+  ShutdownAndDeleteService();
+  CreateService(ProfileSyncService::AUTO_START);
   base::Closure captured_callback;
   ExpectSyncEngineCreationCaptureClearServerData(&captured_callback);
   ExpectDataTypeManagerCreation(
       1, GetRecordingConfigureCalledCallback(&configure_reason));
-  service()->RequestStart();
+  InitializeForNthSync();
   testing::Mock::VerifyAndClearExpectations(component_factory());
   EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
   EXPECT_TRUE(captured_callback.is_null());
@@ -913,11 +914,12 @@ TEST_F(ProfileSyncServiceTest,
   captured_callback.Reset();
 
   // Simulate browser restart. First configuration is a regular one.
-  service()->Shutdown();
+  ShutdownAndDeleteService();
+  CreateService(ProfileSyncService::AUTO_START);
   ExpectSyncEngineCreationCaptureClearServerData(&captured_callback);
   ExpectDataTypeManagerCreation(
       1, GetRecordingConfigureCalledCallback(&configure_reason));
-  service()->RequestStart();
+  InitializeForNthSync();
   testing::Mock::VerifyAndClearExpectations(component_factory());
   EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
   EXPECT_TRUE(captured_callback.is_null());

@@ -210,12 +210,17 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     if (local_sync_backend_folder.empty())
       return nullptr;
 
+    init_params.signin_scoped_device_id_callback =
+        base::BindRepeating([]() { return std::string("local_device"); });
+
     init_params.start_behavior = ProfileSyncService::AUTO_START;
   }
 #endif  // defined(OS_WIN)
 
   if (!local_sync_backend_enabled) {
     SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+    SigninClient* signin_client =
+        ChromeSigninClientFactory::GetForProfile(profile);
 
     // Always create the GCMProfileService instance such that we can listen to
     // the profile notifications and purge the GCM store when the profile is
@@ -228,6 +233,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
     init_params.signin_wrapper =
         std::make_unique<SupervisedUserSigninManagerWrapper>(profile, signin);
+    // Note: base::Unretained(signin_client) is safe because the SigninClient is
+    // guaranteed to outlive the PSS, per a DependsOn() above (and because PSS
+    // clears the callback in its Shutdown()).
+    init_params.signin_scoped_device_id_callback =
+        base::BindRepeating(&SigninClient::GetSigninScopedDeviceId,
+                            base::Unretained(signin_client));
     init_params.oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     init_params.gaia_cookie_manager_service =

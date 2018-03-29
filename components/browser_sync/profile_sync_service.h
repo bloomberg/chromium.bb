@@ -174,7 +174,8 @@ class ProfileSyncService : public syncer::SyncServiceBase,
                            public GaiaCookieManagerService::Observer {
  public:
   using Status = syncer::SyncEngine::Status;
-  using PlatformSyncAllowedProvider = base::Callback<bool(void)>;
+  using PlatformSyncAllowedProvider = base::RepeatingCallback<bool()>;
+  using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
 
   enum SyncEventCodes {
     MIN_SYNC_EVENT_CODE = 0,
@@ -229,6 +230,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
     std::unique_ptr<syncer::SyncClient> sync_client;
     std::unique_ptr<SigninManagerWrapper> signin_wrapper;
+    SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
     ProfileOAuth2TokenService* oauth2_token_service = nullptr;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     StartBehavior start_behavior = MANUAL_START;
@@ -744,6 +746,8 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   // Called when a SetupInProgressHandle issued by this instance is destroyed.
   virtual void OnSetupInProgressHandleDestroyed();
+
+  SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
 
   // This is a cache of the last authentication response we received from the
   // sync server. The UI queries this to display appropriate messaging to the

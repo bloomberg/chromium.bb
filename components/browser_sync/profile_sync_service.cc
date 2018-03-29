@@ -101,8 +101,6 @@ namespace browser_sync {
 
 namespace {
 
-using AuthError = GoogleServiceAuthError;
-
 const char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 
 const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
@@ -146,7 +144,9 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                       init_params.base_directory,
                       init_params.debug_identifier),
       OAuth2TokenService::Consumer("sync"),
-      last_auth_error_(AuthError::AuthErrorNone()),
+      signin_scoped_device_id_callback_(
+          init_params.signin_scoped_device_id_callback),
+      last_auth_error_(GoogleServiceAuthError::AuthErrorNone()),
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
                                     init_params.channel)),
@@ -171,6 +171,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_enabled_weak_factory_(this),
       weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(signin_scoped_device_id_callback_);
   DCHECK(sync_client_);
   std::string last_version = sync_prefs_.GetLastRunVersion();
   std::string current_version = PRODUCT_VERSION;
@@ -650,6 +651,8 @@ void ProfileSyncService::Shutdown() {
     sync_error_controller_.reset();
   }
 
+  signin_scoped_device_id_callback_.Reset();
+
   if (sync_thread_)
     sync_thread_->Stop();
 }
@@ -889,17 +892,9 @@ void ProfileSyncService::OnEngineInitialized(
   sync_js_controller_.AttachJsBackend(js_backend);
   debug_info_listener_ = debug_info_listener;
 
-  std::string signin_scoped_device_id;
-  if (IsLocalSyncEnabled()) {
-    signin_scoped_device_id = "local_device";
-  } else {
-    SigninClient* signin_client = signin_->GetOriginal()->signin_client();
-    DCHECK(signin_client);
-    signin_scoped_device_id = signin_client->GetSigninScopedDeviceId();
-  }
-
   // Initialize local device info.
-  local_device_->Initialize(cache_guid, signin_scoped_device_id);
+  local_device_->Initialize(cache_guid,
+                            signin_scoped_device_id_callback_.Run());
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -986,7 +981,8 @@ void ProfileSyncService::OnExperimentsChanged(
       experiments.gcm_invalidations_enabled);
 }
 
-void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
+void ProfileSyncService::UpdateAuthErrorState(
+    const GoogleServiceAuthError& error) {
   is_auth_in_progress_ = false;
   last_auth_error_ = error;
 
@@ -995,22 +991,23 @@ void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
 
 namespace {
 
-AuthError ConnectionStatusToAuthError(syncer::ConnectionStatus status) {
+GoogleServiceAuthError ConnectionStatusToAuthError(
+    syncer::ConnectionStatus status) {
   switch (status) {
     case syncer::CONNECTION_OK:
-      return AuthError::AuthErrorNone();
+      return GoogleServiceAuthError::AuthErrorNone();
       break;
     case syncer::CONNECTION_AUTH_ERROR:
-      return AuthError(AuthError::FromInvalidGaiaCredentialsReason(
-          AuthError::InvalidGaiaCredentialsReason::
-              CREDENTIALS_REJECTED_BY_SERVER));
+      return GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER);
       break;
     case syncer::CONNECTION_SERVER_ERROR:
-      return AuthError(AuthError::CONNECTION_FAILED);
+      return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
       break;
     default:
       NOTREACHED();
-      return AuthError(AuthError::CONNECTION_FAILED);
+      return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
   }
 }
 
@@ -1344,7 +1341,7 @@ bool ProfileSyncService::QueryDetailedSyncStatus(SyncEngine::Status* result) {
   return false;
 }
 
-const AuthError& ProfileSyncService::GetAuthError() const {
+const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return last_auth_error_;
 }
@@ -1895,7 +1892,8 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
                                                const std::string& username) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!IsEngineInitialized() || GetAuthError().state() != AuthError::NONE) {
+  if (!IsEngineInitialized() ||
+      GetAuthError().state() != GoogleServiceAuthError::NONE) {
     // Track the fact that we're still waiting for auth to complete.
     is_auth_in_progress_ = true;
   }
@@ -2362,4 +2360,5 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
     ReconfigureDatatypeManager();
   NotifyObservers();
 }
+
 }  // namespace browser_sync
