@@ -323,6 +323,23 @@ TEST_F(ViewTest, LayoutCalledInvalidateAndOriginChanges) {
   EXPECT_TRUE(child->did_layout_);
 }
 
+// Tests that SizeToPreferredSize will trigger a Layout if the size has changed
+// or if layout is marked invalid.
+TEST_F(ViewTest, SizeToPreferredSizeInducesLayout) {
+  TestView example_view;
+  example_view.SetPreferredSize(gfx::Size(101, 102));
+  example_view.SizeToPreferredSize();
+  EXPECT_TRUE(example_view.did_layout_);
+
+  example_view.Reset();
+  example_view.SizeToPreferredSize();
+  EXPECT_FALSE(example_view.did_layout_);
+
+  example_view.InvalidateLayout();
+  example_view.SizeToPreferredSize();
+  EXPECT_TRUE(example_view.did_layout_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OnBoundsChanged
 ////////////////////////////////////////////////////////////////////////////////
