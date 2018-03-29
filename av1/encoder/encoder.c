@@ -53,9 +53,7 @@
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"
 #endif
-#if CONFIG_FILM_GRAIN
 #include "av1/encoder/grain_test_vectors.h"
-#endif
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
 #include "aom_ports/aom_timer.h"
@@ -444,7 +442,6 @@ static void alloc_context_buffers_ext(AV1_COMP *cpi) {
                   aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
 }
 
-#if CONFIG_FILM_GRAIN
 static void update_film_grain_parameters(struct AV1_COMP *cpi,
                                          const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
@@ -479,7 +476,6 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
     memset(&cm->film_grain_params, 0, sizeof(cm->film_grain_params));
   }
 }
-#endif
 
 static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -960,9 +956,8 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   set_sb_size(&cm->seq_params,
               select_sb_size(cpi));  // set sb size before allocations
   alloc_compressor_data(cpi);
-#if CONFIG_FILM_GRAIN
+
   update_film_grain_parameters(cpi, oxcf);
-#endif
 
   // Single thread case: use counts in common.
   cpi->td.counts = &cm->counts;
@@ -2277,9 +2272,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->equal_picture_interval = oxcf->equal_picture_interval;
   cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
 
-#if CONFIG_FILM_GRAIN
   update_film_grain_parameters(cpi, oxcf);
-#endif
 
   cpi->oxcf = *oxcf;
   cpi->common.options = oxcf->cfg;
@@ -5548,9 +5541,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   bitstream_queue_set_frame_write(cm->current_video_frame * 2 + cm->show_frame);
 #endif
 
-#if CONFIG_FILM_GRAIN_SHOWEX
   cm->showable_frame = 0;
-#endif
   aom_usec_timer_start(&cmptimer);
 
 #if CONFIG_AMVR
@@ -5655,9 +5646,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     assert(arf_src_index <= rc->frames_to_key);
 
     if ((source = av1_lookahead_peek(cpi->lookahead, arf_src_index)) != NULL) {
-#if CONFIG_FILM_GRAIN_SHOWEX
       cm->showable_frame = 1;
-#endif
       cpi->alt_ref_source = source;
 
       if (oxcf->arnr_max_frames > 0) {
@@ -5699,9 +5688,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     assert(arf_src_index <= rc->frames_to_key);
 
     if ((source = av1_lookahead_peek(cpi->lookahead, arf_src_index)) != NULL) {
-#if CONFIG_FILM_GRAIN_SHOWEX
       cm->showable_frame = 1;
-#endif
       cpi->alt_ref_source = source;
 
       if (oxcf->arnr_max_frames > 0) {
@@ -5729,9 +5716,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   if (brf_src_index) {
     assert(brf_src_index <= rc->frames_to_key);
     if ((source = av1_lookahead_peek(cpi->lookahead, brf_src_index)) != NULL) {
-#if CONFIG_FILM_GRAIN_SHOWEX
       cm->showable_frame = 1;
-#endif
       cm->show_frame = 0;
       cm->intra_only = 0;
 
@@ -5809,14 +5794,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
   cm->cur_frame->buf.buf_8bit_valid = 0;
 
-#if CONFIG_FILM_GRAIN
   if (cm->film_grain_table) {
     cm->film_grain_params_present = aom_film_grain_table_lookup(
         cm->film_grain_table, *time_stamp, *time_end, 0 /* erase */,
         &cm->film_grain_params);
   }
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
-#endif
 
   // Start with a 0 size frame.
   *size = 0;
@@ -5911,9 +5894,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 #endif  // EXT_TILE_DEBUG
 #undef EXT_TILE_DEBUG
-#if CONFIG_FILM_GRAIN_SHOWEX
+
   cm->showable_frame = !cm->show_frame && cm->showable_frame;
-#endif
 
   // No frame encoded, or frame was dropped, release scaled references.
   if ((*size == 0) && (frame_is_intra_only(cm) == 0)) {

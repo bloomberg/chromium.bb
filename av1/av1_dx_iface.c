@@ -40,9 +40,7 @@
 typedef struct cache_frame {
   int fb_idx;
   aom_image_t img;
-#if CONFIG_FILM_GRAIN
   aom_film_grain_t film_grain_params;
-#endif
 } cache_frame;
 
 struct aom_codec_alg_priv {
@@ -69,9 +67,7 @@ struct aom_codec_alg_priv {
   int next_output_worker_id;
   int available_threads;
   cache_frame frame_cache[FRAME_CACHE_SIZE];
-#if CONFIG_FILM_GRAIN
   aom_image_t *image_with_grain;
-#endif
   int frame_cache_write;
   int frame_cache_read;
   int num_cache_frames;
@@ -114,9 +110,7 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
       // default values
       priv->cfg.cfg.ext_partition = 1;
     }
-#if CONFIG_FILM_GRAIN
     priv->image_with_grain = NULL;
-#endif
   }
 
   return AOM_CODEC_OK;
@@ -154,9 +148,7 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
 
   aom_free(ctx->frame_workers);
   aom_free(ctx->buffer_pool);
-#if CONFIG_FILM_GRAIN
   if (ctx->image_with_grain) aom_img_free(ctx->image_with_grain);
-#endif
   aom_free(ctx);
   return AOM_CODEC_OK;
 }
@@ -504,7 +496,6 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   return res;
 }
 
-#if CONFIG_FILM_GRAIN
 aom_image_t *add_grain_if_needed(aom_image_t *img, aom_image_t *grain_img_buf,
                                  aom_film_grain_t *grain_params) {
   if (!grain_params->apply_grain) return img;
@@ -526,7 +517,6 @@ aom_image_t *add_grain_if_needed(aom_image_t *img, aom_image_t *grain_img_buf,
 
   return grain_img_buf;
 }
-#endif
 
 static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                                       aom_codec_iter_t *iter) {
@@ -539,13 +529,9 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
     img = &ctx->frame_cache[ctx->frame_cache_read].img;
     ctx->frame_cache_read = (ctx->frame_cache_read + 1) % FRAME_CACHE_SIZE;
     --ctx->num_cache_frames;
-#if CONFIG_FILM_GRAIN
     return add_grain_if_needed(
         img, ctx->image_with_grain,
         &ctx->frame_cache[ctx->frame_cache_read].film_grain_params);
-#else
-    return img;
-#endif
   }
 
   // iter acts as a flip flop, so an image is only returned on the first
@@ -614,13 +600,9 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->enhancement_id = cm->enhancement_layer_id;
-#if CONFIG_FILM_GRAIN
           return add_grain_if_needed(
               img, ctx->image_with_grain,
               &frame_worker_data->pbi->common.film_grain_params);
-#else
-          return img;
-#endif
         }
       } else {
         // Decoding failed. Release the worker thread.

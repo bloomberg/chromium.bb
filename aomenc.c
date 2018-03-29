@@ -461,7 +461,6 @@ static const struct arg_enum_list timing_info_enum[] = {
 static const arg_def_t timing_info =
     ARG_DEF_ENUM(NULL, "timing-info", 1,
                  "Signal timing info in the bitstream:", timing_info_enum);
-#if CONFIG_FILM_GRAIN
 static const arg_def_t film_grain_test =
     ARG_DEF(NULL, "film-grain-test", 1,
             "Film grain test vectors (0: none (default), 1: test-1  2: test-2, "
@@ -469,7 +468,6 @@ static const arg_def_t film_grain_test =
 static const arg_def_t film_grain_table =
     ARG_DEF(NULL, "film-grain-table", 1,
             "Path to file containing film grain parameters");
-#endif
 static const arg_def_t enable_ref_frame_mvs =
     ARG_DEF(NULL, "enable-ref-frame-mvs", 1,
             "Enable temporal mv prediction (default is 1)");
@@ -648,10 +646,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &num_tg,
                                        &mtu_size,
                                        &timing_info,
-#if CONFIG_FILM_GRAIN
                                        &film_grain_test,
                                        &film_grain_table,
-#endif
                                        &enable_ref_frame_mvs,
                                        &bitdeptharg,
                                        &inbitdeptharg,
@@ -700,10 +696,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_NUM_TG,
                                         AV1E_SET_MTU,
                                         AV1E_SET_TIMING_INFO,
-#if CONFIG_FILM_GRAIN
                                         AV1E_SET_FILM_GRAIN_TEST_VECTOR,
                                         AV1E_SET_FILM_GRAIN_TABLE,
-#endif
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
                                         AV1E_SET_ENABLE_DF,
                                         AV1E_SET_ENABLE_ORDER_HINT,

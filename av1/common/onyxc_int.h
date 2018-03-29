@@ -29,10 +29,8 @@
 #include "av1/common/tile_common.h"
 #include "av1/common/odintrin.h"
 #include "av1/encoder/hash_motion.h"
-#if CONFIG_FILM_GRAIN
 #include "aom_dsp/grain_synthesis.h"
 #include "aom_dsp/grain_table.h"
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -124,13 +122,9 @@ typedef struct {
   int width;
   int height;
   WarpedMotionParams global_motion[REF_FRAMES];
-#if CONFIG_FILM_GRAIN_SHOWEX
   int showable_frame;  // frame can be used as show existing frame in future
-#endif
-#if CONFIG_FILM_GRAIN
   int film_grain_params_present;
   aom_film_grain_t film_grain_params;
-#endif
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
   hash_table hash_table;
@@ -300,9 +294,7 @@ typedef struct AV1Common {
   FRAME_TYPE frame_type;
 
   int show_frame;
-#if CONFIG_FILM_GRAIN_SHOWEX
   int showable_frame;  // frame can be used as show existing frame in future
-#endif
   int last_show_frame;
   int show_existing_frame;
   // Flag for a frame used as a reference - not written to the bitstream
@@ -501,11 +493,9 @@ typedef struct AV1Common {
   TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
   int above_context_alloc_cols;
   WarpedMotionParams global_motion[REF_FRAMES];
-#if CONFIG_FILM_GRAIN
   aom_film_grain_table_t *film_grain_table;
   int film_grain_params_present;
   aom_film_grain_t film_grain_params;
-#endif
   int cdef_pri_damping;
   int cdef_sec_damping;
   int nb_cdef_strengths;

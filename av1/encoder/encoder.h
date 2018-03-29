@@ -270,10 +270,8 @@ typedef struct AV1EncoderConfig {
   uint32_t time_scale;
   int equal_picture_interval;
   uint32_t num_ticks_per_picture;
-#if CONFIG_FILM_GRAIN
   int film_grain_test_vector;
   const char *film_grain_table_filename;
-#endif
 
   uint8_t cdf_update_mode;
   aom_superblock_size_t superblock_size;

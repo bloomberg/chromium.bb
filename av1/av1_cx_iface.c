@@ -80,10 +80,8 @@ struct av1_extracfg {
   unsigned int single_tile_decoding;
   int error_resilient_mode;
 
-#if CONFIG_FILM_GRAIN
   int film_grain_test_vector;
   const char *film_grain_table_filename;
-#endif
   unsigned int motion_vector_unit_test;
   unsigned int cdf_update_mode;
   int enable_order_hint;
@@ -146,20 +144,17 @@ static struct av1_extracfg default_extra_cfg = {
   AOM_SUPERBLOCK_SIZE_DYNAMIC,  // superblock_size
   0,                            // Single tile decoding is off by default.
   0,                            // error_resilient_mode off by default.
-
-#if CONFIG_FILM_GRAIN
-  0,  // film_grain_test_vector
-  0,  // film_grain_table_filename
-#endif
-  0,  // motion_vector_unit_test
-  1,  // CDF update mode
-  1,  // frame order hint
-  1,  // jnt_comp
-  1,  // enable_ref_frame_mvs sequence level
-  1,  // allow ref_frame_mvs frame level
-  1,  // frame order hint
-  1,  // jnt_comp
-  1,  // superres
+  0,                            // film_grain_test_vector
+  0,                            // film_grain_table_filename
+  0,                            // motion_vector_unit_test
+  1,                            // CDF update mode
+  1,                            // frame order hint
+  1,                            // jnt_comp
+  1,                            // enable_ref_frame_mvs sequence level
+  1,                            // allow ref_frame_mvs frame level
+  1,                            // frame order hint
+  1,                            // jnt_comp
+  1,                            // superres
 };
 
 struct aom_codec_alg_priv {
@@ -376,9 +371,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 
   RANGE_CHECK(extra_cfg, timing_info, AOM_TIMING_UNSPECIFIED, AOM_TIMING_EQUAL);
 
-#if CONFIG_FILM_GRAIN
   RANGE_CHECK(extra_cfg, film_grain_test_vector, 0, 16);
-#endif
 
   if (extra_cfg->lossless) {
     if (extra_cfg->aq_mode != 0)
@@ -609,11 +602,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->content = extra_cfg->content;
   oxcf->cdf_update_mode = (uint8_t)extra_cfg->cdf_update_mode;
   oxcf->superblock_size = extra_cfg->superblock_size;
-
-#if CONFIG_FILM_GRAIN
   oxcf->film_grain_test_vector = extra_cfg->film_grain_test_vector;
   oxcf->film_grain_table_filename = extra_cfg->film_grain_table_filename;
-#endif
   oxcf->large_scale_tile = cfg->large_scale_tile;
   oxcf->single_tile_decoding =
       (oxcf->large_scale_tile) ? extra_cfg->single_tile_decoding : 0;
@@ -1013,7 +1003,6 @@ static aom_codec_err_t ctrl_set_aq_mode(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-#if CONFIG_FILM_GRAIN
 static aom_codec_err_t ctrl_set_film_grain_test_vector(
     aom_codec_alg_priv_t *ctx, va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1028,7 +1017,6 @@ static aom_codec_err_t ctrl_set_film_grain_table(aom_codec_alg_priv_t *ctx,
   extra_cfg.film_grain_table_filename = CAST(AV1E_SET_FILM_GRAIN_TABLE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#endif
 
 static aom_codec_err_t ctrl_set_deltaq_mode(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
@@ -1642,11 +1630,8 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_RENDER_SIZE, ctrl_set_render_size },
   { AV1E_SET_SUPERBLOCK_SIZE, ctrl_set_superblock_size },
   { AV1E_SET_SINGLE_TILE_DECODING, ctrl_set_single_tile_decoding },
-#if CONFIG_FILM_GRAIN
   { AV1E_SET_FILM_GRAIN_TEST_VECTOR, ctrl_set_film_grain_test_vector },
   { AV1E_SET_FILM_GRAIN_TABLE, ctrl_set_film_grain_table },
-#endif  // CONFIG_FILM_GRAIN
-
   { AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, ctrl_enable_motion_vector_unit_test },
 
   // Getters

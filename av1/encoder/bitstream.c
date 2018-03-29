@@ -2511,7 +2511,6 @@ static void write_timing_info_header(AV1_COMMON *const cm,
   }
 }
 
-#if CONFIG_FILM_GRAIN
 static void write_film_grain_params(AV1_COMP *cpi,
                                     struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
@@ -2531,7 +2530,6 @@ static void write_film_grain_params(AV1_COMP *cpi,
     aom_wb_write_bit(wb, pars->update_parameters);
   else
     pars->update_parameters = 1;
-#if CONFIG_FILM_GRAIN_SHOWEX
   if (!pars->update_parameters) {
     RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
     int ref_frame, ref_idx, buf_idx;
@@ -2548,12 +2546,8 @@ static void write_film_grain_params(AV1_COMP *cpi,
     aom_wb_write_literal(wb, ref_idx, 3);
     return;
   }
-#else
-  if (!pars->update_parameters) return;
-#endif
 
   // Scaling functions parameters
-
   aom_wb_write_literal(wb, pars->num_y_points, 4);  // max 14
   for (int i = 0; i < pars->num_y_points; i++) {
     aom_wb_write_literal(wb, pars->scaling_points_y[i][0], 8);
@@ -2626,7 +2620,6 @@ static void write_film_grain_params(AV1_COMP *cpi,
 
   aom_wb_write_bit(wb, pars->clip_to_restricted_range);
 }
-#endif  // CONFIG_FILM_GRAIN
 
 static void write_sb_size(SequenceHeader *seq_params,
                           struct aom_write_bit_buffer *wb) {
@@ -2848,21 +2841,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       aom_wb_write_literal(wb, display_frame_id, frame_id_len);
     }
 
-#if CONFIG_FILM_GRAIN && !CONFIG_FILM_GRAIN_SHOWEX
-    if (cm->film_grain_params_present && cm->show_frame) {
-      int flip_back_update_parameters_flag = 0;
-      if (cm->frame_type == KEY_FRAME &&
-          cm->film_grain_params.update_parameters == 0) {
-        cm->film_grain_params.update_parameters = 1;
-        flip_back_update_parameters_flag = 1;
-      }
-      write_film_grain_params(cpi, wb);
-
-      if (flip_back_update_parameters_flag)
-        cm->film_grain_params.update_parameters = 0;
-    }
-#endif
-
     if (cm->reset_decoder_state &&
         frame_bufs[frame_to_show].frame_type != KEY_FRAME) {
       aom_internal_error(
@@ -2881,11 +2859,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->intra_only) cm->frame_type = INTRA_ONLY_FRAME;
 
   aom_wb_write_bit(wb, cm->show_frame);
-#if CONFIG_FILM_GRAIN_SHOWEX
   if (!cm->show_frame) {
     aom_wb_write_bit(wb, cm->showable_frame);
   }
-#endif
   if (frame_is_sframe(cm)) {
     assert(cm->error_resilient_mode);
   } else {
@@ -3166,12 +3142,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 
-#if CONFIG_FILM_GRAIN
-#if CONFIG_FILM_GRAIN_SHOWEX
   if (cm->film_grain_params_present && (cm->show_frame || cm->showable_frame)) {
-#else
-  if (cm->film_grain_params_present && cm->show_frame) {
-#endif
     int flip_back_update_parameters_flag = 0;
     if (cm->frame_type != INTER_FRAME &&
         cm->film_grain_params.update_parameters == 0) {
@@ -3183,7 +3154,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     if (flip_back_update_parameters_flag)
       cm->film_grain_params.update_parameters = 0;
   }
-#endif
 }
 
 static int choose_size_bytes(uint32_t size, int spare_msbs) {
@@ -3408,9 +3378,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
   // timing_info
   write_timing_info_header(cm, &wb);
 
-#if CONFIG_FILM_GRAIN
   aom_wb_write_bit(&wb, cm->film_grain_params_present);
-#endif
 
 #if CONFIG_TRAILING_BITS
   add_trailing_bits(&wb);

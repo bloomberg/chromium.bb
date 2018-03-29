@@ -2026,7 +2026,6 @@ void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   return;
 }
 
-#if CONFIG_FILM_GRAIN
 void av1_read_film_grain_params(AV1_COMMON *cm,
                                 struct aom_read_bit_buffer *rb) {
   aom_film_grain_t *pars = &cm->film_grain_params;
@@ -2043,7 +2042,6 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   else
     pars->update_parameters = 1;
 
-#if CONFIG_FILM_GRAIN_SHOWEX
   if (!pars->update_parameters) {
     // inherit parameters from a previous reference frame
     RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
@@ -2058,12 +2056,8 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
     pars->random_seed = random_seed;                // with new random seed
     return;
   }
-#else
-  if (!pars->update_parameters) return;
-#endif
 
   // Scaling functions parameters
-
   pars->num_y_points = aom_rb_read_literal(rb, 4);  // max 14
   if (pars->num_y_points > 14)
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
@@ -2180,7 +2174,6 @@ static void read_film_grain(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   memcpy(&cm->cur_frame->film_grain_params, &cm->film_grain_params,
          sizeof(aom_film_grain_t));
 }
-#endif
 
 void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                            struct aom_read_bit_buffer *rb,
@@ -2605,19 +2598,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->lf.filter_level[1] = 0;
     cm->show_frame = 1;
 
-#if CONFIG_FILM_GRAIN_SHOWEX
     if (!frame_bufs[frame_to_show].showable_frame) {
       aom_merge_corrupted_flag(&xd->corrupted, 1);
     }
     frame_bufs[frame_to_show].showable_frame = 0;
-#endif
-#if CONFIG_FILM_GRAIN
-#if CONFIG_FILM_GRAIN_SHOWEX
     cm->film_grain_params = frame_bufs[frame_to_show].film_grain_params;
-#else
-    read_film_grain(cm, rb);
-#endif
-#endif
 
     if (cm->reset_decoder_state) {
       show_existing_frame_reset(pbi, existing_frame_idx);
@@ -2630,14 +2615,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
   cm->show_frame = aom_rb_read_bit(rb);
-#if CONFIG_FILM_GRAIN_SHOWEX
   cm->showable_frame = 0;
   if (!cm->show_frame) {
     // See if this frame can be used as show_existing_frame in future
     cm->showable_frame = aom_rb_read_bit(rb);
   }
   cm->cur_frame->showable_frame = cm->showable_frame;
-#endif
   cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
   cm->error_resilient_mode = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
   cm->disable_cdf_update = aom_rb_read_bit(rb);
@@ -2786,9 +2769,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->allow_ref_frame_mvs = 0;
 
     if (cm->intra_only) {
-#if CONFIG_FILM_GRAIN
       cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
-#endif
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       setup_frame_size(cm, frame_size_override_flag, rb);
       if (pbi->need_resync) {
@@ -3107,18 +3088,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
-#if CONFIG_FILM_GRAIN
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
-#if CONFIG_FILM_GRAIN_SHOWEX
   if (cm->show_frame || cm->showable_frame) {
     read_film_grain(cm, rb);
   }
-#else
-  if (cm->show_frame) {
-    read_film_grain(cm, rb);
-  }
-#endif
-#endif
 
   set_single_tile_decoding_mode(&pbi->common);
   return 0;
