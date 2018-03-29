@@ -3756,6 +3756,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsePdfCompositorServiceDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
 
+    {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
+     flag_descriptions::kAutofillDynamicFormsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

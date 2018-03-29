@@ -55,6 +55,10 @@ const char kAsyncImageDecodingName[] = "AsyncImageDecoding";
 const char kAsyncImageDecodingDescription[] =
     "Enables asynchronous decoding of images from raster for web content";
 
+const char kAutofillDynamicFormsName[] = "Autofill Dynamic Forms";
+const char kAutofillDynamicFormsDescription[] =
+    "Allows autofill to fill dynamically changing forms";
+
 const char kAutoplayPolicyName[] = "Autoplay policy";
 const char kAutoplayPolicyDescription[] =
     "Policy used when deciding if audio or video is allowed to autoplay.";
