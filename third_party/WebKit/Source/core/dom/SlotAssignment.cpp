@@ -237,8 +237,6 @@ void SlotAssignment::RecalcAssignmentNg() {
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     if (!child.IsSlotable())
       continue;
-    // TODO(hayato): Avoid unconditional LazyReattach
-    child.LazyReattachIfAttached();
 
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
@@ -253,11 +251,7 @@ void SlotAssignment::RecalcAssignmentNg() {
 
     if (slot)
       slot->AppendAssignedNode(child);
-  }
-
-  // TODO(hayato): Avoid unconditional LazyReattach
-  for (Member<HTMLSlotElement> slot : Slots()) {
-    for (Node& child : NodeTraversal::ChildrenOf(*slot))
+    else
       child.LazyReattachIfAttached();
   }
 
@@ -266,6 +260,9 @@ void SlotAssignment::RecalcAssignmentNg() {
         .GetSlotAssignmentEngine()
         .RemoveShadowRootNeedingRecalc(*owner_);
   }
+
+  for (auto& slot : Slots())
+    slot->RecalcFlatTreeChildren();
 }
 
 void SlotAssignment::RecalcAssignment() {
