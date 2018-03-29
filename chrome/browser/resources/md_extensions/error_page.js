@@ -269,6 +269,15 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @param {!chrome.developerPrivate.StackFrame} frame
+     * @return {number}
+     * @private
+     */
+    getStackFrameTabIndex_: function(frame) {
+      return frame == this.selectedStackFrame_ ? 0 : -1;
+    },
+
+    /**
      * This function is used to determine whether or not we want to show a
      * stack frame. We don't want to show code from internal scripts.
      * @param {string} url
@@ -281,13 +290,11 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!Event} e
+     * @param {!chrome.developerPrivate.StackFrame} frame
      * @private
      */
-    onStackFrameTap_: function(e) {
-      const frame = /** @type {!{model:Object}} */ (e).model.item;
-
-      this.selectedStackFrame_ = frame;
+    updateSelected_: function(frame) {
+      this.selectedStackFrame_ = assert(frame);
 
       const selectedError = this.getSelectedError();
       this.delegate
@@ -298,6 +305,46 @@ cr.define('extensions', function() {
             lineNumber: frame.lineNumber,
           })
           .then(code => this.code_ = code);
+    },
+
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onStackFrameTap_: function(e) {
+      const frame = /** @type {!{model:Object}} */ (e).model.item;
+      this.updateSelected_(frame);
+    },
+
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onStackKeydown_: function(e) {
+      let direction = 0;
+
+      if (e.key == 'ArrowDown')
+        direction = 1;
+      else if (e.key == 'ArrowUp')
+        direction = -1;
+      else
+        return;
+
+      e.preventDefault();
+
+      let list = e.target.parentElement.querySelectorAll('li');
+
+      for (let i = 0; i < list.length; ++i) {
+        if (list[i].classList.contains('selected')) {
+          let polymerEvent = /** @type {!{model: !Object}} */ (e);
+          let frame = polymerEvent.model.item.stackTrace[i + direction];
+          if (frame) {
+            this.updateSelected_(frame);
+            list[i + direction].focus();  // Preserve focus.
+          }
+          return;
+        }
+      }
     },
 
     /** @private */
