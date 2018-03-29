@@ -20,6 +20,7 @@ namespace {
 const int kMaxErrorFrames = 12;
 const int kMaxDroppableFrames = 12;
 const int kMaxErrorResilientFrames = 12;
+const int kMaxNoMFMVFrames = 12;
 const int kCpuUsed = 1;
 
 class ErrorResilienceTestLarge
@@ -38,6 +39,7 @@ class ErrorResilienceTestLarge
     error_nframes_ = 0;
     droppable_nframes_ = 0;
     error_resilient_nframes_ = 0;
+    nomfmv_nframes_ = 0;
     pattern_switch_ = 0;
   }
 
@@ -82,6 +84,18 @@ class ErrorResilienceTestLarge
           std::cout << "             Encoding error_resilient frame: "
                     << error_resilient_frames_[i] << "\n";
           encoder->Control(AV1E_SET_ERROR_RESILIENT_MODE, 1);
+          break;
+        }
+      }
+    }
+    encoder->Control(AV1E_SET_ALLOW_REF_FRAME_MVS, 1);
+    if (nomfmv_nframes_ > 0 &&
+        (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
+      for (unsigned int i = 0; i < nomfmv_nframes_; ++i) {
+        if (nomfmv_frames_[i] == video->frame()) {
+          std::cout << "             Encoding no mfmv frame: "
+                    << nomfmv_frames_[i] << "\n";
+          encoder->Control(AV1E_SET_ALLOW_REF_FRAME_MVS, 0);
           break;
         }
       }
@@ -157,6 +171,16 @@ class ErrorResilienceTestLarge
       error_resilient_frames_[i] = list[i];
   }
 
+  void SetNoMFMVFrames(int num, unsigned int *list) {
+    if (num > kMaxNoMFMVFrames)
+      num = kMaxNoMFMVFrames;
+    else if (num < 0)
+      num = 0;
+    nomfmv_nframes_ = num;
+    for (unsigned int i = 0; i < nomfmv_nframes_; ++i)
+      nomfmv_frames_[i] = list[i];
+  }
+
   unsigned int GetMismatchFrames() { return mismatch_nframes_; }
   unsigned int GetEncodedFrames() { return nframes_; }
   unsigned int GetDecodedFrames() { return decoded_nframes_; }
@@ -170,12 +194,14 @@ class ErrorResilienceTestLarge
   unsigned int error_nframes_;
   unsigned int droppable_nframes_;
   unsigned int error_resilient_nframes_;
+  unsigned int nomfmv_nframes_;
   unsigned int pattern_switch_;
   double mismatch_psnr_;
   unsigned int mismatch_nframes_;
   unsigned int error_frames_[kMaxErrorFrames];
   unsigned int droppable_frames_[kMaxDroppableFrames];
   unsigned int error_resilient_frames_[kMaxErrorResilientFrames];
+  unsigned int nomfmv_frames_[kMaxNoMFMVFrames];
   libaom_test::TestMode encoding_mode_;
 };
 
