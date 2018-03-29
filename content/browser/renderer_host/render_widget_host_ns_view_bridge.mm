@@ -8,12 +8,14 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#import "content/browser/renderer_host/popup_window_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 
 namespace content {
 
@@ -31,13 +33,22 @@ class RenderWidgetHostViewNSViewBridgeLocal
   ~RenderWidgetHostViewNSViewBridgeLocal() override;
   RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa() override;
 
+  void InitAsPopup(const gfx::Rect& content_rect,
+                   blink::WebPopupType popup_type) override;
   void Destroy() override;
   void MakeFirstResponder() override;
+  void SetBounds(const gfx::Rect& rect) override;
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetTooltipText(const base::string16& display_text) override;
 
  private:
+  bool IsPopup() const {
+    // TODO(ccameron): If this is not equivalent to |popup_window_| then
+    // there are bugs.
+    return popup_type_ != blink::kWebPopupTypeNone;
+  }
+
   // display::DisplayObserver implementation.
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
@@ -45,6 +56,10 @@ class RenderWidgetHostViewNSViewBridgeLocal
   // Weak, this is owned by |cocoa_view_|'s |client_|, and |cocoa_view_| owns
   // its |client_|.
   RenderWidgetHostViewCocoa* cocoa_view_ = nil;
+
+  // The window used for popup widgets, and its helper.
+  std::unique_ptr<PopupWindowMac> popup_window_;
+  blink::WebPopupType popup_type_ = blink::kWebPopupTypeNone;
 
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
   base::scoped_nsobject<CALayer> background_layer_;
@@ -72,11 +87,20 @@ RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
 RenderWidgetHostViewNSViewBridgeLocal::
     ~RenderWidgetHostViewNSViewBridgeLocal() {
   display::Screen::GetScreen()->RemoveObserver(this);
+  popup_window_.reset();
 }
 
 RenderWidgetHostViewCocoa*
 RenderWidgetHostViewNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
   return cocoa_view_;
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::InitAsPopup(
+    const gfx::Rect& content_rect,
+    blink::WebPopupType popup_type) {
+  popup_type_ = popup_type;
+  popup_window_ =
+      std::make_unique<PopupWindowMac>(content_rect, popup_type_, cocoa_view_);
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::Destroy() {
@@ -89,6 +113,47 @@ void RenderWidgetHostViewNSViewBridgeLocal::Destroy() {
 
 void RenderWidgetHostViewNSViewBridgeLocal::MakeFirstResponder() {
   [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
+  // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
+  // TODO(thakis): fix, http://crbug.com/73362
+
+  // During the initial creation of the RenderWidgetHostView in
+  // WebContentsImpl::CreateRenderViewForRenderManager, SetSize is called with
+  // an empty size. In the Windows code flow, it is not ignored because
+  // subsequent sizing calls from the OS flow through TCVW::WasSized which calls
+  // SetSize() again. On Cocoa, we rely on the Cocoa view struture and resizer
+  // flags to keep things sized properly. On the other hand, if the size is not
+  // empty then this is a valid request for a pop-up.
+  if (rect.size().IsEmpty())
+    return;
+
+  // Ignore the position of |rect| for non-popup rwhvs. This is because
+  // background tabs do not have a window, but the window is required for the
+  // coordinate conversions. Popups are always for a visible tab.
+  //
+  // Note: If |cocoa_view_| has been removed from the view hierarchy, it's still
+  // valid for resizing to be requested (e.g., during tab capture, to size the
+  // view to screen-capture resolution). In this case, simply treat the view as
+  // relative to the screen.
+  BOOL isRelativeToScreen =
+      IsPopup() || ![[cocoa_view_ superview] isKindOfClass:[BaseView class]];
+  if (isRelativeToScreen) {
+    // The position of |rect| is screen coordinate system and we have to
+    // consider Cocoa coordinate system is upside-down and also multi-screen.
+    NSRect frame = gfx::ScreenRectToNSRect(rect);
+    if (IsPopup())
+      [popup_window_->window() setFrame:frame display:YES];
+    else
+      [cocoa_view_ setFrame:frame];
+  } else {
+    BaseView* superview = static_cast<BaseView*>([cocoa_view_ superview]);
+    gfx::Rect rect2 = [superview flipNSRectToRect:[cocoa_view_ frame]];
+    rect2.set_width(rect.width());
+    rect2.set_height(rect.height());
+    [cocoa_view_ setFrame:[superview flipRectToNSRect:rect2]];
+  }
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {

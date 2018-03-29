@@ -344,9 +344,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // collide with FrameSinkIds used by RenderWidgetHostImpls.
   static viz::FrameSinkId AllocateFrameSinkIdForGuestViewHack();
 
-  // Returns whether this render view is a popup (autocomplete window).
-  bool IsPopup() const;
-
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.
   void ShutdownHost();
@@ -398,9 +395,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
-
-  // The window used for popup widgets.
-  base::scoped_nsobject<NSWindow> popup_window_;
 
   // The fullscreen window used for pepper flash.
   base::scoped_nsobject<NSWindow> pepper_fullscreen_window_;
