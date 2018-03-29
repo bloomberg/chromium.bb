@@ -30,7 +30,6 @@ deps = [
   "//gpu/ipc/common:struct_traits",
   "//media/base/ipc",
   "//media/mojo/common:mojo_shared_buffer_video_frame",
-  "//mojo/common:struct_traits",
   "//ui/gfx/geometry/mojo:struct_traits",
 ]
 

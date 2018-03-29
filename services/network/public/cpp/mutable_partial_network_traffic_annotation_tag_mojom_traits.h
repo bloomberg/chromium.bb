@@ -5,7 +5,6 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_MUTABLE_PARTIAL_NETWORK_TRAFFIC_ANNOTATION_TAG_MOJOM_TRAITS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_MUTABLE_PARTIAL_NETWORK_TRAFFIC_ANNOTATION_TAG_MOJOM_TRAITS_H_
 
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/mutable_partial_network_traffic_annotation_tag.mojom.h"
 

@@ -10,7 +10,6 @@
 #include "media/base/ipc/media_param_traits_macros.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "mojo/common/values_struct_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"

@@ -24,7 +24,6 @@ static_library("common") {
   deps = [
     "//base",
     "//mojo/common:common_custom_types",
-    "//mojo/common:struct_traits",
     "//mojo/public/cpp/bindings:struct_traits",
     "//net",
     "//url",

@@ -9,7 +9,6 @@
 #include "base/process/process_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace mojo {

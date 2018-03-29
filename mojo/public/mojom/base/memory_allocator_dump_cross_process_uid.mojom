@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo.common.mojom;
+module mojo_base.mojom;
 
 // Corresponds to |base::trace_event::MemoryAllocatorDumpGuid| in base/trace_event/memory_allocator_dump_guid.h
-// TODO(ssid): MemoryAllocatorDumpGUID should be renamed. crbug.com/732653
 struct MemoryAllocatorDumpCrossProcessUid {
   uint64 value;
 };

@@ -5,11 +5,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
-#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
-#include "mojo/common/process_id.mojom.h"
 #include "mojo/common/test_common_custom_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,15 +95,6 @@ class CommonCustomTypesTest : public testing::Test {
 };
 
 }  // namespace
-
-TEST_F(CommonCustomTypesTest, ProcessId) {
-  base::ProcessId pid = base::GetCurrentProcId();
-  base::ProcessId out_pid = base::kNullProcessId;
-  ASSERT_NE(pid, out_pid);
-  EXPECT_TRUE(mojom::ProcessId::Deserialize(mojom::ProcessId::Serialize(&pid),
-                                            &out_pid));
-  EXPECT_EQ(pid, out_pid);
-}
 
 TEST_F(CommonCustomTypesTest, Value) {
   TestValuePtr ptr;

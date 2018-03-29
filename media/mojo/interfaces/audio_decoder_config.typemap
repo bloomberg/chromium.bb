@@ -20,7 +20,6 @@ public_deps = [
 
 deps = [
   "//media/base/ipc",
-  "//mojo/common:struct_traits",
 ]
 
 # See media_types.typemap for enum mappings.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo.common.mojom;
+module mojo_base.mojom;
 
 struct ProcessId {
   // This is the storage for the pid, on windows the pid is a DWORD and the

@@ -17,7 +17,6 @@ deps = [
   "//base",
   "//media",
   "//media/base/ipc",
-  "//mojo/common:struct_traits",
 ]
 
 type_mappings =

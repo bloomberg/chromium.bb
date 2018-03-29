@@ -9,7 +9,6 @@
 
 #include "chrome/common/media_router/media_status.h"
 #include "chrome/common/media_router/mojo/media_status.mojom.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 
 namespace mojo {
 

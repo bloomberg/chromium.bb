@@ -1,16 +1,15 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/common_custom_types_struct_traits.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include "mojo/public/cpp/base/memory_allocator_dump_cross_process_uid_mojom_traits.h"
 
 namespace mojo {
 
 // static
-bool StructTraits<common::mojom::MemoryAllocatorDumpCrossProcessUidDataView,
+bool StructTraits<mojo_base::mojom::MemoryAllocatorDumpCrossProcessUidDataView,
                   base::trace_event::MemoryAllocatorDumpGuid>::
-    Read(common::mojom::MemoryAllocatorDumpCrossProcessUidDataView data,
+    Read(mojo_base::mojom::MemoryAllocatorDumpCrossProcessUidDataView data,
          base::trace_event::MemoryAllocatorDumpGuid* out) {
   // Receiving a zeroed MemoryAllocatorDumpCrossProcessUid is a bug.
   if (data.value() == 0)

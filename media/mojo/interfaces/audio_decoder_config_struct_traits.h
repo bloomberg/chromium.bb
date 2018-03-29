@@ -9,7 +9,6 @@
 #include "media/base/ipc/media_param_traits.h"
 #include "media/mojo/interfaces/encryption_scheme_struct_traits.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 
 namespace mojo {
 

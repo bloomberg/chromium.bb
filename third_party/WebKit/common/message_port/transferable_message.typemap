@@ -10,7 +10,6 @@ public_headers = [
 traits_headers = [ "//third_party/WebKit/common/message_port/transferable_message_struct_traits.h" ]
 
 deps = [
-  "//mojo/common:struct_traits",
   "//skia/public/interfaces",
 ]
 type_mappings = [
