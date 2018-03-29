@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "modules/accessibility/AXPosition.h"
+
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/editing/Position.h"
 #include "core/html/HTMLElement.h"
 #include "modules/accessibility/AXObject.h"
-#include "modules/accessibility/AXPosition.h"
 #include "modules/accessibility/testing/AccessibilityTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

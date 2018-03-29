@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gtest/gtest.h>
-
 #include "core/dom/AXObjectCache.h"
+
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "modules/accessibility/testing/AccessibilityTest.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
