@@ -417,18 +417,24 @@ bool FingerprintMismatch(String old_sdp, String new_sdp) {
   // or createAnswer, so this only applies when there are no fingerprints.
   // This is allowed.
   const size_t new_fingerprint_pos = new_sdp.Find("\na=fingerprint:");
-  if (new_fingerprint_pos == kNotFound)
+  if (new_fingerprint_pos == kNotFound) {
     return false;
+  }
   // Look for fingerprint having been added. Not allowed.
   const size_t old_fingerprint_pos = old_sdp.Find("\na=fingerprint:");
   if (old_fingerprint_pos == kNotFound) {
     return true;
   }
-  // Look for fingerprint being modified. Not allowed.
-  const size_t old_fingerprint_end =
-      old_sdp.Find("\n", old_fingerprint_pos + 1);
-  const size_t new_fingerprint_end =
-      new_sdp.Find("\n", new_fingerprint_pos + 1);
+  // Look for fingerprint being modified. Not allowed.  Handle differences in
+  // line endings ('\r\n' vs, '\n' when looking for the end of the fingerprint).
+  size_t old_fingerprint_end = old_sdp.Find("\r\n", old_fingerprint_pos + 1);
+  if (old_fingerprint_end == std::string::npos) {
+    old_fingerprint_end = old_sdp.Find("\n", old_fingerprint_pos + 1);
+  }
+  size_t new_fingerprint_end = new_sdp.Find("\r\n", new_fingerprint_pos + 1);
+  if (new_fingerprint_end == std::string::npos) {
+    new_fingerprint_end = new_sdp.Find("\n", new_fingerprint_pos + 1);
+  }
   return old_sdp.Substring(old_fingerprint_pos,
                            old_fingerprint_end - old_fingerprint_pos) !=
          new_sdp.Substring(new_fingerprint_pos,
