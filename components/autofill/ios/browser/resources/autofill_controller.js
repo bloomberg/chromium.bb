@@ -270,7 +270,8 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     // Skip non-empty fields unless this is the forceFillFieldName or it's a
     // 'select-one' element. 'select-one' elements are always autofilled even
     // if non-empty; see AutofillManager::FillOrPreviewDataModelForm().
-    if (element.value && !sanitizedFieldIsEmpty_(element.value) &&
+    if (element.value &&
+        !__gCrWeb.autofill.sanitizedFieldIsEmpty(element.value) &&
         !__gCrWeb.fill.isSelectElement(element) &&
         fieldIdentifier !== forceFillFieldIdentifier) {
       continue;
