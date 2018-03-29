@@ -979,9 +979,16 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
 
 void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrame", "frame", frame_index);
-  if (frame_index < 0 && !webvr_delayed_gvr_submit_.IsCancelled()) {
-    // We've exited WebVR, but the last submit to GVR didn't complete.
-    // Cancel the scheduled submit and reuse the frame.
+  if (!webvr_delayed_gvr_submit_.IsCancelled()) {
+    // The last submit to GVR didn't complete, we have an acquired frame. This
+    // is normal when exiting WebVR, in that case we just want to reuse the
+    // frame. It's not supposed to happen during WebVR presentation.
+    if (frame_index >= 0) {
+      // This is a WebVR frame from OnWebVRFrameAvailable which isn't supposed
+      // to be delivered while the previous frame is still processing. Drop the
+      // previous work to avoid errors and reuse the acquired frame.
+      DLOG(WARNING) << "Unexpected WebVR DrawFrame during acquired frame";
+    }
     webvr_delayed_gvr_submit_.Cancel();
     DrawIntoAcquiredFrame(frame_index, current_time);
     return;
