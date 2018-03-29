@@ -30,6 +30,16 @@ enum SettingsPageActiveOnRebootRequiredHistogramValue {
   SETTINGS_PAGE_ON_REBOOT_REQUIRED_MAX,
 };
 
+// These values are used to record how the user was prompted to reboot the
+// machine. Must be in sync with the SoftwareReporterRebootPromptType enum from
+// enums.xml.
+enum SoftwareReporterRebootPromptTypeHistogramValue {
+  REBOOT_PROMPT_TYPE_SETTINGS_PAGE_OPENED = 1,
+  REBOOT_PROMPT_TYPE_MODAL_DIALOG_SHOWN = 2,
+  REBOOT_PROMPT_TYPE_NON_MODAL_DIALOG_SHOWN = 3,
+  REBOOT_PROMPT_TYPE_MAX,
+};
+
 class PromptDelegateImpl
     : public ChromeCleanerRebootDialogControllerImpl::PromptDelegate {
  public:
@@ -87,14 +97,6 @@ ChromeCleanerRebootDialogControllerImpl::Create(
                                                   std::move(prompt_delegate));
   controller->MaybeStartRebootPrompt();
   return controller;
-}
-
-void ChromeCleanerRebootDialogControllerImpl::DialogShown() {
-  DCHECK(base::FeatureList::IsEnabled(kRebootPromptDialogFeature));
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(crbug.com/770749) Collect metrics on how many times this dialog is
-  //                        shown.
 }
 
 void ChromeCleanerRebootDialogControllerImpl::Accept() {
@@ -181,8 +183,16 @@ void ChromeCleanerRebootDialogControllerImpl::StartRebootPromptForBrowser(
 
   if (base::FeatureList::IsEnabled(kRebootPromptDialogFeature)) {
     prompt_delegate_->ShowChromeCleanerRebootPrompt(browser, this);
+    SoftwareReporterRebootPromptTypeHistogramValue prompt_type =
+        IsRebootPromptModal() ? REBOOT_PROMPT_TYPE_MODAL_DIALOG_SHOWN
+                              : REBOOT_PROMPT_TYPE_NON_MODAL_DIALOG_SHOWN;
+    UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.RebootPromptShown",
+                              prompt_type, REBOOT_PROMPT_TYPE_MAX);
   } else {
     prompt_delegate_->OpenSettingsPage(browser);
+    UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.RebootPromptShown",
+                              REBOOT_PROMPT_TYPE_SETTINGS_PAGE_OPENED,
+                              REBOOT_PROMPT_TYPE_MAX);
     OnInteractionDone();
   }
 }
