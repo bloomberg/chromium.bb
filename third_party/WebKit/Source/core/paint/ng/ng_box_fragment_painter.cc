@@ -454,7 +454,9 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   }
 
   if (!painting_overflow_contents) {
-    PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style);
+    PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
+                                      border_edges_.line_left,
+                                      border_edges_.line_right);
 
     if (box_decoration_data.has_border_decoration &&
         ShouldPaintBoxFragmentBorders(*box_fragment_.GetLayoutObject())) {
