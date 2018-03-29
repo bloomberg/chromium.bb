@@ -162,3 +162,14 @@ name: cookie1, value: привет, domain: .chromium.org, path: /path, session
 
 Running test: deleteAllCookies
 
+Running test: setCookieViaFetch
+Num of cookies 1
+name: name, value: value, domain: 127.0.0.1, path: /inspector-protocol/network/resources, session
+
+Running test: deleteAllCookies
+
+Running test: printCookieViaFetch
+Cookies as seen on server: "HTTP_COOKIE: foo=bar1\n"
+
+Running test: deleteAllCookies
+
