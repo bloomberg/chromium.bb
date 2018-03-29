@@ -8,8 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/browsing_history_service.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -38,7 +38,7 @@ LegacyHistoryEntryItem* TestHistoryEntryItem(base::Time timestamp,
 class HistoryEntryInserterTest : public PlatformTest {
  public:
   HistoryEntryInserterTest() {
-    model_ = [[CollectionViewModel alloc] init];
+    model_ = [[ListModel alloc] init];
     [model_ addSectionWithIdentifier:kSectionIdentifierEnumZero];
     inserter_ = [[HistoryEntryInserter alloc] initWithModel:model_];
     mock_delegate_ =
@@ -47,12 +47,12 @@ class HistoryEntryInserterTest : public PlatformTest {
   }
 
  protected:
-  __strong CollectionViewModel* model_;
+  __strong ListModel* model_;
   __strong HistoryEntryInserter* inserter_;
   __strong id<HistoryEntryInserterDelegate> mock_delegate_;
 };
 
-// Tests that history entry items added to CollectionViewModel are sorted by
+// Tests that history entry items added to ListModel are sorted by
 // timestamp.
 TEST_F(HistoryEntryInserterTest, AddItems) {
   base::Time today =

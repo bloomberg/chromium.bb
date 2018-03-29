@@ -7,10 +7,13 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/history/history_entry_item_interface.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,8 +21,8 @@
 #endif
 
 @interface HistoryEntryInserter () {
-  // CollectionViewModel in which to insert history entries.
-  CollectionViewModel* _collectionViewModel;
+  // ListModel in which to insert history entries.
+  ListModel* _listModel;
   // The index of the first section to contain history entries.
   NSInteger _firstSectionIndex;
   // Number of assigned section identifiers.
@@ -35,17 +38,17 @@
 @implementation HistoryEntryInserter
 @synthesize delegate = _delegate;
 
-- (instancetype)initWithModel:(CollectionViewModel*)collectionViewModel {
+- (instancetype)initWithModel:(ListModel*)listModel {
   if ((self = [super init])) {
-    _collectionViewModel = collectionViewModel;
-    _firstSectionIndex = [collectionViewModel numberOfSections];
+    _listModel = listModel;
+    _firstSectionIndex = [listModel numberOfSections];
     _dates = [[NSMutableOrderedSet alloc] init];
     _sectionIdentifiers = [NSMutableDictionary dictionary];
   }
   return self;
 }
 
-- (void)insertHistoryEntryItem:(LegacyHistoryEntryItem*)item {
+- (void)insertHistoryEntryItem:(ListItem<HistoryEntryItemInterface>*)item {
   NSInteger sectionIdentifier =
       [self sectionIdentifierForTimestamp:item.timestamp];
 
@@ -66,8 +69,7 @@
                                               : NSOrderedDescending;
   };
 
-  NSArray* items =
-      [_collectionViewModel itemsInSectionWithIdentifier:sectionIdentifier];
+  NSArray* items = [_listModel itemsInSectionWithIdentifier:sectionIdentifier];
   NSRange range = NSMakeRange(0, [items count]);
   // If the object is not already in the section, insert it.
   if ([items indexOfObject:item
@@ -79,12 +81,12 @@
                               inSortedRange:range
                                     options:NSBinarySearchingInsertionIndex
                             usingComparator:objectComparator];
-    [_collectionViewModel insertItem:item
-             inSectionWithIdentifier:sectionIdentifier
-                             atIndex:index];
+    [_listModel insertItem:item
+        inSectionWithIdentifier:sectionIdentifier
+                        atIndex:index];
     NSIndexPath* indexPath = [NSIndexPath
         indexPathForItem:index
-               inSection:[_collectionViewModel
+               inSection:[_listModel
                              sectionForSectionIdentifier:sectionIdentifier]];
     [self.delegate historyEntryInserter:self
                didInsertItemAtIndexPath:indexPath];
@@ -119,14 +121,22 @@
                            usingComparator:comparator];
   [_dates insertObject:date atIndex:index];
   NSInteger insertionIndex = _firstSectionIndex + index;
-  CollectionViewTextItem* header =
-      [[CollectionViewTextItem alloc] initWithType:kItemTypeEnumZero];
-  header.text =
-      base::SysUTF16ToNSString(history::GetRelativeDateLocalized(timestamp));
-  [_collectionViewModel insertSectionWithIdentifier:sectionIdentifier
-                                            atIndex:insertionIndex];
-  [_collectionViewModel setHeader:header
-         forSectionWithIdentifier:sectionIdentifier];
+  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+    TableViewTextHeaderFooterItem* header =
+        [[TableViewTextHeaderFooterItem alloc] initWithType:kItemTypeEnumZero];
+    header.text =
+        base::SysUTF16ToNSString(history::GetRelativeDateLocalized(timestamp));
+    [_listModel setHeader:header forSectionWithIdentifier:sectionIdentifier];
+
+  } else {
+    CollectionViewTextItem* header =
+        [[CollectionViewTextItem alloc] initWithType:kItemTypeEnumZero];
+    header.text =
+        base::SysUTF16ToNSString(history::GetRelativeDateLocalized(timestamp));
+    [_listModel setHeader:header forSectionWithIdentifier:sectionIdentifier];
+  }
+  [_listModel insertSectionWithIdentifier:sectionIdentifier
+                                  atIndex:insertionIndex];
   [self.delegate historyEntryInserter:self
               didInsertSectionAtIndex:insertionIndex];
   return sectionIdentifier;
@@ -134,12 +144,11 @@
 
 - (void)removeSection:(NSInteger)sectionIndex {
   NSUInteger sectionIdentifier =
-      [_collectionViewModel sectionIdentifierForSection:sectionIndex];
+      [_listModel sectionIdentifierForSection:sectionIndex];
 
   // Sections should not be removed unless there are no items in that section.
-  DCHECK(![[_collectionViewModel itemsInSectionWithIdentifier:sectionIdentifier]
-      count]);
-  [_collectionViewModel removeSectionWithIdentifier:sectionIdentifier];
+  DCHECK(![[_listModel itemsInSectionWithIdentifier:sectionIdentifier] count]);
+  [_listModel removeSectionWithIdentifier:sectionIdentifier];
 
   NSEnumerator* dateEnumerator = [_sectionIdentifiers keyEnumerator];
   NSDate* date = nil;
