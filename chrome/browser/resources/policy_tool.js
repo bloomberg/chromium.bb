@@ -93,6 +93,14 @@ policy.Page.setPolicyValues = function(values) {
   }
 };
 
+function loadSession(sessionName) {
+  $('invalid-session-name-error').hidden = true;
+  $('session-name-field').value = '';
+  if (sessionName) {
+    chrome.send('loadSession', [sessionName]);
+  }
+}
+
 /** @override */
 policy.Page.prototype.initialize = function() {
   cr.ui.FocusOutlineManager.forDocument(document);
@@ -110,13 +118,14 @@ policy.Page.prototype.initialize = function() {
   };
 
   $('session-choice').onsubmit = () => {
-    $('invalid-session-name-error').hidden = true;
-    var session = $('session-name-field').value;
-    chrome.send('loadSession', [session]);
-    $('session-name-field').value = '';
+    loadSession($('session-name-field').value);
     // Return false in order to prevent the browser from reloading the whole
     // page.
     return false;
+  };
+
+  $('session-list').ondblclick = () => {
+    loadSession($('session-list').value);
   };
 
   $('show-unset').onchange = () => {
