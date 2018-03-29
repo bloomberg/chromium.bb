@@ -697,11 +697,11 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                              int mi_row, int mi_col, aom_reader *r,
                              BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
-  const int num_8x8_wh = mi_size_wide[bsize];
-  const int hbs = num_8x8_wh >> 1;
+  const int bw = mi_size_wide[bsize];
+  const int hbs = bw >> 1;
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
-  const int quarter_step = num_8x8_wh / 4;
+  const int quarter_step = bw / 4;
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
   const int has_rows = (mi_row + hbs) < cm->mi_rows;
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
