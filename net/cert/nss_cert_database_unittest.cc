@@ -124,7 +124,10 @@ class CertDatabaseNSSTest : public testing::Test {
   }
 
   std::unique_ptr<NSSCertDatabase> cert_db_;
-  const CertificateList empty_cert_list_;
+  // When building with libstdc++, |empty_cert_list_| does not have a default
+  // constructor.  Initialize it explicitly so that CertDatabaseNSSTest gets a
+  // default constructor.
+  const CertificateList empty_cert_list_ = CertificateList();
   crypto::ScopedTestNSSDB test_nssdb_;
   crypto::ScopedPK11Slot public_slot_;
 };

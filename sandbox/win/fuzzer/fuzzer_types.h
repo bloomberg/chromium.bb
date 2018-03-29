@@ -14,7 +14,13 @@
 // captured by the fuzzing harness.
 
 // Disable exceptions.
+#if defined(__try)
+#undef __try
+#endif
 #define __try if(true)
+#if defined(__except)
+#undef __except
+#endif
 #define __except(...) if(false)
 
 // Windows types used in sandbox.
