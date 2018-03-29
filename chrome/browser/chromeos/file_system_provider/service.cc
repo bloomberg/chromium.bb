@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_id.h"
@@ -262,24 +261,8 @@ bool Service::RequestUnmount(const ProviderId& provider_id,
 bool Service::RequestMount(const ProviderId& provider_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  extensions::EventRouter* const event_router =
-      extensions::EventRouter::Get(profile_);
-  DCHECK(event_router);
-
-  if (!event_router->ExtensionHasEventListener(
-          provider_id.GetExtensionId(), extensions::api::file_system_provider::
-                                            OnMountRequested::kEventName)) {
-    return false;
-  }
-
-  event_router->DispatchEventToExtension(
-      provider_id.GetExtensionId(),
-      std::make_unique<extensions::Event>(
-          extensions::events::FILE_SYSTEM_PROVIDER_ON_MOUNT_REQUESTED,
-          extensions::api::file_system_provider::OnMountRequested::kEventName,
-          std::unique_ptr<base::ListValue>(new base::ListValue())));
-
-  return true;
+  ProviderInterface* const provider = GetProvider(provider_id);
+  return provider->RequestMount(profile_);
 }
 
 std::vector<ProvidedFileSystemInfo> Service::GetProvidedFileSystemInfoList() {

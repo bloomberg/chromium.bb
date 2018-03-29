@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -86,6 +87,27 @@ const std::string& ExtensionProvider::GetName() const {
 
 const IconSet& ExtensionProvider::GetIconSet() const {
   return icon_set_;
+}
+
+bool ExtensionProvider::RequestMount(Profile* profile) {
+  extensions::EventRouter* const event_router =
+      extensions::EventRouter::Get(profile);
+  DCHECK(event_router);
+
+  if (!event_router->ExtensionHasEventListener(
+          provider_id_.GetExtensionId(), extensions::api::file_system_provider::
+                                             OnMountRequested::kEventName)) {
+    return false;
+  }
+
+  event_router->DispatchEventToExtension(
+      provider_id_.GetExtensionId(),
+      std::make_unique<extensions::Event>(
+          extensions::events::FILE_SYSTEM_PROVIDER_ON_MOUNT_REQUESTED,
+          extensions::api::file_system_provider::OnMountRequested::kEventName,
+          std::unique_ptr<base::ListValue>(new base::ListValue())));
+
+  return true;
 }
 
 ExtensionProvider::ExtensionProvider(

@@ -43,6 +43,7 @@ class SmbProvider : public ProviderInterface {
   const ProviderId& GetId() const override;
   const std::string& GetName() const override;
   const IconSet& GetIconSet() const override;
+  bool RequestMount(Profile* profile) override;
 
  private:
   ProviderId provider_id_;

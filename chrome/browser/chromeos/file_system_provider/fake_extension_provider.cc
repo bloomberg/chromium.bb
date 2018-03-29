@@ -53,6 +53,10 @@ const IconSet& FakeExtensionProvider::GetIconSet() const {
   return icon_set_;
 }
 
+bool FakeExtensionProvider::RequestMount(Profile* profile) {
+  return true;
+}
+
 FakeExtensionProvider::FakeExtensionProvider(
     const extensions::ExtensionId& extension_id,
     const Capabilities& capabilities)

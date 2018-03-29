@@ -67,6 +67,10 @@ class ProviderInterface {
 
   // Returns an icon URL set for the provider.
   virtual const IconSet& GetIconSet() const = 0;
+
+  // Requests mounting a new file system. Returns false if the request could not
+  // be created, true otherwise.
+  virtual bool RequestMount(Profile* profile) = 0;
 };
 
 }  // namespace file_system_provider
