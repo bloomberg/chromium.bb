@@ -36,7 +36,7 @@
 - (void)testJavaScriptInOmnibox {
   // TODO(crbug.com/703855): Keyboard entry inside the omnibox fails only on
   // iPad running iOS 10.
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS10OrLater())
+  if (IsIPadIdiom())
     return;
 
   // Preps the http server with two URLs serving content.
