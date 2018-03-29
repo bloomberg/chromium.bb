@@ -5,8 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_delegate.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
@@ -154,12 +152,6 @@ class VolumeControllerSoundsTest : public VolumeControllerTest {
     media::SoundsManager::InitializeForTesting(sounds_manager_);
   }
 
-  void EnableSpokenFeedback(bool enabled) {
-    chromeos::AccessibilityManager* manager =
-        chromeos::AccessibilityManager::Get();
-    manager->EnableSpokenFeedback(enabled, ash::A11Y_NOTIFICATION_NONE);
-  }
-
   bool is_sound_initialized() const {
     return sounds_manager_->is_sound_initialized(chromeos::SOUND_VOLUME_ADJUST);
   }
@@ -177,12 +169,12 @@ class VolumeControllerSoundsTest : public VolumeControllerTest {
 IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, Simple) {
   audio_handler_->SetOutputVolumePercent(50);
 
-  EnableSpokenFeedback(false /* enabled */);
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false);
   volume_controller_->VolumeUp();
   volume_controller_->VolumeDown();
   EXPECT_EQ(0, num_play_requests());
 
-  EnableSpokenFeedback(true /* enabled */);
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
   volume_controller_->VolumeUp();
   volume_controller_->VolumeDown();
   EXPECT_EQ(2, num_play_requests());
@@ -190,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, Simple) {
 
 IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, EdgeCases) {
   EXPECT_TRUE(is_sound_initialized());
-  EnableSpokenFeedback(true /* enabled */);
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
 
   // Check that sound is played on volume up and volume down.
   audio_handler_->SetOutputVolumePercent(50);

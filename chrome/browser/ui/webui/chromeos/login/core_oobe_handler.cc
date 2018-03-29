@@ -6,7 +6,6 @@
 
 #include <type_traits>
 
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -332,8 +331,7 @@ void CoreOobeHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
   AccessibilityManager* manager = AccessibilityManager::Get();
-  manager->EnableSpokenFeedback(!manager->IsSpokenFeedbackEnabled(),
-                                ash::A11Y_NOTIFICATION_NONE);
+  manager->EnableSpokenFeedback(!manager->IsSpokenFeedbackEnabled());
 }
 
 void CoreOobeHandler::HandleSetDeviceRequisition(

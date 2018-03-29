@@ -4,8 +4,6 @@
 
 #include "ash/accessibility/touch_exploration_controller.h"
 
-#include "ash/accessibility/accessibility_delegate.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -57,8 +55,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
   }
 
   void SwitchTouchExplorationMode(bool on) {
-    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-        on, ash::A11Y_NOTIFICATION_NONE);
+    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(on);
   }
 
   base::TimeTicks Now() { return simulated_clock_->NowTicks(); }

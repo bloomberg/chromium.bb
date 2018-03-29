@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "base/callback_forward.h"
@@ -62,12 +61,10 @@ enum AccessibilityNotificationType {
 struct AccessibilityStatusEventDetails {
   AccessibilityStatusEventDetails(
       AccessibilityNotificationType notification_type,
-      bool enabled,
-      ash::AccessibilityNotificationVisibility notify);
+      bool enabled);
 
   AccessibilityNotificationType notification_type;
   bool enabled;
-  ash::AccessibilityNotificationVisibility notify;
 };
 
 typedef base::Callback<void(const AccessibilityStatusEventDetails&)>
@@ -148,8 +145,7 @@ class AccessibilityManager
 
   // Enables or disables spoken feedback. Enabling spoken feedback installs the
   // ChromeVox component extension.
-  void EnableSpokenFeedback(bool enabled,
-                            ash::AccessibilityNotificationVisibility notify);
+  void EnableSpokenFeedback(bool enabled);
 
   // Returns true if spoken feedback is enabled, or false if not.
   bool IsSpokenFeedbackEnabled() const;
@@ -414,8 +410,6 @@ class AccessibilityManager
   bool spoken_feedback_enabled_;
   bool select_to_speak_enabled_;
   bool switch_access_enabled_;
-
-  ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
 
   AccessibilityStatusCallbackList callback_list_;
 
