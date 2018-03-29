@@ -38,6 +38,7 @@ struct Capabilities;
 
 namespace gles2 {
 
+class ErrorState;
 class FeatureInfo;
 class Logger;
 
@@ -94,6 +95,14 @@ void InitializeGLDebugLogging(bool log_non_errors,
 bool ValidContextLostReason(GLenum reason);
 error::ContextLostReason GetContextLostReasonFromResetStatus(
     GLenum reset_status);
+
+bool GetCompressedTexSizeInBytes(const char* function_name,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLsizei depth,
+                                 GLenum format,
+                                 GLsizei* size_in_bytes,
+                                 ErrorState* error_state);
 
 }  // namespace gles2
 }  // namespace gpu

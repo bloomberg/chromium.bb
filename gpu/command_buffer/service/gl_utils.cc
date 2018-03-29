@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "ui/gl/gl_version_info.h"
@@ -16,6 +17,25 @@ namespace gpu {
 namespace gles2 {
 
 namespace {
+
+const int kASTCBlockSize = 16;
+const int kS3TCBlockWidth = 4;
+const int kS3TCBlockHeight = 4;
+const int kS3TCDXT1BlockSize = 8;
+const int kS3TCDXT3AndDXT5BlockSize = 16;
+const int kEACAndETC2BlockSize = 4;
+
+typedef struct {
+  int blockWidth;
+  int blockHeight;
+} ASTCBlockArray;
+
+const ASTCBlockArray kASTCBlockArray[] = {
+    {4, 4}, /* GL_COMPRESSED_RGBA_ASTC_4x4_KHR */
+    {5, 4}, /* and GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR */
+    {5, 5},  {6, 5},  {6, 6},  {8, 5},   {8, 6},   {8, 8},
+    {10, 5}, {10, 6}, {10, 8}, {10, 10}, {12, 10}, {12, 12}};
+
 const char* GetDebugSourceString(GLenum source) {
   switch (source) {
     case GL_DEBUG_SOURCE_API:
@@ -338,6 +358,137 @@ error::ContextLostReason GetContextLostReasonFromResetStatus(
 
   NOTREACHED();
   return error::kUnknown;
+}
+
+bool GetCompressedTexSizeInBytes(const char* function_name,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLsizei depth,
+                                 GLenum format,
+                                 GLsizei* size_in_bytes,
+                                 ErrorState* error_state) {
+  base::CheckedNumeric<GLsizei> bytes_required(0);
+
+  switch (format) {
+    case GL_ATC_RGB_AMD:
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
+    case GL_ETC1_RGB8_OES:
+      bytes_required = (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
+      bytes_required *= (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
+      bytes_required *= kS3TCDXT1BlockSize;
+      break;
+    case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR: {
+      const int index =
+          (format < GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR)
+              ? static_cast<int>(format - GL_COMPRESSED_RGBA_ASTC_4x4_KHR)
+              : static_cast<int>(format -
+                                 GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR);
+
+      const int kBlockWidth = kASTCBlockArray[index].blockWidth;
+      const int kBlockHeight = kASTCBlockArray[index].blockHeight;
+
+      bytes_required = (width + kBlockWidth - 1) / kBlockWidth;
+      bytes_required *= (height + kBlockHeight - 1) / kBlockHeight;
+
+      bytes_required *= kASTCBlockSize;
+      break;
+    }
+    case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
+    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
+      bytes_required = (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
+      bytes_required *= (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
+      bytes_required *= kS3TCDXT3AndDXT5BlockSize;
+      break;
+    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+      bytes_required = std::max(width, 8);
+      bytes_required *= std::max(height, 8);
+      bytes_required *= 4;
+      bytes_required += 7;
+      bytes_required /= 8;
+      break;
+    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+      bytes_required = std::max(width, 16);
+      bytes_required *= std::max(height, 8);
+      bytes_required *= 2;
+      bytes_required += 7;
+      bytes_required /= 8;
+      break;
+
+    // ES3 formats.
+    case GL_COMPRESSED_R11_EAC:
+    case GL_COMPRESSED_SIGNED_R11_EAC:
+    case GL_COMPRESSED_RGB8_ETC2:
+    case GL_COMPRESSED_SRGB8_ETC2:
+    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+      bytes_required =
+          (width + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *=
+          (height + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *= 8;
+      bytes_required *= depth;
+      break;
+    case GL_COMPRESSED_RG11_EAC:
+    case GL_COMPRESSED_SIGNED_RG11_EAC:
+    case GL_COMPRESSED_RGBA8_ETC2_EAC:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+      bytes_required =
+          (width + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *=
+          (height + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *= 16;
+      bytes_required *= depth;
+      break;
+    default:
+      ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(error_state, function_name, format,
+                                           "format");
+      return false;
+  }
+
+  if (!bytes_required.IsValid()) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
+                            "invalid size");
+    return false;
+  }
+
+  *size_in_bytes = bytes_required.ValueOrDefault(0);
+  return true;
 }
 
 }  // namespace gles2

@@ -181,6 +181,19 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
                       GLsizei width,
                       GLsizei height);
 
+  void SetupClearTextureExpectations(GLuint service_id,
+                                     GLuint old_service_id,
+                                     GLenum bind_target,
+                                     GLenum target,
+                                     GLint level,
+                                     GLenum format,
+                                     GLenum type,
+                                     GLint xoffset,
+                                     GLint yoffset,
+                                     GLsizei width,
+                                     GLsizei height,
+                                     GLuint bound_pixel_unpack_buffer);
+
   GLvoid* BufferOffset(unsigned i) { return static_cast<int8_t*>(NULL) + (i); }
 
  protected:

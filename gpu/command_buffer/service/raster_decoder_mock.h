@@ -31,12 +31,13 @@ class QueryManager;
 namespace gles2 {
 class ContextGroup;
 class ErrorState;
+class FeatureInfo;
 class GpuFenceManager;
 class GLES2Util;
 class ImageManager;
-struct ContextState;
-class FeatureInfo;
 class Logger;
+class Texture;
+struct ContextState;
 }  // namespace gles2
 
 namespace raster {
@@ -113,6 +114,33 @@ class MockRasterDecoder : public RasterDecoder {
                     uint32_t texture_target,
                     gl::GLImage* image,
                     bool can_bind_to_sampler));
+  MOCK_METHOD1(IsCompressedTextureFormat, bool(unsigned format));
+  MOCK_METHOD9(ClearLevel,
+               bool(gles2::Texture* texture,
+                    unsigned target,
+                    int level,
+                    unsigned format,
+                    unsigned type,
+                    int xoffset,
+                    int yoffset,
+                    int width,
+                    int height));
+  MOCK_METHOD6(ClearCompressedTextureLevel,
+               bool(gles2::Texture* texture,
+                    unsigned target,
+                    int level,
+                    unsigned format,
+                    int width,
+                    int height));
+  MOCK_METHOD8(ClearLevel3D,
+               bool(gles2::Texture* texture,
+                    unsigned target,
+                    int level,
+                    unsigned format,
+                    unsigned type,
+                    int width,
+                    int height,
+                    int depth));
 
  private:
   base::WeakPtrFactory<MockRasterDecoder> weak_ptr_factory_;
