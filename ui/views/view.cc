@@ -437,9 +437,7 @@ void View::SetPreferredSize(const gfx::Size& size) {
 }
 
 void View::SizeToPreferredSize() {
-  gfx::Size pref_size = GetPreferredSize();
-  if ((pref_size.width() != width()) || (pref_size.height() != height()))
-    SetBounds(x(), y(), pref_size.width(), pref_size.height());
+  SetSize(GetPreferredSize());
 }
 
 gfx::Size View::GetMinimumSize() const {
