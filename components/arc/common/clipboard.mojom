@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -36,17 +36,21 @@ struct ClipData {
   array<ClipRepresentation> representations@0;
 };
 
-// Next method ID: 4
-// Deprecated method IDs: 0, 1
+// Next method ID: 5
+// Deprecated method IDs: 0, 1, 3
 interface ClipboardHost {
   // Tells the host to update its clipboard content, usually when the user
   // initiates a 'copy' action.
   [MinVersion=1] SetClipContent@2(ClipData data);
 
+  // DEPRECATED: Please use GetClipContent@4 instead. Clean up after Aug 1 2018.
+  // This version of ClipboardInstance can't handle a ClipData larger than 800K.
+  [MinVersion=1] GetClipContentDeprecated@3() => (ClipData data);
+
   // Tells the host to return its clipboard content, usually when the user
   // initiates a 'paste' action or when the instance needs to re-sync its
   // clipboard content with the host.
-  [MinVersion=1] GetClipContent@3() => (ClipData data);
+  [MinVersion=3] GetClipContent@4() => (ClipData data);
 };
 
 // Next method ID: 4
