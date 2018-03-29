@@ -80,4 +80,19 @@ TEST_F(ApplyStyleCommandTest, JustifyRightDetachesDestination) {
   // Shouldn't crash.
 }
 
+// This is a regression test for https://crbug.com/726992
+TEST_F(ApplyStyleCommandTest, FontSizeDeltaWithSpanElement) {
+  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
+      "<div contenteditable>^<div></div>a<span></span>|</div>"));
+
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  style->SetProperty(CSSPropertyWebkitFontSizeDelta, "3", /* important */ false,
+                     GetDocument().GetSecureContextMode());
+  ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
+                            InputEvent::InputType::kNone)
+      ->Apply();
+  EXPECT_EQ("<div contenteditable><div></div><span>^a|</span></div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
 }  // namespace blink

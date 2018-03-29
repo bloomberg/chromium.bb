@@ -467,14 +467,17 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
   HeapVector<Member<HTMLElement>> unstyled_spans;
 
   Node* last_styled_node = nullptr;
-  for (Node* node = start_node; node != beyond_end;
-       node = NodeTraversal::Next(*node)) {
+  Node* node = start_node;
+  while (node != beyond_end) {
     DCHECK(node);
+    Node* const next_node = NodeTraversal::Next(*node);
     HTMLElement* element = nullptr;
     if (node->IsHTMLElement()) {
       // Only work on fully selected nodes.
-      if (!ElementFullySelected(ToHTMLElement(*node), start, end))
+      if (!ElementFullySelected(ToHTMLElement(*node), start, end)) {
+        node = next_node;
         continue;
+      }
       element = ToHTMLElement(node);
     } else if (node->IsTextNode() && node->GetLayoutObject() &&
                node->parentNode() != last_styled_node) {
@@ -487,6 +490,7 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
         return;
       element = span;
     } else {
+      node = next_node;
       // Only handle HTML elements and text nodes.
       continue;
     }
@@ -518,6 +522,7 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
       if (IsSpanWithoutAttributesOrUnstyledStyleSpan(element))
         unstyled_spans.push_back(element);
     }
+    node = next_node;
   }
 
   for (const auto& unstyled_span : unstyled_spans) {
