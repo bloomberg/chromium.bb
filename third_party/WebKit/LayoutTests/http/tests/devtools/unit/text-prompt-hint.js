@@ -46,17 +46,19 @@
       typeCharacter(null);
       waitForAutocomplete().then(step5);
   }
-  function step5()
+  async function step5()
   {
       dumpTextPrompt();
       prompt.setText("something_before test");
-      prompt.complete();
-      completionsDone().then(()=>{
-          dumpTextPrompt();
-          typeCharacter("T");
-          dumpTextPrompt();
-          TestRunner.completeTest();
-      });
+      await Promise.all([
+          prompt.complete(),
+          completionsDone()
+      ]);
+
+      dumpTextPrompt();
+      typeCharacter("T");
+      dumpTextPrompt();
+      TestRunner.completeTest();
   }
 
   function completions(expression, query)

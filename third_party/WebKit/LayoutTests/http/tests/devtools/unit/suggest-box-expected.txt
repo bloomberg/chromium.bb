@@ -4,6 +4,7 @@ Testing that the first item is selected.
 Intermediate Suggestion Applied: First
 
 Testing that no item is selected.
+No item selected.
 
 Testing that highest priority item is selected.
 Intermediate Suggestion Applied: The best suggestion
@@ -20,5 +21,6 @@ Suggestion Applied: Hello
 Suggestion accepted
 
 Testing that highest priority item is selected.
+No item selected.
 Intermediate Suggestion Applied: The best suggestion
 
