@@ -9,11 +9,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "base/time/tick_clock.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class PrefChangeRegistrar;
 class Profile;
+
+namespace power_manager {
+class ScreenIdleState;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -25,9 +32,11 @@ class PowerPolicyController;
 
 // Sends an updated power policy to the |power_policy_controller| whenever one
 // of the power-related prefs changes.
-class PowerPrefs : public content::NotificationObserver {
+class PowerPrefs : public PowerManagerClient::Observer,
+                   public content::NotificationObserver {
  public:
-  explicit PowerPrefs(PowerPolicyController* power_policy_controller);
+  PowerPrefs(PowerPolicyController* power_policy_controller,
+             PowerManagerClient* power_manager_client);
   ~PowerPrefs() override;
 
   // Register power prefs with default values applicable to a user profile.
@@ -37,6 +46,12 @@ class PowerPrefs : public content::NotificationObserver {
   // Register power prefs with default values applicable to the login profile.
   static void RegisterLoginProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry);
+
+  void set_tick_clock_for_test(base::TickClock* clock) { tick_clock_ = clock; }
+
+  // PowerManagerClient::Observer:
+  void ScreenIdleStateChanged(
+      const power_manager::ScreenIdleState& proto) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -58,11 +73,20 @@ class PowerPrefs : public content::NotificationObserver {
 
   content::NotificationRegistrar notification_registrar_;
 
-  Profile* profile_;  // Not owned.
+  ScopedObserver<PowerManagerClient, PowerManagerClient::Observer>
+      power_manager_client_observer_;
+
+  Profile* profile_ = nullptr;  // Not owned.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  // True while the screen is locked (but not while the login screen is shown).
-  bool screen_is_locked_;
+  base::TickClock* tick_clock_;  // Not owned.
+
+  // Time at which the screen was locked. Unset if the screen is unlocked.
+  base::TimeTicks screen_lock_time_;
+
+  // Time at which the screen was last turned off due to user inactivity.
+  // Unset if the screen isn't currently turned off due to user inactivity.
+  base::TimeTicks screen_idle_off_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPrefs);
 };
