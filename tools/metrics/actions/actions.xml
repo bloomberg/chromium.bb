@@ -5626,6 +5626,14 @@ should be able to be added at any place in this file.
   <description>User triggered the hotword by saying 'Ok Google'.</description>
 </action>
 
+<action name="ITunesLinksHandler_StoreKitLaunched">
+  <owner>mrefaat@chromium.org</owner>
+  <description>
+    Record when StoreKit is launched on the iOS app by ITunesLinkHandler. This
+    should happen when the user navigates to iTunes appstore URL.
+  </description>
+</action>
+
 <action name="ImportLockDialogCocoa_Shown">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

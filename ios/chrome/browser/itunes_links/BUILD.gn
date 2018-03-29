@@ -5,8 +5,10 @@
 source_set("itunes_links") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "itunes_links_observer.h",
-    "itunes_links_observer.mm",
+    "itunes_links_flag.h",
+    "itunes_links_flag.mm",
+    "itunes_links_handler_tab_helper.h",
+    "itunes_links_handler_tab_helper.mm",
   ]
   deps = [
     "//base",
@@ -20,12 +22,14 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "itunes_links_observer_unittest.mm",
+    "itunes_links_handler_tab_helper_unittest.mm",
   ]
   deps = [
     ":itunes_links",
     "//base",
     "//ios/chrome/browser/store_kit",
+    "//ios/chrome/test/fakes",
+    "//ios/web/public",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",

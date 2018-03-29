@@ -117,6 +117,7 @@ source_set("browser") {
     "//ios/chrome/browser/browsing_data:features",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/drag_and_drop",
+    "//ios/chrome/browser/itunes_links",
     "//ios/chrome/browser/mailto:features",
     "//ios/chrome/browser/payments:constants",
     "//ios/chrome/browser/ssl:features",
