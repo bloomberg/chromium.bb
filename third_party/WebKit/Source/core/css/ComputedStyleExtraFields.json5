@@ -35,12 +35,6 @@
       custom_compare: true,
     },
     {
-      name: "AnimationPropertiesLocked",
-      field_template: "primitive",
-      default_value: "false",
-      type_name: "bool",
-    },
-    {
       name: "BorderLeftColorIsCurrentColor",
       field_template: "primitive",
       default_value: "true",
