@@ -6,6 +6,7 @@
 
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/forms/TextControlElement.h"
 #include "core/layout/LayoutObject.h"
@@ -821,6 +822,38 @@ TEST_P(ParameterizedLocalCaretRectTest, CollapsedSpace) {
                                                LayoutRect(0, 0, 0, 0)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(white_spaces, 2), TextAffinity::kDownstream)));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, AbsoluteCaretBoundsOfWithShadowDOM) {
+  const char* body_content =
+      "<p id='host'><b id='one'>11</b><b id='two'>22</b></p>";
+  const char* shadow_content =
+      "<div><content select=#two></content><content "
+      "select=#one></content></div>";
+  SetBodyContent(body_content);
+  SetShadowContent(shadow_content, "host");
+
+  Element* body = GetDocument().body();
+  Element* one = body->QuerySelector("#one");
+
+  IntRect bounds_in_dom_tree =
+      AbsoluteCaretBoundsOf(CreateVisiblePosition(Position(one, 0)));
+  IntRect bounds_in_flat_tree =
+      AbsoluteCaretBoundsOf(CreateVisiblePosition(PositionInFlatTree(one, 0)));
+
+  EXPECT_FALSE(bounds_in_dom_tree.IsEmpty());
+  EXPECT_EQ(bounds_in_dom_tree, bounds_in_flat_tree);
+}
+
+// Repro case of crbug.com/680428
+TEST_P(ParameterizedLocalCaretRectTest, AbsoluteSelectionBoundsOfWithImage) {
+  SetBodyContent("<div>foo<img></div>");
+
+  Node* node = GetDocument().QuerySelector("img");
+  IntRect rect =
+      AbsoluteSelectionBoundsOf(VisiblePosition::Create(PositionWithAffinity(
+          Position(node, PositionAnchorType::kAfterChildren))));
+  EXPECT_FALSE(rect.IsEmpty());
 }
 
 }  // namespace blink

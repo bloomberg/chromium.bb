@@ -6,6 +6,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/LocalCaretRect.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"

@@ -37,6 +37,17 @@ LocalCaretRectOfPosition(const PositionInFlatTreeWithAffinity&);
 
 LocalCaretRect LocalSelectionRectOfPosition(const PositionWithAffinity&);
 
+// Bounds of (possibly transformed) caret in absolute coords
+CORE_EXPORT IntRect AbsoluteCaretBoundsOf(const VisiblePosition&);
+CORE_EXPORT IntRect AbsoluteCaretBoundsOf(const VisiblePositionInFlatTree&);
+
+IntRect AbsoluteCaretRectOfPosition(
+    const PositionWithAffinity&,
+    LayoutUnit* extra_width_to_end_of_line = nullptr);
+
+CORE_EXPORT IntRect AbsoluteSelectionBoundsOf(const VisiblePosition&);
+CORE_EXPORT IntRect AbsoluteSelectionBoundsOf(const VisiblePositionInFlatTree&);
+
 // Exposed to tests only. Implemented in LocalCaretRectTest.cpp.
 bool operator==(const LocalCaretRect&, const LocalCaretRect&);
 std::ostream& operator<<(std::ostream&, const LocalCaretRect&);
