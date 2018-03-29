@@ -4,20 +4,10 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../media-controls.js"></script>
-<body></body>
+<video controls width=400 src="../../content/60_sec_video.webm"></video>
 <script>
 async_test(t => {
-  // Need to enable double-tap to check the scrubbing message.
-  enableDoubleTapToJumpForTest(t);
-
-  // We create the video on the fly, since we need double-tap to jump enabled
-  // before the video is created.
-  let video = document.createElement('video');
-  video.controls = true;
-  video.width = 400;
-  video.src = "../../content/60_sec_video.webm";
-  document.body.appendChild(video);
-
+  const video = document.querySelector('video');
   const timeline = timelineElement(video);
   const thumb = timelineThumb(video);
   const scrubbingMessage = scrubbingMessageElement(video);
@@ -34,7 +24,7 @@ async_test(t => {
       assert_true(seeked);
       checkControlsClassName(video, 'phase-ready state-playing');
 
-      // Check the scrubbing message is no longer shown.
+      // Check the scrubbing message not shown.
       assert_false(isControlVisible(scrubbingMessage));
     }), { once: true });
 
@@ -56,8 +46,8 @@ async_test(t => {
   video.addEventListener('seeking', t.step_func(() => {
     checkControlsClassName(video, 'phase-ready state-scrubbing');
 
-    // Check the scrubbing message is shown.
-    assert_true(isControlVisible(scrubbingMessage));
+    // Check the scrubbing message is not shown since we're scrubbing with the mouse.
+    assert_false(isControlVisible(scrubbingMessage));
   }), { once: true });
 
   video.addEventListener('seeked', t.step_func(() => {

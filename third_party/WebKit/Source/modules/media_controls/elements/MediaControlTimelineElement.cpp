@@ -118,7 +118,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
   if (BeginScrubbingEvent(*event)) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.ScrubbingBegin"));
-    GetMediaControls().BeginScrubbing();
+    GetMediaControls().BeginScrubbing(MediaControlsImpl::IsTouchEvent(event));
     Element* thumb = UserAgentShadowRoot()->getElementById(
         ShadowElementNames::SliderThumb());
     bool started_from_thumb = thumb && thumb == event->target()->ToNode();

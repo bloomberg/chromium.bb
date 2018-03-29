@@ -218,9 +218,10 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
     } else {
       // Cancel the play pause event.
       tap_timer_.Stop();
-      tap_was_touch_event_.reset();
 
-      if (RuntimeEnabledFeatures::DoubleTapToJumpOnVideoEnabled()) {
+      // If both taps were touch events, then jump.
+      if (tap_was_touch_event_.value() &&
+          MediaControlsImpl::IsTouchEvent(event)) {
         // Jump forwards or backwards based on the position of the tap.
         WebSize element_size =
             MediaControlElementsHelper::GetSizeOrDefault(*this, WebSize(0, 0));
@@ -240,6 +241,7 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
         }
       }
 
+      tap_was_touch_event_.reset();
       event->SetDefaultHandled();
     }
   }

@@ -499,9 +499,7 @@ void MediaControlsImpl::InitializeControls() {
   // seperate button panel. This is because they are displayed in two lines.
   if (IsModern() && MediaElement().IsHTMLVideoElement()) {
     media_button_panel_ = new MediaControlButtonPanelElement(*this);
-    if (RuntimeEnabledFeatures::DoubleTapToJumpOnVideoEnabled()) {
-      scrubbing_message_ = new MediaControlScrubbingMessageElement(*this);
-    }
+    scrubbing_message_ = new MediaControlScrubbingMessageElement(*this);
   }
 
   play_button_ = new MediaControlPlayButtonElement(*this);
@@ -916,13 +914,13 @@ HTMLDivElement* MediaControlsImpl::PanelElement() {
   return panel_;
 }
 
-void MediaControlsImpl::BeginScrubbing() {
+void MediaControlsImpl::BeginScrubbing(bool is_touch_event) {
   if (!MediaElement().paused()) {
     is_paused_for_scrubbing_ = true;
     MediaElement().pause();
   }
 
-  if (scrubbing_message_) {
+  if (scrubbing_message_ && is_touch_event) {
     scrubbing_message_->SetIsWanted(true);
     if (scrubbing_message_->DoesFit())
       panel_->setAttribute("class", kScrubbingMessageCSSClass);
