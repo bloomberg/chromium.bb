@@ -132,11 +132,11 @@ void VrTestContext::DrawFrame() {
   // Update the render position of all UI elements (including desktop).
   ui_->scene()->OnBeginFrame(current_time, head_pose_);
   ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
-  ui_->ui_renderer()->Draw(render_info);
 
-  // This is required in order to show the WebVR toasts.
-  if (model_->web_vr.presenting_web_vr()) {
+  if (web_vr_mode_ && ui_->ShouldRenderWebVr() && webvr_frames_received_) {
     ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info);
+  } else {
+    ui_->ui_renderer()->Draw(render_info);
   }
 
   auto load_progress = (current_time - page_load_start_).InMilliseconds() /
@@ -191,9 +191,15 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_S:
         ToggleSplashScreen();
         break;
-      case ui::DomCode::US_R:
+      case ui::DomCode::US_R: {
+        webvr_frames_received_ = true;
+        CapturingStateModel capturing_state;
+        capturing_state.bluetooth_connected = true;
+        capturing_state.location_access_enabled = true;
+        ui_->SetCapturingState(capturing_state);
         ui_->OnWebVrFrameAvailable();
         break;
+      }
       case ui::DomCode::US_E:
         model_->experimental_features_enabled =
             !model_->experimental_features_enabled;
@@ -403,11 +409,9 @@ void VrTestContext::CreateFakeVoiceSearchResult() {
 void VrTestContext::CycleWebVrModes() {
   switch (model_->web_vr.state) {
     case kWebVrNoTimeoutPending: {
+      web_vr_mode_ = true;
+      webvr_frames_received_ = false;
       ui_->SetWebVrMode(true);
-      CapturingStateModel capturing_state;
-      capturing_state.bluetooth_connected = true;
-      capturing_state.location_access_enabled = true;
-      ui_->SetCapturingState(capturing_state);
       break;
     }
     case kWebVrAwaitingMinSplashScreenDuration:
@@ -420,6 +424,11 @@ void VrTestContext::CycleWebVrModes() {
       break;
     case kWebVrTimedOut:
       ui_->SetWebVrMode(false);
+      web_vr_mode_ = false;
+      break;
+    case kWebVrPresenting:
+      ui_->SetWebVrMode(false);
+      web_vr_mode_ = false;
       break;
     default:
       break;
@@ -428,6 +437,8 @@ void VrTestContext::CycleWebVrModes() {
 
 void VrTestContext::ToggleSplashScreen() {
   if (!show_web_vr_splash_screen_) {
+    web_vr_mode_ = true;
+    webvr_frames_received_ = false;
     UiInitialState state;
     state.in_web_vr = true;
     state.web_vr_autopresentation_expected = true;
@@ -463,10 +474,14 @@ void VrTestContext::SetVoiceSearchActive(bool active) {
     ui_->OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING);
 }
 
-void VrTestContext::ExitPresent() {}
+void VrTestContext::ExitPresent() {
+  web_vr_mode_ = false;
+  ui_->SetWebVrMode(false);
+}
+
 void VrTestContext::ExitFullscreen() {
   fullscreen_ = false;
-  ui_->SetFullscreen(fullscreen_);
+  ui_->SetFullscreen(false);
 }
 
 void VrTestContext::Navigate(GURL gurl, NavigationMethod method) {

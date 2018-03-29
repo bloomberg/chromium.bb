@@ -49,6 +49,10 @@ bool GlRenderer::Initialize() {
 
 void GlRenderer::RenderFrame() {
   context_->MakeCurrent(surface_.get());
+
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
   vr_->DrawFrame();
   PostRenderFrameTask(
       surface_->SwapBuffers(base::BindRepeating(&OnPresentedFrame)));

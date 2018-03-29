@@ -93,6 +93,8 @@ class VrTestContext : public vr::UiBrowserInterface {
   // This avoids storing a duplicate of the model state here.
   Model* model_;
 
+  bool web_vr_mode_ = false;
+  bool webvr_frames_received_ = false;
   bool fullscreen_ = false;
   bool incognito_ = false;
   bool show_web_vr_splash_screen_ = false;
