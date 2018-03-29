@@ -197,8 +197,21 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
   }
 #endif
 
+  signin::AccountConsistencyMethod method =
+      signin::GetAccountConsistencyMethod();
+
+  // Legacy supervised users cannot get Dice.
+  // TODO(droger): remove this once legacy supervised users are no longer
+  // supported.
+  if (profile_->IsLegacySupervised() &&
+      (method != signin::AccountConsistencyMethod::kMirror) &&
+      signin::DiceMethodGreaterOrEqual(
+          method, signin::AccountConsistencyMethod::kDiceFixAuthErrors)) {
+    return signin::AccountConsistencyMethod::kDiceFixAuthErrors;
+  }
+
   if (signin::IsDiceEnabledForProfile(profile_->GetPrefs()))
     return signin::AccountConsistencyMethod::kDice;
 
-  return signin::GetAccountConsistencyMethod();
+  return method;
 }
