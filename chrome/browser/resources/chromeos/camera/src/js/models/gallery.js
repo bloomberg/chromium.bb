@@ -293,7 +293,11 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
         }
       }.bind(this, entry));
     }
-    queue.run(onSuccess);
+    queue.run(function(callback) {
+      this.sortPictures_();
+      onSuccess();
+      callback();
+    }.bind(this));
   }.bind(this);
 
   var readEntries = function() {
@@ -427,6 +431,47 @@ camera.models.Gallery.prototype.createThumbnail_ = function(
   };
 
   original.src = url;
+};
+
+/**
+ * Sorts pictures by the taken order; the most recent picture will be at the end
+ * of the picture array.
+ * @private
+ */
+camera.models.Gallery.prototype.sortPictures_ = function() {
+  // Sort pictures in ascending order of the taken time deduced from filenames.
+  // Assume no more than one picture taken within one millisecond.
+  this.pictures_.sort(function(a, b) {
+    var parseDate = function(filename) {
+      var num = function(str) {
+        return parseInt(str, 10);
+      };
+
+      var match;
+      if (!filename.startsWith('VID_') && !filename.startsWith('IMG_')) {
+        // Early pictures are in legacy filename format (crrev.com/c/310064).
+        match = filename.match(/(\d+).(?:\d+)/);
+        return match ? new Date(num(match[1])) : null;
+      }
+      // Match numeric parts from filenames, e.g. IMG_'yyyyMMdd_HHmmss_n'.jpg.
+      match = filename.match(
+          /_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d+))?/);
+      return match ? new Date(num(match[1]), num(match[2]) - 1, num(match[3]),
+          num(match[4]), num(match[5]), num(match[6]),
+          match[7] ? num(match[7]) : 0) : null;
+
+    };
+
+    var dateA = parseDate(a.pictureEntry.name);
+    if (dateA == null) {
+      return -1;
+    }
+    var dateB = parseDate(b.pictureEntry.name);
+    if (dateB == null) {
+      return 1;
+    }
+    return dateA - dateB;
+  });
 };
 
 /**
