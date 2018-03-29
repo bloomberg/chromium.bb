@@ -3372,6 +3372,9 @@ crbug.com/825262 [ Win7 ] external/wpt/css/css-transitions/properties-value-impl
 crbug.com/825733 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 
+# Intent to Ship pending for this test
+crbug.com/680741 external/wpt/uievents/mouse/mouse_buttons_back_forward-manual.html [ Skip ]
+
 # Sheriff 2018-03-29
 crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
 crbug.com/827209 [ Win7 ] fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
