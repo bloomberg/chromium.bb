@@ -14,7 +14,7 @@ WindowPort* WindowPort::Get(Window* window) {
 }
 
 // static
-base::ReentrantObserverList<WindowObserver, true>* WindowPort::GetObservers(
+base::ObserverList<WindowObserver, true>* WindowPort::GetObservers(
     Window* window) {
   return &(window->observers_);
 }

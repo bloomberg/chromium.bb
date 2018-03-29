@@ -610,7 +610,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Makes the window pass all events through to any windows behind it.
   ui::mojom::EventTargetingPolicy event_targeting_policy_;
 
-  base::ReentrantObserverList<WindowObserver, true> observers_;
+  base::ObserverList<WindowObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };
