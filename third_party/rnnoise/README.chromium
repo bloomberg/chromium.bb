@@ -14,4 +14,8 @@ RNNoise is a noise suppression library based on a recurrent neural network.
 The library is used for speech processing in WebRTC.
 
 Local Modifications:
-Only retaining rnn.c, rnn_data.c, tansig_table.h from src/ and COPYING.
+Only retaining COPYING and from src/ the following files:
+- kiss_fft.c, kiss_fft.h, _kiss_fft_guts.h
+- rnn.c
+- rnn_data.c
+- tansig_table.h
