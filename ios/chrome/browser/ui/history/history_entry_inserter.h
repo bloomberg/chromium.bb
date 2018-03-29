@@ -7,14 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-
 namespace base {
 class Time;
 }
-@class CollectionViewModel;
+@class ListModel;
 @class HistoryEntryInserter;
-@class LegacyHistoryEntryItem;
+@class ListItem;
+@protocol HistoryEntryItemInterface;
 
 // Delegate for HistoryEntryInserter. Provides callbacks for completion of item
 // and section insertion and deletion.
@@ -31,27 +30,26 @@ class Time;
 @end
 
 // Object for ensuring history entry items are kept in order as they are added
-// to the CollectionViewModel.
+// to the ListModel.
 @interface HistoryEntryInserter : NSObject
 
 // Delegate for the HistoryEntryInserter. Receives callbacks upon item and
 // section insertion and removal.
 @property(nonatomic, weak) id<HistoryEntryInserterDelegate> delegate;
 
-// Designated initializer for HistoryEntryInserter. collectionViewModel is the
+// Designated initializer for HistoryEntryInserter. listModel is the
 // model into which entries are inserted. Sections for history entries are
 // appended to the model. Sections already in the model at initialization
 // of the inserter should not be removed, and sections should not be added
 // except by the inserter. Duplicate entries are not inserted.
-- (instancetype)initWithModel:(CollectionViewModel*)collectionViewModel
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithModel:(ListModel*)listModel NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Inserts a history entry into the model at the correct sorted index path.
 // History entries in the model are sorted from most to least recent, and
 // grouped into section by date. Duplicate entries are not inserted. Invokes
 // delegate callback when insertion is complete.
-- (void)insertHistoryEntryItem:(LegacyHistoryEntryItem*)item;
+- (void)insertHistoryEntryItem:(ListItem<HistoryEntryItemInterface>*)item;
 
 // Returns section identifier for provided timestamp. Adds section for date if
 // not found, and invokes delegate callback.
