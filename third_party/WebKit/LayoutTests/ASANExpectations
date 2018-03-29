@@ -70,6 +70,3 @@ crbug.com/803276 inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 crbug.com/803276 virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile.js [ Skip ]
 crbug.com/803276 virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 
-# Tests timing out sometimes on WebKit Linux Trusty ASAN/MSAN
-crbug.com/681919 [ Linux ] http/tests/media/media-src-suspend-after-have-metadata.html [ Timeout Pass ]
-crbug.com/681919 [ Linux ] http/tests/media/media-src-suspend-before-have-metadata.html [ Timeout Pass ]

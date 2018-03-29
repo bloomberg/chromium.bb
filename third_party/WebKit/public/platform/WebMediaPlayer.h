@@ -328,7 +328,7 @@ class WebMediaPlayer {
   virtual void OnDisplayTypeChanged(DisplayType) {}
 
   // Test helper methods for exercising media suspension.
-  virtual void ForceStaleStateForTesting() {}
+  virtual void ForceStaleStateForTesting(ReadyState target_state) {}
   virtual bool IsSuspendedForTesting() { return false; }
 };
 

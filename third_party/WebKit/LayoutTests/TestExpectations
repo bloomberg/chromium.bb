@@ -3346,10 +3346,6 @@ crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in
 # Sheriff 2018-03-05
 crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash Pass ]
 
-# Sheriff 2018-03-06
-crbug.com/681919 [ Linux Debug ] http/tests/media/media-src-suspend-after-have-metadata.html [ Timeout Pass ]
-crbug.com/681919 [ Linux Debug ] http/tests/media/media-src-suspend-before-have-metadata.html [ Timeout Pass ]
-
 # Sheriff 2018-03-07
 crbug.com/819778 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Pass Timeout ]
 

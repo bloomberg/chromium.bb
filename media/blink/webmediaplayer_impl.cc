@@ -2519,8 +2519,12 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   PlayState result;
 
   bool must_suspend = delegate_->IsFrameClosed();
-  bool is_stale = stale_state_override_for_testing_.value_or(
-      delegate_->IsStale(delegate_id_));
+  bool is_stale = delegate_->IsStale(delegate_id_);
+
+  if (stale_state_override_for_testing_.has_value() &&
+      ready_state_ >= stale_state_override_for_testing_.value()) {
+    is_stale = true;
+  }
 
   // This includes both data source (before pipeline startup) and pipeline
   // errors.
@@ -2794,8 +2798,8 @@ void WebMediaPlayerImpl::UpdateRemotePlaybackCompatibility(bool is_compatible) {
   client_->RemotePlaybackCompatibilityChanged(loaded_url_, is_compatible);
 }
 
-void WebMediaPlayerImpl::ForceStaleStateForTesting() {
-  stale_state_override_for_testing_.emplace(true);
+void WebMediaPlayerImpl::ForceStaleStateForTesting(ReadyState target_state) {
+  stale_state_override_for_testing_.emplace(target_state);
   UpdatePlayState();
 }
 

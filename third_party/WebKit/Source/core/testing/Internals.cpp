@@ -2496,11 +2496,21 @@ void Internals::setPersistent(HTMLVideoElement* video_element,
   video_element->OnBecamePersistentVideo(persistent);
 }
 
-void Internals::forceStaleStateForMediaElement(
-    HTMLMediaElement* media_element) {
+void Internals::forceStaleStateForMediaElement(HTMLMediaElement* media_element,
+                                               int target_state) {
   DCHECK(media_element);
-  if (auto wmp = media_element->GetWebMediaPlayer())
-    wmp->ForceStaleStateForTesting();
+  // Even though this is an internals method, the checks are necessary to
+  // prevent fuzzers from taking this path and generating useless noise.
+  if (target_state < static_cast<int>(WebMediaPlayer::kReadyStateHaveNothing) ||
+      target_state >
+          static_cast<int>(WebMediaPlayer::kReadyStateHaveEnoughData)) {
+    return;
+  }
+
+  if (auto wmp = media_element->GetWebMediaPlayer()) {
+    wmp->ForceStaleStateForTesting(
+        static_cast<WebMediaPlayer::ReadyState>(target_state));
+  }
 }
 
 bool Internals::isMediaElementSuspended(HTMLMediaElement* media_element) {
