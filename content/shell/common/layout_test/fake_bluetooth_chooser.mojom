@@ -45,10 +45,10 @@ interface FakeBluetoothChooser {
 
   // Simulates a user selecting the given |peripheral_address| in the Bluetooth
   // chooser.
-  SelectPeripheral(string peripheral_address) => ();
+  SelectPeripheral(string peripheral_address);
 
   // Calls the event handler function with the CANCELLED event.
-  Cancel() => ();
+  Cancel();
 
   // Calls the event handler function with the RESCAN event.
   Rescan() => ();

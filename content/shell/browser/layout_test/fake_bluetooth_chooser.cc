@@ -41,35 +41,30 @@ void FakeBluetoothChooser::WaitForEvents(uint32_t num_of_events,
 }
 
 void FakeBluetoothChooser::SelectPeripheral(
-    const std::string& peripheral_address,
-    SelectPeripheralCallback callback) {
-  // TODO(https://crbug.com/719826): Record the event and send a
-  // BluetoothChooser::SELECTED event to |event_handler_|.
-  NOTREACHED();
+    const std::string& peripheral_address) {
+  event_handler_.Run(BluetoothChooser::Event::SELECTED, peripheral_address);
 }
 
-void FakeBluetoothChooser::Cancel(CancelCallback callback) {
-  // TODO(https://crbug.com/719826): Record the event and send a
-  // BluetoothChooser::CANCELLED event to |event_handler_|.
+void FakeBluetoothChooser::Cancel() {
+  // TODO(https://crbug.com/719826): Run |event_handler_| with
+  // BluetoothChooser::CANCELLED.
   NOTREACHED();
 }
 
 void FakeBluetoothChooser::Rescan(RescanCallback callback) {
-  // TODO(https://crbug.com/719826): Record the event and send a
-  // BluetoothChooser::RESCAN event to |event_handler_|.
+  // TODO(https://crbug.com/719826): Run |event_handler_| with
+  // BluetoothChooser::RESCAN.
   NOTREACHED();
 }
 
 // BluetoothChooser overrides
 
 void FakeBluetoothChooser::SetAdapterPresence(AdapterPresence presence) {
-  // TODO(https://crbug.com/719826): Record the event.
-  NOTREACHED();
+  // TODO(https://crbug.com/719826): Send the event to the client.
 }
 
 void FakeBluetoothChooser::ShowDiscoveryState(DiscoveryState state) {
-  // TODO(https://crbug.com/719826): Record the event.
-  NOTREACHED();
+  // TODO(https://crbug.com/719826): Send the event to the client.
 }
 
 void FakeBluetoothChooser::AddOrUpdateDevice(const std::string& device_id,
@@ -78,8 +73,7 @@ void FakeBluetoothChooser::AddOrUpdateDevice(const std::string& device_id,
                                              bool is_gatt_connected,
                                              bool is_paired,
                                              int signal_strength_level) {
-  // TODO(https://crbug.com/719826): Record the event.
-  NOTREACHED();
+  // TODO(https://crbug.com/719826): Send the event to the client.
 }
 
 // private

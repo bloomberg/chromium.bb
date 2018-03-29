@@ -580,7 +580,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // Helper class to easily update the sets of UUIDs and keep them in sync with
   // the set of all the device's UUIDs.
-  class DeviceUUIDs {
+  class DEVICE_BLUETOOTH_EXPORT DeviceUUIDs {
    public:
     DeviceUUIDs();
     ~DeviceUUIDs();
