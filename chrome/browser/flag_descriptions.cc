@@ -284,6 +284,13 @@ const char kEnableAutofillCreditCardUploadCvcPromptDescription[] =
     "If enabled, requests missing CVC when offering to upload credit cards to "
     "Google Payments.";
 
+const char kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName[] =
+    "Enable Google Pay branding when offering credit card upload on Android";
+const char
+    kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingDescription[] =
+        "If enabled, shows the Google Pay logo and a shorter header message "
+        "when credit card upload to Google Payments is offered on Android.";
+
 const char kEnableAutofillCreditCardUploadSendDetectedValuesName[] =
     "Always send metadata on detected form values for Autofill credit card "
     "upload";
