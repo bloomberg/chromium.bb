@@ -124,6 +124,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   // For Incremental Shadow DOM
   void ClearAssignedNodes();
+  void RecalcFlatTreeChildren();
 
   static AtomicString NormalizeSlotName(const AtomicString&);
 
@@ -158,6 +159,9 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapVector<Member<Node>>& GetDistributedNodes();
 
   HeapVector<Member<Node>> assigned_nodes_;
+
+  // For IncrementalShadowDOM
+  HeapVector<Member<Node>> flat_tree_children_;
 
   // For Non-IncrmentalShadowDOM. IncremntalShadowDOM never use these members.
   HeapVector<Member<Node>> distributed_nodes_;

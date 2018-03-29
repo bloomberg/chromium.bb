@@ -230,11 +230,31 @@ void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
 
 void HTMLSlotElement::ClearAssignedNodes() {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-  // TODO(hayato): Avoid uncondional LazyReattach
-  for (const auto& node : assigned_nodes_)
-    node->LazyReattachIfAttached();
-
   assigned_nodes_.clear();
+}
+
+void HTMLSlotElement::RecalcFlatTreeChildren() {
+  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+  DCHECK(SupportsAssignment());
+
+  HeapVector<Member<Node>> old_flat_tree_children;
+  old_flat_tree_children.swap(flat_tree_children_);
+
+  if (assigned_nodes_.IsEmpty()) {
+    // Use children as fallback
+    for (auto& child : NodeTraversal::ChildrenOf(*this))
+      flat_tree_children_.push_back(child);
+  } else {
+    flat_tree_children_ = assigned_nodes_;
+  }
+
+  // Tentative naive version.
+  // TODO(hayato): Optimize this, as we do in
+  // |LazyReattachDistributedNodesIfNeeded|.
+  for (auto& node : old_flat_tree_children)
+    node->LazyReattachIfAttached();
+  for (auto& node : flat_tree_children_)
+    node->LazyReattachIfAttached();
 }
 
 void HTMLSlotElement::ClearDistribution() {
@@ -642,6 +662,7 @@ int HTMLSlotElement::tabIndex() const {
 
 void HTMLSlotElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(assigned_nodes_);
+  visitor->Trace(flat_tree_children_);
   visitor->Trace(distributed_nodes_);
   visitor->Trace(old_distributed_nodes_);
   visitor->Trace(distributed_indices_);
