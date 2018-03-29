@@ -591,9 +591,8 @@ void RenderFrameProxy::WasResized() {
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
 
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
-  if (enable_surface_synchronization_) {
+  if (enable_surface_synchronization_)
     compositing_helper_->SetPrimarySurfaceId(surface_id, local_frame_size());
-  }
 
   bool rect_changed =
       !sent_resize_params_ || sent_resize_params_->screen_space_rect !=

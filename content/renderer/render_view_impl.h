@@ -507,15 +507,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
   void OnEnablePreferredSizeChangedMode();
-  void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
-  void OnDisableAutoResize(const gfx::Size& new_size);
-  void OnSetLocalSurfaceIdForAutoResize(
-      uint64_t sequence_number,
-      const gfx::Size& min_size,
-      const gfx::Size& max_size,
-      const content::ScreenInfo& screen_info,
-      uint32_t content_source_id,
-      const viz::LocalSurfaceId& local_surface_id);
   void OnEnumerateDirectoryResponse(int id,
                                     const std::vector<base::FilePath>& paths);
   void OnMediaPlayerActionAt(const gfx::Point& location,

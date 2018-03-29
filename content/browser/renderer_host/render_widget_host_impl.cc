@@ -760,6 +760,12 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     resize_params->display_mode = blink::kWebDisplayModeBrowser;
   }
 
+  resize_params->auto_resize_enabled = auto_resize_enabled_;
+  resize_params->min_size_for_auto_resize = min_size_for_auto_resize_;
+  resize_params->max_size_for_auto_resize = max_size_for_auto_resize_;
+  resize_params->auto_resize_sequence_number =
+      last_auto_resize_response_number_;
+
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
     resize_params->compositor_viewport_pixel_size =
@@ -780,7 +786,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     // a size. We should only propagate a LocalSurfaceId here if the
     // compositor's viewport has a non-empty size.
     viz::LocalSurfaceId local_surface_id =
-        resize_params->compositor_viewport_pixel_size.IsEmpty()
+        resize_params->compositor_viewport_pixel_size.IsEmpty() &&
+                !auto_resize_enabled_
             ? viz::LocalSurfaceId()
             : view_->GetLocalSurfaceId();
     if (local_surface_id.is_valid())
@@ -801,9 +808,19 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
 
   const bool size_changed =
       !old_resize_params_ ||
-      old_resize_params_->new_size != resize_params->new_size ||
-      (old_resize_params_->compositor_viewport_pixel_size.IsEmpty() &&
-       !resize_params->compositor_viewport_pixel_size.IsEmpty());
+      old_resize_params_->auto_resize_enabled !=
+          resize_params->auto_resize_enabled ||
+      (old_resize_params_->auto_resize_enabled &&
+       (old_resize_params_->min_size_for_auto_resize !=
+            resize_params->min_size_for_auto_resize ||
+        old_resize_params_->max_size_for_auto_resize !=
+            resize_params->max_size_for_auto_resize ||
+        old_resize_params_->auto_resize_sequence_number !=
+            resize_params->auto_resize_sequence_number)) ||
+      (!old_resize_params_->auto_resize_enabled &&
+       (old_resize_params_->new_size != resize_params->new_size ||
+        (old_resize_params_->compositor_viewport_pixel_size.IsEmpty() &&
+         !resize_params->compositor_viewport_pixel_size.IsEmpty())));
 
   bool dirty =
       size_changed ||
@@ -830,7 +847,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   // We don't expect to receive an ACK when the requested size or the physical
   // backing size is empty, or when the main viewport size didn't change.
   resize_params->needs_resize_ack =
-      g_check_for_pending_resize_ack && !resize_params->new_size.IsEmpty() &&
+      !auto_resize_enabled_ && g_check_for_pending_resize_ack &&
+      !resize_params->new_size.IsEmpty() &&
       !resize_params->compositor_viewport_pixel_size.IsEmpty() &&
       (size_changed || next_resize_needs_resize_ack_) &&
       (!enable_surface_synchronization_ ||
@@ -855,8 +873,8 @@ void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
-      !view_->HasSize() || !renderer_initialized_ || auto_resize_enabled_ ||
-      !delegate_) {
+      !view_->HasSize() || !renderer_initialized_ || !delegate_ ||
+      last_auto_resize_request_number_ != last_auto_resize_response_number_) {
     return;
   }
 
@@ -1907,6 +1925,7 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
   auto_resize_enabled_ = enable;
   min_size_for_auto_resize_ = min_size;
   max_size_for_auto_resize_ = max_size;
+  WasResized();
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {
@@ -2618,22 +2637,8 @@ void RenderWidgetHostImpl::DetachDelegate() {
 
 void RenderWidgetHostImpl::DidAllocateLocalSurfaceIdForAutoResize(
     uint64_t sequence_number) {
-  if (!view_ || !sequence_number ||
-      last_auto_resize_request_number_ != sequence_number) {
-    return;
-  }
-
-  DCHECK(!view_->IsLocalSurfaceIdAllocationSuppressed());
-
-  viz::LocalSurfaceId local_surface_id(view_->GetLocalSurfaceId());
-  if (local_surface_id.is_valid()) {
-    ScreenInfo screen_info;
-    view_->GetScreenInfo(&screen_info);
-    Send(new ViewMsg_SetLocalSurfaceIdForAutoResize(
-        routing_id_, sequence_number, min_size_for_auto_resize_,
-        max_size_for_auto_resize_, screen_info, current_content_source_id_,
-        local_surface_id));
-  }
+  last_auto_resize_response_number_ = sequence_number;
+  WasResized();
 }
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {

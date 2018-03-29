@@ -613,11 +613,7 @@ void RenderViewImpl::Initialize(
   UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(params->renderer_preferences);
 
-  if (!params->enable_auto_resize) {
-    OnResize(params->initial_size);
-  } else {
-    OnEnableAutoResize(params->min_size, params->max_size);
-  }
+  OnResize(params->initial_size);
 
   idle_user_detector_.reset(new IdleUserDetector(this));
 
@@ -1079,10 +1075,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableAutoResize, OnEnableAutoResize)
-    IPC_MESSAGE_HANDLER(ViewMsg_DisableAutoResize, OnDisableAutoResize)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetLocalSurfaceIdForAutoResize,
-                        OnSetLocalSurfaceIdForAutoResize)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
@@ -1870,77 +1862,6 @@ void RenderViewImpl::OnEnumerateDirectoryResponse(
   enumeration_completions_.erase(id);
 }
 
-void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
-                                        const gfx::Size& max_size) {
-  DCHECK(disable_scrollbars_size_limit_.IsEmpty());
-  if (!webview())
-    return;
-
-  auto_resize_mode_ = true;
-
-  if (IsUseZoomForDSFEnabled()) {
-    webview()->EnableAutoResizeMode(
-        gfx::ScaleToCeiledSize(min_size,
-                               GetWebScreenInfo().device_scale_factor),
-        gfx::ScaleToCeiledSize(max_size,
-                               GetWebScreenInfo().device_scale_factor));
-  } else {
-    webview()->EnableAutoResizeMode(min_size, max_size);
-  }
-}
-
-void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
-  DCHECK(disable_scrollbars_size_limit_.IsEmpty());
-  if (!webview())
-    return;
-  auto_resize_mode_ = false;
-  auto_resize_ack_callback_.Cancel();
-  need_resize_ack_for_auto_resize_ = false;
-  webview()->DisableAutoResizeMode();
-
-  if (!new_size.IsEmpty()) {
-    ResizeParams resize_params;
-    resize_params.screen_info = screen_info_;
-    resize_params.new_size = new_size;
-    resize_params.compositor_viewport_pixel_size =
-        compositor_viewport_pixel_size_;
-    resize_params.browser_controls_shrink_blink_size =
-        browser_controls_shrink_blink_size_;
-    resize_params.top_controls_height = top_controls_height_;
-    resize_params.visible_viewport_size = visible_viewport_size_;
-    resize_params.is_fullscreen_granted = is_fullscreen_granted();
-    resize_params.display_mode = display_mode_;
-    resize_params.needs_resize_ack = false;
-    Resize(resize_params);
-  }
-}
-
-void RenderViewImpl::OnSetLocalSurfaceIdForAutoResize(
-    uint64_t sequence_number,
-    const gfx::Size& min_size,
-    const gfx::Size& max_size,
-    const content::ScreenInfo& screen_info,
-    uint32_t content_source_id,
-    const viz::LocalSurfaceId& local_surface_id) {
-  if (!auto_resize_mode_ || auto_resize_sequence_number_ != sequence_number) {
-    DidResizeOrRepaintAck();
-    return;
-  }
-
-  SetLocalSurfaceIdForAutoResize(sequence_number, screen_info,
-                                 content_source_id, local_surface_id);
-
-  if (IsUseZoomForDSFEnabled()) {
-    webview()->EnableAutoResizeMode(
-        gfx::ScaleToCeiledSize(min_size,
-                               GetWebScreenInfo().device_scale_factor),
-        gfx::ScaleToCeiledSize(max_size,
-                               GetWebScreenInfo().device_scale_factor));
-  } else {
-    webview()->EnableAutoResizeMode(min_size, max_size);
-  }
-}
-
 void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
   if (send_preferred_size_changes_)
     return;
@@ -2052,6 +1973,30 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
       display_mode_ = params.display_mode;
       webview()->SetDisplayMode(display_mode_);
     }
+  }
+
+  bool auto_resize_mode_changed =
+      auto_resize_mode_ != params.auto_resize_enabled;
+  auto_resize_mode_ = params.auto_resize_enabled;
+  min_size_for_auto_resize_ = params.min_size_for_auto_resize;
+  max_size_for_auto_resize_ = params.max_size_for_auto_resize;
+  if (auto_resize_mode_) {
+    if (IsUseZoomForDSFEnabled()) {
+      webview()->EnableAutoResizeMode(
+          gfx::ScaleToCeiledSize(params.min_size_for_auto_resize,
+                                 params.screen_info.device_scale_factor),
+          gfx::ScaleToCeiledSize(params.max_size_for_auto_resize,
+                                 params.screen_info.device_scale_factor));
+    } else {
+      webview()->EnableAutoResizeMode(params.min_size_for_auto_resize,
+                                      params.max_size_for_auto_resize);
+    }
+  } else if (auto_resize_mode_changed) {
+    auto_resize_ack_callback_.Cancel();
+    need_resize_ack_for_auto_resize_ = false;
+    webview()->DisableAutoResizeMode();
+    if (params.new_size.IsEmpty())
+      return;
   }
 
   browser_controls_shrink_blink_size_ =
@@ -2430,11 +2375,31 @@ void RenderViewImpl::UseSynchronousResizeModeForTesting(bool enable) {
 
 void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,
                                                 const gfx::Size& max_size) {
-  OnEnableAutoResize(min_size, max_size);
+  ResizeParams resize_params;
+  resize_params.auto_resize_enabled = true;
+  resize_params.min_size_for_auto_resize = min_size;
+  resize_params.max_size_for_auto_resize = max_size;
+  OnResize(resize_params);
 }
 
 void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
-  OnDisableAutoResize(new_size);
+  if (!auto_resize_mode_)
+    return;
+
+  ResizeParams resize_params;
+  resize_params.auto_resize_enabled = false;
+  resize_params.screen_info = screen_info_;
+  resize_params.new_size = new_size;
+  resize_params.compositor_viewport_pixel_size =
+      compositor_viewport_pixel_size_;
+  resize_params.browser_controls_shrink_blink_size =
+      browser_controls_shrink_blink_size_;
+  resize_params.top_controls_height = top_controls_height_;
+  resize_params.visible_viewport_size = visible_viewport_size_;
+  resize_params.is_fullscreen_granted = is_fullscreen_granted();
+  resize_params.display_mode = display_mode_;
+  resize_params.needs_resize_ack = false;
+  OnResize(resize_params);
 }
 
 void RenderViewImpl::OnResolveTapDisambiguation(double timestamp_seconds,
