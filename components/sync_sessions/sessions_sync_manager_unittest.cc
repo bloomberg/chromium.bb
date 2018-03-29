@@ -30,6 +30,7 @@ using syncer::SyncDataList;
 using syncer::SyncDataLocal;
 using syncer::SyncError;
 using testing::Eq;
+using testing::IsNull;
 
 namespace sync_sessions {
 
@@ -1132,11 +1133,12 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDeleteTabsWithShadowing) {
   output.clear();
 
   // Verify that cleanup post-merge cleanup correctly removes all tabs objects.
-  const sessions::SessionTab* tab;
-  ASSERT_FALSE(manager()->session_tracker_.LookupSessionTab(session_tag,
-                                                            kTabIds1[0], &tab));
-  ASSERT_FALSE(manager()->session_tracker_.LookupSessionTab(session_tag,
-                                                            kTabIds1[1], &tab));
+  ASSERT_THAT(
+      manager()->session_tracker_.LookupSessionTab(session_tag, kTabIds1[0]),
+      IsNull());
+  ASSERT_THAT(
+      manager()->session_tracker_.LookupSessionTab(session_tag, kTabIds1[1]),
+      IsNull());
 
   std::set<int> tab_node_ids;
   manager()->session_tracker_.LookupForeignTabNodeIds(session_tag,
@@ -1333,9 +1335,9 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesBadHash) {
   EXPECT_EQ(1U, CountIfTagMatches(output, bad_header_tag));
   EXPECT_EQ(1U, CountIfTagMatches(output, bad_tab_tag));
 
-  std::vector<const SyncedSession*> sessions;
-  manager()->session_tracker_.LookupAllForeignSessions(
-      &sessions, SyncedSessionTracker::RAW);
+  const std::vector<const SyncedSession*> sessions =
+      manager()->session_tracker_.LookupAllForeignSessions(
+          SyncedSessionTracker::RAW);
   ASSERT_EQ(2U, sessions.size());
   EXPECT_EQ(1U, CountIfTagMatches(sessions, good_header_tag));
   EXPECT_EQ(1U, CountIfTagMatches(sessions, good_tag_tab));

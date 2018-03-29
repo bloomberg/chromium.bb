@@ -277,8 +277,8 @@ void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
 syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
     syncer::ModelType type) const {
   syncer::SyncDataList list;
-  const SyncedSession* session = nullptr;
-  if (!session_tracker_.LookupLocalSession(&session))
+  const SyncedSession* session = session_tracker_.LookupLocalSession();
+  if (!session)
     return syncer::SyncDataList();
 
   // First construct the header node.
@@ -524,10 +524,8 @@ bool SessionsSyncManager::InitFromSyncModel(
 
   // Cleanup all foreign sessions, since orphaned tabs may have been added after
   // the header.
-  std::vector<const SyncedSession*> sessions;
-  session_tracker_.LookupAllForeignSessions(&sessions,
-                                            SyncedSessionTracker::RAW);
-  for (const auto* session : sessions) {
+  for (const auto* session :
+       session_tracker_.LookupAllForeignSessions(SyncedSessionTracker::RAW)) {
     session_tracker_.CleanupSession(session->session_tag);
   }
 
@@ -624,15 +622,11 @@ OpenTabsUIDelegate* SessionsSyncManager::GetOpenTabsUIDelegate() {
 }
 
 void SessionsSyncManager::DoGarbageCollection() {
-  std::vector<const SyncedSession*> sessions;
-  if (!session_tracker_.LookupAllForeignSessions(&sessions,
-                                                 SyncedSessionTracker::RAW))
-    return;  // No foreign sessions.
-
   // Iterate through all the sessions and delete any with age older than
   // |stale_session_threshold_days_|.
   syncer::SyncChangeList changes;
-  for (const auto* session : sessions) {
+  for (const auto* session :
+       session_tracker_.LookupAllForeignSessions(SyncedSessionTracker::RAW)) {
     int session_age_in_days =
         (base::Time::Now() - session->modified_time).InDays();
     if (session_age_in_days > stale_session_threshold_days_) {

@@ -15,6 +15,10 @@
 using testing::AssertionFailure;
 using testing::AssertionResult;
 using testing::AssertionSuccess;
+using testing::ElementsAre;
+using testing::IsEmpty;
+using testing::IsNull;
+using testing::NotNull;
 
 namespace sync_sessions {
 
@@ -42,6 +46,10 @@ const SessionID kTab5 = SessionID::FromSerializedValue(55);
 const SessionID kTab6 = SessionID::FromSerializedValue(65);
 const SessionID kTab7 = SessionID::FromSerializedValue(75);
 
+MATCHER_P(HasSessionTag, expected_tag, "") {
+  return arg->session_tag == expected_tag;
+}
+
 }  // namespace
 
 class SyncedSessionTrackerTest : public testing::Test {
@@ -56,48 +64,53 @@ class SyncedSessionTrackerTest : public testing::Test {
   // and that that tab object is owned either by the Session itself or the
   // |unmapped_tabs_| tab holder.
   AssertionResult VerifyTabIntegrity(const std::string& session_tag) {
+    const SyncedSessionTracker::TrackedSession* session =
+        tracker_.LookupTrackedSession(session_tag);
+    if (!session) {
+      return AssertionFailure()
+             << "Not tracked session with tag " << session_tag;
+    }
+
     // First get all the tabs associated with this session.
-    int total_tab_count = 0;
-    auto tab_map_iter = tracker_.synced_tab_map_.find(session_tag);
-    if (tab_map_iter != tracker_.synced_tab_map_.end())
-      total_tab_count = tab_map_iter->second.size();
+    int total_tab_count = session->synced_tab_map.size();
 
     // Now traverse the SyncedSession tree to verify the mapped tabs all match
     // up.
     int mapped_tab_count = 0;
-    if (tracker_.synced_session_map_.find(session_tag) !=
-        tracker_.synced_session_map_.end()) {
-      SyncedSession* session = tracker_.synced_session_map_[session_tag].get();
-      for (auto& window_pair : session->windows) {
-        mapped_tab_count += window_pair.second->wrapped_window.tabs.size();
-        for (auto& tab : window_pair.second->wrapped_window.tabs) {
-          if (tab_map_iter->second[tab->tab_id] != tab.get()) {
-            return AssertionFailure()
-                   << "Mapped tab " << tab->tab_id.id()
-                   << " does not match synced tab map " << tab->tab_id.id();
-          }
+    for (auto& window_pair : session->synced_session.windows) {
+      mapped_tab_count += window_pair.second->wrapped_window.tabs.size();
+      for (auto& tab : window_pair.second->wrapped_window.tabs) {
+        const auto tab_map_it = session->synced_tab_map.find(tab->tab_id);
+        if (tab_map_it == session->synced_tab_map.end()) {
+          return AssertionFailure() << "Tab ID " << tab->tab_id.id()
+                                    << " has no corresponding synced tab entry";
+        }
+        if (tab_map_it->second != tab.get()) {
+          return AssertionFailure()
+                 << "Mapped tab " << tab->tab_id.id()
+                 << " does not match synced tab map " << tab->tab_id.id();
         }
       }
     }
 
     // Wrap up by verifying all unmapped tabs are tracked.
-    int unmapped_tab_count = 0;
-    if (tracker_.unmapped_tabs_.find(session_tag) !=
-        tracker_.unmapped_tabs_.end()) {
-      unmapped_tab_count = tracker_.unmapped_tabs_[session_tag].size();
-      for (const auto& tab_pair : tracker_.unmapped_tabs_[session_tag]) {
-        if (tab_pair.first != tab_pair.second->tab_id) {
-          return AssertionFailure()
-                 << "Unmapped tab " << tab_pair.second->tab_id.id()
-                 << " associated with wrong tab " << tab_pair.first;
-        }
-        if (tab_map_iter->second[tab_pair.second->tab_id] !=
-            tab_pair.second.get()) {
-          return AssertionFailure()
-                 << "Unmapped tab " << tab_pair.second->tab_id.id()
-                 << " does not match synced tab map "
-                 << tab_pair.second->tab_id.id();
-        }
+    int unmapped_tab_count = session->unmapped_tabs.size();
+    for (const auto& tab_pair : session->unmapped_tabs) {
+      if (tab_pair.first != tab_pair.second->tab_id) {
+        return AssertionFailure()
+               << "Unmapped tab " << tab_pair.second->tab_id.id()
+               << " associated with wrong tab " << tab_pair.first;
+      }
+      const auto tab_map_it =
+          session->synced_tab_map.find(tab_pair.second->tab_id);
+      if (tab_map_it == session->synced_tab_map.end()) {
+        return AssertionFailure() << "Unmapped tab " << tab_pair.second->tab_id
+                                  << " has no corresponding synced tab entry";
+      }
+      if (tab_map_it->second != tab_pair.second.get()) {
+        return AssertionFailure()
+               << "Unmapped tab " << tab_pair.second->tab_id.id()
+               << " does not match synced tab map " << tab_map_it->second;
       }
     }
 
@@ -158,9 +171,9 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   ON_CALL(*GetSyncSessionsClient(), ShouldSyncURL(GURL(kInvalidUrl)))
       .WillByDefault(testing::Return(false));
 
-  std::vector<const SyncedSession*> sessions;
-  ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(
-      &sessions, SyncedSessionTracker::PRESENTABLE));
+  EXPECT_THAT(
+      GetTracker()->LookupAllForeignSessions(SyncedSessionTracker::PRESENTABLE),
+      IsEmpty());
   GetTracker()->GetSession(kTag);
   GetTracker()->PutWindowInSession(kTag, kWindow1);
   GetTracker()->PutTabInWindow(kTag, kWindow1, kTab1);
@@ -178,15 +191,13 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kInvalidUrl, kTitle));
-  ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(
-      &sessions, SyncedSessionTracker::PRESENTABLE));
   // Only the session with a valid window and tab gets returned.
-  ASSERT_EQ(1U, sessions.size());
-  ASSERT_EQ(kTag, sessions[0]->session_tag);
-
-  ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(
-      &sessions, SyncedSessionTracker::RAW));
-  ASSERT_EQ(3U, sessions.size());
+  EXPECT_THAT(
+      GetTracker()->LookupAllForeignSessions(SyncedSessionTracker::PRESENTABLE),
+      ElementsAre(HasSessionTag(kTag)));
+  EXPECT_THAT(GetTracker()->LookupAllForeignSessions(SyncedSessionTracker::RAW),
+              ElementsAre(HasSessionTag(kTag), HasSessionTag(kTag2),
+                          HasSessionTag(kTag3)));
 }
 
 TEST_F(SyncedSessionTrackerTest, LookupSessionWindows) {
@@ -206,15 +217,13 @@ TEST_F(SyncedSessionTrackerTest, LookupSessionWindows) {
 }
 
 TEST_F(SyncedSessionTrackerTest, LookupSessionTab) {
-  const sessions::SessionTab* tab;
-  ASSERT_FALSE(
-      GetTracker()->LookupSessionTab(kTag, SessionID::InvalidValue(), &tab));
-  ASSERT_FALSE(GetTracker()->LookupSessionTab(kTag, kTab1, &tab));
+  ASSERT_THAT(GetTracker()->LookupSessionTab(kTag, SessionID::InvalidValue()),
+              IsNull());
+  ASSERT_THAT(GetTracker()->LookupSessionTab(kTag, kTab1), IsNull());
   GetTracker()->GetSession(kTag);
   GetTracker()->PutWindowInSession(kTag, kWindow1);
   GetTracker()->PutTabInWindow(kTag, kWindow1, kTab1);
-  ASSERT_TRUE(GetTracker()->LookupSessionTab(kTag, kTab1, &tab));
-  ASSERT_NE((sessions::SessionTab*)nullptr, tab);
+  ASSERT_THAT(GetTracker()->LookupSessionTab(kTag, kTab1), NotNull());
 }
 
 TEST_F(SyncedSessionTrackerTest, Complex) {
@@ -227,18 +236,20 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   tabs1.push_back(GetTracker()->GetTab(kTag, kTab2));
   tabs1.push_back(GetTracker()->GetTab(kTag, kTab3));
   ASSERT_EQ(3U, GetTracker()->num_synced_tabs(kTag));
-  ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
+  ASSERT_EQ(1U, GetTracker()->num_synced_sessions());
   temp_tab = GetTracker()->GetTab(kTag, kTab1);  // Already created.
   ASSERT_EQ(3U, GetTracker()->num_synced_tabs(kTag));
-  ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
+  ASSERT_EQ(1U, GetTracker()->num_synced_sessions());
   ASSERT_EQ(tabs1[0], temp_tab);
   tabs2.push_back(GetTracker()->GetTab(kTag2, kTab1));
   ASSERT_EQ(1U, GetTracker()->num_synced_tabs(kTag2));
-  ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
+  ASSERT_EQ(2U, GetTracker()->num_synced_sessions());
   ASSERT_FALSE(GetTracker()->DeleteForeignSession(kTag3));
 
   SyncedSession* session = GetTracker()->GetSession(kTag);
+  ASSERT_EQ(2U, GetTracker()->num_synced_sessions());
   SyncedSession* session2 = GetTracker()->GetSession(kTag2);
+  ASSERT_EQ(2U, GetTracker()->num_synced_sessions());
   SyncedSession* session3 = GetTracker()->GetSession(kTag3);
   session3->device_type = sync_pb::SyncEnums_DeviceType_TYPE_LINUX;
   ASSERT_EQ(3U, GetTracker()->num_synced_sessions());
@@ -255,13 +266,9 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   GetTracker()->PutTabInWindow(kTag, kWindow1, kTab3);  // No longer unmapped.
   ASSERT_EQ(3U, GetTracker()->num_synced_tabs(kTag));  // Has not changed.
 
-  const sessions::SessionTab* tab_ptr;
-  ASSERT_TRUE(GetTracker()->LookupSessionTab(kTag, kTab1, &tab_ptr));
-  ASSERT_EQ(tab_ptr, tabs1[0]);
-  ASSERT_TRUE(GetTracker()->LookupSessionTab(kTag, kTab3, &tab_ptr));
-  ASSERT_EQ(tab_ptr, tabs1[2]);
-  ASSERT_FALSE(GetTracker()->LookupSessionTab(kTag, kTab4, &tab_ptr));
-  ASSERT_FALSE(tab_ptr);
+  ASSERT_EQ(tabs1[0], GetTracker()->LookupSessionTab(kTag, kTab1));
+  ASSERT_EQ(tabs1[2], GetTracker()->LookupSessionTab(kTag, kTab3));
+  ASSERT_THAT(GetTracker()->LookupSessionTab(kTag, kTab4), IsNull());
 
   std::vector<const sessions::SessionWindow*> windows;
   ASSERT_TRUE(GetTracker()->LookupSessionWindows(kTag, &windows));
@@ -271,17 +278,16 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
 
   // The sessions don't have valid tabs, lookup should not succeed.
   std::vector<const SyncedSession*> sessions;
-  ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(
-      &sessions, SyncedSessionTracker::PRESENTABLE));
-  ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(
-      &sessions, SyncedSessionTracker::RAW));
-  ASSERT_EQ(2U, sessions.size());
+  EXPECT_THAT(
+      GetTracker()->LookupAllForeignSessions(SyncedSessionTracker::PRESENTABLE),
+      IsEmpty());
+  EXPECT_THAT(GetTracker()->LookupAllForeignSessions(SyncedSessionTracker::RAW),
+              ElementsAre(HasSessionTag(kTag), HasSessionTag(kTag2)));
 
   GetTracker()->Clear();
   ASSERT_EQ(0U, GetTracker()->num_synced_tabs(kTag));
   ASSERT_EQ(0U, GetTracker()->num_synced_tabs(kTag2));
   ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
-  ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
 
 TEST_F(SyncedSessionTrackerTest, ManyGetTabs) {
@@ -554,8 +560,8 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMapped) {
   // GetSession as well as the GetTab.
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
             session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(session->tab_node_ids.size(),
-            session->tab_node_ids.count(kTabNode1));
+  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
+            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
@@ -594,8 +600,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
 
   // Tab 1 should no longer be associated with any SessionTab object. At this
   // point there's no need to verify it's unmapped state.
-  const sessions::SessionTab* tab_ptr = nullptr;
-  EXPECT_FALSE(GetTracker()->LookupSessionTab(kTag, kTab1, &tab_ptr));
+  EXPECT_THAT(GetTracker()->LookupSessionTab(kTag, kTab1), IsNull());
 
   // Reset tracking and add back both the old tab and the new tab (both of which
   // refer to the same tab node id).
@@ -613,8 +618,8 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
   // GetSession as well as the GetTab.
   EXPECT_EQ(GetTracker()->GetTab(kTag, kTab2),
             session->windows[kWindow1]->wrapped_window.tabs[1].get());
-  EXPECT_EQ(session->tab_node_ids.size(),
-            session->tab_node_ids.count(kTabNode1));
+  EXPECT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
+            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
   EXPECT_EQ(1U, GetTabNodePool()->Capacity());
 
   // Attempting to access the original tab will create a new SessionTab object.
@@ -655,8 +660,8 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabUnmapped) {
   SyncedSession* session = GetTracker()->GetSession(kTag);
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
             session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(session->tab_node_ids.size(),
-            session->tab_node_ids.count(kTabNode1));
+  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
+            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
@@ -693,8 +698,8 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabOldUnmappedNewMapped) {
   SyncedSession* session = GetTracker()->GetSession(kTag);
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
             session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(session->tab_node_ids.size(),
-            session->tab_node_ids.count(kTabNode1));
+  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
+            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
@@ -743,8 +748,8 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabSameTabId) {
   // GetSession as well as the GetTab.
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab1),
             session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(session->tab_node_ids.size(),
-            session->tab_node_ids.count(kTabNode1));
+  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
+            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
