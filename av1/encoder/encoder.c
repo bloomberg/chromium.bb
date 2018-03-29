@@ -5808,6 +5808,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
     *time_stamp = source->ts_start;
     *time_end = source->ts_end;
+    av1_apply_encoding_flags(cpi, source->flags);
     *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
 
   } else {

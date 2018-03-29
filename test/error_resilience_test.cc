@@ -221,9 +221,7 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
   const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 500;
-  // FIXME(debargha): Fix this to work for any lag.
-  // Currently this test only works for lag = 0
-  cfg_.g_lag_in_frames = 0;
+  cfg_.g_lag_in_frames = 10;
 
   init_flags_ = AOM_CODEC_USE_PSNR;
 
