@@ -90,17 +90,6 @@ class CppFunctionsTest(unittest.TestCase):
 
     """Supports testing functions that do not need CppStyleTestBase."""
 
-    def test_convert_to_lower_with_underscores(self):
-        self.assertEqual(cpp_style._convert_to_lower_with_underscores('ABC'), 'abc')
-        self.assertEqual(cpp_style._convert_to_lower_with_underscores('aB'), 'a_b')
-        self.assertEqual(cpp_style._convert_to_lower_with_underscores('isAName'), 'is_a_name')
-        self.assertEqual(cpp_style._convert_to_lower_with_underscores('AnotherTest'), 'another_test')
-        self.assertEqual(cpp_style._convert_to_lower_with_underscores('_ABC'), '_abc')
-
-    def test_create_acronym(self):
-        self.assertEqual(cpp_style._create_acronym('ABC'), 'ABC')
-        self.assertEqual(cpp_style._create_acronym('IsAName'), 'IAN')
-
     def test_is_c_or_objective_c(self):
         clean_lines = cpp_style.CleansedLines([''])
         clean_objc_lines = cpp_style.CleansedLines(['#import "header.h"'])
@@ -111,42 +100,11 @@ class CppFunctionsTest(unittest.TestCase):
         self.assertFalse(cpp_style._FileState(clean_lines, 'h').is_c_or_objective_c())
         self.assertTrue(cpp_style._FileState(clean_objc_lines, 'h').is_c_or_objective_c())
 
-    def test_parameter(self):
-        # Test type.
-        parameter = cpp_style.Parameter('ExceptionCode', 13, 1)
-        self.assertEqual(parameter.type, 'ExceptionCode')
-        self.assertEqual(parameter.name, '')
-        self.assertEqual(parameter.row, 1)
-
-        # Test type and name.
-        parameter = cpp_style.Parameter('scoped_refptr<MyClass> parent', 22, 1)
-        self.assertEqual(parameter.type, 'scoped_refptr<MyClass>')
-        self.assertEqual(parameter.name, 'parent')
-        self.assertEqual(parameter.row, 1)
-
-        # Test type, no name, with default value.
-        parameter = cpp_style.Parameter('MyClass = 0', 7, 0)
-        self.assertEqual(parameter.type, 'MyClass')
-        self.assertEqual(parameter.name, '')
-        self.assertEqual(parameter.row, 0)
-
-        # Test type, name, and default value.
-        parameter = cpp_style.Parameter('MyClass a = 0', 7, 0)
-        self.assertEqual(parameter.type, 'MyClass')
-        self.assertEqual(parameter.name, 'a')
-        self.assertEqual(parameter.row, 0)
-
     def test_single_line_view(self):
         start_position = cpp_style.Position(row=1, column=1)
         end_position = cpp_style.Position(row=3, column=1)
         single_line_view = cpp_style.SingleLineView(['0', 'abcde', 'fgh', 'i'], start_position, end_position)
         self.assertEqual(single_line_view.single_line, 'bcde fgh i')
-        self.assertEqual(single_line_view.convert_column_to_row(0), 1)
-        self.assertEqual(single_line_view.convert_column_to_row(4), 1)
-        self.assertEqual(single_line_view.convert_column_to_row(5), 2)
-        self.assertEqual(single_line_view.convert_column_to_row(8), 2)
-        self.assertEqual(single_line_view.convert_column_to_row(9), 3)
-        self.assertEqual(single_line_view.convert_column_to_row(100), 3)
 
         start_position = cpp_style.Position(row=0, column=3)
         end_position = cpp_style.Position(row=0, column=4)
@@ -157,64 +115,6 @@ class CppFunctionsTest(unittest.TestCase):
         end_position = cpp_style.Position(row=3, column=2)
         single_line_view = cpp_style.SingleLineView(['""', '""', '""'], start_position, end_position)
         self.assertEqual(single_line_view.single_line, '""')
-
-    def test_create_skeleton_parameters(self):
-        self.assertEqual(cpp_style.create_skeleton_parameters(''), '')
-        self.assertEqual(cpp_style.create_skeleton_parameters(' '), ' ')
-        self.assertEqual(cpp_style.create_skeleton_parameters('long'), 'long,')
-        self.assertEqual(cpp_style.create_skeleton_parameters('const unsigned long int'), '                    int,')
-        self.assertEqual(cpp_style.create_skeleton_parameters('long int*'), '     int ,')
-        self.assertEqual(cpp_style.create_skeleton_parameters('scoped_refptr<Foo> a'), 'scoped_refptr      a,')
-        self.assertEqual(cpp_style.create_skeleton_parameters(
-            'ComplexTemplate<NestedTemplate1<MyClass1, MyClass2>, NestedTemplate1<MyClass1, MyClass2> > param, int second'),
-            'ComplexTemplate                                                                            param, int second,')
-        self.assertEqual(cpp_style.create_skeleton_parameters('int = 0, Namespace::Type& a'), 'int    ,            Type  a,')
-        # Create skeleton parameters is a bit too aggressive with function variables, but
-        # it allows for parsing other parameters and declarations like this are rare.
-        self.assertEqual(cpp_style.create_skeleton_parameters('void (*fn)(int a, int b), Namespace::Type& a'),
-                         'void                    ,            Type  a,')
-
-        # This doesn't look like functions declarations but the simplifications help to eliminate false positives.
-        self.assertEqual(cpp_style.create_skeleton_parameters('b{d}'), 'b   ,')
-
-    def test_find_parameter_name_index(self):
-        self.assertEqual(cpp_style.find_parameter_name_index(' int a '), 5)
-        self.assertEqual(cpp_style.find_parameter_name_index(' scoped_refptr     '), 19)
-        self.assertEqual(cpp_style.find_parameter_name_index('double'), 6)
-
-    def test_parameter_list(self):
-        elided_lines = ['int blah(scoped_refptr<MyClass> paramName,',
-                        'const Other1Class& foo,',
-                        ('const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = '
-                         'new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),'),
-                        'int* myCount = 0);']
-        start_position = cpp_style.Position(row=0, column=8)
-        end_position = cpp_style.Position(row=3, column=16)
-
-        expected_parameters = ({'type': 'scoped_refptr<MyClass>', 'name': 'paramName', 'row': 0},
-                               {'type': 'const Other1Class&', 'name': 'foo', 'row': 1},
-                               {'type': 'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const *',
-                                'name': 'param',
-                                'row': 2},
-                               {'type': 'int*', 'name': 'myCount', 'row': 3})
-        index = 0
-        for parameter in cpp_style.parameter_list(elided_lines, start_position, end_position):
-            expected_parameter = expected_parameters[index]
-            self.assertEqual(parameter.type, expected_parameter['type'])
-            self.assertEqual(parameter.name, expected_parameter['name'])
-            self.assertEqual(parameter.row, expected_parameter['row'])
-            index += 1
-        self.assertEqual(index, len(expected_parameters))
-
-    def test_check_parameter_against_text(self):
-        error_collector = ErrorCollector(self.assertTrue)
-        parameter = cpp_style.Parameter('FooF ooF', 4, 1)
-        self.assertFalse(cpp_style._check_parameter_name_against_text(parameter, 'FooF', error_collector))
-        self.assertEqual(
-            error_collector.results(),
-            'The parameter name "ooF" adds no information, so it should be removed. '
-            'See https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/blink-c++.md'
-            '#Leave-obvious-parameter-names-out-of-function-declarations.  [readability/parameter_name] [5]')
 
 
 class CppStyleTestBase(unittest.TestCase):
@@ -496,97 +396,6 @@ class FunctionDetectionTest(CppStyleTestBase):
 
         # Simple test case with something that is not a function.
         self.perform_function_detection(['class Stuff;'], None)
-
-    def test_parameter_list(self):
-        # A function with no arguments.
-        self.perform_function_detection(
-            ['void functionName();'],
-            {'name': 'functionName',
-             'function_name_start_position': (0, 5),
-             'parameter_start_position': (0, 17),
-             'parameter_end_position': (0, 19),
-             'body_start_position': (0, 19),
-             'end_position': (0, 20),
-             'is_pure': False,
-             'is_declaration': True,
-             'parameter_list': ()})
-
-        # A function with one argument.
-        self.perform_function_detection(
-            ['void functionName(int);'],
-            {'name': 'functionName',
-             'function_name_start_position': (0, 5),
-             'parameter_start_position': (0, 17),
-             'parameter_end_position': (0, 22),
-             'body_start_position': (0, 22),
-             'end_position': (0, 23),
-             'is_pure': False,
-             'is_declaration': True,
-             'parameter_list':
-                 ({'type': 'int', 'name': '', 'row': 0},)})
-
-        # A function with unsigned and short arguments
-        self.perform_function_detection(
-            ['void functionName(unsigned a, short b, long c, long long short unsigned int);'],
-            {'name': 'functionName',
-             'function_name_start_position': (0, 5),
-             'parameter_start_position': (0, 17),
-             'parameter_end_position': (0, 76),
-             'body_start_position': (0, 76),
-             'end_position': (0, 77),
-             'is_pure': False,
-             'is_declaration': True,
-             'parameter_list':
-                 ({'type': 'unsigned', 'name': 'a', 'row': 0},
-                  {'type': 'short', 'name': 'b', 'row': 0},
-                  {'type': 'long', 'name': 'c', 'row': 0},
-                  {'type': 'long long short unsigned int', 'name': '', 'row': 0})})
-
-        # Some parameter type with modifiers and no parameter names.
-        self.perform_function_detection(
-            [
-                'virtual void determineARIADropEffects(Vector<String>*&, '
-                'const unsigned long int*&, const MediaPlayer::Preload, '
-                'Other<Other2, Other3<P1, P2> >, int);'
-            ],
-            {'name': 'determineARIADropEffects',
-             'parameter_start_position': (0, 37),
-             'function_name_start_position': (0, 13),
-             'parameter_end_position': (0, 147),
-             'body_start_position': (0, 147),
-             'end_position': (0, 148),
-             'is_pure': False,
-             'is_declaration': True,
-             'parameter_list':
-                 ({'type': 'Vector<String>*&', 'name': '', 'row': 0},
-                  {'type': 'const unsigned long int*&', 'name': '', 'row': 0},
-                  {'type': 'const MediaPlayer::Preload', 'name': '', 'row': 0},
-                  {'type': 'Other<Other2, Other3<P1, P2> >', 'name': '', 'row': 0},
-                  {'type': 'int', 'name': '', 'row': 0})})
-
-        # Try parsing a function with a very complex definition.
-        self.perform_function_detection(
-            ['#define MyMacro(a) a',
-             'virtual',
-             'AnotherTemplate<Class1, Class2> aFunctionName(scoped_refptr<MyClass> paramName,',
-             'const Other1Class& foo,',
-             ('const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = '
-              'new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),'),
-             'int* myCount = 0);'],
-            {'name': 'aFunctionName',
-             'function_name_start_position': (2, 32),
-             'parameter_start_position': (2, 45),
-             'parameter_end_position': (5, 17),
-             'body_start_position': (5, 17),
-             'end_position': (5, 18),
-             'is_pure': False,
-             'is_declaration': True,
-             'parameter_list':
-                 ({'type': 'scoped_refptr<MyClass>', 'name': 'paramName', 'row': 2},
-                  {'type': 'const Other1Class&', 'name': 'foo', 'row': 3},
-                  {'type': 'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const *', 'name': 'param', 'row': 4},
-                  {'type': 'int*', 'name': 'myCount', 'row': 5})},
-            detection_line=2)
 
 
 class CppStyleTest(CppStyleTestBase):
@@ -2915,71 +2724,6 @@ class WebKitStyleTest(CppStyleTestBase):
             'Use equivalent function in <wtf/ASCIICType.h> instead of the '
             'isascii() function.  [runtime/ctype_function] [4]',
             'foo.cpp')
-
-    def test_parameter_names(self):
-        # Leave meaningless variable names out of function declarations.
-        # This variable name is very long.  # pylint: disable=invalid-name
-        meaningless_variable_name_error_message = (
-            'The parameter name "%s" adds no information, so it should be removed. '
-            'See https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/blink-c++.md'
-            '#Leave-obvious-parameter-names-out-of-function-declarations.  [readability/parameter_name] [5]')
-
-        parameter_error_rules = ('-', '+readability/parameter_name')
-        # No variable name, so no error.
-        self.assertEqual(
-            '',
-            self.perform_lint('void func(int);', 'test.cpp', parameter_error_rules))
-
-        # Verify that copying the name of the set function causes the error (with some odd casing).
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'itemCount',
-            self.perform_lint('void setItemCount(size_t itemCount);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'abcCount',
-            self.perform_lint('void setABCCount(size_t abcCount);', 'test.cpp', parameter_error_rules))
-
-        # Verify that copying a type name will trigger the warning (even if the type is a template parameter).
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'context',
-            self.perform_lint('void funct(scoped_refptr<ScriptExecutionContext> context);', 'test.cpp', parameter_error_rules))
-
-        # Verify that acronyms as variable names trigger the error (for both set functions and type names).
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'ec',
-            self.perform_lint('void setExceptionCode(int ec);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'ec',
-            self.perform_lint('void funct(ExceptionCode ec);', 'test.cpp', parameter_error_rules))
-
-        # 'object' alone, appended, or as part of an acronym is meaningless.
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'object',
-            self.perform_lint('void funct(RenderView object);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'viewObject',
-            self.perform_lint('void funct(RenderView viewObject);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(
-            meaningless_variable_name_error_message % 'rvo',
-            self.perform_lint('void funct(RenderView rvo);', 'test.cpp', parameter_error_rules))
-
-        # Check that r, g, b, and a are allowed.
-        self.assertEqual(
-            '',
-            self.perform_lint('void setRGBAValues(int r, int g, int b, int a);', 'test.cpp', parameter_error_rules))
-
-        # Verify that a simple substring match isn't done which would cause false positives.
-        self.assertEqual(
-            '',
-            self.perform_lint('void setNateLateCount(size_t elate);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(
-            '',
-            self.perform_lint('void funct(NateLate elate);', 'test.cpp', parameter_error_rules))
-
-        # Don't have generate warnings for functions (only declarations).
-        self.assertEqual(
-            '',
-            self.perform_lint(
-                'void funct(scoped_refptr<ScriptExecutionContext> context)\n{\n}\n', 'test.cpp', parameter_error_rules))
 
     def test_redundant_virtual(self):
         self.assert_lint('virtual void fooMethod() override;',
