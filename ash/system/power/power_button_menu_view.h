@@ -21,9 +21,8 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
                                        public views::ButtonListener,
                                        public ui::ImplicitAnimationObserver {
  public:
-  // The duration of showing or dismissing power button menu animation.
-  static constexpr base::TimeDelta kMenuAnimationDuration =
-      base::TimeDelta::FromMilliseconds(250);
+  // The duration of the animation to show or hide the power button menu view.
+  static constexpr int kAnimationTimeoutMs = 500;
 
   // Distance of the menu animation transform.
   static constexpr int kMenuViewTransformDistanceDp = 16;
