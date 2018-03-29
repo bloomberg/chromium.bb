@@ -65,6 +65,9 @@ class ASH_EXPORT ShelfButton : public views::Button {
   // Called when user started dragging the shelf button.
   void OnDragStarted(const ui::LocatedEvent* event);
 
+  // Callback used when a menu for this ShelfButton is closed.
+  void OnMenuClosed();
+
   // Overrides to views::Button:
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
@@ -105,6 +108,9 @@ class ASH_EXPORT ShelfButton : public views::Button {
   // Invoked when |touch_drag_timer_| fires to show dragging UI.
   void OnTouchDragTimer();
 
+  // Invoked when |ripple_activation_timer_| fires to activate the ink drop.
+  void OnRippleTimer();
+
   // Scales up app icon if |scale_up| is true, otherwise scales it back to
   // normal size.
   void ScaleAppIcon(bool scale_up);
@@ -139,6 +145,9 @@ class ASH_EXPORT ShelfButton : public views::Button {
 
   // A timer to defer showing drag UI when the shelf button is pressed.
   base::OneShotTimer drag_timer_;
+
+  // A timer to activate the ink drop ripple during a long press.
+  base::OneShotTimer ripple_activation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfButton);
 };
