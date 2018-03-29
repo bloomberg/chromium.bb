@@ -287,7 +287,6 @@ test("components_unittests") {
   # Desktop-only deps.
   if (!is_android && !is_ios) {
     deps += [
-      "//components/cryptauth:unit_tests",
       "//components/feedback:unit_tests",
 
       # See comment in components/guest_view/browser/BUILD.gn for why
@@ -306,6 +305,7 @@ test("components_unittests") {
   if (is_chromeos) {
     deps += [
       "//components/arc:unit_tests",
+      "//components/cryptauth:unit_tests",
       "//components/ownership:unit_tests",
       "//components/pairing:unit_tests",
       "//components/proximity_auth:unit_tests",
