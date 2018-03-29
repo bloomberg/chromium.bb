@@ -685,6 +685,57 @@ TEST_F('CrExtensionsViewManagerTest', 'EventFiringTest', function() {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
+// Error Console tests
+
+var CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get suiteName() {
+    return 'ErrorConsoleTests';
+  }
+
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/?errors=oehidglfoeondlkoeloailjdmmghacge';
+  }
+
+  /** @override */
+  testGenPreamble() {
+    GEN('  SetDevModeEnabled(true);');
+    GEN('  EnableErrorConsole();');
+    GEN('  InstallErrorsExtension();');
+  }
+
+  /** @override */
+  testGenPostamble() {
+    GEN('  SetDevModeEnabled(false);');  // Return this to default.
+  }
+};
+
+TEST_F('CrExtensionsErrorConsoleTest', 'TestUpDownErrors', function() {
+  const STACK_ERRORS = '* /deep/ li';
+  const ACTIVE_ERROR_IN_STACK = '* /deep/ li[tabindex="0"]';
+
+  let initialFocus = document.querySelector(ACTIVE_ERROR_IN_STACK);
+  assertTrue(!!initialFocus);
+  assertEquals(1, document.querySelectorAll(ACTIVE_ERROR_IN_STACK).length);
+  assertEquals(4, document.querySelectorAll(STACK_ERRORS).length);
+
+  // Pressing up when the first item is focused should NOT change focus.
+  MockInteractions.keyDownOn(initialFocus, 38, '', 'ArrowUp');
+  assertEquals(initialFocus, document.querySelector(ACTIVE_ERROR_IN_STACK));
+
+  // Pressing down when the first item is focused should change focus.
+  MockInteractions.keyDownOn(initialFocus, 40, '', 'ArrowDown');
+  assertNotEquals(initialFocus, document.querySelector(ACTIVE_ERROR_IN_STACK));
+
+  // Pressing up when the second item is focused should focus the first again.
+  MockInteractions.keyDownOn(initialFocus, 38, '', 'ArrowUp');
+  assertEquals(initialFocus, document.querySelector(ACTIVE_ERROR_IN_STACK));
+
+  testDone();
+});
+
+////////////////////////////////////////////////////////////////////////////////
 // extensions-toggle-row tests.
 
 var CrExtensionsToggleRowTest = class extends CrExtensionsBrowserTest {

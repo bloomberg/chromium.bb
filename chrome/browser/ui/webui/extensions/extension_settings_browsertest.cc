@@ -46,6 +46,8 @@ void ExtensionSettingsUIBrowserTest::InstallErrorsExtension() {
   EXPECT_TRUE(
       InstallExtension(test_data_dir_.AppendASCII("error_console")
                            .AppendASCII("runtime_and_manifest_errors")));
+  EXPECT_TRUE(InstallExtension(test_data_dir_.AppendASCII("error_console")
+                                   .AppendASCII("deep_stack_trace")));
 }
 
 void ExtensionSettingsUIBrowserTest::InstallSharedModule() {

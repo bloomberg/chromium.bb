@@ -226,9 +226,12 @@
                       <div class="details-heading">
                         $i18n{stackTrace}
                       </div>
-                      <ul class="stack-trace-container">
+                      <ul class="stack-trace-container"
+                          on-keydown="onStackKeydown_">
                         <template is="dom-repeat" items="[[item.stackTrace]]">
                           <li on-click="onStackFrameTap_"
+                              tabindex$="[[getStackFrameTabIndex_(item,
+                                  selectedStackFrame_)]]"
                               hidden="[[!shouldDisplayFrame_(item.url)]]"
                               class$="[[getStackFrameClass_(item,
                                   selectedStackFrame_)]]">
