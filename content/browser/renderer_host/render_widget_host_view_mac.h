@@ -290,6 +290,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnNSViewWindowFrameInScreenChanged(
       const gfx::Rect& window_frame_in_screen_dip) override;
   void OnNSViewDisplayChanged(const display::Display& display) override;
+  void OnNSViewRouteOrProcessMouseEvent(
+      const blink::WebMouseEvent& web_event) override;
+  void OnNSViewRouteOrProcessWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) override;
+  void OnNSViewForwardMouseEvent(
+      const blink::WebMouseEvent& web_event) override;
+  void OnNSViewForwardWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;

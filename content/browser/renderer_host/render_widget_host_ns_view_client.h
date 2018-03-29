@@ -49,6 +49,18 @@ class RenderWidgetHostNSViewClient {
   // Indicate the NSView's NSScreen's properties.
   virtual void OnNSViewDisplayChanged(const display::Display& display) = 0;
 
+  // Forward events to the renderer or the input router, as appropriate.
+  virtual void OnNSViewRouteOrProcessMouseEvent(
+      const blink::WebMouseEvent& web_event) = 0;
+  virtual void OnNSViewRouteOrProcessWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) = 0;
+
+  // Special case forwarding of synthetic events to the renderer.
+  virtual void OnNSViewForwardMouseEvent(
+      const blink::WebMouseEvent& web_event) = 0;
+  virtual void OnNSViewForwardWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClient);
 };
