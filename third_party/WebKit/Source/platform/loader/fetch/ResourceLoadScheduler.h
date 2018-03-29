@@ -6,11 +6,11 @@
 #define ResourceLoadScheduler_h
 
 #include <set>
-#include "platform/FrameScheduler.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {

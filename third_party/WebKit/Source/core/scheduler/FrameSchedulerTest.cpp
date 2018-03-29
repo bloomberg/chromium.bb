@@ -5,7 +5,7 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
-#include "platform/FrameScheduler.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ElementsAre;

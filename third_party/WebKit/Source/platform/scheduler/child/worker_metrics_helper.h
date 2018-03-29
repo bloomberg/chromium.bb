@@ -7,7 +7,7 @@
 
 #include "platform/scheduler/child/metrics_helper.h"
 #include "platform/scheduler/child/worker_task_queue.h"
-#include "platform/scheduler/renderer/frame_origin_type.h"
+#include "platform/scheduler/main_thread/frame_origin_type.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
 #include "public/platform/TaskType.h"
 

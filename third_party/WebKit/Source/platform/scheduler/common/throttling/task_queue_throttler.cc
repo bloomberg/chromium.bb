@@ -12,7 +12,7 @@
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/common/throttling/budget_pool.h"
 #include "platform/scheduler/common/throttling/throttled_time_domain.h"
-#include "platform/scheduler/renderer/frame_scheduler_impl.h"
+#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace blink {

@@ -5,11 +5,11 @@
 #ifndef MockFetchContext_h
 #define MockFetchContext_h
 
-#include "platform/FrameScheduler.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/scheduler/test/fake_frame_scheduler.h"
 #include "platform/scheduler/test/fake_task_runner.h"
 #include "platform/wtf/Optional.h"

@@ -5,7 +5,7 @@
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
 
 #include "platform/scheduler/child/worker_scheduler_impl.h"
-#include "platform/scheduler/renderer/frame_scheduler_impl.h"
+#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {

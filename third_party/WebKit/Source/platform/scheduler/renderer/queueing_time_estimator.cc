@@ -5,7 +5,7 @@
 #include "platform/scheduler/renderer/queueing_time_estimator.h"
 
 #include "base/memory/ptr_util.h"
-#include "platform/FrameScheduler.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 
 #include <algorithm>
 #include <map>

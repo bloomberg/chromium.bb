@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/frame_origin_type.h"
+#include "platform/scheduler/main_thread/frame_origin_type.h"
 
 #include "base/macros.h"
-#include "platform/FrameScheduler.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
 namespace scheduler {

@@ -31,7 +31,6 @@
 #ifndef FetchContext_h
 #define FetchContext_h
 
-#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
@@ -41,6 +40,7 @@
 #include "platform/loader/fetch/ResourceLoadScheduler.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"

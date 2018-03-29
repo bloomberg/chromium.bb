@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_SCHEDULER_IMPL_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_SCHEDULER_IMPL_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_SCHEDULER_IMPL_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_SCHEDULER_IMPL_H_
 
 #include <memory>
 
@@ -11,12 +11,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
-#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
-#include "platform/scheduler/renderer/frame_origin_type.h"
+#include "platform/scheduler/main_thread/frame_origin_type.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
 namespace base {
@@ -184,4 +184,4 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_SCHEDULER_IMPL_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_SCHEDULER_IMPL_H_

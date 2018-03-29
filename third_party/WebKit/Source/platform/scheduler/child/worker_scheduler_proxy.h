@@ -9,10 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/child/page_visibility_state.h"
-#include "platform/scheduler/renderer/frame_origin_type.h"
+#include "platform/scheduler/main_thread/frame_origin_type.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/wtf/WTF.h"
 
 namespace blink {

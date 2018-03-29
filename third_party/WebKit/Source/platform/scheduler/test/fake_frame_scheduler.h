@@ -7,8 +7,8 @@
 
 #include <deque>
 
-#include "platform/FrameScheduler.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 
 namespace blink {

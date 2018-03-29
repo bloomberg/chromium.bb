@@ -9,7 +9,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/FrameScheduler.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/fake_frame_scheduler.h"
 #include "platform/scheduler/test/fake_page_scheduler.h"

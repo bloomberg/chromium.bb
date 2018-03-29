@@ -28,7 +28,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/script/ScriptElementBase.h"
-#include "platform/FrameScheduler.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/wtf/Time.h"
 
 namespace blink {
