@@ -559,46 +559,6 @@ PositionInFlatTree PreviousBoundary(
 
 // ---------
 
-VisiblePosition StartOfBlock(const VisiblePosition& visible_position,
-                             EditingBoundaryCrossingRule rule) {
-  DCHECK(visible_position.IsValid()) << visible_position;
-  Position position = visible_position.DeepEquivalent();
-  Element* start_block =
-      position.ComputeContainerNode()
-          ? EnclosingBlock(position.ComputeContainerNode(), rule)
-          : nullptr;
-  return start_block ? VisiblePosition::FirstPositionInNode(*start_block)
-                     : VisiblePosition();
-}
-
-VisiblePosition EndOfBlock(const VisiblePosition& visible_position,
-                           EditingBoundaryCrossingRule rule) {
-  DCHECK(visible_position.IsValid()) << visible_position;
-  Position position = visible_position.DeepEquivalent();
-  Element* end_block =
-      position.ComputeContainerNode()
-          ? EnclosingBlock(position.ComputeContainerNode(), rule)
-          : nullptr;
-  return end_block ? VisiblePosition::LastPositionInNode(*end_block)
-                   : VisiblePosition();
-}
-
-bool IsStartOfBlock(const VisiblePosition& pos) {
-  DCHECK(pos.IsValid()) << pos;
-  return pos.IsNotNull() &&
-         pos.DeepEquivalent() ==
-             StartOfBlock(pos, kCanCrossEditingBoundary).DeepEquivalent();
-}
-
-bool IsEndOfBlock(const VisiblePosition& pos) {
-  DCHECK(pos.IsValid()) << pos;
-  return pos.IsNotNull() &&
-         pos.DeepEquivalent() ==
-             EndOfBlock(pos, kCanCrossEditingBoundary).DeepEquivalent();
-}
-
-// ---------
-
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> StartOfDocumentAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {

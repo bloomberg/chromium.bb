@@ -227,16 +227,6 @@ bool InSameParagraph(const VisiblePosition&,
                      EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
 EphemeralRange ExpandToParagraphBoundary(const EphemeralRange&);
 
-// blocks (true paragraphs; line break elements don't break blocks)
-VisiblePosition StartOfBlock(
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
-VisiblePosition EndOfBlock(
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
-bool IsStartOfBlock(const VisiblePosition&);
-bool IsEndOfBlock(const VisiblePosition&);
-
 // document
 CORE_EXPORT VisiblePosition StartOfDocument(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInFlatTree
