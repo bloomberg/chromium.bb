@@ -14,6 +14,7 @@
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/predictors/glowplug_key_value_table.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,7 +36,8 @@ class GlowplugKeyValueData {
  public:
   GlowplugKeyValueData(scoped_refptr<ResourcePrefetchPredictorTables> tables,
                        GlowplugKeyValueTable<T>* backend,
-                       size_t max_size);
+                       size_t max_size,
+                       base::TimeDelta flush_delay);
 
   // Must be called on the DB sequence of the ResourcePrefetchPredictorTables
   // before calling all other methods.
@@ -66,9 +68,16 @@ class GlowplugKeyValueData {
     }
   };
 
+  enum class DeferredOperation { kUpdate, kDelete };
+
+  void FlushDataToDisk();
+
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
   GlowplugKeyValueTable<T>* backend_table_;
   std::unique_ptr<std::map<std::string, T>> data_cache_;
+  std::unordered_map<std::string, DeferredOperation> deferred_updates_;
+  base::RepeatingTimer flush_timer_;
+  const base::TimeDelta flush_delay_;
   const size_t max_size_;
   EntryCompare entry_compare_;
 
@@ -79,10 +88,11 @@ template <typename T, typename Compare>
 GlowplugKeyValueData<T, Compare>::GlowplugKeyValueData(
     scoped_refptr<ResourcePrefetchPredictorTables> tables,
     GlowplugKeyValueTable<T>* backend,
-    size_t max_size)
+    size_t max_size,
+    base::TimeDelta flush_delay)
     : tables_(tables),
       backend_table_(backend),
-      data_cache_(),
+      flush_delay_(flush_delay),
       max_size_(max_size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
@@ -136,21 +146,22 @@ void GlowplugKeyValueData<T, Compare>::UpdateData(const std::string& key,
     if (data_cache_->size() == max_size_) {
       auto entry_to_delete = std::min_element(
           data_cache_->begin(), data_cache_->end(), entry_compare_);
-      const std::string& key_to_delete = entry_to_delete->first;
-      tables_->ScheduleDBTask(
-          FROM_HERE, base::BindOnce(&GlowplugKeyValueTable<T>::DeleteData,
-                                    base::Unretained(backend_table_),
-                                    std::vector<std::string>({key_to_delete})));
+      deferred_updates_[entry_to_delete->first] = DeferredOperation::kDelete;
       data_cache_->erase(entry_to_delete);
     }
     data_cache_->emplace(key, data);
   } else {
     it->second = data;
   }
+  deferred_updates_[key] = DeferredOperation::kUpdate;
 
-  tables_->ScheduleDBTask(
-      FROM_HERE, base::BindOnce(&GlowplugKeyValueTable<T>::UpdateData,
-                                base::Unretained(backend_table_), key, data));
+  if (flush_delay_.is_zero()) {
+    // Flush immediately, only for tests.
+    FlushDataToDisk();
+  } else if (!flush_timer_.IsRunning()) {
+    flush_timer_.Start(FROM_HERE, flush_delay_, this,
+                       &GlowplugKeyValueData::FlushDataToDisk);
+  }
 }
 
 template <typename T, typename Compare>
@@ -158,15 +169,14 @@ void GlowplugKeyValueData<T, Compare>::DeleteData(
     const std::vector<std::string>& keys) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(data_cache_);
-  std::vector<std::string> keys_found;
   for (const std::string& key : keys) {
     if (data_cache_->erase(key))
-      keys_found.emplace_back(key);
+      deferred_updates_[key] = DeferredOperation::kDelete;
   }
 
-  tables_->ScheduleDBTask(
-      FROM_HERE, base::BindOnce(&GlowplugKeyValueTable<T>::DeleteData,
-                                base::Unretained(backend_table_), keys_found));
+  // Run all deferred updates immediately because it was requested by user.
+  if (!deferred_updates_.empty())
+    FlushDataToDisk();
 }
 
 template <typename T, typename Compare>
@@ -174,9 +184,47 @@ void GlowplugKeyValueData<T, Compare>::DeleteAllData() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(data_cache_);
   data_cache_->clear();
+  deferred_updates_.clear();
+  // Delete all the content of the database immediately because it was requested
+  // by user.
   tables_->ScheduleDBTask(
       FROM_HERE, base::BindOnce(&GlowplugKeyValueTable<T>::DeleteAllData,
                                 base::Unretained(backend_table_)));
+}
+
+template <typename T, typename Compare>
+void GlowplugKeyValueData<T, Compare>::FlushDataToDisk() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (deferred_updates_.empty())
+    return;
+
+  std::vector<std::string> keys_to_delete;
+  for (const auto& entry : deferred_updates_) {
+    const std::string& key = entry.first;
+    switch (entry.second) {
+      case DeferredOperation::kUpdate: {
+        auto it = data_cache_->find(key);
+        if (it != data_cache_->end()) {
+          tables_->ScheduleDBTask(
+              FROM_HERE, base::BindOnce(&GlowplugKeyValueTable<T>::UpdateData,
+                                        base::Unretained(backend_table_), key,
+                                        it->second));
+        }
+        break;
+      }
+      case DeferredOperation::kDelete:
+        keys_to_delete.push_back(key);
+    }
+  }
+
+  if (!keys_to_delete.empty()) {
+    tables_->ScheduleDBTask(
+        FROM_HERE,
+        base::BindOnce(&GlowplugKeyValueTable<T>::DeleteData,
+                       base::Unretained(backend_table_), keys_to_delete));
+  }
+
+  deferred_updates_.clear();
 }
 
 }  // namespace predictors
