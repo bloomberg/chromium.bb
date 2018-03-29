@@ -27,7 +27,11 @@ constexpr ui::LayerAnimationElement::AnimatableProperties
 
 // Maximum number of times that MaybeComputeOcclusion() should have to recompute
 // occlusion states before they become stable.
-constexpr int kMaxRecomputeOcclusion = 2;
+//
+// TODO(fdoray): This can be changed to 2 once showing/hiding a WebContents
+// doesn't cause a call to Show()/Hide() on the aura::Window of a
+// RenderWidgetHostViewAura. https://crbug.com/827268
+constexpr int kMaxRecomputeOcclusion = 3;
 
 WindowOcclusionTracker* g_tracker = nullptr;
 

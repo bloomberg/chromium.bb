@@ -1426,21 +1426,21 @@ class WindowDelegateChangingWindowVisibility : public MockWindowDelegate {
     if (!window_to_update_)
       return;
 
+    ++num_occlusion_change_;
+
     if (window_to_update_->IsVisible()) {
       window_to_update_->Hide();
-      EXPECT_FALSE(did_set_expectation_from_occlusion_changed_);
-      set_expectation(Window::OcclusionState::HIDDEN);
-      did_set_expectation_from_occlusion_changed_ = true;
+      if (num_occlusion_change_ <= 3)
+        set_expectation(Window::OcclusionState::HIDDEN);
     } else {
       window_to_update_->Show();
-      if (!did_set_expectation_from_occlusion_changed_)
         set_expectation(Window::OcclusionState::VISIBLE);
     }
   }
 
  private:
   Window* window_to_update_ = nullptr;
-  bool did_set_expectation_from_occlusion_changed_ = false;
+  int num_occlusion_change_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WindowDelegateChangingWindowVisibility);
 };
