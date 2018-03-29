@@ -989,6 +989,11 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect viewport_intersection_;
   gfx::Rect compositor_visible_rect_;
 
+  // Cache whether or not we have touch handlers, to reduce IPCs sent.
+  // Different consumers in the browser process makes different assumptions, so
+  // must always send the first IPC regardless of value.
+  base::Optional<bool> has_touch_handlers_;
+
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);

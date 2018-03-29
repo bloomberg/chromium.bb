@@ -2031,33 +2031,42 @@ class SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled
 
 IN_PROC_BROWSER_TEST_P(
     SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled,
-    SubframeWheelEventsOnMainThread) {
+    MultipleSubframeWheelEventsOnMainThread) {
   GURL main_url(embedded_test_server()->GetURL(
-      "/frame_tree/page_with_positioned_nested_frames.html"));
+      "/frame_tree/page_with_two_positioned_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(2U, root->child_count());
 
   GURL frame_url(embedded_test_server()->GetURL(
       "b.com", "/page_with_scrollable_div.html"));
+  // To test for https://bugs.chromium.org/p/chromium/issues/detail?id=820232
+  // it's important that both subframes are in the same renderer process, so
+  // we load the same URL in each case.
   NavigateFrameToURL(root->child_at(0), frame_url);
+  NavigateFrameToURL(root->child_at(1), frame_url);
 
-  // Synchronize with the child and parent renderers to guarantee that the
-  // surface information required for event hit testing is ready.
-  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
-      root->child_at(0)->current_frame_host()->GetView());
+  for (int frame_index = 0; frame_index < 2; frame_index++) {
+    // Synchronize with the child and parent renderers to guarantee that the
+    // surface information required for event hit testing is ready.
+    RenderWidgetHostViewBase* child_rwhv =
+        static_cast<RenderWidgetHostViewBase*>(
+            root->child_at(frame_index)->current_frame_host()->GetView());
 
-  EXPECT_FALSE(child_rwhv->wheel_scroll_latching_enabled());
-  WaitForChildFrameSurfaceReady(root->child_at(0)->current_frame_host());
+    EXPECT_FALSE(child_rwhv->wheel_scroll_latching_enabled());
+    WaitForChildFrameSurfaceReady(
+        root->child_at(frame_index)->current_frame_host());
 
-  content::RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
-  SetupWheelAndScrollHandlers(child);
+    content::RenderFrameHostImpl* child =
+        root->child_at(frame_index)->current_frame_host();
+    SetupWheelAndScrollHandlers(child);
 
-  gfx::Rect bounds = child_rwhv->GetViewBounds();
-  gfx::Point pos(bounds.x() + 10, bounds.y() + 10);
+    gfx::Rect bounds = child_rwhv->GetViewBounds();
+    gfx::Point pos(bounds.x() + 10, bounds.y() + 10);
 
-  RunTest(pos, child_rwhv);
+    RunTest(pos, child_rwhv);
+  }
 }
 
 // Verifies that test in SubframeWheelEventsOnMainThread also makes sense for

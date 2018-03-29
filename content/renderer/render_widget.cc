@@ -2535,6 +2535,10 @@ void RenderWidget::SetHandlingInputEventForTesting(bool handling_input_event) {
 }
 
 void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
+  if (has_touch_handlers_ && *has_touch_handlers_ == has_handlers)
+    return;
+
+  has_touch_handlers_ = has_handlers;
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHasTouchHandler(has_handlers);
   Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
