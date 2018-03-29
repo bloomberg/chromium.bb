@@ -571,7 +571,11 @@ void SplitViewDragIndicators::SetIndicatorState(
 }
 
 void SplitViewDragIndicators::OnDisplayBoundsChanged() {
-  indicators_view_->Layout();
+  aura::Window* root_window = widget_->GetNativeView()->GetRootWindow();
+  gfx::Rect bounds = screen_util::GetDisplayWorkAreaBoundsInParent(
+      root_window->GetChildById(kShellWindowId_OverlayContainer));
+  ::wm::ConvertRectToScreen(root_window, &bounds);
+  widget_->SetBounds(bounds);
 }
 
 bool SplitViewDragIndicators::GetIndicatorTypeVisibilityForTesting(
