@@ -81,18 +81,10 @@ bool ReadTemporalUnit(InputContext *ctx, size_t *unit_size) {
     }
 #if CONFIG_WEBM_IO
     case FILE_TYPE_WEBM: {
-      size_t frame_size = ctx->unit_buffer_size;
-      if (webm_read_frame(ctx->webm_ctx, &ctx->unit_buffer, &frame_size)) {
+      if (webm_read_frame(ctx->webm_ctx, &ctx->unit_buffer, unit_size,
+                          &ctx->unit_buffer_size)) {
         return false;
       }
-
-      if (frame_size != ctx->unit_buffer_size &&
-          frame_size > ctx->unit_buffer_size) {
-        // webmdec realloc'd the buffer, store new size.
-        ctx->unit_buffer_size = frame_size;
-      }
-
-      *unit_size = frame_size;
       break;
     }
 #endif

@@ -118,7 +118,7 @@ int file_is_webm(struct WebmInputContext *webm_ctx,
 }
 
 int webm_read_frame(struct WebmInputContext *webm_ctx, uint8_t **buffer,
-                    size_t *buffer_size) {
+                    size_t *bytes_read, size_t *buffer_size) {
   // This check is needed for frame parallel decoding, in which case this
   // function could be called even after it has reached end of input stream.
   if (webm_ctx->reached_eos) {
@@ -142,7 +142,7 @@ int webm_read_frame(struct WebmInputContext *webm_ctx, uint8_t **buffer,
     } else if (block_entry_eos || block_entry->EOS()) {
       cluster = segment->GetNext(cluster);
       if (cluster == NULL || cluster->EOS()) {
-        *buffer_size = 0;
+        *bytes_read = 0;
         webm_ctx->reached_eos = 1;
         return 1;
       }
@@ -184,8 +184,9 @@ int webm_read_frame(struct WebmInputContext *webm_ctx, uint8_t **buffer,
       return -1;
     }
     webm_ctx->buffer = *buffer;
+    *buffer_size = frame.len;
   }
-  *buffer_size = frame.len;
+  *bytes_read = frame.len;
   webm_ctx->timestamp_ns = block->GetTime(cluster);
   webm_ctx->is_key_frame = block->IsKey();
 
@@ -199,8 +200,9 @@ int webm_guess_framerate(struct WebmInputContext *webm_ctx,
   uint32_t i = 0;
   uint8_t *buffer = NULL;
   size_t buffer_size = 0;
+  size_t bytes_read = 0;
   while (webm_ctx->timestamp_ns < 1000000000 && i < 50) {
-    if (webm_read_frame(webm_ctx, &buffer, &buffer_size)) {
+    if (webm_read_frame(webm_ctx, &buffer, &bytes_read, &buffer_size)) {
       break;
     }
     ++i;

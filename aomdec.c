@@ -238,7 +238,8 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
   switch (input->aom_input_ctx->file_type) {
 #if CONFIG_WEBM_IO
     case FILE_TYPE_WEBM:
-      return webm_read_frame(input->webm_ctx, buf, bytes_in_buffer);
+      return webm_read_frame(input->webm_ctx, buf, bytes_in_buffer,
+                             buffer_size);
 #endif
     case FILE_TYPE_RAW:
       return raw_read_frame(input->aom_input_ctx->file, buf, bytes_in_buffer,
