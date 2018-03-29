@@ -52,22 +52,22 @@ static bool IsEastAsianWidthWide(UChar32 c, const ComputedStyle* style) {
 // CSS Text, Segment Break Transformation Rules
 // https://drafts.csswg.org/css-text-3/#line-break-transform
 static bool ShouldRemoveNewlineSlow(const StringBuilder& before,
+                                    unsigned space_index,
                                     const ComputedStyle* before_style,
-                                    const String& after,
-                                    unsigned after_index,
+                                    const StringView& after,
                                     const ComputedStyle* after_style) {
   // Remove if either before/after the newline is zeroWidthSpaceCharacter.
   UChar32 last = 0;
-  DCHECK(!before.IsEmpty());
-  DCHECK_EQ(before[before.length() - 1], ' ');
-  if (before.length() >= 2) {
-    last = before[before.length() - 2];
+  DCHECK(space_index == before.length() ||
+         (space_index < before.length() && before[space_index] == ' '));
+  if (space_index) {
+    last = before[space_index - 1];
     if (last == kZeroWidthSpaceCharacter)
       return true;
   }
   UChar32 next = 0;
-  if (after_index < after.length()) {
-    next = after[after_index];
+  if (!after.IsEmpty()) {
+    next = after[0];
     if (next == kZeroWidthSpaceCharacter)
       return true;
   }
@@ -77,14 +77,14 @@ static bool ShouldRemoveNewlineSlow(const StringBuilder& before,
     return false;
 
   // Remove if East Asian Widths of both before/after the newline are Wide.
-  if (U16_IS_TRAIL(last) && before.length() >= 2) {
-    UChar last_last = before[before.length() - 2];
+  if (U16_IS_TRAIL(last) && space_index >= 2) {
+    UChar last_last = before[space_index - 2];
     if (U16_IS_LEAD(last_last))
       last = U16_GET_SUPPLEMENTARY(last_last, last);
   }
   if (IsEastAsianWidthWide(last, before_style)) {
-    if (U16_IS_LEAD(next) && after_index + 1 < after.length()) {
-      UChar next_next = after[after_index + 1];
+    if (U16_IS_LEAD(next) && after.length() > 1) {
+      UChar next_next = after[1];
       if (U16_IS_TRAIL(next_next))
         next = U16_GET_SUPPLEMENTARY(next, next_next);
     }
@@ -96,13 +96,13 @@ static bool ShouldRemoveNewlineSlow(const StringBuilder& before,
 }
 
 static bool ShouldRemoveNewline(const StringBuilder& before,
+                                unsigned space_index,
                                 const ComputedStyle* before_style,
-                                const String& after,
-                                unsigned after_index,
+                                const StringView& after,
                                 const ComputedStyle* after_style) {
   // All characters before/after removable newline are 16 bits.
   return (!before.Is8Bit() || !after.Is8Bit()) &&
-         ShouldRemoveNewlineSlow(before, before_style, after, after_index,
+         ShouldRemoveNewlineSlow(before, space_index, before_style, after,
                                  after_style);
 }
 
@@ -112,7 +112,6 @@ static void AppendItem(Vector<NGInlineItem>* items,
                        unsigned end,
                        const ComputedStyle* style = nullptr,
                        LayoutObject* layout_object = nullptr) {
-  DCHECK(items->IsEmpty() || items->back().EndOffset() == start);
   items->push_back(NGInlineItem(type, start, end, style, layout_object));
 }
 
@@ -141,6 +140,36 @@ static inline bool IsControlItemCharacter(UChar c) {
          ShouldIgnore(c);
 }
 
+// Find the end of the collapsible spaces.
+// Returns whether this space run contains a newline or not, because it changes
+// the collapsing behavior.
+static inline bool MoveToEndOfCollapsibleSpaces(const StringView& string,
+                                                unsigned* offset,
+                                                UChar* c) {
+  DCHECK_EQ(*c, string[*offset]);
+  DCHECK(IsCollapsibleSpace(*c));
+  bool space_run_has_newline = *c == kNewlineCharacter;
+  for ((*offset)++; *offset < string.length(); (*offset)++) {
+    *c = string[*offset];
+    space_run_has_newline |= *c == kNewlineCharacter;
+    if (!IsCollapsibleSpace(*c))
+      break;
+  }
+  return space_run_has_newline;
+}
+
+// Find the last item to compute collapsing with. Opaque items such as
+// open/close or bidi controls are ignored.
+// Returns nullptr if there were no previous items.
+static NGInlineItem* LastItemToCollapseWith(Vector<NGInlineItem>* items) {
+  for (auto it = items->rbegin(); it != items->rend(); it++) {
+    NGInlineItem& item = *it;
+    if (item.EndCollapseType() != NGInlineItem::kOpaqueToCollapsing)
+      return &item;
+  }
+  return nullptr;
+}
+
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     const String& string,
@@ -153,9 +182,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
                                                        layout_object);
 
-  last_auto_wrap_ = auto_wrap_;
   EWhiteSpace whitespace = style->WhiteSpace();
-  auto_wrap_ = ComputedStyle::AutoWrap(whitespace);
   bool is_svg_text = layout_object && layout_object->IsSVGInlineText();
 
   if (!ComputedStyle::CollapseWhiteSpace(whitespace))
@@ -163,82 +190,191 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   else if (ComputedStyle::PreserveNewline(whitespace) && !is_svg_text)
     AppendPreserveNewline(string, style, layout_object);
   else
-    AppendCollapseWhitespace(string, 0, string.length(), style, layout_object);
+    AppendCollapseWhitespace(string, style, layout_object);
 }
 
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<
-    OffsetMappingBuilder>::AppendCollapseWhitespace(const String& string,
-                                                    unsigned start,
-                                                    unsigned end,
+    OffsetMappingBuilder>::AppendCollapseWhitespace(const StringView string,
                                                     const ComputedStyle* style,
                                                     LayoutText* layout_object) {
-  DCHECK_GT(end, start);
+  DCHECK(!string.IsEmpty());
 
-  // Collapsed spaces are "zero advance width, invisible, but retains its soft
-  // wrap opportunity". When the first collapsible space was in 'nowrap',
-  // following collapsed spaces should create a break opportunity.
-  // https://drafts.csswg.org/css-text-3/#collapse
-  if (last_collapsible_space_ != CollapsibleSpace::kNone && !last_auto_wrap_ &&
-      auto_wrap_ && IsCollapsibleSpace(string[start])) {
-    typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
-                                                         nullptr);
-    AppendBreakOpportunity(style, nullptr);
-    last_collapsible_space_ = CollapsibleSpace::kSpace;
+  // This algorithm segments the input string at the collapsible space, and
+  // process collapsible space run and non-space run alternately.
+
+  // The first run, regardless it is a collapsible space run or not, is special
+  // that it can interact with the last item. Depends on the end of the last
+  // item, it may either change collapsing behavior to collapse the leading
+  // spaces of this item entirely, or remove the trailing spaces of the last
+  // item.
+
+  // Due to this difference, this algorithm process the first run first, then
+  // loop through the rest of runs.
+
+  unsigned start_offset;
+  NGInlineItem::NGCollapseType end_collapse = NGInlineItem::kNotCollapsible;
+  unsigned i = 0;
+  UChar c = string[i];
+  if (IsCollapsibleSpace(c)) {
+    // Find the end of the collapsible space run.
+    bool space_run_has_newline = MoveToEndOfCollapsibleSpaces(string, &i, &c);
+
+    // LayoutBR does not set preserve_newline, but should be preserved.
+    if (UNLIKELY(space_run_has_newline && string.length() == 1 &&
+                 layout_object && layout_object->IsBR())) {
+      AppendForcedBreakCollapseWhitespace(style, layout_object);
+      return;
+    }
+
+    // Check the last item this space run may be collapsed with.
+    bool insert_space;
+    if (NGInlineItem* item = LastItemToCollapseWith(items_)) {
+      if (item->EndCollapseType() == NGInlineItem::kNotCollapsible) {
+        // The last item does not end with a collapsible space.
+        // Insert a space to represent this space run.
+        insert_space = true;
+      } else {
+        // The last item ends with a collapsible space this run should collapse
+        // to. Collapse the entire space run in this item.
+        DCHECK(item->EndCollapseType() == NGInlineItem::kCollapsibleSpace ||
+               item->EndCollapseType() == NGInlineItem::kCollapsibleNewline);
+        insert_space = false;
+
+        // If the space run either in this item or in the last item contains a
+        // newline, apply segment break rules. This may result in removal of
+        // the space in the last item.
+        if ((space_run_has_newline ||
+             item->EndCollapseType() == NGInlineItem::kCollapsibleNewline) &&
+            item->Type() == NGInlineItem::kText &&
+            ShouldRemoveNewline(text_, item->EndOffset() - 1, item->Style(),
+                                StringView(string, i), style)) {
+          RemoveTrailingCollapsibleSpace(item);
+          space_run_has_newline = false;
+        } else if (!item->Style()->AutoWrap() && style->AutoWrap()) {
+          // Otherwise, remove the space run entirely, collapsing to the space
+          // in the last item.
+
+          // There is a special case to generate a break opportunity though.
+          // Spec-wise, collapsed spaces are "zero advance width, invisible,
+          // but retains its soft wrap opportunity".
+          // https://drafts.csswg.org/css-text-3/#collapse
+          // In most cases, this is not needed and that collapsed spaces are
+          // removed entirely. However, when the first collapsible space is
+          // 'nowrap', and the following collapsed space is 'wrap', the
+          // collapsed space needs to create a break opportunity.
+          typename OffsetMappingBuilder::SourceNodeScope scope(
+              &mapping_builder_, nullptr);
+          AppendBreakOpportunity(style, nullptr);
+        }
+      }
+    } else {
+      // This space is at the beginning of the paragraph. Remove leading spaces
+      // as CSS requires.
+      insert_space = false;
+    }
+
+    // If this space run contains a newline, apply segment break rules.
+    if (space_run_has_newline &&
+        ShouldRemoveNewline(text_, text_.length(), style, StringView(string, i),
+                            style)) {
+      insert_space = space_run_has_newline = false;
+    }
+
+    // Done computing the interaction with the last item. Start appending.
+    start_offset = text_.length();
+
+    DCHECK(i);
+    unsigned collapsed_length = i;
+    if (insert_space) {
+      text_.Append(kSpaceCharacter);
+      mapping_builder_.AppendIdentityMapping(1);
+      collapsed_length--;
+    }
+    if (collapsed_length)
+      mapping_builder_.AppendCollapsedMapping(collapsed_length);
+
+    // If this space run is at the end of this item, keep whether the
+    // collapsible space run has a newline or not in the item.
+    if (i == string.length()) {
+      end_collapse = space_run_has_newline ? NGInlineItem::kCollapsibleNewline
+                                           : NGInlineItem::kCollapsibleSpace;
+    }
+  } else {
+    // If the last item ended with a collapsible space run with segment breaks,
+    // apply segment break rules. This may result in removal of the space in the
+    // last item.
+    if (NGInlineItem* item = LastItemToCollapseWith(items_)) {
+      if (item->EndCollapseType() == NGInlineItem::kCollapsibleNewline &&
+          ShouldRemoveNewline(text_, item->EndOffset() - 1, item->Style(),
+                              string, style)) {
+        RemoveTrailingCollapsibleSpace(item);
+      }
+    }
+
+    start_offset = text_.length();
   }
 
-  unsigned start_offset = text_.length();
-  for (unsigned i = start; i < end;) {
-    UChar c = string[i];
-    if (c == kNewlineCharacter) {
-      // LayoutBR does not set preserve_newline, but should be preserved.
-      if (!i && end == 1 && layout_object && layout_object->IsBR()) {
-        AppendForcedBreakCollapseWhitespace(style, layout_object);
-        return;
+  // The first run is done. Loop through the rest of runs.
+  if (i < string.length()) {
+    while (true) {
+      // Append the non-space text until we find a collapsible space.
+      // |string[i]| is guaranteed not to be a space.
+      DCHECK(!IsCollapsibleSpace(string[i]));
+      unsigned start_of_non_space = i;
+      for (i++; i < string.length(); i++) {
+        c = string[i];
+        if (IsCollapsibleSpace(c))
+          break;
       }
+      text_.Append(string, start_of_non_space, i - start_of_non_space);
+      mapping_builder_.AppendIdentityMapping(i - start_of_non_space);
 
-      if (last_collapsible_space_ == CollapsibleSpace::kNone) {
+      if (i == string.length())
+        break;
+
+      // Process a collapsible space run. First, find the end of the run.
+      DCHECK_EQ(c, string[i]);
+      DCHECK(IsCollapsibleSpace(c));
+      unsigned start_of_spaces = i;
+      bool space_run_has_newline = MoveToEndOfCollapsibleSpaces(string, &i, &c);
+
+      // Because leading spaces are handled before this loop, no need to check
+      // cross-item collapsing.
+      DCHECK(start_of_spaces);
+
+      // If this space run contains a newline, apply segment break rules.
+      if (space_run_has_newline &&
+          ShouldRemoveNewline(text_, text_.length(), style,
+                              StringView(string, i), style)) {
+        space_run_has_newline = false;
+      } else {
+        // Otherwise, or if the segment break rules did not remove the run,
+        // append a space.
         text_.Append(kSpaceCharacter);
         mapping_builder_.AppendIdentityMapping(1);
-      } else {
-        mapping_builder_.AppendCollapsedMapping(1);
+        start_of_spaces++;
       }
-      last_collapsible_space_ = CollapsibleSpace::kNewline;
-      i++;
-      continue;
-    }
 
-    if (c == kSpaceCharacter || c == kTabulationCharacter) {
-      if (last_collapsible_space_ == CollapsibleSpace::kNone) {
-        text_.Append(kSpaceCharacter);
-        last_collapsible_space_ = CollapsibleSpace::kSpace;
-        mapping_builder_.AppendIdentityMapping(1);
-      } else {
-        mapping_builder_.AppendCollapsedMapping(1);
+      if (i != start_of_spaces)
+        mapping_builder_.AppendCollapsedMapping(i - start_of_spaces);
+
+      // If this space run is at the end of this item, keep whether the
+      // collapsible space run has a newline or not in the item.
+      if (i == string.length()) {
+        end_collapse = space_run_has_newline ? NGInlineItem::kCollapsibleNewline
+                                             : NGInlineItem::kCollapsibleSpace;
+        break;
       }
-      i++;
-      continue;
     }
-
-    if (last_collapsible_space_ == CollapsibleSpace::kNewline) {
-      RemoveTrailingCollapsibleNewlineIfNeeded(string, i, style);
-      start_offset = std::min(start_offset, text_.length());
-    }
-
-    size_t end_of_non_space = string.Find(IsCollapsibleSpace, i + 1);
-    if (end_of_non_space == kNotFound)
-      end_of_non_space = string.length();
-    text_.Append(string, i, end_of_non_space - i);
-    mapping_builder_.AppendIdentityMapping(end_of_non_space - i);
-    i = end_of_non_space;
-    last_collapsible_space_ = CollapsibleSpace::kNone;
   }
 
   if (text_.length() > start_offset) {
     AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
                layout_object);
-
-    is_empty_inline_ &= items_->back().IsEmptyItem();
+    NGInlineItem& item = items_->back();
+    item.SetEndCollapseType(end_collapse);
+    is_empty_inline_ &= item.IsEmptyItem();
   }
 }
 
@@ -272,8 +408,6 @@ void NGInlineItemsBuilderTemplate<
     is_empty_inline_ &= items_->back().IsEmptyItem();
     start = end;
   }
-
-  last_collapsible_space_ = CollapsibleSpace::kNone;
 }
 
 template <typename OffsetMappingBuilder>
@@ -291,7 +425,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendPreserveNewline(
     size_t end = string.find(kNewlineCharacter, start + 1);
     if (end == kNotFound)
       end = string.length();
-    AppendCollapseWhitespace(string, start, end, style, layout_object);
+    DCHECK_GE(end, start);
+    AppendCollapseWhitespace(StringView(string, start, end - start), style,
+                             layout_object);
     start = end;
   }
 }
@@ -311,6 +447,12 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendForcedBreak(
 
   Append(NGInlineItem::kControl, kNewlineCharacter, style, layout_object);
 
+  // A forced break is not a collapsible space, but following collapsible spaces
+  // are leading spaces and that they should be collapsed.
+  // Pretend that this item ends with a collapsible space, so that following
+  // collapsible spaces can be collapsed.
+  items_->back().SetEndCollapseType(NGInlineItem::kCollapsibleSpace);
+
   // Then re-add bidi controls to restore the bidi context.
   if (!bidi_context_.IsEmpty()) {
     typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
@@ -328,17 +470,14 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
   RemoveTrailingCollapsibleSpaceIfExists();
 
   AppendForcedBreak(style, layout_object);
-
-  // Remove collapsible spaces immediately after a preserved newline.
-  last_collapsible_space_ = CollapsibleSpace::kSpace;
 }
 
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendBreakOpportunity(
     const ComputedStyle* style,
     LayoutObject* layout_object) {
-  Append(NGInlineItem::kControl, kZeroWidthSpaceCharacter, style,
-         layout_object);
+  AppendOpaque(NGInlineItem::kControl, kZeroWidthSpaceCharacter, style,
+               layout_object);
 }
 
 template <typename OffsetMappingBuilder>
@@ -355,7 +494,6 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   AppendItem(items_, type, end_offset - 1, end_offset, style, layout_object);
 
   is_empty_inline_ &= items_->back().IsEmptyItem();
-  last_collapsible_space_ = CollapsibleSpace::kNone;
 }
 
 template <typename OffsetMappingBuilder>
@@ -379,7 +517,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset - 1, end_offset, style, layout_object);
 
-  is_empty_inline_ &= items_->back().IsEmptyItem();
+  NGInlineItem& item = items_->back();
+  item.SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
+  is_empty_inline_ &= item.IsEmptyItem();
 }
 
 template <typename OffsetMappingBuilder>
@@ -390,89 +530,60 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset, end_offset, style, layout_object);
 
-  is_empty_inline_ &= items_->back().IsEmptyItem();
-}
-
-// Removes the collapsible newline at the end of |text_| if exists and the
-// removal conditions met.
-template <typename OffsetMappingBuilder>
-void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
-    RemoveTrailingCollapsibleNewlineIfNeeded(const String& after,
-                                             unsigned after_index,
-                                             const ComputedStyle* after_style) {
-  DCHECK_EQ(last_collapsible_space_, CollapsibleSpace::kNewline);
-
-  if (text_.IsEmpty() || text_[text_.length() - 1] != kSpaceCharacter)
-    return;
-
-  const ComputedStyle* before_style = after_style;
-  if (!items_->IsEmpty()) {
-    NGInlineItem& item = items_->back();
-    if (text_.length() < item.EndOffset() + 2)
-      before_style = item.Style();
-  }
-
-  if (ShouldRemoveNewline(text_, before_style, after, after_index, after_style))
-    RemoveTrailingCollapsibleSpace(text_.length() - 1);
+  NGInlineItem& item = items_->back();
+  item.SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
+  is_empty_inline_ &= item.IsEmptyItem();
 }
 
 // Removes the collapsible space at the end of |text_| if exists.
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<
     OffsetMappingBuilder>::RemoveTrailingCollapsibleSpaceIfExists() {
-  if (last_collapsible_space_ == CollapsibleSpace::kNone || text_.IsEmpty())
-    return;
-
-  // Look for the last space character since characters that are opaque to
-  // whitespace collapsing may be appended.
-  for (unsigned i = text_.length(); i;) {
-    UChar ch = text_[--i];
-    if (ch == kSpaceCharacter) {
-      RemoveTrailingCollapsibleSpace(i);
-      return;
-    }
-
-    // AppendForcedBreakCollapseWhitespace sets CollapsibleSpace::kSpace to
-    // ignore leading spaces. In this case, the trailing collapsible space does
-    // not exist.
-    if (ch == kNewlineCharacter)
-      return;
+  if (NGInlineItem* item = LastItemToCollapseWith(items_)) {
+    if (item->EndCollapseType() != NGInlineItem::kNotCollapsible)
+      RemoveTrailingCollapsibleSpace(item);
   }
-  // We could still reach here because the initial value is kSpace, in order to
-  // collapse leading spaces.
 }
 
-// Removes the collapsible space at the specified index.
+// Removes the collapsible space at the end of the specified item.
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<
-    OffsetMappingBuilder>::RemoveTrailingCollapsibleSpace(unsigned index) {
-  DCHECK_NE(last_collapsible_space_, CollapsibleSpace::kNone);
-  DCHECK(!text_.IsEmpty());
-  DCHECK_EQ(text_[index], kSpaceCharacter);
+    OffsetMappingBuilder>::RemoveTrailingCollapsibleSpace(NGInlineItem* item) {
+  DCHECK(item);
+  DCHECK_GT(item->Length(), 0u);
+  DCHECK(item->EndCollapseType() == NGInlineItem::kCollapsibleSpace ||
+         item->EndCollapseType() == NGInlineItem::kCollapsibleNewline);
 
-  text_.erase(index);
-  last_collapsible_space_ = CollapsibleSpace::kNone;
-  mapping_builder_.CollapseTrailingSpace(text_.length() - index);
+  // A forced break pretends that it's a collapsible space, see
+  // |AppendForcedBreak()|. It should not be removed.
+  if (item->Type() == NGInlineItem::kControl)
+    return;
+  DCHECK_EQ(item->Type(), NGInlineItem::kText);
 
-  // Adjust items if the removed space is already included.
-  for (unsigned i = items_->size(); i > 0;) {
-    NGInlineItem& item = (*items_)[--i];
-    if (index >= item.EndOffset())
+  unsigned space_offset = item->EndOffset() - 1;
+  DCHECK_EQ(text_[space_offset], kSpaceCharacter);
+  text_.erase(space_offset);
+  mapping_builder_.CollapseTrailingSpace(text_.length() - space_offset);
+
+  // Remove the item if the item has only one space that we're removing.
+  if (item->Length() == 1) {
+    DCHECK_EQ(item->StartOffset(), space_offset);
+    unsigned index = std::distance(items_->begin(), item);
+    items_->EraseAt(index);
+    if (index == items_->size())
       return;
-    if (item.StartOffset() <= index) {
-      if (item.Length() == 1) {
-        DCHECK_EQ(item.StartOffset(), index);
-        DCHECK_EQ(item.Type(), NGInlineItem::kText);
-        items_->EraseAt(i);
-      } else {
-        item.SetEndOffset(item.EndOffset() - 1);
-      }
-      return;
-    }
+    // Re-compute |item| because |EraseAt| may have reallocated the buffer.
+    item = &(*items_)[index];
+  } else {
+    item->SetEndOffset(item->EndOffset() - 1);
+    item->SetEndCollapseType(NGInlineItem::kNotCollapsible);
+    item++;
+  }
 
-    // Trailing spaces can be removed across non-character items.
-    // Adjust their offsets if after the removed index.
-    item.SetOffset(item.StartOffset() - 1, item.EndOffset() - 1);
+  // Trailing spaces can be removed across non-character items.
+  // Adjust their offsets if after the removed index.
+  for (; item != items_->end(); item++) {
+    item->SetOffset(item->StartOffset() - 1, item->EndOffset() - 1);
   }
 }
 

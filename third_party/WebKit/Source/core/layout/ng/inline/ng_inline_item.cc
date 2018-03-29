@@ -55,7 +55,8 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       shape_options_(kPreContext | kPostContext),
       is_empty_item_(false),
       should_create_box_fragment_(false),
-      style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)) {
+      style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)),
+      end_collapse_type_(kNotCollapsible) {
   DCHECK_GE(end, start);
   ComputeBoxProperties();
 }
