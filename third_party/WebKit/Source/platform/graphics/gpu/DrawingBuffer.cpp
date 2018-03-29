@@ -35,7 +35,9 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "cc/layers/texture_layer.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -251,32 +253,43 @@ bool DrawingBuffer::DefaultBufferRequiresAlphaChannelToBePreserved() {
   return !want_alpha_channel_ && have_alpha_channel_;
 }
 
-std::unique_ptr<viz::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
-  auto it = std::remove_if(
-      recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
-      [this](const RecycledBitmap& bitmap) { return bitmap.size != size_; });
+DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar) {
+  auto it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
+                           [this](const RegisteredBitmap& registered) {
+                             return registered.bitmap->size() != size_;
+                           });
   recycled_bitmaps_.Shrink(it - recycled_bitmaps_.begin());
 
   if (!recycled_bitmaps_.IsEmpty()) {
-    RecycledBitmap recycled = std::move(recycled_bitmaps_.back());
+    RegisteredBitmap recycled = std::move(recycled_bitmaps_.back());
     recycled_bitmaps_.pop_back();
-    DCHECK(recycled.size == size_);
-    return std::move(recycled.bitmap);
+    DCHECK(recycled.bitmap->size() == size_);
+    return recycled;
   }
 
-  return Platform::Current()->AllocateSharedBitmap(size_, viz::RGBA_8888);
+  viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
+  std::unique_ptr<base::SharedMemory> shm =
+      viz::bitmap_allocation::AllocateMappedBitmap(size_, viz::RGBA_8888);
+  auto bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
+      id, std::move(shm), size_, viz::RGBA_8888);
+  RegisteredBitmap registered = {
+      bitmap, bitmap_registrar->RegisterSharedBitmapId(id, bitmap)};
+  return registered;
 }
 
 bool DrawingBuffer::PrepareTransferableResource(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   ScopedStateRestorer scoped_state_restorer(this);
   bool force_gpu_result = false;
-  return PrepareTransferableResourceInternal(out_resource, out_release_callback,
-                                             force_gpu_result);
+  return PrepareTransferableResourceInternal(
+      bitmap_registrar, out_resource, out_release_callback, force_gpu_result);
 }
 
 bool DrawingBuffer::PrepareTransferableResourceInternal(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback,
     bool force_gpu_result) {
@@ -305,25 +318,25 @@ bool DrawingBuffer::PrepareTransferableResourceInternal(
   ResolveIfNeeded();
 
   if (!using_gpu_compositing_ && !force_gpu_result) {
-    return FinishPrepareTransferableResourceSoftware(out_resource,
-                                                     out_release_callback);
+    FinishPrepareTransferableResourceSoftware(bitmap_registrar, out_resource,
+                                              out_release_callback);
   } else {
-    return FinishPrepareTransferableResourceGpu(out_resource,
-                                                out_release_callback);
+    FinishPrepareTransferableResourceGpu(out_resource, out_release_callback);
   }
+  return true;
 }
 
-bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
+void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
-  std::unique_ptr<viz::SharedBitmap> bitmap = CreateOrRecycleBitmap();
-  if (!bitmap)
-    return false;
+  RegisteredBitmap registered = CreateOrRecycleBitmap(bitmap_registrar);
 
   // Read the framebuffer into |bitmap|.
   {
-    unsigned char* pixels = bitmap->pixels();
+    unsigned char* pixels = static_cast<unsigned char*>(
+        registered.bitmap->shared_memory()->memory());
     DCHECK(pixels);
     bool need_premultiply = want_alpha_channel_ && !premultiplied_alpha_;
     WebGLImageConversion::AlphaOp op =
@@ -336,7 +349,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   }
 
   *out_resource = viz::TransferableResource::MakeSoftware(
-      bitmap->id(), bitmap->sequence_number(), size_, viz::RGBA_8888);
+      registered.bitmap->id(), /*sequence_number=*/0, size_, viz::RGBA_8888);
   out_resource->color_space = storage_color_space_;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -344,17 +357,15 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   // owns the SharedBitmap.
   auto func = WTF::Bind(&DrawingBuffer::MailboxReleasedSoftware,
                         scoped_refptr<DrawingBuffer>(this),
-                        WTF::Passed(std::move(bitmap)), size_);
+                        WTF::Passed(std::move(registered)));
   *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
   if (preserve_drawing_buffer_ == kDiscard) {
     SetBufferClearNeeded(true);
   }
-
-  return true;
 }
 
-bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
+void DrawingBuffer::FinishPrepareTransferableResourceGpu(
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
@@ -447,7 +458,6 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
 
   contents_changed_ = false;
   SetBufferClearNeeded(true);
-  return true;
 }
 
 void DrawingBuffer::MailboxReleasedGpu(scoped_refptr<ColorBuffer> color_buffer,
@@ -479,17 +489,18 @@ void DrawingBuffer::MailboxReleasedGpu(scoped_refptr<ColorBuffer> color_buffer,
   recycled_color_buffer_queue_.push_front(color_buffer);
 }
 
-void DrawingBuffer::MailboxReleasedSoftware(
-    std::unique_ptr<viz::SharedBitmap> bitmap,
-    const IntSize& size,
-    const gpu::SyncToken& sync_token,
-    bool lost_resource) {
+void DrawingBuffer::MailboxReleasedSoftware(RegisteredBitmap registered,
+                                            const gpu::SyncToken& sync_token,
+                                            bool lost_resource) {
   DCHECK(!sync_token.HasData());  // No sync tokens for software resources.
-  if (destruction_in_progress_ || lost_resource || is_hidden_ || size != size_)
-    return;  // Just delete the bitmap.
+  if (destruction_in_progress_ || lost_resource || is_hidden_ ||
+      registered.bitmap->size() != size_) {
+    // Just delete the RegisteredBitmap, which will free the memory and
+    // unregister it with the compositor.
+    return;
+  }
 
-  RecycledBitmap recycled = {std::move(bitmap), size_};
-  recycled_bitmaps_.push_back(std::move(recycled));
+  recycled_bitmaps_.push_back(std::move(registered));
 }
 
 scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
@@ -499,8 +510,9 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
   viz::TransferableResource transferable_resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   constexpr bool force_gpu_result = true;
-  if (!PrepareTransferableResourceInternal(
-          &transferable_resource, &release_callback, force_gpu_result)) {
+  if (!PrepareTransferableResourceInternal(nullptr, &transferable_resource,
+                                           &release_callback,
+                                           force_gpu_result)) {
     // If we can't get a mailbox, return an transparent black ImageBitmap.
     // The only situation in which this could happen is when two or more calls
     // to transferToImageBitmap are made back-to-back, or when the context gets

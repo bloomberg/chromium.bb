@@ -288,6 +288,7 @@ static void ReleaseSharedMemory(std::unique_ptr<viz::SharedBitmap> bitmap,
                                 bool lost) {}
 
 bool TestPlugin::PrepareTransferableResource(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* resource,
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!content_changed_)

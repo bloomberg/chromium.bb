@@ -32,7 +32,10 @@
 #define DrawingBuffer_h
 
 #include <memory>
+
 #include "cc/layers/texture_layer_client.h"
+#include "cc/resources/cross_thread_shared_bitmap.h"
+#include "cc/resources/shared_bitmap_id_registrar.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/PlatformExport.h"
@@ -55,10 +58,6 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
-
-namespace viz {
-class SharedBitmap;
 }
 
 namespace blink {
@@ -196,9 +195,11 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool destroyed() const { return destruction_in_progress_; }
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTransferableResource(viz::TransferableResource* out_resource,
-                                   std::unique_ptr<viz::SingleReleaseCallback>*
-                                       out_release_callback) override;
+  bool PrepareTransferableResource(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar,
+      viz::TransferableResource* out_resource,
+      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback)
+      override;
 
   // Returns a StaticBitmapImage backed by a texture containing the current
   // contents of the front buffer. This is done without any pixel copies. The
@@ -263,13 +264,17 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   bool Initialize(const IntSize&, bool use_multisampling);
 
+  struct RegisteredBitmap {
+    scoped_refptr<cc::CrossThreadSharedBitmap> bitmap;
+    cc::SharedBitmapIdRegistration registration;
+
+    // Explicitly move-only.
+    RegisteredBitmap(RegisteredBitmap&&) = default;
+    RegisteredBitmap& operator=(RegisteredBitmap&&) = default;
+  };
   // Shared memory bitmaps that were released by the compositor and can be used
   // again by this DrawingBuffer.
-  struct RecycledBitmap {
-    std::unique_ptr<viz::SharedBitmap> bitmap;
-    IntSize size;
-  };
-  Vector<RecycledBitmap> recycled_bitmaps_;
+  Vector<RegisteredBitmap> recycled_bitmaps_;
 
  private:
   friend class ScopedRGBEmulationForBlitFramebuffer;
@@ -363,15 +368,17 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   void ResolveIfNeeded();
 
   bool PrepareTransferableResourceInternal(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar,
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback,
       bool force_gpu_result);
 
   // Helper functions to be called only by PrepareTransferableResourceInternal.
-  bool FinishPrepareTransferableResourceGpu(
+  void FinishPrepareTransferableResourceGpu(
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
-  bool FinishPrepareTransferableResourceSoftware(
+  void FinishPrepareTransferableResourceSoftware(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar,
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
@@ -380,8 +387,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   void MailboxReleasedGpu(scoped_refptr<ColorBuffer>,
                           const gpu::SyncToken&,
                           bool lost_resource);
-  void MailboxReleasedSoftware(std::unique_ptr<viz::SharedBitmap>,
-                               const IntSize&,
+  void MailboxReleasedSoftware(RegisteredBitmap,
                                const gpu::SyncToken&,
                                bool lost_resource);
 
@@ -391,7 +397,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   void ClearPlatformLayer();
 
-  std::unique_ptr<viz::SharedBitmap> CreateOrRecycleBitmap();
+  RegisteredBitmap CreateOrRecycleBitmap(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar);
 
   // Updates the current size of the buffer, ensuring that
   // s_currentResourceUsePixels is updated.

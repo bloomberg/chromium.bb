@@ -295,8 +295,8 @@ class Canvas2DLayerBridgeTest : public Test {
 
     viz::TransferableResource resource;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-    EXPECT_FALSE(
-        bridge->PrepareTransferableResource(&resource, &release_callback));
+    EXPECT_FALSE(bridge->PrepareTransferableResource(nullptr, &resource,
+                                                     &release_callback));
   }
 
   void PrepareMailboxWhenContextIsLostWithFailedRestore() {
@@ -319,8 +319,8 @@ class Canvas2DLayerBridgeTest : public Test {
 
     viz::TransferableResource resource;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-    EXPECT_FALSE(
-        bridge->PrepareTransferableResource(&resource, &release_callback));
+    EXPECT_FALSE(bridge->PrepareTransferableResource(nullptr, &resource,
+                                                     &release_callback));
   }
 
   void ReleaseCallbackWithNullContextProviderWrapperTest() {
@@ -333,8 +333,8 @@ class Canvas2DLayerBridgeTest : public Test {
           Canvas2DLayerBridge::kForceAccelerationForTesting,
           CanvasColorParams()));
       bridge->FinalizeFrame();
-      EXPECT_TRUE(
-          bridge->PrepareTransferableResource(&resource, &release_callback));
+      EXPECT_TRUE(bridge->PrepareTransferableResource(nullptr, &resource,
+                                                      &release_callback));
     }
 
     bool lost_resource = true;
@@ -357,8 +357,8 @@ class Canvas2DLayerBridgeTest : public Test {
       bridge->FinalizeFrame();
       viz::TransferableResource resource;
       std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-      EXPECT_TRUE(
-          bridge->PrepareTransferableResource(&resource, &release_callback));
+      EXPECT_TRUE(bridge->PrepareTransferableResource(nullptr, &resource,
+                                                      &release_callback));
 
       bool lost_resource = true;
       release_callback->Run(gpu::SyncToken(), lost_resource);
@@ -375,7 +375,8 @@ class Canvas2DLayerBridgeTest : public Test {
             Canvas2DLayerBridge::kForceAccelerationForTesting,
             CanvasColorParams()));
         bridge->FinalizeFrame();
-        bridge->PrepareTransferableResource(&resource, &release_callback);
+        bridge->PrepareTransferableResource(nullptr, &resource,
+                                            &release_callback);
         // |bridge| goes out of scope and would normally be destroyed, but
         // object is kept alive by self references.
       }
@@ -1061,8 +1062,8 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
   // Test PrepareTransferableResource() while hibernating
   viz::TransferableResource resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  EXPECT_FALSE(
-      bridge->PrepareTransferableResource(&resource, &release_callback));
+  EXPECT_FALSE(bridge->PrepareTransferableResource(nullptr, &resource,
+                                                   &release_callback));
   EXPECT_TRUE(bridge->IsValid());
 
   // Tear down the bridge on the thread so that 'bridge' can go out of scope
@@ -1116,8 +1117,8 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   // Test prepareMailbox while background rendering
   viz::TransferableResource resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  EXPECT_FALSE(
-      bridge->PrepareTransferableResource(&resource, &release_callback));
+  EXPECT_FALSE(bridge->PrepareTransferableResource(nullptr, &resource,
+                                                   &release_callback));
   EXPECT_TRUE(bridge->IsValid());
 }
 
@@ -1147,14 +1148,14 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   DrawSomething(bridge);
-  bridge->PrepareTransferableResource(&resource1, &release_callback1);
+  bridge->PrepareTransferableResource(nullptr, &resource1, &release_callback1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   DrawSomething(bridge);
-  bridge->PrepareTransferableResource(&resource2, &release_callback2);
+  bridge->PrepareTransferableResource(nullptr, &resource2, &release_callback2);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
@@ -1211,14 +1212,14 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   DrawSomething(bridge);
-  bridge->PrepareTransferableResource(&resource1, &release_callback1);
+  bridge->PrepareTransferableResource(nullptr, &resource1, &release_callback1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   DrawSomething(bridge);
-  bridge->PrepareTransferableResource(&resource2, &release_callback2);
+  bridge->PrepareTransferableResource(nullptr, &resource2, &release_callback2);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
@@ -1270,7 +1271,7 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
   DrawSomething(bridge);
-  bridge->PrepareTransferableResource(&resource, &release_callback);
+  bridge->PrepareTransferableResource(nullptr, &resource, &release_callback);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 

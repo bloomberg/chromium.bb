@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
 
 namespace gpu {
 
@@ -56,6 +57,16 @@ bool Mailbox::Verify() const {
 #else
   return true;
 #endif
+}
+
+std::string Mailbox::ToDebugString() const {
+  std::string s;
+  for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i) {
+    if (i > 0)
+      s += ':';
+    s += base::StringPrintf("%u", name[i]);
+  }
+  return s;
 }
 
 }  // namespace gpu

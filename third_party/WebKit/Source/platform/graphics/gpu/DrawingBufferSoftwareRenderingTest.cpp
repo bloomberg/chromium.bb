@@ -4,6 +4,7 @@
 
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
+#include "cc/resources/shared_bitmap_id_registrar.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
@@ -18,6 +19,14 @@
 
 namespace blink {
 namespace {
+
+class TestSharedBitmapIdRegistar : public cc::SharedBitmapIdRegistrar {
+  virtual cc::SharedBitmapIdRegistration RegisterSharedBitmapId(
+      const viz::SharedBitmapId& id,
+      scoped_refptr<cc::CrossThreadSharedBitmap> bitmap) {
+    return {};
+  }
+};
 
 class DrawingBufferSoftwareCompositingTest : public testing::Test {
  protected:
@@ -36,6 +45,7 @@ class DrawingBufferSoftwareCompositingTest : public testing::Test {
   }
 
   scoped_refptr<DrawingBufferForTests> drawing_buffer_;
+  TestSharedBitmapIdRegistar test_shared_bitmap_id_registrar_;
 };
 
 TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
@@ -49,7 +59,8 @@ TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
   drawing_buffer_->Resize(initial_size);
   drawing_buffer_->MarkContentsChanged();
   drawing_buffer_->PrepareTransferableResource(
-      &resource, &release_callback1);  // create a bitmap.
+      &test_shared_bitmap_id_registrar_, &resource,
+      &release_callback1);  // create a bitmap.
   EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
   release_callback1->Run(
       gpu::SyncToken(),
@@ -57,7 +68,8 @@ TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
   EXPECT_EQ(1, drawing_buffer_->RecycledBitmapCount());
   drawing_buffer_->MarkContentsChanged();
   drawing_buffer_->PrepareTransferableResource(
-      &resource, &release_callback2);  // recycle a bitmap.
+      &test_shared_bitmap_id_registrar_, &resource,
+      &release_callback2);  // recycle a bitmap.
   EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
   release_callback2->Run(
       gpu::SyncToken(),
@@ -67,7 +79,7 @@ TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
   drawing_buffer_->MarkContentsChanged();
   // Regression test for crbug.com/647896 - Next line must not crash
   drawing_buffer_->PrepareTransferableResource(
-      &resource,
+      &test_shared_bitmap_id_registrar_, &resource,
       &release_callback3);  // cause recycling queue to be purged due to resize
   EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
   release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
@@ -90,7 +102,8 @@ TEST_F(DrawingBufferSoftwareCompositingTest, FramebufferBinding) {
   gl_->SaveState();
   drawing_buffer_->Resize(initial_size);
   drawing_buffer_->MarkContentsChanged();
-  drawing_buffer_->PrepareTransferableResource(&resource, &release_callback);
+  drawing_buffer_->PrepareTransferableResource(
+      &test_shared_bitmap_id_registrar_, &resource, &release_callback);
   gl_->GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawBinding);
   gl_->GetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readBinding);
   EXPECT_EQ(static_cast<GLint>(draw_framebuffer_binding), drawBinding);

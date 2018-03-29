@@ -55,12 +55,6 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
 
 TestLayerTreeFrameSink::~TestLayerTreeFrameSink() {
   DCHECK(copy_requests_.empty());
-
-  // The shared_bitmap_manager() has ownership of shared memory for each
-  // SharedBitmapId that has been reported from the client. Since the client is
-  // gone that memory can be freed. If we don't then it would leak.
-  for (const auto& id : owned_bitmaps_)
-    shared_bitmap_manager()->ChildDeletedSharedBitmap(id);
 }
 
 void TestLayerTreeFrameSink::SetDisplayColorSpace(
@@ -134,6 +128,13 @@ bool TestLayerTreeFrameSink::BindToClient(
 }
 
 void TestLayerTreeFrameSink::DetachFromClient() {
+  // The shared_bitmap_manager() has ownership of shared memory for each
+  // SharedBitmapId that has been reported from the client. Since the client is
+  // gone that memory can be freed. If we don't then it would leak.
+  for (const auto& id : owned_bitmaps_)
+    shared_bitmap_manager()->ChildDeletedSharedBitmap(id);
+  owned_bitmaps_.clear();
+
   if (display_begin_frame_source_) {
     frame_sink_manager_->UnregisterBeginFrameSource(
         display_begin_frame_source_);

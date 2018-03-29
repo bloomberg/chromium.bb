@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <string>
+
 #include "gpu/gpu_export.h"
 
 // From gl2/gl2ext.h.
@@ -45,6 +47,8 @@ struct GPU_EXPORT Mailbox {
   // works in Debug (always returns true in Release). This is not a secure
   // check, only to catch bugs where clients forgot to call Mailbox::Generate.
   bool Verify() const;
+
+  std::string ToDebugString() const;
 
   Name name;
 

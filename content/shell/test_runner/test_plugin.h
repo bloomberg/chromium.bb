@@ -100,6 +100,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   // cc::TextureLayerClient methods:
   bool PrepareTransferableResource(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar,
       viz::TransferableResource* resource,
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
 

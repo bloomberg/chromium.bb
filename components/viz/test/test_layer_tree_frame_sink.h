@@ -117,6 +117,10 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
 
+  const std::set<SharedBitmapId>& owned_bitmaps() const {
+    return owned_bitmaps_;
+  }
+
  private:
   // ExternalBeginFrameSource implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;

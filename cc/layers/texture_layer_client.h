@@ -12,6 +12,7 @@ struct TransferableResource;
 }
 
 namespace cc {
+class SharedBitmapIdRegistrar;
 
 class TextureLayerClient {
  public:
@@ -19,6 +20,7 @@ class TextureLayerClient {
   // Returns false if no new data is available
   // and the old mailbox is to be reused.
   virtual bool PrepareTransferableResource(
+      SharedBitmapIdRegistrar* bitmap_registar,
       viz::TransferableResource* transferable_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback) = 0;
 

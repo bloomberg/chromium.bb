@@ -73,6 +73,7 @@ void ImageLayerBridge::Dispose() {
 }
 
 bool ImageLayerBridge::PrepareTransferableResource(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   if (disposed_)

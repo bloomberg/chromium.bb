@@ -86,9 +86,11 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   ~Canvas2DLayerBridge() override;
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTransferableResource(viz::TransferableResource* out_resource,
-                                   std::unique_ptr<viz::SingleReleaseCallback>*
-                                       out_release_callback) override;
+  bool PrepareTransferableResource(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar,
+      viz::TransferableResource* out_resource,
+      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback)
+      override;
 
   void FinalizeFrame();
   void SetIsHidden(bool);
