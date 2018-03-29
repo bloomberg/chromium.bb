@@ -548,7 +548,6 @@ void PasswordManager::ShowManualFallbackForSaving(
     client_->ShowManualFallbackForSaving(std::move(provisional_save_manager_),
                                          has_generated_password, is_update);
   } else {
-    provisional_save_manager_.reset();
     HideManualFallbackForSaving();
   }
 }
