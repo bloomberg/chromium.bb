@@ -330,12 +330,11 @@ CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
 // CookieTreeAppCacheNode, public:
 
 CookieTreeAppCacheNode::CookieTreeAppCacheNode(
-    const GURL& origin_url,
+    const url::Origin& origin,
     std::list<content::AppCacheInfo>::iterator appcache_info)
     : CookieTreeNode(base::UTF8ToUTF16(appcache_info->manifest_url.spec())),
-      origin_url_(origin_url),
-      appcache_info_(appcache_info) {
-}
+      origin_(origin),
+      appcache_info_(appcache_info) {}
 
 CookieTreeAppCacheNode::~CookieTreeAppCacheNode() {
 }
@@ -347,12 +346,12 @@ void CookieTreeAppCacheNode::DeleteStoredObjects() {
     DCHECK(container->appcache_helper_.get());
     container->appcache_helper_
         ->DeleteAppCacheGroup(appcache_info_->manifest_url);
-    container->appcache_info_[origin_url_].erase(appcache_info_);
+    container->appcache_info_[origin_].erase(appcache_info_);
   }
 }
 
 CookieTreeNode::DetailedInfo CookieTreeAppCacheNode::GetDetailedInfo() const {
-  return DetailedInfo().InitAppCache(origin_url_, &*appcache_info_);
+  return DetailedInfo().InitAppCache(origin_.GetURL(), &*appcache_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1310,7 +1309,8 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     base::string16 host_node_name = base::UTF8ToUTF16(origin.first.host());
     if (filter.empty() ||
         (host_node_name.find(filter) != base::string16::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin.first);
+      CookieTreeHostNode* host_node =
+          root->GetOrCreateHostNode(origin.first.GetURL());
       CookieTreeAppCachesNode* appcaches_node =
           host_node->GetOrCreateAppCachesNode();
 

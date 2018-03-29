@@ -32,7 +32,6 @@ typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
 typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
 typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::list<content::CacheStorageUsageInfo> CacheStorageUsageInfoList;
-typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 
 }  // namespace

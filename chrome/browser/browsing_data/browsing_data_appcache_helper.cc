@@ -27,11 +27,9 @@ void OnAppCacheInfoFetchComplete(
 
   // Filter out appcache info entries for non-websafe schemes. Extension state
   // and DevTools, for example, are not considered browsing data.
-  typedef std::map<GURL, content::AppCacheInfoVector> InfoByOrigin;
-  InfoByOrigin& origin_map = info_collection->infos_by_origin;
-  for (InfoByOrigin::iterator it = origin_map.begin();
-       it != origin_map.end();) {
-    if (!BrowsingDataHelper::HasWebScheme(it->first))
+  auto& origin_map = info_collection->infos_by_origin;
+  for (auto it = origin_map.begin(); it != origin_map.end();) {
+    if (!BrowsingDataHelper::IsWebScheme(it->first.scheme()))
       origin_map.erase(it++);
     else
       ++it;
@@ -101,7 +99,7 @@ void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
 
   OriginAppCacheInfoMap& origin_map = info_collection_->infos_by_origin;
   content::AppCacheInfoVector& appcache_infos =
-      origin_map[manifest_url.GetOrigin()];
+      origin_map[url::Origin::Create(manifest_url)];
 
   for (const auto& appcache : appcache_infos) {
     if (appcache.manifest_url == manifest_url)
@@ -141,7 +139,7 @@ void CannedBrowsingDataAppCacheHelper::StartFetching(
 
 void CannedBrowsingDataAppCacheHelper::DeleteAppCacheGroup(
     const GURL& manifest_url) {
-  info_collection_->infos_by_origin.erase(manifest_url.GetOrigin());
+  info_collection_->infos_by_origin.erase(url::Origin::Create(manifest_url));
   BrowsingDataAppCacheHelper::DeleteAppCacheGroup(manifest_url);
 }
 

@@ -28,15 +28,16 @@ void MockBrowsingDataAppCacheHelper::DeleteAppCacheGroup(
 }
 
 void MockBrowsingDataAppCacheHelper::AddAppCacheSamples() {
-  GURL kOrigin("http://hello/");
+  const GURL kOriginURL("http://hello/");
+  const url::Origin kOrigin(url::Origin::Create(kOriginURL));
   content::AppCacheInfo mock_manifest_1;
   content::AppCacheInfo mock_manifest_2;
   content::AppCacheInfo mock_manifest_3;
-  mock_manifest_1.manifest_url = kOrigin.Resolve("manifest1");
+  mock_manifest_1.manifest_url = kOriginURL.Resolve("manifest1");
   mock_manifest_1.size = 1;
-  mock_manifest_2.manifest_url = kOrigin.Resolve("manifest2");
+  mock_manifest_2.manifest_url = kOriginURL.Resolve("manifest2");
   mock_manifest_2.size = 2;
-  mock_manifest_3.manifest_url = kOrigin.Resolve("manifest3");
+  mock_manifest_3.manifest_url = kOriginURL.Resolve("manifest3");
   mock_manifest_3.size = 3;
   content::AppCacheInfoVector info_vector;
   info_vector.push_back(mock_manifest_1);

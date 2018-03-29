@@ -176,7 +176,7 @@ void AppCacheServiceImpl::DeleteOriginHelper::OnAllInfo(
     return;
   }
 
-  auto found = collection->infos_by_origin.find(origin_.GetURL());
+  auto found = collection->infos_by_origin.find(origin_);
   if (found == collection->infos_by_origin.end() || found->second.empty()) {
     // No caches for this origin.
     CallCallback(net::OK);

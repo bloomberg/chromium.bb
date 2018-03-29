@@ -338,7 +338,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   // appcache_info should remain valid at least as long as the
   // CookieTreeAppCacheNode is valid.
   explicit CookieTreeAppCacheNode(
-      const GURL& origin_url,
+      const url::Origin& origin,
       std::list<content::AppCacheInfo>::iterator appcache_info);
   ~CookieTreeAppCacheNode() override;
 
@@ -346,7 +346,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   DetailedInfo GetDetailedInfo() const override;
 
  private:
-  GURL origin_url_;
+  url::Origin origin_;
   std::list<content::AppCacheInfo>::iterator appcache_info_;
   DISALLOW_COPY_AND_ASSIGN(CookieTreeAppCacheNode);
 };

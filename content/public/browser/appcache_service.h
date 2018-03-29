@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/appcache_info.h"
 #include "net/base/completion_callback.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -21,7 +22,7 @@ struct CONTENT_EXPORT AppCacheInfoCollection
     : public base::RefCountedThreadSafe<AppCacheInfoCollection> {
   AppCacheInfoCollection();
 
-  std::map<GURL, AppCacheInfoVector> infos_by_origin;
+  std::map<url::Origin, AppCacheInfoVector> infos_by_origin;
 
  private:
   friend class base::RefCountedThreadSafe<AppCacheInfoCollection>;

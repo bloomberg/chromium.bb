@@ -225,7 +225,7 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   info_vector.push_back(mock_manifest_1);
   info_vector.push_back(mock_manifest_2);
   info_vector.push_back(mock_manifest_3);
-  info->infos_by_origin[kOrigin.GetURL()] = info_vector;
+  info->infos_by_origin[kOrigin] = info_vector;
   mock_storage()->SimulateGetAllInfo(info.get());
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
@@ -235,7 +235,7 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   delete_completion_count_ = 0;
 
   // Should fail if storage fails to delete.
-  info->infos_by_origin[kOrigin.GetURL()] = info_vector;
+  info->infos_by_origin[kOrigin] = info_vector;
   mock_storage()->SimulateGetAllInfo(info.get());
   mock_storage()->SimulateMakeGroupObsoleteFailure();
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);

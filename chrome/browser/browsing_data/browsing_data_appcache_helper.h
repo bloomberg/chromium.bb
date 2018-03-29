@@ -24,7 +24,8 @@ class BrowserContext;
 class BrowsingDataAppCacheHelper
     : public base::RefCountedThreadSafe<BrowsingDataAppCacheHelper> {
  public:
-  typedef std::map<GURL, content::AppCacheInfoVector> OriginAppCacheInfoMap;
+  using OriginAppCacheInfoMap =
+      std::map<url::Origin, content::AppCacheInfoVector>;
 
   using FetchCallback =
       base::Callback<void(scoped_refptr<content::AppCacheInfoCollection>)>;
