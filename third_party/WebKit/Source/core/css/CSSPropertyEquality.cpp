@@ -26,10 +26,14 @@ bool FillLayersEqual(const FillLayer& a_layers, const FillLayer& b_layers) {
       case CSSPropertyWebkitMaskPositionX:
         if (a_layer->PositionX() != b_layer->PositionX())
           return false;
+        if (a_layer->BackgroundXOrigin() != b_layer->BackgroundXOrigin())
+          return false;
         break;
       case CSSPropertyBackgroundPositionY:
       case CSSPropertyWebkitMaskPositionY:
         if (a_layer->PositionY() != b_layer->PositionY())
+          return false;
+        if (a_layer->BackgroundYOrigin() != b_layer->BackgroundYOrigin())
           return false;
         break;
       case CSSPropertyBackgroundSize:
