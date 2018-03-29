@@ -14,12 +14,20 @@ android_resources("piet_resources") {
   custom_package = "com.google.android.libraries.feed.piet"
 }
 
+android_resources("hostimpl_resources") {
+  resource_dirs = [
+    "src/src/main/java/com/google/android/libraries/feed/hostimpl/stream/res",
+  ]
+  custom_package = "com.google.android.libraries.feed.hostimpl.stream"
+}
+
 android_library("feed_lib_java") {
   chromium_code = false
   java_files = feed_lib_java_sources
 
   deps = [
     ":feed_lib_proto_java",
+    ":hostimpl_resources",
     ":piet_resources",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_cardview_java",
