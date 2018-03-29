@@ -47,6 +47,7 @@ class NET_EXPORT ReportingCache {
                          const std::string& group,
                          const std::string& type,
                          std::unique_ptr<const base::Value> body,
+                         int depth,
                          base::TimeTicks queued,
                          int attempts) = 0;
 

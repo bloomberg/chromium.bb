@@ -41,6 +41,7 @@ struct NET_EXPORT ReportingReport {
                   const std::string& group,
                   const std::string& type,
                   std::unique_ptr<const base::Value> body,
+                  int depth,
                   base::TimeTicks queued,
                   int attempts);
   ~ReportingReport();
@@ -63,6 +64,11 @@ struct NET_EXPORT ReportingReport {
 
   // The body of the report. (Included in the delivered report.)
   std::unique_ptr<const base::Value> body;
+
+  // How many uploads deep the related request was: 0 if the related request was
+  // not an upload (or there was no related request), or n+1 if it was an upload
+  // reporting on requests of at most depth n.
+  int depth;
 
   // When the report was queued. (Included in the delivered report as an age
   // relative to the time of the delivery attempt.)

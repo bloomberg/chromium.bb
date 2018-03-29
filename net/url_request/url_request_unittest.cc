@@ -7116,7 +7116,8 @@ class TestReportingService : public ReportingService {
   void QueueReport(const GURL& url,
                    const std::string& group,
                    const std::string& type,
-                   std::unique_ptr<const base::Value> body) override {
+                   std::unique_ptr<const base::Value> body,
+                   int depth) override {
     NOTIMPLEMENTED();
   }
 
@@ -7131,9 +7132,9 @@ class TestReportingService : public ReportingService {
     NOTIMPLEMENTED();
   }
 
-  bool RequestIsUpload(const URLRequest& request) override {
+  int GetUploadDepth(const URLRequest& request) override {
     NOTIMPLEMENTED();
-    return true;
+    return 0;
   }
 
   const ReportingPolicy& GetPolicy() const override {

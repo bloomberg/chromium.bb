@@ -1196,9 +1196,12 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
       base::TimeTicks::Now() - load_timing_info_.request_start;
   details.type = status().ToNetError();
 
-  details.is_reporting_upload =
-      context()->reporting_service() &&
-      context()->reporting_service()->RequestIsUpload(*this);
+  if (context()->reporting_service()) {
+    details.reporting_upload_depth =
+        context()->reporting_service()->GetUploadDepth(*this);
+  } else {
+    details.reporting_upload_depth = 0;
+  }
 
   service->OnRequest(details);
 }

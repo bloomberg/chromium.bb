@@ -27,6 +27,10 @@ namespace {
 class UploadUserData : public base::SupportsUserData::Data {
  public:
   static const void* const kUserDataKey;
+
+  UploadUserData(int depth) : depth(depth) {}
+
+  int depth;
 };
 
 // SetUserData needs a unique const void* to serve as the key, so create a const
@@ -77,6 +81,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
 
   void StartUpload(const GURL& url,
                    const std::string& json,
+                   int max_depth,
                    UploadCallback callback) override {
     net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation("reporting", R"(
@@ -116,7 +121,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
         ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
 
     request->SetUserData(UploadUserData::kUserDataKey,
-                         std::make_unique<UploadUserData>());
+                         std::make_unique<UploadUserData>(max_depth));
 
     // This inherently sets mode = "no-cors", but that doesn't matter, because
     // the origins that are included in the upload don't actually get to see
@@ -132,8 +137,10 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
   }
 
   // static
-  bool RequestIsUpload(const net::URLRequest& request) override {
-    return request.GetUserData(UploadUserData::kUserDataKey);
+  int GetUploadDepth(const net::URLRequest& request) override {
+    UploadUserData* data = static_cast<UploadUserData*>(
+        request.GetUserData(UploadUserData::kUserDataKey));
+    return data ? data->depth + 1 : 0;
   }
 
   // URLRequest::Delegate implementation:

@@ -41,7 +41,7 @@ class ReportingBrowsingDataRemoverTest : public ReportingTestBase {
 
   void AddReport(const GURL& url) {
     cache()->AddReport(url, kGroup_, kType_,
-                       std::make_unique<base::DictionaryValue>(),
+                       std::make_unique<base::DictionaryValue>(), 0,
                        tick_clock()->NowTicks(), 0);
   }
 

@@ -977,7 +977,8 @@ class MockReportingService : public net::ReportingService {
   void QueueReport(const GURL& url,
                    const std::string& group,
                    const std::string& type,
-                   std::unique_ptr<const base::Value> body) override {
+                   std::unique_ptr<const base::Value> body,
+                   int depth) override {
     NOTREACHED();
   }
 
@@ -994,9 +995,9 @@ class MockReportingService : public net::ReportingService {
     last_origin_filter_ = origin_filter;
   }
 
-  bool RequestIsUpload(const net::URLRequest& request) override {
+  int GetUploadDepth(const net::URLRequest& request) override {
     NOTREACHED();
-    return true;
+    return 0;
   }
 
   const net::ReportingPolicy& GetPolicy() const override {

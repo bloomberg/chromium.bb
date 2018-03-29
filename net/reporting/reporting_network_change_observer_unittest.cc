@@ -65,7 +65,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearNothing) {
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
-                     std::make_unique<base::DictionaryValue>(),
+                     std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   SetClient();
   ASSERT_EQ(1u, report_count());
@@ -84,7 +84,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearReports) {
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
-                     std::make_unique<base::DictionaryValue>(),
+                     std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   SetClient();
   ASSERT_EQ(1u, report_count());
@@ -103,7 +103,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearClients) {
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
-                     std::make_unique<base::DictionaryValue>(),
+                     std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   SetClient();
   ASSERT_EQ(1u, report_count());
@@ -122,7 +122,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearReportsAndClients) {
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
-                     std::make_unique<base::DictionaryValue>(),
+                     std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   SetClient();
   ASSERT_EQ(1u, report_count());

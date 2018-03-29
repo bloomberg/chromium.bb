@@ -118,11 +118,6 @@ bool IsHttpError(const NetworkErrorLoggingService::RequestDetails& request) {
   return request.status_code >= 400 && request.status_code < 600;
 }
 
-bool RequestWasSuccessful(
-    const NetworkErrorLoggingService::RequestDetails& request) {
-  return request.type == OK && !IsHttpError(request);
-}
-
 enum class HeaderOutcome {
   DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE = 0,
   DISCARDED_INVALID_SSL_INFO = 1,
@@ -234,28 +229,35 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return;
     }
 
-    std::string type_string;
-    if (!GetTypeFromNetError(details.type, &type_string)) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_UNMAPPED_ERROR);
-      return;
-    }
-
+    Error type = details.type;
     // It is expected for Reporting uploads to terminate with ERR_ABORTED, since
     // the ReportingUploader cancels them after receiving the response code and
     // headers.
-    //
-    // (This check would go earlier, but the histogram bucket will be more
-    // meaningful if it only includes reports that otherwise could have been
-    // uploaded.)
-    if (details.is_reporting_upload && details.type == ERR_ABORTED) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_REPORTING_UPLOAD);
+    if (details.reporting_upload_depth > 0 && type == ERR_ABORTED) {
+      // TODO(juliatuttle): Modify ReportingUploader to drain successful uploads
+      // instead of aborting them, so NEL can properly report on aborted
+      // requests.
+      type = OK;
+    }
+
+    std::string type_string;
+    if (!GetTypeFromNetError(type, &type_string)) {
+      RecordRequestOutcome(RequestOutcome::DISCARDED_UNMAPPED_ERROR);
       return;
     }
 
     if (IsHttpError(details))
       type_string = kHttpErrorType;
 
-    bool success = RequestWasSuccessful(details);
+    // This check would go earlier, but the histogram bucket will be more
+    // meaningful if it only includes reports that otherwise could have been
+    // uploaded.
+    if (details.reporting_upload_depth > kMaxNestedReportDepth) {
+      RecordRequestOutcome(RequestOutcome::DISCARDED_REPORTING_UPLOAD);
+      return;
+    }
+
+    bool success = (type == OK) && !IsHttpError(details);
     double sampling_fraction =
         success ? policy->success_fraction : policy->failure_fraction;
     if (base::RandDouble() >= sampling_fraction) {
@@ -267,7 +269,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     reporting_service_->QueueReport(
         details.uri, policy->report_to, kReportType,
-        CreateReportBody(type_string, sampling_fraction, details));
+        CreateReportBody(type_string, sampling_fraction, details),
+        details.reporting_upload_depth);
     RecordRequestOutcome(RequestOutcome::QUEUED);
   }
 
@@ -500,6 +503,15 @@ NetworkErrorLoggingService::RequestDetails::~RequestDetails() = default;
 const char NetworkErrorLoggingService::kHeaderName[] = "NEL";
 
 const char NetworkErrorLoggingService::kReportType[] = "network-error";
+
+// Allow NEL reports on regular requests, plus NEL reports on Reporting uploads
+// containing only regular requests, but do not allow NEL reports on Reporting
+// uploads containing Reporting uploads.
+//
+// This prevents origins from building purposefully-broken Reporting endpoints
+// that generate new NEL reports to bypass the age limit on Reporting reports.
+const int NetworkErrorLoggingService::kMaxNestedReportDepth = 1;
+
 const char NetworkErrorLoggingService::kUriKey[] = "uri";
 const char NetworkErrorLoggingService::kReferrerKey[] = "referrer";
 const char NetworkErrorLoggingService::kSamplingFractionKey[] =

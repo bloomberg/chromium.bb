@@ -46,7 +46,7 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
 
   ~PendingUploadImpl() override = default;
 
-  // PendingUpload implementationP:
+  // PendingUpload implementation:
   const GURL& url() const override { return url_; }
   const std::string& json() const override { return json_; }
   std::unique_ptr<base::Value> GetValue() const override {
@@ -100,15 +100,16 @@ TestReportingUploader::~TestReportingUploader() = default;
 
 void TestReportingUploader::StartUpload(const GURL& url,
                                         const std::string& json,
+                                        int max_depth,
                                         UploadCallback callback) {
   pending_uploads_.push_back(std::make_unique<PendingUploadImpl>(
       url, json, std::move(callback),
       base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
 }
 
-bool TestReportingUploader::RequestIsUpload(const URLRequest& request) {
+int TestReportingUploader::GetUploadDepth(const URLRequest& request) {
   NOTIMPLEMENTED();
-  return true;
+  return 0;
 }
 
 TestReportingDelegate::TestReportingDelegate()

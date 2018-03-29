@@ -36,14 +36,15 @@ class ReportingServiceImpl : public ReportingService {
   void QueueReport(const GURL& url,
                    const std::string& group,
                    const std::string& type,
-                   std::unique_ptr<const base::Value> body) override {
+                   std::unique_ptr<const base::Value> body,
+                   int depth) override {
     DCHECK(context_);
     DCHECK(context_->delegate());
 
     if (!context_->delegate()->CanQueueReport(url::Origin::Create(url)))
       return;
 
-    context_->cache()->AddReport(url, group, type, std::move(body),
+    context_->cache()->AddReport(url, group, type, std::move(body), depth,
                                  context_->tick_clock()->NowTicks(), 0);
   }
 
@@ -64,8 +65,8 @@ class ReportingServiceImpl : public ReportingService {
         context_->cache(), data_type_mask, origin_filter);
   }
 
-  bool RequestIsUpload(const URLRequest& request) override {
-    return context_->uploader()->RequestIsUpload(request);
+  int GetUploadDepth(const URLRequest& request) override {
+    return context_->uploader()->GetUploadDepth(request);
   }
 
   const ReportingPolicy& GetPolicy() const override {
