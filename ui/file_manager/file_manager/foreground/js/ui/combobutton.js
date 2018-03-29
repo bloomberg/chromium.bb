@@ -144,10 +144,20 @@ cr.define('cr.ui', function() {
       this.dispatchSelectEvent(event.target.data);
     },
 
-    handleButtonClick_: function() {
-      this.paperRipple_.simulatedRipple();
-      this.blur();
-      this.dispatchSelectEvent(this.defaultItem_);
+    handleButtonClick_: function(event) {
+      if (this.multiple) {
+        // When there are multiple choices just show/hide menu.
+        if (this.isMenuShown()) {
+          this.hideMenu();
+        } else {
+          this.showMenu(true);
+        }
+      } else {
+        // When there is only 1 choice, just dispatch to open.
+        this.paperRipple_.simulatedRipple();
+        this.blur();
+        this.dispatchSelectEvent(this.defaultItem_);
+      }
     },
 
     handleMenuShow_: function() {
