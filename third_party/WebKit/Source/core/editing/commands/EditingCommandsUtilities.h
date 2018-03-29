@@ -33,6 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
 #include "core/editing/TextGranularity.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/events/InputEvent.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/WTFString.h"
@@ -157,6 +158,20 @@ InputEvent::EventIsComposing IsComposingFromCommand(
 
 InputEvent::InputType DeletionInputTypeFromTextGranularity(DeleteDirection,
                                                            TextGranularity);
+
+// -------------------------------------------------------------------------
+// Blocks (true paragraphs; line break elements don't break blocks)
+// -------------------------------------------------------------------------
+//
+VisiblePosition StartOfBlock(
+    const VisiblePosition&,
+    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
+VisiblePosition EndOfBlock(
+    const VisiblePosition&,
+    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
+bool IsStartOfBlock(const VisiblePosition&);
+bool IsEndOfBlock(const VisiblePosition&);
+
 }  // namespace blink
 
 #endif
