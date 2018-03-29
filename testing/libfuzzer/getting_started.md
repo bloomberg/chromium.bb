@@ -6,7 +6,7 @@
 
 This document will walk you through:
 
-* setting up your build enviroment.
+* setting up your build environment.
 * creating your first fuzz target.
 * running the fuzz target and verifying its vitals.
 
@@ -29,7 +29,7 @@ Supported sanitizer configurations are:
 | GN Argument | Description |
 |--------------|----|
 | `is_asan=true` | enables [Address Sanitizer] to catch problems like buffer overruns. |
-| `is_msan=true` | enables [Memory Sanitizer] to catch problems like uninitialed reads<sup>\[[*](reference.md#MSan)\]</sup>. |
+| `is_msan=true` | enables [Memory Sanitizer] to catch problems like uninitialized reads<sup>\[[*](reference.md#MSan)\]</sup>. |
 | `is_ubsan_security=true` | enables [Undefined Behavior Sanitizer] to catch<sup>\[[*](reference.md#UBSan)\]</sup> undefined behavior like integer overflow. |
 | | it is possible to run libfuzzer without any sanitizers; *probably not what you want*.|
 
@@ -131,7 +131,7 @@ to your fuzzer target and add example files in appropriate folder. Read more
 in [Seed Corpus] section of the [Efficient Fuzzer Guide].
 *Make sure corpus files are appropriately licensed.*
 * Create mutation dictionary. With a `dict = "protocol.dict"` attribute and
-`key=value` dicitionary file format, mutations can be more effective.
+`key=value` dictionary file format, mutations can be more effective.
 See [Fuzzer Dictionary] section of the [Efficient Fuzzer Guide].
 * Specify testcase length limits. By default, libFuzzer uses `-max_len=4096`
 or takes the longest testcase in the corpus if `-max_len` is not specified.
@@ -213,7 +213,7 @@ Note that those bytes should not be used as data for any other arguments, e.g.:
 
 ```cpp
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Don't forget to enfoce minimal data length.
+  // Don't forget to enforce minimal data length.
   if (size < 1)
     return 0;
 
@@ -260,7 +260,7 @@ copy API input into it, or use a container object e.g.:
 
 ```cpp
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Don't forget to enfoce minimal data length.
+  // Don't forget to enforce minimal data length.
   if (size < 1)
     return 0;
 
