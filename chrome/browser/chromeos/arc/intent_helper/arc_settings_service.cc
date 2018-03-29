@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -42,6 +43,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/common/page_zoom.h"
 #include "net/proxy_resolution/proxy_config.h"
 
 using ::chromeos::CrosSettings;
@@ -127,9 +129,7 @@ class ArcSettingsServiceImpl
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
  private:
-  PrefService* GetPrefs() const {
-    return Profile::FromBrowserContext(context_)->GetPrefs();
-  }
+  PrefService* GetPrefs() const { return profile_->GetPrefs(); }
 
   // Returns whether kProxy pref proxy config is applied.
   bool IsPrefProxyConfigApplied() const;
@@ -161,6 +161,7 @@ class ArcSettingsServiceImpl
   void SyncBackupEnabled() const;
   void SyncFocusHighlightEnabled() const;
   void SyncFontSize() const;
+  void SyncPageZoom() const;
   void SyncLocale() const;
   void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
@@ -198,7 +199,7 @@ class ArcSettingsServiceImpl
   // ConnectionObserver<mojom::AppInstance>:
   void OnConnectionReady() override;
 
-  content::BrowserContext* const context_;
+  Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // Manages pref observation registration.
@@ -206,6 +207,11 @@ class ArcSettingsServiceImpl
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       reporting_consent_subscription_;
+
+  // Subscription for preference change of default zoom level. Subscription
+  // automatically unregisters a callback when it's destructed.
+  std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+      default_zoom_level_subscription_;
 
   base::WeakPtrFactory<ArcSettingsServiceImpl> weak_factory_;
 
@@ -215,9 +221,11 @@ class ArcSettingsServiceImpl
 ArcSettingsServiceImpl::ArcSettingsServiceImpl(
     content::BrowserContext* context,
     ArcBridgeService* arc_bridge_service)
-    : context_(context),
+    : profile_(Profile::FromBrowserContext(context)),
       arc_bridge_service_(arc_bridge_service),
       weak_factory_(this) {
+  DCHECK(profile_);
+
   StartObservingSettingsChanges();
   SyncBootTimeSettings();
   DCHECK(ArcSessionManager::Get());
@@ -338,6 +346,14 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
       base::Bind(&ArcSettingsServiceImpl::SyncReportingConsent,
                  base::Unretained(this)));
 
+  // It's safe to use base::Unretained. This is unregistered when
+  // default_zoom_level_subscription_ is destructed which is stored as
+  // unique_ptr in member of this class.
+  default_zoom_level_subscription_ =
+      profile_->GetZoomLevelPrefs()->RegisterDefaultZoomLevelCallback(
+          base::BindRepeating(&ArcSettingsServiceImpl::SyncPageZoom,
+                              base::Unretained(this)));
+
   TimezoneSettings::GetInstance()->AddObserver(this);
 
   chromeos::NetworkHandler::Get()->network_state_handler()->AddObserver(
@@ -365,6 +381,7 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   SyncAccessibilityVirtualKeyboardEnabled();
   SyncFocusHighlightEnabled();
   SyncFontSize();
+  SyncPageZoom();
   SyncProxySettings();
   SyncReportingConsent();
   SyncSelectToSpeakEnabled();
@@ -463,6 +480,15 @@ void ArcSettingsServiceImpl::SyncFontSize() const {
   extras.SetDouble("scale", android_scale);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_FONT_SCALE",
                         extras);
+}
+
+void ArcSettingsServiceImpl::SyncPageZoom() const {
+  double zoom_level = profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
+  double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
+
+  base::DictionaryValue extras;
+  extras.SetDouble("zoomFactor", zoom_factor);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_PAGE_ZOOM", extras);
 }
 
 void ArcSettingsServiceImpl::SyncLocale() const {
