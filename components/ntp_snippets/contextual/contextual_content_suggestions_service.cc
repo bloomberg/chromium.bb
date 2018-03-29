@@ -18,6 +18,10 @@
 
 namespace ntp_snippets {
 
+ContextualContentSuggestionsService::Cluster::Cluster() = default;
+
+ContextualContentSuggestionsService::Cluster::~Cluster() = default;
+
 ContextualContentSuggestionsService::ContextualContentSuggestionsService(
     std::unique_ptr<ContextualSuggestionsFetcher>
         contextual_suggestions_fetcher,
@@ -40,6 +44,12 @@ void ContextualContentSuggestionsService::FetchContextualSuggestions(
       base::BindOnce(
           &ContextualContentSuggestionsService::DidFetchContextualSuggestions,
           base::Unretained(this), url, std::move(callback)));
+}
+
+void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
+    const GURL& url,
+    FetchContextualSuggestionClustersCallback callback) {
+  // Fetch suggestions using the updated fetcher.
 }
 
 void ContextualContentSuggestionsService::FetchContextualSuggestionImage(

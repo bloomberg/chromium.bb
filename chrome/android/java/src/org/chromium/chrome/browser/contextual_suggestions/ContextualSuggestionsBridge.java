@@ -39,6 +39,17 @@ public class ContextualSuggestionsBridge {
         mNativeContextualSuggestionsBridge = 0;
     }
 
+    /**
+     * Fetches suggestions for a given URL.
+     * @param url URL for which to fetch suggestions.
+     * @param callback Callback used to return suggestions for a given URL.
+     */
+    public void fetchSuggestions(
+            String url, Callback<List<ContextualSuggestionsCluster>> callback) {
+        assert mNativeContextualSuggestionsBridge != 0;
+        nativeFetchSuggestions(mNativeContextualSuggestionsBridge, url, callback);
+    }
+
     /** Fetches a thumbnail for the suggestion. */
     public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
         assert mNativeContextualSuggestionsBridge != 0;
@@ -51,6 +62,12 @@ public class ContextualSuggestionsBridge {
         assert mNativeContextualSuggestionsBridge != 0;
         nativeFetchSuggestionFavicon(
                 mNativeContextualSuggestionsBridge, suggestion.mIdWithinCategory, callback);
+    }
+
+    /** Requests the backend to clear state related to this bridge. */
+    public void clearState() {
+        assert mNativeContextualSuggestionsBridge != 0;
+        nativeClearState(mNativeContextualSuggestionsBridge);
     }
 
     /**
@@ -86,21 +103,14 @@ public class ContextualSuggestionsBridge {
                         thumbnailDominantColor == 0 ? null : thumbnailDominantColor));
     }
 
-    @CalledByNative
-    private void onSuggestionsAvailable(List<ContextualSuggestionsCluster> clusters) {
-        // Pass this to UI (could be through observer).
-    }
-
-    @CalledByNative
-    private void onStateCleared() {
-        // Pass this to UI (could be through observer).
-    }
-
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeContextualSuggestionsBridge);
+    private native void nativeFetchSuggestions(long nativeContextualSuggestionsBridge, String url,
+            Callback<List<ContextualSuggestionsCluster>> callback);
     private native void nativeFetchSuggestionImage(
             long nativeContextualSuggestionsBridge, String suggestionId, Callback<Bitmap> callback);
     private native void nativeFetchSuggestionFavicon(
             long nativeContextualSuggestionsBridge, String suggestionId, Callback<Bitmap> callback);
+    private native void nativeClearState(long nativeContextualSuggestionsBridge);
     private native void nativeReportEvent(long nativeContextualSuggestionsBridge, int eventId);
 }
