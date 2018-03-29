@@ -14,6 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/test/webrtc_stats_report_obtainer.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
@@ -37,6 +38,8 @@ class RTCRtpReceiverTest : public ::testing::Test {
         dependency_factory_.get(), main_thread_,
         new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
                                              main_thread_));
+    peer_connection_ = new rtc::RefCountedObject<MockPeerConnectionImpl>(
+        dependency_factory_.get(), nullptr);
   }
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
@@ -55,9 +58,18 @@ class RTCRtpReceiverTest : public ::testing::Test {
     DCHECK(mock_webrtc_receiver_);
     DCHECK(track_adapter);
     return std::make_unique<RTCRtpReceiver>(
+        peer_connection_.get(), main_thread_,
+        dependency_factory_->GetWebRtcSignalingThread(),
         mock_webrtc_receiver_.get(), std::move(track_adapter),
         std::vector<
             std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>());
+  }
+
+  scoped_refptr<WebRTCStatsReportObtainer> GetStats() {
+    scoped_refptr<WebRTCStatsReportObtainer> obtainer =
+        new WebRTCStatsReportObtainer();
+    receiver_->GetStats(obtainer->GetStatsCallbackWrapper());
+    return obtainer;
   }
 
  protected:
@@ -82,6 +94,7 @@ class RTCRtpReceiverTest : public ::testing::Test {
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map_;
+  rtc::scoped_refptr<MockPeerConnectionImpl> peer_connection_;
   rtc::scoped_refptr<webrtc::MockRtpReceiver> mock_webrtc_receiver_;
   std::unique_ptr<RTCRtpReceiver> receiver_;
 };
@@ -112,6 +125,33 @@ TEST_F(RTCRtpReceiverTest, ShallowCopy) {
   EXPECT_EQ(copy->webrtc_receiver(), webrtc_receiver);
   EXPECT_EQ(&copy->webrtc_track(), webrtc_track);
   EXPECT_EQ(copy->Track().UniqueId(), web_track_unique_id);
+}
+
+TEST_F(RTCRtpReceiverTest, GetStats) {
+  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
+      MockWebRtcAudioTrack::Create("webrtc_track");
+  receiver_ = CreateReceiver(webrtc_track);
+
+  // Make the mock return a blink version of the |webtc_report|. The mock does
+  // not perform any stats filtering, we just set it to a dummy value.
+  rtc::scoped_refptr<webrtc::RTCStatsReport> webrtc_report =
+      webrtc::RTCStatsReport::Create(0u);
+  webrtc_report->AddStats(
+      std::make_unique<webrtc::RTCInboundRTPStreamStats>("stats-id", 1234u));
+  peer_connection_->SetGetStatsReport(webrtc_report);
+
+  auto obtainer = GetStats();
+  // Make sure the operation is async.
+  EXPECT_FALSE(obtainer->report());
+  // Wait for the report, this performs the necessary run-loop.
+  auto* report = obtainer->WaitForReport();
+  EXPECT_TRUE(report);
+
+  // Verify dummy value.
+  EXPECT_EQ(report->Size(), 1u);
+  auto stats = report->GetStats(blink::WebString::FromUTF8("stats-id"));
+  EXPECT_TRUE(stats);
+  EXPECT_EQ(stats->Timestamp(), 1.234);
 }
 
 }  // namespace content

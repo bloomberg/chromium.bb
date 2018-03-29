@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "WebCommon.h"
+#include "WebRTCStats.h"
 #include "WebString.h"
 #include "WebVector.h"
 
@@ -31,6 +32,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
   virtual WebVector<WebMediaStream> Streams() const = 0;
   virtual WebVector<std::unique_ptr<WebRTCRtpContributingSource>>
   GetSources() = 0;
+  virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) = 0;
 };
 
 }  // namespace blink

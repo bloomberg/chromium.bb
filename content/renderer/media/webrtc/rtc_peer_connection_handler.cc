@@ -2062,6 +2062,7 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
           .insert(std::make_pair(
               receiver_id,
               std::make_unique<RTCRtpReceiver>(
+                  native_peer_connection_, task_runner_, signaling_thread(),
                   webrtc_receiver.get(), std::move(remote_track_adapter_ref),
                   std::move(remote_stream_adapter_refs))))
           .first->second;

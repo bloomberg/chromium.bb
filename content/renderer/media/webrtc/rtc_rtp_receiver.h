@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCRtpReceiver.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
 
 namespace content {
@@ -27,6 +28,9 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
       const webrtc::RtpReceiverInterface* webrtc_rtp_receiver);
 
   RTCRtpReceiver(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
       rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
           track_adapter,
@@ -46,6 +50,7 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   blink::WebVector<blink::WebMediaStream> Streams() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
   GetSources() override;
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override;
 
   webrtc::RtpReceiverInterface* webrtc_receiver() const;
   const webrtc::MediaStreamTrackInterface& webrtc_track() const;

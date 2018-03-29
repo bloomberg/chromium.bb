@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/renderer/media/webrtc/rtc_rtp_contributing_source.h"
+#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace content {
@@ -16,12 +17,18 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
           RTCRtpReceiver::RTCRtpReceiverInternal> {
  public:
   RTCRtpReceiverInternal(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
       rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
           track_adapter,
       std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
           stream_adapter_refs)
-      : webrtc_receiver_(std::move(webrtc_receiver)),
+      : native_peer_connection_(std::move(native_peer_connection)),
+        main_thread_(std::move(main_thread)),
+        signaling_thread_(std::move(signaling_thread)),
+        webrtc_receiver_(std::move(webrtc_receiver)),
         track_adapter_(std::move(track_adapter)),
         stream_adapter_refs_(std::move(stream_adapter_refs)) {
     DCHECK(webrtc_receiver_);
@@ -50,6 +57,13 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
           std::make_unique<RTCRtpContributingSource>(webrtc_sources[i]);
     }
     return sources;
+  }
+
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+    signaling_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RTCRtpReceiverInternal::GetStatsOnSignalingThread, this,
+                       std::move(callback)));
   }
 
   webrtc::RtpReceiverInterface* webrtc_receiver() const {
@@ -84,8 +98,17 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
   friend class base::RefCountedThreadSafe<RTCRtpReceiverInternal>;
   ~RTCRtpReceiverInternal() {}
 
-  const rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver_;
+  void GetStatsOnSignalingThread(
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+    native_peer_connection_->GetStats(webrtc_receiver_,
+                                      RTCStatsCollectorCallbackImpl::Create(
+                                          main_thread_, std::move(callback)));
+  }
 
+  const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
+  const rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver_;
   // The track adapter is the glue between blink and webrtc layer tracks.
   // Keeping a reference to the adapter ensures it is not disposed, as is
   // required as long as the webrtc layer track is in use by the receiver.
@@ -102,11 +125,17 @@ uintptr_t RTCRtpReceiver::getId(
 }
 
 RTCRtpReceiver::RTCRtpReceiver(
+    scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
     rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter,
     std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
         stream_adapter_refs)
-    : internal_(new RTCRtpReceiverInternal(std::move(webrtc_receiver),
+    : internal_(new RTCRtpReceiverInternal(std::move(native_peer_connection),
+                                           std::move(main_thread),
+                                           std::move(signaling_thread),
+                                           std::move(webrtc_receiver),
                                            std::move(track_adapter),
                                            std::move(stream_adapter_refs))) {}
 
@@ -139,6 +168,11 @@ blink::WebVector<blink::WebMediaStream> RTCRtpReceiver::Streams() const {
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
 RTCRtpReceiver::GetSources() {
   return internal_->GetSources();
+}
+
+void RTCRtpReceiver::GetStats(
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+  internal_->GetStats(std::move(callback));
 }
 
 webrtc::RtpReceiverInterface* RTCRtpReceiver::webrtc_receiver() const {
