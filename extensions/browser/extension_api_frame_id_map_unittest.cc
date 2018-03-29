@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/extension_api_frame_id_map.h"
+
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/extension_api_frame_id_map.h"
+#include "extensions/common/constants.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using FrameDataCallback = extensions::ExtensionApiFrameIdMap::FrameDataCallback;
 
 namespace extensions {
 
 namespace {
+
+using FrameDataCallback = extensions::ExtensionApiFrameIdMap::FrameDataCallback;
 
 int ToTestFrameId(int render_process_id, int frame_routing_id) {
   if (render_process_id < 0 && frame_routing_id < 0)
@@ -33,7 +36,7 @@ int ToTestParentFrameId(int render_process_id, int frame_routing_id) {
 
 int ToTestTabId(int render_process_id, int frame_routing_id) {
   if (render_process_id < 0 && frame_routing_id < 0)
-    return -1;
+    return extension_misc::kUnknownTabId;
   // Return a deterministic value (yet different from the input) for testing.
   // To make debugging easier: Ending with 5 = tab ID.
   return render_process_id * 1000 + frame_routing_id * 10 + 5;
@@ -41,10 +44,20 @@ int ToTestTabId(int render_process_id, int frame_routing_id) {
 
 int ToTestWindowId(int render_process_id, int frame_routing_id) {
   if (render_process_id < 0 && frame_routing_id < 0)
-    return -1;
+    return extension_misc::kUnknownWindowId;
   // Return a deterministic value (yet different from the input) for testing.
   // To make debugging easier: Ending with 4 = window ID.
   return render_process_id * 1000 + frame_routing_id * 10 + 4;
+}
+
+GURL ToTestLastCommittedMainFrameURL(int render_process_id,
+                                     int frame_routing_id) {
+  if (render_process_id < 0 && frame_routing_id < 0)
+    return GURL();
+
+  // Return a deterministic value (yet different from the input) for testing.
+  return GURL(base::StringPrintf("http://%d.com/%d", render_process_id,
+                                 frame_routing_id));
 }
 
 class TestExtensionApiFrameIdMap : public ExtensionApiFrameIdMap {
@@ -80,7 +93,9 @@ class TestExtensionApiFrameIdMap : public ExtensionApiFrameIdMap {
         ToTestFrameId(key.render_process_id, key.frame_routing_id),
         ToTestParentFrameId(key.render_process_id, key.frame_routing_id),
         ToTestTabId(key.render_process_id, key.frame_routing_id),
-        ToTestWindowId(key.render_process_id, key.frame_routing_id));
+        ToTestWindowId(key.render_process_id, key.frame_routing_id),
+        ToTestLastCommittedMainFrameURL(key.render_process_id,
+                                        key.frame_routing_id));
   }
 };
 
@@ -113,6 +128,9 @@ class ExtensionApiFrameIdMapTest : public testing::Test {
               frame_data.tab_id);
     EXPECT_EQ(ToTestWindowId(render_process_id, frame_routing_id),
               frame_data.window_id);
+    EXPECT_EQ(
+        ToTestLastCommittedMainFrameURL(render_process_id, frame_routing_id),
+        frame_data.last_committed_main_frame_url);
   }
 
   const std::vector<std::string>& results() { return results_; }
@@ -273,6 +291,8 @@ TEST_F(ExtensionApiFrameIdMapTest, GetCachedFrameDataOnIO) {
             data.parent_frame_id);
   EXPECT_EQ(ToTestTabId(kRenderProcessId, kFrameRoutingId), data.tab_id);
   EXPECT_EQ(ToTestWindowId(kRenderProcessId, kFrameRoutingId), data.window_id);
+  EXPECT_EQ(ToTestLastCommittedMainFrameURL(kRenderProcessId, kFrameRoutingId),
+            data.last_committed_main_frame_url);
 }
 
 }  // namespace extensions

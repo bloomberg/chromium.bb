@@ -8,11 +8,14 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "url/gurl.h"
 
 namespace content {
 class NavigationHandle;
@@ -58,7 +61,15 @@ class ExtensionApiFrameIdMap {
   // The data for a RenderFrame. Every RenderFrameIdKey maps to a FrameData.
   struct FrameData {
     FrameData();
-    FrameData(int frame_id, int parent_frame_id, int tab_id, int window_id);
+    FrameData(int frame_id,
+              int parent_frame_id,
+              int tab_id,
+              int window_id,
+              GURL last_committed_main_frame_url);
+    ~FrameData();
+
+    FrameData(const FrameData&);
+    FrameData& operator=(const FrameData&);
 
     // The extension API frame ID of the frame.
     int frame_id;
@@ -73,6 +84,15 @@ class ExtensionApiFrameIdMap {
     // The id of the window that the frame is in, or -1 if the frame isn't in a
     // window.
     int window_id;
+
+    // The last committed url of the main frame to which this frame belongs.
+    // This ignores any same-document navigations.
+    GURL last_committed_main_frame_url;
+
+    // The pending main frame url. This is only non-empty for main frame data
+    // when the main frame is ready to commit navigation but hasn't fully
+    // completed the navigation yet. This ignores any same-document navigations.
+    base::Optional<GURL> pending_main_frame_url;
   };
 
   using FrameDataCallback = base::Callback<void(const FrameData&)>;
@@ -135,6 +155,16 @@ class ExtensionApiFrameIdMap {
   void UpdateTabAndWindowId(int tab_id,
                             int window_id,
                             content::RenderFrameHost* rfh);
+
+  // Called when WebContentsObserver::ReadyToCommitNavigation is dispatched for
+  // a main frame.
+  void OnMainFrameReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle);
+
+  // Called when WebContentsObserver::DidFinishNavigation is dispatched for a
+  // main frame.
+  void OnMainFrameDidFinishNavigation(
+      content::NavigationHandle* navigation_handle);
 
   // Returns whether frame data for |rfh| is cached.
   bool HasCachedFrameDataForTesting(content::RenderFrameHost* rfh) const;
@@ -212,6 +242,12 @@ class ExtensionApiFrameIdMap {
   // UI thread and read on the IO thread. Acquire during a read on the IO thread
   // and during a write on the UI thread.
   base::Lock frame_data_map_lock_;
+
+  // The set of pending main frame navigations for which ReadyToCommitNavigation
+  // has been fired. Only used on the UI thread. This is needed to clear state
+  // set up in OnMainFrameReadyToCommitNavigation for navigations which
+  // eventually do not commit.
+  std::set<content::NavigationHandle*> ready_to_commit_document_navigations_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionApiFrameIdMap);
 };

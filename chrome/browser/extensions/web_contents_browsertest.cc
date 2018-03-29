@@ -2,23 +2,68 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
+#include "extensions/browser/extension_navigation_ui_data.h"
 
 namespace {
+
+using ExtensionApiFrameIdMap = extensions::ExtensionApiFrameIdMap;
 
 content::WebContents* GetActiveWebContents(const Browser* browser) {
   return browser->tab_strip_model()->GetActiveWebContents();
 }
+
+// Saves ExtensionNavigationUIData for each render frame which completes
+// navigation.
+class ExtensionNavigationUIDataObserver : public content::WebContentsObserver {
+ public:
+  explicit ExtensionNavigationUIDataObserver(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  const extensions::ExtensionNavigationUIData* GetExtensionNavigationUIData(
+      content::RenderFrameHost* rfh) const {
+    auto iter = navigation_ui_data_map_.find(rfh);
+    if (iter == navigation_ui_data_map_.end())
+      return nullptr;
+    return iter->second.get();
+  }
+
+ private:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->HasCommitted())
+      return;
+
+    content::RenderFrameHost* rfh = navigation_handle->GetRenderFrameHost();
+    const auto* data = static_cast<const ChromeNavigationUIData*>(
+        navigation_handle->GetNavigationUIData());
+    navigation_ui_data_map_[rfh] =
+        data->GetExtensionNavigationUIData()->DeepCopy();
+  }
+
+  std::map<content::RenderFrameHost*,
+           std::unique_ptr<extensions::ExtensionNavigationUIData>>
+      navigation_ui_data_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionNavigationUIDataObserver);
+};
 
 }  // namespace
 
@@ -84,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DevToolsMainFrameIsCached) {
   test_devtools_main_frame_cached(browser(), false /*is_docked*/);
 }
 
-// Test that we cache frame data for all frames on creation. Regression test for
-// crbug.com/810614.
+// Test that we correctly cache frame data for all frames on creation.
+// Regression test for crbug.com/810614.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FrameDataCached) {
   // Load an extension with a web accessible resource.
   const extensions::Extension* extension =
@@ -98,8 +143,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FrameDataCached) {
 
   // Returns whether the frame data for |rfh| is cached.
   auto has_cached_frame_data = [](content::RenderFrameHost* rfh) {
-    return extensions::ExtensionApiFrameIdMap::Get()
-        ->HasCachedFrameDataForTesting(rfh);
+    return ExtensionApiFrameIdMap::Get()->HasCachedFrameDataForTesting(rfh);
+  };
+
+  // Returns the cached frame data for |rfh|.
+  auto get_frame_data = [](content::RenderFrameHost* rfh) {
+    return ExtensionApiFrameIdMap::Get()->GetFrameData(rfh);
   };
 
   // Adds an iframe with the given |name| and |src| to the given |web_contents|
@@ -131,29 +180,66 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FrameDataCached) {
   };
 
   // Navigates the browser to |url|. Injects a web-frame and an extension frame
-  // into the page and ensures that extension frame data is cached for each
-  // created frame.
+  // into the page and ensures that extension frame data is correctly cached for
+  // each created frame.
   auto load_page_and_test = [&](const GURL& url) {
+    using FrameData = ExtensionApiFrameIdMap::FrameData;
+
     SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
 
     ui_test_utils::NavigateToURL(browser(), url);
     content::WebContents* web_contents = GetActiveWebContents(browser());
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(web_contents);
+    ASSERT_TRUE(session_tab_helper);
+    int expected_tab_id = session_tab_helper->session_id().id();
+    int expected_window_id = session_tab_helper->window_id().id();
 
     // Ensure that the frame data for the main frame is cached.
-    EXPECT_TRUE(has_cached_frame_data(web_contents->GetMainFrame()));
+    content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+    EXPECT_TRUE(has_cached_frame_data(rfh));
+    FrameData main_frame_data = get_frame_data(rfh);
+    EXPECT_EQ(ExtensionApiFrameIdMap::kTopFrameId, main_frame_data.frame_id);
+    EXPECT_EQ(ExtensionApiFrameIdMap::kInvalidFrameId,
+              main_frame_data.parent_frame_id);
+    EXPECT_EQ(expected_tab_id, main_frame_data.tab_id);
+    EXPECT_EQ(expected_window_id, main_frame_data.window_id);
+    EXPECT_EQ(url, main_frame_data.last_committed_main_frame_url);
+    EXPECT_FALSE(main_frame_data.pending_main_frame_url);
 
     // Add an extension iframe to the page and ensure its frame data is cached.
     ASSERT_TRUE(
         add_iframe(web_contents, "extension_frame",
                    extension->GetResourceURL("web_accessible_page.html")));
-    EXPECT_TRUE(has_cached_frame_data(
-        get_frame_by_name(web_contents, "extension_frame")));
+    rfh = get_frame_by_name(web_contents, "extension_frame");
+    EXPECT_TRUE(has_cached_frame_data(rfh));
+    FrameData extension_frame_data = get_frame_data(rfh);
+    EXPECT_NE(ExtensionApiFrameIdMap::kInvalidFrameId,
+              extension_frame_data.frame_id);
+    EXPECT_NE(ExtensionApiFrameIdMap::kTopFrameId,
+              extension_frame_data.frame_id);
+    EXPECT_EQ(ExtensionApiFrameIdMap::kTopFrameId,
+              extension_frame_data.parent_frame_id);
+    EXPECT_EQ(expected_tab_id, extension_frame_data.tab_id);
+    EXPECT_EQ(expected_window_id, extension_frame_data.window_id);
+    EXPECT_EQ(url, extension_frame_data.last_committed_main_frame_url);
+    EXPECT_FALSE(extension_frame_data.pending_main_frame_url);
 
     // Add a web frame to the page and ensure its frame data is cached.
     ASSERT_TRUE(add_iframe(web_contents, "web_frame",
                            embedded_test_server()->GetURL("/empty.html")));
-    EXPECT_TRUE(
-        has_cached_frame_data(get_frame_by_name(web_contents, "web_frame")));
+    rfh = get_frame_by_name(web_contents, "web_frame");
+    EXPECT_TRUE(has_cached_frame_data(rfh));
+    FrameData web_frame_data = get_frame_data(rfh);
+    EXPECT_NE(ExtensionApiFrameIdMap::kInvalidFrameId, web_frame_data.frame_id);
+    EXPECT_NE(ExtensionApiFrameIdMap::kTopFrameId, web_frame_data.frame_id);
+    EXPECT_NE(extension_frame_data.frame_id, web_frame_data.frame_id);
+    EXPECT_EQ(ExtensionApiFrameIdMap::kTopFrameId,
+              web_frame_data.parent_frame_id);
+    EXPECT_EQ(expected_tab_id, web_frame_data.tab_id);
+    EXPECT_EQ(expected_window_id, web_frame_data.window_id);
+    EXPECT_EQ(url, web_frame_data.last_committed_main_frame_url);
+    EXPECT_FALSE(web_frame_data.pending_main_frame_url);
   };
   // End utility functions.
 
@@ -162,4 +248,61 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FrameDataCached) {
 
   // Test a non-extension page.
   load_page_and_test(embedded_test_server()->GetURL("/empty.html"));
+}
+
+// Test that we correctly set up the ExtensionNavigationUIData for each
+// navigation.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionNavigationUIData) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* web_contents = GetActiveWebContents(browser());
+  GURL last_committed_main_frame_url = web_contents->GetLastCommittedURL();
+  ExtensionNavigationUIDataObserver observer(web_contents);
+
+  // Load a page with an iframe.
+  const GURL url = embedded_test_server()->GetURL("/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(session_tab_helper);
+  int expected_tab_id = session_tab_helper->session_id().id();
+  int expected_window_id = session_tab_helper->window_id().id();
+
+  // Test ExtensionNavigationUIData for the main frame.
+  {
+    const auto* extension_navigation_ui_data =
+        observer.GetExtensionNavigationUIData(web_contents->GetMainFrame());
+    ASSERT_TRUE(extension_navigation_ui_data);
+    EXPECT_FALSE(extension_navigation_ui_data->is_web_view());
+
+    ExtensionApiFrameIdMap::FrameData frame_data =
+        extension_navigation_ui_data->frame_data();
+    EXPECT_EQ(ExtensionApiFrameIdMap::kTopFrameId, frame_data.frame_id);
+    EXPECT_EQ(ExtensionApiFrameIdMap::kInvalidFrameId,
+              frame_data.parent_frame_id);
+    EXPECT_EQ(expected_tab_id, frame_data.tab_id);
+    EXPECT_EQ(expected_window_id, frame_data.window_id);
+    EXPECT_EQ(last_committed_main_frame_url,
+              frame_data.last_committed_main_frame_url);
+    EXPECT_FALSE(frame_data.pending_main_frame_url);
+  }
+
+  // Test ExtensionNavigationUIData for the sub-frame.
+  {
+    const auto* extension_navigation_ui_data =
+        observer.GetExtensionNavigationUIData(
+            content::ChildFrameAt(web_contents->GetMainFrame(), 0));
+    ASSERT_TRUE(extension_navigation_ui_data);
+    EXPECT_FALSE(extension_navigation_ui_data->is_web_view());
+
+    ExtensionApiFrameIdMap::FrameData frame_data =
+        extension_navigation_ui_data->frame_data();
+    EXPECT_NE(ExtensionApiFrameIdMap::kInvalidFrameId, frame_data.frame_id);
+    EXPECT_NE(ExtensionApiFrameIdMap::kTopFrameId, frame_data.frame_id);
+    EXPECT_EQ(ExtensionApiFrameIdMap::kTopFrameId, frame_data.parent_frame_id);
+    EXPECT_EQ(expected_tab_id, frame_data.tab_id);
+    EXPECT_EQ(expected_window_id, frame_data.window_id);
+    EXPECT_EQ(url, frame_data.last_committed_main_frame_url);
+    EXPECT_FALSE(frame_data.pending_main_frame_url);
+  }
 }
