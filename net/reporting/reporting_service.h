@@ -53,7 +53,8 @@ class NET_EXPORT ReportingService {
   virtual void QueueReport(const GURL& url,
                            const std::string& group,
                            const std::string& type,
-                           std::unique_ptr<const base::Value> body) = 0;
+                           std::unique_ptr<const base::Value> body,
+                           int depth) = 0;
 
   // Processes a Report-To header. |url| is the URL that originated the header;
   // |header_value| is the normalized value of the Report-To header.
@@ -66,9 +67,9 @@ class NET_EXPORT ReportingService {
       int data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
 
-  // Checks whether |request| is a Reporting upload, to avoid loops of reporting
-  // about report uploads.
-  virtual bool RequestIsUpload(const URLRequest& request) = 0;
+  // Checks how many uploads deep |request| is: 0 if it's not an upload, n+1 if
+  // it's an upload reporting on requests of at most depth n.
+  virtual int GetUploadDepth(const URLRequest& request) = 0;
 
   virtual const ReportingPolicy& GetPolicy() const = 0;
 

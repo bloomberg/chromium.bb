@@ -180,11 +180,16 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       std::string json;
       SerializeReports(reports, tick_clock()->NowTicks(), &json);
 
-      for (const ReportingReport* report : reports)
+      int max_depth = 0;
+      for (const ReportingReport* report : reports) {
         undelivered_reports.erase(report);
+        if (report->depth > max_depth)
+          max_depth = report->depth;
+      }
 
+      // TODO: Calculate actual max depth.
       uploader()->StartUpload(
-          endpoint, json,
+          endpoint, json, max_depth,
           base::BindOnce(
               &ReportingDeliveryAgentImpl::OnUploadComplete,
               weak_factory_.GetWeakPtr(),

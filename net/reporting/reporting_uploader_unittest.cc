@@ -109,7 +109,8 @@ TEST_F(ReportingUploaderTest, Upload) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, callback.callback());
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
+                         callback.callback());
   callback.WaitForCall();
 }
 
@@ -118,7 +119,8 @@ TEST_F(ReportingUploaderTest, Success) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, callback.callback());
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
+                         callback.callback());
   callback.WaitForCall();
 
   EXPECT_EQ(ReportingUploader::Outcome::SUCCESS, callback.outcome());
@@ -130,7 +132,7 @@ TEST_F(ReportingUploaderTest, NetworkError1) {
   ASSERT_TRUE(server_.ShutdownAndWaitUntilComplete());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(url, kUploadBody, callback.callback());
+  uploader_->StartUpload(url, kUploadBody, 0, callback.callback());
   callback.WaitForCall();
 
   EXPECT_EQ(ReportingUploader::Outcome::FAILURE, callback.outcome());
@@ -141,7 +143,8 @@ TEST_F(ReportingUploaderTest, NetworkError2) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, callback.callback());
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
+                         callback.callback());
   callback.WaitForCall();
 
   EXPECT_EQ(ReportingUploader::Outcome::FAILURE, callback.outcome());
@@ -153,7 +156,8 @@ TEST_F(ReportingUploaderTest, ServerError) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, callback.callback());
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
+                         callback.callback());
   callback.WaitForCall();
 
   EXPECT_EQ(ReportingUploader::Outcome::FAILURE, callback.outcome());
@@ -165,7 +169,8 @@ TEST_F(ReportingUploaderTest, RemoveEndpoint) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, callback.callback());
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
+                         callback.callback());
   callback.WaitForCall();
 
   EXPECT_EQ(ReportingUploader::Outcome::REMOVE_ENDPOINT, callback.outcome());
@@ -207,7 +212,8 @@ TEST_F(ReportingUploaderTest, FollowHttpsRedirect) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, callback.callback());
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
+                         callback.callback());
   callback.WaitForCall();
 
   EXPECT_TRUE(followed);
@@ -228,7 +234,8 @@ TEST_F(ReportingUploaderTest, DontFollowHttpRedirect) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, callback.callback());
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
+                         callback.callback());
   callback.WaitForCall();
 
   EXPECT_FALSE(followed);
@@ -254,7 +261,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
   ASSERT_TRUE(cookie_callback.result());
 
   TestUploadCallback upload_callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody,
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
                          upload_callback.callback());
   upload_callback.WaitForCall();
 }
@@ -274,7 +281,7 @@ TEST_F(ReportingUploaderTest, DontSaveCookies) {
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback upload_callback;
-  uploader_->StartUpload(server_.GetURL("/"), kUploadBody,
+  uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
                          upload_callback.callback());
   upload_callback.WaitForCall();
 
@@ -312,7 +319,7 @@ TEST_F(ReportingUploaderTest, DontCacheResponse) {
 
   {
     TestUploadCallback callback;
-    uploader_->StartUpload(server_.GetURL("/"), kUploadBody,
+    uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
                            callback.callback());
     callback.WaitForCall();
   }
@@ -320,7 +327,7 @@ TEST_F(ReportingUploaderTest, DontCacheResponse) {
 
   {
     TestUploadCallback callback;
-    uploader_->StartUpload(server_.GetURL("/"), kUploadBody,
+    uploader_->StartUpload(server_.GetURL("/"), kUploadBody, 0,
                            callback.callback());
     callback.WaitForCall();
   }

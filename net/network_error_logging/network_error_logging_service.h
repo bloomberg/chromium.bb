@@ -56,12 +56,21 @@ class NET_EXPORT NetworkErrorLoggingService {
     base::TimeDelta elapsed_time;
     Error type;
 
-    bool is_reporting_upload;
+    // Upload nesting depth of this request.
+    //
+    // If the request is not a Reporting upload, the depth is 0.
+    //
+    // If the request is a Reporting upload, the depth is the max of the depth
+    // of the requests reported within it plus 1. (Non-NEL reports are
+    // considered to have depth 0.)
+    int reporting_upload_depth;
   };
 
   static const char kHeaderName[];
 
   static const char kReportType[];
+
+  static const int kMaxNestedReportDepth;
 
   // Keys for data included in report bodies. Exposed for tests.
 
