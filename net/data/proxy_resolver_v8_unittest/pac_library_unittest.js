@@ -258,9 +258,14 @@ Tests.testDateRange = function(t) {
   t.expectEquals(true, dateRange(3, "MAR"));
   MockDate.setCurrent("Mar 03 2014");
   t.expectEquals(true, dateRange(3, "MAR"));
-  // TODO(eroman):
-  //t.expectEquals(false, dateRange(2, "MAR"));
-  //t.expectEquals(false, dateRange(3, "JAN"));
+
+  // It is unclear what the intent of (day, month) is; the Netscape code
+  // ends up returning true for any combination (https://crbug.com/827292).
+  //
+  // This seems wrong, but in the spirit of bug-for-bug compatibility document
+  // that behavior through tests :(
+  t.expectEquals(true, dateRange(2, "MAR"));
+  t.expectEquals(true, dateRange(3, "JAN"));
 
   // dateRange(day, month, year)
   MockDate.setCurrent("Mar 03 2009");
