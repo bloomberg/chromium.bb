@@ -46,6 +46,12 @@ namespace {
 const base::Feature kPrioritySupportedRequestsDelayable{
     "PrioritySupportedRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When kSpdyProxiesRequestsDelayable is enabled, HTTP requests fetched from
+// a SPDY/QUIC/H2 proxies can be delayed by the ResourceScheduler just as
+// HTTP/1.1 resources are.
+const base::Feature kSpdyProxiesRequestsDelayable{
+    "SpdyProxiesRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, low-priority H2 and QUIC requests are throttled, but only
 // when the parser is in head.
 const base::Feature kHeadPrioritySupportedRequestsDelayable{
@@ -399,7 +405,9 @@ class ResourceScheduler::Client {
  public:
   Client(const net::NetworkQualityEstimator* const network_quality_estimator,
          ResourceScheduler* resource_scheduler)
-      : deprecated_is_loaded_(false),
+      : spdy_proxy_requests_delayble_(
+            base::FeatureList::IsEnabled(kSpdyProxiesRequestsDelayable)),
+        deprecated_is_loaded_(false),
         deprecated_has_html_body_(false),
         using_spdy_proxy_(false),
         in_flight_delayable_count_(0),
@@ -507,6 +515,11 @@ class ResourceScheduler::Client {
   }
 
   void OnReceivedSpdyProxiedHttpResponse() {
+    // If the requests to SPDY/H2/QUIC proxies are delayable, then return
+    // immediately.
+    if (spdy_proxy_requests_delayble_)
+      return;
+
     if (!using_spdy_proxy_) {
       using_spdy_proxy_ = true;
       LoadAnyStartablePendingRequests(RequestStartTrigger::SPDY_PROXY_DETECTED);
@@ -959,6 +972,10 @@ class ResourceScheduler::Client {
       }
     }
   }
+
+  // True if requests to SPDY/H2/QUIC proxies can be delayed by the
+  // ResourceScheduler just as HTTP/1.1 resources are.
+  const bool spdy_proxy_requests_delayble_;
 
   bool deprecated_is_loaded_;
   // Tracks if the main HTML parser has reached the body which marks the end of

@@ -2024,6 +2024,66 @@ TEST_F(ResourceSchedulerTest, NumDelayableAtStartOfNonDelayableUMA) {
       1);
 }
 
+TEST_F(ResourceSchedulerTest,
+       SpdyProxiesRequestsDelayableFeatureEnabled_DelaysSpdyProxyRequests) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("SpdyProxiesRequestsDelayable", "");
+  InitializeScheduler();
+
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::IDLE));
+  EXPECT_FALSE(request->started());
+
+  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request->started());
+
+  // Low priority requests are not started even though the page is loaded from
+  // an H2 proxy.
+  std::unique_ptr<TestRequest> after(
+      NewRequest("http://host/after", net::IDLE));
+  EXPECT_FALSE(after->started());
+
+  // High priority requests should still be scheduled immediately.
+  std::unique_ptr<TestRequest> high_2(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high_2->started());
+}
+
+TEST_F(
+    ResourceSchedulerTest,
+    SpdyProxiesRequestsDelayableFeatureDisabled_SpdyProxyRequestsScheduledImmediately) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("", "SpdyProxiesRequestsDelayable");
+  InitializeScheduler();
+
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::IDLE));
+  EXPECT_FALSE(request->started());
+
+  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request->started());
+
+  // Low priority requests are started since the page is loaded from an H2
+  // proxy.
+  std::unique_ptr<TestRequest> after(
+      NewRequest("http://host/after", net::IDLE));
+  EXPECT_TRUE(after->started());
+
+  std::unique_ptr<TestRequest> high_2(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high_2->started());
+}
+
 TEST_F(ResourceSchedulerTest, SchedulerEnabled) {
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
