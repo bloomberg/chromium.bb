@@ -7,9 +7,13 @@
 
 namespace virtual_machines {
 
-// Whether running virtual machines on Chrome OS are allowed
+// Whether running virtual machines on Chrome OS is allowed
 // per enterprise policy.
 bool AreVirtualMachinesAllowedByPolicy();
+
+// Whether running virtual machines on Chrome OS is allowed per hard-coded
+// release schedule.
+bool AreVirtualMachinesAllowedByVersionAndChannel();
 
 }  // namespace virtual_machines
 
