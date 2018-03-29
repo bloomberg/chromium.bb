@@ -26,8 +26,7 @@ const char kTestExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 class AppInfoDialogAshTest : public ash::AshTestBase {
  public:
-  AppInfoDialogAshTest()
-      : extension_environment_(base::MessageLoopForUI::current()) {}
+  AppInfoDialogAshTest() = default;
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -49,7 +48,9 @@ class AppInfoDialogAshTest : public ash::AshTestBase {
   }
 
  protected:
-  extensions::TestExtensionEnvironment extension_environment_;
+  extensions::TestExtensionEnvironment extension_environment_{
+      extensions::TestExtensionEnvironment::Type::
+          kInheritExistingTaskEnvironment};
   views::Widget* widget_ = nullptr;
   AppInfoDialog* dialog_ = nullptr;  // Owned by |widget_|'s views hierarchy.
 

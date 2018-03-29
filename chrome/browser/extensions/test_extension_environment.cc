@@ -8,10 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -20,7 +17,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,20 +70,20 @@ std::unique_ptr<base::DictionaryValue> MakePackagedAppManifest() {
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
 // Extra environment state required for ChromeOS.
 class TestExtensionEnvironment::ChromeOSEnv {
  public:
   ChromeOSEnv() {}
 
  private:
-#if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSEnv);
 };
+#endif  // defined(OS_CHROMEOS)
 
 // static
 ExtensionService* TestExtensionEnvironment::CreateExtensionServiceForProfile(
@@ -98,24 +94,16 @@ ExtensionService* TestExtensionEnvironment::CreateExtensionServiceForProfile(
       base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
 }
 
-TestExtensionEnvironment::TestExtensionEnvironment()
-    : thread_bundle_(new content::TestBrowserThreadBundle),
-      extension_service_(nullptr) {
-  Init();
-}
-
-TestExtensionEnvironment::TestExtensionEnvironment(
-    base::MessageLoopForUI* message_loop)
-    : extension_service_(nullptr) {
-  Init();
-}
-
-void TestExtensionEnvironment::Init() {
-  profile_.reset(new TestingProfile);
+TestExtensionEnvironment::TestExtensionEnvironment(Type type)
+    : thread_bundle_(type == Type::kWithTaskEnvironment
+                         ? std::make_unique<content::TestBrowserThreadBundle>()
+                         : nullptr),
 #if defined(OS_CHROMEOS)
-  if (!chromeos::DeviceSettingsService::IsInitialized())
-    chromeos_env_.reset(new ChromeOSEnv);
+      chromeos_env_(chromeos::DeviceSettingsService::IsInitialized()
+                        ? nullptr
+                        : std::make_unique<ChromeOSEnv>()),
 #endif
+      profile_(std::make_unique<TestingProfile>()) {
 }
 
 TestExtensionEnvironment::~TestExtensionEnvironment() {
