@@ -270,7 +270,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     // Skip non-empty fields unless this is the forceFillFieldName or it's a
     // 'select-one' element. 'select-one' elements are always autofilled even
     // if non-empty; see AutofillManager::FillOrPreviewDataModelForm().
-    if (element.value && element.value.length > 0 &&
+    if (element.value && !sanitizedFieldIsEmpty_(element.value) &&
         !__gCrWeb.fill.isSelectElement(element) &&
         fieldIdentifier !== forceFillFieldIdentifier) {
       continue;
@@ -654,5 +654,22 @@ __gCrWeb.autofill['fillPredictionData'] = function(data) {
     }
   }
 };
+
+/**
+ * Returns whether |value| contains only formating characters.
+ *
+ * It is based on the logic in
+ *     void SanitizedFieldIsEmpty(const base::string16& value);
+ * in chromium/src/components/autofill/common/autofill_util.h.
+ *
+ * @param {HTMLFormElement} formElement A form element to be processed.
+ * @return {Array<FormControlElement>} The array of autofillable elements.
+ */
+__gCrWeb.autofill['sanitizedFieldIsEmpty'] = function(value) {
+  // Some sites enter values such as ____-____-____-____ or (___)-___-____ in
+  // their fields. Check if the field value is empty after the removal of the
+  // formatting characters.
+  return __gCrWeb.common.trim(value.replace(/[-_()/|]/g,'')) == '';
+ };
 
 }());  // End of anonymous object
