@@ -2821,7 +2821,8 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             e->RefreshVisible();
             SetVisibleInLayout(
                 scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                model->web_vr.show_exit_toast && !value.second);
+                !model->web_vr_autopresentation_enabled() &&
+                    !model->browsing_disabled && !value.second);
             SetVisibleInLayout(scene->GetUiElementByName(kWebVrUrlToast),
                                model->web_vr_autopresentation_enabled() &&
                                    model->toolbar_state.should_display_url);

@@ -37,9 +37,7 @@ public interface VrShell extends VrDialogManager {
     /**
      * Sets whether we're presenting WebVR content or not.
      */
-    // TODO(bshe): Refactor needed. See https://crbug.com/735169.
-    // TODO(mthiesse, https://crbug.com/803236): Remove this showToast parameter.
-    void setWebVrModeEnabled(boolean enabled, boolean showToast);
+    void setWebVrModeEnabled(boolean enabled);
 
     /**
      * Returns true if we're presenting WebVR content.

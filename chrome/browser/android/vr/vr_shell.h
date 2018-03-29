@@ -102,8 +102,7 @@ class VrShell : device::GvrGamepadDataProvider,
                   const base::android::JavaParamRef<jobject>& surface);
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
-                    bool enabled,
-                    bool show_toast);
+                    bool enabled);
   bool GetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj);
   bool IsDisplayingUrlForTesting(

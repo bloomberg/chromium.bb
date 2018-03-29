@@ -19,7 +19,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MockBrowserUiInterface();
   ~MockBrowserUiInterface() override;
 
-  MOCK_METHOD2(SetWebVrMode, void(bool enabled, bool show_toast));
+  MOCK_METHOD1(SetWebVrMode, void(bool enabled));
   MOCK_METHOD1(SetFullscreen, void(bool enabled));
   MOCK_METHOD1(SetToolbarState, void(const ToolbarState& state));
   MOCK_METHOD1(SetIncognito, void(bool enabled));

@@ -133,13 +133,13 @@ TEST_F(UiTest, ToastStateTransitions) {
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
-  ui_->SetWebVrMode(true, true);
+  ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel());
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
 
-  ui_->SetWebVrMode(false, false);
+  ui_->SetWebVrMode(false);
   // TODO(crbug.com/787582): we should not show the fullscreen toast again when
   // returning to fullscreen mode after presenting webvr.
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
@@ -149,11 +149,11 @@ TEST_F(UiTest, ToastStateTransitions) {
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
-  ui_->SetWebVrMode(false, false);
+  ui_->SetWebVrMode(false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
@@ -168,7 +168,7 @@ TEST_F(UiTest, ToastTransience) {
                                                    kSmallDelaySeconds)));
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
-  ui_->SetWebVrMode(true, true);
+  ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel());
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
@@ -176,7 +176,7 @@ TEST_F(UiTest, ToastTransience) {
                                                    kSmallDelaySeconds)));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
-  ui_->SetWebVrMode(false, false);
+  ui_->SetWebVrMode(false);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
@@ -186,7 +186,7 @@ TEST_F(UiTest, CaptureToasts) {
 
   for (auto& spec : GetIndicatorSpecs()) {
     for (int i = 0; i < 3; ++i) {
-      ui_->SetWebVrMode(true, true);
+      ui_->SetWebVrMode(true);
       ui_->OnWebVrFrameAvailable();
 
       CapturingStateModel state;
@@ -203,7 +203,7 @@ TEST_F(UiTest, CaptureToasts) {
                                                        kSmallDelaySeconds)));
       EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
-      ui_->SetWebVrMode(false, false);
+      ui_->SetWebVrMode(false);
       EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
       EXPECT_FALSE(IsVisible(spec.webvr_name));
     }
@@ -228,7 +228,7 @@ TEST_F(UiTest, CloseButtonVisibleInCctFullscreen) {
   // Button should not be visible when in WebVR.
   CreateScene(kInCct, kInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
-  ui_->SetWebVrMode(false, false);
+  ui_->SetWebVrMode(false);
   EXPECT_TRUE(IsVisible(kCloseButton));
 
   // Button should be visible in Cct across transistions in fullscreen.
@@ -333,13 +333,13 @@ TEST_F(UiTest, UiModeWebVr) {
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   EXPECT_EQ(model_->ui_modes.size(), 2u);
   EXPECT_EQ(model_->ui_modes[1], kModeWebVr);
   EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
   VerifyOnlyElementsVisible("WebVR", {kWebVrBackground});
 
-  ui_->SetWebVrMode(false, false);
+  ui_->SetWebVrMode(false);
   EXPECT_EQ(model_->ui_modes.size(), 1u);
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
   VerifyOnlyElementsVisible("Browsing after WebVR", kElementsVisibleInBrowsing);
@@ -435,7 +435,7 @@ TEST_F(UiTest, WebVrAutopresented) {
   VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
 
   // Enter WebVR with autopresentation.
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   ui_->SetCapturingState(CapturingStateModel());
 
   // The splash screen should go away.
@@ -457,7 +457,7 @@ TEST_F(UiTest, WebVrSplashScreenHiddenWhenTimeoutImminent) {
   // Initially, we should only show the splash screen.
   VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
 
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   EXPECT_TRUE(RunFor(MsToDelta(
       1000 * (kSplashScreenMinDurationSeconds + kSmallDelaySeconds * 2))));
 
@@ -706,7 +706,7 @@ TEST_F(UiTest, WebVrFramesIgnoredWhenUnexpected) {
   ui_->OnWebVrFrameAvailable();
   VerifyOnlyElementsVisible("Elements hidden", std::set<UiElementName>{});
   // Disable WebVR mode.
-  ui_->SetWebVrMode(false, false);
+  ui_->SetWebVrMode(false);
 
   // New frame available after exiting WebVR mode.
   ui_->OnWebVrFrameAvailable();
@@ -722,7 +722,7 @@ TEST_F(UiTest, UiUpdateTransitionToWebVR) {
   model_->capturing_state.bluetooth_connected = true;
 
   // Transition to WebVR mode
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
 
   // All elements should be hidden.
@@ -749,9 +749,9 @@ TEST_F(UiTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
   // Go into non-browser modes and make sure all indicators are hidden.
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
-  ui_->SetWebVrMode(false, false);
+  ui_->SetWebVrMode(false);
   ui_->SetFullscreen(true);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
   ui_->SetFullscreen(false);
@@ -848,7 +848,7 @@ TEST_F(UiTest, ExitWarning) {
 TEST_F(UiTest, WebVrTimeout) {
   CreateScene(kNotInCct, kInWebVr);
 
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   model_->web_vr.state = kWebVrAwaitingFirstFrame;
 
   RunFor(MsToDelta(500));
@@ -1105,7 +1105,7 @@ TEST_F(UiTest, CloseButtonColorBindings) {
 
 TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
   CreateScene(kNotInCct, kNotInWebVr);
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   // Clicking app button should trigger to exit presentation.
   EXPECT_CALL(*browser_, ExitPresent());
   // And also trigger exit fullscreen.
@@ -1125,7 +1125,7 @@ TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 
   // Enter WebVR with autopresentation.
-  ui_->SetWebVrMode(true, false);
+  ui_->SetWebVrMode(true);
   ui_->SetCapturingState(CapturingStateModel());
   OnBeginFrame(MsToDelta(1000 * kSplashScreenMinDurationSeconds));
   EXPECT_TRUE(IsVisible(kSplashScreenText));
@@ -1358,7 +1358,7 @@ TEST_F(UiTest, RepositionHostedUi) {
 // these cases requires knowledge of the previous state.
 TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
   CreateScene(kNotInCct, kInWebVr);
-  ui_->SetWebVrMode(true, true);
+  ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   ui_->OnWebVrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel());
