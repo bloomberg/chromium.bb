@@ -82,7 +82,7 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  bool visible_preferred() { return visible_preferred_; }
+  bool visible_preferred() const { return visible_preferred_; }
 
  protected:
   FeaturePodIconButton* icon_button() const { return icon_button_; }

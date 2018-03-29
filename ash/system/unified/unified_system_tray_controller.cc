@@ -28,14 +28,30 @@
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/lock_state_controller.h"
+#include "base/numerics/ranges.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 namespace ash {
 
+namespace {
+
+// Animation duration to collapse / expand the view in milliseconds.
+const int kExpandAnimationDurationMs = 500;
+// Threshold in pixel that fully collapses / expands the view through gesture.
+const int kDragThreshold = 200;
+
+}  // namespace
+
 UnifiedSystemTrayController::UnifiedSystemTrayController(
     SystemTray* system_tray)
-    : system_tray_(system_tray) {}
+    : system_tray_(system_tray),
+      animation_(std::make_unique<gfx::SlideAnimation>(this)) {
+  animation_->Reset(1.0);
+  animation_->SetSlideDuration(kExpandAnimationDurationMs);
+  animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
+}
 
 UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
 
@@ -78,8 +94,32 @@ void UnifiedSystemTrayController::HandlePowerAction() {
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {
-  expanded_ = !expanded_;
-  unified_view_->SetExpanded(expanded_);
+  if (animation_->IsShowing())
+    animation_->Hide();
+  else
+    animation_->Show();
+}
+
+void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {
+  drag_init_point_ = location;
+  was_expanded_ = animation_->IsShowing();
+}
+
+void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
+  animation_->Reset(GetDragExpandedAmount(location));
+  UpdateExpandedAmount();
+}
+
+void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
+  // If dragging is finished, animate to closer state.
+  if (GetDragExpandedAmount(location) > 0.5) {
+    animation_->Show();
+  } else {
+    // To animate to hidden state, first set SlideAnimation::IsShowing() to
+    // true.
+    animation_->Show();
+    animation_->Hide();
+  }
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView() {
@@ -105,6 +145,22 @@ void UnifiedSystemTrayController::ShowVPNDetailedView() {
 void UnifiedSystemTrayController::ShowIMEDetailedView() {
   // TODO(tetsui): Implement UnifiedSystemTray's IME detailed view.
   ShowSystemTrayDetailedView(system_tray_->GetTrayIME());
+}
+
+void UnifiedSystemTrayController::AnimationEnded(
+    const gfx::Animation* animation) {
+  UpdateExpandedAmount();
+}
+
+void UnifiedSystemTrayController::AnimationProgressed(
+    const gfx::Animation* animation) {
+  UpdateExpandedAmount();
+}
+
+void UnifiedSystemTrayController::AnimationCanceled(
+    const gfx::Animation* animation) {
+  animation_->Reset(std::round(animation_->GetCurrentValue()));
+  UpdateExpandedAmount();
 }
 
 void UnifiedSystemTrayController::InitFeaturePods() {
@@ -136,6 +192,25 @@ void UnifiedSystemTrayController::ShowSystemTrayDetailedView(
   system_tray_->ShowDetailedView(system_tray_item,
                                  0 /* close_delay_in_seconds */,
                                  BubbleCreationType::BUBBLE_USE_EXISTING);
+}
+
+void UnifiedSystemTrayController::UpdateExpandedAmount() {
+  unified_view_->SetExpandedAmount(animation_->GetCurrentValue());
+}
+
+double UnifiedSystemTrayController::GetDragExpandedAmount(
+    const gfx::Point& location) const {
+  double y_diff = (location - drag_init_point_).y();
+
+  // If already expanded, only consider swiping down. Otherwise, only consider
+  // swiping up.
+  if (was_expanded_) {
+    return base::ClampToRange(1.0 - std::max(0.0, y_diff) / kDragThreshold, 0.0,
+                              1.0);
+  } else {
+    return base::ClampToRange(std::max(0.0, -y_diff) / kDragThreshold, 0.0,
+                              1.0);
+  }
 }
 
 }  // namespace ash
