@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
+#include "content/common/service_worker/service_worker_container.mojom.h"
 
 namespace content {
 
@@ -66,7 +67,8 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
 
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
-  mojom::ControllerServiceWorker* GetControllerServiceWorker();
+  mojom::ControllerServiceWorker* GetControllerServiceWorker(
+      mojom::ControllerServiceWorkerPurpose purpose);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

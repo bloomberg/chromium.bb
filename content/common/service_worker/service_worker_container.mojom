@@ -13,6 +13,12 @@ import "third_party/WebKit/public/mojom/service_worker/service_worker_registrati
 import "third_party/WebKit/public/platform/web_feature.mojom";
 import "url/mojom/url.mojom";
 
+// Used for EnsureControllerServiceWorker() to indicate why a controllee needs
+// a controller ServiceWorker.
+enum ControllerServiceWorkerPurpose {
+  FETCH_SUB_RESOURCE
+};
+
 // mojom::ServiceWorkerContainerHost is a browser-side interface. The renderer
 // process uses this interface to request the browser process to do operations
 // involving service worker registrations.
@@ -56,7 +62,7 @@ interface ServiceWorkerContainerHost {
     => (blink.mojom.ServiceWorkerRegistrationObjectInfo? registration);
 
   // S13nServiceWorker:
-  // Gets a Mojo end point to the controller ServiceWorker. This may start a
+  // Returns a Mojo end point to the controller ServiceWorker. This may start a
   // service worker instance in a renderer process if the corresponding
   // instance is not alive.
   // This method must be called only by the controllees.
@@ -64,7 +70,9 @@ interface ServiceWorkerContainerHost {
   // connection error of the returned pipe. The detailed error reasons are not
   // reported to the controllees, but the browser process is responsible for
   // properly handling the failure and recording the reasons.
-  GetControllerServiceWorker(ControllerServiceWorker& controller);
+  // |purpose| is used for UMA.
+  EnsureControllerServiceWorker(ControllerServiceWorker& controller,
+                                ControllerServiceWorkerPurpose purpose);
 
   // S13nServiceWorker:
   // Clones the Mojo end point to the ServiceWorker container host. This is

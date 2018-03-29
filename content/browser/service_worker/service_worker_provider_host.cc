@@ -136,6 +136,16 @@ void GetInterfaceImpl(const std::string& interface_name,
                       origin);
 }
 
+ServiceWorkerMetrics::EventType PurposeToEventType(
+    mojom::ControllerServiceWorkerPurpose purpose) {
+  switch (purpose) {
+    case mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE:
+      return ServiceWorkerMetrics::EventType::FETCH_SUB_RESOURCE;
+  }
+  NOTREACHED();
+  return ServiceWorkerMetrics::EventType::UNKNOWN;
+}
+
 }  // anonymous namespace
 
 // static
@@ -309,6 +319,8 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
     return nullptr;
   }
+  // TODO(bashi): Make sure the worker is running by calling
+  // controller_->RunAfterStartWorker().
   mojom::ControllerServiceWorkerPtr controller_ptr;
   controller_->controller()->Clone(mojo::MakeRequest(&controller_ptr));
   return controller_ptr;
@@ -1009,16 +1021,26 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
   ReturnRegistrationForReadyIfNeeded();
 }
 
-void ServiceWorkerProviderHost::GetControllerServiceWorker(
-    mojom::ControllerServiceWorkerRequest controller_request) {
+void ServiceWorkerProviderHost::StartControllerComplete(
+    mojom::ControllerServiceWorkerRequest controller_request,
+    ServiceWorkerStatusCode status) {
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  if (status == SERVICE_WORKER_OK)
+    controller_->controller()->Clone(std::move(controller_request));
+}
+
+void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
+    mojom::ControllerServiceWorkerRequest controller_request,
+    mojom::ControllerServiceWorkerPurpose purpose) {
   // TODO(kinuko): Log the reasons we drop the request.
   if (!dispatcher_host_ || !IsContextAlive() || !controller_)
     return;
 
-  // TODO(kinuko): Call version_->StartWorker() here if the service
-  // is not starting or running. https://crbug.com/797222
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-  controller_->controller()->Clone(std::move(controller_request));
+  controller_->RunAfterStartWorker(
+      PurposeToEventType(purpose),
+      base::BindOnce(&ServiceWorkerProviderHost::StartControllerComplete,
+                     AsWeakPtr(), std::move(controller_request)));
 }
 
 void ServiceWorkerProviderHost::CloneForWorker(
