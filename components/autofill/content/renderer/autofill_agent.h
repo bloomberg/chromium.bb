@@ -258,6 +258,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   // cleared in this method.
   void OnFormNoLongerSubmittable();
 
+  // Check whether |element_| was removed or replaced dynamically on the page.
+  // If so, looks for the same element in the updated |form| and replaces the
+  // |element_| with it if it's found.
+  void ReplaceElementIfNowInvalid(const FormData& form);
+
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.
   FormCache form_cache_;

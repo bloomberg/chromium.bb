@@ -58,6 +58,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
@@ -91,6 +92,13 @@ const size_t kMaxRecentFormSignaturesToRemember = 3;
 // Set a conservative upper bound on the number of forms we are willing to
 // cache, simply to prevent unbounded memory consumption.
 const size_t kMaxFormCacheSize = 100;
+
+// Time to wait, in ms, after a dynamic form change before triggering a refill.
+// This is used for sites that change multiple things consecutively.
+const size_t kWaitTimeForDynamicFormsMs = 200;
+
+// The time limit, in ms, between a fill and when a refill can happen.
+const int kLimitBeforeRefillMs = 1000;
 
 // Precondition: |form_structure| and |form| should correspond to the same
 // logical form.  Returns true if any field in the given |section| within |form|
@@ -190,6 +198,17 @@ Suggestion CreateHttpWarningMessageSuggestionItem(const GURL& source_url) {
 }
 
 }  // namespace
+
+AutofillManager::FillingContext::FillingContext() = default;
+
+AutofillManager::FillingContext::~FillingContext() = default;
+
+void AutofillManager::FillingContext::Reset() {
+  attempted_refill = false;
+  filled_form_name.clear();
+  filled_field_name.clear();
+  type_groups_to_refill.clear();
+}
 
 AutofillManager::AutofillManager(
     AutofillDriver* driver,
@@ -549,7 +568,10 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   }
 
   std::vector<Suggestion> suggestions;
-  const bool is_context_secure = !IsFormNonSecure(form);
+  const bool is_context_secure =
+      !IsFormNonSecure(form) ||
+      !base::FeatureList::IsEnabled(
+          features::kAutofillRequireSecureCreditCardContext);
   const bool is_http_warning_enabled =
       security_state::IsHttpWarningInFormEnabled();
 
@@ -748,9 +770,18 @@ void AutofillManager::FillOrPreviewProfileForm(
   AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
-  if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
+  if (action == AutofillDriver::FORM_DATA_ACTION_FILL) {
     address_form_event_logger_->OnDidFillSuggestion(
         profile, form_structure->form_parsed_timestamp());
+
+    // Set up the information needed for an eventual refill.
+    if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms)) {
+      filling_context_.temp_data_model = profile;
+      filling_context_.filled_form_name = form_structure->form_name();
+      filling_context_.filled_field_name = autofill_field->unique_name();
+      filling_context_.original_fill_time = base::TimeTicks::Now();
+    }
+  }
 
   FillOrPreviewDataModelForm(
       action, query_id, form, field, profile, false /* is_credit_card */,
@@ -789,8 +820,14 @@ void AutofillManager::FillCreditCardForm(int query_id,
     return;
   }
 
-  FillOrPreviewDataModelForm(AutofillDriver::FORM_DATA_ACTION_FILL, query_id,
-                             form, field, credit_card, true, cvc);
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return;
+
+  FillOrPreviewDataModelForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, query_id, form, field, credit_card,
+      true /* is_credit_card */, cvc, form_structure, autofill_field);
 }
 
 void AutofillManager::OnFocusNoLongerOnForm() {
@@ -1167,6 +1204,7 @@ void AutofillManager::Reset() {
   forms_loaded_timestamps_.clear();
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
+  filling_context_.Reset();
 }
 
 AutofillManager::AutofillManager(
@@ -1298,26 +1336,10 @@ void AutofillManager::FillOrPreviewDataModelForm(
     const FormFieldData& field,
     const AutofillDataModel& data_model,
     bool is_credit_card,
-    const base::string16& cvc) {
-  FormStructure* form_structure = nullptr;
-  AutofillField* autofill_field = nullptr;
-  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
-    return;
-  FillOrPreviewDataModelForm(action, query_id, form, field, data_model,
-                             is_credit_card, cvc, form_structure,
-                             autofill_field);
-}
-
-void AutofillManager::FillOrPreviewDataModelForm(
-    AutofillDriver::RendererFormDataAction action,
-    int query_id,
-    const FormData& form,
-    const FormFieldData& field,
-    const AutofillDataModel& data_model,
-    bool is_credit_card,
     const base::string16& cvc,
     FormStructure* form_structure,
-    AutofillField* autofill_field) {
+    AutofillField* autofill_field,
+    bool is_refill) {
   DCHECK(form_structure);
   DCHECK(autofill_field);
 
@@ -1328,6 +1350,16 @@ void AutofillManager::FillOrPreviewDataModelForm(
   }
 
   DCHECK_EQ(form_structure->field_count(), form.fields.size());
+
+  // Only record the types that are filled for an eventual refill if all the
+  // following are satisfied:
+  //  The refilling feature is enabled.
+  //  A refill has not been attempted yet.
+  //  This fill is not a refill attempt.
+  //  This is not a credit card fill.
+  bool could_attempt_refill =
+      base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
+      !filling_context_.attempted_refill && !is_refill && !is_credit_card;
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     if (form_structure->field(i)->section() != autofill_field->section())
@@ -1345,20 +1377,26 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
     // Don't fill non-focusable fields, with the exception of <select> fields.
     if (!cached_field->is_focusable &&
-        result.fields[i].form_control_type != "select-one")
-      continue;
-
-    if (cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) {
+        result.fields[i].form_control_type != "select-one") {
       continue;
     }
+
+    if (cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION)
+      continue;
 
     // Don't fill previously autofilled fields.
-    if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field)) {
+    if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field))
       continue;
-    }
 
     if (field_group_type == NO_GROUP)
       continue;
+
+    // On a refill, only fill fields from type groups that were present during
+    // the initial fill.
+    if (is_refill && !base::ContainsKey(filling_context_.type_groups_to_refill,
+                                        field_group_type)) {
+      continue;
+    }
 
     // Don't fill expired cards expiration date.
     if (IsCreditCardExpirationType(cached_field->Type().GetStorableType()) &&
@@ -1366,6 +1404,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
             ->IsExpired(AutofillClock::Now())) {
       continue;
     }
+
+    if (could_attempt_refill)
+      filling_context_.type_groups_to_refill.insert(field_group_type);
 
     // Must match ForEachMatchingFormField() in form_autofill_util.cc.
     // Only notify autofilling of empty fields and the field that initiated
@@ -1617,6 +1658,22 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
     AutofillMetrics::LogParseFormTiming(TimeTicks::Now() -
                                         parse_form_start_time);
+
+    // If a form with the same name was previously filled, and there has not
+    // been a refill attempt yet, start the process of triggering a refill.
+    if (ShouldTriggerRefill(*form_structure)) {
+      // If a timer for the refill was already running, it means the form
+      // changed again. Stop the timer and start it again.
+      if (filling_context_.on_refill_timer.IsRunning())
+        filling_context_.on_refill_timer.AbandonAndStop();
+
+      filling_context_.on_refill_timer.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kWaitTimeForDynamicFormsMs),
+          base::BindRepeating(&AutofillManager::TriggerRefill,
+                              weak_ptr_factory_.GetWeakPtr(), form,
+                              form_structure));
+    }
   }
 
   if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
@@ -1940,6 +1997,44 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
                                                    app_locale_));
     }
   }
+}
+
+bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
+  if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
+    return false;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta delta = now - filling_context_.original_fill_time;
+  return !filling_context_.attempted_refill &&
+         !filling_context_.filled_form_name.empty() &&
+         filling_context_.filled_form_name == form_structure.form_name() &&
+         delta.InMilliseconds() < kLimitBeforeRefillMs;
+}
+
+void AutofillManager::TriggerRefill(const FormData& form,
+                                    FormStructure* form_structure) {
+  filling_context_.attempted_refill = true;
+
+  // Try to find the field from which the original field originated.
+  AutofillField* autofill_field = nullptr;
+  for (const std::unique_ptr<AutofillField>& field : *form_structure) {
+    if (field->unique_name() == filling_context_.filled_field_name) {
+      autofill_field = field.get();
+      break;
+    }
+  }
+
+  // If it was not found cancel the refill.
+  if (!autofill_field)
+    return;
+
+  FormFieldData field = *autofill_field;
+  base::string16 cvc;
+  FillOrPreviewDataModelForm(
+      AutofillDriver::RendererFormDataAction::FORM_DATA_ACTION_FILL,
+      /*query_id=*/-1, form, field, filling_context_.temp_data_model,
+      /*is_credit_card=*/false, cvc, form_structure, autofill_field,
+      /*is_refill=*/true);
 }
 
 AutofillMetrics::CardNumberStatus AutofillManager::GetCardNumberStatus(

@@ -427,6 +427,9 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
   if (id != autofill_query_id_ && id != kNoQueryId)
     return;
 
+  if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
+    ReplaceElementIfNowInvalid(form);
+
   was_query_node_autofilled_ = element_.IsAutofilled();
   form_util::FillForm(form, element_);
   if (!element_.Form().IsNull())
@@ -984,6 +987,47 @@ void AutofillAgent::UpdateLastInteractedForm(blink::WebFormElement form) {
 
 void AutofillAgent::OnFormNoLongerSubmittable() {
   submitted_forms_.clear();
+}
+
+void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
+  // If the document is invalid, bail out.
+  if (element_.GetDocument().IsNull())
+    return;
+
+  if (!element_.Form().IsNull()) {
+    // If |element_|'s parent form has no elements, |element_| is now invalid
+    // and should be updated.
+    WebVector<WebFormControlElement> form_elements;
+    element_.Form().GetFormControlElements(form_elements);
+    if (!form_elements.empty())
+      return;
+  }
+
+  // Try to find the new version of the form.
+  WebFormElement form_element;
+  WebVector<WebFormElement> forms;
+  element_.GetDocument().Forms(forms);
+  for (const WebFormElement& form : forms) {
+    if (original_form.name == form.GetName().Utf16() ||
+        original_form.name == form.GetAttribute("id").Utf16()) {
+      form_element = form;
+      break;
+    }
+  }
+
+  // Could not find the new version of the form, bail out.
+  if (form_element.IsNull())
+    return;
+
+  // Try to find the new version of the last interacted element.
+  WebVector<WebFormControlElement> elements;
+  form_element.GetFormControlElements(elements);
+  for (const WebFormControlElement& element : elements) {
+    if (element_.NameForAutofill() == element.NameForAutofill()) {
+      element_ = element;
+      return;
+    }
+  }
 }
 
 const mojom::AutofillDriverPtr& AutofillAgent::GetAutofillDriver() {
