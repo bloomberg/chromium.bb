@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
-#import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -32,6 +31,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+#import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
+#endif
 
 using content::WebContents;
 
@@ -312,6 +315,9 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
         web_contents, origin, this);
     bubbleWindow_.reset([bubble retain]);
   } else {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+    NOTREACHED() << "MacViews Browser can't host Cocoa dialogs";
+#else
     ContentSettingBubbleController* bubbleController =
         [ContentSettingBubbleController showForModel:model
                                          webContents:web_contents
@@ -319,6 +325,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
                                           decoration:this
                                           anchoredAt:anchor];
     bubbleWindow_.reset([[bubbleController window] retain]);
+#endif
   }
 
   return true;
