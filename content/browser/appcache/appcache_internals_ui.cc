@@ -99,7 +99,8 @@ std::unique_ptr<base::ListValue> GetListValueFromAppCacheInfoCollection(
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (const auto& key_value : appcache_collection->infos_by_origin) {
     base::DictionaryValue* dict = new base::DictionaryValue;
-    dict->SetString("originURL", key_value.first.spec());
+    // Use GURL::spec() to keep consistency with previous version
+    dict->SetString("originURL", key_value.first.GetURL().spec());
     dict->Set("manifests", GetListValueForAppCacheInfoVector(key_value.second));
     list->Append(std::unique_ptr<base::Value>(dict));
   }

@@ -55,7 +55,7 @@ typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>
     SharedWorkerInfoList;
 typedef std::list<content::CacheStorageUsageInfo> CacheStorageUsageInfoList;
-typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
+typedef std::map<url::Origin, std::list<content::AppCacheInfo>> AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 typedef std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>
     MediaLicenseInfoList;

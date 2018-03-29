@@ -67,7 +67,7 @@ void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
 
   origins_->clear();
   for (const auto& kvp : appcache_info_->infos_by_origin)
-    origins_->insert(url::Origin::Create(kvp.first));
+    origins_->insert(kvp.first);
 
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }

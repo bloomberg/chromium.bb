@@ -367,8 +367,7 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
   std::set<url::Origin> origins;
   database_->FindOriginsWithGroups(&origins);
   for (const url::Origin& origin : origins) {
-    AppCacheInfoVector& infos =
-        info_collection_->infos_by_origin[origin.GetURL()];
+    AppCacheInfoVector& infos = info_collection_->infos_by_origin[origin];
     std::vector<AppCacheDatabase::GroupRecord> groups;
     database_->FindGroupsForOrigin(origin, &groups);
     for (const auto& group : groups) {
