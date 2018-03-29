@@ -220,8 +220,7 @@ Error WebSocketHttp2HandshakeStream::GetTokenBindingSignature(
     crypto::ECPrivateKey* key,
     TokenBindingType tb_type,
     std::vector<uint8_t>* out) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
+  return stream_->GetTokenBindingSignature(key, tb_type, out);
 }
 
 void WebSocketHttp2HandshakeStream::Drain(HttpNetworkSession* session) {

@@ -32,6 +32,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_basic_stream_adapters.h"
@@ -334,8 +335,12 @@ Error WebSocketBasicHandshakeStream::GetTokenBindingSignature(
     crypto::ECPrivateKey* key,
     TokenBindingType tb_type,
     std::vector<uint8_t>* out) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
+  DCHECK(url_.SchemeIsCryptographic());
+
+  // Encrypted WebSocket must use an SSL socket.
+  StreamSocket* socket = state_.connection()->socket();
+  SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(socket);
+  return ssl_socket->GetTokenBindingSignature(key, tb_type, out);
 }
 
 void WebSocketBasicHandshakeStream::Drain(HttpNetworkSession* session) {
