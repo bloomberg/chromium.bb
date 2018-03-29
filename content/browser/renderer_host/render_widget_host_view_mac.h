@@ -201,6 +201,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       RenderWidgetHostViewBase* updated_view) override;
   void OnTextSelectionChanged(TextInputManager* text_input_manager,
                               RenderWidgetHostViewBase* updated_view) override;
+
+  // RenderFrameMetadataProvider::Observer
+  void OnRenderFrameMetadataChanged() override;
+
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
 

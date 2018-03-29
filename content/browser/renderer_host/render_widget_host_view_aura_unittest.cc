@@ -2793,6 +2793,11 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   viz::CompositorFrame frame =
       MakeDelegatedFrame(1.f, small_size, gfx::Rect(small_size));
   frame.metadata.root_background_color = SK_ColorRED;
+
+  cc::RenderFrameMetadata metadata;
+  metadata.root_background_color = SK_ColorRED;
+  view_->SetRenderFrameMetadata(metadata);
+  view_->OnRenderFrameMetadataChanged();
   view_->SubmitCompositorFrame(small_id, std::move(frame), nullptr);
 
   ui::Layer* parent_layer = view_->GetNativeView()->layer();

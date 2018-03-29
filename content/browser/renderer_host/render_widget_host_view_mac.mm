@@ -643,6 +643,14 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
   }
 }
 
+void RenderWidgetHostViewMac::OnRenderFrameMetadataChanged() {
+  last_frame_root_background_color_ = host()
+                                          ->render_frame_metadata_provider()
+                                          ->LastRenderFrameMetadata()
+                                          .root_background_color;
+  RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
+}
+
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
                                                 int error_code) {
   Destroy();
@@ -1048,8 +1056,6 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
-
-  last_frame_root_background_color_ = frame.metadata.root_background_color;
 
   page_at_minimum_scale_ =
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
