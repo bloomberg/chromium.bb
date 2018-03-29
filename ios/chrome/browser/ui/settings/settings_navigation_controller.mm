@@ -524,27 +524,6 @@ initWithRootViewController:(UIViewController*)rootViewController
   return mainBrowserState_;
 }
 
-#pragma mark - Status bar
-
-- (BOOL)modalPresentationCapturesStatusBarAppearance {
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
-    // dropped.
-    return YES;
-  } else {
-    return [super modalPresentationCapturesStatusBarAppearance];
-  }
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
-    // dropped.
-    [self setNeedsStatusBarAppearanceUpdate];
-  }
-}
-
 #pragma mark - AppBar Containment
 
 // If viewController doesn't implement the AppBarPresenting protocol, it is
