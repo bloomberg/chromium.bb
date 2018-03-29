@@ -865,10 +865,10 @@ bool VrShellGl::ResizeForWebVR(int16_t frame_index) {
   // Process all pending_bounds_ changes targeted for before this frame, being
   // careful of wrapping frame indices.
   static constexpr unsigned max =
-      std::numeric_limits<decltype(frame_index_)>::max();
+      std::numeric_limits<decltype(next_frame_index_)>::max();
   static_assert(max > kPoseRingBufferSize * 2,
                 "To detect wrapping, kPoseRingBufferSize must be smaller "
-                "than half of frame_index_ range.");
+                "than half of next_frame_index_ range.");
   while (!pending_bounds_.empty()) {
     uint16_t index = pending_bounds_.front().first;
     // If index is less than the frame_index it's possible we've wrapped, so we
@@ -950,8 +950,10 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
 
 void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrame", "frame", frame_index);
-  if (!webvr_delayed_frame_submit_.IsCancelled()) {
-    webvr_delayed_frame_submit_.Cancel();
+  if (frame_index < 0 && !webvr_delayed_gvr_submit_.IsCancelled()) {
+    // We've exited WebVR, but the last submit to GVR didn't complete.
+    // Cancel the scheduled submit and reuse the frame.
+    webvr_delayed_gvr_submit_.Cancel();
     DrawIntoAcquiredFrame(frame_index, current_time);
     return;
   }
@@ -1172,11 +1174,11 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     }
   }
   if (fence) {
-    webvr_delayed_frame_submit_.Reset(base::BindRepeating(
+    webvr_delayed_gvr_submit_.Reset(base::BindRepeating(
         &VrShellGl::DrawFrameSubmitWhenReady, base::Unretained(this)));
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(webvr_delayed_frame_submit_.callback(), frame_index,
+        base::BindOnce(webvr_delayed_gvr_submit_.callback(), frame_index,
                        submit_head_pose, base::Passed(&fence)));
   } else {
     // Continue with submit immediately.
@@ -1199,7 +1201,7 @@ void VrShellGl::DrawFrameSubmitWhenReady(
           kWebVRFenceCheckTimeout.InMicroseconds() * 1000);
     }
     if (!fence->HasCompleted()) {
-      webvr_delayed_frame_submit_.Reset(base::BindRepeating(
+      webvr_delayed_gvr_submit_.Reset(base::BindRepeating(
           &VrShellGl::DrawFrameSubmitWhenReady, base::Unretained(this)));
       if (use_polling) {
         // Poll the fence status at a short interval. This burns some CPU, but
@@ -1208,13 +1210,13 @@ void VrShellGl::DrawFrameSubmitWhenReady(
         // with a delay of up to one polling interval.
         task_runner_->PostDelayedTask(
             FROM_HERE,
-            base::BindOnce(webvr_delayed_frame_submit_.callback(), frame_index,
+            base::BindOnce(webvr_delayed_gvr_submit_.callback(), frame_index,
                            head_pose, base::Passed(&fence)),
             kWebVRFenceCheckPollInterval);
       } else {
         task_runner_->PostTask(
             FROM_HERE,
-            base::BindOnce(webvr_delayed_frame_submit_.callback(), frame_index,
+            base::BindOnce(webvr_delayed_gvr_submit_.callback(), frame_index,
                            head_pose, base::Passed(&fence)));
       }
       return;
@@ -1227,7 +1229,7 @@ void VrShellGl::DrawFrameSubmitWhenReady(
     AddWebVrRenderTimeEstimate(frame_index, true);
   }
 
-  webvr_delayed_frame_submit_.Cancel();
+  webvr_delayed_gvr_submit_.Cancel();
   DrawFrameSubmitNow(frame_index, head_pose);
 }
 
@@ -1553,7 +1555,7 @@ bool VrShellGl::ShouldSkipVSync() {
     return false;
 
   int16_t prev_idx =
-      (frame_index_ + kPoseRingBufferSize - 1) % kPoseRingBufferSize;
+      (next_frame_index_ + kPoseRingBufferSize - 1) % kPoseRingBufferSize;
   base::TimeTicks prev_js_submit = webvr_time_js_submit_[prev_idx];
   if (prev_js_submit.is_null())
     return false;
@@ -1587,17 +1589,21 @@ bool VrShellGl::ShouldSkipVSync() {
 }
 
 void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
-  DVLOG(2) << __FUNCTION__;
   // There must not be a stored callback at this point, callers should use
   // ResetAndReturn to clear it before calling this method.
   DCHECK(!callback_);
 
   if (ShouldSkipVSync()) {
     callback_ = std::move(callback);
+    DVLOG(2) << __FUNCTION__ << ": ShouldSkipVSync()=true";
     return;
   }
 
-  uint8_t frame_index = frame_index_++;
+  // next_frame_index_ is an uint8_t that generates a wrapping 0.255 frame
+  // number. We store it in an int16_t to match mojo APIs, and to avoid it
+  // appearing as a char in debug logs.
+  int16_t frame_index = next_frame_index_++;
+  DVLOG(2) << __FUNCTION__ << " frame=" << frame_index;
 
   TRACE_EVENT1("input", "VrShellGl::SendVSync", "frame", frame_index);
 

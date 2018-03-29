@@ -286,9 +286,10 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   GlBrowserInterface* browser_;
 
-  uint8_t frame_index_ = 0;
-  // Larger than frame_index_ so it can be initialized out-of-band.
-  uint16_t last_frame_index_ = -1;
+  // Index of the next WebXR frame, wrapping from 255 back to 0. Elsewhere we
+  // use -1 to indicate a non-WebXR frame, so most internal APIs use int16_t to
+  // store the -1..255 range.
+  uint8_t next_frame_index_ = 0;
 
   uint64_t webvr_frames_received_ = 0;
 
@@ -325,9 +326,13 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   base::CancelableOnceCallback<void()> webvr_frame_timeout_;
   base::CancelableOnceCallback<void()> webvr_spinner_timeout_;
+
+  // WebVR defers submitting a frame to GVR by scheduling a closure
+  // for later. If we exit WebVR before it is executed, we need to
+  // cancel it to avoid inconsistent state.
   base::CancelableCallback<
       void(int16_t, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
-      webvr_delayed_frame_submit_;
+      webvr_delayed_gvr_submit_;
 
   std::vector<gvr::BufferSpec> specs_;
 
