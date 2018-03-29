@@ -292,6 +292,7 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Predicate.java",
       "$java_src_dir/org/chromium/chromecast/base/ScopeFactories.java",
       "$java_src_dir/org/chromium/chromecast/base/ScopeFactory.java",
+      "$java_src_dir/org/chromium/chromecast/base/Supplier.java",
       "$java_src_dir/org/chromium/chromecast/base/Unit.java",
       "$java_src_dir/org/chromium/chromecast/base/VoidScopeFactory.java",
 

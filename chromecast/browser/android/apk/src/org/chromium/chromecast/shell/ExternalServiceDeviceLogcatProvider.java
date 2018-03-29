@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
 
@@ -27,7 +26,7 @@ import java.io.IOException;
  * Javascript console messages.
  */
 class ExternalServiceDeviceLogcatProvider extends ElidedLogcatProvider {
-    private static final String TAG = "AssistantDeviceLogcatProvider";
+    private static final String TAG = "ExternalLogProvider";
 
     @Override
     protected void getRawLogcat(RawLogcatCallback callback) {
@@ -45,41 +44,31 @@ class ExternalServiceDeviceLogcatProvider extends ElidedLogcatProvider {
                 IDeviceLogsProvider provider = IDeviceLogsProvider.Stub.asInterface(service);
 
                 ServiceConnection conn = this;
-                new AsyncTask<Void, Void, CircularBuffer<String>>() {
-                    @Override
-                    public CircularBuffer<String> doInBackground(Void... params) {
-                        CircularBuffer<String> rawLogcat =
-                                new CircularBuffer<>(BuildConfig.LOGCAT_SIZE);
-                        try {
-                            // getLogs() currently gives us the filename of the location of the logs
-                            String logsFileName = provider.getLogs();
-                            Log.i(TAG, "Log Location: " + logsFileName);
+                new AsyncTaskRunner().doAsync(() -> {
+                    CircularBuffer<String> rawLogcat =
+                            new CircularBuffer<>(BuildConfig.LOGCAT_SIZE);
+                    try {
+                        // getLogs() currently gives us the filename of the location of the logs
+                        String logsFileName = provider.getLogs();
+                        Log.i(TAG, "Log Location: " + logsFileName);
 
-                            try (BufferedReader bReader =
-                                            new BufferedReader(new FileReader(logsFileName))) {
-                                String logLn;
-                                while ((logLn = bReader.readLine()) != null) {
-                                    rawLogcat.add(logLn);
-                                }
-                            } catch (IOException e) {
-                                Log.e(TAG, "Can't read logs", e);
+                        try (BufferedReader bReader =
+                                        new BufferedReader(new FileReader(logsFileName))) {
+                            String logLn;
+                            while ((logLn = bReader.readLine()) != null) {
+                                rawLogcat.add(logLn);
                             }
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "Can't get logs", e);
-                        } finally {
-                            ContextUtils.getApplicationContext().unbindService(conn);
-                            return rawLogcat;
+                        } catch (IOException e) {
+                            Log.e(TAG, "Can't read logs", e);
                         }
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "Can't get logs", e);
+                    } finally {
+                        ContextUtils.getApplicationContext().unbindService(conn);
+                        return rawLogcat;
                     }
-
-                    @Override
-                    public void onPostExecute(CircularBuffer<String> rawLogcat) {
-                        callback.onLogsDone(rawLogcat);
-                    }
-                }
-                        .execute();
+                }, callback::onLogsDone);
             }
-
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 Log.i(TAG, "onServiceConnected");
