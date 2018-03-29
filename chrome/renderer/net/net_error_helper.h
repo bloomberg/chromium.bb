@@ -59,7 +59,7 @@ class NetErrorHelper
       public chrome::mojom::NetworkDiagnosticsClient,
       public chrome::mojom::NavigationCorrector {
  public:
-  NetErrorHelper(content::RenderFrame* render_frame, bool online);
+  explicit NetErrorHelper(content::RenderFrame* render_frame);
   ~NetErrorHelper() override;
 
   // NetErrorPageController::Delegate implementation

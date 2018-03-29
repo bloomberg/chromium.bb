@@ -60,7 +60,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/filename_util.h"
-#include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/failing_http_transaction_factory.h"
@@ -1324,59 +1323,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
 
   EXPECT_EQ(2, interceptor_failures());
   EXPECT_EQ(3, interceptor_requests());
-}
-
-class ErrorPageAutoReloadOffline : public ErrorPageAutoReloadTest {
- public:
-  void PreRunTestOnMainThread() override {
-    // Helps the browser to create renderer in offline mode.
-    MockNetwork();
-    InProcessBrowserTest::PreRunTestOnMainThread();
-  }
-  void PostRunTestOnMainThread() override {
-    InProcessBrowserTest::PostRunTestOnMainThread();
-    ReleaseNetwork();
-  }
-
-  void MockNetwork() {
-    mock_network_ =
-        std::make_unique<net::test::ScopedMockNetworkChangeNotifier>();
-    mock_network_->mock_network_change_notifier()->SetConnectionType(
-        net::NetworkChangeNotifier::CONNECTION_NONE);
-  }
-
-  void ReleaseNetwork() { mock_network_.reset(); }
-
- private:
-  std::unique_ptr<net::test::ScopedMockNetworkChangeNotifier> mock_network_;
-};
-
-IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadOffline,
-                       AvoidAutoReloadingWhenOffline) {
-  GURL test_url("http://error.page.auto.reload");
-  InstallInterceptor(test_url, 1);
-
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), test_url,
-                                                            1);
-  base::RunLoop().RunUntilIdle();
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  content::WaitForLoadStop(web_contents);
-  // Make sure that first autoreload did not happen.
-  EXPECT_EQ(1, interceptor_requests());
-
-  // Release network. Now the renderer can receive notifications about network.
-  ReleaseNetwork();
-
-  // Browser is online now. Autoreload request should start immediately.
-  net::NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeForTests(
-      1., net::NetworkChangeNotifier::CONNECTION_WIFI);
-
-  content::TestNavigationObserver tab_observer(web_contents, 1);
-  tab_observer.Wait();
-
-  EXPECT_EQ(2, interceptor_requests());
 }
 
 // TODO(dougt): AddressUnreachableInterceptor can be removed as soon as the

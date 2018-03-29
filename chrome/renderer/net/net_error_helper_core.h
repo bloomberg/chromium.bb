@@ -132,8 +132,7 @@ class NetErrorHelperCore {
   NetErrorHelperCore(Delegate* delegate,
                      bool auto_reload_enabled,
                      bool auto_reload_visible_only,
-                     bool is_visible,
-                     bool online);
+                     bool is_visible);
   ~NetErrorHelperCore();
 
   // Sets values in |pending_error_page_info_|. If |error_html| is not null, it

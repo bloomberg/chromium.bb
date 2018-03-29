@@ -501,8 +501,7 @@ bool NetErrorHelperCore::IsReloadableError(
 NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
                                        bool auto_reload_enabled,
                                        bool auto_reload_visible_only,
-                                       bool is_visible,
-                                       bool online)
+                                       bool is_visible)
     : delegate_(delegate),
       last_probe_status_(error_page::DNS_PROBE_POSSIBLE),
       can_show_network_diagnostics_dialog_(false),
@@ -512,7 +511,8 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
       auto_reload_paused_(false),
       auto_reload_in_flight_(false),
       uncommitted_load_started_(false),
-      online_(online),
+      // TODO(ellyjones): Make online_ accurate at object creation.
+      online_(true),
       visible_(is_visible),
       auto_reload_count_(0),
       navigation_from_button_(NO_BUTTON) {}
