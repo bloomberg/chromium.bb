@@ -26,9 +26,8 @@ bool IsOpaqueUiMode(UiMode mode) {
 
 }  // namespace
 
-Model::Model() {}
-
-Model::~Model() {}
+Model::Model() = default;
+Model::~Model() = default;
 
 const ColorScheme& Model::color_scheme() const {
   ColorScheme::Mode mode = ColorScheme::kModeNormal;

@@ -10884,7 +10884,18 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_SHELL_SITE_IS_SHARING_SCREEN" desc="Text displayed in a transient bubble to inform the user that the page is sharing the screen.">
         Site is sharing your screen
       </message>
-
+      <message name="IDS_VR_SHELL_BG_IS_USING_MICROPHONE" desc="Text displayed in a transient bubble to inform the user that a background tab is using the microphone.">
+        Background tab is using your microphone
+      </message>
+      <message name="IDS_VR_SHELL_BG_IS_USING_BLUETOOTH" desc="Text displayed in a transient bubble to inform the user that a background tab is using bluetooth.">
+        Background tab is using bluetooth
+      </message>
+      <message name="IDS_VR_SHELL_BG_IS_USING_CAMERA" desc="Text displayed in a transient bubble to inform the user that a background tab is using the camera.">
+        Background tab is using your camera
+      </message>
+      <message name="IDS_VR_SHELL_BG_IS_SHARING_SCREEN" desc="Text displayed in a transient bubble to inform the user that a background tab is sharing the screen.">
+        Background tab is sharing your screen
+      </message>
       <message name="IDS_VR_SHELL_SITE_CAN_TRACK_LOCATION" desc="Text displayed in a transient bubble to inform the user that the page may track location, but isn't doing so yet.">
         Site can track your location
       </message>

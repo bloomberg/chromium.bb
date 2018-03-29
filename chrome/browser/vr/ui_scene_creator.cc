@@ -578,6 +578,29 @@ EventHandlers CreateRepositioningHandlers(Model* model, UiScene* scene) {
   return handlers;
 }
 
+void BindIndicatorText(Model* model, Text* text, const IndicatorSpec& spec) {
+  text->AddBinding(std::make_unique<Binding<std::pair<bool, bool>>>(
+      VR_BIND_LAMBDA(
+          [](Model* model, bool CapturingStateModel::*signal,
+             bool CapturingStateModel::*background_signal) {
+            return std::make_pair(model->capturing_state.*signal,
+                                  model->capturing_state.*background_signal);
+          },
+          base::Unretained(model), spec.signal, spec.background_signal),
+      VR_BIND_LAMBDA(
+          [](Text* view, int resource, int background_resource,
+             int potential_resource, const std::pair<bool, bool>& value) {
+            if (value.first)
+              view->SetText(l10n_util::GetStringUTF16(resource));
+            else if (value.second)
+              view->SetText(l10n_util::GetStringUTF16(background_resource));
+            else
+              view->SetText(l10n_util::GetStringUTF16(potential_resource));
+          },
+          base::Unretained(text), spec.resource_string,
+          spec.background_resource_string, spec.potential_resource_string)));
+}
+
 std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
                                                 UiBrowserInterface* browser,
                                                 IndicatorSpec spec) {
@@ -630,24 +653,10 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
     text_element->SetAlignment(UiTexture::kTextAlignmentLeft);
     text_element->SetColor(SK_ColorWHITE);
     text_element->SetSize(kWebVrPermissionTextWidth, 0.0f);
-    if (spec.signal) {
-      text_element->AddBinding(std::make_unique<Binding<bool>>(
-          VR_BIND_LAMBDA(
-              [](Model* model, bool CapturingStateModel::*signal) {
-                return model->capturing_state.*signal;
-              },
-              base::Unretained(model), spec.signal),
-          VR_BIND_LAMBDA(
-              [](Text* view, int resource, int potential_resource,
-                 const bool& value) {
-                view->SetText(l10n_util::GetStringUTF16(
-                    value ? resource : potential_resource));
-              },
-              base::Unretained(text_element.get()), spec.resource_string,
-              spec.potential_resource_string)));
-    } else {
+    if (spec.signal)
+      BindIndicatorText(model, text_element.get(), spec);
+    else
       text_element->SetText(l10n_util::GetStringUTF16(spec.resource_string));
-    }
     VR_BIND_COLOR(model, text_element.get(),
                   &ColorScheme::webvr_permission_foreground, &Text::SetColor);
     description_element = std::move(text_element);
@@ -977,10 +986,12 @@ void UiSceneCreator::CreateSystemIndicators() {
     element->set_hover_offset(0.0f);
     element->AddBinding(std::make_unique<Binding<bool>>(
         VR_BIND_LAMBDA(
-            [](Model* model, bool CapturingStateModel::*signal) {
-              return model->capturing_state.*signal;
+            [](Model* model, bool CapturingStateModel::*signal,
+               bool CapturingStateModel::*background_signal) {
+              return model->capturing_state.*signal ||
+                     model->capturing_state.*background_signal;
             },
-            base::Unretained(model_), spec.signal),
+            base::Unretained(model_), spec.signal, spec.background_signal),
         VR_BIND_LAMBDA(
             [](UiElement* view, const bool& value) {
               view->SetVisible(value);
@@ -1033,20 +1044,7 @@ void UiSceneCreator::CreateSystemIndicators() {
     text_element->set_owner_name_for_test(element->name());
     text_element->SetSize(0.0f, kWebVrPermissionFontHeight);
     text_element->SetType(kTypeLabel);
-    text_element->AddBinding(std::make_unique<Binding<bool>>(
-        VR_BIND_LAMBDA(
-            [](Model* model, bool CapturingStateModel::*signal) {
-              return model->capturing_state.*signal;
-            },
-            base::Unretained(model_), spec.signal),
-        VR_BIND_LAMBDA(
-            [](Text* view, int resource, int potential_resource,
-               const bool& value) {
-              view->SetText(l10n_util::GetStringUTF16(
-                  value ? resource : potential_resource));
-            },
-            base::Unretained(text_element.get()), spec.resource_string,
-            spec.potential_resource_string)));
+    BindIndicatorText(model_, text_element.get(), spec);
     VR_BIND_COLOR(model_, text_element.get(),
                   &ColorScheme::webvr_permission_foreground, &Text::SetColor);
 
@@ -2728,18 +2726,25 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                                    kRemoveCircleOutlineIcon,
                                    IDS_PRESS_APP_TO_EXIT,
                                    0,
+                                   0,
+                                   nullptr,
                                    nullptr,
                                    nullptr,
                                    false};
   indicators->AddChild(CreateWebVrIndicator(model_, browser_, app_button_spec));
 
-  IndicatorSpec url_indicator_spec = {
-      kNone, kWebVrUrlToast, toolbar::kHttpsInvalidIcon, 0, 0, nullptr, nullptr,
-      true};
+  IndicatorSpec url_indicator_spec = {kNone,
+                                      kWebVrUrlToast,
+                                      toolbar::kHttpsInvalidIcon,
+                                      0,
+                                      0,
+                                      0,
+                                      nullptr,
+                                      nullptr,
+                                      nullptr,
+                                      true};
   indicators->AddChild(
       CreateWebVrIndicator(model_, browser_, url_indicator_spec));
-
-  // TODO(crbug.com/824472): add an indicator for the transient URL toast.
 
   auto specs = GetIndicatorSpecs();
   for (const auto& spec : specs) {
@@ -2790,7 +2795,8 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
               SetVisibleInLayout(
                   scene->GetUiElementByName(spec.webvr_name),
                   model->capturing_state.*spec.signal ||
-                      model->capturing_state.*spec.potential_signal);
+                      model->capturing_state.*spec.potential_signal ||
+                      model->capturing_state.*spec.background_signal);
             }
 
             e->RemoveKeyframeModels(TRANSFORM);

@@ -111,8 +111,8 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetLoading(true);
   ui_->SetLoadProgress(0.4);
   CapturingStateModel capturing_state;
-  capturing_state.video_capture_enabled = true;
-  capturing_state.screen_capture_enabled = true;
+  capturing_state.video_capture_potentially_enabled = true;
+  capturing_state.background_screen_capture_enabled = true;
   capturing_state.bluetooth_connected = true;
   capturing_state.location_access_enabled = true;
   ui_->SetCapturingState(capturing_state);
