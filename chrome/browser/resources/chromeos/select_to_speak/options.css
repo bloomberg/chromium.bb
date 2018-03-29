@@ -153,6 +153,7 @@ label {
 .slider {
     -webkit-appearance: none;
     padding: 15px 0 15px 0;
+    transition: all 200ms ease;
     width: 200px;
 }
 
@@ -165,21 +166,28 @@ label {
 
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    -webkit-transition: .200ms;
+    -webkit-transition: 200ms;
     appearance: none;
     background: rgb(51, 103, 214);
     border-radius: 50%;
     height: 10px;
     margin-top: -3px;
-    transition: width .200ms, height .200ms, margin-top .200ms;
     width: 10px;
+}
+
+.slider:focus::-webkit-slider-thumb {
+    background-clip: padding-box;
+    border: 10px solid rgba(51, 103, 214, .2);
+    height: 30px;
+    margin-top: -13px;
+    width: 30px;
 }
 
 .slider:active::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    background: rgb(51, 103, 214);
-    border-radius: 50%;
+    border:0px;
+    border-radius:50%;
     height: 20px;
     margin-top: -10px;
     width: 20px;
