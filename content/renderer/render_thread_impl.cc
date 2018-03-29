@@ -1536,7 +1536,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
   if (!gpu_factories_.empty()) {
-    if (gpu_factories_.back()->ContextProviderMainThread())
+    if (!gpu_factories_.back()->CheckContextProviderLost())
       return gpu_factories_.back().get();
 
     GetMediaThreadTaskRunner()->PostTask(
