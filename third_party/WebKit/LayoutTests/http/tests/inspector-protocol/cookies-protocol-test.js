@@ -52,6 +52,27 @@
     await Promise.all(promises);
   }
 
+  async function setCookieViaFetch() {
+    await dp.Runtime.evaluate({
+        expression: `fetch('/inspector-protocol/network/resources/cookie.pl', { credentials: 'same-origin' })`,
+        awaitPromise: true
+    });
+    await logCookies();
+  }
+
+  async function printCookieViaFetch() {
+    await dp.Network.setCookie({url: 'http://127.0.0.1/', name: 'foo', value: 'bar1'});
+    const body = (await dp.Runtime.evaluate({
+        expression: `
+            fetch('/inspector-protocol/network/resources/echo-headers.php?headers=HTTP_COOKIE',
+                { credentials: 'same-origin' })
+            .then(r => r.text())`,
+        awaitPromise: true,
+        returnByValue: true
+    })).result.result.value;
+    testRunner.log(`Cookies as seen on server: ${JSON.stringify(body)}`);
+  }
+
   testRunner.log('Test started');
   testRunner.log('Enabling network');
   await dp.Network.enable();
@@ -180,5 +201,12 @@
 
     deleteAllCookies,
 
+    setCookieViaFetch,
+
+    deleteAllCookies,
+
+    printCookieViaFetch,
+
+    deleteAllCookies,
   ]);
 })
