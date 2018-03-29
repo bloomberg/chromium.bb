@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
@@ -317,9 +318,7 @@ class ASH_EXPORT Shell : public SessionObserver,
     return app_list_controller_.get();
   }
   AshAssistantController* ash_assistant_controller() {
-    // TODO(dmblack): Add DCHECK(chromeos::switches::IsAssistantEnabled());
-    // Note that this requires removing an unused header in
-    // chrome/test/base/ui_test_utils.cc to avoid breaking the build.
+    DCHECK(chromeos::switches::IsAssistantEnabled());
     return ash_assistant_controller_.get();
   }
   AshDisplayController* ash_display_controller() {

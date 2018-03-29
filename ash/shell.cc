@@ -146,7 +146,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/system/devicemode.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
