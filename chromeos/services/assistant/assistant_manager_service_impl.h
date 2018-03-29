@@ -55,6 +55,23 @@ class AssistantManagerServiceImpl
   void OnSpeechLevelUpdated(float speech_level) override;
 
  private:
+  void StartAssistantInternal(const std::string& access_token,
+                              const std::string& arc_version);
+  std::string BuildUserAgent(const std::string& arc_version) const;
+
+  static void OnShowHtmlInternal(
+      const base::WeakPtr<AssistantManagerServiceImpl>& self,
+      const std::string& html);
+  static void OnShowTextInternal(
+      const base::WeakPtr<AssistantManagerServiceImpl>& self,
+      const std::string& text);
+  static void OnOpenUrlInteranl(
+      const base::WeakPtr<AssistantManagerServiceImpl>& self,
+      const std::string& url);
+  static void OnSpeechLevelUpdatedInternal(
+      const base::WeakPtr<AssistantManagerServiceImpl>& self,
+      const float speech_level);
+
   bool running_ = false;
   PlatformApiImpl platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
@@ -62,10 +79,8 @@ class AssistantManagerServiceImpl
   assistant_client::AssistantManagerInternal* const assistant_manager_internal_;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
-
-  void StartAssistantInternal(const std::string& access_token,
-                              const std::string& arc_version);
-  std::string BuildUserAgent(const std::string& arc_version) const;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImpl);
 };

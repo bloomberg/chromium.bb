@@ -30,7 +30,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
                                                      kDefaultConfigStr)),
       assistant_manager_internal_(
           UnwrapAssistantManagerInternal(assistant_manager_.get())),
-      display_connection_(std::make_unique<CrosDisplayConnection>(this)) {}
+      display_connection_(std::make_unique<CrosDisplayConnection>(this)),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_factory_(this) {}
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
@@ -44,6 +46,59 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token) {
 
   // Set the flag to avoid starting the service multiple times.
   running_ = true;
+}
+
+bool AssistantManagerServiceImpl::IsRunning() const {
+  return running_;
+}
+
+void AssistantManagerServiceImpl::SetAccessToken(
+    const std::string& access_token) {
+  // Push the |access_token| we got as an argument into AssistantManager before
+  // starting to ensure that all server requests will be authenticated once
+  // it is started. |user_id| is used to pair a user to their |access_token|,
+  // since we do not support multi-user in this example we can set it to a
+  // dummy value like "0".
+  assistant_manager_->SetAuthTokens({std::pair<std::string, std::string>(
+      /* user_id: */ "0", access_token)});
+}
+
+void AssistantManagerServiceImpl::EnableListening(bool enable) {
+  assistant_manager_->EnableListening(enable);
+}
+
+void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
+  assistant_manager_internal_->SendTextQuery(query);
+}
+
+void AssistantManagerServiceImpl::AddAssistantEventSubscriber(
+    mojom::AssistantEventSubscriberPtr subscriber) {
+  subscribers_.AddPtr(std::move(subscriber));
+}
+
+void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&OnShowHtmlInternal, weak_factory_.GetWeakPtr(), html));
+}
+
+void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&OnShowTextInternal, weak_factory_.GetWeakPtr(), text));
+}
+
+void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&OnOpenUrlInteranl, weak_factory_.GetWeakPtr(), url));
+}
+
+void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
+    const float speech_level) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&OnSpeechLevelUpdatedInternal,
+                                weak_factory_.GetWeakPtr(), speech_level));
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
@@ -82,51 +137,45 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
   return user_agent;
 }
 
-bool AssistantManagerServiceImpl::IsRunning() const {
-  return running_;
+// static
+void AssistantManagerServiceImpl::OnShowHtmlInternal(
+    const base::WeakPtr<AssistantManagerServiceImpl>& self,
+    const std::string& html) {
+  if (self) {
+    self->subscribers_.ForAllPtrs(
+        [&html](auto* ptr) { ptr->OnHtmlResponse(html); });
+  }
 }
 
-void AssistantManagerServiceImpl::SetAccessToken(
-    const std::string& access_token) {
-  // Push the |access_token| we got as an argument into AssistantManager before
-  // starting to ensure that all server requests will be authenticated once
-  // it is started. |user_id| is used to pair a user to their |access_token|,
-  // since we do not support multi-user in this example we can set it to a
-  // dummy value like "0".
-  assistant_manager_->SetAuthTokens({std::pair<std::string, std::string>(
-      /* user_id: */ "0", access_token)});
+// static
+void AssistantManagerServiceImpl::OnShowTextInternal(
+    const base::WeakPtr<AssistantManagerServiceImpl>& self,
+    const std::string& text) {
+  if (self) {
+    self->subscribers_.ForAllPtrs(
+        [&text](auto* ptr) { ptr->OnTextResponse(text); });
+  }
 }
 
-void AssistantManagerServiceImpl::EnableListening(bool enable) {
-  assistant_manager_->EnableListening(enable);
+// static
+void AssistantManagerServiceImpl::OnOpenUrlInteranl(
+    const base::WeakPtr<AssistantManagerServiceImpl>& self,
+    const std::string& url) {
+  if (self) {
+    self->subscribers_.ForAllPtrs(
+        [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
+  }
 }
 
-void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
-  assistant_manager_internal_->SendTextQuery(query);
-}
-
-void AssistantManagerServiceImpl::AddAssistantEventSubscriber(
-    mojom::AssistantEventSubscriberPtr subscriber) {
-  subscribers_.AddPtr(std::move(subscriber));
-}
-
-void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
-  subscribers_.ForAllPtrs([&html](auto* ptr) { ptr->OnHtmlResponse(html); });
-}
-
-void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
-  subscribers_.ForAllPtrs([&text](auto* ptr) { ptr->OnTextResponse(text); });
-}
-
-void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
-  subscribers_.ForAllPtrs(
-      [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
-}
-
-void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
+// static
+void AssistantManagerServiceImpl::OnSpeechLevelUpdatedInternal(
+    const base::WeakPtr<AssistantManagerServiceImpl>& self,
     const float speech_level) {
-  subscribers_.ForAllPtrs(
-      [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
+  if (self) {
+    self->subscribers_.ForAllPtrs([&speech_level](auto* ptr) {
+      ptr->OnSpeechLevelUpdated(speech_level);
+    });
+  }
 }
 
 }  // namespace assistant
