@@ -4068,47 +4068,6 @@ TEST_F(SplitViewWindowSelectorTest,
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 }
 
-// Verify that events that originate on the overview title bar will not allow
-// the item to be dragged or enter splitview, but will still be able to select a
-// window.
-TEST_F(SplitViewWindowSelectorTest, EventsOnOverviewTitleBar) {
-  const gfx::Rect bounds(400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-
-  ToggleOverview();
-
-  const int grid_index = 0;
-  WindowSelectorItem* selector_item1 =
-      GetWindowItemForWindow(grid_index, window1.get());
-  const gfx::Rect original_bounds = selector_item1->target_bounds();
-
-  // Click on the title of the selector item.
-  const gfx::Point point_on_title =
-      GetLabelView(selector_item1)->GetBoundsInScreen().CenterPoint();
-  GetEventGenerator().MoveMouseTo(point_on_title);
-  GetEventGenerator().PressLeftButton();
-
-  // Verify that dragging the mouse does change the selector item bounds.
-  GetEventGenerator().MoveMouseTo(0, 0);
-  EXPECT_EQ(original_bounds, selector_item1->target_bounds());
-
-  // We dragged into the left snap region. Verify that after releasing the
-  // mouse, we do not enter split view mode, which would be the case if we did
-  // not click on the title.
-  GetEventGenerator().ReleaseLeftButton();
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
-
-  // Verify that clicking on the title still exits overview and activates the
-  // associated window of the clicked selector item.
-  ASSERT_TRUE(window_selector());
-  GetEventGenerator().MoveMouseTo(point_on_title);
-  GetEventGenerator().PressLeftButton();
-  GetEventGenerator().ReleaseLeftButton();
-
-  EXPECT_FALSE(window_selector());
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-}
-
 // Test that when splitview mode is active, minimizing one of the snapped window
 // will insert the minimized window back to overview mode if overview mode is
 // active at the moment.
