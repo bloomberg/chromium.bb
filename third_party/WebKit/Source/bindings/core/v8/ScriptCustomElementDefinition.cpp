@@ -23,6 +23,8 @@
 
 namespace blink {
 
+class CSSStyleSheet;
+
 ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
     ScriptState* script_state,
     CustomElementRegistry* registry,
@@ -74,11 +76,12 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
     const v8::Local<v8::Function>& disconnected_callback,
     const v8::Local<v8::Function>& adopted_callback,
     const v8::Local<v8::Function>& attribute_changed_callback,
-    HashSet<AtomicString>&& observed_attributes) {
+    HashSet<AtomicString>&& observed_attributes,
+    CSSStyleSheet* default_style_sheet) {
   ScriptCustomElementDefinition* definition = new ScriptCustomElementDefinition(
       script_state, descriptor, constructor, connected_callback,
       disconnected_callback, adopted_callback, attribute_changed_callback,
-      std::move(observed_attributes));
+      std::move(observed_attributes), default_style_sheet);
 
   // Tag the JavaScript constructor object with its ID.
   v8::Local<v8::Value> id_value =
@@ -100,8 +103,11 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     const v8::Local<v8::Function>& disconnected_callback,
     const v8::Local<v8::Function>& adopted_callback,
     const v8::Local<v8::Function>& attribute_changed_callback,
-    HashSet<AtomicString>&& observed_attributes)
-    : CustomElementDefinition(descriptor, std::move(observed_attributes)),
+    HashSet<AtomicString>&& observed_attributes,
+    CSSStyleSheet* default_style_sheet)
+    : CustomElementDefinition(descriptor,
+                              default_style_sheet,
+                              std::move(observed_attributes)),
       script_state_(script_state),
       constructor_(script_state->GetIsolate(), constructor) {
   v8::Isolate* isolate = script_state->GetIsolate();

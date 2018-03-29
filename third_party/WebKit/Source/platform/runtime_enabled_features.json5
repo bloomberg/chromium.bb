@@ -340,6 +340,10 @@
       status: "experimental",
     },
     {
+      name: "CustomElementDefaultStyle",
+      status: "experimental",
+    },
+    {
       name: "CustomElementsBuiltin",
       status: "stable",
     },

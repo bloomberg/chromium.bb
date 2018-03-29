@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "core/CoreExport.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "platform/wtf/Allocator.h"
 
@@ -22,8 +23,6 @@ class CORE_EXPORT CustomElementDefinitionBuilder {
   STACK_ALLOCATED();
 
  public:
-  CustomElementDefinitionBuilder() = default;
-
   // This API necessarily sounds JavaScript specific; this implements
   // some steps of the CustomElementRegistry.define process, which
   // are defined in terms of JavaScript.
@@ -47,6 +46,9 @@ class CORE_EXPORT CustomElementDefinitionBuilder {
   // Produce the definition. This must produce a definition.
   virtual CustomElementDefinition* Build(const CustomElementDescriptor&,
                                          CustomElementDefinition::Id) = 0;
+
+ protected:
+  CustomElementDefinitionBuilder() = default;
 
   DISALLOW_COPY_AND_ASSIGN(CustomElementDefinitionBuilder);
 };

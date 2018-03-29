@@ -38,7 +38,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       const v8::Local<v8::Function>& disconnected_callback,
       const v8::Local<v8::Function>& adopted_callback,
       const v8::Local<v8::Function>& attribute_changed_callback,
-      HashSet<AtomicString>&& observed_attributes);
+      HashSet<AtomicString>&& observed_attributes,
+      CSSStyleSheet*);
 
   virtual ~ScriptCustomElementDefinition() = default;
 
@@ -72,7 +73,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       const v8::Local<v8::Function>& disconnected_callback,
       const v8::Local<v8::Function>& adopted_callback,
       const v8::Local<v8::Function>& attribute_changed_callback,
-      HashSet<AtomicString>&& observed_attributes);
+      HashSet<AtomicString>&& observed_attributes,
+      CSSStyleSheet*);
 
   // Implementations of |CustomElementDefinition|
   ScriptValue GetConstructorForScript() final;

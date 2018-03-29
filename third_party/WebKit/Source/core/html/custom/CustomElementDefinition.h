@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class CSSStyleSheet;
 class Document;
 class Element;
 class ExceptionState;
@@ -32,9 +33,6 @@ class CORE_EXPORT CustomElementDefinition
   // CustomElementRegistry that created it.
   using Id = uint32_t;
 
-  CustomElementDefinition(const CustomElementDescriptor&);
-  CustomElementDefinition(const CustomElementDescriptor&,
-                          const HashSet<AtomicString>&);
   virtual ~CustomElementDefinition();
 
   virtual void Trace(blink::Visitor*);
@@ -93,6 +91,8 @@ class CORE_EXPORT CustomElementDefinition
                                        const AtomicString& old_value,
                                        const AtomicString& new_value);
 
+  CSSStyleSheet* DefaultStyleSheet() const { return default_style_sheet_; }
+
   class CORE_EXPORT ConstructionStackScope final {
     STACK_ALLOCATED();
     DISALLOW_COPY_AND_ASSIGN(ConstructionStackScope);
@@ -108,6 +108,14 @@ class CORE_EXPORT CustomElementDefinition
   };
 
  protected:
+  CustomElementDefinition(const CustomElementDescriptor&);
+
+  CustomElementDefinition(const CustomElementDescriptor&, CSSStyleSheet*);
+
+  CustomElementDefinition(const CustomElementDescriptor&,
+                          CSSStyleSheet*,
+                          const HashSet<AtomicString>& observed_attributes);
+
   virtual bool RunConstructor(Element*) = 0;
 
   static void CheckConstructorResult(Element*,
@@ -120,6 +128,8 @@ class CORE_EXPORT CustomElementDefinition
   ConstructionStack construction_stack_;
   HashSet<AtomicString> observed_attributes_;
   bool has_style_attribute_changed_callback_;
+
+  const Member<CSSStyleSheet> default_style_sheet_;
 
   void EnqueueAttributeChangedCallbackForAllAttributes(Element*);
 

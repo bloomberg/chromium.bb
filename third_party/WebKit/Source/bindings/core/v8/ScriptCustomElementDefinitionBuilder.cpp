@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptCustomElementDefinition.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"
@@ -20,10 +21,12 @@ namespace blink {
 ScriptCustomElementDefinitionBuilder::ScriptCustomElementDefinitionBuilder(
     ScriptState* script_state,
     CustomElementRegistry* registry,
+    CSSStyleSheet* default_style_sheet,
     const ScriptValue& constructor,
     ExceptionState& exception_state)
     : script_state_(script_state),
       registry_(registry),
+      default_style_sheet_(default_style_sheet),
       constructor_value_(constructor.V8Value()),
       exception_state_(exception_state) {}
 
@@ -156,7 +159,8 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
   return ScriptCustomElementDefinition::Create(
       script_state_.get(), registry_, descriptor, id, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
-      attribute_changed_callback_, std::move(observed_attributes_));
+      attribute_changed_callback_, std::move(observed_attributes_),
+      default_style_sheet_);
 }
 
 }  // namespace blink
