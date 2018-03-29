@@ -46,6 +46,8 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
 
   init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
       SigninManagerFactory::GetForProfile(profile));
+  init_params.signin_scoped_device_id_callback =
+      base::BindRepeating([]() { return std::string(); });
   init_params.oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;

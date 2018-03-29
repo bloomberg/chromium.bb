@@ -16,15 +16,13 @@ using testing::Return;
 
 namespace syncer {
 
-SyncApiComponentFactoryMock::SyncApiComponentFactoryMock()
-    : local_device_(new LocalDeviceInfoProviderMock()) {}
+SyncApiComponentFactoryMock::SyncApiComponentFactoryMock() = default;
 
 SyncApiComponentFactoryMock::SyncApiComponentFactoryMock(
     AssociatorInterface* model_associator,
     ChangeProcessor* change_processor)
     : model_associator_(model_associator),
-      change_processor_(change_processor),
-      local_device_(new LocalDeviceInfoProviderMock()) {}
+      change_processor_(change_processor) {}
 
 SyncApiComponentFactoryMock::~SyncApiComponentFactoryMock() {}
 
@@ -43,7 +41,9 @@ SyncApiComponentFactoryMock::MakeSyncComponents() {
 
 std::unique_ptr<LocalDeviceInfoProvider>
 SyncApiComponentFactoryMock::CreateLocalDeviceInfoProvider() {
-  return std::move(local_device_);
+  if (local_device_)
+    return std::move(local_device_);
+  return std::make_unique<LocalDeviceInfoProviderMock>();
 }
 
 void SyncApiComponentFactoryMock::SetLocalDeviceInfoProvider(

@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -27,6 +28,8 @@ CreateProfileSyncServiceParamsForTest(
 
   init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
       ios::SigninManagerFactory::GetForBrowserState(browser_state));
+  init_params.signin_scoped_device_id_callback =
+      base::BindRepeating([]() { return std::string(); });
   init_params.oauth2_token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
