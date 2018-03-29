@@ -113,9 +113,11 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
 
   void SetAlertDialogEnabled(bool enabled,
                              ContentInputDelegate* delegate,
-                             int width,
-                             int height);
-  void SetAlertDialogSize(int width, int height);
+                             float width,
+                             float height);
+  void SetAlertDialogSize(float width, float height);
+  void SetDialogLocation(float x, float y);
+  void SetDialogFloating();
   bool ShouldRenderWebVr();
 
   void OnGlInitialized(

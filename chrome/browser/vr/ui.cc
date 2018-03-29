@@ -222,18 +222,27 @@ void Ui::UpdateWebInputIndices(int selection_start,
 
 void Ui::SetAlertDialogEnabled(bool enabled,
                                ContentInputDelegate* delegate,
-                               int width,
-                               int height) {
+                               float width,
+                               float height) {
   model_->web_vr.showing_hosted_ui = enabled;
   model_->native_ui.hosted_ui_enabled = enabled;
-  model_->native_ui.size_ratio =
-      static_cast<float>(height) / static_cast<float>(width);
+  model_->native_ui.rect.set_height(height);
+  model_->native_ui.rect.set_width(width);
   model_->native_ui.delegate = delegate;
 }
 
-void Ui::SetAlertDialogSize(int width, int height) {
-  model_->native_ui.size_ratio =
-      static_cast<float>(height) / static_cast<float>(width);
+void Ui::SetAlertDialogSize(float width, float height) {
+  model_->native_ui.rect.set_height(height);
+  model_->native_ui.rect.set_width(width);
+}
+
+void Ui::SetDialogLocation(float x, float y) {
+  model_->native_ui.rect.set_y(y);
+  model_->native_ui.rect.set_x(x);
+}
+
+void Ui::SetDialogFloating() {
+  model_->native_ui.floating = true;
 }
 
 bool Ui::ShouldRenderWebVr() {

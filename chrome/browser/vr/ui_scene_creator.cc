@@ -677,8 +677,10 @@ std::unique_ptr<UiElement> CreateHostedUi(
     float distance) {
   auto hosted_ui = Create<ContentElement>(
       kNone, kPhaseForeground, content_input_delegate, base::DoNothing());
-  hosted_ui->SetSize(kHostedUiWidthDMM, kHostedUiHeightDMM);
+  hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
+                     kContentHeight * kHostedUiHeightRatio);
   hosted_ui->SetVisible(false);
+  hosted_ui->set_opacity_when_visible(1.0);
   hosted_ui->set_requires_layout(false);
   hosted_ui->set_corner_radius(kContentCornerRadius);
   hosted_ui->SetTransitionedProperties({OPACITY});
@@ -699,19 +701,57 @@ std::unique_ptr<UiElement> CreateHostedUi(
             dialog->set_hit_testable(enabled);
           },
           base::Unretained(hosted_ui.get()))));
-  hosted_ui->AddBinding(std::make_unique<Binding<float>>(
-      base::BindRepeating([](Model* m) { return m->native_ui.size_ratio; },
-                          base::Unretained(model)),
+  hosted_ui->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::PointF>>>(
       base::BindRepeating(
-          [](ContentElement* dialog, const float& value) {
-            dialog->SetSize(kHostedUiWidthDMM, kHostedUiWidthDMM * value);
+          [](Model* m) {
+            return std::pair<bool, gfx::PointF>(
+                m->native_ui.floating,
+                gfx::PointF(m->native_ui.rect.x(), m->native_ui.rect.y()));
+          },
+          base::Unretained(model)),
+      base::BindRepeating(
+          [](ContentElement* dialog,
+             const std::pair<bool, gfx::PointF>& value) {
+            if (value.first) {
+              dialog->set_x_centering(LEFT);
+              dialog->set_y_centering(TOP);
+              dialog->SetTranslate((value.second.x() - 0.5) * kContentWidth,
+                                   (0.5 - value.second.y()) * kContentHeight,
+                                   kFloatingHostedUiDistance);
+            } else {
+              dialog->set_x_centering(NONE);
+              dialog->set_y_centering(NONE);
+              dialog->SetTranslate(0, 0, kHostedUiDepthOffset);
+            }
           },
           base::Unretained(hosted_ui.get()))));
 
-  auto backplane = Create<InvisibleHitTarget>(kNone, kPhaseForeground);
+  hosted_ui->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::SizeF>>>(
+      base::BindRepeating(
+          [](Model* m) {
+            return std::pair<bool, gfx::SizeF>(
+                m->native_ui.floating, gfx::SizeF(m->native_ui.rect.width(),
+                                                  m->native_ui.rect.height()));
+          },
+          base::Unretained(model)),
+      base::BindRepeating(
+          [](ContentElement* dialog, const std::pair<bool, gfx::SizeF>& value) {
+            if (!value.first && value.second.width() > 0) {
+              float ratio = static_cast<float>(value.second.height()) /
+                            value.second.width();
+              dialog->SetSize(kContentWidth * kHostedUiWidthRatio,
+                              kContentWidth * kHostedUiWidthRatio * ratio);
+            } else if (value.first) {
+              dialog->SetSize(kContentWidth * value.second.width(),
+                              kContentWidth * value.second.height());
+            }
+          },
+          base::Unretained(hosted_ui.get()))));
+
+  auto backplane = Create<InvisibleHitTarget>(name, kPhaseForeground);
   backplane->SetType(kTypeHostedUiBackplane);
   backplane->SetSize(kSceneSize, kSceneSize);
-  backplane->SetTranslate(0.0, kHostedUiVerticalOffsetDMM, 0.0);
+  backplane->SetTranslate(0.0, kContentVerticalOffset, -kContentDistance);
   backplane->set_contributes_to_parent_bounds(false);
   EventHandlers event_handlers;
   event_handlers.button_up = base::BindRepeating(
@@ -723,15 +763,11 @@ std::unique_ptr<UiElement> CreateHostedUi(
       base::Unretained(model), base::Unretained(browser));
   backplane->set_event_handlers(event_handlers);
   backplane->AddChild(std::move(hosted_ui));
+  backplane->AddBinding(
+      VR_BIND_FUNC(bool, Model, model, model->native_ui.hosted_ui_enabled,
+                   InvisibleHitTarget, backplane.get(), SetVisible));
 
-  auto scaler = Create<ScaledDepthAdjuster>(name, kPhaseNone, distance);
-  scaler->SetType(kTypeScaledDepthAdjuster);
-  scaler->AddChild(std::move(backplane));
-  scaler->set_contributes_to_parent_bounds(false);
-  scaler->AddBinding(VR_BIND_FUNC(bool, Model, model,
-                                  model->native_ui.hosted_ui_enabled, UiElement,
-                                  scaler.get(), SetVisible));
-  return scaler;
+  return backplane;
 }
 
 std::unique_ptr<Grid> CreateGrid(Model* model, UiElementName name) {

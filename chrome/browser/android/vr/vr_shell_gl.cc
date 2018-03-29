@@ -466,8 +466,8 @@ void VrShellGl::OnSwapContents(int new_content_id) {
 }
 
 void VrShellGl::EnableAlertDialog(ContentInputForwarder* input_forwarder,
-                                  int width,
-                                  int height) {
+                                  float width,
+                                  float height) {
   showing_vr_dialog_ = true;
   vr_dialog_.reset(new VrDialog(width, height));
   vr_dialog_->SetEventForwarder(input_forwarder);
@@ -482,10 +482,18 @@ void VrShellGl::DisableAlertDialog() {
   ScheduleOrCancelWebVrFrameTimeout();
 }
 
-void VrShellGl::SetAlertDialogSize(int width, int height) {
+void VrShellGl::SetAlertDialogSize(float width, float height) {
   if (vr_dialog_)
     vr_dialog_->SetSize(width, height);
   ui_->SetAlertDialogSize(width, height);
+}
+
+void VrShellGl::SetDialogLocation(float x, float y) {
+  ui_->SetDialogLocation(x, y);
+}
+
+void VrShellGl::SetDialogFloating() {
+  ui_->SetDialogFloating();
 }
 
 void VrShellGl::ResumeContentRendering() {

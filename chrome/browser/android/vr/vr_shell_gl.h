@@ -114,11 +114,13 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void OnSwapContents(int new_content_id);
 
   void EnableAlertDialog(ContentInputForwarder* input_forwarder,
-                         int width,
-                         int height);
+                         float width,
+                         float height);
   void DisableAlertDialog();
 
-  void SetAlertDialogSize(int width, int height);
+  void SetAlertDialogSize(float width, float height);
+  void SetDialogLocation(float x, float y);
+  void SetDialogFloating();
 
   void AcceptDoffPromptForTesting();
 

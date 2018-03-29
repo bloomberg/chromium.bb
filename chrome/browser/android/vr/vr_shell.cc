@@ -581,8 +581,8 @@ void VrShell::OnTabRemoved(JNIEnv* env,
 
 void VrShell::SetAlertDialog(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
-                             int width,
-                             int height) {
+                             float width,
+                             float height) {
   PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::EnableAlertDialog,
                                            gl_thread_->GetVrShellGl(),
                                            gl_thread_.get(), width, height));
@@ -598,16 +598,38 @@ void VrShell::CloseAlertDialog(
   CreatePageInfo();
 }
 
+void VrShell::SetDialogBufferSize(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    float width,
+    float height) {
+  if (ui_surface_texture_)
+    ui_surface_texture_->SetDefaultBufferSize(width, height);
+}
+
 void VrShell::SetAlertDialogSize(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    int width,
-    int height) {
-  if (ui_surface_texture_)
-    ui_surface_texture_->SetDefaultBufferSize(width, height);
+    float width,
+    float height) {
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&VrShellGl::SetAlertDialogSize,
                                 gl_thread_->GetVrShellGl(), width, height));
+}
+
+void VrShell::SetDialogLocation(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>& obj,
+                                float x,
+                                float y) {
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::SetDialogLocation,
+                                           gl_thread_->GetVrShellGl(), x, y));
+}
+
+void VrShell::SetDialogFloating(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::SetDialogFloating,
+                                           gl_thread_->GetVrShellGl()));
 }
 
 void VrShell::ConnectPresentingService(
