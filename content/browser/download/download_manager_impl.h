@@ -41,6 +41,7 @@ namespace content {
 class DownloadItemFactory;
 class DownloadItemImpl;
 class ResourceContext;
+class StoragePartitionImpl;
 class URLLoaderFactoryGetter;
 
 class CONTENT_EXPORT DownloadManagerImpl
@@ -229,7 +230,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ResumeInterruptedDownload(
       std::unique_ptr<download::DownloadUrlParameters> params,
       uint32_t id,
-      StoragePartitionImpl* storage_partition) override;
+      const GURL& site_url) override;
   void OpenDownload(DownloadItemImpl* download) override;
   bool IsMostRecentDownloadItemAtFilePath(DownloadItemImpl* download) override;
   void ShowDownloadInShell(DownloadItemImpl* download) override;

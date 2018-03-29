@@ -817,7 +817,11 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
 void DownloadManagerImpl::ResumeInterruptedDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
     uint32_t id,
-    StoragePartitionImpl* storage_partition) {
+    const GURL& site_url) {
+  StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetStoragePartitionForSite(browser_context_, site_url));
+  params->set_url_request_context_getter(
+      storage_partition->GetURLRequestContext());
   BeginDownloadInternal(std::move(params), nullptr, id, storage_partition);
 }
 

@@ -18,7 +18,6 @@
 namespace content {
 class BrowserContext;
 class DownloadItemImpl;
-class StoragePartitionImpl;
 
 // Delegate for operations that a DownloadItemImpl can't do for itself.
 // The base implementation of this class does nothing (returning false
@@ -75,7 +74,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   virtual void ResumeInterruptedDownload(
       std::unique_ptr<download::DownloadUrlParameters> params,
       uint32_t id,
-      StoragePartitionImpl* storage_partition);
+      const GURL& site_url);
 
   // For contextual issues like language and prefs.
   virtual BrowserContext* GetBrowserContext() const;

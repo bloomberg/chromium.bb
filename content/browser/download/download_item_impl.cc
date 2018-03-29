@@ -54,7 +54,6 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "net/http/http_response_headers.h"
@@ -2344,10 +2343,6 @@ void DownloadItemImpl::ResumeInterruptedDownload(
     received_slices_.clear();
   }
 
-  StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartitionForSite(GetBrowserContext(),
-                                                 request_info_.site_url));
-
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("download_manager_resume", R"(
         semantics {
@@ -2377,9 +2372,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // request will not be dropped if the WebContents (and by extension, the
   // associated renderer) goes away before a response is received.
   std::unique_ptr<download::DownloadUrlParameters> download_params(
-      new download::DownloadUrlParameters(
-          GetURL(), storage_partition->GetURLRequestContext(),
-          traffic_annotation));
+      new download::DownloadUrlParameters(GetURL(), nullptr,
+                                          traffic_annotation));
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
     std::vector<download::DownloadItem::ReceivedSlice> slices_to_download =
@@ -2426,7 +2420,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   }
 
   delegate_->ResumeInterruptedDownload(std::move(download_params), GetId(),
-                                       storage_partition);
+                                       request_info_.site_url);
 
   if (job_)
     job_->Resume(false);
