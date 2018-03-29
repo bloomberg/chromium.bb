@@ -507,6 +507,9 @@
   <message name="IDS_SETTINGS_NOT_VALID_WEB_ADDRESS" desc="Text indicating that the Web address entered by the user is invalid." >
     Not a valid web address
   </message>
+  <message name="IDS_SETTINGS_RETRY" desc="The label text of the retry button because there is an error.">
+   Retry
+  </message>
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">
@@ -1347,9 +1350,6 @@
     <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE" desc="The text on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
       Smart Lock is currently unavailable. Please try again later.
     </message>
-    <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY" desc="The label text of the retry button on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
-      Retry
-    </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_ALLOW_SIGN_IN_LABEL" desc="The label text on the Easy unlock settings page for the radio box to allow the EasyUnlock on the sign-in screen (in addition to the lock screen).">
       Use Smart Lock to sign in to your account
     </message>
@@ -2184,6 +2184,12 @@
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_DISABLED" desc="Text that is shown when spell checking is disabled by policy.">
       Disabled
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_DOWNLOAD_FAILED" desc="Error message when spell dictionary download fails.">
+      Spell check dictionary download failed.
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_DOWNLOAD_FAILED_HELP" desc="Error message when spell dictionary download fails more than once possibly due to a network policy or configuration.">
+      Please check with your network administrator to make sure that the firewall is not blocking downloads from Google servers.
     </message>
   </if>
 

@@ -156,6 +156,11 @@ Polymer({
   /** @private {?Function} */
   boundOnInputMethodChanged_: null,
 
+  // <if expr="not is_macosx">
+  /** @private {?Function} */
+  boundOnSpellcheckDictionariesChanged_: null,
+  // </if>
+
   /** @private {?settings.LanguagesBrowserProxy} */
   browserProxy_: null,
 
@@ -217,14 +222,24 @@ Polymer({
 
     Promise.all(promises).then(results => {
       if (!this.isConnected) {
-        // Return early if this element was detached from the DOM before this
-        // async callback executes (can happen during testing).
+        // Return early if this element was detached from the DOM before
+        // this async callback executes (can happen during testing).
         return;
       }
 
       // TODO(dpapad): Cleanup this code. It uses results[3] and results[4]
       // which only exist for ChromeOS.
       this.createModel_(results[1], results[2], results[3], results[4]);
+
+      // <if expr="not is_macosx">
+      this.boundOnSpellcheckDictionariesChanged_ =
+          this.onSpellcheckDictionariesChanged_.bind(this);
+      this.languageSettingsPrivate_.onSpellcheckDictionariesChanged.addListener(
+          this.boundOnSpellcheckDictionariesChanged_);
+      this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses(
+          this.boundOnSpellcheckDictionariesChanged_);
+      // </if>
+
       this.resolver_.resolve();
     });
 
@@ -242,6 +257,14 @@ Polymer({
           assert(this.boundOnInputMethodChanged_));
       this.boundOnInputMethodChanged_ = null;
     }
+
+    // <if expr="not is_macosx">
+    if (this.boundOnSpellcheckDictionariesChanged_) {
+      this.languageSettingsPrivate_.onSpellcheckDictionariesChanged
+          .removeListener(this.boundOnSpellcheckDictionariesChanged_);
+      this.boundOnSpellcheckDictionariesChanged_ = null;
+    }
+    // </if>
   },
 
   /**
@@ -269,6 +292,13 @@ Polymer({
       this.enabledLanguageSet_.add(enabledLanguageStates[i].language.code);
 
     this.set('languages.enabled', enabledLanguageStates);
+
+    // <if expr="not is_macosx">
+    if (this.boundOnSpellcheckDictionariesChanged_) {
+      this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses(
+          this.boundOnSpellcheckDictionariesChanged_);
+    }
+    // </if>
   },
 
   /**
@@ -314,7 +344,11 @@ Polymer({
     for (let i = 0; i < spellCheckForcedDictionaries.length; i++) {
       const code = spellCheckForcedDictionaries[i];
       if (!enabledSet.has(code) && this.supportedLanguageMap_.has(code)) {
-        forcedLanguages.push(this.supportedLanguageMap_.get(code));
+        forcedLanguages.push({
+          language: this.supportedLanguageMap_.get(code),
+          isManaged: true,
+          downloadDictionaryFailureCount: 0,
+        });
       }
     }
     return forcedLanguages;
@@ -470,10 +504,51 @@ Polymer({
           translateCode != translateTarget &&
           (!prospectiveUILanguage || code != prospectiveUILanguage);
       languageState.isManaged = !!spellCheckForcedSet.has(code);
+      languageState.downloadDictionaryFailureCount = 0;
       enabledLanguageStates.push(languageState);
     }
     return enabledLanguageStates;
   },
+
+  // <if expr="not is_macosx">
+  /**
+   * Updates the dictionary download status for languages in
+   * |this.languages.enabled| and |this.languages.forcedSpellCheckLanguages| in
+   * order to track the number of times a spell check dictionary download has
+   * failed.
+   * @param {!Array<!chrome.languageSettingsPrivate.SpellcheckDictionaryStatus>}
+   *     statuses
+   * @private
+   */
+  onSpellcheckDictionariesChanged_: function(statuses) {
+    const statusMap = new Map();
+    statuses.forEach(status => {
+      statusMap.set(status.languageCode, status);
+    });
+
+    ['enabled', 'forcedSpellCheckLanguages'].forEach(collectionName => {
+      this.languages[collectionName].forEach((languageState, index) => {
+        const status = statusMap.get(languageState.language.code);
+        if (!status)
+          return;
+
+        const previousStatus = languageState.downloadDictionaryStatus;
+        const keyPrefix = `languages.${collectionName}.${index}`;
+        this.set(`${keyPrefix}.downloadDictionaryStatus`, status);
+
+        const failureCountKey = `${keyPrefix}.downloadDictionaryFailureCount`;
+        if (status.downloadFailed &&
+            !(previousStatus && previousStatus.downloadFailed)) {
+          const failureCount = languageState.downloadDictionaryFailureCount + 1;
+          this.set(failureCountKey, failureCount);
+        } else if (
+            status.isReady && !(previousStatus && previousStatus.isReady)) {
+          this.set(failureCountKey, 0);
+        }
+      });
+    });
+  },
+  // </if>
 
   /**
    * Returns a list of enabled input methods.
@@ -768,6 +843,14 @@ Polymer({
    */
   getLanguage: function(languageCode) {
     return this.supportedLanguageMap_.get(languageCode);
+  },
+
+  /**
+   * Retries downloading the dictionary for |languageCode|.
+   * @param {string} languageCode
+   */
+  retryDownloadDictionary: function(languageCode) {
+    this.languageSettingsPrivate_.retryDownloadDictionary(languageCode);
   },
 
   // <if expr="chromeos">

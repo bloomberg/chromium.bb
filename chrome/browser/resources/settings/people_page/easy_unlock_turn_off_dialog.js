@@ -145,7 +145,7 @@ Polymer({
       case settings.EasyUnlockTurnOffStatus.PENDING:
         return this.i18n('easyUnlockTurnOffButton');
       case settings.EasyUnlockTurnOffStatus.SERVER_ERROR:
-        return this.i18n('easyUnlockTurnOffRetryButton');
+        return this.i18n('retry');
     }
     assertNotReached();
   },
