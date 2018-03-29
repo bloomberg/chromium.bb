@@ -35,6 +35,14 @@ LocationLine.prototype.show = function(entry) {
 };
 
 /**
+ * Returns current path components built by the current directory entry.
+ * @return {!Array<!LocationLine.PathComponent>} Current path components.
+ */
+LocationLine.prototype.getCurrentPathComponents = function() {
+  return this.components_;
+};
+
+/**
  * Replace the root directory name at the end of a url.
  * The input, |url| is a displayRoot URL of a Drive volume like
  * filesystem:chrome-extension://....foo.com-hash/root
