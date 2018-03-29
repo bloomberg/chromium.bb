@@ -320,7 +320,7 @@ void av1_cyclic_refresh_check_golden_update(AV1_COMP *const cpi) {
   double fraction_low = 0.0;
   int low_content_frame = 0;
 
-  MODE_INFO **mi;
+  MB_MODE_INFO **mi;
   RATE_CONTROL *const rc = &cpi->rc;
   const int rows = cm->mi_rows, cols = cm->mi_cols;
   int cnt1 = 0, cnt2 = 0;
@@ -330,12 +330,12 @@ void av1_cyclic_refresh_check_golden_update(AV1_COMP *const cpi) {
     mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
 
     for (mi_col = 0; mi_col < cols; mi_col++) {
-      int16_t abs_mvr = mi[0]->mbmi.mv[0].as_mv.row >= 0
-                            ? mi[0]->mbmi.mv[0].as_mv.row
-                            : -1 * mi[0]->mbmi.mv[0].as_mv.row;
-      int16_t abs_mvc = mi[0]->mbmi.mv[0].as_mv.col >= 0
-                            ? mi[0]->mbmi.mv[0].as_mv.col
-                            : -1 * mi[0]->mbmi.mv[0].as_mv.col;
+      int16_t abs_mvr = mi[0]->mv[0].as_mv.row >= 0
+                            ? mi[0]->mv[0].as_mv.row
+                            : -1 * mi[0]->mv[0].as_mv.row;
+      int16_t abs_mvc = mi[0]->mv[0].as_mv.col >= 0
+                            ? mi[0]->mv[0].as_mv.col
+                            : -1 * mi[0]->mv[0].as_mv.col;
 
       // Calculate the motion of the background.
       if (abs_mvr <= 16 && abs_mvc <= 16) {

@@ -72,16 +72,16 @@ static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
 
 // This function returns either the appropriate sub block or block's mv
 // on whether the block_size < 8x8 and we have check_sub_blocks set.
-static INLINE int_mv get_sub_block_mv(const MODE_INFO *candidate, int which_mv,
-                                      int search_col) {
+static INLINE int_mv get_sub_block_mv(const MB_MODE_INFO *candidate,
+                                      int which_mv, int search_col) {
   (void)search_col;
-  return candidate->mbmi.mv[which_mv];
+  return candidate->mv[which_mv];
 }
 
-static INLINE int_mv get_sub_block_pred_mv(const MODE_INFO *candidate,
+static INLINE int_mv get_sub_block_pred_mv(const MB_MODE_INFO *candidate,
                                            int which_mv, int search_col) {
   (void)search_col;
-  return candidate->mbmi.mv[which_mv];
+  return candidate->mv[which_mv];
 }
 
 // Performs mv sign inversion if indicated by the reference frame combination.
@@ -295,11 +295,11 @@ static INLINE void av1_collect_neighbors_ref_counts(MACROBLOCKD *const xd) {
   }
 }
 
-void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
-                        int mi_col, int x_mis, int y_mis);
+void av1_copy_frame_mvs(const AV1_COMMON *const cm, MB_MODE_INFO *mi,
+                        int mi_row, int mi_col, int x_mis, int y_mis);
 
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                      MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
+                      MB_MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                       uint8_t ref_mv_count[MODE_CTX_REF_FRAMES],
                       CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
                       int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES], int mi_row,

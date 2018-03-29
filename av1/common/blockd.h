@@ -292,10 +292,6 @@ typedef struct MB_MODE_INFO {
   int comp_group_idx;
 } MB_MODE_INFO;
 
-typedef struct MODE_INFO {
-  MB_MODE_INFO mbmi;
-} MODE_INFO;
-
 #define NO_FILTER_FOR_IBC 1  // Disable in-loop filters for frame with intrabc
 
 static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
@@ -370,13 +366,12 @@ static INLINE MV_REFERENCE_FRAME comp_ref1(int ref_idx) {
   return lut[ref_idx];
 }
 
-PREDICTION_MODE av1_left_block_mode(const MODE_INFO *left_mi);
+PREDICTION_MODE av1_left_block_mode(const MB_MODE_INFO *left_mi);
 
-PREDICTION_MODE av1_above_block_mode(const MODE_INFO *above_mi);
+PREDICTION_MODE av1_above_block_mode(const MB_MODE_INFO *above_mi);
 
-static INLINE int is_global_mv_block(const MODE_INFO *mi,
+static INLINE int is_global_mv_block(const MB_MODE_INFO *const mbmi,
                                      TransformationType type) {
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const PREDICTION_MODE mode = mbmi->mode;
 #if GLOBAL_SUB8X8_USED
   const int block_size_allowed = 1;
@@ -524,9 +519,7 @@ typedef struct macroblockd {
 
   int mi_stride;
 
-  MODE_INFO **mi;
-  MODE_INFO *left_mi;
-  MODE_INFO *above_mi;
+  MB_MODE_INFO **mi;
   MB_MODE_INFO *left_mbmi;
   MB_MODE_INFO *above_mbmi;
   MB_MODE_INFO *chroma_left_mbmi;
@@ -764,7 +757,7 @@ static INLINE int av1_raster_order_to_block_index(TX_SIZE tx_size,
 static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
                                           const MACROBLOCKD *xd,
                                           TX_SIZE tx_size) {
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
 
   if (is_inter_block(mbmi) || plane_type != PLANE_TYPE_Y ||
       xd->lossless[mbmi->segment_id] || tx_size >= TX_32X32)
@@ -837,8 +830,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
                                       const MACROBLOCKD *xd, int blk_row,
                                       int blk_col, TX_SIZE tx_size,
                                       int reduced_tx_set) {
-  const MODE_INFO *const mi = xd->mi[0];
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct macroblockd_plane *const pd = &xd->plane[plane_type];
   const TxSetType tx_set_type =
       get_ext_tx_set_type(tx_size, is_inter_block(mbmi), reduced_tx_set);
@@ -925,7 +917,7 @@ static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi, int ss_x,
 }
 
 static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
-  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *mbmi = xd->mi[0];
   if (xd->lossless[mbmi->segment_id]) return TX_4X4;
   if (plane == 0) return mbmi->tx_size;
   const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
@@ -997,7 +989,7 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
 
 static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                        int subsampled) {
-  TX_SIZE max_txsize = xd->lossless[xd->mi[0]->mbmi.segment_id]
+  TX_SIZE max_txsize = xd->lossless[xd->mi[0]->segment_id]
                            ? TX_4X4
                            : get_max_rect_tx_size(bsize);
 
@@ -1039,11 +1031,10 @@ static INLINE int check_num_overlappable_neighbors(const MB_MODE_INFO *mbmi) {
 
 static INLINE MOTION_MODE
 motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
-                    const MODE_INFO *mi, int allow_warped_motion) {
-  const MB_MODE_INFO *mbmi = &mi->mbmi;
+                    const MB_MODE_INFO *mbmi, int allow_warped_motion) {
   if (xd->cur_frame_force_integer_mv == 0) {
     const TransformationType gm_type = gm_params[mbmi->ref_frame[0]].wmtype;
-    if (is_global_mv_block(mi, gm_type)) return SIMPLE_TRANSLATION;
+    if (is_global_mv_block(mbmi, gm_type)) return SIMPLE_TRANSLATION;
   }
   if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
       is_inter_mode(mbmi->mode) && mbmi->ref_frame[1] != INTRA_FRAME &&
@@ -1066,10 +1057,10 @@ motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
 static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
                                             const WarpedMotionParams *gm_params,
                                             const MACROBLOCKD *xd,
-                                            const MODE_INFO *mi,
+                                            const MB_MODE_INFO *mbmi,
                                             int allow_warped_motion) {
   const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(gm_params, xd, mi, allow_warped_motion);
+      motion_mode_allowed(gm_params, xd, mbmi, allow_warped_motion);
 
   // Check that the input mode is not illegal
   if (last_motion_mode_allowed < mode)
@@ -1145,8 +1136,7 @@ typedef struct {
 } Av1ColorMapParam;
 
 static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
-  const MODE_INFO *mi = xd->mi[0];
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
   int ref;
 
   // First check if all modes are GLOBALMV

@@ -43,7 +43,7 @@ static void temporal_filter_predictors_mb_c(
   int uv_stride;
   // TODO(angiebird): change plane setting accordingly
   ConvolveParams conv_params = get_conv_params(which_mv, 0, 0, xd->bd);
-  const InterpFilters interp_filters = xd->mi[0]->mbmi.interp_filters;
+  const InterpFilters interp_filters = xd->mi[0]->interp_filters;
   WarpTypesAllowed warp_types;
   memset(&warp_types, 0, sizeof(WarpTypesAllowed));
 
@@ -277,7 +277,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
         NULL, 0, 0, 0, 0, 0);
   }
 
-  x->e_mbd.mi[0]->mbmi.mv[0] = x->best_mv;
+  x->e_mbd.mi[0]->mv[0] = x->best_mv;
 
   // Restore input state
   x->plane[0].src = src;
@@ -358,8 +358,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 
         if (frames[frame] == NULL) continue;
 
-        mbd->mi[0]->mbmi.mv[0].as_mv.row = 0;
-        mbd->mi[0]->mbmi.mv[0].as_mv.col = 0;
+        mbd->mi[0]->mv[0].as_mv.row = 0;
+        mbd->mi[0]->mv[0].as_mv.col = 0;
 
         if (frame == alt_ref_index) {
           filter_weight = 2;
@@ -381,8 +381,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
               mbd, frames[frame]->y_buffer + mb_y_offset,
               frames[frame]->u_buffer + mb_uv_offset,
               frames[frame]->v_buffer + mb_uv_offset, frames[frame]->y_stride,
-              mb_uv_width, mb_uv_height, mbd->mi[0]->mbmi.mv[0].as_mv.row,
-              mbd->mi[0]->mbmi.mv[0].as_mv.col, predictor, scale, mb_col * 16,
+              mb_uv_width, mb_uv_height, mbd->mi[0]->mv[0].as_mv.row,
+              mbd->mi[0]->mv[0].as_mv.col, predictor, scale, mb_col * 16,
               mb_row * 16, cm->allow_warped_motion);
 
           // Apply the filter (YUV)

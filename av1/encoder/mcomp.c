@@ -884,8 +884,7 @@ unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
                                      const MV *this_mv) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  MODE_INFO *mi = xd->mi[0];
-  MB_MODE_INFO *mbmi = &mi->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   const uint8_t *const src = x->plane[0].src.buf;
   const int src_stride = x->plane[0].src.stride;
   uint8_t *const dst = xd->plane[0].dst.buf;
@@ -909,8 +908,7 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
                                   int total_samples) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  MODE_INFO *mi = xd->mi[0];
-  MB_MODE_INFO *mbmi = &mi->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   const MV neighbors[8] = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 },
                             { 0, -2 }, { 2, 0 }, { 0, 2 }, { -2, 0 } };
   const MV ref_mv = x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv;
@@ -1873,7 +1871,7 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
   DECLARE_ALIGNED(16, int16_t, hbuf[2 * MAX_SB_SIZE]);
   DECLARE_ALIGNED(16, int16_t, vbuf[2 * MAX_SB_SIZE]);
@@ -1883,7 +1881,7 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
   const int src_stride = x->plane[0].src.stride;
   const int ref_stride = xd->plane[0].pre[0].stride;
   uint8_t const *ref_buf, *src_buf;
-  MV *tmp_mv = &xd->mi[0]->mbmi.mv[0].as_mv;
+  MV *tmp_mv = &xd->mi[0]->mv[0].as_mv;
   unsigned int best_sad, tmp_sad, sad_arr[4];
   MV this_mv;
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
@@ -2577,9 +2575,9 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
         // for the hashMap
         hash_table *ref_frame_hash =
-            intra ? &cpi->common.cur_frame->hash_table
-                  : av1_get_ref_frame_hash_map(
-                        cpi, x->e_mbd.mi[0]->mbmi.ref_frame[0]);
+            intra
+                ? &cpi->common.cur_frame->hash_table
+                : av1_get_ref_frame_hash_map(cpi, x->e_mbd.mi[0]->ref_frame[0]);
 
         av1_get_block_hash_value(
             what, what_stride, block_width, &hash_value1, &hash_value2,
@@ -2737,7 +2735,7 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   const int *const src_address = z;
   MACROBLOCKD *xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[0];
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   unsigned int besterr = INT_MAX;
   unsigned int sse;
   unsigned int thismse;

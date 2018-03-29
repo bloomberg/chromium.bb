@@ -863,7 +863,7 @@ void av1_setup_pred_block(const MACROBLOCKD *xd,
   dst[1].stride = dst[2].stride = src->uv_stride;
 
   for (i = 0; i < num_planes; ++i) {
-    setup_pred_plane(dst + i, xd->mi[0]->mbmi.sb_type, dst[i].buf,
+    setup_pred_plane(dst + i, xd->mi[0]->sb_type, dst[i].buf,
                      i ? src->uv_crop_width : src->y_crop_width,
                      i ? src->uv_crop_height : src->y_crop_height,
                      dst[i].stride, mi_row, mi_col, i ? scale_uv : scale,
@@ -898,7 +898,7 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
 int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
                             const MACROBLOCKD *xd) {
   if (cm->interp_filter == SWITCHABLE) {
-    const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+    const MB_MODE_INFO *const mbmi = xd->mi[0];
     int inter_filter_cost = 0;
     int dir;
 

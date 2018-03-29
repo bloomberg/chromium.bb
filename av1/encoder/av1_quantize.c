@@ -686,7 +686,7 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
 void av1_frame_init_quantizer(AV1_COMP *cpi) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
+  av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
 }
 
 void av1_set_quantizer(AV1_COMMON *cm, int q) {

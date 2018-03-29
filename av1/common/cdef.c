@@ -32,26 +32,26 @@ int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   for (int r = 0; r < maxr; r++) {
     for (int c = 0; c < maxc; c++) {
       skip =
-          skip && cm->mi_grid_visible[(mi_row + r) * cm->mi_stride + mi_col + c]
-                      ->mbmi.skip;
+          skip &&
+          cm->mi_grid_visible[(mi_row + r) * cm->mi_stride + mi_col + c]->skip;
     }
   }
   return skip;
 }
 
-static int is_8x8_block_skip(MODE_INFO **grid, int mi_row, int mi_col,
+static int is_8x8_block_skip(MB_MODE_INFO **grid, int mi_row, int mi_col,
                              int mi_stride) {
   int is_skip = 1;
   for (int r = 0; r < mi_size_high[BLOCK_8X8]; ++r)
     for (int c = 0; c < mi_size_wide[BLOCK_8X8]; ++c)
-      is_skip &= grid[(mi_row + r) * mi_stride + (mi_col + c)]->mbmi.skip;
+      is_skip &= grid[(mi_row + r) * mi_stride + (mi_col + c)]->skip;
 
   return is_skip;
 }
 
 int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
                          cdef_list *dlist, BLOCK_SIZE bs) {
-  MODE_INFO **grid = cm->mi_grid_visible;
+  MB_MODE_INFO **grid = cm->mi_grid_visible;
   int maxc = cm->mi_cols - mi_col;
   int maxr = cm->mi_rows - mi_row;
 
@@ -193,7 +193,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                               MI_SIZE_64X64 * fbc] == NULL ||
           cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
                               MI_SIZE_64X64 * fbc]
-                  ->mbmi.cdef_strength == -1) {
+                  ->cdef_strength == -1) {
         cdef_left = 0;
         continue;
       }
@@ -241,7 +241,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       const int mbmi_cdef_strength =
           cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
                               MI_SIZE_64X64 * fbc]
-              ->mbmi.cdef_strength;
+              ->cdef_strength;
       level = cm->cdef_strengths[mbmi_cdef_strength] / CDEF_SEC_STRENGTHS;
       sec_strength =
           cm->cdef_strengths[mbmi_cdef_strength] % CDEF_SEC_STRENGTHS;

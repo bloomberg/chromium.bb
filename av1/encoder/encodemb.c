@@ -104,7 +104,7 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
   const int eob = p->eobs[block];
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  const int segment_id = xd->mi[0]->mbmi.segment_id;
+  const int segment_id = xd->mi[0]->segment_id;
 
   if (eob == 0 || !cpi->optimize_seg_arr[segment_id] ||
       xd->lossless[segment_id]) {
@@ -135,7 +135,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
                      TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx) {
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   PLANE_TYPE plane_type = get_plane_type(plane);
@@ -206,7 +206,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   const AV1_COMMON *const cm = &args->cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -292,7 +292,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
   struct encode_b_args *const args = arg;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
@@ -366,10 +366,9 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
     txfm_param.tx_type = DCT_DCT;
     txfm_param.tx_size = tx_size;
     txfm_param.eob = p->eobs[block];
-    txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+    txfm_param.lossless = xd->lossless[xd->mi[0]->segment_id];
     txfm_param.tx_set_type = get_ext_tx_set_type(
-        txfm_param.tx_size, is_inter_block(&xd->mi[0]->mbmi),
-        cm->reduced_tx_set_used);
+        txfm_param.tx_size, is_inter_block(xd->mi[0]), cm->reduced_tx_set_used);
     if (txfm_param.is_hbd) {
       av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, &txfm_param);
       return;
@@ -392,7 +391,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   struct encode_b_args arg = { cpi,
                                x,
                                &ctx,
@@ -498,7 +497,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const AV1_COMMON *const cm = &args->cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -576,7 +575,7 @@ void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
   ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE] = { 0 };
 
   struct encode_b_args arg = {
-    cpi, x, NULL, &xd->mi[0]->mbmi.skip, ta, tl, enable_optimize_b
+    cpi, x, NULL, &(xd->mi[0]->skip), ta, tl, enable_optimize_b
   };
 
   if (!is_chroma_reference(mi_row, mi_col, bsize,

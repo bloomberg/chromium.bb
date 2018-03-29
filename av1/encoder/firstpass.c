@@ -360,7 +360,7 @@ static void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   MV tmp_mv = { 0, 0 };
   MV ref_mv_full = { ref_mv->row >> 3, ref_mv->col >> 3 };
   int num00, tmp_err, n;
-  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
   const int new_mv_mode_penalty = NEW_MV_MODE_PENALTY;
 
@@ -542,7 +542,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
   xd->mi = cm->mi_grid_visible;
   xd->mi[0] = cm->mi;
-  x->e_mbd.mi[0]->mbmi.sb_type = BLOCK_16X16;
+  x->e_mbd.mi[0]->sb_type = BLOCK_16X16;
 
   intra_factor = 0.0;
   brightness_factor = 0.0;
@@ -622,8 +622,8 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       xd->plane[1].dst.buf = new_yv12->u_buffer + recon_uvoffset;
       xd->plane[2].dst.buf = new_yv12->v_buffer + recon_uvoffset;
       xd->left_available = (mb_col != 0);
-      xd->mi[0]->mbmi.sb_type = bsize;
-      xd->mi[0]->mbmi.ref_frame[0] = INTRA_FRAME;
+      xd->mi[0]->sb_type = bsize;
+      xd->mi[0]->ref_frame[0] = INTRA_FRAME;
       set_mi_row_col(xd, &tile, mb_row * mb_scale, mi_size_high[bsize],
                      mb_col * mb_scale, mi_size_wide[bsize], cm->mi_rows,
                      cm->mi_cols);
@@ -631,10 +631,10 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize], num_planes);
 
       // Do intra 16x16 prediction.
-      xd->mi[0]->mbmi.segment_id = 0;
-      xd->lossless[xd->mi[0]->mbmi.segment_id] = (qindex == 0);
-      xd->mi[0]->mbmi.mode = DC_PRED;
-      xd->mi[0]->mbmi.tx_size =
+      xd->mi[0]->segment_id = 0;
+      xd->lossless[xd->mi[0]->segment_id] = (qindex == 0);
+      xd->mi[0]->mode = DC_PRED;
+      xd->mi[0]->tx_size =
           use_dc_pred ? (bsize >= BLOCK_16X16 ? TX_16X16 : TX_8X8) : TX_4X4;
       av1_encode_intra_block_plane(cpi, x, bsize, 0, 0, mb_row * 2, mb_col * 2);
       this_error = aom_get_mb_ss(x->plane[0].src_diff);
@@ -830,11 +830,11 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
           mv.row *= 8;
           mv.col *= 8;
           this_error = motion_error;
-          xd->mi[0]->mbmi.mode = NEWMV;
-          xd->mi[0]->mbmi.mv[0].as_mv = mv;
-          xd->mi[0]->mbmi.tx_size = TX_4X4;
-          xd->mi[0]->mbmi.ref_frame[0] = LAST_FRAME;
-          xd->mi[0]->mbmi.ref_frame[1] = NONE_FRAME;
+          xd->mi[0]->mode = NEWMV;
+          xd->mi[0]->mv[0].as_mv = mv;
+          xd->mi[0]->tx_size = TX_4X4;
+          xd->mi[0]->ref_frame[0] = LAST_FRAME;
+          xd->mi[0]->ref_frame[1] = NONE_FRAME;
           av1_build_inter_predictors_sby(cm, xd, mb_row * mb_scale,
                                          mb_col * mb_scale, NULL, bsize);
           av1_encode_sby_pass1(cm, x, bsize);

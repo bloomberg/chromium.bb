@@ -65,8 +65,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
   }
   for (j = 0; j < cm->mi_rows; j++) {
     for (i = 0; i < cm->mi_cols; i++) {
-      const MB_MODE_INFO *mbmi =
-          &cm->mi_grid_visible[j * cm->mi_stride + i]->mbmi;
+      const MB_MODE_INFO *mbmi = cm->mi_grid_visible[j * cm->mi_stride + i];
       insp_mi_data *mi = &fd->mi_grid[j * cm->mi_cols + i];
       // Segment
       mi->segment_id = mbmi->segment_id;

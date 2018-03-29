@@ -36,7 +36,7 @@ typedef enum {
 
 // Structure to hold snapshot of coding context during the mode picking process
 typedef struct {
-  MODE_INFO mic;
+  MB_MODE_INFO mic;
   MB_MODE_INFO_EXT mbmi_ext;
   uint8_t *color_index_map[2];
   uint8_t *blk_skip;

@@ -16,10 +16,9 @@
 #include "av1/common/seg_common.h"
 
 // Returns a context number for the given MB prediction signal
-static InterpFilter get_ref_filter_type(const MODE_INFO *mi,
+static InterpFilter get_ref_filter_type(const MB_MODE_INFO *ref_mbmi,
                                         const MACROBLOCKD *xd, int dir,
                                         MV_REFERENCE_FRAME ref_frame) {
-  const MB_MODE_INFO *ref_mbmi = &mi->mbmi;
   (void)xd;
 
   return ((ref_mbmi->ref_frame[0] == ref_frame ||
@@ -29,7 +28,7 @@ static InterpFilter get_ref_filter_type(const MODE_INFO *mi,
 }
 
 int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir) {
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
   const int ctx_offset =
       (mbmi->ref_frame[1] > INTRA_FRAME) * INTER_FILTER_COMP_OFFSET;
   MV_REFERENCE_FRAME ref_frame =
@@ -75,22 +74,20 @@ int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
                           uint16_t *cache) {
   const int row = -xd->mb_to_top_edge >> 3;
   // Do not refer to above SB row when on SB boundary.
-  const MODE_INFO *const above_mi =
-      (row % (1 << MIN_SB_SIZE_LOG2)) ? xd->above_mi : NULL;
-  const MODE_INFO *const left_mi = xd->left_mi;
+  const MB_MODE_INFO *const above_mi =
+      (row % (1 << MIN_SB_SIZE_LOG2)) ? xd->above_mbmi : NULL;
+  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
   int above_n = 0, left_n = 0;
-  if (above_mi)
-    above_n = above_mi->mbmi.palette_mode_info.palette_size[plane != 0];
-  if (left_mi)
-    left_n = left_mi->mbmi.palette_mode_info.palette_size[plane != 0];
+  if (above_mi) above_n = above_mi->palette_mode_info.palette_size[plane != 0];
+  if (left_mi) left_n = left_mi->palette_mode_info.palette_size[plane != 0];
   if (above_n == 0 && left_n == 0) return 0;
   int above_idx = plane * PALETTE_MAX_SIZE;
   int left_idx = plane * PALETTE_MAX_SIZE;
   int n = 0;
   const uint16_t *above_colors =
-      above_mi ? above_mi->mbmi.palette_mode_info.palette_colors : NULL;
+      above_mi ? above_mi->palette_mode_info.palette_colors : NULL;
   const uint16_t *left_colors =
-      left_mi ? left_mi->mbmi.palette_mode_info.palette_colors : NULL;
+      left_mi ? left_mi->palette_mode_info.palette_colors : NULL;
   // Merge the sorted lists of base colors from above and left to get
   // combined sorted color cache.
   while (above_n > 0 && left_n > 0) {

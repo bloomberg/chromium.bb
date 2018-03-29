@@ -386,9 +386,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int vb_step = 1;
       BLOCK_SIZE bs = BLOCK_64X64;
       MB_MODE_INFO *const mbmi =
-          &cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
-                               MI_SIZE_64X64 * fbc]
-               ->mbmi;
+          cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
+                              MI_SIZE_64X64 * fbc];
       if (((fbc & 1) &&
            (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64)) ||
           ((fbr & 1) &&
@@ -498,7 +497,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       }
     }
     selected_strength[i] = best_gi;
-    cm->mi_grid_visible[sb_index[i]]->mbmi.cdef_strength = best_gi;
+    cm->mi_grid_visible[sb_index[i]]->cdef_strength = best_gi;
   }
 
   if (fast) {

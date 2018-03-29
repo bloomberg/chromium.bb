@@ -16,16 +16,16 @@
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
 
-PREDICTION_MODE av1_left_block_mode(const MODE_INFO *left_mi) {
+PREDICTION_MODE av1_left_block_mode(const MB_MODE_INFO *left_mi) {
   if (!left_mi) return DC_PRED;
-  assert(!is_inter_block(&left_mi->mbmi) || is_intrabc_block(&left_mi->mbmi));
-  return left_mi->mbmi.mode;
+  assert(!is_inter_block(left_mi) || is_intrabc_block(left_mi));
+  return left_mi->mode;
 }
 
-PREDICTION_MODE av1_above_block_mode(const MODE_INFO *above_mi) {
+PREDICTION_MODE av1_above_block_mode(const MB_MODE_INFO *above_mi) {
   if (!above_mi) return DC_PRED;
-  assert(!is_inter_block(&above_mi->mbmi) || is_intrabc_block(&above_mi->mbmi));
-  return above_mi->mbmi.mode;
+  assert(!is_inter_block(above_mi) || is_intrabc_block(above_mi));
+  return above_mi->mode;
 }
 
 void av1_foreach_transformed_block_in_plane(
@@ -93,7 +93,7 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
   ENTROPY_CONTEXT *const l = pd->left_context + loff;
   const int txs_wide = tx_size_wide_unit[tx_size];
   const int txs_high = tx_size_high_unit[tx_size];
-  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 
   // above

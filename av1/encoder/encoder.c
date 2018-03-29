@@ -362,10 +362,11 @@ static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
   if (!cm->prev_mip) return 1;
   cm->mi_alloc_size = mi_size;
 
-  cm->mi_grid_base = (MODE_INFO **)aom_calloc(mi_size, sizeof(MODE_INFO *));
+  cm->mi_grid_base =
+      (MB_MODE_INFO **)aom_calloc(mi_size, sizeof(MB_MODE_INFO *));
   if (!cm->mi_grid_base) return 1;
   cm->prev_mi_grid_base =
-      (MODE_INFO **)aom_calloc(mi_size, sizeof(MODE_INFO *));
+      (MB_MODE_INFO **)aom_calloc(mi_size, sizeof(MB_MODE_INFO *));
   if (!cm->prev_mi_grid_base) return 1;
 
   return 0;
@@ -385,8 +386,8 @@ static void enc_free_mi(AV1_COMMON *cm) {
 
 static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
   // Current mip will be the prev_mip for the next frame.
-  MODE_INFO **temp_base = cm->prev_mi_grid_base;
-  MODE_INFO *temp = cm->prev_mip;
+  MB_MODE_INFO **temp_base = cm->prev_mi_grid_base;
+  MB_MODE_INFO *temp = cm->prev_mip;
   cm->prev_mip = cm->mip;
   cm->mip = temp;
 
@@ -684,15 +685,15 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
 
 static void update_reference_segmentation_map(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  MODE_INFO **mi_8x8_ptr = cm->mi_grid_visible;
+  MB_MODE_INFO **mi_8x8_ptr = cm->mi_grid_visible;
   uint8_t *cache_ptr = cm->current_frame_seg_map;
   int row, col;
 
   for (row = 0; row < cm->mi_rows; row++) {
-    MODE_INFO **mi_8x8 = mi_8x8_ptr;
+    MB_MODE_INFO **mi_8x8 = mi_8x8_ptr;
     uint8_t *cache = cache_ptr;
     for (col = 0; col < cm->mi_cols; col++, mi_8x8++, cache++)
-      cache[0] = mi_8x8[0]->mbmi.segment_id;
+      cache[0] = mi_8x8[0]->segment_id;
     mi_8x8_ptr += cm->mi_stride;
     cache_ptr += cm->mi_cols;
   }

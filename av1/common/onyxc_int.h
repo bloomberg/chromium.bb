@@ -305,7 +305,7 @@ typedef struct AV1Common {
   int allow_warped_motion;
 
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
-  // MODE_INFO (8-pixel) units.
+  // MB_MODE_INFO (8-pixel) units.
   int MBs;
   int mb_rows, mi_rows;
   int mb_cols, mi_cols;
@@ -351,28 +351,28 @@ typedef struct AV1Common {
   int min_qmlevel;
   int max_qmlevel;
 
-  /* We allocate a MODE_INFO struct for each macroblock, together with
+  /* We allocate a MB_MODE_INFO struct for each macroblock, together with
      an extra row on top and column on the left to simplify prediction. */
   int mi_alloc_size;
-  MODE_INFO *mip; /* Base of allocated array */
-  MODE_INFO *mi;  /* Corresponds to upper left visible macroblock */
+  MB_MODE_INFO *mip; /* Base of allocated array */
+  MB_MODE_INFO *mi;  /* Corresponds to upper left visible macroblock */
 
   // TODO(agrange): Move prev_mi into encoder structure.
   // prev_mip and prev_mi will only be allocated in encoder.
-  MODE_INFO *prev_mip; /* MODE_INFO array 'mip' from last decoded frame */
-  MODE_INFO *prev_mi;  /* 'mi' from last frame (points into prev_mip) */
+  MB_MODE_INFO *prev_mip; /* MB_MODE_INFO array 'mip' from last decoded frame */
+  MB_MODE_INFO *prev_mi;  /* 'mi' from last frame (points into prev_mip) */
 
   // Separate mi functions between encoder and decoder.
   int (*alloc_mi)(struct AV1Common *cm, int mi_size);
   void (*free_mi)(struct AV1Common *cm);
   void (*setup_mi)(struct AV1Common *cm);
 
-  // Grid of pointers to 8x8 MODE_INFO structs.  Any 8x8 not in the visible
+  // Grid of pointers to 8x8 MB_MODE_INFO structs.  Any 8x8 not in the visible
   // area will be NULL.
-  MODE_INFO **mi_grid_base;
-  MODE_INFO **mi_grid_visible;
-  MODE_INFO **prev_mi_grid_base;
-  MODE_INFO **prev_mi_grid_visible;
+  MB_MODE_INFO **mi_grid_base;
+  MB_MODE_INFO **mi_grid_visible;
+  MB_MODE_INFO **prev_mi_grid_base;
+  MB_MODE_INFO **prev_mi_grid_visible;
 
   // Whether to use previous frames' motion vectors for prediction.
   int allow_ref_frame_mvs;
@@ -715,7 +715,7 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
   for (i = 0; i < num_planes; ++i) {
     struct macroblockd_plane *const pd = &xd->plane[i];
     // Offset the buffer pointer
-    const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+    const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
     if (pd->subsampling_y && (mi_row & 0x01) && (mi_size_high[bsize] == 1))
       row_offset = mi_row - 1;
     if (pd->subsampling_x && (mi_col & 0x01) && (mi_size_wide[bsize] == 1))
@@ -767,20 +767,14 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   if (ss_y && bh < mi_size_high[BLOCK_8X8])
     xd->chroma_up_available = (mi_row - 1) > tile->mi_row_start;
   if (xd->up_available) {
-    xd->above_mi = xd->mi[-xd->mi_stride];
-    // above_mi may be NULL in encoder's first pass.
-    xd->above_mbmi = xd->above_mi ? &xd->above_mi->mbmi : NULL;
+    xd->above_mbmi = xd->mi[-xd->mi_stride];
   } else {
-    xd->above_mi = NULL;
     xd->above_mbmi = NULL;
   }
 
   if (xd->left_available) {
-    xd->left_mi = xd->mi[-1];
-    // left_mi may be NULL in encoder's first pass.
-    xd->left_mbmi = xd->left_mi ? &xd->left_mi->mbmi : NULL;
+    xd->left_mbmi = xd->mi[-1];
   } else {
-    xd->left_mi = NULL;
     xd->left_mbmi = NULL;
   }
 
@@ -791,20 +785,20 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
     // current block may cover multiple luma blocks (eg, if partitioned into
     // 4x4 luma blocks).
     // First, find the top-left-most luma block covered by this chroma block
-    MODE_INFO **base_mi =
+    MB_MODE_INFO **base_mi =
         &xd->mi[-(mi_row & ss_y) * xd->mi_stride - (mi_col & ss_x)];
 
     // Then, we consider the luma region covered by the left or above 4x4 chroma
     // prediction. We want to point to the chroma reference block in that
     // region, which is the bottom-right-most mi unit.
     // This leads to the following offsets:
-    MODE_INFO *chroma_above_mi =
+    MB_MODE_INFO *chroma_above_mi =
         xd->chroma_up_available ? base_mi[-xd->mi_stride + ss_x] : NULL;
-    xd->chroma_above_mbmi = chroma_above_mi ? &chroma_above_mi->mbmi : NULL;
+    xd->chroma_above_mbmi = chroma_above_mi;
 
-    MODE_INFO *chroma_left_mi =
+    MB_MODE_INFO *chroma_left_mi =
         xd->chroma_left_available ? base_mi[ss_y * xd->mi_stride - 1] : NULL;
-    xd->chroma_left_mbmi = chroma_left_mi ? &chroma_left_mi->mbmi : NULL;
+    xd->chroma_left_mbmi = chroma_left_mi;
   }
 
   xd->n8_h = bh;
@@ -818,8 +812,8 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
 }
 
 static INLINE aom_cdf_prob *get_y_mode_cdf(FRAME_CONTEXT *tile_ctx,
-                                           const MODE_INFO *above_mi,
-                                           const MODE_INFO *left_mi) {
+                                           const MB_MODE_INFO *above_mi,
+                                           const MB_MODE_INFO *left_mi) {
   const PREDICTION_MODE above = av1_above_block_mode(above_mi);
   const PREDICTION_MODE left = av1_left_block_mode(left_mi);
   const int above_ctx = intra_mode_context[above];
@@ -1203,8 +1197,8 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return PARTITION_INVALID;
 
   const int offset = mi_row * cm->mi_stride + mi_col;
-  MODE_INFO **mi = cm->mi_grid_visible + offset;
-  const BLOCK_SIZE subsize = mi[0]->mbmi.sb_type;
+  MB_MODE_INFO **mi = cm->mi_grid_visible + offset;
+  const BLOCK_SIZE subsize = mi[0]->sb_type;
 
   if (subsize == bsize) return PARTITION_NONE;
 
@@ -1217,8 +1211,8 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
       mi_col + bhigh / 2 < cm->mi_cols) {
     // In this case, the block might be using an extended partition
     // type.
-    const MB_MODE_INFO *const mbmi_right = &mi[bwide / 2]->mbmi;
-    const MB_MODE_INFO *const mbmi_below = &mi[bhigh / 2 * cm->mi_stride]->mbmi;
+    const MB_MODE_INFO *const mbmi_right = mi[bwide / 2];
+    const MB_MODE_INFO *const mbmi_below = mi[bhigh / 2 * cm->mi_stride];
 
     if (sswide == bwide) {
       // Smaller height but same width. Is PARTITION_HORZ_4, PARTITION_HORZ or

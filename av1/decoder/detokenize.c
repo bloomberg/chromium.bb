@@ -64,7 +64,7 @@ static void decode_color_map_tokens(Av1ColorMapParam *param, aom_reader *r) {
 static void get_palette_params(const MACROBLOCKD *const xd, int plane,
                                BLOCK_SIZE bsize, Av1ColorMapParam *params) {
   assert(plane == 0 || plane == 1);
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   params->color_map = xd->plane[plane].color_index_map;
   params->map_cdf = plane ? xd->tile_ctx->palette_uv_color_index_cdf
@@ -76,7 +76,7 @@ static void get_palette_params(const MACROBLOCKD *const xd, int plane,
 
 void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
                                aom_reader *r) {
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(plane == 0 || plane == 1);
   Av1ColorMapParam color_map_params;
   memset(&color_map_params, 0, sizeof(color_map_params));

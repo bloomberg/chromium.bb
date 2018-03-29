@@ -79,18 +79,17 @@ static INLINE int av1_get_spatial_seg_pred(const AV1_COMMON *const cm,
 }
 
 static INLINE int av1_get_pred_context_seg_id(const MACROBLOCKD *xd) {
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
-  const int above_sip =
-      (above_mi != NULL) ? above_mi->mbmi.seg_id_predicted : 0;
-  const int left_sip = (left_mi != NULL) ? left_mi->mbmi.seg_id_predicted : 0;
+  const MB_MODE_INFO *const above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
+  const int above_sip = (above_mi != NULL) ? above_mi->seg_id_predicted : 0;
+  const int left_sip = (left_mi != NULL) ? left_mi->seg_id_predicted : 0;
 
   return above_sip + left_sip;
 }
 
 static INLINE int get_comp_index_context(const AV1_COMMON *cm,
                                          const MACROBLOCKD *xd) {
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
   int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
   int bck_frame_index = 0, fwd_frame_index = 0;
@@ -104,25 +103,23 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
   int fwd = abs(get_relative_dist(cm, fwd_frame_index, cur_frame_index));
   int bck = abs(get_relative_dist(cm, cur_frame_index, bck_frame_index));
 
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
+  const MB_MODE_INFO *const above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
 
   int above_ctx = 0, left_ctx = 0;
   const int offset = (fwd == bck);
 
   if (above_mi) {
-    const MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
-    if (has_second_ref(above_mbmi))
-      above_ctx = above_mbmi->compound_idx;
-    else if (above_mbmi->ref_frame[0] == ALTREF_FRAME)
+    if (has_second_ref(above_mi))
+      above_ctx = above_mi->compound_idx;
+    else if (above_mi->ref_frame[0] == ALTREF_FRAME)
       above_ctx = 1;
   }
 
   if (left_mi) {
-    const MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
-    if (has_second_ref(left_mbmi))
-      left_ctx = left_mbmi->compound_idx;
-    else if (left_mbmi->ref_frame[0] == ALTREF_FRAME)
+    if (has_second_ref(left_mi))
+      left_ctx = left_mi->compound_idx;
+    else if (left_mi->ref_frame[0] == ALTREF_FRAME)
       left_ctx = 1;
   }
 
@@ -130,22 +127,20 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
 }
 
 static INLINE int get_comp_group_idx_context(const MACROBLOCKD *xd) {
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
+  const MB_MODE_INFO *const above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
   int above_ctx = 0, left_ctx = 0;
 
   if (above_mi) {
-    const MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
-    if (has_second_ref(above_mbmi))
-      above_ctx = above_mbmi->comp_group_idx;
-    else if (above_mbmi->ref_frame[0] == ALTREF_FRAME)
+    if (has_second_ref(above_mi))
+      above_ctx = above_mi->comp_group_idx;
+    else if (above_mi->ref_frame[0] == ALTREF_FRAME)
       above_ctx = 3;
   }
   if (left_mi) {
-    const MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
-    if (has_second_ref(left_mbmi))
-      left_ctx = left_mbmi->comp_group_idx;
-    else if (left_mbmi->ref_frame[0] == ALTREF_FRAME)
+    if (has_second_ref(left_mi))
+      left_ctx = left_mi->comp_group_idx;
+    else if (left_mi->ref_frame[0] == ALTREF_FRAME)
       left_ctx = 3;
   }
 
@@ -158,18 +153,18 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_seg_id(
 }
 
 static INLINE int av1_get_skip_mode_context(const MACROBLOCKD *xd) {
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
-  const int above_skip_mode = above_mi ? above_mi->mbmi.skip_mode : 0;
-  const int left_skip_mode = left_mi ? left_mi->mbmi.skip_mode : 0;
+  const MB_MODE_INFO *const above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
+  const int above_skip_mode = above_mi ? above_mi->skip_mode : 0;
+  const int left_skip_mode = left_mi ? left_mi->skip_mode : 0;
   return above_skip_mode + left_skip_mode;
 }
 
 static INLINE int av1_get_skip_context(const MACROBLOCKD *xd) {
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
-  const int above_skip = (above_mi != NULL) ? above_mi->mbmi.skip : 0;
-  const int left_skip = (left_mi != NULL) ? left_mi->mbmi.skip : 0;
+  const MB_MODE_INFO *const above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
+  const int above_skip = above_mi ? above_mi->skip : 0;
+  const int left_skip = left_mi ? left_mi->skip : 0;
   return above_skip + left_skip;
 }
 
@@ -187,11 +182,11 @@ static INLINE int av1_get_palette_bsize_ctx(BLOCK_SIZE bsize) {
 }
 
 static INLINE int av1_get_palette_mode_ctx(const MACROBLOCKD *xd) {
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
+  const MB_MODE_INFO *const above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
   int ctx = 0;
-  if (above_mi) ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-  if (left_mi) ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+  if (above_mi) ctx += (above_mi->palette_mode_info.palette_size[0] > 0);
+  if (left_mi) ctx += (left_mi->palette_mode_info.palette_size[0] > 0);
   return ctx;
 }
 
@@ -328,7 +323,7 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_single_ref_p6(
 // left of the entries corresponding to real blocks.
 // The prediction flags in these dummy entries are initialized to 0.
 static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
-  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *mbmi = xd->mi[0];
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const TX_SIZE max_tx_size = max_txsize_rect_lookup[mbmi->sb_type];

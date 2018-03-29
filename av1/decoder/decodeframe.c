@@ -280,10 +280,10 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   xd->mi[0] = &cm->mi[offset];
   // TODO(slavarnway): Generate sb_type based on bwl and bhl, instead of
   // passing bsize from decode_partition().
-  xd->mi[0]->mbmi.sb_type = bsize;
+  xd->mi[0]->sb_type = bsize;
 #if CONFIG_RD_DEBUG
-  xd->mi[0]->mbmi.mi_row = mi_row;
-  xd->mi[0]->mbmi.mi_col = mi_col;
+  xd->mi[0]->mi_row = mi_row;
+  xd->mi[0]->mi_col = mi_col;
 #endif
   xd->cfl.mi_row = mi_row;
   xd->cfl.mi_col = mi_col;
@@ -320,7 +320,7 @@ static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   aom_accounting_set_context(&pbi->accounting, mi_col, mi_row);
 #endif
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
-  xd->mi[0]->mbmi.partition = partition;
+  xd->mi[0]->partition = partition;
   av1_read_mode_info(pbi, xd, mi_row, mi_col, r, x_mis, y_mis);
   if (bsize >= BLOCK_8X8 && (cm->subsampling_x || cm->subsampling_y)) {
     const BLOCK_SIZE uv_subsize =
@@ -346,7 +346,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
 
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   CFL_CTX *const cfl = &xd->cfl;
   cfl->is_chroma_reference = is_chroma_reference(
       mi_row, mi_col, bsize, cfl->subsampling_x, cfl->subsampling_y);
@@ -594,7 +594,7 @@ static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, int is_inter,
                                      aom_reader *r) {
   // TODO(debargha): Clean up the logic here. This function should only
   // be called for intra.
-  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
   const int max_depths = bsize_to_max_depth(bsize, 0);
   const int ctx = get_tx_size_context(xd);
@@ -609,8 +609,8 @@ static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, int is_inter,
 static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
                             int allow_select_inter, aom_reader *r) {
   const TX_MODE tx_mode = cm->tx_mode;
-  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
-  if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return TX_4X4;
+  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+  if (xd->lossless[xd->mi[0]->segment_id]) return TX_4X4;
 
   if (block_signals_txsize(bsize)) {
     if ((!is_inter || allow_select_inter) && tx_mode == TX_MODE_SELECT) {
@@ -630,16 +630,16 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                          PARTITION_TYPE partition, BLOCK_SIZE bsize) {
   decode_mbmi_block(pbi, xd, mi_row, mi_col, r, partition, bsize);
 
-  if (!is_inter_block(&xd->mi[0]->mbmi)) {
+  if (!is_inter_block(xd->mi[0])) {
     for (int plane = 0; plane < AOMMIN(2, av1_num_planes(&pbi->common));
          ++plane) {
-      if (xd->mi[0]->mbmi.palette_mode_info.palette_size[plane])
+      if (xd->mi[0]->palette_mode_info.palette_size[plane])
         av1_decode_palette_tokens(xd, plane, r);
     }
   }
 
   AV1_COMMON *cm = &pbi->common;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *mbmi = xd->mi[0];
   int inter_block_tx = is_inter_block(mbmi) || is_intrabc_block(mbmi);
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !mbmi->skip && inter_block_tx && !xd->lossless[mbmi->segment_id]) {
