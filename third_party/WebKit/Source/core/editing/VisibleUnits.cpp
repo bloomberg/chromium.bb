@@ -739,11 +739,6 @@ static bool InRenderedText(const PositionTemplate<Strategy>& position) {
                                                    *anchor_node, text_offset));
 }
 
-static FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
-  return caret_rect.layout_object->LocalToAbsoluteQuad(
-      FloatRect(caret_rect.rect));
-}
-
 bool RendersInDifferentPosition(const Position& position1,
                                 const Position& position2) {
   if (position1.IsNull() || position2.IsNull())

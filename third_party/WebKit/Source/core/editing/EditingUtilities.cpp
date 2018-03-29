@@ -37,6 +37,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/LocalCaretRect.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/PositionIterator.h"
 #include "core/editing/PositionWithAffinity.h"
@@ -1571,6 +1572,11 @@ size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
             position.ComputeOffsetInContainerNode());
   return static_cast<size_t>(adjusted_position.ComputeOffsetInContainerNode() -
                              position.ComputeOffsetInContainerNode());
+}
+
+FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
+  return caret_rect.layout_object->LocalToAbsoluteQuad(
+      FloatRect(caret_rect.rect));
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {

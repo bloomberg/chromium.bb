@@ -154,11 +154,6 @@ LocalCaretRect LocalSelectionRectOfPositionTemplate(
                  LayoutSize(box->Root().SelectionHeight(), rect.Height())));
 }
 
-FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
-  return caret_rect.layout_object->LocalToAbsoluteQuad(
-      FloatRect(caret_rect.rect));
-}
-
 }  // namespace
 
 LocalCaretRect LocalCaretRectOfPosition(
