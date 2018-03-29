@@ -980,11 +980,6 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Keep track of whether we committed after the latest resize that needs to be
-  // acked was received. This helps us make sure we don't ack a resize before
-  // it's committed.
-  bool did_commit_after_resize_ = false;
-
   gfx::Rect viewport_intersection_;
   gfx::Rect compositor_visible_rect_;
 
