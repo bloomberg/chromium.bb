@@ -3111,8 +3111,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SpokenFeedbackEnabled) {
       chromeos::AccessibilityManager::Get();
 
   // Manually enable spoken feedback.
-  accessibility_manager->EnableSpokenFeedback(true,
-                                              ash::A11Y_NOTIFICATION_NONE);
+  accessibility_manager->EnableSpokenFeedback(true);
   EXPECT_TRUE(accessibility_manager->IsSpokenFeedbackEnabled());
 
   // Verify that policy overrides the manual setting.
@@ -3124,8 +3123,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SpokenFeedbackEnabled) {
   EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
 
   // Verify that spoken feedback cannot be enabled manually anymore.
-  accessibility_manager->EnableSpokenFeedback(true,
-                                              ash::A11Y_NOTIFICATION_NONE);
+  accessibility_manager->EnableSpokenFeedback(true);
   EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
 }
 

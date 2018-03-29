@@ -49,7 +49,6 @@ class ChromeVoxPanel : public views::WidgetDelegate {
   void DidFirstVisuallyNonEmptyPaint();
   void EnterFullscreen();
   void ExitFullscreen();
-  void DisableSpokenFeedback();
   void Focus();
 
   // Sends a request to the ash window manager.

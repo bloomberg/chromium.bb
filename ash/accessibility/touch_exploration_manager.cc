@@ -143,7 +143,7 @@ void TouchExplorationManager::ToggleSpokenFeedback() {
           return;
         GetA11yController()->SetSpokenFeedbackEnabled(
             !GetA11yController()->IsSpokenFeedbackEnabled(),
-            ash::A11Y_NOTIFICATION_SHOW);
+            A11Y_NOTIFICATION_SHOW);
       }));
 }
 

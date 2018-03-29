@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -93,8 +92,7 @@ IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
           ->GetProperty(
               aura::client::kAccessibilityTouchExplorationPassThrough));
 
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-      true /* enable */, ash::A11Y_NOTIFICATION_NONE);
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
   EXPECT_EQ(mojom::AccessibilityFilterType::ALL,
             fake_accessibility_helper_instance_->filter_type());
 

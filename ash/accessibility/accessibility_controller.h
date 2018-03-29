@@ -9,7 +9,6 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_export.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
@@ -31,6 +30,11 @@ namespace ash {
 class AccessibilityHighlightController;
 class AccessibilityObserver;
 class ScopedBacklightsForcedOff;
+
+enum AccessibilityNotificationVisibility {
+  A11Y_NOTIFICATION_NONE,
+  A11Y_NOTIFICATION_SHOW,
+};
 
 // The controller for accessibility features in ash. Features can be enabled
 // in chrome's webui settings or the system tray menu (see TrayAccessibility).

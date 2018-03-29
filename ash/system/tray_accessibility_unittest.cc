@@ -165,7 +165,8 @@ TEST_F(TrayAccessibilityTest, ShowNotificationOnSpokenFeedback) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
 
-  // Enabling spoken feedback should show the notification.
+  // Enabling spoken feedback should show the notification if specified to show
+  // notification.
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
   message_center::NotificationList::Notifications notifications =
       MessageCenter::Get()->GetVisibleNotifications();
@@ -173,8 +174,16 @@ TEST_F(TrayAccessibilityTest, ShowNotificationOnSpokenFeedback) {
   EXPECT_EQ(kChromeVoxEnabledTitle, (*notifications.begin())->title());
   EXPECT_EQ(kChromeVoxEnabled, (*notifications.begin())->message());
 
-  // Disabling spoken feedback should not show any notification.
+  // Disabling spoken feedback should not show any notification even if
+  // specified to show notification.
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_SHOW);
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(0u, notifications.size());
+
+  // Enabling spoken feedback but not specified to show notification should not
+  // show any notification, for example toggling on tray detailed menu.
+  // TODO(warx): migrate clicking on tray detailed menu from browser tests.
+  controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(0u, notifications.size());
 }

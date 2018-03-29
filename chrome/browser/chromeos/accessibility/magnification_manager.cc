@@ -190,8 +190,7 @@ class MagnificationManagerImpl
     }
 
     AccessibilityStatusEventDetails details(
-        ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER, enabled_,
-        ash::A11Y_NOTIFICATION_NONE);
+        ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER, enabled_);
 
     if (!AccessibilityManager::Get())
       return;

@@ -60,7 +60,7 @@ class ChromeVoxPanel::ChromeVoxPanelWebContentsObserver
     // to this panel host.
     std::string fragment = web_contents()->GetLastCommittedURL().ref();
     if (fragment == kDisableSpokenFeedbackURLFragment)
-      panel_->DisableSpokenFeedback();
+      chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false);
     else if (fragment == kFullscreenURLFragment)
       panel_->EnterFullscreen();
     else if (fragment == kFocusURLFragment)
@@ -181,11 +181,6 @@ void ChromeVoxPanel::ExitFullscreen() {
   widget_->Deactivate();
   widget_->widget_delegate()->set_can_activate(false);
   SetAccessibilityPanelFullscreen(false);
-}
-
-void ChromeVoxPanel::DisableSpokenFeedback() {
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
 }
 
 void ChromeVoxPanel::Focus() {

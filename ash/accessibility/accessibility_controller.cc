@@ -621,6 +621,7 @@ void AccessibilityController::UpdateSpokenFeedbackFromPref() {
   spoken_feedback_enabled_ = enabled;
 
   NotifyAccessibilityStatusChanged();
+
   if (spoken_feedback_notification_ != A11Y_NOTIFICATION_NONE)
     NotifyShowAccessibilityNotification();
 
