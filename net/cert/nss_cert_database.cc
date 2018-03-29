@@ -74,7 +74,6 @@ NSSCertDatabase::NSSCertDatabase(crypto::ScopedPK11Slot public_slot,
       weak_factory_(this) {
   CHECK(public_slot_);
 
-  // This also makes sure that NSS has been initialized.
   CertDatabase* cert_db = CertDatabase::GetInstance();
   cert_notification_forwarder_.reset(new CertNotificationForwarder(cert_db));
   AddObserver(cert_notification_forwarder_.get());
