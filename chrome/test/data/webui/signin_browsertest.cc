@@ -20,5 +20,5 @@ void SigninBrowserTest::EnableDice() {
 
 void SigninBrowserTest::EnableUnity() {
   EnableDice();
-  scoped_feature_list_.InitAndEnableFeature(features::kUnifiedConsent);
+  scoped_feature_list_.InitAndEnableFeature(signin::kUnifiedConsent);
 }

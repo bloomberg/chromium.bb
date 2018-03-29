@@ -314,8 +314,6 @@ extern const base::Feature kTabMetricsLogging;
 
 extern const base::Feature kTopSitesFromSiteEngagement;
 
-extern const base::Feature kUnifiedConsent;
-
 extern const base::Feature kUseGoogleLocalNtp;
 
 #if defined(OS_CHROMEOS)

@@ -35,6 +35,7 @@
 #include "components/payments/core/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -268,6 +269,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
      flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kSearchButtonIconChoices)},
+    {"unified-consent", flag_descriptions::kUnifiedConsentName,
+     flag_descriptions::kUnifiedConsentDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(signin::kUnifiedConsent)},
 };
 
 // Add all switches from experimental flags to |command_line|.

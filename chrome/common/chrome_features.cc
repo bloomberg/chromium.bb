@@ -574,10 +574,6 @@ const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
 const base::Feature kTopSitesFromSiteEngagement{
     "TopSitesFromSiteEngagement", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Improved and unified consent for privacy-related features.
-const base::Feature kUnifiedConsent{"UnifiedConsent",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables using the local NTP if Google is the default search engine.
 const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

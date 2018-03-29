@@ -23,6 +23,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/safe_browsing/features.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/common/content_features.h"
 #include "jni/ChromeFeatureList_jni.h"
@@ -56,7 +57,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSiteNotificationChannels,
     &features::kSimplifiedFullscreenUI,
     &features::kSoundContentSetting,
-    &features::kUnifiedConsent,
     &features::kWebPayments,
     &feed::kInterestFeedContentSuggestions,
     &kAdjustWebApkInstallationSpace,
@@ -149,6 +149,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains,
     &password_manager::features::kPasswordExport,
     &password_manager::features::kPasswordSearchMobile,
+    &signin::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI,
     &safe_browsing::kDispatchSafetyNetCheckOffThread,
 };
