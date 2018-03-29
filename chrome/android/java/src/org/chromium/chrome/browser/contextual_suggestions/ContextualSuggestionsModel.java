@@ -68,4 +68,11 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
     String getTitle() {
         return mTitle;
     }
+
+    /**
+     * @return Whether there are any suggestions to be shown.
+     */
+    boolean hasSuggestions() {
+        return getClusterList().getItemCount() > 0;
+    }
 }
