@@ -154,11 +154,6 @@ struct WinHeapInfo {
 // Unfortunately, there is no safe way to collect information from secondary
 // heaps due to limitations and racy nature of this piece of WinAPI.
 void WinHeapMemoryDumpImpl(WinHeapInfo* crt_heap_info) {
-#if defined(SYZYASAN)
-  if (base::debug::IsBinaryInstrumented())
-    return;
-#endif
-
   // Iterate through whichever heap our CRT is using.
   HANDLE crt_heap = reinterpret_cast<HANDLE>(_get_heap_handle());
   ::HeapLock(crt_heap);

@@ -369,7 +369,7 @@ MULTIPROCESS_TEST_MAIN(CrashingChildProcess) {
 
 // This test intentionally crashes, so we don't need to run it under
 // AddressSanitizer.
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_GetTerminationStatusCrash DISABLED_GetTerminationStatusCrash
 #else
 #define MAYBE_GetTerminationStatusCrash GetTerminationStatusCrash

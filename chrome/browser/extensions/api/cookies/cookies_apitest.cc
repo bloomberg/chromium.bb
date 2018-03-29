@@ -8,13 +8,7 @@
 
 namespace extensions {
 
-// Times out on win syzyasan, http://crbug.com/166026
-#if defined(SYZYASAN)
-#define MAYBE_Cookies DISABLED_Cookies
-#else
-#define MAYBE_Cookies Cookies
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Cookies) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Cookies) {
   ASSERT_TRUE(RunExtensionTest("cookies/api")) << message_;
 }
 

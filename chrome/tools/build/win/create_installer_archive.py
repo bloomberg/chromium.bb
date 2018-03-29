@@ -540,15 +540,7 @@ def main(options):
                                 options.last_chrome_installer,
                                 options.output_name)
 
-  # Preferentially copy the files we can find from the output_dir, as
-  # this is where we'll find the Syzygy-optimized executables when
-  # building the optimized mini_installer.
-  if options.build_dir != options.output_dir:
-    CopyAllFilesToStagingDir(config, options.distribution,
-                             staging_dir, options.output_dir,
-                             options.enable_hidpi)
-
-  # Now copy the remainder of the files from the build dir.
+  # Copy the files from the build dir.
   CopyAllFilesToStagingDir(config, options.distribution,
                            staging_dir, options.build_dir,
                            options.enable_hidpi)

@@ -21,8 +21,6 @@ if (is_android) {
   import("//build/mac/tweak_info_plist.gni")
   import("//third_party/icu/config.gni")
   import("//v8/gni/v8.gni")
-} else if (is_win) {
-  import("//build/win/syzygy/syzygy.gni")
 }
 
 declare_args() {
@@ -612,19 +610,6 @@ if (is_android) {
     fuchsia_executable_runner("content_shell_fuchsia") {
       testonly = true
       exe_target = ":content_shell"
-    }
-  }
-}
-
-if (is_win) {
-  if (is_syzyasan) {
-    syzygy_asan("content_shell_syzyasan") {
-      binary_name = "content_shell.exe"
-      dest_dir = "$root_out_dir/syzygy"
-      deps = [
-        "//content/shell:content_shell",
-      ]
-      testonly = true
     }
   }
 }

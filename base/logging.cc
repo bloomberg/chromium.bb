@@ -386,7 +386,7 @@ void CloseLogFileUnlocked() {
 }  // namespace
 
 #if DCHECK_IS_CONFIGURABLE
-// In DCHECK-enabled SyzyASAN builds, allow the meaning of LOG_DCHECK to be
+// In DCHECK-enabled Chrome builds, allow the meaning of LOG_DCHECK to be
 // determined at run-time. We default it to INFO, to avoid it triggering
 // crashes before the run-time has explicitly chosen the behaviour.
 BASE_EXPORT logging::LogSeverity LOG_DCHECK = LOG_INFO;

@@ -569,7 +569,6 @@ group("gn_all") {
       "//chrome/install_static:install_static_unittests",
       "//chrome/installer/gcapi",
       "//chrome/installer/setup:setup_unittests",
-      "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
       "//chrome_elf:chrome_elf_import_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",
@@ -804,24 +803,6 @@ if (is_win) {
       "//ui/views:views_unittests",
       "//url:url_unittests",
     ]
-  }
-
-  group("All_syzygy") {
-    if (is_syzyasan) {
-      deps = [
-        "//chrome/installer/mini_installer:mini_installer",
-        "//chrome/installer/mini_installer:mini_installer_syzygy",
-      ]
-    }
-  }
-
-  if (is_syzyasan) {
-    group("chrome_official_syzyasan_builder") {
-      deps = [
-        ":All_syzygy",
-        ":chrome_official_builder_no_unittests",
-      ]
-    }
   }
 }
 
@@ -1107,12 +1088,6 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
       deps += [
         "//third_party/pdfium/samples:pdfium_test",
         "//v8:v8_shell($v8_snapshot_toolchain)",
-      ]
-    }
-    if (is_win && symbol_level == 2 && target_cpu == "x86" && is_syzyasan) {
-      deps += [
-        "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
-        "//content/shell:content_shell_syzyasan",
       ]
     }
   }

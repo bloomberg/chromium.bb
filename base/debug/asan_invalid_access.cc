@@ -21,13 +21,7 @@ namespace debug {
 
 namespace {
 
-#if defined(SYZYASAN) && defined(COMPILER_MSVC)
-// Disable warning C4530: "C++ exception handler used, but unwind semantics are
-// not enabled". We don't want to change the compilation flags just for this
-// test, and no exception should be triggered here, so this warning has no value
-// here.
-#pragma warning(push)
-#pragma warning(disable: 4530)
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
 // Corrupt a memory block and make sure that the corruption gets detected either
 // when we free it or when another crash happens (if |induce_crash| is set to
 // true).
@@ -35,27 +29,28 @@ NOINLINE void CorruptMemoryBlock(bool induce_crash) {
   // NOTE(sebmarchand): We intentionally corrupt a memory block here in order to
   //     trigger an Address Sanitizer (ASAN) error report.
   static const int kArraySize = 5;
-  int* array = new int[kArraySize];
-  // Encapsulate the invalid memory access into a try-catch statement to prevent
-  // this function from being instrumented. This way the underflow won't be
-  // detected but the corruption will (as the allocator will still be hooked).
-  try {
-    // Declares the dummy value as volatile to make sure it doesn't get
-    // optimized away.
-    int volatile dummy = array[-1]--;
-    base::debug::Alias(const_cast<int*>(&dummy));
-  } catch (...) {
-  }
+  LONG* array = new LONG[kArraySize];
+
+  // Explicitly call out to a kernel32 function to perform the memory access.
+  // This way the underflow won't be detected but the corruption will (as the
+  // allocator will still be hooked).
+  auto InterlockedIncrementFn =
+      reinterpret_cast<LONG (*)(LONG volatile * addend)>(
+          GetProcAddress(GetModuleHandle(L"kernel32"), "InterlockedIncrement"));
+  CHECK(InterlockedIncrementFn);
+
+  LONG volatile dummy = InterlockedIncrementFn(array - 1);
+  base::debug::Alias(const_cast<LONG*>(&dummy));
+
   if (induce_crash)
     CHECK(false);
   delete[] array;
 }
-#pragma warning(pop)
-#endif  // SYZYASAN && COMPILER_MSVC
+#endif  // OS_WIN && ADDRESS_SANITIZER
 
 }  // namespace
 
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
 // NOTE(sebmarchand): We intentionally perform some invalid heap access here in
 //     order to trigger an AddressSanitizer (ASan) error report.
 
@@ -91,9 +86,7 @@ void AsanHeapUseAfterFree() {
   base::debug::Alias(&dummy);
 }
 
-#endif  // ADDRESS_SANITIZER || SYZYASAN
-
-#if defined(SYZYASAN) && defined(COMPILER_MSVC)
+#if defined(OS_WIN)
 void AsanCorruptHeapBlock() {
   CorruptMemoryBlock(false);
 }
@@ -101,7 +94,8 @@ void AsanCorruptHeapBlock() {
 void AsanCorruptHeap() {
   CorruptMemoryBlock(true);
 }
-#endif  // SYZYASAN && COMPILER_MSVC
+#endif  // OS_WIN
+#endif  // ADDRESS_SANITIZER
 
 }  // namespace debug
 }  // namespace base

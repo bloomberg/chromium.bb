@@ -4,10 +4,6 @@
 
 #include "content/browser/frame_host/debug_urls.h"
 
-#if defined(SYZYASAN)
-#include <windows.h>
-#endif
-
 #include <vector>
 
 #include "base/command_line.h"
@@ -16,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,7 +40,8 @@ const char kAsanCrashDomain[] = "crash";
 const char kAsanHeapOverflow[] = "/browser-heap-overflow";
 const char kAsanHeapUnderflow[] = "/browser-heap-underflow";
 const char kAsanUseAfterFree[] = "/browser-use-after-free";
-#if defined(SYZYASAN)
+
+#if defined(OS_WIN)
 const char kAsanCorruptHeapBlock[] = "/browser-corrupt-heap-block";
 const char kAsanCorruptHeap[] = "/browser-corrupt-heap";
 #endif
@@ -66,11 +64,6 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
 }
 
 bool IsAsanDebugURL(const GURL& url) {
-#if defined(SYZYASAN)
-  if (!base::debug::IsBinaryInstrumented())
-    return false;
-#endif
-
   if (!(url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
         url.DomainIs(kAsanCrashDomain) &&
         url.has_path())) {
@@ -83,7 +76,7 @@ bool IsAsanDebugURL(const GURL& url) {
     return true;
   }
 
-#if defined(SYZYASAN)
+#if defined(OS_WIN)
   if (url.path_piece() == kAsanCorruptHeapBlock ||
       url.path_piece() == kAsanCorruptHeap) {
     return true;
@@ -94,10 +87,8 @@ bool IsAsanDebugURL(const GURL& url) {
 }
 
 bool HandleAsanDebugURL(const GURL& url) {
-#if defined(SYZYASAN)
-  if (!base::debug::IsBinaryInstrumented())
-    return false;
-
+#if defined(ADDRESS_SANITIZER)
+#if defined(OS_WIN)
   if (url.path_piece() == kAsanCorruptHeapBlock) {
     base::debug::AsanCorruptHeapBlock();
     return true;
@@ -105,9 +96,8 @@ bool HandleAsanDebugURL(const GURL& url) {
     base::debug::AsanCorruptHeap();
     return true;
   }
-#endif
+#endif  // OS_WIN
 
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
   if (url.path_piece() == kAsanHeapOverflow) {
     base::debug::AsanHeapOverflow();
   } else if (url.path_piece() == kAsanHeapUnderflow) {

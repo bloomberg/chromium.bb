@@ -136,7 +136,7 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->set_channel(client.GetChannel());
   system_profile->set_application_locale(client.GetApplicationLocale());
 
-#if defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
   system_profile->set_is_asan_build(true);
 #endif
   metrics::SystemProfileProto::Hardware* hardware =

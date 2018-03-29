@@ -25,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace debug {
@@ -260,8 +261,9 @@ void Activity::FillFrom(Activity* activity,
   activity->activity_type = type;
   activity->data = data;
 
-#if defined(SYZYASAN)
-  // Create a stacktrace from the current location and get the addresses.
+#if (!defined(OS_NACL) && DCHECK_IS_ON()) || defined(ADDRESS_SANITIZER)
+  // Create a stacktrace from the current location and get the addresses for
+  // improved debuggability.
   StackTrace stack_trace;
   size_t stack_depth;
   const void* const* stack_addrs = stack_trace.Addresses(&stack_depth);

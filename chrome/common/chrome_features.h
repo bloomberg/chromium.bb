@@ -304,10 +304,6 @@ extern const base::Feature kSupervisedUserCommittedInterstitials;
 extern const base::Feature kSysInternals;
 #endif
 
-#if defined(SYZYASAN)
-extern const base::Feature kSyzyasanDeferredFree;
-#endif
-
 #if !defined(OS_ANDROID)
 extern const base::Feature kTabMetricsLogging;
 #endif

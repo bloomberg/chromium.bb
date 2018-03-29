@@ -87,10 +87,6 @@ bool IsProfilingSupported() {
 
 #if !defined(OS_WIN)
 
-bool IsBinaryInstrumented() {
-  return false;
-}
-
 ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc() {
   return nullptr;
 }
@@ -108,36 +104,6 @@ MoveDynamicSymbol GetProfilerMoveDynamicSymbolFunc() {
 }
 
 #else  // defined(OS_WIN)
-
-bool IsBinaryInstrumented() {
-  enum InstrumentationCheckState {
-    UNINITIALIZED,
-    INSTRUMENTED_IMAGE,
-    NON_INSTRUMENTED_IMAGE,
-  };
-
-  static InstrumentationCheckState state = UNINITIALIZED;
-
-  if (state == UNINITIALIZED) {
-    base::win::PEImage image(CURRENT_MODULE());
-
-    // Check to be sure our image is structured as we'd expect.
-    DCHECK(image.VerifyMagic());
-
-    // Syzygy-instrumented binaries contain a PE image section named ".thunks",
-    // and all Syzygy-modified binaries contain the ".syzygy" image section.
-    // This is a very fast check, as it only looks at the image header.
-    if ((image.GetImageSectionHeaderByName(".thunks") != NULL) &&
-        (image.GetImageSectionHeaderByName(".syzygy") != NULL)) {
-      state = INSTRUMENTED_IMAGE;
-    } else {
-      state = NON_INSTRUMENTED_IMAGE;
-    }
-  }
-  DCHECK(state != UNINITIALIZED);
-
-  return state == INSTRUMENTED_IMAGE;
-}
 
 namespace {
 
@@ -186,9 +152,6 @@ bool FindResolutionFunctionInImports(
 
 template <typename FunctionType>
 FunctionType FindFunctionInImports(const char* function_name) {
-  if (!IsBinaryInstrumented())
-    return NULL;
-
   base::win::PEImage image(CURRENT_MODULE());
 
   FunctionSearchContext ctx = { function_name, NULL };

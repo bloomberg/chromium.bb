@@ -17,7 +17,7 @@
 // Disable tests under ASAN.  http://crbug.com/104832.
 // This is a bit heavy handed, but the majority of these tests fail under ASAN.
 // See bug for history.
-#if !defined(ADDRESS_SANITIZER) && !defined(SYZYASAN)
+#if !defined(ADDRESS_SANITIZER)
 
 // Disabled due to timeouts: http://crbug.com/136548
 IN_PROC_BROWSER_TEST_F(

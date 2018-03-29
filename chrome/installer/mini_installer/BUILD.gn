@@ -293,14 +293,6 @@ generate_mini_installer("mini_installer") {
   chrome_dll_target = "//chrome:main_dll"
 }
 
-if (is_syzyasan) {
-  generate_mini_installer("mini_installer_syzygy") {
-    out_dir = "$root_out_dir/syzygy/"
-    chrome_dll_file = "$root_out_dir/syzygy/chrome.dll"
-    chrome_dll_target = "//chrome/tools/build/win/syzygy:chrome_dll_syzygy"
-  }
-}
-
 # next_version_mini_installer.exe can't be generated in an x86 Debug component
 # build because it requires too much memory.
 # TODO(thakis): Enable this in cross builds, https://crbug.com/799827

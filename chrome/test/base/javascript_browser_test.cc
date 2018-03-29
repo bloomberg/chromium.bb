@@ -58,7 +58,7 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
 // enabled. Also, it seems some ChromeOS-specific tests use the
 // js2gtest GN template.
 #if (!defined(MEMORY_SANITIZER) && !defined(ADDRESS_SANITIZER) && \
-     !defined(LEAK_SANITIZER) && !defined(SYZYASAN)) ||           \
+     !defined(LEAK_SANITIZER)) ||                                 \
     BUILDFLAG(ENABLE_NACL) || defined(OS_CHROMEOS)
   base::FilePath gen_test_data_directory;
   ASSERT_TRUE(

@@ -24,13 +24,7 @@
 namespace extensions {
 namespace {
 
-// Times out on win syzyasan, http://crbug.com/166026
-#if defined(SYZYASAN)
-#define MAYBE_ActiveTab DISABLED_ActiveTab
-#else
-#define MAYBE_ActiveTab ActiveTab
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ActiveTab) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   const Extension* extension =

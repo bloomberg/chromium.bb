@@ -25,7 +25,7 @@
 #include "third_party/zlib/zlib.h"
 
 // Some builds don't support memlog in which case the tests won't function.
-#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(SYZYASAN)
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 namespace profiling {
 
@@ -155,4 +155,4 @@ INSTANTIATE_TEST_CASE_P(Memlog,
 
 }  // namespace profiling
 
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(SYZYASAN)
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)

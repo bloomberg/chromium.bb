@@ -35,7 +35,6 @@ nacl_irt_x86_64.nexe: %(VersionDir)s\
 natives_blob.bin: %(VersionDir)s\
 notification_helper.exe: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
-syzyasan_rtl.dll: %(VersionDir)s\
 v8_context_snapshot.bin: %(VersionDir)s\
 #
 # Sub directories living in the version dir

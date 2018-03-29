@@ -87,9 +87,6 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   static const char* const kValidFilePatterns[] = {
     "KERNEL32.dll",
     "RPCRT4.dll",
-#if defined(SYZYASAN)
-    "syzyasan_rtl.dll",
-#endif
 #if defined(ADDRESS_SANITIZER) && defined(COMPONENT_BUILD)
     "clang_rt.asan_dynamic-i386.dll",
 #endif
