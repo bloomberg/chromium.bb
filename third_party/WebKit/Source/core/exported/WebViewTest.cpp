@@ -3858,11 +3858,15 @@ class TouchEventHandlerWebWidgetClient
  public:
   // WebWidgetClient methods
   void HasTouchEventHandlers(bool state) override {
-    has_touch_event_handler_count_[state]++;
+    // Only count the times the state changes.
+    if (state != has_touch_event_handler_)
+      has_touch_event_handler_count_[state]++;
+    has_touch_event_handler_ = state;
   }
 
   // Local methods
-  TouchEventHandlerWebWidgetClient() : has_touch_event_handler_count_() {}
+  TouchEventHandlerWebWidgetClient()
+      : has_touch_event_handler_count_(), has_touch_event_handler_(false) {}
 
   int GetAndResetHasTouchEventHandlerCallCount(bool state) {
     int value = has_touch_event_handler_count_[state];
@@ -3872,6 +3876,7 @@ class TouchEventHandlerWebWidgetClient
 
  private:
   int has_touch_event_handler_count_[2];
+  bool has_touch_event_handler_;
 };
 
 // This test verifies that WebWidgetClient::hasTouchEventHandlers is called
@@ -3894,7 +3899,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
   // In practice we get two such calls because WebViewHelper::initializeAndLoad
   // first initializes an empty frame, and then loads a document into it, so
   // there are two FrameLoader::commitProvisionalLoad calls.
-  EXPECT_LT(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding the first document handler results in a has-handlers call.

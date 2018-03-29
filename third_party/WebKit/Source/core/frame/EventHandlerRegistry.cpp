@@ -127,16 +127,16 @@ bool EventHandlerRegistry::UpdateEventHandlerInternal(
     ChangeOperation op,
     EventHandlerClass handler_class,
     EventTarget* target) {
-  bool had_handlers = targets_[handler_class].size();
+  unsigned old_num_handlers = targets_[handler_class].size();
   bool target_set_changed =
       UpdateEventHandlerTargets(op, handler_class, target);
-  bool has_handlers = targets_[handler_class].size();
+  unsigned new_num_handlers = targets_[handler_class].size();
 
-  bool handlers_changed = had_handlers != has_handlers;
+  bool handlers_changed = old_num_handlers != new_num_handlers;
 
   if (op != kRemoveAll) {
     if (handlers_changed)
-      NotifyHasHandlersChanged(target, handler_class, has_handlers);
+      NotifyHasHandlersChanged(target, handler_class, new_num_handlers > 0);
 
     if (target_set_changed) {
       NotifyDidAddOrRemoveEventHandlerTarget(GetLocalFrameForTarget(target),
@@ -224,7 +224,7 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
   for (size_t i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
     if (handlers_changed[i]) {
-      bool has_handlers = targets_[handler_class].size();
+      bool has_handlers = targets_[handler_class].Contains(&target);
       NotifyHasHandlersChanged(&target, handler_class, has_handlers);
     }
     if (target_set_changed[i]) {
