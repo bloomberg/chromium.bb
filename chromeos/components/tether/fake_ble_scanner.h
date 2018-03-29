@@ -43,7 +43,8 @@ class FakeBleScanner : public BleScanner {
 
   void NotifyReceivedAdvertisementFromDevice(
       const cryptauth::RemoteDevice& remote_device,
-      device::BluetoothDevice* bluetooth_device);
+      device::BluetoothDevice* bluetooth_device,
+      bool is_background_advertisement);
   void NotifyDiscoverySessionStateChanged(bool discovery_session_active);
 
   // BleScanner:

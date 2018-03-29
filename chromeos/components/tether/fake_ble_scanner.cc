@@ -20,9 +20,10 @@ FakeBleScanner::~FakeBleScanner() = default;
 
 void FakeBleScanner::NotifyReceivedAdvertisementFromDevice(
     const cryptauth::RemoteDevice& remote_device,
-    device::BluetoothDevice* bluetooth_device) {
-  BleScanner::NotifyReceivedAdvertisementFromDevice(remote_device,
-                                                    bluetooth_device);
+    device::BluetoothDevice* bluetooth_device,
+    bool is_background_advertisement) {
+  BleScanner::NotifyReceivedAdvertisementFromDevice(
+      remote_device, bluetooth_device, is_background_advertisement);
 }
 
 void FakeBleScanner::NotifyDiscoverySessionStateChanged(

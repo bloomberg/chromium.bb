@@ -53,7 +53,8 @@ class TestBleScannerObserver final : public BleScanner::Observer {
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
       const cryptauth::RemoteDevice& remote_device,
-      device::BluetoothDevice* bluetooth_device) override {
+      device::BluetoothDevice* bluetooth_device,
+      bool is_background_advertisement) override {
     device_addresses_.push_back(bluetooth_device->GetAddress());
     devices_.push_back(remote_device);
   }
@@ -88,7 +89,8 @@ class DeletingObserver final : public BleScanner::Observer {
 
   void OnReceivedAdvertisementFromDevice(
       const cryptauth::RemoteDevice& remote_device,
-      device::BluetoothDevice* bluetooth_device) override {}
+      device::BluetoothDevice* bluetooth_device,
+      bool is_background_advertisement) override {}
 
  private:
   std::unique_ptr<BleScannerImpl>& ble_scanner_;

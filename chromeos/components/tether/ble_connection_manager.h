@@ -133,7 +133,8 @@ class BleConnectionManager : public BleScanner::Observer {
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
       const cryptauth::RemoteDevice& remote_device,
-      device::BluetoothDevice* bluetooth_device) override;
+      device::BluetoothDevice* bluetooth_device,
+      bool is_background_advertisement) override;
 
  protected:
   void NotifyMessageReceived(std::string device_id, std::string payload);
@@ -229,7 +230,7 @@ class BleConnectionManager : public BleScanner::Observer {
   // Record various operation durations. These need to be separate methods
   // because internally they use a macro which maintains a static state that
   // does not tolerate different histogram names being passed to it.
-  void RecordAdvertisementToConnectionDuration(const std::string device_id);
+  void RecordStartScanToConnectionDuration(const std::string device_id);
   void RecordConnectionToAuthenticationDuration(const std::string device_id);
 
   cryptauth::CryptAuthService* cryptauth_service_;
@@ -246,7 +247,11 @@ class BleConnectionManager : public BleScanner::Observer {
   std::map<std::string, std::unique_ptr<ConnectionMetadata>>
       device_id_to_metadata_map_;
 
-  std::map<std::string, base::Time> device_id_to_advertising_start_time_map_;
+  std::map<std::string, base::Time> device_id_to_started_scan_time_map_;
+  // Records when an advertisement was received, and whether or not it was a
+  // background advertisement.
+  std::map<std::string, std::pair<base::Time, bool>>
+      device_id_to_received_advertisement_time_and_is_background_map_;
   std::map<std::string, base::Time> device_id_to_status_connected_time_map_;
 
   base::ObserverList<Observer> observer_list_;

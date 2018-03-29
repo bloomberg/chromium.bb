@@ -340,7 +340,8 @@ void BleConnectionManager::RemoveObserver(Observer* observer) {
 
 void BleConnectionManager::OnReceivedAdvertisementFromDevice(
     const cryptauth::RemoteDevice& remote_device,
-    device::BluetoothDevice* bluetooth_device) {
+    device::BluetoothDevice* bluetooth_device,
+    bool is_background_advertisement) {
   const std::string device_id = remote_device.GetDeviceId();
 
   ConnectionMetadata* connection_metadata = GetConnectionMetadata(device_id);
@@ -368,6 +369,9 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
   PA_LOG(INFO) << "Received advertisement - Device ID: \""
                << remote_device.GetTruncatedDeviceIdForLogs()
                << "\". Starting authentication handshake.";
+
+  device_id_to_received_advertisement_time_and_is_background_map_[device_id] =
+      std::pair<base::Time, bool>(clock_->Now(), is_background_advertisement);
 
   // Stop trying to connect to that device, since it has been found.
   StopConnectionAttemptAndMoveToEndOfQueue(device_id);
@@ -511,7 +515,7 @@ void BleConnectionManager::EndUnsuccessfulAttempt(
     StateChangeDetail state_change_detail) {
   GetConnectionMetadata(device_id)->StopConnectionAttemptTimer();
   StopConnectionAttemptAndMoveToEndOfQueue(device_id);
-  device_id_to_advertising_start_time_map_[device_id] = base::Time();
+  device_id_to_started_scan_time_map_[device_id] = base::Time();
 
   // Send a "connecting => disconnected" update to alert clients that a
   // connection attempt for |device_id| has failed.
@@ -595,10 +599,10 @@ void BleConnectionManager::NotifySecureChannelStatusChanged(
                << StateChangeDetailToString(state_change_detail);
 
   if (new_status == cryptauth::SecureChannel::Status::CONNECTING) {
-    device_id_to_advertising_start_time_map_[device_id] = clock_->Now();
+    device_id_to_started_scan_time_map_[device_id] = clock_->Now();
   } else if (new_status == cryptauth::SecureChannel::Status::CONNECTED) {
     device_id_to_status_connected_time_map_[device_id] = clock_->Now();
-    RecordAdvertisementToConnectionDuration(device_id);
+    RecordStartScanToConnectionDuration(device_id);
   } else if (new_status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
     RecordConnectionToAuthenticationDuration(device_id);
   }
@@ -621,23 +625,64 @@ void BleConnectionManager::SetTestDoubles(
   timer_factory_ = std::move(test_timer_factory);
 }
 
-void BleConnectionManager::RecordAdvertisementToConnectionDuration(
+void BleConnectionManager::RecordStartScanToConnectionDuration(
     const std::string device_id) {
-  if (!base::ContainsKey(device_id_to_advertising_start_time_map_, device_id) ||
-      device_id_to_advertising_start_time_map_[device_id].is_null() ||
+  if (!base::ContainsKey(device_id_to_started_scan_time_map_, device_id) ||
+      device_id_to_started_scan_time_map_[device_id].is_null() ||
+      !base::ContainsKey(
+          device_id_to_received_advertisement_time_and_is_background_map_,
+          device_id) ||
+      device_id_to_received_advertisement_time_and_is_background_map_[device_id]
+          .first.is_null() ||
       !base::ContainsKey(device_id_to_status_connected_time_map_, device_id) ||
       device_id_to_status_connected_time_map_[device_id].is_null()) {
-    LOG(ERROR) << "Failed to record advertisement to connection duration: "
+    LOG(ERROR) << "Failed to record start scan to connection duration: "
                << "times are invalid";
     return;
   }
 
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "InstantTethering.Performance.AdvertisementToConnectionDuration",
+  base::TimeDelta start_scan_to_received_advertisment_duration =
+      device_id_to_received_advertisement_time_and_is_background_map_[device_id]
+          .first -
+      device_id_to_started_scan_time_map_[device_id];
+  base::TimeDelta received_advertisment_to_connection_duration =
       device_id_to_status_connected_time_map_[device_id] -
-          device_id_to_advertising_start_time_map_[device_id]);
+      device_id_to_received_advertisement_time_and_is_background_map_[device_id]
+          .first;
+  base::TimeDelta start_scan_to_connection_duration =
+      device_id_to_status_connected_time_map_[device_id] -
+      device_id_to_started_scan_time_map_[device_id];
 
-  device_id_to_advertising_start_time_map_.erase(device_id);
+  bool is_background_advertisement =
+      device_id_to_received_advertisement_time_and_is_background_map_[device_id]
+          .second;
+  if (is_background_advertisement) {
+    UMA_HISTOGRAM_TIMES(
+        "InstantTethering.Performance.StartScanToReceiveAdvertisementDuration."
+        "Background",
+        start_scan_to_received_advertisment_duration);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "InstantTethering.Performance.ReceiveAdvertisementToConnectionDuration."
+        "Background",
+        received_advertisment_to_connection_duration);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "InstantTethering.Performance.StartScanToConnectionDuration.Background",
+        start_scan_to_connection_duration);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "InstantTethering.Performance.StartScanToReceiveAdvertisementDuration",
+        start_scan_to_received_advertisment_duration);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "InstantTethering.Performance.ReceiveAdvertisementToConnectionDuration",
+        received_advertisment_to_connection_duration);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "InstantTethering.Performance.AdvertisementToConnectionDuration",
+        start_scan_to_connection_duration);
+  }
+
+  device_id_to_started_scan_time_map_.erase(device_id);
+  device_id_to_received_advertisement_time_and_is_background_map_.erase(
+      device_id);
 }
 
 void BleConnectionManager::RecordConnectionToAuthenticationDuration(
