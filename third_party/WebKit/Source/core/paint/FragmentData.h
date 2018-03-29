@@ -208,7 +208,6 @@ class CORE_EXPORT FragmentData {
 
   // Contains rare data that that is not needed on all fragments.
   struct RareData {
-    WTF_MAKE_NONCOPYABLE(RareData);
     USING_FAST_MALLOC(RareData);
 
    public:
@@ -231,6 +230,8 @@ class CORE_EXPORT FragmentData {
     bool is_clip_path_cache_valid = false;
     Optional<IntRect> clip_path_bounding_box;
     scoped_refptr<const RefCountedPath> clip_path_path;
+
+    DISALLOW_COPY_AND_ASSIGN(RareData);
   };
 
   RareData& EnsureRareData();

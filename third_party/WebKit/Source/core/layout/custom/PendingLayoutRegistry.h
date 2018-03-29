@@ -18,8 +18,6 @@ class Node;
 // re-attached when a custom layout is registered. This is primarily owned by
 // the LayoutWorklet instance.
 class PendingLayoutRegistry : public GarbageCollected<PendingLayoutRegistry> {
-  WTF_MAKE_NONCOPYABLE(PendingLayoutRegistry);
-
  public:
   PendingLayoutRegistry() = default;
 
@@ -40,6 +38,8 @@ class PendingLayoutRegistry : public GarbageCollected<PendingLayoutRegistry> {
   using PendingSet = HeapHashSet<WeakMember<Node>>;
   using PendingLayoutMap = HeapHashMap<AtomicString, Member<PendingSet>>;
   PendingLayoutMap pending_layouts_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingLayoutRegistry);
 };
 
 }  // namespace blink

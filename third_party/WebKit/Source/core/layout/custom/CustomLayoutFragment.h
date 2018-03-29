@@ -25,7 +25,6 @@ class LayoutBox;
 // This should eventually mirror the information in a NGFragment, it has the
 // additional capability that it is exposed to web developers.
 class CustomLayoutFragment : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(CustomLayoutFragment);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -69,6 +68,8 @@ class CustomLayoutFragment : public ScriptWrappable {
   // The offset is relative to our parent, and in the parent's writing mode.
   double inline_offset_ = 0;
   double block_offset_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomLayoutFragment);
 };
 
 }  // namespace blink

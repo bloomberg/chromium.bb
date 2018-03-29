@@ -21,8 +21,6 @@ class StyleRule;
 // StylePropertyMap.idl. The declared StylePropertyMap for an element is
 // accessed via CSSStyleRule.styleMap (see CSSStyleRule.idl)
 class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
-  WTF_MAKE_NONCOPYABLE(DeclaredStylePropertyMap);
-
  public:
   explicit DeclaredStylePropertyMap(CSSStyleRule* owner_rule);
 
@@ -52,6 +50,8 @@ class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
   StyleRule* GetStyleRule() const;
 
   WeakMember<CSSStyleRule> owner_rule_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclaredStylePropertyMap);
 };
 
 }  // namespace blink

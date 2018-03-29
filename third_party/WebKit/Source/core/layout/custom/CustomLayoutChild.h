@@ -23,7 +23,6 @@ class LayoutBox;
 // The represent all inflow children, out-of-flow children (fixed/absolute) do
 // not appear in the children list.
 class CustomLayoutChild : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(CustomLayoutChild);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -51,6 +50,8 @@ class CustomLayoutChild : public ScriptWrappable {
  private:
   LayoutBox* box_;
   Member<PrepopulatedComputedStylePropertyMap> style_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomLayoutChild);
 };
 
 }  // namespace blink

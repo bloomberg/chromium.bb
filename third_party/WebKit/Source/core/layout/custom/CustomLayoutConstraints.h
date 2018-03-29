@@ -13,7 +13,6 @@ namespace blink {
 // Represents the constraints given to the layout by the parent that isn't
 // encapsulated by the style, or edges.
 class CustomLayoutConstraints : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(CustomLayoutConstraints);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -26,6 +25,8 @@ class CustomLayoutConstraints : public ScriptWrappable {
 
  private:
   double fixed_inline_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomLayoutConstraints);
 };
 
 }  // namespace blink
