@@ -15,6 +15,31 @@ class TopShortcutsView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
 
+// Container view of slider views. If SetExpandedAmount() is called with 1.0,
+// the behavior is same as vertiacal BoxLayout, but otherwise it shows
+// intermediate state during animation.
+class UnifiedSlidersContainerView : public views::View {
+ public:
+  UnifiedSlidersContainerView();
+  ~UnifiedSlidersContainerView() override;
+
+  // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
+  // Otherwise, it shows intermediate state.
+  void SetExpandedAmount(double expanded_amount);
+
+  // views::View:
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
+
+ private:
+  // Update opacity of each child slider views based on |expanded_amount_|.
+  void UpdateOpacity();
+
+  double expanded_amount_ = 1.0;
+
+  DISALLOW_COPY_AND_ASSIGN(UnifiedSlidersContainerView);
+};
+
 // View class of the main bubble in UnifiedSystemTray.
 class UnifiedSystemTrayView : public views::View {
  public:
@@ -27,8 +52,12 @@ class UnifiedSystemTrayView : public views::View {
   // Add slider view.
   void AddSliderView(views::View* slider_view);
 
-  // Change the expanded state.
-  void SetExpanded(bool expanded);
+  // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
+  // Otherwise, it shows intermediate state.
+  void SetExpandedAmount(double expanded_amount);
+
+  // views::View:
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Unowned.
@@ -37,7 +66,7 @@ class UnifiedSystemTrayView : public views::View {
   // Owned by views hierarchy.
   TopShortcutsView* top_shortcuts_view_;
   FeaturePodsContainerView* feature_pods_container_;
-  views::View* sliders_container_;
+  UnifiedSlidersContainerView* sliders_container_;
   UnifiedSystemInfoView* system_info_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayView);

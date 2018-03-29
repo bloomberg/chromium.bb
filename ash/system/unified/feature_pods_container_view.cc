@@ -14,33 +14,47 @@ FeaturePodsContainerView::FeaturePodsContainerView() {}
 FeaturePodsContainerView::~FeaturePodsContainerView() = default;
 
 gfx::Size FeaturePodsContainerView::CalculatePreferredSize() const {
-  if (!expanded_) {
-    return gfx::Size(kTrayMenuWidth,
-                     2 * kUnifiedFeaturePodCollapsedVerticalPadding +
-                         kUnifiedFeaturePodCollapsedSize.height());
-  }
+  const int collapsed_height = 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
+                               kUnifiedFeaturePodCollapsedSize.height();
 
-  int visible_count = CountVisibleChildren();
+  int visible_count = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
+      ++visible_count;
+  }
 
   // floor(visible_count / kUnifiedFeaturePodItemsInRow)
   int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
                         kUnifiedFeaturePodItemsInRow;
-  return gfx::Size(kTrayMenuWidth, kUnifiedFeaturePodVerticalPadding +
-                                       (kUnifiedFeaturePodVerticalPadding +
-                                        kUnifiedFeaturePodSize.height()) *
-                                           number_of_lines);
+  const int expanded_height =
+      kUnifiedFeaturePodVerticalPadding +
+      (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
+          number_of_lines;
+
+  return gfx::Size(
+      kTrayMenuWidth,
+      static_cast<int>(collapsed_height * (1.0 - expanded_amount_) +
+                       expanded_height * expanded_amount_));
 }
 
-void FeaturePodsContainerView::SetExpanded(bool expanded) {
-  if (expanded_ == expanded)
+void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
+  DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
+  if (expanded_amount_ == expanded_amount)
     return;
-  expanded_ = expanded;
-  for (int i = 0; i < child_count(); ++i) {
-    auto* child = static_cast<FeaturePodButton*>(child_at(i));
-    child->SetExpanded(expanded);
-  }
-  UpdateChildVisibility();
+  expanded_amount_ = expanded_amount;
+
   PreferredSizeChanged();
+
+  if (expanded_amount == 0.0 || expanded_amount == 1.0) {
+    expanded_ = expanded_amount == 1.0;
+    for (int i = 0; i < child_count(); ++i) {
+      auto* child = static_cast<FeaturePodButton*>(child_at(i));
+      child->SetExpanded(expanded_);
+    }
+    UpdateChildVisibility();
+    // We have to call Layout() explicitly here.
+    Layout();
+  }
 }
 
 void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
@@ -94,7 +108,12 @@ void FeaturePodsContainerView::LayoutExpanded() {
 void FeaturePodsContainerView::LayoutCollapsed() {
   DCHECK(!expanded_);
 
-  int visible_count = CountVisibleChildren();
+  int visible_count = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    if (child_at(i)->visible())
+      ++visible_count;
+  }
+
   DCHECK(visible_count > 0 &&
          visible_count <= kUnifiedFeaturePodMaxItemsInCollapsed);
 
@@ -121,15 +140,6 @@ void FeaturePodsContainerView::LayoutCollapsed() {
 
   DCHECK(x - kUnifiedFeaturePodCollapsedHorizontalPadding + side_padding ==
          kTrayMenuWidth);
-}
-
-int FeaturePodsContainerView::CountVisibleChildren() const {
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (child_at(i)->visible())
-      ++visible_count;
-  }
-  return visible_count;
 }
 
 void FeaturePodsContainerView::UpdateChildVisibility() {
