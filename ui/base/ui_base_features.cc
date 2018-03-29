@@ -16,6 +16,11 @@ namespace features {
 const base::Feature kEnableFloatingVirtualKeyboard = {
     "enable-floating-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the full screen handwriting virtual keyboard behavior.
+const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
+    "enable-fullscreen-handwriting-virtual-keyboard",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableStylusVirtualKeyboard = {
     "enable-stylus-virtual-keyboard", base::FEATURE_DISABLED_BY_DEFAULT};
 
