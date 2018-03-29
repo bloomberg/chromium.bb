@@ -243,9 +243,8 @@ NSString* GetSizeString(long long size_in_bytes) {
   [NSLayoutConstraint activateConstraints:@[
     [installDriveIcon.centerYAnchor
         constraintEqualToAnchor:installDriveRow.centerYAnchor],
-    [installDriveIcon.leadingAnchor
-        constraintEqualToAnchor:installDriveRow.layoutMarginsGuide
-                                    .leadingAnchor],
+    [installDriveIcon.centerXAnchor
+        constraintEqualToAnchor:stateIcon.centerXAnchor],
   ]];
 
   // install google drive label constraints.
@@ -254,8 +253,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     [installDriveLabel.centerYAnchor
         constraintEqualToAnchor:installDriveRow.centerYAnchor],
     [installDriveLabel.leadingAnchor
-        constraintEqualToAnchor:installDriveIcon.trailingAnchor
-                       constant:kElementMargin],
+        constraintEqualToAnchor:statusLabel.leadingAnchor],
     [installDriveLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:installDriveButton.leadingAnchor
                                  constant:-kElementMargin],
