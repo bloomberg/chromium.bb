@@ -1087,8 +1087,6 @@ void av1_iidentity4_c(const int32_t *input, int32_t *output, int8_t cos_bit,
   (void)cos_bit;
   (void)stage_range;
   for (int i = 0; i < 4; ++i) {
-    // Normal input should fit into 32-bit. Cast to 64-bit here to avoid
-    // overflow with corrupted/fuzzed input. The same for av1_iidentity/16/64_c.
     output[i] = round_shift((int64_t)NewSqrt2 * input[i], NewSqrt2Bits);
   }
   assert(stage_range[0] + NewSqrt2Bits <= 32);
