@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread.h"
@@ -95,7 +96,22 @@ MATCHER_P(SameRequest, expected, "") {
     expected->video_type == arg.video_type;
 }
 
-TEST_F(MediaStreamUIProxyTest, Deny) {
+// These tests are flaky on Linux. https://crbug.com/826483
+#if defined(OS_LINUX)
+#define MAYBE_DeleteBeforeAccepted DISABLED_DeleteBeforeAccepted
+#define MAYBE_Deny DISABLED_Deny
+#define MAYBE_AcceptAndStart DISABLED_AcceptAndStart
+#define MAYBE_StopFromUI DISABLED_StopFromUI
+#define MAYBE_WindowIdCallbackCalled DISABLED_WindowIdCallbackCalled
+#else
+#define MAYBE_DeleteBeforeAccepted DeleteBeforeAccepted
+#define MAYBE_Deny Deny
+#define MAYBE_AcceptAndStart AcceptAndStart
+#define MAYBE_StopFromUI StopFromUI
+#define MAYBE_WindowIdCallbackCalled WindowIdCallbackCalled
+#endif
+
+TEST_F(MediaStreamUIProxyTest, MAYBE_Deny) {
   std::unique_ptr<MediaStreamRequest> request(new MediaStreamRequest(
       0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
       std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
@@ -123,7 +139,7 @@ TEST_F(MediaStreamUIProxyTest, Deny) {
   EXPECT_TRUE(response.empty());
 }
 
-TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
+TEST_F(MediaStreamUIProxyTest, MAYBE_AcceptAndStart) {
   std::unique_ptr<MediaStreamRequest> request(new MediaStreamRequest(
       0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
       std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
@@ -159,7 +175,7 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
 }
 
 // Verify that the proxy can be deleted before the request is processed.
-TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
+TEST_F(MediaStreamUIProxyTest, MAYBE_DeleteBeforeAccepted) {
   std::unique_ptr<MediaStreamRequest> request(new MediaStreamRequest(
       0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
       std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
@@ -183,7 +199,7 @@ TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
   callback.Run(devices, MEDIA_DEVICE_OK, std::move(ui));
 }
 
-TEST_F(MediaStreamUIProxyTest, StopFromUI) {
+TEST_F(MediaStreamUIProxyTest, MAYBE_StopFromUI) {
   std::unique_ptr<MediaStreamRequest> request(new MediaStreamRequest(
       0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
       std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
@@ -229,7 +245,7 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
+TEST_F(MediaStreamUIProxyTest, MAYBE_WindowIdCallbackCalled) {
   std::unique_ptr<MediaStreamRequest> request(new MediaStreamRequest(
       0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
       std::string(), std::string(), MEDIA_NO_SERVICE,
