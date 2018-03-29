@@ -201,7 +201,7 @@ template <typename T>
 inline ThreadSpecific<T>::~ThreadSpecific() {
   // Does not invoke destructor functions. They will be called from
   // ThreadSpecificThreadExit when the thread is detached.
-  TlsFree(tlsKeys()[m_index]);
+  TlsFree(TlsKeys()[index_]);
 }
 
 template <typename T>
