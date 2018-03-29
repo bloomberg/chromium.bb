@@ -72,6 +72,8 @@ void ManagePasswordsControllerTest::SetUpSavePendingState(
          base::ASCIIToUTF16("pass_el" + std::to_string(i))});
   }
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+  EXPECT_CALL(*ui_controller_, GetCurrentForms()).WillOnce(ReturnRef(forms));
   GURL origin(kSiteOrigin);
   EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));
   EXPECT_CALL(*ui_controller_, GetState())

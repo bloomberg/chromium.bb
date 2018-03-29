@@ -108,7 +108,6 @@ class ManagePasswordsUIController
   const autofill::PasswordForm& GetPendingPassword() const override;
   password_manager::metrics_util::CredentialSourceType GetCredentialSource()
       const override;
-  bool IsPasswordOverridden() const override;
   const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
       const override;
   const password_manager::InteractionsStats* GetCurrentInteractionStats()

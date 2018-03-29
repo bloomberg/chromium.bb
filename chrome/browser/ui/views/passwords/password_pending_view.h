@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -26,7 +27,8 @@ class PasswordSignInPromoView;
 // "Save"/"Update" button and a "Never"/"Nope" button.
 class PasswordPendingView : public PasswordBubbleViewBase,
                             public views::ButtonListener,
-                            public views::StyledLabelListener {
+                            public views::StyledLabelListener,
+                            public views::TextfieldController {
  public:
   PasswordPendingView(content::WebContents* web_contents,
                       views::View* anchor_view,
@@ -55,6 +57,10 @@ class PasswordPendingView : public PasswordBubbleViewBase,
                               const gfx::Range& range,
                               int event_flags) override;
 
+  // views::TextfieldController:
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+
   // PasswordBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
@@ -69,13 +75,13 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   bool Close() override;
 
   void CreateAndSetLayout(bool show_password_label);
-  void CreatePasswordField();
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
   void ReplaceWithPromo();
   void UpdateTitleText(views::StyledLabel* title_view);
 
-  // True iff it is an update password bubble. False iff it is a save bubble.
+  // True iff it is an update password bubble on creation. False iff it is a
+  // save bubble.
   const bool is_update_bubble_;
 
   // Different promo dialogs that helps the user get access to credentials

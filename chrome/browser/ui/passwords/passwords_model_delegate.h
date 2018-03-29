@@ -57,10 +57,6 @@ class PasswordsModelDelegate {
   virtual password_manager::metrics_util::CredentialSourceType
   GetCredentialSource() const = 0;
 
-  // True if the password for previously stored account was overridden, i.e. in
-  // newly submitted form the password is different from stored one.
-  virtual bool IsPasswordOverridden() const = 0;
-
   // Returns current local forms for the current page.
   virtual const std::vector<std::unique_ptr<autofill::PasswordForm>>&
   GetCurrentForms() const = 0;

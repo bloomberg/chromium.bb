@@ -37,6 +37,7 @@ void IOSChromeSavePasswordInfoBarDelegate::Create(
 }
 
 IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
+  password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response());
   form_to_save()->metrics_recorder()->RecordUIDismissalReason(
       infobar_response());
 }

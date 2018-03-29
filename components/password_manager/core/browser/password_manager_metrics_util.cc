@@ -32,9 +32,19 @@ void LogUMAHistogramBoolean(const std::string& name, bool sample) {
   histogram->AddBoolean(sample);
 }
 
-void LogUIDismissalReason(UIDismissalReason reason) {
+void LogGeneralUIDismissalReason(UIDismissalReason reason) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.UIDismissalReason",
                             reason,
+                            NUM_UI_RESPONSES);
+}
+
+void LogSaveUIDismissalReason(UIDismissalReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SaveUIDismissalReason", reason,
+                            NUM_UI_RESPONSES);
+}
+
+void LogUpdateUIDismissalReason(UIDismissalReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UpdateUIDismissalReason", reason,
                             NUM_UI_RESPONSES);
 }
 
@@ -69,19 +79,6 @@ void LogPasswordGenerationAvailableSubmissionEvent(
     PasswordSubmissionEvent event) {
   UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionAvailableEvent",
                             event, SUBMISSION_EVENT_ENUM_COUNT);
-}
-
-void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event) {
-  DCHECK_LT(event, UPDATE_PASSWORD_EVENT_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UpdatePasswordSubmissionEvent",
-                            event, UPDATE_PASSWORD_EVENT_COUNT);
-}
-
-void LogMultiAccountUpdateBubbleUserAction(
-    MultiAccountUpdateBubbleUserAction action) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.MultiAccountPasswordUpdateAction",
-                            action,
-                            MULTI_ACCOUNT_UPDATE_BUBBLE_USER_ACTION_COUNT);
 }
 
 void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action) {

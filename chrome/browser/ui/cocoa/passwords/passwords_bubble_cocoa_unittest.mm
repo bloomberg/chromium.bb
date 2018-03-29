@@ -77,6 +77,8 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(mock));
     autofill::PasswordForm form;
     EXPECT_CALL(*mock, GetPendingPassword()).WillOnce(ReturnRef(form));
+    std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+    EXPECT_CALL(*mock, GetCurrentForms()).WillOnce(ReturnRef(forms));
     GURL origin;
     EXPECT_CALL(*mock, GetOrigin()).WillOnce(ReturnRef(origin));
     EXPECT_CALL(*mock, GetState())

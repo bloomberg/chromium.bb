@@ -23,9 +23,7 @@
 #endif
 
 IOSChromePasswordManagerInfoBarDelegate::
-    ~IOSChromePasswordManagerInfoBarDelegate() {
-  password_manager::metrics_util::LogUIDismissalReason(infobar_response_);
-};
+    ~IOSChromePasswordManagerInfoBarDelegate() = default;
 
 IOSChromePasswordManagerInfoBarDelegate::
     IOSChromePasswordManagerInfoBarDelegate(
