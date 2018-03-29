@@ -245,9 +245,9 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
       // the OnLocalTabModified method invoking AssociateTab directly.
       // Therefore, we can key whether this window has valid tabs based on
       // the tab's presence in the tracker.
-      const sessions::SessionTab* tab = nullptr;
-      if (session_tracker_->LookupSessionTab(current_session_tag_, tab_id,
-                                             &tab)) {
+      const sessions::SessionTab* tab =
+          session_tracker_->LookupSessionTab(current_session_tag_, tab_id);
+      if (tab) {
         found_tabs = true;
 
         // Update this window's representation in the synced session tracker.

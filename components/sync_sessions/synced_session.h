@@ -59,17 +59,6 @@ struct SyncedSession {
   // Map of windows that make up this session.
   std::map<SessionID, std::unique_ptr<SyncedSessionWindow>> windows;
 
-  // A tab node id is part of the identifier for the sync tab objects. Tab node
-  // ids are not used for interacting with the model/browser tabs. However, when
-  // when we want to delete a foreign session, we use these values to inform
-  // sync which tabs to delete. We are extracting these tab node ids from
-  // individual session (tab, not header) specifics, but store them here in the
-  // SyncedSession during runtime. We do this because tab node ids may be reused
-  // for different tabs, and tracking which tab id is currently associated with
-  // each tab node id is both difficult and unnecessary. See comments at
-  // SyncedSessionTracker::GetTabImpl for a concrete example of id reuse.
-  std::set<int> tab_node_ids;
-
   // Convert this object to its protocol buffer equivalent. Shallow conversion,
   // does not create SessionTab protobufs.
   sync_pb::SessionHeader ToSessionHeaderProto() const;

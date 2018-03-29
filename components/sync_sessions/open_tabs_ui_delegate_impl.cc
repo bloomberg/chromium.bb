@@ -50,11 +50,10 @@ bool OpenTabsUIDelegateImpl::GetSyncedFaviconForPageURL(
 
 bool OpenTabsUIDelegateImpl::GetAllForeignSessions(
     std::vector<const SyncedSession*>* sessions) {
-  if (!session_tracker_->LookupAllForeignSessions(
-          sessions, SyncedSessionTracker::PRESENTABLE))
-    return false;
+  *sessions = session_tracker_->LookupAllForeignSessions(
+      SyncedSessionTracker::PRESENTABLE);
   std::sort(sessions->begin(), sessions->end(), SessionsRecencyComparator);
-  return true;
+  return !sessions->empty();
 }
 
 bool OpenTabsUIDelegateImpl::GetForeignSession(
@@ -66,11 +65,8 @@ bool OpenTabsUIDelegateImpl::GetForeignSession(
 bool OpenTabsUIDelegateImpl::GetForeignTab(const std::string& tag,
                                            const SessionID tab_id,
                                            const sessions::SessionTab** tab) {
-  const sessions::SessionTab* synced_tab = nullptr;
-  bool success = session_tracker_->LookupSessionTab(tag, tab_id, &synced_tab);
-  if (success)
-    *tab = synced_tab;
-  return success;
+  *tab = session_tracker_->LookupSessionTab(tag, tab_id);
+  return *tab != nullptr;
 }
 
 bool OpenTabsUIDelegateImpl::GetForeignSessionTabs(
@@ -106,7 +102,8 @@ void OpenTabsUIDelegateImpl::DeleteForeignSession(const std::string& tag) {
 
 bool OpenTabsUIDelegateImpl::GetLocalSession(
     const SyncedSession** local_session) {
-  return session_tracker_->LookupLocalSession(local_session);
+  *local_session = session_tracker_->LookupLocalSession();
+  return *local_session != nullptr;
 }
 
 }  // namespace sync_sessions

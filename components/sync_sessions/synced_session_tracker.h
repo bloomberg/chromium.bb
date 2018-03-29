@@ -46,13 +46,11 @@ class SyncedSessionTracker {
 
   // **** Synced session/tab query methods. ****
 
-  // Fill a preallocated vector with all foreign sessions we're tracking (skips
-  // the local session object). SyncedSession ownership remains within the
-  // SyncedSessionTracker. Lookup parameter is used to decide which foreign tabs
-  // should be include.
-  // Returns true if we had foreign sessions to fill it with, false otherwise.
-  bool LookupAllForeignSessions(std::vector<const SyncedSession*>* sessions,
-                                SessionLookup lookup) const;
+  // Returns all foreign sessions we're tracking (skips the local session
+  // object). SyncedSession ownership remains within the SyncedSessionTracker.
+  // Lookup parameter is used to decide which foreign tabs should be include.
+  std::vector<const SyncedSession*> LookupAllForeignSessions(
+      SessionLookup lookup) const;
 
   // Fills |tab_node_ids| with the tab node ids (see GetTab) for all the tabs*
   // associated with the session having tag |session_tag|.
@@ -72,17 +70,13 @@ class SyncedSessionTracker {
 
   // Attempts to look up the tab associated with the given tag and tab id.
   // Ownership of the SessionTab remains within the SyncedSessionTracker.
-  // If lookup succeeds:
-  // - Sets tab to point to the SessionTab, and returns true.
-  // Else
-  // - Returns false, tab is set to null.
-  bool LookupSessionTab(const std::string& session_tag,
-                        SessionID tab_id,
-                        const sessions::SessionTab** tab) const;
+  // Returns null if lookup fails.
+  const sessions::SessionTab* LookupSessionTab(const std::string& session_tag,
+                                               SessionID tab_id) const;
 
   // Allows retrieval of existing data for the local session. Unlike GetSession
-  // this won't create-if-not-present.
-  bool LookupLocalSession(const SyncedSession** output) const;
+  // this won't create-if-not-present and will return null instead.
+  const SyncedSession* LookupLocalSession() const;
 
   // **** Methods for manipulating synced sessions and tabs. ****
 
@@ -193,18 +187,16 @@ class SyncedSessionTracker {
   // tracking structures.
   void Clear();
 
-  bool Empty() const {
-    return synced_tab_map_.empty() && synced_session_map_.empty();
-  }
+  bool Empty() const { return session_map_.empty(); }
 
   // Includes both foreign sessions and the local session.
-  size_t num_synced_sessions() const { return synced_session_map_.size(); }
+  size_t num_synced_sessions() const { return session_map_.size(); }
 
   // Returns the number of tabs associated with the specified session tag.
   size_t num_synced_tabs(const std::string& session_tag) const {
-    auto iter = synced_tab_map_.find(session_tag);
-    if (iter != synced_tab_map_.end()) {
-      return iter->second.size();
+    auto iter = session_map_.find(session_tag);
+    if (iter != session_map_.end()) {
+      return iter->second.synced_tab_map.size();
     } else {
       return 0;
     }
@@ -213,9 +205,52 @@ class SyncedSessionTracker {
   // Returns whether a tab is unmapped or not.
   bool IsTabUnmappedForTesting(SessionID tab_id);
 
+  std::set<int> GetTabNodeIdsForTesting(const std::string& session_tag) const;
+
  private:
   friend class SessionsSyncManagerTest;
   friend class SyncedSessionTrackerTest;
+
+  struct TrackedSession {
+    TrackedSession();
+    ~TrackedSession();
+
+    // Owns the SyncedSessions, and transitively, all of the windows and tabs
+    // they contain.
+    SyncedSession synced_session;
+
+    // The mapping of tab/window to their SessionTab/SessionWindow objects.
+    // The SessionTab/SessionWindow objects referred to may be owned either by
+    // the session in the |synced_session| or be temporarily unmapped and live
+    // in the |unmapped_tabs|/|unmapped_windows| collections.
+    std::map<SessionID, sessions::SessionTab*> synced_tab_map;
+    std::map<SessionID, SyncedSessionWindow*> synced_window_map;
+
+    // The collection of tabs/windows not owned by SyncedSession. This is the
+    // case either because 1. (in the case of tabs) they were newly created by
+    // GetTab() and not yet added to a session, or 2. they were removed from
+    // their owning session by a call to ResetSessionTracking() and not yet
+    // added back.
+    std::map<SessionID, std::unique_ptr<sessions::SessionTab>> unmapped_tabs;
+    std::map<SessionID, std::unique_ptr<SyncedSessionWindow>> unmapped_windows;
+
+    // A tab node id is part of the identifier for the sync tab objects. Tab
+    // node ids are not used for interacting with the model/browser tabs.
+    // However, when when we want to delete a foreign session, we use these
+    // values to inform sync which tabs to delete. We are extracting these tab
+    // node ids from individual session (tab, not header) specifics, but store
+    // them here during runtime. We do this because tab node ids may be reused
+    // for different tabs, and tracking which tab id is currently associated
+    // with each tab node id is both difficult and unnecessary.
+    std::set<int> tab_node_ids;
+  };
+
+  // LookupTrackedSession() returns null if the session tag is unknown.
+  const TrackedSession* LookupTrackedSession(
+      const std::string& session_tag) const;
+  TrackedSession* LookupTrackedSession(const std::string& session_tag);
+  // Creates tracked session if it wasn't known previously. Never returns null.
+  TrackedSession* GetTrackedSession(const std::string& session_tag);
 
   // Implementation of CleanupForeignSession/CleanupLocalTabs.
   void CleanupSessionImpl(const std::string& session_tag);
@@ -223,35 +258,8 @@ class SyncedSessionTracker {
   // The client of the sync sessions datatype.
   SyncSessionsClient* const sessions_client_;
 
-  // The mapping of tab/window to their SessionTab/SessionWindow objects.
-  // The SessionTab/SessionWindow objects referred to may be owned either by the
-  // session in the |synced_session_map_| or be temporarily unmapped and live in
-  // the |unmapped_tabs_|/|unmapped_windows_| collections.
-  //
-  // Map: session tag -> (tab/window -> SessionTab*/SessionWindow*)
-  std::map<std::string, std::map<SessionID, sessions::SessionTab*>>
-      synced_tab_map_;
-  std::map<std::string, std::map<SessionID, SyncedSessionWindow*>>
-      synced_window_map_;
-
-  // The collection that owns the SyncedSessions, and transitively, all of the
-  // windows and tabs they contain.
-  //
-  // Map: session tag -> owned SyncedSession
-  std::map<std::string, std::unique_ptr<SyncedSession>> synced_session_map_;
-
-  // The collection of tabs/windows not owned by a SyncedSession. This is the
-  // case either because 1. (in the case of tabs) they were newly created by
-  // GetTab() and not yet added to a session, or 2. they were removed from their
-  // owning session by a call to ResetSessionTracking() and not yet added back.
-  //
-  // Map: session tag -> (tab/window id -> owned SessionTab/SessionWindow)
-  std::map<std::string,
-           std::map<SessionID, std::unique_ptr<sessions::SessionTab>>>
-      unmapped_tabs_;
-  std::map<std::string,
-           std::map<SessionID, std::unique_ptr<SyncedSessionWindow>>>
-      unmapped_windows_;
+  // Map: session tag -> TrackedSession.
+  std::map<std::string, TrackedSession> session_map_;
 
   // The tag for this machine's local session, so we can distinguish the foreign
   // sessions.
