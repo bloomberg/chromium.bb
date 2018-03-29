@@ -514,7 +514,7 @@ const base::Feature kShowAllDialogsWithViewsToolkit{
 
 #if defined(OS_ANDROID)
 const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
