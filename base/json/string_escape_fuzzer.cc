@@ -4,6 +4,8 @@
 
 #include "base/json/string_escape.h"
 
+#include <memory>
+
 std::string escaped_string;
 
 // Entry point for LibFuzzer.
