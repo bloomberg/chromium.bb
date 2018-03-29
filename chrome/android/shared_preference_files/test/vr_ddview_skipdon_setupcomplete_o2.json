@@ -9,7 +9,7 @@
       "UseAutomatedController": true,
       "PairedControllerDriver": "DRIVER_AUTOMATED",
       "PairedControllerAddress": "FOO",
-      "GvrPlatformLibraryPref": false
+      "GvrPlatformLibraryPref": true
     }
   }
 ]
