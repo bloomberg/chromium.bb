@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -138,6 +139,7 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOffTheRecordContext(
 
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
     content::BrowserContext* context) {
+  DCHECK(context);
   return static_cast<Profile*>(context)->GetOriginalProfile();
 }
 
