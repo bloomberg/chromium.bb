@@ -1,0 +1,523 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPaintFragment",
+          "rect": [8, 74, 418, 526],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [8, 74, 418, 526],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 585, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 584, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 565, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 564, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 545, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 544, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 525, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 524, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 345, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 344, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 325, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 324, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 305, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 304, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 285, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 284, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 265, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 264, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 225, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 224, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 205, 406, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 204, 406, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 465, 355, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 464, 355, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 485, 354, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 484, 354, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 164, 354, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 164, 354, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 144, 354, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 144, 354, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 124, 354, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 124, 354, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 104, 354, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 104, 354, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 84, 354, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 84, 354, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 425, 305, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 424, 305, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 365, 302, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 364, 302, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 405, 300, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 404, 300, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 445, 287, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 444, 287, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 245, 223, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 244, 223, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 184, 220, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 185, 218, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [243, 245, 178, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [243, 244, 178, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 505, 146, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [14, 504, 146, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [281, 184, 140, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [283, 185, 138, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 385, 84, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [65, 384, 84, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [302, 445, 68, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [302, 444, 68, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [371, 365, 49, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [371, 364, 49, 14],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow (floating) SPAN id='greenFloat'",
+          "rect": [372, 404, 48, 81],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutNGBlockFlow (floating) SPAN id='greenFloat'",
+          "rect": [372, 403, 48, 81],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [14, 364, 48, 65],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [14, 363, 48, 65],
+          "reason": "subtree"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [235, 183, 46, 13],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [238, 184, 41, 11],
+          "reason": "disappeared"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [485, 0, 15, 600],
+          "reason": "scroll control"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutNGBlockFlow (floating) SPAN id='greenFloat'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    }
+  ]
+}
+
