@@ -7,8 +7,6 @@
 <video controls width=400 src="../../content/60_sec_video.webm"></video>
 <script>
 async_test(t => {
-  enableDoubleTapToJumpForTest(t);
-
   const video = document.querySelector('video');
   let time = 0;
 
@@ -30,7 +28,7 @@ async_test(t => {
       time = currentTime;
       const coordinates =
         coordinatesOutsideElement(mediaControlsOverlayPlayButton(video));
-      doubleTapAtCoordinates(coordinates[0] + 1, coordinates[1] + 1);
+      doubleTouchAtCoordinates(coordinates[0] + 1, coordinates[1] + 1);
     } else if (time > 0) {
       // Check the video went back 10 seconds
       assert_greater_than(time, 0);

@@ -490,10 +490,6 @@ void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetPWAFullCodeCacheEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableDoubleTapToJumpOnVideo(bool enable) {
-  RuntimeEnabledFeatures::SetDoubleTapToJumpOnVideoEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableCodeCacheAfterExecute(bool enable) {
   RuntimeEnabledFeatures::SetCodeCacheAfterExecuteEnabled(enable);
 }

@@ -134,7 +134,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ShowOverlayCastButtonIfNeeded();
 
   // Methods call by the scrubber.
-  void BeginScrubbing();
+  void BeginScrubbing(bool);
   void EndScrubbing();
   void UpdateCurrentTimeDisplay();
 

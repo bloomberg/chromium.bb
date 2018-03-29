@@ -183,7 +183,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableStopLoadingInBackground(bool);
   BLINK_PLATFORM_EXPORT static void EnableStopNonTimersInBackground(bool);
   BLINK_PLATFORM_EXPORT static void EnablePWAFullCodeCache(bool);
-  BLINK_PLATFORM_EXPORT static void EnableDoubleTapToJumpOnVideo(bool);
   BLINK_PLATFORM_EXPORT static void EnableCodeCacheAfterExecute(bool);
   BLINK_PLATFORM_EXPORT static void EnableUnifiedTouchAdjustment(bool);
   BLINK_PLATFORM_EXPORT static void EnableMojoBlobURLs(bool);

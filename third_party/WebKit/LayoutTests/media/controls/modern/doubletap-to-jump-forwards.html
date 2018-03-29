@@ -7,8 +7,6 @@
 <video controls width=400 src="../../content/60_sec_video.webm"></video>
 <script>
 async_test(t => {
-  enableDoubleTapToJumpForTest(t);
-
   const video = document.querySelector('video');
   let time = 0;
 
@@ -17,7 +15,7 @@ async_test(t => {
     time = Math.round(video.currentTime);
     const coordinates =
       coordinatesOutsideElement(mediaControlsOverlayPlayButton(video));
-    doubleTapAtCoordinates(coordinates[0] + video.width, coordinates[1] + 1);
+    doubleTouchAtCoordinates(coordinates[0] + video.width, coordinates[1] + 1);
   }), { once: true });
 
   video.ontimeupdate = t.step_func(() => {
