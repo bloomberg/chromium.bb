@@ -115,21 +115,13 @@ NSString* GetTranslateInfobarSwitchLabel(const std::string& language) {
 // Returns a matcher for the button with label "Cancel" in the language picker.
 // The language picker uses the system accessibility labels, thus no IDS_CANCEL.
 id<GREYMatcher> LanguagePickerCancelButton() {
-  // Setting A11y id on this button doesn't work on iOS 9.0.
-  if (base::ios::IsRunningOnIOS10OrLater())
-    return grey_accessibilityID(kLanguagePickerCancelButtonId);
-
-  return chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel");
+  return grey_accessibilityID(kLanguagePickerCancelButtonId);
 }
 
 // Returns a matcher for the button with label "Done" in the language picker.
 // The language picker uses the system accessibility labels, thus no IDS_DONE.
 id<GREYMatcher> LanguagePickerDoneButton() {
-  // Setting A11y ID on this button doesn't work on iOS 9.0.
-  if (base::ios::IsRunningOnIOS10OrLater())
-    return grey_accessibilityID(kLanguagePickerDoneButtonId);
-
-  return chrome_test_util::ButtonWithAccessibilityLabel(@"Done");
+  return grey_accessibilityID(kLanguagePickerDoneButtonId);
 }
 
 // Assigns the testing callback for the current WebState's language detection
