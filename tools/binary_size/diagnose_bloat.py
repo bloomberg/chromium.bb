@@ -115,7 +115,8 @@ class NativeDiff(BaseDiff):
 
 
 class ResourceSizesDiff(BaseDiff):
-  _SUMMARY_SECTIONS = ('Breakdown', 'Specifics', 'StaticInitializersCount')
+  _SUMMARY_SECTIONS = (
+      'Breakdown', 'Dex', 'Specifics', 'StaticInitializersCount')
   # Sections where it makes sense to sum subsections into a section total.
   _AGGREGATE_SECTIONS = (
       'InstallBreakdown', 'Breakdown', 'MainLibInfo', 'Uncompressed')
