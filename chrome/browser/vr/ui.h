@@ -77,7 +77,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
 
   // BrowserUiInterface
-  void SetWebVrMode(bool enabled, bool show_toast) override;
+  void SetWebVrMode(bool enabled) override;
   void SetFullscreen(bool enabled) override;
   void SetToolbarState(const ToolbarState& state) override;
   void SetIncognito(bool enabled) override;

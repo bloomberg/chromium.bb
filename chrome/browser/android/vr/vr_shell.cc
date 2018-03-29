@@ -490,8 +490,7 @@ void VrShell::SetSurface(JNIEnv* env,
 
 void VrShell::SetWebVrMode(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
-                           bool enabled,
-                           bool show_toast) {
+                           bool enabled) {
   webvr_mode_ = enabled;
   SessionMetricsHelper* metrics_helper =
       SessionMetricsHelper::FromWebContents(web_contents_);
@@ -503,7 +502,7 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   // We create and dispose a page info in order to get notifed of page
   // permissions.
   CreatePageInfo();
-  ui_->SetWebVrMode(enabled, show_toast);
+  ui_->SetWebVrMode(enabled);
 
   if (!webvr_mode_ && !web_vr_autopresentation_expected_) {
     AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVrBrowsing);

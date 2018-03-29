@@ -785,8 +785,8 @@ public class VrShellImpl
     }
 
     @Override
-    public void setWebVrModeEnabled(boolean enabled, boolean showToast) {
-        if (mNativeVrShell != 0) nativeSetWebVrMode(mNativeVrShell, enabled, showToast);
+    public void setWebVrModeEnabled(boolean enabled) {
+        if (mNativeVrShell != 0) nativeSetWebVrMode(mNativeVrShell, enabled);
         if (!enabled) {
             mContentVrWindowAndroid.setVSyncPaused(false);
             mPendingVSyncPause = false;
@@ -1089,7 +1089,7 @@ public class VrShellImpl
     private native void nativeOnLoadProgressChanged(long nativeVrShell, double progress);
     private native void nativeBufferBoundsChanged(long nativeVrShell, int contentWidth,
             int contentHeight, int overlayWidth, int overlayHeight);
-    private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled, boolean showToast);
+    private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);
     private native boolean nativeGetWebVrMode(long nativeVrShell);
     private native boolean nativeIsDisplayingUrlForTesting(long nativeVrShell);
     private native void nativeOnTabListCreated(long nativeVrShell, Tab[] mainTabs,

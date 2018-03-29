@@ -74,8 +74,7 @@ base::WeakPtr<BrowserUiInterface> Ui::GetBrowserUiWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void Ui::SetWebVrMode(bool enabled, bool show_toast) {
-  model_->web_vr.show_exit_toast = show_toast;
+void Ui::SetWebVrMode(bool enabled) {
   if (enabled) {
     model_->web_vr.has_received_permissions = false;
     if (!model_->web_vr_autopresentation_enabled()) {
