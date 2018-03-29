@@ -831,7 +831,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionOpenPopupOnPopup) {
 
 // Test that a browser action popup can download data URLs. See
 // https://crbug.com/821219
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupDownload) {
+// Fails consistently on Win7. https://crbug.com/827160
+#if defined(OS_WIN)
+#define MAYBE_BrowserActionPopupDownload DISABLED_BrowserActionPopupDownload
+#else
+#define MAYBE_BrowserActionPopupDownload BrowserActionPopupDownload
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_BrowserActionPopupDownload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
