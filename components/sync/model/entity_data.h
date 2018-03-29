@@ -83,6 +83,12 @@ struct EntityData {
   // local change is cached in ProcessorEntityTracker.
   EntityDataPtr UpdateId(const std::string& new_id) const WARN_UNUSED_RESULT;
 
+  // Makes a copy of EntityData and updates its specifics to |new_specifics|.
+  // This is needed when specifics is updated after decryption in the
+  // ModelTypeWorker::DecryptStoredEntities().
+  EntityDataPtr UpdateSpecifics(
+      const sync_pb::EntitySpecifics& new_specifics) const WARN_UNUSED_RESULT;
+
   // Dumps all info into a DictionaryValue and returns it.
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue();
 
@@ -94,7 +100,8 @@ struct EntityData {
   // Used to transfer the data without copying.
   void Swap(EntityData* other);
 
-  // Allow copy ctor so that UpdateId can make a copy of this EntityData.
+  // Allow copy ctor so that UpdateId and UpdateSpecifics can make a copy of
+  // this EntityData.
   EntityData(const EntityData& src);
 
   DISALLOW_ASSIGN(EntityData);

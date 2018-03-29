@@ -60,6 +60,15 @@ EntityDataPtr EntityData::UpdateId(const std::string& new_id) const {
   return target;
 }
 
+EntityDataPtr EntityData::UpdateSpecifics(
+    const sync_pb::EntitySpecifics& new_specifics) const {
+  EntityData entity_data(*this);
+  entity_data.specifics = new_specifics;
+  EntityDataPtr target;
+  target.swap_value(&entity_data);
+  return target;
+}
+
 #define ADD_TO_DICT(dict, value) \
   dict->SetString(base::ToUpperASCII(#value), value);
 
