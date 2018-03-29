@@ -10,11 +10,14 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -32,6 +35,9 @@ class ContextualSuggestionsMediator implements FetchHelper.Delegate {
     private final ContextualSuggestionsModel mModel;
     private final SnippetsBridge mBridge;
     private final FetchHelper mFetchHelper;
+    private final ChromeFullscreenManager mFullscreenManager;
+
+    private boolean mDidSuggestionsShowForTab;
 
     @Nullable
     private String mCurrentRequestUrl;
@@ -41,18 +47,45 @@ class ContextualSuggestionsMediator implements FetchHelper.Delegate {
      * @param context The {@link Context} used to retrieve resources.
      * @param profile The regular {@link Profile}.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
+     * @param fullscreenManager The {@link ChromeFullscreenManager} to listen for browser controls
+     *                          events.
      * @param coordinator The {@link ContextualSuggestionsCoordinator} for the component.
      * @param model The {@link ContextualSuggestionsModel} for the component.
      */
     ContextualSuggestionsMediator(Context context, Profile profile,
-            TabModelSelector tabModelSelector, ContextualSuggestionsCoordinator coordinator,
-            ContextualSuggestionsModel model) {
+            TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
+            ContextualSuggestionsCoordinator coordinator, ContextualSuggestionsModel model) {
         mContext = context;
         mCoordinator = coordinator;
         mModel = model;
+        mFullscreenManager = fullscreenManager;
 
         mBridge = new SnippetsBridge(Profile.getLastUsedProfile());
         mFetchHelper = new FetchHelper(this, tabModelSelector);
+
+        fullscreenManager.addListener(new FullscreenListener() {
+            @Override
+            public void onContentOffsetChanged(float offset) {}
+
+            @Override
+            public void onControlsOffsetChanged(
+                    float topOffset, float bottomOffset, boolean needsAnimate) {
+                // When the controls scroll completely off-screen, the suggestions are "shown" but
+                // remain hidden since their offset from the bottom of the screen is determined by
+                // the top controls.
+                if (!mDidSuggestionsShowForTab && mModel.hasSuggestions()
+                        && areBrowserControlsHidden()) {
+                    mDidSuggestionsShowForTab = true;
+                    mCoordinator.showSuggestions();
+                }
+            }
+
+            @Override
+            public void onToggleOverlayVideoMode(boolean enabled) {}
+
+            @Override
+            public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+        });
     }
 
     /**
@@ -70,10 +103,17 @@ class ContextualSuggestionsMediator implements FetchHelper.Delegate {
         mFetchHelper.destroy();
     }
 
+    /**
+     * @return Whether the browser controls are currently completely hidden.
+     */
+    private boolean areBrowserControlsHidden() {
+        return MathUtils.areFloatsEqual(-mFullscreenManager.getTopControlOffset(),
+                mFullscreenManager.getTopControlsHeight());
+    }
+
     @Override
     public void requestSuggestions(String url) {
         mCurrentRequestUrl = url;
-
         mBridge.fetchContextualSuggestions(url, (suggestions) -> {
             // Avoiding double fetches causing suggestions for incorrect context.
             if (!TextUtils.equals(url, mCurrentRequestUrl)) return;
@@ -83,7 +123,10 @@ class ContextualSuggestionsMediator implements FetchHelper.Delegate {
                     .show();
 
             if (suggestions.size() > 0) {
-                displaySuggestions(generateClusterList(suggestions), suggestions.get(0).mTitle);
+                preloadSuggestions(generateClusterList(suggestions), suggestions.get(0).mTitle);
+                // If the controls are already off-screen, show the suggestions immediately so they
+                // are available on reverse scroll.
+                if (areBrowserControlsHidden()) mCoordinator.showSuggestions();
             }
         });
     }
@@ -95,6 +138,7 @@ class ContextualSuggestionsMediator implements FetchHelper.Delegate {
 
     private void clearSuggestions() {
         // TODO(twellington): Does this signal need to go back to FetchHelper?
+        mDidSuggestionsShowForTab = false;
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
         mModel.setTitle(null);
@@ -102,11 +146,11 @@ class ContextualSuggestionsMediator implements FetchHelper.Delegate {
         mCurrentRequestUrl = "";
     }
 
-    private void displaySuggestions(ClusterList clusters, String title) {
+    private void preloadSuggestions(ClusterList clusters, String title) {
         mModel.setClusterList(clusters);
         mModel.setCloseButtonOnClickListener(view -> { clearSuggestions(); });
         mModel.setTitle(mContext.getString(R.string.contextual_suggestions_toolbar_title, title));
-        mCoordinator.displaySuggestions();
+        mCoordinator.preloadSuggestionsInSheet();
     }
 
     // TODO(twellington): Remove after clusters are returned from the backend.

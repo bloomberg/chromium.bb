@@ -49,8 +49,8 @@ public class ContextualSuggestionsCoordinator {
         mProfile = Profile.getLastUsedProfile().getOriginalProfile();
 
         mModel = new ContextualSuggestionsModel();
-        mMediator = new ContextualSuggestionsMediator(
-                mActivity, mProfile, tabModelSelector, this, mModel);
+        mMediator = new ContextualSuggestionsMediator(mActivity, mProfile, tabModelSelector,
+                activity.getFullscreenManager(), this, mModel);
 
         SuggestionsSource suggestionsSource = mMediator.getSuggestionsSource();
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegateImpl(
@@ -71,9 +71,10 @@ public class ContextualSuggestionsCoordinator {
     }
 
     /**
-     * Displays contextual suggestions in the {@link BottomSheet}.
+     * Preload the contextual suggestions in the {@link BottomSheet}; content won't actually be
+     * shown until {@link #showSuggestions()} is called.
      */
-    void displaySuggestions() {
+    void preloadSuggestionsInSheet() {
         // TODO(twellington): Introduce another method that creates bottom sheet content with only
         // a toolbar view when suggestions are fist available, and use this method to construct the
         // content view when the sheet is opened.
@@ -84,7 +85,21 @@ public class ContextualSuggestionsCoordinator {
                 mActivity.getWindowAndroid(), mActivity::closeContextMenu);
         mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
                 mContentCoordinator, mToolbarCoordinator);
-        mBottomSheetController.requestShowContent(mBottomSheetContent, true);
+        // TODO(twellington): Handle the case where preload returns false.
+        mBottomSheetController.requestContentPreload(mBottomSheetContent);
+    }
+
+    /**
+     * Show the contextual suggestions in the {@link BottomSheet}.
+     * {@link #preloadSuggestionsInSheet()} must be called prior to calling this method.
+     */
+    void showSuggestions() {
+        // #preloadSuggestionsInSheet will always be called before this method, regardless of
+        // whether content was actually put in the sheet (meaning mBottomSheetContent should never
+        // be null). If content is not successfully preloaded
+        // BottomSheetController#requestContentPreload will return false.
+        assert mBottomSheetContent != null;
+        mBottomSheetController.requestShowContent(mBottomSheetContent, false);
     }
 
     /** Removes contextual suggestions from the {@link BottomSheet}. */
