@@ -2187,7 +2187,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.generic_android_pfq,
       site_config.templates.internal,
       display_label=config_lib.DISPLAY_LABEL_PI_ANDROID_PFQ,
-      android_package='android-container-pi-arc-dev',
+      android_package='android-container-pi',
       android_import_branch=constants.ANDROID_PI_BUILD_BRANCH,
   )
 
