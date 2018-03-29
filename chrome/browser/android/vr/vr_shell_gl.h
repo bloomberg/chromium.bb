@@ -189,6 +189,14 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool ShouldSkipVSync();
   void SendVSync(base::TimeTicks time, GetVSyncCallback callback);
 
+  // Checks if we're in a valid state for submitting a frame. Invalid states
+  // include mailbox_bridge_ready_ being false, or overlapping processing
+  // frames.
+  bool WebVrCanSubmitFrame();
+  // Call this after state changes that could result in WebVrCanSubmitFrame
+  // becoming true.
+  void WebVrTryDeferredSubmit();
+
   void ClosePresentationBindings();
 
   device::mojom::XRInputSourceStatePtr GetGazeInputSourceState();
@@ -332,6 +340,15 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   base::CancelableCallback<
       void(int16_t, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
       webvr_delayed_gvr_submit_;
+
+  // We only want one frame at a time in the lifecycle from
+  // mojo SubmitFrame until we submit to GVR. This flag is true
+  // for that timespan.
+  bool webvr_frame_processing_ = false;
+
+  // If we receive a new SubmitFrame when we're not ready, save it for
+  // later execution.
+  base::OnceClosure webvr_deferred_mojo_submit_;
 
   std::vector<gvr::BufferSpec> specs_;
 
