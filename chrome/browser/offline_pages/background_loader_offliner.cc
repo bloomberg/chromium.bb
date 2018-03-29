@@ -371,7 +371,7 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
   if (navigation_handle->IsErrorPage()) {
     RecordErrorCauseUMA(pending_request_->client_id(),
                         static_cast<int>(navigation_handle->GetNetErrorCode()));
-    page_load_state_ = RETRIABLE;
+    page_load_state_ = RETRIABLE_NET_ERROR;
   } else {
     int status_code = 200;  // Default to OK.
     // No response header can imply intermediate navigation state.
@@ -384,7 +384,7 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
     // We skip 418 because it's a teapot.
     if (status_code == 301 || (status_code >= 400 && status_code != 418)) {
       RecordErrorCauseUMA(pending_request_->client_id(), status_code);
-      page_load_state_ = RETRIABLE;
+      page_load_state_ = RETRIABLE_HTTP_ERROR;
     }
   }
 
@@ -438,8 +438,11 @@ void BackgroundLoaderOffliner::StartSnapshot() {
   if (page_load_state_ != SUCCESS) {
     Offliner::RequestStatus status;
     switch (page_load_state_) {
-      case RETRIABLE:
-        status = Offliner::RequestStatus::LOADING_FAILED;
+      case RETRIABLE_NET_ERROR:
+        status = Offliner::RequestStatus::LOADING_FAILED_NET_ERROR;
+        break;
+      case RETRIABLE_HTTP_ERROR:
+        status = Offliner::RequestStatus::LOADING_FAILED_HTTP_ERROR;
         break;
       case NONRETRIABLE:
         status = Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;

@@ -55,9 +55,10 @@ void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {
   state_ = RequestState::OFFLINING;
 }
 
-void SavePageRequest::MarkAttemptCompleted() {
+void SavePageRequest::MarkAttemptCompleted(FailState fail_state) {
   ++completed_attempt_count_;
   state_ = RequestState::AVAILABLE;
+  UpdateFailState(fail_state);
 }
 
 void SavePageRequest::MarkAttemptAborted() {
@@ -72,6 +73,23 @@ void SavePageRequest::MarkAttemptAborted() {
 
 void SavePageRequest::MarkAttemptPaused() {
   state_ = RequestState::PAUSED;
+}
+
+void SavePageRequest::UpdateFailState(FailState fail_state) {
+  // The order of precedence for failure errors related to offline page
+  // downloads is as follows: NO_FAILURE, CANNOT_DOWNLOAD and
+  // NETWORK_INSTABILITY.
+  switch (fail_state) {
+    case FailState::NO_FAILURE:  // Intentional fallthrough.
+    case FailState::CANNOT_DOWNLOAD:
+      fail_state_ = fail_state;
+      break;
+    case FailState::NETWORK_INSTABILITY:
+      if (fail_state_ != FailState::CANNOT_DOWNLOAD) {
+        fail_state_ = fail_state;
+      }
+      break;
+  }
 }
 
 }  // namespace offline_pages

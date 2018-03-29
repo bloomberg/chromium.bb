@@ -63,7 +63,7 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   EXPECT_EQ(1, request.started_attempt_count());
   EXPECT_EQ(SavePageRequest::RequestState::OFFLINING, request.request_state());
 
-  request.MarkAttemptCompleted();
+  request.MarkAttemptCompleted(FailState::CANNOT_DOWNLOAD);
 
   // Again, most things don't change about the request.
   EXPECT_EQ(kRequestId, request.request_id());

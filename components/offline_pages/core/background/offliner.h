@@ -32,7 +32,8 @@ class Offliner {
     REQUEST_COORDINATOR_CANCELED = 3,
     // Loading was canceled.
     LOADING_CANCELED = 4,
-    // Loader failed to load page.
+    // Loader failed to load page because the system or Chrome encountered an
+    // error.
     LOADING_FAILED = 5,
     // Failed to save loaded page.
     SAVE_FAILED = 6,
@@ -70,6 +71,10 @@ class Offliner {
     LOADING_FAILED_DOWNLOAD = 17,
     // The page initiated a download, and we passed it on to downloads.
     DOWNLOAD_THROTTLED = 18,
+    // Loader failed to load page due to net error.
+    LOADING_FAILED_NET_ERROR = 19,
+    // Loader failed to load page due to HTTP error.
+    LOADING_FAILED_HTTP_ERROR = 20,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

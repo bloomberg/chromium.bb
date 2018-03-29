@@ -16,6 +16,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_items_collection/core/fail_state.h"
 #include "components/offline_pages/core/background/cleanup_task_factory.h"
 #include "components/offline_pages/core/background/device_conditions.h"
 #include "components/offline_pages/core/background/pick_request_task.h"
@@ -87,9 +88,11 @@ class RequestQueue : public TaskQueue::Delegate {
   void MarkAttemptAborted(int64_t request_id, const UpdateCallback& callback);
 
   // Marks attempt with |request_id| as completed. The attempt may have
-  // completed with either success or failure (not denoted here). Results
-  // are returned through |callback|.
-  void MarkAttemptCompleted(int64_t request_id, const UpdateCallback& callback);
+  // completed with either success or failure (stored in FailState). Results are
+  // returned through |callback|.
+  void MarkAttemptCompleted(int64_t request_id,
+                            FailState fail_state,
+                            const UpdateCallback& callback);
 
   // Make a task to pick the next request, and report our choice to the
   // callbacks.
