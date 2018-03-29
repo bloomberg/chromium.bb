@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.datareduction;
 
+import static android.text.format.DateUtils.FORMAT_ABBREV_MONTH;
 import static android.text.format.DateUtils.FORMAT_NO_YEAR;
 import static android.text.format.DateUtils.FORMAT_SHOW_DATE;
 
@@ -50,11 +51,8 @@ public class DataReductionStatsPreference extends Preference {
     private NetworkStatsHistory mReceivedNetworkStatsHistory;
     private List<DataReductionDataUseItem> mSiteBreakdownItems;
 
-    private TextView mOriginalSizeTextView;
-    private TextView mReceivedSizeTextView;
     private TextView mDataSavingsTextView;
     private TextView mDataUsageTextView;
-    private TextView mPercentReductionTextView;
     private TextView mStartDateTextView;
     private TextView mEndDateTextView;
     private Button mResetStatisticsButton;
@@ -66,7 +64,6 @@ public class DataReductionStatsPreference extends Preference {
     private CharSequence mOriginalTotalPhrase;
     private CharSequence mSavingsTotalPhrase;
     private CharSequence mReceivedTotalPhrase;
-    private String mPercentReductionPhrase;
     private String mStartDatePhrase;
     private String mEndDatePhrase;
 
@@ -156,13 +153,10 @@ public class DataReductionStatsPreference extends Preference {
 
     private void setDetailText() {
         updateDetailData();
-        mPercentReductionTextView.setText(mPercentReductionPhrase);
         mStartDateTextView.setText(mStartDatePhrase);
         mEndDateTextView.setText(mEndDatePhrase);
         if (mDataUsageTextView != null) mDataUsageTextView.setText(mReceivedTotalPhrase);
         if (mDataSavingsTextView != null) mDataSavingsTextView.setText(mSavingsTotalPhrase);
-        if (mOriginalSizeTextView != null) mOriginalSizeTextView.setText(mOriginalTotalPhrase);
-        if (mReceivedSizeTextView != null) mReceivedSizeTextView.setText(mReceivedTotalPhrase);
     }
 
     /**
@@ -183,7 +177,6 @@ public class DataReductionStatsPreference extends Preference {
         super.onBindView(view);
         mDataUsageTextView = (TextView) view.findViewById(R.id.data_reduction_usage);
         mDataSavingsTextView = (TextView) view.findViewById(R.id.data_reduction_savings);
-        mPercentReductionTextView = (TextView) view.findViewById(R.id.data_reduction_percent);
         mStartDateTextView = (TextView) view.findViewById(R.id.data_reduction_start_date);
         mEndDateTextView = (TextView) view.findViewById(R.id.data_reduction_end_date);
         mDataReductionBreakdownView =
@@ -270,7 +263,7 @@ public class DataReductionStatsPreference extends Preference {
      * Update data reduction statistics whenever the chart's inspection
      * range changes. In particular, this creates strings describing the total
      * original size of all data received over the date range, the total size
-     * of all data received (after compression), the percent data reduction
+     * of all data received (after compression), and the percent data reduction
      * and the range of dates over which these statistics apply.
      */
     // TODO(crbug.com/635567): Fix this properly.
@@ -287,22 +280,15 @@ public class DataReductionStatsPreference extends Preference {
         mOriginalTotalPhrase = FileSizeUtil.formatFileSize(context, originalTotalBytes);
         final long savingsTotalBytes = originalTotalBytes - compressedTotalBytes;
         mSavingsTotalPhrase = FileSizeUtil.formatFileSize(context, savingsTotalBytes);
-
-        float percentage = 0.0f;
-        if (originalTotalBytes > 0L && originalTotalBytes > compressedTotalBytes) {
-            percentage = (originalTotalBytes - compressedTotalBytes) / (float) originalTotalBytes;
-        }
-        mPercentReductionPhrase = String.format("%.0f%%", 100.0 * percentage);
-
         mStartDatePhrase = formatDate(context, start);
         mEndDatePhrase = formatDate(context, end);
 
         DataReductionProxyUma.dataReductionProxyUserViewedSavings(
-                compressedTotalBytes, originalTotalBytes, 100.0 * percentage);
+                compressedTotalBytes, originalTotalBytes);
     }
 
     private static String formatDate(Context context, long millisSinceEpoch) {
-        final int flags = FORMAT_SHOW_DATE | FORMAT_NO_YEAR;
+        final int flags = FORMAT_SHOW_DATE | FORMAT_ABBREV_MONTH | FORMAT_NO_YEAR;
         return DateUtils.formatDateTime(context, millisSinceEpoch, flags).toString();
     }
 }
