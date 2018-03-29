@@ -192,11 +192,9 @@ typedef struct SequenceHeader {
   int force_screen_content_tools;  // 0 - force off
                                    // 1 - force on
                                    // 2 - adaptive
-#if CONFIG_AMVR
-  int force_integer_mv;  // 0 - Not to force. MV can be in 1/4 or 1/8
-                         // 1 - force to integer
-                         // 2 - adaptive
-#endif
+  int force_integer_mv;            // 0 - Not to force. MV can be in 1/4 or 1/8
+                                   // 1 - force to integer
+                                   // 2 - adaptive
   int monochrome;
   int enable_filter_intra;         // enables/disables filterintra
   int enable_intra_edge_filter;    // enables/disables corner/edge/upsampling
@@ -302,9 +300,7 @@ typedef struct AV1Common {
   uint8_t last_intra_only;
   uint8_t disable_cdf_update;
   int allow_high_precision_mv;
-#if CONFIG_AMVR
   int cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
-#endif
 
   int allow_screen_content_tools;
   int allow_intrabc;

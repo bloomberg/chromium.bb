@@ -87,7 +87,6 @@ set(CONFIG_SIZE_LIMIT 0 CACHE NUMBER "Limit max decode width/height.")
 set(CONFIG_SPATIAL_RESAMPLING 1 CACHE NUMBER "Spatial resampling.")
 
 # AV1 experiment flags.
-set(CONFIG_AMVR 1 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_DIST_8X8 1 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_ENTROPY_STATS 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_EXPLICIT_ORDER_HINT 1 CACHE NUMBER "AV1 experiment flag.")

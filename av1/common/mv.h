@@ -183,7 +183,6 @@ static INLINE int convert_to_trans_prec(int allow_hp, int coor) {
   else
     return ROUND_POWER_OF_TWO_SIGNED(coor, WARPEDMODEL_PREC_BITS - 2) * 2;
 }
-#if CONFIG_AMVR
 static INLINE void integer_mv_precision(MV *mv) {
   int mod = (mv->row % 8);
   if (mod != 0) {
@@ -209,7 +208,6 @@ static INLINE void integer_mv_precision(MV *mv) {
     }
   }
 }
-#endif
 // Convert a global motion vector into a motion vector at the centre of the
 // given block.
 //
@@ -219,12 +217,8 @@ static INLINE void integer_mv_precision(MV *mv) {
 // represents an integer)
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int allow_hp, BLOCK_SIZE bsize,
-                                          int mi_col, int mi_row
-#if CONFIG_AMVR
-                                          ,
-                                          int is_integer
-#endif
-) {
+                                          int mi_col, int mi_row,
+                                          int is_integer) {
   int_mv res;
   const int32_t *mat = gm->wmmat;
   int x, y, tx, ty;
@@ -241,11 +235,9 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
     res.as_mv.row = gm->wmmat[0] >> GM_TRANS_ONLY_PREC_DIFF;
     res.as_mv.col = gm->wmmat[1] >> GM_TRANS_ONLY_PREC_DIFF;
     assert(IMPLIES(1 & (res.as_mv.row | res.as_mv.col), allow_hp));
-#if CONFIG_AMVR
     if (is_integer) {
       integer_mv_precision(&res.as_mv);
     }
-#endif
     return res;
   }
 
@@ -279,11 +271,9 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
   res.as_mv.row = ty;
   res.as_mv.col = tx;
 
-#if CONFIG_AMVR
   if (is_integer) {
     integer_mv_precision(&res.as_mv);
   }
-#endif
   return res;
 }
 

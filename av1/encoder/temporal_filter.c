@@ -256,8 +256,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 
   x->mv_limits = tmp_mv_limits;
 
-// Ignore mv costing by sending NULL pointer instead of cost array
-#if CONFIG_AMVR
+  // Ignore mv costing by sending NULL pointer instead of cost array
   if (cpi->common.cur_frame_force_integer_mv == 1) {
     const uint8_t *const src_address = x->plane[0].src.buf;
     const int src_stride = x->plane[0].src.stride;
@@ -271,15 +270,12 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
     bestsme = cpi->fn_ptr[BLOCK_16X16].vf(y + offset, y_stride, src_address,
                                           src_stride, &sse);
   } else {
-#endif
     bestsme = cpi->find_fractional_mv_step(
         x, &best_ref_mv1, cpi->common.allow_high_precision_mv, x->errorperbit,
         &cpi->fn_ptr[BLOCK_16X16], 0, mv_sf->subpel_iters_per_step,
         cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
         NULL, 0, 0, 0, 0, 0);
-#if CONFIG_AMVR
   }
-#endif
 
   x->e_mbd.mi[0]->mbmi.mv[0] = x->best_mv;
 

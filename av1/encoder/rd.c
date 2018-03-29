@@ -529,7 +529,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_block_thresholds(cm, rd);
 
-#if CONFIG_AMVR
   if (cm->cur_frame_force_integer_mv) {
     av1_build_nmv_cost_table(x->nmv_vec_cost, x->nmvcost, &cm->fc->nmvc,
                              MV_SUBPEL_NONE);
@@ -539,11 +538,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
         cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost, &cm->fc->nmvc,
         cm->allow_high_precision_mv);
   }
-#else
-  av1_build_nmv_cost_table(
-      x->nmv_vec_cost, cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost,
-      &cm->fc->nmvc, cm->allow_high_precision_mv);
-#endif
 
   x->mvcost = x->mv_cost_stack;
   x->nmvjointcost = x->nmv_vec_cost;

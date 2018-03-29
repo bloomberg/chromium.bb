@@ -2305,7 +2305,6 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     seq_params->force_screen_content_tools = aom_rb_read_bit(rb);
   }
 
-#if CONFIG_AMVR
   if (seq_params->force_screen_content_tools > 0) {
     if (aom_rb_read_bit(rb)) {
       seq_params->force_integer_mv = 2;
@@ -2315,7 +2314,6 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   } else {
     seq_params->force_integer_mv = 2;
   }
-#endif
 
 #if CONFIG_EXPLICIT_ORDER_HINT
   seq_params->order_hint_bits_minus1 =
@@ -2631,7 +2629,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->allow_screen_content_tools = cm->seq_params.force_screen_content_tools;
   }
 
-#if CONFIG_AMVR
   if (cm->allow_screen_content_tools) {
     if (cm->seq_params.force_integer_mv == 2) {
       cm->cur_frame_force_integer_mv = aom_rb_read_bit(rb);
@@ -2641,7 +2638,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   } else {
     cm->cur_frame_force_integer_mv = 0;
   }
-#endif  // CONFIG_AMVR
 
   if (cm->seq_params.frame_id_numbers_present_flag) {
     int frame_id_length = cm->seq_params.frame_id_length;
@@ -2867,15 +2863,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         setup_frame_size(cm, frame_size_override_flag, rb);
       }
 
-#if CONFIG_AMVR
       if (cm->cur_frame_force_integer_mv) {
         cm->allow_high_precision_mv = 0;
       } else {
         cm->allow_high_precision_mv = aom_rb_read_bit(rb);
       }
-#else
-      cm->allow_high_precision_mv = aom_rb_read_bit(rb);
-#endif
       cm->interp_filter = read_frame_interp_filter(rb);
       cm->switchable_motion_mode = aom_rb_read_bit(rb);
     }
@@ -3027,9 +3019,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
     }
   }
-#if CONFIG_AMVR
   xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
-#endif
 
   for (int i = 0; i < MAX_SEGMENTS; ++i) {
     const int qindex = cm->seg.enabled

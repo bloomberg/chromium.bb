@@ -582,10 +582,8 @@ typedef struct macroblockd {
   int qindex[MAX_SEGMENTS];
   int lossless[MAX_SEGMENTS];
   int corrupted;
-#if CONFIG_AMVR
   int cur_frame_force_integer_mv;
-// same with that in AV1_COMMON
-#endif
+  // same with that in AV1_COMMON
   struct aom_internal_error_info *error_info;
   const WarpedMotionParams *global_motion;
   int prev_qindex;
@@ -1043,14 +1041,10 @@ static INLINE MOTION_MODE
 motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
                     const MODE_INFO *mi, int allow_warped_motion) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
-#if CONFIG_AMVR
   if (xd->cur_frame_force_integer_mv == 0) {
-#endif
     const TransformationType gm_type = gm_params[mbmi->ref_frame[0]].wmtype;
     if (is_global_mv_block(mi, gm_type)) return SIMPLE_TRANSLATION;
-#if CONFIG_AMVR
   }
-#endif
   if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
       is_inter_mode(mbmi->mode) && mbmi->ref_frame[1] != INTRA_FRAME &&
       is_motion_variation_allowed_compound(mbmi)) {
@@ -1058,11 +1052,9 @@ motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
     assert(!has_second_ref(mbmi));
     if (mbmi->num_proj_ref[0] >= 1 &&
         (allow_warped_motion && !av1_is_scaled(&(xd->block_refs[0]->sf)))) {
-#if CONFIG_AMVR
       if (xd->cur_frame_force_integer_mv) {
         return OBMC_CAUSAL;
       }
-#endif
       return WARPED_CAUSAL;
     }
     return OBMC_CAUSAL;

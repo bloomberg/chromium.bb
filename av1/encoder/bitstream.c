@@ -2697,7 +2697,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
     aom_wb_write_bit(wb, seq_params->force_screen_content_tools);
   }
 
-#if CONFIG_AMVR
   if (seq_params->force_screen_content_tools > 0) {
     if (seq_params->force_integer_mv == 2) {
       aom_wb_write_bit(wb, 1);
@@ -2708,7 +2707,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   } else {
     assert(seq_params->force_integer_mv == 2);
   }
-#endif
 
 #if CONFIG_EXPLICIT_ORDER_HINT
   if (seq_params->enable_order_hint)
@@ -2878,7 +2876,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
            cm->seq_params.force_screen_content_tools);
   }
 
-#if CONFIG_AMVR
   if (cm->allow_screen_content_tools) {
     if (cm->seq_params.force_integer_mv == 2) {
       aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
@@ -2888,7 +2885,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   } else {
     assert(cm->cur_frame_force_integer_mv == 0);
   }
-#endif  // CONFIG_AMVR
 
   cm->invalid_delta_frame_id_minus1 = 0;
   if (cm->seq_params.frame_id_numbers_present_flag) {
@@ -3056,15 +3052,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         write_frame_size(cm, frame_size_override_flag, wb);
       }
 
-#if CONFIG_AMVR
       if (cm->cur_frame_force_integer_mv) {
         cm->allow_high_precision_mv = 0;
       } else {
         aom_wb_write_bit(wb, cm->allow_high_precision_mv);
       }
-#else
-      aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-#endif
       fix_interp_filter(cm, cpi->td.counts);
       write_frame_interp_filter(cm->interp_filter, wb);
       aom_wb_write_bit(wb, cm->switchable_motion_mode);

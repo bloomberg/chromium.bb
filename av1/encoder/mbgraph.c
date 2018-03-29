@@ -47,16 +47,12 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
   av1_hex_search(x, &ref_full, step_param, x->errorperbit, 0,
                  cond_cost_list(cpi, cost_list), &v_fn_ptr, 0, ref_mv);
 
-// Try sub-pixel MC
-// if (bestsme > error_thresh && bestsme < INT_MAX)
-#if CONFIG_AMVR
+  // Try sub-pixel MC
+  // if (bestsme > error_thresh && bestsme < INT_MAX)
   if (cpi->common.cur_frame_force_integer_mv == 1) {
     x->best_mv.as_mv.row *= 8;
     x->best_mv.as_mv.col *= 8;
   } else {
-#else
-  {
-#endif
     int distortion;
     unsigned int sse;
     cpi->find_fractional_mv_step(x, ref_mv, cpi->common.allow_high_precision_mv,

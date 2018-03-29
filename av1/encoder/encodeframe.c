@@ -3458,9 +3458,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
               : 0;
       seg_skip = segfeature_active(seg, segment_id, SEG_LVL_SKIP);
     }
-#if CONFIG_AMVR
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
-#endif
 
     if (cm->delta_q_present_flag) {
       // Test mode for delta quantization

@@ -82,11 +82,7 @@ static INLINE void av1_make_inter_predictor(
       (w >= 8 && h >= 8 &&
        allow_warp(mi, warp_types, &xd->global_motion[mi->mbmi.ref_frame[ref]],
                   build_for_obmc, xs, ys, &final_warp_params));
-  if (do_warp
-#if CONFIG_AMVR
-      && xd->cur_frame_force_integer_mv == 0
-#endif
-  ) {
+  if (do_warp && xd->cur_frame_force_integer_mv == 0) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
     av1_warp_plane(&final_warp_params,
