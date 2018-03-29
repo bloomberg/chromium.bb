@@ -144,13 +144,13 @@ void BrowserProcessSubThread::CompleteInitializationOnBrowserThread() {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-void BrowserProcessSubThread::UIThreadRun(base::RunLoop* run_loop) {
+NOINLINE void BrowserProcessSubThread::UIThreadRun(base::RunLoop* run_loop) {
   const int line_number = __LINE__;
   Thread::Run(run_loop);
   base::debug::Alias(&line_number);
 }
 
-void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
+NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
   const int line_number = __LINE__;
   Thread::Run(run_loop);
   base::debug::Alias(&line_number);
