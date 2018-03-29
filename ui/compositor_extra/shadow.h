@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WM_CORE_SHADOW_H_
-#define UI_WM_CORE_SHADOW_H_
+#ifndef UI_COMPOSITOR_EXTRA_SHADOW_H_
+#define UI_COMPOSITOR_EXTRA_SHADOW_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/wm/core/wm_core_export.h"
 
 namespace gfx {
 struct ShadowDetails;
@@ -18,12 +17,9 @@ struct ShadowDetails;
 
 namespace ui {
 class Layer;
-}  // namespace ui
-
-namespace wm {
 
 // Simple class that draws a drop shadow around content at given bounds.
-class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
+class Shadow : public ui::ImplicitAnimationObserver {
  public:
   Shadow();
   ~Shadow() override;
@@ -103,6 +99,6 @@ class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };
 
-}  // namespace wm
+}  // namespace ui
 
-#endif  // UI_WM_CORE_SHADOW_H_
+#endif  // UI_COMPOSITOR_EXTRA_SHADOW_H_

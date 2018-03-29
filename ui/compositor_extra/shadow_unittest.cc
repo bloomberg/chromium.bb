@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/shadow.h"
+#include "ui/compositor_extra/shadow.h"
 
 #include "base/macros.h"
-#include "ui/aura/test/aura_test_base.h"
+#include "base/test/test_discardable_memory_allocator.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/shadow_util.h"
 #include "ui/gfx/shadow_value.h"
 
-namespace wm {
+namespace ui {
 namespace {
 
 constexpr int kElevationLarge = 24;
@@ -28,10 +32,30 @@ gfx::Size NineboxImageSizeForElevationAndCornerRadius(int elevation,
   return bounds.size();
 }
 
-using ShadowTest = aura::test::AuraTestBase;
+class ShadowTest : public testing::Test {
+ protected:
+  ShadowTest() {}
+  ~ShadowTest() override {}
+
+  void SetUp() override {
+    base::DiscardableMemoryAllocator::SetInstance(
+        &discardable_memory_allocator_);
+  }
+
+  void TearDown() override {
+    base::DiscardableMemoryAllocator::SetInstance(nullptr);
+  }
+
+ private:
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShadowTest);
+};
 
 // Test if the proper content bounds is calculated based on the current style.
 TEST_F(ShadowTest, SetContentBounds) {
+  ScopedAnimationDurationScaleMode zero_duration_mode(
+      ScopedAnimationDurationScaleMode::ZERO_DURATION);
   // Verify that layer bounds are outset from content bounds.
   Shadow shadow;
   {
@@ -103,4 +127,4 @@ TEST_F(ShadowTest, AdjustRoundedCornerRadius) {
 }
 
 }  // namespace
-}  // namespace wm
+}  // namespace ui

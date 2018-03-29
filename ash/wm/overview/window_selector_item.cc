@@ -37,6 +37,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -53,7 +54,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace ash {
@@ -1192,7 +1192,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
     label_view_->SetFontList(gfx::FontList().Derive(
         kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
 
-    shadow_ = std::make_unique<::wm::Shadow>();
+    shadow_ = std::make_unique<ui::Shadow>();
     shadow_->Init(kShadowElevation);
     item_widget_->GetLayer()->Add(shadow_->layer());
   }
