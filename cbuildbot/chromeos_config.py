@@ -3571,6 +3571,14 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   _AdjustReleaseConfigs()
 
+  def _EnableThinLTO():
+    """Enable thinlto in release builders for selected boards."""
+    for board in _x86_internal_release_boards:
+      config_name = GetReleaseConfigName(board)
+      site_config[config_name].apply(useflags=append_useflags(['thinlto']))
+
+  _EnableThinLTO()
+
 
 def PayloadBuilders(site_config, boards_dict):
   """Create <board>-payloads configs for all payload generating boards.
