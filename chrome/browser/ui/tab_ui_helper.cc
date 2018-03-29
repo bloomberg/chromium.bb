@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tab_ui_helper.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +17,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/views_mode_controller.h"
+#endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabUIHelper);
 
@@ -47,7 +52,7 @@ base::string16 TabUIHelper::GetTitle() const {
   if (tab_ui_data_)
     return tab_ui_data_->title;
 
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
   return l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
 #else
   return base::string16();
@@ -58,11 +63,15 @@ gfx::Image TabUIHelper::GetFavicon() const {
   if (ShouldUseFaviconFromHistory() && tab_ui_data_)
     return tab_ui_data_->favicon;
 
-#ifdef OS_MACOSX
-  return gfx::Image();
-#else
-  return favicon::TabFaviconFromWebContents(web_contents());
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return gfx::Image();
+// For views browser windows on Mac, it will fall through to be handled
+// in the following function. If default favicon needs to be drawn more
+// visible on dark theme, consider porting code from
+// mac::FaviconForWebContents().
 #endif
+  return favicon::TabFaviconFromWebContents(web_contents());
 }
 
 bool TabUIHelper::ShouldHideThrobber() const {
