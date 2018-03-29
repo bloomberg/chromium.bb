@@ -16,6 +16,12 @@ bool CanFalloverToNextProxy(int* error) {
   // to proxy servers.  The hostname in those URLs might fail to resolve if we
   // are still using a non-proxy config.  We need to check if a proxy config
   // now exists that corresponds to a proxy server that could load the URL.
+  //
+  // A failure while establishing a tunnel to the proxy
+  // (ERR_TUNNEL_CONNECTION_FAILED) is NOT considered grounds for fallback.
+  // Other browsers similarly don't fallback, and some client's PAC
+  // configurations rely on this for some degree of content blocking.
+  // See https://crbug.com/680837 for details.
   switch (*error) {
     case ERR_PROXY_CONNECTION_FAILED:
     case ERR_NAME_NOT_RESOLVED:
@@ -27,7 +33,6 @@ bool CanFalloverToNextProxy(int* error) {
     case ERR_CONNECTION_REFUSED:
     case ERR_CONNECTION_ABORTED:
     case ERR_TIMED_OUT:
-    case ERR_TUNNEL_CONNECTION_FAILED:
     case ERR_SOCKS_CONNECTION_FAILED:
     // ERR_PROXY_CERTIFICATE_INVALID can happen in the case of trying to talk to
     // a proxy using SSL, and ending up talking to a captive portal that
