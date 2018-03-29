@@ -206,14 +206,24 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void SetAlertDialog(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,
-                      int width,
-                      int height);
+                      float width,
+                      float height);
   void CloseAlertDialog(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
+  void SetDialogBufferSize(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           float width,
+                           float height);
   void SetAlertDialogSize(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
-                          int width,
-                          int height);
+                          float width,
+                          float height);
+  void SetDialogLocation(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         float x,
+                         float y);
+  void SetDialogFloating(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtr submit_client,

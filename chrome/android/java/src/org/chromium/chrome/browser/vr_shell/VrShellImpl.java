@@ -751,7 +751,24 @@ public class VrShellImpl
      */
     @Override
     public void setDialogSize(int width, int height) {
-        nativeSetAlertDialogSize(mNativeVrShell, width, height);
+        nativeSetDialogBufferSize(mNativeVrShell, width, height);
+        float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
+        nativeSetAlertDialogSize(mNativeVrShell, width * scale, height * scale);
+    }
+
+    /**
+     * Set size of the Dialog location in VR.
+     */
+    @Override
+    public void setDialogLocation(int x, int y) {
+        if (getWebVrModeEnabled()) return;
+        float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
+        nativeSetDialogLocation(mNativeVrShell, x * scale, y * scale);
+    }
+
+    @Override
+    public void setDialogFloating() {
+        nativeSetDialogFloating(mNativeVrShell);
     }
 
     /**
@@ -759,9 +776,10 @@ public class VrShellImpl
      */
     @Override
     public void initVrDialog(int width, int height) {
-        nativeSetAlertDialog(mNativeVrShell, width, height);
+        float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
+        nativeSetAlertDialog(mNativeVrShell, width * scale, height * scale);
         mAndroidDialogGestureTarget =
-                new AndroidUiGestureTarget(mVrUiViewContainer.getInputTarget(), 1.0f,
+                new AndroidUiGestureTarget(mVrUiViewContainer.getInputTarget(), 1.0f / scale,
                         getNativePageScrollRatio(), getTouchSlop());
         nativeSetDialogGestureTarget(mNativeVrShell, mAndroidDialogGestureTarget);
     }
@@ -1080,8 +1098,11 @@ public class VrShellImpl
             String title);
     private native void nativeOnTabRemoved(long nativeVrShell, boolean incognito, int id);
     private native void nativeCloseAlertDialog(long nativeVrShell);
-    private native void nativeSetAlertDialog(long nativeVrShell, int width, int height);
-    private native void nativeSetAlertDialogSize(long nativeVrShell, int width, int height);
+    private native void nativeSetAlertDialog(long nativeVrShell, float width, float height);
+    private native void nativeSetDialogBufferSize(long nativeVrShell, float width, float height);
+    private native void nativeSetAlertDialogSize(long nativeVrShell, float width, float height);
+    private native void nativeSetDialogLocation(long nativeVrShell, float x, float y);
+    private native void nativeSetDialogFloating(long nativeVrShell);
     private native void nativeSetHistoryButtonsEnabled(
             long nativeVrShell, boolean canGoBack, boolean canGoForward);
     private native void nativeRequestToExitVr(long nativeVrShell, @UiUnsupportedMode int reason);
