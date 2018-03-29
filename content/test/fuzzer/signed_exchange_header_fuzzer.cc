@@ -18,7 +18,19 @@ struct IcuEnvironment {
 IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  SignedExchangeHeader::Parse(base::make_span(data, size));
+  if (size < SignedExchangeHeader::kEncodedHeaderLengthInBytes)
+    return 0;
+  auto encoded_length =
+      base::make_span(data, SignedExchangeHeader::kEncodedHeaderLengthInBytes);
+  size_t header_len = SignedExchangeHeader::ParseHeadersLength(encoded_length);
+  data += SignedExchangeHeader::kEncodedHeaderLengthInBytes;
+  size -= SignedExchangeHeader::kEncodedHeaderLengthInBytes;
+
+  // Copy the header into a separate buffer so that out-of-bounds access can be
+  // detected.
+  std::vector<uint8_t> header(data, data + std::min(size, header_len));
+
+  SignedExchangeHeader::Parse(base::make_span(header));
   return 0;
 }
 
