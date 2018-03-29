@@ -138,10 +138,8 @@ ResourceDispatcher::~ResourceDispatcher() {
 ResourceDispatcher::PendingRequestInfo*
 ResourceDispatcher::GetPendingRequestInfo(int request_id) {
   PendingRequestMap::iterator it = pending_requests_.find(request_id);
-  if (it == pending_requests_.end()) {
-    // This might happen for kill()ed requests on the webkit end.
+  if (it == pending_requests_.end())
     return nullptr;
-  }
   return it->second.get();
 }
 
@@ -341,7 +339,7 @@ void ResourceDispatcher::Cancel(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
-    DVLOG(1) << "unknown request";
+    DLOG(ERROR) << "unknown request";
     return;
   }
 
@@ -371,7 +369,11 @@ void ResourceDispatcher::DidChangePriority(int request_id,
                                            net::RequestPriority new_priority,
                                            int intra_priority_value) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  DCHECK(request_info);
+  if (!request_info) {
+    DLOG(ERROR) << "unknown request";
+    return;
+  }
+
   request_info->url_loader->SetPriority(new_priority, intra_priority_value);
 }
 
