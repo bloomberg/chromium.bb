@@ -4,8 +4,8 @@
 //
 // This file contains utility functions for WKBasedNavigationManagerImpl.
 
-#ifndef IOS_WEB_NAVIGATION_WK_BASED_RESTORE_SESSION_UTIL_H_
-#define IOS_WEB_NAVIGATION_WK_BASED_RESTORE_SESSION_UTIL_H_
+#ifndef IOS_WEB_NAVIGATION_WK_NAVIGATION_UTIL_H_
+#define IOS_WEB_NAVIGATION_WK_NAVIGATION_UTIL_H_
 
 #include <memory>
 #include <vector>
@@ -15,6 +15,8 @@
 namespace web {
 
 class NavigationItem;
+
+namespace wk_navigation_util {
 
 // Query parameter key used to encode the session history to inject in a
 // restore_session.html URL.
@@ -51,6 +53,7 @@ GURL CreateRedirectUrl(const GURL& target_url);
 // component exists, returns false.
 bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url);
 
+}  // namespace wk_navigation_util
 }  // namespace web
 
-#endif  // IOS_WEB_NAVIGATION_WK_BASED_RESTORE_SESSION_UTIL_H_
+#endif  // IOS_WEB_NAVIGATION_WK_NAVIGATION_UTIL_H_

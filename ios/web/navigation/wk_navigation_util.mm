@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/navigation/wk_based_restore_session_util.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 
 #include "base/json/json_writer.h"
 #include "base/mac/bundle_locations.h"
@@ -14,7 +14,12 @@
 #include "net/base/url_util.h"
 #include "url/url_constants.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
+namespace wk_navigation_util {
 
 const char kRestoreSessionSessionQueryKey[] = "session";
 const char kRestoreSessionTargetUrlQueryKey[] = "targetUrl";
@@ -87,4 +92,5 @@ bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
   return success;
 }
 
+}  // namespace wk_navigation_util
 }  // namespace web

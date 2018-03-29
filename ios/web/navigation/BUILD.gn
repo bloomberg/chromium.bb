@@ -62,8 +62,8 @@ source_set("core") {
     "navigation_manager_util.mm",
     "placeholder_navigation_util.h",
     "placeholder_navigation_util.mm",
-    "wk_based_restore_session_util.h",
-    "wk_based_restore_session_util.mm",
+    "wk_navigation_util.h",
+    "wk_navigation_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
