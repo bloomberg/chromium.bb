@@ -134,7 +134,7 @@ void ExtensionMessageBubbleViewBrowserTest::ClickLearnMoreButton(
   // to report a valid state.
   ui::AXNodeData node_data;
   bubble->GetWidget()->GetRootView()->GetAccessibleNodeData(&node_data);
-  EXPECT_EQ(ax::mojom::Role::kDialog, node_data.role);
+  EXPECT_EQ(ax::mojom::Role::kAlertDialog, node_data.role);
 }
 
 void ExtensionMessageBubbleViewBrowserTest::ClickActionButton(

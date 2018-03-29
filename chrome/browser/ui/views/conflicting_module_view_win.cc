@@ -20,7 +20,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
@@ -104,10 +103,6 @@ void ConflictingModuleView::ShowBubble() {
       prefs::kModuleConflictBubbleShown,
       browser_->profile()->GetPrefs());
   bubble_shown.SetValue(bubble_shown.GetValue() + 1);
-}
-
-ax::mojom::Role ConflictingModuleView::GetAccessibleWindowRole() const {
-  return ax::mojom::Role::kAlertDialog;
 }
 
 void ConflictingModuleView::OnWidgetClosing(views::Widget* widget) {

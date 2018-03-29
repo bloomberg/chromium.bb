@@ -232,9 +232,6 @@ are declared in build/common.gypi.
       <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a popup.">
         <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to
       </message>
-      <message name="IDS_PERMISSIONS_BUBBLE_ACCESSIBLE_TITLE" desc="The sentence read out by screen readers to describe the permission request popup.">
-        <ph name="SITE_NAME">$1<ex>google.com</ex></ph> has a permission request.
-      </message>
       <message name="IDS_PERMISSION_ALLOW" desc="Label on button to allow a permissions request.">
         Allow
       </message>

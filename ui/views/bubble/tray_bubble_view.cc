@@ -313,6 +313,13 @@ int TrayBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() const {
+  // We override the role because the base class sets it to alert dialog.
+  // This would make screen readers announce the whole of the system tray
+  // which is undesirable.
+  return ax::mojom::Role::kDialog;
+}
+
 void TrayBubbleView::SizeToContents() {
   BubbleDialogDelegateView::SizeToContents();
   bubble_content_mask_->layer()->SetBounds(GetBubbleBounds());

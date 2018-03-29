@@ -32,8 +32,6 @@ class ConflictingModuleView : public views::BubbleDialogDelegateView,
   // Shows the bubble and updates the counter for how often it has been shown.
   void ShowBubble();
 
-  // views::BubbleDialogDelegateView:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
   void OnWidgetClosing(views::Widget* widget) override;
   bool Accept() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;

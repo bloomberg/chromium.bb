@@ -2419,7 +2419,10 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_ALERT;
 
     case ax::mojom::Role::kAlertDialog:
-      return ROLE_SYSTEM_DIALOG;
+      // We temporarily use |ROLE_SYSTEM_ALERT| because some Windows screen
+      // readers are not compatible with |ax::mojom::Role::kAlertDialog| yet.
+      // TODO(aleventhal) modify this to return |ROLE_SYSTEM_DIALOG|.
+      return ROLE_SYSTEM_ALERT;
 
     case ax::mojom::Role::kAnchor:
       return ROLE_SYSTEM_LINK;

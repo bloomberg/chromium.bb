@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/events/event.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -160,6 +161,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
  protected:
   // Overridden from views::BubbleDialogDelegateView.
   int GetDialogButtons() const override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
   void SizeToContents() override;
 
   // Overridden from views::View.
