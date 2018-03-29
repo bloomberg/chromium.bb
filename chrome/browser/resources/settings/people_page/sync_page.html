@@ -88,6 +88,17 @@
       }
 </if>
     </style>
+<if expr="not chromeos">
+    <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled,
+        unifiedConsentEnabled, syncStatus.syncSystemEnabled,
+        syncStatus.signinAllowed)]]">
+      <settings-sync-account-control
+          sync-status="[[syncStatus]]"
+          promo-label="$i18n{syncSignInPrompt}"
+          promo-secondary-label="$i18n{syncSignInPromptSecondary}">
+      </settings-sync-account-control>
+    </template>
+</if>
     <div id="[[pages_.SPINNER]]" class="settings-box first"
         hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
       $i18n{syncLoading}
@@ -363,7 +374,7 @@
       </template>
     </div>
 <if expr="not chromeos">
-    <cr-toast id="toast" open="[[setupInProgress]]">
+    <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
       $i18n{syncWillStart}
       <paper-button on-click="onCancelSyncClick_">
         $i18n{cancelSync}

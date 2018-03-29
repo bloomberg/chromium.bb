@@ -3197,6 +3197,12 @@
     <message name="IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC" desc="The label of button that allows user to cancel sync.">
       Cancel sync
     </message>
+    <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT" desc="The text displayed to prompt users to sign in to chrome.">
+      Sync and personalize Chrome across your device
+    </message>
+    <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_SECONDARY" desc="The secondary text displayed to prompt users to sign in to chrome.">
+      Turns on the features listed here. Uses your browser activity, content on some sites you visit, and other browser interactions for personalization.
+    </message>
   </if>
   <message name="IDS_SETTINGS_SYNC_TIMEOUT" desc="Text explaining what to do if sync times out.">
     Check your internet connection. If the problem continues, try signing out and signing in again.

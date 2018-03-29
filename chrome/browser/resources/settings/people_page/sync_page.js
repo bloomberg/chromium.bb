@@ -53,13 +53,8 @@ Polymer({
       type: Object,
     },
 
-    // <if expr="not chromeos">
-    /** @private */
-    setupInProgress: {
-      type: Boolean,
-      value: false,
-    },
-    // </if>
+    /** @type {settings.SyncStatus} */
+    syncStatus: Object,
 
     /**
      * Whether the "create passphrase" inputs should be shown. These inputs
@@ -98,6 +93,12 @@ Polymer({
       type: String,
       value: '',
     },
+
+    // <if expr="not chromeos">
+    diceEnabled: Boolean,
+    // </if>
+
+    unifiedConsentEnabled: Boolean,
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -428,6 +429,17 @@ Polymer({
     this.didAbort_ = true;
     settings.navigateTo(settings.routes.BASIC);
   },
+
+  // <if expr="not chromeos">
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowSyncAccountControl_: function() {
+    return !!this.diceEnabled && !!this.unifiedConsentEnabled &&
+        !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
+  },
+  // </if>
 });
 
 })();

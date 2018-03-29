@@ -1528,6 +1528,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncedToName", IDS_SETTINGS_PEOPLE_SYNCED_AS_NAME},
     {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
     {"syncNotWorking", IDS_SETTINGS_PEOPLE_SYNC_NOT_WORKING},
+    {"syncSignInPrompt", IDS_SETTINGS_SYNC_SIGN_IN_PROMPT},
+    {"syncSignInPromptSecondary", IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_SECONDARY},
 #endif
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
     {"syncDisabledByAdministrator",
