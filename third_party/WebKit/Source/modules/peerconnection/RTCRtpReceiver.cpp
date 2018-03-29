@@ -4,6 +4,7 @@
 
 #include "modules/peerconnection/RTCRtpReceiver.h"
 
+#include "modules/peerconnection/WebRTCStatsReportCallbackResolver.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebMediaStream.h"
@@ -35,6 +36,13 @@ const HeapVector<Member<RTCRtpContributingSource>>&
 RTCRtpReceiver::getContributingSources() {
   UpdateSourcesIfNeeded();
   return contributing_sources_;
+}
+
+ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  receiver_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver));
+  return promise;
 }
 
 const WebRTCRtpReceiver& RTCRtpReceiver::web_receiver() const {

@@ -30,6 +30,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
   MediaStreamTrack* track() const;
   const HeapVector<Member<RTCRtpContributingSource>>& getContributingSources();
+  ScriptPromise getStats(ScriptState*);
 
   const WebRTCRtpReceiver& web_receiver() const;
   MediaStreamVector streams() const;

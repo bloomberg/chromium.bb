@@ -12,5 +12,6 @@ PASS replaceTrack() after offer, before answer: new track attachment stats prese
 PASS replaceTrack() after answer: new track attachment stats present
 FAIL replaceTrack(): original track attachment stats present after replacing assert_true: Has stats for original track expected true got false
 PASS RTCRtpSender.getStats() contains only outbound-rtp and related stats
+PASS RTCRtpReceiver.getStats() contains only inbound-rtp and related stats
 Harness: the test ran to completion.
 

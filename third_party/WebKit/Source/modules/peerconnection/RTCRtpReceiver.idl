@@ -7,6 +7,6 @@
 interface RTCRtpReceiver {
     readonly attribute MediaStreamTrack track;
     sequence<RTCRtpContributingSource> getContributingSources();
-
+    [RuntimeEnabled=RTCPeerConnectionGetStatsSelector, CallWith=ScriptState] Promise<RTCStatsReport> getStats();
     // TODO(hbos): Support every member of the spec. https://crbug.com/700916
 };
