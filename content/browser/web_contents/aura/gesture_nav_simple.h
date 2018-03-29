@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -17,7 +18,7 @@ class WebContentsImpl;
 
 // A simple delegate for the overscroll controller that paints an arrow on top
 // of the web-contents as a hint for pending navigations from overscroll.
-class GestureNavSimple : public OverscrollControllerDelegate {
+class CONTENT_EXPORT GestureNavSimple : public OverscrollControllerDelegate {
  public:
   explicit GestureNavSimple(WebContentsImpl* web_contents);
   ~GestureNavSimple() override;
@@ -27,6 +28,8 @@ class GestureNavSimple : public OverscrollControllerDelegate {
   void OnAffordanceAnimationEnded();
 
  private:
+  friend class GestureNavSimpleTest;
+
   // OverscrollControllerDelegate:
   gfx::Size GetDisplaySize() const override;
   bool OnOverscrollUpdate(float delta_x, float delta_y) override;
