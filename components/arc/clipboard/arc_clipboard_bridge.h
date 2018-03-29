@@ -40,6 +40,7 @@ class ArcClipboardBridge : public KeyedService,
   // mojom::ClipboardHost overrides.
   void SetClipContent(mojom::ClipDataPtr clip_data) override;
   void GetClipContent(GetClipContentCallback callback) override;
+  void GetClipContentDeprecated(GetClipContentCallback callback) override;
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
