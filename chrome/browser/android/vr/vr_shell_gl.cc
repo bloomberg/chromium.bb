@@ -525,15 +525,9 @@ void VrShellGl::OnWebVRFrameAvailable() {
   // This is called each time a frame that was drawn on the WebVR Surface
   // arrives on the SurfaceTexture.
 
-  // A "while" loop here is a bad idea. It's legal to call
-  // UpdateTexImage repeatedly even if no frames are available, but
-  // that does *not* wait for a new frame, it just reuses the most
-  // recent one. That would mess up the count.
-  if (pending_frames_.empty()) {
-    // We're expecting a frame, but it's not here yet. Retry in OnVsync.
-    ++premature_received_frames_;
-    return;
-  }
+  // This event should only occur in response to a SwapBuffers from
+  // an incoming SubmitFrame call.
+  DCHECK(!pending_frames_.empty()) << ": Frame arrived before SubmitFrame";
 
   webvr_surface_texture_->UpdateTexImage();
   int frame_index = pending_frames_.front();
@@ -1419,11 +1413,6 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   TRACE_EVENT_INSTANT1("viz", "DisplayScheduler::BeginFrame",
                        TRACE_EVENT_SCOPE_THREAD, "args", std::move(args));
 
-  while (premature_received_frames_ > 0) {
-    TRACE_EVENT0("gpu", "VrShellGl::OnWebVRFrameAvailableRetry");
-    --premature_received_frames_;
-    OnWebVRFrameAvailable();
-  }
   vsync_helper_.RequestVSync(
       base::BindRepeating(&VrShellGl::OnVSync, base::Unretained(this)));
 

@@ -219,7 +219,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   std::unique_ptr<gvr::SwapChain> swap_chain_;
   gvr::Frame acquired_frame_;
   base::queue<std::pair<uint8_t, WebVrBounds>> pending_bounds_;
-  int premature_received_frames_ = 0;
   base::queue<uint16_t> pending_frames_;
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
   bool mailbox_bridge_ready_ = false;
