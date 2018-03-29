@@ -14,7 +14,11 @@ import org.chromium.ui.widget.popups.UiWidgetFactory;
  * The factory that creates VR compatible UI widgets.
  */
 public class VrUiWidgetFactory extends UiWidgetFactory {
-    public VrUiWidgetFactory() {}
+    private VrShell mVrShell;
+
+    public VrUiWidgetFactory(VrShell vrShell) {
+        mVrShell = vrShell;
+    }
 
     @Override
     public PopupWindow createPopupWindow(Context context) {
@@ -23,13 +27,13 @@ public class VrUiWidgetFactory extends UiWidgetFactory {
 
     @Override
     public android.widget.Toast createToast(Context context) {
-        return new VrToast(context);
+        return new VrToast(context, mVrShell);
     }
 
     @Override
     @SuppressLint("ShowToast")
     public android.widget.Toast makeToast(Context context, CharSequence text, int duration) {
-        android.widget.Toast toast = new VrToast(context);
+        android.widget.Toast toast = new VrToast(context, mVrShell);
         // It is tempting to use toast.setText directly instead of creating a tmpToast and
         // calling setView below. However, setText depends on android.widget.Toast.makeText
         // being called first to inflate a subtree which has a Textview. Calling setText without

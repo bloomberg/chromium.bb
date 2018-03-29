@@ -131,6 +131,7 @@ class UiElement : public cc::AnimationTarget {
   UiElementType type() const { return type_; }
   void SetType(UiElementType type);
   virtual void OnSetType();
+  UiElement* GetDescendantByType(UiElementType type);
 
   DrawPhase draw_phase() const { return draw_phase_; }
   void SetDrawPhase(DrawPhase draw_phase);

@@ -122,6 +122,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void SetDialogLocation(float x, float y);
   void SetDialogFloating();
 
+  void ShowToast(const base::string16& text);
+  void CancelToast();
+
   void AcceptDoffPromptForTesting();
 
  private:

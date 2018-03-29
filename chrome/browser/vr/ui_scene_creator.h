@@ -49,7 +49,7 @@ class UiSceneCreator {
   void CreateCloseButton();
   void CreateExitPrompt();
   void CreatePrompts();
-  void CreateFullscreenToast();
+  void CreateToasts();
   void CreateVoiceSearchUiGroup();
   void CreateContentRepositioningAffordance();
   void CreateExitWarning();

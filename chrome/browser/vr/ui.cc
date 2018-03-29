@@ -18,6 +18,7 @@
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
+#include "chrome/browser/vr/model/platform_toast.h"
 #include "chrome/browser/vr/model/sound_id.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -224,24 +225,32 @@ void Ui::SetAlertDialogEnabled(bool enabled,
                                float width,
                                float height) {
   model_->web_vr.showing_hosted_ui = enabled;
-  model_->native_ui.hosted_ui_enabled = enabled;
-  model_->native_ui.rect.set_height(height);
-  model_->native_ui.rect.set_width(width);
-  model_->native_ui.delegate = delegate;
+  model_->hosted_platform_ui.hosted_ui_enabled = enabled;
+  model_->hosted_platform_ui.rect.set_height(height);
+  model_->hosted_platform_ui.rect.set_width(width);
+  model_->hosted_platform_ui.delegate = delegate;
 }
 
 void Ui::SetAlertDialogSize(float width, float height) {
-  model_->native_ui.rect.set_height(height);
-  model_->native_ui.rect.set_width(width);
+  model_->hosted_platform_ui.rect.set_height(height);
+  model_->hosted_platform_ui.rect.set_width(width);
 }
 
 void Ui::SetDialogLocation(float x, float y) {
-  model_->native_ui.rect.set_y(y);
-  model_->native_ui.rect.set_x(x);
+  model_->hosted_platform_ui.rect.set_y(y);
+  model_->hosted_platform_ui.rect.set_x(x);
 }
 
 void Ui::SetDialogFloating() {
-  model_->native_ui.floating = true;
+  model_->hosted_platform_ui.floating = true;
+}
+
+void Ui::ShowPlatformToast(const base::string16& text) {
+  model_->platform_toast = std::make_unique<PlatformToast>(text);
+}
+
+void Ui::CancelPlatformToast() {
+  model_->platform_toast.reset();
 }
 
 bool Ui::ShouldRenderWebVr() {
@@ -268,7 +277,7 @@ void Ui::OnGlInitialized(
   model_->content_overlay_texture_id = content_overlay_texture_id;
   model_->content_location = content_location;
   model_->content_overlay_location = content_overlay_location;
-  model_->native_ui.texture_id = ui_texture_id;
+  model_->hosted_platform_ui.texture_id = ui_texture_id;
 }
 
 void Ui::RequestFocus(int element_id) {
@@ -307,7 +316,7 @@ void Ui::OnAppButtonClicked() {
     return;
   }
 
-  if (model_->native_ui.hosted_ui_enabled) {
+  if (model_->hosted_platform_ui.hosted_ui_enabled) {
     browser_->CloseHostedDialog();
     return;
   }

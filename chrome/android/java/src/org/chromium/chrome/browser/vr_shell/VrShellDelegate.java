@@ -1206,7 +1206,7 @@ public class VrShellDelegate
         maybeSetPresentResult(true, donSuceeded);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
             mUiWidgetFactoryBeforeEnterVr = UiWidgetFactory.getInstance();
-            UiWidgetFactory.setInstance(new VrUiWidgetFactory());
+            UiWidgetFactory.setInstance(new VrUiWidgetFactory(mVrShell));
         }
 
         for (VrModeObserver observer : sVrModeObservers) observer.onEnterVr();

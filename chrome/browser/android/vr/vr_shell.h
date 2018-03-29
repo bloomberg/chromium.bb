@@ -224,6 +224,12 @@ class VrShell : device::GvrGamepadDataProvider,
   void SetDialogFloating(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
+  void ShowToast(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 jstring text);
+  void CancelToast(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtr submit_client,
       device::mojom::VRPresentationProviderRequest request,

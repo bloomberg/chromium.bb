@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_MODEL_NATIVE_UI_MODEL_H_
-#define CHROME_BROWSER_VR_MODEL_NATIVE_UI_MODEL_H_
+#ifndef CHROME_BROWSER_VR_MODEL_HOSTED_PLATFORM_UI_H_
+#define CHROME_BROWSER_VR_MODEL_HOSTED_PLATFORM_UI_H_
 
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {
 typedef ContentInputDelegate* ContentInputDelegatePtr;
-struct NativeUiModel {
+struct HostedPlatformUi {
   bool hosted_ui_enabled = false;
   ContentInputDelegatePtr delegate = nullptr;
   unsigned int texture_id = 0;
@@ -20,4 +20,4 @@ struct NativeUiModel {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_MODEL_NATIVE_UI_MODEL_H_
+#endif  // CHROME_BROWSER_VR_MODEL_HOSTED_PLATFORM_UI_H_

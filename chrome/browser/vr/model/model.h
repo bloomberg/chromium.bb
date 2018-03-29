@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_VR_MODEL_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_MODEL_H_
 
+#include <memory>
+
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/controller_model.h"
+#include "chrome/browser/vr/model/hosted_platform_ui.h"
 #include "chrome/browser/vr/model/modal_prompt_type.h"
-#include "chrome/browser/vr/model/native_ui_model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
+#include "chrome/browser/vr/model/platform_toast.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/speech_recognition_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
@@ -91,7 +94,9 @@ struct Model {
   bool experimental_features_enabled = false;
   bool skips_redraw_when_not_dirty = false;
   bool exiting_vr = false;
-  NativeUiModel native_ui;
+  HostedPlatformUi hosted_platform_ui;
+
+  std::unique_ptr<const PlatformToast> platform_toast;
 };
 
 }  // namespace vr

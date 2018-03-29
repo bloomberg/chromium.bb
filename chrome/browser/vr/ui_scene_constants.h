@@ -95,10 +95,10 @@ static constexpr float kWebVrUrlToastRotationRad = gfx::DegToRad(14.0f);
 
 static constexpr float kWebVrToastDistance = 1.0f;
 static constexpr float kFullScreenToastOffsetDMM = 0.1f;
-static constexpr float kExclusiveScreenToastXPaddingDMM = 0.017f;
-static constexpr float kExclusiveScreenToastYPaddingDMM = 0.02f;
-static constexpr float kExclusiveScreenToastCornerRadiusDMM = 0.004f;
-static constexpr float kExclusiveScreenToastTextFontHeightDMM = 0.023f;
+static constexpr float kToastXPaddingDMM = 0.017f;
+static constexpr float kToastYPaddingDMM = 0.02f;
+static constexpr float kToastCornerRadiusDMM = 0.004f;
+static constexpr float kToastTextFontHeightDMM = 0.023f;
 // When changing the value here, make sure it doesn't collide with
 // kWarningAngleRadians.
 static constexpr float kWebVrAngleRadians = gfx::DegToRad(9.88f);
