@@ -466,9 +466,7 @@ exact_match:
 int drv_bo_unmap(struct bo *bo, struct mapping *mapping)
 {
 	uint32_t i;
-	int ret = drv_bo_flush(bo, mapping);
-	if (ret)
-		return ret;
+	int ret = 0;
 
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
@@ -507,7 +505,7 @@ int drv_bo_invalidate(struct bo *bo, struct mapping *mapping)
 	return ret;
 }
 
-int drv_bo_flush(struct bo *bo, struct mapping *mapping)
+int drv_bo_flush_or_unmap(struct bo *bo, struct mapping *mapping)
 {
 	int ret = 0;
 
@@ -519,6 +517,8 @@ int drv_bo_flush(struct bo *bo, struct mapping *mapping)
 
 	if (bo->drv->backend->bo_flush)
 		ret = bo->drv->backend->bo_flush(bo, mapping);
+	else
+		ret = drv_bo_unmap(bo, mapping);
 
 	return ret;
 }

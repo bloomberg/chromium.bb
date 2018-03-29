@@ -130,7 +130,7 @@ int drv_bo_unmap(struct bo *bo, struct mapping *mapping);
 
 int drv_bo_invalidate(struct bo *bo, struct mapping *mapping);
 
-int drv_bo_flush(struct bo *bo, struct mapping *mapping);
+int drv_bo_flush_or_unmap(struct bo *bo, struct mapping *mapping);
 
 uint32_t drv_bo_get_width(struct bo *bo);
 

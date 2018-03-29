@@ -90,7 +90,7 @@ int32_t cros_gralloc_buffer::unlock()
 
 	if (!--lockcount_) {
 		if (lock_data_[0]) {
-			drv_bo_flush(bo_, lock_data_[0]);
+			drv_bo_flush_or_unmap(bo_, lock_data_[0]);
 			lock_data_[0] = nullptr;
 		}
 	}
