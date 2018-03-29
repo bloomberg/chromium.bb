@@ -254,8 +254,6 @@ VariationsService::VariationsService(
       weak_ptr_factory_(this) {
   DCHECK(client_.get());
   DCHECK(resource_request_allowed_notifier_.get());
-
-  resource_request_allowed_notifier_->Init(this);
 }
 
 VariationsService::~VariationsService() {
@@ -263,6 +261,12 @@ VariationsService::~VariationsService() {
 
 void VariationsService::PerformPreMainMessageLoopStartup() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // ResourceRequestAllowedNotifier does not install an observer if there is no
+  // NetworkChangeNotifier, which results in never being notified of changes to
+  // network status.
+  DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+  resource_request_allowed_notifier_->Init(this);
 
   if (!IsFetchingEnabled())
     return;

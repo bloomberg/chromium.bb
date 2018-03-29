@@ -32,6 +32,7 @@
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/web_resource/resource_request_allowed_notifier_test_util.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -381,6 +382,7 @@ TEST_F(VariationsServiceTest, VariationsURLHasParams) {
 }
 
 TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
+  net::test::MockNetworkChangeNotifier network_change_notifier;
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
   std::unique_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
@@ -388,6 +390,7 @@ TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
   web_resource::TestRequestAllowedNotifier* raw_notifier = test_notifier.get();
   TestVariationsService test_service(std::move(test_notifier), &prefs_,
                                      GetMetricsStateManager(), true);
+  test_service.PerformPreMainMessageLoopStartup();
 
   // Force the notifier to initially disallow requests.
   raw_notifier->SetRequestsAllowedOverride(false);
@@ -770,6 +773,8 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
   prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 1);
 
   VariationsService::EnableFetchForTesting();
+
+  net::test::MockNetworkChangeNotifier network_change_notifier;
 
   // Create a variations service and perform a successful fetch.
   VariationsService service(
