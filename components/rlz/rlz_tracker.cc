@@ -23,6 +23,10 @@
 #include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/syslog_logging.h"
+#endif
+
 namespace rlz {
 namespace {
 
@@ -246,6 +250,15 @@ bool RLZTracker::Init(bool first_run,
 #endif
   }
   delegate_->GetReactivationBrand(&reactivation_brand_);
+
+#if defined(OS_CHROMEOS)
+  // If the brand is organic, RLZ is essentially disabled.  Write a log to the
+  // console for administrators and QA.
+  if (delegate_->IsBrandOrganic(brand_) &&
+      delegate_->IsBrandOrganic(reactivation_brand_)) {
+    SYSLOG(INFO) << "RLZ is disabled";
+  }
+#endif
 
   // Could be null; don't run if so.  RLZ will try again next restart.
   net::URLRequestContextGetter* context_getter = delegate_->GetRequestContext();
