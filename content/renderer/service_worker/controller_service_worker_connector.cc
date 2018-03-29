@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
@@ -24,13 +23,14 @@ ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
 }
 
 mojom::ControllerServiceWorker*
-ControllerServiceWorkerConnector::GetControllerServiceWorker() {
+ControllerServiceWorkerConnector::GetControllerServiceWorker(
+    mojom::ControllerServiceWorkerPurpose purpose) {
   switch (state_) {
     case State::kDisconnected:
       DCHECK(!controller_service_worker_);
       DCHECK(container_host_);
-      container_host_->GetControllerServiceWorker(
-          mojo::MakeRequest(&controller_service_worker_));
+      container_host_->EnsureControllerServiceWorker(
+          mojo::MakeRequest(&controller_service_worker_), purpose);
       controller_service_worker_.set_connection_error_handler(base::BindOnce(
           &ControllerServiceWorkerConnector::OnControllerConnectionClosed,
           base::Unretained(this)));

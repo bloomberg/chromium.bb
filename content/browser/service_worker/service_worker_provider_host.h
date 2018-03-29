@@ -443,8 +443,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void GetRegistrations(GetRegistrationsCallback callback) override;
   void GetRegistrationForReady(
       GetRegistrationForReadyCallback callback) override;
-  void GetControllerServiceWorker(
-      mojom::ControllerServiceWorkerRequest controller_request) override;
+  void EnsureControllerServiceWorker(
+      mojom::ControllerServiceWorkerRequest controller_request,
+      mojom::ControllerServiceWorkerPurpose purpose) override;
   void CloneForWorker(
       mojom::ServiceWorkerContainerHostRequest container_host_request) override;
 
@@ -467,6 +468,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
           registrations);
+
+  // Callback for ServiceWorkerVersion::RunAfterStartWorker()
+  void StartControllerComplete(
+      mojom::ControllerServiceWorkerRequest controller_request,
+      ServiceWorkerStatusCode status);
 
   bool IsValidRegisterMessage(
       const GURL& script_url,

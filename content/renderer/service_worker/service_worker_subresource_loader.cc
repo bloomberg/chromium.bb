@@ -231,7 +231,8 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
   mojom::ControllerServiceWorker* controller =
-      controller_connector_->GetControllerServiceWorker();
+      controller_connector_->GetControllerServiceWorker(
+          mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
   // When |controller| is null, the network request will be aborted soon since
   // the network provider has already been discarded. In that case, We don't
   // need to return an error as the client must be shutting down.

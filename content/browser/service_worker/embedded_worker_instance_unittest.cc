@@ -87,8 +87,9 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
       GetRegistrationForReadyCallback callback) override {
     NOTIMPLEMENTED();
   }
-  void GetControllerServiceWorker(
-      mojom::ControllerServiceWorkerRequest request) override {
+  void EnsureControllerServiceWorker(
+      mojom::ControllerServiceWorkerRequest request,
+      mojom::ControllerServiceWorkerPurpose purpose) override {
     NOTIMPLEMENTED();
   }
   void CloneForWorker(

@@ -302,8 +302,9 @@ class FakeServiceWorkerContainerHost
       GetRegistrationForReadyCallback callback) override {
     NOTIMPLEMENTED();
   }
-  void GetControllerServiceWorker(
-      mojom::ControllerServiceWorkerRequest request) override {
+  void EnsureControllerServiceWorker(
+      mojom::ControllerServiceWorkerRequest request,
+      mojom::ControllerServiceWorkerPurpose purpose) override {
     get_controller_service_worker_count_++;
     if (!fake_controller_)
       return;
