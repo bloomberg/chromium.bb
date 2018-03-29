@@ -34,6 +34,7 @@
 #include "net/cert/known_roots_nss.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
+#include "net/cert_net/nss_ocsp.h"
 
 #include <dlfcn.h>
 
@@ -828,6 +829,10 @@ int CertVerifyProcNSS::VerifyInternalImpl(
     const CertificateList& additional_trust_anchors,
     CERTChainVerifyCallback* chain_verify_callback,
     CertVerifyResult* verify_result) {
+  crypto::EnsureNSSInit();
+  if (flags & CertVerifier::VERIFY_CERT_IO_ENABLED)
+    EnsureNSSHttpIOInit();
+
   // Convert the whole input chain into NSS certificates. Even though only the
   // target cert is explicitly referred to in this function, creating NSS
   // certificates for the intermediates is required for PKIXVerifyCert to find

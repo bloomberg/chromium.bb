@@ -102,7 +102,6 @@ class NssHttpTest : public ::testing::Test {
                                                             std::move(handler));
 
     SetURLRequestContextForNSSHttpIO(&context_);
-    EnsureNSSHttpIOInit();
   }
 
   void TearDown() override {
