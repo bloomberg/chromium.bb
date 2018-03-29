@@ -358,7 +358,7 @@ manually construct an instance of your object to [extending RenderingTest][]
 where you can load HTML, [enable compositing][] if necessary, and run assertions
 about the state.
 
-[extending Test]: https://cs.chromium.org/search/?q=public%5C+::testing::Test+file:core%5C/Animation&sq=package:chromium&type=cs
+[extending Test]: https://cs.chromium.org/search/?q=public%5C+testing::Test+file:core%5C/Animation&sq=package:chromium&type=cs
 [extending RenderingTest]: https://cs.chromium.org/search/?q=public%5C+RenderingTest+file:core%5C/animation&type=cs
 [enable compositing]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/animation/CompositorAnimationsTest.cpp?type=cs&sq=package:chromium&q=file:core%5C/animation%5C/.*Test%5C.cpp+EnableCompositing
 

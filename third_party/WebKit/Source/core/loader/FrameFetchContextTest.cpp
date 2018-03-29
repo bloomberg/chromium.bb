@@ -68,7 +68,7 @@
 
 namespace blink {
 
-using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 
 class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
@@ -132,7 +132,7 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
   bool is_associated_with_ad_subframe_;
 };
 
-class FrameFetchContextTest : public ::testing::Test {
+class FrameFetchContextTest : public testing::Test {
  protected:
   void SetUp() override { RecreateFetchContext(); }
 
@@ -274,7 +274,7 @@ class FrameFetchContextMockedLocalFrameClientTest
     http_url = KURL("http://example.test/foo");
     main_resource_url = KURL("https://example.test");
     different_host_url = KURL("https://different.example.test/foo");
-    client = new ::testing::NiceMock<FrameFetchContextMockLocalFrameClient>();
+    client = new testing::NiceMock<FrameFetchContextMockLocalFrameClient>();
     dummy_page_holder =
         DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
@@ -291,7 +291,7 @@ class FrameFetchContextMockedLocalFrameClientTest
   KURL main_resource_url;
   KURL different_host_url;
 
-  Persistent<::testing::NiceMock<FrameFetchContextMockLocalFrameClient>> client;
+  Persistent<testing::NiceMock<FrameFetchContextMockLocalFrameClient>> client;
 };
 
 class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
@@ -972,8 +972,8 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
 
   int index = 0;
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message() << index++ << " " << test.document_url
-                                      << " => " << test.serialized_origin);
+    SCOPED_TRACE(testing::Message() << index++ << " " << test.document_url
+                                    << " => " << test.serialized_origin);
     // Set up a new document to ensure sandbox flags are cleared:
     dummy_page_holder = DummyPageHolder::Create(IntSize(500, 500));
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
@@ -1130,16 +1130,16 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(resource_request);
-  EXPECT_CALL(*client,
-              DispatchDidLoadResourceFromMemoryCache(
-                  ::testing::AllOf(
-                      ::testing::Property(&ResourceRequest::Url, url),
-                      ::testing::Property(
-                          &ResourceRequest::GetFrameType,
-                          network::mojom::RequestContextFrameType::kNone),
-                      ::testing::Property(&ResourceRequest::GetRequestContext,
-                                          WebURLRequest::kRequestContextImage)),
-                  ResourceResponse()));
+  EXPECT_CALL(
+      *client,
+      DispatchDidLoadResourceFromMemoryCache(
+          testing::AllOf(
+              testing::Property(&ResourceRequest::Url, url),
+              testing::Property(&ResourceRequest::GetFrameType,
+                                network::mojom::RequestContextFrameType::kNone),
+              testing::Property(&ResourceRequest::GetRequestContext,
+                                WebURLRequest::kRequestContextImage)),
+          ResourceResponse()));
   fetch_context->DispatchDidLoadResourceFromMemoryCache(
       CreateUniqueIdentifier(), resource_request, resource->GetResponse());
 }
@@ -1359,7 +1359,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   Checkpoint checkpoint;
 
   EXPECT_CALL(checkpoint, Call(1));
-  EXPECT_CALL(*client, UserAgent()).WillOnce(::testing::Return(String("hi")));
+  EXPECT_CALL(*client, UserAgent()).WillOnce(testing::Return(String("hi")));
   EXPECT_CALL(checkpoint, Call(2));
 
   checkpoint.Call(1);
@@ -1633,7 +1633,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        ClientLoFiInterventionHeader) {
   // Verify header not added if Lo-Fi not active.
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(::testing::Return(WebURLRequest::kPreviewsOff));
+      .WillRepeatedly(testing::Return(WebURLRequest::kPreviewsOff));
   ResourceRequest resource_request("http://www.example.com/style.css");
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchMainResource);
@@ -1641,7 +1641,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
   // Verify header is added if Lo-Fi is active.
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(::testing::Return(WebURLRequest::kClientLoFiOn));
+      .WillRepeatedly(testing::Return(WebURLRequest::kClientLoFiOn));
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchSubresource);
   EXPECT_EQ(
@@ -1667,7 +1667,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        NoScriptInterventionHeader) {
   // Verify header not added if NoScript not active.
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(::testing::Return(WebURLRequest::kPreviewsOff));
+      .WillRepeatedly(testing::Return(WebURLRequest::kPreviewsOff));
   ResourceRequest resource_request("http://www.example.com/style.css");
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchMainResource);
@@ -1675,7 +1675,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
   // Verify header is added if NoScript is active.
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(::testing::Return(WebURLRequest::kNoScriptOn));
+      .WillRepeatedly(testing::Return(WebURLRequest::kNoScriptOn));
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchSubresource);
   EXPECT_EQ(

@@ -10,8 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
-using ::testing::_;
-using ::testing::Mock;
+using testing::_;
+using testing::Mock;
 
 namespace blink {
 
@@ -25,7 +25,7 @@ class MockOffscreenCanvasFrameDispatcherImpl
                void(scoped_refptr<StaticBitmapImage>, unsigned resource_id));
 };
 
-class OffscreenCanvasFrameDispatcherImplTest : public ::testing::Test {
+class OffscreenCanvasFrameDispatcherImplTest : public testing::Test {
  public:
   void DispatchOneFrame();
   OffscreenCanvasResourceProvider* GetResourceProvider() {

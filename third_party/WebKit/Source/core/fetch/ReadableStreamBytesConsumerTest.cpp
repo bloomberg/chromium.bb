@@ -23,9 +23,9 @@ namespace blink {
 
 namespace {
 
-using ::testing::InSequence;
-using ::testing::StrictMock;
-using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
+using testing::InSequence;
+using testing::StrictMock;
+using Checkpoint = StrictMock<testing::MockFunction<void(int)>>;
 using Result = BytesConsumer::Result;
 using PublicState = BytesConsumer::PublicState;
 
@@ -44,7 +44,7 @@ class MockClient : public GarbageCollectedFinalized<MockClient>,
   MockClient() = default;
 };
 
-class ReadableStreamBytesConsumerTest : public ::testing::Test {
+class ReadableStreamBytesConsumerTest : public testing::Test {
  public:
   ReadableStreamBytesConsumerTest() : page_(DummyPageHolder::Create()) {}
 

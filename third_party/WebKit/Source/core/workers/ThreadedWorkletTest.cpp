@@ -201,7 +201,7 @@ class ThreadedWorkletMessagingProxyForTest
   }
 };
 
-class ThreadedWorkletTest : public ::testing::Test {
+class ThreadedWorkletTest : public testing::Test {
  public:
   void SetUp() override {
     page_ = DummyPageHolder::Create();

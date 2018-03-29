@@ -123,20 +123,20 @@ scoped_refptr<SerializedScriptValue> SerializedValue(
 }
 
 // Checks for a DOM exception, including a rethrown one.
-::testing::AssertionResult HadDOMExceptionInCoreTest(
+testing::AssertionResult HadDOMExceptionInCoreTest(
     const StringView& name,
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!exception_state.HadException())
-    return ::testing::AssertionFailure() << "no exception thrown";
+    return testing::AssertionFailure() << "no exception thrown";
   DOMException* dom_exception = V8DOMException::ToImplWithTypeCheck(
       script_state->GetIsolate(), exception_state.GetException());
   if (!dom_exception)
-    return ::testing::AssertionFailure()
+    return testing::AssertionFailure()
            << "exception thrown was not a DOMException";
   if (dom_exception->name() != name)
-    return ::testing::AssertionFailure() << "was " << dom_exception->name();
-  return ::testing::AssertionSuccess();
+    return testing::AssertionFailure() << "was " << dom_exception->name();
+  return testing::AssertionSuccess();
 }
 
 namespace {
@@ -982,7 +982,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
                   ->readPixels(SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType,
                                                  kPremul_SkAlphaType),
                                &pixel, 4, 3, 3));
-  ASSERT_THAT(pixel, ::testing::ElementsAre(255, 0, 0, 255));
+  ASSERT_THAT(pixel, testing::ElementsAre(255, 0, 0, 255));
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
@@ -1070,7 +1070,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
                   ->readPixels(SkImageInfo::Make(2, 1, kRGBA_8888_SkColorType,
                                                  kPremul_SkAlphaType),
                                &pixels, 8, 0, 0));
-  ASSERT_THAT(pixels, ::testing::ElementsAre(255, 0, 0, 255, 0, 255, 0, 255));
+  ASSERT_THAT(pixels, testing::ElementsAre(255, 0, 0, 255, 0, 255, 0, 255));
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeImageBitmapV18) {
@@ -1105,8 +1105,8 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmapV18) {
                   ->readPixels(info, &pixel, 8, 1, 0));
   // The reference values are the hex representation of red in P3 (as stored
   // in half floats by Skia).
-  ASSERT_THAT(pixel, ::testing::ElementsAre(0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24,
-                                            0x0, 0x3C));
+  ASSERT_THAT(pixel, testing::ElementsAre(0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24,
+                                          0x0, 0x3C));
 }
 
 TEST(V8ScriptValueSerializerTest, InvalidImageBitmapDecode) {
@@ -1245,7 +1245,7 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
   ASSERT_TRUE(new_image->readPixels(
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
       &pixel, 4, 3, 3));
-  ASSERT_THAT(pixel, ::testing::ElementsAre(255, 0, 0, 255));
+  ASSERT_THAT(pixel, testing::ElementsAre(255, 0, 0, 255));
 
   // Check also that the underlying image contents were transferred.
   EXPECT_EQ(image, new_image);

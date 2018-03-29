@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class MediaListDirectiveTest : public ::testing::Test {
+class MediaListDirectiveTest : public testing::Test {
  public:
   MediaListDirectiveTest() : csp(ContentSecurityPolicy::Create()) {}
 

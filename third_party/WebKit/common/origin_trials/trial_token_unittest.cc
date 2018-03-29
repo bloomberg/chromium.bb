@@ -734,7 +734,7 @@ TEST_P(TrialTokenTest, ParseInvalidString) {
   EXPECT_FALSE(empty_token) << "Invalid trial token should not parse.";
 }
 
-INSTANTIATE_TEST_CASE_P(, TrialTokenTest, ::testing::ValuesIn(kInvalidTokens));
+INSTANTIATE_TEST_CASE_P(, TrialTokenTest, testing::ValuesIn(kInvalidTokens));
 
 TEST_F(TrialTokenTest, ParseValidToken) {
   std::unique_ptr<TrialToken> token = Parse(kSampleTokenJSON);

@@ -22,7 +22,7 @@
 
 namespace blink {
 
-class ContentSecurityPolicyTest : public ::testing::Test {
+class ContentSecurityPolicyTest : public testing::Test {
  public:
   ContentSecurityPolicyTest()
       : csp(ContentSecurityPolicy::Create()),
@@ -59,7 +59,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
   // Enforced
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "[Enforce] Header: `" << test.header << "`");
     csp = ContentSecurityPolicy::Create();
     csp->DidReceiveHeader(test.header, kContentSecurityPolicyHeaderTypeEnforce,
@@ -80,7 +80,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
   // Report-Only
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "[Report-Only] Header: `" << test.header << "`");
     csp = ContentSecurityPolicy::Create();
     csp->DidReceiveHeader(test.header, kContentSecurityPolicyHeaderTypeReport,
@@ -682,7 +682,7 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "Policy: `" << test.policy << "`, URL: `" << test.url
                  << "`, Nonce: `" << test.nonce << "`");
     const KURL resource(test.url);
@@ -742,8 +742,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   document->SetSecurityOrigin(secure_origin);
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message() << "Policy: `" << test.policy
-                                      << "`, Nonce: `" << test.nonce << "`");
+    SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy
+                                    << "`, Nonce: `" << test.nonce << "`");
 
     unsigned expected_reports = test.allowed ? 0u : 1u;
     auto* element =
@@ -846,9 +846,9 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message() << "Policy: `" << test.policy1 << "`/`"
-                                      << test.policy2 << "`, URL: `" << test.url
-                                      << "`, Nonce: `" << test.nonce << "`");
+    SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy1 << "`/`"
+                                    << test.policy2 << "`, URL: `" << test.url
+                                    << "`, Nonce: `" << test.nonce << "`");
     const KURL resource(test.url);
 
     unsigned expected_reports =

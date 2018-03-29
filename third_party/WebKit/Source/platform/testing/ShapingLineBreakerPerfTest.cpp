@@ -42,7 +42,7 @@ LayoutUnit ShapeText(ShapingLineBreaker* breaker,
 
 }  // anonymous namespace
 
-class ShapingLineBreakerPerfTest : public ::testing::Test {
+class ShapingLineBreakerPerfTest : public testing::Test {
  public:
   ShapingLineBreakerPerfTest()
       : timer_(kWarmupRuns,

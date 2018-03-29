@@ -32,7 +32,7 @@ using blink::URLTestHelpers::ToKURL;
 const char kDefaultOrigin[] = "https://example.test/";
 const char kManifestDummyFilePath[] = "manifest-dummy.html";
 
-class WebDocumentTest : public ::testing::Test {
+class WebDocumentTest : public testing::Test {
  protected:
   static void SetUpTestCase();
 

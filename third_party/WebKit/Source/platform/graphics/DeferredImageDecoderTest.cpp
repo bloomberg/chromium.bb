@@ -78,7 +78,7 @@ const unsigned char kWhiteGIF[] = {
 
 }  // namespace
 
-class DeferredImageDecoderTest : public ::testing::Test,
+class DeferredImageDecoderTest : public testing::Test,
                                  public MockImageDecoderClient {
  public:
   void SetUp() override {

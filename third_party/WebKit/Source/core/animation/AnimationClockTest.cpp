@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class AnimationAnimationClockTest : public ::testing::Test {
+class AnimationAnimationClockTest : public testing::Test {
  public:
   AnimationAnimationClockTest() : animation_clock(MockTimeFunction) {}
 

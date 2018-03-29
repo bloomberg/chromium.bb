@@ -19,7 +19,7 @@
 
 namespace blink {
 
-class WorkerModuleFetchCoordinatorTest : public ::testing::Test {
+class WorkerModuleFetchCoordinatorTest : public testing::Test {
  public:
   WorkerModuleFetchCoordinatorTest() = default;
 

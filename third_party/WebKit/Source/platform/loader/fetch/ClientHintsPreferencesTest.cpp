@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class ClientHintsPreferencesTest : public ::testing::Test {};
+class ClientHintsPreferencesTest : public testing::Test {};
 
 TEST_F(ClientHintsPreferencesTest, BasicSecure) {
   struct TestCase {

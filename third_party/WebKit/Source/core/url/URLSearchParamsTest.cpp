@@ -8,7 +8,7 @@
 
 namespace blink {
 
-using URLSearchParamsTest = ::testing::Test;
+using URLSearchParamsTest = testing::Test;
 
 TEST_F(URLSearchParamsTest, ToEncodedFormData) {
   URLSearchParams* params = URLSearchParams::Create(String());

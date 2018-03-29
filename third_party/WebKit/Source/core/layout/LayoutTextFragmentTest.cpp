@@ -43,7 +43,7 @@ class LayoutTextFragmentTest : public RenderingTest {
 
 // Helper class to run the same test code with and without LayoutNG
 class ParameterizedLayoutTextFragmentTest
-    : public ::testing::WithParamInterface<bool>,
+    : public testing::WithParamInterface<bool>,
       private ScopedLayoutNGForTest,
       public LayoutTextFragmentTest {
  public:
@@ -55,7 +55,7 @@ class ParameterizedLayoutTextFragmentTest
 
 INSTANTIATE_TEST_CASE_P(All,
                         ParameterizedLayoutTextFragmentTest,
-                        ::testing::Bool());
+                        testing::Bool());
 
 TEST_P(ParameterizedLayoutTextFragmentTest, Basics) {
   SetBasicBody("foo");

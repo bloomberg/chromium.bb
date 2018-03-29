@@ -19,7 +19,7 @@ class MockWebCrypto : public WebCrypto {
 
   static std::unique_ptr<MockWebCrypto> Create() {
     return std::unique_ptr<MockWebCrypto>(
-        new ::testing::StrictMock<MockWebCrypto>());
+        new testing::StrictMock<MockWebCrypto>());
   }
 
   MOCK_METHOD5(Encrypt,
@@ -131,7 +131,7 @@ class MockWebCryptoDigestor : public WebCryptoDigestor {
   ~MockWebCryptoDigestor() override = default;
 
   static MockWebCryptoDigestor* Create() {
-    return new ::testing::StrictMock<MockWebCryptoDigestor>();
+    return new testing::StrictMock<MockWebCryptoDigestor>();
   }
 
   void ExpectConsumeAndFinish(const void* input_data,

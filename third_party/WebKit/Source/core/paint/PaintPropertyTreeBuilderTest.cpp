@@ -123,10 +123,9 @@ void PaintPropertyTreeBuilderTest::SetUp() {
 #define CHECK_EXACT_VISUAL_RECT(expected, source_object, ancestor) \
   CHECK_VISUAL_RECT(expected, source_object, ancestor, 0)
 
-INSTANTIATE_TEST_CASE_P(
-    All,
-    PaintPropertyTreeBuilderTest,
-    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        PaintPropertyTreeBuilderTest,
+                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   LoadTestData("fixed-position.html");

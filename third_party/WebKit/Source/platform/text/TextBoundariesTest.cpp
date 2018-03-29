@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class TextBoundariesTest : public ::testing::Test {};
+class TextBoundariesTest : public testing::Test {};
 
 namespace {
 

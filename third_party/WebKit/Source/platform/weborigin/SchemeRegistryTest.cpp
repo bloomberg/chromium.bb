@@ -12,7 +12,7 @@ namespace {
 const char kTestScheme[] = "test-scheme";
 const char kTestScheme2[] = "test-scheme-2";
 
-class SchemeRegistryTest : public ::testing::Test {
+class SchemeRegistryTest : public testing::Test {
   void TearDown() override {
     SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
         kTestScheme);

@@ -19,7 +19,7 @@ namespace blink {
 typedef bool TestParamRootLayerScrolling;
 class DataTransferTest
     : public RenderingTest,
-      public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+      public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest {
  public:
   DataTransferTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
@@ -32,7 +32,7 @@ class DataTransferTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, DataTransferTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, DataTransferTest, testing::Bool());
 
 TEST_P(DataTransferTest, NodeImage) {
   SetBodyInnerHTML(R"HTML(

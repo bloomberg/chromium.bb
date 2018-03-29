@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class AdTrackerTest : public ::testing::Test {
+class AdTrackerTest : public testing::Test {
  protected:
   void SetUp() override;
   void TearDown() override;

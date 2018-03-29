@@ -40,7 +40,7 @@ struct TaskTiming {
   TaskTiming(double start, double end) : start(start), end(end) {}
 };
 
-class InteractiveDetectorTest : public ::testing::Test {
+class InteractiveDetectorTest : public testing::Test {
  public:
   InteractiveDetectorTest() {
     platform_->AdvanceClockSeconds(1);

@@ -947,14 +947,14 @@ TEST_F(DocumentTest, InterfaceInvalidatorDestruction) {
 
 typedef bool TestParamRootLayerScrolling;
 class ParameterizedDocumentTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public DocumentTest {
  public:
   ParameterizedDocumentTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedDocumentTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ParameterizedDocumentTest, testing::Bool());
 
 // Android does not support non-overlay top-level scrollbars.
 #if !defined(OS_ANDROID)

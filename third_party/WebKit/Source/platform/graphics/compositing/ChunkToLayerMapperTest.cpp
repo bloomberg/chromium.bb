@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class ChunkToLayerMapperTest : public ::testing::Test {
+class ChunkToLayerMapperTest : public testing::Test {
  protected:
   static PaintChunk Chunk(const PropertyTreeState& state) {
     DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());

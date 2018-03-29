@@ -39,10 +39,10 @@ namespace WTF {
 namespace {
 
 template <typename Set>
-class ListOrLinkedHashSetTest : public ::testing::Test {};
+class ListOrLinkedHashSetTest : public testing::Test {};
 
 using SetTypes =
-    ::testing::Types<ListHashSet<int>, ListHashSet<int, 1>, LinkedHashSet<int>>;
+    testing::Types<ListHashSet<int>, ListHashSet<int, 1>, LinkedHashSet<int>>;
 TYPED_TEST_CASE(ListOrLinkedHashSetTest, SetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
@@ -404,12 +404,12 @@ class DummyRefCounted : public RefCounted<DummyRefCounted> {
 int DummyRefCounted::ref_invokes_count_ = 0;
 
 template <typename Set>
-class ListOrLinkedHashSetRefPtrTest : public ::testing::Test {};
+class ListOrLinkedHashSetRefPtrTest : public testing::Test {};
 
 using RefPtrSetTypes =
-    ::testing::Types<ListHashSet<scoped_refptr<DummyRefCounted>>,
-                     ListHashSet<scoped_refptr<DummyRefCounted>, 1>,
-                     LinkedHashSet<scoped_refptr<DummyRefCounted>>>;
+    testing::Types<ListHashSet<scoped_refptr<DummyRefCounted>>,
+                   ListHashSet<scoped_refptr<DummyRefCounted>, 1>,
+                   LinkedHashSet<scoped_refptr<DummyRefCounted>>>;
 TYPED_TEST_CASE(ListOrLinkedHashSetRefPtrTest, RefPtrSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
@@ -516,12 +516,12 @@ struct ComplexityTranslator {
 };
 
 template <typename Set>
-class ListOrLinkedHashSetTranslatorTest : public ::testing::Test {};
+class ListOrLinkedHashSetTranslatorTest : public testing::Test {};
 
 using TranslatorSetTypes =
-    ::testing::Types<ListHashSet<Complicated, 256, ComplicatedHashFunctions>,
-                     ListHashSet<Complicated, 1, ComplicatedHashFunctions>,
-                     LinkedHashSet<Complicated, ComplicatedHashFunctions>>;
+    testing::Types<ListHashSet<Complicated, 256, ComplicatedHashFunctions>,
+                   ListHashSet<Complicated, 1, ComplicatedHashFunctions>,
+                   LinkedHashSet<Complicated, ComplicatedHashFunctions>>;
 TYPED_TEST_CASE(ListOrLinkedHashSetTranslatorTest, TranslatorSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTranslatorTest, ComplexityTranslator) {
@@ -623,11 +623,11 @@ TEST(ListHashSetTest, WithOwnPtr) {
 }
 
 template <typename Set>
-class ListOrLinkedHashSetCountCopyTest : public ::testing::Test {};
+class ListOrLinkedHashSetCountCopyTest : public testing::Test {};
 
-using CountCopySetTypes = ::testing::Types<ListHashSet<CountCopy>,
-                                           ListHashSet<CountCopy, 1>,
-                                           LinkedHashSet<CountCopy>>;
+using CountCopySetTypes = testing::Types<ListHashSet<CountCopy>,
+                                         ListHashSet<CountCopy, 1>,
+                                         LinkedHashSet<CountCopy>>;
 TYPED_TEST_CASE(ListOrLinkedHashSetCountCopyTest, CountCopySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetCountCopyTest,
@@ -655,11 +655,11 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy) {
 }
 
 template <typename Set>
-class ListOrLinkedHashSetMoveOnlyTest : public ::testing::Test {};
+class ListOrLinkedHashSetMoveOnlyTest : public testing::Test {};
 
-using MoveOnlySetTypes = ::testing::Types<ListHashSet<MoveOnlyHashValue>,
-                                          ListHashSet<MoveOnlyHashValue, 1>,
-                                          LinkedHashSet<MoveOnlyHashValue>>;
+using MoveOnlySetTypes = testing::Types<ListHashSet<MoveOnlyHashValue>,
+                                        ListHashSet<MoveOnlyHashValue, 1>,
+                                        LinkedHashSet<MoveOnlyHashValue>>;
 TYPED_TEST_CASE(ListOrLinkedHashSetMoveOnlyTest, MoveOnlySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {

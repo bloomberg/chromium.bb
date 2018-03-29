@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class LocaleICUTest : public ::testing::Test {
+class LocaleICUTest : public testing::Test {
  public:
   // Labels class is used for printing results in EXPECT_EQ macro.
   class Labels {

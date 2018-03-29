@@ -24,18 +24,18 @@ namespace blink {
 
 namespace {
 
-using ::testing::ByMove;
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::_;
-using ::testing::SaveArg;
-using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+using testing::ByMove;
+using testing::InSequence;
+using testing::Return;
+using testing::_;
+using testing::SaveArg;
+using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 using BytesConsumerCommand = BytesConsumerTestUtil::Command;
 using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 using MockFetchDataLoaderClient =
     BytesConsumerTestUtil::MockFetchDataLoaderClient;
 
-class BodyStreamBufferTest : public ::testing::Test {
+class BodyStreamBufferTest : public testing::Test {
  protected:
   ScriptValue Eval(ScriptState* script_state, const char* s) {
     v8::Local<v8::String> source;
@@ -74,8 +74,8 @@ class MockFetchDataLoader : public FetchDataLoader {
   // Cancel() gets called during garbage collection after the test is
   // finished. Since most tests don't care about this, use NiceMock so that the
   // calls to Cancel() are ignored.
-  static ::testing::NiceMock<MockFetchDataLoader>* Create() {
-    return new ::testing::NiceMock<MockFetchDataLoader>();
+  static testing::NiceMock<MockFetchDataLoader>* Create() {
+    return new testing::NiceMock<MockFetchDataLoader>();
   }
 
   MOCK_METHOD2(Start, void(BytesConsumer*, FetchDataLoader::Client*));

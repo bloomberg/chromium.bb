@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class WorkletModuleResponsesMapTest : public ::testing::Test {
+class WorkletModuleResponsesMapTest : public testing::Test {
  public:
   WorkletModuleResponsesMapTest() = default;
 

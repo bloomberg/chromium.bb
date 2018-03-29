@@ -18,12 +18,12 @@ namespace blink {
 namespace {
 
 using DataConsumerCommand = DataConsumerHandleTestUtil::Command;
-using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
-using ::testing::ByMove;
-using ::testing::InSequence;
-using ::testing::Return;
+using testing::ByMove;
+using testing::InSequence;
+using testing::Return;
 
 class BytesConsumerForDataConsumerHandleTest : public PageTestBase {
  protected:
@@ -40,7 +40,7 @@ class MockBytesConsumerClient
 
  public:
   static MockBytesConsumerClient* Create() {
-    return new ::testing::StrictMock<MockBytesConsumerClient>();
+    return new testing::StrictMock<MockBytesConsumerClient>();
   }
   MOCK_METHOD0(OnStateChange, void());
   String DebugName() const override { return "MockBytesConsumerClient"; }

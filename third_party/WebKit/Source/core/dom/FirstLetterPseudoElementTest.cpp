@@ -8,7 +8,7 @@
 
 namespace blink {
 
-class FirstLetterPseudoElementTest : public ::testing::Test {};
+class FirstLetterPseudoElementTest : public testing::Test {};
 
 TEST_F(FirstLetterPseudoElementTest, DoesNotBreakEmoji) {
   const UChar emoji[] = {0xD83D, 0xDE31, 0};

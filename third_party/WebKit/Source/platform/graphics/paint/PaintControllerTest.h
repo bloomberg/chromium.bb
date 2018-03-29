@@ -16,7 +16,7 @@ namespace blink {
 
 class GraphicsContext;
 
-class PaintControllerTestBase : public ::testing::Test {
+class PaintControllerTestBase : public testing::Test {
  public:
   PaintControllerTestBase()
       : root_paint_property_client_("root"),

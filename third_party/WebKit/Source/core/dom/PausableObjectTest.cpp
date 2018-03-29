@@ -56,7 +56,7 @@ class MockPausableObject final
   MOCK_METHOD1(ContextDestroyed, void(ExecutionContext*));
 };
 
-class PausableObjectTest : public ::testing::Test {
+class PausableObjectTest : public testing::Test {
  protected:
   PausableObjectTest();
 

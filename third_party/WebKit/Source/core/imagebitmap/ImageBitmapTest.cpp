@@ -59,7 +59,7 @@ namespace blink {
 
 class ExceptionState;
 
-class ImageBitmapTest : public ::testing::Test {
+class ImageBitmapTest : public testing::Test {
  protected:
   virtual void SetUp() {
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);

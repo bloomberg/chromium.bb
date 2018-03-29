@@ -89,15 +89,13 @@ class NGOffsetMappingTest : public NGLayoutTest {
 
 // TODO(layout-dev): Remove this unused parameterization.
 class ParameterizedNGOffsetMappingTest
-    : public ::testing::WithParamInterface<bool>,
+    : public testing::WithParamInterface<bool>,
       public NGOffsetMappingTest {
  public:
   ParameterizedNGOffsetMappingTest() {}
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedNGOffsetMappingTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ParameterizedNGOffsetMappingTest, testing::Bool());
 
 #define TEST_UNIT(unit, type, owner, dom_start, dom_end, text_content_start, \
                   text_content_end)                                          \

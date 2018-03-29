@@ -17,7 +17,7 @@ namespace blink {
 
 typedef bool TestParamRootLayerScrolling;
 class CompositedLayerMappingTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  public:
@@ -62,7 +62,7 @@ class CompositedLayerMappingTest
   void TearDown() override { RenderingTest::TearDown(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, CompositedLayerMappingTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, CompositedLayerMappingTest, testing::Bool());
 
 TEST_P(CompositedLayerMappingTest, SubpixelAccumulationChange) {
   SetBodyInnerHTML(

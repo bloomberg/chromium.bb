@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class ScriptedAnimationControllerTest : public ::testing::Test {
+class ScriptedAnimationControllerTest : public testing::Test {
  protected:
   void SetUp() override;
 

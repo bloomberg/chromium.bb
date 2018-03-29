@@ -38,12 +38,12 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 class NGLogicalRectUniteTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<LogicalRectUniteTestData> {};
+    : public testing::Test,
+      public testing::WithParamInterface<LogicalRectUniteTestData> {};
 
 INSTANTIATE_TEST_CASE_P(NGGeometryUnitsTest,
                         NGLogicalRectUniteTest,
-                        ::testing::ValuesIn(logical_rect_unite_test_data));
+                        testing::ValuesIn(logical_rect_unite_test_data));
 
 TEST_P(NGLogicalRectUniteTest, Data) {
   const auto& data = GetParam();

@@ -57,9 +57,9 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message() << "Origin: " << test.origin
-                                      << ", Target: " << test.target
-                                      << ", Expectation: " << test.expectation);
+    SCOPED_TRACE(testing::Message()
+                 << "Origin: " << test.origin << ", Target: " << test.target
+                 << ", Expectation: " << test.expectation);
     KURL origin_url(NullURL(), test.origin);
     scoped_refptr<const SecurityOrigin> security_origin(
         SecurityOrigin::Create(origin_url));

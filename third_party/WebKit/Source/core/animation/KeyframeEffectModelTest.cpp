@@ -583,7 +583,7 @@ TEST_F(AnimationKeyframeEffectModel, ToKeyframeEffectModel) {
 
 namespace blink {
 
-class KeyframeEffectModelTest : public ::testing::Test {
+class KeyframeEffectModelTest : public testing::Test {
  public:
   static Vector<double> GetComputedOffsets(const KeyframeVector& keyframes) {
     return KeyframeEffectModelBase::GetComputedOffsets(keyframes);

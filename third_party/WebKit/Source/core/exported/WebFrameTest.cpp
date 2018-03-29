@@ -168,9 +168,9 @@
 using blink::URLTestHelpers::ToKURL;
 using blink::mojom::SelectionMenuBehavior;
 using blink::test::RunPendingTasks;
-using ::testing::ElementsAre;
-using ::testing::Mock;
-using ::testing::_;
+using testing::ElementsAre;
+using testing::Mock;
+using testing::_;
 
 namespace blink {
 
@@ -184,7 +184,7 @@ namespace blink {
 
 const int kTouchPointPadding = 32;
 
-class WebFrameTest : public ::testing::Test {
+class WebFrameTest : public testing::Test {
  protected:
   WebFrameTest()
       : base_url_("http://internal.test/"),
@@ -350,14 +350,14 @@ class WebFrameTest : public ::testing::Test {
 
 typedef bool TestParamRootLayerScrolling;
 class ParameterizedWebFrameTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public WebFrameTest {
  public:
   ParameterizedWebFrameTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedWebFrameTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ParameterizedWebFrameTest, testing::Bool());
 
 TEST_P(ParameterizedWebFrameTest, ContentText) {
   RegisterMockedHttpURLLoad("iframes_test.html");
@@ -898,7 +898,7 @@ void CSSCallbackWebFrameClient::DidMatchCSS(
   }
 }
 
-class WebFrameCSSCallbackTest : public ::testing::Test {
+class WebFrameCSSCallbackTest : public testing::Test {
  protected:
   WebFrameCSSCallbackTest() {
     frame_ = helper_.InitializeAndLoad("about:blank", &client_)
@@ -3279,7 +3279,7 @@ class WebFrameResizeTest : public ParameterizedWebFrameTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, WebFrameResizeTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, WebFrameResizeTest, testing::Bool());
 
 TEST_P(WebFrameResizeTest,
        ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth) {
@@ -6417,7 +6417,7 @@ class CompositedSelectionBoundsTest
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, CompositedSelectionBoundsTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, CompositedSelectionBoundsTest, testing::Bool());
 
 TEST_P(CompositedSelectionBoundsTest, None) {
   RunTestWithNoSelection("composited_selection_bounds_none.html");
@@ -9267,7 +9267,7 @@ class WebFrameSwapTest : public ParameterizedWebFrameTest {
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, WebFrameSwapTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, WebFrameSwapTest, testing::Bool());
 
 TEST_P(WebFrameSwapTest, SwapMainFrame) {
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
@@ -10292,7 +10292,7 @@ class DeviceEmulationTest : public ParameterizedWebFrameTest {
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, DeviceEmulationTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, DeviceEmulationTest, testing::Bool());
 
 TEST_P(DeviceEmulationTest, DeviceSizeInvalidatedOnResize) {
   WebDeviceEmulationParams params;
@@ -10458,7 +10458,7 @@ class OverscrollWebViewClient : public FrameTestHelpers::TestWebViewClient {
 typedef std::pair<bool, blink::WebGestureDevice> WebFrameOverscrollTestParam;
 class WebFrameOverscrollTest
     : public WebFrameTest,
-      public ::testing::WithParamInterface<WebFrameOverscrollTestParam>,
+      public testing::WithParamInterface<WebFrameOverscrollTestParam>,
       private ScopedRootLayerScrollingForTest {
  public:
   WebFrameOverscrollTest()
@@ -10508,7 +10508,7 @@ class WebFrameOverscrollTest
 INSTANTIATE_TEST_CASE_P(
     All,
     WebFrameOverscrollTest,
-    ::testing::Values(
+    testing::Values(
         WebFrameOverscrollTestParam(false, kWebGestureDeviceTouchpad),
         WebFrameOverscrollTestParam(false, kWebGestureDeviceTouchscreen),
         WebFrameOverscrollTestParam(true, kWebGestureDeviceTouchpad),
@@ -11031,7 +11031,7 @@ class WebFrameVisibilityChangeTest : public ParameterizedWebFrameTest {
   Persistent<WebRemoteFrameImpl> web_remote_frame_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, WebFrameVisibilityChangeTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, WebFrameVisibilityChangeTest, testing::Bool());
 
 TEST_P(WebFrameVisibilityChangeTest, RemoteFrameVisibilityChange) {
   SwapLocalFrameToRemoteFrame();
@@ -11658,14 +11658,14 @@ TEST_P(ParameterizedWebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       document->GetFrame()->GetChromeClient().LastSetTooltipNodeForTesting());
 }
 
-class WebFrameSimTest : public ::testing::WithParamInterface<bool>,
+class WebFrameSimTest : public testing::WithParamInterface<bool>,
                         private ScopedRootLayerScrollingForTest,
                         public SimTest {
  public:
   WebFrameSimTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, WebFrameSimTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, WebFrameSimTest, testing::Bool());
 
 TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   WebView().Resize(WebSize(500, 300));
@@ -12622,10 +12622,9 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
   std::unique_ptr<FrameTestHelpers::WebViewHelper> web_view_helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(
-    All,
-    SlimmingPaintWebFrameTest,
-    ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        SlimmingPaintWebFrameTest,
+                        testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
 
 TEST_P(SlimmingPaintWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());

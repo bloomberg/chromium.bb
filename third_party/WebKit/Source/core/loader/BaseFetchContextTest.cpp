@@ -107,7 +107,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   bool is_detached_ = false;
 };
 
-class BaseFetchContextTest : public ::testing::Test {
+class BaseFetchContextTest : public testing::Test {
  protected:
   void SetUp() override {
     execution_context_ = new NullExecutionContext();

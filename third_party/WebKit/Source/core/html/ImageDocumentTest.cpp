@@ -71,7 +71,7 @@ class WindowToViewportScalingChromeClient : public EmptyChromeClient {
   float scale_factor_;
 };
 
-class ImageDocumentTest : public ::testing::Test {
+class ImageDocumentTest : public testing::Test {
  protected:
   void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 

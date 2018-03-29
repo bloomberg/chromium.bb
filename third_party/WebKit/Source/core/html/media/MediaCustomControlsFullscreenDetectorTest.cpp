@@ -24,7 +24,7 @@ struct VideoTestParam {
 }  // anonymous namespace
 
 class MediaCustomControlsFullscreenDetectorTest
-    : public ::testing::Test,
+    : public testing::Test,
       private ScopedVideoFullscreenDetectionForTest {
  public:
   MediaCustomControlsFullscreenDetectorTest()

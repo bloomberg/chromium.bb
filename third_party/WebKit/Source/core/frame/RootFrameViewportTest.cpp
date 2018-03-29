@@ -200,7 +200,7 @@ class VisualViewportStub : public ScrollableAreaStub {
   float scale_;
 };
 
-class RootFrameViewportTest : public ::testing::Test {
+class RootFrameViewportTest : public testing::Test {
  public:
   RootFrameViewportTest() = default;
 

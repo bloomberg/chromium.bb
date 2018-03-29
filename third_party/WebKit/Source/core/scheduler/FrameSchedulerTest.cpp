@@ -8,7 +8,7 @@
 #include "platform/scheduler/public/frame_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ElementsAre;
+using testing::ElementsAre;
 
 namespace blink {
 

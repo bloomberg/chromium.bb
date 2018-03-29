@@ -27,7 +27,7 @@ bool operator==(const Pod& left, const Pod& right) {
 }  // namespace
 
 template <typename T>
-class ContainerTypeOperationsTest : public ::testing::Test {};
+class ContainerTypeOperationsTest : public testing::Test {};
 
 TYPED_TEST_CASE_P(ContainerTypeOperationsTest);
 
@@ -75,7 +75,7 @@ TYPED_TEST_P(ContainerTypeOperationsTest, Completeness) {
 
 REGISTER_TYPED_TEST_CASE_P(ContainerTypeOperationsTest, Completeness);
 
-using PodTestTypes = ::testing::Types<int, char, int*, Pod>;
+using PodTestTypes = testing::Types<int, char, int*, Pod>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Pod, ContainerTypeOperationsTest, PodTestTypes);
 

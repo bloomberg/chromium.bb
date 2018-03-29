@@ -424,7 +424,7 @@ static_assert(!VectorTraits<MojoMoveOnlyType>::kCanCopyWithMemcpy,
               "MojoMoveOnlyType can't be copied with memcpy.");
 
 class VectorWithDifferingInlineCapacityTest
-    : public ::testing::TestWithParam<size_t> {};
+    : public testing::TestWithParam<size_t> {};
 
 template <size_t inlineCapacity>
 void TestVectorDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {

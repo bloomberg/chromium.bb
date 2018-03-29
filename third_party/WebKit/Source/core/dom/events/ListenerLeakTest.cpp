@@ -84,7 +84,7 @@ int GetNumObjects(const char* constructor) {
   return count;
 }
 
-class ListenerLeakTest : public ::testing::Test {
+class ListenerLeakTest : public testing::Test {
  public:
   void RunTest(const std::string& filename) {
     std::string base_url("http://www.example.com/");

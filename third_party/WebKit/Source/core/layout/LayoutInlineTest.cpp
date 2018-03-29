@@ -15,10 +15,9 @@ namespace blink {
 class LayoutInlineTest : public RenderingTest {};
 
 // Helper class to run the same test code with and without LayoutNG
-class ParameterizedLayoutInlineTest
-    : public ::testing::WithParamInterface<bool>,
-      private ScopedLayoutNGForTest,
-      public LayoutInlineTest {
+class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
+                                      private ScopedLayoutNGForTest,
+                                      public LayoutInlineTest {
  public:
   ParameterizedLayoutInlineTest() : ScopedLayoutNGForTest(GetParam()) {}
 
@@ -26,7 +25,7 @@ class ParameterizedLayoutInlineTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutInlineTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutInlineTest, testing::Bool());
 
 TEST_P(ParameterizedLayoutInlineTest, LinesBoundingBox) {
   LoadAhem();

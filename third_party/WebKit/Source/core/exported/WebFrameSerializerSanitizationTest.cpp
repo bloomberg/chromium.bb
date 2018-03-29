@@ -90,7 +90,7 @@ int MatchSubstring(const String& str, const char* pattern, size_t size) {
 
 }  // namespace
 
-class WebFrameSerializerSanitizationTest : public ::testing::Test {
+class WebFrameSerializerSanitizationTest : public testing::Test {
  protected:
   WebFrameSerializerSanitizationTest() { helper_.Initialize(); }
 

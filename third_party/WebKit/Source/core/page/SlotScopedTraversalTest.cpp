@@ -20,7 +20,7 @@
 
 namespace blink {
 
-class SlotScopedTraversalTest : public ::testing::Test {
+class SlotScopedTraversalTest : public testing::Test {
  protected:
   Document& GetDocument() const;
 

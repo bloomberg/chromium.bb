@@ -92,10 +92,10 @@ class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
   }
 };
 
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::Invoke;
-using ::testing::Return;
+using testing::_;
+using testing::AtLeast;
+using testing::Invoke;
+using testing::Return;
 
 }  // anonymous namespace
 
@@ -273,7 +273,7 @@ class HTMLMediaElementWithMockSchedulerTest
 };
 
 TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
-  ::testing::InSequence dummy;
+  testing::InSequence dummy;
   GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
 
   // Set a src to trigger WebMediaPlayer creation.
@@ -322,7 +322,7 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
 }
 
 TEST_F(HTMLMediaElementWithMockSchedulerTest, PeriodicTimeupdateAfterSeek) {
-  ::testing::InSequence dummy;
+  testing::InSequence dummy;
   GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
 
   // Set a src to trigger WebMediaPlayer creation.

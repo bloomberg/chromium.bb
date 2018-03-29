@@ -55,7 +55,7 @@ void RegisterMockedURLLoadFromBaseURL(const std::string& base_url,
                                                 WebString::FromUTF8(file_name));
 }
 
-class WebSearchableFormDataTest : public ::testing::Test {
+class WebSearchableFormDataTest : public testing::Test {
  protected:
   WebSearchableFormDataTest() = default;
 

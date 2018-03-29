@@ -33,7 +33,7 @@ class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
 
 }  // namespace
 
-class OomInterventionImplTest : public ::testing::Test {
+class OomInterventionImplTest : public testing::Test {
  public:
   size_t MockMemoryWorkloadCalculator() { return memory_workload_; }
 

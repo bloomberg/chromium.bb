@@ -866,7 +866,7 @@ TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorParent) {
 }
 
 class PaintLayerClipperTestParameterized
-    : public ::testing::WithParamInterface<bool>,
+    : public testing::WithParamInterface<bool>,
       private ScopedRootLayerScrollingForTest,
       public PaintLayerClipperTest {
  public:
@@ -876,7 +876,7 @@ class PaintLayerClipperTestParameterized
 
 INSTANTIATE_TEST_CASE_P(All,
                         PaintLayerClipperTestParameterized,
-                        ::testing::Bool());
+                        testing::Bool());
 
 TEST_P(PaintLayerClipperTestParameterized, FixedLayerClipRectInDocumentSpace) {
   SetBodyInnerHTML(R"HTML(

@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class HTMLFrameElementTest : public ::testing::Test {};
+class HTMLFrameElementTest : public testing::Test {};
 
 // Test that the correct container policy is constructed on a frame element.
 // Frame elements do not have any container-policy related attributes, but the

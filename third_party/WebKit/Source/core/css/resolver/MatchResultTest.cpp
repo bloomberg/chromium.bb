@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class MatchResultTest : public ::testing::Test {
+class MatchResultTest : public testing::Test {
  protected:
   void SetUp() override;
 

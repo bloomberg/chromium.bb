@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class BlobBytesProviderTest : public ::testing::Test {
+class BlobBytesProviderTest : public testing::Test {
  public:
   void SetUp() override {
     test_bytes1_.resize(128);
@@ -117,7 +117,7 @@ void PrintTo(const FileTestData& test, std::ostream* os) {
 }
 
 class RequestAsFile : public BlobBytesProviderTest,
-                      public ::testing::WithParamInterface<FileTestData> {
+                      public testing::WithParamInterface<FileTestData> {
  public:
   void SetUp() override {
     BlobBytesProviderTest::SetUp();
@@ -249,7 +249,7 @@ const FileTestData file_tests[] = {
 
 INSTANTIATE_TEST_CASE_P(BlobBytesProviderTest,
                         RequestAsFile,
-                        ::testing::ValuesIn(file_tests));
+                        testing::ValuesIn(file_tests));
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_MultipleChunks) {
   auto provider = CreateProvider();

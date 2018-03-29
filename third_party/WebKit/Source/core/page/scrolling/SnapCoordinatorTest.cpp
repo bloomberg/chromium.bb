@@ -24,7 +24,7 @@ using HTMLNames::styleAttr;
 
 typedef bool TestParamRootLayerScrolling;
 class SnapCoordinatorTest
-    : public ::testing::TestWithParam<TestParamRootLayerScrolling>,
+    : public testing::TestWithParam<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest {
  protected:
   SnapCoordinatorTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
@@ -114,7 +114,7 @@ class SnapCoordinatorTest
   std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, SnapCoordinatorTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, SnapCoordinatorTest, testing::Bool());
 
 TEST_P(SnapCoordinatorTest, SimpleSnapElement) {
   Element& snap_element = *GetDocument().getElementById("snap-element");

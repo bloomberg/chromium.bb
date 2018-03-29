@@ -9,10 +9,10 @@
 
 namespace blink {
 
-using ::testing::NiceMock;
-using ::testing::Return;
+using testing::NiceMock;
+using testing::Return;
 
-class ScrollbarThemeOverlayTest : public ::testing::Test {
+class ScrollbarThemeOverlayTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
 };

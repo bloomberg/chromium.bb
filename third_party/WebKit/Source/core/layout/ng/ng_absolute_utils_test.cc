@@ -15,7 +15,7 @@ namespace {
 
 #define NGAuto LayoutUnit(-1)
 
-class NGAbsoluteUtilsTest : public ::testing::Test {
+class NGAbsoluteUtilsTest : public testing::Test {
  protected:
   void SetUp() override {
     style_ = ComputedStyle::Create();

@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class TimerPerfTest : public ::testing::Test {
+class TimerPerfTest : public testing::Test {
  public:
   void NopTask(TimerBase*) {}
 

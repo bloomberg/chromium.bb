@@ -16,15 +16,15 @@ namespace blink {
 
 namespace {
 
-using ::testing::ByMove;
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::DoAll;
-using ::testing::StrictMock;
-using ::testing::_;
-using ::testing::SaveArg;
-using ::testing::SetArgPointee;
-using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
+using testing::ByMove;
+using testing::InSequence;
+using testing::Return;
+using testing::DoAll;
+using testing::StrictMock;
+using testing::_;
+using testing::SaveArg;
+using testing::SetArgPointee;
+using Checkpoint = StrictMock<testing::MockFunction<void(int)>>;
 using MockFetchDataLoaderClient =
     BytesConsumerTestUtil::MockFetchDataLoaderClient;
 using MockBytesConsumer = BytesConsumerTestUtil::MockBytesConsumer;

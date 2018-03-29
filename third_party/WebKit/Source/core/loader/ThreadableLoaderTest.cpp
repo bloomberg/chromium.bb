@@ -46,12 +46,12 @@ namespace blink {
 
 namespace {
 
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::InvokeWithoutArgs;
-using ::testing::StrEq;
-using ::testing::Truly;
-using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+using testing::_;
+using testing::InSequence;
+using testing::InvokeWithoutArgs;
+using testing::StrEq;
+using testing::Truly;
+using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 
 constexpr char kFileName[] = "fox-null-terminated.html";
 
@@ -59,7 +59,7 @@ class MockThreadableLoaderClient : public ThreadableLoaderClient {
  public:
   static std::unique_ptr<MockThreadableLoaderClient> Create() {
     return base::WrapUnique(
-        new ::testing::StrictMock<MockThreadableLoaderClient>);
+        new testing::StrictMock<MockThreadableLoaderClient>);
   }
   MOCK_METHOD2(DidSendData, void(unsigned long long, unsigned long long));
   MOCK_METHOD3(DidReceiveResponseMock,
@@ -437,7 +437,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
 };
 
 class ThreadableLoaderTest
-    : public ::testing::TestWithParam<ThreadableLoaderToTest> {
+    : public testing::TestWithParam<ThreadableLoaderToTest> {
  public:
   ThreadableLoaderTest() {
     switch (GetParam()) {
@@ -491,11 +491,11 @@ class ThreadableLoaderTest
 
 INSTANTIATE_TEST_CASE_P(Document,
                         ThreadableLoaderTest,
-                        ::testing::Values(kDocumentThreadableLoaderTest));
+                        testing::Values(kDocumentThreadableLoaderTest));
 
 INSTANTIATE_TEST_CASE_P(Worker,
                         ThreadableLoaderTest,
-                        ::testing::Values(kWorkerThreadableLoaderTest));
+                        testing::Values(kWorkerThreadableLoaderTest));
 
 TEST_P(ThreadableLoaderTest, StartAndStop) {}
 

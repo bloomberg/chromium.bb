@@ -32,7 +32,7 @@ const char* PointerTypeNameForWebPointPointerType(
 }
 }
 
-class PointerEventFactoryTest : public ::testing::Test {
+class PointerEventFactoryTest : public testing::Test {
  protected:
   void SetUp() override;
   PointerEvent* CreateAndCheckPointerCancel(WebPointerProperties::PointerType,

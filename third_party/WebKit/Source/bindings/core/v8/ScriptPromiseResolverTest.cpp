@@ -42,7 +42,7 @@ class TestHelperFunction : public ScriptFunction {
   String* value_;
 };
 
-class ScriptPromiseResolverTest : public ::testing::Test {
+class ScriptPromiseResolverTest : public testing::Test {
  public:
   ScriptPromiseResolverTest() : page_holder_(DummyPageHolder::Create()) {}
 

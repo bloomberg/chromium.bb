@@ -16,7 +16,7 @@ namespace blink {
 
 enum class MediaTestParam { kAudio, kVideo };
 
-class HTMLMediaElementTest : public ::testing::TestWithParam<MediaTestParam> {
+class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
  protected:
   void SetUp() override {
     dummy_page_holder_ = DummyPageHolder::Create();
@@ -42,10 +42,10 @@ class HTMLMediaElementTest : public ::testing::TestWithParam<MediaTestParam> {
 
 INSTANTIATE_TEST_CASE_P(Audio,
                         HTMLMediaElementTest,
-                        ::testing::Values(MediaTestParam::kAudio));
+                        testing::Values(MediaTestParam::kAudio));
 INSTANTIATE_TEST_CASE_P(Video,
                         HTMLMediaElementTest,
-                        ::testing::Values(MediaTestParam::kVideo));
+                        testing::Values(MediaTestParam::kVideo));
 
 TEST_P(HTMLMediaElementTest, effectiveMediaVolume) {
   struct TestData {

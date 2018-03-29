@@ -13,7 +13,7 @@ namespace blink {
 // Functionality implemented in SpellCheckMarkerListImpl is tested in
 // SpellingMarkerListImplTest.cpp.
 
-class GrammarMarkerListImplTest : public ::testing::Test {
+class GrammarMarkerListImplTest : public testing::Test {
  protected:
   GrammarMarkerListImplTest() : marker_list_(new GrammarMarkerListImpl()) {}
 

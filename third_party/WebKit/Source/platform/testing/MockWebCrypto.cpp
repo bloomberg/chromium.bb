@@ -11,11 +11,11 @@
 
 namespace blink {
 
-using ::testing::_;
-using ::testing::DoAll;
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::SetArgReferee;
+using testing::_;
+using testing::DoAll;
+using testing::InSequence;
+using testing::Return;
+using testing::SetArgReferee;
 
 // MemEq(p, len) expects memcmp(arg, p, len) == 0, where |arg| is the argument
 // to be matched.
@@ -24,7 +24,7 @@ MATCHER_P2(MemEq,
            len,
            std::string("pointing to memory") + (negation ? " not" : "") +
                " equal to \"" + std::string(static_cast<const char*>(p), len) +
-               "\" (length=" + ::testing::PrintToString(len) + ")") {
+               "\" (length=" + testing::PrintToString(len) + ")") {
   return memcmp(arg, p, len) == 0;
 }
 

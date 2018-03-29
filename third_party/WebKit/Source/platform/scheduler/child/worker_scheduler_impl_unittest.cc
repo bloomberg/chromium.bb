@@ -15,7 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ElementsAreArray;
+using testing::ElementsAreArray;
 
 namespace blink {
 namespace scheduler {
@@ -89,7 +89,7 @@ class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
   std::vector<std::string>* timeline_;  // NOT OWNED
 };
 
-class WorkerSchedulerImplTest : public ::testing::Test {
+class WorkerSchedulerImplTest : public testing::Test {
  public:
   WorkerSchedulerImplTest()
       : mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)),
@@ -188,8 +188,8 @@ TEST_F(WorkerSchedulerImplTest, TestPostDefaultTask) {
 
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                     std::string("D3"), std::string("D4")));
+              testing::ElementsAre(std::string("D1"), std::string("D2"),
+                                   std::string("D3"), std::string("D4")));
 }
 
 TEST_F(WorkerSchedulerImplTest, TestPostIdleTask) {
@@ -199,7 +199,7 @@ TEST_F(WorkerSchedulerImplTest, TestPostIdleTask) {
   PostTestTasks(&run_order, "I1");
 
   RunUntilIdle();
-  EXPECT_THAT(run_order, ::testing::ElementsAre(std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("I1")));
 }
 
 TEST_F(WorkerSchedulerImplTest, TestPostDefaultAndIdleTasks) {
@@ -210,8 +210,8 @@ TEST_F(WorkerSchedulerImplTest, TestPostDefaultAndIdleTasks) {
 
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D2"), std::string("D3"),
-                                     std::string("D4"), std::string("I1")));
+              testing::ElementsAre(std::string("D2"), std::string("D3"),
+                                   std::string("D4"), std::string("I1")));
 }
 
 TEST_F(WorkerSchedulerImplTest, TestPostDefaultDelayedAndIdleTasks) {
@@ -226,9 +226,9 @@ TEST_F(WorkerSchedulerImplTest, TestPostDefaultDelayedAndIdleTasks) {
 
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D2"), std::string("D3"),
-                                     std::string("D4"), std::string("I1"),
-                                     std::string("DELAYED")));
+              testing::ElementsAre(std::string("D2"), std::string("D3"),
+                                   std::string("D4"), std::string("I1"),
+                                   std::string("DELAYED")));
 }
 
 TEST_F(WorkerSchedulerImplTest, TestIdleTaskWhenIsNotQuiescent) {
@@ -327,8 +327,8 @@ TEST_F(WorkerSchedulerImplTest, TestPostIdleTaskAfterRunningUntilIdle) {
 
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D3"), std::string("I1"),
-                                     std::string("I2")));
+              testing::ElementsAre(std::string("D3"), std::string("I1"),
+                                   std::string("I2")));
 }
 
 void PostIdleTask(std::vector<std::string>* timeline,

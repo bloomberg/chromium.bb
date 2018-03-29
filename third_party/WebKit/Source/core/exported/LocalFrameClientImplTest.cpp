@@ -41,9 +41,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-using ::testing::Mock;
-using ::testing::Return;
+using testing::_;
+using testing::Mock;
+using testing::Return;
 
 namespace blink {
 namespace {
@@ -56,7 +56,7 @@ class LocalFrameMockWebFrameClient
   MOCK_METHOD0(UserAgentOverride, WebString());
 };
 
-class LocalFrameClientImplTest : public ::testing::Test {
+class LocalFrameClientImplTest : public testing::Test {
  protected:
   void SetUp() override {
     ON_CALL(web_frame_client_, UserAgentOverride())

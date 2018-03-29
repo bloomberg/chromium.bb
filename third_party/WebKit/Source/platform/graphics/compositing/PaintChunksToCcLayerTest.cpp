@@ -39,7 +39,7 @@ namespace {
 
 using test::CreateOpacityOnlyEffect;
 
-class PaintChunksToCcLayerTest : public ::testing::Test,
+class PaintChunksToCcLayerTest : public testing::Test,
                                  private ScopedSlimmingPaintV2ForTest {
  protected:
   PaintChunksToCcLayerTest() : ScopedSlimmingPaintV2ForTest(true) {}
@@ -47,18 +47,17 @@ class PaintChunksToCcLayerTest : public ::testing::Test,
 
 // Matches PaintOpTypes in a PaintRecord.
 class PaintRecordMatcher
-    : public ::testing::MatcherInterface<const cc::PaintOpBuffer&> {
+    : public testing::MatcherInterface<const cc::PaintOpBuffer&> {
  public:
-  static ::testing::Matcher<const cc::PaintOpBuffer&> Make(
+  static testing::Matcher<const cc::PaintOpBuffer&> Make(
       std::initializer_list<cc::PaintOpType> args) {
-    return ::testing::MakeMatcher(new PaintRecordMatcher(args));
+    return testing::MakeMatcher(new PaintRecordMatcher(args));
   }
   PaintRecordMatcher(std::initializer_list<cc::PaintOpType> args)
       : expected_ops_(args) {}
 
-  bool MatchAndExplain(
-      const cc::PaintOpBuffer& buffer,
-      ::testing::MatchResultListener* listener) const override {
+  bool MatchAndExplain(const cc::PaintOpBuffer& buffer,
+                       testing::MatchResultListener* listener) const override {
     size_t index = 0;
     for (cc::PaintOpBuffer::Iterator it(&buffer); it; ++it, ++index) {
       auto op = (*it)->GetType();

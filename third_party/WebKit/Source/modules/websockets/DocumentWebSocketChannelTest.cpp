@@ -27,17 +27,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::PrintToString;
-using ::testing::AnyNumber;
-using ::testing::SaveArg;
+using testing::_;
+using testing::InSequence;
+using testing::PrintToString;
+using testing::AnyNumber;
+using testing::SaveArg;
 
 namespace blink {
 
 namespace {
 
-typedef ::testing::StrictMock<::testing::MockFunction<void(int)>> Checkpoint;
+typedef testing::StrictMock<testing::MockFunction<void(int)>> Checkpoint;
 
 class MockWebSocketChannelClient
     : public GarbageCollectedFinalized<MockWebSocketChannelClient>,
@@ -46,7 +46,7 @@ class MockWebSocketChannelClient
 
  public:
   static MockWebSocketChannelClient* Create() {
-    return new ::testing::StrictMock<MockWebSocketChannelClient>();
+    return new testing::StrictMock<MockWebSocketChannelClient>();
   }
 
   MockWebSocketChannelClient() = default;
@@ -75,7 +75,7 @@ class MockWebSocketChannelClient
 class MockWebSocketHandle : public WebSocketHandle {
  public:
   static MockWebSocketHandle* Create() {
-    return new ::testing::StrictMock<MockWebSocketHandle>();
+    return new testing::StrictMock<MockWebSocketHandle>();
   }
 
   MockWebSocketHandle() = default;
@@ -103,7 +103,7 @@ class MockWebSocketHandle : public WebSocketHandle {
 class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
  public:
   static MockWebSocketHandshakeThrottle* Create() {
-    return new ::testing::StrictMock<MockWebSocketHandshakeThrottle>();
+    return new testing::StrictMock<MockWebSocketHandshakeThrottle>();
   }
   MockWebSocketHandshakeThrottle() = default;
   ~MockWebSocketHandshakeThrottle() override { Destructor(); }
@@ -170,7 +170,7 @@ class DocumentWebSocketChannelTest : public PageTestBase {
     }
     EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
     HandleClient()->DidConnect(Handle(), String("a"), String("b"));
-    ::testing::Mock::VerifyAndClearExpectations(this);
+    testing::Mock::VerifyAndClearExpectations(this);
   }
 
   Persistent<MockWebSocketChannelClient> channel_client_;

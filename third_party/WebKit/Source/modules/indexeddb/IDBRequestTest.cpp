@@ -60,7 +60,7 @@
 namespace blink {
 namespace {
 
-class IDBRequestTest : public ::testing::Test {
+class IDBRequestTest : public testing::Test {
  protected:
   void SetUp() override {
     url_loader_mock_factory_ = platform_->GetURLLoaderMockFactory();

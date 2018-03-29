@@ -79,10 +79,9 @@ class CaretDisplayItemClientTest : public PaintTestConfigurations,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(
-    All,
-    CaretDisplayItemClientTest,
-    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        CaretDisplayItemClientTest,
+                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);

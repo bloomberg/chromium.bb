@@ -185,7 +185,7 @@ class PromiseObserver {
   ScriptValue saved_arg_;
 };
 
-class MediaDevicesTest : public ::testing::Test {
+class MediaDevicesTest : public testing::Test {
  public:
   using MediaDeviceInfos = PersistentHeapVector<Member<MediaDeviceInfo>>;
 

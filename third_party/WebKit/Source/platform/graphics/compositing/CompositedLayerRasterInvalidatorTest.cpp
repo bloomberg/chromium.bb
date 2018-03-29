@@ -14,7 +14,7 @@ namespace blink {
 static const IntRect kDefaultLayerBounds(-9999, -7777, 18888, 16666);
 
 class CompositedLayerRasterInvalidatorTest
-    : public ::testing::Test,
+    : public testing::Test,
       private ScopedSlimmingPaintV2ForTest {
  protected:
   CompositedLayerRasterInvalidatorTest() : ScopedSlimmingPaintV2ForTest(true) {}

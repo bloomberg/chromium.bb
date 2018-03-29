@@ -88,7 +88,7 @@ class SubresourceFilteringWebFrameClient
 
 }  // namespace
 
-class WebDocumentSubresourceFilterTest : public ::testing::Test {
+class WebDocumentSubresourceFilterTest : public testing::Test {
  protected:
   WebDocumentSubresourceFilterTest() : base_url_("http://internal.test/") {
     RegisterMockedHttpURLLoad("white-1x1.png");
@@ -120,7 +120,7 @@ class WebDocumentSubresourceFilterTest : public ::testing::Test {
         WebString::FromUTF8(file_name));
   }
 
-  // ::testing::Test:
+  // testing::Test:
   void TearDown() override {
     Platform::Current()
         ->GetURLLoaderMockFactory()
@@ -137,7 +137,7 @@ TEST_F(WebDocumentSubresourceFilterTest, AllowedSubresource) {
   ExpectSubresourceWasLoaded(true);
   // The filter should not be consulted for the main document resource.
   EXPECT_THAT(QueriedSubresourcePaths(),
-              ::testing::ElementsAre("/white-1x1.png"));
+              testing::ElementsAre("/white-1x1.png"));
 }
 
 TEST_F(WebDocumentSubresourceFilterTest, DisallowedSubresource) {
@@ -147,7 +147,7 @@ TEST_F(WebDocumentSubresourceFilterTest, DisallowedSubresource) {
 
 TEST_F(WebDocumentSubresourceFilterTest, FilteringDecisionIsMadeLoadByLoad) {
   for (const bool allow_subresources : {false, true}) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "First load allows subresources = " << allow_subresources);
 
     LoadDocument(allow_subresources);
@@ -156,7 +156,7 @@ TEST_F(WebDocumentSubresourceFilterTest, FilteringDecisionIsMadeLoadByLoad) {
     LoadDocument(!allow_subresources);
     ExpectSubresourceWasLoaded(!allow_subresources);
     EXPECT_THAT(QueriedSubresourcePaths(),
-                ::testing::ElementsAre("/white-1x1.png"));
+                testing::ElementsAre("/white-1x1.png"));
 
     WebCache::Clear();
   }

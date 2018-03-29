@@ -13,7 +13,7 @@ namespace blink {
 class Document;
 class LocalFrame;
 
-class PageTestBase : public ::testing::Test {
+class PageTestBase : public testing::Test {
   USING_FAST_MALLOC(PageTestBase);
 
  public:

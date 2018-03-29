@@ -55,7 +55,7 @@ int GetPageVisitsBucketforHistogram(const std::string& histogram_name) {
 namespace blink {
 using WebFeature = mojom::WebFeature;
 
-class UseCounterTest : public ::testing::Test {
+class UseCounterTest : public testing::Test {
  public:
   UseCounterTest() : dummy_(DummyPageHolder::Create()) {}
 
@@ -483,7 +483,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
                    CSSPropertyFontWeight, 3);
 }
 
-class DeprecationTest : public ::testing::Test {
+class DeprecationTest : public testing::Test {
  public:
   DeprecationTest()
       : dummy_(DummyPageHolder::Create()),

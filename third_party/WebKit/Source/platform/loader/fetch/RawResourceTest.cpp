@@ -48,7 +48,7 @@
 
 namespace blink {
 
-class RawResourceTest : public ::testing::Test {
+class RawResourceTest : public testing::Test {
  public:
   RawResourceTest() = default;
   ~RawResourceTest() override = default;

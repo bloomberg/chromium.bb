@@ -110,8 +110,8 @@ TEST_F(AcceleratedStaticBitmapImageTest, CopyToTextureSynchronization) {
 
   MockGLES2InterfaceWithSyncTokenSupport destination_gl;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-  ::testing::Mock::VerifyAndClearExpectations(&destination_gl);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&destination_gl);
 
   InSequence s;  // Indicate to gmock that order of EXPECT_CALLs is important
 
@@ -138,8 +138,8 @@ TEST_F(AcceleratedStaticBitmapImageTest, CopyToTextureSynchronization) {
                         false /*unpack_flip_y*/, dest_point,
                         source_sub_rectangle);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-  ::testing::Mock::VerifyAndClearExpectations(&destination_gl);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&destination_gl);
 
   // Note the following expectation is commented-out because the
   // MailboxTextureHolder destructor skips it when the texture ID is 0.

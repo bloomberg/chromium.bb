@@ -33,7 +33,7 @@ scoped_refptr<ShapeResult> ShapeLine(ShapingLineBreaker* breaker,
 
 }  // namespace
 
-class ShapingLineBreakerTest : public ::testing::Test {
+class ShapingLineBreakerTest : public testing::Test {
  protected:
   void SetUp() override {
     font_description.SetComputedSize(12.0);
@@ -298,16 +298,16 @@ struct BreakOpportunityTestData {
 
 class BreakOpportunityTest
     : public ShapingLineBreakerTest,
-      public ::testing::WithParamInterface<BreakOpportunityTestData> {};
+      public testing::WithParamInterface<BreakOpportunityTestData> {};
 
 INSTANTIATE_TEST_CASE_P(
     ShapingLineBreakerTest,
     BreakOpportunityTest,
-    ::testing::Values(BreakOpportunityTestData{u"x y z", {1, 3, 5}},
-                      BreakOpportunityTestData{u"y\xADz", {2, 3}, {3}},
-                      BreakOpportunityTestData{u"\xADz", {1, 2}, {2}},
-                      BreakOpportunityTestData{u"y\xAD", {2}, {2}},
-                      BreakOpportunityTestData{u"\xAD\xADz", {2, 3}, {3}}));
+    testing::Values(BreakOpportunityTestData{u"x y z", {1, 3, 5}},
+                    BreakOpportunityTestData{u"y\xADz", {2, 3}, {3}},
+                    BreakOpportunityTestData{u"\xADz", {1, 2}, {2}},
+                    BreakOpportunityTestData{u"y\xAD", {2}, {2}},
+                    BreakOpportunityTestData{u"\xAD\xADz", {2, 3}, {3}}));
 
 TEST_P(BreakOpportunityTest, Next) {
   const BreakOpportunityTestData& data = GetParam();
@@ -315,12 +315,12 @@ TEST_P(BreakOpportunityTest, Next) {
   LazyLineBreakIterator break_iterator(string);
   ShapingLineBreaker breaker(nullptr, &font, nullptr, &break_iterator);
   EXPECT_THAT(BreakPositionsByNext(breaker, string),
-              ::testing::ElementsAreArray(data.break_positions));
+              testing::ElementsAreArray(data.break_positions));
 
   if (!data.break_positions_with_soft_hyphen_disabled.IsEmpty()) {
     breaker.DisableSoftHyphen();
     EXPECT_THAT(BreakPositionsByNext(breaker, string),
-                ::testing::ElementsAreArray(
+                testing::ElementsAreArray(
                     data.break_positions_with_soft_hyphen_disabled));
   }
 }
@@ -331,12 +331,12 @@ TEST_P(BreakOpportunityTest, Previous) {
   LazyLineBreakIterator break_iterator(string);
   ShapingLineBreaker breaker(nullptr, &font, nullptr, &break_iterator);
   EXPECT_THAT(BreakPositionsByPrevious(breaker, string),
-              ::testing::ElementsAreArray(data.break_positions));
+              testing::ElementsAreArray(data.break_positions));
 
   if (!data.break_positions_with_soft_hyphen_disabled.IsEmpty()) {
     breaker.DisableSoftHyphen();
     EXPECT_THAT(BreakPositionsByPrevious(breaker, string),
-                ::testing::ElementsAreArray(
+                testing::ElementsAreArray(
                     data.break_positions_with_soft_hyphen_disabled));
   }
 }

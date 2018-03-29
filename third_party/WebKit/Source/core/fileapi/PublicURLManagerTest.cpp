@@ -62,7 +62,7 @@ class FakeURLRegistry : public URLRegistry {
 
 }  // namespace
 
-class PublicURLManagerTest : public ::testing::Test {
+class PublicURLManagerTest : public testing::Test {
  public:
   PublicURLManagerTest() : url_store_binding_(&url_store_) {}
 

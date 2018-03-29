@@ -30,7 +30,7 @@
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
+using testing::_;
 
 namespace blink {
 
@@ -73,10 +73,9 @@ class FrameThrottlingTest : public SimTest, public PaintTestConfigurations {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(
-    All,
-    FrameThrottlingTest,
-    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        FrameThrottlingTest,
+                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 TEST_P(FrameThrottlingTest, ThrottleInvisibleFrames) {
   SimRequest main_resource("https://example.com/", "text/html");

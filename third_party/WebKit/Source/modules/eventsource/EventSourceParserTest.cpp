@@ -86,7 +86,7 @@ class StoppingClient : public GarbageCollectedFinalized<StoppingClient>,
   Vector<EventOrReconnectionTimeSetting> events_;
 };
 
-class EventSourceParserTest : public ::testing::Test {
+class EventSourceParserTest : public testing::Test {
  protected:
   using Type = EventOrReconnectionTimeSetting::Type;
   EventSourceParserTest()

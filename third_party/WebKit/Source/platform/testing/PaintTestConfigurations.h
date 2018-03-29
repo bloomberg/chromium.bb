@@ -18,7 +18,7 @@ enum {
 };
 
 class PaintTestConfigurations
-    : public ::testing::WithParamInterface<unsigned>,
+    : public testing::WithParamInterface<unsigned>,
       private ScopedRootLayerScrollingForTest,
       private ScopedSlimmingPaintV175ForTest,
       private ScopedSlimmingPaintV2ForTest,

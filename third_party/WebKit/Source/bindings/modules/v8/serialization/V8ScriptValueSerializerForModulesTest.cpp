@@ -26,9 +26,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ElementsAre;
-using ::testing::ElementsAreArray;
-using ::testing::UnorderedElementsAre;
+using testing::ElementsAre;
+using testing::ElementsAreArray;
+using testing::UnorderedElementsAre;
 
 namespace blink {
 namespace {
@@ -51,21 +51,21 @@ v8::Local<v8::Value> RoundTripForModules(v8::Local<v8::Value> value,
 }
 
 // Checks for a DOM exception, including a rethrown one.
-::testing::AssertionResult HadDOMExceptionInModulesTest(
+testing::AssertionResult HadDOMExceptionInModulesTest(
     const StringView& name,
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!exception_state.HadException())
-    return ::testing::AssertionFailure() << "no exception thrown";
+    return testing::AssertionFailure() << "no exception thrown";
   DOMException* dom_exception = V8DOMException::ToImplWithTypeCheck(
       script_state->GetIsolate(), exception_state.GetException());
   if (!dom_exception) {
-    return ::testing::AssertionFailure()
+    return testing::AssertionFailure()
            << "exception thrown was not a DOMException";
   }
   if (dom_exception->name() != name)
-    return ::testing::AssertionFailure() << "was " << dom_exception->name();
-  return ::testing::AssertionSuccess();
+    return testing::AssertionFailure() << "was " << dom_exception->name();
+  return testing::AssertionSuccess();
 }
 
 static const char kEcdsaPrivateKey[] =

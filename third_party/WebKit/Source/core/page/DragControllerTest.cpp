@@ -43,7 +43,7 @@ class DragMockChromeClient : public EmptyChromeClient {
 
 typedef bool TestParamRootLayerScrolling;
 class DragControllerTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  protected:
@@ -65,7 +65,7 @@ class DragControllerTest
   Persistent<DragMockChromeClient> chrome_client_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, DragControllerTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, DragControllerTest, testing::Bool());
 
 TEST_P(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
   SetBodyInnerHTML(
@@ -88,14 +88,14 @@ TEST_P(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
   EXPECT_EQ(image1->Size().Height() * 2, image2->Size().Height());
 }
 
-class DragControllerSimTest : public ::testing::WithParamInterface<bool>,
+class DragControllerSimTest : public testing::WithParamInterface<bool>,
                               private ScopedRootLayerScrollingForTest,
                               public SimTest {
  public:
   DragControllerSimTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, DragControllerSimTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, DragControllerSimTest, testing::Bool());
 
 // Tests that dragging a URL onto a WebWidget that doesn't navigate on Drag and
 // Drop clears out the Autoscroll state. Regression test for

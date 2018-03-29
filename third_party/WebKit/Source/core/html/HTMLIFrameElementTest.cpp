@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class HTMLIFrameElementTest : public ::testing::Test {
+class HTMLIFrameElementTest : public testing::Test {
  public:
   scoped_refptr<const SecurityOrigin> GetOriginForFeaturePolicy(
       HTMLIFrameElement* element) {

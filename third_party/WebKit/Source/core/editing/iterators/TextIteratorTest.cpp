@@ -136,10 +136,9 @@ Range* TextIteratorTest::GetBodyRange() const {
   return range;
 }
 
-class ParameterizedTextIteratorTest
-    : public ::testing::WithParamInterface<bool>,
-      private ScopedLayoutNGForTest,
-      public TextIteratorTest {
+class ParameterizedTextIteratorTest : public testing::WithParamInterface<bool>,
+                                      private ScopedLayoutNGForTest,
+                                      public TextIteratorTest {
  public:
   ParameterizedTextIteratorTest() : ScopedLayoutNGForTest(GetParam()) {}
 
@@ -152,7 +151,7 @@ class ParameterizedTextIteratorTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedTextIteratorTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ParameterizedTextIteratorTest, testing::Bool());
 
 TEST_F(TextIteratorTest, BitStackOverflow) {
   const unsigned kBitsInWord = sizeof(unsigned) * 8;

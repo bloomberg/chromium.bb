@@ -40,14 +40,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::test::RunPendingTasks;
-using ::testing::Mock;
+using testing::Mock;
 
 namespace blink {
 
 namespace {
 
-class RootScrollerTest : public ::testing::Test,
-                         public ::testing::WithParamInterface<bool>,
+class RootScrollerTest : public testing::Test,
+                         public testing::WithParamInterface<bool>,
                          private ScopedRootLayerScrollingForTest,
                          private ScopedImplicitRootScrollerForTest,
                          private ScopedSetRootScrollerForTest {
@@ -188,7 +188,7 @@ class RootScrollerTest : public ::testing::Test,
   RuntimeEnabledFeatures::Backup features_backup_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, RootScrollerTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, RootScrollerTest, testing::Bool());
 
 // Test that no root scroller element is set if setRootScroller isn't called on
 // any elements. The document Node should be the default effective root
@@ -1258,7 +1258,7 @@ TEST_P(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
 }
 
-class RootScrollerSimTest : public ::testing::WithParamInterface<bool>,
+class RootScrollerSimTest : public testing::WithParamInterface<bool>,
                             private ScopedRootLayerScrollingForTest,
                             private ScopedImplicitRootScrollerForTest,
                             public SimTest {
@@ -1268,7 +1268,7 @@ class RootScrollerSimTest : public ::testing::WithParamInterface<bool>,
         ScopedImplicitRootScrollerForTest(false) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, RootScrollerSimTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, RootScrollerSimTest, testing::Bool());
 
 // Tests that the root scroller doesn't affect visualViewport pageLeft and
 // pageTop.
@@ -1587,7 +1587,7 @@ class RootScrollerHitTest : public RootScrollerTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, RootScrollerHitTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, RootScrollerHitTest, testing::Bool());
 
 // Test that hit testing in the area revealed at the bottom of the screen
 // revealed by hiding the URL bar works properly when using a root scroller

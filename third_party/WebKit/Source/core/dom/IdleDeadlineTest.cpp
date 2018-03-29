@@ -75,7 +75,7 @@ class MockIdleDeadlinePlatform : public TestingPlatformSupport {
 
 }  // namespace
 
-class IdleDeadlineTest : public ::testing::Test {
+class IdleDeadlineTest : public testing::Test {
  public:
   void SetUp() override {
     original_time_function_ = SetTimeFunctionsForTesting([] { return 1.0; });

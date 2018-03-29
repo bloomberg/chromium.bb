@@ -161,7 +161,7 @@ class DedicatedWorkerMessagingProxyForTest
         new MockWorkerThreadLifecycleObserver(
             worker_thread->GetWorkerThreadLifecycleContext());
     EXPECT_CALL(*mock_worker_thread_lifecycle_observer_,
-                ContextDestroyed(::testing::_))
+                ContextDestroyed(testing::_))
         .Times(1);
     return std::move(worker_thread);
   }

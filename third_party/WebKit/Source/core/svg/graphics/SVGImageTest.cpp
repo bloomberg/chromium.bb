@@ -23,7 +23,7 @@
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace blink {
-class SVGImageTest : public ::testing::Test {
+class SVGImageTest : public testing::Test {
  public:
   SVGImage& GetImage() { return *image_; }
 

@@ -17,22 +17,20 @@
 
 namespace blink {
 
-INSTANTIATE_TEST_CASE_P(
-    All,
-    PaintControllerPaintTest,
-    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        PaintControllerPaintTest,
+                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 using PaintControllerPaintTestForSPv2 = PaintControllerPaintTest;
-INSTANTIATE_TEST_CASE_P(
-    All,
-    PaintControllerPaintTestForSPv2,
-    ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        PaintControllerPaintTestForSPv2,
+                        testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
 
 using PaintControllerPaintTestForNonSPv1 = PaintControllerPaintTest;
 INSTANTIATE_TEST_CASE_P(
     All,
     PaintControllerPaintTestForNonSPv1,
-    ::testing::ValuesIn(kSlimmingPaintNonV1TestConfigurations));
+    testing::ValuesIn(kSlimmingPaintNonV1TestConfigurations));
 
 TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   SetBodyInnerHTML(

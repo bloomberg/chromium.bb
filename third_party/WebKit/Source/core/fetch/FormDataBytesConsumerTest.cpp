@@ -25,11 +25,11 @@ namespace blink {
 namespace {
 
 using Result = BytesConsumer::Result;
-using ::testing::_;
-using ::testing::DoAll;
-using ::testing::InSequence;
-using ::testing::Return;
-using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+using testing::_;
+using testing::DoAll;
+using testing::InSequence;
+using testing::Return;
+using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 using MockBytesConsumer = BytesConsumerTestUtil::MockBytesConsumer;
 
 class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {

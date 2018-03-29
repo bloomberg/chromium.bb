@@ -22,7 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ElementsAre;
+using testing::ElementsAre;
 using VirtualTimePolicy = blink::PageScheduler::VirtualTimePolicy;
 
 namespace blink {
@@ -30,7 +30,7 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace page_scheduler_impl_unittest {
 
-class PageSchedulerImplTest : public ::testing::Test {
+class PageSchedulerImplTest : public testing::Test {
  public:
   PageSchedulerImplTest() = default;
   ~PageSchedulerImplTest() override = default;

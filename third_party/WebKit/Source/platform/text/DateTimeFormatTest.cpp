@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class DateTimeFormatTest : public ::testing::Test {
+class DateTimeFormatTest : public testing::Test {
  public:
   using FieldType = DateTimeFormat::FieldType;
 

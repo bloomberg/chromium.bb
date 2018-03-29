@@ -13,12 +13,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::Invoke;
-using ::testing::ElementsAre;
-using ::testing::Return;
-using ::testing::WhenSorted;
-using ::testing::ElementsAreArray;
-using ::testing::_;
+using testing::Invoke;
+using testing::ElementsAre;
+using testing::Return;
+using testing::WhenSorted;
+using testing::ElementsAreArray;
+using testing::_;
 
 namespace blink {
 
@@ -118,7 +118,7 @@ MockScriptLoader* MockScriptLoader::SetupForNonStreaming() {
   return this;
 }
 
-class ScriptRunnerTest : public ::testing::Test {
+class ScriptRunnerTest : public testing::Test {
  public:
   ScriptRunnerTest() : document_(Document::CreateForTest()) {}
 
@@ -382,7 +382,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
   int expected[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
                     10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
 
-  EXPECT_THAT(order_, ::testing::ElementsAreArray(expected));
+  EXPECT_THAT(order_, testing::ElementsAreArray(expected));
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {

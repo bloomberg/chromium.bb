@@ -76,7 +76,7 @@ using blink::test::RunPendingTasks;
 
 namespace blink {
 
-class WebPluginContainerTest : public ::testing::Test {
+class WebPluginContainerTest : public testing::Test {
  public:
   WebPluginContainerTest() : base_url_("http://www.test.com/") {}
 

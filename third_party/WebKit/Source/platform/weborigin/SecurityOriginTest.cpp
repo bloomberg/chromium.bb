@@ -46,7 +46,7 @@ namespace blink {
 
 const uint16_t kMaxAllowedPort = UINT16_MAX;
 
-class SecurityOriginTest : public ::testing::Test {};
+class SecurityOriginTest : public testing::Test {};
 
 TEST_F(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins) {
   uint16_t ports[] = {0, 80, 443, 5000, kMaxAllowedPort};
@@ -354,7 +354,7 @@ TEST_F(SecurityOriginTest, CanonicalizeHost) {
   };
 
   for (const TestCase& test : cases) {
-    SCOPED_TRACE(::testing::Message() << "raw host: '" << test.host << "'");
+    SCOPED_TRACE(testing::Message() << "raw host: '" << test.host << "'");
     String host = String::FromUTF8(test.host);
     bool success = false;
     String canonical_host = SecurityOrigin::CanonicalizeHost(host, &success);

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class DOMFileSystemBaseTest : public ::testing::Test {
+class DOMFileSystemBaseTest : public testing::Test {
  public:
   DOMFileSystemBaseTest() {
     file_path_ = test::BlinkRootDir();

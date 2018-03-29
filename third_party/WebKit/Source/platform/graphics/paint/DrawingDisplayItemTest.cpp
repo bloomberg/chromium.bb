@@ -15,9 +15,9 @@
 namespace blink {
 namespace {
 
-using ::testing::_;
+using testing::_;
 
-class DrawingDisplayItemTest : public ::testing::Test {
+class DrawingDisplayItemTest : public testing::Test {
  protected:
   FakeDisplayItemClient client_;
 };

@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class WebSurroundingTextTest : public ::testing::Test {
+class WebSurroundingTextTest : public testing::Test {
  protected:
   Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
   void SetHTML(const String&);

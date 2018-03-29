@@ -68,7 +68,7 @@ class PreloadRecordingCSSPreloaderResourceClient final
   Vector<ReferrerPolicy> preload_referrer_policies_;
 };
 
-class CSSPreloadScannerTest : public ::testing::Test {};
+class CSSPreloadScannerTest : public testing::Test {};
 
 }  // namespace
 

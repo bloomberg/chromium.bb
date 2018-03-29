@@ -39,10 +39,9 @@ struct FunctionPair {
   BuilderFunc set_value;
 };
 
-class FontBuilderInitTest : public FontBuilderTest, public ::testing::Test {};
+class FontBuilderInitTest : public FontBuilderTest, public testing::Test {};
 class FontBuilderAdditiveTest : public FontBuilderTest,
-                                public ::testing::TestWithParam<FunctionPair> {
-};
+                                public testing::TestWithParam<FunctionPair> {};
 
 TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled) {
   scoped_refptr<ComputedStyle> initial = ComputedStyle::Create();
@@ -194,7 +193,7 @@ static void FontScriptValue(FontBuilder& b) {
 INSTANTIATE_TEST_CASE_P(
     AllFields,
     FontBuilderAdditiveTest,
-    ::testing::Values(
+    testing::Values(
         FunctionPair(FontWeightBase, FontWeightValue),
         FunctionPair(FontStretchBase, FontStretchValue),
         FunctionPair(FontFamilyBase, FontFamilyValue),

@@ -20,7 +20,7 @@ namespace scheduler {
 // Namespace to avoid symbol collisions in jumbo builds.
 namespace auto_advancing_virtual_time_domain_unittest {
 
-class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
+class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
  public:
   AutoAdvancingVirtualTimeDomainTest() = default;
   ~AutoAdvancingVirtualTimeDomainTest() override = default;

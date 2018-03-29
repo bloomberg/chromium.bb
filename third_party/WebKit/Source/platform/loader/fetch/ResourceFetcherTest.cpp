@@ -88,7 +88,7 @@ void RegisterMockedURLLoad(const KURL& url) {
 
 }  // namespace
 
-class ResourceFetcherTest : public ::testing::Test {
+class ResourceFetcherTest : public testing::Test {
  public:
   ResourceFetcherTest() = default;
   ~ResourceFetcherTest() override { GetMemoryCache()->EvictResources(); }

@@ -18,8 +18,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-using ::testing::Return;
+using testing::_;
+using testing::Return;
 
 using blink::test::CreateTestFont;
 

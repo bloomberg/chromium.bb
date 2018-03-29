@@ -13,7 +13,7 @@ namespace blink {
 
 namespace {
 
-class CORSExposedHeadersTest : public ::testing::Test {
+class CORSExposedHeadersTest : public testing::Test {
  public:
   using CredentialsMode = network::mojom::FetchCredentialsMode;
 

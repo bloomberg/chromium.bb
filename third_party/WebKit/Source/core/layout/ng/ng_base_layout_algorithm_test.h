@@ -23,7 +23,7 @@ class Element;
 // Base class for all LayoutNG Algorithms unit test classes.
 typedef bool TestParamLayoutNG;
 class NGBaseLayoutAlgorithmTest
-    : public ::testing::WithParamInterface<TestParamLayoutNG>,
+    : public testing::WithParamInterface<TestParamLayoutNG>,
       public NGLayoutTest {
  protected:
   void SetUp() override;

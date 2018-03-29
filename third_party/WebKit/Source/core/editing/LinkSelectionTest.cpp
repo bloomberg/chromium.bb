@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
+using testing::_;
 
 namespace blink {
 
@@ -28,7 +28,7 @@ IntSize Scaled(IntSize p, float scale) {
   return p;
 }
 
-class LinkSelectionTestBase : public ::testing::Test {
+class LinkSelectionTestBase : public testing::Test {
  protected:
   enum DragFlag { kSendDownEvent = 1, kSendUpEvent = 1 << 1 };
   using DragFlags = unsigned;
@@ -314,7 +314,7 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
         double_click_event ? EventTypeNames::dblclick : EventTypeNames::click,
         event_handler);
 
-    ::testing::InSequence s;
+    testing::InSequence s;
     EXPECT_CALL(*event_handler, handleEvent(_, _)).Times(1);
 
     const auto& elem_bounds = element.BoundsInViewport();

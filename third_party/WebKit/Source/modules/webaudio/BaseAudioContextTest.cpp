@@ -102,7 +102,7 @@ class BaseAudioContextTestPlatform : public TestingPlatformSupport {
   TEST_P(test_case_name, DISABLED_##test_name)
 
 class BaseAudioContextAutoplayTest
-    : public ::testing::TestWithParam<AutoplayPolicy::Type> {
+    : public testing::TestWithParam<AutoplayPolicy::Type> {
  protected:
   using AutoplayStatus = BaseAudioContext::AutoplayStatus;
 
@@ -743,9 +743,9 @@ MAYBE_TEST_P(BaseAudioContextAutoplayTest,
 INSTANTIATE_TEST_CASE_P(
     BaseAudioContextAutoplayTest,
     BaseAudioContextAutoplayTest,
-    ::testing::Values(AutoplayPolicy::Type::kNoUserGestureRequired,
-                      AutoplayPolicy::Type::kUserGestureRequired,
-                      AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin,
-                      AutoplayPolicy::Type::kDocumentUserActivationRequired));
+    testing::Values(AutoplayPolicy::Type::kNoUserGestureRequired,
+                    AutoplayPolicy::Type::kUserGestureRequired,
+                    AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin,
+                    AutoplayPolicy::Type::kDocumentUserActivationRequired));
 
 }  // namespace blink

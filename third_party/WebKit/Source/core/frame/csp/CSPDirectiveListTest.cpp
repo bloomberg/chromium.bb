@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class CSPDirectiveListTest : public ::testing::Test {
+class CSPDirectiveListTest : public testing::Test {
  public:
   CSPDirectiveListTest() : csp(ContentSecurityPolicy::Create()) {}
 
@@ -159,7 +159,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "List: `" << test.list << "`, URL: `" << test.url << "`");
     const KURL script_src(test.url);
 
@@ -215,7 +215,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "List: `" << test.list << "`, URL: `" << test.url << "`");
     const KURL resource(test.url);
 
@@ -352,7 +352,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "List: `" << test.list << "`, URL: `" << test.url
                  << "`, Integrity: `" << test.integrity << "`");
     const KURL resource(test.url);

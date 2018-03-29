@@ -60,7 +60,7 @@ namespace blink {
 
 using blink::test::RunPendingTasks;
 
-class ViewportTest : public ::testing::Test {
+class ViewportTest : public testing::Test {
  protected:
   ViewportTest()
       : base_url_("http://www.test.com/"), chrome_url_("chrome://") {}

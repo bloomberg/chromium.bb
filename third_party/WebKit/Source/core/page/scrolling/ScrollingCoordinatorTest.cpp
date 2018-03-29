@@ -59,8 +59,8 @@
 
 namespace blink {
 
-class ScrollingCoordinatorTest : public ::testing::Test,
-                                 public ::testing::WithParamInterface<bool>,
+class ScrollingCoordinatorTest : public testing::Test,
+                                 public testing::WithParamInterface<bool>,
                                  private ScopedRootLayerScrollingForTest {
  public:
   ScrollingCoordinatorTest()
@@ -133,7 +133,7 @@ class ScrollingCoordinatorTest : public ::testing::Test,
   FrameTestHelpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, ScrollingCoordinatorTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ScrollingCoordinatorTest, testing::Bool());
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   GetWebView()->Resize(WebSize(800, 600));
@@ -1203,7 +1203,7 @@ class NonCompositedMainThreadScrollingReasonTest
 
 INSTANTIATE_TEST_CASE_P(All,
                         NonCompositedMainThreadScrollingReasonTest,
-                        ::testing::Bool());
+                        testing::Bool());
 
 TEST_P(NonCompositedMainThreadScrollingReasonTest, TransparentTest) {
   TestNonCompositedReasons("transparent",

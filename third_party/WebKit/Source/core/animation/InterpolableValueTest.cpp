@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class AnimationInterpolableValueTest : public ::testing::Test {
+class AnimationInterpolableValueTest : public testing::Test {
  protected:
   double InterpolateNumbers(int a, int b, double progress) {
     // We require a property that maps to CSSNumberInterpolationType. 'z-index'

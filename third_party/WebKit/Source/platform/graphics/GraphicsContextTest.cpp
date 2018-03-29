@@ -141,7 +141,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
 }
 
-class GraphicsContextHighConstrastTest : public ::testing::Test {
+class GraphicsContextHighConstrastTest : public testing::Test {
  protected:
   void SetUp() override {
     bitmap_.allocN32Pixels(4, 1);

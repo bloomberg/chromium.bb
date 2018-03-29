@@ -33,7 +33,7 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
   bool was_run_ = false;
 };
 
-class ResourceLoadSchedulerTest : public ::testing::Test {
+class ResourceLoadSchedulerTest : public testing::Test {
  public:
   using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
   void SetUp() override {
@@ -61,7 +61,7 @@ class ResourceLoadSchedulerTest : public ::testing::Test {
   Persistent<ResourceLoadScheduler> scheduler_;
 };
 
-class RendererSideResourceSchedulerTest : public ::testing::Test {
+class RendererSideResourceSchedulerTest : public testing::Test {
  public:
   using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
   class TestingPlatformSupport : public ::blink::TestingPlatformSupport {

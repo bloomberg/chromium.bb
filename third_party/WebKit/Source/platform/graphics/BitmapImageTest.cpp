@@ -50,7 +50,7 @@
 
 namespace blink {
 
-class BitmapImageTest : public ::testing::Test {
+class BitmapImageTest : public testing::Test {
  public:
   class FakeImageObserver : public GarbageCollectedFinalized<FakeImageObserver>,
                             public ImageObserver {
@@ -632,7 +632,7 @@ struct HistogramTestParams {
 
 template <typename HistogramEnumType>
 class BitmapHistogramTest : public BitmapImageTest,
-                            public ::testing::WithParamInterface<
+                            public testing::WithParamInterface<
                                 HistogramTestParams<HistogramEnumType>> {
  protected:
   void RunTest(const char* histogram_name) {
@@ -669,7 +669,7 @@ const DecodedImageTypeHistogramTest::ParamType
 INSTANTIATE_TEST_CASE_P(
     DecodedImageTypeHistogramTest,
     DecodedImageTypeHistogramTest,
-    ::testing::ValuesIn(kDecodedImageTypeHistogramTestparams));
+    testing::ValuesIn(kDecodedImageTypeHistogramTestparams));
 
 using DecodedImageOrientationHistogramTest =
     BitmapHistogramTest<ImageOrientationEnum>;
@@ -700,6 +700,6 @@ const DecodedImageOrientationHistogramTest::ParamType
 INSTANTIATE_TEST_CASE_P(
     DecodedImageOrientationHistogramTest,
     DecodedImageOrientationHistogramTest,
-    ::testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
+    testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
 
 }  // namespace blink

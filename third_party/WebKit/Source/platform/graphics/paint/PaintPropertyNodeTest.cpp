@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class PaintPropertyNodeTest : public ::testing::Test {
+class PaintPropertyNodeTest : public testing::Test {
  protected:
   void SetUp() override {
     root = ClipPaintPropertyNode::Root();

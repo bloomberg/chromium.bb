@@ -31,7 +31,7 @@ static scoped_refptr<SimpleFontData> CreateTestSimpleFontData(
   return SimpleFontData::Create(platform_data, nullptr);
 }
 
-class ShapeResultBloberizerTest : public ::testing::Test {
+class ShapeResultBloberizerTest : public testing::Test {
  protected:
   void SetUp() override {
     font_description.SetComputedSize(12.0);

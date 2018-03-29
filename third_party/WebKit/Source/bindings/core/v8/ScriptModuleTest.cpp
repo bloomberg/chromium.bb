@@ -162,7 +162,7 @@ TEST(ScriptModuleTest, moduleRequests) {
   ASSERT_FALSE(module.IsNull());
 
   auto requests = module.ModuleRequests(scope.GetScriptState());
-  EXPECT_THAT(requests, ::testing::ContainerEq<Vector<String>>({"a", "b"}));
+  EXPECT_THAT(requests, testing::ContainerEq<Vector<String>>({"a", "b"}));
 }
 
 TEST(ScriptModuleTest, instantiateNoDeps) {

@@ -90,7 +90,7 @@ class TouchActionTrackingWebWidgetClient
   TouchAction action_;
 };
 
-class TouchActionTest : public ::testing::Test {
+class TouchActionTest : public testing::Test {
  public:
   TouchActionTest() : base_url_("http://www.test.com/") {
     URLTestHelpers::RegisterMockedURLLoadFromBase(

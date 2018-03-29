@@ -21,7 +21,7 @@ namespace blink {
 
 namespace {
 
-class V8ScriptRunnerTest : public ::testing::Test {
+class V8ScriptRunnerTest : public testing::Test {
  public:
   V8ScriptRunnerTest() = default;
   ~V8ScriptRunnerTest() override = default;

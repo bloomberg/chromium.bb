@@ -94,7 +94,7 @@ struct BucketExpectation {
 
 }  // namespace
 
-class QueueingTimeEstimatorTest : public ::testing::Test {
+class QueueingTimeEstimatorTest : public testing::Test {
  protected:
   static std::vector<BucketExpectation> GetFineGrained(
       const std::vector<BucketExpectation>& expected) {
@@ -158,7 +158,7 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
   std::vector<BucketExpectation> expected = {{300, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 1, expected);
   std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
@@ -193,11 +193,11 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(7600),
-                                     base::TimeDelta::FromMilliseconds(15500),
-                                     base::TimeDelta::FromMilliseconds(10500),
-                                     base::TimeDelta::FromMilliseconds(5500),
-                                     base::TimeDelta::FromMilliseconds(900)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(7600),
+                                   base::TimeDelta::FromMilliseconds(15500),
+                                   base::TimeDelta::FromMilliseconds(10500),
+                                   base::TimeDelta::FromMilliseconds(5500),
+                                   base::TimeDelta::FromMilliseconds(900)));
   std::vector<BucketExpectation> expected = {
       {900, 1}, {5500, 1}, {7600, 1}, {10500, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 5, expected);
@@ -369,8 +369,8 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(100)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(100)));
   std::vector<BucketExpectation> expected = {{0, 1}, {100, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
   std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
@@ -420,8 +420,8 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(100)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(100)));
   std::vector<BucketExpectation> expected = {{100, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
   std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
@@ -469,8 +469,8 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(100)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(100)));
   std::vector<BucketExpectation> expected = {{100, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
   std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
@@ -518,7 +518,7 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
       base::TimeDelta::FromMilliseconds(0),
       base::TimeDelta::FromMilliseconds(0)};
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAreArray(expected_durations));
+              testing::ElementsAreArray(expected_durations));
   // UMA reported only on disjoint windows.
   std::vector<BucketExpectation> expected = {{0, 1}, {2500, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
@@ -569,7 +569,7 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
       base::TimeDelta::FromMilliseconds(0),
       base::TimeDelta::FromMilliseconds(0)};
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAreArray(expected_durations));
+              testing::ElementsAreArray(expected_durations));
   std::vector<BucketExpectation> expected = {{0, 1}, {725, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
   std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
@@ -629,7 +629,7 @@ TEST_F(QueueingTimeEstimatorTest,
       base::TimeDelta::FromMilliseconds(0)};
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAreArray(expected_durations));
+              testing::ElementsAreArray(expected_durations));
   std::vector<BucketExpectation> expected = {{325, 1}, {400, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
   // The two values get grouped under the same bucket in the microsecond
@@ -683,10 +683,10 @@ TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithSingleStepPerWindow) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(1000),
-                                     base::TimeDelta::FromMilliseconds(125),
-                                     base::TimeDelta::FromMilliseconds(20)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(1000),
+                                   base::TimeDelta::FromMilliseconds(125),
+                                   base::TimeDelta::FromMilliseconds(20)));
   std::vector<BucketExpectation> expected = {
       {0, 1}, {20, 1}, {125, 1}, {1000, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 4, expected);
@@ -767,14 +767,14 @@ TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithMutipleStepsPerWindow) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(25),
-                                     base::TimeDelta::FromMilliseconds(121),
-                                     base::TimeDelta::FromMilliseconds(121),
-                                     base::TimeDelta::FromMilliseconds(150),
-                                     base::TimeDelta::FromMilliseconds(330),
-                                     base::TimeDelta::FromMilliseconds(321),
-                                     base::TimeDelta::FromMilliseconds(561),
-                                     base::TimeDelta::FromMilliseconds(801)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(25),
+                                   base::TimeDelta::FromMilliseconds(121),
+                                   base::TimeDelta::FromMilliseconds(121),
+                                   base::TimeDelta::FromMilliseconds(150),
+                                   base::TimeDelta::FromMilliseconds(330),
+                                   base::TimeDelta::FromMilliseconds(321),
+                                   base::TimeDelta::FromMilliseconds(561),
+                                   base::TimeDelta::FromMilliseconds(801)));
 }
 
 // Split ExpectedQueueingTime only reports once per disjoint window. The
@@ -870,69 +870,69 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
 
   // End of window 4. Now check the vectors per task queue type.
   EXPECT_THAT(client.QueueTypeValues(QueueType::kDefault),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
-                                     base::TimeDelta::FromMilliseconds(800),
-                                     base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(36)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
+                                   base::TimeDelta::FromMilliseconds(800),
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(36)));
   // The 800 and 900 values get grouped into a single bucket.
   std::vector<BucketExpectation> expected = {{36, 1}, {100, 1}, {800, 2}};
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByTaskQueue2.Default", 4,
                 GetFineGrained(expected));
 
   EXPECT_THAT(client.QueueTypeValues(QueueType::kFrameLoading),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(36)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(36)));
   expected = {{0, 2}, {36, 1}, {100, 1}};
   TestHistogram(
       "RendererScheduler.ExpectedQueueingTimeByTaskQueue2.FrameLoading", 4,
       GetFineGrained(expected));
 
   EXPECT_THAT(client.QueueTypeValues(QueueType::kFrameThrottleable),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(36)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(36)));
   expected = {{0, 2}, {36, 1}, {100, 1}};
   TestHistogram(
       "RendererScheduler.ExpectedQueueingTimeByTaskQueue2.FrameThrottleable", 4,
       GetFineGrained(expected));
 
   EXPECT_THAT(client.QueueTypeValues(QueueType::kFramePausable),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(36)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(36)));
   expected = {{0, 3}, {36, 1}};
   TestHistogram(
       "RendererScheduler.ExpectedQueueingTimeByTaskQueue2.FramePausable", 4,
       GetFineGrained(expected));
 
   EXPECT_THAT(client.QueueTypeValues(QueueType::kUnthrottled),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(36)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(36)));
   expected = {{0, 2}, {36, 1}, {100, 1}};
   TestHistogram(
       "RendererScheduler.ExpectedQueueingTimeByTaskQueue2.Unthrottled", 4,
       GetFineGrained(expected));
 
   EXPECT_THAT(client.QueueTypeValues(QueueType::kCompositor),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(36)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(36)));
   expected = {{0, 3}, {36, 1}};
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByTaskQueue2.Compositor",
                 4, GetFineGrained(expected));
 
   EXPECT_THAT(client.QueueTypeValues(QueueType::kOther),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(22)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(22)));
   expected = {{0, 3}, {22, 1}};
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByTaskQueue2.Other", 4,
                 GetFineGrained(expected));
@@ -943,7 +943,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
                                      base::TimeDelta::FromMilliseconds(400),
                                      base::TimeDelta::FromMilliseconds(238)};
   EXPECT_THAT(client.FrameStatusValues(FrameStatus::kNone),
-              ::testing::ElementsAreArray(expected_sums));
+              testing::ElementsAreArray(expected_sums));
   expected = {{238, 1}, {400, 1}, {800, 1}, {900, 1}};
   // The 800 and 900 values end up grouped up in the fine-grained version.
   std::vector<BucketExpectation> fine_grained = {
@@ -1125,11 +1125,11 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
 
   // End of window 5. Now check the vectors per frame type.
   EXPECT_THAT(client.FrameStatusValues(FrameStatus::kMainFrameBackground),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(800),
-                                     base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(16)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(800),
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(16)));
   std::vector<BucketExpectation> expected = {
       {0, 1}, {16, 1}, {100, 1}, {800, 2}};
   TestHistogram(
@@ -1138,11 +1138,11 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
       5, GetFineGrained(expected));
 
   EXPECT_THAT(client.FrameStatusValues(FrameStatus::kMainFrameVisible),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(800),
-                                     base::TimeDelta::FromMilliseconds(900),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(16)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(800),
+                                   base::TimeDelta::FromMilliseconds(900),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(16)));
   expected = {{0, 2}, {16, 1}, {800, 2}};
   TestHistogram(
       "RendererScheduler.ExpectedQueueingTimeByFrameStatus2.MainFrameVisible",
@@ -1164,11 +1164,11 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
   };
   for (const auto& frame_expectation : three_expected) {
     EXPECT_THAT(client.FrameStatusValues(frame_expectation.frame_status),
-                ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                       base::TimeDelta::FromMilliseconds(0),
-                                       base::TimeDelta::FromMilliseconds(0),
-                                       base::TimeDelta::FromMilliseconds(100),
-                                       base::TimeDelta::FromMilliseconds(16)));
+                testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(100),
+                                     base::TimeDelta::FromMilliseconds(16)));
     expected = {{0, 3}, {16, 1}, {100, 1}};
     TestHistogram(frame_expectation.name, 5, GetFineGrained(expected));
   }
@@ -1188,21 +1188,21 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
        "CrossOriginBackground"}};
   for (const auto& frame_expectation : more_expected) {
     EXPECT_THAT(client.FrameStatusValues(frame_expectation.frame_status),
-                ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                       base::TimeDelta::FromMilliseconds(0),
-                                       base::TimeDelta::FromMilliseconds(0),
-                                       base::TimeDelta::FromMilliseconds(0),
-                                       base::TimeDelta::FromMilliseconds(16)));
+                testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(16)));
     expected = {{0, 4}, {16, 1}};
     TestHistogram(frame_expectation.name, 5, GetFineGrained(expected));
   }
 
   EXPECT_THAT(client.FrameStatusValues(FrameStatus::kNone),
-              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(82)));
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(82)));
   expected = {{0, 4}, {82, 1}};
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByFrameStatus2.Other", 5,
                 GetFineGrained(expected));
@@ -1214,7 +1214,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
                                      base::TimeDelta::FromMilliseconds(400),
                                      base::TimeDelta::FromMilliseconds(226)};
   EXPECT_THAT(client.QueueTypeValues(QueueType::kOther),
-              ::testing::ElementsAreArray(expected_sums));
+              testing::ElementsAreArray(expected_sums));
   expected = {{226, 1}, {400, 1}, {800, 1}, {900, 1}, {1700, 1}};
   std::vector<BucketExpectation> fine_grained = {
       {226 * 1000, 1}, {400 * 1000, 1}, {800 * 1000, 2}, {1700 * 1000, 1}};

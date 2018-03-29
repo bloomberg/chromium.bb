@@ -17,7 +17,7 @@ const float kEpsilon = 0.00001;
 
 namespace blink {
 
-class HighContrastImageClassifierTest : public ::testing::Test {
+class HighContrastImageClassifierTest : public testing::Test {
  public:
   // Loads the image from |file_name|, computes features vector into |features|,
   // and returns the classification result.

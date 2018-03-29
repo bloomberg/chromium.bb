@@ -33,7 +33,7 @@ class MockEventListenerForPresentationReceiver : public EventListener {
   MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
 };
 
-class PresentationReceiverTest : public ::testing::Test {
+class PresentationReceiverTest : public testing::Test {
  public:
   PresentationReceiverTest()
       : connection_info_(KURL("http://example.com"), "id") {}
@@ -76,7 +76,7 @@ void PresentationReceiverTest::VerifyConnectionListSize(
   EXPECT_EQ(expected_size, receiver->connection_list_->connections_.size());
 }
 
-using ::testing::StrictMock;
+using testing::StrictMock;
 
 TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   V8TestingScope scope;
@@ -85,7 +85,7 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   auto event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -101,7 +101,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
   auto event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -122,7 +122,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(1);
+  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(1);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -153,7 +153,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
 
   // Receive first connection.
   receiver->OnReceiverConnectionAvailable(
@@ -180,13 +180,13 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
 
 TEST_F(PresentationReceiverTest, CreateReceiver) {
   MockWebPresentationClient client;
-  EXPECT_CALL(client, SetReceiver(::testing::NotNull()));
+  EXPECT_CALL(client, SetReceiver(testing::NotNull()));
 
   V8TestingScope scope;
   new PresentationReceiver(&scope.GetFrame(), &client);
-  EXPECT_TRUE(::testing::Mock::VerifyAndClearExpectations(&client));
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&client));
 
-  EXPECT_CALL(client, SetReceiver(::testing::IsNull()));
+  EXPECT_CALL(client, SetReceiver(testing::IsNull()));
 }
 
 }  // namespace blink

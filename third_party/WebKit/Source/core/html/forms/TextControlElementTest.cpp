@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class TextControlElementTest : public ::testing::Test {
+class TextControlElementTest : public testing::Test {
  protected:
   void SetUp() override;
 
