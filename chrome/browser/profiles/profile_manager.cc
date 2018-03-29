@@ -711,8 +711,15 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
         continue;
       }
       Profile* profile = GetProfile(user_data_dir.AppendASCII(profile_path));
-      if (profile)
+      if (profile) {
+        // crbug.com/823338 -> CHECK that the profiles aren't guest or
+        // incognito, causing a crash during session restore.
+        CHECK(!profile->IsGuestSession())
+            << "Guest profiles shouldn't have been saved as active profiles";
+        CHECK(!profile->IsOffTheRecord())
+            << "OTR profiles shouldn't have been saved as active profiles";
         to_return.push_back(profile);
+      }
     }
   }
   return to_return;
@@ -1175,6 +1182,12 @@ void ProfileManager::Observe(
     std::set<std::string> profile_paths;
     std::vector<Profile*>::const_iterator it;
     for (it = active_profiles_.begin(); it != active_profiles_.end(); ++it) {
+      // crbug.com/823338 -> CHECK that the profiles aren't guest or incognito,
+      // causing a crash during session restore.
+      CHECK(!(*it)->IsGuestSession())
+          << "Guest profiles shouldn't be saved as active profiles";
+      CHECK(!(*it)->IsOffTheRecord())
+          << "OTR profiles shouldn't be saved as active profiles";
       std::string profile_path = (*it)->GetPath().BaseName().MaybeAsASCII();
       // Some profiles might become ephemeral after they are created.
       // Don't persist the System Profile as one of the last actives, it should
