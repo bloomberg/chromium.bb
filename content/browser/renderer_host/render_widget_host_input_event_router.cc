@@ -9,6 +9,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -1077,6 +1078,11 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     const blink::WebGestureEvent& gesture_event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
+  // Temporary logging for https://crbug.com/824774.
+  static auto* target_source_key = base::debug::AllocateCrashKeyString(
+      "touchscreen-gesture-target-source", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(target_source_key, "input");
+
   if (gesture_event.GetType() == blink::WebInputEvent::kGesturePinchBegin) {
     in_touchscreen_gesture_pinch_ = true;
     // If the root view wasn't already receiving the gesture stream, then we
@@ -1134,6 +1140,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // RenderWidgetTargeter. These gesture events should always have a
     // unique_touch_event_id of 0.
     touchscreen_gesture_target_.target = target;
+    base::debug::SetCrashKeyString(target_source_key, "touch_id=0");
     DCHECK(target_location.has_value());
     touchscreen_gesture_target_.delta =
         target_location.value() - gesture_event.PositionInWidget();
@@ -1158,6 +1165,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
     touchscreen_gesture_target_.target = result.view;
+    base::debug::SetCrashKeyString(target_source_key, "no_matching_id");
     touchscreen_gesture_target_.delta = transformed_point - original_point;
   } else if (is_gesture_start) {
     touchscreen_gesture_target_ = gesture_target_it->second;
@@ -1183,6 +1191,12 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   blink::WebGestureEvent event(gesture_event);
   event.SetPositionInWidget(event.PositionInWidget() +
                             touchscreen_gesture_target_.delta);
+  // Temporary logging for https://crbug.com/824774.
+  static auto* target_ptr_key = base::debug::AllocateCrashKeyString(
+      "touchscreen-gesture-target-ptr", base::debug::CrashKeySize::Size64);
+  base::debug::SetCrashKeyString(
+      target_ptr_key,
+      base::StringPrintf("%p", touchscreen_gesture_target_.target));
   touchscreen_gesture_target_.target->ProcessGestureEvent(event, latency);
 }
 
