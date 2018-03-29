@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Encrypted Media Extentions IDL test MediaKeyMessageEventInit inherits EventInit, but MediaKeyMessageEventInit is not an interface.
+Harness: the test ran to completion.
+

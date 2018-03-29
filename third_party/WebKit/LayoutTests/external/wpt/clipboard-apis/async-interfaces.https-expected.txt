@@ -1,40 +1,4 @@
 This is a testharness.js-based test.
-PASS Test driver
-PASS Navigator interface: attribute clipboard
-PASS Unscopable handled correctly for clipboard property on Navigator
-PASS Navigator interface: navigator must inherit property "clipboard" with the proper type
-FAIL ClipboardEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
-PASS ClipboardEvent interface object length
-PASS ClipboardEvent interface object name
-FAIL ClipboardEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
-PASS ClipboardEvent interface: existence and properties of interface prototype object's "constructor" property
-PASS ClipboardEvent interface: existence and properties of interface prototype object's @@unscopables property
-PASS ClipboardEvent interface: attribute clipboardData
-PASS Unscopable handled correctly for clipboardData property on ClipboardEvent
-PASS ClipboardEvent must be primary interface of new ClipboardEvent("x")
-FAIL Stringification of new ClipboardEvent("x") Cannot read property 'has_stringifier' of undefined
-PASS ClipboardEvent interface: new ClipboardEvent("x") must inherit property "clipboardData" with the proper type
-PASS Clipboard interface: existence and properties of interface object
-PASS Clipboard interface object length
-PASS Clipboard interface object name
-PASS Clipboard interface: existence and properties of interface prototype object
-PASS Clipboard interface: existence and properties of interface prototype object's "constructor" property
-PASS Clipboard interface: existence and properties of interface prototype object's @@unscopables property
-PASS Clipboard interface: operation read()
-PASS Unscopable handled correctly for read() on Clipboard
-PASS Clipboard interface: operation readText()
-PASS Unscopable handled correctly for readText() on Clipboard
-PASS Clipboard interface: operation write(DataTransfer)
-PASS Unscopable handled correctly for write(DataTransfer) on Clipboard
-PASS Clipboard interface: operation writeText(DOMString)
-PASS Unscopable handled correctly for writeText(DOMString) on Clipboard
-PASS Clipboard must be primary interface of navigator.clipboard
-PASS Stringification of navigator.clipboard
-PASS Clipboard interface: navigator.clipboard must inherit property "read()" with the proper type
-PASS Clipboard interface: navigator.clipboard must inherit property "readText()" with the proper type
-PASS Clipboard interface: navigator.clipboard must inherit property "write(DataTransfer)" with the proper type
-PASS Clipboard interface: calling write(DataTransfer) on navigator.clipboard with too few arguments must throw TypeError
-PASS Clipboard interface: navigator.clipboard must inherit property "writeText(DOMString)" with the proper type
-PASS Clipboard interface: calling writeText(DOMString) on navigator.clipboard with too few arguments must throw TypeError
+FAIL Test driver promise_test: Unhandled rejection with value: object "ClipboardEventInit inherits EventInit, but ClipboardEventInit is not an interface."
 Harness: the test ran to completion.
 

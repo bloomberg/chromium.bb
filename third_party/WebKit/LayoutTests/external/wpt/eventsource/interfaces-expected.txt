@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL EventSource IDL tests Uncaught AddEventListenerOptions inherits EventListenerOptions, but AddEventListenerOptions is not an interface.
+Harness: the test ran to completion.
+

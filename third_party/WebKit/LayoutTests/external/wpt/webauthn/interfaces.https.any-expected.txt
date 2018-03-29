@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL WebAuthn interfaces. promise_test: Unhandled rejection with value: object "PublicKeyCredential inherits Credential, but Credential is undefined."
+Harness: the test ran to completion.
+

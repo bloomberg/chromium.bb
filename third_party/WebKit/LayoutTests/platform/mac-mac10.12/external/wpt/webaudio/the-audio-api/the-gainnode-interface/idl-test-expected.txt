@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL GainNode IDL Test Uncaught GainOptions inherits AudioNodeOptions, but GainOptions is not an interface.
+Harness: the test ran to completion.
+

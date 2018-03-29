@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Media Capabilities IDL tests Uncaught MediaDecodingConfiguration inherits MediaConfiguration, but MediaDecodingConfiguration is not an interface.
+Harness: the test ran to completion.
+

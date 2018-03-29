@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL File API automated IDL tests Uncaught FilePropertyBag inherits BlobPropertyBag, but FilePropertyBag is not an interface.
+Harness: the test ran to completion.
+

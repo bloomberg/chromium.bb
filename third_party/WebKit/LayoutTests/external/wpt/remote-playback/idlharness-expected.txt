@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test driver promise_test: Unhandled rejection with value: object "HTMLMediaElement inherits HTMLElement, but HTMLElement is undefined."
+Harness: the test ran to completion.
+
