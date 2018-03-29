@@ -34,7 +34,7 @@ interface HTMLLinkElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString type;
     [Reflect, ReflectOnly=("script","style","image","video", "audio", "track", "font", "fetch")] attribute DOMString as;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
-    [CEReactions, PutForwards=value] readonly attribute DOMTokenList sizes;
+    [PutForwards=value] readonly attribute DOMTokenList sizes;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLLinkElement-partial

@@ -34,7 +34,7 @@ interface Element : Node {
 
     [CEReactions, Reflect] attribute DOMString id;
     [CEReactions, Reflect=class] attribute DOMString className;
-    [SameObject, CEReactions, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList classList;
+    [SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList classList;
     [Unscopable, CEReactions, Reflect] attribute DOMString slot;
 
     // Pointer Events
