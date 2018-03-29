@@ -406,16 +406,19 @@ cr.define('languages_page_tests', function() {
       }
     });
 
-    test(TestNames.Spellcheck, function() {
-      const spellCheckCollapse = languagesPage.$.spellCheckCollapse;
-      const spellCheckSettingsExist = !!spellCheckCollapse;
-      if (cr.isMac) {
-        assertFalse(spellCheckSettingsExist);
-      } else {
+    suite(TestNames.Spellcheck, function() {
+      test('structure', function() {
+        const spellCheckCollapse = languagesPage.$.spellCheckCollapse;
+        const spellCheckSettingsExist = !!spellCheckCollapse;
+        if (cr.isMac) {
+          assertFalse(spellCheckSettingsExist);
+          return;
+        }
+
         assertTrue(spellCheckSettingsExist);
 
-        // The row button should have a secondary row specifying which language
-        // spell check is enabled for.
+        // The row button should have a secondary row specifying which
+        // language spell check is enabled for.
         const triggerRow = languagesPage.$.spellCheckSubpageTrigger;
 
         // en-US starts with spellcheck enabled, so the secondary row is
@@ -434,8 +437,7 @@ cr.define('languages_page_tests', function() {
         MockInteractions.tap(spellcheckLanguageToggle);
         assertFalse(spellcheckLanguageToggle.checked);
         assertEquals(
-            0,
-            languageHelper.prefs.spellcheck.dictionaries.value.length);
+            0, languageHelper.prefs.spellcheck.dictionaries.value.length);
 
         // Now the secondary row is empty, so it shouldn't be shown.
         assertFalse(triggerRow.classList.contains('two-line'));
@@ -467,7 +469,57 @@ cr.define('languages_page_tests', function() {
         languageHelper.setPrefValue('browser.enable_spellchecking', true);
         Polymer.dom.flush();
         assertFalse(!!triggerRow.querySelector('cr-policy-pref-indicator'));
-      }
+      });
+
+      test('error handling', function() {
+        if (cr.isMac)
+          return;
+
+        const checkAllHidden = nodes => {
+          assertTrue(nodes.every(node => node.hidden));
+        };
+
+        const languageSettingsPrivate =
+            browserProxy.getLanguageSettingsPrivate();
+        const spellCheckCollapse = languagesPage.$.spellCheckCollapse;
+        const errorDivs = Array.from(
+            spellCheckCollapse.querySelectorAll('.name-with-error-list div'));
+        assertEquals(4, errorDivs.length);
+        checkAllHidden(errorDivs);
+
+        const retryButtons =
+            Array.from(spellCheckCollapse.querySelectorAll('paper-button'));
+        assertEquals(2, retryButtons.length);
+        checkAllHidden(retryButtons);
+
+        const languageCode =
+            languagesPage.get('languages.enabled.0.language.code');
+        languageSettingsPrivate.onSpellcheckDictionariesChanged.callListeners([
+          {languageCode, isReady: false, downloadFailed: true},
+        ]);
+
+        Polymer.dom.flush();
+        assertFalse(errorDivs[0].hidden);
+        checkAllHidden(errorDivs.slice(1));
+        assertFalse(retryButtons[0].hidden);
+        assertTrue(retryButtons[1].hidden);
+
+        // Check that more information is provided when subsequent downloads
+        // fail.
+        const moreInfo = errorDivs[1];
+        assertTrue(moreInfo.hidden);
+        // No change when status is the same as last update.
+        const currentStatus =
+            languagesPage.get('languages.enabled.0.downloadDictionaryStatus');
+        languageSettingsPrivate.onSpellcheckDictionariesChanged.callListeners(
+            [currentStatus]);
+        Polymer.dom.flush();
+        assertTrue(moreInfo.hidden);
+
+        retryButtons[0].click();
+        Polymer.dom.flush();
+        assertFalse(moreInfo.hidden);
+      });
     });
   });
 

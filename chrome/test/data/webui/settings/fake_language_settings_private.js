@@ -255,8 +255,7 @@ cr.define('settings', function() {
      *     callback
      */
     getSpellcheckDictionaryStatuses(callback) {
-      assertNotReached(
-          'Not implemented in fake: getSpellcheckDictionaryStatuses');
+      callback([]);
     }
 
     /**
@@ -342,6 +341,19 @@ cr.define('settings', function() {
           'prefs.settings.language.preload_engines.value',
           this.settingsPrefs_.prefs.settings.language.preload_engines.value
               .replace(inputMethodId, ''));
+    }
+
+    /**
+     * Tries to download the dictionary after a failed download.
+     * @param {string} languageCode
+     */
+    retryDownloadDictionary(languageCode) {
+      this.onSpellcheckDictionariesChanged.callListeners([
+        {languageCode, isReady: false, isDownlading: true},
+      ]);
+      this.onSpellcheckDictionariesChanged.callListeners([
+        {languageCode, isReady: false, downloadFailed: true},
+      ]);
     }
   }
 

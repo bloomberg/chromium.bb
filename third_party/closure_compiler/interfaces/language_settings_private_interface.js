@@ -112,6 +112,13 @@ LanguageSettingsPrivate.prototype = {
    * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-removeInputMethod
    */
   removeInputMethod: assertNotReached,
+
+  /**
+   * Tries to download the dictionary after a failed download.
+   * @param {string} languageCode
+   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-retryDownloadDictionary
+   */
+  retryDownloadDictionary: assertNotReached,
 };
 
 /**

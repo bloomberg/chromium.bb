@@ -122,6 +122,19 @@ Polymer({
         'languages.forcedSpellCheckLanguages.*)',
     'updateSpellcheckEnabled_(prefs.browser.enable_spellchecking.*)',
   ],
+
+  /**
+   * Checks if there are any errors downloading the spell check dictionary. This
+   * is used for showing/hiding error messages, spell check toggle and retry.
+   * button.
+   * @param {number} downloadDictionaryFailureCount
+   * @param {number} threshold
+   * @return {boolean}
+   * @private
+   */
+  errorsGreaterThan_: function(downloadDictionaryFailureCount, threshold) {
+    return downloadDictionaryFailureCount > threshold;
+  },
   // </if>
 
   /**
@@ -482,8 +495,7 @@ Polymer({
    */
   getSpellCheckLanguages_: function() {
     return this.languages.enabled.concat(
-        this.languages.forcedSpellCheckLanguages.map(
-            language => ({'language': language, isManaged: true})));
+        this.languages.forcedSpellCheckLanguages);
   },
 
   /** @private */
@@ -500,6 +512,8 @@ Polymer({
     for (let i = 0; i < this.spellCheckLanguages_.length; i++) {
       this.notifyPath(`spellCheckLanguages_.${i}.isManaged`);
       this.notifyPath(`spellCheckLanguages_.${i}.spellCheckEnabled`);
+      this.notifyPath(
+          `spellCheckLanguages_.${i}.downloadDictionaryFailureCount`);
     }
   },
 
@@ -531,6 +545,39 @@ Polymer({
 
     this.languageHelper.toggleSpellCheck(
         item.language.code, !item.spellCheckEnabled);
+  },
+
+  /**
+   * Handler to initiate another attempt at downloading the spell check
+   * dictionary for a specified language.
+   * @param {!{target: Element, model: !{item: !LanguageState}}} e
+   */
+  onRetryDictionaryDownloadClick_: function(e) {
+    assert(this.errorsGreaterThan_(
+        e.model.item.downloadDictionaryFailureCount, 0));
+    this.languageHelper.retryDownloadDictionary(e.model.item.language.code);
+  },
+
+  /**
+   * Handler for clicking on the name of the language. The action taken must
+   * match the control that is available.
+   * @param {!{target: Element, model: !{item: !LanguageState}}} e
+   */
+  onSpellCheckNameClick_: function(e) {
+    assert(!this.isSpellCheckNameClickDisabled_(e.model.item));
+    this.onSpellCheckChange_(e);
+  },
+
+  /**
+   * Name only supports clicking when language is not managed, supports
+   * spellcheck, and the dictionary has been downloaded with no errors.
+   * @param {!LanguageState|!ForcedLanguageState} item
+   * @return {boolean}
+   * @private
+   */
+  isSpellCheckNameClickDisabled_: function(item) {
+    return item.isManaged || !item.language.supportsSpellcheck ||
+        item.downloadDictionaryFailureCount > 0;
   },
 
   /**

@@ -6,6 +6,8 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -75,6 +77,25 @@
       #uiLanguageItem:focus,
       #offerTranslations:focus {
         background-color: transparent;
+      }
+
+      .name-with-error-list {
+        padding: 18px 0;
+      }
+
+      .name-with-error-list div {
+        color: var(--google-red-500);
+        margin-top: 8px;
+      }
+
+      .error-icon {
+        @apply --cr-icon-height-width;
+        --iron-icon-fill-color: var(--google-red-700);
+        -webkit-margin-end: 8px;
+      }
+
+      .name-with-error-list[disabled] {
+        pointer-events: none;
       }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
@@ -231,24 +252,42 @@
         <iron-collapse id="spellCheckCollapse" opened="[[spellCheckOpened_]]">
           <div class="list-frame vertical-list">
             <template is="dom-repeat" items="[[spellCheckLanguages_]]">
-              <div class="list-item">
-                <template is="dom-if" if="[[!item.isManaged]]">
-                  <div class="start" on-click="onSpellCheckChange_"
-                      actionable$="[[item.language.supportsSpellcheck]]">
-                    [[item.language.displayName]]
+              <div class="list-item two-line">
+                <div class="start name-with-error-list"
+                    on-click="onSpellCheckNameClick_" actionable
+                    disabled$="[[isSpellCheckNameClickDisabled_(item,
+                        item.*)]]">
+                  [[item.language.displayName]]
+                  <div hidden="[[!errorsGreaterThan_(
+                      item.downloadDictionaryFailureCount, 0)]]">
+                    <iron-icon class="error-icon" icon="error">
+                    </iron-icon>
+                    $i18n{languagesDictionaryDownloadError}
                   </div>
+                  <div hidden="[[!errorsGreaterThan_(
+                      item.downloadDictionaryFailureCount, 1)]]">
+                    $i18n{languagesDictionaryDownloadErrorHelp}
+                  </div>
+                </div>
+                <paper-button on-click="onRetryDictionaryDownloadClick_"
+                    hidden="[[!errorsGreaterThan_(
+                        item.downloadDictionaryFailureCount, 0)]]">
+                  $i18n{retry}
+                </paper-button>
+                <template is="dom-if" if="[[!item.isManaged]]">
                   <cr-toggle on-change="onSpellCheckChange_"
                       disabled="[[!item.language.supportsSpellcheck]]"
                       checked="[[item.spellCheckEnabled]]"
-                      aria-label$="[[item.language.displayName]]">
+                      aria-label$="[[item.language.displayName]]"
+                      hidden="[[errorsGreaterThan_(
+                          item.downloadDictionaryFailureCount, 0)]]">
                   </cr-toggle>
                 </template>
                 <template is="dom-if" if="[[item.isManaged]]">
-                  <div class="start">
-                    [[item.language.displayName]]
-                  </div>
                   <cr-policy-pref-indicator
-                      pref="[[prefs.spellcheck.forced_dictionaries]]">
+                      pref="[[prefs.spellcheck.forced_dictionaries]]"
+                      hidden="[[errorsGreaterThan_(
+                          item.downloadDictionaryFailureCount, 0)]]">
                   </cr-policy-pref-indicator>
                 </template>
               </div>

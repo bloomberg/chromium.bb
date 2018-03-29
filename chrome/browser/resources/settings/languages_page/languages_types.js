@@ -15,6 +15,9 @@
  *   spellCheckEnabled: boolean,
  *   translateEnabled: boolean,
  *   isManaged: boolean,
+ *   downloadDictionaryFailureCount: number,
+ *   downloadDictionaryStatus:
+ *       ?chrome.languageSettingsPrivate.SpellcheckDictionaryStatus,
  * }}
  */
 let LanguageState;
@@ -24,6 +27,9 @@ let LanguageState;
  * @typedef {{
  *   language: !chrome.languageSettingsPrivate.Language,
  *   isManaged: boolean,
+ *   downloadDictionaryFailureCount: number,
+ *   downloadDictionaryStatus:
+ *       ?chrome.languageSettingsPrivate.SpellcheckDictionaryStatus,
  * }}
  */
 let ForcedLanguageState;
@@ -61,7 +67,7 @@ let InputMethodsModel;
  *   translateTarget: string,
  *   prospectiveUILanguage: (string|undefined),
  *   inputMethods: (!InputMethodsModel|undefined),
- *   forcedSpellCheckLanguages: !Array<!chrome.languageSettingsPrivate.Language>
+ *   forcedSpellCheckLanguages: !Array<!ForcedLanguageState>,
  * }}
  */
 let LanguagesModel;
@@ -173,6 +179,9 @@ LanguageHelper.prototype = {
    * @return {!chrome.languageSettingsPrivate.Language|undefined}
    */
   getLanguage: assertNotReached,
+
+  /** @param {string} languageCode */
+  retryDownloadDictionary: assertNotReached,
 
   // <if expr="chromeos">
   /** @param {string} id */
