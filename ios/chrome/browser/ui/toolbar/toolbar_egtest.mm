@@ -334,8 +334,8 @@ using chrome_test_util::OmniboxText;
 // Types JavaScript into Omnibox and verify that an alert is displayed.
 - (void)testTypeJavaScriptIntoOmnibox {
   // TODO(crbug.com/642544): Enable the test for iPad when typing bug is fixed.
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS10OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled for iOS10 iPad due to a typing bug.");
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
   }
 
   std::map<GURL, std::string> responses;
@@ -359,8 +359,8 @@ using chrome_test_util::OmniboxText;
 // script execution.
 - (void)testTypeJavaScriptIntoOmniboxWithWebUIPage {
   // TODO(crbug.com/642544): Enable the test for iPad when typing bug is fixed.
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS10OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled for iOS10 iPad due to a typing bug.");
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
   }
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
