@@ -154,6 +154,10 @@
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #endif  // !defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/views/frame/browser_view_commands_mac.h"
+#endif
+
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/theme_profile_key.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -1412,6 +1416,9 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
 void BrowserView::CutCopyPaste(int command_id) {
+#if defined(OS_MACOSX)
+  ForwardCutCopyPasteToNSApp(command_id);
+#else
   // If a WebContents is focused, call its member method.
   //
   // We could make WebContents register accelerators and then just use the
@@ -1449,6 +1456,7 @@ void BrowserView::CutCopyPaste(int command_id) {
   ui::Accelerator accelerator;
   GetAccelerator(command_id, &accelerator);
   GetFocusManager()->ProcessAccelerator(accelerator);
+#endif  // defined(OS_MACOSX)
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
