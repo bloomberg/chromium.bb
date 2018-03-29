@@ -549,6 +549,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             @Override
             public void onLargeIconAvailable(
                     Bitmap icon, int fallbackColor, boolean isFallbackColorDefault, int iconType) {
+                if (isNotificationHiddingOrHidden()) return;
                 if (icon == null) {
                     // If we do not have any favicon then make sure we show default sound icon. This
                     // icon is used by notification manager only if we do not show any icon.
