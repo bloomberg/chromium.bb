@@ -7,7 +7,9 @@
 namespace content {
 
 ResizeParams::ResizeParams()
-    : browser_controls_shrink_blink_size(false),
+    : auto_resize_enabled(false),
+      auto_resize_sequence_number(0u),
+      browser_controls_shrink_blink_size(false),
       scroll_focused_node_into_view(false),
       top_controls_height(0.f),
       bottom_controls_height(0.f),

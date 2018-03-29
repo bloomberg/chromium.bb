@@ -446,9 +446,14 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
 
   // Send the LocalSurfaceId for the first Auto-Resize.
   viz::ParentLocalSurfaceIdAllocator allocator;
-  widget()->OnMessageReceived(ViewMsg_SetLocalSurfaceIdForAutoResize(
-      widget()->routing_id(), auto_resize_sequence_number, auto_size,
-      auto_size2, ScreenInfo(), 0u, allocator.GenerateId()));
+  content::ResizeParams resize_params;
+  resize_params.auto_resize_enabled = true;
+  resize_params.auto_resize_sequence_number = auto_resize_sequence_number;
+  resize_params.min_size_for_auto_resize = auto_size;
+  resize_params.max_size_for_auto_resize = auto_size2;
+  resize_params.local_surface_id = allocator.GenerateId();
+  widget()->OnMessageReceived(
+      ViewMsg_Resize(widget()->routing_id(), resize_params));
 
   // The LocalSurfaceId should not take because there's another in-flight auto-
   // resize operation.

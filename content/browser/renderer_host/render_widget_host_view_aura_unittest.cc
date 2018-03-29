@@ -2350,18 +2350,18 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
 }
 
 // This test verifies that in AutoResize mode a new
-// ViewMsg_SetLocalSurfaceIdForAutoResize message is sent when ScreenInfo
+// ViewMsg_Resize message is sent when ScreenInfo
 // changes and that message contains the latest ScreenInfo.
 TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
-  sink_->ClearMessages();
   viz::LocalSurfaceId local_surface_id1(view_->GetLocalSurfaceId());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+  sink_->ClearMessages();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
   params.sequence_number = 1;
@@ -2378,16 +2378,19 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SetLocalSurfaceIdForAutoResize::ID),
-              msg->type());
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
-    EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
-    EXPECT_EQ("50x50", std::get<1>(params).ToString());
-    EXPECT_EQ("100x100", std::get<2>(params).ToString());
-    EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
-    local_surface_id2 = std::get<5>(params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    ResizeParams resize_params = std::get<0>(params);
+    EXPECT_EQ(1u,
+              resize_params.auto_resize_sequence_number);  // sequence_number
+    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
+    local_surface_id2 =
+        resize_params.local_surface_id.value_or(viz::LocalSurfaceId());
     EXPECT_NE(local_surface_id1, local_surface_id2);
+    EXPECT_TRUE(local_surface_id2.is_valid());
   }
 
   sink_->ClearMessages();
@@ -2396,33 +2399,36 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   {
     // TODO(samans): There should be only one message in the sink, but some
     // testers are seeing two (crrev.com/c/839580). Investigate why.
-    const IPC::Message* msg = sink_->GetFirstMessageMatching(
-        ViewMsg_SetLocalSurfaceIdForAutoResize::ID);
+    const IPC::Message* msg =
+        sink_->GetFirstMessageMatching(ViewMsg_Resize::ID);
     ASSERT_TRUE(msg);
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
-    EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
-    EXPECT_EQ("50x50", std::get<1>(params).ToString());
-    EXPECT_EQ("100x100", std::get<2>(params).ToString());
-    EXPECT_EQ(2, std::get<3>(params).device_scale_factor);
-    EXPECT_NE(local_surface_id1, std::get<5>(params));
-    EXPECT_NE(local_surface_id2, std::get<5>(params));
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    ResizeParams resize_params = std::get<0>(params);
+    EXPECT_EQ(1u,
+              resize_params.auto_resize_sequence_number);  // sequence_number
+    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(2, resize_params.screen_info.device_scale_factor);
+    EXPECT_NE(local_surface_id1,
+              resize_params.local_surface_id.value_or(viz::LocalSurfaceId()));
+    EXPECT_NE(local_surface_id2,
+              resize_params.local_surface_id.value_or(viz::LocalSurfaceId()));
   }
 }
 
 // This test verifies that in AutoResize mode a new
-// ViewMsg_SetLocalSurfaceIdForAutoResize message is sent when size
-// changes.
+// ViewMsg_Resize message is sent when size changes.
 TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
-  sink_->ClearMessages();
   viz::LocalSurfaceId local_surface_id1(view_->GetLocalSurfaceId());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+  sink_->ClearMessages();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
   params.sequence_number = 1;
@@ -2439,15 +2445,17 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SetLocalSurfaceIdForAutoResize::ID),
-              msg->type());
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
-    EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
-    EXPECT_EQ("50x50", std::get<1>(params).ToString());
-    EXPECT_EQ("100x100", std::get<2>(params).ToString());
-    EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
-    local_surface_id2 = std::get<5>(params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    ResizeParams resize_params = std::get<0>(params);
+    EXPECT_EQ(1u, resize_params.auto_resize_sequence_number);
+    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
+    local_surface_id2 =
+        resize_params.local_surface_id.value_or(viz::LocalSurfaceId());
+    EXPECT_TRUE(local_surface_id2.is_valid());
     EXPECT_NE(local_surface_id1, local_surface_id2);
   }
 
@@ -2455,19 +2463,20 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
 
   view_->SetSize(gfx::Size(120, 120));
   viz::LocalSurfaceId local_surface_id3;
-  // Find out what the second IPC is.
-  ASSERT_EQ(2u, sink_->message_count());
+  ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SetLocalSurfaceIdForAutoResize::ID),
-              msg->type());
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
-    ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
-    EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
-    EXPECT_EQ("50x50", std::get<1>(params).ToString());
-    EXPECT_EQ("100x100", std::get<2>(params).ToString());
-    EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
-    local_surface_id3 = std::get<5>(params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    ResizeParams resize_params = std::get<0>(params);
+    EXPECT_EQ(1u, resize_params.auto_resize_sequence_number);
+    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
+    local_surface_id3 =
+        resize_params.local_surface_id.value_or(viz::LocalSurfaceId());
+    EXPECT_TRUE(local_surface_id3.is_valid());
     EXPECT_NE(local_surface_id1, local_surface_id3);
     EXPECT_NE(local_surface_id2, local_surface_id3);
   }

@@ -959,18 +959,16 @@ void RenderViewHostImpl::EnablePreferredSizeMode() {
 void RenderViewHostImpl::EnableAutoResize(const gfx::Size& min_size,
                                           const gfx::Size& max_size) {
   GetWidget()->SetAutoResize(true, min_size, max_size);
-  Send(new ViewMsg_EnableAutoResize(GetRoutingID(), min_size, max_size));
 }
 
 void RenderViewHostImpl::DisableAutoResize(const gfx::Size& new_size) {
-  GetWidget()->SetAutoResize(false, gfx::Size(), gfx::Size());
-  Send(new ViewMsg_DisableAutoResize(GetRoutingID(), new_size));
   if (!new_size.IsEmpty())
     GetWidget()->GetView()->SetSize(new_size);
   // This clears the cached value in the WebContents, so that OOPIFs will
   // stop using it.
   if (GetWidget()->delegate())
     GetWidget()->delegate()->ResetAutoResizeSize();
+  GetWidget()->SetAutoResize(false, gfx::Size(), gfx::Size());
 }
 
 void RenderViewHostImpl::ExecuteMediaPlayerActionAtLocation(

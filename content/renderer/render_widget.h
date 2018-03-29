@@ -415,6 +415,19 @@ class CONTENT_EXPORT RenderWidget
   uint32_t GetContentSourceId();
   void DidNavigate();
 
+  bool auto_resize_mode() const { return auto_resize_mode_; }
+
+  uint64_t auto_resize_sequence_number() const {
+    return auto_resize_sequence_number_;
+  }
+
+  const gfx::Size& min_size_for_auto_resize() const {
+    return min_size_for_auto_resize_;
+  }
+
+  const gfx::Size& max_size_for_auto_resize() const {
+    return max_size_for_auto_resize_;
+  }
   // MainThreadEventQueueClient overrides.
 
   // Requests a BeginMainFrame callback from the compositor.
@@ -537,12 +550,6 @@ class CONTENT_EXPORT RenderWidget
       RenderWidgetScreenMetricsEmulator* emulator);
 #endif
 
-  void SetLocalSurfaceIdForAutoResize(
-      uint64_t sequence_number,
-      const content::ScreenInfo& screen_info,
-      uint32_t content_source_id,
-      const viz::LocalSurfaceId& local_surface_id);
-
   // RenderWidget IPC message handlers
   void OnHandleInputEvent(
       const blink::WebInputEvent* event,
@@ -552,13 +559,6 @@ class CONTENT_EXPORT RenderWidget
   void OnClose();
   void OnCreatingNewAck();
   virtual void OnResize(const ResizeParams& params);
-  void OnSetLocalSurfaceIdForAutoResize(
-      uint64_t sequence_number,
-      const gfx::Size& min_size,
-      const gfx::Size& max_size,
-      const content::ScreenInfo& screen_info,
-      uint32_t content_source_id,
-      const viz::LocalSurfaceId& local_surface_id);
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
   virtual void OnWasHidden();
@@ -735,6 +735,12 @@ class CONTENT_EXPORT RenderWidget
 
   // The sequence number used for the auto-resize request.
   uint64_t auto_resize_sequence_number_ = 0;
+
+  // The minimum size to use for auto-resize.
+  gfx::Size min_size_for_auto_resize_;
+
+  // The maximum size to use for auto-resize.
+  gfx::Size max_size_for_auto_resize_;
 
   // A pending ResizeOrRepaintAck callback in response to an auto-resize
   // initiated by Blink. If auto-resize mode is canceled with an in-flight

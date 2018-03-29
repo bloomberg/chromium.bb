@@ -162,6 +162,10 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)
   IPC_STRUCT_TRAITS_MEMBER(screen_info)
+  IPC_STRUCT_TRAITS_MEMBER(auto_resize_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(min_size_for_auto_resize)
+  IPC_STRUCT_TRAITS_MEMBER(max_size_for_auto_resize)
+  IPC_STRUCT_TRAITS_MEMBER(auto_resize_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(new_size)
   IPC_STRUCT_TRAITS_MEMBER(compositor_viewport_pixel_size)
   IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
@@ -343,19 +347,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 // rect so that we don't have to fetch it every time WebKit asks for it.
 IPC_MESSAGE_ROUTED1(ViewMsg_Resize, content::ResizeParams /* params */)
 
-// Tells the widget to use the provided viz::LocalSurfaceId to submit
-// CompositorFrames for autosize.
-// TODO(fsamuel): Replace these parameters with ResizeParams eventually. After
-// surface sync is on by default everywhere, ResizeParams should be renamed to
-// SynchronizedVisualParams.
-IPC_MESSAGE_ROUTED(ViewMsg_SetLocalSurfaceIdForAutoResize,
-                   uint64_t /* sequence_number */,
-                   gfx::Size /* min_size */,
-                   gfx::Size /* max_size */,
-                   content::ScreenInfo /* screen_info */,
-                   uint32_t /* content_source_id */,
-                   viz::LocalSurfaceId /* local_surface_id */)
-
 // Enables device emulation. See WebDeviceEmulationParams for description.
 IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,
                     blink::WebDeviceEmulationParams /* params */)
@@ -444,16 +435,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
 
 // Used to instruct the RenderView to send back updates to the preferred size.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
-
-// Used to instruct the RenderView to automatically resize and send back
-// updates for the new size.
-IPC_MESSAGE_ROUTED2(ViewMsg_EnableAutoResize,
-                    gfx::Size /* min_size */,
-                    gfx::Size /* max_size */)
-
-// Used to instruct the RenderView to disalbe automatically resize.
-IPC_MESSAGE_ROUTED1(ViewMsg_DisableAutoResize,
-                    gfx::Size /* new_size */)
 
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
