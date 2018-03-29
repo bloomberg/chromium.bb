@@ -35,6 +35,11 @@ class AutofillSaveCardInfoBar : public ConfirmInfoBar {
   // Returns the infobar delegate.
   autofill::AutofillSaveCardInfoBarDelegateMobile* GetSaveCardDelegate();
 
+  // Returns Google Pay branding icon id. Keeping this method here instead
+  // of autofill_save_card_infobar_delegate_mobile.cc as Android icon .xmls
+  // are stored in /chrome and /components cannot depend on /chrome.
+  int GetGooglePayBrandingIconId();
+
   DISALLOW_COPY_AND_ASSIGN(AutofillSaveCardInfoBar);
 };
 

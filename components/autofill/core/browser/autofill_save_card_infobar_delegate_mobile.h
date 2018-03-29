@@ -49,6 +49,14 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // Legal messages are only specified for the upload case, not for local save.
   bool LegalMessagesParsedSuccessfully();
 
+  // Google Pay branding is enabled with a flag and only for cards upstreamed
+  // to Google.
+  bool IsGooglePayBrandingEnabled() const;
+
+  // All following changes are with respect to Google Pay branding.
+  base::string16 GetTitleText() const;
+  base::string16 GetDescriptionText() const;
+
   // ConfirmInfoBarDelegate:
   int GetIconId() const override;
   base::string16 GetMessageText() const override;

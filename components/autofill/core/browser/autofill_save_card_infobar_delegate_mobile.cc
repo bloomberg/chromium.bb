@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -53,6 +54,10 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       return;
     }
   }
+  if (IsGooglePayBrandingEnabled()) {
+    card_label_ = card.NetworkForDisplay() + base::string16(kMidlineEllipsis) +
+                  card.LastFourDigits();
+  }
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
       AutofillMetrics::INFOBAR_SHOWN, upload_,
@@ -77,18 +82,40 @@ bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
   return !upload_ || !legal_messages_.empty();
 }
 
+bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {
+  return upload_ &&
+         base::FeatureList::IsEnabled(
+             features::kAutofillUpstreamUseGooglePayOnAndroidBranding);
+}
+
+base::string16 AutofillSaveCardInfoBarDelegateMobile::GetTitleText() const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
+}
+
+base::string16 AutofillSaveCardInfoBarDelegateMobile::GetDescriptionText()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2);
+}
+
 int AutofillSaveCardInfoBarDelegateMobile::GetIconId() const {
-  return IDR_INFOBAR_AUTOFILL_CC;
+  return IsGooglePayBrandingEnabled() ? 0 : IDR_INFOBAR_AUTOFILL_CC;
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetMessageText() const {
+  if (IsGooglePayBrandingEnabled()) {
+    return base::string16();
+  }
   return l10n_util::GetStringUTF16(
       upload_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD
               : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  return IsGooglePayBrandingEnabled()
+             ? base::string16()
+             : l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -128,7 +155,7 @@ bool AutofillSaveCardInfoBarDelegateMobile::Cancel() {
 }
 
 GURL AutofillSaveCardInfoBarDelegateMobile::GetLinkURL() const {
-  return GURL(kHelpURL);
+  return IsGooglePayBrandingEnabled() ? GURL() : GURL(kHelpURL);
 }
 
 void AutofillSaveCardInfoBarDelegateMobile::LogUserAction(
