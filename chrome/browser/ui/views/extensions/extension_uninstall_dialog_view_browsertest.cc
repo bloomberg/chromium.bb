@@ -6,12 +6,16 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -134,6 +138,46 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
   run_loop.Run();
   EXPECT_TRUE(delegate.canceled());
 }
+
+#if defined(OS_CHROMEOS)
+// Test that we don't crash when uninstalling an extension from a bookmark app
+// window in Ash. Context: crbug.com/825554
+IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
+                       BookmarkAppWindowAshCrash) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
+
+  scoped_refptr<extensions::Extension> extension(BuildTestExtension());
+  extensions::ExtensionSystem::Get(browser()->profile())
+      ->extension_service()
+      ->AddExtension(extension.get());
+
+  WebApplicationInfo info;
+  info.app_url = GURL("https://test.com/");
+  const extensions::Extension* bookmark_app =
+      extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
+                                                       info);
+  Browser* app_browser = extensions::browsertest_util::LaunchAppBrowser(
+      browser()->profile(), bookmark_app);
+
+  std::unique_ptr<extensions::ExtensionUninstallDialog> dialog;
+  {
+    base::RunLoop run_loop;
+    dialog.reset(extensions::ExtensionUninstallDialog::Create(
+        app_browser->profile(), app_browser->window()->GetNativeWindow(),
+        nullptr));
+    run_loop.RunUntilIdle();
+  }
+
+  {
+    base::RunLoop run_loop;
+    dialog->ConfirmUninstall(extension.get(),
+                             extensions::UNINSTALL_REASON_FOR_TESTING,
+                             extensions::UNINSTALL_SOURCE_FOR_TESTING);
+    run_loop.RunUntilIdle();
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Test that when the user clicks Uninstall on the ExtensionUninstallDialog, the
 // extension's uninstall url (when it is specified) should open and be the

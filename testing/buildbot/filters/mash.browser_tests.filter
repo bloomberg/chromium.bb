@@ -42,6 +42,7 @@
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -BrowserNonClientFrameViewAshBackButtonTest.*
 -BrowserNonClientFrameViewAshTest.*
+-ExtensionUninstallDialogViewBrowserTest.BookmarkAppWindowAshCrash
 -HostedAppNonClientFrameViewAshTest.*
 -ImmersiveModeControllerAshHostedAppBrowserTest.*
 
