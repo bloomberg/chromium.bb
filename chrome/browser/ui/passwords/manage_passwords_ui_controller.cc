@@ -312,12 +312,6 @@ ManagePasswordsUIController::GetCredentialSource() const {
              : password_manager::metrics_util::CredentialSourceType::kUnknown;
 }
 
-bool ManagePasswordsUIController::IsPasswordOverridden() const {
-  const password_manager::PasswordFormManager* form_manager =
-      passwords_data_.form_manager();
-  return form_manager ? form_manager->password_overridden() : false;
-}
-
 const std::vector<std::unique_ptr<autofill::PasswordForm>>&
 ManagePasswordsUIController::GetCurrentForms() const {
   return passwords_data_.GetCurrentForms();
@@ -384,7 +378,6 @@ void ManagePasswordsUIController::NeverSavePassword() {
 
 void ManagePasswordsUIController::SavePassword(const base::string16& username,
                                                const base::string16& password) {
-  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
   const auto& pending_credentials =
       passwords_data_.form_manager()->pending_credentials();
   bool username_edited = pending_credentials.username_value != username;

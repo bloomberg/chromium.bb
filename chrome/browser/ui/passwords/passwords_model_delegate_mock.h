@@ -25,7 +25,6 @@ class PasswordsModelDelegateMock
   MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
   MOCK_CONST_METHOD0(GetCredentialSource,
                      password_manager::metrics_util::CredentialSourceType());
-  MOCK_CONST_METHOD0(IsPasswordOverridden, bool());
   MOCK_CONST_METHOD0(
       GetCurrentForms,
       const std::vector<std::unique_ptr<autofill::PasswordForm>>&());

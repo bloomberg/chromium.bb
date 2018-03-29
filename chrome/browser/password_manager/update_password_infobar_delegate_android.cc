@@ -38,6 +38,7 @@ void UpdatePasswordInfoBarDelegate::Create(
 }
 
 UpdatePasswordInfoBarDelegate::~UpdatePasswordInfoBarDelegate() {
+  password_manager::metrics_util::LogUpdateUIDismissalReason(infobar_response_);
   passwords_state_.form_manager()->metrics_recorder()->RecordUIDismissalReason(
       infobar_response_);
 }

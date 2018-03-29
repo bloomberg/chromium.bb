@@ -47,6 +47,8 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
 
 IOSChromeUpdatePasswordInfoBarDelegate::
     ~IOSChromeUpdatePasswordInfoBarDelegate() {
+  password_manager::metrics_util::LogUpdateUIDismissalReason(
+      infobar_response());
   form_to_save()->metrics_recorder()->RecordUIDismissalReason(
       infobar_response());
 }

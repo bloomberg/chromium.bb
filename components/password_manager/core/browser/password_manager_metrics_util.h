@@ -44,7 +44,7 @@ enum UIDisplayDisposition {
 // Metrics: "PasswordManager.UIDismissalReason"
 enum UIDismissalReason {
   // We use this to mean both "Bubble lost focus" and "No interaction with the
-  // infobar", depending on which experiment is active.
+  // infobar".
   NO_DIRECT_INTERACTION = 0,
   CLICKED_SAVE,
   CLICKED_CANCEL,
@@ -89,37 +89,6 @@ enum PasswordSubmissionEvent {
   PASSWORD_USED,
   GENERATED_PASSWORD_FORCE_SAVED,
   SUBMISSION_EVENT_ENUM_COUNT
-};
-
-enum UpdatePasswordSubmissionEvent {
-  NO_ACCOUNTS_CLICKED_UPDATE,
-  NO_ACCOUNTS_CLICKED_NOPE,
-  NO_ACCOUNTS_NO_INTERACTION,
-  ONE_ACCOUNT_CLICKED_UPDATE,
-  ONE_ACCOUNT_CLICKED_NOPE,
-  ONE_ACCOUNT_NO_INTERACTION,
-  MULTIPLE_ACCOUNTS_CLICKED_UPDATE,
-  MULTIPLE_ACCOUNTS_CLICKED_NOPE,
-  MULTIPLE_ACCOUNTS_NO_INTERACTION,
-  PASSWORD_OVERRIDDEN_CLICKED_UPDATE,
-  PASSWORD_OVERRIDDEN_CLICKED_NOPE,
-  PASSWORD_OVERRIDDEN_NO_INTERACTION,
-  UPDATE_PASSWORD_EVENT_COUNT,
-
-  NO_UPDATE_SUBMISSION
-};
-
-enum MultiAccountUpdateBubbleUserAction {
-  DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_CHANGED,
-  DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_NOT_CHANGED,
-  DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_REJECTED_UPDATE,
-  DEFAULT_ACCOUNT_PREFERRED_USER_CHANGED,
-  DEFAULT_ACCOUNT_PREFERRED_USER_NOT_CHANGED,
-  DEFAULT_ACCOUNT_PREFERRED_USER_REJECTED_UPDATE,
-  DEFAULT_ACCOUNT_FIRST_USER_CHANGED,
-  DEFAULT_ACCOUNT_FIRST_USER_NOT_CHANGED,
-  DEFAULT_ACCOUNT_FIRST_USER_REJECTED_UPDATE,
-  MULTI_ACCOUNT_UPDATE_BUBBLE_USER_ACTION_COUNT
 };
 
 enum AutoSigninPromoUserAction {
@@ -287,8 +256,15 @@ enum class ExportPasswordsResult {
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
 
-// Log the |reason| a user dismissed the password manager UI.
-void LogUIDismissalReason(UIDismissalReason reason);
+// Log the |reason| a user dismissed the password manager UI except save/update
+// bubbles.
+void LogGeneralUIDismissalReason(UIDismissalReason reason);
+
+// Log the |reason| a user dismissed the save password bubble.
+void LogSaveUIDismissalReason(UIDismissalReason reason);
+
+// Log the |reason| a user dismissed the update password bubble.
+void LogUpdateUIDismissalReason(UIDismissalReason reason);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
@@ -308,14 +284,6 @@ void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event);
 // Log when password generation is available for a particular form.
 void LogPasswordGenerationAvailableSubmissionEvent(
     PasswordSubmissionEvent event);
-
-// Log submission events related to password update.
-void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event);
-
-// Log a user action on showing an update password bubble with multiple
-// accounts.
-void LogMultiAccountUpdateBubbleUserAction(
-    MultiAccountUpdateBubbleUserAction action);
 
 // Log a user action on showing the autosignin first run experience.
 void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
