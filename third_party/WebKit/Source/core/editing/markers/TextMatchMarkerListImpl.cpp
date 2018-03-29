@@ -9,6 +9,8 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/markers/SortedDocumentMarkerListEditor.h"
 #include "core/editing/markers/TextMatchMarker.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "third_party/WebKit/Source/core/editing/VisibleUnits.h"
 
 namespace blink {
@@ -78,7 +80,13 @@ static void UpdateMarkerLayoutRect(const Node& node, TextMatchMarker& marker) {
   const Position start_position(node, marker.StartOffset());
   const Position end_position(node, marker.EndOffset());
   EphemeralRange range(start_position, end_position);
-  marker.SetLayoutRect(LayoutRect(ComputeTextRect(range)));
+
+  DCHECK(node.GetDocument().GetFrame());
+  LocalFrameView* frame_view = node.GetDocument().GetFrame()->View();
+
+  DCHECK(frame_view);
+  marker.SetLayoutRect(
+      frame_view->AbsoluteToDocument(LayoutRect(ComputeTextRect(range))));
 }
 
 Vector<IntRect> TextMatchMarkerListImpl::LayoutRects(const Node& node) const {
