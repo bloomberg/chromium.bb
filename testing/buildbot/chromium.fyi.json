@@ -2708,6 +2708,18 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "app_shell_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "aura_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
       },
       {
@@ -2739,6 +2751,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -2746,6 +2764,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "compositor_unittests"
       },
       {
         "swarming": {
@@ -2803,6 +2827,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
@@ -2841,6 +2871,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mini_installer_tests"
       },
       {
         "swarming": {
@@ -2947,6 +2983,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "wm_unittests"
       },
       {
         "swarming": {
@@ -2968,6 +3010,18 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "app_shell_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "aura_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
       },
       {
@@ -2999,6 +3053,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -3006,6 +3066,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "compositor_unittests"
       },
       {
         "swarming": {
@@ -3063,6 +3129,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
@@ -3101,6 +3173,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mini_installer_tests"
       },
       {
         "swarming": {
@@ -3212,6 +3290,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "wm_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "zucchini_unittests"
       }
     ]
@@ -3223,6 +3307,18 @@
           "can_use_on_swarming_builders": true
         },
         "test": "angle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "app_shell_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "aura_unittests"
       },
       {
         "swarming": {
@@ -3252,6 +3348,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -3259,6 +3361,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "compositor_unittests"
       },
       {
         "swarming": {
@@ -3316,6 +3424,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
@@ -3354,6 +3468,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mini_installer_tests"
       },
       {
         "swarming": {
@@ -3448,6 +3568,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "wm_unittests"
       },
       {
         "swarming": {
@@ -7458,6 +7584,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mini_installer_tests"
       },
       {
         "swarming": {

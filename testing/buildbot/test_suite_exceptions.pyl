@@ -51,8 +51,6 @@
   },
   'angle_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxMSan',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -69,37 +67,7 @@
   },
   'app_shell_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'CrWinClang',
-      'CrWinClang(dbg)',
-      'CrWinClang(shared)',
-      'CrWinClang64',
-      'CrWinClang64(dbg)',
-      'CrWinClang64(dll)',
-      'CrWinClangLLD',
-      'CrWinClangLLD64',
-      'CrWinClngLLD64dbg',
-      'CrWinClngLLDdbg',
-      'ToTLinuxASan',
-      'ToTLinuxMSan',
-      'ToTLinuxUBSanVptr',
-      'ToTWin',
-      'ToTWin(dbg)',
-      'ToTWin(dll)',
-      'ToTWin64',
-      'ToTWin64(dbg)',
-      'ToTWin64(dll)',
-      'ToTWinCFI',
-      'ToTWinCFI64',
-      'ToTWinThinLTO64',
-      'UBSanVptr Linux',
       # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
       # chromium.memory
@@ -119,34 +87,7 @@
   },
   'aura_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'CrWinClang',
-      'CrWinClang(dbg)',
-      'CrWinClang(shared)',
-      'CrWinClang64',
-      'CrWinClang64(dbg)',
-      'CrWinClang64(dll)',
-      'CrWinClangLLD',
-      'CrWinClangLLD64',
-      'CrWinClngLLD64dbg',
-      'CrWinClngLLDdbg',
-      'ToTLinuxASan',
-      'ToTWin',
-      'ToTWin(dbg)',
-      'ToTWin(dll)',
-      'ToTWin64',
-      'ToTWin64(dbg)',
-      'ToTWin64(dll)',
-      'ToTWinCFI',
-      'ToTWinCFI64',
-      'ToTWinThinLTO64',
       # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
       # chromium.memory
@@ -557,31 +498,7 @@
   },
   'chrome_elf_import_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'CrWinClang',
-      'CrWinClang(dbg)',
-      'CrWinClang(shared)',
-      'CrWinClang64',
-      'CrWinClang64(dbg)',
-      'CrWinClang64(dll)',
-      'CrWinClangLLD',
-      'CrWinClangLLD64',
-      'CrWinClngLLD64dbg',
-      'CrWinClngLLDdbg',
-      'ToTWin(dll)',
-      'ToTWin64',
-      'ToTWin64(dbg)',
-      'ToTWin64(dll)',
-      'ToTWinCFI',
-      'ToTWinCFI64',
-      'ToTWinThinLTO64',
       # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
@@ -1007,34 +924,7 @@
   },
   'compositor_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'CrWinClang',
-      'CrWinClang(dbg)',
-      'CrWinClang(shared)',
-      'CrWinClang64',
-      'CrWinClang64(dbg)',
-      'CrWinClang64(dll)',
-      'CrWinClangLLD',
-      'CrWinClangLLD64',
-      'CrWinClngLLD64dbg',
-      'CrWinClngLLDdbg',
-      'ToTLinuxASan',
-      'ToTWin',
-      'ToTWin(dbg)',
-      'ToTWin(dll)',
-      'ToTWin64',
-      'ToTWin64(dbg)',
-      'ToTWin64(dll)',
-      'ToTWinCFI',
-      'ToTWinCFI64',
-      'ToTWinThinLTO64',
       # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
       # chromium.memory
@@ -1873,32 +1763,7 @@
   },
   'install_static_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'CrWinClang',
-      'CrWinClang(dbg)',
-      'CrWinClang(shared)',
-      'CrWinClang64',
-      'CrWinClang64(dbg)',
-      'CrWinClang64(dll)',
-      'CrWinClangLLD',
-      'CrWinClangLLD64',
-      'CrWinClngLLD64dbg',
-      'CrWinClngLLDdbg',
-      'ToTWin(dbg)',
-      'ToTWin(dll)',
-      'ToTWin64',
-      'ToTWin64(dbg)',
-      'ToTWin64(dll)',
-      'ToTWinCFI',
-      'ToTWinCFI64',
-      'ToTWinThinLTO64',
       # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
@@ -2304,6 +2169,12 @@
       'ToTAndroidCFI',
       # chromium.memory
       'Android CFI',
+    ],
+  },
+  'mini_installer_tests': {
+    'remove_from': [
+      # chromium.clang
+      'linux-win_cross-rel',  # https://crbug.com/799827
     ],
   },
   'mojo_common_unittests': {
@@ -4002,34 +3873,7 @@
   },
   'wm_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'CrWinClang',
-      'CrWinClang(dbg)',
-      'CrWinClang(shared)',
-      'CrWinClang64',
-      'CrWinClang64(dbg)',
-      'CrWinClang64(dll)',
-      'CrWinClangLLD',
-      'CrWinClangLLD64',
-      'CrWinClngLLD64dbg',
-      'CrWinClngLLDdbg',
-      'ToTLinuxASan',
-      'ToTWin',
-      'ToTWin(dbg)',
-      'ToTWin(dll)',
-      'ToTWin64',
-      'ToTWin64(dbg)',
-      'ToTWin64(dll)',
-      'ToTWinCFI',
-      'ToTWinCFI64',
-      'ToTWinThinLTO64',
       # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
       # chromium.memory
