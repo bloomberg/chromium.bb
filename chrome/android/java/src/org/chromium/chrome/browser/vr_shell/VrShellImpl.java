@@ -477,20 +477,25 @@ public class VrShellImpl
         mDelegate.showDoff(false);
     }
 
-    // Called because showing PageInfo isn't supported in VR. This happens when the user clicks on
-    // the security icon in the URL bar.
+    // Called when the user clicks on the security icon in the URL bar.
     @CalledByNative
-    public void onUnhandledPageInfo() {
-        VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
-            @Override
-            public void onSucceeded() {
-                PageInfoPopup.show(
-                        mActivity, mActivity.getActivityTab(), null, PageInfoPopup.OPENED_FROM_VR);
-            }
+    public void showPageInfo() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
+            VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
+                @Override
+                public void onSucceeded() {
+                    PageInfoPopup.show(mActivity, mActivity.getActivityTab(), null,
+                            PageInfoPopup.OPENED_FROM_VR);
+                }
 
-            @Override
-            public void onDenied() {}
-        }, UiUnsupportedMode.UNHANDLED_PAGE_INFO);
+                @Override
+                public void onDenied() {}
+            }, UiUnsupportedMode.UNHANDLED_PAGE_INFO);
+            return;
+        }
+
+        PageInfoPopup.show(
+                mActivity, mActivity.getActivityTab(), null, PageInfoPopup.OPENED_FROM_VR);
     }
 
     // Called because showing audio permission dialog isn't supported in VR. This happens when

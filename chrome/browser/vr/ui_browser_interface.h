@@ -43,6 +43,7 @@ class UiBrowserInterface {
   virtual void SetVoiceSearchActive(bool active) = 0;
   virtual void StartAutocomplete(const AutocompleteRequest& request) = 0;
   virtual void StopAutocomplete() = 0;
+  virtual void ShowPageInfo() = 0;
 };
 
 }  // namespace vr

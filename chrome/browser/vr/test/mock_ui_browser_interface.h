@@ -33,6 +33,7 @@ class MockUiBrowserInterface : public UiBrowserInterface {
   MOCK_METHOD1(SetVoiceSearchActive, void(bool active));
   MOCK_METHOD1(StartAutocomplete, void(const AutocompleteRequest& request));
   MOCK_METHOD0(StopAutocomplete, void());
+  MOCK_METHOD0(ShowPageInfo, void());
   MOCK_METHOD0(LoadAssets, void());
 
  private:

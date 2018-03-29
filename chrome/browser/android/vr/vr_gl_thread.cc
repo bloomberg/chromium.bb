@@ -309,6 +309,12 @@ void VrGLThread::StopAutocomplete() {
       FROM_HERE, base::BindOnce(&VrShell::StopAutocomplete, weak_vr_shell_));
 }
 
+void VrGLThread::ShowPageInfo() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::ShowPageInfo, weak_vr_shell_));
+}
+
 void VrGLThread::SetFullscreen(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,

@@ -2001,9 +2001,8 @@ void UiSceneCreator::CreateUrlBar() {
 
   auto security_button = Create<VectorIconButton>(
       kUrlBarSecurityButton, kPhaseForeground,
-      base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
-                          base::Unretained(browser_),
-                          UiUnsupportedMode::kUnhandledPageInfo),
+      base::BindRepeating(&UiBrowserInterface::ShowPageInfo,
+                          base::Unretained(browser_)),
       toolbar::kHttpsInvalidIcon, audio_delegate_);
   security_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
