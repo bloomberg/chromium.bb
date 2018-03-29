@@ -112,6 +112,14 @@ void UiElement::SetType(UiElementType type) {
   OnSetType();
 }
 
+UiElement* UiElement::GetDescendantByType(UiElementType type) {
+  for (auto& descendant : *this) {
+    if (descendant.type() == type)
+      return &descendant;
+  }
+  return nullptr;
+}
+
 void UiElement::OnSetType() {}
 
 void UiElement::SetDrawPhase(DrawPhase draw_phase) {

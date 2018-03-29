@@ -180,6 +180,35 @@ TEST_F(UiTest, ToastTransience) {
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
+TEST_F(UiTest, PlatformToast) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  EXPECT_FALSE(IsVisible(kPlatformToast));
+
+  // show and hide toast after a timeout.
+  ui_->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
+  EXPECT_TRUE(IsVisible(kPlatformToast));
+  EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds +
+                                                   kSmallDelaySeconds)));
+  EXPECT_FALSE(IsVisible(kPlatformToast));
+
+  // toast can be cancelled.
+  ui_->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
+  EXPECT_TRUE(IsVisible(kPlatformToast));
+  ui_->CancelPlatformToast();
+  EXPECT_FALSE(IsVisible(kPlatformToast));
+
+  // toast can refresh visible timeout.
+  ui_->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
+  EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kSmallDelaySeconds)));
+  ui_->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
+  EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds -
+                                                   kSmallDelaySeconds)));
+  EXPECT_TRUE(IsVisible(kPlatformToast));
+  EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds +
+                                                   kSmallDelaySeconds)));
+  EXPECT_FALSE(IsVisible(kPlatformToast));
+}
+
 TEST_F(UiTest, CaptureToasts) {
   CreateScene(kNotInCct, kNotInWebVr);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
@@ -1314,10 +1343,10 @@ TEST_F(UiTest, DisableResizeWhenEditing) {
   OnBeginFrame();
   EXPECT_TRUE(hit_plane->hit_testable());
 
-  model_->native_ui.hosted_ui_enabled = true;
+  model_->hosted_platform_ui.hosted_ui_enabled = true;
   OnBeginFrame();
   EXPECT_FALSE(hit_plane->hit_testable());
-  model_->native_ui.hosted_ui_enabled = false;
+  model_->hosted_platform_ui.hosted_ui_enabled = false;
   OnBeginFrame();
   EXPECT_TRUE(hit_plane->hit_testable());
 

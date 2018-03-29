@@ -523,6 +523,14 @@ void VrShellGl::SetDialogFloating() {
   ui_->SetDialogFloating();
 }
 
+void VrShellGl::ShowToast(const base::string16& text) {
+  ui_->ShowPlatformToast(text);
+}
+
+void VrShellGl::CancelToast() {
+  ui_->CancelPlatformToast();
+}
+
 void VrShellGl::ResumeContentRendering() {
   if (!content_paused_)
     return;

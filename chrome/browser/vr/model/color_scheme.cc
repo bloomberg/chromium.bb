@@ -64,8 +64,8 @@ void InitializeColorSchemes() {
   normal_scheme.exit_warning_background = 0xCC1A1A1A;
   normal_scheme.web_vr_transient_toast_foreground = 0xFFF3F3F3;
   normal_scheme.web_vr_transient_toast_background = SK_ColorBLACK;
-  normal_scheme.exclusive_screen_toast_foreground = 0xCCFFFFFF;
-  normal_scheme.exclusive_screen_toast_background = 0xCC2F2F2F;
+  normal_scheme.toast_foreground = 0xCCFFFFFF;
+  normal_scheme.toast_background = 0xCC2F2F2F;
   normal_scheme.modal_prompt_icon_foreground = 0xFF4285F4;
   normal_scheme.modal_prompt_background = 0xFFF5F5F5;
   normal_scheme.modal_prompt_foreground = 0xFF333333;

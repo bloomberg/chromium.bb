@@ -164,6 +164,13 @@ void VrTestContext::HandleInput(ui::Event* event) {
         fullscreen_ = !fullscreen_;
         ui_->SetFullscreen(fullscreen_);
         break;
+      case ui::DomCode::US_A:
+        if (model_->platform_toast) {
+          ui_->CancelPlatformToast();
+        } else {
+          ui_->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
+        }
+        break;
       case ui::DomCode::US_H:
         handedness_ = handedness_ == PlatformController::kRightHanded
                           ? PlatformController::kLeftHanded

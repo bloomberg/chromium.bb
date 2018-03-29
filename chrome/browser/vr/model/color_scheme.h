@@ -73,8 +73,8 @@ struct ColorScheme {
   SkColor exit_warning_background;
   SkColor web_vr_transient_toast_foreground;
   SkColor web_vr_transient_toast_background;
-  SkColor exclusive_screen_toast_foreground;
-  SkColor exclusive_screen_toast_background;
+  SkColor toast_foreground;
+  SkColor toast_background;
   SkColor modal_prompt_icon_foreground;
   SkColor modal_prompt_background;
   SkColor modal_prompt_foreground;

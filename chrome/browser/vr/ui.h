@@ -118,6 +118,8 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void SetAlertDialogSize(float width, float height);
   void SetDialogLocation(float x, float y);
   void SetDialogFloating();
+  void ShowPlatformToast(const base::string16& text);
+  void CancelPlatformToast();
   bool ShouldRenderWebVr();
 
   void OnGlInitialized(

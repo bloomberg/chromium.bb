@@ -45,7 +45,6 @@
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/elements/throbber.h"
-#include "chrome/browser/vr/elements/toast.h"
 #include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/vr/elements/webvr_url_toast.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/model.h"
+#include "chrome/browser/vr/model/platform_toast.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/ui.h"
@@ -685,15 +685,16 @@ std::unique_ptr<UiElement> CreateHostedUi(
   hosted_ui->set_corner_radius(kContentCornerRadius);
   hosted_ui->SetTransitionedProperties({OPACITY});
   hosted_ui->SetTranslate(0, 0, kHostedUiDepthOffset);
-  hosted_ui->AddBinding(VR_BIND_FUNC(ContentInputDelegatePtr, Model, model,
-                                     model->native_ui.delegate, ContentElement,
-                                     hosted_ui.get(), SetDelegate));
-  hosted_ui->AddBinding(
-      VR_BIND_FUNC(unsigned int, Model, model, model->native_ui.texture_id,
-                   ContentElement, hosted_ui.get(), SetTextureId));
+  hosted_ui->AddBinding(VR_BIND_FUNC(
+      ContentInputDelegatePtr, Model, model, model->hosted_platform_ui.delegate,
+      ContentElement, hosted_ui.get(), SetDelegate));
+  hosted_ui->AddBinding(VR_BIND_FUNC(
+      unsigned int, Model, model, model->hosted_platform_ui.texture_id,
+      ContentElement, hosted_ui.get(), SetTextureId));
   hosted_ui->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA([](Model* m) { return m->native_ui.hosted_ui_enabled; },
-                     base::Unretained(model)),
+      VR_BIND_LAMBDA(
+          [](Model* m) { return m->hosted_platform_ui.hosted_ui_enabled; },
+          base::Unretained(model)),
       VR_BIND_LAMBDA(
           [](ContentElement* dialog, const bool& enabled) {
             dialog->SetVisible(enabled);
@@ -705,8 +706,9 @@ std::unique_ptr<UiElement> CreateHostedUi(
       base::BindRepeating(
           [](Model* m) {
             return std::pair<bool, gfx::PointF>(
-                m->native_ui.floating,
-                gfx::PointF(m->native_ui.rect.x(), m->native_ui.rect.y()));
+                m->hosted_platform_ui.floating,
+                gfx::PointF(m->hosted_platform_ui.rect.x(),
+                            m->hosted_platform_ui.rect.y()));
           },
           base::Unretained(model)),
       base::BindRepeating(
@@ -730,8 +732,9 @@ std::unique_ptr<UiElement> CreateHostedUi(
       base::BindRepeating(
           [](Model* m) {
             return std::pair<bool, gfx::SizeF>(
-                m->native_ui.floating, gfx::SizeF(m->native_ui.rect.width(),
-                                                  m->native_ui.rect.height()));
+                m->hosted_platform_ui.floating,
+                gfx::SizeF(m->hosted_platform_ui.rect.width(),
+                           m->hosted_platform_ui.rect.height()));
           },
           base::Unretained(model)),
       base::BindRepeating(
@@ -756,16 +759,16 @@ std::unique_ptr<UiElement> CreateHostedUi(
   EventHandlers event_handlers;
   event_handlers.button_up = base::BindRepeating(
       [](Model* model, UiBrowserInterface* browser) {
-        if (model->native_ui.hosted_ui_enabled) {
+        if (model->hosted_platform_ui.hosted_ui_enabled) {
           browser->CloseHostedDialog();
         }
       },
       base::Unretained(model), base::Unretained(browser));
   backplane->set_event_handlers(event_handlers);
   backplane->AddChild(std::move(hosted_ui));
-  backplane->AddBinding(
-      VR_BIND_FUNC(bool, Model, model, model->native_ui.hosted_ui_enabled,
-                   InvisibleHitTarget, backplane.get(), SetVisible));
+  backplane->AddBinding(VR_BIND_FUNC(
+      bool, Model, model, model->hosted_platform_ui.hosted_ui_enabled,
+      InvisibleHitTarget, backplane.get(), SetVisible));
 
   return backplane;
 }
@@ -786,6 +789,44 @@ std::unique_ptr<Grid> CreateGrid(Model* model, UiElementName name) {
 void SetVisibleInLayout(UiElement* e, bool v) {
   e->SetVisible(v);
   e->set_requires_layout(v);
+}
+
+std::unique_ptr<TransientElement> CreateTextToast(
+    UiElementName transient_parent_name,
+    UiElementName toast_name,
+    Model* model,
+    const base::string16& text) {
+  auto parent =
+      CreateTransientParent(transient_parent_name, kToastTimeoutSeconds, false);
+  parent->set_bounds_contain_children(true);
+  parent->SetScale(kContentDistance, kContentDistance, 1.0f);
+
+  auto background_element = Create<Rect>(toast_name, kPhaseForeground);
+  VR_BIND_COLOR(model, background_element.get(), &ColorScheme::toast_background,
+                &Rect::SetColor);
+
+  background_element->set_bounds_contain_children(true);
+  background_element->set_padding(kToastXPaddingDMM, kToastYPaddingDMM,
+                                  kToastXPaddingDMM, kToastYPaddingDMM);
+  background_element->SetTransitionedProperties({OPACITY});
+  background_element->SetType(kTypeToastBackground);
+  background_element->set_corner_radius(kToastCornerRadiusDMM);
+
+  auto text_element =
+      Create<Text>(kNone, kPhaseForeground, kToastTextFontHeightDMM);
+  text_element->SetLayoutMode(kSingleLine);
+  text_element->SetColor(SK_ColorWHITE);
+  text_element->set_owner_name_for_test(toast_name);
+  text_element->SetSize(0.0f, kToastTextFontHeightDMM);
+  text_element->SetType(kTypeToastText);
+  text_element->SetText(text);
+
+  VR_BIND_COLOR(model, text_element.get(), &ColorScheme::toast_foreground,
+                &Text::SetColor);
+
+  background_element->AddChild(std::move(text_element));
+  parent->AddChild(std::move(background_element));
+  return parent;
 }
 
 }  // namespace
@@ -825,7 +866,7 @@ void UiSceneCreator::CreateScene() {
   }
   CreateOmnibox();
   CreateCloseButton();
-  CreateFullscreenToast();
+  CreateToasts();
   CreateVoiceSearchUiGroup();
   CreateContentRepositioningAffordance();
   CreateExitWarning();
@@ -921,9 +962,10 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
                               kPhaseNone);
   element->set_bounds_contain_children(true);
   element->SetTransitionedProperties({OPACITY});
-  element->AddBinding(VR_BIND(
-      bool, Model, model_, !model->native_ui.hosted_ui_enabled, UiElement,
-      element.get(), view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
+  element->AddBinding(
+      VR_BIND(bool, Model, model_, !model->hosted_platform_ui.hosted_ui_enabled,
+              UiElement, element.get(),
+              view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
   scene_->AddUiElement(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
                        std::move(element));
 
@@ -1760,7 +1802,7 @@ void UiSceneCreator::CreateController() {
   root->SetName(kControllerRoot);
   VR_BIND_VISIBILITY(root, model->browsing_enabled() ||
                                model->web_vr.state == kWebVrTimedOut ||
-                               model->native_ui.hosted_ui_enabled);
+                               model->hosted_platform_ui.hosted_ui_enabled);
   scene_->AddUiElement(kRoot, std::move(root));
 
   auto group = std::make_unique<UiElement>();
@@ -2886,35 +2928,50 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(parent));
 }
 
-void UiSceneCreator::CreateFullscreenToast() {
-  auto parent = CreateTransientParent(kExclusiveScreenToastTransientParent,
-                                      kToastTimeoutSeconds, false);
-  parent->set_contributes_to_parent_bounds(false);
-  parent->set_y_anchoring(TOP);
-  parent->SetScale(kContentDistance, kContentDistance, 1.0f);
-  parent->SetTranslate(0, kIndicatorVerticalOffset, kIndicatorDistanceOffset);
-  VR_BIND_VISIBILITY(parent, model->fullscreen_enabled());
-  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(parent));
+void UiSceneCreator::CreateToasts() {
+  auto layout = Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kLeft);
+  layout->set_contributes_to_parent_bounds(false);
+  layout->set_y_anchoring(TOP);
+  layout->SetTranslate(0, kIndicatorVerticalOffset, kIndicatorDistanceOffset);
+  layout->set_margin(kWebVrPermissionMargin);
 
-  auto element = std::make_unique<Toast>();
-  element->SetName(kExclusiveScreenToast);
-  element->SetDrawPhase(kPhaseForeground);
-  element->set_padding(kExclusiveScreenToastXPaddingDMM,
-                       kExclusiveScreenToastYPaddingDMM);
-  element->set_corner_radius(kExclusiveScreenToastCornerRadiusDMM);
-  element->AddText(l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT_FULLSCREEN),
-                   kExclusiveScreenToastTextFontHeightDMM,
-                   TextLayoutMode::kSingleLine);
+  auto fullscreen_toast = CreateTextToast(
+      kExclusiveScreenToastTransientParent, kExclusiveScreenToast, model_,
+      l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT_FULLSCREEN));
+  fullscreen_toast->AddBinding(
+      VR_BIND(bool, Model, model_, model->fullscreen_enabled(), UiElement,
+              fullscreen_toast.get(), SetVisibleInLayout(view, value)));
+  layout->AddChild(std::move(fullscreen_toast));
 
-  VR_BIND_COLOR(model_, element.get(),
-                &ColorScheme::exclusive_screen_toast_background,
-                &Toast::SetBackgroundColor);
-  VR_BIND_COLOR(model_, element.get(),
-                &ColorScheme::exclusive_screen_toast_foreground,
-                &Toast::SetForegroundColor);
+  auto platform_toast = CreateTextToast(
+      kPlatformToastTransientParent, kPlatformToast, model_, base::string16());
+  platform_toast->AddBinding(std::make_unique<Binding<const PlatformToast*>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->platform_toast.get(); },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](TransientElement* t, const PlatformToast* const& value) {
+            SetVisibleInLayout(t, value);
+            if (value) {
+              t->RefreshVisible();
+            }
+          },
+          base::Unretained(platform_toast.get()))));
+  Text* text_element =
+      static_cast<Text*>(platform_toast->GetDescendantByType(kTypeToastText));
+  DCHECK(text_element);
+  text_element->AddBinding(std::make_unique<Binding<const PlatformToast*>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->platform_toast.get(); },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](Text* t, const PlatformToast* const& value) {
+            if (value) {
+              t->SetText(value->text);
+            }
+          },
+          base::Unretained(text_element))));
+  layout->AddChild(std::move(platform_toast));
 
-  scene_->AddUiElement(kExclusiveScreenToastTransientParent,
-                       std::move(element));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(layout));
 }
 
 }  // namespace vr

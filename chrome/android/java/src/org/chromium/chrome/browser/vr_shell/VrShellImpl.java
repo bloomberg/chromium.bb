@@ -784,6 +784,22 @@ public class VrShellImpl
         nativeSetDialogGestureTarget(mNativeVrShell, mAndroidDialogGestureTarget);
     }
 
+    /**
+     * Show a text only Toast.
+     */
+    @Override
+    public void showToast(CharSequence text) {
+        nativeShowToast(mNativeVrShell, text.toString());
+    }
+
+    /**
+     * Cancel a Toast.
+     */
+    @Override
+    public void cancelToast() {
+        nativeCancelToast(mNativeVrShell);
+    }
+
     @Override
     public void setWebVrModeEnabled(boolean enabled) {
         if (mNativeVrShell != 0) nativeSetWebVrMode(mNativeVrShell, enabled);
@@ -1103,6 +1119,8 @@ public class VrShellImpl
     private native void nativeSetAlertDialogSize(long nativeVrShell, float width, float height);
     private native void nativeSetDialogLocation(long nativeVrShell, float x, float y);
     private native void nativeSetDialogFloating(long nativeVrShell);
+    private native void nativeShowToast(long nativeVrShell, String text);
+    private native void nativeCancelToast(long nativeVrShell);
     private native void nativeSetHistoryButtonsEnabled(
             long nativeVrShell, boolean canGoBack, boolean canGoForward);
     private native void nativeRequestToExitVr(long nativeVrShell, @UiUnsupportedMode int reason);

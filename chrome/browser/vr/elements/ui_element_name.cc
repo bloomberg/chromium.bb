@@ -113,6 +113,8 @@ static const char* g_ui_element_name_strings[] = {
     "kExclusiveScreenToastTransientParent",
     "kExclusiveScreenToast",
     "kWebVrExclusiveScreenToast",
+    "kPlatformToastTransientParent",
+    "kPlatformToast",
     "kSplashScreenRoot",
     "kSplashScreenTransientParent",
     "kSplashScreenViewportAwareRoot",

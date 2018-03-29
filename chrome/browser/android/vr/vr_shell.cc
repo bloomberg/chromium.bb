@@ -631,6 +631,21 @@ void VrShell::SetDialogFloating(
                                            gl_thread_->GetVrShellGl()));
 }
 
+void VrShell::ShowToast(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jstring jtext) {
+  base::string16 text;
+  base::android::ConvertJavaStringToUTF16(env, jtext, &text);
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::ShowToast,
+                                           gl_thread_->GetVrShellGl(), text));
+}
+
+void VrShell::CancelToast(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj) {
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::CancelToast,
+                                           gl_thread_->GetVrShellGl()));
+}
+
 void VrShell::ConnectPresentingService(
     device::mojom::VRSubmitFrameClientPtr submit_client,
     device::mojom::VRPresentationProviderRequest request,
