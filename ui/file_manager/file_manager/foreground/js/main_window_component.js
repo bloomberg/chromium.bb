@@ -371,18 +371,14 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
   switch (util.getKeyModifiers(event) + event.key) {
     case 'Backspace':  // Backspace => Up one directory.
       event.preventDefault();
-      // TODO(mtomasz): Use Entry.getParent() instead.
-      var currentEntry = this.directoryModel_.getCurrentDirEntry();
-      if (!currentEntry)
+      const components = this.ui_.locationLine.getCurrentPathComponents();
+      if (components.length < 2)
         break;
-      var locationInfo = this.volumeManager_.getLocationInfo(currentEntry);
-      // TODO(mtomasz): There may be a tiny race in here.
-      if (locationInfo && !locationInfo.isRootEntry &&
-          !locationInfo.isSpecialSearchRoot) {
-        currentEntry.getParent(function(parentEntry) {
-          this.directoryModel_.changeDirectoryEntry(parentEntry);
-        }.bind(this), function() { /* Ignore errors. */});
-      }
+      const parentPathComponent = components[components.length - 2];
+      parentPathComponent.resolveEntry().then((parentEntry) => {
+        this.directoryModel_.changeDirectoryEntry(
+            /** @type {!DirectoryEntry} */ (parentEntry));
+      });
       break;
 
     case 'Enter':  // Enter => Change directory or perform default action.
