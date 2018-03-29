@@ -23229,28 +23229,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--shard-timeout=300"
-        ],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build17-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 1200,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "blink_perf.bindings",
           "-v",
           "--upload-results",
