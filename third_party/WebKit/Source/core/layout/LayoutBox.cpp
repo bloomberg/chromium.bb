@@ -635,26 +635,15 @@ void LayoutBox::ScrollToPosition(const FloatPoint& position,
   GetScrollableArea()->ScrollToAbsolutePosition(position, scroll_behavior);
 }
 
-// Returns true iff we are attempting an autoscroll inside an iframe with
-// scrolling="no".
-static bool IsDisallowedAutoscroll(HTMLFrameOwnerElement* owner_element,
-                                   LocalFrameView* frame_view) {
-  if (owner_element && IsHTMLFrameElementBase(*owner_element)) {
-    HTMLFrameElementBase* frame_element_base =
-        ToHTMLFrameElementBase(owner_element);
-    if (Page* page = frame_view->GetFrame().GetPage()) {
-      return page->GetAutoscrollController().SelectionAutoscrollInProgress() &&
-             frame_element_base->ScrollingMode() == kScrollbarAlwaysOff;
-    }
-  }
-  return false;
-}
-
 void LayoutBox::ScrollRectToVisibleRecursive(
     const LayoutRect& absolute_rect,
     const WebScrollIntoViewParams& params) {
   DCHECK(params.GetScrollType() == kProgrammaticScroll ||
          params.GetScrollType() == kUserScroll);
+
+  if (!GetFrameView())
+    return;
+
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
@@ -665,7 +654,6 @@ void LayoutBox::ScrollRectToVisibleRecursive(
     absolute_rect_to_scroll.SetHeight(LayoutUnit(1));
 
   LayoutBox* parent_box = nullptr;
-  LayoutRect parent_absolute_rect = absolute_rect_to_scroll;
 
   bool restricted_by_line_clamp = false;
   if (ContainingBlock()) {
@@ -673,43 +661,47 @@ void LayoutBox::ScrollRectToVisibleRecursive(
     restricted_by_line_clamp = ContainingBlock()->Style()->HasLineClamp();
   }
 
+  LayoutRect absolute_rect_for_parent;
   if (!IsLayoutView() && HasOverflowClip() && !restricted_by_line_clamp) {
     // Don't scroll to reveal an overflow layer that is restricted by the
     // -webkit-line-clamp property. This will prevent us from revealing text
     // hidden by the slider in Safari RSS.
     // TODO(eae): We probably don't need this any more as we don't share any
     //            code with the Safari RSS reeder.
-    parent_absolute_rect =
+    absolute_rect_for_parent =
         GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
-    if (LocalFrameView* frame_view = GetFrameView()) {
-      HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
-      if (!IsDisallowedAutoscroll(owner_element, frame_view)) {
-        ScrollableArea* area_to_scroll =
-            params.make_visible_in_visual_viewport
-                ? frame_view->GetScrollableArea()
-                : frame_view->LayoutViewportScrollableArea();
-        absolute_rect_to_scroll =
-            area_to_scroll->ScrollIntoView(absolute_rect_to_scroll, params);
+    ScrollableArea* area_to_scroll =
+        params.make_visible_in_visual_viewport
+            ? GetFrameView()->GetScrollableArea()
+            : GetFrameView()->LayoutViewportScrollableArea();
+    absolute_rect_for_parent =
+        area_to_scroll->ScrollIntoView(absolute_rect_to_scroll, params);
 
-        if (params.is_for_scroll_sequence)
-          absolute_rect_to_scroll.Move(PendingOffsetToScroll());
-        if (owner_element && owner_element->GetLayoutObject()) {
-          if (frame_view->SafeToPropagateScrollToParent()) {
-            parent_box = owner_element->GetLayoutObject()->EnclosingBox();
-            LayoutView* parent_view = owner_element->GetLayoutObject()->View();
-            parent_absolute_rect = EnclosingLayoutRect(
-                View()
-                    ->LocalToAncestorQuad(
-                        FloatRect(absolute_rect_to_scroll), parent_view,
-                        kUseTransforms | kTraverseDocumentBoundaries)
-                    .BoundingBox());
-          } else {
-            parent_box = nullptr;
-          }
-        }
-      }
+    // TODO(bokan): This is a hack to reconcile the fact that scrolling a
+    // FrameView pre-RLS and post-RLS resulted in different absolute coordinate
+    // changes to the target. This line and PendingOffsetToScroll can be
+    // removed once RLS is stable. https://crbug.com/823365.
+    if (params.is_for_scroll_sequence)
+      absolute_rect_for_parent.Move(PendingOffsetToScroll());
+
+    // If the parent is a local iframe, convert to the absolute coordinate
+    // space of its document. For remote frames, this will happen on the other
+    // end of the IPC call.
+    HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
+    if (owner_element && owner_element->GetLayoutObject() &&
+        GetFrameView()->SafeToPropagateScrollToParent()) {
+      parent_box = owner_element->GetLayoutObject()->EnclosingBox();
+      LayoutView* parent_view = owner_element->GetLayoutObject()->View();
+      absolute_rect_for_parent = EnclosingLayoutRect(
+          View()
+              ->LocalToAncestorQuad(
+                  FloatRect(absolute_rect_for_parent), parent_view,
+                  kUseTransforms | kTraverseDocumentBoundaries)
+              .BoundingBox());
     }
+  } else {
+    absolute_rect_for_parent = absolute_rect_to_scroll;
   }
 
   // If we are fixed-position and stick to the viewport, it is useless to
@@ -717,20 +709,12 @@ void LayoutBox::ScrollRectToVisibleRecursive(
   if (Style()->GetPosition() == EPosition::kFixed && Container() == View())
     return;
 
-  if (GetFrame()
-          ->GetPage()
-          ->GetAutoscrollController()
-          .SelectionAutoscrollInProgress()) {
-    parent_box = EnclosingScrollableBox();
-  }
-
   if (parent_box) {
-    parent_box->ScrollRectToVisibleRecursive(parent_absolute_rect, params);
+    parent_box->ScrollRectToVisibleRecursive(absolute_rect_for_parent, params);
   } else if (GetFrame()->IsLocalRoot() && !GetFrame()->IsMainFrame()) {
-    LocalFrameView* frame_view = GetFrameView();
-    if (frame_view && frame_view->SafeToPropagateScrollToParent()) {
-      frame_view->ScrollRectToVisibleInRemoteParent(absolute_rect_to_scroll,
-                                                    params);
+    if (GetFrameView()->SafeToPropagateScrollToParent()) {
+      GetFrameView()->ScrollRectToVisibleInRemoteParent(
+          absolute_rect_for_parent, params);
     }
   }
 }
