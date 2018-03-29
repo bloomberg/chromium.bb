@@ -300,6 +300,36 @@ void ExtractUnderlines(NSAttributedString* string,
   clientWasDestroyed_ = YES;
 }
 
+- (void)setShowingContextMenu:(BOOL)showing {
+  showingContextMenu_ = showing;
+
+  // Create a fake mouse event to inform the render widget that the mouse
+  // left or entered.
+  NSWindow* window = [self window];
+  int window_number = window ? [window windowNumber] : -1;
+
+  // TODO(asvitkine): If the location outside of the event stream doesn't
+  // correspond to the current event (due to delayed event processing), then
+  // this may result in a cursor flicker if there are later mouse move events
+  // in the pipeline. Find a way to use the mouse location from the event that
+  // dismissed the context menu.
+  NSPoint location = [window mouseLocationOutsideOfEventStream];
+  NSTimeInterval event_time = [[NSApp currentEvent] timestamp];
+  NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
+                                      location:location
+                                 modifierFlags:0
+                                     timestamp:event_time
+                                  windowNumber:window_number
+                                       context:nil
+                                   eventNumber:0
+                                    clickCount:0
+                                      pressure:0];
+  WebMouseEvent web_event = WebMouseEventBuilder::Build(event, self);
+  web_event.SetModifiers(web_event.GetModifiers() |
+                         WebInputEvent::kRelativeMotionEvent);
+  renderWidgetHostView_->ForwardMouseEvent(web_event);
+}
+
 - (BOOL)shouldIgnoreMouseEvent:(NSEvent*)theEvent {
   NSWindow* window = [self window];
   // If this is a background window, don't handle mouse movement events. This
@@ -2021,8 +2051,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   // NSWindow's invalidateCursorRectsForView: resets cursor rects but does not
   // update the cursor instantly. The cursor is updated when the mouse moves.
   // Update the cursor by setting the current cursor if not hidden.
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (!cursorHidden_ && web_contents && !web_contents->IsShowingContextMenu())
+  if (!cursorHidden_ && !showingContextMenu_)
     [currentCursor_ set];
 }
 

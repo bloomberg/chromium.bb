@@ -21,7 +21,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
-#include "content/common/cursors/webcursor.h"
 #include "ipc/ipc_sender.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
@@ -33,6 +32,7 @@ class RenderWidgetHost;
 class RenderWidgetHostNSViewBridge;
 class RenderWidgetHostViewMac;
 class WebContents;
+class WebCursor;
 }
 
 namespace ui {
@@ -272,8 +272,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   }
 
   CONTENT_EXPORT void release_pepper_fullscreen_window_for_testing();
-
-  int window_number() const;
 
   // Update the size, scale factor, color profile, vsync parameters, and any
   // other properties of the NSView or its NSScreen. Propagate these to the

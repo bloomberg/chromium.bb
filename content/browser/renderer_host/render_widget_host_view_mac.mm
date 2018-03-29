@@ -346,13 +346,6 @@ void RenderWidgetHostViewMac::release_pepper_fullscreen_window_for_testing() {
   pepper_fullscreen_window_.reset();
 }
 
-int RenderWidgetHostViewMac::window_number() const {
-  NSWindow* window = [cocoa_view() window];
-  if (!window)
-    return -1;
-  return [window windowNumber];
-}
-
 void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
   if (!host() || !display_link_.get())
     return;
@@ -515,8 +508,7 @@ void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostViewMac::DisplayCursor(const WebCursor& cursor) {
-  WebCursor web_cursor = cursor;
-  [cocoa_view() updateCursor:web_cursor.GetNativeCursor()];
+  ns_view_bridge_->DisplayCursor(cursor);
 }
 
 CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
@@ -577,7 +569,7 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
 void RenderWidgetHostViewMac::OnImeCancelComposition(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
-  [cocoa_view() cancelComposition];
+  ns_view_bridge_->ClearMarkedText();
 }
 
 void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
@@ -589,7 +581,7 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
     return;
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
-  [cocoa_view() setMarkedRange:info->range.ToNSRange()];
+  ns_view_bridge_->SetMarkedRange(info->range);
 }
 
 void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
@@ -634,13 +626,7 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
   if (!selection)
     return;
 
-  [cocoa_view() setSelectedRange:selection->range().ToNSRange()];
-  // Updates markedRange when there is no marked text so that retrieving
-  // markedRange immediately after calling setMarkdText: returns the current
-  // caret position.
-  if (![cocoa_view() hasMarkedText]) {
-    [cocoa_view() setMarkedRange:selection->range().ToNSRange()];
-  }
+  ns_view_bridge_->SetSelectedRange(selection->range());
 }
 
 void RenderWidgetHostViewMac::OnRenderFrameMetadataChanged() {
@@ -797,29 +783,7 @@ void RenderWidgetHostViewMac::SpeakSelection() {
 //
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
-  // Create a fake mouse event to inform the render widget that the mouse
-  // left or entered.
-  NSWindow* window = [cocoa_view() window];
-  // TODO(asvitkine): If the location outside of the event stream doesn't
-  // correspond to the current event (due to delayed event processing), then
-  // this may result in a cursor flicker if there are later mouse move events
-  // in the pipeline. Find a way to use the mouse location from the event that
-  // dismissed the context menu.
-  NSPoint location = [window mouseLocationOutsideOfEventStream];
-  NSTimeInterval event_time = [[NSApp currentEvent] timestamp];
-  NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
-                                      location:location
-                                 modifierFlags:0
-                                     timestamp:event_time
-                                  windowNumber:window_number()
-                                       context:nil
-                                   eventNumber:0
-                                    clickCount:0
-                                      pressure:0];
-  WebMouseEvent web_event = WebMouseEventBuilder::Build(event, cocoa_view());
-  web_event.SetModifiers(web_event.GetModifiers() |
-                         WebInputEvent::kRelativeMotionEvent);
-  ForwardMouseEvent(web_event);
+  ns_view_bridge_->SetShowingContextMenu(showing);
 }
 
 void RenderWidgetHostViewMac::CopyFromSurface(
@@ -1033,7 +997,7 @@ bool RenderWidgetHostViewMac::ShouldContinueToPauseForFrame() {
 void RenderWidgetHostViewMac::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
-  [cocoa_view() cancelComposition];
+  ns_view_bridge_->ClearMarkedText();
 
   // If the Mac Zoom feature is enabled, update it with the bounds of the
   // current focused node so that it can ensure that it's scrolled into view.
