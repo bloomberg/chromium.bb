@@ -14,13 +14,14 @@
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
 
@@ -35,6 +36,8 @@ constexpr char kFakeContainerInstanceId[] = "0123456789ABCDEF";
 constexpr char kStubDevicePolicyFile[] = "stub_device_policy";
 constexpr char kStubPolicyFile[] = "stub_policy";
 constexpr char kStubStateKeysFile[] = "stub_state_keys";
+constexpr char kStubPolicyKey[] = "policy.pub";
+constexpr char kEmptyAccountId[] = "";
 
 // Store the owner key in a file on the disk, so that it can be loaded by
 // DeviceSettingsService and used e.g. for validating policy signatures in the
@@ -67,26 +70,6 @@ std::string GetFileContent(const base::FilePath& path) {
   return result;
 }
 
-// Helper to notify the callback with SUCCESS, to be used by the stub.
-void NotifyOnRetrievePolicySuccess(
-    SessionManagerClient::RetrievePolicyCallback callback,
-    const std::string& protobuf) {
-  std::move(callback).Run(RetrievePolicyResponseType::SUCCESS, protobuf);
-}
-
-// Returns a location for |file| that is specific to the given |cryptohome_id|.
-// These paths will be relative to DIR_USER_POLICY_KEYS, and can be used only
-// to store stub files.
-base::FilePath GetUserFilePath(const cryptohome::Identification& cryptohome_id,
-                               const std::string& file) {
-  base::FilePath keys_path;
-  if (!PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &keys_path))
-    return base::FilePath();
-  const std::string sanitized =
-      CryptohomeClient::GetStubSanitizedUsername(cryptohome_id);
-  return keys_path.AppendASCII(sanitized).AppendASCII(file);
-}
-
 // Helper to write a file in a background thread.
 void StoreFile(const base::FilePath& path, const std::string& data) {
   if (path.empty() || !base::CreateDirectory(path.DirName())) {
@@ -98,15 +81,15 @@ void StoreFile(const base::FilePath& path, const std::string& data) {
     LOG(WARNING) << "Failed to write to " << path.value();
 }
 
-// Helper to write policy owner key and policy blob in a background thread.
-void StorePolicyWithKey(
-    const enterprise_management::PolicyFetchResponse& policy,
-    const std::string& policy_blob,
-    const base::FilePath& owner_key_path,
-    const base::FilePath& policy_path) {
-  if (policy.has_new_public_key())
-    StoreFile(owner_key_path, policy.new_public_key());
-  StoreFile(policy_path, policy_blob);
+// Creates a PolicyDescriptor object to store/retrieve Chrome policy.
+login_manager::PolicyDescriptor MakeChromePolicyDescriptor(
+    login_manager::PolicyAccountType account_type,
+    const std::string& account_id) {
+  login_manager::PolicyDescriptor descriptor;
+  descriptor.set_account_type(account_type);
+  descriptor.set_account_id(account_id);
+  descriptor.set_domain(login_manager::POLICY_DOMAIN_CHROME);
+  return descriptor;
 }
 
 // Helper to asynchronously read (or if missing create) state key stubs.
@@ -130,6 +113,96 @@ std::vector<std::string> ReadCreateStateKeysStub(const base::FilePath& path) {
   return state_keys;
 }
 
+// Gets the stub file paths of the policy blob and optionally the policy key
+// (|key_path|) for the given |descriptor|. |key_path| can be nullptr. Returns
+// an empty file path on error.
+base::FilePath GetStubPolicyFilePath(
+    const login_manager::PolicyDescriptor& descriptor,
+    base::FilePath* key_path) {
+  if (key_path)
+    key_path->clear();
+
+  switch (descriptor.account_type()) {
+    case login_manager::ACCOUNT_TYPE_DEVICE: {
+      base::FilePath owner_key_path;
+      if (!PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path))
+        return base::FilePath();
+      if (key_path)
+        *key_path = owner_key_path;
+      return owner_key_path.DirName().AppendASCII(kStubDevicePolicyFile);
+    }
+
+    case login_manager::ACCOUNT_TYPE_USER:
+    case login_manager::ACCOUNT_TYPE_SESSIONLESS_USER:
+    case login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT: {
+      base::FilePath base_path;
+      if (!PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &base_path))
+        return base::FilePath();
+      cryptohome::Identification cryptohome_id =
+          cryptohome::Identification::FromString(descriptor.account_id());
+      const std::string sanitized_id =
+          CryptohomeClient::GetStubSanitizedUsername(cryptohome_id);
+      base_path = base_path.AppendASCII(sanitized_id);
+      if (key_path)
+        *key_path = base_path.AppendASCII(kStubPolicyKey);
+      return base_path.AppendASCII(kStubPolicyFile);
+    }
+  }
+}
+
+// Blocking stub call to retrieve policy from disk. Returns empty string on
+// error.
+std::string StubBlockingRetrievePolicy(
+    const login_manager::PolicyDescriptor& descriptor) {
+  base::FilePath policy_path = GetStubPolicyFilePath(descriptor, nullptr);
+  if (policy_path.empty())
+    return std::string();
+  return GetFileContent(policy_path);
+}
+
+// Non-blocking stub call to retrieve policy from disk.
+void StubCallRetrievePolicy(
+    const login_manager::PolicyDescriptor& descriptor,
+    SessionManagerClient::RetrievePolicyCallback callback) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&StubBlockingRetrievePolicy, descriptor),
+      base::BindOnce(std::move(callback), RetrievePolicyResponseType::SUCCESS));
+}
+
+// Stub call to store policy on disk.
+void StubCallStorePolicy(const login_manager::PolicyDescriptor& descriptor,
+                         const std::string& policy_blob,
+                         VoidDBusMethodCallback callback) {
+  // Decode the blob (to get the new key) and get file paths.
+  enterprise_management::PolicyFetchResponse response;
+  base::FilePath key_path;
+  base::FilePath policy_path = GetStubPolicyFilePath(descriptor, &key_path);
+  if (policy_path.empty() || !response.ParseFromString(policy_blob)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Make sure both key (if present) and policy get written before signalling
+  // completion since Chrome will attempt to retrieve the device policy right
+  // after storing during enrollment.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
+  // Rotate key if there's a new one.
+  if (response.has_new_public_key()) {
+    task_runner->PostTask(FROM_HERE, base::BindOnce(&StoreFile, key_path,
+                                                    response.new_public_key()));
+  }
+
+  // Write policy and signal completion.
+  task_runner->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&StoreFile, policy_path, policy_blob),
+      base::BindOnce(std::move(callback), true));
+}
+
 }  // namespace
 
 FakeSessionManagerClient::FakeSessionManagerClient(uint32_t options)
@@ -148,8 +221,7 @@ FakeSessionManagerClient::FakeSessionManagerClient()
 
 FakeSessionManagerClient::~FakeSessionManagerClient() = default;
 
-void FakeSessionManagerClient::Init(dbus::Bus* bus) {
-}
+void FakeSessionManagerClient::Init(dbus::Bus* bus) {}
 
 void FakeSessionManagerClient::SetStubDelegate(StubDelegate* delegate) {
   delegate_ = delegate;
@@ -190,14 +262,11 @@ void FakeSessionManagerClient::StartSession(
   user_sessions_[cryptohome_id] = user_id_hash;
 }
 
-void FakeSessionManagerClient::StopSession() {
-}
+void FakeSessionManagerClient::StopSession() {}
 
-void FakeSessionManagerClient::NotifySupervisedUserCreationStarted() {
-}
+void FakeSessionManagerClient::NotifySupervisedUserCreationStarted() {}
 
-void FakeSessionManagerClient::NotifySupervisedUserCreationFinished() {
-}
+void FakeSessionManagerClient::NotifySupervisedUserCreationFinished() {}
 
 void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;
@@ -231,21 +300,9 @@ void FakeSessionManagerClient::RetrieveActiveSessions(
 void FakeSessionManagerClient::RetrieveDevicePolicy(
     RetrievePolicyCallback callback) {
   if (options_ & USE_HOST_POLICY) {
-    base::FilePath owner_key_path;
-    if (!PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path)) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(callback),
-                         RetrievePolicyResponseType::SUCCESS, std::string()));
-      return;
-    }
-    base::FilePath device_policy_path =
-        owner_key_path.DirName().AppendASCII(kStubDevicePolicyFile);
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(&GetFileContent, device_policy_path),
-        base::BindOnce(&NotifyOnRetrievePolicySuccess, std::move(callback)));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
+    StubCallRetrievePolicy(descriptor, std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -258,31 +315,22 @@ RetrievePolicyResponseType
 FakeSessionManagerClient::BlockingRetrieveDevicePolicy(
     std::string* policy_out) {
   if (options_ & USE_HOST_POLICY) {
-    base::FilePath owner_key_path;
-    if (!PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path)) {
-      *policy_out = "";
-      return RetrievePolicyResponseType::SUCCESS;
-    }
-    base::FilePath device_policy_path =
-        owner_key_path.DirName().AppendASCII(kStubDevicePolicyFile);
-    *policy_out = GetFileContent(device_policy_path);
-    return RetrievePolicyResponseType::SUCCESS;
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
+    *policy_out = StubBlockingRetrievePolicy(descriptor);
   } else {
     *policy_out = device_policy_;
-    return RetrievePolicyResponseType::SUCCESS;
   }
+  return RetrievePolicyResponseType::SUCCESS;
 }
 
 void FakeSessionManagerClient::RetrievePolicyForUser(
     const cryptohome::Identification& cryptohome_id,
     RetrievePolicyCallback callback) {
   if (options_ & USE_HOST_POLICY) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(&GetFileContent,
-                       GetUserFilePath(cryptohome_id, kStubPolicyFile)),
-        base::BindOnce(&NotifyOnRetrievePolicySuccess, std::move(callback)));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+    StubCallRetrievePolicy(descriptor, std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -296,8 +344,9 @@ FakeSessionManagerClient::BlockingRetrievePolicyForUser(
     const cryptohome::Identification& cryptohome_id,
     std::string* policy_out) {
   if (options_ & USE_HOST_POLICY) {
-    *policy_out =
-        GetFileContent(GetUserFilePath(cryptohome_id, kStubPolicyFile));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+    *policy_out = StubBlockingRetrievePolicy(descriptor);
   } else {
     *policy_out = user_policies_[cryptohome_id];
   }
@@ -308,7 +357,9 @@ void FakeSessionManagerClient::RetrievePolicyForUserWithoutSession(
     const cryptohome::Identification& cryptohome_id,
     RetrievePolicyCallback callback) {
   if (options_ & USE_HOST_POLICY) {
-    RetrievePolicyForUser(cryptohome_id, std::move(callback));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_SESSIONLESS_USER, cryptohome_id.id());
+    StubCallRetrievePolicy(descriptor, std::move(callback));
   } else {
     auto iter = user_policies_without_session_.find(cryptohome_id);
     auto task =
@@ -326,8 +377,9 @@ void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
     const std::string& account_id,
     RetrievePolicyCallback callback) {
   if (options_ & USE_HOST_POLICY) {
-    RetrievePolicyForUser(cryptohome::Identification::FromString(account_id),
-                          std::move(callback));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_id);
+    StubCallRetrievePolicy(descriptor, std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -343,39 +395,21 @@ FakeSessionManagerClient::BlockingRetrieveDeviceLocalAccountPolicy(
   if (options_ & USE_HOST_POLICY) {
     return BlockingRetrievePolicyForUser(
         cryptohome::Identification::FromString(account_id), policy_out);
+  } else {
+    *policy_out = device_local_account_policy_[account_id];
+    return RetrievePolicyResponseType::SUCCESS;
   }
-  *policy_out = device_local_account_policy_[account_id];
-  return RetrievePolicyResponseType::SUCCESS;
 }
 
 void FakeSessionManagerClient::StoreDevicePolicy(
     const std::string& policy_blob,
     VoidDBusMethodCallback callback) {
-  enterprise_management::PolicyFetchResponse policy;
-
   if (options_ & USE_HOST_POLICY) {
-    base::FilePath owner_key_path;
-    if (!policy.ParseFromString(policy_blob) ||
-        !PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path)) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false /* success */));
-      return;
-    }
-
-    // Chrome will attempt to retrieve the device policy right after storing
-    // during enrollment, so make sure it's written before signaling
-    // completion.
-    // Note also that the owner key will be written before the device policy,
-    // if it was present in the blob.
-    base::FilePath device_policy_path =
-        owner_key_path.DirName().AppendASCII(kStubDevicePolicyFile);
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(&StorePolicyWithKey, policy, policy_blob, owner_key_path,
-                       device_policy_path),
-        base::BindOnce(std::move(callback), true));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
+    StubCallStorePolicy(descriptor, policy_blob, std::move(callback));
   } else {
+    enterprise_management::PolicyFetchResponse policy;
     if (!policy.ParseFromString(policy_blob)) {
       LOG(ERROR) << "Unable to parse policy protobuf";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -410,27 +444,9 @@ void FakeSessionManagerClient::StorePolicyForUser(
     const std::string& policy_blob,
     VoidDBusMethodCallback callback) {
   if (options_ & USE_HOST_POLICY) {
-    // The session manager writes the user policy key to a well-known
-    // location. Do the same with the stub impl, so that user policy works and
-    // can be tested on desktop builds.
-    enterprise_management::PolicyFetchResponse response;
-    if (!response.ParseFromString(policy_blob)) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false /* success */));
-      return;
-    }
-
-    // This file isn't read directly by Chrome, but is used by this class to
-    // reload the user policy across restarts.
-    base::FilePath stub_policy_path =
-        GetUserFilePath(cryptohome_id, kStubPolicyFile);
-    base::FilePath key_path = GetUserFilePath(cryptohome_id, "policy.pub");
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(&StorePolicyWithKey, response, policy_blob, key_path,
-                       stub_policy_path),
-        base::BindOnce(std::move(callback), true));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+    StubCallStorePolicy(descriptor, policy_blob, std::move(callback));
   } else {
     bool result = false;
     if (store_user_policy_success_) {
@@ -447,8 +463,9 @@ void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
     const std::string& policy_blob,
     VoidDBusMethodCallback callback) {
   if (options_ & USE_HOST_POLICY) {
-    StorePolicyForUser(cryptohome::Identification::FromString(account_id),
-                       policy_blob, std::move(callback));
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_id);
+    StubCallStorePolicy(descriptor, policy_blob, std::move(callback));
   } else {
     device_local_account_policy_[account_id] = policy_blob;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
