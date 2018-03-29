@@ -49,6 +49,17 @@ To test the FindBadConstructs plugin, run:
      ./test.py ../../../../third_party/llvm-build/Release+Asserts/bin/clang \
                ../../../../third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so)
 
+Since the plugin is rolled with clang changes, behavior changes to the plugin
+should be guarded by flags to make it easy to roll clang. A general outline:
+1.  Implement new plugin behavior behind a flag.
+1.  Wait for a compiler roll to bring in the flag.
+1.  Start passing the new flag in `GN` and verify the new behavior.
+1.  Enable the new plugin behavior unconditionally and update the plugin to
+    ignore the flag.
+1.  Wait for another compiler roll.
+1.  Stop passing the flag from `GN`.
+1.  Remove the flag completely.
+
 ## Using the clang static analyzer
 
 See [clang_static_analyzer.md](clang_static_analyzer.md).
