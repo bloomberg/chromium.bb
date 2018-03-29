@@ -623,6 +623,14 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
       DVLOGF(3) << "All input frames needed to be flushed are enqueued.";
       encoder_input_queue_.pop();
 
+      // If we are not streaming, the device is not running and there is no need
+      // to call V4L2_ENC_CMD_STOP to request a flush. This also means there is
+      // nothing left to process, so we can return flush success back to the
+      // client.
+      if (!input_streamon_) {
+        std::move(flush_callback_).Run(true);
+        return;
+      }
       struct v4l2_encoder_cmd cmd;
       memset(&cmd, 0, sizeof(cmd));
       cmd.cmd = V4L2_ENC_CMD_STOP;
