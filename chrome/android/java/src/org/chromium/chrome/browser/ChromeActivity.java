@@ -1271,10 +1271,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     getCompositorViewHolder().getLayoutManager(), mFadingBackgroundView,
                     mBottomSheet);
 
-            mFadingBackgroundView.addObserver(mBottomSheet);
-
-            mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(
-                    this, mBottomSheetController, getTabModelSelector());
+            if (ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)) {
+                mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(
+                        this, mBottomSheetController, getTabModelSelector());
+            }
         }
     }
 

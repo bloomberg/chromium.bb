@@ -14,7 +14,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.FadingBackgroundView.FadingViewObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.ui.UiUtils;
 
 import java.util.PriorityQueue;
@@ -56,6 +58,19 @@ public class BottomSheetController {
             BottomSheet bottomSheet) {
         mBottomSheet = bottomSheet;
         mLayoutManager = layoutManager;
+
+        // Handle interactions with the scrim.
+        fadingBackgroundView.addObserver(new FadingViewObserver() {
+            @Override
+            public void onFadingViewClick() {
+                if (!mBottomSheet.isSheetOpen()) return;
+                mBottomSheet.setSheetState(
+                        BottomSheet.SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
+            }
+
+            @Override
+            public void onFadingViewVisibilityChanged(boolean visible) {}
+        });
 
         // Watch for navigation and tab switching that close the sheet.
         new TabModelSelectorTabObserver(tabModelSelector) {

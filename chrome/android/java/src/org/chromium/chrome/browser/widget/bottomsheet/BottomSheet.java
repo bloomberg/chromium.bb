@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.toolbar.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -66,9 +65,8 @@ import java.util.List;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-public class BottomSheet
-        extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
-                                       FadingBackgroundView.FadingViewObserver, NativePageHost {
+public class BottomSheet extends FrameLayout
+        implements BottomSheetSwipeDetector.SwipeableBottomSheet, NativePageHost {
     /** The different states that the bottom sheet can have. */
     @IntDef({SHEET_STATE_NONE, SHEET_STATE_HIDDEN, SHEET_STATE_PEEK, SHEET_STATE_HALF,
             SHEET_STATE_FULL, SHEET_STATE_SCROLLING})
@@ -1399,15 +1397,6 @@ public class BottomSheet
         float fullToHalfDiff = (getFullRatio() - getHalfRatio()) * mContainerHeight;
         return fullToHalfDiff < mMinHalfFullDistance;
     }
-
-    @Override
-    public void onFadingViewClick() {
-        if (!mIsSheetOpen) return;
-        setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
-    }
-
-    @Override
-    public void onFadingViewVisibilityChanged(boolean visible) {}
 
     /**
      * @return The default toolbar view.
