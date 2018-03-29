@@ -118,6 +118,8 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
       return CredentialManagerError::PENDING_REQUEST;
     case webauth::mojom::blink::AuthenticatorStatus::INVALID_DOMAIN:
       return CredentialManagerError::INVALID_DOMAIN;
+    case webauth::mojom::blink::AuthenticatorStatus::INVALID_STATE:
+      return CredentialManagerError::INVALID_STATE;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
       return CredentialManagerError::NOT_IMPLEMENTED;
     case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:

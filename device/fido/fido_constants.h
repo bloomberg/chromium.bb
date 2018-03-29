@@ -20,6 +20,7 @@ enum class FidoReturnCode : uint8_t {
   kFailure,
   kInvalidParams,
   kConditionsNotSatisfied,
+  kInvalidState,
 };
 
 enum class ProtocolVersion {

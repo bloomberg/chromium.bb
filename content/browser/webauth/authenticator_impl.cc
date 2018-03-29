@@ -545,7 +545,7 @@ void AuthenticatorImpl::OnRegisterResponse(
   DCHECK(u2f_request_) << "unsupported callback hairpin";
 
   switch (status_code) {
-    case device::FidoReturnCode::kConditionsNotSatisfied:
+    case device::FidoReturnCode::kInvalidState:
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
@@ -560,6 +560,7 @@ void AuthenticatorImpl::OnRegisterResponse(
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
     case device::FidoReturnCode::kInvalidParams:
+    case device::FidoReturnCode::kConditionsNotSatisfied:
       NOTREACHED();
       return;
     case device::FidoReturnCode::kSuccess:
@@ -653,6 +654,7 @@ void AuthenticatorImpl::OnSignResponse(
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
     case device::FidoReturnCode::kInvalidParams:
+    case device::FidoReturnCode::kInvalidState:
       NOTREACHED();
       return;
     case device::FidoReturnCode::kSuccess:

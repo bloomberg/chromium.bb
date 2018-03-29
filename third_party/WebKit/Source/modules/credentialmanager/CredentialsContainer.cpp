@@ -256,6 +256,10 @@ DOMException* CredentialManagerErrorToDOMException(
           "Parameters for this operation are not supported.");
     case CredentialManagerError::INVALID_DOMAIN:
       return DOMException::Create(kSecurityError, "This is an invalid domain.");
+    case CredentialManagerError::INVALID_STATE:
+      return DOMException::Create(
+          kInvalidStateError,
+          "Attempting to register an already-registered key.");
     case CredentialManagerError::NOT_IMPLEMENTED:
       return DOMException::Create(kNotSupportedError, "Not implemented");
     case CredentialManagerError::UNKNOWN:
