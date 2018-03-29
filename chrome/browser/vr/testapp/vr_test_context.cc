@@ -508,8 +508,7 @@ void VrTestContext::CloseAllIncognitoTabs() {
 void VrTestContext::ExitCct() {}
 
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
-  if (mode == UiUnsupportedMode::kUnhandledPageInfo ||
-      mode == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
+  if (mode == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
     ui_->ShowExitVrPrompt(mode);
   }
 }
@@ -582,6 +581,8 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
 void VrTestContext::StopAutocomplete() {
   ui_->SetOmniboxSuggestions(std::make_unique<OmniboxSuggestions>());
 }
+
+void VrTestContext::ShowPageInfo() {}
 
 void VrTestContext::CycleIndicators() {
   static size_t state = 0;

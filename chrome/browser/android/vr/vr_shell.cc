@@ -780,11 +780,11 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
     case UiUnsupportedMode::kGenericUnsupportedFeature:
       ExitVrDueToUnsupportedMode(mode);
       return;
-    case UiUnsupportedMode::kUnhandledPageInfo: {
-      JNIEnv* env = base::android::AttachCurrentThread();
-      Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_);
+    case UiUnsupportedMode::kUnhandledPageInfo:
+      // Is not send by the UI anymore. Enum value still exists to show correct
+      // exit prompt if vr-browsing-native-android-ui flag is false.
+      NOTREACHED();
       return;
-    }
     case UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission: {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_VrShellImpl_onUnhandledPermissionPrompt(env, j_vr_shell_);
@@ -901,6 +901,11 @@ void VrShell::StartAutocomplete(const AutocompleteRequest& request) {
 
 void VrShell::StopAutocomplete() {
   autocomplete_controller_->Stop();
+}
+
+void VrShell::ShowPageInfo() {
+  Java_VrShellImpl_showPageInfo(base::android::AttachCurrentThread(),
+                                j_vr_shell_);
 }
 
 bool VrShell::HasAudioPermission() {

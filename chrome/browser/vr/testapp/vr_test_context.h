@@ -57,6 +57,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   void SetVoiceSearchActive(bool active) override;
   void StartAutocomplete(const AutocompleteRequest& request) override;
   void StopAutocomplete() override;
+  void ShowPageInfo() override;
   void Navigate(GURL gurl, NavigationMethod method) override;
 
   void set_window_size(const gfx::Size& size) { window_size_ = size; }

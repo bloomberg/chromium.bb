@@ -195,6 +195,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void SetVoiceSearchActive(bool active);
   void StartAutocomplete(const AutocompleteRequest& request);
   void StopAutocomplete();
+  void ShowPageInfo();
   bool HasAudioPermission();
 
   void ClearFocusedElement();
