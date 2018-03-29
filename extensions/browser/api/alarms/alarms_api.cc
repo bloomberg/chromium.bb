@@ -114,7 +114,7 @@ bool AlarmsCreateFunction::RunAsync() {
       new Alarm(alarm_name, params->alarm_info, granularity, clock_->Now()));
   AlarmManager::Get(browser_context())
       ->AddAlarm(extension_id(), std::move(alarm),
-                 base::Bind(&AlarmsCreateFunction::Callback, this));
+                 base::BindOnce(&AlarmsCreateFunction::Callback, this));
 
   return true;
 }
@@ -131,7 +131,7 @@ bool AlarmsGetFunction::RunAsync() {
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
   AlarmManager::Get(browser_context())
       ->GetAlarm(extension_id(), name,
-                 base::Bind(&AlarmsGetFunction::Callback, this, name));
+                 base::BindOnce(&AlarmsGetFunction::Callback, this, name));
 
   return true;
 }
@@ -147,7 +147,7 @@ void AlarmsGetFunction::Callback(const std::string& name,
 bool AlarmsGetAllFunction::RunAsync() {
   AlarmManager::Get(browser_context())
       ->GetAllAlarms(extension_id(),
-                     base::Bind(&AlarmsGetAllFunction::Callback, this));
+                     base::BindOnce(&AlarmsGetAllFunction::Callback, this));
   return true;
 }
 
@@ -169,7 +169,7 @@ bool AlarmsClearFunction::RunAsync() {
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
   AlarmManager::Get(browser_context())
       ->RemoveAlarm(extension_id(), name,
-                    base::Bind(&AlarmsClearFunction::Callback, this, name));
+                    base::BindOnce(&AlarmsClearFunction::Callback, this, name));
 
   return true;
 }
@@ -181,8 +181,9 @@ void AlarmsClearFunction::Callback(const std::string& name, bool success) {
 
 bool AlarmsClearAllFunction::RunAsync() {
   AlarmManager::Get(browser_context())
-      ->RemoveAllAlarms(extension_id(),
-                        base::Bind(&AlarmsClearAllFunction::Callback, this));
+      ->RemoveAllAlarms(
+          extension_id(),
+          base::BindOnce(&AlarmsClearAllFunction::Callback, this));
   return true;
 }
 
