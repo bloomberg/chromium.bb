@@ -74,6 +74,9 @@ const char kAccountConsistencyFeatureMethodDicePrepareMigration[] =
 const char kAccountConsistencyFeatureMethodDiceMigration[] = "dice_migration";
 const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
+const base::Feature kUnifiedConsent{"UnifiedConsent",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
                               AccountConsistencyMethod b) {
   DCHECK_NE(AccountConsistencyMethod::kMirror, a);

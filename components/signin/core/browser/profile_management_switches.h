@@ -37,6 +37,9 @@ extern const char kAccountConsistencyFeatureMethodDicePrepareMigration[];
 extern const char kAccountConsistencyFeatureMethodDiceMigration[];
 extern const char kAccountConsistencyFeatureMethodDice[];
 
+// Improved and unified consent for privacy-related features.
+extern const base::Feature kUnifiedConsent;
+
 // TODO(https://crbug.com/777774): Cleanup this enum and remove related
 // functions once Dice is fully rolled out, and/or Mirror code is removed on
 // desktop.
