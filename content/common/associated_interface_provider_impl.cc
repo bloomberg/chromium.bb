@@ -12,10 +12,12 @@ namespace content {
 class AssociatedInterfaceProviderImpl::LocalProvider
     : public mojom::AssociatedInterfaceProvider {
  public:
-  explicit LocalProvider(mojom::AssociatedInterfaceProviderAssociatedPtr* proxy)
+  LocalProvider(mojom::AssociatedInterfaceProviderAssociatedPtr* proxy,
+                scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : associated_interface_provider_binding_(this) {
     associated_interface_provider_binding_.Bind(
-        mojo::MakeRequestAssociatedWithDedicatedPipe(proxy));
+        mojo::MakeRequestAssociatedWithDedicatedPipe(proxy),
+        std::move(task_runner));
   }
 
   ~LocalProvider() override {}
@@ -46,13 +48,16 @@ class AssociatedInterfaceProviderImpl::LocalProvider
 };
 
 AssociatedInterfaceProviderImpl::AssociatedInterfaceProviderImpl(
-    mojom::AssociatedInterfaceProviderAssociatedPtr proxy)
-    : proxy_(std::move(proxy)) {
+    mojom::AssociatedInterfaceProviderAssociatedPtr proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : proxy_(std::move(proxy)), task_runner_(std::move(task_runner)) {
   DCHECK(proxy_.is_bound());
 }
 
-AssociatedInterfaceProviderImpl::AssociatedInterfaceProviderImpl()
-    : local_provider_(std::make_unique<LocalProvider>(&proxy_)) {}
+AssociatedInterfaceProviderImpl::AssociatedInterfaceProviderImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : local_provider_(std::make_unique<LocalProvider>(&proxy_, task_runner)),
+      task_runner_(std::move(task_runner)) {}
 
 AssociatedInterfaceProviderImpl::~AssociatedInterfaceProviderImpl() {}
 
@@ -69,7 +74,7 @@ void AssociatedInterfaceProviderImpl::OverrideBinderForTesting(
   if (!local_provider_) {
     DCHECK(proxy_.is_bound());
     proxy_.reset();
-    local_provider_ = std::make_unique<LocalProvider>(&proxy_);
+    local_provider_ = std::make_unique<LocalProvider>(&proxy_, task_runner_);
   }
   local_provider_->SetBinderForName(name, binder);
 }

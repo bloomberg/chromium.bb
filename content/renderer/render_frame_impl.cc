@@ -2910,13 +2910,14 @@ RenderFrameImpl::GetRemoteAssociatedInterfaces() {
       mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
       thread->GetRemoteRouteProvider()->GetRoute(
           routing_id_, mojo::MakeRequest(&remote_interfaces));
-      remote_associated_interfaces_.reset(
-          new AssociatedInterfaceProviderImpl(std::move(remote_interfaces)));
+      remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
+          std::move(remote_interfaces),
+          GetTaskRunner(blink::TaskType::kInternalIPC)));
     } else {
       // In some tests the thread may be null,
       // so set up a self-contained interface provider instead.
-      remote_associated_interfaces_.reset(
-          new AssociatedInterfaceProviderImpl());
+      remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
+          GetTaskRunner(blink::TaskType::kInternalIPC)));
     }
   }
   return remote_associated_interfaces_.get();

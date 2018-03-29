@@ -19,12 +19,21 @@ class AssociatedInterfaceProviderImpl
     : public blink::AssociatedInterfaceProvider {
  public:
   // Binds this to a remote mojom::AssociatedInterfaceProvider.
+  //
+  // |task_runner| must belong to the same thread. It will be used to dispatch
+  // all callbacks and connection error notification.
   explicit AssociatedInterfaceProviderImpl(
-      mojom::AssociatedInterfaceProviderAssociatedPtr proxy);
+      mojom::AssociatedInterfaceProviderAssociatedPtr proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
+
   // Constructs a local provider with no remote interfaces. This is useful in
   // conjunction with OverrideBinderForTesting(), in test environments where
   // there may not be a remote |mojom::AssociatedInterfaceProvider| available.
-  AssociatedInterfaceProviderImpl();
+  //
+  // |task_runner| must belong to the same thread. It will be used to dispatch
+  // all callbacks and connection error notification.
+  explicit AssociatedInterfaceProviderImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~AssociatedInterfaceProviderImpl() override;
 
   // AssociatedInterfaceProvider:
@@ -41,6 +50,7 @@ class AssociatedInterfaceProviderImpl
   mojom::AssociatedInterfaceProviderAssociatedPtr proxy_;
 
   std::unique_ptr<LocalProvider> local_provider_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AssociatedInterfaceProviderImpl);
 };
