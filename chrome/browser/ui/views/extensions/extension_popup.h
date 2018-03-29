@@ -94,8 +94,7 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
                  views::BubbleBorder::Arrow arrow,
                  ShowAction show_action);
 
-  // Called on anchor window activation (ie. user clicked the browser window).
-  void OnAnchorWindowActivation();
+  void CloseUnlessUnderInspection();
 
  private:
   static ExtensionPopup* Create(extensions::ExtensionViewHost* host,

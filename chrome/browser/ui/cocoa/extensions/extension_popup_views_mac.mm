@@ -38,7 +38,7 @@ ExtensionPopupViewsMac* ExtensionPopupViewsMac::ShowPopup(
                                    object:parent_window
                                     queue:nil
                                usingBlock:^(NSNotification* notification) {
-                                 popup->OnAnchorWindowActivation();
+                                 popup->CloseUnlessUnderInspection();
                                }];
   [popup->observer_tokens_ addObject:token];
   return popup;
