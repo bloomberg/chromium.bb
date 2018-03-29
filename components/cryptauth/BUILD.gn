@@ -6,6 +6,8 @@
 # user's account. This component both sends data about the current device and
 # requets data about associated devices.
 
+assert(is_chromeos, "CryptAuth is Chrome OS only")
+
 static_library("cryptauth") {
   sources = [
     "authenticator.cc",
