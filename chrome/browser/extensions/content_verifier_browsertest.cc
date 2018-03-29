@@ -244,9 +244,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   }
 };
 
-// Disabled for extremel flakiness. The culprit cannot be reverted but is
-// documents in crbug.com/825540.
-IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DISABLED_DotSlashPaths) {
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   TestContentVerifyJobObserver job_observer;
   std::string id = "hoipipabpcoomfapcecilckodldhmpgl";
 
@@ -287,6 +285,14 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DISABLED_DotSlashPaths) {
   // content_verifier.cc isn't thread safe, so it might asynchronously call
   // OnFetchComplete after this test's body executes).
   verifier_observer.reset();
+
+  EXPECT_TRUE(job_observer.WaitForExpectedJobs());
+
+  // Set expectations for extension enablement below.
+  job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("cs1.js")),
+                               Result::SUCCESS);
+  job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("cs2.js")),
+                               Result::SUCCESS);
 
   // Now disable/re-enable the extension to cause the content scripts to be
   // read again.

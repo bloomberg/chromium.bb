@@ -388,6 +388,15 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
 
   const ContentVerifierIOData::ExtensionData* data =
       io_data_->GetData(extension_id);
+  // The absence of |data| generally means that we don't have to verify the
+  // extension resource. However, it could also mean that
+  // OnExtensionLoadedOnIO didn't get a chance to fire yet.
+  // See https://crbug.com/826584 for an example of how this can happen from
+  // ExtensionUserScriptLoader. Currently, ExtensionUserScriptLoader performs a
+  // thread hopping to work around this problem.
+  // TODO(lazyboy): Prefer queueing up jobs in these case instead of the thread
+  // hopping solution, but that requires a substantial change in
+  // ContnetVerifier/ContentVerifyJob.
   if (!data)
     return NULL;
 
