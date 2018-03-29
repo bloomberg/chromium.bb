@@ -220,6 +220,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
+    self.Flaky('conformance/glsl/variables/gl-frontfacing.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=825416)
     self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=737018)
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
