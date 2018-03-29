@@ -11,7 +11,6 @@
 crbug.com/24182 storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/24182 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-mac.html [ Slow ]
-crbug.com/24182 editing/selection/modify_move/move-by-word-visually-multi-line.html [ Slow ]
 crbug.com/24182 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
 crbug.com/24182 virtual/disable-spv175/compositing/culling/filter-occlusion-blur-large.html [ Slow ]
 crbug.com/24182 compositing/video-frame-size-change.html [ Slow ]
