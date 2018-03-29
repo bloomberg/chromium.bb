@@ -8,6 +8,7 @@ include_rules = [
     "+base/macros.h",
     "+base/memory/ptr_util.h",
     "+base/memory/weak_ptr.h",
+    "+base/metrics/histogram_macros.h",
     "+base/sequenced_task_runner.h",
     "+base/single_thread_task_runner.h",
     "+base/task_scheduler/post_task.h",
