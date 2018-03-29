@@ -16,6 +16,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -291,6 +292,61 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   EXPECT_TRUE(GetTray()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_FALSE(GetTray()->visible());
+}
+
+// Verify that quick switch works properly when one of the windows has a
+// transient child.
+TEST_F(OverviewButtonTrayTest, TransientChildQuickSwitch) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+
+  // Add |window2| as a transient child of |window1|, and focus |window1|.
+  ::wm::AddTransientChild(window1.get(), window2.get());
+  ::wm::ActivateWindow(window3.get());
+  ::wm::ActivateWindow(window2.get());
+  ::wm::ActivateWindow(window1.get());
+
+  // Verify that after double tapping, we have switched to |window3|, even
+  // though |window2| is more recently used.
+  PerformDoubleTap();
+  EXPECT_EQ(window3.get(), wm::GetActiveWindow());
+}
+
+// Verify that quick switch works properly when in split view mode.
+TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
+  // Splitview is only available in tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+
+  // Enter splitview mode. Snap |window1| to the left, this will be the default
+  // splitview window.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  ASSERT_EQ(window1.get(), split_view_controller->GetDefaultSnappedWindow());
+  EXPECT_EQ(window2.get(), wm::GetActiveWindow());
+
+  // Verify that after double tapping, we have switched to |window3|, even
+  // though |window1| is more recently used.
+  PerformDoubleTap();
+  EXPECT_EQ(window3.get(), split_view_controller->right_window());
+  EXPECT_EQ(window3.get(), wm::GetActiveWindow());
+
+  // Focus |window1|. Verify that after double tapping, |window2| is the on the
+  // right side for splitview.
+  wm::ActivateWindow(window1.get());
+  PerformDoubleTap();
+  EXPECT_EQ(window2.get(), split_view_controller->right_window());
+  EXPECT_EQ(window2.get(), wm::GetActiveWindow());
+
+  split_view_controller->EndSplitView();
 }
 
 }  // namespace ash
