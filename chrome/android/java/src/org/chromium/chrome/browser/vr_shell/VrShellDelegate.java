@@ -61,6 +61,7 @@ import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationDelegateManager;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.display.DisplayAndroidManager;
+import org.chromium.ui.widget.popups.UiWidgetFactory;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -218,6 +219,8 @@ public class VrShellDelegate
     private Runnable mSettingsButtonListener;
 
     private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
+
+    private UiWidgetFactory mUiWidgetFactoryBeforeEnterVr;
 
     /**
      * Used to observe changes to whether Chrome is currently being viewed in VR.
@@ -1201,6 +1204,10 @@ public class VrShellDelegate
             }, EXPECT_DON_TIMEOUT_MS);
         }
         maybeSetPresentResult(true, donSuceeded);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
+            mUiWidgetFactoryBeforeEnterVr = UiWidgetFactory.getInstance();
+            UiWidgetFactory.setInstance(new VrUiWidgetFactory());
+        }
 
         for (VrModeObserver observer : sVrModeObservers) observer.onEnterVr();
     }
@@ -1801,6 +1808,9 @@ public class VrShellDelegate
         // prompt.
         if (mShowingExitVrPrompt) callOnExitVrRequestListener(true);
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
+            UiWidgetFactory.setInstance(mUiWidgetFactoryBeforeEnterVr);
+        }
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
