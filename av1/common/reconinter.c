@@ -21,9 +21,7 @@
 #include "aom_dsp/blend.h"
 
 #include "av1/common/blockd.h"
-#if CONFIG_EXPLICIT_ORDER_HINT
 #include "av1/common/mvref_common.h"
-#endif
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
 #include "av1/common/onyxc_int.h"
@@ -786,15 +784,10 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
     fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
   }
 
-#if CONFIG_EXPLICIT_ORDER_HINT
   int d0 = clamp(abs(get_relative_dist(cm, fwd_frame_index, cur_frame_index)),
                  0, MAX_FRAME_DISTANCE);
   int d1 = clamp(abs(get_relative_dist(cm, cur_frame_index, bck_frame_index)),
                  0, MAX_FRAME_DISTANCE);
-#else
-  int d0 = clamp(abs(fwd_frame_index - cur_frame_index), 0, MAX_FRAME_DISTANCE);
-  int d1 = clamp(abs(cur_frame_index - bck_frame_index), 0, MAX_FRAME_DISTANCE);
-#endif
 
   const int order = d0 <= d1;
 

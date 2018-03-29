@@ -2708,10 +2708,8 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
     assert(seq_params->force_integer_mv == 2);
   }
 
-#if CONFIG_EXPLICIT_ORDER_HINT
   if (seq_params->enable_order_hint)
     aom_wb_write_literal(wb, seq_params->order_hint_bits_minus1, 3);
-#endif
   aom_wb_write_bit(wb, seq_params->enable_superres);
   aom_wb_write_bit(wb, seq_params->enable_cdef);
   aom_wb_write_bit(wb, seq_params->enable_restoration);
@@ -2906,21 +2904,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   cm->frame_refs_short_signaling = 0;
 
-#if CONFIG_EXPLICIT_ORDER_HINT
   aom_wb_write_literal(wb, cm->frame_offset,
                        cm->seq_params.order_hint_bits_minus1 + 1);
-#else
-  if (cm->show_frame == 0) {
-    int arf_offset = AOMMIN(
-        (MAX_GF_INTERVAL - 1),
-        cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
-    int brf_offset =
-        cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
-
-    arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-    aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
-  }
-#endif
 
   if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
     aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
@@ -2936,7 +2921,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     // all eight fbs are refreshed, pick one that will live long enough
     cm->fb_of_context_type[REGULAR_FRAME] = 0;
   } else {
-#if CONFIG_EXPLICIT_ORDER_HINT
     // Write all ref frame order hints if error_resilient_mode == 1
     if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
       RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
@@ -2950,7 +2934,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                              cm->seq_params.order_hint_bits_minus1 + 1);
       }
     }
-#endif  // CONFIG_EXPLICIT_ORDER_HINT
 
     if (cm->frame_type == INTRA_ONLY_FRAME) {
       cpi->refresh_frame_mask = get_refresh_mask(cpi);

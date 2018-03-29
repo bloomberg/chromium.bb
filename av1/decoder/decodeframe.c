@@ -2315,10 +2315,8 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     seq_params->force_integer_mv = 2;
   }
 
-#if CONFIG_EXPLICIT_ORDER_HINT
   seq_params->order_hint_bits_minus1 =
       seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
-#endif
   seq_params->enable_superres = aom_rb_read_bit(rb);
   seq_params->enable_cdef = aom_rb_read_bit(rb);
   seq_params->enable_restoration = aom_rb_read_bit(rb);
@@ -2441,33 +2439,6 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          REF_FRAMES * sizeof(WarpedMotionParams));
 }
 
-#if !CONFIG_EXPLICIT_ORDER_HINT
-
-// Copied from av1/encoder/random.h
-static INLINE unsigned int lcg_rand16(unsigned int *state) {
-  *state = (unsigned int)(*state * 1103515245ULL + 12345);
-  return *state / 65536 % 32768;
-}
-
-// Wrap around to make sure current_video_frame won't surpass a limit
-// Such that distance computation could remain correct
-static void wrap_around_current_video_frame(AV1Decoder *pbi) {
-  AV1_COMMON *const cm = &pbi->common;
-
-  if (cm->current_video_frame >= FRAME_NUM_LIMIT) {
-    // Wrap to a random number in range (MAX_FRAME_DISTANCE, 32768)
-    static unsigned int seed = 54321;
-    int new_frame_offset = lcg_rand16(&seed);
-    new_frame_offset += (MAX_FRAME_DISTANCE + 1);
-
-    // Wrap around for current frame
-    cm->current_video_frame = new_frame_offset;
-    cm->frame_offset = new_frame_offset;
-    cm->cur_frame->cur_frame_offset = cm->frame_offset;
-  }
-}
-#endif
-
 static void show_existing_frame_reset(AV1Decoder *const pbi,
                                       int existing_frame_idx) {
   AV1_COMMON *const cm = &pbi->common;
@@ -2476,13 +2447,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
 
   assert(cm->show_existing_frame);
 
-#if !CONFIG_EXPLICIT_ORDER_HINT
-  wrap_around_current_video_frame(pbi);
-#endif
   cm->frame_type = KEY_FRAME;
-#if !CONFIG_EXPLICIT_ORDER_HINT
-  cm->frame_offset = cm->current_video_frame;
-#endif
 
   pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
@@ -2687,27 +2652,15 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->frame_refs_short_signaling = 0;
   cm->primary_ref_frame = PRIMARY_REF_NONE;
 
-#if CONFIG_EXPLICIT_ORDER_HINT
   cm->frame_offset =
       aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
   cm->current_video_frame = cm->frame_offset;
-#else
-  if (cm->show_frame == 0) {
-    cm->frame_offset =
-        cm->current_video_frame + aom_rb_read_literal(rb, FRAME_OFFSET_BITS);
-  } else {
-    cm->frame_offset = cm->current_video_frame;
-  }
-#endif
 
   if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
     cm->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
   }
 
   if (cm->frame_type == KEY_FRAME) {
-#if !CONFIG_EXPLICIT_ORDER_HINT
-    wrap_around_current_video_frame(pbi);
-#endif                    // !CONFIG_EXPLICIT_ORDER_HINT
     if (!cm->show_frame)  // unshown keyframe (forward keyframe)
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
     else  // shown keyframe
@@ -2730,7 +2683,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->allow_ref_frame_mvs = 0;
     cm->prev_frame = NULL;
   } else {
-#if CONFIG_EXPLICIT_ORDER_HINT
     // Read all ref frame order hints if error_resilient_mode == 1
     if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
@@ -2760,7 +2712,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         }
       }
     }
-#endif  // CONFIG_EXPLICIT_ORDER_HINT
 
     cm->allow_ref_frame_mvs = 0;
 

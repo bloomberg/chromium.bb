@@ -89,7 +89,6 @@ set(CONFIG_SPATIAL_RESAMPLING 1 CACHE NUMBER "Spatial resampling.")
 # AV1 experiment flags.
 set(CONFIG_DIST_8X8 1 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_ENTROPY_STATS 0 CACHE NUMBER "AV1 experiment flag.")
-set(CONFIG_EXPLICIT_ORDER_HINT 1 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_FP_MB_STATS 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_INTER_STATS_ONLY 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_RD_DEBUG 0 CACHE NUMBER "AV1 experiment flag.")
