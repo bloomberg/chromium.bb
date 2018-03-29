@@ -56,6 +56,7 @@
 #include "core/editing/commands/InsertCommands.h"
 #include "core/editing/commands/MoveCommands.h"
 #include "core/editing/commands/RemoveFormatCommand.h"
+#include "core/editing/commands/StyleCommands.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/commands/UnlinkCommand.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -253,9 +254,9 @@ class EditorInternalCommand {
 static const bool kNotTextInsertion = false;
 static const bool kIsTextInsertion = true;
 
-static void ApplyStyle(LocalFrame& frame,
-                       CSSPropertyValueSet* style,
-                       InputEvent::InputType input_type) {
+void StyleCommands::ApplyStyle(LocalFrame& frame,
+                               CSSPropertyValueSet* style,
+                               InputEvent::InputType input_type) {
   const VisibleSelection& selection =
       frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
   if (selection.IsNone())
@@ -273,19 +274,19 @@ static void ApplyStyle(LocalFrame& frame,
       ->Apply();
 }
 
-static void ApplyStyleToSelection(LocalFrame& frame,
-                                  CSSPropertyValueSet* style,
-                                  InputEvent::InputType input_type) {
+void StyleCommands::ApplyStyleToSelection(LocalFrame& frame,
+                                          CSSPropertyValueSet* style,
+                                          InputEvent::InputType input_type) {
   if (!style || style->IsEmpty() || !frame.GetEditor().CanEditRichly())
     return;
 
   ApplyStyle(frame, style, input_type);
 }
 
-static bool ApplyCommandToFrame(LocalFrame& frame,
-                                EditorCommandSource source,
-                                InputEvent::InputType input_type,
-                                CSSPropertyValueSet* style) {
+bool StyleCommands::ApplyCommandToFrame(LocalFrame& frame,
+                                        EditorCommandSource source,
+                                        InputEvent::InputType input_type,
+                                        CSSPropertyValueSet* style) {
   // FIXME: We don't call shouldApplyStyle when the source is DOM; is there a
   // good reason for that?
   switch (source) {
@@ -300,11 +301,11 @@ static bool ApplyCommandToFrame(LocalFrame& frame,
   return false;
 }
 
-static bool ExecuteApplyStyle(LocalFrame& frame,
-                              EditorCommandSource source,
-                              InputEvent::InputType input_type,
-                              CSSPropertyID property_id,
-                              const String& property_value) {
+bool StyleCommands::ExecuteApplyStyle(LocalFrame& frame,
+                                      EditorCommandSource source,
+                                      InputEvent::InputType input_type,
+                                      CSSPropertyID property_id,
+                                      const String& property_value) {
   DCHECK(frame.GetDocument());
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
@@ -313,11 +314,11 @@ static bool ExecuteApplyStyle(LocalFrame& frame,
   return ApplyCommandToFrame(frame, source, input_type, style);
 }
 
-static bool ExecuteApplyStyle(LocalFrame& frame,
-                              EditorCommandSource source,
-                              InputEvent::InputType input_type,
-                              CSSPropertyID property_id,
-                              CSSValueID property_value) {
+bool StyleCommands::ExecuteApplyStyle(LocalFrame& frame,
+                                      EditorCommandSource source,
+                                      InputEvent::InputType input_type,
+                                      CSSPropertyID property_id,
+                                      CSSValueID property_value) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(property_id, property_value);
@@ -328,11 +329,11 @@ static bool ExecuteApplyStyle(LocalFrame& frame,
 // <b><u>hello</u>world</b> properly. This function must use
 // EditingStyle::SelectionHasStyle to determine the current style but we cannot
 // fix this until https://bugs.webkit.org/show_bug.cgi?id=27818 is resolved.
-static bool ExecuteToggleStyleInList(LocalFrame& frame,
-                                     EditorCommandSource source,
-                                     InputEvent::InputType input_type,
-                                     CSSPropertyID property_id,
-                                     CSSValue* value) {
+bool StyleCommands::ExecuteToggleStyleInList(LocalFrame& frame,
+                                             EditorCommandSource source,
+                                             InputEvent::InputType input_type,
+                                             CSSPropertyID property_id,
+                                             CSSValue* value) {
   EditingStyle* selection_style =
       EditingStyleUtilities::CreateStyleAtSelectionStart(
           frame.Selection().ComputeVisibleSelectionInDOMTree());
@@ -363,9 +364,9 @@ static bool ExecuteToggleStyleInList(LocalFrame& frame,
   return ApplyCommandToFrame(frame, source, input_type, new_mutable_style);
 }
 
-static bool SelectionStartHasStyle(LocalFrame& frame,
-                                   CSSPropertyID property_id,
-                                   const String& value) {
+bool StyleCommands::SelectionStartHasStyle(LocalFrame& frame,
+                                           CSSPropertyID property_id,
+                                           const String& value) {
   const SecureContextMode secure_context_mode =
       frame.GetDocument()->GetSecureContextMode();
 
@@ -379,12 +380,12 @@ static bool SelectionStartHasStyle(LocalFrame& frame,
          EditingTriState::kFalse;
 }
 
-static bool ExecuteToggleStyle(LocalFrame& frame,
-                               EditorCommandSource source,
-                               InputEvent::InputType input_type,
-                               CSSPropertyID property_id,
-                               const char* off_value,
-                               const char* on_value) {
+bool StyleCommands::ExecuteToggleStyle(LocalFrame& frame,
+                                       EditorCommandSource source,
+                                       InputEvent::InputType input_type,
+                                       CSSPropertyID property_id,
+                                       const char* off_value,
+                                       const char* on_value) {
   // Style is considered present when
   // Mac: present at the beginning of selection
   // other: present throughout the selection
@@ -478,9 +479,9 @@ static EditingTriState SelectionListState(const FrameSelection& selection,
   return EditingTriState::kFalse;
 }
 
-static EditingTriState StateStyle(LocalFrame& frame,
-                                  CSSPropertyID property_id,
-                                  const char* desired_value) {
+EditingTriState StyleCommands::StateStyle(LocalFrame& frame,
+                                          CSSPropertyID property_id,
+                                          const char* desired_value) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (frame.GetEditor().Behavior().ShouldToggleStyleBasedOnStartOfSelection()) {
     return SelectionStartHasStyle(frame, property_id, desired_value)
@@ -490,8 +491,9 @@ static EditingTriState StateStyle(LocalFrame& frame,
   return EditingStyle::SelectionHasStyle(frame, property_id, desired_value);
 }
 
-static String SelectionStartCSSPropertyValue(LocalFrame& frame,
-                                             CSSPropertyID property_id) {
+String StyleCommands::SelectionStartCSSPropertyValue(
+    LocalFrame& frame,
+    CSSPropertyID property_id) {
   EditingStyle* const selection_style =
       EditingStyleUtilities::CreateStyleAtSelectionStart(
           frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
@@ -504,7 +506,7 @@ static String SelectionStartCSSPropertyValue(LocalFrame& frame,
   return selection_style->Style()->GetPropertyValue(property_id);
 }
 
-static String ValueStyle(LocalFrame& frame, CSSPropertyID property_id) {
+String StyleCommands::ValueStyle(LocalFrame& frame, CSSPropertyID property_id) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: Rather than retrieving the style at the start of the current
@@ -513,7 +515,8 @@ static String ValueStyle(LocalFrame& frame, CSSPropertyID property_id) {
   return SelectionStartCSSPropertyValue(frame, property_id);
 }
 
-static bool IsUnicodeBidiNestedOrMultipleEmbeddings(CSSValueID value_id) {
+bool StyleCommands::IsUnicodeBidiNestedOrMultipleEmbeddings(
+    CSSValueID value_id) {
   return value_id == CSSValueEmbed || value_id == CSSValueBidiOverride ||
          value_id == CSSValueWebkitIsolate ||
          value_id == CSSValueWebkitIsolateOverride ||
@@ -523,7 +526,7 @@ static bool IsUnicodeBidiNestedOrMultipleEmbeddings(CSSValueID value_id) {
 
 // TODO(editing-dev): We should make |textDirectionForSelection()| to take
 // |selectionInDOMTree|.
-static WritingDirection TextDirectionForSelection(
+WritingDirection StyleCommands::TextDirectionForSelection(
     const VisibleSelection& selection,
     EditingStyle* typing_style,
     bool& has_nested_or_multiple_embeddings) {
@@ -627,8 +630,9 @@ static WritingDirection TextDirectionForSelection(
   return found_direction;
 }
 
-static EditingTriState StateTextWritingDirection(LocalFrame& frame,
-                                                 WritingDirection direction) {
+EditingTriState StyleCommands::StateTextWritingDirection(
+    LocalFrame& frame,
+    WritingDirection direction) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   bool has_nested_or_multiple_embeddings;
@@ -658,10 +662,10 @@ static EphemeralRange UnionEphemeralRanges(const EphemeralRange& range1,
 
 // Execute command functions
 
-static bool ExecuteBackColor(LocalFrame& frame,
-                             Event*,
-                             EditorCommandSource source,
-                             const String& value) {
+bool StyleCommands::ExecuteBackColor(LocalFrame& frame,
+                                     Event*,
+                                     EditorCommandSource source,
+                                     const String& value) {
   return ExecuteApplyStyle(frame, source, InputEvent::InputType::kNone,
                            CSSPropertyBackgroundColor, value);
 }
@@ -925,18 +929,18 @@ static bool ExecuteFindString(LocalFrame& frame,
   return frame.GetEditor().FindString(value, kCaseInsensitive | kWrapAround);
 }
 
-static bool ExecuteFontName(LocalFrame& frame,
-                            Event*,
-                            EditorCommandSource source,
-                            const String& value) {
+bool StyleCommands::ExecuteFontName(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource source,
+                                    const String& value) {
   return ExecuteApplyStyle(frame, source, InputEvent::InputType::kNone,
                            CSSPropertyFontFamily, value);
 }
 
-static bool ExecuteFontSize(LocalFrame& frame,
-                            Event*,
-                            EditorCommandSource source,
-                            const String& value) {
+bool StyleCommands::ExecuteFontSize(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource source,
+                                    const String& value) {
   CSSValueID size;
   if (!HTMLFontElement::CssValueFromFontSizeNumber(value, size))
     return false;
@@ -944,18 +948,18 @@ static bool ExecuteFontSize(LocalFrame& frame,
                            CSSPropertyFontSize, size);
 }
 
-static bool ExecuteFontSizeDelta(LocalFrame& frame,
-                                 Event*,
-                                 EditorCommandSource source,
-                                 const String& value) {
+bool StyleCommands::ExecuteFontSizeDelta(LocalFrame& frame,
+                                         Event*,
+                                         EditorCommandSource source,
+                                         const String& value) {
   return ExecuteApplyStyle(frame, source, InputEvent::InputType::kNone,
                            CSSPropertyWebkitFontSizeDelta, value);
 }
 
-static bool ExecuteForeColor(LocalFrame& frame,
-                             Event*,
-                             EditorCommandSource source,
-                             const String& value) {
+bool StyleCommands::ExecuteForeColor(LocalFrame& frame,
+                                     Event*,
+                                     EditorCommandSource source,
+                                     const String& value) {
   return ExecuteApplyStyle(frame, source, InputEvent::InputType::kNone,
                            CSSPropertyColor, value);
 }
@@ -1061,10 +1065,11 @@ static bool ExecuteJustifyRight(LocalFrame& frame,
                                     CSSPropertyTextAlign, "right");
 }
 
-static bool ExecuteMakeTextWritingDirectionLeftToRight(LocalFrame& frame,
-                                                       Event*,
-                                                       EditorCommandSource,
-                                                       const String&) {
+bool StyleCommands::ExecuteMakeTextWritingDirectionLeftToRight(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
@@ -1073,10 +1078,10 @@ static bool ExecuteMakeTextWritingDirectionLeftToRight(LocalFrame& frame,
   return true;
 }
 
-static bool ExecuteMakeTextWritingDirectionNatural(LocalFrame& frame,
-                                                   Event*,
-                                                   EditorCommandSource,
-                                                   const String&) {
+bool StyleCommands::ExecuteMakeTextWritingDirectionNatural(LocalFrame& frame,
+                                                           Event*,
+                                                           EditorCommandSource,
+                                                           const String&) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
@@ -1084,10 +1089,11 @@ static bool ExecuteMakeTextWritingDirectionNatural(LocalFrame& frame,
   return true;
 }
 
-static bool ExecuteMakeTextWritingDirectionRightToLeft(LocalFrame& frame,
-                                                       Event*,
-                                                       EditorCommandSource,
-                                                       const String&) {
+bool StyleCommands::ExecuteMakeTextWritingDirectionRightToLeft(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
@@ -1255,10 +1261,10 @@ static bool ExecuteSetMark(LocalFrame& frame,
   return true;
 }
 
-static bool ExecuteStrikethrough(LocalFrame& frame,
-                                 Event*,
-                                 EditorCommandSource source,
-                                 const String&) {
+bool StyleCommands::ExecuteStrikethrough(LocalFrame& frame,
+                                         Event*,
+                                         EditorCommandSource source,
+                                         const String&) {
   CSSIdentifierValue* line_through =
       CSSIdentifierValue::Create(CSSValueLineThrough);
   return ExecuteToggleStyleInList(
@@ -1266,37 +1272,37 @@ static bool ExecuteStrikethrough(LocalFrame& frame,
       CSSPropertyWebkitTextDecorationsInEffect, line_through);
 }
 
-static bool ExecuteStyleWithCSS(LocalFrame& frame,
-                                Event*,
-                                EditorCommandSource,
-                                const String& value) {
+bool StyleCommands::ExecuteStyleWithCSS(LocalFrame& frame,
+                                        Event*,
+                                        EditorCommandSource,
+                                        const String& value) {
   frame.GetEditor().SetShouldStyleWithCSS(
       !DeprecatedEqualIgnoringCase(value, "false"));
   return true;
 }
 
-static bool ExecuteUseCSS(LocalFrame& frame,
-                          Event*,
-                          EditorCommandSource,
-                          const String& value) {
+bool StyleCommands::ExecuteUseCSS(LocalFrame& frame,
+                                  Event*,
+                                  EditorCommandSource,
+                                  const String& value) {
   frame.GetEditor().SetShouldStyleWithCSS(
       DeprecatedEqualIgnoringCase(value, "false"));
   return true;
 }
 
-static bool ExecuteSubscript(LocalFrame& frame,
-                             Event*,
-                             EditorCommandSource source,
-                             const String&) {
+bool StyleCommands::ExecuteSubscript(LocalFrame& frame,
+                                     Event*,
+                                     EditorCommandSource source,
+                                     const String&) {
   return ExecuteToggleStyle(frame, source,
                             InputEvent::InputType::kFormatSubscript,
                             CSSPropertyVerticalAlign, "baseline", "sub");
 }
 
-static bool ExecuteSuperscript(LocalFrame& frame,
-                               Event*,
-                               EditorCommandSource source,
-                               const String&) {
+bool StyleCommands::ExecuteSuperscript(LocalFrame& frame,
+                                       Event*,
+                                       EditorCommandSource source,
+                                       const String&) {
   return ExecuteToggleStyle(frame, source,
                             InputEvent::InputType::kFormatSuperscript,
                             CSSPropertyVerticalAlign, "baseline", "super");
@@ -1321,18 +1327,18 @@ static bool ExecuteSwapWithMark(LocalFrame& frame,
   return true;
 }
 
-static bool ExecuteToggleBold(LocalFrame& frame,
-                              Event*,
-                              EditorCommandSource source,
-                              const String&) {
+bool StyleCommands::ExecuteToggleBold(LocalFrame& frame,
+                                      Event*,
+                                      EditorCommandSource source,
+                                      const String&) {
   return ExecuteToggleStyle(frame, source, InputEvent::InputType::kFormatBold,
                             CSSPropertyFontWeight, "normal", "bold");
 }
 
-static bool ExecuteToggleItalic(LocalFrame& frame,
-                                Event*,
-                                EditorCommandSource source,
-                                const String&) {
+bool StyleCommands::ExecuteToggleItalic(LocalFrame& frame,
+                                        Event*,
+                                        EditorCommandSource source,
+                                        const String&) {
   return ExecuteToggleStyle(frame, source, InputEvent::InputType::kFormatItalic,
                             CSSPropertyFontStyle, "normal", "italic");
 }
@@ -1401,10 +1407,10 @@ static bool ExecuteTranspose(LocalFrame& frame,
   return true;
 }
 
-static bool ExecuteUnderline(LocalFrame& frame,
-                             Event*,
-                             EditorCommandSource source,
-                             const String&) {
+bool StyleCommands::ExecuteUnderline(LocalFrame& frame,
+                                     Event*,
+                                     EditorCommandSource source,
+                                     const String&) {
   CSSIdentifierValue* underline = CSSIdentifierValue::Create(CSSValueUnderline);
   return ExecuteToggleStyleInList(
       frame, source, InputEvent::InputType::kFormatUnderline,
@@ -1427,10 +1433,10 @@ static bool ExecuteUnlink(LocalFrame& frame,
   return UnlinkCommand::Create(*frame.GetDocument())->Apply();
 }
 
-static bool ExecuteUnscript(LocalFrame& frame,
-                            Event*,
-                            EditorCommandSource source,
-                            const String&) {
+bool StyleCommands::ExecuteUnscript(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource source,
+                                    const String&) {
   return ExecuteApplyStyle(frame, source, InputEvent::InputType::kNone,
                            CSSPropertyVerticalAlign, "baseline");
 }
@@ -1676,52 +1682,55 @@ static EditingTriState StateNone(LocalFrame&, Event*) {
   return EditingTriState::kFalse;
 }
 
-static EditingTriState StateBold(LocalFrame& frame, Event*) {
+EditingTriState StyleCommands::StateBold(LocalFrame& frame, Event*) {
   return StateStyle(frame, CSSPropertyFontWeight, "bold");
 }
 
-static EditingTriState StateItalic(LocalFrame& frame, Event*) {
+EditingTriState StyleCommands::StateItalic(LocalFrame& frame, Event*) {
   return StateStyle(frame, CSSPropertyFontStyle, "italic");
 }
 
-static EditingTriState StateOrderedList(LocalFrame& frame, Event*) {
+EditingTriState StateOrderedList(LocalFrame& frame, Event*) {
   return SelectionListState(frame.Selection(), olTag);
 }
 
-static EditingTriState StateStrikethrough(LocalFrame& frame, Event*) {
+EditingTriState StyleCommands::StateStrikethrough(LocalFrame& frame, Event*) {
   return StateStyle(frame, CSSPropertyWebkitTextDecorationsInEffect,
                     "line-through");
 }
 
-static EditingTriState StateStyleWithCSS(LocalFrame& frame, Event*) {
+EditingTriState StyleCommands::StateStyleWithCSS(LocalFrame& frame, Event*) {
   return frame.GetEditor().ShouldStyleWithCSS() ? EditingTriState::kTrue
                                                 : EditingTriState::kFalse;
 }
 
-static EditingTriState StateSubscript(LocalFrame& frame, Event*) {
+EditingTriState StyleCommands::StateSubscript(LocalFrame& frame, Event*) {
   return StateStyle(frame, CSSPropertyVerticalAlign, "sub");
 }
 
-static EditingTriState StateSuperscript(LocalFrame& frame, Event*) {
+EditingTriState StyleCommands::StateSuperscript(LocalFrame& frame, Event*) {
   return StateStyle(frame, CSSPropertyVerticalAlign, "super");
 }
 
-static EditingTriState StateTextWritingDirectionLeftToRight(LocalFrame& frame,
-                                                            Event*) {
+EditingTriState StyleCommands::StateTextWritingDirectionLeftToRight(
+    LocalFrame& frame,
+    Event*) {
   return StateTextWritingDirection(frame, LeftToRightWritingDirection);
 }
 
-static EditingTriState StateTextWritingDirectionNatural(LocalFrame& frame,
-                                                        Event*) {
+EditingTriState StyleCommands::StateTextWritingDirectionNatural(
+    LocalFrame& frame,
+    Event*) {
   return StateTextWritingDirection(frame, NaturalWritingDirection);
 }
 
-static EditingTriState StateTextWritingDirectionRightToLeft(LocalFrame& frame,
-                                                            Event*) {
+EditingTriState StyleCommands::StateTextWritingDirectionRightToLeft(
+    LocalFrame& frame,
+    Event*) {
   return StateTextWritingDirection(frame, RightToLeftWritingDirection);
 }
 
-static EditingTriState StateUnderline(LocalFrame& frame, Event*) {
+EditingTriState StyleCommands::StateUnderline(LocalFrame& frame, Event*) {
   return StateStyle(frame, CSSPropertyWebkitTextDecorationsInEffect,
                     "underline");
 }
@@ -1731,19 +1740,19 @@ static EditingTriState StateUnorderedList(LocalFrame& frame, Event*) {
 }
 
 static EditingTriState StateJustifyCenter(LocalFrame& frame, Event*) {
-  return StateStyle(frame, CSSPropertyTextAlign, "center");
+  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "center");
 }
 
 static EditingTriState StateJustifyFull(LocalFrame& frame, Event*) {
-  return StateStyle(frame, CSSPropertyTextAlign, "justify");
+  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "justify");
 }
 
 static EditingTriState StateJustifyLeft(LocalFrame& frame, Event*) {
-  return StateStyle(frame, CSSPropertyTextAlign, "left");
+  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "left");
 }
 
 static EditingTriState StateJustifyRight(LocalFrame& frame, Event*) {
-  return StateStyle(frame, CSSPropertyTextAlign, "right");
+  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "right");
 }
 
 // Value functions
@@ -1765,9 +1774,9 @@ static String ValueEmpty(const EditorInternalCommand&, LocalFrame&, Event*) {
   return g_empty_string;
 }
 
-static String ValueBackColor(const EditorInternalCommand&,
-                             LocalFrame& frame,
-                             Event*) {
+String StyleCommands::ValueBackColor(const EditorInternalCommand&,
+                                     LocalFrame& frame,
+                                     Event*) {
   return ValueStyle(frame, CSSPropertyBackgroundColor);
 }
 
@@ -1785,27 +1794,27 @@ static String ValueDefaultParagraphSeparator(const EditorInternalCommand&,
   return String();
 }
 
-static String ValueFontName(const EditorInternalCommand&,
-                            LocalFrame& frame,
-                            Event*) {
+String StyleCommands::ValueFontName(const EditorInternalCommand&,
+                                    LocalFrame& frame,
+                                    Event*) {
   return ValueStyle(frame, CSSPropertyFontFamily);
 }
 
-static String ValueFontSize(const EditorInternalCommand&,
-                            LocalFrame& frame,
-                            Event*) {
+String StyleCommands::ValueFontSize(const EditorInternalCommand&,
+                                    LocalFrame& frame,
+                                    Event*) {
   return ValueStyle(frame, CSSPropertyFontSize);
 }
 
-static String ValueFontSizeDelta(const EditorInternalCommand&,
-                                 LocalFrame& frame,
-                                 Event*) {
+String StyleCommands::ValueFontSizeDelta(const EditorInternalCommand&,
+                                         LocalFrame& frame,
+                                         Event*) {
   return ValueStyle(frame, CSSPropertyWebkitFontSizeDelta);
 }
 
-static String ValueForeColor(const EditorInternalCommand&,
-                             LocalFrame& frame,
-                             Event*) {
+String StyleCommands::ValueForeColor(const EditorInternalCommand&,
+                                     LocalFrame& frame,
+                                     Event*) {
   return ValueStyle(frame, CSSPropertyColor);
 }
 
@@ -1848,16 +1857,17 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kAlignRight, ExecuteJustifyRight,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kBackColor, ExecuteBackColor, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueBackColor,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kBackColor, StyleCommands::ExecuteBackColor,
+       Supported, EnabledInRichlyEditableText, StateNone,
+       StyleCommands::ValueBackColor, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
       // FIXME: remove BackwardDelete when Safari for Windows stops using it.
       {WebEditingCommandType::kBackwardDelete, ExecuteDeleteBackward,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kBold, ExecuteToggleBold, Supported,
-       EnabledInRichlyEditableText, StateBold, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kBold, StyleCommands::ExecuteToggleBold,
+       Supported, EnabledInRichlyEditableText, StyleCommands::StateBold,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kCopy, ClipboardCommands::ExecuteCopy, Supported,
        ClipboardCommands::EnabledCopy, StateNone, ValueStateOrNull,
        kNotTextInsertion, ClipboardCommands::CanWriteClipboard},
@@ -1911,26 +1921,31 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kFindString, ExecuteFindString, Supported,
        Enabled, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kFontName, ExecuteFontName, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueFontName, kNotTextInsertion,
+      {WebEditingCommandType::kFontName, StyleCommands::ExecuteFontName,
+       Supported, EnabledInRichlyEditableText, StateNone,
+       StyleCommands::ValueFontName, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kFontSize, ExecuteFontSize, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueFontSize, kNotTextInsertion,
+      {WebEditingCommandType::kFontSize, StyleCommands::ExecuteFontSize,
+       Supported, EnabledInRichlyEditableText, StateNone,
+       StyleCommands::ValueFontSize, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kFontSizeDelta, ExecuteFontSizeDelta, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueFontSizeDelta,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kForeColor, ExecuteForeColor, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueForeColor,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kFontSizeDelta,
+       StyleCommands::ExecuteFontSizeDelta, Supported,
+       EnabledInRichlyEditableText, StateNone,
+       StyleCommands::ValueFontSizeDelta, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kForeColor, StyleCommands::ExecuteForeColor,
+       Supported, EnabledInRichlyEditableText, StateNone,
+       StyleCommands::ValueForeColor, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kFormatBlock, ExecuteFormatBlock, Supported,
        EnabledInRichlyEditableText, StateNone, ValueFormatBlock,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kForwardDelete, ExecuteForwardDelete, Supported,
        EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kHiliteColor, ExecuteBackColor, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
+      {WebEditingCommandType::kHiliteColor, StyleCommands::ExecuteBackColor,
+       Supported, EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kIgnoreSpelling, ExecuteIgnoreSpelling,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
@@ -1982,9 +1997,9 @@ static const EditorInternalCommand* InternalCommand(
        InsertCommands::ExecuteInsertUnorderedList, Supported,
        EnabledInRichlyEditableText, StateUnorderedList, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kItalic, ExecuteToggleItalic, Supported,
-       EnabledInRichlyEditableText, StateItalic, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kItalic, StyleCommands::ExecuteToggleItalic,
+       Supported, EnabledInRichlyEditableText, StyleCommands::StateItalic,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kJustifyCenter, ExecuteJustifyCenter, Supported,
        EnabledInRichlyEditableText, StateJustifyCenter, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
@@ -2001,18 +2016,19 @@ static const EditorInternalCommand* InternalCommand(
        EnabledInRichlyEditableText, StateJustifyRight, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMakeTextWritingDirectionLeftToRight,
-       ExecuteMakeTextWritingDirectionLeftToRight,
+       StyleCommands::ExecuteMakeTextWritingDirectionLeftToRight,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText,
-       StateTextWritingDirectionLeftToRight, ValueStateOrNull,
+       StyleCommands::StateTextWritingDirectionLeftToRight, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMakeTextWritingDirectionNatural,
-       ExecuteMakeTextWritingDirectionNatural, SupportedFromMenuOrKeyBinding,
-       EnabledInRichlyEditableText, StateTextWritingDirectionNatural,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMakeTextWritingDirectionRightToLeft,
-       ExecuteMakeTextWritingDirectionRightToLeft,
+       StyleCommands::ExecuteMakeTextWritingDirectionNatural,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText,
-       StateTextWritingDirectionRightToLeft, ValueStateOrNull,
+       StyleCommands::StateTextWritingDirectionNatural, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMakeTextWritingDirectionRightToLeft,
+       StyleCommands::ExecuteMakeTextWritingDirectionRightToLeft,
+       SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText,
+       StyleCommands::StateTextWritingDirectionRightToLeft, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveBackward, MoveCommands::ExecuteMoveBackward,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
@@ -2266,51 +2282,54 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kSetMark, ExecuteSetMark,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kStrikethrough, ExecuteStrikethrough, Supported,
-       EnabledInRichlyEditableText, StateStrikethrough, ValueStateOrNull,
+      {WebEditingCommandType::kStrikethrough,
+       StyleCommands::ExecuteStrikethrough, Supported,
+       EnabledInRichlyEditableText, StyleCommands::StateStrikethrough,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kStyleWithCSS, StyleCommands::ExecuteStyleWithCSS,
+       Supported, Enabled, StyleCommands::StateStyleWithCSS, ValueEmpty,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kStyleWithCSS, ExecuteStyleWithCSS, Supported,
-       Enabled, StateStyleWithCSS, ValueEmpty, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kSubscript, ExecuteSubscript, Supported,
-       EnabledInRichlyEditableText, StateSubscript, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kSuperscript, ExecuteSuperscript, Supported,
-       EnabledInRichlyEditableText, StateSuperscript, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kSubscript, StyleCommands::ExecuteSubscript,
+       Supported, EnabledInRichlyEditableText, StyleCommands::StateSubscript,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kSuperscript, StyleCommands::ExecuteSuperscript,
+       Supported, EnabledInRichlyEditableText, StyleCommands::StateSuperscript,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kSwapWithMark, ExecuteSwapWithMark,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelectionAndMark, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kToggleBold, ExecuteToggleBold,
-       SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateBold,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kToggleItalic, ExecuteToggleItalic,
-       SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateItalic,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kToggleUnderline, ExecuteUnderline,
+      {WebEditingCommandType::kToggleBold, StyleCommands::ExecuteToggleBold,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText,
-       StateUnderline, ValueStateOrNull, kNotTextInsertion,
+       StyleCommands::StateBold, ValueStateOrNull, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kToggleItalic, StyleCommands::ExecuteToggleItalic,
+       SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText,
+       StyleCommands::StateItalic, ValueStateOrNull, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kToggleUnderline, StyleCommands::ExecuteUnderline,
+       SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText,
+       StyleCommands::StateUnderline, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kTranspose, ExecuteTranspose, Supported,
        EnableCaretInEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kUnderline, ExecuteUnderline, Supported,
-       EnabledInRichlyEditableText, StateUnderline, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kUnderline, StyleCommands::ExecuteUnderline,
+       Supported, EnabledInRichlyEditableText, StyleCommands::StateUnderline,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kUndo, ExecuteUndo, Supported, EnabledUndo,
        StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kUnlink, ExecuteUnlink, Supported,
        EnabledRangeInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kUnscript, ExecuteUnscript,
+      {WebEditingCommandType::kUnscript, StyleCommands::ExecuteUnscript,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kUnselect, ExecuteUnselect, Supported,
        EnabledUnselect, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kUseCSS, ExecuteUseCSS, Supported, Enabled,
-       StateNone, ValueStateOrNull, kNotTextInsertion,
+      {WebEditingCommandType::kUseCSS, StyleCommands::ExecuteUseCSS, Supported,
+       Enabled, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kYank, ExecuteYank, SupportedFromMenuOrKeyBinding,
        EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
