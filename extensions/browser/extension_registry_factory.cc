@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_registry_factory.h"
 
+#include "base/logging.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -41,7 +42,9 @@ KeyedService* ExtensionRegistryFactory::BuildServiceInstanceFor(
 BrowserContext* ExtensionRegistryFactory::GetBrowserContextToUse(
     BrowserContext* context) const {
   // Redirected in incognito.
-  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
+  auto* extension_browser_client = ExtensionsBrowserClient::Get();
+  DCHECK(extension_browser_client);
+  return extension_browser_client->GetOriginalContext(context);
 }
 
 }  // namespace extensions
