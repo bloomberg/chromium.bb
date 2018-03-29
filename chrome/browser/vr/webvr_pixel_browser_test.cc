@@ -7,18 +7,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/vr/test/vr_browser_test.h"
-#include "chrome/browser/vr/test/vr_transition_utils.h"
+#include "chrome/browser/vr/test/vr_xr_browser_test.h"
+#include "chrome/browser/vr/test/xr_browser_test.h"
 #include "device/vr/openvr/test/fake_openvr_log.h"
 
 #include <memory>
 
 namespace vr {
 
-// Pixel test for WebXR - start presentation, submit frames, get data back out.
-// Validates that a pixel was rendered at with the expected color.
-IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
-                       REQUIRES_GPU(TestPresentationPixels)) {
-  // Set up environment variable to tell mock device to save pixel logs
+// Pixel test for WebVR/WebXR - start presentation, submit frames, get data back
+// out. Validates that a pixel was rendered with the expected color.
+void TestPresentationPixelsImpl(VrXrBrowserTestBase* t, std::string filename) {
+  // Set up environment variable to tell mock device to save pixel logs.
   std::unique_ptr<base::Environment> env = base::Environment::Create();
   base::ScopedTempDir temp_dir;
   base::FilePath log_path;
@@ -32,17 +32,17 @@ IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
   }
 
   // Load the test page, and enter presentation.
-  LoadUrlAndAwaitInitialization(GetHtmlTestFile("test_webvr_pixels"));
-  EnterPresentationOrFail(GetFirstTabWebContents());
+  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
+  t->EnterPresentationOrFail(t->GetFirstTabWebContents());
 
   // Wait for javascript to submit at least one frame.
-  EXPECT_TRUE(PollJavaScriptBoolean("hasPresentedFrame", kPollTimeoutShort,
-                                    GetFirstTabWebContents()))
+  EXPECT_TRUE(t->PollJavaScriptBoolean(
+      "hasPresentedFrame", t->kPollTimeoutShort, t->GetFirstTabWebContents()))
       << "No frame submitted";
 
   // Tell javascript that it is done with the test.
-  ExecuteStepAndWait("finishTest()", GetFirstTabWebContents());
-  EndTest(GetFirstTabWebContents());
+  t->ExecuteStepAndWait("finishTest()", t->GetFirstTabWebContents());
+  t->EndTest(t->GetFirstTabWebContents());
 
   // Try to open the log file.
   {
@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
         file = nullptr;
       }
 
-      if (base::Time::Now() - start > kPollTimeoutLong)
+      if (base::Time::Now() - start > t->kPollTimeoutLong)
         break;
     }
     EXPECT_TRUE(file);
@@ -76,6 +76,15 @@ IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
     file = nullptr;  // Make sure we destroy this before allow_files.
     EXPECT_TRUE(temp_dir.Delete());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
+                       REQUIRES_GPU(TestPresentationPixels)) {
+  TestPresentationPixelsImpl(this, "test_webvr_pixels");
+}
+IN_PROC_BROWSER_TEST_F(XrBrowserTestStandard,
+                       REQUIRES_GPU(TestPresentationPixels)) {
+  TestPresentationPixelsImpl(this, "test_webxr_pixels");
 }
 
 }  // namespace vr
