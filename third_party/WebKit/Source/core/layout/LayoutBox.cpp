@@ -655,19 +655,11 @@ void LayoutBox::ScrollRectToVisibleRecursive(
 
   LayoutBox* parent_box = nullptr;
 
-  bool restricted_by_line_clamp = false;
-  if (ContainingBlock()) {
+  if (ContainingBlock())
     parent_box = ContainingBlock();
-    restricted_by_line_clamp = ContainingBlock()->Style()->HasLineClamp();
-  }
 
   LayoutRect absolute_rect_for_parent;
-  if (!IsLayoutView() && HasOverflowClip() && !restricted_by_line_clamp) {
-    // Don't scroll to reveal an overflow layer that is restricted by the
-    // -webkit-line-clamp property. This will prevent us from revealing text
-    // hidden by the slider in Safari RSS.
-    // TODO(eae): We probably don't need this any more as we don't share any
-    //            code with the Safari RSS reeder.
+  if (!IsLayoutView() && HasOverflowClip()) {
     absolute_rect_for_parent =
         GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
@@ -1137,11 +1129,7 @@ void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
   if (delta.IsZero())
     return;
 
-  bool restricted_by_line_clamp = false;
-  if (Parent())
-    restricted_by_line_clamp = Parent()->Style()->HasLineClamp();
-
-  if (HasOverflowClip() && !restricted_by_line_clamp) {
+  if (HasOverflowClip()) {
     PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
     DCHECK(scrollable_area);
 
