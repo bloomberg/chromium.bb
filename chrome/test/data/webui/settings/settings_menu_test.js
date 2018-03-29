@@ -75,13 +75,6 @@ cr.define('settings_menu', function() {
       MockInteractions.tap(settingsMenu.$.people);
       assertEquals('', settings.getQueryParameters().toString());
     });
-
-    test('extensionsLinkClicked', function() {
-      const eventPromise =
-          test_util.eventToPromise('external-link-click', settingsMenu);
-      settingsMenu.$.extensionsLink.click();
-      return eventPromise;
-    });
   });
 
   suite('SettingsMenuReset', function() {

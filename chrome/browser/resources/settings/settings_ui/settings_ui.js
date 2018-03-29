@@ -82,10 +82,6 @@ Polymer({
       this.$.drawerTemplate.if = true;
     });
 
-    this.addEventListener('external-link-click', () => {
-      this.$.drawer.closeDrawer();
-    });
-
     window.addEventListener('popstate', e => {
       this.$.drawer.closeDrawer();
     });
