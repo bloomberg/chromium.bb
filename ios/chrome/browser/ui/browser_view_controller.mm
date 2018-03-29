@@ -4617,6 +4617,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
   _voiceSearchController->PrepareToAppear();
 }
 
+- (void)closeAllIncognitoTabs {
+  DCHECK(self.isOffTheRecord);
+  [self.tabModel closeAllTabs];
+}
+
 #if !defined(NDEBUG)
 - (void)viewSource {
   Tab* tab = [_model currentTab];

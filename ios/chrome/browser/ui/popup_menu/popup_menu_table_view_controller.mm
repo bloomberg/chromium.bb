@@ -185,6 +185,14 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       base::RecordAction(UserMetricsAction("MobileMenuSettings"));
       [self.dispatcher showSettingsFromViewController:self.baseViewController];
       break;
+    case PopupMenuActionCloseTab:
+      base::RecordAction(UserMetricsAction("MobileMenuCloseTab"));
+      [self.dispatcher closeCurrentTab];
+      break;
+    case PopupMenuActionCloseAllIncognitoTabs:
+      base::RecordAction(UserMetricsAction("MobileMenuCloseAllIncognitoTabs"));
+      [self.dispatcher closeAllIncognitoTabs];
+      break;
   }
 
   // Close the tools menu.

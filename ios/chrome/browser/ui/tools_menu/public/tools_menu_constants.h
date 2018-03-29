@@ -30,6 +30,8 @@ extern NSString* const kToolsMenuNewIncognitoTabId;
 extern NSString* const kToolsMenuCloseAllTabsId;
 // Close all incognito Tabs item accessibility Identifier.
 extern NSString* const kToolsMenuCloseAllIncognitoTabsId;
+// Close the current tab item accessibility Identifier.
+extern NSString* const kToolsMenuCloseTabId;
 // Bookmarks item accessibility Identifier.
 extern NSString* const kToolsMenuBookmarksId;
 // Reading List item accessibility Identifier.

@@ -24,7 +24,8 @@ typedef NS_ENUM(NSInteger, PopupMenuType) {
 // updating the items of the popup menu.
 @interface PopupMenuMediator : NSObject
 
-- (instancetype)initWithType:(PopupMenuType)type NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithType:(PopupMenuType)type
+                 isIncognito:(BOOL)isIncognito NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // The WebStateList that this mediator listens for any changes on the current
