@@ -27,10 +27,4 @@ void LifecycleUnitSourceBase::NotifyLifecycleUnitCreated(
     observer.OnLifecycleUnitCreated(lifecycle_unit);
 }
 
-void LifecycleUnitSourceBase::NotifyLifecycleUnitDestroyed(
-    LifecycleUnit* lifecycle_unit) {
-  for (LifecycleUnitSourceObserver& observer : observers_)
-    observer.OnLifecycleUnitDestroyed(lifecycle_unit);
-}
-
 }  // namespace resource_coordinator

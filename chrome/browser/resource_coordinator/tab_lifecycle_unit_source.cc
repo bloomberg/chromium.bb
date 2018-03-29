@@ -128,7 +128,6 @@ void TabLifecycleUnitSource::TabClosingAt(TabStripModel* tab_strip_model,
   TabLifecycleUnit* lifecycle_unit = it->second.get();
   if (focused_tab_lifecycle_unit_ == lifecycle_unit)
     UpdateFocusedTabTo(nullptr);
-  NotifyLifecycleUnitDestroyed(lifecycle_unit);
   tabs_.erase(contents);
 }
 
