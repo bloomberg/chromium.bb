@@ -173,6 +173,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   StateTracer<kTracingCategoryNameInfo> url_tracer_;
   // |task_queue_throttled_| is false if |throttleable_task_queue_| is absent.
   TraceableState<bool, kTracingCategoryNameInfo> task_queue_throttled_;
+  // TODO(kraynov): https://crbug.com/827113
+  // Trace active connection count.
   int active_connection_count_;
   TraceableState<bool, kTracingCategoryNameInfo> has_active_connection_;
 
