@@ -473,6 +473,8 @@ void HeadlessWebContentsImpl::DelegateRequestsClose() {
   if (quit_closure_) {
     quit_closure_.Run();
     quit_closure_ = base::Closure();
+  } else {
+    browser_context()->DestroyWebContents(this);
   }
 }
 
