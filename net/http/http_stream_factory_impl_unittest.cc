@@ -740,6 +740,62 @@ TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {
   EXPECT_TRUE(iter != retry_info.end());
 }
 
+// This test requests a stream for an https:// URL using an HTTP proxy.
+// The proxy will fail to establish a tunnel via connect, and the resolved
+// proxy list includes a fallback to DIRECT.
+//
+// The expected behavior is that proxy fallback does NOT occur, even though the
+// request might work using the fallback. This is a regression test for
+// https://crbug.com/680837.
+TEST_F(HttpStreamFactoryTest, NoProxyFallbackOnTunnelFail) {
+  const char* kProxyString = "PROXY bad:99; DIRECT";
+  SpdySessionDependencies session_deps(
+      ProxyResolutionService::CreateFixedFromPacResult(
+          kProxyString, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // A 404 in response to a CONNECT will trigger
+  // ERR_TUNNEL_CONNECTION_FAILED.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 404 Not Found\r\n\r\n"), MockRead(SYNCHRONOUS, OK),
+  };
+
+  // Simulate a failure during CONNECT to bad:99.
+  StaticSocketDataProvider socket_data1(data_reads, arraysize(data_reads),
+                                        nullptr, 0);
+  socket_data1.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data1);
+
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  // Request a stream for an https:// URL. The exact URL doesn't matter for
+  // this test, since it mocks a failure immediately when establishing a
+  // tunnel through the proxy.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  std::unique_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter.WaitForStream();
+
+  // The stream should have failed, since the proxy server failed to
+  // establish a tunnel.
+  ASSERT_THAT(waiter.error_status(), IsError(ERR_TUNNEL_CONNECTION_FAILED));
+
+  // The proxy should NOT have been marked as bad.
+  const ProxyRetryInfoMap& retry_info =
+      session->proxy_resolution_service()->proxy_retry_info();
+  EXPECT_EQ(0u, retry_info.size());
+}
+
 // List of errors that are used in the tests related to QUIC proxy.
 const int quic_proxy_test_mock_errors[] = {
     ERR_PROXY_CONNECTION_FAILED,
@@ -751,7 +807,6 @@ const int quic_proxy_test_mock_errors[] = {
     ERR_CONNECTION_REFUSED,
     ERR_CONNECTION_ABORTED,
     ERR_TIMED_OUT,
-    ERR_TUNNEL_CONNECTION_FAILED,
     ERR_SOCKS_CONNECTION_FAILED,
     ERR_PROXY_CERTIFICATE_INVALID,
     ERR_QUIC_PROTOCOL_ERROR,
