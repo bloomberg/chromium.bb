@@ -9,6 +9,7 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
@@ -282,4 +283,17 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
   navigation_watcher.Wait();
   EXPECT_FALSE(browser()->tab_strip_model()->TabsAreLoading());
   EXPECT_EQ(TabNetworkState::kNone, tab_strip->tab_at(0)->data().network_state);
+}
+
+// Verifies a tab should show its favicon.
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, ShowFaviconInTab) {
+  // Opens "chrome://version/" page, which uses default favicon.
+  GURL version_url(chrome::kChromeUIVersionURL);
+  ui_test_utils::NavigateToURL(browser(), version_url);
+  auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  auto* helper = TabUIHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  auto favicon = helper->GetFavicon();
+  ASSERT_FALSE(favicon.IsEmpty());
 }
