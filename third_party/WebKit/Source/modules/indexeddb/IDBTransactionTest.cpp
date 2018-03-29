@@ -76,7 +76,7 @@ class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
   FakeIDBDatabaseCallbacks() = default;
 };
 
-class IDBTransactionTest : public ::testing::Test {
+class IDBTransactionTest : public testing::Test {
  protected:
   void SetUp() override {
     url_loader_mock_factory_ = platform_->GetURLLoaderMockFactory();

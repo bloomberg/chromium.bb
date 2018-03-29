@@ -29,7 +29,7 @@ struct TestElement {
 
 }  // namespace
 
-class IntrusiveHeapTest : public ::testing::Test {
+class IntrusiveHeapTest : public testing::Test {
  protected:
   static bool CompareNodes(const TestElement& a, const TestElement& b) {
     return IntrusiveHeap<TestElement>::CompareNodes(a, b);
@@ -278,8 +278,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyUp) {
     heap.Pop();
   }
 
-  EXPECT_THAT(results,
-              ::testing::ElementsAre(0, 2, 4, 6, 8, 12, 14, 16, 17, 18));
+  EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 12, 14, 16, 17, 18));
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
@@ -298,8 +297,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
     heap.Pop();
   }
 
-  EXPECT_THAT(results,
-              ::testing::ElementsAre(0, 2, 4, 6, 8, 11, 12, 14, 16, 18));
+  EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 11, 12, 14, 16, 18));
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyDown) {
@@ -318,8 +316,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyDown) {
     heap.Pop();
   }
 
-  EXPECT_THAT(results,
-              ::testing::ElementsAre(0, 1, 2, 4, 6, 8, 12, 14, 16, 18));
+  EXPECT_THAT(results, testing::ElementsAre(0, 1, 2, 4, 6, 8, 12, 14, 16, 18));
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyDownButDoesntMove) {
@@ -338,8 +335,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyDownButDoesntMove) {
     heap.Pop();
   }
 
-  EXPECT_THAT(results,
-              ::testing::ElementsAre(0, 2, 4, 6, 8, 9, 12, 14, 16, 18));
+  EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 9, 12, 14, 16, 18));
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {

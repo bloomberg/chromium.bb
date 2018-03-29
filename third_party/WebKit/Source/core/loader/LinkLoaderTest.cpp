@@ -88,7 +88,7 @@ class NetworkHintsMock : public NetworkHintsInterface {
   mutable bool is_cross_origin_ = false;
 };
 
-class LinkLoaderPreloadTestBase : public ::testing::Test {
+class LinkLoaderPreloadTestBase : public testing::Test {
  public:
   struct Expectations {
     ResourceLoadPriority priority;
@@ -179,7 +179,7 @@ constexpr PreloadTestParams kPreloadTestParams[] = {
 
 class LinkLoaderPreloadTest
     : public LinkLoaderPreloadTestBase,
-      public ::testing::WithParamInterface<PreloadTestParams> {};
+      public testing::WithParamInterface<PreloadTestParams> {};
 
 TEST_P(LinkLoaderPreloadTest, Preload) {
   const auto& test_case = GetParam();
@@ -196,7 +196,7 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
 
 INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadTest,
                         LinkLoaderPreloadTest,
-                        ::testing::ValuesIn(kPreloadTestParams));
+                        testing::ValuesIn(kPreloadTestParams));
 
 struct PreloadMimeTypeTestParams {
   const char* href;
@@ -257,7 +257,7 @@ constexpr PreloadMimeTypeTestParams kPreloadMimeTypeTestParams[] = {
 
 class LinkLoaderPreloadMimeTypeTest
     : public LinkLoaderPreloadTestBase,
-      public ::testing::WithParamInterface<PreloadMimeTypeTestParams> {};
+      public testing::WithParamInterface<PreloadMimeTypeTestParams> {};
 
 TEST_P(LinkLoaderPreloadMimeTypeTest, Preload) {
   const auto& test_case = GetParam();
@@ -274,7 +274,7 @@ TEST_P(LinkLoaderPreloadMimeTypeTest, Preload) {
 
 INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadMimeTypeTest,
                         LinkLoaderPreloadMimeTypeTest,
-                        ::testing::ValuesIn(kPreloadMimeTypeTestParams));
+                        testing::ValuesIn(kPreloadMimeTypeTestParams));
 
 struct PreloadMediaTestParams {
   const char* media;
@@ -290,7 +290,7 @@ constexpr PreloadMediaTestParams kPreloadMediaTestParams[] = {
 
 class LinkLoaderPreloadMediaTest
     : public LinkLoaderPreloadTestBase,
-      public ::testing::WithParamInterface<PreloadMediaTestParams> {};
+      public testing::WithParamInterface<PreloadMediaTestParams> {};
 
 TEST_P(LinkLoaderPreloadMediaTest, Preload) {
   const auto& test_case = GetParam();
@@ -308,7 +308,7 @@ TEST_P(LinkLoaderPreloadMediaTest, Preload) {
 
 INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadMediaTest,
                         LinkLoaderPreloadMediaTest,
-                        ::testing::ValuesIn(kPreloadMediaTestParams));
+                        testing::ValuesIn(kPreloadMediaTestParams));
 
 constexpr ReferrerPolicy kPreloadReferrerPolicyTestParams[] = {
     kReferrerPolicyOrigin,
@@ -320,7 +320,7 @@ constexpr ReferrerPolicy kPreloadReferrerPolicyTestParams[] = {
 
 class LinkLoaderPreloadReferrerPolicyTest
     : public LinkLoaderPreloadTestBase,
-      public ::testing::WithParamInterface<ReferrerPolicy> {};
+      public testing::WithParamInterface<ReferrerPolicy> {};
 
 TEST_P(LinkLoaderPreloadReferrerPolicyTest, Preload) {
   const ReferrerPolicy referrer_policy = GetParam();
@@ -336,7 +336,7 @@ TEST_P(LinkLoaderPreloadReferrerPolicyTest, Preload) {
 
 INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadReferrerPolicyTest,
                         LinkLoaderPreloadReferrerPolicyTest,
-                        ::testing::ValuesIn(kPreloadReferrerPolicyTestParams));
+                        testing::ValuesIn(kPreloadReferrerPolicyTestParams));
 
 struct PreloadNonceTestParams {
   const char* nonce;
@@ -352,7 +352,7 @@ constexpr PreloadNonceTestParams kPreloadNonceTestParams[] = {
 
 class LinkLoaderPreloadNonceTest
     : public LinkLoaderPreloadTestBase,
-      public ::testing::WithParamInterface<PreloadNonceTestParams> {};
+      public testing::WithParamInterface<PreloadNonceTestParams> {};
 
 TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   const auto& test_case = GetParam();
@@ -375,7 +375,7 @@ TEST_P(LinkLoaderPreloadNonceTest, Preload) {
 
 INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadNonceTest,
                         LinkLoaderPreloadNonceTest,
-                        ::testing::ValuesIn(kPreloadNonceTestParams));
+                        testing::ValuesIn(kPreloadNonceTestParams));
 
 struct PreloadSrcsetTestParams {
   const char* href;
@@ -405,7 +405,7 @@ constexpr PreloadSrcsetTestParams kPreloadSrcsetTestParams[] = {
 
 class LinkLoaderPreloadSrcsetTest
     : public LinkLoaderPreloadTestBase,
-      public ::testing::WithParamInterface<PreloadSrcsetTestParams> {};
+      public testing::WithParamInterface<PreloadSrcsetTestParams> {};
 
 TEST_P(LinkLoaderPreloadSrcsetTest, Preload) {
   const auto& test_case = GetParam();
@@ -425,7 +425,7 @@ TEST_P(LinkLoaderPreloadSrcsetTest, Preload) {
 
 INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadSrcsetTest,
                         LinkLoaderPreloadSrcsetTest,
-                        ::testing::ValuesIn(kPreloadSrcsetTestParams));
+                        testing::ValuesIn(kPreloadSrcsetTestParams));
 
 struct ModulePreloadTestParams {
   const char* href;
@@ -454,7 +454,7 @@ constexpr ModulePreloadTestParams kModulePreloadTestParams[] = {
      network::mojom::FetchCredentialsMode::kOmit}};
 
 class LinkLoaderModulePreloadTest
-    : public ::testing::TestWithParam<ModulePreloadTestParams> {};
+    : public testing::TestWithParam<ModulePreloadTestParams> {};
 
 class ModulePreloadTestModulator final : public DummyModulator {
  public:
@@ -509,7 +509,7 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
 
 INSTANTIATE_TEST_CASE_P(LinkLoaderModulePreloadTest,
                         LinkLoaderModulePreloadTest,
-                        ::testing::ValuesIn(kModulePreloadTestParams));
+                        testing::ValuesIn(kModulePreloadTestParams));
 
 TEST(LinkLoaderTest, Prefetch) {
   struct TestCase {

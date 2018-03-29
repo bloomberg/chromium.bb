@@ -371,7 +371,7 @@ class BackPointerCppSideConnection : public CppSideConnection {
   bool termination_seen_;
 };
 
-class JsToCppTest : public ::testing::Test {
+class JsToCppTest : public testing::Test {
  public:
   void RunTest(CppSideConnection* cpp_side) {
     js_to_cpp::blink::CppSidePtr cpp_side_ptr;

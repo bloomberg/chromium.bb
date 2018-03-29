@@ -82,14 +82,13 @@ class DrawsRectangleCanvas : public SkCanvas {
 };
 
 class DrawsRectanglesMatcher
-    : public ::testing::MatcherInterface<const SkPicture&> {
+    : public testing::MatcherInterface<const SkPicture&> {
  public:
   DrawsRectanglesMatcher(const Vector<RectWithColor>& rects_with_color)
       : rects_with_color_(rects_with_color) {}
 
-  bool MatchAndExplain(
-      const SkPicture& picture,
-      ::testing::MatchResultListener* listener) const override {
+  bool MatchAndExplain(const SkPicture& picture,
+                       testing::MatchResultListener* listener) const override {
     DrawsRectangleCanvas canvas;
     picture.playback(&canvas);
     const auto& actual_rects = canvas.RectsWithColor();
@@ -134,16 +133,16 @@ class DrawsRectanglesMatcher
 
 }  // namespace
 
-::testing::Matcher<const SkPicture&> DrawsRectangle(const FloatRect& rect,
-                                                    Color color) {
+testing::Matcher<const SkPicture&> DrawsRectangle(const FloatRect& rect,
+                                                  Color color) {
   Vector<RectWithColor> rects_with_color;
   rects_with_color.push_back(RectWithColor(rect, color));
-  return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rects_with_color));
+  return testing::MakeMatcher(new DrawsRectanglesMatcher(rects_with_color));
 }
 
-::testing::Matcher<const SkPicture&> DrawsRectangles(
+testing::Matcher<const SkPicture&> DrawsRectangles(
     const Vector<RectWithColor>& rects_with_color) {
-  return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rects_with_color));
+  return testing::MakeMatcher(new DrawsRectanglesMatcher(rects_with_color));
 }
 
 }  // namespace blink

@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class EffectiveNavigationPolicyTest : public ::testing::Test {
+class EffectiveNavigationPolicyTest : public testing::Test {
  protected:
   NavigationPolicy GetNavigationPolicyWithMouseEvent(
       int modifiers,

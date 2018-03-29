@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class CachingWordShaperTest : public ::testing::Test {
+class CachingWordShaperTest : public testing::Test {
  protected:
   void SetUp() override {
     font_description.SetComputedSize(12.0);

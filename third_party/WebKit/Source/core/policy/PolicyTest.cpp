@@ -19,9 +19,9 @@ constexpr char kOriginA[] = "https://example.com";
 constexpr char kOriginB[] = "https://example.net";
 }  // namespace
 
-using ::testing::UnorderedElementsAre;
+using testing::UnorderedElementsAre;
 
-class PolicyTest : public ::testing::Test {
+class PolicyTest : public testing::Test {
  public:
   void SetUp() override {
     document_ = Document::CreateForTest();

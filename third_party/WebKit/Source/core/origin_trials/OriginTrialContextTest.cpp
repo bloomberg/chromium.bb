@@ -67,7 +67,7 @@ class MockTokenValidator : public WebTrialTokenValidator {
 
 }  // namespace
 
-class OriginTrialContextTest : public ::testing::Test,
+class OriginTrialContextTest : public testing::Test,
                                private ScopedOriginTrialsForTest {
  protected:
   OriginTrialContextTest()

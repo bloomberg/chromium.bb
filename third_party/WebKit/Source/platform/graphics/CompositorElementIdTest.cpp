@@ -8,7 +8,7 @@
 
 namespace blink {
 
-class CompositorElementIdTest : public ::testing::Test {};
+class CompositorElementIdTest : public testing::Test {};
 
 uint64_t IdFromCompositorElementId(CompositorElementId element_id) {
   return element_id.ToInternalValue() >> kCompositorNamespaceBitCount;

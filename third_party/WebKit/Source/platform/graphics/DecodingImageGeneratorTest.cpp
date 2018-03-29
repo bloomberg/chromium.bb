@@ -24,7 +24,7 @@ scoped_refptr<SegmentReader> CreateSegmentReader(char* reference_data,
 
 }  // namespace
 
-class DecodingImageGeneratorTest : public ::testing::Test {};
+class DecodingImageGeneratorTest : public testing::Test {};
 
 TEST_F(DecodingImageGeneratorTest, Create) {
   scoped_refptr<SharedBuffer> reference_data =

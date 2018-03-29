@@ -26,8 +26,8 @@ class FullscreenMockChromeClient : public EmptyChromeClient {
   MOCK_METHOD1(ExitFullscreen, void(LocalFrame&));
 };
 
-using ::testing::_;
-using ::testing::Sequence;
+using testing::_;
+using testing::Sequence;
 
 }  // anonymous namespace
 

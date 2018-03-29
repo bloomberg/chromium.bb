@@ -19,7 +19,7 @@ AtomicString Id(const HTMLOptionElement* option) {
 
 }  // namespace
 
-class OptionListTest : public ::testing::Test {
+class OptionListTest : public testing::Test {
  protected:
   void SetUp() override {
     HTMLDocument* document = HTMLDocument::CreateForTest();

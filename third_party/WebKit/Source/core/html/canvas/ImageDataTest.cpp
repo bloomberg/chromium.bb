@@ -15,7 +15,7 @@
 namespace blink {
 namespace {
 
-class ImageDataTest : public ::testing::Test {};
+class ImageDataTest : public testing::Test {};
 
 // Under asan_clang_phone, the test crashes after the memory allocation
 // is not successful. It is probably related to the value of

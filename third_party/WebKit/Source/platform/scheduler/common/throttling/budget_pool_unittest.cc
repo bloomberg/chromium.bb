@@ -24,7 +24,7 @@
 namespace blink {
 namespace scheduler {
 
-class BudgetPoolTest : public ::testing::Test {
+class BudgetPoolTest : public testing::Test {
  public:
   BudgetPoolTest() = default;
   ~BudgetPoolTest() override = default;

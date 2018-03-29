@@ -13,7 +13,7 @@ namespace blink {
 
 typedef bool TestParamRootLayerScrolling;
 class MapCoordinatesTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  public:
@@ -113,7 +113,7 @@ FloatQuad MapCoordinatesTest::MapAncestorToLocal(
   return transform_state.LastPlanarQuad();
 }
 
-INSTANTIATE_TEST_CASE_P(All, MapCoordinatesTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, MapCoordinatesTest, testing::Bool());
 
 TEST_P(MapCoordinatesTest, SimpleText) {
   SetBodyInnerHTML("<div id='container'><br>text</div>");

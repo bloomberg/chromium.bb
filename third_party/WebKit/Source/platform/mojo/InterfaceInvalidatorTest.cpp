@@ -90,7 +90,7 @@ class PingServiceImpl : public PingServiceImplBase {
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
-class InterfaceInvalidatorTest : public ::testing::Test {
+class InterfaceInvalidatorTest : public testing::Test {
  public:
   InterfaceInvalidatorTest() {}
   ~InterfaceInvalidatorTest() override {}

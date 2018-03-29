@@ -18,8 +18,8 @@
 
 #include "core/paint/PaintPropertyTreePrinter.h"
 
-using ::testing::_;
-using ::testing::AnyNumber;
+using testing::_;
+using testing::AnyNumber;
 
 namespace blink {
 namespace {
@@ -46,7 +46,7 @@ class AnimationMockChromeClient : public EmptyChromeClient {
 
 typedef bool TestParamRootLayerScrolling;
 class LocalFrameViewTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  protected:
@@ -59,8 +59,7 @@ class LocalFrameViewTest
   }
 
   ~LocalFrameViewTest() {
-    ::testing::Mock::VerifyAndClearExpectations(
-        &GetAnimationMockChromeClient());
+    testing::Mock::VerifyAndClearExpectations(&GetAnimationMockChromeClient());
   }
 
   ChromeClient& GetChromeClient() const override { return *chrome_client_; }
@@ -78,7 +77,7 @@ class LocalFrameViewTest
   Persistent<AnimationMockChromeClient> chrome_client_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, LocalFrameViewTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, LocalFrameViewTest, testing::Bool());
 
 TEST_P(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");

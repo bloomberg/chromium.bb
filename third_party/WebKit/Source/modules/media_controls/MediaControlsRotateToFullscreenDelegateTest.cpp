@@ -32,8 +32,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AtLeast;
-using ::testing::Return;
+using testing::AtLeast;
+using testing::Return;
 
 namespace blink {
 
@@ -229,7 +229,7 @@ void MediaControlsRotateToFullscreenDelegateTest::RotateTo(
     WebScreenOrientationType new_screen_orientation) {
   WebScreenInfo screen_info;
   screen_info.orientation_type = new_screen_orientation;
-  ::testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
+  testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
   EXPECT_CALL(GetChromeClient(), GetScreenInfo())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(screen_info));

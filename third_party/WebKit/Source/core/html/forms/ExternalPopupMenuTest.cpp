@@ -91,7 +91,7 @@ class ExternalPopupMenuWebFrameClient
   MockWebExternalPopupMenu mock_web_external_popup_menu_;
 };
 
-class ExternalPopupMenuTest : public ::testing::Test {
+class ExternalPopupMenuTest : public testing::Test {
  public:
   ExternalPopupMenuTest() : base_url_("http://www.test.com") {}
 

@@ -10,7 +10,7 @@ using ui::mojom::ImeTextSpanThickness;
 
 namespace blink {
 
-class ActiveSuggestionMarkerTest : public ::testing::Test {};
+class ActiveSuggestionMarkerTest : public testing::Test {};
 
 TEST_F(ActiveSuggestionMarkerTest, MarkerType) {
   DocumentMarker* marker = new ActiveSuggestionMarker(

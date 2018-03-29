@@ -30,7 +30,7 @@ using blink::test::RunPendingTasks;
 
 namespace blink {
 
-class TextFinderTest : public ::testing::Test {
+class TextFinderTest : public testing::Test {
  protected:
   TextFinderTest() {
     web_view_helper_.Initialize();

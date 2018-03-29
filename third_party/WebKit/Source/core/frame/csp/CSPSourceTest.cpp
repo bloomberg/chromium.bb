@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class CSPSourceTest : public ::testing::Test {
+class CSPSourceTest : public testing::Test {
  public:
   CSPSourceTest() : csp(ContentSecurityPolicy::Create()) {}
 

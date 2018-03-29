@@ -21,7 +21,7 @@ std::string GetResourceData(
 
 }  // namespace
 
-class MHTMLParserTest : public ::testing::Test {
+class MHTMLParserTest : public testing::Test {
  public:
   MHTMLParserTest() = default;
 

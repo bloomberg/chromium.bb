@@ -11,12 +11,12 @@
 
 using ::blink::test::CreateOpacityOnlyEffect;
 using ::blink::test::DefaultPaintChunkProperties;
-using ::testing::ElementsAre;
+using testing::ElementsAre;
 
 namespace blink {
 namespace {
 
-class PaintChunkerTest : public ::testing::Test,
+class PaintChunkerTest : public testing::Test,
                          private ScopedSlimmingPaintV175ForTest {
  public:
   PaintChunkerTest() : ScopedSlimmingPaintV175ForTest(true) {}

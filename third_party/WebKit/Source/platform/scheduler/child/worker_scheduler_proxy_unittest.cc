@@ -80,7 +80,7 @@ std::unique_ptr<WebThreadImplForWorkerSchedulerForTest> CreateWorkerThread(
 
 }  // namespace
 
-class WorkerSchedulerProxyTest : public ::testing::Test {
+class WorkerSchedulerProxyTest : public testing::Test {
  public:
   WorkerSchedulerProxyTest()
       : mock_main_thread_task_runner_(

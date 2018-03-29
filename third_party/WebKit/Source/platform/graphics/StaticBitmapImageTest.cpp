@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class StaticBitmapImageTest : public ::testing::Test {};
+class StaticBitmapImageTest : public testing::Test {};
 
 // This test verifies if requesting a large ImageData that cannot be handled by
 // V8 is denied by StaticBitmapImage. This prevents V8 from crashing the

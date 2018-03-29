@@ -24,7 +24,7 @@ struct OrientationExpectedRun {
       : limit(the_limit), render_orientation(the_render_orientation) {}
 };
 
-class OrientationIteratorTest : public ::testing::Test {
+class OrientationIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<OrientationTestRun>& runs) {
     String text(g_empty_string16_bit);

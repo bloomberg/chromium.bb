@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
 
-using ::testing::Mock;
+using testing::Mock;
 
 namespace blink {
 

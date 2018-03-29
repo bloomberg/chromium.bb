@@ -22,7 +22,7 @@ const char kCrossOriginTarget[] = "https://not-example.com/target.html";
 
 class BindingSecurityCounterTest
     : public SimTest,
-      public ::testing::WithParamInterface<const char*> {
+      public testing::WithParamInterface<const char*> {
  public:
   enum class OriginDisposition { CrossOrigin, SameOrigin };
 
@@ -90,19 +90,19 @@ class BindingSecurityCounterTest
 
 INSTANTIATE_TEST_CASE_P(WindowProperties,
                         BindingSecurityCounterTest,
-                        ::testing::Values("window",
-                                          "self",
-                                          "location",
-                                          "close",
-                                          "closed",
-                                          "focus",
-                                          "blur",
-                                          "frames",
-                                          "length",
-                                          "top",
-                                          "opener",
-                                          "parent",
-                                          "postMessage"));
+                        testing::Values("window",
+                                        "self",
+                                        "location",
+                                        "close",
+                                        "closed",
+                                        "focus",
+                                        "blur",
+                                        "frames",
+                                        "length",
+                                        "top",
+                                        "opener",
+                                        "parent",
+                                        "postMessage"));
 
 TEST_P(BindingSecurityCounterTest, CrossOriginWindow) {
   LoadWindowAndAccessProperty(OriginDisposition::CrossOrigin, GetParam());

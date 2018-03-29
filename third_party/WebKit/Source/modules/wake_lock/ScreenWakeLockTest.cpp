@@ -52,7 +52,7 @@ class MockWakeLock : public WakeLock {
   bool wake_lock_status_ = false;
 };
 
-class ScreenWakeLockTest : public ::testing::Test {
+class ScreenWakeLockTest : public testing::Test {
  protected:
   void SetUp() override {
     service_manager::InterfaceProvider::TestApi test_api(

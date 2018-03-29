@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
+using testing::_;
 
 namespace blink {
 namespace scheduler {
@@ -45,7 +45,7 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
   using TaskQueueSelector::prioritizing_selector_for_test;
 };
 
-class TaskQueueSelectorTest : public ::testing::Test {
+class TaskQueueSelectorTest : public testing::Test {
  public:
   TaskQueueSelectorTest()
       : test_closure_(
@@ -144,21 +144,21 @@ class TaskQueueSelectorTest : public ::testing::Test {
 TEST_F(TaskQueueSelectorTest, TestDefaultPriority) {
   size_t queue_order[] = {4, 3, 2, 1, 0};
   PushTasks(queue_order, 5);
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(4, 3, 2, 1, 0));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(4, 3, 2, 1, 0));
 }
 
 TEST_F(TaskQueueSelectorTest, TestHighPriority) {
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(queue_order, 5);
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kHighPriority);
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(2, 0, 1, 3, 4));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(2, 0, 1, 3, 4));
 }
 
 TEST_F(TaskQueueSelectorTest, TestLowPriority) {
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(queue_order, 5);
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kLowPriority);
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(0, 1, 3, 4, 2));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3, 4, 2));
 }
 
 TEST_F(TaskQueueSelectorTest, TestBestEffortPriority) {
@@ -168,7 +168,7 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortPriority) {
                              TaskQueue::kBestEffortPriority);
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kLowPriority);
   selector_.SetQueuePriority(task_queues_[3].get(), TaskQueue::kHighPriority);
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(3, 1, 4, 2, 0));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(3, 1, 4, 2, 0));
 }
 
 TEST_F(TaskQueueSelectorTest, TestControlPriority) {
@@ -179,7 +179,7 @@ TEST_F(TaskQueueSelectorTest, TestControlPriority) {
   EXPECT_EQ(TaskQueue::kControlPriority, task_queues_[4]->GetQueuePriority());
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kHighPriority);
   EXPECT_EQ(TaskQueue::kHighPriority, task_queues_[2]->GetQueuePriority());
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(4, 2, 0, 1, 3));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(4, 2, 0, 1, 3));
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithEnabledQueue) {
@@ -214,17 +214,17 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
   // Disabling a queue should not affect its priority.
   EXPECT_EQ(TaskQueue::kNormalPriority, task_queues_[2]->GetQueuePriority());
   EXPECT_EQ(TaskQueue::kNormalPriority, task_queues_[4]->GetQueuePriority());
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(0, 1, 3));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3));
 
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
   task_queues_[2]->SetQueueEnabledForTest(true);
   selector_.EnableQueue(task_queues_[2].get());
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::kBestEffortPriority);
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(2));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(2));
   task_queues_[4]->SetQueueEnabledForTest(true);
   selector_.EnableQueue(task_queues_[4].get());
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(4));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(4));
 }
 
 TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
@@ -242,7 +242,7 @@ TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
   task_queues_[2]->SetQueueEnabledForTest(true);
 
   EXPECT_EQ(TaskQueue::kHighPriority, task_queues_[2]->GetQueuePriority());
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(2, 0, 1, 3, 4));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(2, 0, 1, 3, 4));
 }
 
 TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
@@ -267,7 +267,7 @@ TEST_F(TaskQueueSelectorTest, TestAge) {
   size_t enqueue_order[] = {10, 1, 2, 9, 4};
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasksWithEnqueueOrder(queue_order, enqueue_order, 5);
-  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(1, 2, 4, 3, 0));
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(1, 2, 4, 3, 0));
 }
 
 TEST_F(TaskQueueSelectorTest, TestControlStarvesOthers) {
@@ -485,7 +485,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
 
   WorkQueue* chosen_work_queue;
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
-  ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
 
@@ -520,8 +520,7 @@ static const ChooseOldestWithPriorityTestParam
 
 class ChooseOldestWithPriorityTest
     : public TaskQueueSelectorTest,
-      public ::testing::WithParamInterface<ChooseOldestWithPriorityTestParam> {
-};
+      public testing::WithParamInterface<ChooseOldestWithPriorityTestParam> {};
 
 TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
   task_queues_[0]->immediate_work_queue()->Push(TaskQueueImpl::Task(
@@ -548,10 +547,9 @@ TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
             GetParam().expected_did_starve_immediate_queue);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ChooseOldestWithPriorityTest,
-    ChooseOldestWithPriorityTest,
-    ::testing::ValuesIn(kChooseOldestWithPriorityTestCases));
+INSTANTIATE_TEST_CASE_P(ChooseOldestWithPriorityTest,
+                        ChooseOldestWithPriorityTest,
+                        testing::ValuesIn(kChooseOldestWithPriorityTestCases));
 
 }  // namespace task_queue_selector_unittest
 }  // namespace internal

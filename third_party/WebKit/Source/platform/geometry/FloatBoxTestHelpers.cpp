@@ -47,34 +47,34 @@ bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b) {
   return true;
 }
 
-::testing::AssertionResult AssertAlmostEqual(const char* expr,
-                                             const char* n_expr,
-                                             const FloatBox& m,
-                                             const FloatBox& n) {
+testing::AssertionResult AssertAlmostEqual(const char* expr,
+                                           const char* n_expr,
+                                           const FloatBox& m,
+                                           const FloatBox& n) {
   if (!ApproximatelyEqual(m, n)) {
-    return ::testing::AssertionFailure()
+    return testing::AssertionFailure()
            << "       Value of:" << n_expr << std::endl
-           << "         Actual:" << ::testing::PrintToString(n) << std::endl
+           << "         Actual:" << testing::PrintToString(n) << std::endl
            << "Expected Approx:" << expr << std::endl
-           << "       Which is:" << ::testing::PrintToString(m);
+           << "       Which is:" << testing::PrintToString(m);
   }
-  return ::testing::AssertionSuccess();
+  return testing::AssertionSuccess();
 }
 
-::testing::AssertionResult AssertContains(const char* expr,
-                                          const char* n_expr,
-                                          const FloatBox& m,
-                                          const FloatBox& n) {
+testing::AssertionResult AssertContains(const char* expr,
+                                        const char* n_expr,
+                                        const FloatBox& m,
+                                        const FloatBox& n) {
   FloatBox new_m = m;
   new_m.ExpandTo(n);
   if (!ApproximatelyEqual(m, new_m)) {
-    return ::testing::AssertionFailure()
+    return testing::AssertionFailure()
            << "        Value of:" << n_expr << std::endl
-           << "          Actual:" << ::testing::PrintToString(n) << std::endl
+           << "          Actual:" << testing::PrintToString(n) << std::endl
            << "Not Contained in:" << expr << std::endl
-           << "        Which is:" << ::testing::PrintToString(m);
+           << "        Which is:" << testing::PrintToString(m);
   }
-  return ::testing::AssertionSuccess();
+  return testing::AssertionSuccess();
 }
 
 }  // namespace FloatBoxTest

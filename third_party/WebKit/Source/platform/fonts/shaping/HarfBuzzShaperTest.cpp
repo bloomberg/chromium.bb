@@ -23,7 +23,7 @@
 
 namespace blink {
 
-class HarfBuzzShaperTest : public ::testing::Test {
+class HarfBuzzShaperTest : public testing::Test {
  protected:
   void SetUp() override {
     font_description.SetComputedSize(12.0);
@@ -94,7 +94,7 @@ class ScopedSubpixelOverride {
 };
 
 class ShapeParameterTest : public HarfBuzzShaperTest,
-                           public ::testing::WithParamInterface<TextDirection> {
+                           public testing::WithParamInterface<TextDirection> {
  protected:
   scoped_refptr<ShapeResult> ShapeWithParameter(HarfBuzzShaper* shaper) {
     TextDirection direction = GetParam();
@@ -104,8 +104,8 @@ class ShapeParameterTest : public HarfBuzzShaperTest,
 
 INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
                         ShapeParameterTest,
-                        ::testing::Values(TextDirection::kLtr,
-                                          TextDirection::kRtl));
+                        testing::Values(TextDirection::kLtr,
+                                        TextDirection::kRtl));
 
 static inline ShapeResultTestInfo* TestInfo(scoped_refptr<ShapeResult>& result) {
   return static_cast<ShapeResultTestInfo*>(result.get());
@@ -586,11 +586,11 @@ TEST_F(HarfBuzzShaperTest, EmojiZWJSequence) {
 // A Value-Parameterized Test class to test OffsetForPosition() with
 // |include_partial_glyphs| parameter.
 class IncludePartialGlyphs : public HarfBuzzShaperTest,
-                             public ::testing::WithParamInterface<bool> {};
+                             public testing::WithParamInterface<bool> {};
 
 INSTANTIATE_TEST_CASE_P(OffsetForPositionTest,
                         IncludePartialGlyphs,
-                        ::testing::Bool());
+                        testing::Bool());
 
 TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetLatin) {
   String string = To16Bit("Hello World!", 12);
@@ -698,11 +698,11 @@ std::ostream& operator<<(std::ostream& ostream,
 
 class ShapeResultCopyRangeTest
     : public HarfBuzzShaperTest,
-      public ::testing::WithParamInterface<ShapeResultCopyRangeTestData> {};
+      public testing::WithParamInterface<ShapeResultCopyRangeTestData> {};
 
 INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
                         ShapeResultCopyRangeTest,
-                        ::testing::ValuesIn(shape_result_copy_range_test_data));
+                        testing::ValuesIn(shape_result_copy_range_test_data));
 
 // Split a ShapeResult and combine them should match to the original result.
 TEST_P(ShapeResultCopyRangeTest, Split) {

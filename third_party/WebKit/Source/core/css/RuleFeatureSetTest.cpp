@@ -19,7 +19,7 @@
 
 namespace blink {
 
-class RuleFeatureSetTest : public ::testing::Test {
+class RuleFeatureSetTest : public testing::Test {
  public:
   RuleFeatureSetTest() = default;
 

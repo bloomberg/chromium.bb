@@ -23,7 +23,7 @@ struct FallbackExpectedRun {
       : limit(the_limit), font_fallback_priority(the_font_fallback_priority) {}
 };
 
-class SymbolsIteratorTest : public ::testing::Test {
+class SymbolsIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<FallbackTestRun>& runs) {
     String text(g_empty_string16_bit);

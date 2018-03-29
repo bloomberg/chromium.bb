@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class BackgroundFetchManagerTest : public ::testing::Test {
+class BackgroundFetchManagerTest : public testing::Test {
  protected:
   // Creates a vector of WebServiceWorkerRequest entries for the given
   // |requests| based on the |scope|. Proxied in the fixture to reduce the

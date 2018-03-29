@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class AllowedByNosniffTest : public ::testing::Test {
+class AllowedByNosniffTest : public testing::Test {
  public:
   void SetUp() override {
     // Create a new dummy page holder for each test, so that we get a fresh
@@ -82,7 +82,7 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
   };
 
   for (auto& testcase : data) {
-    SCOPED_TRACE(::testing::Message()
+    SCOPED_TRACE(testing::Message()
                  << "\n  mime type: " << testcase.mimetype
                  << "\n  allowed: " << (testcase.allowed ? "true" : "false"));
 
@@ -129,10 +129,10 @@ TEST_F(AllowedByNosniffTest, Counters) {
 
   for (auto& testcase : data) {
     SetUp();
-    SCOPED_TRACE(::testing::Message()
-                 << "\n  url: " << testcase.url << "\n  origin: "
-                 << testcase.origin << "\n  mime type: " << testcase.mimetype
-                 << "\n  webfeature: " << testcase.expected);
+    SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url
+                                    << "\n  origin: " << testcase.origin
+                                    << "\n  mime type: " << testcase.mimetype
+                                    << "\n  webfeature: " << testcase.expected);
     doc()->SetSecurityOrigin(SecurityOrigin::Create(KURL(testcase.origin)));
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);

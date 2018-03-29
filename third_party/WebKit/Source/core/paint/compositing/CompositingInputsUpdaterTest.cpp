@@ -12,7 +12,7 @@ namespace blink {
 
 typedef bool TestParamRootLayerScrolling;
 class CompositingInputsUpdaterTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  public:
@@ -21,7 +21,7 @@ class CompositingInputsUpdaterTest
         RenderingTest(SingleChildLocalFrameClient::Create()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, CompositingInputsUpdaterTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, CompositingInputsUpdaterTest, testing::Bool());
 
 // Tests that transitioning a sticky away from an ancestor overflow layer that
 // does not have a scrollable area does not crash.

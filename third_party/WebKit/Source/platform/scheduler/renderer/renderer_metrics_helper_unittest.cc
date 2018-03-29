@@ -39,7 +39,7 @@ using base::Bucket;
 using testing::ElementsAre;
 using testing::UnorderedElementsAre;
 
-class RendererMetricsHelperTest : public ::testing::Test {
+class RendererMetricsHelperTest : public testing::Test {
  public:
   RendererMetricsHelperTest() = default;
   ~RendererMetricsHelperTest() = default;

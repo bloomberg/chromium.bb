@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class RenderedPositionTest : public ::testing::WithParamInterface<bool>,
+class RenderedPositionTest : public testing::WithParamInterface<bool>,
                              private ScopedRootLayerScrollingForTest,
                              public EditingTestBase {
  public:
@@ -48,7 +48,7 @@ class RenderedPositionTest : public ::testing::WithParamInterface<bool>,
   UseMockScrollbarSettings mock_scrollbars_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, RenderedPositionTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, RenderedPositionTest, testing::Bool());
 
 TEST_P(RenderedPositionTest, ComputeCompositedSelection) {
   SetBodyContent(R"HTML(

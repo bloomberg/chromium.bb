@@ -20,7 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using blink::test::CreateOpacityOnlyEffect;
-using ::testing::UnorderedElementsAre;
+using testing::UnorderedElementsAre;
 
 namespace blink {
 
@@ -33,12 +33,12 @@ class PaintControllerTest : public PaintTestConfigurations,
 INSTANTIATE_TEST_CASE_P(
     All,
     PaintControllerTest,
-    ::testing::Values(0,
-                      kSlimmingPaintV175,
-                      kSlimmingPaintV2,
-                      kUnderInvalidationChecking,
-                      kSlimmingPaintV175 | kUnderInvalidationChecking,
-                      kSlimmingPaintV2 | kUnderInvalidationChecking));
+    testing::Values(0,
+                    kSlimmingPaintV175,
+                    kSlimmingPaintV2,
+                    kUnderInvalidationChecking,
+                    kSlimmingPaintV175 | kUnderInvalidationChecking,
+                    kSlimmingPaintV2 | kUnderInvalidationChecking));
 
 TEST_P(PaintControllerTest, NestedRecorders) {
   GraphicsContext context(GetPaintController());
@@ -2034,7 +2034,7 @@ class PaintControllerUnderInvalidationTest
 
  protected:
   void SetUp() override {
-    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+    testing::FLAGS_gtest_death_test_style = "threadsafe";
   }
 
   void TestChangeDrawing() {

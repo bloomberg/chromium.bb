@@ -28,7 +28,7 @@ class LocalCaretRectTest : public EditingTestBase {};
 
 // Helper class to run the same test code with and without LayoutNG
 class ParameterizedLocalCaretRectTest
-    : public ::testing::WithParamInterface<bool>,
+    : public testing::WithParamInterface<bool>,
       private ScopedLayoutNGForTest,
       public LocalCaretRectTest {
  public:
@@ -38,9 +38,7 @@ class ParameterizedLocalCaretRectTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedLocalCaretRectTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ParameterizedLocalCaretRectTest, testing::Bool());
 
 TEST_P(ParameterizedLocalCaretRectTest, DOMAndFlatTrees) {
   const char* body_content =

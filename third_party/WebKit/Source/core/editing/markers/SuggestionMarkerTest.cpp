@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class SuggestionMarkerTest : public ::testing::Test {};
+class SuggestionMarkerTest : public testing::Test {};
 
 TEST_F(SuggestionMarkerTest, MarkerType) {
   DocumentMarker* marker =

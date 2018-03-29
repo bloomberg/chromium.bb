@@ -11,7 +11,7 @@ namespace blink {
 
 using MarkerOffsets = DocumentMarker::MarkerOffsets;
 
-class DocumentMarkerTest : public ::testing::Test {
+class DocumentMarkerTest : public testing::Test {
  protected:
   DocumentMarker* CreateMarker(unsigned startOffset, unsigned endOffset) {
     return new TextMatchMarker(startOffset, endOffset,

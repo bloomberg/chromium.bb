@@ -23,7 +23,7 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace frame_scheduler_impl_unittest {
 
-class FrameSchedulerImplTest : public ::testing::Test {
+class FrameSchedulerImplTest : public testing::Test {
  public:
   FrameSchedulerImplTest() = default;
   ~FrameSchedulerImplTest() override = default;

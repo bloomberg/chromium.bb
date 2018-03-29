@@ -22,8 +22,8 @@ namespace blink {
 
 namespace {
 
-using ::testing::_;
-using ::testing::Return;
+using testing::_;
+using testing::Return;
 
 class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
  public:
@@ -34,7 +34,7 @@ class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
 
 }  // namespace
 
-class ScrollableAreaTest : public ::testing::Test {
+class ScrollableAreaTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
 };

@@ -23,21 +23,20 @@ bool ApproximatelyEqual(float a, float b, float test_epsilon) {
   return ((abs_err / (abs_a + abs_b)) < test_epsilon);
 }
 
-::testing::AssertionResult AssertAlmostEqual(const char* actual_expr,
-                                             const char* expected_expr,
-                                             float actual,
-                                             float expected,
-                                             float test_epsilon) {
+testing::AssertionResult AssertAlmostEqual(const char* actual_expr,
+                                           const char* expected_expr,
+                                           float actual,
+                                           float expected,
+                                           float test_epsilon) {
   if (!ApproximatelyEqual(actual, expected, test_epsilon)) {
-    return ::testing::AssertionFailure()
+    return testing::AssertionFailure()
            << "       Value of:" << actual_expr << std::endl
-           << "         Actual:" << ::testing::PrintToString(actual)
-           << std::endl
+           << "         Actual:" << testing::PrintToString(actual) << std::endl
            << "Expected Approx:" << expected_expr << std::endl
-           << "       Which is:" << ::testing::PrintToString(expected);
+           << "       Which is:" << testing::PrintToString(expected);
   }
 
-  return ::testing::AssertionSuccess();
+  return testing::AssertionSuccess();
 }
 
 }  // namespace GeometryTest

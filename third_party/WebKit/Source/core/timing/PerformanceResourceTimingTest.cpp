@@ -8,7 +8,7 @@
 
 namespace blink {
 
-class PerformanceResourceTimingTest : public ::testing::Test {
+class PerformanceResourceTimingTest : public testing::Test {
  protected:
   AtomicString GetNextHopProtocol(const AtomicString& alpn_negotiated_protocol,
                                   const AtomicString& connection_info) {

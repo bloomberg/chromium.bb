@@ -48,9 +48,9 @@
 
 #include <string>
 
-using ::testing::_;
-using ::testing::PrintToString;
-using ::testing::Mock;
+using testing::_;
+using testing::PrintToString;
+using testing::Mock;
 using blink::URLTestHelpers::ToKURL;
 
 namespace blink {
@@ -72,7 +72,7 @@ void configureAndroidCompositing(WebSettings* settings) {
 }
 
 typedef bool TestParamRootLayerScrolling;
-class VisualViewportTest : public ::testing::Test,
+class VisualViewportTest : public testing::Test,
                            public PaintTestConfigurations {
  public:
   VisualViewportTest() : base_url_("http://www.test.com/") {}
@@ -144,10 +144,9 @@ class VisualViewportTest : public ::testing::Test,
   FrameTestHelpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(
-    All,
-    VisualViewportTest,
-    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        VisualViewportTest,
+                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 // Test that resizing the VisualViewport works as expected and that resizing the
 // WebView resizes the VisualViewport.

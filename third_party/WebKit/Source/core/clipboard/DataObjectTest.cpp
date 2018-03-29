@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class DataObjectTest : public ::testing::Test {
+class DataObjectTest : public testing::Test {
  public:
   DataObjectTest() : data_object_(DataObject::Create()) {}
 

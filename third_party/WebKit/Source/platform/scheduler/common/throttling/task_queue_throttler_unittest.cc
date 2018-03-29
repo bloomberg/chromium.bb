@@ -24,7 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ElementsAre;
+using testing::ElementsAre;
 
 namespace blink {
 namespace scheduler {
@@ -70,7 +70,7 @@ class AutoAdvancingTestClock : public base::SimpleTestTickClock {
   base::TimeDelta advancing_interval_;
 };
 
-class TaskQueueThrottlerTest : public ::testing::Test {
+class TaskQueueThrottlerTest : public testing::Test {
  public:
   TaskQueueThrottlerTest() = default;
   ~TaskQueueThrottlerTest() override = default;
@@ -142,7 +142,7 @@ class TaskQueueThrottlerTest : public ::testing::Test {
 
 class TaskQueueThrottlerWithAutoAdvancingTimeTest
     : public TaskQueueThrottlerTest,
-      public ::testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<bool> {
  public:
   TaskQueueThrottlerWithAutoAdvancingTimeTest()
       : auto_advance_time_interval_(GetParam()
@@ -163,7 +163,7 @@ class TaskQueueThrottlerWithAutoAdvancingTimeTest
 
 INSTANTIATE_TEST_CASE_P(All,
                         TaskQueueThrottlerWithAutoAdvancingTimeTest,
-                        ::testing::Bool());
+                        testing::Bool());
 
 TEST_F(TaskQueueThrottlerTest, ThrottledTasksReportRealTime) {
   EXPECT_EQ(timer_queue_->GetTimeDomain()->Now(),

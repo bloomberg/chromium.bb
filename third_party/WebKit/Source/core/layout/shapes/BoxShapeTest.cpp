@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class BoxShapeTest : public ::testing::Test {
+class BoxShapeTest : public testing::Test {
  protected:
   BoxShapeTest() = default;
 

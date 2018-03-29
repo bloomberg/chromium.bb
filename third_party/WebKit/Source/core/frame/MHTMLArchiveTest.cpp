@@ -54,7 +54,7 @@ const char kEndOfDocumentBoundary[] = "--boundary-example--";
 
 }  // namespace
 
-class MHTMLArchiveTest : public ::testing::Test {
+class MHTMLArchiveTest : public testing::Test {
  public:
   MHTMLArchiveTest() {
     file_path_ = test::CoreTestDataPath("frameserializer/css/");

@@ -26,23 +26,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::InSequence;
-using ::testing::Ref;
-using ::testing::Return;
+using testing::_;
+using testing::AnyNumber;
+using testing::InSequence;
+using testing::Ref;
+using testing::Return;
 
 namespace blink {
 
 namespace {
 
-typedef ::testing::StrictMock<::testing::MockFunction<void(int)>>
+typedef testing::StrictMock<testing::MockFunction<void(int)>>
     Checkpoint;  // NOLINT
 
 class MockWebSocketChannel : public WebSocketChannel {
  public:
   static MockWebSocketChannel* Create() {
-    return new ::testing::StrictMock<MockWebSocketChannel>();
+    return new testing::StrictMock<MockWebSocketChannel>();
   }
 
   ~MockWebSocketChannel() override = default;
@@ -117,7 +117,7 @@ class DOMWebSocketTestScope {
     // These statements are needed to clear WebSocket::channel_ to
     // avoid ASSERTION failure on ~DOMWebSocket.
     DCHECK(Socket().Channel());
-    ::testing::Mock::VerifyAndClear(Socket().Channel());
+    testing::Mock::VerifyAndClear(Socket().Channel());
     EXPECT_CALL(Channel(), Disconnect()).Times(AnyNumber());
 
     Socket().DidClose(WebSocketChannelClient::kClosingHandshakeIncomplete, 1006,
@@ -822,7 +822,7 @@ TEST(DOMWebSocketTest, binaryType) {
 // FIXME: We should add tests for suspend / resume.
 
 class DOMWebSocketValidClosingTest
-    : public ::testing::TestWithParam<unsigned short> {};
+    : public testing::TestWithParam<unsigned short> {};
 
 TEST_P(DOMWebSocketValidClosingTest, test) {
   V8TestingScope scope;
@@ -848,10 +848,10 @@ TEST_P(DOMWebSocketValidClosingTest, test) {
 
 INSTANTIATE_TEST_CASE_P(DOMWebSocketValidClosing,
                         DOMWebSocketValidClosingTest,
-                        ::testing::Values(1000, 3000, 3001, 4998, 4999));
+                        testing::Values(1000, 3000, 3001, 4998, 4999));
 
 class DOMWebSocketInvalidClosingCodeTest
-    : public ::testing::TestWithParam<unsigned short> {};
+    : public testing::TestWithParam<unsigned short> {};
 
 TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
   V8TestingScope scope;
@@ -882,7 +882,7 @@ TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
 INSTANTIATE_TEST_CASE_P(
     DOMWebSocketInvalidClosingCode,
     DOMWebSocketInvalidClosingCodeTest,
-    ::testing::Values(0, 1, 998, 999, 1001, 2999, 5000, 9999, 65535));
+    testing::Values(0, 1, 998, 999, 1001, 2999, 5000, 9999, 65535));
 
 }  // namespace
 

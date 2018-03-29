@@ -45,7 +45,7 @@ class MockPresentationAvailabilityCallbacks
   MOCK_METHOD0(RejectAvailabilityNotSupported, void());
 };
 
-class PresentationAvailabilityStateTest : public ::testing::Test {
+class PresentationAvailabilityStateTest : public testing::Test {
  public:
   PresentationAvailabilityStateTest()
       : url1_(KURL("https://www.example.com/1.html")),
@@ -174,7 +174,7 @@ TEST_F(PresentationAvailabilityStateTest,
 TEST_F(PresentationAvailabilityStateTest,
        RequestAvailabilityOneUrlNoAvailabilityChange) {
   auto* mock_callback =
-      new ::testing::StrictMock<MockPresentationAvailabilityCallbacks>();
+      new testing::StrictMock<MockPresentationAvailabilityCallbacks>();
 
   EXPECT_CALL(mock_presentation_service_, ListenForScreenAvailability(url1_))
       .Times(1);

@@ -43,7 +43,7 @@ class TestingUnitsPlatform : public TestingPlatformSupport {
 
 TestingUnitsPlatform::~TestingUnitsPlatform() = default;
 
-class PlaceholderImageTest : public ::testing::Test {
+class PlaceholderImageTest : public testing::Test {
  private:
   ScopedTestingPlatformSupport<TestingUnitsPlatform> platform_;
 };

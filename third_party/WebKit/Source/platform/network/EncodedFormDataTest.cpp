@@ -10,7 +10,7 @@ namespace blink {
 
 namespace {
 
-class EncodedFormDataTest : public ::testing::Test {
+class EncodedFormDataTest : public testing::Test {
  public:
   void CheckDeepCopied(const String& a, const String& b) {
     EXPECT_EQ(a, b);

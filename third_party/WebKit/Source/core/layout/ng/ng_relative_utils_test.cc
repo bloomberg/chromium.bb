@@ -20,7 +20,7 @@ const LayoutUnit kBottom{9};
 const LayoutUnit kAuto{-1};
 const LayoutUnit kZero{0};
 
-class NGRelativeUtilsTest : public ::testing::Test {
+class NGRelativeUtilsTest : public testing::Test {
  protected:
   void SetUp() override {
     style_ = ComputedStyle::Create();

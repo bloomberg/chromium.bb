@@ -28,7 +28,7 @@ class MockPerformance : public Performance {
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
 };
 
-class PerformanceObserverTest : public ::testing::Test {
+class PerformanceObserverTest : public testing::Test {
  protected:
   void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =

@@ -78,7 +78,7 @@ class FakeDecodedResource final : public Resource {
   void DestroyDecodedDataIfPossible() override { SetDecodedSize(0); }
 };
 
-class MemoryCacheTest : public ::testing::Test {
+class MemoryCacheTest : public testing::Test {
  public:
   class FakeResource final : public Resource {
    public:

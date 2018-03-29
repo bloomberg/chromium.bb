@@ -43,7 +43,7 @@ class LocalePlatformSupport : public TestingPlatformSupport {
   }
 };
 
-class LocaleMacTest : public ::testing::Test {
+class LocaleMacTest : public testing::Test {
  protected:
   enum {
     kJanuary = 0,

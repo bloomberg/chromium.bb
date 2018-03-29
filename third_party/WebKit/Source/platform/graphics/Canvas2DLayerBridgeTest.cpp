@@ -62,14 +62,14 @@
 
 #include <memory>
 
-using ::testing::AnyNumber;
-using ::testing::AtLeast;
-using ::testing::InSequence;
-using ::testing::Pointee;
-using ::testing::Return;
-using ::testing::SetArgPointee;
-using ::testing::Test;
-using ::testing::_;
+using testing::AnyNumber;
+using testing::AtLeast;
+using testing::InSequence;
+using testing::Pointee;
+using testing::Return;
+using testing::SetArgPointee;
+using testing::Test;
+using testing::_;
 
 namespace blink {
 
@@ -503,7 +503,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -515,7 +515,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
 
   bridge->SetIsHidden(false);
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -551,7 +551,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -563,7 +563,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
 
   bridge->SetIsHidden(false);
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -602,8 +602,8 @@ TEST_F(Canvas2DLayerBridgeTest,
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -615,8 +615,8 @@ TEST_F(Canvas2DLayerBridgeTest,
   EXPECT_CALL(mock_host, RestoreCanvasMatrixClipStack(_))
       .Times(AtLeast(1));  // Because deferred rendering is disabled
   bridge->SetIsHidden(false);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_host);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -647,7 +647,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -658,14 +658,14 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
                   Canvas2DLayerBridge::
                       kHibernationEndedWithSwitchToBackgroundRendering));
   DrawSomething(bridge);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
 
   // Unhide
   bridge->SetIsHidden(false);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
@@ -705,8 +705,8 @@ TEST_F(
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -719,8 +719,8 @@ TEST_F(
   EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
       .Times(AtLeast(1));
   DrawSomething(bridge);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -729,8 +729,8 @@ TEST_F(
   EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
       .Times(AtLeast(1));
   bridge->SetIsHidden(false);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
@@ -768,8 +768,8 @@ TEST_F(Canvas2DLayerBridgeTest,
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -782,8 +782,8 @@ TEST_F(Canvas2DLayerBridgeTest,
   EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
       .Times(AtLeast(1));
   bridge->DisableDeferral(kDisableDeferralReasonUnknown);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -792,8 +792,8 @@ TEST_F(Canvas2DLayerBridgeTest,
   EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
       .Times(AtLeast(1));
   bridge->SetIsHidden(false);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
@@ -802,7 +802,7 @@ TEST_F(Canvas2DLayerBridgeTest,
   EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
       .Times(AnyNumber());
   bridge.Clear();
-  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
+  testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -830,7 +830,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -840,7 +840,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
               ReportHibernationEvent(
                   Canvas2DLayerBridge::kHibernationEndedWithTeardown));
   bridge.Clear();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -868,7 +868,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -956,7 +956,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
   bridge->BeginDestruction();
   platform->RunUntilIdle();
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -990,7 +990,7 @@ TEST_F(Canvas2DLayerBridgeTest,
   bridge->SetIsHidden(true);
   bridge->SetIsHidden(false);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -1027,7 +1027,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
 
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsHibernating());
 }
 
@@ -1056,7 +1056,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 
   // Test PrepareTransferableResource() while hibernating
   viz::TransferableResource resource;
@@ -1071,7 +1071,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
               ReportHibernationEvent(
                   Canvas2DLayerBridge::kHibernationEndedWithTeardown));
   bridge.Clear();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED && CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU
@@ -1100,7 +1100,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 
   // Rendering in the background -> temp switch to SW
   EXPECT_CALL(*mock_logger_ptr,
@@ -1108,7 +1108,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
                   Canvas2DLayerBridge::
                       kHibernationEndedWithSwitchToBackgroundRendering));
   DrawSomething(bridge);
-  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
+  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -1142,21 +1142,21 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
       IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
       CanvasColorParams()));
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(&resource1, &release_callback1);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(&resource2, &release_callback2);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Check that release resources does not result in destruction due
   // to recycling.
@@ -1166,14 +1166,14 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
   release_callback1->Run(gpu::SyncToken(), lost_resource);
   release_callback1 = nullptr;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
   EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
   release_callback2->Run(gpu::SyncToken(), lost_resource);
   release_callback2 = nullptr;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Destroying the bridge results in destruction of cached resources.
   EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1)).Times(1);
@@ -1182,7 +1182,7 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
   EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id2))).Times(1);
   bridge.Clear();
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
@@ -1206,21 +1206,21 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
       IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
       CanvasColorParams()));
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(&resource1, &release_callback1);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(&resource2, &release_callback2);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Release first frame to cache
   EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
@@ -1229,14 +1229,14 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   release_callback1->Run(gpu::SyncToken(), lost_resource);
   release_callback1 = nullptr;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Switching to Hidden frees cached resources immediately
   EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1)).Times(1);
   EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id1))).Times(1);
   bridge->SetIsHidden(true);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Release second frame and verify that its resource is destroyed immediately
   // due to the layer bridge being hidden
@@ -1245,7 +1245,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   release_callback2->Run(gpu::SyncToken(), lost_resource);
   release_callback2 = nullptr;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
@@ -1265,21 +1265,21 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
       IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
       CanvasColorParams()));
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(&resource, &release_callback);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Tearing down the bridge does not destroy unreleased resources.
   EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
   EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
   bridge.Clear();
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id)).Times(1);
   EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id))).Times(1);
@@ -1287,7 +1287,7 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
   release_callback->Run(gpu::SyncToken(), lost_resource);
   release_callback = nullptr;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {

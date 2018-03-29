@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class FECompositeTest : public ::testing::Test {
+class FECompositeTest : public testing::Test {
  protected:
   FEComposite* CreateComposite(CompositeOperationType type,
                                float k1 = 0,

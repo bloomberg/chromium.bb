@@ -25,7 +25,7 @@ mojom::FeaturePolicyFeature kDefaultOffFeature =
 
 }  // namespace
 
-class FeaturePolicyTest : public ::testing::Test {
+class FeaturePolicyTest : public testing::Test {
  protected:
   FeaturePolicyTest()
       : feature_list_(

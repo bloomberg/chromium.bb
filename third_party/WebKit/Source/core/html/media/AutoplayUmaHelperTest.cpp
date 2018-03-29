@@ -15,7 +15,7 @@
 
 namespace blink {
 
-using ::testing::Invoke;
+using testing::Invoke;
 
 class MockAutoplayUmaHelper : public AutoplayUmaHelper {
  public:
@@ -54,7 +54,7 @@ class AutoplayUmaHelperTest : public PageTestBase {
     HTMLMediaElement& element = MediaElement();
     uma_helper_ = new MockAutoplayUmaHelper(&element);
     element.autoplay_policy_->autoplay_uma_helper_ = uma_helper_;
-    ::testing::Mock::AllowLeak(&UmaHelper());
+    testing::Mock::AllowLeak(&UmaHelper());
   }
 
   void TearDown() override { uma_helper_.Clear(); }
@@ -69,7 +69,7 @@ TEST_F(AutoplayUmaHelperTest, VisibilityChangeWhenUnload) {
   UmaHelper().OnAutoplayInitiated(AutoplaySource::kMethod);
   UmaHelper().HandlePlayingEvent();
   PageTestBase::TearDown();
-  ::testing::Mock::VerifyAndClear(&UmaHelper());
+  testing::Mock::VerifyAndClear(&UmaHelper());
 }
 
 }  // namespace blink

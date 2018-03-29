@@ -24,7 +24,7 @@ struct SmallCapsExpectedRun {
       : limit(the_limit), small_caps_behavior(the_small_caps_behavior) {}
 };
 
-class SmallCapsIteratorTest : public ::testing::Test {
+class SmallCapsIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<SmallCapsTestRun>& runs) {
     String text(g_empty_string16_bit);

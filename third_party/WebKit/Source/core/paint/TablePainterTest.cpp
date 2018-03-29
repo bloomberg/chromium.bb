@@ -16,7 +16,7 @@ namespace blink {
 using TablePainterTest = PaintControllerPaintTest;
 INSTANTIATE_TEST_CASE_P(All,
                         TablePainterTest,
-                        ::testing::Values(0, kRootLayerScrolling));
+                        testing::Values(0, kRootLayerScrolling));
 
 TEST_P(TablePainterTest, Background) {
   SetBodyInnerHTML(R"HTML(

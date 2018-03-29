@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class LocaleWinTest : public ::testing::Test {
+class LocaleWinTest : public testing::Test {
  protected:
   enum {
     kJanuary = 0,

@@ -24,9 +24,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::Property;
+using testing::_;
+using testing::AtLeast;
+using testing::Property;
 
 namespace blink {
 namespace {
@@ -65,7 +65,7 @@ class SolidColorOverlay : public PageOverlay::Delegate {
   Color color_;
 };
 
-class PageOverlayTest : public ::testing::Test {
+class PageOverlayTest : public testing::Test {
  protected:
   enum CompositingMode { kAcceleratedCompositing, kUnacceleratedCompositing };
 

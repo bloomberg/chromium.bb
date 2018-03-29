@@ -23,7 +23,7 @@ namespace {
 TEST(PushPullFIFOBasicTest, BasicTests) {
   // This suppresses the multi-thread warning for GTest. Potently it increases
   // the test execution time, but this specific test is very short and simple.
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   // FIFO length exceeding the maximum length allowed will cause crash.
   // i.e.) fifo_length_ <= kMaxFIFOLength
@@ -131,8 +131,7 @@ std::ostream& operator<<(std::ostream& out, const FIFOTestParam& param) {
   return out;
 }
 
-class PushPullFIFOFeatureTest : public ::testing::TestWithParam<FIFOTestParam> {
-};
+class PushPullFIFOFeatureTest : public testing::TestWithParam<FIFOTestParam> {};
 
 TEST_P(PushPullFIFOFeatureTest, FeatureTests) {
   const FIFOTestSetup setup = GetParam().setup;
@@ -361,7 +360,7 @@ FIFOTestParam g_feature_test_params[] = {
 
 INSTANTIATE_TEST_CASE_P(PushPullFIFOFeatureTest,
                         PushPullFIFOFeatureTest,
-                        ::testing::ValuesIn(g_feature_test_params));
+                        testing::ValuesIn(g_feature_test_params));
 
 }  // namespace
 

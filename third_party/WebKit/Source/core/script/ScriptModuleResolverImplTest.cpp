@@ -98,7 +98,7 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
 
 }  // namespace
 
-class ScriptModuleResolverImplTest : public ::testing::Test {
+class ScriptModuleResolverImplTest : public testing::Test {
  public:
   void SetUp() override;
 

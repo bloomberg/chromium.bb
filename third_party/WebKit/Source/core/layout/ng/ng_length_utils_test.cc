@@ -16,7 +16,7 @@
 namespace blink {
 namespace {
 
-class NGLengthUtilsTest : public ::testing::Test {
+class NGLengthUtilsTest : public testing::Test {
  protected:
   void SetUp() override { style_ = ComputedStyle::Create(); }
 

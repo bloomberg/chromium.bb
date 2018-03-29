@@ -120,7 +120,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
 
 INSTANTIATE_TEST_CASE_P(All,
                         BoxPaintInvalidatorTest,
-                        ::testing::Values(0, kRootLayerScrolling));
+                        testing::Values(0, kRootLayerScrolling));
 
 TEST_P(BoxPaintInvalidatorTest, SlowMapToVisualRectInAncestorSpaceLayoutView) {
   SetBodyInnerHTML(

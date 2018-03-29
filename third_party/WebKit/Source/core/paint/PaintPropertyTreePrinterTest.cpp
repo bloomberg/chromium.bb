@@ -29,23 +29,23 @@ class PaintPropertyTreePrinterTest : public PaintControllerPaintTest {
 INSTANTIATE_TEST_CASE_P(
     All,
     PaintPropertyTreePrinterTest,
-    ::testing::ValuesIn(kSlimmingPaintNonV1TestConfigurations));
+    testing::ValuesIn(kSlimmingPaintNonV1TestConfigurations));
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTree) {
   SetBodyInnerHTML("hello world");
   String transform_tree_as_string =
       transformPropertyTreeAsString(*GetDocument().View());
   EXPECT_THAT(transform_tree_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .*"
-                                      "  .*Translation \\(.*\\) .*"));
+              testing::MatchesRegex("root .*"
+                                    "  .*Translation \\(.*\\) .*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleClipTree) {
   SetBodyInnerHTML("hello world");
   String clip_tree_as_string = clipPropertyTreeAsString(*GetDocument().View());
   EXPECT_THAT(clip_tree_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .*"
-                                      "  .*Clip \\(.*\\) .*"));
+              testing::MatchesRegex("root .*"
+                                    "  .*Clip \\(.*\\) .*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTree) {
@@ -53,8 +53,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTree) {
   String effect_tree_as_string =
       effectPropertyTreeAsString(*GetDocument().View());
   EXPECT_THAT(effect_tree_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .*"
-                                      "  Effect \\(LayoutBlockFlow DIV\\) .*"));
+              testing::MatchesRegex("root .*"
+                                    "  Effect \\(LayoutBlockFlow DIV\\) .*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTree) {
@@ -62,8 +62,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTree) {
   String scroll_tree_as_string =
       scrollPropertyTreeAsString(*GetDocument().View());
   EXPECT_THAT(scroll_tree_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .*"
-                                      "  Scroll \\(.*\\) .*"));
+              testing::MatchesRegex("root .*"
+                                    "  Scroll \\(.*\\) .*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
@@ -77,10 +77,10 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
   String transform_path_as_string =
       transformed_object_properties->Transform()->ToTreeString();
   EXPECT_THAT(transform_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .*\"scroll\".*"
-                                      "  .*\"parent\".*"
-                                      "    .*\"matrix\".*"
-                                      "      .*\"matrix\".*"));
+              testing::MatchesRegex("root .*\"scroll\".*"
+                                    "  .*\"parent\".*"
+                                    "    .*\"matrix\".*"
+                                    "      .*\"matrix\".*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
@@ -94,9 +94,9 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
   String clip_path_as_string =
       clipped_object_properties->CssClip()->ToTreeString();
   EXPECT_THAT(clip_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .*\"rect\".*"
-                                      "  .*\"rect\".*"
-                                      "    .*\"rect\".*"));
+              testing::MatchesRegex("root .*\"rect\".*"
+                                    "  .*\"rect\".*"
+                                    "    .*\"rect\".*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
@@ -108,8 +108,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
   String effect_path_as_string =
       effect_object_properties->Effect()->ToTreeString();
   EXPECT_THAT(effect_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .*\"outputClip\".*"
-                                      "  .*\"parent\".*\"opacity\".*"));
+              testing::MatchesRegex("root .*\"outputClip\".*"
+                                    "  .*\"parent\".*\"opacity\".*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
@@ -126,8 +126,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
                                      ->ScrollNode()
                                      ->ToTreeString();
   EXPECT_THAT(scroll_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .* \\{\\}.*"
-                                      "  .*\"parent\".*"));
+              testing::MatchesRegex("root .* \\{\\}.*"
+                                    "  .*\"parent\".*"));
 }
 
 }  // namespace blink

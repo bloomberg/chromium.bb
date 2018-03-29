@@ -41,7 +41,7 @@ class ImeRequestTrackingWebViewClient
   int virtual_keyboard_request_count_;
 };
 
-class ImeOnFocusTest : public ::testing::Test {
+class ImeOnFocusTest : public testing::Test {
  public:
   ImeOnFocusTest() : base_url_("http://www.test.com/") {}
 

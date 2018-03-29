@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class RTCPeerConnectionTest : public ::testing::Test {
+class RTCPeerConnectionTest : public testing::Test {
  public:
   RTCPeerConnection* CreatePC(V8TestingScope& scope) {
     RTCConfiguration config;

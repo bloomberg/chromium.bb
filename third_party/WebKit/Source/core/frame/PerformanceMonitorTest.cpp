@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class PerformanceMonitorTest : public ::testing::Test {
+class PerformanceMonitorTest : public testing::Test {
  protected:
   void SetUp() override;
   void TearDown() override;

@@ -18,11 +18,11 @@ class ViewPainterTest : public PaintControllerPaintTest {
 
 INSTANTIATE_TEST_CASE_P(All,
                         ViewPainterTest,
-                        ::testing::Values(0,
-                                          kSlimmingPaintV175,
-                                          kRootLayerScrolling,
-                                          kSlimmingPaintV175 |
-                                              kRootLayerScrolling));
+                        testing::Values(0,
+                                        kSlimmingPaintV175,
+                                        kRootLayerScrolling,
+                                        kSlimmingPaintV175 |
+                                            kRootLayerScrolling));
 
 void ViewPainterTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {

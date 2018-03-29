@@ -64,7 +64,7 @@ class SimpleWebFrameSerializerClient final : public WebFrameSerializerClient {
 
 }  // namespace
 
-class WebFrameSerializerTest : public ::testing::Test {
+class WebFrameSerializerTest : public testing::Test {
  protected:
   WebFrameSerializerTest() { helper_.Initialize(); }
 

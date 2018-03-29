@@ -16,11 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
-using ::testing::_;
-using ::testing::Pointee;
-using ::testing::Return;
-using ::testing::SetArrayArgument;
-using ::testing::Test;
+using testing::_;
+using testing::Pointee;
+using testing::Return;
+using testing::SetArrayArgument;
+using testing::Test;
 
 namespace blink {
 
@@ -85,7 +85,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   sk_sp<SkSurface> surface =
       SkSurface::MakeRenderTarget(GetGrContext(), SkBudgeted::kYes, image_info);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_TRUE(!!context_provider_wrapper_);
   scoped_refptr<CanvasResource> resource = CanvasResource_Bitmap::Create(
@@ -93,7 +93,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
                                 context_provider_wrapper_),
       nullptr, kLow_SkFilterQuality);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   gpu::Mailbox test_mailbox;
   test_mailbox.name[0] = 1;
@@ -102,7 +102,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
   resource->GetOrCreateGpuMailbox();
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // No expected call to DeleteTextures becaus skia recycles
   // No expected call to ProduceTextureDirectCHROMIUM(0, *) because
@@ -111,7 +111,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(0, _)).Times(0);
   resource = nullptr;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Purging skia's resource cache will finally delete the GrTexture, resulting
   // in the mailbox being orphaned via ProduceTextureDirectCHROMIUM.
@@ -120,7 +120,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
       .Times(0);
   GetGrContext()->performDeferredCleanup(std::chrono::milliseconds(0));
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
@@ -137,7 +137,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
 
   EXPECT_TRUE(bool(resource));
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   gpu::Mailbox test_mailbox;
   test_mailbox.name[0] = 1;
@@ -146,7 +146,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
   resource->GetOrCreateGpuMailbox();
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   const gpu::SyncToken reference_token1 = GenTestSyncToken(1);
   EXPECT_CALL(gl_, GenUnverifiedSyncTokenCHROMIUM(_))
@@ -156,7 +156,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   gpu::SyncToken actual_token = resource->GetSyncToken();
   EXPECT_EQ(actual_token, reference_token1);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Grabbing the mailbox again without making any changes must not result in
   // a sync token refresh
@@ -166,7 +166,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   actual_token = resource->GetSyncToken();
   EXPECT_EQ(actual_token, reference_token1);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Grabbing the mailbox again after a content change must result in
   // a sync token refresh, but the mailbox gets re-used.
@@ -182,7 +182,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   actual_token = resource->GetSyncToken();
   EXPECT_EQ(actual_token, reference_token2);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 }  // namespace blink

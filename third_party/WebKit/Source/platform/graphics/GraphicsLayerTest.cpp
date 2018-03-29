@@ -58,8 +58,7 @@
 
 namespace blink {
 
-class GraphicsLayerTest : public ::testing::Test,
-                          public PaintTestConfigurations {
+class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
  public:
   GraphicsLayerTest() {
     clip_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
@@ -131,7 +130,7 @@ class GraphicsLayerTest : public ::testing::Test,
 
 INSTANTIATE_TEST_CASE_P(All,
                         GraphicsLayerTest,
-                        ::testing::Values(0, kSlimmingPaintV175));
+                        testing::Values(0, kSlimmingPaintV175));
 
 class AnimationForTesting : public CompositorAnimationClient {
  public:

@@ -46,8 +46,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-using ::testing::Test;
-using ::testing::_;
+using testing::Test;
+using testing::_;
 
 namespace blink {
 
@@ -412,7 +412,7 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest,
         DrawingBuffer::kPreserve, kDisableMultisampling);
     CHECK(drawing_buffer_);
     SetAndSaveRestoreState(true);
-    ::testing::Mock::VerifyAndClearExpectations(gl_);
+    testing::Mock::VerifyAndClearExpectations(gl_);
   }
 
   void TearDown() override {
@@ -440,7 +440,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
   EXPECT_EQ(initial_size, resource.size);
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
   GLuint image_id2 = gl_->NextImageIdToBeCreated();
@@ -454,7 +454,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   VerifyStateWasRestored();
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
   VerifyStateWasRestored();
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
 
   GLuint image_id3 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id3)).Times(1);
@@ -465,7 +465,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_EQ(alternate_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
   EXPECT_EQ(alternate_size, resource.size);
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
 
   GLuint image_id4 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id4)).Times(1);
@@ -478,7 +478,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   VerifyStateWasRestored();
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
   VerifyStateWasRestored();
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
 
   GLuint image_id5 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id5)).Times(1);
@@ -489,7 +489,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
   EXPECT_EQ(initial_size, resource.size);
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
 
   // Prepare one final resource and verify that it's the correct size.
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
@@ -506,7 +506,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_CALL(*gl_, DestroyImageMock(image_id4)).Times(1);
   EXPECT_CALL(*gl_, ReleaseTexImage2DMock(image_id4)).Times(1);
   drawing_buffer_->BeginDestruction();
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
 }
 
 TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
@@ -526,7 +526,7 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource1,
                                                            &release_callback1));
   EXPECT_TRUE(resource1.is_overlay_candidate);
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
   // Force image CHROMIUM creation failure. Request another resource. It should
@@ -546,7 +546,7 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource3,
                                                            &release_callback3));
   EXPECT_TRUE(resource3.is_overlay_candidate);
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
   release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
@@ -556,7 +556,7 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   EXPECT_CALL(*gl_, DestroyImageMock(_)).Times(3);
   EXPECT_CALL(*gl_, ReleaseTexImage2DMock(_)).Times(3);
   drawing_buffer_->BeginDestruction();
-  ::testing::Mock::VerifyAndClearExpectations(gl_);
+  testing::Mock::VerifyAndClearExpectations(gl_);
 }
 
 class DepthStencilTrackingGLES2Interface

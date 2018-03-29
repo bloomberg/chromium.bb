@@ -80,7 +80,7 @@ static const char kBadSha256AndBadSha384Integrities[] =
 static const char kUnsupportedHashFunctionIntegrity[] =
     "sha1-JfLW308qMPKfb4DaHpUBEESwuPc=";
 
-class SubresourceIntegrityTest : public ::testing::Test {
+class SubresourceIntegrityTest : public testing::Test {
  public:
   SubresourceIntegrityTest()
       : sec_url("https://example.test:443"),
@@ -603,20 +603,20 @@ TEST_F(SubresourceIntegrityTest, OriginIntegrity) {
 
   EXPECT_CALL(mock_crypto_scope.MockCrypto(),
               CreateDigestorProxy(kWebCryptoAlgorithmIdSha256))
-      .WillRepeatedly(::testing::InvokeWithoutArgs(
+      .WillRepeatedly(testing::InvokeWithoutArgs(
           &factory_sha256, &MockWebCryptoDigestorFactory::Create));
   EXPECT_CALL(mock_crypto_scope.MockCrypto(),
               CreateDigestorProxy(kWebCryptoAlgorithmIdSha384))
-      .WillRepeatedly(::testing::InvokeWithoutArgs(
+      .WillRepeatedly(testing::InvokeWithoutArgs(
           &factory_sha384, &MockWebCryptoDigestorFactory::Create));
   EXPECT_CALL(mock_crypto_scope.MockCrypto(),
               CreateDigestorProxy(kWebCryptoAlgorithmIdSha512))
-      .WillRepeatedly(::testing::InvokeWithoutArgs(
+      .WillRepeatedly(testing::InvokeWithoutArgs(
           &factory_sha512, &MockWebCryptoDigestorFactory::Create));
 
   for (const auto& test : cases) {
     SCOPED_TRACE(
-        ::testing::Message()
+        testing::Message()
         << "Origin: " << test.origin.BaseAsString()
         << ", target: " << test.target.BaseAsString()
         << ", CORS access-control-allow-origin header: "

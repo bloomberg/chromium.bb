@@ -160,7 +160,7 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
       added_handle_;
 };
 
-class NetworkStateNotifierTest : public ::testing::Test {
+class NetworkStateNotifierTest : public testing::Test {
  public:
   NetworkStateNotifierTest()
       : task_runner_(base::MakeRefCounted<FakeTaskRunner>()),

@@ -9,7 +9,7 @@
 
 namespace blink {
 
-using ::testing::Return;
+using testing::Return;
 
 namespace {
 
@@ -29,7 +29,7 @@ class ScrollbarThemeAuraButtonOverride final : public ScrollbarThemeAura {
 
 }  // namespace
 
-class ScrollbarThemeAuraTest : public ::testing::Test {
+class ScrollbarThemeAuraTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
 };

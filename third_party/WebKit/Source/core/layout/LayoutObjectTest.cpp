@@ -17,7 +17,7 @@
 
 namespace blink {
 
-using ::testing::Return;
+using testing::Return;
 
 class LayoutObjectTest : public RenderingTest {
  public:

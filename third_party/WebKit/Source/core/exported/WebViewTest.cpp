@@ -246,8 +246,8 @@ class DateTimeChooserWebViewClient
 
 typedef bool TestParamRootLayerScrolling;
 class WebViewTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::Test,
+      public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest {
  public:
   WebViewTest()
@@ -306,7 +306,7 @@ static std::string HitTestElementId(WebView* view, int x, int y) {
   return hit_test_result.GetNode().To<WebElement>().GetAttribute("id").Utf8();
 }
 
-INSTANTIATE_TEST_CASE_P(All, WebViewTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, WebViewTest, testing::Bool());
 
 TEST_P(WebViewTest, HitTestVideo) {
   // Test that hit tests on parts of a video element result in hits on the video
@@ -4448,7 +4448,7 @@ class ShowUnhandledTapTest : public WebViewTest {
   std::unique_ptr<MojoTestHelper> mojo_test_helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, ShowUnhandledTapTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ShowUnhandledTapTest, testing::Bool());
 
 TEST_P(ShowUnhandledTapTest, ShowUnhandledTapUIIfNeeded) {
   // Scroll the bottom into view so we can distinguish window coordinates from

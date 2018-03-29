@@ -149,7 +149,7 @@ struct FIFOSmokeTestParam {
 };
 
 class PushPullFIFOSmokeTest
-    : public ::testing::TestWithParam<FIFOSmokeTestParam> {};
+    : public testing::TestWithParam<FIFOSmokeTestParam> {};
 
 TEST_P(PushPullFIFOSmokeTest, SmokeTests) {
   const FIFOSmokeTestParam param = GetParam();
@@ -218,7 +218,7 @@ FIFOSmokeTestParam smoke_test_params[] = {
 
 INSTANTIATE_TEST_CASE_P(PushPullFIFOSmokeTest,
                         PushPullFIFOSmokeTest,
-                        ::testing::ValuesIn(smoke_test_params));
+                        testing::ValuesIn(smoke_test_params));
 
 }  // namespace
 

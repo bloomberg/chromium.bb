@@ -53,7 +53,7 @@ namespace blink {
 // These tests cover browser controls scrolling on main-thread.
 // The animation for completing a partial show/hide is done in compositor so
 // it is not covered here.
-class BrowserControlsTest : public ::testing::Test {
+class BrowserControlsTest : public testing::Test {
  public:
   BrowserControlsTest() : base_url_("http://www.test.com/") {
     RegisterMockedHttpURLLoad("large-div.html");

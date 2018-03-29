@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class UnsortedDocumentMarkerListEditorTest : public ::testing::Test {
+class UnsortedDocumentMarkerListEditorTest : public testing::Test {
  protected:
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
     return new SuggestionMarker(start_offset, end_offset,

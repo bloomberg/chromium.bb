@@ -15,10 +15,9 @@ namespace blink {
 
 using BlockPainterTest = PaintControllerPaintTest;
 
-INSTANTIATE_TEST_CASE_P(
-    All,
-    BlockPainterTest,
-    ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+INSTANTIATE_TEST_CASE_P(All,
+                        BlockPainterTest,
+                        testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
 
 TEST_P(BlockPainterTest, ScrollHitTestProperties) {
   SetBodyInnerHTML(R"HTML(

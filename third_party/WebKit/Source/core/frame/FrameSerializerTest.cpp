@@ -56,7 +56,7 @@
 
 namespace blink {
 
-class FrameSerializerTest : public ::testing::Test,
+class FrameSerializerTest : public testing::Test,
                             public FrameSerializer::Delegate {
  public:
   FrameSerializerTest()

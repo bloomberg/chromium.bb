@@ -11,7 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ElementsAre;
+using testing::ElementsAre;
 
 namespace blink {
 
@@ -131,7 +131,7 @@ TEST_F(TouchEventTest,
   EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
 }
 
-class TouchEventTestNoFrame : public ::testing::Test {};
+class TouchEventTestNoFrame : public testing::Test {};
 
 TEST_F(TouchEventTestNoFrame, PreventDefaultDoesntRequireFrame) {
   TouchEvent::Create()->preventDefault();

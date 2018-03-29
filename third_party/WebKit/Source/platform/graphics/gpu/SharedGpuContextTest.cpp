@@ -16,7 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using ::testing::Test;
+using testing::Test;
 
 namespace blink {
 
@@ -187,7 +187,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
           SharedGpuContext::ContextProviderWrapper());
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
   gpu::Mailbox mailbox;
@@ -195,15 +195,15 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
       .Times(1)
-      .WillOnce(::testing::Invoke(&mailboxGenerator,
-                                  &FakeMailboxGenerator::GenMailbox));
+      .WillOnce(testing::Invoke(&mailboxGenerator,
+                                &FakeMailboxGenerator::GenMailbox));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
       mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
       .Times(0);  // GenMailboxCHROMIUM must not be called!
@@ -213,7 +213,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
       mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
@@ -224,7 +224,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
           SharedGpuContext::ContextProviderWrapper());
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
   gpu::Mailbox mailbox;
@@ -232,20 +232,20 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
       .Times(1)
-      .WillOnce(::testing::Invoke(&mailboxGenerator,
-                                  &FakeMailboxGenerator::GenMailbox));
+      .WillOnce(testing::Invoke(&mailboxGenerator,
+                                &FakeMailboxGenerator::GenMailbox));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
       mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Destroy image and surface to return texture to recleable resource pool
   image = nullptr;
   resource_provider = nullptr;
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Re-creating surface should recycle the old GrTexture inside skia
   resource_provider = CanvasResourceProvider::Create(
@@ -254,7 +254,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   image = resource_provider->Snapshot();
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
       .Times(0);  // GenMailboxCHROMIUM must not be called!
@@ -264,7 +264,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
       mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 }  // unnamed namespace

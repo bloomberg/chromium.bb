@@ -10,7 +10,7 @@ namespace blink {
 
 namespace {
 
-class ApproximatedDeviceMemoryTest : public ::testing::Test {};
+class ApproximatedDeviceMemoryTest : public testing::Test {};
 
 TEST_F(ApproximatedDeviceMemoryTest, GetApproximatedDeviceMemory) {
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(128);  // 128MB

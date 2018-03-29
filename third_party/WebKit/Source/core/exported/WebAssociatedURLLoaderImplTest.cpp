@@ -58,7 +58,7 @@ using blink::test::RunPendingTasks;
 
 namespace blink {
 
-class WebAssociatedURLLoaderTest : public ::testing::Test,
+class WebAssociatedURLLoaderTest : public testing::Test,
                                    public WebAssociatedURLLoaderClient {
  public:
   WebAssociatedURLLoaderTest()

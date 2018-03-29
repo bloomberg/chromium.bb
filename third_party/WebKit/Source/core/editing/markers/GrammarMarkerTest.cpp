@@ -10,7 +10,7 @@ namespace blink {
 
 const char* const kDescription = "Test description";
 
-class GrammarMarkerTest : public ::testing::Test {};
+class GrammarMarkerTest : public testing::Test {};
 
 TEST_F(GrammarMarkerTest, MarkerType) {
   DocumentMarker* marker = new GrammarMarker(0, 1, kDescription);

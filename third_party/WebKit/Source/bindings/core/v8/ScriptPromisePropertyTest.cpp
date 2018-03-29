@@ -163,7 +163,7 @@ class ScriptPromisePropertyTestBase {
 // test on this class.
 class ScriptPromisePropertyGarbageCollectedTest
     : public ScriptPromisePropertyTestBase,
-      public ::testing::Test {
+      public testing::Test {
  public:
   typedef GarbageCollectedHolder::Property Property;
 
@@ -184,7 +184,7 @@ class ScriptPromisePropertyGarbageCollectedTest
 // target.
 class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
     : public ScriptPromisePropertyTestBase,
-      public ::testing::Test {
+      public testing::Test {
  public:
   template <typename T>
   void Test(const T& value,

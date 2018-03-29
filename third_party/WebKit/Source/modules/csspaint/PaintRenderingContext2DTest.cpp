@@ -13,7 +13,7 @@ static const int kWidth = 50;
 static const int kHeight = 75;
 static const float kZoom = 1.0;
 
-class PaintRenderingContext2DTest : public ::testing::Test {
+class PaintRenderingContext2DTest : public testing::Test {
  protected:
   void SetUp() override;
 

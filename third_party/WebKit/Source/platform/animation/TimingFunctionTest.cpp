@@ -50,7 +50,7 @@ namespace blink {
 
 namespace {
 
-class TimingFunctionTest : public ::testing::Test,
+class TimingFunctionTest : public testing::Test,
                            private ScopedFramesTimingFunctionForTest {
  public:
   TimingFunctionTest() : ScopedFramesTimingFunctionForTest(true) {}

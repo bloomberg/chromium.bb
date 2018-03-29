@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class SourceListDirectiveTest : public ::testing::Test {
+class SourceListDirectiveTest : public testing::Test {
  public:
   SourceListDirectiveTest() : csp(ContentSecurityPolicy::Create()) {}
 

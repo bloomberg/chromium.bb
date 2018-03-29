@@ -20,7 +20,7 @@ using Corner = ScrollAnchor::Corner;
 
 typedef bool TestParamRootLayerScrolling;
 class ScrollAnchorTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       private ScopedScrollAnchoringForTest,
       public RenderingTest {
@@ -87,7 +87,7 @@ class ScrollAnchorTest
   std::unique_ptr<ScopedScrollAnchoringForTest> scroll_anchoring_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, ScrollAnchorTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ScrollAnchorTest, testing::Bool());
 
 // TODO(ymalik): Currently, this should be the first test in the file to avoid
 // failure when running with other tests. Dig into this more and fix.

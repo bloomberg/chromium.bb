@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class TextBreakIteratorTest : public ::testing::Test {
+class TextBreakIteratorTest : public testing::Test {
  protected:
   void SetTestString(const char* test_string) {
     test_string_ = String::FromUTF8(test_string);
@@ -47,7 +47,7 @@ class TextBreakIteratorTest : public ::testing::Test {
         break_positions.push_back(i);
     }
     EXPECT_THAT(break_positions,
-                ::testing::ElementsAreArray(expected_break_positions))
+                testing::ElementsAreArray(expected_break_positions))
         << test_string_ << " " << break_iterator.BreakType() << " "
         << break_iterator.BreakSpace();
   }
@@ -62,7 +62,7 @@ class TextBreakIteratorTest : public ::testing::Test {
       break_positions.push_back(i);
     }
     EXPECT_THAT(break_positions,
-                ::testing::ElementsAreArray(expected_break_positions))
+                testing::ElementsAreArray(expected_break_positions))
         << test_string_ << " " << break_iterator.BreakType() << " "
         << break_iterator.BreakSpace();
   }
@@ -80,11 +80,11 @@ static const LineBreakType all_break_types[] = {
     LineBreakType::kBreakCharacter, LineBreakType::kKeepAll};
 
 class BreakTypeTest : public TextBreakIteratorTest,
-                      public ::testing::WithParamInterface<LineBreakType> {};
+                      public testing::WithParamInterface<LineBreakType> {};
 
 INSTANTIATE_TEST_CASE_P(TextBreakIteratorTest,
                         BreakTypeTest,
-                        ::testing::ValuesIn(all_break_types));
+                        testing::ValuesIn(all_break_types));
 
 TEST_P(BreakTypeTest, EmptyString) {
   LazyLineBreakIterator iterator(g_empty_string);

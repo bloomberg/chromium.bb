@@ -20,7 +20,7 @@ class WebLocalFrameImpl;
 class Document;
 class LocalDOMWindow;
 
-class SimTest : public ::testing::Test {
+class SimTest : public testing::Test {
  protected:
   SimTest();
   ~SimTest() override;

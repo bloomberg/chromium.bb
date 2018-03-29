@@ -14,11 +14,11 @@ namespace blink {
 
 namespace {
 using Result = BytesConsumer::Result;
-using ::testing::_;
-using ::testing::ByMove;
-using ::testing::DoAll;
-using ::testing::Return;
-using ::testing::SetArgPointee;
+using testing::_;
+using testing::ByMove;
+using testing::DoAll;
+using testing::Return;
+using testing::SetArgPointee;
 }  // namespace
 
 BytesConsumerTestUtil::MockBytesConsumer::MockBytesConsumer() {

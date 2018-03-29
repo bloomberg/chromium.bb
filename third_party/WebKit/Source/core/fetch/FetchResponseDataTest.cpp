@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class FetchResponseDataTest : public ::testing::Test {
+class FetchResponseDataTest : public testing::Test {
  public:
   FetchResponseData* CreateInternalResponse() {
     FetchResponseData* internal_response = FetchResponseData::Create();

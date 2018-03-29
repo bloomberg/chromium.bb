@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class FloatClipRectTest : public ::testing::Test {
+class FloatClipRectTest : public testing::Test {
  public:
 };
 

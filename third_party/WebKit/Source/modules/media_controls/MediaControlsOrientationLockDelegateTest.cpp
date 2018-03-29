@@ -34,9 +34,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::Return;
+using testing::_;
+using testing::AtLeast;
+using testing::Return;
 
 namespace blink {
 
@@ -191,7 +191,7 @@ class MediaControlsOrientationLockDelegateTest
   }
 
   void TearDown() override {
-    ::testing::Mock::VerifyAndClear(&ScreenOrientationClient());
+    testing::Mock::VerifyAndClear(&ScreenOrientationClient());
     ScreenOrientationClient().Close();
   }
 
@@ -369,7 +369,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
                 ScreenOrientationControllerImpl::ComputeOrientation(
                     screen_info.rect, screen_info.orientation_angle));
 
-    ::testing::Mock::VerifyAndClearExpectations(&ChromeClient());
+    testing::Mock::VerifyAndClearExpectations(&ChromeClient());
     EXPECT_CALL(ChromeClient(), GetScreenInfo())
         .Times(AtLeast(1))
         .WillRepeatedly(Return(screen_info));
@@ -623,8 +623,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Repeat test with natural_orientation_is_portrait_ = false then true.
   for (int n_o_i_p = 0; n_o_i_p <= 1; n_o_i_p++) {
     natural_orientation_is_portrait_ = static_cast<bool>(n_o_i_p);
-    SCOPED_TRACE(::testing::Message() << "natural_orientation_is_portrait_="
-                                      << natural_orientation_is_portrait_);
+    SCOPED_TRACE(testing::Message() << "natural_orientation_is_portrait_="
+                                    << natural_orientation_is_portrait_);
 
     DeviceOrientationType natural_orientation =
         natural_orientation_is_portrait_ ? DeviceOrientationType::kPortrait
@@ -639,7 +639,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
     // orientation, it only depends on whether the device is naturally portrait
     // or naturally landscape). Similarly for a naturally landscape device.
     for (int screen_angle = 0; screen_angle < 360; screen_angle += 90) {
-      SCOPED_TRACE(::testing::Message() << "screen_angle=" << screen_angle);
+      SCOPED_TRACE(testing::Message() << "screen_angle=" << screen_angle);
       WebScreenOrientationType screen_type = kWebScreenOrientationUndefined;
       switch (screen_angle) {
         case 0:

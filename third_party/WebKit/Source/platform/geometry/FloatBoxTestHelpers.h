@@ -33,14 +33,14 @@ bool ApproximatelyEqual(const float&, const float&);
 namespace FloatBoxTest {
 bool ApproximatelyEqual(const float&, const float&);
 bool ApproximatelyEqual(const FloatBox&, const FloatBox&);
-::testing::AssertionResult AssertAlmostEqual(const char*,
-                                             const char*,
-                                             const FloatBox&,
-                                             const FloatBox&);
-::testing::AssertionResult AssertContains(const char*,
-                                          const char*,
-                                          const FloatBox&,
-                                          const FloatBox&);
+testing::AssertionResult AssertAlmostEqual(const char*,
+                                           const char*,
+                                           const FloatBox&,
+                                           const FloatBox&);
+testing::AssertionResult AssertContains(const char*,
+                                        const char*,
+                                        const FloatBox&,
+                                        const FloatBox&);
 }  // namespace FloatBoxTest
 }  // namespace blink
 

@@ -16,7 +16,7 @@ namespace blink {
 class BackwardGraphemeBoundaryStateMachine;
 class ForwardGraphemeBoundaryStateMachine;
 
-class GraphemeStateMachineTestBase : public ::testing::Test {
+class GraphemeStateMachineTestBase : public testing::Test {
  protected:
   GraphemeStateMachineTestBase() = default;
   ~GraphemeStateMachineTestBase() override = default;

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class HistoryTest : public ::testing::Test {};
+class HistoryTest : public testing::Test {};
 
 TEST_F(HistoryTest, CanChangeToURL) {
   struct TestCase {

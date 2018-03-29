@@ -54,7 +54,7 @@ using blink::URLTestHelpers::ToKURL;
 namespace blink {
 namespace test {
 
-class MHTMLLoadingTest : public ::testing::Test {
+class MHTMLLoadingTest : public testing::Test {
  public:
   MHTMLLoadingTest() = default;
 

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class ImageDecodingStoreTest : public ::testing::Test,
+class ImageDecodingStoreTest : public testing::Test,
                                public MockImageDecoderClient {
  public:
   void SetUp() override {

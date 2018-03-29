@@ -121,7 +121,7 @@ class MockVideoFrameResourceProvider
 };
 }  // namespace
 
-class VideoFrameSubmitterTest : public ::testing::Test {
+class VideoFrameSubmitterTest : public testing::Test {
  public:
   VideoFrameSubmitterTest()
       : now_src_(new base::SimpleTestTickClock()),

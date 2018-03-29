@@ -38,7 +38,7 @@ class LayoutTextTest : public RenderingTest {
 const char kTacoText[] = "Los Compadres Taco Truck";
 
 // Helper class to run the same test code with and without LayoutNG
-class ParameterizedLayoutTextTest : public ::testing::WithParamInterface<bool>,
+class ParameterizedLayoutTextTest : public testing::WithParamInterface<bool>,
                                     private ScopedLayoutNGForTest,
                                     public LayoutTextTest {
  public:
@@ -48,7 +48,7 @@ class ParameterizedLayoutTextTest : public ::testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutTextTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutTextTest, testing::Bool());
 
 }  // namespace
 
@@ -175,14 +175,14 @@ std::ostream& operator<<(std::ostream& out, NGOffsetMappingTestData data) {
 class MapDOMOffsetToTextContentOffset
     : public LayoutTextTest,
       private ScopedLayoutNGForTest,
-      public ::testing::WithParamInterface<NGOffsetMappingTestData> {
+      public testing::WithParamInterface<NGOffsetMappingTestData> {
  public:
   MapDOMOffsetToTextContentOffset() : ScopedLayoutNGForTest(true) {}
 };
 
 INSTANTIATE_TEST_CASE_P(LayoutTextTest,
                         MapDOMOffsetToTextContentOffset,
-                        ::testing::ValuesIn(offset_mapping_test_data));
+                        testing::ValuesIn(offset_mapping_test_data));
 
 TEST_P(MapDOMOffsetToTextContentOffset, Basic) {
   const auto data = GetParam();
@@ -443,8 +443,8 @@ TEST_P(ParameterizedLayoutTextTest, AbsoluteRects) {
   LayoutText* layout_text = GetLayoutTextById("target");
   Vector<IntRect> rects;
   layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
-  EXPECT_THAT(rects, ::testing::ElementsAre(IntRect(130, 200, 30, 10),
-                                            IntRect(100, 210, 20, 10)));
+  EXPECT_THAT(rects, testing::ElementsAre(IntRect(130, 200, 30, 10),
+                                          IntRect(100, 210, 20, 10)));
 }
 
 TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
@@ -463,8 +463,8 @@ TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
   LayoutText* layout_text = GetLayoutTextById("target");
   Vector<IntRect> rects;
   layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
-  EXPECT_THAT(rects, ::testing::ElementsAre(IntRect(100, 230, 10, 30),
-                                            IntRect(110, 200, 10, 20)));
+  EXPECT_THAT(rects, testing::ElementsAre(IntRect(100, 230, 10, 30),
+                                          IntRect(110, 200, 10, 20)));
 }
 
 TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {

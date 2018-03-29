@@ -24,9 +24,8 @@ class HTMLDocumentParserSimTest : public SimTest {
   HistogramTester histogram_;
 };
 
-class HTMLDocumentParserLoadingTest
-    : public HTMLDocumentParserSimTest,
-      public ::testing::WithParamInterface<bool> {
+class HTMLDocumentParserLoadingTest : public HTMLDocumentParserSimTest,
+                                      public testing::WithParamInterface<bool> {
  protected:
   HTMLDocumentParserLoadingTest() {
     Document::SetThreadedParsingEnabledForTesting(GetParam());
@@ -35,10 +34,10 @@ class HTMLDocumentParserLoadingTest
 
 INSTANTIATE_TEST_CASE_P(Threaded,
                         HTMLDocumentParserLoadingTest,
-                        ::testing::Values(true));
+                        testing::Values(true));
 INSTANTIATE_TEST_CASE_P(NotThreaded,
                         HTMLDocumentParserLoadingTest,
-                        ::testing::Values(false));
+                        testing::Values(false));
 
 TEST_P(HTMLDocumentParserLoadingTest,
        ShouldNotPauseParsingForExternalStylesheetsInHead) {

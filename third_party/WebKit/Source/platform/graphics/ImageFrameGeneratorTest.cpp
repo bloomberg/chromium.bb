@@ -54,7 +54,7 @@ SkImageInfo ImageInfo() {
 
 }  // namespace
 
-class ImageFrameGeneratorTest : public ::testing::Test,
+class ImageFrameGeneratorTest : public testing::Test,
                                 public MockImageDecoderClient {
  public:
   void SetUp() override {

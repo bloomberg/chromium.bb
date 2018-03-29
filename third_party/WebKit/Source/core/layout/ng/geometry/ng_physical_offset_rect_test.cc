@@ -38,13 +38,13 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 class NGPhysicalOffsetRectUniteTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<PhysicalOffsetRectUniteTestData> {};
+    : public testing::Test,
+      public testing::WithParamInterface<PhysicalOffsetRectUniteTestData> {};
 
 INSTANTIATE_TEST_CASE_P(
     NGGeometryUnitsTest,
     NGPhysicalOffsetRectUniteTest,
-    ::testing::ValuesIn(physical_offset_rect_unite_test_data));
+    testing::ValuesIn(physical_offset_rect_unite_test_data));
 
 TEST_P(NGPhysicalOffsetRectUniteTest, Data) {
   const auto& data = GetParam();

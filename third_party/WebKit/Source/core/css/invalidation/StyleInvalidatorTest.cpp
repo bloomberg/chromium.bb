@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class StyleInvalidatorTest : public ::testing::Test {
+class StyleInvalidatorTest : public testing::Test {
  protected:
   void SetUp() override;
 

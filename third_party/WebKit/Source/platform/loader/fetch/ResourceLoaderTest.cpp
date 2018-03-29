@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class ResourceLoaderTest : public ::testing::Test {
+class ResourceLoaderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ResourceLoaderTest);
 
  public:
@@ -92,19 +92,20 @@ TEST_F(ResourceLoaderTest, DetermineCORSStatus) {
   ResourceLoadScheduler* scheduler = ResourceLoadScheduler::Create();
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(
-        ::testing::Message()
-        << "Origin: " << test.origin.GetString()
-        << ", target: " << test.target.GetString()
-        << ", CORS access-control-allow-origin header: "
-        << (test.allow_origin_url ? test.allow_origin_url->GetString() : "-")
-        << ", service worker: "
-        << (test.service_worker == kNoSW
-                ? "no"
-                : (test.service_worker == kSWClear ? "clear response"
-                                                   : "opaque response"))
-        << ", expected CORSStatus == "
-        << static_cast<unsigned>(test.expectation));
+    SCOPED_TRACE(testing::Message()
+                 << "Origin: " << test.origin.GetString()
+                 << ", target: " << test.target.GetString()
+                 << ", CORS access-control-allow-origin header: "
+                 << (test.allow_origin_url ? test.allow_origin_url->GetString()
+                                           : "-")
+                 << ", service worker: "
+                 << (test.service_worker == kNoSW
+                         ? "no"
+                         : (test.service_worker == kSWClear
+                                ? "clear response"
+                                : "opaque response"))
+                 << ", expected CORSStatus == "
+                 << static_cast<unsigned>(test.expectation));
 
     context_->SetSecurityOrigin(SecurityOrigin::Create(test.origin));
     ResourceFetcher* fetcher = ResourceFetcher::Create(context_);

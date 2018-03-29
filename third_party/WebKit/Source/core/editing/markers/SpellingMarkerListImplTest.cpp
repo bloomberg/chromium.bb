@@ -14,7 +14,7 @@ namespace blink {
 // This test class tests functionality implemented by SpellingMarkerListImpl and
 // also functionality implemented by its parent class SpellCheckMarkerListImpl.
 
-class SpellingMarkerListImplTest : public ::testing::Test {
+class SpellingMarkerListImplTest : public testing::Test {
  protected:
   SpellingMarkerListImplTest() : marker_list_(new SpellingMarkerListImpl()) {}
 

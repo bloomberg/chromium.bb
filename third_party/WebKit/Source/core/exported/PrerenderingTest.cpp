@@ -159,7 +159,7 @@ class TestPrerenderingSupport : public WebPrerenderingSupport {
   Vector<WebPrerender> abandoned_prerenders_;
 };
 
-class PrerenderingTest : public ::testing::Test {
+class PrerenderingTest : public testing::Test {
  public:
   ~PrerenderingTest() override {
     Platform::Current()

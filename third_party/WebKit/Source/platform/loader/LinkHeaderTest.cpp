@@ -153,10 +153,10 @@ struct SingleTestCase {
 };
 
 void PrintTo(const SingleTestCase& test, std::ostream* os) {
-  *os << ::testing::PrintToString(test.header_value);
+  *os << testing::PrintToString(test.header_value);
 }
 
-class SingleLinkHeaderTest : public ::testing::TestWithParam<SingleTestCase> {};
+class SingleLinkHeaderTest : public testing::TestWithParam<SingleTestCase> {};
 
 // Test the cases with a single header
 TEST_P(SingleLinkHeaderTest, Single) {
@@ -175,7 +175,7 @@ TEST_P(SingleLinkHeaderTest, Single) {
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest,
                         SingleLinkHeaderTest,
-                        ::testing::ValuesIn(g_single_test_cases));
+                        testing::ValuesIn(g_single_test_cases));
 
 struct DoubleTestCase {
   const char* header_value;
@@ -198,10 +198,10 @@ struct DoubleTestCase {
 };
 
 void PrintTo(const DoubleTestCase& test, std::ostream* os) {
-  *os << ::testing::PrintToString(test.header_value);
+  *os << testing::PrintToString(test.header_value);
 }
 
-class DoubleLinkHeaderTest : public ::testing::TestWithParam<DoubleTestCase> {};
+class DoubleLinkHeaderTest : public testing::TestWithParam<DoubleTestCase> {};
 
 TEST_P(DoubleLinkHeaderTest, Double) {
   const DoubleTestCase test_case = GetParam();
@@ -219,7 +219,7 @@ TEST_P(DoubleLinkHeaderTest, Double) {
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest,
                         DoubleLinkHeaderTest,
-                        ::testing::ValuesIn(g_double_test_cases));
+                        testing::ValuesIn(g_double_test_cases));
 
 struct CrossOriginTestCase {
   const char* header_value;
@@ -259,11 +259,11 @@ struct CrossOriginTestCase {
 };
 
 void PrintTo(const CrossOriginTestCase& test, std::ostream* os) {
-  *os << ::testing::PrintToString(test.header_value);
+  *os << testing::PrintToString(test.header_value);
 }
 
 class CrossOriginLinkHeaderTest
-    : public ::testing::TestWithParam<CrossOriginTestCase> {};
+    : public testing::TestWithParam<CrossOriginTestCase> {};
 
 TEST_P(CrossOriginLinkHeaderTest, CrossOrigin) {
   const CrossOriginTestCase test_case = GetParam();
@@ -281,7 +281,7 @@ TEST_P(CrossOriginLinkHeaderTest, CrossOrigin) {
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest,
                         CrossOriginLinkHeaderTest,
-                        ::testing::ValuesIn(g_cross_origin_test_cases));
+                        testing::ValuesIn(g_cross_origin_test_cases));
 
 }  // namespace
 }  // namespace blink

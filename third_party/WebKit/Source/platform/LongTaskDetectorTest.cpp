@@ -32,7 +32,7 @@ class TestLongTaskObserver :
 };  // Anonymous namespace
 
 }  // namespace
-class LongTaskDetectorTest : public ::testing::Test {
+class LongTaskDetectorTest : public testing::Test {
  public:
   // Public because it's executed on a task queue.
   void DummyTaskWithDuration(double duration_seconds) {

@@ -42,9 +42,9 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::Mock;
+using testing::_;
+using testing::InSequence;
+using testing::Mock;
 
 namespace blink {
 
@@ -152,7 +152,7 @@ class CanvasRenderingContext2DTest : public PageTestBase {
   };
 
   // TODO(Oilpan): avoid tedious part-object wrapper by supporting on-heap
-  // ::testing::Tests.
+  // testing::Tests.
   Persistent<WrapGradients> wrap_gradients_;
 
  protected:

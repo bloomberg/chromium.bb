@@ -20,14 +20,14 @@ namespace blink {
 namespace {
 
 typedef bool TestParamRootLayerScrolling;
-class ScrollIntoViewTest : public ::testing::WithParamInterface<bool>,
+class ScrollIntoViewTest : public testing::WithParamInterface<bool>,
                            private ScopedRootLayerScrollingForTest,
                            public SimTest {
  protected:
   ScrollIntoViewTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, ScrollIntoViewTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ScrollIntoViewTest, testing::Bool());
 
 TEST_P(ScrollIntoViewTest, InstantScroll) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());

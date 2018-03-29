@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class SuggestionMarkerListImplTest : public ::testing::Test {
+class SuggestionMarkerListImplTest : public testing::Test {
  protected:
   SuggestionMarkerListImplTest()
       : marker_list_(new SuggestionMarkerListImpl()) {}

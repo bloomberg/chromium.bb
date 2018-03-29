@@ -33,7 +33,7 @@ namespace blink {
 
 namespace {
 
-class ScriptStreamingTest : public ::testing::Test {
+class ScriptStreamingTest : public testing::Test {
  public:
   ScriptStreamingTest()
       : loading_task_runner_(scheduler::GetSingleThreadTaskRunnerForTesting()),
@@ -43,11 +43,10 @@ class ScriptStreamingTest : public ::testing::Test {
     // Basically we are not interested in ScriptElementBase* calls, just making
     // the method(s) to return default values.
     EXPECT_CALL(*element, IntegrityAttributeValue())
-        .WillRepeatedly(::testing::Return(String()));
+        .WillRepeatedly(testing::Return(String()));
     EXPECT_CALL(*element, GetDocument())
-        .WillRepeatedly(
-            ::testing::ReturnRef(dummy_page_holder_->GetDocument()));
-    EXPECT_CALL(*element, Loader()).WillRepeatedly(::testing::Return(nullptr));
+        .WillRepeatedly(testing::ReturnRef(dummy_page_holder_->GetDocument()));
+    EXPECT_CALL(*element, Loader()).WillRepeatedly(testing::Return(nullptr));
 
     KURL url("http://www.streaming-test.com/");
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(

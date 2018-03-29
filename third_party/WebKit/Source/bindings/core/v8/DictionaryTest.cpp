@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-class V8DictionaryTest : public ::testing::Test {
+class V8DictionaryTest : public testing::Test {
  protected:
   static Dictionary CreateDictionary(ScriptState* script_state, const char* s) {
     v8::Local<v8::String> source =

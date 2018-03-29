@@ -344,7 +344,7 @@ TEST(KURLTest, RelativeRemoveWhitespace) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message() << test.base << ", " << test.relative);
+    SCOPED_TRACE(testing::Message() << test.base << ", " << test.relative);
     const KURL base(test.base);
     const KURL expected("http://example.com/path");
     const KURL actual(base, test.relative);
@@ -432,7 +432,7 @@ TEST(KURLTest, AbsolutePotentiallyDanglingMarkup) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message() << test.input << ", " << test.expected);
+    SCOPED_TRACE(testing::Message() << test.input << ", " << test.expected);
     const KURL input(test.input);
     const KURL expected(test.expected);
     EXPECT_EQ(input, expected) << input.GetString() << expected.GetString();

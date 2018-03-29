@@ -56,7 +56,7 @@ class DecimalStepRange {
   }
 };
 
-class DecimalTest : public ::testing::Test {
+class DecimalTest : public testing::Test {
  protected:
   using Sign = Decimal::Sign;
   static const Sign kPositive = Decimal::kPositive;

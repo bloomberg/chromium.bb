@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class FontResourceTest : public ::testing::Test {
+class FontResourceTest : public testing::Test {
   void TearDown() override {
     Platform::Current()
         ->GetURLLoaderMockFactory()

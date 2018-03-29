@@ -8,7 +8,7 @@
 
 namespace blink {
 
-class PropertyTreeStateTest : public ::testing::Test {};
+class PropertyTreeStateTest : public testing::Test {};
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdNoElementIdOnAnyNode) {
   PropertyTreeState state(TransformPaintPropertyNode::Root(),

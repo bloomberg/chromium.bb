@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-class RotationViewportAnchorTest : public ::testing::WithParamInterface<bool>,
+class RotationViewportAnchorTest : public testing::WithParamInterface<bool>,
                                    private ScopedRootLayerScrollingForTest,
                                    public SimTest {
  public:
@@ -28,7 +28,7 @@ class RotationViewportAnchorTest : public ::testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, RotationViewportAnchorTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, RotationViewportAnchorTest, testing::Bool());
 
 TEST_P(RotationViewportAnchorTest, SimpleAbsolutePosition) {
   WebView().Resize(WebSize(400, 600));

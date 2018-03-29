@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class GeometryMapperTest : public ::testing::Test,
+class GeometryMapperTest : public testing::Test,
                            public PaintTestConfigurations {
  public:
   const FloatClipRect* GetCachedClip(
@@ -53,7 +53,7 @@ class GeometryMapperTest : public ::testing::Test,
 
 INSTANTIATE_TEST_CASE_P(All,
                         GeometryMapperTest,
-                        ::testing::ValuesIn(kSlimmingPaintVersions));
+                        testing::ValuesIn(kSlimmingPaintVersions));
 
 #define EXPECT_FLOAT_RECT_NEAR(expected, actual)                            \
   do {                                                                      \

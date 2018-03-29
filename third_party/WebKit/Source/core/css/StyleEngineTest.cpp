@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class StyleEngineTest : public ::testing::Test {
+class StyleEngineTest : public testing::Test {
  protected:
   void SetUp() override;
 

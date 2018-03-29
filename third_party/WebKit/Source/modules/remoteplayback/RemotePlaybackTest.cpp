@@ -26,9 +26,8 @@ namespace blink {
 
 class MockFunction : public ScriptFunction {
  public:
-  static ::testing::StrictMock<MockFunction>* Create(
-      ScriptState* script_state) {
-    return new ::testing::StrictMock<MockFunction>(script_state);
+  static testing::StrictMock<MockFunction>* Create(ScriptState* script_state) {
+    return new testing::StrictMock<MockFunction>(script_state);
   }
 
   v8::Local<v8::Function> Bind() { return BindToV8Function(); }
@@ -63,7 +62,7 @@ class MockPresentationController final : public PresentationController {
                void(PresentationAvailabilityObserver*));
 };
 
-class RemotePlaybackTest : public ::testing::Test,
+class RemotePlaybackTest : public testing::Test,
                            private ScopedRemotePlaybackBackendForTest {
  public:
   RemotePlaybackTest() : ScopedRemotePlaybackBackendForTest(true) {}
@@ -99,8 +98,8 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   auto resolve = MockFunction::Create(scope.GetScriptState());
   auto reject = MockFunction::Create(scope.GetScriptState());
 
-  EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
-  EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
+  EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
+  EXPECT_CALL(*reject, Call(testing::_)).Times(1);
 
   std::unique_ptr<UserGestureIndicator> indicator = Frame::NotifyUserActivation(
       &page_holder->GetFrame(), UserGestureToken::kNewGesture);
@@ -113,8 +112,8 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(resolve);
-  ::testing::Mock::VerifyAndClear(reject);
+  testing::Mock::VerifyAndClear(resolve);
+  testing::Mock::VerifyAndClear(reject);
 }
 
 TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
@@ -130,8 +129,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
   auto resolve = MockFunction::Create(scope.GetScriptState());
   auto reject = MockFunction::Create(scope.GetScriptState());
 
-  EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
-  EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
+  EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
+  EXPECT_CALL(*reject, Call(testing::_)).Times(1);
 
   SetState(remote_playback, WebRemotePlaybackState::kConnected);
 
@@ -146,8 +145,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(resolve);
-  ::testing::Mock::VerifyAndClear(reject);
+  testing::Mock::VerifyAndClear(resolve);
+  testing::Mock::VerifyAndClear(reject);
 }
 
 TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
@@ -163,8 +162,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
   auto resolve = MockFunction::Create(scope.GetScriptState());
   auto reject = MockFunction::Create(scope.GetScriptState());
 
-  EXPECT_CALL(*resolve, Call(::testing::_)).Times(1);
-  EXPECT_CALL(*reject, Call(::testing::_)).Times(0);
+  EXPECT_CALL(*resolve, Call(testing::_)).Times(1);
+  EXPECT_CALL(*reject, Call(testing::_)).Times(0);
 
   SetState(remote_playback, WebRemotePlaybackState::kConnected);
 
@@ -180,8 +179,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(resolve);
-  ::testing::Mock::VerifyAndClear(reject);
+  testing::Mock::VerifyAndClear(resolve);
+  testing::Mock::VerifyAndClear(reject);
 }
 
 TEST_F(RemotePlaybackTest, StateChangeEvents) {
@@ -195,11 +194,11 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
       HTMLMediaElementRemotePlayback::remote(*element);
 
   auto connecting_handler =
-      new ::testing::StrictMock<MockEventListenerForRemotePlayback>();
+      new testing::StrictMock<MockEventListenerForRemotePlayback>();
   auto connect_handler =
-      new ::testing::StrictMock<MockEventListenerForRemotePlayback>();
+      new testing::StrictMock<MockEventListenerForRemotePlayback>();
   auto disconnect_handler =
-      new ::testing::StrictMock<MockEventListenerForRemotePlayback>();
+      new testing::StrictMock<MockEventListenerForRemotePlayback>();
 
   remote_playback->addEventListener(EventTypeNames::connecting,
                                     connecting_handler);
@@ -207,11 +206,10 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   remote_playback->addEventListener(EventTypeNames::disconnect,
                                     disconnect_handler);
 
-  EXPECT_CALL(*connecting_handler, handleEvent(::testing::_, ::testing::_))
+  EXPECT_CALL(*connecting_handler, handleEvent(testing::_, testing::_))
       .Times(1);
-  EXPECT_CALL(*connect_handler, handleEvent(::testing::_, ::testing::_))
-      .Times(1);
-  EXPECT_CALL(*disconnect_handler, handleEvent(::testing::_, ::testing::_))
+  EXPECT_CALL(*connect_handler, handleEvent(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*disconnect_handler, handleEvent(testing::_, testing::_))
       .Times(1);
 
   SetState(remote_playback, WebRemotePlaybackState::kConnecting);
@@ -223,9 +221,9 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(connecting_handler);
-  ::testing::Mock::VerifyAndClear(connect_handler);
-  ::testing::Mock::VerifyAndClear(disconnect_handler);
+  testing::Mock::VerifyAndClear(connecting_handler);
+  testing::Mock::VerifyAndClear(connect_handler);
+  testing::Mock::VerifyAndClear(disconnect_handler);
 }
 
 TEST_F(RemotePlaybackTest,
@@ -242,8 +240,8 @@ TEST_F(RemotePlaybackTest,
   MockFunction* resolve = MockFunction::Create(scope.GetScriptState());
   MockFunction* reject = MockFunction::Create(scope.GetScriptState());
 
-  EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
-  EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
+  EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
+  EXPECT_CALL(*reject, Call(testing::_)).Times(1);
 
   std::unique_ptr<UserGestureIndicator> indicator = Frame::NotifyUserActivation(
       &page_holder->GetFrame(), UserGestureToken::kNewGesture);
@@ -257,8 +255,8 @@ TEST_F(RemotePlaybackTest,
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(resolve);
-  ::testing::Mock::VerifyAndClear(reject);
+  testing::Mock::VerifyAndClear(resolve);
+  testing::Mock::VerifyAndClear(reject);
 }
 
 TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
@@ -278,13 +276,13 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.
-  EXPECT_CALL(*callback_function, Call(::testing::_)).Times(0);
+  EXPECT_CALL(*callback_function, Call(testing::_)).Times(0);
 
   MockFunction* resolve = MockFunction::Create(scope.GetScriptState());
   MockFunction* reject = MockFunction::Create(scope.GetScriptState());
 
-  EXPECT_CALL(*resolve, Call(::testing::_)).Times(1);
-  EXPECT_CALL(*reject, Call(::testing::_)).Times(0);
+  EXPECT_CALL(*resolve, Call(testing::_)).Times(1);
+  EXPECT_CALL(*reject, Call(testing::_)).Times(0);
 
   remote_playback
       ->watchAvailability(scope.GetScriptState(), availability_callback)
@@ -298,9 +296,9 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(resolve);
-  ::testing::Mock::VerifyAndClear(reject);
-  ::testing::Mock::VerifyAndClear(callback_function);
+  testing::Mock::VerifyAndClear(resolve);
+  testing::Mock::VerifyAndClear(reject);
+  testing::Mock::VerifyAndClear(callback_function);
 }
 
 TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
@@ -317,8 +315,8 @@ TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
   auto resolve = MockFunction::Create(scope.GetScriptState());
   auto reject = MockFunction::Create(scope.GetScriptState());
 
-  EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
-  EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
+  EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
+  EXPECT_CALL(*reject, Call(testing::_)).Times(1);
 
   std::unique_ptr<UserGestureIndicator> indicator = Frame::NotifyUserActivation(
       &page_holder->GetFrame(), UserGestureToken::kNewGesture);
@@ -330,8 +328,8 @@ TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(resolve);
-  ::testing::Mock::VerifyAndClear(reject);
+  testing::Mock::VerifyAndClear(resolve);
+  testing::Mock::VerifyAndClear(reject);
 }
 
 TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
@@ -352,13 +350,13 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.
-  EXPECT_CALL(*callback_function, Call(::testing::_)).Times(0);
+  EXPECT_CALL(*callback_function, Call(testing::_)).Times(0);
 
   MockFunction* resolve = MockFunction::Create(scope.GetScriptState());
   MockFunction* reject = MockFunction::Create(scope.GetScriptState());
 
-  EXPECT_CALL(*resolve, Call(::testing::_)).Times(1);
-  EXPECT_CALL(*reject, Call(::testing::_)).Times(0);
+  EXPECT_CALL(*resolve, Call(testing::_)).Times(1);
+  EXPECT_CALL(*reject, Call(testing::_)).Times(0);
 
   remote_playback
       ->watchAvailability(scope.GetScriptState(), availability_callback)
@@ -369,9 +367,9 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(resolve);
-  ::testing::Mock::VerifyAndClear(reject);
-  ::testing::Mock::VerifyAndClear(callback_function);
+  testing::Mock::VerifyAndClear(resolve);
+  testing::Mock::VerifyAndClear(reject);
+  testing::Mock::VerifyAndClear(callback_function);
 }
 
 TEST_F(RemotePlaybackTest, IsListening) {
@@ -392,10 +390,10 @@ TEST_F(RemotePlaybackTest, IsListening) {
       frame, static_cast<PresentationController*>(mock_controller));
 
   EXPECT_CALL(*mock_controller,
-              AddAvailabilityObserver(::testing::Eq(remote_playback)))
+              AddAvailabilityObserver(testing::Eq(remote_playback)))
       .Times(2);
   EXPECT_CALL(*mock_controller,
-              RemoveAvailabilityObserver(::testing::Eq(remote_playback)))
+              RemoveAvailabilityObserver(testing::Eq(remote_playback)))
       .Times(2);
 
   MockFunction* callback_function =
@@ -405,7 +403,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.
-  EXPECT_CALL(*callback_function, Call(::testing::_)).Times(2);
+  EXPECT_CALL(*callback_function, Call(testing::_)).Times(2);
 
   remote_playback->watchAvailability(scope.GetScriptState(),
                                      availability_callback);
@@ -441,8 +439,8 @@ TEST_F(RemotePlaybackTest, IsListening) {
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
-  ::testing::Mock::VerifyAndClear(callback_function);
-  ::testing::Mock::VerifyAndClear(mock_controller);
+  testing::Mock::VerifyAndClear(callback_function);
+  testing::Mock::VerifyAndClear(mock_controller);
 }
 
 }  // namespace blink

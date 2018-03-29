@@ -82,7 +82,7 @@ struct ExpectedElement {
 
 }  // namespace
 
-class BlobDataHandleTest : public ::testing::Test {
+class BlobDataHandleTest : public testing::Test {
  public:
   BlobDataHandleTest() : blob_registry_binding_(&mock_blob_registry_) {
     blob_registry_binding_.Bind(MakeRequest(&blob_registry_ptr_));

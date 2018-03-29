@@ -507,7 +507,7 @@ class MockFinishObserver : public GarbageCollectedFinalized<MockFinishObserver>,
   static MockFinishObserver* Create() {
     return
 
-        new ::testing::StrictMock<MockFinishObserver>;
+        new testing::StrictMock<MockFinishObserver>;
   }
   MOCK_METHOD0(NotifyFinished, void());
   String DebugName() const override { return "MockFinishObserver"; }
@@ -620,7 +620,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
 }
 
 class ImageResourceReloadTest
-    : public ::testing::TestWithParam<bool>,
+    : public testing::TestWithParam<bool>,
       private ScopedClientPlaceholdersForServerLoFiForTest {
  public:
   ImageResourceReloadTest()
@@ -952,7 +952,7 @@ TEST_P(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         ImageResourceReloadTest,
-                        ::testing::Bool());
+                        testing::Bool());
 
 TEST(ImageResourceTest, SVGImage) {
   KURL url("http://127.0.0.1:8000/foo");
@@ -1932,7 +1932,7 @@ TEST(ImageResourceTest, DeferredInvalidation) {
 
 }  // namespace
 
-class ImageResourceCounterTest : public ::testing::Test {
+class ImageResourceCounterTest : public testing::Test {
  public:
   ImageResourceCounterTest() = default;
   ~ImageResourceCounterTest() = default;

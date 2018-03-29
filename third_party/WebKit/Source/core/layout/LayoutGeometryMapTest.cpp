@@ -50,8 +50,8 @@ namespace blink {
 
 typedef bool TestParamRootLayerScrolling;
 class LayoutGeometryMapTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public testing::Test,
+      public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest {
  public:
   LayoutGeometryMapTest()
@@ -171,7 +171,7 @@ class LayoutGeometryMapTest
   const std::string base_url_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, LayoutGeometryMapTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, LayoutGeometryMapTest, testing::Bool());
 
 TEST_P(LayoutGeometryMapTest, SimpleGeometryMapTest) {
   RegisterMockedHttpURLLoad("rgm_test.html");

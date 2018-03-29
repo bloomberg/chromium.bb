@@ -48,7 +48,7 @@ double FakeTimer::g_mock_time = 1000.;
 
 }  // namespace
 
-class WindowPerformanceTest : public ::testing::Test {
+class WindowPerformanceTest : public testing::Test {
  protected:
   void SetUp() override {
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600));

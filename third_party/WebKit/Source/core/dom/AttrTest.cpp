@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class AttrTest : public ::testing::Test {
+class AttrTest : public testing::Test {
  protected:
   void SetUp() override;
 

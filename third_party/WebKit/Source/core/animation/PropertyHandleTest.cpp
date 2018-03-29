@@ -12,7 +12,7 @@ namespace blink {
 using SVGNames::amplitudeAttr;
 using SVGNames::exponentAttr;
 
-class PropertyHandleTest : public ::testing::Test {};
+class PropertyHandleTest : public testing::Test {};
 
 TEST_F(PropertyHandleTest, Equality) {
   AtomicString name_a = "--a";

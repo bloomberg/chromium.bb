@@ -30,7 +30,7 @@ class NGTextFragmentPainterTest : public PaintControllerPaintTest,
 
 INSTANTIATE_TEST_CASE_P(All,
                         NGTextFragmentPainterTest,
-                        ::testing::Values(0, kRootLayerScrolling));
+                        testing::Values(0, kRootLayerScrolling));
 
 TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   SetBodyInnerHTML(R"HTML(

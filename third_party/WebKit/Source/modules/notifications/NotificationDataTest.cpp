@@ -63,7 +63,7 @@ class CompleteUrlExecutionContext final : public NullExecutionContext {
   KURL base_;
 };
 
-class NotificationDataTest : public ::testing::Test {
+class NotificationDataTest : public testing::Test {
  public:
   void SetUp() override {
     execution_context_ = new CompleteUrlExecutionContext(kNotificationBaseUrl);

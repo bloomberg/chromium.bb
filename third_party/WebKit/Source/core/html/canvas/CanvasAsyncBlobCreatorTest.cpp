@@ -175,7 +175,7 @@ TEST_F(CanvasAsyncBlobCreatorTest,
   AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
   test::EnterRunLoop();
 
-  ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
+  testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
             AsyncBlobCreator()->GetIdleTaskStatus());
 }
@@ -193,7 +193,7 @@ TEST_F(CanvasAsyncBlobCreatorTest,
   AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
   test::EnterRunLoop();
 
-  ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
+  testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
             AsyncBlobCreator()->GetIdleTaskStatus());
 }

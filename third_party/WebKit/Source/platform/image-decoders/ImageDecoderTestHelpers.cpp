@@ -156,7 +156,7 @@ static void TestRandomFrameDecode(DecoderCreator create_decoder,
   decoder->SetData(full_data, true);
   for (size_t i = 0; i < skipping_step; ++i) {
     for (size_t j = i; j < frame_count; j += skipping_step) {
-      SCOPED_TRACE(::testing::Message() << "Random i:" << i << " j:" << j);
+      SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
       ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(j);
       EXPECT_EQ(baseline_hashes[j], HashBitmap(frame->Bitmap()));
     }
@@ -166,7 +166,7 @@ static void TestRandomFrameDecode(DecoderCreator create_decoder,
   decoder = create_decoder();
   decoder->SetData(full_data, true);
   for (size_t i = frame_count; i; --i) {
-    SCOPED_TRACE(::testing::Message() << "Reverse i:" << i);
+    SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
     ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i - 1);
     EXPECT_EQ(baseline_hashes[i - 1], HashBitmap(frame->Bitmap()));
   }
@@ -187,7 +187,7 @@ static void TestRandomDecodeAfterClearFrameBufferCache(
     decoder->ClearCacheExceptFrame(clear_except_frame);
     for (size_t i = 0; i < skipping_step; ++i) {
       for (size_t j = 0; j < frame_count; j += skipping_step) {
-        SCOPED_TRACE(::testing::Message() << "Random i:" << i << " j:" << j);
+        SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
         ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(j);
         EXPECT_EQ(baseline_hashes[j], HashBitmap(frame->Bitmap()));
       }

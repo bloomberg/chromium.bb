@@ -80,7 +80,7 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
-class CreateWindowTest : public ::testing::Test {
+class CreateWindowTest : public testing::Test {
  protected:
   void SetUp() override {
     web_view_ = helper_.Initialize(nullptr, &web_view_client_);
@@ -164,7 +164,7 @@ class FakeDateTimeChooserClient
 // TODO(crbug.com/779126): A number of popups are not supported in immersive
 // mode. The PagePopupSuppressionTests ensure that these unsupported popups
 // do not appear in immersive mode.
-class PagePopupSuppressionTest : public ::testing::Test {
+class PagePopupSuppressionTest : public testing::Test {
  public:
   PagePopupSuppressionTest() = default;
 

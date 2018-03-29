@@ -55,7 +55,7 @@ constexpr char kOneDayAfterOriginalRequest[] = "Fri, 26 May 1977 18:30:00 GMT";
 
 }  // namespace
 
-class MemoryCacheCorrectnessTest : public ::testing::Test {
+class MemoryCacheCorrectnessTest : public testing::Test {
  protected:
   MockResource* ResourceFromResourceResponse(ResourceResponse response) {
     if (response.Url().IsNull())
@@ -101,7 +101,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
   void AdvanceClock(double seconds) { platform_->AdvanceClockSeconds(seconds); }
 
  private:
-  // Overrides ::testing::Test.
+  // Overrides testing::Test.
   void SetUp() override {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());

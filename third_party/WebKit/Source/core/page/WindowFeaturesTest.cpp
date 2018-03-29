@@ -10,7 +10,7 @@
 
 namespace blink {
 
-using WindowFeaturesTest = ::testing::Test;
+using WindowFeaturesTest = testing::Test;
 
 TEST_F(WindowFeaturesTest, NoOpener) {
   static const struct {
