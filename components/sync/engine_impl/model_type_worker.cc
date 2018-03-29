@@ -392,26 +392,19 @@ void ModelTypeWorker::DecryptStoredEntities() {
     WorkerEntityTracker* entity = kv.second.get();
     if (entity->HasEncryptedUpdate()) {
       const UpdateResponseData& encrypted_update = entity->GetEncryptedUpdate();
-      const EntityData& data = encrypted_update.entity.value();
-      DCHECK(data.specifics.has_encrypted());
+      EntityDataPtr data = encrypted_update.entity;
+      DCHECK(data->specifics.has_encrypted());
 
-      if (cryptographer_->CanDecrypt(data.specifics.encrypted())) {
-        EntityData decrypted_data;
-        if (DecryptSpecifics(*cryptographer_, data.specifics,
-                             &decrypted_data.specifics)) {
-          // Copy other fields one by one since EntityData doesn't allow
-          // copying.
-          decrypted_data.id = data.id;
-          decrypted_data.client_tag_hash = data.client_tag_hash;
-          decrypted_data.non_unique_name = data.non_unique_name;
-          decrypted_data.creation_time = data.creation_time;
-          decrypted_data.modification_time = data.modification_time;
-
+      if (cryptographer_->CanDecrypt(data->specifics.encrypted())) {
+        sync_pb::EntitySpecifics specifics;
+        if (DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
           UpdateResponseData decrypted_update;
-          decrypted_update.entity = decrypted_data.PassToPtr();
           decrypted_update.response_version = encrypted_update.response_version;
+          // Copy the encryption_key_name from data->specifics before it gets
+          // overriden in data->UpdateSpecifics().
           decrypted_update.encryption_key_name =
-              data.specifics.encrypted().key_name();
+              data->specifics.encrypted().key_name();
+          decrypted_update.entity = data->UpdateSpecifics(specifics);
           pending_updates_.push_back(decrypted_update);
 
           entity->ClearEncryptedUpdate();
