@@ -236,9 +236,11 @@ TEST_F(NGInlineItemsBuilderTest, CollapseTrailingNewlines) {
   EXPECT_EQ("{4, 5}", collapsed_);
 }
 
-TEST_F(NGInlineItemsBuilderTest, CollapseBeforeNewlineAcrossElements) {
+TEST_F(NGInlineItemsBuilderTest, CollapseNewlineAcrossElements) {
   EXPECT_EQ("text text", TestAppend("text ", "\ntext"));
   EXPECT_EQ("{5}", collapsed_);
+  EXPECT_EQ("text text", TestAppend("text ", "\n text"));
+  EXPECT_EQ("{5, 6}", collapsed_);
   EXPECT_EQ("text text", TestAppend("text", " ", "\ntext"));
   EXPECT_EQ("{5}", collapsed_);
 }
@@ -290,6 +292,11 @@ TEST_F(NGInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
   EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\u200B\n", u" text"))
       << "Collapsible space after newline is removed even when the "
          "newline was removed.";
+  EXPECT_EQ("{5, 6}", collapsed_);
+
+  EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\u200B ", u"\ntext"))
+      << "A white space sequence containing a segment break before or after "
+         "a zero width space is collapsed to a zero width space.";
   EXPECT_EQ("{5, 6}", collapsed_);
 }
 

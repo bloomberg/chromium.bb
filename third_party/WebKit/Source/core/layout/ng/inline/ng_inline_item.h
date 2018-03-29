@@ -49,6 +49,17 @@ class CORE_EXPORT NGInlineItem {
     kPostContext = 2
   };
 
+  enum NGCollapseType {
+    // No collapsible spaces.
+    kNotCollapsible,
+    // A collapsible space run that does not contain segment breaks.
+    kCollapsibleSpace,
+    // A collapsible space run that contains segment breaks.
+    kCollapsibleNewline,
+    // This item is opaque to whitespace collapsing.
+    kOpaqueToCollapsing
+  };
+
   // The constructor and destructor can't be implicit or inlined, because they
   // require full definition of ComputedStyle.
   NGInlineItem(NGInlineItemType type,
@@ -101,6 +112,12 @@ class CORE_EXPORT NGInlineItem {
     return static_cast<NGStyleVariant>(style_variant_);
   }
 
+  // Get or set the whitespace collapse type at the end of this item.
+  NGCollapseType EndCollapseType() const {
+    return static_cast<NGCollapseType>(end_collapse_type_);
+  }
+  void SetEndCollapseType(NGCollapseType type) { end_collapse_type_ = type; }
+
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
                                unsigned index,
@@ -128,6 +145,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned is_empty_item_ : 1;
   unsigned should_create_box_fragment_ : 1;
   unsigned style_variant_ : 2;
+  unsigned end_collapse_type_ : 2;  // NGCollapseType
   friend class NGInlineNode;
 };
 

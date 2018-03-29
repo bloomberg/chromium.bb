@@ -118,11 +118,6 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   };
   Vector<BidiContext> bidi_context_;
 
-  enum class CollapsibleSpace { kNone, kSpace, kNewline };
-
-  CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::kSpace;
-  bool auto_wrap_ = true;
-  bool last_auto_wrap_ = false;
   bool has_bidi_controls_ = false;
   bool is_empty_inline_ = true;
 
@@ -137,9 +132,7 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
               const ComputedStyle*,
               LayoutObject*);
 
-  void AppendCollapseWhitespace(const String&,
-                                unsigned start,
-                                unsigned end,
+  void AppendCollapseWhitespace(const StringView,
                                 const ComputedStyle*,
                                 LayoutText*);
   void AppendPreserveWhitespace(const String&,
@@ -151,10 +144,7 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   void AppendForcedBreak(const ComputedStyle*, LayoutObject*);
 
   void RemoveTrailingCollapsibleSpaceIfExists();
-  void RemoveTrailingCollapsibleSpace(unsigned);
-  void RemoveTrailingCollapsibleNewlineIfNeeded(const String&,
-                                                unsigned,
-                                                const ComputedStyle*);
+  void RemoveTrailingCollapsibleSpace(NGInlineItem*);
 
   void Exit(LayoutObject*);
 };
