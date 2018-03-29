@@ -31,4 +31,7 @@ struct ResourceLoadInfo {
 
   // True if the response was fetched from the network cache.
   bool was_cached;
+
+  // True if the request accessed the network in the process of retrieving data.
+  bool network_accessed;
 };

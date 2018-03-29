@@ -69,6 +69,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // has been read to the end.
   int64_t encoded_body_length;
 
+  // True if the request accessed the network in the process of retrieving data.
+  bool network_accessed;
+
   // The appcache this response was loaded from, or kAppCacheNoCacheId.
   // TODO(rdsmith): Remove conceptual dependence on appcache.
   int64_t appcache_id;

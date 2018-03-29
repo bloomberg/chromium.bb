@@ -645,6 +645,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
       "text/html", "127.0.0.1",
       /*was_cached=*/false));
+  EXPECT_TRUE(observer.resource_load_infos()[1]->network_accessed);
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   observer.Reset();
 
@@ -675,6 +676,27 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       "text/html", "127.0.0.1",
       /*was_cached=*/true));
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
+  EXPECT_FALSE(observer.resource_load_infos()[1]->network_accessed);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ResourceLoadCompleteFromLocalResource) {
+  ResourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(),
+                GURL(embedded_test_server()->GetURL("/page_with_image.html")));
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  // TODO(crbug.com/826082): network_accessed should be true on the frame.
+  EXPECT_FALSE(observer.resource_load_infos()[0]->network_accessed);
+  EXPECT_TRUE(observer.resource_load_infos()[1]->network_accessed);
+  observer.Reset();
+
+  NavigateToURL(shell(), GURL("chrome://gpu"));
+  ASSERT_LE(1U, observer.resource_load_infos().size());
+  for (const mojom::ResourceLoadInfoPtr& resource_load_info :
+       observer.resource_load_infos()) {
+    EXPECT_FALSE(resource_load_info->network_accessed);
+  }
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
