@@ -9,7 +9,7 @@
 #include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
 #include "platform/scheduler/main_thread/frame_scheduler_impl.h"
-#include "platform/scheduler/renderer/page_scheduler_impl.h"
+#include "platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -10,7 +10,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Emulation.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "platform/scheduler/renderer/page_scheduler.h"
+#include "platform/scheduler/public/page_scheduler.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
 
