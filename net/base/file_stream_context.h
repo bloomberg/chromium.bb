@@ -124,27 +124,6 @@ class FileStream::Context {
     DISALLOW_COPY_AND_ASSIGN(OpenResult);
   };
 
-  // TODO(xunjieli): Remove after crbug.com/732321 is fixed.
-  enum LastOperation {
-    // FileStream has a pending Open().
-    OPEN,
-    // FileStream has a pending Write().
-    WRITE,
-    // FileStream has a pending Read().
-    READ,
-    // FileStream has a pending Seek().
-    SEEK,
-    // FileStream has a pending Flush().
-    FLUSH,
-    // FileStream has a pending Close().
-    CLOSE,
-    // FileStream doesn't have any pending operation.
-    NONE
-  };
-
-  // TODO(xunjieli): Remove after crbug.com/732321 is fixed.
-  void CheckNoAsyncInProgress() const;
-
   ////////////////////////////////////////////////////////////////////////////
   // Platform-independent methods implemented in file_stream_context.cc.
   ////////////////////////////////////////////////////////////////////////////
@@ -238,9 +217,6 @@ class FileStream::Context {
 
   base::File file_;
   bool async_in_progress_;
-
-  // TODO(xunjieli): Remove after crbug.com/732321 is fixed.
-  LastOperation last_operation_;
 
   bool orphaned_;
   scoped_refptr<base::TaskRunner> task_runner_;

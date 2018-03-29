@@ -38,7 +38,6 @@ void IncrementOffset(OVERLAPPED* overlapped, DWORD count) {
 
 FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
     : async_in_progress_(false),
-      last_operation_(NONE),
       orphaned_(false),
       task_runner_(task_runner),
       async_read_initiated_(false),
@@ -50,7 +49,6 @@ FileStream::Context::Context(base::File file,
                              const scoped_refptr<base::TaskRunner>& task_runner)
     : file_(std::move(file)),
       async_in_progress_(false),
-      last_operation_(NONE),
       orphaned_(false),
       task_runner_(task_runner),
       async_read_initiated_(false),
@@ -69,13 +67,12 @@ FileStream::Context::~Context() {
 int FileStream::Context::Read(IOBuffer* buf,
                               int buf_len,
                               CompletionOnceCallback callback) {
-  CheckNoAsyncInProgress();
+  DCHECK(!async_in_progress_);
 
   DCHECK(!async_read_initiated_);
   DCHECK(!async_read_completed_);
   DCHECK(!io_complete_for_read_received_);
 
-  last_operation_ = READ;
   IOCompletionIsPending(std::move(callback), buf);
 
   async_read_initiated_ = true;
@@ -92,9 +89,8 @@ int FileStream::Context::Read(IOBuffer* buf,
 int FileStream::Context::Write(IOBuffer* buf,
                                int buf_len,
                                CompletionOnceCallback callback) {
-  CheckNoAsyncInProgress();
+  DCHECK(!async_in_progress_);
 
-  last_operation_ = WRITE;
   result_ = 0;
 
   DWORD bytes_written = 0;
@@ -142,10 +138,8 @@ void FileStream::Context::OnIOCompleted(
   DCHECK(!callback_.is_null());
   DCHECK(async_in_progress_);
 
-  if (!async_read_initiated_) {
-    last_operation_ = NONE;
+  if (!async_read_initiated_)
     async_in_progress_ = false;
-  }
 
   if (orphaned_) {
     io_complete_for_read_received_ = true;
@@ -185,7 +179,6 @@ void FileStream::Context::InvokeUserCallback() {
     async_read_initiated_ = false;
     io_complete_for_read_received_ = false;
     async_read_completed_ = false;
-    last_operation_ = NONE;
     async_in_progress_ = false;
   }
   scoped_refptr<IOBuffer> temp_buf = in_flight_buf_;
@@ -194,7 +187,6 @@ void FileStream::Context::InvokeUserCallback() {
 }
 
 void FileStream::Context::DeleteOrphanedContext() {
-  last_operation_ = NONE;
   async_in_progress_ = false;
   callback_.Reset();
   in_flight_buf_ = NULL;
