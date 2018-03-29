@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -147,7 +148,8 @@ void SigninViewController::ShowDiceSigninTab(
                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
     active_contents->OpenURL(params);
   } else {
-    ShowSingletonTab(browser, signin_url);
+    NavigateParams params = GetSingletonTabNavigateParams(browser, signin_url);
+    ShowSingletonTabOverwritingNTP(browser, params);
     active_contents = browser->tab_strip_model()->GetActiveWebContents();
   }
   DCHECK(active_contents);
