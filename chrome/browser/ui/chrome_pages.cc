@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -410,31 +411,36 @@ void ShowBrowserSignin(Browser* browser,
 
 #if defined(OS_CHROMEOS)
   // ChromeOS doesn't have the avatar bubble.
-  const bool can_show_avatar_bubble = false;
+  const bool show_full_tab_chrome_signin_page = true;
 #else
-  // The sign-in modal dialog is presented as a tab-modal dialog (which is
-  // automatically dismissed when the page navigates). Displaying the dialog on
-  // a new tab that loads any page will lead to it being dismissed as soon as
-  // the new tab is loaded. So the sign-in dialog must only be presented on top
-  // of an existing tab.
+  // When Desktop Identity Consistency (aka DICE) is not enabled, Chrome uses
+  // a modal sign-in dialog for signing in. This sign-in modal dialog is
+  // presented as a tab-modal dialog (which is automatically dismissed when
+  // the page navigates). Displaying the dialog on a new tab that loads any
+  // page will lead to it being dismissed as soon as the new tab is loaded.
+  // So the sign-in dialog must only be presented on top of an existing tab.
   //
   // If ScopedTabbedBrowserDisplayer had to create a (non-incognito) Browser*,
   // it won't have any tabs yet. Fallback to the full-tab sign-in flow in this
   // case.
-  const bool can_show_avatar_bubble = !browser->tab_strip_model()->empty();
+  const bool show_full_tab_chrome_signin_page =
+      !signin::DiceMethodGreaterOrEqual(
+          AccountConsistencyModeManager::GetMethodForProfile(
+              browser->profile()),
+          signin::AccountConsistencyMethod::kDicePrepareMigration) &&
+      browser->tab_strip_model()->empty();
 #endif  // defined(OS_CHROMEOS)
-
-  if (can_show_avatar_bubble) {
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-        signin::ManageAccountsParams(), access_point, false);
-  } else {
+  if (show_full_tab_chrome_signin_page) {
     NavigateToSingletonTab(
         browser,
         signin::GetPromoURLForTab(
             access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
             false));
     DCHECK_GT(browser->tab_strip_model()->count(), 0);
+  } else {
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+        signin::ManageAccountsParams(), access_point, false);
   }
 }
 

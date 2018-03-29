@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/signin_ui_util.h"
 
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -40,6 +42,23 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #endif
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+namespace {
+void CreateDiceTurnSyncOnHelper(
+    Profile* profile,
+    Browser* browser,
+    signin_metrics::AccessPoint signin_access_point,
+    signin_metrics::Reason signin_reason,
+    const std::string& account_id,
+    DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
+  // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
+  // enabling sync).
+  new DiceTurnSyncOnHelper(profile, browser, signin_access_point, signin_reason,
+                           account_id, signin_aborted_mode);
+}
+}  // namespace
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
 namespace signin_ui_util {
 
 base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
@@ -64,8 +83,8 @@ base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
 void InitializePrefsForProfile(Profile* profile) {
   if (profile->IsNewProfile()) {
     // Suppresses the upgrade tutorial for a new profile.
-    profile->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);
+    profile->GetPrefs()->SetInteger(prefs::kProfileAvatarTutorialShown,
+                                    kUpgradeWelcomeTutorialShowMax + 1);
   }
 }
 
@@ -93,6 +112,27 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
 void EnableSync(Browser* browser,
                 const AccountInfo& account,
                 signin_metrics::AccessPoint access_point) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  internal::EnableSync(browser, account, access_point,
+                       base::BindOnce(&CreateDiceTurnSyncOnHelper));
+#else
+  internal::EnableSync(browser, account, access_point, base::DoNothing());
+#endif
+}
+
+namespace internal {
+void EnableSync(
+    Browser* browser,
+    const AccountInfo& account,
+    signin_metrics::AccessPoint access_point,
+    base::OnceCallback<
+        void(Profile* profile,
+             Browser* browser,
+             signin_metrics::AccessPoint signin_access_point,
+             signin_metrics::Reason signin_reason,
+             const std::string& account_id,
+             DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
+        create_dice_turn_sync_on_helper_callback) {
   DCHECK(browser);
   DCHECK_NE(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, access_point);
   Profile* profile = browser->profile();
@@ -138,16 +178,15 @@ void EnableSync(Browser* browser,
     return;
   }
 
-  // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
-  // enabling sync).
-  new DiceTurnSyncOnHelper(
-      profile, browser, access_point,
-      signin_metrics::Reason::REASON_UNKNOWN_REASON, account.account_id,
-      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+  std::move(create_dice_turn_sync_on_helper_callback)
+      .Run(profile, browser, access_point,
+           signin_metrics::Reason::REASON_UNKNOWN_REASON, account.account_id,
+           DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
 #else
   NOTREACHED();
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
+}  // namespace internal
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // TODO(tangltom): Add a unit test for this function.
