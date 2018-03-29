@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/user_metrics.h"
@@ -22,6 +23,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -80,14 +82,35 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
     DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
 
     base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
+
+    // Build mru window list. Use cycle as it excludes some windows we are not
+    // interested in such as transient children.
     MruWindowTracker::WindowList mru_window_list =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
 
     // Switch to the second most recently used window (most recent is the
-    // current window), if it exists.
+    // current window) if it exists, unless splitview mode is active.
     if (mru_window_list.size() > 1u) {
+      aura::Window* new_active_window = mru_window_list[1];
+
+      // In splitview mode, quick switch will only affect the windows on the non
+      // default side. The window which was dragged to either side to begin
+      // splitview will remain untouched. Skip that window if it appears in the
+      // mru list.
+      SplitViewController* split_view_controller =
+          Shell::Get()->split_view_controller();
+      if (split_view_controller->IsSplitViewModeActive() &&
+          mru_window_list.size() > 2u) {
+        if (mru_window_list[0] ==
+                split_view_controller->GetDefaultSnappedWindow() ||
+            mru_window_list[1] ==
+                split_view_controller->GetDefaultSnappedWindow()) {
+          new_active_window = mru_window_list[2];
+        }
+      }
+
       AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-      wm::GetWindowState(mru_window_list[1])->Activate();
+      wm::GetWindowState(new_active_window)->Activate();
       last_press_event_time_ = base::nullopt;
       return true;
     }
