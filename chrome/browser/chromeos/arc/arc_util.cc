@@ -423,34 +423,44 @@ bool IsArcOobeOptInActive() {
   if (!IsPlayStoreAvailable())
     return false;
 
-  // Check if Chrome OS OOBE or OPA OptIn flow is currently showing.
-  // TODO(b/65861628): Rename the method since it is no longer accurate.
-  // Redesign the OptIn flow since there is no longer reason to have two
-  // different OptIn flows.
+  // Check if Chrome OS OOBE flow is currently showing.
+  // TODO(b/65861628): Redesign the OptIn flow since there is no longer reason
+  // to have two different OptIn flows.
+  if (!chromeos::LoginDisplayHost::default_host())
+    return false;
+
+  // Use the legacy logic for first sign-in OOBE OptIn flow. Make sure the user
+  // is new.
+  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
+    return false;
+
+  // Differentiate the case when Assistant Wizard is started later for the new
+  // user session. For example, OOBE was shown and user pressed Skip button.
+  // Later in the same user session user activates Assistant and we show
+  // Assistant Wizard with ARC terms. This case is not considered as OOBE OptIn.
+  return !IsArcOptInWizardForAssistantActive();
+}
+
+bool IsArcOptInWizardForAssistantActive() {
+  // Check if Assistant Wizard is currently showing.
+  // TODO(b/65861628): Redesign the OptIn flow since there is no longer reason
+  // to have two different OptIn flows.
   chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
-  if (!host)
+  if (!host || !host->IsVoiceInteractionOobe())
     return false;
 
   // Make sure the wizard controller is active and have the ARC ToS screen
   // showing for the voice interaction OptIn flow.
-  if (host->IsVoiceInteractionOobe()) {
-    const chromeos::WizardController* wizard_controller =
-        host->GetWizardController();
-    if (!wizard_controller)
-      return false;
-    const chromeos::BaseScreen* screen = wizard_controller->current_screen();
-    if (!screen)
-      return false;
-    return screen->screen_id() ==
-           chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
-  }
-
-  // Use the legacy logic for first sign-in OOBE OptIn flow. Make sure the user
-  // is new and the swtich is appended.
-  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
+  const chromeos::WizardController* wizard_controller =
+      host->GetWizardController();
+  if (!wizard_controller)
     return false;
 
-  return true;
+  const chromeos::BaseScreen* screen = wizard_controller->current_screen();
+  if (!screen)
+    return false;
+  return screen->screen_id() ==
+         chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
 }
 
 bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {

@@ -4750,6 +4750,8 @@ static_library("test_support") {
       "chromeos/login/test/js_checker.h",
       "chromeos/login/test/oobe_screen_waiter.cc",
       "chromeos/login/test/oobe_screen_waiter.h",
+      "chromeos/login/ui/fake_login_display_host.cc",
+      "chromeos/login/ui/fake_login_display_host.h",
       "chromeos/login/ui/mock_login_display.cc",
       "chromeos/login/ui/mock_login_display.h",
       "chromeos/login/ui/mock_login_display_host.cc",

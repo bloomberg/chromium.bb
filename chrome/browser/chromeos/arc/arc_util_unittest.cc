@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
+#include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -987,6 +988,95 @@ INSTANTIATE_TEST_CASE_P(
         AskForEcryptfsArcUserTestParam{false /* device_supported_arc */,
                                        false /* arc_enabled */,
                                        false /* expect_migration_allowed */}));
+
+class ArcOobeOpaOptInActiveInTest : public ChromeArcUtilTest {
+ public:
+  ArcOobeOpaOptInActiveInTest() = default;
+
+ protected:
+  void CreateLoginDisplayHost() {
+    fake_login_display_host_ =
+        std::make_unique<chromeos::FakeLoginDisplayHost>();
+  }
+
+  chromeos::FakeLoginDisplayHost* login_display_host() {
+    return fake_login_display_host_.get();
+  }
+
+  void CloseLoginDisplayHost() { fake_login_display_host_.reset(); }
+
+ private:
+  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcOobeOpaOptInActiveInTest);
+};
+
+TEST_F(ArcOobeOpaOptInActiveInTest, OobeOptInActive) {
+  // OOBE OptIn is active in case of OOBE controller is alive and the ARC ToS
+  // screen is currently showing.
+  EXPECT_FALSE(IsArcOobeOptInActive());
+  CreateLoginDisplayHost();
+  EXPECT_FALSE(IsArcOobeOptInActive());
+  GetFakeUserManager()->set_current_user_new(true);
+  EXPECT_TRUE(IsArcOobeOptInActive());
+  // OOBE OptIn can be started only for new user flow.
+  GetFakeUserManager()->set_current_user_new(false);
+  EXPECT_FALSE(IsArcOobeOptInActive());
+  // ARC ToS wizard but not for new user.
+  login_display_host()->StartWizard(
+      chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  EXPECT_FALSE(IsArcOobeOptInActive());
+}
+
+TEST_F(ArcOobeOpaOptInActiveInTest, NewUserAndAssistantWizard) {
+  CreateLoginDisplayHost();
+  GetFakeUserManager()->set_current_user_new(true);
+  login_display_host()->StartVoiceInteractionOobe();
+  login_display_host()->StartWizard(
+      chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  EXPECT_FALSE(IsArcOobeOptInActive());
+  EXPECT_TRUE(IsArcOptInWizardForAssistantActive());
+}
+
+// Emulate the following case.
+// Create a new profile on the device.
+// ARC OOBE ToS is expected to be shown, and the user "SKIP" it.
+// Then, the user tries to use Assistant. In such a case, ARC OOBE ToS wizard
+// is used unlike other scenarios to enable ARC during a session, which use
+// ArcSupport.
+// Because, IsArcOobeOptInActive() checks the UI state, this test checks if it
+// works expected for Assistant cases.
+TEST_F(ArcOobeOpaOptInActiveInTest, NoOobeOptInForPlayStoreNotAvailable) {
+  // No OOBE OptIn when Play Store is not available.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv(
+      {"", "--arc-availability=installed",
+       "--arc-start-mode=always-start-with-no-play-store"});
+  CreateLoginDisplayHost();
+  GetFakeUserManager()->set_current_user_new(true);
+  EXPECT_FALSE(IsArcOobeOptInActive());
+}
+
+TEST_F(ArcOobeOpaOptInActiveInTest, OptInWizardForAssistantActive) {
+  // OPA OptIn is active when wizard is started and  ARC ToS screen is currently
+  // showing.
+  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
+  CreateLoginDisplayHost();
+  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
+  GetFakeUserManager()->set_current_user_new(true);
+  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
+  login_display_host()->StartVoiceInteractionOobe();
+  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
+  login_display_host()->StartWizard(
+      chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
+  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
+  login_display_host()->StartWizard(
+      chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  EXPECT_TRUE(IsArcOptInWizardForAssistantActive());
+  // Assistant wizard can be started for any user session.
+  GetFakeUserManager()->set_current_user_new(false);
+  EXPECT_TRUE(IsArcOptInWizardForAssistantActive());
+}
 
 }  // namespace util
 }  // namespace arc
