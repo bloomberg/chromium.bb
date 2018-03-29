@@ -5395,6 +5395,7 @@ interface RTCRtpReceiver
     getter track
     method constructor
     method getContributingSources
+    method getStats
 interface RTCRtpSender
     attribute @@toStringTag
     getter dtmf
