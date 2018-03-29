@@ -178,6 +178,8 @@ void EnableSync(
     return;
   }
 
+  signin_metrics::LogSigninAccessPointStarted(access_point);
+  signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
   std::move(create_dice_turn_sync_on_helper_callback)
       .Run(profile, browser, access_point,
            signin_metrics::Reason::REASON_UNKNOWN_REASON, account.account_id,

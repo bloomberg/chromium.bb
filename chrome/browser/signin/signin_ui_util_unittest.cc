@@ -5,6 +5,8 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
+#include "base/test/user_action_tester.h"
 #include "build/buildflag.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
@@ -147,13 +149,17 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
 
   void EnableSync(const AccountInfo& account_info) {
     signin_ui_util::internal::EnableSync(
-        browser(), account_info,
-        signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+        browser(), account_info, access_point_,
         base::BindOnce(&DiceSigninUiUtilTest::CreateDiceTurnSyncOnHelper,
                        base::Unretained(this)));
   }
 
-  signin::ScopedAccountConsistency scoped_account_consistency_;
+  const signin::ScopedAccountConsistency scoped_account_consistency_;
+  const signin_metrics::AccessPoint access_point_ =
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
+  base::HistogramTester histogram_tester_;
+  base::UserActionTester user_action_tester_;
+
   bool create_dice_turn_sync_on_helper_called_ = false;
   CreateDiceTurnSyncOnHelperParams create_dice_turn_sync_on_helper_params_;
 };
@@ -164,8 +170,17 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
       GetAccountTrackerService()->SeedAccountInfo(kMainEmail, kMainGaiaID);
   GetTokenService()->UpdateCredentials(account_id, "token");
 
+  histogram_tester_.ExpectTotalCount("Signin.SigninStartedAccessPoint", 0);
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
+
   EnableSync(GetAccountTrackerService()->GetAccountInfo(account_id));
   ASSERT_TRUE(create_dice_turn_sync_on_helper_called_);
+
+  histogram_tester_.ExpectUniqueSample("Signin.SigninStartedAccessPoint",
+                                       access_point_, 1);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
 
   // Verify that the helper to enable sync is created with the expected params.
   EXPECT_EQ(profile(), create_dice_turn_sync_on_helper_params_.profile);
@@ -185,8 +200,17 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   std::string account_id =
       GetAccountTrackerService()->SeedAccountInfo(kMainGaiaID, kMainEmail);
 
+  histogram_tester_.ExpectTotalCount("Signin.SigninStartedAccessPoint", 0);
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
+
   EnableSync(GetAccountTrackerService()->GetAccountInfo(account_id));
   ASSERT_FALSE(create_dice_turn_sync_on_helper_called_);
+
+  histogram_tester_.ExpectUniqueSample("Signin.SigninStartedAccessPoint",
+                                       access_point_, 1);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
 
   // Verify that the active tab has the correct DICE sign-in URL.
   content::WebContents* active_contents =
@@ -197,8 +221,17 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
 }
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
+  histogram_tester_.ExpectTotalCount("Signin.SigninStartedAccessPoint", 0);
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
+
   EnableSync(AccountInfo());
   ASSERT_FALSE(create_dice_turn_sync_on_helper_called_);
+
+  histogram_tester_.ExpectUniqueSample("Signin.SigninStartedAccessPoint",
+                                       access_point_, 1);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
 
   // Verify that the active tab has the correct DICE sign-in URL.
   content::WebContents* active_contents =
@@ -211,8 +244,17 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
 TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
   AddTab(browser(), GURL("http://foo/1"));
 
+  histogram_tester_.ExpectTotalCount("Signin.SigninStartedAccessPoint", 0);
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
+
   EnableSync(AccountInfo());
   ASSERT_FALSE(create_dice_turn_sync_on_helper_called_);
+
+  histogram_tester_.ExpectUniqueSample("Signin.SigninStartedAccessPoint",
+                                       access_point_, 1);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(
+                   "Signin_Signin_FromBookmarkBubble"));
 
   // Verify that the active tab has the correct DICE sign-in URL.
   content::WebContents* active_contents =
