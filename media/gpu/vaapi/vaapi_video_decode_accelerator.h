@@ -23,7 +23,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "media/base/bitstream_buffer.h"
@@ -116,21 +115,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Queue a input buffer for decode.
   void QueueInputBuffer(const BitstreamBuffer& bitstream_buffer);
 
-  // Gets a new |current_input_buffer_| from |input_buffers_| and sets it up in
-  // |decoder_|. This method will sleep if no |input_buffers_| are available.
-  // Returns true if a new buffer has been set up, false if an early exit has
-  // been requested (due to initiated reset/flush/destroy).
-  bool GetCurrInputBuffer_Locked();
-
-  // Signals the client that |curr_input_buffer_| has been read and can be
-  // returned. Will also release the mapping.
-  void ReturnCurrInputBuffer_Locked();
-
-  // Waits for more surfaces to become available. Returns true once they do or
-  // false if an early exit has been requested (due to an initiated
-  // reset/flush/destroy).
-  bool WaitForSurfaces_Locked();
-
   // Continue decoding given input buffers and sleep waiting for input/output
   // as needed. Will exit if a new set of surfaces or reset/flush/destroy
   // is requested.
@@ -185,10 +169,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Initiate wait cycle for surfaces to be released before we release them
   // and allocate new ones, as requested by the decoder.
-  void InitiateSurfaceSetChange(size_t num_pics, gfx::Size size);
-
-  // Check if the surfaces have been released or post ourselves for later.
-  void TryFinishSurfaceSetChange();
+  void TryFinishSurfaceSetChange(size_t num_pics, const gfx::Size& size);
 
   // VAVDA state.
   enum State {
@@ -204,18 +185,20 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     kDestroying,
   };
 
-  // Protects input buffer and surface queues and state_.
+  // Protects input buffer and surface queues and |state_|.
   base::Lock lock_;
   State state_;
   Config::OutputMode output_mode_;
 
-  // Queue of available InputBuffers (picture_buffer_ids).
+  // Queue of input InputBuffers (PictureBuffer ids) to decode.
   base::queue<std::unique_ptr<InputBuffer>> input_buffers_;
-  // Signalled when input buffers are queued onto |input_buffers_| queue.
-  base::ConditionVariable input_ready_;
-
-  // Current input buffer at decoder.
+  // Current InputBuffer at |decoder_|.
+  // Only accessed on |decoder_thread_task_runner_| (needs no |lock_|)
   std::unique_ptr<InputBuffer> curr_input_buffer_;
+
+  // VA Surfaces no longer in use that can be passed back to the decoder for
+  // reuse, once it requests them.
+  std::list<VASurfaceID> available_va_surfaces_;
 
   // Queue for incoming output buffers (texture ids).
   using OutputBuffers = base::queue<int32_t>;
@@ -236,13 +219,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Return a VaapiPicture associated with given client-provided id.
   VaapiPicture* PictureById(int32_t picture_buffer_id);
-
-  // VA Surfaces no longer in use that can be passed back to the decoder for
-  // reuse, once it requests them.
-  std::list<VASurfaceID> available_va_surfaces_;
-  // Signalled when output surfaces are queued onto the available_va_surfaces_
-  // queue.
-  base::ConditionVariable surfaces_available_;
 
   // Pending output requests from the decoder. When it indicates that we should
   // output a surface and we have an available Picture (i.e. texture) ready
