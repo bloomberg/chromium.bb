@@ -4,8 +4,10 @@
 
 #include "chrome/common/profiling/profiling_client.h"
 
+#include "base/allocator/allocator_interception_mac.h"
 #include "base/files/platform_file.h"
 #include "base/trace_event/malloc_dump_provider.h"
+#include "build/build_config.h"
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 #include "chrome/common/profiling/memlog_sender_pipe.h"
 #include "chrome/common/profiling/memlog_stream.h"
@@ -72,6 +74,14 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {
   }
 
   base::trace_event::MallocDumpProvider::GetInstance()->DisableMetrics();
+
+#if defined(OS_MACOSX)
+  // On macOS, this call is necessary to shim malloc zones that were created
+  // after startup. This cannot be done during shim initialization because the
+  // task scheduler has not yet been initialized.
+  base::allocator::PeriodicallyShimNewMallocZones();
+#endif
+
   InitAllocatorShim(memlog_sender_pipe_.get(), std::move(params));
 }
 
