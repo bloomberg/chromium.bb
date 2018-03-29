@@ -63,6 +63,7 @@ static_library("vr_android") {
     "//services/device/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/ui/public/cpp/gpu",
+    "//third_party/gvr-android-sdk:gvr_shim",
     "//ui/android",
     "//ui/base",
     "//ui/display",
@@ -74,10 +75,7 @@ static_library("vr_android") {
     "//device/vr/public/mojom",
   ]
 
-  libs = [
-    "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
-    "android",
-  ]
+  libs = [ "android" ]
 
   configs += [
     "//third_party/gvr-android-keyboard:kb_config",

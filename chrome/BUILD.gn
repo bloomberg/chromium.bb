@@ -1837,6 +1837,10 @@ if (is_android) {
         "//ui/events/devices",
       ]
     }
+
+    if (enable_vr) {
+      deps += [ "//third_party/gvr-android-sdk:gvr_shim" ]
+    }
   }
 }
 

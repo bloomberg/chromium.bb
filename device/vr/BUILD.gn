@@ -70,11 +70,9 @@ if (enable_vr) {
         "//device/gamepad",
         "//device/gamepad/public/cpp:shared_with_blink",
         "//third_party/WebKit/public:blink_headers",
+        "//third_party/gvr-android-sdk:gvr_shim",
       ]
       ldflags = [ "-landroid" ]
-      libs = [
-        "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
-      ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
