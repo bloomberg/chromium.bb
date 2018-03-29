@@ -154,7 +154,7 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
   Node* position_node = position.ComputeContainerNode();
   if (selection.IsRange() && position_node && position_node->IsTextNode() &&
       position.ComputeOffsetInContainerNode() ==
-          position_node->MaxCharacterOffset())
+          static_cast<int>(ToText(position_node)->length()))
     position = NextVisuallyDistinctCandidate(position);
 
   Element* element = AssociatedElementOf(position);

@@ -29,7 +29,7 @@ int EditingAlgorithm<Traversal>::LastOffsetForEditing(const Node* node) {
   if (!node)
     return 0;
   if (node->IsCharacterDataNode())
-    return node->MaxCharacterOffset();
+    return static_cast<int>(ToCharacterData(node)->length());
 
   if (Traversal::HasChildren(*node))
     return Traversal::CountChildren(*node);

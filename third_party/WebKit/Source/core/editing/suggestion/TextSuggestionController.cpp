@@ -76,13 +76,13 @@ EphemeralRangeInFlatTree ComputeRangeSurroundingCaret(
     const PositionInFlatTree& caret_position) {
   const Node* const position_node = caret_position.ComputeContainerNode();
   const bool is_text_node = position_node->IsTextNode();
-  const int position_offset_in_node =
+  const unsigned position_offset_in_node =
       caret_position.ComputeOffsetInContainerNode();
 
   // If we're in the interior of a text node, we can avoid calling
   // PreviousPositionOf/NextPositionOf for better efficiency.
   if (is_text_node && position_offset_in_node != 0 &&
-      position_offset_in_node != position_node->MaxCharacterOffset()) {
+      position_offset_in_node != ToText(position_node)->length()) {
     return EphemeralRangeInFlatTree(
         PositionInFlatTree(position_node, position_offset_in_node - 1),
         PositionInFlatTree(position_node, position_offset_in_node + 1));
@@ -535,22 +535,22 @@ TextSuggestionController::FirstMarkerIntersectingRange(
     DocumentMarker::MarkerTypes types) const {
   const Node* const range_start_container =
       range.StartPosition().ComputeContainerNode();
-  const int range_start_offset =
+  const unsigned range_start_offset =
       range.StartPosition().ComputeOffsetInContainerNode();
   const Node* const range_end_container =
       range.EndPosition().ComputeContainerNode();
-  const int range_end_offset =
+  const unsigned range_end_offset =
       range.EndPosition().ComputeOffsetInContainerNode();
 
   for (const Node& node : range.Nodes()) {
     if (!node.IsTextNode())
       continue;
 
-    const int start_offset =
+    const unsigned start_offset =
         node == range_start_container ? range_start_offset : 0;
-    const int end_offset = node == range_end_container
-                               ? range_end_offset
-                               : node.MaxCharacterOffset();
+    const unsigned end_offset = node == range_end_container
+                                    ? range_end_offset
+                                    : ToText(node).length();
 
     const DocumentMarker* const found_marker =
         GetFrame().GetDocument()->Markers().FirstMarkerIntersectingOffsetRange(
