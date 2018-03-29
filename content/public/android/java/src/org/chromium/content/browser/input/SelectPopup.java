@@ -13,7 +13,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.PopupController;
 import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
-import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
@@ -141,7 +140,7 @@ public class SelectPopup implements HideablePopup {
             return;
         }
 
-        hidePopupsAndClearSelection();
+        PopupController.hidePopupsAndClearSelection(mWebContents);
         assert mNativeSelectPopupSourceFrame == 0 : "Zombie popup did not clear the frame source";
 
         assert items.length == enabled.length;
@@ -188,12 +187,6 @@ public class SelectPopup implements HideablePopup {
     @VisibleForTesting
     public boolean isVisibleForTesting() {
         return mPopupView != null;
-    }
-
-    private void hidePopupsAndClearSelection() {
-        SelectionPopupControllerImpl.fromWebContents(mWebContents).destroyActionModeAndUnselect();
-        mWebContents.dismissTextHandles();
-        PopupController.hideAll(mWebContents);
     }
 
     private WindowAndroid getWindowAndroid() {

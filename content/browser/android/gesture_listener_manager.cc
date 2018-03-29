@@ -7,6 +7,8 @@
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "jni/GestureListenerManagerImpl_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/android/gesture_event_type.h"
@@ -67,10 +69,40 @@ int ToGestureEventType(WebInputEvent::Type type) {
 
 }  // namespace
 
+// Reset scroll, hide popups on navigation finish/render process gone event.
+class GestureListenerManager::ResetScrollObserver : public WebContentsObserver {
+ public:
+  ResetScrollObserver(WebContents* web_contents,
+                      GestureListenerManager* manager);
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+
+ private:
+  GestureListenerManager* const manager_;
+  DISALLOW_COPY_AND_ASSIGN(ResetScrollObserver);
+};
+
+GestureListenerManager::ResetScrollObserver::ResetScrollObserver(
+    WebContents* web_contents,
+    GestureListenerManager* manager)
+    : WebContentsObserver(web_contents), manager_(manager) {}
+
+void GestureListenerManager::ResetScrollObserver::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  manager_->OnNavigationFinished(navigation_handle);
+}
+
+void GestureListenerManager::ResetScrollObserver::RenderProcessGone(
+    base::TerminationStatus status) {
+  manager_->OnRenderProcessGone();
+}
+
 GestureListenerManager::GestureListenerManager(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                WebContentsImpl* web_contents)
     : RenderWidgetHostConnector(web_contents),
+      reset_scroll_observer_(new ResetScrollObserver(web_contents, this)),
       web_contents_(web_contents),
       java_ref_(env, obj) {}
 
@@ -212,6 +244,27 @@ void GestureListenerManager::UpdateRenderProcessConnection(
   if (new_rwhva) {
     new_rwhva->set_gesture_listener_manager(this);
   }
+}
+
+void GestureListenerManager::OnNavigationFinished(
+    NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted() &&
+      !navigation_handle->IsSameDocument()) {
+    ResetPopupsAndInput(false);
+  }
+}
+
+void GestureListenerManager::OnRenderProcessGone() {
+  ResetPopupsAndInput(true);
+}
+
+void GestureListenerManager::ResetPopupsAndInput(bool render_process_gone) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_GestureListenerManagerImpl_resetPopupsAndInput(env, obj,
+                                                      render_process_gone);
 }
 
 jlong JNI_GestureListenerManagerImpl_Init(

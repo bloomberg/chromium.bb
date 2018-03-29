@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.WebContents;
@@ -42,7 +44,21 @@ public class PopupController {
      */
     public static void hideAll(WebContents webContents) {
         if (webContents == null) return;
-        PopupController.fromWebContents(webContents).hideAllPopups();
+        PopupController controller = PopupController.fromWebContents(webContents);
+        if (controller != null) controller.hideAllPopups();
+    }
+
+    /**
+     * Hide all popup views and clear text selection UI.
+     * @param webContents {@link WebContents} for current content.
+     */
+    public static void hidePopupsAndClearSelection(WebContents webContents) {
+        if (webContents == null) return;
+        SelectionPopupControllerImpl controller =
+                SelectionPopupControllerImpl.fromWebContents(webContents);
+        if (controller != null) controller.destroyActionModeAndUnselect();
+        ((WebContentsImpl) webContents).dismissTextHandles();
+        PopupController.hideAll(webContents);
     }
 
     /**
