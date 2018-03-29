@@ -42,7 +42,6 @@ namespace {
 
 using RetrievePolicyResponseType =
     SessionManagerClient::RetrievePolicyResponseType;
-using login_manager::PolicyDescriptor;
 
 constexpr char kEmptyAccountId[] = "";
 
@@ -89,10 +88,11 @@ void LogPolicyResponseUma(login_manager::PolicyAccountType account_type,
   }
 }
 
-PolicyDescriptor MakePolicyDescriptor(
+// Creates a PolicyDescriptor object to store/retrieve Chrome policy.
+login_manager::PolicyDescriptor MakeChromePolicyDescriptor(
     login_manager::PolicyAccountType account_type,
     const std::string& account_id) {
-  PolicyDescriptor descriptor;
+  login_manager::PolicyDescriptor descriptor;
   descriptor.set_account_type(account_type);
   descriptor.set_account_id(account_id);
   descriptor.set_domain(login_manager::POLICY_DOMAIN_CHROME);
@@ -263,21 +263,21 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void RetrieveDevicePolicy(RetrievePolicyCallback callback) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
     CallRetrievePolicy(descriptor, std::move(callback));
   }
 
   RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
       std::string* policy_out) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
     return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
   void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
                              RetrievePolicyCallback callback) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
     CallRetrievePolicy(descriptor, std::move(callback));
   }
@@ -285,7 +285,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   RetrievePolicyResponseType BlockingRetrievePolicyForUser(
       const cryptohome::Identification& cryptohome_id,
       std::string* policy_out) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
     return BlockingRetrievePolicy(descriptor, policy_out);
   }
@@ -293,7 +293,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void RetrievePolicyForUserWithoutSession(
       const cryptohome::Identification& cryptohome_id,
       RetrievePolicyCallback callback) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_SESSIONLESS_USER, cryptohome_id.id());
     CallRetrievePolicy(descriptor, std::move(callback));
   }
@@ -301,7 +301,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       RetrievePolicyCallback callback) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_name);
     CallRetrievePolicy(descriptor, std::move(callback));
   }
@@ -309,14 +309,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
   RetrievePolicyResponseType BlockingRetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       std::string* policy_out) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_name);
     return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
   void StoreDevicePolicy(const std::string& policy_blob,
                          VoidDBusMethodCallback callback) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
@@ -324,7 +324,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
                           VoidDBusMethodCallback callback) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
@@ -332,7 +332,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void StoreDeviceLocalAccountPolicy(const std::string& account_name,
                                      const std::string& policy_blob,
                                      VoidDBusMethodCallback callback) override {
-    PolicyDescriptor descriptor = MakePolicyDescriptor(
+    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_name);
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
@@ -506,7 +506,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // Non-blocking call to Session Manager to retrieve policy.
-  void CallRetrievePolicy(const PolicyDescriptor& descriptor,
+  void CallRetrievePolicy(const login_manager::PolicyDescriptor& descriptor,
                           RetrievePolicyCallback callback) {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
@@ -526,7 +526,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   // Blocking call to Session Manager to retrieve policy.
   RetrievePolicyResponseType BlockingRetrievePolicy(
-      const PolicyDescriptor& descriptor,
+      const login_manager::PolicyDescriptor& descriptor,
       std::string* policy_out) {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
@@ -549,13 +549,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
       ExtractPolicyResponseString(descriptor.account_type(), response.get(),
                                   policy_out);
     } else {
-      *policy_out = "";
+      policy_out->clear();
     }
     LogPolicyResponseUma(descriptor.account_type(), result);
     return result;
   }
 
-  void CallStorePolicy(const PolicyDescriptor& descriptor,
+  void CallStorePolicy(const login_manager::PolicyDescriptor& descriptor,
                        const std::string& policy_blob,
                        VoidDBusMethodCallback callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
@@ -587,8 +587,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageReader reader(response);
     dbus::MessageReader array_reader(nullptr);
     if (!reader.PopArray(&array_reader)) {
-      LOG(ERROR) << method_name << " response is incorrect: "
-                 << response->ToString();
+      LOG(ERROR) << method_name
+                 << " response is incorrect: " << response->ToString();
       std::move(callback).Run(base::nullopt);
       return;
     }

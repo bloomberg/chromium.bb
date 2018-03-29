@@ -167,6 +167,10 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // active users.
   virtual void RetrieveActiveSessions(ActiveSessionsCallback callback) = 0;
 
+  // TODO(crbug.com/765644): Change the policy storage interface so that it has
+  // a single StorePolicy, RetrievePolicy, BlockingRetrivePolicy method that
+  // takes a PolicyDescriptor.
+
   // Used for RetrieveDevicePolicy, RetrievePolicyForUser and
   // RetrieveDeviceLocalAccountPolicy. Takes a serialized protocol buffer as
   // string.  Upon success, we will pass a protobuf and SUCCESS |response_type|
