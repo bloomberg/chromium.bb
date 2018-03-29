@@ -158,7 +158,6 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
 
 base::Optional<CBORReader::DataItemHeader> CBORReader::DecodeDataItemHeader() {
   if (!CanConsume(1)) {
-    error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
     return base::nullopt;
   }
 
@@ -193,7 +192,6 @@ bool CBORReader::ReadVariadicLengthInteger(uint8_t additional_info,
   }
 
   if (!CanConsume(additional_bytes)) {
-    error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
     return false;
   }
 
@@ -252,7 +250,6 @@ base::Optional<CBORValue> CBORReader::ReadStringContent(
     const CBORReader::DataItemHeader& header) {
   uint64_t num_bytes = header.value;
   if (!CanConsume(num_bytes)) {
-    error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
     return base::nullopt;
   }
 
@@ -268,7 +265,6 @@ base::Optional<CBORValue> CBORReader::ReadByteStringContent(
     const CBORReader::DataItemHeader& header) {
   uint64_t num_bytes = header.value;
   if (!CanConsume(num_bytes)) {
-    error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
     return base::nullopt;
   }
 
