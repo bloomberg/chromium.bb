@@ -11,16 +11,15 @@
 
 namespace chromeos {
 
-namespace multidevice {
+namespace multidevice_setup {
 
 // Fake MultiDeviceSetupObserver implementation for tests.
-class FakeMultiDeviceSetupObserver
-    : public multidevice_setup::mojom::MultiDeviceSetupObserver {
+class FakeMultiDeviceSetupObserver : public mojom::MultiDeviceSetupObserver {
  public:
   FakeMultiDeviceSetupObserver();
   ~FakeMultiDeviceSetupObserver() override;
 
-  multidevice_setup::mojom::MultiDeviceSetupObserverPtr GenerateInterfacePtr();
+  mojom::MultiDeviceSetupObserverPtr GenerateInterfacePtr();
 
   size_t num_new_user_events_handled() { return num_new_user_events_handled_; }
 
@@ -32,7 +31,7 @@ class FakeMultiDeviceSetupObserver
     return num_existing_user_chromebook_added_events_handled_;
   }
 
-  // multidevice_setup::mojom::MultiDeviceSetupObserver:
+  // mojom::MultiDeviceSetupObserver:
   void OnPotentialHostExistsForNewUser() override;
   void OnConnectedHostSwitchedForExistingUser() override;
   void OnNewChromebookAddedForExistingUser() override;
@@ -42,13 +41,12 @@ class FakeMultiDeviceSetupObserver
   size_t num_existing_user_host_switched_events_handled_ = 0u;
   size_t num_existing_user_chromebook_added_events_handled_ = 0u;
 
-  mojo::BindingSet<multidevice_setup::mojom::MultiDeviceSetupObserver>
-      bindings_;
+  mojo::BindingSet<mojom::MultiDeviceSetupObserver> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMultiDeviceSetupObserver);
 };
 
-}  // namespace multidevice
+}  // namespace multidevice_setup
 
 }  // namespace chromeos
 

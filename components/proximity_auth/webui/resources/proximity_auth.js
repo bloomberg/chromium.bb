@@ -53,9 +53,10 @@ class CryptAuthController {
     this.elements_.existingUserNewChromebookNotifButton.onclick =
         this.showExistingUserNewChromebookNotification_.bind(this);
 
-    this.multiDeviceSetup = new multideviceSetup.mojom.MultiDeviceSetupPtr();
+    this.multiDeviceSetup =
+        new chromeos.multideviceSetup.mojom.MultiDeviceSetupPtr();
     Mojo.bindInterface(
-        multideviceSetup.mojom.MultiDeviceSetup.name,
+        chromeos.multideviceSetup.mojom.MultiDeviceSetup.name,
         mojo.makeRequest(this.multiDeviceSetup).handle);
   }
 
@@ -158,7 +159,7 @@ class CryptAuthController {
    */
   showNewUserNotification_() {
     this.showMultiDeviceSetupPromoNotification_(
-        multideviceSetup.mojom.EventTypeForDebugging.
+        chromeos.multideviceSetup.mojom.EventTypeForDebugging.
             kNewUserPotentialHostExists);
   }
 
@@ -167,7 +168,7 @@ class CryptAuthController {
    */
   showExistingUserNewHostNotification_() {
     this.showMultiDeviceSetupPromoNotification_(
-        multideviceSetup.mojom.EventTypeForDebugging.
+        chromeos.multideviceSetup.mojom.EventTypeForDebugging.
             kExistingUserConnectedHostSwitched);
   }
 
@@ -176,7 +177,7 @@ class CryptAuthController {
    */
   showExistingUserNewChromebookNotification_() {
     this.showMultiDeviceSetupPromoNotification_(
-        multideviceSetup.mojom.EventTypeForDebugging.
+        chromeos.multideviceSetup.mojom.EventTypeForDebugging.
             kExistingUserNewChromebookAdded);
   }
 

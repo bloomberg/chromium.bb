@@ -6,15 +6,15 @@
 
 namespace chromeos {
 
-namespace multidevice {
+namespace multidevice_setup {
 
 FakeMultiDeviceSetupObserver::FakeMultiDeviceSetupObserver() = default;
 
 FakeMultiDeviceSetupObserver::~FakeMultiDeviceSetupObserver() = default;
 
-multidevice_setup::mojom::MultiDeviceSetupObserverPtr
+mojom::MultiDeviceSetupObserverPtr
 FakeMultiDeviceSetupObserver::GenerateInterfacePtr() {
-  multidevice_setup::mojom::MultiDeviceSetupObserverPtr interface_ptr;
+  mojom::MultiDeviceSetupObserverPtr interface_ptr;
   bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
   return interface_ptr;
 }
@@ -31,6 +31,6 @@ void FakeMultiDeviceSetupObserver::OnNewChromebookAddedForExistingUser() {
   ++num_existing_user_chromebook_added_events_handled_;
 }
 
-}  // namespace multidevice
+}  // namespace multidevice_setup
 
 }  // namespace chromeos

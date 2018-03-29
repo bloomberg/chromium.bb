@@ -13,13 +13,13 @@
 
 namespace chromeos {
 
-namespace multidevice {
+namespace multidevice_setup {
 
 class MultiDeviceSetupImpl;
 
-// Service which provides an implementation for
-// multidevice_setup::mojom::MultiDeviceSetup. This service creates one
-// implementation and shares it among all connection requests.
+// Service which provides an implementation for mojom::MultiDeviceSetup. This
+// service creates one implementation and shares it among all connection
+// requests.
 class MultiDeviceSetupService : public service_manager::Service {
  public:
   MultiDeviceSetupService();
@@ -32,7 +32,7 @@ class MultiDeviceSetupService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void BindRequest(multidevice_setup::mojom::MultiDeviceSetupRequest request);
+  void BindRequest(mojom::MultiDeviceSetupRequest request);
 
   std::unique_ptr<MultiDeviceSetupImpl> multidevice_setup_impl_;
 
@@ -41,7 +41,7 @@ class MultiDeviceSetupService : public service_manager::Service {
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupService);
 };
 
-}  // namespace multidevice
+}  // namespace multidevice_setup
 
 }  // namespace chromeos
 

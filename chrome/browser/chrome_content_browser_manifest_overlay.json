@@ -100,7 +100,9 @@
           "mojom::SiteEngagementDetailsProvider",
           "mojom::UsbInternalsPageHandler"
         ],
-        "multidevice_setup" : [ "multidevice_setup::mojom::MultiDeviceSetup" ]
+        "multidevice_setup" : [
+          "chromeos::multidevice_setup::mojom::MultiDeviceSetup"
+        ]
       }
     },
     "navigation:dedicated_worker": {
