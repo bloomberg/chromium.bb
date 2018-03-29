@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/navigation/wk_based_restore_session_util.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 
 #include <memory>
 #include <vector>
@@ -14,11 +14,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
+namespace wk_navigation_util {
 
-typedef PlatformTest WKBasedRestoreSessionUtilTest;
+typedef PlatformTest WKNavigationUtilTest;
 
-TEST_F(WKBasedRestoreSessionUtilTest, CreateRestoreSessionUrl) {
+TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
   auto item0 = std::make_unique<NavigationItemImpl>();
   item0->SetURL(GURL("http://www.0.com"));
   item0->SetTitle(base::ASCIIToUTF16("Test Website 0"));
@@ -50,7 +55,7 @@ TEST_F(WKBasedRestoreSessionUtilTest, CreateRestoreSessionUrl) {
       session_json);
 }
 
-TEST_F(WKBasedRestoreSessionUtilTest, IsNotRestoreSessionUrl) {
+TEST_F(WKNavigationUtilTest, IsNotRestoreSessionUrl) {
   EXPECT_FALSE(IsRestoreSessionUrl(GURL()));
   EXPECT_FALSE(IsRestoreSessionUrl(GURL("file://somefile")));
   EXPECT_FALSE(IsRestoreSessionUrl(GURL("http://www.1.com")));
@@ -58,7 +63,7 @@ TEST_F(WKBasedRestoreSessionUtilTest, IsNotRestoreSessionUrl) {
 
 // Tests that CreateRedirectUrl and ExtractTargetURL used back-to-back is an
 // identity transformation.
-TEST_F(WKBasedRestoreSessionUtilTest, CreateAndExtractTargetURL) {
+TEST_F(WKNavigationUtilTest, CreateAndExtractTargetURL) {
   GURL target_url = GURL("http://www.1.com?query=special%26chars");
   GURL url = CreateRedirectUrl(target_url);
   ASSERT_TRUE(url.SchemeIsFile());
@@ -68,4 +73,5 @@ TEST_F(WKBasedRestoreSessionUtilTest, CreateAndExtractTargetURL) {
   EXPECT_EQ(target_url, extracted_url);
 }
 
+}  // namespace wk_navigation_util
 }  // namespace web

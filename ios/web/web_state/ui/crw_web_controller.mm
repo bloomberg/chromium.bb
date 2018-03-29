@@ -44,7 +44,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
 #include "ios/web/navigation/placeholder_navigation_util.h"
-#include "ios/web/navigation/wk_based_restore_session_util.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
 #import "ios/web/net/crw_ssl_status_updater.h"
@@ -124,6 +124,7 @@ namespace {
 using web::placeholder_navigation_util::IsPlaceholderUrl;
 using web::placeholder_navigation_util::CreatePlaceholderUrlForUrl;
 using web::placeholder_navigation_util::ExtractUrlFromPlaceholderUrl;
+using web::wk_navigation_util::IsRestoreSessionUrl;
 
 // Struct to capture data about a user interaction. Records the time of the
 // interaction and the main document URL at that time.
@@ -1196,7 +1197,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // navigation stack.
   GURL webViewURL = net::GURLWithNSURL(_webView.URL);
   if (_webView && !IsPlaceholderUrl(webViewURL) &&
-      !web::IsRestoreSessionUrl(webViewURL)) {
+      !IsRestoreSessionUrl(webViewURL)) {
     return [self webURLWithTrustLevel:trustLevel];
   }
   // Any non-web URL source is trusted.
@@ -2080,7 +2081,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Placeholder and restore session URLs are implementation details so should
   // not notify WebStateObservers.
   bool isInternalURL = context && (IsPlaceholderUrl(context->GetUrl()) ||
-                                   web::IsRestoreSessionUrl(context->GetUrl()));
+                                   IsRestoreSessionUrl(context->GetUrl()));
   if (!isInternalURL) {
     _webStateImpl->SetIsLoading(false);
     _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
@@ -4972,7 +4973,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       IsPlaceholderUrl(_documentURL) ||
       web::GetWebClient()->IsAppSpecificURL(_documentURL);
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      web::IsRestoreSessionUrl(webViewURL) && previousURLIsAppSpecific) {
+      IsRestoreSessionUrl(webViewURL) && previousURLIsAppSpecific) {
     [_webView reload];
     return;
   }

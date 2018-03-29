@@ -5,7 +5,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 
 #import "ios/web/navigation/navigation_manager_delegate.h"
-#include "ios/web/navigation/wk_based_restore_session_util.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
 #include "ui/base/page_transition_types.h"
 
@@ -352,7 +352,7 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
   // WKBackForwardList for the new user agent type. This hack is not needed for
   // LegacyNavigationManagerImpl which manages its own history entries.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    reloadURL = CreateRedirectUrl(reloadURL);
+    reloadURL = wk_navigation_util::CreateRedirectUrl(reloadURL);
   }
 
   WebLoadParams params(reloadURL);

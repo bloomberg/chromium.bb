@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/navigation/wk_based_restore_session_util.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -607,7 +607,8 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   EXPECT_EQ("http://www.0.com/", pending_item->GetVirtualURL());
 
   std::string session_json;
-  net::GetValueForKeyInQuery(pending_url, kRestoreSessionSessionQueryKey,
+  net::GetValueForKeyInQuery(pending_url,
+                             wk_navigation_util::kRestoreSessionSessionQueryKey,
                              &session_json);
   EXPECT_EQ(
       "{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
@@ -687,9 +688,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithEmptyHistory) {
 // the target URL.
 TEST_F(WKBasedNavigationManagerTest, HideInternalRedirectUrl) {
   GURL target_url = GURL("http://www.1.com?query=special%26chars");
-  GURL url = net::AppendQueryParameter(GetRestoreSessionBaseUrl(),
-                                       kRestoreSessionTargetUrlQueryKey,
-                                       target_url.spec());
+  GURL url = net::AppendQueryParameter(
+      wk_navigation_util::GetRestoreSessionBaseUrl(),
+      wk_navigation_util::kRestoreSessionTargetUrlQueryKey, target_url.spec());
   NSString* url_spec = base::SysUTF8ToNSString(url.spec());
   [mock_wk_list_ setCurrentURL:url_spec];
   NavigationItem* item = manager_->GetItemAtIndex(0);

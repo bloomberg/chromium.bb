@@ -16,7 +16,7 @@
 #include "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/navigation/placeholder_navigation_util.h"
-#include "ios/web/navigation/wk_based_restore_session_util.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
@@ -429,7 +429,8 @@ void WKBasedNavigationManagerImpl::Restore(
   // TODO(crbug.com/771200): Retain these original NavigationItems restored from
   // storage and associate them with new WKBackForwardListItems created after
   // history restore so information such as scroll position is restored.
-  GURL url = CreateRestoreSessionUrl(last_committed_item_index, items);
+  GURL url = wk_navigation_util::CreateRestoreSessionUrl(
+      last_committed_item_index, items);
 
   WebLoadParams params(url);
   // It's not clear how this transition type will be used and what's the impact.
@@ -485,9 +486,9 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(
   // the query parameter automatically. Set virtual URL to the target URL so the
   // internal restore_session.html is not exposed in the UI and to URL-sensing
   // components outside of //ios/web layer.
-  if (IsRestoreSessionUrl(url)) {
+  if (wk_navigation_util::IsRestoreSessionUrl(url)) {
     GURL virtual_url;
-    bool success = ExtractTargetURL(url, &virtual_url);
+    bool success = wk_navigation_util::ExtractTargetURL(url, &virtual_url);
     DCHECK(success);
     if (success)
       new_item->SetVirtualURL(virtual_url);
