@@ -2,7 +2,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 '''Creates a ADMX group policy template file from an extension schema.json file.
 
 generate_extension_admx.py --name <name> --id <id> --schema <schema_file>
@@ -32,6 +31,7 @@ import sys
 
 from optparse import OptionParser
 from xml.dom import minidom
+
 
 class AdmxGenerator(object):
   '''Generates ADMX and ADML templates'''
@@ -68,11 +68,11 @@ class AdmxGenerator(object):
 
     properties = self._schema['properties']
     for policy_name, policy_schema in properties.items():
-      self._AddPolicy(policy_name, policy_schema)
+      self._AddPolicy(policy_name, policy_schema, 'extension',
+                      self._REGISTRY_KEY)
 
     return self._ToPrettyXml(self._admx_doc.toxml()), \
            self._adml_doc.toxml()
-
 
   def _AddElement(self, parent, name):
     '''
@@ -86,8 +86,7 @@ class AdmxGenerator(object):
     parent.appendChild(element)
     return element
 
-
-  def _SetAttribute(self, elem, name, value, string_id = None):
+  def _SetAttribute(self, elem, name, value, string_id=None):
     '''
     Sets the attribute |name| = |value| on the element |elem|. If |string_id|
     is given, a new string with that ID is added to the strings table in the
@@ -101,14 +100,12 @@ class AdmxGenerator(object):
     else:
       elem.setAttribute(name, value)
 
-
   def _ToId(self, id_str):
     '''
     Replaces all non-alphanumeric characters by underscores.
 
     '''
     return re.sub('[^0-9a-zA-Z]+', '_', id_str) if id_str else None
-
 
   def _AddString(self, string_id, text):
     '''
@@ -125,7 +122,6 @@ class AdmxGenerator(object):
       self._SetAttribute(string_elem, 'id', string_id)
       string_elem.appendChild(self._adml_doc.createTextNode(text))
 
-
   def _AddNamespace(self, namespaces_elem, elem_name, namespace, prefix):
     '''
     Adds an ADMX namespace node.
@@ -135,18 +131,16 @@ class AdmxGenerator(object):
     self._SetAttribute(namespace_elem, 'namespace', namespace)
     self._SetAttribute(namespace_elem, 'prefix', prefix)
 
-
-  def _AddCategory(self, categories_elem, display_name, name, parent_category):
+  def _AddCategory(self, display_name, name, parent_category):
     '''
     Adds an ADMX category.
 
     '''
-    category_elem = self._AddElement(categories_elem, 'category')
+    category_elem = self._AddElement(self.categories_elem_, 'category')
     self._SetAttribute(category_elem, 'displayName', display_name, name)
     self._SetAttribute(category_elem, 'name', name)
     parent_category_elem = self._AddElement(category_elem, 'parentCategory')
     self._SetAttribute(parent_category_elem, 'ref', parent_category)
-
 
   def _BeginAdmlTemplate(self):
     '''
@@ -165,8 +159,7 @@ class AdmxGenerator(object):
     resources_elem = self._AddElement(root_elem, 'resources')
     self._string_table_elem = self._AddElement(resources_elem, 'stringTable')
     self._presentation_table_elem = self._AddElement(resources_elem,
-                                                    'presentationTable')
-
+                                                     'presentationTable')
 
   def _BeginAdmxTemplate(self):
     '''
@@ -194,42 +187,22 @@ class AdmxGenerator(object):
     definitions_elem = self._AddElement(supported_on_elem, 'definitions')
     definition_elem = self._AddElement(definitions_elem, 'definition')
     self._SetAttribute(definition_elem, 'displayName',
-                       'Microsoft Windows 7 or later',
-                       'SUPPORTED_WIN7')
+                       'Microsoft Windows 7 or later', 'SUPPORTED_WIN7')
     self._SetAttribute(definition_elem, 'name', 'SUPPORTED_WIN7')
 
-    categories_elem = self._AddElement(root_elem, 'categories')
-    self._AddCategory(categories_elem,
-                      self._extension_name, 'extension', 'Google:Cat_Google')
+    self.categories_elem_ = self._AddElement(root_elem, 'categories')
+    self._AddCategory(self._extension_name, 'extension', 'Google:Cat_Google')
 
     self._policies_elem = self._AddElement(root_elem, 'policies')
 
-
-  def _AddPolicy(self, policy_name, policy_schema):
+  def _AddPolicy(self, policy_name, policy_schema, parent_category, parent_key):
     '''
     Adds a policy with name |policy_name| and schema data |policy_schema| to
     the ADMX/ADML docs.
 
     '''
     policy_id = self._ToId(policy_name)
-    policy_elem = self._AddElement(self._policies_elem, 'policy')
-    policy_title = policy_schema['title']
-    policy_desc = policy_schema['description']
-    self._SetAttribute(policy_elem, 'name', policy_name)
-    self._SetAttribute(policy_elem, 'class', 'Both')
-    self._SetAttribute(policy_elem, 'displayName', policy_title,
-                       policy_id)
-    self._SetAttribute(policy_elem, 'explainText', policy_desc,
-                       policy_id + '_Explain')
-    self._SetAttribute(policy_elem, 'presentation',
-                       '$(presentation.%s)' % policy_id)
-    self._SetAttribute(policy_elem, 'key', self._REGISTRY_KEY)
-
-    parent_category_elem = self._AddElement(policy_elem, 'parentCategory')
-    self._SetAttribute(parent_category_elem, 'ref', 'extension')
-
-    supported_on_elem = self._AddElement(policy_elem, 'supportedOn')
-    self._SetAttribute(supported_on_elem, 'ref', 'SUPPORTED_WIN7')
+    policy_title = policy_schema.get('title', policy_name)
 
     if 'id' in policy_schema:
       # Keep id map for referenced schema.
@@ -241,53 +214,81 @@ class AdmxGenerator(object):
         if not key in policy_schema:
           policy_schema[key] = value
 
-    desc_id = policy_id + '_Part'
-    presentation_elem = self._AddElement(self._presentation_table_elem,
-                                        'presentation')
-    self._SetAttribute(presentation_elem, 'id', policy_id)
-    if (policy_schema['type'] == 'boolean'):
-      self._SetAttribute(policy_elem, 'valueName', policy_id)
-
-      enabled_value_elem = self._AddElement(policy_elem, 'enabledValue')
-      decimal_elem = self._AddElement(enabled_value_elem, 'decimal')
-      self._SetAttribute(decimal_elem, 'value', '1')
-
-      disabled_value_elem = self._AddElement(policy_elem, 'disabledValue')
-      decimal_elem = self._AddElement(disabled_value_elem, 'decimal')
-      self._SetAttribute(decimal_elem, 'value', '0')
-    elif (policy_schema['type'] == 'integer'):
-      elements_elem = self._AddElement(policy_elem, 'elements')
-      decimal_elem = self._AddElement(elements_elem, 'decimal')
-      self._SetAttribute(decimal_elem, 'id', desc_id)
-      self._SetAttribute(decimal_elem, 'valueName', policy_id)
-
-      textbox_elem = self._AddElement(presentation_elem, 'decimalTextBox')
-      self._SetAttribute(textbox_elem, 'refId', desc_id)
-      textbox_elem.appendChild(self._adml_doc.createTextNode(policy_title))
-    elif (policy_schema['type'] == 'string'):
-      elements_elem = self._AddElement(policy_elem, 'elements')
-      text_elem = self._AddElement(elements_elem, 'text')
-      self._SetAttribute(text_elem, 'id', desc_id)
-      self._SetAttribute(text_elem, 'valueName', policy_id)
-
-      textbox_elem = self._AddElement(presentation_elem, 'textBox')
-      self._SetAttribute(textbox_elem, 'refId', desc_id)
-      label_elem = self._AddElement(textbox_elem, 'label')
-      label_elem.appendChild(self._adml_doc.createTextNode(policy_title))
-    elif (policy_schema['type'] == 'array'):
-      elements_elem = self._AddElement(policy_elem, 'elements')
-      list_elem = self._AddElement(elements_elem, 'list')
-      self._SetAttribute(list_elem, 'id', desc_id)
-      self._SetAttribute(list_elem, 'key',
-                        self._REGISTRY_KEY + '\\' + policy_name)
-      self._SetAttribute(list_elem, 'valuePrefix', None)
-
-      listbox_elem = self._AddElement(presentation_elem, 'listBox')
-      self._SetAttribute(listbox_elem, 'refId', desc_id)
-      listbox_elem.appendChild(self._adml_doc.createTextNode(policy_title))
+    # For 'object' type items create a new category (folder) and add children.
+    if (policy_schema['type'] == 'object'):
+      self._AddCategory(policy_title, policy_id, parent_category)
+      properties = policy_schema['properties']
+      for child_policy_name, child_policy_schema in properties.items():
+        self._AddPolicy(child_policy_name, child_policy_schema, policy_id,
+                        parent_key + '\\' + policy_name)
     else:
-      raise Exception('Unhandled schema type "%s"' % policy_schema['type'])
+      policy_elem = self._AddElement(self._policies_elem, 'policy')
+      policy_desc = policy_schema.get('description', None)
+      self._SetAttribute(policy_elem, 'name', policy_name)
+      self._SetAttribute(policy_elem, 'class', 'Both')
+      self._SetAttribute(policy_elem, 'displayName', policy_title, policy_id)
+      if policy_desc:
+        self._SetAttribute(policy_elem, 'explainText', policy_desc,
+                           policy_id + '_Explain')
+      self._SetAttribute(policy_elem, 'presentation',
+                         '$(presentation.%s)' % policy_id)
+      self._SetAttribute(policy_elem, 'key', parent_key)
 
+      parent_category_elem = self._AddElement(policy_elem, 'parentCategory')
+      self._SetAttribute(parent_category_elem, 'ref', parent_category)
+
+      supported_on_elem = self._AddElement(policy_elem, 'supportedOn')
+      self._SetAttribute(supported_on_elem, 'ref', 'SUPPORTED_WIN7')
+
+      desc_id = policy_id + '_Part'
+      presentation_elem = self._AddElement(self._presentation_table_elem,
+                                           'presentation')
+      self._SetAttribute(presentation_elem, 'id', policy_id)
+      if policy_schema['type'] == 'boolean':
+        self._SetAttribute(policy_elem, 'valueName', policy_id)
+
+        enabled_value_elem = self._AddElement(policy_elem, 'enabledValue')
+        decimal_elem = self._AddElement(enabled_value_elem, 'decimal')
+        self._SetAttribute(decimal_elem, 'value', '1')
+
+        disabled_value_elem = self._AddElement(policy_elem, 'disabledValue')
+        decimal_elem = self._AddElement(disabled_value_elem, 'decimal')
+        self._SetAttribute(decimal_elem, 'value', '0')
+      elif policy_schema['type'] == 'integer':
+        elements_elem = self._AddElement(policy_elem, 'elements')
+        decimal_elem = self._AddElement(elements_elem, 'decimal')
+        self._SetAttribute(decimal_elem, 'id', desc_id)
+        self._SetAttribute(decimal_elem, 'valueName', policy_id)
+
+        textbox_elem = self._AddElement(presentation_elem, 'decimalTextBox')
+        self._SetAttribute(textbox_elem, 'refId', desc_id)
+        textbox_elem.appendChild(self._adml_doc.createTextNode(policy_title))
+      elif (policy_schema['type'] == 'string' or
+            policy_schema['type'] == 'number'):
+        # Note: 'number' are doubles, but ADMX only supports integers
+        # (decimal), thus use 'string' and rely on string-to-double
+        # conversion in RegistryDict.
+        elements_elem = self._AddElement(policy_elem, 'elements')
+        text_elem = self._AddElement(elements_elem, 'text')
+        self._SetAttribute(text_elem, 'id', desc_id)
+        self._SetAttribute(text_elem, 'valueName', policy_id)
+
+        textbox_elem = self._AddElement(presentation_elem, 'textBox')
+        self._SetAttribute(textbox_elem, 'refId', desc_id)
+        label_elem = self._AddElement(textbox_elem, 'label')
+        label_elem.appendChild(self._adml_doc.createTextNode(policy_title))
+      elif policy_schema['type'] == 'array':
+        elements_elem = self._AddElement(policy_elem, 'elements')
+        list_elem = self._AddElement(elements_elem, 'list')
+        self._SetAttribute(list_elem, 'id', desc_id)
+        self._SetAttribute(list_elem, 'key', parent_key + '\\' + policy_name)
+        self._SetAttribute(list_elem, 'valuePrefix', None)
+
+        listbox_elem = self._AddElement(presentation_elem, 'listBox')
+        self._SetAttribute(listbox_elem, 'refId', desc_id)
+        listbox_elem.appendChild(self._adml_doc.createTextNode(policy_title))
+      else:
+        raise Exception('Unhandled schema type "%s"' % policy_schema['type'])
 
   def _ToPrettyXml(self, xml):
     # return doc.toprettyxml(indent='  ')
@@ -348,17 +349,23 @@ def ConvertJsonToAdmx(extension_id, extension_name, schema_file, admx_file,
 def main():
   '''Main function, usage see top of file.'''
   parser = OptionParser(usage=__doc__)
-  parser.add_option('--name', dest='extension_name',
-                    help='extension name (e.g. Managed Bookmarks)')
-  parser.add_option('--id', dest='extension_id',
-                    help='extension id (e.g. gihmafigllmhbppdfjnfecimiohcljba)')
-  parser.add_option('--schema', dest='schema_file',
-                    help='Input schema.json file for the extension',
-                    metavar='FILE')
-  parser.add_option('--admx', dest='admx_file', help='Output ADMX file',
-                    metavar='FILE')
-  parser.add_option('--adml', dest='adml_file', help='Output ADML file',
-                    metavar='FILE')
+  parser.add_option(
+      '--name',
+      dest='extension_name',
+      help='extension name (e.g. Managed Bookmarks)')
+  parser.add_option(
+      '--id',
+      dest='extension_id',
+      help='extension id (e.g. gihmafigllmhbppdfjnfecimiohcljba)')
+  parser.add_option(
+      '--schema',
+      dest='schema_file',
+      help='Input schema.json file for the extension',
+      metavar='FILE')
+  parser.add_option(
+      '--admx', dest='admx_file', help='Output ADMX file', metavar='FILE')
+  parser.add_option(
+      '--adml', dest='adml_file', help='Output ADML file', metavar='FILE')
   (options, args) = parser.parse_args()
 
   if not options.extension_name or not options.extension_id or \
