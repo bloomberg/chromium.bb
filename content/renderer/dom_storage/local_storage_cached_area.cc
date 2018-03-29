@@ -16,6 +16,7 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/renderer/dom_storage/local_storage_area.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
+#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -346,11 +347,21 @@ void LocalStorageCachedArea::KeyDeleted(const std::vector<uint8_t>& key,
       map_->RemoveItem(key_string, nullptr);
   }
 
-  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-      blink::WebString::FromUTF16(key_string),
-      blink::WebString::FromUTF16(
-          Uint8VectorToString16(old_value, IsSessionStorage())),
-      blink::WebString(), origin_.GetURL(), page_url, originating_area);
+  if (IsSessionStorage()) {
+    WebStorageNamespaceImpl session_namespace_for_event_dispatch(namespace_id_);
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString::FromUTF16(key_string),
+        blink::WebString::FromUTF16(
+            Uint8VectorToString16(old_value, IsSessionStorage())),
+        blink::WebString(), origin_.GetURL(), page_url,
+        session_namespace_for_event_dispatch, originating_area);
+  } else {
+    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+        blink::WebString::FromUTF16(key_string),
+        blink::WebString::FromUTF16(
+            Uint8VectorToString16(old_value, IsSessionStorage())),
+        blink::WebString(), origin_.GetURL(), page_url, originating_area);
+  }
 }
 
 void LocalStorageCachedArea::AllDeleted(const std::string& source) {
@@ -377,9 +388,18 @@ void LocalStorageCachedArea::AllDeleted(const std::string& source) {
     }
   }
 
-  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-      blink::WebString(), blink::WebString(), blink::WebString(),
-      origin_.GetURL(), page_url, originating_area);
+  if (IsSessionStorage()) {
+    WebStorageNamespaceImpl session_namespace_for_event_dispatch(namespace_id_);
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString(), blink::WebString(), blink::WebString(),
+        origin_.GetURL(), page_url, session_namespace_for_event_dispatch,
+        originating_area);
+
+  } else {
+    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+        blink::WebString(), blink::WebString(), blink::WebString(),
+        origin_.GetURL(), page_url, originating_area);
+  }
 }
 
 void LocalStorageCachedArea::ShouldSendOldValueOnMutations(bool value) {
@@ -417,11 +437,21 @@ void LocalStorageCachedArea::KeyAddedOrChanged(
     }
   }
 
-  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-      blink::WebString::FromUTF16(key_string),
-      blink::WebString::FromUTF16(old_value),
-      blink::WebString::FromUTF16(new_value_string), origin_.GetURL(), page_url,
-      originating_area);
+  if (IsSessionStorage()) {
+    WebStorageNamespaceImpl session_namespace_for_event_dispatch(namespace_id_);
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString::FromUTF16(key_string),
+        blink::WebString::FromUTF16(old_value),
+        blink::WebString::FromUTF16(new_value_string), origin_.GetURL(),
+        page_url, session_namespace_for_event_dispatch, originating_area);
+
+  } else {
+    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+        blink::WebString::FromUTF16(key_string),
+        blink::WebString::FromUTF16(old_value),
+        blink::WebString::FromUTF16(new_value_string), origin_.GetURL(),
+        page_url, originating_area);
+  }
 }
 
 void LocalStorageCachedArea::EnsureLoaded() {
