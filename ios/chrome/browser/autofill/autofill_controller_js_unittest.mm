@@ -1824,4 +1824,18 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
   }
 }
 
+// Test sanitizedFieldIsEmpty
+TEST_F(AutofillControllerJsTest, SanitizedFieldIsEmpty) {
+  LoadHtml(@"<html></html>");
+  NSArray* tests = @[
+    @[ @"--  (())//||__", @YES ], @[ @"  --  (())__  ", @YES ],
+    @[ @"  --  (()c)__  ", @NO ], @[ @"123-456-7890", @NO ], @[ @"", @YES ]
+  ];
+  for (NSArray* test in tests) {
+    NSString* result = ExecuteJavaScriptWithFormat(
+        @"__gCrWeb.autofill.sanitizedFieldIsEmpty('%@');", test[0]);
+    EXPECT_NSEQ(result, test[1]);
+  }
+}
+
 }  // namespace
