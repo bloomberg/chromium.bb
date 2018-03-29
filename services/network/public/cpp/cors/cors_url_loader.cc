@@ -132,6 +132,7 @@ void CORSURLLoader::OnReceiveResponse(
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
   if (fetch_cors_flag_ && cors::IsCORSEnabledRequestMode(fetch_request_mode_)) {
+    // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
     base::Optional<mojom::CORSError> cors_error = cors::CheckAccess(
         last_response_url_, response_head.headers->response_code(),
         GetHeaderString(response_head.headers,

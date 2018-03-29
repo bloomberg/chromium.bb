@@ -44,7 +44,8 @@ base::Optional<mojom::CORSError> CheckAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     network::mojom::FetchCredentialsMode credentials_mode,
-    const url::Origin& origin);
+    const url::Origin& origin,
+    bool allow_file_origin = false);
 
 // Given a redirected-to URL, checks if the location is allowed
 // according to CORS. That is:
