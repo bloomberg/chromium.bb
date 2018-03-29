@@ -1192,22 +1192,11 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   event.SetPositionInWidget(event.PositionInWidget() +
                             touchscreen_gesture_target_.delta);
   // Temporary logging for https://crbug.com/824774.
-  // TODO(wjmaclean): Remove all this logging code once the issue is resolved.
   static auto* target_ptr_key = base::debug::AllocateCrashKeyString(
       "touchscreen-gesture-target-ptr", base::debug::CrashKeySize::Size64);
   base::debug::SetCrashKeyString(
       target_ptr_key,
       base::StringPrintf("%p", touchscreen_gesture_target_.target));
-  // Issue 824772 is a potential cause for issue 824774. Report whether
-  // devtools is in use to investigate this possibility.
-  auto* contents = root_view->host()->delegate()->GetAsWebContents();
-  const bool have_devtools =
-      contents && DevToolsAgentHost::IsDebuggerAttached(contents);
-  static auto* devtools_key = base::debug::AllocateCrashKeyString(
-      "touchscreen-gesture-target-have-devtools",
-      base::debug::CrashKeySize::Size32);
-  base::debug::SetCrashKeyString(devtools_key, std::to_string(have_devtools));
-  // Crash in 824774 appears to happen on next line.
   touchscreen_gesture_target_.target->ProcessGestureEvent(event, latency);
 }
 
