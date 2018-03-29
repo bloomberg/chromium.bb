@@ -41018,6 +41018,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="On browser window available"/>
 </enum>
 
+<enum name="SoftwareReporterRebootPromptType">
+  <int value="1" label="SettingsPageOpened"/>
+  <int value="2" label="ModalDialogShown"/>
+  <int value="3" label="NonModalDialogShown"/>
+</enum>
+
 <enum name="SoftwareReporterSequenceResult">
   <int value="1" label="Not scheduled"/>
   <int value="2" label="Timed-out"/>

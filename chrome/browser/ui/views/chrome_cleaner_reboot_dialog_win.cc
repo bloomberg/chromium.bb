@@ -70,8 +70,6 @@ void ChromeCleanerRebootDialog::Show(Browser* browser) {
       this, nullptr, browser->window()->GetNativeWindow());
   widget->SetBounds(GetDialogBounds(browser));
   widget->Show();
-
-  dialog_controller_->DialogShown();
 }
 
 // WidgetDelegate overrides.

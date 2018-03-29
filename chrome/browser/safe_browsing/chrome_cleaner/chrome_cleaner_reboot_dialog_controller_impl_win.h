@@ -40,7 +40,6 @@ class ChromeCleanerRebootDialogControllerImpl
       std::unique_ptr<PromptDelegate> delegate);
 
   // ChromeCleanerRebootDialogController overrides.
-  void DialogShown() override;
   void Accept() override;
   void Cancel() override;
   void Close() override;

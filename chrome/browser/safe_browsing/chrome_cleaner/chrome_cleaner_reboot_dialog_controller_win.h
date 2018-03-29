@@ -16,9 +16,6 @@ namespace safe_browsing {
 // the user interacts with it.
 class ChromeCleanerRebootDialogController {
  public:
-  // Called by the reboot dialog when the dialog has been shown. Used for
-  // reporting metrics.
-  virtual void DialogShown() = 0;
   // Called by the reboot dialog when user accepts the reboot prompt. Once
   // |Accept()| has been called, the controller will eventually delete itself
   // and no member functions should be called after that.
