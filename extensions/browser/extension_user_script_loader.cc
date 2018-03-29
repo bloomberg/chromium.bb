@@ -42,20 +42,43 @@ namespace {
 
 using SubstitutionMap = std::map<std::string, std::string>;
 
+struct VerifyContentInfo {
+  VerifyContentInfo(const scoped_refptr<ContentVerifier>& verifier,
+                    const ExtensionId& extension_id,
+                    const base::FilePath& extension_root,
+                    const base::FilePath relative_path,
+                    const std::string& content)
+      : verifier(verifier),
+        extension_id(extension_id),
+        extension_root(extension_root),
+        relative_path(relative_path),
+        content(content) {}
+
+  scoped_refptr<ContentVerifier> verifier;
+  ExtensionId extension_id;
+  base::FilePath extension_root;
+  base::FilePath relative_path;
+  std::string content;
+};
+
 // Verifies file contents as they are read.
-void VerifyContent(const scoped_refptr<ContentVerifier>& verifier,
-                   const std::string& extension_id,
-                   const base::FilePath& extension_root,
-                   const base::FilePath& relative_path,
-                   const std::string& content) {
+void VerifyContent(const VerifyContentInfo& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  scoped_refptr<ContentVerifyJob> job(
-      verifier->CreateJobFor(extension_id, extension_root, relative_path));
+  DCHECK(info.verifier);
+  ContentVerifier* verifier = info.verifier.get();
+  scoped_refptr<ContentVerifyJob> job(verifier->CreateJobFor(
+      info.extension_id, info.extension_root, info.relative_path));
   if (job.get()) {
-    job->Start(verifier.get());
-    job->BytesRead(content.size(), content.data());
+    job->Start(verifier);
+    job->BytesRead(info.content.size(), info.content.data());
     job->DoneReading();
   }
+}
+
+void ForwardVerifyContentToIO(const VerifyContentInfo& info) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   base::BindOnce(&VerifyContent, info));
 }
 
 // Loads user scripts from the extension who owns these scripts.
@@ -89,11 +112,15 @@ bool LoadScriptContent(const HostID& host_id,
       return false;
     }
     if (verifier.get()) {
+      // Call VerifyContent() after yielding on UI thread so it is ensured that
+      // ContentVerifierIOData is populated at the time we call VerifyContent().
       content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&VerifyContent, verifier, host_id.id(),
-                     script_file->extension_root(),
-                     script_file->relative_path(), content));
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(
+              &ForwardVerifyContentToIO,
+              VerifyContentInfo(verifier, host_id.id(),
+                                script_file->extension_root(),
+                                script_file->relative_path(), content)));
     }
   }
 
