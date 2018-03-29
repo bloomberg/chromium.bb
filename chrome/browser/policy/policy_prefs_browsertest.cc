@@ -455,15 +455,9 @@ class PolicyPrefsTest : public InProcessBrowserTest {
   MockConfigurationPolicyProvider provider_;
 };
 
-// Flaky on Win only. https://crbug.com/822975
-#if defined(OS_WIN)
-#define MAYBE_PolicyToPrefsMapping DISABLED_PolicyToPrefsMapping
-#else
-#define MAYBE_PolicyToPrefsMapping PolicyToPrefsMapping
-#endif
 // Verifies that policies make their corresponding preferences become managed,
 // and that the user can't override that setting.
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, MAYBE_PolicyToPrefsMapping) {
+IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
   Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
   ASSERT_TRUE(chrome_schema.valid());
   PrefService* local_state = g_browser_process->local_state();
