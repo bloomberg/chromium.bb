@@ -1912,6 +1912,8 @@
       'Chromium Win 10 GCE Tests',
       # chromium.memory
       'Linux TSan Tests',
+      # chromium.win; temporary, https://crbug.com/826735
+      'Win10 Tests x64',
     ],
     'modifications': {
       # chromium.clang
