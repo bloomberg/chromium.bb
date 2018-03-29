@@ -28,10 +28,10 @@
 #include "ui/gl/gl_image.h"
 
 namespace gpu {
+class DecoderContext;
 class ServiceDiscardableManager;
 
 namespace gles2 {
-class GLES2Decoder;
 class GLStreamTextureImage;
 struct ContextState;
 struct DecoderFramebufferState;
@@ -421,11 +421,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
 
   // Clears any renderable uncleared levels.
   // Returns false if a GL error was generated.
-  bool ClearRenderableLevels(GLES2Decoder* decoder);
+  bool ClearRenderableLevels(DecoderContext* decoder);
 
   // Clears the level.
   // Returns false if a GL error was generated.
-  bool ClearLevel(GLES2Decoder* decoder, GLenum target, GLint level);
+  bool ClearLevel(DecoderContext* decoder, GLenum target, GLint level);
 
   // Sets a texture parameter.
   // TODO(gman): Expand to SetParameteriv,fv
@@ -692,7 +692,7 @@ struct DecoderTextureState {
 // texture complete checking.
 //
 // NOTE: To support shared resources an instance of this class will need to be
-// shared by multiple GLES2Decoders.
+// shared by multiple DecoderContexts.
 class GPU_GLES2_EXPORT TextureManager
     : public base::trace_event::MemoryDumpProvider {
  public:
@@ -862,11 +862,13 @@ class GPU_GLES2_EXPORT TextureManager
   void MarkMipmapsGenerated(TextureRef* ref);
 
   // Clears any uncleared renderable levels.
-  bool ClearRenderableLevels(GLES2Decoder* decoder, TextureRef* ref);
+  bool ClearRenderableLevels(DecoderContext* decoder, TextureRef* ref);
 
   // Clear a specific level.
-  bool ClearTextureLevel(
-      GLES2Decoder* decoder, TextureRef* ref, GLenum target, GLint level);
+  bool ClearTextureLevel(DecoderContext* decoder,
+                         TextureRef* ref,
+                         GLenum target,
+                         GLint level);
 
   // Creates a new texture info.
   TextureRef* CreateTexture(GLuint client_id, GLuint service_id);
@@ -1050,7 +1052,7 @@ class GPU_GLES2_EXPORT TextureManager
       // Presumes the pointer is valid.
       TextureRef** texture_ref);
 
-  void ValidateAndDoTexSubImage(GLES2Decoder* decoder,
+  void ValidateAndDoTexSubImage(DecoderContext* decoder,
                                 DecoderTextureState* texture_state,
                                 ContextState* state,
                                 DecoderFramebufferState* framebuffer_state,

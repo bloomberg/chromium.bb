@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -187,6 +188,28 @@ ScopedTextureBinder::~ScopedTextureBinder() {
   state_->RestoreActiveTexture();
 }
 
+// Temporarily changes a decoder's PIXEL_UNPACK_BUFFER to 0 and set pixel unpack
+// params to default, and restore them when this object goes out of scope.
+class ScopedPixelUnpackState {
+ public:
+  explicit ScopedPixelUnpackState(ContextState* state);
+  ~ScopedPixelUnpackState();
+
+ private:
+  ContextState* state_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedPixelUnpackState);
+};
+
+ScopedPixelUnpackState::ScopedPixelUnpackState(ContextState* state)
+    : state_(state) {
+  DCHECK(state_);
+  state_->PushTextureUnpackState();
+}
+
+ScopedPixelUnpackState::~ScopedPixelUnpackState() {
+  state_->RestoreUnpackState();
+}
+
 }  // namespace
 
 class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
@@ -268,6 +291,33 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                  bool can_bind_to_sampler) override;
   gles2::ContextGroup* GetContextGroup() override;
   gles2::ErrorState* GetErrorState() override;
+  bool IsCompressedTextureFormat(unsigned format) override;
+  bool ClearLevel(gles2::Texture* texture,
+                  unsigned target,
+                  int level,
+                  unsigned format,
+                  unsigned type,
+                  int xoffset,
+                  int yoffset,
+                  int width,
+                  int height) override;
+  bool ClearCompressedTextureLevel(gles2::Texture* texture,
+                                   unsigned target,
+                                   int level,
+                                   unsigned format,
+                                   int width,
+                                   int height) override;
+  bool ClearLevel3D(gles2::Texture* texture,
+                    unsigned target,
+                    int level,
+                    unsigned format,
+                    unsigned type,
+                    int width,
+                    int height,
+                    int depth) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
 
   // ErrorClientState implementation.
   void OnContextLostError() override;
@@ -1126,6 +1176,132 @@ gles2::ErrorState* RasterDecoderImpl::GetErrorState() {
   return state_.GetErrorState();
 }
 
+bool RasterDecoderImpl::IsCompressedTextureFormat(unsigned format) {
+  return feature_info_->validators()->compressed_texture_format.IsValid(format);
+}
+
+bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
+                                   unsigned target,
+                                   int level,
+                                   unsigned format,
+                                   unsigned type,
+                                   int xoffset,
+                                   int yoffset,
+                                   int width,
+                                   int height) {
+  DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY &&
+         target != GL_TEXTURE_EXTERNAL_OES);
+  uint32_t channels = GLES2Util::GetChannelsForFormat(format);
+  if (channels & GLES2Util::kDepth) {
+    DCHECK(false) << "depth not supported";
+    return false;
+  }
+
+  const uint32_t kMaxZeroSize = 1024 * 1024 * 4;
+
+  uint32_t size;
+  uint32_t padded_row_size;
+  if (!GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
+                                        state_.unpack_alignment, &size, nullptr,
+                                        &padded_row_size)) {
+    return false;
+  }
+
+  TRACE_EVENT1("gpu", "RasterDecoderImpl::ClearLevel", "size", size);
+
+  int tile_height;
+
+  if (size > kMaxZeroSize) {
+    if (kMaxZeroSize < padded_row_size) {
+      // That'd be an awfully large texture.
+      return false;
+    }
+    // We should never have a large total size with a zero row size.
+    DCHECK_GT(padded_row_size, 0U);
+    tile_height = kMaxZeroSize / padded_row_size;
+    if (!GLES2Util::ComputeImageDataSizes(width, tile_height, 1, format, type,
+                                          state_.unpack_alignment, &size,
+                                          nullptr, nullptr)) {
+      return false;
+    }
+  } else {
+    tile_height = height;
+  }
+
+  api()->glBindTextureFn(texture->target(), texture->service_id());
+  {
+    // Add extra scope to destroy zero and the object it owns right
+    // after its usage.
+    // Assumes the size has already been checked.
+    std::unique_ptr<char[]> zero(new char[size]);
+    memset(zero.get(), 0, size);
+
+    ScopedPixelUnpackState reset_restore(&state_);
+    GLint y = 0;
+    while (y < height) {
+      GLint h = y + tile_height > height ? height - y : tile_height;
+      api()->glTexSubImage2DFn(
+          target, level, xoffset, yoffset + y, width, h,
+          TextureManager::AdjustTexFormat(feature_info_.get(), format), type,
+          zero.get());
+      y += tile_height;
+    }
+  }
+
+  TextureRef* bound_texture =
+      texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
+  api()->glBindTextureFn(texture->target(),
+                         bound_texture ? bound_texture->service_id() : 0);
+  DCHECK(glGetError() == GL_NO_ERROR);
+  return true;
+}
+
+bool RasterDecoderImpl::ClearCompressedTextureLevel(gles2::Texture* texture,
+                                                    unsigned target,
+                                                    int level,
+                                                    unsigned format,
+                                                    int width,
+                                                    int height) {
+  DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY);
+  // This code path can only be called if the texture was originally
+  // allocated via TexStorage2D. Note that TexStorage2D is exposed
+  // internally for ES 2.0 contexts, but compressed texture support is
+  // not part of that exposure.
+  DCHECK(feature_info_->IsWebGL2OrES3Context());
+
+  GLsizei bytes_required = 0;
+  std::string error_str;
+  if (!GetCompressedTexSizeInBytes("ClearCompressedTextureLevel", width, height,
+                                   1, format, &bytes_required,
+                                   state_.GetErrorState())) {
+    return false;
+  }
+
+  TRACE_EVENT1("gpu", "RasterDecoderImpl::ClearCompressedTextureLevel",
+               "bytes_required", bytes_required);
+
+  api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
+  {
+    // Add extra scope to destroy zero and the object it owns right
+    // after its usage.
+    std::unique_ptr<char[]> zero(new char[bytes_required]);
+    memset(zero.get(), 0, bytes_required);
+    api()->glBindTextureFn(texture->target(), texture->service_id());
+    api()->glCompressedTexSubImage2DFn(target, level, 0, 0, width, height,
+                                       format, bytes_required, zero.get());
+  }
+  TextureRef* bound_texture =
+      texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
+  api()->glBindTextureFn(texture->target(),
+                         bound_texture ? bound_texture->service_id() : 0);
+  gles2::Buffer* bound_buffer =
+      buffer_manager()->GetBufferInfoForTarget(&state_, GL_PIXEL_UNPACK_BUFFER);
+  if (bound_buffer) {
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_buffer->service_id());
+  }
+  return true;
+}
+
 void RasterDecoderImpl::OnContextLostError() {
   NOTIMPLEMENTED();
 }
@@ -1763,19 +1939,13 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
   for (int ii = 0; ii < levels; ++ii) {
     uint32_t size;
     if (is_compressed_format) {
-      DCHECK_EQ(static_cast<unsigned int>(GL_ETC1_RGB8_OES), internal_format);
-      base::CheckedNumeric<uint32_t> bytes_required(0);
-      const int kS3TCBlockWidth = 4;
-      const int kS3TCBlockHeight = 4;
-      const int kS3TCDXT1BlockSize = 8;
-      bytes_required = (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
-      bytes_required *= (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
-      bytes_required *= kS3TCDXT1BlockSize;
-      if (!bytes_required.IsValid()) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "invalid size");
+      GLsizei level_size;
+      if (!GetCompressedTexSizeInBytes("glTexStorage2D", level_width,
+                                       level_height, 1, internal_format,
+                                       &level_size, state_.GetErrorState())) {
         return;
       }
-      size = bytes_required.ValueOrDefault(0);
+      size = static_cast<uint32_t>(level_size);
     } else {
       if (!GLES2Util::ComputeImageDataSizesES3(
               level_width, level_height, 1 /* level_depth */, format, type,

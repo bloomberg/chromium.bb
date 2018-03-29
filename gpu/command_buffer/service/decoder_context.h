@@ -35,6 +35,7 @@ class ContextGroup;
 class ErrorState;
 class FeatureInfo;
 class GpuFenceManager;
+class Texture;
 struct ContextState;
 struct DisallowedFeatures;
 }  // namespace gles2
@@ -176,6 +177,42 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
   //
   virtual gles2::ContextGroup* GetContextGroup() = 0;
   virtual gles2::ErrorState* GetErrorState() = 0;
+
+  //
+  // Methods required by Texture.
+  //
+  // Indicates whether a given internal format is one for a compressed
+  // texture.
+  virtual bool IsCompressedTextureFormat(unsigned format) = 0;
+  // Clears a level sub area of a 2D texture.
+  // Returns false if a GL error should be generated.
+  virtual bool ClearLevel(gles2::Texture* texture,
+                          unsigned target,
+                          int level,
+                          unsigned format,
+                          unsigned type,
+                          int xoffset,
+                          int yoffset,
+                          int width,
+                          int height) = 0;
+  // Clears a level sub area of a compressed 2D texture.
+  // Returns false if a GL error should be generated.
+  virtual bool ClearCompressedTextureLevel(gles2::Texture* texture,
+                                           unsigned target,
+                                           int level,
+                                           unsigned format,
+                                           int width,
+                                           int height) = 0;
+  // Clears a level of a 3D texture.
+  // Returns false if a GL error should be generated.
+  virtual bool ClearLevel3D(gles2::Texture* texture,
+                            unsigned target,
+                            int level,
+                            unsigned format,
+                            unsigned type,
+                            int width,
+                            int height,
+                            int depth) = 0;
 };
 
 }  // namespace gpu

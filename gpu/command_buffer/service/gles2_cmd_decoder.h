@@ -49,7 +49,6 @@ class ImageManager;
 class Logger;
 class Outputter;
 class ShaderTranslatorInterface;
-class Texture;
 class TransformFeedbackManager;
 class VertexArrayManager;
 
@@ -178,42 +177,6 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
   // If no such record is found then return false.
   virtual bool GetServiceTextureId(uint32_t client_texture_id,
                                    uint32_t* service_texture_id);
-
-  // Clears a level sub area of a 2D texture.
-  // Returns false if a GL error should be generated.
-  virtual bool ClearLevel(Texture* texture,
-                          unsigned target,
-                          int level,
-                          unsigned format,
-                          unsigned type,
-                          int xoffset,
-                          int yoffset,
-                          int width,
-                          int height) = 0;
-
-  // Clears a level sub area of a compressed 2D texture.
-  // Returns false if a GL error should be generated.
-  virtual bool ClearCompressedTextureLevel(Texture* texture,
-                                           unsigned target,
-                                           int level,
-                                           unsigned format,
-                                           int width,
-                                           int height) = 0;
-
-  // Indicates whether a given internal format is one for a compressed
-  // texture.
-  virtual bool IsCompressedTextureFormat(unsigned format) = 0;
-
-  // Clears a level of a 3D texture.
-  // Returns false if a GL error should be generated.
-  virtual bool ClearLevel3D(Texture* texture,
-                            unsigned target,
-                            int level,
-                            unsigned format,
-                            unsigned type,
-                            int width,
-                            int height,
-                            int depth) = 0;
 
   virtual void WaitForReadPixels(base::OnceClosure callback) = 0;
 
