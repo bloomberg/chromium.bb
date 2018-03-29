@@ -114,7 +114,7 @@ public class RecentTabsPage
             ApiCompatibilityUtils.setPaddingRelative(recentTabsRoot,
                     ApiCompatibilityUtils.getPaddingStart(recentTabsRoot), 0,
                     ApiCompatibilityUtils.getPaddingEnd(recentTabsRoot),
-                    resources.getDimensionPixelSize(R.dimen.bottom_control_container_height));
+                    resources.getDimensionPixelSize(R.dimen.bottom_control_container_peek_height));
         }
 
         onUpdated();

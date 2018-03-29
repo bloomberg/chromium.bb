@@ -21,7 +21,7 @@
         android:id="@+id/control_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/bottom_control_container_height" >
+        android:minHeight="@dimen/bottom_control_container_peek_height" >
 
         <view
             class="org.chromium.chrome.browser.toolbar.ToolbarControlContainer$ToolbarViewResourceFrameLayout"
@@ -42,7 +42,7 @@
                 class="org.chromium.chrome.browser.widget.bottomsheet.TouchRestrictingFrameLayout"
                 android:id="@+id/toolbar_holder"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_control_container_height"
+                android:layout_height="@dimen/bottom_control_container_peek_height"
                 android:layout_marginTop="@dimen/toolbar_shadow_height" >
 
                 <ViewStub
@@ -65,7 +65,7 @@
                 android:inflatedId="@+id/find_toolbar"
                 android:layout_marginTop="@dimen/toolbar_shadow_height"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_control_container_height"
+                android:layout_height="@dimen/bottom_control_container_peek_height"
                 android:layout="@layout/find_toolbar" />
 
         </view>

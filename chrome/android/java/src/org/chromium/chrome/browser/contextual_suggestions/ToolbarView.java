@@ -16,6 +16,7 @@ import org.chromium.chrome.R;
 public class ToolbarView extends LinearLayout {
     private View mCloseButton;
     private TextView mTitle;
+    private View mShadow;
 
     public ToolbarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -27,6 +28,7 @@ public class ToolbarView extends LinearLayout {
 
         mCloseButton = findViewById(R.id.close_button);
         mTitle = (TextView) findViewById(R.id.title);
+        mShadow = findViewById(R.id.shadow);
     }
 
     void setCloseButtonOnClickListener(OnClickListener listener) {
@@ -35,5 +37,9 @@ public class ToolbarView extends LinearLayout {
 
     void setTitle(String title) {
         mTitle.setText(title);
+    }
+
+    void setShadowVisibility(boolean visible) {
+        mShadow.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 }

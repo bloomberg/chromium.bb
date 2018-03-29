@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,6 +65,15 @@ class ContentCoordinator {
 
         mModelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
         mModel.mClusterListObservable.addObserver(mModelChangeProcessor);
+
+        // TODO(twellington): Should this be a proper model property, set by the mediator and bound
+        // to the RecyclerView?
+        mRecyclerView.addOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                mModel.setToolbarShadowVisibility(mRecyclerView.canScrollVertically(-1));
+            }
+        });
     }
 
     /** @return The content {@link View}. */

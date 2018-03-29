@@ -208,7 +208,7 @@
     <!-- Full Screen Dimensions -->
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
-    <dimen name="bottom_control_container_height">40dp</dimen>
+    <dimen name="bottom_control_container_peek_height">40dp</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
     <dimen name="fullscreen_activity_control_container_height">0dp</dimen>
 
@@ -253,7 +253,6 @@
     <dimen name="toolbar_button_width">48dp</dimen>
     <dimen name="toolbar_handle_height">3dp</dimen>
     <dimen name="toolbar_handle_width">20dp</dimen>
-    <dimen name="toolbar_handle_corner_radius">1.5dp</dimen>
     <dimen name="toolbar_handle_margin_top">12dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
@@ -550,7 +549,4 @@
     <item type="dimen" name="dialog_fixed_width_minor">100%</item>
     <item type="dimen" name="dialog_fixed_height_major">100%</item>
     <item type="dimen" name="dialog_fixed_height_minor">100%</item>
-
-    <!-- Contextual suggestions dimensions -->
-    <dimen name="contextual_suggestions_expanded_toolbar_height">56dp</dimen>
 </resources>

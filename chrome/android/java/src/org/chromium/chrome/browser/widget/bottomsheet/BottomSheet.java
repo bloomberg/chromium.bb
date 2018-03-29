@@ -519,7 +519,7 @@ public class BottomSheet extends FrameLayout
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
         mToolbarHeight = activity.getResources().getDimensionPixelSize(
-                R.dimen.bottom_control_container_height);
+                R.dimen.bottom_control_container_peek_height);
 
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(mActivity, this);

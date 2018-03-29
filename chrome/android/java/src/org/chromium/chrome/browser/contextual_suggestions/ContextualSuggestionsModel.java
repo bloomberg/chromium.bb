@@ -36,6 +36,7 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
     ClusterListObservable mClusterListObservable = new ClusterListObservable();
     private OnClickListener mCloseButtonOnClickListener;
     private String mTitle;
+    private boolean mToolbarShadowVisibility;
 
     /** @param suggestions The current list of clusters. */
     void setClusterList(ClusterList clusterList) {
@@ -74,5 +75,16 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
      */
     boolean hasSuggestions() {
         return getClusterList().getItemCount() > 0;
+    }
+
+    /** @param visible Whether the toolbar shadow should be visible. */
+    void setToolbarShadowVisibility(boolean visible) {
+        mToolbarShadowVisibility = visible;
+        notifyPropertyChanged(new PropertyKey(PropertyKey.TOOLBAR_SHADOW_VISIBILITY));
+    }
+
+    /** @return Whether the toolbar shadow should be visible. */
+    boolean getToolbarShadowVisibility() {
+        return mToolbarShadowVisibility;
     }
 }

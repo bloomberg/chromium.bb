@@ -41,7 +41,7 @@ public abstract class BasicNativePage implements NativePage {
         int bottomMargin = 0;
         if (activity instanceof ChromeActivity
                 && ((ChromeActivity) activity).getBottomSheet() != null) {
-            bottomMargin = res.getDimensionPixelSize(R.dimen.bottom_control_container_height);
+            bottomMargin = res.getDimensionPixelSize(R.dimen.bottom_control_container_peek_height);
         } else {
             topMargin = res.getDimensionPixelSize(R.dimen.tab_strip_height)
                     + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
