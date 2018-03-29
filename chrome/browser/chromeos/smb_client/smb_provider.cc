@@ -57,5 +57,9 @@ const IconSet& SmbProvider::GetIconSet() const {
   return icon_set_;
 }
 
+bool SmbProvider::RequestMount(Profile* profile) {
+  return false;
+}
+
 }  // namespace smb_client
 }  // namespace chromeos
