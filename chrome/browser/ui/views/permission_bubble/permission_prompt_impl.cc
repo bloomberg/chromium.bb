@@ -73,9 +73,7 @@ class PermissionsBubbleDialogDelegateView
 
   void CloseBubble();
 
-  // BubbleDialogDelegateView:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
-  base::string16 GetAccessibleWindowTitle() const override;
+  // BubbleDialogDelegateView overrides.
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -176,17 +174,6 @@ void PermissionsBubbleDialogDelegateView::AddedToWidget() {
   // truncated from the least significant side. Explicitly disable multiline.
   title->SetMultiLine(false);
   GetBubbleFrameView()->SetTitleView(std::move(title));
-}
-
-ax::mojom::Role PermissionsBubbleDialogDelegateView::GetAccessibleWindowRole()
-    const {
-  return ax::mojom::Role::kAlertDialog;
-}
-
-base::string16 PermissionsBubbleDialogDelegateView::GetAccessibleWindowTitle()
-    const {
-  return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_ACCESSIBLE_TITLE,
-                                    name_or_origin_.name_or_origin);
 }
 
 bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {

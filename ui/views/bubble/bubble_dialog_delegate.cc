@@ -250,6 +250,13 @@ gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {
       adjust_if_offscreen_ && !anchor_minimized && has_anchor);
 }
 
+ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() const {
+  // We return |ax::mojom::Role::kAlertDialog| which will make screen
+  // readers announce the contents of the bubble dialog as soon as it appears,
+  // as long as we also fire |ax::mojom::Event::kAlert|.
+  return ax::mojom::Role::kAlertDialog;
+}
+
 void BubbleDialogDelegateView::OnNativeThemeChanged(
     const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
@@ -325,9 +332,11 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
   // the bubble in its entirety rather than just its title and initially focused
   // view.  See http://crbug.com/474622 for details.
   if (widget == GetWidget() && visible) {
-    if (GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog)
+    if (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
+        GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog) {
       widget->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
                                                       true);
+    }
   }
 }
 
