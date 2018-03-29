@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 74: 'webkitURL' is deprecated. Please use 'URL' instead.
+CONSOLE WARNING: line 78: 'webkitURL' is deprecated. Please use 'URL' instead.
 This test documents all interface attributes and methods on the global window object and element instances.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -1094,28 +1094,6 @@ interface DataTransferItemList
     method clear
     method constructor
     method remove
-interface DataView
-    attribute @@toStringTag
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    method constructor
-    method getFloat32
-    method getFloat64
-    method getInt16
-    method getInt32
-    method getInt8
-    method getUint16
-    method getUint32
-    method getUint8
-    method setFloat32
-    method setFloat64
-    method setInt16
-    method setInt32
-    method setInt8
-    method setUint16
-    method setUint32
-    method setUint8
 interface DelayNode : AudioNode
     attribute @@toStringTag
     getter delayTime
