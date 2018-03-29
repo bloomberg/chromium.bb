@@ -820,6 +820,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   [self handleKeyEvent:&event];
 }
 
+- (void)flagsChanged:(NSEvent*)theEvent {
+  ui::KeyEvent event(theEvent);
+  [self handleKeyEvent:&event];
+}
+
 - (void)scrollWheel:(NSEvent*)theEvent {
   if (!hostedView_)
     return;
