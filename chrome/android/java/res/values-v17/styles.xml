@@ -703,16 +703,20 @@
         <item name="android:paddingBottom">10dp</item>
         <item name="android:paddingTop">10dp</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textAppearance">@style/RobotoMediumStyle</item>
+        <item name="android:textAppearance">@style/BlackButtonText</item>
+    </style>
+    <style name="DataUsageBreakdownSavedColumnLabel" parent="DataUsageBreakdownColumnLabel">
+        <item name="android:textAppearance">@style/BlueButtonText2</item>
     </style>
     <style name="DataUsageBreakdownColumnItem">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:paddingBottom">10dp</item>
         <item name="android:paddingTop">10dp</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textColor">@color/data_reduction_breakdown_text_color</item>
-        <item name="android:textSize">12sp</item>
+        <item name="android:textAppearance">@style/BlackCaption</item>
+    </style>
+    <style name="DataUsageBreakdownSavedColumnItem" parent="DataUsageBreakdownColumnItem">
+        <item name="android:textAppearance">@style/BlueLink3</item>
     </style>
 
     <!-- Incognito New Tab Page -->

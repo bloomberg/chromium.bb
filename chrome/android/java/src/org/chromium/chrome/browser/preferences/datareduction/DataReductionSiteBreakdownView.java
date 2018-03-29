@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -44,10 +43,6 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     private TextView mDataSavedTitle;
     private List<DataReductionDataUseItem> mDataUseItems;
     private boolean mTextViewsNeedAttributesSet;
-    @ColorInt
-    private int mTextColor;
-    @ColorInt
-    private int mLightTextColor;
 
     public DataReductionSiteBreakdownView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -59,10 +54,6 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         mTableLayout = (TableLayout) findViewById(R.id.data_reduction_proxy_breakdown_table);
         mDataUsedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_used_title);
         mDataSavedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_saved_title);
-        mTextColor = ApiCompatibilityUtils.getColor(
-                getContext().getResources(), R.color.data_reduction_breakdown_text_color);
-        mLightTextColor = ApiCompatibilityUtils.getColor(
-                getContext().getResources(), R.color.data_reduction_breakdown_light_text_color);
 
         mDataUsedTitle.setOnClickListener(new OnClickListener() {
             @Override
@@ -119,7 +110,6 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     }
 
     private void setTextViewSortedAttributes(TextView textView) {
-        textView.setTextColor(mTextColor);
         Drawable arrowDrawable = getStartCompoundDrawable(textView);
         // If the drawable has not been created yet, set mTextViewsNeedAttributesSet so that
         // onMeasure will set the attributes after the drawable is created.
@@ -127,12 +117,14 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
             mTextViewsNeedAttributesSet = true;
             return;
         }
+        // Expose the arrow for this sorted column using its text color.
         arrowDrawable.mutate();
         arrowDrawable.setAlpha(255);
+        arrowDrawable.setColorFilter(new android.graphics.PorterDuffColorFilter(
+                textView.getCurrentTextColor(), android.graphics.PorterDuff.Mode.SRC_IN));
     }
 
     private void setTextViewUnsortedAttributes(TextView textView) {
-        textView.setTextColor(mLightTextColor);
         Drawable arrowDrawable = getStartCompoundDrawable(textView);
         // If the drawable has not been created yet, set mTextViewsNeedAttributesSet so that
         // onMeasure will set the attributes after the drawable is created.
@@ -140,8 +132,10 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
             mTextViewsNeedAttributesSet = true;
             return;
         }
+        // Clear the arrow from this unsorted column.
         arrowDrawable.mutate();
         arrowDrawable.setAlpha(0);
+        arrowDrawable.clearColorFilter();
     }
 
     private Drawable getStartCompoundDrawable(TextView textView) {

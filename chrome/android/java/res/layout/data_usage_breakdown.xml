@@ -20,7 +20,7 @@
         android:paddingBottom="12dp"
         android:paddingTop="26dp"
         android:singleLine="true"
-        android:text="@string/data_reduction_data_usage_breakdown_title"
+        android:text="@string/details_link"
         android:textAppearance="@style/PreferenceCategoryTextStyle" />
 
     <TableLayout
@@ -41,7 +41,6 @@
                 android:layout_width="0dp"
                 android:layout_weight="0"
                 android:layout_gravity="start"
-                android:textColor="@color/data_reduction_breakdown_light_text_color"
                 style="@style/DataUsageBreakdownColumnLabel" />
 
             <TextView
@@ -62,7 +61,7 @@
                 android:drawablePadding="3dp"
                 android:drawableStart="@drawable/data_reduction_breakdown_sort_arrow"
                 android:gravity="end"
-                style="@style/DataUsageBreakdownColumnLabel" />
+                style="@style/DataUsageBreakdownSavedColumnLabel" />
 
         </TableRow>
 

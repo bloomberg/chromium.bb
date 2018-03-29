@@ -143,7 +143,7 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SAVE" desc="Label for a button to save a change. Used in multiple contexts. [CHAR-LIMIT=20]">
         Save
       </message>
-      <message name="IDS_DETAILS_LINK" desc="The label of the link to open the detailed information.">
+      <message name="IDS_DETAILS_LINK" desc="In 1) Settings > Clean up computer (desktop), a link to open details of incompatible applications. In 2) Settings > Data Saver (mobile), static title for data usage breakdown." meaning="Short for 'view details'. Link; static title.">
         Details
       </message>
       <message name="IDS_DONE" desc="Label for a button to save a change or finish editing data. Used in multiple contexts. [CHAR-LIMIT=20]">
@@ -1105,16 +1105,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         <ph name="PERCENT">%1$s<ex>49%</ex></ph> data savings
       </message>
       <message name="IDS_DATA_REDUCTION_SAVINGS_LABEL" desc="Data Reduction statistics label that states the amount of mobile data that was saved by Data Saver. Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
-        Data saved:
+        data saved
       </message>
       <message name="IDS_DATA_REDUCTION_USAGE_LABEL" desc="Data Reduction statistics label that states the amount of data that was used by Chrome when Data Saver is enabled.">
-        Data used:
+        data used
       </message>
       <message name="IDS_DATA_REDUCTION_PROXY_UNREACHABLE_WARN" desc="Warning message shown when Google data reduction proxy servers are not reachable.">
         Chrome is unable to reach Google servers for data compression. Your data savings may be limited.
-      </message>
-      <message name="IDS_DATA_REDUCTION_DATA_USAGE_BREAKDOWN_TITLE" desc="Title for the data usage breakdown on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved.">
-        Data usage breakdown
       </message>
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_SITE_TITLE" desc="Title for the sites column on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved.">
         Site
