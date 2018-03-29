@@ -21,6 +21,7 @@ var xrDevice = null;
 var onMagicWindowXRFrameCallback = null;
 var onExclusiveXRFrameCallback = null;
 var shouldSubmitFrame = true;
+var hasPresentedFrame = false;
 
 var magicWindowSession = null;
 var magicWindowFrameOfRef = null;
@@ -99,6 +100,7 @@ function onXRFrame(t, frame) {
     gl.clearColor(1.0, 0.0, 0.0, 1.0);
   }
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  hasPresentedFrame = true;
 }
 
 // Try to get an XRDevice and set up a non-exclusive session with it

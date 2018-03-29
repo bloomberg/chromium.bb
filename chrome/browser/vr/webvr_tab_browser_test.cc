@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/vr/test/vr_browser_test.h"
-#include "chrome/browser/vr/test/vr_transition_utils.h"
+#include "chrome/browser/vr/test/vr_xr_browser_test.h"
+#include "chrome/browser/vr/test/xr_browser_test.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -14,18 +15,26 @@
 
 namespace vr {
 
-// Tests that non-focused tabs cannot get pose information
+// Tests that non-focused tabs cannot get pose information from WebVR/WebXR
+void TestPoseDataUnfocusedTabImpl(VrXrBrowserTestBase* t,
+                                  std::string filename) {
+  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
+  t->ExecuteStepAndWait("stepCheckFrameDataWhileFocusedTab()",
+                        t->GetFirstTabWebContents());
+  chrome::AddTabAt(t->browser(), GURL(url::kAboutBlankURL),
+                   -1 /* index, append to end */, true /* foreground */);
+  t->ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
+                        t->GetFirstTabWebContents());
+  t->EndTest(t->GetFirstTabWebContents());
+}
+
 IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
                        REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
-  LoadUrlAndAwaitInitialization(
-      GetHtmlTestFile("test_pose_data_unfocused_tab"));
-  ExecuteStepAndWait("stepCheckFrameDataWhileFocusedTab()",
-                     GetFirstTabWebContents());
-  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL),
-                   -1 /* index, append to end */, true /* foreground */);
-  ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
-                     GetFirstTabWebContents());
-  EndTest(GetFirstTabWebContents());
+  TestPoseDataUnfocusedTabImpl(this, "test_pose_data_unfocused_tab");
+}
+IN_PROC_BROWSER_TEST_F(XrBrowserTestStandard,
+                       REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
+  TestPoseDataUnfocusedTabImpl(this, "webxr_test_pose_data_unfocused_tab");
 }
 
 }  // namespace vr

@@ -1841,7 +1841,7 @@ COMMON_GTESTS = {
       '--enable-gpu',
       '--test-launcher-bot-mode',
       '--test-launcher-jobs=1',
-      '--gtest_filter=VrBrowserTest*',
+      '--gtest_filter=VrBrowserTest*:XrBrowserTest*',
       '--enable-pixel-output-in-tests',
       '--gtest_also_run_disabled_tests',
     ],
