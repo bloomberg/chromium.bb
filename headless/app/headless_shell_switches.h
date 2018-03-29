@@ -24,7 +24,6 @@ extern const char kPrintToPDF[];
 extern const char kProxyBypassList[];
 extern const char kProxyServer[];
 extern const char kRemoteDebuggingAddress[];
-extern const char kRemoteDebuggingSocketFd[];
 extern const char kRepl[];
 extern const char kScreenshot[];
 extern const char kSSLKeyLogFile[];
@@ -39,6 +38,7 @@ extern const char kFontRenderHinting[];
 
 // Switches which are replicated from content.
 using ::switches::kRemoteDebuggingPort;
+using ::switches::kRemoteDebuggingPipe;
 
 }  // namespace switches
 }  // namespace headless

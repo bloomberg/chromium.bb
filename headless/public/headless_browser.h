@@ -119,12 +119,11 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
 #endif
 
   // Address at which DevTools should listen for connections. Disabled by
-  // default. Mutually exclusive with devtools_socket_fd.
+  // default.
   net::HostPortPair devtools_endpoint;
 
-  // The fd of an already-open socket inherited from a parent process. Disabled
-  // by default. Mutually exclusive with devtools_endpoint.
-  size_t devtools_socket_fd = 0;
+  // Enables remote debug over stdio pipes [in=3, out=4].
+  bool devtools_pipe_enabled = false;
 
   // A single way to test whether the devtools server has been requested.
   bool DevtoolsServerEnabled();
@@ -250,7 +249,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   // Browser-wide settings.
 
   Builder& EnableDevToolsServer(const net::HostPortPair& endpoint);
-  Builder& EnableDevToolsServer(const size_t socket_fd);
+  Builder& EnableDevToolsPipe();
   Builder& SetMessagePump(base::MessagePump* message_pump);
   Builder& SetSingleProcessMode(bool single_process_mode);
   Builder& SetDisableSandbox(bool disable_sandbox);
