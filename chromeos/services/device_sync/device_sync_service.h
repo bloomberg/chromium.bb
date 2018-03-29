@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MULTIDEVICE_SERVICE_DEVICE_SYNC_SERVICE_H_
-#define COMPONENTS_MULTIDEVICE_SERVICE_DEVICE_SYNC_SERVICE_H_
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_DEVICE_SYNC_SERVICE_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_DEVICE_SYNC_SERVICE_H_
 
 #include <memory>
 
-#include "components/multidevice/service/public/interfaces/device_sync.mojom.h"
+#include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+
+namespace chromeos {
 
 namespace device_sync {
 
@@ -39,4 +41,6 @@ class DeviceSyncService : public service_manager::Service {
 
 }  // namespace device_sync
 
-#endif  // COMPONENTS_MULTIDEVICE_SERVICE_DEVICE_SYNC_SERVICE_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_DEVICE_SYNC_SERVICE_H_

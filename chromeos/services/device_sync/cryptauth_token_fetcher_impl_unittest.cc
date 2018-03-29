@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/multidevice/service/cryptauth_token_fetcher_impl.h"
+#include "chromeos/services/device_sync/cryptauth_token_fetcher_impl.h"
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -11,7 +11,9 @@
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace multidevice {
+namespace chromeos {
+
+namespace device_sync {
 
 namespace {
 
@@ -20,9 +22,9 @@ const char kTestEmail[] = "example@gmail.com";
 
 }  // namespace
 
-class MultiDeviceCryptAuthAccessTokenFetcherImplTest : public testing::Test {
+class DeviceSyncCryptAuthAccessTokenFetcherImplTest : public testing::Test {
  protected:
-  MultiDeviceCryptAuthAccessTokenFetcherImplTest() {}
+  DeviceSyncCryptAuthAccessTokenFetcherImplTest() {}
 
   void SetUp() override {
     identity_test_environment_ =
@@ -50,7 +52,7 @@ class MultiDeviceCryptAuthAccessTokenFetcherImplTest : public testing::Test {
 
   void StartFetchingAccessToken() {
     token_fetcher_->FetchAccessToken(base::Bind(
-        &MultiDeviceCryptAuthAccessTokenFetcherImplTest::OnAccessTokenFetched,
+        &DeviceSyncCryptAuthAccessTokenFetcherImplTest::OnAccessTokenFetched,
         base::Unretained(this)));
   }
 
@@ -73,10 +75,10 @@ class MultiDeviceCryptAuthAccessTokenFetcherImplTest : public testing::Test {
   std::unique_ptr<CryptAuthAccessTokenFetcherImpl> token_fetcher_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MultiDeviceCryptAuthAccessTokenFetcherImplTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceSyncCryptAuthAccessTokenFetcherImplTest);
 };
 
-TEST_F(MultiDeviceCryptAuthAccessTokenFetcherImplTest, TestSuccess) {
+TEST_F(DeviceSyncCryptAuthAccessTokenFetcherImplTest, TestSuccess) {
   base::RunLoop run_loop;
   set_on_access_token_received_callback(run_loop.QuitClosure());
 
@@ -93,7 +95,7 @@ TEST_F(MultiDeviceCryptAuthAccessTokenFetcherImplTest, TestSuccess) {
   EXPECT_EQ(kAccessToken, *GetTokenAndReset());
 }
 
-TEST_F(MultiDeviceCryptAuthAccessTokenFetcherImplTest, TestFailure) {
+TEST_F(DeviceSyncCryptAuthAccessTokenFetcherImplTest, TestFailure) {
   base::RunLoop run_loop;
   set_on_access_token_received_callback(run_loop.QuitClosure());
 
@@ -112,7 +114,7 @@ TEST_F(MultiDeviceCryptAuthAccessTokenFetcherImplTest, TestFailure) {
   EXPECT_EQ(std::string(), *GetTokenAndReset());
 }
 
-TEST_F(MultiDeviceCryptAuthAccessTokenFetcherImplTest,
+TEST_F(DeviceSyncCryptAuthAccessTokenFetcherImplTest,
        TestDeletedBeforeOperationFinished) {
   StartFetchingAccessToken();
   EXPECT_EQ(nullptr, GetTokenAndReset());
@@ -123,4 +125,6 @@ TEST_F(MultiDeviceCryptAuthAccessTokenFetcherImplTest,
   EXPECT_EQ(std::string(), *GetTokenAndReset());
 }
 
-}  // namespace multidevice
+}  // namespace device_sync
+
+}  // namespace chromeos

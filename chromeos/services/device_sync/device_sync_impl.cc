@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/multidevice/service/device_sync_impl.h"
+#include "chromeos/services/device_sync/device_sync_impl.h"
+
+namespace chromeos {
 
 namespace device_sync {
 
@@ -36,3 +38,5 @@ void DeviceSyncImpl::AddObserver(mojom::DeviceSyncObserverPtr observer,
 }
 
 }  // namespace device_sync
+
+}  // namespace chromeos
