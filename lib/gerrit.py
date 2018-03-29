@@ -93,6 +93,18 @@ class GerritHelper(object):
     else:
       gob_util.AddAssignee(self.host, change, assignee)
 
+  def SetPrivate(self, change, private):
+    """Sets the private bit on the given CL.
+
+    Args:
+      change: CL number.
+      private: bool to indicate what value to set for the private bit.
+    """
+    if private:
+      gob_util.MarkPrivate(self.host, change)
+    else:
+      gob_util.MarkNotPrivate(self.host, change)
+
   def SetReviewers(self, change, add=(), remove=(), dryrun=False):
     """Modify the list of reviewers on a gerrit change.
 

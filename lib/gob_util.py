@@ -597,6 +597,55 @@ def AddAssignee(host, change, assignee):
   return  FetchUrlJson(host, path, reqtype='PUT', body=body, ignore_404=False)
 
 
+def MarkPrivate(host, change):
+  """Marks the given CL as private.
+
+  Args:
+    host: The gob host to interact with.
+    change: CL number on the given host.
+  """
+  path = '%s/private' % _GetChangePath(change)
+  try:
+    FetchUrlJson(host, path, reqtype='POST', ignore_404=False)
+  except GOBError as e:
+    # 201: created -- change was successfully marked private.
+    if e.http_status != 201:
+      raise
+  else:
+    raise GOBError(
+        http_status=200,
+        reason='Change was already marked private',
+    )
+
+
+def MarkNotPrivate(host, change):
+  """Sets the private bit on given CL to False.
+
+  Args:
+    host: The gob host to interact with.
+    change: CL number on the given host.
+  """
+  path = '%s/private.delete' % _GetChangePath(change)
+  try:
+    FetchUrlJson(host, path, reqtype='POST', ignore_404=False, ignore_204=True)
+  except GOBError as e:
+    if e.http_status == 204:
+      # 204: no content -- change was successfully marked not private.
+      pass
+    elif e.http_status == 409:
+      raise GOBError(
+          http_status=e.http_status,
+          reason='Change was already marked not private',
+      )
+    else:
+      raise
+  else:
+    raise GOBError(
+        http_status=200,
+        reason='Got unexpected 200 when marking change not private.',
+    )
+
+
 def GetReviewers(host, change):
   """Get information about all reviewers attached to a change.
 

@@ -456,6 +456,16 @@ def UserActTopic(opts, topic, *args):
     helper, arg = GetGerrit(opts, arg)
     helper.SetTopic(arg, topic, dryrun=opts.dryrun)
 
+def UserActPrivate(opts, cl, private_str):
+  """Set private bit on CL to private"""
+  try:
+    private = cros_build_lib.BooleanShellValue(private_str, False)
+  except ValueError:
+    raise RuntimeError('Unknown "boolean" value: %s' % private_str)
+
+  helper, cl = GetGerrit(opts, cl)
+  helper.SetPrivate(cl, private)
+
 
 def UserActSethashtags(opts, cl, *args):
   """Add/remove hashtags for CL <n> (prepend with '~' to remove)"""
