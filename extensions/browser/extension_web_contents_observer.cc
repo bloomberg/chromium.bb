@@ -169,9 +169,24 @@ void ExtensionWebContentsObserver::RenderFrameHostChanged(
   }
 }
 
+void ExtensionWebContentsObserver::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSameDocument()) {
+    ExtensionApiFrameIdMap::Get()->OnMainFrameReadyToCommitNavigation(
+        navigation_handle);
+  }
+}
+
 void ExtensionWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(initialized_);
+  if (navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSameDocument()) {
+    ExtensionApiFrameIdMap::Get()->OnMainFrameDidFinishNavigation(
+        navigation_handle);
+  }
+
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -179,6 +194,8 @@ void ExtensionWebContentsObserver::DidFinishNavigation(
 
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
+  DCHECK(render_frame_host);
+
   const Extension* frame_extension =
       GetExtensionFromFrame(render_frame_host, true);
   if (pm->IsRenderFrameHostRegistered(render_frame_host)) {

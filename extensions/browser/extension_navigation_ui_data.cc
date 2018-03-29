@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
 namespace extensions {
@@ -64,7 +65,13 @@ ExtensionNavigationUIData::ExtensionNavigationUIData(
     int window_id,
     int frame_id,
     int parent_frame_id)
-    : frame_data_(frame_id, parent_frame_id, tab_id, window_id) {
+    : frame_data_(frame_id,
+                  parent_frame_id,
+                  tab_id,
+                  window_id,
+                  // The RenderFrameHost may not have an associated WebContents
+                  // in cases such as interstitial pages.
+                  web_contents ? web_contents->GetLastCommittedURL() : GURL()) {
   WebViewGuest* web_view = WebViewGuest::FromWebContents(web_contents);
   if (web_view) {
     is_web_view_ = true;
