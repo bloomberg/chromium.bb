@@ -2224,6 +2224,9 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
   hashes.push_back(
       HashValue(X509Certificate::CalculateFingerprint256(cert->cert_buffer())));
 
+  // If CT is required, then the requirements are not met if the CT policy
+  // wasn't met, but are met if the policy was met or the build was out of
+  // date.
   {
     TransportSecurityState state;
     const TransportSecurityState::CTRequirementsStatus original_status =
@@ -2276,6 +2279,8 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   }
 
+  // If CT is not required, then regardless of the CT state for the host,
+  // it should indicate CT is not required.
   {
     TransportSecurityState state;
     const TransportSecurityState::CTRequirementsStatus original_status =
@@ -2314,6 +2319,8 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   }
 
+  // If the Delegate is in the default state, then it should return the same
+  // result as if there was no delegate in the first place.
   {
     TransportSecurityState state;
     const TransportSecurityState::CTRequirementsStatus original_status =
@@ -2500,7 +2507,7 @@ TEST_F(TransportSecurityStateTest, RequireCTViaFieldTrial) {
       kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
-  // It should fail if it doesn't comply with policy...
+  // It should fail if it doesn't comply with policy.
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
             state.CheckCTRequirements(
                 HostPortPair("www.example.com", 443), true, hashes, cert.get(),
@@ -2508,7 +2515,7 @@ TEST_F(TransportSecurityStateTest, RequireCTViaFieldTrial) {
                 TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
                 ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
-  // ... and succeed if it does comply with policy ...
+  // It should succeed if it does comply with policy.
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
             state.CheckCTRequirements(
                 HostPortPair("www.example.com", 443), true, hashes, cert.get(),
@@ -2516,10 +2523,18 @@ TEST_F(TransportSecurityStateTest, RequireCTViaFieldTrial) {
                 TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
                 ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
-  // ... or if the build is outdated.
+  // It should succeed if the build is outdated.
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
             state.CheckCTRequirements(
                 HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY));
+
+  // It should succeed if it was a locally-trusted CA.
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), false, hashes, cert.get(),
                 cert.get(), SignedCertificateTimestampAndStatusList(),
                 TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
                 ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY));
@@ -3104,6 +3119,62 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCTAndDelegate) {
       .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
   state.SetRequireCTDelegate(&always_require_delegate);
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
+            state.CheckCTRequirements(
+                HostPortPair("example.test", 443), true, HashValueVector(),
+                cert1.get(), cert2.get(), sct_list,
+                TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
+  EXPECT_EQ(1u, reporter.num_failures());
+  EXPECT_EQ("example.test", reporter.host_port_pair().host());
+  EXPECT_EQ(443, reporter.host_port_pair().port());
+  EXPECT_EQ(expiry, reporter.expiration());
+  EXPECT_EQ(cert1.get(), reporter.validated_certificate_chain());
+  EXPECT_EQ(cert2.get(), reporter.served_certificate_chain());
+  EXPECT_EQ(sct_list.size(), reporter.signed_certificate_timestamps().size());
+  EXPECT_EQ(sct_list[0].status,
+            reporter.signed_certificate_timestamps()[0].status);
+  EXPECT_EQ(sct_list[0].sct, reporter.signed_certificate_timestamps()[0].sct);
+}
+
+// Tests that for a host that explicitly disabled CT by delegate and is also
+// Expect-CT-enabled, CheckCTRequirements() sends reports.
+TEST_F(TransportSecurityStateTest,
+       CheckCTRequirementsWithExpectCTAndDelegateDisables) {
+  using ::testing::_;
+  using ::testing::Return;
+  using CTRequirementLevel =
+      TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
+
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ASSERT_TRUE(cert1);
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert2);
+  SignedCertificateTimestampAndStatusList sct_list;
+  MakeTestSCTAndStatus(ct::SignedCertificateTimestamp::SCT_EMBEDDED, "test_log",
+                       std::string(), std::string(), base::Time::Now(),
+                       ct::SCT_STATUS_INVALID_SIGNATURE, &sct_list);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  TransportSecurityState state;
+  MockExpectCTReporter reporter;
+  state.SetExpectCTReporter(&reporter);
+  state.AddExpectCT("example.test", expiry, false /* enforce */,
+                    GURL("https://example-report.test"));
+
+  // A connection to an Expect-CT host, which is exempted from the CT
+  // requirements by the delegate, should be reported but not closed.
+  MockRequireCTDelegate never_require_delegate;
+  EXPECT_CALL(never_require_delegate, IsCTRequiredForHost(_))
+      .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
+  state.SetRequireCTDelegate(&never_require_delegate);
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,

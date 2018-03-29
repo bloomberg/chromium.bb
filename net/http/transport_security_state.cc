@@ -885,6 +885,12 @@ TransportSecurityState::CheckCTRequirements(
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
   std::string hostname = host_port_pair.host();
 
+  // CT is not required if the certificate does not chain to a publicly
+  // trusted root certificate. Testing can override this, as certain tests
+  // rely on using a non-publicly-trusted root.
+  if (!is_issued_by_known_root && g_ct_required_for_testing == 0)
+    return CT_NOT_REQUIRED;
+
   // A connection is considered compliant if it has sufficient SCTs or if the
   // build is outdated. Other statuses are not considered compliant; this
   // includes COMPLIANCE_DETAILS_NOT_AVAILABLE because compliance must have been
@@ -896,9 +902,9 @@ TransportSecurityState::CheckCTRequirements(
 
   // Check Expect-CT first so that other CT requirements do not prevent
   // Expect-CT reports from being sent.
+  bool required_via_expect_ct = false;
   ExpectCTState state;
-  if (is_issued_by_known_root && IsDynamicExpectCTEnabled() &&
-      GetDynamicExpectCTState(hostname, &state)) {
+  if (IsDynamicExpectCTEnabled() && GetDynamicExpectCTState(hostname, &state)) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.ExpectCTHeader.PolicyComplianceOnConnectionSetup",
         policy_compliance, ct::CTPolicyCompliance::CT_POLICY_MAX);
@@ -909,17 +915,27 @@ TransportSecurityState::CheckCTRequirements(
                                 served_certificate_chain,
                                 signed_certificate_timestamps);
     }
-    if (state.enforce)
-      return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
+    required_via_expect_ct = state.enforce;
   }
 
   CTRequirementLevel ct_required = CTRequirementLevel::DEFAULT;
-  if (require_ct_delegate_)
+  if (require_ct_delegate_) {
+    // Allow the delegate to override the CT requirement state, including
+    // overriding any Expect-CT enforcement.
     ct_required = require_ct_delegate_->IsCTRequiredForHost(hostname);
-  if (ct_required != CTRequirementLevel::DEFAULT) {
-    if (ct_required == CTRequirementLevel::REQUIRED)
+  }
+  switch (ct_required) {
+    case CTRequirementLevel::REQUIRED:
       return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
-    return CT_NOT_REQUIRED;
+    case CTRequirementLevel::NOT_REQUIRED:
+      return CT_NOT_REQUIRED;
+    case CTRequirementLevel::DEFAULT:
+      if (required_via_expect_ct) {
+        // If Expect-CT is set, short-circuit checking additional policies,
+        // since they will only enable CT requirement, not exclude from it.
+        return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
+      }
+      break;
   }
 
   // Allow unittests to override the default result.
