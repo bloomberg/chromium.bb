@@ -598,10 +598,10 @@ static INLINE int get_lower_levels_ctx_general(int is_last, int scan_idx,
   }
 }
 
-static INLINE void set_dc_sign(int *cul_level, tran_low_t v) {
-  if (v < 0)
+static INLINE void set_dc_sign(int *cul_level, int dc_val) {
+  if (dc_val < 0)
     *cul_level |= 1 << COEFF_CONTEXT_BITS;
-  else if (v > 0)
+  else if (dc_val > 0)
     *cul_level += 2 << COEFF_CONTEXT_BITS;
 }
 

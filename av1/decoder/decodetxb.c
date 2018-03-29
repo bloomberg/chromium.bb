@@ -126,6 +126,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
   int cul_level = 0;
+  int dc_val = 0;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   const int all_zero = aom_read_symbol(
@@ -276,6 +277,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       if (level >= MAX_BASE_BR_RANGE) {
         level += read_golomb(xd, r);
       }
+
+      if (c == 0) dc_val = sign ? -level : level;
+
       // Bitmasking to clamp level to valid range:
       //   The valid range for 8/10/12 bit vdieo is at most 14/16/18 bit
       level &= 0xfffff;
@@ -295,7 +299,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   cul_level = AOMMIN(63, cul_level);
 
   // DC value
-  set_dc_sign(&cul_level, tcoeffs[0]);
+  set_dc_sign(&cul_level, dc_val);
 
   return cul_level;
 }
