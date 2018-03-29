@@ -64,6 +64,9 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // The current web state associated with the toolbar.
 @property(nonatomic, assign) web::WebState* webState;
 
+// Whether the popup menu is presented in incognito or not.
+@property(nonatomic, assign) BOOL isIncognito;
+
 #pragma mark*** Specific Items ***
 
 @property(nonatomic, strong) PopupMenuToolsItem* reloadStop;
@@ -78,6 +81,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @implementation PopupMenuMediator
 
 @synthesize items = _items;
+@synthesize isIncognito = _isIncognito;
 @synthesize popupMenu = _popupMenu;
 @synthesize dispatcher = _dispatcher;
 @synthesize type = _type;
@@ -91,9 +95,10 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 #pragma mark - Public
 
-- (instancetype)initWithType:(PopupMenuType)type {
+- (instancetype)initWithType:(PopupMenuType)type isIncognito:(BOOL)isIncognito {
   self = [super init];
   if (self) {
+    _isIncognito = isIncognito;
     _type = type;
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
@@ -222,14 +227,14 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   if (!_items) {
     switch (self.type) {
       case PopupMenuTypeToolsMenu:
-        [self createToolsMenuItem];
+        [self createToolsMenuItems];
         break;
       case PopupMenuTypeNavigationForward:
         break;
       case PopupMenuTypeNavigationBackward:
         break;
       case PopupMenuTypeTabGrid:
-        self.items = @[ [self itemsForNewTab] ];
+        [self createTabGridMenuItems];
         break;
       case PopupMenuTypeSearch:
         break;
@@ -317,8 +322,25 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 #pragma mark - Item creation (Private)
 
+// Creates the menu items for the tab grid menu.
+- (void)createTabGridMenuItems {
+  NSMutableArray* items = [NSMutableArray arrayWithArray:[self itemsForNewTab]];
+  if (self.isIncognito) {
+    [items addObject:CreateTableViewItem(
+                         IDS_IOS_TOOLS_MENU_CLOSE_ALL_INCOGNITO_TABS,
+                         PopupMenuActionCloseAllIncognitoTabs,
+                         kToolsMenuCloseAllIncognitoTabsId)];
+  }
+
+  [items addObject:CreateTableViewItem(IDS_IOS_TOOLS_MENU_CLOSE_TAB,
+                                       PopupMenuActionCloseTab,
+                                       kToolsMenuCloseTabId)];
+
+  self.items = @[ items ];
+}
+
 // Creates the menu items for the tools menu.
-- (void)createToolsMenuItem {
+- (void)createToolsMenuItems {
   // Reload or stop page action, created as reload.
   self.reloadStop = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_RELOAD, PopupMenuActionReload, kToolsMenuReload);

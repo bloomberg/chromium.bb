@@ -14,6 +14,7 @@ source_set("popup_menu") {
     ":popup_menu_ui",
     "//base",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/activity_services",

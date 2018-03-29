@@ -37,7 +37,12 @@ const int kNumberOfWebStates = 3;
 class PopupMenuMediatorTest : public PlatformTest {
  public:
   PopupMenuMediatorTest() {
-    mediator_ = [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu];
+    mediator_incognito_ =
+        [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu
+                                    isIncognito:YES];
+    mediator_non_incognito_ =
+        [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu
+                                    isIncognito:NO];
     popup_menu_ = OCMClassMock([PopupMenuTableViewController class]);
     popup_menu_strict_ =
         OCMStrictClassMock([PopupMenuTableViewController class]);
@@ -48,7 +53,10 @@ class PopupMenuMediatorTest : public PlatformTest {
 
   // Explicitly disconnect the mediator so there won't be any WebStateList
   // observers when web_state_list_ gets dealloc.
-  ~PopupMenuMediatorTest() override { [mediator_ disconnect]; }
+  ~PopupMenuMediatorTest() override {
+    [mediator_incognito_ disconnect];
+    [mediator_non_incognito_ disconnect];
+  }
 
  protected:
   void SetUpWebStateList() {
@@ -81,7 +89,8 @@ class PopupMenuMediatorTest : public PlatformTest {
 
   void SetUpActiveWebState() { web_state_list_->ActivateWebStateAt(0); }
 
-  PopupMenuMediator* mediator_;
+  PopupMenuMediator* mediator_incognito_;
+  PopupMenuMediator* mediator_non_incognito_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
   std::unique_ptr<WebStateList> web_state_list_;
@@ -92,14 +101,27 @@ class PopupMenuMediatorTest : public PlatformTest {
 };
 
 // Test no setup is being done on the PopupMenu if there's no Webstate.
-TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoWebstate) {
-  mediator_.popupMenu = popup_menu_strict_;
+TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoWebstateIncognito) {
+  mediator_incognito_.popupMenu = popup_menu_strict_;
   EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
 }
 
-// Test no setup is being done on the LocationBar if there's no active Webstate.
+// Test no setup is being done on the PopupMenu if there's no Webstate.
+TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoWebstate) {
+  mediator_non_incognito_.popupMenu = popup_menu_strict_;
+  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
+}
+
+// Test no setup is being done on the PopupMenu if there's no active Webstate.
+TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoActiveWebstateIncognito) {
+  mediator_incognito_.webStateList = web_state_list_.get();
+  mediator_incognito_.popupMenu = popup_menu_strict_;
+  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
+}
+
+// Test no setup is being done on the PopupMenu if there's no active Webstate.
 TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoActiveWebstate) {
-  mediator_.webStateList = web_state_list_.get();
-  mediator_.popupMenu = popup_menu_strict_;
+  mediator_non_incognito_.webStateList = web_state_list_.get();
+  mediator_non_incognito_.popupMenu = popup_menu_strict_;
   EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
 }
