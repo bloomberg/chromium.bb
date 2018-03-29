@@ -35,6 +35,16 @@ config("find_bad_constructs") {
       "find-bad-constructs",
     ]
 
+    # This option should be safe to use by default, and this also
+    # works with distributed build systems such as icecc.
+    # TODO(mostynb@vewd.com): update the plugin and remove these flags.
+    cflags += [
+      "-Xclang",
+      "-plugin-arg-find-bad-constructs",
+      "-Xclang",
+      "no-realpath",
+    ]
+
     if (is_linux || is_android || is_fuchsia) {
       cflags += [
         "-Xclang",
