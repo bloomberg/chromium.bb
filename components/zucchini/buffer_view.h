@@ -105,6 +105,14 @@ class BufferViewBase {
     return region.FitsIn(size());
   }
 
+  // Returns whether the buffer is large enough to cover an array starting at
+  // |offset| with |num| elements, each taking |elt_size| bytes.
+  bool covers_array(size_t offset, size_t num, size_t elt_size) {
+    DCHECK_GT(elt_size, 0U);
+    // Use subtraction and division to avoid overflow.
+    return offset < size() && (size() - offset) / elt_size >= num;
+  }
+
   // Element access
 
   // Returns the raw value at specified location |pos|.

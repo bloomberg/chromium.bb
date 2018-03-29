@@ -4,6 +4,7 @@
 
 #include "components/zucchini/ensemble_matcher.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/logging.h"
@@ -18,7 +19,21 @@ EnsembleMatcher::EnsembleMatcher() = default;
 EnsembleMatcher::~EnsembleMatcher() = default;
 
 void EnsembleMatcher::Trim() {
-  // TODO(huangs): Add MultiDex handling logic when we add DEX support.
+  // Trim rule: If > 1 DEX files are found then ignore all DEX. This is done
+  // because we do not yet support MultiDex, under which contents can move
+  // across file boundary between "old" and "new" archives. When this occurs,
+  // forcing matches of DEX files and patching them separately can result in
+  // larger patches than naive patching.
+  auto is_match_dex = [](const ElementMatch& match) {
+    return match.exe_type() == kExeTypeDex;
+  };
+  auto num_dex = std::count_if(matches_.begin(), matches_.end(), is_match_dex);
+  if (num_dex > 1) {
+    LOG(WARNING) << "Found " << num_dex << " DEX: Ignoring all.";
+    matches_.erase(
+        std::remove_if(matches_.begin(), matches_.end(), is_match_dex),
+        matches_.end());
+  }
 }
 
 }  // namespace zucchini
