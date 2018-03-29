@@ -337,19 +337,12 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
                                         const std::string& request_origin) {
   DCHECK(web_contents);
 
-// Ensure that the storage permission is granted since the archive file is
-// going to be placed in the public directory.
-#if defined(OS_ANDROID)
-  content::ResourceRequestInfo::WebContentsGetter web_contents_getter =
-      GetWebContentsGetter(web_contents);
-  DownloadControllerBase::Get()->AcquireFileAccessPermission(
-      web_contents_getter,
+  // Ensure that the storage permission is granted since the archive file is
+  // going to be placed in the public directory.
+  AcquireFileAccessPermission(
+      web_contents,
       base::Bind(&AcquireFileAccessPermissionDoneForScheduleDownload,
                  web_contents, name_space, url, ui_action, request_origin));
-#else
-  AcquireFileAccessPermissionDoneForScheduleDownload(
-      web_contents, name_space, url, ui_action, origin, true /*granted*/);
-#endif  // defined(OS_ANDROID)
 }
 
 // static
@@ -413,6 +406,21 @@ bool OfflinePageUtils::IsShowingTrustedOfflinePage(
   OfflinePageTabHelper* tab_helper =
       OfflinePageTabHelper::FromWebContents(web_contents);
   return tab_helper && tab_helper->IsShowingTrustedOfflinePage();
+}
+
+// static
+void OfflinePageUtils::AcquireFileAccessPermission(
+    content::WebContents* web_contents,
+    const base::Callback<void(bool)>& callback) {
+#if defined(OS_ANDROID)
+  content::ResourceRequestInfo::WebContentsGetter web_contents_getter =
+      GetWebContentsGetter(web_contents);
+  DownloadControllerBase::Get()->AcquireFileAccessPermission(
+      web_contents_getter, callback);
+#else
+  // Not needed in other platforms.
+  callback.Run(true /*granted*/);
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace offline_pages

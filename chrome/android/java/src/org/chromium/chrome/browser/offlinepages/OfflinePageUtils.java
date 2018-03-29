@@ -367,37 +367,46 @@ public class OfflinePageUtils {
             return false;
         }
 
-        OfflinePageItem offlinePage = offlinePageBridge.getOfflinePage(tab.getWebContents());
+        WebContents webContents = tab.getWebContents();
+        if (webContents == null) return false;
+
+        OfflinePageItem offlinePage = offlinePageBridge.getOfflinePage(webContents);
         String offlinePath = offlinePage.getFilePath();
 
         final String pageUrl = tab.getUrl();
 
         if (!isOfflinePageShareable(offlinePageBridge, offlinePage, pageUrl)) return false;
 
-        final String tabTitle = tab.getTitle();
-        final File offlinePageFile = new File(offlinePath);
-        AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
-            @Override
-            protected Uri doInBackground(Void... v) {
-                // If we have a content or file URI, we will not have a filename, just return the
-                // URI.
-                if (offlinePath.isEmpty()) {
-                    Uri uri = Uri.parse(pageUrl);
-                    assert(isSchemeContentOrFile(uri));
-                    return uri;
+        // The file access permission is needed since we may need to publish the archive file
+        // if it resides in internal directory.
+        offlinePageBridge.acquireFileAccessPermission(webContents, (granted) -> {
+            if (!granted) return;
+
+            final String tabTitle = tab.getTitle();
+            final File offlinePageFile = new File(offlinePath);
+            AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
+                @Override
+                protected Uri doInBackground(Void... v) {
+                    // If we have a content or file URI, we will not have a filename, just return
+                    // the URI.
+                    if (offlinePath.isEmpty()) {
+                        Uri uri = Uri.parse(pageUrl);
+                        assert(isSchemeContentOrFile(uri));
+                        return uri;
+                    }
+                    return ChromeFileProvider.generateUri(activity, offlinePageFile);
                 }
-                return ChromeFileProvider.generateUri(activity, offlinePageFile);
-            }
-            @Override
-            protected void onPostExecute(Uri uri) {
-                ShareParams shareParams = new ShareParams.Builder(activity, tabTitle, pageUrl)
-                                                  .setShareDirectly(false)
-                                                  .setOfflineUri(uri)
-                                                  .build();
-                shareCallback.onResult(shareParams);
-            }
-        };
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                @Override
+                protected void onPostExecute(Uri uri) {
+                    ShareParams shareParams = new ShareParams.Builder(activity, tabTitle, pageUrl)
+                                                      .setShareDirectly(false)
+                                                      .setOfflineUri(uri)
+                                                      .build();
+                    shareCallback.onResult(shareParams);
+                }
+            };
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        });
 
         return true;
     }
