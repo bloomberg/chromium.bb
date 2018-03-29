@@ -24,7 +24,7 @@ interface HTMLIFrameElement : HTMLElement {
     [CEReactions, Reflect, URL] attribute USVString src;
     [CEReactions, Reflect] attribute DOMString srcdoc;
     [CEReactions, Reflect] attribute DOMString name;
-    [CEReactions, PutForwards=value] readonly attribute DOMTokenList sandbox;
+    [PutForwards=value] readonly attribute DOMTokenList sandbox;
     // Note: The seamless attribute was once supported, but was removed.
     [CEReactions, Reflect] attribute boolean allowFullscreen;
     [CEReactions, Reflect] attribute DOMString width;
