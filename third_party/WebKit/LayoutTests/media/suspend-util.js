@@ -1,4 +1,4 @@
-function suspendMediaElement(video, callback) {
+function suspendMediaElement(video, expectedState, callback) {
   var pollSuspendState = function() {
     if (!window.internals.isMediaElementSuspended(video)) {
       window.requestAnimationFrame(pollSuspendState);
@@ -9,7 +9,7 @@ function suspendMediaElement(video, callback) {
   };
 
   window.requestAnimationFrame(pollSuspendState);
-  window.internals.forceStaleStateForMediaElement(video);
+  window.internals.forceStaleStateForMediaElement(video, expectedState);
 }
 
 function preloadMetadataSuspendTest(t, video, src, expectSuspend) {
@@ -41,7 +41,7 @@ function preloadMetadataSuspendTest(t, video, src, expectSuspend) {
   video.src = src;
 }
 
-function suspendTest(t, video, src, eventName, expectedState) {
+function suspendTest(t, video, src, expectedState) {
   assert_true(!!window.internals, 'This test requires windows.internals.');
   video.onerror = t.unreached_func();
 
@@ -54,17 +54,14 @@ function suspendTest(t, video, src, eventName, expectedState) {
     }
   });
 
-  var eventListener = t.step_func(function() {
-    assert_equals(video.readyState, expectedState);
-    suspendMediaElement(video, t.step_func(function() {
+  // We can't force a suspend state until loading has started.
+  video.addEventListener('loadstart', t.step_func(function() {
+    suspendMediaElement(video, expectedState, t.step_func(function() {
       assert_true(window.internals.isMediaElementSuspended(video));
       window.requestAnimationFrame(timeWatcher);
       video.play();
     }));
+  }), false);
 
-    video.removeEventListener(eventName, eventListener, false);
-  });
-
-  video.addEventListener(eventName, eventListener, false);
   video.src = src;
 }

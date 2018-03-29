@@ -266,7 +266,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void UpdateRemotePlaybackCompatibility(bool is_compatible) override;
 
   // Test helper methods for exercising media suspension.
-  void ForceStaleStateForTesting() override;
+  void ForceStaleStateForTesting(ReadyState target_state) override;
   bool IsSuspendedForTesting() override;
 
   // Called from WebMediaPlayerCast.
@@ -880,7 +880,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   mojom::MediaMetricsProviderPtr media_metrics_provider_;
 
-  base::Optional<bool> stale_state_override_for_testing_;
+  base::Optional<ReadyState> stale_state_override_for_testing_;
 
   // True if we attempt to start the media pipeline in a suspended state for
   // preload=metadata. Cleared upon pipeline startup.

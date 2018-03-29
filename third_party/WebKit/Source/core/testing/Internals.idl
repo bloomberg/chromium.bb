@@ -238,7 +238,7 @@ enum EffectiveConnectionType {
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
     void setMediaElementNetworkState(HTMLMediaElement element, long state);
     void setPersistent(HTMLVideoElement video, boolean persistent);
-    void forceStaleStateForMediaElement(HTMLMediaElement mediaElement);
+    void forceStaleStateForMediaElement(HTMLMediaElement mediaElement, long state);
     boolean isMediaElementSuspended(HTMLMediaElement mediaElement);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
