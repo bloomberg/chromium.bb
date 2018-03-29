@@ -645,7 +645,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   discovery()->AddDevice(std::move(device));
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kConditionsNotSatisfied,
+  EXPECT_EQ(FidoReturnCode::kInvalidState,
             register_callback_receiver().status());
   EXPECT_FALSE(register_callback_receiver().value());
 }
@@ -697,7 +697,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kConditionsNotSatisfied,
+  EXPECT_EQ(FidoReturnCode::kInvalidState,
             register_callback_receiver().status());
   EXPECT_FALSE(register_callback_receiver().value());
 }

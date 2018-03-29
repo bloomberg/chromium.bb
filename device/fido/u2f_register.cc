@@ -142,7 +142,7 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
       state_ = State::COMPLETE;
       if (is_duplicate_registration) {
         std::move(completion_callback_)
-            .Run(FidoReturnCode::kConditionsNotSatisfied, base::nullopt);
+            .Run(FidoReturnCode::kInvalidState, base::nullopt);
         break;
       }
       auto response =
