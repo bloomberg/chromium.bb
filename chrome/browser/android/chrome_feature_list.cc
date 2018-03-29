@@ -57,6 +57,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSiteNotificationChannels,
     &features::kSimplifiedFullscreenUI,
     &features::kSoundContentSetting,
+    &features::kWebAuth,
     &features::kWebPayments,
     &feed::kInterestFeedContentSuggestions,
     &kAdjustWebApkInstallationSpace,

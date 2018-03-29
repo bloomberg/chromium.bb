@@ -43,4 +43,7 @@ specific_include_rules = {
   "WebApkIntegrationTest\.java": [
     "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
   ],
+  "AuthenticatorTest\.java": [
+    "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+  ],
 }

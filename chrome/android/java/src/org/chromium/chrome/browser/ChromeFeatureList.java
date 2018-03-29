@@ -259,6 +259,7 @@ public abstract class ChromeFeatureList {
     public static final String VR_BROWSING_IN_CUSTOM_TAB = "VrBrowsingInCustomTab";
     public static final String VR_BROWSING_NATIVE_ANDROID_UI = "VrBrowsingNativeAndroidUi";
     public static final String VR_ICON_IN_DAYDREAM_HOME = "VrIconInDaydreamHome";
+    public static final String WEB_AUTH = "WebAuthentication";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
             "WebPaymentsMethodSectionOrderV2";

@@ -175,6 +175,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h",
+  "+third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.h",
   "+third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h",
   "+third_party/WebKit/public/platform/oom_intervention.mojom.h",
   "+third_party/WebKit/public/platform/site_engagement.mojom.h",
