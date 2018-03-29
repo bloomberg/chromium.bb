@@ -324,6 +324,7 @@ void BleScannerImpl::CheckForMatchingScanFilters(
     device::BluetoothDevice* bluetooth_device,
     const std::string& service_data) {
   std::string device_id;
+  bool is_background_advertisement = false;
 
   // First try, identifying |service_data| as a foreground advertisement.
   if (service_data.size() >= kMinNumBytesInForegroundServiceData) {
@@ -343,6 +344,7 @@ void BleScannerImpl::CheckForMatchingScanFilters(
     device_id = background_eid_generator_->IdentifyRemoteDeviceByAdvertisement(
         remote_beacon_seed_fetcher_, service_data,
         registered_remote_device_ids_);
+    is_background_advertisement = true;
   }
 
   // If the service data does not correspond to an advertisement from a device
@@ -351,14 +353,15 @@ void BleScannerImpl::CheckForMatchingScanFilters(
     return;
 
   tether_host_fetcher_->FetchTetherHost(
-      device_id,
-      base::Bind(&BleScannerImpl::OnIdentifiedHostFetched,
-                 weak_ptr_factory_.GetWeakPtr(), bluetooth_device, device_id));
+      device_id, base::Bind(&BleScannerImpl::OnIdentifiedHostFetched,
+                            weak_ptr_factory_.GetWeakPtr(), bluetooth_device,
+                            device_id, is_background_advertisement));
 }
 
 void BleScannerImpl::OnIdentifiedHostFetched(
     device::BluetoothDevice* bluetooth_device,
     const std::string& device_id,
+    bool is_background_advertisement,
     std::unique_ptr<cryptauth::RemoteDevice> identified_device) {
   if (!identified_device) {
     PA_LOG(ERROR) << "Unable to fetch RemoteDevice object with ID \""
@@ -367,7 +370,8 @@ void BleScannerImpl::OnIdentifiedHostFetched(
     return;
   }
 
-  NotifyReceivedAdvertisementFromDevice(*identified_device, bluetooth_device);
+  NotifyReceivedAdvertisementFromDevice(*identified_device, bluetooth_device,
+                                        is_background_advertisement);
 }
 
 void BleScannerImpl::ScheduleStatusChangeNotification(

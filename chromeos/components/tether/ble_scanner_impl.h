@@ -135,6 +135,7 @@ class BleScannerImpl : public BleScanner,
   void OnIdentifiedHostFetched(
       device::BluetoothDevice* bluetooth_device,
       const std::string& device_id,
+      bool is_background_advertisement,
       std::unique_ptr<cryptauth::RemoteDevice> identified_device);
 
   void ScheduleStatusChangeNotification(bool discovery_session_active);

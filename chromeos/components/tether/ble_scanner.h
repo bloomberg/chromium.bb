@@ -24,7 +24,8 @@ class BleScanner {
    public:
     virtual void OnReceivedAdvertisementFromDevice(
         const cryptauth::RemoteDevice& remote_device,
-        device::BluetoothDevice* bluetooth_device) {}
+        device::BluetoothDevice* bluetooth_device,
+        bool is_background_advertisement) {}
     virtual void OnDiscoverySessionStateChanged(bool discovery_session_active) {
     }
   };
@@ -53,7 +54,8 @@ class BleScanner {
  protected:
   void NotifyReceivedAdvertisementFromDevice(
       const cryptauth::RemoteDevice& remote_device,
-      device::BluetoothDevice* bluetooth_device);
+      device::BluetoothDevice* bluetooth_device,
+      bool is_background_advertisement);
   void NotifyDiscoverySessionStateChanged(bool discovery_session_active);
 
  private:
