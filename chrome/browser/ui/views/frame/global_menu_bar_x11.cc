@@ -294,7 +294,7 @@ void EnsureMethodsLoaded() {
 }  // namespace
 
 struct GlobalMenuBarX11::HistoryItem {
-  HistoryItem() : session_id(0) {}
+  HistoryItem() : session_id(SessionID::InvalidValue()) {}
 
   // The title for the menu item.
   base::string16 title;
@@ -303,10 +303,10 @@ struct GlobalMenuBarX11::HistoryItem {
 
   // This ID is unique for a browser session and can be passed to the
   // TabRestoreService to re-open the closed window or tab that this
-  // references. A non-0 session ID indicates that this is an entry can be
+  // references. A valid session ID indicates that this is an entry can be
   // restored that way. Otherwise, the URL will be used to open the item and
-  // this ID will be 0.
-  SessionID::id_type session_id;
+  // this ID will be invalid.
+  SessionID session_id;
 
   // If the HistoryItem is a window, this will be the vector of tabs. Note
   // that this is a list of weak references. The |menu_item_map_| is the owner
@@ -845,7 +845,7 @@ void GlobalMenuBarX11::OnHistoryItemActivated(DbusmenuMenuitem* sender,
   // just load the URL.
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile_);
-  if (item->session_id && service) {
+  if (item->session_id.is_valid() && service) {
     service->RestoreEntryById(browser_->live_tab_context(), item->session_id,
                               WindowOpenDisposition::UNKNOWN);
   } else {

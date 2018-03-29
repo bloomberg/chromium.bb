@@ -192,7 +192,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
     }
 
     SessionID window_id = window_delegate->GetSessionId();
-    DVLOG(1) << "Associating window " << window_id << " with "
+    DVLOG(1) << "Associating window " << window_id.id() << " with "
              << window_delegate->GetTabCount() << " tabs.";
 
     bool found_tabs = false;
@@ -234,7 +234,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
           AssociateRestoredPlaceholderTab(*synced_tab, tab_id, window_id,
                                           batch);
         } else {
-          DVLOG(1) << "Placeholder tab " << tab_id << " has no sync id.";
+          DVLOG(1) << "Placeholder tab " << tab_id.id() << " has no sync id.";
         }
       } else if (RELOAD_TABS == option) {
         AssociateTab(synced_tab, has_tabbed_window, batch);
@@ -314,8 +314,8 @@ void LocalSessionEventHandlerImpl::AssociateTab(
   }
 
   SessionID tab_id = tab_delegate->GetSessionId();
-  DVLOG(1) << "Syncing tab " << tab_id << " from window "
-           << tab_delegate->GetWindowId();
+  DVLOG(1) << "Syncing tab " << tab_id.id() << " from window "
+           << tab_delegate->GetWindowId().id();
 
   int tab_node_id = TabNodePool::kInvalidTabNodeID;
   bool existing_tab_node = true;

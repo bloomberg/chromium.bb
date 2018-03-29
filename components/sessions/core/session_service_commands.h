@@ -36,9 +36,9 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowBoundsCommand(
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
 CreateSetTabIndexInWindowCommand(const SessionID& tab_id, int new_index);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateTabClosedCommand(
-    SessionID::id_type tab_id);
+    SessionID tab_id);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateWindowClosedCommand(
-    SessionID::id_type tab_id);
+    SessionID tab_id);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
 CreateSetSelectedNavigationIndexCommand(const SessionID& tab_id, int index);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
@@ -98,7 +98,7 @@ SESSIONS_EXPORT bool IsClosingCommand(SessionCommand* command);
 SESSIONS_EXPORT void RestoreSessionFromCommands(
     const std::vector<std::unique_ptr<SessionCommand>>& commands,
     std::vector<std::unique_ptr<SessionWindow>>* valid_windows,
-    SessionID::id_type* active_window_id);
+    SessionID* active_window_id);
 
 }  // namespace sessions
 

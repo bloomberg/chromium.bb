@@ -50,7 +50,7 @@ class SessionServiceTestHelper {
   // Reads the contents of the last session.
   void ReadWindows(
       std::vector<std::unique_ptr<sessions::SessionWindow>>* windows,
-      SessionID::id_type* active_window_id);
+      SessionID* active_window_id);
 
   void AssertTabEquals(const SessionID& window_id,
                        const SessionID& tab_id,

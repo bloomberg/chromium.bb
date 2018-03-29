@@ -201,30 +201,29 @@ void SessionService::TabClosed(const SessionID& window_id,
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  IdToRange::iterator i = tab_to_available_range_.find(tab_id.id());
+  IdToRange::iterator i = tab_to_available_range_.find(tab_id);
   if (i != tab_to_available_range_.end())
     tab_to_available_range_.erase(i);
 
   if (find(pending_window_close_ids_.begin(), pending_window_close_ids_.end(),
-           window_id.id()) != pending_window_close_ids_.end()) {
+           window_id) != pending_window_close_ids_.end()) {
     // Tab is in last window. Don't commit it immediately, instead add it to the
     // list of tabs to close. If the user creates another window, the close is
     // committed.
-    pending_tab_close_ids_.insert(tab_id.id());
+    pending_tab_close_ids_.insert(tab_id);
   } else if (find(window_closing_ids_.begin(), window_closing_ids_.end(),
-                  window_id.id()) != window_closing_ids_.end() ||
-             !IsOnlyOneTabLeft() ||
-             closed_by_user_gesture) {
+                  window_id) != window_closing_ids_.end() ||
+             !IsOnlyOneTabLeft() || closed_by_user_gesture) {
     // Close is the result of one of the following:
     // . window close (and it isn't the last window).
     // . closing a tab and there are other windows/tabs open.
     // . closed by a user gesture.
     // In all cases we need to mark the tab as explicitly closed.
-    ScheduleCommand(sessions::CreateTabClosedCommand(tab_id.id()));
+    ScheduleCommand(sessions::CreateTabClosedCommand(tab_id));
   } else {
     // User closed the last tab in the last tabbed browser. Don't mark the
     // tab closed.
-    pending_tab_close_ids_.insert(tab_id.id());
+    pending_tab_close_ids_.insert(tab_id);
     has_open_trackable_browsers_ = false;
   }
 }
@@ -281,9 +280,9 @@ void SessionService::WindowClosing(const SessionID& window_id) {
     }
   }
   if (use_pending_close)
-    pending_window_close_ids_.insert(window_id.id());
+    pending_window_close_ids_.insert(window_id);
   else
-    window_closing_ids_.insert(window_id.id());
+    window_closing_ids_.insert(window_id);
 }
 
 void SessionService::WindowClosed(const SessionID& window_id) {
@@ -293,19 +292,19 @@ void SessionService::WindowClosed(const SessionID& window_id) {
     return;
   }
 
-  windows_tracking_.erase(window_id.id());
+  windows_tracking_.erase(window_id);
 
-  if (window_closing_ids_.find(window_id.id()) != window_closing_ids_.end()) {
-    window_closing_ids_.erase(window_id.id());
-    ScheduleCommand(sessions::CreateWindowClosedCommand(window_id.id()));
-  } else if (pending_window_close_ids_.find(window_id.id()) ==
+  if (window_closing_ids_.find(window_id) != window_closing_ids_.end()) {
+    window_closing_ids_.erase(window_id);
+    ScheduleCommand(sessions::CreateWindowClosedCommand(window_id));
+  } else if (pending_window_close_ids_.find(window_id) ==
              pending_window_close_ids_.end()) {
     // We'll hit this if user closed the last tab in a window.
     has_open_trackable_browsers_ = HasOpenTrackableBrowsers(window_id);
     if (!has_open_trackable_browsers_)
-      pending_window_close_ids_.insert(window_id.id());
+      pending_window_close_ids_.insert(window_id);
     else
-      ScheduleCommand(sessions::CreateWindowClosedCommand(window_id.id()));
+      ScheduleCommand(sessions::CreateWindowClosedCommand(window_id));
   }
   MaybeDeleteSessionOnlyData();
 }
@@ -361,7 +360,7 @@ void SessionService::SetWindowType(const SessionID& window_id,
   if (!ShouldRestoreWindowOfType(window_type, app_type))
     return;
 
-  windows_tracking_.insert(window_id.id());
+  windows_tracking_.insert(window_id);
 
   // The user created a new tabbed browser with our profile. Commit any
   // pending closes.
@@ -400,9 +399,8 @@ void SessionService::TabNavigationPathPrunedFromFront(
     return;
 
   // Update the range of indices.
-  if (tab_to_available_range_.find(tab_id.id()) !=
-      tab_to_available_range_.end()) {
-    std::pair<int, int>& range = tab_to_available_range_[tab_id.id()];
+  if (tab_to_available_range_.find(tab_id) != tab_to_available_range_.end()) {
+    std::pair<int, int>& range = tab_to_available_range_[tab_id];
     range.first = std::max(0, range.first - count);
     range.second = std::max(0, range.second - count);
   }
@@ -431,9 +429,8 @@ void SessionService::UpdateTabNavigation(
     return;
   }
 
-  if (tab_to_available_range_.find(tab_id.id()) !=
-      tab_to_available_range_.end()) {
-    std::pair<int, int>& range = tab_to_available_range_[tab_id.id()];
+  if (tab_to_available_range_.find(tab_id) != tab_to_available_range_.end()) {
+    std::pair<int, int>& range = tab_to_available_range_[tab_id];
     range.first = std::min(navigation.index(), range.first);
     range.second = std::max(navigation.index(), range.second);
   }
@@ -455,10 +452,9 @@ void SessionService::SetSelectedNavigationIndex(const SessionID& window_id,
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  if (tab_to_available_range_.find(tab_id.id()) !=
-      tab_to_available_range_.end()) {
-    if (index < tab_to_available_range_[tab_id.id()].first ||
-        index > tab_to_available_range_[tab_id.id()].second) {
+  if (tab_to_available_range_.find(tab_id) != tab_to_available_range_.end()) {
+    if (index < tab_to_available_range_[tab_id].first ||
+        index > tab_to_available_range_[tab_id].second) {
       // The new index is outside the range of what we've archived, schedule
       // a reset.
       ResetFromCurrentBrowsers();
@@ -604,7 +600,7 @@ void SessionService::OnGotSessionCommands(
     const sessions::GetLastSessionCallback& callback,
     std::vector<std::unique_ptr<sessions::SessionCommand>> commands) {
   std::vector<std::unique_ptr<sessions::SessionWindow>> valid_windows;
-  SessionID::id_type active_window_id = 0;
+  SessionID active_window_id = SessionID::InvalidValue();
 
   sessions::RestoreSessionFromCommands(commands, &valid_windows,
                                        &active_window_id);
@@ -618,7 +614,9 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
                                          int index_in_window,
                                          bool is_pinned,
                                          IdToRange* tab_to_available_range) {
-  DCHECK(tab && window_id.id());
+  DCHECK(tab);
+  DCHECK(window_id.is_valid());
+
   SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(tab);
   const SessionID& session_id(session_tab_helper->session_id());
   base_session_service_->AppendRebuildCommand(
@@ -632,7 +630,7 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
                tab->GetController().GetEntryCount());
   const int pending_index = tab->GetController().GetPendingEntryIndex();
   if (tab_to_available_range) {
-    (*tab_to_available_range)[session_id.id()] =
+    (*tab_to_available_range)[session_id] =
         std::pair<int, int>(min_index, max_index);
   }
 
@@ -693,9 +691,9 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
 void SessionService::BuildCommandsForBrowser(
     Browser* browser,
     IdToRange* tab_to_available_range,
-    std::set<SessionID::id_type>* windows_to_track) {
+    std::set<SessionID>* windows_to_track) {
   DCHECK(browser);
-  DCHECK(browser->session_id().id());
+  DCHECK(browser->session_id().is_valid());
 
   base_session_service_->AppendRebuildCommand(
       sessions::CreateSetWindowBoundsCommand(
@@ -718,7 +716,7 @@ void SessionService::BuildCommandsForBrowser(
   sessions::CreateSetWindowWorkspaceCommand(
       browser->session_id(), browser->window()->GetWorkspace());
 
-  windows_to_track->insert(browser->session_id().id());
+  windows_to_track->insert(browser->session_id());
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
     WebContents* tab = tab_strip->GetWebContentsAt(i);
@@ -738,7 +736,7 @@ void SessionService::BuildCommandsForBrowser(
 
 void SessionService::BuildCommandsFromBrowsers(
     IdToRange* tab_to_available_range,
-    std::set<SessionID::id_type>* windows_to_track) {
+    std::set<SessionID>* windows_to_track) {
   for (auto* browser : *BrowserList::GetInstance()) {
     // Make sure the browser has tabs and a window. Browser's destructor
     // removes itself from the BrowserList. When a browser is closed the
@@ -811,7 +809,7 @@ bool SessionService::IsOnlyOneTabLeft() const {
 
   int window_count = 0;
   for (auto* browser : *BrowserList::GetInstance()) {
-    const SessionID::id_type window_id = browser->session_id().id();
+    const SessionID window_id = browser->session_id();
     if (ShouldTrackBrowser(browser) &&
         window_closing_ids_.find(window_id) == window_closing_ids_.end()) {
       if (++window_count > 1)
@@ -833,8 +831,8 @@ bool SessionService::HasOpenTrackableBrowsers(
   }
 
   for (auto* browser : *BrowserList::GetInstance()) {
-    const SessionID::id_type browser_id = browser->session_id().id();
-    if (browser_id != window_id.id() &&
+    const SessionID browser_id = browser->session_id();
+    if (browser_id != window_id &&
         window_closing_ids_.find(browser_id) == window_closing_ids_.end() &&
         ShouldTrackBrowser(browser)) {
       return true;
@@ -845,7 +843,7 @@ bool SessionService::HasOpenTrackableBrowsers(
 
 bool SessionService::ShouldTrackChangesToWindow(
     const SessionID& window_id) const {
-  return windows_tracking_.find(window_id.id()) != windows_tracking_.end();
+  return windows_tracking_.find(window_id) != windows_tracking_.end();
 }
 
 bool SessionService::ShouldTrackBrowser(Browser* browser) const {

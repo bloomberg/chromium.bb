@@ -13,6 +13,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -87,7 +88,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   struct TabNavigationItem;
   typedef std::vector<TabNavigationItem> TabNavigationItems;
 
-  typedef std::vector<SessionID::id_type> WindowItems;
+  typedef std::vector<SessionID> WindowItems;
 
   // Build the menu items by populating the menumodel.
   void Build();
@@ -100,14 +101,14 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   // Build a recently closed tab item with parameters needed to restore it, and
   // add it to the menumodel at |curr_model_index|.
-  void BuildLocalTabItem(int seesion_id,
+  void BuildLocalTabItem(SessionID session_id,
                          const base::string16& title,
                          const GURL& url,
                          int curr_model_index);
 
   // Build the recently closed window item with parameters needed to restore it,
   // and add it to the menumodel at |curr_model_index|.
-  void BuildLocalWindowItem(const SessionID::id_type& window_id,
+  void BuildLocalWindowItem(SessionID window_id,
                             int num_tabs,
                             int curr_model_index);
 

@@ -15,18 +15,19 @@ namespace sessions {
 // SessionTab -----------------------------------------------------------------
 
 SessionTab::SessionTab()
-    : tab_visual_index(-1),
+    : window_id(SessionID::NewUnique()),
+      tab_id(SessionID::NewUnique()),
+      tab_visual_index(-1),
       current_navigation_index(-1),
-      pinned(false) {
-}
+      pinned(false) {}
 
 SessionTab::~SessionTab() {
 }
 
 void SessionTab::SetFromSyncData(const sync_pb::SessionTab& sync_data,
                                  base::Time timestamp) {
-  window_id.set_id(sync_data.window_id());
-  tab_id.set_id(sync_data.tab_id());
+  window_id = SessionID::FromSerializedValue(sync_data.window_id());
+  tab_id = SessionID::FromSerializedValue(sync_data.tab_id());
   tab_visual_index = sync_data.tab_visual_index();
   current_navigation_index = sync_data.current_navigation_index();
   pinned = sync_data.pinned();
@@ -58,7 +59,8 @@ sync_pb::SessionTab SessionTab::ToSyncData() const {
 // SessionWindow ---------------------------------------------------------------
 
 SessionWindow::SessionWindow()
-    : selected_tab_index(-1),
+    : window_id(SessionID::NewUnique()),
+      selected_tab_index(-1),
       type(TYPE_TABBED),
       is_constrained(true),
       show_state(ui::SHOW_STATE_DEFAULT) {}

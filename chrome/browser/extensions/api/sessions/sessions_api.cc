@@ -146,8 +146,9 @@ tabs::Tab SessionsGetRecentlyClosedFunction::CreateTabModel(
     const sessions::TabRestoreService::Tab& tab,
     bool active) {
   return CreateTabModelHelper(tab.navigations[tab.current_navigation_index],
-                              base::IntToString(tab.id), tab.tabstrip_index,
-                              tab.pinned, active, extension());
+                              base::IntToString(tab.id.id()),
+                              tab.tabstrip_index, tab.pinned, active,
+                              extension());
 }
 
 std::unique_ptr<windows::Window>
@@ -160,9 +161,9 @@ SessionsGetRecentlyClosedFunction::CreateWindowModel(
     tabs->push_back(
         CreateTabModel(*tab, tab->tabstrip_index == window.selected_tab_index));
 
-  return CreateWindowModelHelper(std::move(tabs), base::IntToString(window.id),
-                                 windows::WINDOW_TYPE_NORMAL,
-                                 windows::WINDOW_STATE_NORMAL);
+  return CreateWindowModelHelper(
+      std::move(tabs), base::IntToString(window.id.id()),
+      windows::WINDOW_TYPE_NORMAL, windows::WINDOW_STATE_NORMAL);
 }
 
 std::unique_ptr<api::sessions::Session>
@@ -451,7 +452,7 @@ ExtensionFunction::ResponseValue SessionsRestoreFunction::RestoreLocalSession(
   // Check if the recently closed list contains an entry with the provided id.
   bool is_window = false;
   for (const auto& entry : entries) {
-    if (entry->id == session_id.id()) {
+    if (entry->id.id() == session_id.id()) {
       // A full window is being restored only if the entry ID
       // matches the provided ID and the entry type is Window.
       is_window = is_window_entry(*entry);
@@ -463,8 +464,9 @@ ExtensionFunction::ResponseValue SessionsRestoreFunction::RestoreLocalSession(
       BrowserLiveTabContext::FindContextForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
-      tab_restore_service->RestoreEntryById(context, session_id.id(),
-                                            WindowOpenDisposition::UNKNOWN);
+      tab_restore_service->RestoreEntryById(
+          context, SessionID::FromSerializedValue(session_id.id()),
+          WindowOpenDisposition::UNKNOWN);
   // If the ID is invalid, restored_tabs will be empty.
   if (restored_tabs.empty())
     return Error(kInvalidSessionIdError, session_id.ToString());

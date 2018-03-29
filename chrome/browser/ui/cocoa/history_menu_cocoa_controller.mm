@@ -45,7 +45,7 @@ using content::Referrer;
   // just load the URL.
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(bridge_->profile());
-  if (node->session_id && service) {
+  if (node->session_id.is_valid() && service) {
     Browser* browser = chrome::FindTabbedBrowser(bridge_->profile(), false);
     BrowserLiveTabContext* context =
         browser ? browser->live_tab_context() : NULL;

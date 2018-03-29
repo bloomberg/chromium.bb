@@ -110,7 +110,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         clobber_existing_tab_(clobber_existing_tab),
         always_create_tabbed_browser_(always_create_tabbed_browser),
         urls_to_open_(urls_to_open),
-        active_window_id_(0),
+        active_window_id_(SessionID::InvalidValue()),
         restore_started_(base::TimeTicks::Now()),
         on_session_restored_callbacks_(callbacks) {
     if (active_session_restorers == nullptr)
@@ -330,7 +330,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   void OnGotSession(
       std::vector<std::unique_ptr<sessions::SessionWindow>> windows,
-      SessionID::id_type active_window_id) {
+      SessionID active_window_id) {
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-GotSession", false);
@@ -349,7 +349,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   Browser* ProcessSessionWindowsAndNotify(
       std::vector<std::unique_ptr<sessions::SessionWindow>>* windows,
-      SessionID::id_type active_window_id) {
+      SessionID active_window_id) {
     std::vector<RestoredTab> contents;
     Browser* result =
         ProcessSessionWindows(windows, active_window_id, &contents);
@@ -359,7 +359,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   Browser* ProcessSessionWindows(
       std::vector<std::unique_ptr<sessions::SessionWindow>>* windows,
-      SessionID::id_type active_window_id,
+      SessionID active_window_id,
       std::vector<RestoredTab>* created_contents) {
     DVLOG(1) << "ProcessSessionWindows " << windows->size();
 
@@ -393,7 +393,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     bool has_visible_browser = false;
     for (const auto& window : *windows) {
       if (window->show_state != ui::SHOW_STATE_MINIMIZED ||
-          window->window_id.id() == active_window_id)
+          window->window_id == active_window_id)
         has_visible_browser = true;
     }
 
@@ -443,7 +443,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
               ? browser->tab_strip_model()->active_index()
               : std::max(0, std::min((*i)->selected_tab_index,
                                      static_cast<int>((*i)->tabs.size()) - 1));
-      if ((*i)->window_id.id() == active_window_id)
+      if ((*i)->window_id == active_window_id)
         browser_to_activate = browser;
 
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
@@ -720,7 +720,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // loop take a while) we cache the SessionWindows here and create the actual
   // windows when the nested run loop exits.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_;
-  SessionID::id_type active_window_id_;
+  SessionID active_window_id_;
 
   content::NotificationRegistrar registrar_;
 
