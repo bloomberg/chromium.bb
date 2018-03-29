@@ -27,21 +27,9 @@ class EasyUnlockAuthAttempt {
   // The auth type.
   enum Type { TYPE_UNLOCK, TYPE_SIGNIN };
 
-  // A callback to be invoked after the auth attempt is finalized. |success|
-  // indicates whether the attempt is successful or not. |account_id| is the
-  // associated user. |key_secret| is the user secret for a sign-in attempt
-  // and |key_label| is the label of the corresponding cryptohome key.
-  typedef base::Callback<void(Type auth_attempt_type,
-                              bool success,
-                              const AccountId& account_id,
-                              const std::string& key_secret,
-                              const std::string& key_label)>
-      FinalizedCallback;
-
   EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
                         const AccountId& account_id,
-                        Type type,
-                        const FinalizedCallback& finalized_callback);
+                        Type type);
   ~EasyUnlockAuthAttempt();
 
   // Starts the auth attempt by sending screenlockPrivate.onAuthAttempted event
@@ -73,8 +61,6 @@ class EasyUnlockAuthAttempt {
   State state_;
   const AccountId account_id_;
   Type type_;
-
-  FinalizedCallback finalized_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockAuthAttempt);
 };

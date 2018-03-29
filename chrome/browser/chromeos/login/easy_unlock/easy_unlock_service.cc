@@ -405,21 +405,11 @@ ScreenlockState EasyUnlockService::GetScreenlockState() {
 }
 
 void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
-  AttemptAuth(account_id, AttemptAuthCallback());
-}
-
-void EasyUnlockService::AttemptAuth(const AccountId& account_id,
-                                    const AttemptAuthCallback& callback) {
   const EasyUnlockAuthAttempt::Type auth_attempt_type =
       GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
   if (!GetAccountId().is_valid()) {
     LOG(ERROR) << "Empty user account. Refresh token might go bad.";
-    if (!callback.is_null()) {
-      const bool kFailure = false;
-      callback.Run(auth_attempt_type, kFailure, account_id, std::string(),
-                   std::string());
-    }
     return;
   }
 
@@ -428,7 +418,7 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id,
       << account_id.Serialize();
 
   auth_attempt_.reset(new EasyUnlockAuthAttempt(app_manager_.get(), account_id,
-                                                auth_attempt_type, callback));
+                                                auth_attempt_type));
   if (!auth_attempt_->Start())
     auth_attempt_.reset();
 

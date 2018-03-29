@@ -178,12 +178,6 @@ class EasyUnlockService : public KeyedService {
   // attempt type (unlock vs. signin) will depend on the service type.
   void AttemptAuth(const AccountId& account_id);
 
-  // Similar to above but a callback is invoked after the auth attempt is
-  // finalized instead of default unlock/sign-in.
-  typedef EasyUnlockAuthAttempt::FinalizedCallback AttemptAuthCallback;
-  void AttemptAuth(const AccountId& account_id,
-                   const AttemptAuthCallback& callback);
-
   // Finalizes the previously started auth attempt for easy unlock. If called on
   // signin profile service, it will cancel the current auth attempt if one
   // exists.

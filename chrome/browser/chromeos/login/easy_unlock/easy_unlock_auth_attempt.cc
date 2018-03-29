@@ -46,12 +46,11 @@ std::string UnwrapSecret(const std::string& wrapped_secret,
   return secret;
 }
 
-void DefaultAuthAttemptFinalizedHandler(
-    EasyUnlockAuthAttempt::Type auth_attempt_type,
-    bool success,
-    const AccountId& account_id,
-    const std::string& key_secret,
-    const std::string& key_label) {
+void OnAuthAttemptFinalized(EasyUnlockAuthAttempt::Type auth_attempt_type,
+                            bool success,
+                            const AccountId& account_id,
+                            const std::string& key_secret,
+                            const std::string& key_label) {
   if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return;
 
@@ -82,19 +81,13 @@ void DefaultAuthAttemptFinalizedHandler(
 
 }  // namespace
 
-EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(
-    EasyUnlockAppManager* app_manager,
-    const AccountId& account_id,
-    Type type,
-    const FinalizedCallback& finalized_callback)
+EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
+                                             const AccountId& account_id,
+                                             Type type)
     : app_manager_(app_manager),
       state_(STATE_IDLE),
       account_id_(account_id),
-      type_(type),
-      finalized_callback_(finalized_callback) {
-  if (finalized_callback_.is_null())
-    finalized_callback_ = base::Bind(&DefaultAuthAttemptFinalizedHandler);
-}
+      type_(type) {}
 
 EasyUnlockAuthAttempt::~EasyUnlockAuthAttempt() {
   if (state_ == STATE_RUNNING)
@@ -145,8 +138,8 @@ void EasyUnlockAuthAttempt::FinalizeUnlock(const AccountId& account_id,
     return;
   }
 
-  finalized_callback_.Run(type_, success, account_id, std::string(),
-                          std::string());
+  OnAuthAttemptFinalized(type_, success, account_id, std::string(),
+                         std::string());
   state_ = STATE_DONE;
 }
 
@@ -173,8 +166,8 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const AccountId& account_id,
   std::string key_label = EasyUnlockKeyManager::GetKeyLabel(0u);
 
   const bool kSuccess = true;
-  finalized_callback_.Run(type_, kSuccess, account_id, unwrapped_secret,
-                          key_label);
+  OnAuthAttemptFinalized(type_, kSuccess, account_id, unwrapped_secret,
+                         key_label);
   state_ = STATE_DONE;
 }
 
@@ -182,8 +175,8 @@ void EasyUnlockAuthAttempt::Cancel(const AccountId& account_id) {
   state_ = STATE_DONE;
 
   const bool kFailure = false;
-  finalized_callback_.Run(type_, kFailure, account_id, std::string(),
-                          std::string());
+  OnAuthAttemptFinalized(type_, kFailure, account_id, std::string(),
+                         std::string());
 }
 
 }  // namespace chromeos
