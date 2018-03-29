@@ -65,7 +65,7 @@ std::string DownloadItemImplDelegate::GetApplicationClientIdForFileScanning()
 void DownloadItemImplDelegate::ResumeInterruptedDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
     uint32_t id,
-    StoragePartitionImpl* storage_partition) {}
+    const GURL& site_url) {}
 
 BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
   return nullptr;

@@ -104,6 +104,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
     request_headers_.push_back(make_pair(name, value));
   }
 
+  void set_url_request_context_getter(
+      net::URLRequestContextGetter* url_request_context_getter) {
+    url_request_context_getter_ = url_request_context_getter;
+  }
+
   // HTTP Referrer, referrer policy and encoding.
   void set_referrer(const GURL& referrer) { referrer_ = referrer; }
   void set_referrer_policy(net::URLRequest::ReferrerPolicy referrer_policy) {
