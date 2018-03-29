@@ -336,9 +336,26 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     OnVSync(base::TimeTicks::Now());
 }
 
+bool VrShellGl::WebVrCanSubmitFrame() {
+  return mailbox_bridge_ready_ && !webvr_frame_processing_;
+}
+
+void VrShellGl::WebVrTryDeferredSubmit() {
+  if (!webvr_deferred_mojo_submit_ || !WebVrCanSubmitFrame())
+    return;
+
+  DVLOG(2) << "Running deferred SubmitFrame";
+  // Run synchronously, not via PostTask, to ensure we don't
+  // get a new SendVSync scheduling in between.
+  base::ResetAndReturn(&webvr_deferred_mojo_submit_).Run();
+}
+
 void VrShellGl::OnGpuProcessConnectionReady() {
   DVLOG(1) << __FUNCTION__;
   mailbox_bridge_ready_ = true;
+  // We might have a deferred submit that was waiting for
+  // mailbox_bridge_ready_.
+  WebVrTryDeferredSubmit();
 }
 
 void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
@@ -385,12 +402,22 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
   if (!submit_client_.get())
     return;
 
+  if (!WebVrCanSubmitFrame()) {
+    DVLOG(2) << "Deferring SubmitFrame, not ready";
+    DCHECK(!webvr_deferred_mojo_submit_);
+    webvr_deferred_mojo_submit_ =
+        base::BindOnce(&VrShellGl::SubmitFrame, weak_ptr_factory_.GetWeakPtr(),
+                       frame_index, mailbox, time_waited);
+    return;
+  }
+
   if (frame_index < 0 ||
       !webvr_frame_oustanding_[frame_index % kPoseRingBufferSize]) {
     mojo::ReportBadMessage("SubmitFrame called with an invalid frame_index");
     binding_.Close();
     return;
   }
+  webvr_frame_processing_ = true;
 
   webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
       base::TimeTicks::Now();
@@ -1308,6 +1335,11 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     }
   }
 
+  webvr_frame_processing_ = false;
+  // If we have a waiting submit that arrived while processing this one, handle
+  // it now.
+  WebVrTryDeferredSubmit();
+
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
   vr_ui_fps_meter_.AddFrame(base::TimeTicks::Now());
@@ -1538,6 +1570,14 @@ base::TimeDelta VrShellGl::GetPredictedFrameTime() {
 }
 
 bool VrShellGl::ShouldSkipVSync() {
+  // If we appear to be backlogged, don't send additional VSyncs. Don't check
+  // WebVrCanSubmit() here - we intentionally want to allow the first VSync to
+  // go out before mailbox_bridge_ready_ becomes true. The first SubmitFrame
+  // will be deferred if needed, and we'll throttle here to avoid requesting
+  // more frames until that's done.
+  if (webvr_deferred_mojo_submit_)
+    return true;
+
   // Disable heuristic for traditional render path where we submit completed
   // frames.
   if (!webvr_use_gpu_fence_)
