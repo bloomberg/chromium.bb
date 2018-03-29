@@ -27,12 +27,13 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.10.4'
+__version__ = '0.10.5'
 
 import argparse
 import base64
 import collections
 import contextlib
+import errno
 import json
 import logging
 import optparse
@@ -499,16 +500,46 @@ def link_outputs_to_outdir(run_dir, out_dir, outputs):
     return
   isolateserver.create_directories(out_dir, outputs)
   for o in outputs:
-    try:
-      infile = os.path.join(run_dir, o)
-      outfile = os.path.join(out_dir, o)
-      if fs.islink(infile):
-        # TODO(aludwin): handle directories
-        fs.copy2(infile, outfile)
-      else:
-        file_path.link_file(outfile, infile, file_path.HARDLINK_WITH_FALLBACK)
-    except OSError as e:
-      logging.info("Couldn't collect output file %s: %s", o, e)
+    copy_recursively(os.path.join(run_dir, o), os.path.join(out_dir, o))
+
+
+def copy_recursively(src, dst):
+  """Efficiently copies a file or directory from src_dir to dst_dir.
+
+  `item` may be a file, directory, or a symlink to a file or directory.
+  All symlinks are replaced with their targets, so the resulting
+  directory structure in dst_dir will never have any symlinks.
+
+  To increase speed, copy_recursively hardlinks individual files into the
+  (newly created) directory structure if possible, unlike Python's
+  shutil.copytree().
+  """
+  orig_src = src
+  try:
+    # Replace symlinks with their final target.
+    while fs.islink(src):
+      res = fs.readlink(src)
+      src = os.path.join(os.path.dirname(src), res)
+    # TODO(sadafm): Explicitly handle cyclic symlinks.
+
+    # Note that fs.isfile (which is a wrapper around os.path.isfile) throws
+    # an exception if src does not exist. A warning will be logged in that case.
+    if fs.isfile(src):
+      file_path.link_file(dst, src, file_path.HARDLINK_WITH_FALLBACK)
+      return
+
+    if not fs.exists(dst):
+      os.makedirs(dst)
+
+    for child in fs.listdir(src):
+      copy_recursively(os.path.join(src, child), os.path.join(dst, child))
+
+  except OSError as e:
+    if e.errno == errno.ENOENT:
+      logging.warning('Path %s does not exist or %s is a broken symlink',
+                      src, orig_src)
+    else:
+      logging.info("Couldn't collect output file %s: %s", src, e)
 
 
 def delete_and_upload(storage, out_dir, leak_temp_dir):
