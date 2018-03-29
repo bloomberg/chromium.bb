@@ -216,8 +216,8 @@ bool IsSplitToolbarMode(id<UITraitEnvironment> environment);
 // Returns the current first responder.
 UIResponder* GetFirstResponder();
 
-// On iOS10 and above, trigger a haptic vibration for various types of
-// actions. This is a no-op for devices that do not support haptic feedback.
+// Trigger a haptic vibration for various types of actions. This is a no-op for
+// devices that do not support haptic feedback.
 void TriggerHapticFeedbackForAction();
 void TriggerHapticFeedbackForSelectionChange();
 void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
