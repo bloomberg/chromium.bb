@@ -1041,8 +1041,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
        ((twopass->this_frame_stats.intra_error /
          DOUBLE_DIVIDE_CHECK(twopass->this_frame_stats.coded_error)) > 2.0))) {
     if (gld_yv12 != NULL) {
-      ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->gld_fb_idx],
-                 cm->ref_frame_map[cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME]]);
+      ref_cnt_fb(pool->frame_bufs,
+                 &cm->ref_frame_map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]],
+                 cm->ref_frame_map[cpi->ref_fb_idx[LAST_FRAME - 1]]);
     }
     twopass->sr_update_lag = 1;
   } else {
@@ -1053,14 +1054,16 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
   // The frame we just compressed now becomes the last frame.
   ref_cnt_fb(pool->frame_bufs,
-             &cm->ref_frame_map[cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME]],
+             &cm->ref_frame_map[cpi->ref_fb_idx[LAST_FRAME - 1]],
              cm->new_fb_idx);
 
   // Special case for the first frame. Copy into the GF buffer as a second
   // reference.
-  if (cm->current_video_frame == 0 && cpi->gld_fb_idx != INVALID_IDX) {
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->gld_fb_idx],
-               cm->ref_frame_map[cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME]]);
+  if (cm->current_video_frame == 0 &&
+      cpi->ref_fb_idx[GOLDEN_FRAME - 1] != INVALID_IDX) {
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]],
+               cm->ref_frame_map[cpi->ref_fb_idx[LAST_FRAME - 1]]);
   }
 
   // Use this to see what the first pass reconstruction looks like.
@@ -2013,10 +2016,8 @@ static void define_gf_group_structure_16(AV1_COMP *cpi) {
       gf_group->bidir_pred_enabled[frame_index] = 0;
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ++ref_idx)
         gf_group->ref_fb_idx_map[frame_index][ref_idx] = ref_idx;
-      gf_group->refresh_idx[frame_index] =
-          cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME];
-      gf_group->refresh_flag[frame_index] =
-          cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME];
+      gf_group->refresh_idx[frame_index] = cpi->ref_fb_idx[LAST_FRAME - 1];
+      gf_group->refresh_flag[frame_index] = cpi->ref_fb_idx[LAST_FRAME - 1];
 
       continue;
     }
@@ -3153,16 +3154,20 @@ void av1_ref_frame_map_idx_updates(AV1_COMP *cpi, int gf_frame_index) {
   int ref_fb_idx_curr[REF_FRAMES];
 
   ref_fb_idx_prev[LAST_FRAME - LAST_FRAME] =
-      cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME];
+      cpi->ref_fb_idx[LAST_FRAME - LAST_FRAME];
   ref_fb_idx_prev[LAST2_FRAME - LAST_FRAME] =
-      cpi->lst_fb_idxes[LAST2_FRAME - LAST_FRAME];
+      cpi->ref_fb_idx[LAST2_FRAME - LAST_FRAME];
   ref_fb_idx_prev[LAST3_FRAME - LAST_FRAME] =
-      cpi->lst_fb_idxes[LAST3_FRAME - LAST_FRAME];
-  ref_fb_idx_prev[GOLDEN_FRAME - LAST_FRAME] = cpi->gld_fb_idx;
-  ref_fb_idx_prev[BWDREF_FRAME - LAST_FRAME] = cpi->bwd_fb_idx;
-  ref_fb_idx_prev[ALTREF2_FRAME - LAST_FRAME] = cpi->alt2_fb_idx;
-  ref_fb_idx_prev[ALTREF_FRAME - LAST_FRAME] = cpi->alt_fb_idx;
-  ref_fb_idx_prev[REF_FRAMES - LAST_FRAME] = cpi->ext_fb_idx;
+      cpi->ref_fb_idx[LAST3_FRAME - LAST_FRAME];
+  ref_fb_idx_prev[GOLDEN_FRAME - LAST_FRAME] =
+      cpi->ref_fb_idx[GOLDEN_FRAME - 1];
+  ref_fb_idx_prev[BWDREF_FRAME - LAST_FRAME] =
+      cpi->ref_fb_idx[BWDREF_FRAME - 1];
+  ref_fb_idx_prev[ALTREF2_FRAME - LAST_FRAME] =
+      cpi->ref_fb_idx[ALTREF2_FRAME - 1];
+  ref_fb_idx_prev[ALTREF_FRAME - LAST_FRAME] =
+      cpi->ref_fb_idx[ALTREF_FRAME - 1];
+  ref_fb_idx_prev[REF_FRAMES - LAST_FRAME] = cpi->ref_fb_idx[REF_FRAMES - 1];
 
   // Update map index for each reference frame
   for (int ref_idx = 0; ref_idx < REF_FRAMES; ++ref_idx) {
@@ -3170,17 +3175,21 @@ void av1_ref_frame_map_idx_updates(AV1_COMP *cpi, int gf_frame_index) {
     ref_fb_idx_curr[ref_idx] = ref_fb_idx_prev[ref_frame - LAST_FRAME];
   }
 
-  cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME] =
+  cpi->ref_fb_idx[LAST_FRAME - LAST_FRAME] =
       ref_fb_idx_curr[LAST_FRAME - LAST_FRAME];
-  cpi->lst_fb_idxes[LAST2_FRAME - LAST_FRAME] =
+  cpi->ref_fb_idx[LAST2_FRAME - LAST_FRAME] =
       ref_fb_idx_curr[LAST2_FRAME - LAST_FRAME];
-  cpi->lst_fb_idxes[LAST3_FRAME - LAST_FRAME] =
+  cpi->ref_fb_idx[LAST3_FRAME - LAST_FRAME] =
       ref_fb_idx_curr[LAST3_FRAME - LAST_FRAME];
-  cpi->gld_fb_idx = ref_fb_idx_curr[GOLDEN_FRAME - LAST_FRAME];
-  cpi->bwd_fb_idx = ref_fb_idx_curr[BWDREF_FRAME - LAST_FRAME];
-  cpi->alt2_fb_idx = ref_fb_idx_curr[ALTREF2_FRAME - LAST_FRAME];
-  cpi->alt_fb_idx = ref_fb_idx_curr[ALTREF_FRAME - LAST_FRAME];
-  cpi->ext_fb_idx = ref_fb_idx_curr[REF_FRAMES - LAST_FRAME];
+  cpi->ref_fb_idx[GOLDEN_FRAME - 1] =
+      ref_fb_idx_curr[GOLDEN_FRAME - LAST_FRAME];
+  cpi->ref_fb_idx[BWDREF_FRAME - 1] =
+      ref_fb_idx_curr[BWDREF_FRAME - LAST_FRAME];
+  cpi->ref_fb_idx[ALTREF2_FRAME - 1] =
+      ref_fb_idx_curr[ALTREF2_FRAME - LAST_FRAME];
+  cpi->ref_fb_idx[ALTREF_FRAME - 1] =
+      ref_fb_idx_curr[ALTREF_FRAME - LAST_FRAME];
+  cpi->ref_fb_idx[REF_FRAMES - 1] = ref_fb_idx_curr[REF_FRAMES - LAST_FRAME];
 }
 
 // Define the reference buffers that will be updated post encode.
@@ -3206,26 +3215,36 @@ static void configure_buffer_updates_16(AV1_COMP *cpi) {
   // Update refresh index
   switch (gf_group->refresh_idx[gf_group->index]) {
     case LAST_FRAME:
-      cpi->refresh_fb_idx = cpi->lst_fb_idxes[LAST_FRAME - LAST_FRAME];
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[LAST_FRAME - LAST_FRAME];
       break;
 
     case LAST2_FRAME:
-      cpi->refresh_fb_idx = cpi->lst_fb_idxes[LAST2_FRAME - LAST_FRAME];
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[LAST2_FRAME - LAST_FRAME];
       break;
 
     case LAST3_FRAME:
-      cpi->refresh_fb_idx = cpi->lst_fb_idxes[LAST3_FRAME - LAST_FRAME];
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[LAST3_FRAME - LAST_FRAME];
       break;
 
-    case GOLDEN_FRAME: cpi->refresh_fb_idx = cpi->gld_fb_idx; break;
+    case GOLDEN_FRAME:
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[GOLDEN_FRAME - 1];
+      break;
 
-    case BWDREF_FRAME: cpi->refresh_fb_idx = cpi->bwd_fb_idx; break;
+    case BWDREF_FRAME:
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[BWDREF_FRAME - 1];
+      break;
 
-    case ALTREF2_FRAME: cpi->refresh_fb_idx = cpi->alt2_fb_idx; break;
+    case ALTREF2_FRAME:
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[ALTREF2_FRAME - 1];
+      break;
 
-    case ALTREF_FRAME: cpi->refresh_fb_idx = cpi->alt_fb_idx; break;
+    case ALTREF_FRAME:
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[ALTREF_FRAME - 1];
+      break;
 
-    case REF_FRAMES: cpi->refresh_fb_idx = cpi->ext_fb_idx; break;
+    case REF_FRAMES:
+      cpi->refresh_fb_idx = cpi->ref_fb_idx[REF_FRAMES - 1];
+      break;
 
     default: assert(0); break;
   }

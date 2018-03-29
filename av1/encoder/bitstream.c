@@ -2259,10 +2259,12 @@ static int get_refresh_mask(AV1_COMP *cpi) {
   //     shifted and become the new virtual indexes for LAST2_FRAME and
   //     LAST3_FRAME.
   refresh_mask |=
-      (cpi->refresh_last_frame << cpi->lst_fb_idxes[LAST_REF_FRAMES - 1]);
+      (cpi->refresh_last_frame << cpi->ref_fb_idx[LAST_REF_FRAMES - 1]);
 
-  refresh_mask |= (cpi->refresh_bwd_ref_frame << cpi->bwd_fb_idx);
-  refresh_mask |= (cpi->refresh_alt2_ref_frame << cpi->alt2_fb_idx);
+  refresh_mask |=
+      (cpi->refresh_bwd_ref_frame << cpi->ref_fb_idx[BWDREF_FRAME - 1]);
+  refresh_mask |=
+      (cpi->refresh_alt2_ref_frame << cpi->ref_fb_idx[ALTREF2_FRAME - 1]);
 
   if (av1_preserve_existing_gf(cpi)) {
     // We have decided to preserve the previously existing golden frame as our
@@ -2275,10 +2277,12 @@ static int get_refresh_mask(AV1_COMP *cpi) {
     // Note: This is highly specific to the use of ARF as a forward reference,
     // and this needs to be generalized as other uses are implemented
     // (like RTC/temporal scalability).
-    return refresh_mask | (cpi->refresh_golden_frame << cpi->alt_fb_idx);
+    return refresh_mask |
+           (cpi->refresh_golden_frame << cpi->ref_fb_idx[ALTREF_FRAME - 1]);
   } else {
-    const int arf_idx = cpi->alt_fb_idx;
-    return refresh_mask | (cpi->refresh_golden_frame << cpi->gld_fb_idx) |
+    const int arf_idx = cpi->ref_fb_idx[ALTREF_FRAME - 1];
+    return refresh_mask |
+           (cpi->refresh_golden_frame << cpi->ref_fb_idx[GOLDEN_FRAME - 1]) |
            (cpi->refresh_alt_ref_frame << arf_idx);
   }
 }

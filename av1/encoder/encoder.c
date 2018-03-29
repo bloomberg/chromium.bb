@@ -881,13 +881,8 @@ static void update_frame_size(AV1_COMP *cpi) {
 
 static void init_buffer_indices(AV1_COMP *cpi) {
   int fb_idx;
-  for (fb_idx = 0; fb_idx < LAST_REF_FRAMES; ++fb_idx)
-    cpi->lst_fb_idxes[fb_idx] = fb_idx;
-  cpi->gld_fb_idx = LAST_REF_FRAMES;
-  cpi->bwd_fb_idx = LAST_REF_FRAMES + 1;
-  cpi->alt2_fb_idx = LAST_REF_FRAMES + 2;
-  cpi->alt_fb_idx = LAST_REF_FRAMES + 3;
-  cpi->ext_fb_idx = LAST_REF_FRAMES + 4;
+  for (fb_idx = 0; fb_idx < REF_FRAMES; ++fb_idx)
+    cpi->ref_fb_idx[fb_idx] = fb_idx;
   for (fb_idx = 0; fb_idx < MAX_EXT_ARFS + 1; ++fb_idx)
     cpi->arf_map[fb_idx] = LAST_REF_FRAMES + 2 + fb_idx;
   cpi->rate_index = 0;
@@ -2998,7 +2993,7 @@ static void check_show_existing_frame_gf16(AV1_COMP *cpi) {
   } else if (cpi->rc.is_last_bipred_frame) {
     cpi->rc.is_last_bipred_frame = 0;
     cm->show_existing_frame = 1;
-    cpi->existing_fb_idx_to_show = cpi->bwd_fb_idx;
+    cpi->existing_fb_idx_to_show = cpi->ref_fb_idx[BWDREF_FRAME - 1];
   } else if (next_frame_update_type == OVERLAY_UPDATE ||
              next_frame_update_type == INTNL_OVERLAY_UPDATE) {
     // Check the temporal filtering status for the next OVERLAY frame
@@ -3016,8 +3011,8 @@ static void check_show_existing_frame_gf16(AV1_COMP *cpi) {
       cm->show_existing_frame = 1;
       cpi->rc.is_src_frame_alt_ref = 1;
       cpi->existing_fb_idx_to_show = (next_frame_update_type == OVERLAY_UPDATE)
-                                         ? cpi->alt_fb_idx
-                                         : cpi->bwd_fb_idx;
+                                         ? cpi->ref_fb_idx[ALTREF_FRAME - 1]
+                                         : cpi->ref_fb_idx[BWDREF_FRAME - 1];
       cpi->is_arf_filter_off[which_arf] = 0;
     }
   }
@@ -3047,7 +3042,7 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
     //       the last_fb_idxes[0] after reference frame buffer update
     cpi->rc.is_last_bipred_frame = 0;
     cm->show_existing_frame = 1;
-    cpi->existing_fb_idx_to_show = cpi->lst_fb_idxes[0];
+    cpi->existing_fb_idx_to_show = cpi->ref_fb_idx[0];
   } else if (cpi->is_arf_filter_off[which_arf] &&
              (next_frame_update_type == OVERLAY_UPDATE ||
               next_frame_update_type == INTNL_OVERLAY_UPDATE)) {
@@ -3056,8 +3051,8 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
     cm->show_existing_frame = 1;
     cpi->rc.is_src_frame_alt_ref = 1;
     cpi->existing_fb_idx_to_show = (next_frame_update_type == OVERLAY_UPDATE)
-                                       ? cpi->alt_fb_idx
-                                       : cpi->alt2_fb_idx;
+                                       ? cpi->ref_fb_idx[ALTREF_FRAME - 1]
+                                       : cpi->ref_fb_idx[ALTREF2_FRAME - 1];
     cpi->is_arf_filter_off[which_arf] = 0;
   }
   cpi->rc.is_src_frame_ext_arf = 0;
@@ -3231,7 +3226,7 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
   // TODO(isbs): shift the scaled indices as well
   int ref_frame;
   for (ref_frame = LAST_REF_FRAMES - 1; ref_frame > 0; --ref_frame) {
-    cpi->lst_fb_idxes[ref_frame] = cpi->lst_fb_idxes[ref_frame - 1];
+    cpi->ref_fb_idx[ref_frame] = cpi->ref_fb_idx[ref_frame - 1];
 
     // [0] is allocated to the current coded frame. The statistics for the
     // reference frames start at [LAST_FRAME], i.e. [1].
@@ -3249,19 +3244,11 @@ static void update_reference_frames_gf16(AV1_COMP *cpi) {
   BufferPool *const pool = cm->buffer_pool;
 
   if (cm->frame_type == KEY_FRAME) {
-    for (int ref_frame = 0; ref_frame < LAST_REF_FRAMES; ++ref_frame) {
+    for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
       ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->lst_fb_idxes[ref_frame]],
+                 &cm->ref_frame_map[cpi->ref_fb_idx[ref_frame]],
                  cm->new_fb_idx);
     }
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->gld_fb_idx],
-               cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->bwd_fb_idx],
-               cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt2_fb_idx],
-               cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt_fb_idx],
-               cm->new_fb_idx);
   } else {
     if (cpi->refresh_last_frame || cpi->refresh_golden_frame ||
         cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame ||
@@ -3305,15 +3292,20 @@ static void update_reference_frames(AV1_COMP *cpi) {
   // At this point the new frame has been encoded.
   // If any buffer copy / swapping is signaled it should be done here.
   if (cm->frame_type == KEY_FRAME || frame_is_sframe(cm)) {
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->gld_fb_idx],
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]],
                cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->bwd_fb_idx],
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[BWDREF_FRAME - 1]],
                cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt2_fb_idx],
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]],
                cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt_fb_idx],
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF_FRAME - 1]],
                cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->ext_fb_idx],
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[REF_FRAMES - 1]],
                cm->new_fb_idx);
   } else if (av1_preserve_existing_gf(cpi)) {
     // We have decided to preserve the previously existing golden frame as our
@@ -3326,14 +3318,15 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // slot and, if we're updating the GF, the current frame becomes the new GF.
     int tmp;
 
-    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt_fb_idx],
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF_FRAME - 1]],
                cm->new_fb_idx);
-    tmp = cpi->alt_fb_idx;
-    cpi->alt_fb_idx = cpi->gld_fb_idx;
-    cpi->gld_fb_idx = tmp;
+    tmp = cpi->ref_fb_idx[ALTREF_FRAME - 1];
+    cpi->ref_fb_idx[ALTREF_FRAME - 1] = cpi->ref_fb_idx[GOLDEN_FRAME - 1];
+    cpi->ref_fb_idx[GOLDEN_FRAME - 1] = tmp;
 
     // We need to modify the mapping accordingly
-    cpi->arf_map[0] = cpi->alt_fb_idx;
+    cpi->arf_map[0] = cpi->ref_fb_idx[ALTREF_FRAME - 1];
     // TODO(zoeliu): Do we need to copy cpi->interp_filter_selected[0] over to
     // cpi->interp_filter_selected[GOLDEN_FRAME]?
   } else if (cpi->rc.is_src_frame_ext_arf && cm->show_existing_frame) {
@@ -3344,13 +3337,13 @@ static void update_reference_frames(AV1_COMP *cpi) {
     const int which_arf = gf_group->arf_ref_idx[gf_group->index];
     assert(gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE);
 
-    const int tmp = cpi->lst_fb_idxes[LAST_REF_FRAMES - 1];
+    const int tmp = cpi->ref_fb_idx[LAST_REF_FRAMES - 1];
     shift_last_ref_frames(cpi);
 
-    cpi->lst_fb_idxes[0] = cpi->alt2_fb_idx;
-    cpi->alt2_fb_idx = tmp;
+    cpi->ref_fb_idx[LAST_FRAME - 1] = cpi->ref_fb_idx[ALTREF2_FRAME - 1];
+    cpi->ref_fb_idx[ALTREF2_FRAME - 1] = tmp;
     // We need to modify the mapping accordingly
-    cpi->arf_map[which_arf] = cpi->alt2_fb_idx;
+    cpi->arf_map[which_arf] = cpi->ref_fb_idx[ALTREF2_FRAME - 1];
 
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
            cpi->interp_filter_selected[ALTREF2_FRAME],
@@ -3358,7 +3351,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
   } else { /* For non key/golden frames */
     // === ALTREF_FRAME ===
     if (cpi->refresh_alt_ref_frame) {
-      int arf_idx = cpi->alt_fb_idx;
+      int arf_idx = cpi->ref_fb_idx[ALTREF_FRAME - 1];
       int which_arf = 0;
       ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[arf_idx], cm->new_fb_idx);
 
@@ -3369,7 +3362,8 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === GOLDEN_FRAME ===
     if (cpi->refresh_golden_frame) {
-      ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->gld_fb_idx],
+      ref_cnt_fb(pool->frame_bufs,
+                 &cm->ref_frame_map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]],
                  cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[GOLDEN_FRAME],
@@ -3379,7 +3373,8 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === BWDREF_FRAME ===
     if (cpi->refresh_bwd_ref_frame) {
-      ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->bwd_fb_idx],
+      ref_cnt_fb(pool->frame_bufs,
+                 &cm->ref_frame_map[cpi->ref_fb_idx[BWDREF_FRAME - 1]],
                  cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
@@ -3389,7 +3384,8 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === ALTREF2_FRAME ===
     if (cpi->refresh_alt2_ref_frame) {
-      ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt2_fb_idx],
+      ref_cnt_fb(pool->frame_bufs,
+                 &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]],
                  cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[ALTREF2_FRAME],
@@ -3406,7 +3402,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // LAST_FRAME,      ..., LAST3_FRAME,     ..., ALTREF_FRAME
     //      |                     |                     |
     //      v                     v                     v
-    // lst_fb_idxes[0], ..., lst_fb_idxes[2], ..., alt_fb_idx
+    // ref_fb_idx[0],   ..., ref_fb_idx[2],   ..., ref_fb_idx[ALTREF_FRAME-1]
     //      |                     |                     |
     //      v                     v                     v
     // ref_frame_map[], ..., ref_frame_map[], ..., ref_frame_map[]
@@ -3428,26 +3424,26 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // LAST_FRAME,      LAST2_FRAME,     LAST3_FRAME
     //      |                |                |
     //      v                v                v
-    // lst_fb_idxes[2], lst_fb_idxes[0], lst_fb_idxes[1]
+    // ref_fb_idx[2],   ref_fb_idx[0],   ref_fb_idx[1]
     int ref_frame;
 
     if (cm->frame_type == KEY_FRAME || frame_is_sframe(cm)) {
       for (ref_frame = 0; ref_frame < LAST_REF_FRAMES; ++ref_frame) {
         ref_cnt_fb(pool->frame_bufs,
-                   &cm->ref_frame_map[cpi->lst_fb_idxes[ref_frame]],
+                   &cm->ref_frame_map[cpi->ref_fb_idx[ref_frame]],
                    cm->new_fb_idx);
       }
     } else {
       int tmp;
 
       ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->lst_fb_idxes[LAST_REF_FRAMES - 1]],
+                 &cm->ref_frame_map[cpi->ref_fb_idx[LAST_REF_FRAMES - 1]],
                  cm->new_fb_idx);
 
-      tmp = cpi->lst_fb_idxes[LAST_REF_FRAMES - 1];
+      tmp = cpi->ref_fb_idx[LAST_REF_FRAMES - 1];
 
       shift_last_ref_frames(cpi);
-      cpi->lst_fb_idxes[0] = tmp;
+      cpi->ref_fb_idx[0] = tmp;
 
       assert(cm->show_existing_frame == 0);
       memcpy(cpi->interp_filter_selected[LAST_FRAME],
@@ -3463,11 +3459,11 @@ static void update_reference_frames(AV1_COMP *cpi) {
         //       virtual index reshuffling for BWDREF, the encoder always
         //       specifies a LAST_BIPRED right before BWDREF and completes the
         //       reshuffling job accordingly.
-        tmp = cpi->lst_fb_idxes[LAST_REF_FRAMES - 1];
+        tmp = cpi->ref_fb_idx[LAST_REF_FRAMES - 1];
 
         shift_last_ref_frames(cpi);
-        cpi->lst_fb_idxes[0] = cpi->bwd_fb_idx;
-        cpi->bwd_fb_idx = tmp;
+        cpi->ref_fb_idx[0] = cpi->ref_fb_idx[BWDREF_FRAME - 1];
+        cpi->ref_fb_idx[BWDREF_FRAME - 1] = tmp;
 
         memcpy(cpi->interp_filter_selected[LAST_FRAME],
                cpi->interp_filter_selected[BWDREF_FRAME],
@@ -4417,40 +4413,55 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
   const int *const map = cpi->common.ref_frame_map;
 
   // No.1 Priority: LAST_FRAME
-  const int last2_is_last =
-      map[cpi->lst_fb_idxes[1]] == map[cpi->lst_fb_idxes[0]];
-  const int last3_is_last =
-      map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[0]];
-  const int gld_is_last = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[0]];
-  const int bwd_is_last = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[0]];
-  const int alt2_is_last = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[0]];
-  const int alt_is_last = map[cpi->alt_fb_idx] == map[cpi->lst_fb_idxes[0]];
+  const int last2_is_last = map[cpi->ref_fb_idx[1]] == map[cpi->ref_fb_idx[0]];
+  const int last3_is_last = map[cpi->ref_fb_idx[2]] == map[cpi->ref_fb_idx[0]];
+  const int gld_is_last =
+      map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]] == map[cpi->ref_fb_idx[0]];
+  const int bwd_is_last =
+      map[cpi->ref_fb_idx[BWDREF_FRAME - 1]] == map[cpi->ref_fb_idx[0]];
+  const int alt2_is_last =
+      map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]] == map[cpi->ref_fb_idx[0]];
+  const int alt_is_last =
+      map[cpi->ref_fb_idx[ALTREF_FRAME - 1]] == map[cpi->ref_fb_idx[0]];
 
   // No.2 Priority: ALTREF_FRAME
-  const int last2_is_alt = map[cpi->lst_fb_idxes[1]] == map[cpi->alt_fb_idx];
-  const int last3_is_alt = map[cpi->lst_fb_idxes[2]] == map[cpi->alt_fb_idx];
-  const int gld_is_alt = map[cpi->gld_fb_idx] == map[cpi->alt_fb_idx];
-  const int bwd_is_alt = map[cpi->bwd_fb_idx] == map[cpi->alt_fb_idx];
-  const int alt2_is_alt = map[cpi->alt2_fb_idx] == map[cpi->alt_fb_idx];
+  const int last2_is_alt =
+      map[cpi->ref_fb_idx[1]] == map[cpi->ref_fb_idx[ALTREF_FRAME - 1]];
+  const int last3_is_alt =
+      map[cpi->ref_fb_idx[2]] == map[cpi->ref_fb_idx[ALTREF_FRAME - 1]];
+  const int gld_is_alt = map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]] ==
+                         map[cpi->ref_fb_idx[ALTREF_FRAME - 1]];
+  const int bwd_is_alt = map[cpi->ref_fb_idx[BWDREF_FRAME - 1]] ==
+                         map[cpi->ref_fb_idx[ALTREF_FRAME - 1]];
+  const int alt2_is_alt = map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]] ==
+                          map[cpi->ref_fb_idx[ALTREF_FRAME - 1]];
 
   // No.3 Priority: LAST2_FRAME
-  const int last3_is_last2 =
-      map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[1]];
-  const int gld_is_last2 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[1]];
-  const int bwd_is_last2 = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[1]];
-  const int alt2_is_last2 = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[1]];
+  const int last3_is_last2 = map[cpi->ref_fb_idx[2]] == map[cpi->ref_fb_idx[1]];
+  const int gld_is_last2 =
+      map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]] == map[cpi->ref_fb_idx[1]];
+  const int bwd_is_last2 =
+      map[cpi->ref_fb_idx[BWDREF_FRAME - 1]] == map[cpi->ref_fb_idx[1]];
+  const int alt2_is_last2 =
+      map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]] == map[cpi->ref_fb_idx[1]];
 
   // No.4 Priority: LAST3_FRAME
-  const int gld_is_last3 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[2]];
-  const int bwd_is_last3 = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[2]];
-  const int alt2_is_last3 = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[2]];
+  const int gld_is_last3 =
+      map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]] == map[cpi->ref_fb_idx[2]];
+  const int bwd_is_last3 =
+      map[cpi->ref_fb_idx[BWDREF_FRAME - 1]] == map[cpi->ref_fb_idx[2]];
+  const int alt2_is_last3 =
+      map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]] == map[cpi->ref_fb_idx[2]];
 
   // No.5 Priority: GOLDEN_FRAME
-  const int bwd_is_gld = map[cpi->bwd_fb_idx] == map[cpi->gld_fb_idx];
-  const int alt2_is_gld = map[cpi->alt2_fb_idx] == map[cpi->gld_fb_idx];
+  const int bwd_is_gld = map[cpi->ref_fb_idx[BWDREF_FRAME - 1]] ==
+                         map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]];
+  const int alt2_is_gld = map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]] ==
+                          map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]];
 
   // No.6 Priority: BWDREF_FRAME
-  const int alt2_is_bwd = map[cpi->alt2_fb_idx] == map[cpi->bwd_fb_idx];
+  const int alt2_is_bwd = map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]] ==
+                          map[cpi->ref_fb_idx[BWDREF_FRAME - 1]];
 
   // No.7 Priority: ALTREF2_FRAME
 

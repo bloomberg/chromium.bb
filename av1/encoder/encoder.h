@@ -390,12 +390,7 @@ typedef struct AV1_COMP {
   int cur_poc;  // DebugInfo
 
   int scaled_ref_idx[REF_FRAMES];
-  int lst_fb_idxes[LAST_REF_FRAMES];
-  int gld_fb_idx;
-  int bwd_fb_idx;   // BWDREF_FRAME
-  int alt2_fb_idx;  // ALTREF2_FRAME
-  int alt_fb_idx;
-  int ext_fb_idx;      // extra ref frame buffer index
+  int ref_fb_idx[REF_FRAMES];
   int refresh_fb_idx;  // ref frame buffer index to refresh
 
   int last_show_frame_buf_idx;  // last show frame buffer index
@@ -631,16 +626,7 @@ static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
 
 static INLINE int get_ref_frame_map_idx(const AV1_COMP *cpi,
                                         MV_REFERENCE_FRAME ref_frame) {
-  if (ref_frame >= LAST_FRAME && ref_frame <= LAST3_FRAME)
-    return cpi->lst_fb_idxes[ref_frame - 1];
-  else if (ref_frame == GOLDEN_FRAME)
-    return cpi->gld_fb_idx;
-  else if (ref_frame == BWDREF_FRAME)
-    return cpi->bwd_fb_idx;
-  else if (ref_frame == ALTREF2_FRAME)
-    return cpi->alt2_fb_idx;
-  else
-    return cpi->alt_fb_idx;
+  return cpi->ref_fb_idx[ref_frame - 1];
 }
 
 static INLINE int get_ref_frame_buf_idx(const AV1_COMP *cpi,
