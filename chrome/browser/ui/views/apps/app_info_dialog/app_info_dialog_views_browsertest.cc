@@ -26,7 +26,9 @@ class AppInfoDialogBrowserTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     extension_environment_ =
-        std::make_unique<extensions::TestExtensionEnvironment>(nullptr);
+        std::make_unique<extensions::TestExtensionEnvironment>(
+            extensions::TestExtensionEnvironment::Type::
+                kInheritExistingTaskEnvironment);
     constexpr char kTestExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     extension_ =
         extension_environment_->MakePackagedApp(kTestExtensionId, true);

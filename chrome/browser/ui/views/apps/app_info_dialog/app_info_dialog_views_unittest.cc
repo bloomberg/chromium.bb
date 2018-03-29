@@ -82,8 +82,7 @@ const char kTestOtherExtensionId[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
                                public views::WidgetObserver {
  public:
-  AppInfoDialogViewsTest()
-      : extension_environment_(base::MessageLoopForUI::current()) {}
+  AppInfoDialogViewsTest() = default;
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -159,7 +158,9 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   AppInfoDialog* dialog_ = nullptr;  // Owned by |widget_|'s views hierarchy.
   scoped_refptr<extensions::Extension> extension_;
   scoped_refptr<extensions::Extension> chrome_app_;
-  extensions::TestExtensionEnvironment extension_environment_;
+  extensions::TestExtensionEnvironment extension_environment_{
+      extensions::TestExtensionEnvironment::Type::
+          kInheritExistingTaskEnvironment};
 #if defined(OS_CHROMEOS)
   ArcAppTest arc_test_;
 #endif
