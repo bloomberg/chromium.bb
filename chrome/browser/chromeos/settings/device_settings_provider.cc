@@ -517,7 +517,8 @@ void DecodeGenericPolicies(
     }
   }
 
-  if (policy.has_allow_redeem_offers()) {
+  if (policy.has_allow_redeem_offers() &&
+      policy.allow_redeem_offers().has_allow_redeem_offers()) {
     new_values_cache->SetBoolean(
         kAllowRedeemChromeOsRegistrationOffers,
         policy.allow_redeem_offers().allow_redeem_offers());
