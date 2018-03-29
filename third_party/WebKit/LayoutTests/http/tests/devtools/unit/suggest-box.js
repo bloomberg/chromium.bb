@@ -3,7 +3,10 @@
 
   var delegate = {
       applySuggestion: function(suggestion, isIntermediateSuggestion) {
-          TestRunner.addResult((isIntermediateSuggestion ? "Intermediate " : "") + "Suggestion Applied: " + suggestion);
+          if (!suggestion)
+              TestRunner.addResult('No item selected.')
+          else
+              TestRunner.addResult((isIntermediateSuggestion ? "Intermediate " : "") + "Suggestion Applied: " + suggestion);
       },
       acceptSuggestion: function() {
           TestRunner.addResult("Suggestion accepted");
