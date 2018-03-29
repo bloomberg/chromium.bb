@@ -25,14 +25,22 @@ namespace cryptauth {
 class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
                                 public gcm::GCMAppHandler {
  public:
-  // Creates the manager:
-  // |gcm_driver|: Handles the actual GCM communications. The driver is not
-  //     owned and must outlive this instance.
-  // |pref_service|: Contains preferences across browser restarts, and should
-  //     have been registered through RegisterPrefs(). The service is not owned
-  //     and must outlive this instance.
-  CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
-                          PrefService* pref_service);
+  class Factory {
+   public:
+    static std::unique_ptr<CryptAuthGCMManager> NewInstance(
+        gcm::GCMDriver* gcm_driver,
+        PrefService* pref_service);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<CryptAuthGCMManager> BuildInstance(
+        gcm::GCMDriver* gcm_driver,
+        PrefService* pref_service);
+
+   private:
+    static Factory* factory_instance_;
+  };
 
   ~CryptAuthGCMManagerImpl() override;
 
@@ -43,7 +51,19 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
+ protected:
+  // Creates the manager:
+  // |gcm_driver|: Handles the actual GCM communications. The driver is not
+  //     owned and must outlive this instance.
+  // |pref_service|: Contains preferences across browser restarts, and should
+  //     have been registered through RegisterPrefs(). The service is not owned
+  //     and must outlive this instance.
+  CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
+                          PrefService* pref_service);
+
  private:
+  friend class CryptAuthGCMManagerImplTest;
+
   // GCMAppHandler:
   void ShutdownHandler() override;
   void OnStoreReset() override;

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base64url.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/cryptauth/cryptauth_enroller.h"
@@ -51,6 +52,46 @@ std::unique_ptr<SyncScheduler> CreateSyncScheduler(
 }
 
 }  // namespace
+
+// static
+CryptAuthEnrollmentManagerImpl::Factory*
+    CryptAuthEnrollmentManagerImpl::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<CryptAuthEnrollmentManager>
+CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
+    base::Clock* clock,
+    std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
+    const GcmDeviceInfo& device_info,
+    CryptAuthGCMManager* gcm_manager,
+    PrefService* pref_service) {
+  if (!factory_instance_)
+    factory_instance_ = new Factory();
+
+  return factory_instance_->BuildInstance(
+      clock, std::move(enroller_factory), std::move(secure_message_delegate),
+      device_info, gcm_manager, pref_service);
+}
+
+// static
+void CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<CryptAuthEnrollmentManager>
+CryptAuthEnrollmentManagerImpl::Factory::BuildInstance(
+    base::Clock* clock,
+    std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
+    const GcmDeviceInfo& device_info,
+    CryptAuthGCMManager* gcm_manager,
+    PrefService* pref_service) {
+  return base::WrapUnique(new CryptAuthEnrollmentManagerImpl(
+      clock, std::move(enroller_factory), std::move(secure_message_delegate),
+      device_info, gcm_manager, pref_service));
+}
 
 CryptAuthEnrollmentManagerImpl::CryptAuthEnrollmentManagerImpl(
     base::Clock* clock,

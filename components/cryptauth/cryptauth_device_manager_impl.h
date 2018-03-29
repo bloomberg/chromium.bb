@@ -27,19 +27,27 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
                                    public SyncScheduler::Delegate,
                                    public CryptAuthGCMManager::Observer {
  public:
-  // Creates the manager:
-  // |clock|: Used to determine the time between sync attempts.
-  // |client_factory|: Creates CryptAuthClient instances to perform each sync.
-  // |gcm_manager|: Notifies when GCM push messages trigger device syncs.
-  //                Not owned and must outlive this instance.
-  // |pref_service|: Stores syncing metadata and unlock key information to
-  //                 persist across browser restarts. Must already be registered
-  //                 with RegisterPrefs().
-  CryptAuthDeviceManagerImpl(
-      base::Clock* clock,
-      std::unique_ptr<CryptAuthClientFactory> client_factory,
-      CryptAuthGCMManager* gcm_manager,
-      PrefService* pref_service);
+  class Factory {
+   public:
+    static std::unique_ptr<CryptAuthDeviceManager> NewInstance(
+        base::Clock* clock,
+        std::unique_ptr<CryptAuthClientFactory> client_factory,
+        CryptAuthGCMManager* gcm_manager,
+        PrefService* pref_service);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<CryptAuthDeviceManager> BuildInstance(
+        base::Clock* clock,
+        std::unique_ptr<CryptAuthClientFactory> client_factory,
+        CryptAuthGCMManager* gcm_manager,
+        PrefService* pref_service);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   ~CryptAuthDeviceManagerImpl() override;
 
   // CryptAuthDeviceManager:
@@ -56,6 +64,20 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
   std::vector<ExternalDeviceInfo> GetPixelTetherHosts() const override;
 
  protected:
+  // Creates the manager:
+  // |clock|: Used to determine the time between sync attempts.
+  // |client_factory|: Creates CryptAuthClient instances to perform each sync.
+  // |gcm_manager|: Notifies when GCM push messages trigger device syncs.
+  //                Not owned and must outlive this instance.
+  // |pref_service|: Stores syncing metadata and unlock key information to
+  //                 persist across browser restarts. Must already be registered
+  //                 with RegisterPrefs().
+  CryptAuthDeviceManagerImpl(
+      base::Clock* clock,
+      std::unique_ptr<CryptAuthClientFactory> client_factory,
+      CryptAuthGCMManager* gcm_manager,
+      PrefService* pref_service);
+
   void SetSyncSchedulerForTest(std::unique_ptr<SyncScheduler> sync_scheduler);
 
  private:

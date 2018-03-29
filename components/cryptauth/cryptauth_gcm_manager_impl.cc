@@ -5,6 +5,7 @@
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -29,6 +30,32 @@ const char kRegistrationTickleTypeUpdateEnrollment[] = "2";
 const char kRegistrationTickleTypeDevicesSync[] = "3";
 
 }  // namespace
+
+// static
+CryptAuthGCMManagerImpl::Factory*
+    CryptAuthGCMManagerImpl::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<CryptAuthGCMManager>
+CryptAuthGCMManagerImpl::Factory::NewInstance(gcm::GCMDriver* gcm_driver,
+                                              PrefService* pref_service) {
+  if (!factory_instance_)
+    factory_instance_ = new Factory();
+
+  return factory_instance_->BuildInstance(gcm_driver, pref_service);
+}
+
+// static
+void CryptAuthGCMManagerImpl::Factory::SetInstanceForTesting(Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<CryptAuthGCMManager>
+CryptAuthGCMManagerImpl::Factory::BuildInstance(gcm::GCMDriver* gcm_driver,
+                                                PrefService* pref_service) {
+  return base::WrapUnique(
+      new CryptAuthGCMManagerImpl(gcm_driver, pref_service));
+}
 
 CryptAuthGCMManagerImpl::CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
                                                  PrefService* pref_service)
