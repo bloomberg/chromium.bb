@@ -126,15 +126,16 @@ class OmniboxResultView : public views::View,
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // Weak pointers for easy reference.
-  views::ImageView* icon_view_;          // Small icon. e.g. favicon.
-  views::ImageView* image_view_;         // Larger image for rich suggestions.
+  views::ImageView* suggestion_icon_view_;   // Small icon. e.g. favicon.
+  views::ImageView* suggestion_image_view_;  // For rich suggestions.
+  OmniboxTextView* suggestion_content_view_;
+  OmniboxTextView* suggestion_description_view_;
+  OmniboxTextView* suggestion_separator_view_;  // e.g. A hyphen.
+  std::unique_ptr<OmniboxTabSwitchButton> suggestion_tab_switch_button_;
+
   views::ImageView* keyword_icon_view_;  // An icon resembling a '>'.
-  std::unique_ptr<OmniboxTabSwitchButton> tab_switch_button_;
-  OmniboxTextView* content_view_;
-  OmniboxTextView* description_view_;
   OmniboxTextView* keyword_content_view_;
   OmniboxTextView* keyword_description_view_;
-  OmniboxTextView* separator_view_;  // e.g. A hyphen.
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };
