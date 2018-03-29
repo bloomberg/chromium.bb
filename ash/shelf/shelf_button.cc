@@ -56,11 +56,14 @@ constexpr int kIconPaddingVertical = 8;
 // The time threshold before an item can be dragged.
 constexpr int kDragTimeThresholdMs = 300;
 
+// The time threshold before the ink drop should activate on a long press.
+constexpr int kInkDropRippleActivationTimeMs = 650;
+
 // The drag and drop app icon should get scaled by this factor.
 constexpr float kAppIconScale = 1.2f;
 
 // The drag and drop app icon scaling up or down animation transition duration.
-constexpr int kDragDropAppIconScaleTransitionMs = 20;
+constexpr int kDragDropAppIconScaleTransitionMs = 200;
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
@@ -279,10 +282,10 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
       is_touchable_app_context_menu_enabled_(
           features::IsTouchableAppContextMenuEnabled()) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  SetInkDropMode(InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
-
+  set_hide_ink_drop_when_showing_context_menu(false);
   const gfx::ShadowValue kShadows[] = {
       gfx::ShadowValue(gfx::Vector2d(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
       gfx::ShadowValue(gfx::Vector2d(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
@@ -291,6 +294,8 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
   icon_shadows_.assign(kShadows, kShadows + arraysize(kShadows));
 
   // TODO: refactor the layers so each button doesn't require 3.
+  // |icon_view_| needs its own layer so it can be scaled up independently of
+  // the ink drop ripple.
   icon_view_->SetPaintToLayer();
   icon_view_->layer()->SetFillsBoundsOpaquely(false);
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
@@ -391,6 +396,11 @@ views::InkDrop* ShelfButton::GetInkDropForTesting() {
 
 void ShelfButton::OnDragStarted(const ui::LocatedEvent* event) {
   AnimateInkDrop(views::InkDropState::HIDDEN, event);
+}
+
+void ShelfButton::OnMenuClosed() {
+  if (GetInkDrop()->GetTargetInkDropState() != views::InkDropState::DEACTIVATED)
+    GetInkDrop()->AnimateToState(views::InkDropState::DEACTIVATED);
 }
 
 void ShelfButton::ShowContextMenu(const gfx::Point& p,
@@ -554,10 +564,20 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
       drag_timer_.Start(
           FROM_HERE, base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
           base::Bind(&ShelfButton::OnTouchDragTimer, base::Unretained(this)));
+      ripple_activation_timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kInkDropRippleActivationTimeMs),
+          base::Bind(&ShelfButton::OnRippleTimer, base::Unretained(this)));
+      GetInkDrop()->AnimateToState(views::InkDropState::ACTION_PENDING);
       event->SetHandled();
       break;
     case ui::ET_GESTURE_END:
       drag_timer_.Stop();
+      // If the button is being dragged, or there is an active context menu,
+      // for this ShelfButton, don't deactivate the ink drop.
+      if (!(state_ & STATE_DRAGGING) &&
+          !shelf_view_->IsShowingMenuForView(this))
+        GetInkDrop()->AnimateToState(views::InkDropState::DEACTIVATED);
       ClearState(STATE_HOVERED);
       ClearState(STATE_DRAGGING);
       break;
@@ -566,7 +586,10 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
         shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
         event->SetHandled();
       } else {
+        // The drag went to the bezel and is about to be passed to
+        // ShelfLayoutManager.
         drag_timer_.Stop();
+        GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -584,8 +607,12 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_LONG_TAP:
+      GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
       // Handle LONG_TAP to avoid opening the context menu twice.
       event->SetHandled();
+      break;
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
+      GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
       break;
     default:
       break;
@@ -643,16 +670,25 @@ void ShelfButton::OnTouchDragTimer() {
   AddState(STATE_DRAGGING);
 }
 
+void ShelfButton::OnRippleTimer() {
+  if (GetInkDrop()->GetTargetInkDropState() !=
+      views::InkDropState::ACTION_PENDING) {
+    return;
+  }
+  GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
+}
+
 void ShelfButton::ScaleAppIcon(bool scale_up) {
-  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+  ui::ScopedLayerAnimationSettings settings(icon_view_->layer()->GetAnimator());
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kDragDropAppIconScaleTransitionMs));
 
   if (scale_up) {
-    layer()->SetTransform(gfx::GetScaleTransform(
-        gfx::Rect(layer()->bounds().size()).CenterPoint(), kAppIconScale));
+    icon_view_->layer()->SetTransform(gfx::GetScaleTransform(
+        gfx::Rect(icon_view_->layer()->bounds().size()).CenterPoint(),
+        kAppIconScale));
   } else {
-    layer()->SetTransform(gfx::Transform());
+    icon_view_->layer()->SetTransform(gfx::Transform());
   }
 }
 

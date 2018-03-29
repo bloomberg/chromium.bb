@@ -114,7 +114,7 @@ const SkColor kIconColor = gfx::kChromeIconGrey;
 const float kDragDropAppIconScale = 1.2f;
 
 // The drag and drop icon scaling up or down animation transition duration.
-const int kDragDropAppIconScaleTransitionInMs = 20;
+const int kDragDropAppIconScaleTransitionInMs = 200;
 
 // The number of apps shown in the start page app grid.
 const int kNumStartPageTiles = 5;

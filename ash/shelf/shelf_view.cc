@@ -406,6 +406,10 @@ bool ShelfView::IsShowingMenu() const {
   return launcher_menu_runner_.get() && launcher_menu_runner_->IsRunning();
 }
 
+bool ShelfView::IsShowingMenuForView(views::View* view) const {
+  return IsShowingMenu() && menu_owner_ == view;
+}
+
 bool ShelfView::IsShowingOverflowBubble() const {
   return overflow_bubble_.get() && overflow_bubble_->IsShowing();
 }
@@ -1902,7 +1906,7 @@ void ShelfView::AfterItemSelected(
                    item.title, std::move(*menu_items),
                    model_->GetShelfItemDelegate(item.id)),
                sender, gfx::Point(), false,
-               ui::GetMenuSourceTypeForEvent(*event), ink_drop);
+               ui::GetMenuSourceTypeForEvent(*event));
     } else {
       ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
     }
@@ -1926,7 +1930,7 @@ void ShelfView::AfterGetContextMenuItems(
                                      ? kAppContextMenuExecuteCommand
                                      : kNonAppContextMenuExecuteCommand);
   ShowMenu(std::move(menu_model), source, point, true /* context_menu */,
-           source_type, nullptr /* ink_drop */);
+           source_type);
 }
 
 void ShelfView::ShowContextMenuForView(views::View* source,
@@ -1943,7 +1947,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
         std::make_unique<ShelfContextMenuModel>(
             std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
     menu_model->set_histogram_name(kNonAppContextMenuExecuteCommand);
-    ShowMenu(std::move(menu_model), source, point, true, source_type, nullptr);
+    ShowMenu(std::move(menu_model), source, point, true, source_type);
     return;
   }
 
@@ -1962,10 +1966,11 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
                          views::View* source,
                          const gfx::Point& click_point,
                          bool context_menu,
-                         ui::MenuSourceType source_type,
-                         views::InkDrop* ink_drop) {
+                         ui::MenuSourceType source_type) {
+  DCHECK(!IsShowingMenu());
   if (menu_model->GetItemCount() == 0)
     return;
+  menu_owner_ = source;
 
   menu_model_ = std::move(menu_model);
   closing_event_time_ = base::TimeTicks();
@@ -1987,7 +1992,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
 
   launcher_menu_runner_ = std::make_unique<views::MenuRunner>(
       menu_model_.get(), run_types,
-      base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), ink_drop));
+      base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), source));
 
   // NOTE: if you convert to HAS_MNEMONICS be sure to update menu building code.
   launcher_menu_runner_->RunMenuAt(
@@ -1996,7 +2001,8 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
       GetMenuAnchorPosition(item, context_menu), source_type);
 }
 
-void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
+void ShelfView::OnMenuClosed(views::View* source) {
+  menu_owner_ = nullptr;
   context_menu_id_ = ShelfID();
 
   closing_event_time_ = launcher_menu_runner_->closing_event_time();
@@ -2008,9 +2014,9 @@ void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
         base::TimeTicks::Now() - shelf_button_context_menu_time_);
     shelf_button_context_menu_time_ = base::TimeTicks();
   }
-
-  if (ink_drop)
-    ink_drop->AnimateToState(views::InkDropState::DEACTIVATED);
+  const ShelfItem* item = ShelfItemForView(source);
+  if (item)
+    static_cast<ShelfButton*>(source)->OnMenuClosed();
 
   launcher_menu_runner_.reset();
   menu_model_.reset();
