@@ -32,7 +32,6 @@
   }
 
   function onAllResourcesLoaded() {
-    UI.viewManager.showView('search.search');
     fs.reportCreated(fileSystemCreated);
 
     function fileSystemCreated() {
@@ -66,14 +65,14 @@
     function testIgnoreCase(next) {
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
     function testCaseSensitive(next) {
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, false, false);
+      var searchConfig = new Search.SearchConfig(query, false, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -81,7 +80,7 @@
       var query = 'searchTest' +
           'UniqueString' +
           ' file:html';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -89,7 +88,7 @@
       var query = 'file:js ' +
           'searchTest' +
           'UniqueString';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -98,7 +97,7 @@
           'searchTest' +
           'UniqueString' +
           ' file:html';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -107,7 +106,7 @@
           'Unique' +
           ' space' +
           ' String';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -117,7 +116,7 @@
           'Unique' +
           ' space' +
           ' String';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -128,7 +127,7 @@
           ' space' +
           ' String' +
           ' file:search';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -139,7 +138,7 @@
           ' space' +
           ' String' +
           ' file:search file:html';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -149,7 +148,7 @@
           ' file:html ' +
           ' space' +
           ' String';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -160,7 +159,7 @@
           ' space' +
           ' String' +
           ' file:search';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -172,7 +171,7 @@
           ' space' +
           ' String' +
           ' file:search';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -180,7 +179,7 @@
       var query = 'searchTest' +
           'UniqueString' +
           ' file:search -file:js -file:css';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -190,7 +189,7 @@
           ' -file:css ' +
           ' space' +
           ' String';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -199,7 +198,7 @@
       var query = 'searchTest' +
           'Unique' +
           ' file:www';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, step2);
 
       function step2() {
@@ -207,7 +206,7 @@
         query = 'searchTest' +
             'Unique' +
             ' file:zzz';
-        searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+        searchConfig = new Search.SearchConfig(query, true, false);
         SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
       }
     },
@@ -229,7 +228,7 @@
           ' BAR');
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
+      var searchConfig = new Search.SearchConfig(query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     }
   ];

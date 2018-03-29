@@ -20,9 +20,9 @@
   async function step2() {
     panel.searchableView().showSearchField();
     TestRunner.addResult('Search controller: \'' + panel.searchableView()._searchInputElement.value + '\'');
-    var action = new Search.SearchView.ActionDelegate();
+    var action = new Sources.SearchSourcesView.ActionDelegate();
     await action._showSearch();
-    var searchView = /** @type {!Search.SearchView} */ (self.runtime.sharedInstance(Search.SearchView));
+    var searchView = /** @type {!Search.SearchView} */ (self.runtime.sharedInstance(Sources.SearchSourcesView));
     TestRunner.addResult('Advanced search controller: \'' + searchView._search.value + '\'');
     TestRunner.completeTest();
   }

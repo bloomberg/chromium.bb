@@ -7,7 +7,7 @@
   await TestRunner.showPanel('sources');
 
   function dumpParsedSearchQuery(query, isRegex) {
-    var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, isRegex);
+    var searchConfig = new Search.SearchConfig(query, true, isRegex);
     TestRunner.addResult('Dumping parsed search query [' + query + ']:');
     TestRunner.addResult(JSON.stringify(searchConfig.queries()));
   }
