@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -447,6 +448,23 @@ TEST_F(DisplayMoveWindowUtilTest, TransientParentNotInCycleWindowList) {
             screen->GetDisplayNearestWindow(w2.get()).id());
   EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
             screen->GetDisplayNearestWindow(child->GetNativeWindow()).id());
+}
+
+// Tests that restore bounds is updated with window movement to another display.
+TEST_F(DisplayMoveWindowUtilTest, RestoreMaximizedWindowAfterMovement) {
+  UpdateDisplay("400x300,400x300");
+  aura::Window* w =
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 200, 100));
+  wm::ActivateWindow(w);
+
+  wm::WindowState* window_state = wm::GetWindowState(w);
+  window_state->Maximize();
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300 - kShelfSize), w->GetBoundsInScreen());
+
+  PerformMoveWindowAccel();
+  EXPECT_EQ(gfx::Rect(400, 0, 400, 300 - kShelfSize), w->GetBoundsInScreen());
+  window_state->Restore();
+  EXPECT_EQ(gfx::Rect(410, 20, 200, 100), w->GetBoundsInScreen());
 }
 
 }  // namespace display_move_window_util
