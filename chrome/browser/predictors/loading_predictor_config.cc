@@ -96,7 +96,8 @@ LoadingPredictorConfig::LoadingPredictorConfig()
       max_consecutive_misses(3),
       max_redirect_consecutive_misses(5),
       is_origin_learning_enabled(false),
-      should_disable_other_preconnects(false) {}
+      should_disable_other_preconnects(false),
+      flush_data_to_disk_delay_seconds(30) {}
 
 LoadingPredictorConfig::LoadingPredictorConfig(
     const LoadingPredictorConfig& other) = default;

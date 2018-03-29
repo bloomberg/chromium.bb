@@ -81,6 +81,10 @@ struct LoadingPredictorConfig {
 
   // True iff all other implementations of preconnect should be disabled.
   bool should_disable_other_preconnects;
+
+  // Delay between writing data to the predictors database memory cache and
+  // flushing it to disk.
+  size_t flush_data_to_disk_delay_seconds;
 };
 
 }  // namespace predictors
