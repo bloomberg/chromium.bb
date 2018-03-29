@@ -1194,8 +1194,6 @@ void ShellSurfaceBase::Configure() {
 }
 
 bool ShellSurfaceBase::IsResizing() const {
-  if (!resizer_)
-    return false;
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget_->GetNativeWindow());
   if (!window_state->is_dragged())
