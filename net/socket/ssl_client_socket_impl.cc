@@ -66,10 +66,6 @@
 #include "net/ssl/ssl_key_logger.h"
 #endif
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
-
 namespace net {
 
 namespace {
@@ -847,14 +843,6 @@ void SSLClientSocketImpl::OnWriteReady() {
 
 int SSLClientSocketImpl::Init() {
   DCHECK(!ssl_);
-
-#if defined(USE_NSS_CERTS)
-  if (ssl_config_.cert_io_enabled) {
-    // TODO(davidben): Move this out of SSLClientSocket. See
-    // https://crbug.com/539520.
-    EnsureNSSHttpIOInit();
-  }
-#endif
 
   SSLContext* context = SSLContext::GetInstance();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
