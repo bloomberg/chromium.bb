@@ -9,6 +9,7 @@ import argparse
 import optparse
 import os
 import sys
+import logging
 
 from core import benchmark_finders
 from core import path_util
@@ -24,13 +25,13 @@ from chrome_telemetry_build import chromium_config
 
 def _FetchDependenciesIfNeeded(story_set):
   """ Download files needed by a user story set. """
-  if not story_set.wpr_archive_info:
-    return
-
   # Download files in serving_dirs.
   serving_dirs = story_set.serving_dirs
   for directory in serving_dirs:
     cloud_storage.GetFilesInDirectoryIfChanged(directory, story_set.bucket)
+
+  if not story_set.wpr_archive_info:
+    return
 
   # Download WPR files.
   if any(not story.is_local for story in story_set):
@@ -63,7 +64,7 @@ def _EnumerateDependencies(story_set):
   return [dep[prefix_len:] for dep in deps if dep]
 
 
-def FetchDepsForBenchmark(benchmark, output):
+def FetchDepsForBenchmark(benchmark):
   # Create a dummy options object which hold default values that are expected
   # by Benchmark.CreateStorySet(options) method.
   parser = optparse.OptionParser()
@@ -74,13 +75,13 @@ def FetchDepsForBenchmark(benchmark, output):
   # Download files according to specified benchmark.
   _FetchDependenciesIfNeeded(story_set)
 
-  # Print files downloaded.
+  # Log files downloaded.
   deps = _EnumerateDependencies(story_set)
   for dep in deps:
-    print >> output, dep
+    logging.info(dep)
 
 
-def main(args, output):
+def main(args):
   parser = argparse.ArgumentParser(
          description='Fetch the dependencies of perf benchmark(s).')
   parser.add_argument('benchmark_name', type=str, nargs='?')
@@ -88,8 +89,18 @@ def main(args, output):
                       help=('Force fetching all the benchmarks when '
                             'benchmark_name is not specified'),
                       action='store_true', default=False)
+  parser.add_argument(
+        '-v', '--verbose', action='count', dest='verbosity',
+        help='Increase verbosity level (repeat as needed)')
 
   options = parser.parse_args(args)
+
+  if options.verbosity >= 2:
+    logging.getLogger().setLevel(logging.DEBUG)
+  elif options.verbosity:
+    logging.getLogger().setLevel(logging.INFO)
+  else:
+    logging.getLogger().setLevel(logging.WARNING)
 
   if options.benchmark_name:
     perf_dir = path_util.GetPerfDir()
@@ -101,15 +112,15 @@ def main(args, output):
         options.benchmark_name, config)
     if not benchmark:
       raise ValueError('No such benchmark: %s' % options.benchmark_name)
-    FetchDepsForBenchmark(benchmark, output)
+    FetchDepsForBenchmark(benchmark)
   else:
     if not options.force:
       raw_input(
           'No benchmark name is specified. Fetching all benchmark deps. '
           'Press enter to continue...')
     for b in benchmark_finders.GetAllPerfBenchmarks():
-      print >> output, ('Fetch dependencies for benchmark %s' % b.Name())
-      FetchDepsForBenchmark(b, output)
+      logging.info('Fetch dependencies for benchmark %s', b.Name())
+      FetchDepsForBenchmark(b)
 
 if __name__ == '__main__':
-  main(sys.argv[1:], sys.stdout)
+  main(sys.argv[1:])
