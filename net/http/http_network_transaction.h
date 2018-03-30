@@ -17,7 +17,6 @@
 #include "crypto/ec_private_key.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
-#include "net/base/network_throttle_manager.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_request_headers.h"
@@ -49,8 +48,7 @@ struct HttpRequestInfo;
 
 class NET_EXPORT_PRIVATE HttpNetworkTransaction
     : public HttpTransaction,
-      public HttpStreamRequest::Delegate,
-      public NetworkThrottleManager::ThrottleDelegate {
+      public HttpStreamRequest::Delegate {
  public:
   HttpNetworkTransaction(RequestPriority priority,
                          HttpNetworkSession* session);
@@ -127,9 +125,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void OnQuicBroken() override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
-  // NetworkThrottleManager::Delegate methods:
-  void OnThrottleUnblocked(NetworkThrottleManager::Throttle* throttle) override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest, ResetStateForRestart);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest, WindowUpdateReceived);
@@ -142,8 +137,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                            FlowControlNegativeSendWindowSize);
 
   enum State {
-    STATE_THROTTLE,
-    STATE_THROTTLE_COMPLETE,
     STATE_NOTIFY_BEFORE_CREATE_STREAM,
     STATE_CREATE_STREAM,
     STATE_CREATE_STREAM_COMPLETE,
@@ -190,8 +183,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // argument receive the result from the previous state.  If a method returns
   // ERR_IO_PENDING, then the result from OnIOComplete will be passed to the
   // next state method as the result arg.
-  int DoThrottle();
-  int DoThrottleComplete();
   int DoNotifyBeforeCreateStream();
   int DoCreateStream();
   int DoCreateStreamComplete(int result);
@@ -411,10 +402,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   IPEndPoint remote_endpoint_;
   // Network error details for this transaction.
   NetErrorDetails net_error_details_;
-
-  // Communicate lifetime of transaction to the throttler, and
-  // throttled state to the transaction.
-  std::unique_ptr<NetworkThrottleManager::Throttle> throttle_;
 
   // Number of retries made for network errors like ERR_SPDY_PING_FAILED,
   // ERR_SPDY_SERVER_REFUSED_STREAM, ERR_QUIC_HANDSHAKE_FAILED and

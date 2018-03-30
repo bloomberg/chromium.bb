@@ -20,7 +20,6 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/values.h"
-#include "net/base/network_throttle_manager_impl.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_response_body_drainer.h"
 #include "net/http/http_stream_factory_impl.h"
@@ -235,7 +234,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                          AddDefaultHttp2Settings(params.http2_settings),
                          params.time_func),
       http_stream_factory_(std::make_unique<HttpStreamFactoryImpl>(this)),
-      network_stream_throttler_(std::make_unique<NetworkThrottleManagerImpl>()),
       params_(params),
       context_(context) {
   DCHECK(proxy_resolution_service_);

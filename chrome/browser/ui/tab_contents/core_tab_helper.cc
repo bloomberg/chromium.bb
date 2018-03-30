@@ -213,9 +213,6 @@ bool CoreTabHelper::GetStatusTextForWebContents(
           l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
                                      source->GetLoadStateHost());
       return true;
-    case net::LOAD_STATE_THROTTLED:
-      *status_text = l10n_util::GetStringUTF16(IDS_LOAD_STATE_THROTTLED);
-      return true;
     // Ignore net::LOAD_STATE_READING_RESPONSE and net::LOAD_STATE_IDLE
     case net::LOAD_STATE_IDLE:
     case net::LOAD_STATE_READING_RESPONSE:
