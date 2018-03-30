@@ -79,7 +79,7 @@ ReadOnlySharedMemoryMapping ReadOnlySharedMemoryRegion::MapAt(off_t offset,
   return ReadOnlySharedMemoryMapping(memory, mapped_size, handle_.GetGUID());
 }
 
-bool ReadOnlySharedMemoryRegion::IsValid() {
+bool ReadOnlySharedMemoryRegion::IsValid() const {
   return handle_.IsValid();
 }
 
