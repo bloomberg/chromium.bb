@@ -51,7 +51,6 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
   std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
       const RequestOverlayInfoCB& request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space,
       GpuVideoAcceleratorFactories* gpu_factories);
