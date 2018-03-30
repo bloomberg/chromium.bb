@@ -3083,7 +3083,7 @@ void av1_read_frame_size(struct aom_read_bit_buffer *rb, int num_bits_width,
 }
 
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
-  int profile = aom_rb_read_literal(rb, 2);
+  int profile = aom_rb_read_literal(rb, PROFILE_BITS);
   return (BITSTREAM_PROFILE)profile;
 }
 

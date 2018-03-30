@@ -2423,7 +2423,7 @@ static void write_frame_size_with_refs(AV1_COMP *cpi,
 static void write_profile(BITSTREAM_PROFILE profile,
                           struct aom_write_bit_buffer *wb) {
   assert(profile >= PROFILE_0 && profile < MAX_PROFILES);
-  aom_wb_write_literal(wb, profile, 2);
+  aom_wb_write_literal(wb, profile, PROFILE_BITS);
 }
 
 static void write_bitdepth(AV1_COMMON *const cm,

@@ -95,15 +95,18 @@ typedef enum COMPOUND_DIST_WEIGHT_MODE {
 // Shall be removed when bitmask code is completely checkedin
 #define LOOP_FILTER_BITMASK 0
 
+#define PROFILE_BITS 3
+// The following three profiles are currently defined.
 // Profile 0.  8-bit and 10-bit 4:2:0 and 4:0:0 only.
 // Profile 1.  8-bit and 10-bit 4:4:4
 // Profile 2.  8-bit and 10-bit 4:2:2
-//            12 bit  4:0:0, 4:2:2 and 4:4:4
+//            12-bit  4:0:0, 4:2:2 and 4:4:4
+// Since we have three bits for the profiles, it can be extended later.
 typedef enum BITSTREAM_PROFILE {
   PROFILE_0,
   PROFILE_1,
   PROFILE_2,
-  MAX_PROFILES
+  MAX_PROFILES,
 } BITSTREAM_PROFILE;
 
 // Note: Some enums use the attribute 'packed' to use smallest possible integer
