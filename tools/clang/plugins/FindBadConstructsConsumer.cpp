@@ -147,17 +147,20 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
   diag_weak_ptr_factory_order_ = diagnostic().getCustomDiagID(
       getErrorLevel(),
       "[chromium-style] WeakPtrFactory members which refer to their outer "
-      "class "
-      "must be the last member in the outer class definition.");
-  diag_bad_enum_last_value_ =
-      diagnostic().getCustomDiagID(getErrorLevel(),
-                                   "[chromium-style] _LAST/Last constants of "
-                                   "enum types must have the maximal "
-                                   "value for any constant of that type.");
-  diag_auto_deduced_to_a_pointer_type_ = diagnostic().getCustomDiagID(
+      "class must be the last member in the outer class definition.");
+  diag_bad_enum_max_value_ = diagnostic().getCustomDiagID(
       getErrorLevel(),
-      "[chromium-style] auto variable type must not deduce to a raw pointer "
-      "type.");
+      "[chromium-style] kMaxValue enumerator does not match max value %0 of "
+      "other enumerators");
+  diag_enum_max_value_unique_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+      "[chromium-style] kMaxValue enumerator should not have a unique value: "
+      "it should share the value of the highest enumerator");
+  diag_auto_deduced_to_a_pointer_type_ =
+      diagnostic().getCustomDiagID(getErrorLevel(),
+                                   "[chromium-style] auto variable type "
+                                   "must not deduce to a raw pointer "
+                                   "type.");
 
   // Registers notes to make it easier to interpret warnings.
   diag_note_inheritance_ = diagnostic().getCustomDiagID(
@@ -187,6 +190,11 @@ bool FindBadConstructsConsumer::TraverseDecl(Decl* decl) {
   bool result = RecursiveASTVisitor::TraverseDecl(decl);
   if (ipc_visitor_) ipc_visitor_->EndDecl();
   return result;
+}
+
+bool FindBadConstructsConsumer::VisitEnumDecl(clang::EnumDecl* decl) {
+  CheckEnumMaxValue(decl);
+  return true;
 }
 
 bool FindBadConstructsConsumer::VisitTagDecl(clang::TagDecl* tag_decl) {
@@ -246,47 +254,53 @@ void FindBadConstructsConsumer::CheckChromeClass(LocationType location_type,
   CheckWeakPtrFactoryMembers(record_location, record);
 }
 
-void FindBadConstructsConsumer::CheckChromeEnum(LocationType location_type,
-                                                SourceLocation enum_location,
-                                                EnumDecl* enum_decl) {
-  if (!options_.check_enum_last_value)
+void FindBadConstructsConsumer::CheckEnumMaxValue(EnumDecl* decl) {
+  if (!options_.check_enum_max_value)
     return;
 
-  if (location_type == LocationType::kBlink)
+  if (!decl->isScoped())
     return;
 
-  bool got_one = false;
-  bool is_signed = false;
-  llvm::APSInt max_so_far;
-  EnumDecl::enumerator_iterator iter;
-  for (iter = enum_decl->enumerator_begin();
-       iter != enum_decl->enumerator_end();
-       ++iter) {
-    llvm::APSInt current_value = iter->getInitVal();
-    if (!got_one) {
-      max_so_far = current_value;
-      is_signed = current_value.isSigned();
-      got_one = true;
-    } else {
-      if (is_signed != current_value.isSigned()) {
-        // This only happens in some cases when compiling C (not C++) files,
-        // so it is OK to bail out here.
-        return;
-      }
-      if (current_value > max_so_far)
-        max_so_far = current_value;
+  clang::EnumConstantDecl* max_value = nullptr;
+  std::set<clang::EnumConstantDecl*> max_enumerators;
+  llvm::APSInt max_seen;
+  for (clang::EnumConstantDecl* enumerator : decl->enumerators()) {
+    if (enumerator->getName() == "kMaxValue")
+      max_value = enumerator;
+
+    llvm::APSInt current_value = enumerator->getInitVal();
+    if (max_enumerators.empty()) {
+      max_enumerators.emplace(enumerator);
+      max_seen = current_value;
+      continue;
     }
+
+    assert(max_seen.isSigned() == current_value.isSigned());
+
+    if (current_value < max_seen)
+      continue;
+
+    if (current_value == max_seen) {
+      max_enumerators.emplace(enumerator);
+      continue;
+    }
+
+    assert(current_value > max_seen);
+    max_enumerators.clear();
+    max_enumerators.emplace(enumerator);
+    max_seen = current_value;
   }
-  for (iter = enum_decl->enumerator_begin();
-       iter != enum_decl->enumerator_end();
-       ++iter) {
-    std::string name = iter->getNameAsString();
-    if (((name.size() > 4 && name.compare(name.size() - 4, 4, "Last") == 0) ||
-         (name.size() > 5 && name.compare(name.size() - 5, 5, "_LAST") == 0)) &&
-        iter->getInitVal() < max_so_far) {
-      ReportIfSpellingLocNotIgnored(iter->getLocation(),
-                                    diag_bad_enum_last_value_);
-    }
+
+  if (!max_value)
+    return;
+
+  if (max_enumerators.find(max_value) == max_enumerators.end()) {
+    ReportIfSpellingLocNotIgnored(max_value->getLocation(),
+                                  diag_bad_enum_max_value_)
+        << max_seen.toString(10);
+  } else if (max_enumerators.size() < 2) {
+    ReportIfSpellingLocNotIgnored(decl->getLocation(),
+                                  diag_enum_max_value_unique_);
   }
 }
 
