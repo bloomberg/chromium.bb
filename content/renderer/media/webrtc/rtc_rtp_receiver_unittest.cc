@@ -127,7 +127,8 @@ TEST_F(RTCRtpReceiverTest, ShallowCopy) {
   EXPECT_EQ(copy->Track().UniqueId(), web_track_unique_id);
 }
 
-TEST_F(RTCRtpReceiverTest, GetStats) {
+// Test is flaky (https://crbug.com/827450).
+TEST_F(RTCRtpReceiverTest, DISABLED_GetStats) {
   scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
       MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
