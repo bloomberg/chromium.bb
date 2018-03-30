@@ -332,7 +332,13 @@ void MemBackendImpl::EvictIfNeeded() {
   base::LinkNode<MemEntryImpl>* entry = lru_list_.head();
   while (current_size_ > target_size && entry != lru_list_.end()) {
     MemEntryImpl* to_doom = entry->value();
-    entry = entry->next();
+
+    do {
+      entry = entry->next();
+      // It's possible that entry now points to a child of to_doom, and the
+      // parent is about to be deleted. Skip past any child entries.
+    } while (entry != lru_list_.end() && entry->value()->parent() == to_doom);
+
     if (!to_doom->InUse())
       to_doom->Doom();
   }
