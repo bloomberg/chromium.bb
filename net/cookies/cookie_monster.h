@@ -57,9 +57,6 @@ class CookieChangeDispatcher;
 // latter case, the cookie callback will be queued in tasks_pending_for_key_
 // while PermanentCookieStore loads cookies for the specified domain key on DB
 // thread.
-//
-// TODO(deanm) Implement CookieMonster, the cookie database.
-//  - Verify that our domain enforcement and non-dotted handling is correct
 class NET_EXPORT CookieMonster : public CookieStore {
  public:
   class PersistentCookieStore;
