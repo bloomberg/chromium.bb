@@ -57,6 +57,7 @@ PrintPreviewUIBrowserTest.prototype = {
     ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
     ROOT_PATH + 'ui/webui/resources/js/util.js',
     ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
+    ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
     'print_preview_tests.js',
     'native_layer_stub.js',
     'cloud_print_interface_stub.js',
@@ -122,10 +123,16 @@ PrintPreviewUIBrowserTest.prototype = {
   });
 });
 
-TEST_F('PrintPreviewUIBrowserTest', 'InvalidCertificateError', function() {
-  loadTimeData.overrideValues({isEnterpriseManaged: false});
-  this.accessibilityIssuesAreErrors = false;
-  runMochaTest(print_preview_test.suiteName, 'InvalidCertificateError');
+[
+  'InvalidCertificateError',
+  'InvalidCertificateErrorReselectDestination',
+  'InvalidCertificateErrorNoPreview',
+].forEach(function(testName) {
+  TEST_F('PrintPreviewUIBrowserTest', testName, function() {
+    loadTimeData.overrideValues({isEnterpriseManaged: false});
+    this.accessibilityIssuesAreErrors = false;
+    runMochaTest(print_preview_test.suiteName, testName);
+  });
 });
 
 GEN('#if !defined(OS_CHROMEOS)');
