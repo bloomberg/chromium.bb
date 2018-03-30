@@ -340,6 +340,10 @@ AppListButton* ShelfWidget::GetAppListButton() const {
   return shelf_view_->GetAppListButton();
 }
 
+BackButton* ShelfWidget::GetBackButton() const {
+  return shelf_view_->GetBackButton();
+}
+
 app_list::ApplicationDragAndDropHost*
 ShelfWidget::GetDragAndDropHostForAppList() {
   return shelf_view_;
