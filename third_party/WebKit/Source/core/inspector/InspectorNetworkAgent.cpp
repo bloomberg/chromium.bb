@@ -1271,13 +1271,14 @@ InspectorNetworkAgent::BuildInitiatorObject(
       .build();
 }
 
-void InspectorNetworkAgent::DidCreateWebSocket(Document* document,
-                                               unsigned long identifier,
-                                               const KURL& request_url,
-                                               const String&) {
+void InspectorNetworkAgent::DidCreateWebSocket(
+    ExecutionContext* execution_context,
+    unsigned long identifier,
+    const KURL& request_url,
+    const String&) {
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
-          SourceLocation::Capture(document)->BuildInspectorObject();
+          SourceLocation::Capture(execution_context)->BuildInspectorObject();
   if (!current_stack_trace) {
     GetFrontend()->webSocketCreated(
         IdentifiersFactory::SubresourceRequestId(identifier),
@@ -1296,7 +1297,7 @@ void InspectorNetworkAgent::DidCreateWebSocket(Document* document,
 }
 
 void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
-    Document*,
+    ExecutionContext*,
     unsigned long identifier,
     const WebSocketHandshakeRequest* request) {
   DCHECK(request);
@@ -1310,7 +1311,7 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
-    Document*,
+    ExecutionContext*,
     unsigned long identifier,
     const WebSocketHandshakeRequest* request,
     const WebSocketHandshakeResponse* response) {
@@ -1335,7 +1336,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
       CurrentTimeTicksInSeconds(), std::move(response_object));
 }
 
-void InspectorNetworkAgent::DidCloseWebSocket(Document*,
+void InspectorNetworkAgent::DidCloseWebSocket(ExecutionContext*,
                                               unsigned long identifier) {
   GetFrontend()->webSocketClosed(
       IdentifiersFactory::SubresourceRequestId(identifier),
