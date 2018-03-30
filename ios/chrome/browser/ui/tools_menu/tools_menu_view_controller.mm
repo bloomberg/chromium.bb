@@ -26,7 +26,6 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_model.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_tools_cell.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"

@@ -82,7 +82,7 @@ id<GREYMatcher> HistoryEntry(const GURL& url, const std::string& title) {
 }
 // Matcher for the history button in the tools menu.
 id<GREYMatcher> HistoryButton() {
-  return ButtonWithAccessibilityLabelId(IDS_HISTORY_SHOW_HISTORY);
+  return grey_accessibilityID(kToolsMenuHistoryId);
 }
 // Matcher for the edit button in the navigation bar.
 id<GREYMatcher> NavigationEditButton() {
@@ -427,8 +427,7 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
 
 - (void)openHistoryPanel {
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:HistoryButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI tapToolsMenuButton:HistoryButton()];
 }
 
 - (void)assertNoHistoryShown {

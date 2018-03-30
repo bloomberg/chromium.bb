@@ -99,29 +99,3 @@ class PopupMenuMediatorTest : public PlatformTest {
   // Mock refusing all calls except -setPopupMenuItems:.
   id popup_menu_strict_;
 };
-
-// Test no setup is being done on the PopupMenu if there's no Webstate.
-TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoWebstateIncognito) {
-  mediator_incognito_.popupMenu = popup_menu_strict_;
-  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
-}
-
-// Test no setup is being done on the PopupMenu if there's no Webstate.
-TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoWebstate) {
-  mediator_non_incognito_.popupMenu = popup_menu_strict_;
-  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
-}
-
-// Test no setup is being done on the PopupMenu if there's no active Webstate.
-TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoActiveWebstateIncognito) {
-  mediator_incognito_.webStateList = web_state_list_.get();
-  mediator_incognito_.popupMenu = popup_menu_strict_;
-  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
-}
-
-// Test no setup is being done on the PopupMenu if there's no active Webstate.
-TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoActiveWebstate) {
-  mediator_non_incognito_.webStateList = web_state_list_.get();
-  mediator_non_incognito_.popupMenu = popup_menu_strict_;
-  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
-}

@@ -23,8 +23,6 @@
 
 using base::UserMetricsAction;
 
-NSString* const kToolsMenuTableViewId = @"kToolsMenuTableViewId";
-
 namespace {
 
 const CGFloat kToolsPopupMenuWidth = 280.0;

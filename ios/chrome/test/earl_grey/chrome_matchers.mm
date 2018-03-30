@@ -29,7 +29,6 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
