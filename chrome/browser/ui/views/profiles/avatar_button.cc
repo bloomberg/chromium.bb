@@ -46,9 +46,7 @@
 
 namespace {
 
-#if !defined(OS_MACOSX)
 constexpr int kGenericAvatarIconSize = 16;
-#endif
 
 // TODO(emx): Calculate width based on caption button [http://crbug.com/716365]
 constexpr int kCondensibleButtonMinWidth = 46;
@@ -76,6 +74,10 @@ std::unique_ptr<views::Border> CreateThemedBorder(
 
   return std::move(border);
 }
+#endif
+
+#if defined(OS_MACOSX)
+constexpr int kMacButtonHeight = 24;
 #endif
 
 // This class draws the border (and background) of the avatar button for
@@ -181,6 +183,22 @@ class AvatarButtonShutdownNotifierFactory
   DISALLOW_COPY_AND_ASSIGN(AvatarButtonShutdownNotifierFactory);
 };
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+SkColor BaseColorForButton(const ui::ThemeProvider* theme_provider) {
+  return color_utils::IsDark(
+             theme_provider->GetColor(ThemeProperties::COLOR_FRAME))
+             ? SK_ColorWHITE
+             : SK_ColorBLACK;
+}
+
+gfx::ImageSkia AvatarIconWithBaseColor(const SkColor base_color) {
+  const SkColor icon_color =
+      SkColorSetA(base_color, static_cast<SkAlpha>(0.54 * 0xFF));
+  return gfx::CreateVectorIcon(kAccountCircleIcon, kGenericAvatarIconSize,
+                               icon_color);
+}
+#endif
+
 }  // namespace
 
 AvatarButton::AvatarButton(views::MenuButtonListener* listener,
@@ -278,22 +296,14 @@ void AvatarButton::SetupThemeColorButton() {
   if (IsCondensible()) {
     // TODO(bsep): This needs to also be called when the Windows accent color
     // updates, but there is currently no signal for that.
-    const SkColor base_color = color_utils::IsDark(GetThemeProvider()->GetColor(
-                                   ThemeProperties::COLOR_FRAME))
-                                   ? SK_ColorWHITE
-                                   : SK_ColorBLACK;
+    const SkColor base_color = BaseColorForButton(GetThemeProvider());
     set_ink_drop_base_color(base_color);
-    const SkColor icon_color =
-        SkColorSetA(base_color, static_cast<SkAlpha>(0.54 * 0xFF));
-    generic_avatar_ = gfx::CreateVectorIcon(kAccountCircleIcon,
-                                            kGenericAvatarIconSize, icon_color);
+    generic_avatar_ = AvatarIconWithBaseColor(base_color);
   }
 #elif defined(OS_MACOSX)
-  const SkColor text_color = color_utils::IsDark(GetThemeProvider()->GetColor(
-                                 ThemeProperties::COLOR_FRAME))
-                                 ? SK_ColorWHITE
-                                 : SK_ColorBLACK;
-  SetEnabledTextColors(text_color);
+  const SkColor base_color = BaseColorForButton(GetThemeProvider());
+  SetEnabledTextColors(base_color);
+  generic_avatar_ = AvatarIconWithBaseColor(base_color);
 #endif
 }
 
@@ -350,7 +360,9 @@ gfx::Size AvatarButton::CalculatePreferredSize() const {
     size.set_height(MinimizeButtonMetrics::GetCaptionButtonHeightInDIPs());
 #endif
   }
-
+#if defined(OS_MACOSX)
+  size.set_height(kMacButtonHeight);
+#endif
   return size;
 }
 
