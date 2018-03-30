@@ -333,7 +333,7 @@ class DBusServices {
     CrosDBusService::ServiceProviderList service_providers;
     CrosDBusService::ServiceProviderList display_service_providers;
 
-    if (GetAshConfig() == ash::Config::CLASSIC) {
+    if (GetAshConfig() != ash::Config::MASH) {
       // TODO(lannm): This will eventually be served by mus-ws.
       display_service_providers.push_back(
           std::make_unique<DisplayPowerServiceProvider>(
