@@ -35,6 +35,7 @@ struct InputContext {
     memset(avx_ctx, 0, sizeof(*avx_ctx));
     memset(obu_ctx, 0, sizeof(*obu_ctx));
     obu_ctx->avx_ctx = avx_ctx;
+    obu_ctx->last_layer_id = kIgnoreLayers;
 #if CONFIG_WEBM_IO
     memset(webm_ctx, 0, sizeof(*webm_ctx));
 #endif
@@ -74,7 +75,7 @@ bool ReadTemporalUnit(InputContext *ctx, size_t *unit_size) {
     }
     case FILE_TYPE_OBU: {
       if (obudec_read_temporal_unit(ctx->obu_ctx, &ctx->unit_buffer, unit_size,
-                                    &ctx->unit_buffer_size, kIgnoreLayers)) {
+                                    &ctx->unit_buffer_size)) {
         return false;
       }
       break;

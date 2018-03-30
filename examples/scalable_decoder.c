@@ -100,9 +100,8 @@ int main(int argc, char **argv) {
   uint8_t *buf = NULL;
   size_t bytes_in_buffer = 0;
   size_t buffer_size = 0;
-  int next_layer_id = 0;
   struct AvxInputContext aom_input_ctx;
-  struct ObuDecInputContext obu_ctx = { &aom_input_ctx, NULL, 0, 0, 0 };
+  struct ObuDecInputContext obu_ctx = { &aom_input_ctx, NULL, 0, 0, 0, 0 };
   aom_codec_stream_info_t si;
   uint8_t tmpbuf[32];
   unsigned int i;
@@ -141,7 +140,7 @@ int main(int argc, char **argv) {
   }
 
   while (!obudec_read_temporal_unit(&obu_ctx, &buf, &bytes_in_buffer,
-                                    &buffer_size, next_layer_id)) {
+                                    &buffer_size)) {
     aom_codec_iter_t iter = NULL;
     aom_image_t *img = NULL;
     if (aom_codec_decode(&codec, buf, (unsigned int)bytes_in_buffer, NULL))
@@ -151,15 +150,15 @@ int main(int argc, char **argv) {
       if (img->enhancement_id == 0) {
         printf("Writing       base layer 0 %d\n", frame_cnt);
         aom_img_write(img, outfile[0]);
-        next_layer_id++;
+        obu_ctx.last_layer_id++;
       } else if (img->enhancement_id <= (int)si.enhancement_layers_cnt) {
         printf("Writing enhancemnt layer %d %d\n", img->enhancement_id,
                frame_cnt);
         aom_img_write(img, outfile[img->enhancement_id]);
         if (img->enhancement_id == (int)si.enhancement_layers_cnt)
-          next_layer_id = 0;
+          obu_ctx.last_layer_id = 0;
         else
-          next_layer_id++;
+          obu_ctx.last_layer_id++;
       } else {
         die_codec(&codec, "Invalid bitstream.  Layer id exceeds layer count");
       }

@@ -23,6 +23,7 @@ struct ObuDecInputContext {
   size_t buffer_capacity;
   size_t bytes_buffered;
   int is_annexb;
+  int last_layer_id;
 };
 
 // Returns 1 when file data starts (if Annex B stream, after reading the
@@ -37,7 +38,7 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx);
 // via 'bytes_read'.
 int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
                               uint8_t **buffer, size_t *bytes_read,
-                              size_t *buffer_size, int last_layer_id);
+                              size_t *buffer_size);
 
 void obudec_free(struct ObuDecInputContext *obu_ctx);
 
