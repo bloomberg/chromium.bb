@@ -26,6 +26,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/view.h"
 
 using base::ASCIIToUTF16;
@@ -274,13 +275,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
-#if defined(OS_MACOSX)
-// Getting text from textfields doesn't always work: https://crbug.com/823532
-#define MAYBE_SelectionRestoreOnTabSwitch DISABLED_SelectionRestoreOnTabSwitch
-#else
-#define MAYBE_SelectionRestoreOnTabSwitch SelectionRestoreOnTabSwitch
-#endif
-IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_SelectionRestoreOnTabSwitch) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionRestoreOnTabSwitch) {
+  // Mac intentionally changes selection on focus.
+  if (views::PlatformStyle::kTextfieldScrollsToStartOnFocusChange)
+    return;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
@@ -349,13 +347,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_SelectionRestoreOnTabSwitch) {
   EXPECT_EQ(ASCIIToUTF16("de"), GetFindBarSelectedText());
 }
 
-#if defined(OS_MACOSX)
-// Getting text from textfields doesn't always work: https://crbug.com/823532
-#define MAYBE_FocusRestoreOnTabSwitch DISABLED_FocusRestoreOnTabSwitch
-#else
-#define MAYBE_FocusRestoreOnTabSwitch FocusRestoreOnTabSwitch
-#endif
-IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -387,7 +379,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
   ui_test_utils::FindInPage(
       browser()->tab_strip_model()->GetActiveWebContents(),
       ASCIIToUTF16("b"), true, false, NULL, NULL);
-  EXPECT_EQ(ASCIIToUTF16("b"), GetFindBarSelectedText());
+  // Mac intentionally changes selection on focus.
+  if (!views::PlatformStyle::kTextfieldScrollsToStartOnFocusChange)
+    EXPECT_EQ(ASCIIToUTF16("b"), GetFindBarSelectedText());
 
   // Set focus away from the Find bar (to the Location bar).
   chrome::FocusLocationBar(browser());
@@ -396,7 +390,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
   // Select tab A. Find bar should get focus.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
-  EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarSelectedText());
+  if (!views::PlatformStyle::kTextfieldScrollsToStartOnFocusChange)
+    EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarSelectedText());
 
   // Select tab B. Location bar should get focus.
   browser()->tab_strip_model()->ActivateTabAt(1, true);
