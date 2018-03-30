@@ -369,10 +369,17 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
   if (!base::PathExists(file_path))
     return nullptr;
   std::string data;
+
+  // To reduce OOM crashes, set a common sense limit on the cache file size we
+  // try to read. Most cache file sizes are under 1MB.
+  constexpr size_t kHistoryProviderCacheSizeLimitBytes = 50 * 1000 * 1000;
+
   // If there is no cache file then simply give up. This will cause us to
   // attempt to rebuild from the history database.
-  if (!base::ReadFileToString(file_path, &data))
+  if (!base::ReadFileToStringWithMaxSize(file_path, &data,
+                                         kHistoryProviderCacheSizeLimitBytes)) {
     return nullptr;
+  }
 
   scoped_refptr<URLIndexPrivateData> restored_data(new URLIndexPrivateData);
   InMemoryURLIndexCacheItem index_cache;
