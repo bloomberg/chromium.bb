@@ -19,6 +19,11 @@ cast_source_set("le") {
     "remote_service.cc",
     "remote_service.h",
   ]
+
+  public_deps = [
+    "//chromecast/public",
+  ]
+
   deps = [
     "//base",
     "//chromecast/base",
