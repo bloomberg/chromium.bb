@@ -2611,12 +2611,8 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
   }
 
-  // TODO(vmpstr): Initialize tile task limit at ctor time.
   tile_manager_.SetResources(resource_pool_.get(), image_decode_cache_.get(),
                              task_graph_runner, raster_buffer_provider_.get(),
-                             is_synchronous_single_threaded_
-                                 ? std::numeric_limits<size_t>::max()
-                                 : settings_.scheduled_raster_task_limit,
                              use_gpu_rasterization_);
   tile_manager_.SetCheckerImagingForceDisabled(
       settings_.only_checker_images_with_gpu_raster && !use_gpu_rasterization_);

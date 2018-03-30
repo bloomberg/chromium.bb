@@ -46,7 +46,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
   SetDecodedImageTracker(&decoded_image_tracker_);
   SetResources(resource_pool, &image_decode_cache_, GetGlobalTaskGraphRunner(),
                GetGlobalRasterBufferProvider(),
-               std::numeric_limits<size_t>::max(),
                false /* use_gpu_rasterization */);
   SetTileTaskManagerForTesting(std::make_unique<FakeTileTaskManagerImpl>());
 }
