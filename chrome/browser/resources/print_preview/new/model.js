@@ -499,9 +499,13 @@ Polymer({
   /**
    * Creates a string that represents a print ticket.
    * @param {!print_preview.Destination} destination Destination to print to.
+   * @param {boolean} openPdfInPreview Whether this print request is to open
+   *     the PDF in Preview app (Mac only).
+   * @param {boolean} showSystemDialog Whether this print request is to show
+   *     the system dialog.
    * @return {string} Serialized print ticket.
    */
-  createPrintTicket: function(destination) {
+  createPrintTicket: function(destination, openPdfInPreview, showSystemDialog) {
     const dpi = /** @type {{horizontal_dpi: (number | undefined),
                             vertical_dpi: (number | undefined),
                             vendor_id: (number | undefined)}} */ (
@@ -536,7 +540,7 @@ Polymer({
       fitToPageEnabled: this.getSettingValue('fitToPage'),
       pageWidth: this.documentInfo.pageSize.width,
       pageHeight: this.documentInfo.pageSize.height,
-      showSystemDialog: false,
+      showSystemDialog: showSystemDialog,
     };
 
     // Set 'cloudPrintID' only if the destination is not local.
@@ -561,6 +565,10 @@ Polymer({
       ticket.ticket = this.createCloudJobTicket(destination);
       ticket.capabilities = JSON.stringify(destination.capabilities);
     }
+
+    if (openPdfInPreview)
+      ticket.OpenPDFInPreview = true;
+
     return JSON.stringify(ticket);
   },
 

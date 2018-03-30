@@ -18,6 +18,7 @@
         'scaling_settings',
         'other_options_settings',
         'advanced_options_settings',
+        'link_container',
         'preview_area',
         'model',
         'state',
@@ -166,6 +167,15 @@
     {
       'target_name': 'input_behavior',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'link_container',
+      'dependencies': [
+        '../data/compiled_resources2.gyp:destination',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

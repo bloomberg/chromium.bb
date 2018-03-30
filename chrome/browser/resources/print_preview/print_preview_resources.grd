@@ -19,7 +19,8 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_APP_HTML"
                  file="new/app.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_APP_JS"
                  file="new/app.js"
                  type="chrome_html" />
@@ -269,6 +270,16 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_NUMBER_SETTINGS_SECTION_JS"
                  file="new/number_settings_section.js"
                  type="chrome_html" />
+      <if expr="not chromeos">
+        <structure name="IDR_PRINT_PREVIEW_NEW_LINK_CONTAINER_HTML"
+                   file="new/link_container.html"
+                   type="chrome_html"
+                   preprocess="true" />
+        <structure name="IDR_PRINT_PREVIEW_NEW_LINK_CONTAINER_JS"
+                   file="new/link_container.js"
+                   type="chrome_html"
+                   preprocess="true" />
+      </if>
       <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_DIALOG_HTML"
                  file="new/destination_dialog.html"
                  type="chrome_html" />

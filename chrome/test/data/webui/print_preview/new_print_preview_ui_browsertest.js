@@ -264,3 +264,77 @@ GEN('#endif');
 TEST_F('PrintPreviewPreviewGenerationTest', 'Destination', function() {
   this.runMochaTest(preview_generation_test.TestNames.Destination);
 });
+
+GEN('#if !defined(OS_CHROMEOS)');
+PrintPreviewLinkContainerTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/link_container.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'link_container_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return link_container_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewLinkContainerTest', 'HideInAppKioskMode', function() {
+  this.runMochaTest(link_container_test.TestNames.HideInAppKioskMode);
+});
+
+TEST_F('PrintPreviewLinkContainerTest', 'SystemDialogLinkClick', function() {
+  this.runMochaTest(link_container_test.TestNames.SystemDialogLinkClick);
+});
+GEN('#endif');  // !defined(OS_CHROMEOS)
+
+GEN('#if defined(OS_MACOSX)');
+TEST_F('PrintPreviewLinkContainerTest', 'OpenInPreviewLinkClick', function() {
+  this.runMochaTest(link_container_test.TestNames.OpenInPreviewLinkClick);
+});
+GEN('#endif');  // defined(OS_MACOSX)
+
+GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
+PrintPreviewSystemDialogBrowserTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/app.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'plugin_stub.js',
+      'print_preview_test_utils.js',
+      'system_dialog_browsertest.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return system_dialog_browsertest.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewSystemDialogBrowserTest', 'LinkTriggersLocalPrint',
+       function() {
+  this.runMochaTest(system_dialog_browsertest.TestNames.LinkTriggersLocalPrint);
+});
+
+TEST_F('PrintPreviewSystemDialogBrowserTest', 'InvalidSettingsDisableLink',
+       function() {
+  this.runMochaTest(
+      system_dialog_browsertest.TestNames.InvalidSettingsDisableLink);
+});
+GEN('#endif');  // defined(OS_WIN) || defined(OS_MACOSX)
