@@ -8,6 +8,9 @@
 #import <UIKit/UIKit.h>
 
 // Accessibility identifiers for automated testing.
+extern NSString* const kTabGridIncognitoTabsPageButtonIdentifier;
+extern NSString* const kTabGridRegularTabsPageButtonIdentifier;
+extern NSString* const kTabGridRemoteTabsPageButtonIdentifier;
 extern NSString* const kTabGridDoneButtonIdentifier;
 extern NSString* const kTabGridCloseAllButtonIdentifier;
 extern NSString* const kTabGridIncognitoTabsEmptyStateIdentifier;

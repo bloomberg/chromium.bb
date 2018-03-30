@@ -7,7 +7,10 @@
 #import <CoreGraphics/CoreGraphics.h>
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -140,6 +143,7 @@ NSString* StringForItemCount(long count) {
 // the negative-x direction from |sliderOrigin|, and otherwise it will move in
 // the positive-x direction.
 @property(nonatomic) CGFloat sliderRange;
+@property(nonatomic, strong) NSArray* accessibilityElements;
 @end
 
 @implementation TabGridPageControl
@@ -163,6 +167,7 @@ NSString* StringForItemCount(long count) {
 @synthesize remoteSelectedIcon = _remoteSelectedIcon;
 @synthesize sliderOrigin = _sliderOrigin;
 @synthesize sliderRange = _sliderRange;
+@synthesize accessibilityElements = _accessibilityElements;
 
 + (instancetype)pageControl {
   return [[TabGridPageControl alloc] init];
@@ -292,6 +297,59 @@ NSString* StringForItemCount(long count) {
 
   // Set the slider position using the new slider origin and range.
   self.sliderPosition = _sliderPosition;
+}
+
+#pragma mark - UIAccessibilityContainer
+
+- (BOOL)isAccessibilityElement {
+  return NO;
+}
+
+- (NSInteger)accessibilityElementCount {
+  return (NSInteger)self.accessibilityElements.count;
+}
+
+- (id)accessibilityElementAtIndex:(NSInteger)index {
+  return [self.accessibilityElements objectAtIndex:index];
+}
+
+- (NSInteger)indexOfAccessibilityElement:(id)element {
+  return [self.accessibilityElements indexOfObject:element];
+}
+
+- (NSArray*)accessibilityElements {
+  if (!_accessibilityElements) {
+    UIAccessibilityElement* incognitoElement =
+        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+    incognitoElement.accessibilityFrameInContainerSpace =
+        self.incognitoGuide.layoutFrame;
+    incognitoElement.accessibilityTraits = UIAccessibilityTraitButton;
+    incognitoElement.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_INCOGNITO_TABS_TITLE);
+    incognitoElement.accessibilityIdentifier =
+        kTabGridIncognitoTabsPageButtonIdentifier;
+    UIAccessibilityElement* regularElement =
+        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+    regularElement.accessibilityFrameInContainerSpace =
+        self.regularGuide.layoutFrame;
+    regularElement.accessibilityTraits = UIAccessibilityTraitButton;
+    regularElement.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_REGULAR_TABS_TITLE);
+    regularElement.accessibilityIdentifier =
+        kTabGridRegularTabsPageButtonIdentifier;
+    UIAccessibilityElement* remoteElement =
+        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+    remoteElement.accessibilityFrameInContainerSpace =
+        self.remoteGuide.layoutFrame;
+    remoteElement.accessibilityTraits = UIAccessibilityTraitButton;
+    remoteElement.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_REMOTE_TABS_TITLE);
+    remoteElement.accessibilityIdentifier =
+        kTabGridRemoteTabsPageButtonIdentifier;
+    _accessibilityElements =
+        @[ incognitoElement, regularElement, remoteElement ];
+  }
+  return _accessibilityElements;
 }
 
 #pragma mark - Private

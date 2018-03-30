@@ -9,6 +9,12 @@
 #endif
 
 // Accessibility identifiers for automated testing.
+NSString* const kTabGridIncognitoTabsPageButtonIdentifier =
+    @"TabGridIncognitoTabsPageButtonIdentifier";
+NSString* const kTabGridRegularTabsPageButtonIdentifier =
+    @"TabGridRegularTabsPageButtonIdentifier";
+NSString* const kTabGridRemoteTabsPageButtonIdentifier =
+    @"TabGridRemoteTabsPageButtonIdentifier";
 NSString* const kTabGridDoneButtonIdentifier = @"TabGridDoneButtonIdentifier";
 NSString* const kTabGridCloseAllButtonIdentifier =
     @"TabGridCloseAllButtonIdentifier";
