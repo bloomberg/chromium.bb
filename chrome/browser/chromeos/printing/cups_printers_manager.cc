@@ -22,6 +22,9 @@
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/zeroconf_printer_detector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/policy/policy_constants.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace chromeos {
 namespace {
@@ -537,6 +540,14 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
   return std::make_unique<CupsPrintersManagerImpl>(
       synced_printers_manager, std::move(usb_detector),
       std::move(zeroconf_detector), std::move(ppd_provider), event_tracker);
+}
+
+// static
+void CupsPrintersManager::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kUserNativePrintersAllowed, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 }  // namespace chromeos

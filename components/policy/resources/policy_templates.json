@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 432
+#   For your editing convenience: highest ID currently used: 433
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -11562,6 +11562,27 @@
       If this policy is set to True, navigations which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> detects are tab-unders will be blocked.
       If this policy is set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow sites to perform tab-under navigations.
       By default, this policy is set to True.''',
+    },
+    {
+      'name': 'UserNativePrintersAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:67-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 433,
+      'caption': '''Allows access to native CUPS printers''',
+      'tags': [],
+      'desc': '''Allows you to control if users can access non-enterprise printers
+
+      If the policy is set to True, or not set at all, users will be able to add, configure, and print using their own native printers.
+
+      If the policy is set to False, users will not be able to add and configure their own native printers. They will also not be able to print using any previously configured native printers.
+      ''',
     }
   ],
 

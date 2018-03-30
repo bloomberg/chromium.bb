@@ -637,6 +637,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNativePrintersBulkWhitelist,
     prefs::kRecommendedNativePrintersWhitelist,
     base::Value::Type::LIST },
+  { key::kUserNativePrintersAllowed,
+    prefs::kUserNativePrintersAllowed,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

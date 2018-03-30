@@ -352,6 +352,16 @@
     ]
   },
 
+  "UserNativePrintersAllowed": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "UserNativePrintersAllowed": true
+    },
+    "pref_mappings": [
+      { "pref": "native_printing.user_native_printers_allowed" }
+    ]
+  },
+
   "SafeBrowsingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
