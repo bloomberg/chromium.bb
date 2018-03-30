@@ -53,8 +53,6 @@ const char* const kSafeManifestEntries[] = {
 
     "background",
 
-    emk::kBackgroundPageLegacy,
-
     emk::kBackgroundPersistent,
 
     emk::kBluetooth,
