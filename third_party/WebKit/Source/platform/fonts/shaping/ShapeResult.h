@@ -54,6 +54,13 @@ class PLATFORM_EXPORT ShapeResultSpacing;
 class SimpleFontData;
 class TextRun;
 
+enum class AdjustMidCluster {
+  // Adjust the middle of a grapheme cluster to the logical end boundary.
+  kToEnd,
+  // Adjust the middle of a grapheme cluster to the logical start boundary.
+  kToStart
+};
+
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
   static scoped_refptr<ShapeResult> Create(const Font* font,
@@ -106,7 +113,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   unsigned PreviousSafeToBreakOffset(unsigned offset) const;
 
   unsigned OffsetForPosition(float target_x, bool include_partial_glyphs) const;
-  float PositionForOffset(unsigned offset) const;
+  float PositionForOffset(unsigned offset,
+                          AdjustMidCluster = AdjustMidCluster::kToEnd) const;
   LayoutUnit SnappedStartPositionForOffset(unsigned offset) const {
     return LayoutUnit::FromFloatFloor(PositionForOffset(offset));
   }

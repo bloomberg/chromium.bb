@@ -100,7 +100,7 @@ float ShapeResult::RunInfo::XPositionForOffset(
       return position;
     // Adjust offset if it's not on the cluster boundary. In RTL, this means
     // that the adjusted position is the left side of the character.
-    if (adjust_mid_cluster == kAdjustToEnd &&
+    if (adjust_mid_cluster == AdjustMidCluster::kToEnd &&
         glyph_data_[glyph_index].character_index < offset) {
       return position;
     }
@@ -120,7 +120,7 @@ float ShapeResult::RunInfo::XPositionForOffset(
       ++glyph_index;
     }
     // Adjust offset if it's not on the cluster boundary.
-    if (adjust_mid_cluster == kAdjustToStart && glyph_index &&
+    if (adjust_mid_cluster == AdjustMidCluster::kToStart && glyph_index &&
         (glyph_index < num_glyphs ? glyph_data_[glyph_index].character_index
                                   : num_characters_) > offset) {
       offset = glyph_data_[--glyph_index].character_index;
@@ -367,7 +367,9 @@ unsigned ShapeResult::OffsetForPosition(float target_x,
   return characters_so_far;
 }
 
-float ShapeResult::PositionForOffset(unsigned absolute_offset) const {
+float ShapeResult::PositionForOffset(
+    unsigned absolute_offset,
+    AdjustMidCluster adjust_mid_cluster) const {
   float x = 0;
   float offset_x = 0;
 
@@ -392,7 +394,8 @@ float ShapeResult::PositionForOffset(unsigned absolute_offset) const {
     unsigned num_characters = runs_[i]->num_characters_;
 
     if (!offset_x && offset < num_characters) {
-      offset_x = runs_[i]->XPositionForVisualOffset(offset, kAdjustToEnd) + x;
+      offset_x =
+          runs_[i]->XPositionForVisualOffset(offset, adjust_mid_cluster) + x;
       break;
     }
 

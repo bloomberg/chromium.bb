@@ -15,22 +15,32 @@
 
 namespace blink {
 
+// Compute the inline position from text offset, in logical coordinate relative
+// to this fragment.
 LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
-    unsigned offset) const {
+    unsigned offset,
+    LayoutUnit (*round)(float),
+    AdjustMidCluster adjust_mid_cluster) const {
   DCHECK_GE(offset, start_offset_);
   DCHECK_LE(offset, end_offset_);
 
   offset -= start_offset_;
   if (shape_result_) {
-    return LayoutUnit::FromFloatRound(shape_result_->PositionForOffset(offset));
+    return round(shape_result_->PositionForOffset(offset, adjust_mid_cluster));
   }
 
-  // All non-flow controls have ShapeResult.
+  // This fragment is a flow control because otherwise ShapeResult exists.
   DCHECK(IsFlowControl());
   DCHECK_EQ(1u, Length());
   if (!offset || UNLIKELY(IsRtl(Style().Direction())))
     return LayoutUnit();
   return IsHorizontal() ? Size().width : Size().height;
+}
+
+LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
+    unsigned offset) const {
+  return InlinePositionForOffset(offset, LayoutUnit::FromFloatRound,
+                                 AdjustMidCluster::kToEnd);
 }
 
 NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
@@ -40,20 +50,17 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
   DCHECK_GE(start_offset, start_offset_);
   DCHECK_LE(end_offset, end_offset_);
 
-  if (UNLIKELY(!shape_result_)) {
-    DCHECK(IsFlowControl());
-    DCHECK_EQ(Length(), 1u);
-    return {{}, Size()};
-  }
+  LayoutUnit start_position = InlinePositionForOffset(
+      start_offset, LayoutUnit::FromFloatFloor, AdjustMidCluster::kToStart);
+  LayoutUnit end_position = InlinePositionForOffset(
+      end_offset, LayoutUnit::FromFloatCeil, AdjustMidCluster::kToEnd);
 
-  if (UNLIKELY(IsRtl(shape_result_->Direction())))
-    std::swap(start_offset, end_offset);
-  LayoutUnit start_position = LayoutUnit::FromFloatFloor(
-      shape_result_->PositionForOffset(start_offset - start_offset_));
-  LayoutUnit end_position = LayoutUnit::FromFloatCeil(
-      shape_result_->PositionForOffset(end_offset - start_offset_));
-  DCHECK_GE(end_position, start_position);
+  // Swap positions if RTL.
+  if (UNLIKELY(start_position > end_position))
+    std::swap(start_position, end_position);
+
   LayoutUnit inline_size = end_position - start_position;
+
   switch (LineOrientation()) {
     case NGLineOrientation::kHorizontal:
       return {{start_position, LayoutUnit()}, {inline_size, Size().height}};
