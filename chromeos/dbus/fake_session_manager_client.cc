@@ -248,6 +248,8 @@ void FakeSessionManagerClient::EmitLoginPromptVisible() {
     observer.EmitLoginPromptVisibleCalled();
 }
 
+void FakeSessionManagerClient::EmitAshInitialized() {}
+
 void FakeSessionManagerClient::RestartJob(int socket_fd,
                                           const std::vector<std::string>& argv,
                                           VoidDBusMethodCallback callback) {}

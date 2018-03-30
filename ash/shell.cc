@@ -146,6 +146,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/system/devicemode.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -1195,6 +1197,17 @@ void Shell::Init(ui::ContextFactory* context_factory,
     observer.OnShellInitialized();
 
   user_metrics_recorder_->OnShellInitialized();
+
+  // By this point ash shell should have initialized its D-Bus signal
+  // listeners, so emit ash-initialized upstart signal to start Chrome OS tasks
+  // that expect that ash is listening to D-Bus signals they emit. For example,
+  // hammerd, which handles detachable base state, communicates the base state
+  // purely by emitting D-Bus signals, and thus has to be run whenever ash is
+  // started so ash (DetachableBaseHandler in particular) gets the proper view
+  // of the current detachable base state.
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->EmitAshInitialized();
 }
 
 void Shell::InitializeDisplayManager() {

@@ -155,6 +155,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
       observer.EmitLoginPromptVisibleCalled();
   }
 
+  void EmitAshInitialized() override {
+    SimpleMethodCallToSessionManager(
+        login_manager::kSessionManagerEmitAshInitialized);
+  }
+
   void RestartJob(int socket_fd,
                   const std::vector<std::string>& argv,
                   VoidDBusMethodCallback callback) override {
