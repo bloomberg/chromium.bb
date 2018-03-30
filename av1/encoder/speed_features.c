@@ -168,7 +168,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 
     if ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
         av1_internal_image_edge(cpi)) {
-      sf->use_square_partition_only = !frame_is_boosted(cpi);
+      sf->use_square_partition_only = !boosted;
     } else {
       sf->use_square_partition_only = !frame_is_intra_only(cm);
     }
@@ -204,8 +204,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 3) {
     sf->selective_ref_frame = 3;
 
-    sf->tx_size_search_method =
-        frame_is_boosted(cpi) ? USE_FULL_RD : USE_LARGESTALL;
+    sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
     sf->mode_search_skip_flags =
         (cm->frame_type == KEY_FRAME)
             ? 0
