@@ -67,10 +67,12 @@ int main(int argc, char** argv) {
   gl::init::InitializeGLOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
-  viz::HostFrameSinkManager host_frame_sink_manager_;
-  viz::FrameSinkManagerImpl frame_sink_manager_;
+  viz::HostFrameSinkManager host_frame_sink_manager;
+  viz::FrameSinkManagerImpl frame_sink_manager;
+  host_frame_sink_manager.SetLocalManager(&frame_sink_manager);
+  frame_sink_manager.SetLocalClient(&host_frame_sink_manager);
   auto context_factory = std::make_unique<ui::InProcessContextFactory>(
-      &host_frame_sink_manager_, &frame_sink_manager_);
+      &host_frame_sink_manager, &frame_sink_manager);
   context_factory->set_use_test_surface(false);
 
   base::test::ScopedTaskEnvironment scoped_task_environment(
