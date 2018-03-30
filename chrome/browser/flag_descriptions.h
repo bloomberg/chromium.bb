@@ -1311,17 +1311,20 @@ extern const char kOfflinePagesCtDescription[];
 extern const char kOfflinePagesCtV2Name[];
 extern const char kOfflinePagesCtV2Description[];
 
-extern const char kOfflinePagesLimitlessPrefetchingName[];
-extern const char kOfflinePagesLimitlessPrefetchingDescription[];
-
-extern const char kOfflinePagesLoadSignalCollectingName[];
-extern const char kOfflinePagesLoadSignalCollectingDescription[];
+extern const char kOfflinePagesDescriptiveFailStatusName[];
+extern const char kOfflinePagesDescriptiveFailStatusDescription[];
 
 extern const char kOfflinePagesDescriptivePendingStatusName[];
 extern const char kOfflinePagesDescriptivePendingStatusDescription[];
 
 extern const char kOfflinePagesInDownloadHomeOpenInCctName[];
 extern const char kOfflinePagesInDownloadHomeOpenInCctDescription[];
+
+extern const char kOfflinePagesLimitlessPrefetchingName[];
+extern const char kOfflinePagesLimitlessPrefetchingDescription[];
+
+extern const char kOfflinePagesLoadSignalCollectingName[];
+extern const char kOfflinePagesLoadSignalCollectingDescription[];
 
 extern const char kOfflinePagesPrefetchingName[];
 extern const char kOfflinePagesPrefetchingDescription[];

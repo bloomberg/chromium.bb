@@ -230,6 +230,8 @@ public abstract class ChromeFeatureList {
     public static final String NTP_SHORTCUTS = "NTPShortcuts";
     public static final String NTP_SHOW_GOOGLE_G_IN_OMNIBOX = "NTPShowGoogleGInOmnibox";
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
+    public static final String OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS =
+            "OfflinePagesDescriptiveFailStatus";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS =
             "OfflinePagesDescriptivePendingStatus";
     public static final String OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE =

@@ -124,6 +124,17 @@ TEST(OfflinePageFeatureTest, OfflinePagesInDownloadHomeOpenInCct) {
   EXPECT_TRUE(offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
 }
 
+TEST(OfflinePageFeatureTest, OfflinePagesDescriptiveFailStatus) {
+  // Disabled by default.
+  EXPECT_FALSE(offline_pages::IsOfflinePagesDescriptiveFailStatusEnabled());
+
+  // Check if helper method works correctly when the features is enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kOfflinePagesDescriptiveFailStatusFeature);
+  EXPECT_TRUE(offline_pages::IsOfflinePagesDescriptiveFailStatusEnabled());
+}
+
 TEST(OfflinePageFeatureTest, OfflinePagesDescriptivePendingStatus) {
   // Disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflinePagesDescriptivePendingStatusEnabled());
