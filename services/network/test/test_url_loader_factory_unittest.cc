@@ -5,7 +5,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,8 +33,8 @@ class TestURLLoaderFactoryTest : public testing::Test {
   std::string GetData(TestURLLoaderClient* client) {
     std::string response;
     EXPECT_TRUE(client->response_body().is_valid());
-    EXPECT_TRUE(mojo::common::BlockingCopyToString(
-        client->response_body_release(), &response));
+    EXPECT_TRUE(
+        mojo::BlockingCopyToString(client->response_body_release(), &response));
     return response;
   }
 

@@ -69,7 +69,7 @@ service("connect_test_package") {
   deps = [
     ":interfaces",
     "//base",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
@@ -93,7 +93,7 @@ service("connect_test_app") {
   deps = [
     ":interfaces",
     "//base",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
@@ -112,7 +112,7 @@ service("connect_test_class_app") {
   deps = [
     ":interfaces",
     "//base",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
@@ -130,7 +130,7 @@ service("connect_test_singleton_app") {
   ]
   deps = [
     "//base",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
   ]
 }

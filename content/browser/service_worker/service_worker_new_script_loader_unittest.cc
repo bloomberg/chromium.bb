@@ -13,8 +13,8 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -301,8 +301,8 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success) {
   EXPECT_TRUE(client_->has_received_response());
   EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_->response_body_release(), &response));
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client_->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
@@ -325,8 +325,8 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
   EXPECT_TRUE(client_->has_received_response());
   EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_->response_body_release(), &response));
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client_->response_body_release(), &response));
   EXPECT_TRUE(response.empty());
 
   // The response should also be stored in the storage.
@@ -355,8 +355,8 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
   EXPECT_TRUE(client_->has_received_response());
   EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_->response_body_release(), &response));
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client_->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
@@ -477,8 +477,8 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
   EXPECT_TRUE(client_->has_received_response());
   EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_->response_body_release(), &response));
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client_->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.

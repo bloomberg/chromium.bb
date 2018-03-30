@@ -40,7 +40,6 @@ jumbo_source_set("common") {
 
   deps = [
     "//base",
-    "//mojo/common:common_base",
     "//mojo/public/cpp/system",
     "//net",
   ]

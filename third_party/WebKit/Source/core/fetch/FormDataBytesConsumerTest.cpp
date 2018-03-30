@@ -10,8 +10,8 @@
 #include "core/testing/PageTestBase.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
-#include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/wtf/Vector.h"
@@ -46,8 +46,7 @@ class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {
   // network::mojom::DataPipeGetter implementation:
   void Read(mojo::ScopedDataPipeProducerHandle handle,
             ReadCallback callback) override {
-    bool result =
-        mojo::common::BlockingCopyFromString(WebString(str_).Utf8(), handle);
+    bool result = mojo::BlockingCopyFromString(WebString(str_).Utf8(), handle);
     ASSERT_TRUE(result);
     std::move(callback).Run(0 /* OK */, str_.length());
   }

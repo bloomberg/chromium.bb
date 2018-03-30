@@ -53,7 +53,7 @@ source_set("lib") {
     "//media/capture:capture",
     "//media/capture/mojom:image_capture",
     "//media/mojo/common:common",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/mojom",

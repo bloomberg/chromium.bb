@@ -33,7 +33,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/symmetric_key.h"
-#include "mojo/common/data_pipe_drainer.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context.h"
@@ -159,7 +159,7 @@ class DelayableBackend : public disk_cache::Backend {
   base::OnceClosure open_entry_callback_;
 };
 
-class DataPipeDrainerClient : public mojo::common::DataPipeDrainer::Client {
+class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
  public:
   DataPipeDrainerClient(std::string* output) : output_(output) {}
   void Run() { run_loop_.Run(); }
@@ -179,8 +179,7 @@ std::string CopyBody(blink::mojom::Blob* actual_blob) {
   mojo::DataPipe pipe;
   actual_blob->ReadAll(std::move(pipe.producer_handle), nullptr);
   DataPipeDrainerClient client(&output);
-  mojo::common::DataPipeDrainer drainer(&client,
-                                        std::move(pipe.consumer_handle));
+  mojo::DataPipeDrainer drainer(&client, std::move(pipe.consumer_handle));
   client.Run();
   return output;
 }

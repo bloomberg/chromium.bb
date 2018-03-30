@@ -332,8 +332,8 @@ bool TracingControllerImpl::StopTracing(
   is_data_complete_ = false;
   is_metadata_available_ = false;
   mojo::DataPipe data_pipe;
-  drainer_.reset(new mojo::common::DataPipeDrainer(
-      this, std::move(data_pipe.consumer_handle)));
+  drainer_.reset(
+      new mojo::DataPipeDrainer(this, std::move(data_pipe.consumer_handle)));
   if (agent_label.empty()) {
     // Stop and flush all agents.
     coordinator_->StopAndFlush(

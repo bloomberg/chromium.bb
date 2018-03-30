@@ -126,7 +126,7 @@ void PrefetchURLLoader::OnStartLoadingResponseBody(
   // the renderer for prefetch.
   DCHECK(!pipe_drainer_);
   pipe_drainer_ =
-      std::make_unique<mojo::common::DataPipeDrainer>(this, std::move(body));
+      std::make_unique<mojo::DataPipeDrainer>(this, std::move(body));
 }
 
 void PrefetchURLLoader::OnComplete(

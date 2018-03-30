@@ -114,7 +114,7 @@ source_set("gbm") {
   deps = [
     "//base",
     "//ipc",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces:constants",
     "//skia",

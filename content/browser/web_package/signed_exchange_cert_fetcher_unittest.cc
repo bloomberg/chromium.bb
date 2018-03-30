@@ -10,8 +10,8 @@
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
-#include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
@@ -191,8 +191,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         CreateCertMessage(CreateCertMessageFromCert(*certificate));
 
     mojo::DataPipe data_pipe(message.size());
-    CHECK(mojo::common::BlockingCopyFromString(message,
-                                               data_pipe.producer_handle));
+    CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
     return std::move(data_pipe.consumer_handle);
   }
 
@@ -526,13 +525,13 @@ TEST_F(SignedExchangeCertFetcherTest, MultipleChunked) {
   const std::string message =
       CreateCertMessage(CreateCertMessageFromCert(*certificate));
   mojo::DataPipe data_pipe(message.size() / 2 + 1);
-  ASSERT_TRUE(mojo::common::BlockingCopyFromString(
+  ASSERT_TRUE(mojo::BlockingCopyFromString(
       message.substr(0, message.size() / 2), data_pipe.producer_handle));
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   RunUntilIdle();
-  ASSERT_TRUE(mojo::common::BlockingCopyFromString(
-      message.substr(message.size() / 2), data_pipe.producer_handle));
+  ASSERT_TRUE(mojo::BlockingCopyFromString(message.substr(message.size() / 2),
+                                           data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
   mock_loader_factory_.client_ptr()->OnComplete(
       network::URLLoaderCompletionStatus(net::OK));
@@ -577,8 +576,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_Exceeds) {
       CreateFetcherAndStart(false /* force_fetch */);
   CallOnReceiveResponse();
   mojo::DataPipe data_pipe(message.size());
-  CHECK(
-      mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
@@ -601,8 +599,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_SameSize) {
       CreateFetcherAndStart(false /* force_fetch */);
   CallOnReceiveResponse();
   mojo::DataPipe data_pipe(message.size());
-  CHECK(
-      mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
@@ -625,13 +622,13 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_MultipleChunked) {
       CreateFetcherAndStart(false /* force_fetch */);
   CallOnReceiveResponse();
   mojo::DataPipe data_pipe(message.size() / 2 + 1);
-  ASSERT_TRUE(mojo::common::BlockingCopyFromString(
+  ASSERT_TRUE(mojo::BlockingCopyFromString(
       message.substr(0, message.size() / 2), data_pipe.producer_handle));
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   RunUntilIdle();
-  ASSERT_TRUE(mojo::common::BlockingCopyFromString(
-      message.substr(message.size() / 2), data_pipe.producer_handle));
+  ASSERT_TRUE(mojo::BlockingCopyFromString(message.substr(message.size() / 2),
+                                           data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
   mock_loader_factory_.client_ptr()->OnComplete(
       network::URLLoaderCompletionStatus(net::OK));
@@ -657,8 +654,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
   mock_loader_factory_.client_ptr()->OnReceiveResponse(
       resource_response, nullptr /* downloaded_file */);
   mojo::DataPipe data_pipe(message.size());
-  CHECK(
-      mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
@@ -703,8 +699,7 @@ TEST_F(SignedExchangeCertFetcherTest, Invalid_CertData) {
   CallOnReceiveResponse();
   const std::string message = CreateCertMessage("Invalid Cert Data");
   mojo::DataPipe data_pipe(message.size());
-  CHECK(
-      mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
@@ -724,8 +719,7 @@ TEST_F(SignedExchangeCertFetcherTest, Invalid_CertMessage) {
   const std::string message = "Invalid cert message";
 
   mojo::DataPipe data_pipe(message.size());
-  CHECK(
-      mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
@@ -878,15 +872,15 @@ TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_WhileReceivingBody) {
   const std::string message =
       CreateCertMessage(CreateCertMessageFromCert(*certificate));
   mojo::DataPipe data_pipe(message.size() / 2 + 1);
-  ASSERT_TRUE(mojo::common::BlockingCopyFromString(
+  ASSERT_TRUE(mojo::BlockingCopyFromString(
       message.substr(0, message.size() / 2), data_pipe.producer_handle));
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   RunUntilIdle();
   fetcher.reset();
   RunUntilIdle();
-  ASSERT_TRUE(mojo::common::BlockingCopyFromString(
-      message.substr(message.size() / 2), data_pipe.producer_handle));
+  ASSERT_TRUE(mojo::BlockingCopyFromString(message.substr(message.size() / 2),
+                                           data_pipe.producer_handle));
   RunUntilIdle();
 
   EXPECT_FALSE(callback_called_);
@@ -901,8 +895,7 @@ TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_AfterReceivingBody) {
   const std::string message =
       CreateCertMessage(CreateCertMessageFromCert(*certificate));
   mojo::DataPipe data_pipe(message.size());
-  CHECK(
-      mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   RunUntilIdle();
@@ -947,7 +940,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_WhileReceivingBody) {
   const std::string message =
       CreateCertMessage(CreateCertMessageFromCert(*certificate));
   mojo::DataPipe data_pipe(message.size() / 2 + 1);
-  ASSERT_TRUE(mojo::common::BlockingCopyFromString(
+  ASSERT_TRUE(mojo::BlockingCopyFromString(
       message.substr(0, message.size() / 2), data_pipe.producer_handle));
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
@@ -968,8 +961,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_AfterReceivingBody) {
   const std::string message =
       CreateCertMessage(CreateCertMessageFromCert(*certificate));
   mojo::DataPipe data_pipe(message.size());
-  CHECK(
-      mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   RunUntilIdle();

@@ -51,7 +51,7 @@ static_library("renderer") {
     "//content/public/common",
     "//content/public/renderer",
     "//google_apis",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//net",
     "//services/service_manager/public/cpp",
     "//skia",

@@ -25,7 +25,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/tracing/agent_registry.h"
@@ -145,7 +145,7 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
         if (all_finished) {
           StreamMetadata();
           if (!stream_is_empty_ && agent_label_.empty()) {
-            mojo::common::BlockingCopyFromString("}", stream_);
+            mojo::BlockingCopyFromString("}", stream_);
             stream_is_empty_ = false;
           }
           // Recorder connections should be closed on their binding thread.
@@ -193,12 +193,11 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
         std::string escaped;
         base::EscapeJSONString(recorder->data(), false /* put_in_quotes */,
                                &escaped);
-        mojo::common::BlockingCopyFromString(prefix + escaped, stream_);
+        mojo::BlockingCopyFromString(prefix + escaped, stream_);
       } else {
         if (prefix.empty() && !stream_is_empty_)
           prefix = ",";
-        mojo::common::BlockingCopyFromString(prefix + recorder->data(),
-                                             stream_);
+        mojo::BlockingCopyFromString(prefix + recorder->data(), stream_);
       }
       stream_is_empty_ = false;
       recorder->clear_data();
@@ -207,13 +206,13 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
       if (json_field_name_written_) {
         switch (data_type) {
           case mojom::TraceDataType::ARRAY:
-            mojo::common::BlockingCopyFromString("]", stream_);
+            mojo::BlockingCopyFromString("]", stream_);
             break;
           case mojom::TraceDataType::OBJECT:
-            mojo::common::BlockingCopyFromString("}", stream_);
+            mojo::BlockingCopyFromString("}", stream_);
             break;
           case mojom::TraceDataType::STRING:
-            mojo::common::BlockingCopyFromString("\"", stream_);
+            mojo::BlockingCopyFromString("\"", stream_);
             break;
           default:
             NOTREACHED();
@@ -239,7 +238,7 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
     if (!metadata_->empty() &&
         base::JSONWriter::Write(*metadata_, &metadataJSON)) {
       std::string prefix = stream_is_empty_ ? "{\"" : ",\"";
-      mojo::common::BlockingCopyFromString(
+      mojo::BlockingCopyFromString(
           prefix + std::string(kMetadataTraceLabel) + "\":" + metadataJSON,
           stream_);
       stream_is_empty_ = false;

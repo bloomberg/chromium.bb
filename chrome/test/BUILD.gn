@@ -958,7 +958,7 @@ test("browser_tests") {
       "//google_apis:test_support",
       "//media:test_support",
       "//media/cast:test_support",
-      "//mojo/common:common_base",
+      "//mojo/public/cpp/system",
       "//net",
       "//net:test_support",
       "//services/device/public/mojom",

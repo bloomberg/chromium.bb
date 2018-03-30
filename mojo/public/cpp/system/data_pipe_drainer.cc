@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/data_pipe_drainer.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 
 #include <stdint.h>
 
@@ -11,7 +11,6 @@
 #include "base/bind.h"
 
 namespace mojo {
-namespace common {
 
 DataPipeDrainer::DataPipeDrainer(Client* client,
                                  mojo::ScopedDataPipeConsumerHandle source)
@@ -48,5 +47,4 @@ void DataPipeDrainer::WaitComplete(MojoResult result) {
   ReadData();
 }
 
-}  // namespace common
 }  // namespace mojo

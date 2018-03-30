@@ -14,9 +14,9 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -134,8 +134,8 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
                          run_loop.QuitClosure()));
       run_loop.Run();
       // Copy the content to |out_string|.
-      mojo::common::BlockingCopyToString(std::move(data_pipe.consumer_handle),
-                                         out_string);
+      mojo::BlockingCopyToString(std::move(data_pipe.consumer_handle),
+                                 out_string);
     } else {
       NOTREACHED();
     }
@@ -700,8 +700,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   // Test the body.
   std::string response;
   EXPECT_TRUE(client->response_body().is_valid());
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client->response_body_release(), &response));
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
 }
 
@@ -742,8 +742,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
   // Test the body.
   std::string response;
   EXPECT_TRUE(client->response_body().is_valid());
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client->response_body_release(), &response));
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
 }
 
@@ -853,8 +853,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   // Test the body.
   std::string response;
   EXPECT_TRUE(client->response_body().is_valid());
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client->response_body_release(), &response));
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
 }
 

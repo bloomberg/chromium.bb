@@ -22,7 +22,7 @@
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -307,7 +307,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
         url_loader_client.RunUntilComplete();
 
         if (url_loader_client.response_body().is_valid()) {
-          EXPECT_TRUE(mojo::common::BlockingCopyToString(
+          EXPECT_TRUE(mojo::BlockingCopyToString(
               url_loader_client.response_body_release(), &response_));
         }
         response_headers_ = url_loader_client.response_head().headers;
@@ -362,7 +362,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
         url_loader_client.RunUntilComplete();
 
         if (url_loader_client.response_body().is_valid()) {
-          EXPECT_TRUE(mojo::common::BlockingCopyToString(
+          EXPECT_TRUE(mojo::BlockingCopyToString(
               url_loader_client.response_body_release(), &response_));
         }
         response_headers_ = url_loader_client.response_head().headers;

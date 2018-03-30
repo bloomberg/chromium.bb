@@ -7,7 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "content/browser/histogram_internals_request_job.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 
 namespace content {
 
@@ -24,7 +24,7 @@ void StartHistogramInternalsURLLoader(
   base::StatisticsRecorder::ImportProvidedHistograms();
   std::string data = HistogramInternalsRequestJob::GenerateHTML(request.url);
   mojo::DataPipe data_pipe(data.size());
-  CHECK(mojo::common::BlockingCopyFromString(data, data_pipe.producer_handle));
+  CHECK(mojo::BlockingCopyFromString(data, data_pipe.producer_handle));
 
   client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
   network::URLLoaderCompletionStatus status(net::OK);

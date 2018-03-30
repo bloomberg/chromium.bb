@@ -222,8 +222,8 @@ static_library("arc_test_support") {
     "//components/prefs:test_support",
     "//components/user_prefs",
     "//content/test:test_support",
-    "//mojo/common:common_base",
     "//mojo/edk",
+    "//mojo/public/cpp/system",
   ]
 }
 

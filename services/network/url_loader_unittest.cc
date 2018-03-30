@@ -22,8 +22,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -1274,8 +1274,8 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
 
   mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback =
       data_pipe_getter.WaitForGetSize();
-  mojo::common::BlockingCopyFromString(kRequestBody,
-                                       data_pipe_getter.WaitForStartReading());
+  mojo::BlockingCopyFromString(kRequestBody,
+                               data_pipe_getter.WaitForStartReading());
   std::move(get_size_callback).Run(net::OK, kRequestBody.size());
   client()->RunUntilComplete();
 

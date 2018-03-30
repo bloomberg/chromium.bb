@@ -14,9 +14,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
-#include "mojo/common/data_pipe_utils.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -1047,7 +1047,7 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
         blob = std::move(result);
         loop.Quit();
       }));
-  mojo::common::BlockingCopyFromString(kData, pipe.producer_handle);
+  mojo::BlockingCopyFromString(kData, pipe.producer_handle);
   pipe.producer_handle.reset();
   loop.Run();
 

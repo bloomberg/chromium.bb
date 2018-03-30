@@ -28,7 +28,7 @@ source_set("lib") {
     "//cc",
     "//components/viz/service",
     "//components/viz/service/main",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/viz/privileged/interfaces",
   ]

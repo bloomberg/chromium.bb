@@ -56,7 +56,7 @@ source_set("lib") {
     "//components/discardable_memory/public/interfaces",
     "//components/discardable_memory/service",
     "//components/viz/service",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//services/catalog/public/cpp",
     "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
