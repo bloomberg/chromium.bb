@@ -205,6 +205,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/tab_grid",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui",
     "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/tab_switcher:modes",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",

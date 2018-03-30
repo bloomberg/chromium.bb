@@ -109,6 +109,18 @@ source_set("tab_switcher") {
   ]
 }
 
+source_set("modes") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "tab_switcher_mode.h",
+    "tab_switcher_mode.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui",
+  ]
+}
+
 source_set("utils") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
