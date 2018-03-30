@@ -18,7 +18,6 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromecast.base.CastSwitches;
 import org.chromium.chromecast.base.Controller;
-import org.chromium.chromecast.base.ScopeFactories;
 import org.chromium.chromecast.base.Unit;
 import org.chromium.components.content_view.ContentView;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
@@ -132,8 +131,6 @@ class CastWebContentsSurfaceHelper {
                 }
             };
         });
-        // On pause events, unmute so that that other activities can control the mute state on L.
-        mResumedState.watch(ScopeFactories.onExit(() -> releaseStreamMuteIfNecessary()));
     }
 
     void onNewWebContents(
@@ -248,24 +245,6 @@ class CastWebContentsSurfaceHelper {
     void onPause() {
         Log.d(TAG, "onPause: " + mUri);
         mResumedState.reset();
-    }
-
-    @SuppressWarnings("deprecation")
-    private void releaseStreamMuteIfNecessary() {
-        AudioManager audioManager = CastAudioManager.getAudioManager(getActivity()).getInternal();
-        boolean isMuted = false;
-        try {
-            isMuted = (Boolean) audioManager.getClass()
-                              .getMethod("isStreamMute", int.class)
-                              .invoke(audioManager, AudioManager.STREAM_MUSIC);
-        } catch (Exception e) {
-            Log.e(TAG, "Cannot call AudioManager.isStreamMute().", e);
-        }
-
-        if (isMuted) {
-            // Note: this is a no-op on fixed-volume devices.
-            audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-        }
     }
 
     void onResume() {
