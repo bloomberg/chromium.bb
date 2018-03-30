@@ -195,6 +195,7 @@ source_set("eg_tests") {
   ]
   deps = [
     ":egtest_support",
+    ":modes",
     ":tab_switcher",
     "//base",
     "//base/test:test_support",
