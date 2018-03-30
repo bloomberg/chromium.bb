@@ -45,7 +45,7 @@ source_set("libc++abi") {
 
   # This file should really be included on linux as well, but that
   # would introduce an unwanted glibc 2.18 dependency.
-  if (is_posix && !is_mac && !is_linux) {
+  if (is_fuchsia || (is_posix && !is_mac && !is_linux)) {
     sources += [ "trunk/src/cxa_thread_atexit.cpp" ]
   }
 
