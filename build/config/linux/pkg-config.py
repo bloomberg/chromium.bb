@@ -224,8 +224,7 @@ def main():
   # Output a GN array, the first one is the cflags, the second are the libs. The
   # JSON formatter prints GN compatible lists when everything is a list of
   # strings.
-  cflags += map(lambda dir: "-isystem" + dir, includes)
-  print json.dumps([cflags, libs, lib_dirs, ldflags])
+  print json.dumps([includes, cflags, libs, lib_dirs, ldflags])
   return 0
 
 

@@ -101,12 +101,19 @@ template("pkg_config") {
     }
 
     pkgresult = exec_script(pkg_config_script, args, "value")
-    cflags = pkgresult[0]
+    cflags = pkgresult[1]
+
+    # We want the system include paths to use -isystem instead of -I to suppress
+    # warnings in those headers.
+    foreach(include, pkgresult[0]) {
+      include_relativized = rebase_path(include, root_build_dir)
+      cflags += [ "-isystem$include_relativized" ]
+    }
 
     if (!defined(invoker.ignore_libs) || !invoker.ignore_libs) {
-      libs = pkgresult[1]
-      lib_dirs = pkgresult[2]
-      ldflags = pkgresult[3]
+      libs = pkgresult[2]
+      lib_dirs = pkgresult[3]
+      ldflags = pkgresult[4]
     }
 
     forward_variables_from(invoker,
