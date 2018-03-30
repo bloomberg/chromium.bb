@@ -2022,11 +2022,15 @@ static void error_handler(void *data) {
 }
 
 void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_10 : AOM_BITS_8;
-  if (cm->profile < PROFILE_2 || cm->bit_depth == AOM_BITS_8) {
-    return;
+  const int high_bitdepth = aom_rb_read_bit(rb);
+  if (cm->profile == PROFILE_2 && high_bitdepth) {
+    const int twelve_bit = aom_rb_read_bit(rb);
+    cm->bit_depth = twelve_bit ? AOM_BITS_12 : AOM_BITS_10;
+  } else if (cm->profile <= PROFILE_2) {
+    cm->bit_depth = high_bitdepth ? AOM_BITS_10 : AOM_BITS_8;
+  } else {
+    assert(0 && "unsupported profile/bit-depth combination");
   }
-  cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
   return;
 }
 
