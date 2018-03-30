@@ -51,6 +51,10 @@ const char kTime[] = ".Time";
 const uint32_t kFileMagic = 0x600D71FE;
 const uint32_t kFileVersion = 9;
 
+// Set a common sense limit on the store file size we try to read.
+// The maximum store file size, as of today, is about 6MB.
+constexpr size_t kMaxStoreSizeBytes = 50 * 1000 * 1000;
+
 void RecordTimeWithAndWithoutSuffix(const std::string& metric,
                                     base::TimeDelta time,
                                     const base::FilePath& file_path) {
@@ -689,8 +693,8 @@ StoreReadResult V4Store::ReadFromDisk() {
     // A temporary scope to make sure that |contents| get destroyed as soon as
     // we are doing using it.
     std::string contents;
-    bool read_success = base::ReadFileToString(store_path_, &contents);
-    if (!read_success) {
+    if (!base::ReadFileToStringWithMaxSize(store_path_, &contents,
+                                           kMaxStoreSizeBytes)) {
       return FILE_UNREADABLE_FAILURE;
     }
 
