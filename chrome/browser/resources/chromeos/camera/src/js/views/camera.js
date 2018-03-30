@@ -1021,19 +1021,17 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
     toggleRecord.classList.add('toggle-off');
     label = 'toggleRecordOffButton';
   }
-  toggleRecord.setAttribute('i18n-label', label);
-  toggleRecord.setAttribute('aria-label', chrome.i18n.getMessage(label));
+  this.updateButtonLabel_(toggleRecord, label);
 
   var takePictureButton = document.querySelector('#take-picture');
   if (this.is_recording_mode_) {
     takePictureButton.classList.add('motion-picture');
-    label = 'recordVideoButton';
+    label = 'recordVideoStartButton';
   } else {
     takePictureButton.classList.remove('motion-picture');
     label = 'takePictureButton';
   }
-  takePictureButton.setAttribute('i18n-label', label);
-  takePictureButton.setAttribute('aria-label', chrome.i18n.getMessage(label));
+  this.updateButtonLabel_(takePictureButton, label);
 
   document.querySelector('#toggle-multi').hidden = this.is_recording_mode_;
   document.querySelector('#toggle-timer').hidden = this.is_recording_mode_;
@@ -1166,6 +1164,18 @@ camera.views.Camera.prototype.updateToolbar_ = function() {
   document.querySelector('#take-picture').disabled = disabled;
 
   this.updateAlbumButton_();
+};
+
+/**
+ * Updates the button's labels.
+ *
+ * @param {HTMLElement} button Button element to be updated.
+ * @param {string} label Label to be set.
+ * @private
+ */
+camera.views.Camera.prototype.updateButtonLabel_ = function(button, label) {
+  button.setAttribute('i18n-label', label);
+  button.setAttribute('aria-label', chrome.i18n.getMessage(label));
 };
 
 /**
@@ -1787,6 +1797,7 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
       this.mediaRecorder_.onstop = function(event) {
         this.hideRecordingTimer_();
         takePictureButton.classList.remove('flash');
+        this.updateButtonLabel_(takePictureButton, 'recordVideoStartButton');
         this.enableAudio_(false);
         // Add the motion picture after the recording is ended.
         // TODO(yuli): Handle insufficient storage.
@@ -1816,6 +1827,7 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
       // the take-picture button until the recording is stopped.
       takePictureButton.disabled = false;
       takePictureButton.classList.add('flash');
+      this.updateButtonLabel_(takePictureButton, 'recordVideoStopButton');
     } else {
       this.mainCanvas_.toBlob(function(blob) {
         // Play a shutter sound.
@@ -2246,11 +2258,9 @@ camera.views.Camera.prototype.start_ = function() {
     if (index >= constraintsCandidates.length) {
       if (this.is_recording_mode_) {
         // The recording mode can't be started because none of the
-        // constraints is supported. Force to fall back to photo mode
-        // without showing an error and hiding the toolbar.
-        // TODO(yuli): Revise the toast message for unable to start video
-        // recording before switching back to photo mode.
-        this.showToastMessage_(chrome.i18n.getMessage('errorMsgNoCamera'));
+        // constraints is supported. Force to fall back to photo mode.
+        this.showToastMessage_(chrome.i18n.getMessage(
+            'errorMsgToggleRecordOnFailed'));
         setTimeout(function() {
           this.onToggleRecordClicked_();
           scheduleRetry();
