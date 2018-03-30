@@ -116,7 +116,7 @@ const CGFloat kImageTopMargin = 8;
                        attributes:attributes
                           context:nil];
   CGSize size = rectForString.size;
-  size.height = MAX(size.height, kImageLength);
+  size.height = MAX(size.height, kCellHeight);
   size.width += nonTitleElementWidth;
   return size;
 }

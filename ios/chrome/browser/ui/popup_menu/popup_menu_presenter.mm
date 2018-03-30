@@ -71,8 +71,10 @@ const CGFloat kDamping = 0.85;
   // Use preferredSize if it is set.
   CGSize preferredSize = self.presentedViewController.preferredContentSize;
   CGFloat width = fittingSize.width;
+  CGFloat height = fittingSize.height;
   if (!CGSizeEqualToSize(preferredSize, CGSizeZero)) {
     width = preferredSize.width;
+    height = preferredSize.height;
   }
 
   // Set the sizing constraints, in case the UIViewController is using a
@@ -86,7 +88,7 @@ const CGFloat kDamping = 0.85;
 
   NSLayoutConstraint* heightConstraint =
       [self.presentedViewController.view.heightAnchor
-          constraintEqualToConstant:fittingSize.height];
+          constraintEqualToConstant:height];
   heightConstraint.priority = UILayoutPriorityDefaultHigh + 1;
 
   UIView* popup = self.popupViewController.contentContainer;
