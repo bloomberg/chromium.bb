@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
+#include "ios/chrome/browser/ui/tab_switcher/tab_switcher_mode.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -85,8 +86,10 @@ using web::test::HttpServer;
 
 // Tests entering and leaving the tab switcher.
 - (void)testEnteringTabSwitcher {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   [self assertTabSwitcherIsInactive];
 
@@ -108,8 +111,10 @@ using web::test::HttpServer;
 // Tests entering tab switcher by closing all tabs, and leaving the tab switcher
 // by creating a new tab.
 - (void)testClosingAllTabsAndCreatingNewTab {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   [self assertTabSwitcherIsInactive];
 
@@ -132,8 +137,10 @@ using web::test::HttpServer;
 
 // Tests entering tab switcher from incognito mode.
 - (void)testIncognitoTabs {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   [self assertTabSwitcherIsInactive];
 
@@ -176,8 +183,10 @@ using web::test::HttpServer;
 
 // Tests leaving the tab switcher while on the "Other Devices" panel.
 - (void)testLeavingSwitcherFromOtherDevices {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   [self assertTabSwitcherIsInactive];
 
@@ -216,8 +225,10 @@ using web::test::HttpServer;
 // Tests that elements on iPad tab switcher are accessible.
 // TODO: (crbug.com/691095) Open tabs label is not accessible
 - (void)DISABLED_testAccessibilityOnTabSwitcher {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
   [self assertTabSwitcherIsInactive];
 
   [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
@@ -239,8 +250,10 @@ using web::test::HttpServer;
 // Tests that elements on iPad tab switcher incognito tab are accessible.
 // TODO: (crbug.com/691095) Incognito tabs label should be tappable.
 - (void)DISABLED_testAccessibilityOnIncognitoTabSwitcher {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
   [self assertTabSwitcherIsInactive];
 
   [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
@@ -267,8 +280,10 @@ using web::test::HttpServer;
 // Tests that elements on iPad tab switcher other devices are accessible.
 // TODO: (crbug.com/691095) Other devices label should be tappable.
 - (void)DISABLED_testAccessibilityOnOtherDeviceTabSwitcher {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
   [self assertTabSwitcherIsInactive];
 
   [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
@@ -295,9 +310,10 @@ using web::test::HttpServer;
 // Tests that closing a Tab that has a queued dialog successfully cancels the
 // dialog.
 - (void)testCloseTabWithDialog {
-  // The TabSwitcherController is only used on iPhones.
-  if (!IsIPadIdiom())
-    EARL_GREY_TEST_SKIPPED(@"TabSwitcherController is only used on iPads.");
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   // Load the blank test page so that JavaScript can be executed.
   const GURL kBlankPageURL = HttpServer::MakeUrl("http://blank-page");
@@ -345,8 +361,10 @@ using web::test::HttpServer;
 
 // Tests sign-in promo view in cold state.
 - (void)testColdSigninPromoView {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   // Enter the tab switcher and press the "Other Devices" button.
   [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
@@ -362,8 +380,10 @@ using web::test::HttpServer;
 
 // Tests sign-in promo view in warm state.
 - (void)testWarmSigninPromoView {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   // Set up a fake identity.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
@@ -399,8 +419,10 @@ using web::test::HttpServer;
 // Tests to reload the other devices tab after sign-in.
 // See crbug.comm/832527
 - (void)testReloadOtherTabDevicesTab {
-  if (!IsIPadIdiom())
-    return;
+  if (GetTabSwitcherMode() != TabSwitcherMode::TABLET_SWITCHER) {
+    EARL_GREY_TEST_SKIPPED(
+        @"TabSwitcher tests are not applicable in this configuration");
+  }
 
   // Set up a fake identity.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
