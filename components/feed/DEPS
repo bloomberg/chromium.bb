@@ -1,0 +1,14 @@
+include_rules = [
+  "+components/data_use_measurement/core",
+  "+components/variations",
+  "+components/version_info",
+  "+net/base",
+  "+net/http",
+  "+net/traffic_annotation",
+  "+google_apis",
+  "+services/identity/public/cpp",
+  "+services/network/public/cpp",
+  "+services/network/public/mojom",
+  "+services/network/test",
+  "+third_party/zlib/google",
+]

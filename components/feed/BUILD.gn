@@ -23,3 +23,48 @@ static_library("feature_list") {
     "//base",
   ]
 }
+
+static_library("feed") {
+  sources = [
+    "core/feed_networking_host.cc",
+    "core/feed_networking_host.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//net",
+  ]
+
+  deps = [
+    "//components/data_use_measurement/core",
+    "//components/variations",
+    "//components/variations/net",
+    "//components/variations/service",
+    "//google_apis",
+    "//services/identity/public/cpp",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+    "//third_party/zlib/google:compression_utils",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "core/feed_networking_host_unittest.cc",
+  ]
+
+  deps = [
+    ":feed",
+    "//base",
+    "//base/test:test_support",
+    "//net:test_support",
+    "//services/identity/public/cpp",
+    "//services/identity/public/cpp:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+    "//third_party/zlib/google:compression_utils",
+  ]
+}
