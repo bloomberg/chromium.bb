@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -27,6 +28,10 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#endif
 
 using content::WebContents;
 
@@ -752,6 +757,10 @@ TEST_F(DownloadRequestLimiterTest, ContentSettingChanged) {
 }
 
 TEST_F(DownloadRequestLimiterTest, SuppressRequestsInVRMode) {
+#if defined(OS_ANDROID)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chrome::android::kVrBrowsingNativeAndroidUi);
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
 
@@ -769,4 +778,5 @@ TEST_F(DownloadRequestLimiterTest, SuppressRequestsInVRMode) {
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
+#endif
 }
