@@ -297,11 +297,10 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
     return;
   }
   network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
-  mojo::MakeStrongBinding(
-      std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
-          base::MakeRefCounted<ControllerServiceWorkerConnector>(
-              service_worker_container_host_.get()),
-          direct_network_loader_factory_),
+  ServiceWorkerSubresourceLoaderFactory::Create(
+      base::MakeRefCounted<ControllerServiceWorkerConnector>(
+          service_worker_container_host_.get()),
+      direct_network_loader_factory_,
       mojo::MakeRequest(&service_worker_url_loader_factory));
   url_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
