@@ -10,7 +10,7 @@ Apps; APIs are defined and exposed in the same fashion for both.
 
 Before implementing a new API, it has to go through an approval process.  This
 approval process helps ensure that the API is well defined, does not introduce
-and privacy, security, or performance concerns, and fits in with the overall
+any privacy, security, or performance concerns, and fits in with the overall
 product vision.
 
 ## API Details
@@ -117,8 +117,8 @@ finding a member of the chrome team to help you drive it and own it).  However,
 it should be possible to get feedback from many of the required parties during
 that review process, which would expedite the additional approvals needed.
 
-For public APIs, please email the proposal to extension-api-reviews@chromium.org
-for any additional feedback.
+Please email the proposal to extension-api-reviews@chromium.org for any
+additional feedback.
 
 ### Get Sign-Off
 
@@ -148,6 +148,24 @@ events, should still include an API Overview (though it can be brief).
 Medium-sized changes, like adding a single new method, are up to the discretion
 of the API reviewers - we may ask for an API Overview, but it might not be
 necessary.
+
+## FAQ
+__Do I need an API review for a private API?__  Yes! Private APIs are not
+as scrutinized as public APIs because we don't need to be as worried about
+API ergonomics, and we can be a little more lenient in security. However,
+we still need to review the API to make sure that:
+* The API is secure. Even though it runs in trusted extensions, it exposes
+capabilities to a renderer process, and may also introduce vulnerabilities
+elsewhere.
+* The API meets privacy guidelines. We hold ourselves to a strict standard in
+regards to what data we can collect.
+* The API should be a private API. There are multiple alternatives, including a
+public API, a web API, implementing code directly in C++, and others. Private
+APIs are not always the appropriate choice.
+
+__Who signs off for the API review?__  The API review bit will be flipped by
+either an extensions or apps team member. If your API has been languishing,
+please ping rdevlin.cronin@ (Extensions APIs) or benwells@ (Apps APIs).
 
 ## Bug Templates
 __Note:__ All these templates default to public visibility.
