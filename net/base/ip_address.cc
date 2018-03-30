@@ -250,15 +250,10 @@ bool IPAddress::IsIPv4MappedIPv6() const {
 }
 
 bool IPAddress::AssignFromIPLiteral(const base::StringPiece& ip_literal) {
-  IPAddressBytes number;
-
-  // TODO(rch): change the contract so ip_address_ is cleared on failure,
-  // to avoid needing this temporary at all.
-  if (!ParseIPLiteralToBytes(ip_literal, &number))
-    return false;
-
-  ip_address_ = number;
-  return true;
+  bool success = ParseIPLiteralToBytes(ip_literal, &ip_address_);
+  if (!success)
+    ip_address_.Resize(0);
+  return success;
 }
 
 std::vector<uint8_t> IPAddress::CopyBytesToVector() const {

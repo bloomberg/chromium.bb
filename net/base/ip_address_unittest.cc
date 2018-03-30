@@ -395,6 +395,20 @@ TEST(IPAddressTest, AssignFromIPLiteral_FailParse) {
   EXPECT_FALSE(address.AssignFromIPLiteral("[::1]"));
 }
 
+// Test that a failure calling AssignFromIPLiteral() has the sideffect of
+// clearing the current value.
+TEST(IPAddressTest, AssignFromIPLiteral_ResetOnFailure) {
+  IPAddress address = IPAddress::IPv6Localhost();
+
+  EXPECT_TRUE(address.IsValid());
+  EXPECT_FALSE(address.empty());
+
+  EXPECT_FALSE(address.AssignFromIPLiteral("bad value"));
+
+  EXPECT_FALSE(address.IsValid());
+  EXPECT_TRUE(address.empty());
+}
+
 // Test parsing an IPv4 literal.
 TEST(IPAddressTest, AssignFromIPLiteral_IPv4) {
   IPAddress address;
