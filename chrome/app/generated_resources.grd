@@ -5658,6 +5658,9 @@ the Bookmarks menu.">
       <message name="IDS_GENERIC_USER_AVATAR_LABEL" desc="Label shown for the user that is currently active, when there are multiple user accounts.">
         Current user
       </message>
+      <message name="IDS_INCOGNITO_AVATAR_BUTTON_TOOLTIP" desc="Tooltip for the inactive avatar button when the user is in incognito mode.">
+        You're incognito
+      </message>
       <message name="IDS_LEGACY_SUPERVISED_USER_NEW_AVATAR_LABEL" desc="Label shown in the new avatar menu for a supervised user.">
         <ph name="PROFILE_DISPLAY_NAME">$1<ex>Markus</ex></ph> (Supervised)
       </message>
