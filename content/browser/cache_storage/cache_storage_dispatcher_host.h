@@ -100,6 +100,11 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
   void StoreBlobDataHandle(const storage::BlobDataHandle& blob_data_handle);
   void DropBlobDataHandle(const std::string& uuid);
 
+  // Validate the current state of required members, returns false if they
+  // aren't valid and also close |bindings_|, so it's safe to not run
+  // mojo callbacks.
+  bool ValidState();
+
   UUIDToBlobDataHandleList blob_handle_store_;
 
   scoped_refptr<CacheStorageContextImpl> context_;
