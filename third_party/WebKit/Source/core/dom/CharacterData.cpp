@@ -224,8 +224,4 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
   probe::characterDataModified(this);
 }
 
-int CharacterData::MaxCharacterOffset() const {
-  return static_cast<int>(length());
-}
-
 }  // namespace blink

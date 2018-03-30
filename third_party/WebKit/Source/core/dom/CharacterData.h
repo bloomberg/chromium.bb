@@ -81,7 +81,6 @@ class CORE_EXPORT CharacterData : public Node {
   String nodeValue() const final;
   void setNodeValue(const String&) final;
   bool IsCharacterDataNode() const final { return true; }
-  int MaxCharacterOffset() const final;
   void SetDataAndUpdate(const String&,
                         unsigned offset_of_replaced_data,
                         unsigned old_length,
