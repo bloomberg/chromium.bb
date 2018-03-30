@@ -67,6 +67,18 @@ Polymer({
     /** @type {?print_preview.MeasurementSystem} */
     measurementSystem: Object,
 
+    /** @private {boolean} Whether the plugin is loaded */
+    pluginLoaded_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {boolean} Whether the document is ready */
+    documentReady_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {string} */
     previewState_: {
       type: String,
@@ -78,7 +90,8 @@ Polymer({
     previewLoaded_: {
       type: Boolean,
       notify: true,
-      computed: 'computePreviewLoaded_(previewState_)',
+      computed: 'computePreviewLoaded_(' +
+          'previewState_, pluginLoaded_, documentReady_)',
     },
   },
 
@@ -108,12 +121,6 @@ Polymer({
   /** @private {HTMLEmbedElement|print_preview_new.PDFPlugin} */
   plugin_: null,
 
-  /** @private {boolean} Whether the plugin is loaded */
-  pluginLoaded_: false,
-
-  /** @private {boolean} Whether the document is ready */
-  documentReady_: false,
-
   /** @override */
   attached: function() {
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
@@ -139,7 +146,9 @@ Polymer({
    * @private
    */
   computePreviewLoaded_: function() {
-    return this.previewState_ == PreviewAreaState_.DISPLAY_PREVIEW;
+    return this.previewState_ == PreviewAreaState_.DISPLAY_PREVIEW ||
+        (this.documentReady_ && this.pluginLoaded_ &&
+         this.previewState_ == PreviewAreaState_.OPEN_IN_PREVIEW);
   },
 
   /** @return {boolean} Whether the preview is loaded. */
@@ -237,7 +246,7 @@ Polymer({
     if (this.previewState_ == PreviewAreaState_.LOADING)
       return this.i18n('loading');
     if (this.previewState_ == PreviewAreaState_.OPEN_IN_PREVIEW)
-      return this.i18n('openPdfInPreview');
+      return this.i18n('openingPDFInPreview');
     if (this.previewState_ == PreviewAreaState_.INVALID_SETTINGS)
       return this.i18n('invalidSettings');
     if (this.previewState_ == PreviewAreaState_.PREVIEW_FAILED)
@@ -255,7 +264,8 @@ Polymer({
             this.onPreviewStart_(previewUid, -1);
           this.documentReady_ = true;
           if (this.pluginLoaded_) {
-            this.previewState_ = PreviewAreaState_.DISPLAY_PREVIEW;
+            if (this.previewState_ != PreviewAreaState_.OPEN_IN_PREVIEW)
+              this.previewState_ = PreviewAreaState_.DISPLAY_PREVIEW;
             this.fire('preview-loaded');
           }
         },
@@ -290,6 +300,14 @@ Polymer({
         break;
     }
   },
+
+  // <if expr="macosx">
+  /** Set the preview state to display the "opening in preview" message. */
+  setOpeningPdfInPreview: function() {
+    assert(cr.isMac);
+    this.previewState_ = PreviewAreaState_.OPEN_IN_PREVIEW;
+  },
+  // </if>
 
   /**
    * @param {number} previewUid The unique identifier of the preview.
@@ -375,7 +393,8 @@ Polymer({
   onPluginLoad_: function() {
     this.pluginLoaded_ = true;
     if (this.documentReady_) {
-      this.previewState_ = PreviewAreaState_.DISPLAY_PREVIEW;
+      if (this.previewState_ != PreviewAreaState_.OPEN_IN_PREVIEW)
+        this.previewState_ = PreviewAreaState_.DISPLAY_PREVIEW;
       this.fire('preview-loaded');
     }
   },
