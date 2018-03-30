@@ -62,7 +62,6 @@
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
 
-#if CONFIG_TRAILING_BITS
 // Checks that the remaining bits start with a 1 and ends with 0s.
 // It consumes an additional byte, if already byte aligned before the check.
 int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
@@ -76,7 +75,6 @@ int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
   }
   return 0;
 }
-#endif
 
 // Use only_chroma = 1 to only set the chroma planes
 static void set_planes_to_neutral_grey(AV1_COMMON *const cm,
@@ -1838,7 +1836,6 @@ static void decode_tile(AV1Decoder *pbi, int tile_row, int tile_col) {
     decode_tile_sb_row(pbi, td, tile_info, mi_row);
   }
 
-#if CONFIG_TRAILING_BITS
   uint32_t nb_bits = aom_reader_tell(&td->bit_reader);
   uint32_t nb_bytes = (nb_bits + 7) >> 3;
 
@@ -1857,7 +1854,6 @@ static void decode_tile(AV1Decoder *pbi, int tile_row, int tile_col) {
     if (*p != 0) cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
     p++;
   }
-#endif
 }
 
 static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
@@ -3129,13 +3125,8 @@ static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
 }
 
 int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
-#if CONFIG_TRAILING_BITS
                                        struct aom_read_bit_buffer *rb,
-#endif
                                        const uint8_t *data,
-#if !CONFIG_TRAILING_BITS
-                                       const uint8_t *data_end,
-#endif
                                        const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
@@ -3154,19 +3145,9 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   }
   xd->global_motion = cm->global_motion;
 
-#if !CONFIG_TRAILING_BITS
-  struct aom_read_bit_buffer rb;
-#endif
-  read_uncompressed_header(pbi,
-#if CONFIG_TRAILING_BITS
-                           rb);
-#else
-                           av1_init_read_bit_buffer(pbi, &rb, data, data_end));
-#endif
+  read_uncompressed_header(pbi, rb);
 
-#if CONFIG_TRAILING_BITS
   av1_check_trailing_bits(pbi, rb);
-#endif
 
   // If cm->single_tile_decoding = 0, the independent decoding of a single tile
   // or a section of a frame is not allowed.
@@ -3176,11 +3157,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     pbi->dec_tile_col = -1;
   }
 
-#if CONFIG_TRAILING_BITS
   pbi->uncomp_hdr_size = aom_rb_bytes_read(rb);
-#else
-  pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
-#endif
   YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
   if (av1_allow_intrabc(cm)) {
@@ -3190,12 +3167,8 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   }
 
   if (cm->show_existing_frame) {
-  // showing a frame directly
-#if CONFIG_TRAILING_BITS
+    // showing a frame directly
     *p_data_end = data + aom_rb_bytes_read(rb);
-#else
-    *p_data_end = data + aom_rb_bytes_read(&rb);
-#endif
     if (cm->reset_decoder_state) {
       // Use the default frame context values.
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];

@@ -3312,7 +3312,6 @@ static size_t obu_memmove(uint32_t obu_header_size, uint32_t obu_payload_size,
   return length_field_size;
 }
 
-#if CONFIG_TRAILING_BITS
 static void add_trailing_bits(struct aom_write_bit_buffer *wb) {
   if (aom_wb_is_byte_aligned(wb)) {
     aom_wb_write_literal(wb, 0x80, 8);
@@ -3321,7 +3320,6 @@ static void add_trailing_bits(struct aom_write_bit_buffer *wb) {
     aom_wb_write_bit(wb, 1);
   }
 }
-#endif
 
 static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
                                           uint8_t enhancement_layers_cnt) {
@@ -3350,9 +3348,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
 
   aom_wb_write_bit(&wb, cm->film_grain_params_present);
 
-#if CONFIG_TRAILING_BITS
   add_trailing_bits(&wb);
-#endif
 
   size = aom_wb_bytes_written(&wb);
   return size;
@@ -3368,9 +3364,7 @@ static uint32_t write_frame_header_obu(AV1_COMP *cpi,
 
   write_uncompressed_header_obu(cpi, saved_wb, &wb);
 
-#if CONFIG_TRAILING_BITS
   add_trailing_bits(&wb);
-#endif
 
   if (cm->show_existing_frame) {
     total_size = aom_wb_bytes_written(&wb);

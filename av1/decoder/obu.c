@@ -172,9 +172,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   cm->film_grain_params_present = aom_rb_read_bit(rb);
 
-#if CONFIG_TRAILING_BITS
   av1_check_trailing_bits(pbi, rb);
-#endif
 
   pbi->sequence_header_ready = 1;
 
@@ -182,23 +180,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 }
 
 static uint32_t read_frame_header_obu(AV1Decoder *pbi,
-#if CONFIG_TRAILING_BITS
                                       struct aom_read_bit_buffer *rb,
-#endif
                                       const uint8_t *data,
-#if !CONFIG_TRAILING_BITS
-                                      const uint8_t *data_end,
-#endif
                                       const uint8_t **p_data_end) {
-  av1_decode_frame_headers_and_setup(pbi,
-#if CONFIG_TRAILING_BITS
-                                     rb,
-#endif
-                                     data,
-#if !CONFIG_TRAILING_BITS
-                                     data_end,
-#endif
-                                     p_data_end);
+  av1_decode_frame_headers_and_setup(pbi, rb, data, p_data_end);
   return (uint32_t)(pbi->uncomp_hdr_size);
 }
 
@@ -456,18 +441,8 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         }
         // Only decode first frame header received
         if (!frame_header_received) {
-#if CONFIG_TRAILING_BITS
           av1_init_read_bit_buffer(pbi, &rb, data, data_end);
-#endif
-          frame_header_size = read_frame_header_obu(pbi,
-#if CONFIG_TRAILING_BITS
-                                                    &rb,
-#endif
-                                                    data,
-#if !CONFIG_TRAILING_BITS
-                                                    data_end,
-#endif
-                                                    p_data_end);
+          frame_header_size = read_frame_header_obu(pbi, &rb, data, p_data_end);
           frame_header_received = 1;
         }
         decoded_payload_size = frame_header_size;
@@ -477,9 +452,6 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         }
         if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
-#if !CONFIG_TRAILING_BITS
-        av1_init_read_bit_buffer(pbi, &rb, data + obu_payload_offset, data_end);
-#endif                             // !CONFIG_TRAILING_BITS
         AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
       case OBU_TILE_GROUP:
         if (!frame_header_received) {
