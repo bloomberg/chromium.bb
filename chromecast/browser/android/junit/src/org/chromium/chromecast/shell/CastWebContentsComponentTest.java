@@ -234,8 +234,8 @@ public class CastWebContentsComponentTest {
         StartParams params2 = new StartParams(mActivity, mWebContents, "test", 1);
         component.start(params2);
         Assert.assertTrue(component.isStarted());
-        verify(delegate, times(1)).start(any(StartParams.class));
-        verify(delegate, times(0)).start(eq(params2));
+        verify(delegate, times(2)).start(any(StartParams.class));
+        verify(delegate, times(1)).start(eq(params2));
         component.stop(mActivity);
         Assert.assertFalse(component.isStarted());
         verify(delegate, times(1)).stop(any(Context.class));

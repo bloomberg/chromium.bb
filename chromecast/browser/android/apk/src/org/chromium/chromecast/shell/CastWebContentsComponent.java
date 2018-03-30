@@ -252,10 +252,6 @@ public class CastWebContentsComponent {
     }
 
     public void start(StartParams params) {
-        if (mStarted) {
-            if (DEBUG) Log.d(TAG, " Instance (ID:" + mInstanceId + ") already started.");
-            return;
-        }
         if (DEBUG) {
             Log.d(TAG,
                     "Starting WebContents with delegate: " + mDelegate.getClass().getSimpleName()
