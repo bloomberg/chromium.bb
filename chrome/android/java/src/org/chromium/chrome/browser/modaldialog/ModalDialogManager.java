@@ -206,8 +206,8 @@ public class ModalDialogManager {
      * @param dialog The dialog to be cancelled.
      */
     public void cancelDialog(ModalDialogView dialog) {
-        dismissDialog(dialog);
         dialog.getController().onCancel();
+        dismissDialog(dialog);
     }
 
     /**

@@ -303,6 +303,10 @@ class TabAndroid : public CoreTabHelperDelegate,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+  bool AreRendererInputEventsIgnored(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
  private:
   class MediaDownloadInProductHelp;
 

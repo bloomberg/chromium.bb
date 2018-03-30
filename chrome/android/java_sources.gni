@@ -1214,6 +1214,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tab/SadTabView.java",
   "java/src/org/chromium/chrome/browser/tab/SadTabViewFactory.java",
   "java/src/org/chromium/chrome/browser/tab/Tab.java",
+  "java/src/org/chromium/chrome/browser/tab/TabBrowserControlsOffsetHelper.java",
   "java/src/org/chromium/chrome/browser/tab/TabContextMenuItemDelegate.java",
   "java/src/org/chromium/chrome/browser/tab/TabContextMenuPopulator.java",
   "java/src/org/chromium/chrome/browser/tab/TabDelegateFactory.java",

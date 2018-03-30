@@ -544,6 +544,9 @@ public class ChromeFullscreenManager
 
     private boolean shouldShowAndroidControls() {
         if (mBrowserControlsAndroidViewHidden) return false;
+        if (getTab() != null && getTab().getControlsOffsetHelper().isControlsOffsetOverridden()) {
+            return true;
+        }
 
         boolean showControls = !drawControlsAsTexture();
         ContentViewCore contentViewCore = getActiveContentViewCore();

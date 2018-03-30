@@ -242,6 +242,9 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         // Don't eat the event if we don't have a handler.
         if (mSwipeHandler == null) return false;
 
+        // Don't react on touch events if the toolbar container is not fully visible.
+        if (!isFullyVisible()) return true;
+
         // If we have ACTION_DOWN in this context, that means either no child consumed the event or
         // this class is the top UI at the event position. Then, we don't need to feed the event to
         // mGestureDetector here because the event is already once fed in onInterceptTouchEvent().
@@ -256,6 +259,7 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
+        if (!isFullyVisible()) return true;
         if (mSwipeHandler == null || isOnTabStrip(event)) return false;
 
         return mSwipeRecognizer.onTouchEvent(event);
@@ -263,6 +267,13 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     private boolean isOnTabStrip(MotionEvent e) {
         return e.getY() <= mTabStripHeight;
+    }
+
+    /**
+     * @return Whether or not the control container is fully visible on screen.
+     */
+    private boolean isFullyVisible() {
+        return Float.compare(0f, getTranslationY()) == 0;
     }
 
     private class SwipeRecognizerImpl extends SwipeRecognizer {
