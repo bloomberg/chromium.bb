@@ -3,18 +3,33 @@
 // found in the LICENSE file.
 
 #include "content/renderer/media/audio_decoder.h"
+
+#include "base/command_line.h"
+#include "base/logging.h"
+#include "content/public/test/blink_test_environment.h"
 #include "media/base/media.h"
 #include "third_party/WebKit/public/platform/WebAudioBus.h"
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // This is needed to suppress noisy log messages from ffmpeg.
-  media::InitializeMediaLibrary();
+struct Environment {
+  Environment() {
+    base::CommandLine::Init(0, nullptr);
+    content::SetUpBlinkTestEnvironment();
 
-  if (size > 8 * 1024) {
-    // Larger inputs are likely to trigger timeouts and OOMswhich would not be
-    // considered as valid bugs.
-    return 0;
+    // Suppress WARNING messages from the debug build.
+    logging::SetMinLogLevel(logging::LOG_FATAL);
+
+    // This is needed to suppress noisy log messages from ffmpeg.
+    media::InitializeMediaLibrary();
   }
+};
+
+Environment* env = new Environment();
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Larger inputs are likely to trigger timeouts and OOMs which would not be
+  // considered as valid bugs.
+  if (size > 8 * 1024)
+    return 0;
 
   blink::WebAudioBus web_audio_bus;
   bool success = content::DecodeAudioFileData(
