@@ -418,6 +418,7 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
     return;
   }
   webvr_frame_processing_ = true;
+  OnNewWebVRFrame();
 
   webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
       base::TimeTicks::Now();
@@ -569,7 +570,6 @@ void VrShellGl::OnWebVRFrameAvailable() {
   TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
   pending_frames_.pop();
 
-  OnNewWebVRFrame();
   DrawFrame(frame_index, base::TimeTicks::Now());
 }
 
@@ -1348,12 +1348,17 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
       base::TimeTicks now = base::TimeTicks::Now();
       webvr_render_time_.AddSample(now - js_submit_time);
     }
-  }
 
-  webvr_frame_processing_ = false;
-  // If we have a waiting submit that arrived while processing this one, handle
-  // it now.
-  WebVrTryDeferredSubmit();
+    // Only mark processing as complete if this was a WebVR frame.
+    // We shouldn't be getting UI frames while ShouldDrawWebVr() is true,
+    // but the logic is a bit complicated.
+    if (frame_index >= 0) {
+      webvr_frame_processing_ = false;
+      // If we have a waiting submit that arrived while processing this one,
+      // handle it now.
+      WebVrTryDeferredSubmit();
+    }
+  }
 
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
@@ -1422,8 +1427,13 @@ void VrShellGl::SetWebVrMode(bool enabled) {
   if (cardboard_)
     browser_->ToggleCardboardGamepad(enabled);
 
-  if (!web_vr_mode_)
+  if (!web_vr_mode_) {
     ClosePresentationBindings();
+    // Ensure that re-entering VR later gets a fresh start by clearing out the
+    // current session's animating and processing frame state.
+    webvr_deferred_mojo_submit_.Reset();
+    webvr_frame_processing_ = false;
+  }
 }
 
 void VrShellGl::ContentBoundsChanged(int width, int height) {
