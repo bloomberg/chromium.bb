@@ -26,12 +26,7 @@ class ASH_EXPORT ScreenCaptureTrayItem : public ScreenTrayItem,
  private:
   // Overridden from SystemTrayItem.
   views::View* CreateDefaultView(LoginStatus status) override;
-
-  // Overridden from ScreenTrayItem.
-  void CreateOrUpdateNotification() override;
-  std::string GetNotificationId() override;
   void RecordStoppedFromDefaultViewMetric() override;
-  void RecordStoppedFromNotificationViewMetric() override;
 
   // Overridden from ScreenCaptureObserver.
   void OnScreenCaptureStart(

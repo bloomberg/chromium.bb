@@ -24,19 +24,12 @@ class ASH_EXPORT ScreenShareTrayItem : public ScreenTrayItem,
  private:
   // Overridden from SystemTrayItem.
   views::View* CreateDefaultView(LoginStatus status) override;
-
-  // Overridden from ScreenTrayItem.
-  void CreateOrUpdateNotification() override;
-  std::string GetNotificationId() override;
   void RecordStoppedFromDefaultViewMetric() override;
-  void RecordStoppedFromNotificationViewMetric() override;
 
   // Overridden from ScreenShareObserver.
   void OnScreenShareStart(const base::Closure& stop_callback,
                           const base::string16& helper_name) override;
   void OnScreenShareStop() override;
-
-  base::string16 helper_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenShareTrayItem);
 };

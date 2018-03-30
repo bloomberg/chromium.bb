@@ -10,7 +10,6 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
-#include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -67,22 +66,6 @@ class ScreenStatusView : public views::View, public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(ScreenStatusView);
 };
 
-class ScreenNotificationDelegate : public message_center::NotificationDelegate {
- public:
-  explicit ScreenNotificationDelegate(ScreenTrayItem* screen_tray);
-
-  // message_center::NotificationDelegate overrides:
-  void ButtonClick(int button_index) override;
-
- protected:
-  ~ScreenNotificationDelegate() override;
-
- private:
-  ScreenTrayItem* screen_tray_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenNotificationDelegate);
-};
-
 }  // namespace tray
 
 // The base tray item for screen capture and screen sharing. The
@@ -101,23 +84,15 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   }
 
   bool is_started() const { return is_started_; }
-  void set_is_started(bool is_started) { is_started_ = is_started; }
+
+  void SetIsStarted(bool is_started);
 
   void Update();
-  void Start(const base::Closure& stop_callback);
+  void Start(base::OnceClosure stop_callback);
   void Stop();
-
-  // Creates or updates the notification for the tray item.
-  virtual void CreateOrUpdateNotification() = 0;
-
-  // Returns the id of the notification for the tray item.
-  virtual std::string GetNotificationId() = 0;
 
   // Called after Stop() is invoked from the default view.
   virtual void RecordStoppedFromDefaultViewMetric() = 0;
-
-  // Called after Stop() is invoked from the notification view.
-  virtual void RecordStoppedFromNotificationViewMetric() = 0;
 
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(LoginStatus status) override;
@@ -126,10 +101,10 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   void OnDefaultViewDestroyed() override;
 
  private:
+  base::OnceClosure stop_callback_;
   tray::ScreenTrayView* tray_view_;
   tray::ScreenStatusView* default_view_;
   bool is_started_;
-  base::Closure stop_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenTrayItem);
 };
