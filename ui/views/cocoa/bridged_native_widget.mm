@@ -126,8 +126,7 @@ using NSViewComparatorValue = id;
 using NSViewComparatorValue = __kindof NSView*;
 #endif
 
-const CGFloat kMavericksMenuOpacity = 251.0 / 255.0;
-const CGFloat kYosemiteMenuOpacity = 177.0 / 255.0;
+const CGFloat kYosemiteMenuOpacity = 245.0 / 255.0;
 const int kYosemiteMenuBlur = 80;
 
 // Margin at edge and corners of the window that trigger resizing. These match
@@ -1459,17 +1458,13 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   if (widget_type_ == Widget::InitParams::TYPE_MENU) {
     // Giving the canvas opacity messes up subpixel font rendering, so use a
     // solid background, but make the CALayer transparent.
-    if (base::mac::IsAtLeastOS10_10()) {
-      [background_layer setOpacity:kYosemiteMenuOpacity];
-      CGSSetWindowBackgroundBlurRadius(
-          _CGSDefaultConnection(), [window_ windowNumber], kYosemiteMenuBlur);
-      // The blur effect does not occur with a fully transparent (or fully
-      // layer-backed) window. Setting a window background will use square
-      // corners, so ask the contentView to draw one instead.
-      [bridged_view_ setDrawMenuBackgroundForBlur:YES];
-    } else {
-      [background_layer setOpacity:kMavericksMenuOpacity];
-    }
+    [background_layer setOpacity:kYosemiteMenuOpacity];
+    CGSSetWindowBackgroundBlurRadius(_CGSDefaultConnection(),
+                                     [window_ windowNumber], kYosemiteMenuBlur);
+    // The blur effect does not occur with a fully transparent (or fully
+    // layer-backed) window. Setting a window background will use square
+    // corners, so ask the contentView to draw one instead.
+    [bridged_view_ setDrawMenuBackgroundForBlur:YES];
   }
 
   // Set the layer first to create a layer-hosting view (not layer-backed).
