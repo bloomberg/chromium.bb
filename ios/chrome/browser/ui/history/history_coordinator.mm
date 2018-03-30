@@ -5,8 +5,8 @@
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/history/history_table_container_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
-#import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 #import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -17,7 +17,7 @@
 @interface HistoryCoordinator ()
 // ViewController being managed by this Coordinator.
 @property(nonatomic, strong)
-    TableContainerViewController* historyContainerViewController;
+    HistoryTableContainerViewController* historyContainerViewController;
 @end
 
 @implementation HistoryCoordinator
@@ -33,8 +33,9 @@
   historyTableViewController.loader = self.loader;
 
   // Initialize and configure HistoryContainerViewController.
-  self.historyContainerViewController = [[TableContainerViewController alloc]
-      initWithTable:historyTableViewController];
+  self.historyContainerViewController =
+      [[HistoryTableContainerViewController alloc]
+          initWithTable:historyTableViewController];
   self.historyContainerViewController.title =
       l10n_util::GetNSString(IDS_HISTORY_TITLE);
   // TODO(crbug.com/805192): Move this configuration code to
