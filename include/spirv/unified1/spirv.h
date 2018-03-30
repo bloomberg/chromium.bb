@@ -576,6 +576,9 @@ typedef enum SpvGroupOperation_ {
     SpvGroupOperationInclusiveScan = 1,
     SpvGroupOperationExclusiveScan = 2,
     SpvGroupOperationClusteredReduce = 3,
+    SpvGroupOperationPartitionedReduceNV = 6,
+    SpvGroupOperationPartitionedInclusiveScanNV = 7,
+    SpvGroupOperationPartitionedExclusiveScanNV = 8,
     SpvGroupOperationMax = 0x7fffffff,
 } SpvGroupOperation;
 
@@ -692,6 +695,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityShaderStereoViewNV = 5259,
     SpvCapabilityPerViewAttributesNV = 5260,
     SpvCapabilityFragmentFullyCoveredEXT = 5265,
+    SpvCapabilityGroupNonUniformPartitionedNV = 5297,
     SpvCapabilitySubgroupShuffleINTEL = 5568,
     SpvCapabilitySubgroupBufferBlockIOINTEL = 5569,
     SpvCapabilitySubgroupImageBlockIOINTEL = 5570,
@@ -1055,6 +1059,7 @@ typedef enum SpvOp_ {
     SpvOpGroupSMaxNonUniformAMD = 5007,
     SpvOpFragmentMaskFetchAMD = 5011,
     SpvOpFragmentFetchAMD = 5012,
+    SpvOpGroupNonUniformPartitionNV = 5296,
     SpvOpSubgroupShuffleINTEL = 5571,
     SpvOpSubgroupShuffleDownINTEL = 5572,
     SpvOpSubgroupShuffleUpINTEL = 5573,

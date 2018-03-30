@@ -537,6 +537,9 @@ spv = {
         InclusiveScan = 1,
         ExclusiveScan = 2,
         ClusteredReduce = 3,
+        PartitionedReduceNV = 6,
+        PartitionedInclusiveScanNV = 7,
+        PartitionedExclusiveScanNV = 8,
     },
 
     KernelEnqueueFlags = {
@@ -650,6 +653,7 @@ spv = {
         ShaderStereoViewNV = 5259,
         PerViewAttributesNV = 5260,
         FragmentFullyCoveredEXT = 5265,
+        GroupNonUniformPartitionedNV = 5297,
         SubgroupShuffleINTEL = 5568,
         SubgroupBufferBlockIOINTEL = 5569,
         SubgroupImageBlockIOINTEL = 5570,
@@ -1012,6 +1016,7 @@ spv = {
         OpGroupSMaxNonUniformAMD = 5007,
         OpFragmentMaskFetchAMD = 5011,
         OpFragmentFetchAMD = 5012,
+        OpGroupNonUniformPartitionNV = 5296,
         OpSubgroupShuffleINTEL = 5571,
         OpSubgroupShuffleDownINTEL = 5572,
         OpSubgroupShuffleUpINTEL = 5573,
