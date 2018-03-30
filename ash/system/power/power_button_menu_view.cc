@@ -32,6 +32,8 @@ constexpr int kMenuViewRoundRectRadiusDp = 16;
 
 using PowerButtonPosition = PowerButtonController::PowerButtonPosition;
 
+constexpr base::TimeDelta PowerButtonMenuView::kMenuAnimationDuration;
+
 PowerButtonMenuView::PowerButtonMenuView(
     PowerButtonPosition power_button_position)
     : power_button_position_(power_button_position) {
@@ -55,8 +57,7 @@ void PowerButtonMenuView::ScheduleShowHideAnimation(bool show) {
   animation.AddObserver(this);
   animation.SetTweenType(show ? gfx::Tween::EASE_IN
                               : gfx::Tween::FAST_OUT_LINEAR_IN);
-  animation.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationTimeoutMs));
+  animation.SetTransitionDuration(kMenuAnimationDuration);
 
   layer()->SetOpacity(show ? 1.0f : 0.f);
 
