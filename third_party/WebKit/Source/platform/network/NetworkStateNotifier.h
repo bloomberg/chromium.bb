@@ -39,6 +39,7 @@
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebConnectionType.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 
@@ -237,6 +238,19 @@ class PLATFORM_EXPORT NetworkStateNotifier {
       NetworkStateObserver*,
       scoped_refptr<base::SingleThreadTaskRunner>);
 
+  // Returns the String equivalent for a given WebEffectiveCOnnectionType.
+  static String EffectiveConnectionTypeToString(WebEffectiveConnectionType);
+
+  // Returns |rtt| after adding host-specific random noise, and rounding it as
+  // per the NetInfo spec to improve privacy.
+  unsigned long RoundRtt(const String& host,
+                         const Optional<TimeDelta>& rtt) const;
+
+  // Returns |downlink_mbps| after adding host-specific random noise, and
+  // rounding it as per the NetInfo spec and to improve privacy.
+  double RoundMbps(const String& host,
+                   const Optional<double>& downlink_mbps) const;
+
   // Returns the randomization salt (weak and insecure) that should be used when
   // adding noise to the network quality metrics. This is known only to the
   // device, and is generated only once. This makes it possible to add the same
@@ -298,6 +312,11 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   void CollectZeroedObservers(ObserverListMap&,
                               ObserverList*,
                               scoped_refptr<base::SingleThreadTaskRunner>);
+
+  // A random number by which the RTT and downlink estimates are multiplied
+  // with. The returned random multiplier is a function of the hostname.
+  // Adding this noise reduces the chances of cross-origin fingerprinting.
+  double GetRandomMultiplier(const String& host) const;
 
   mutable Mutex mutex_;
   NetworkState state_;
