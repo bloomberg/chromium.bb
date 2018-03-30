@@ -64,7 +64,8 @@ void DisplayPowerServiceProvider::SetDisplayPower(
     DisplayPowerState state = static_cast<DisplayPowerState>(int_state);
     delegate_->SetDisplayPower(state, callback);
   } else {
-    LOG(ERROR) << "Unable to parse " << kSetDisplayPower << " request";
+    LOG(ERROR) << "Unable to parse " << kDisplayServiceSetPowerMethod
+               << " request";
     callback.Run(false);
   }
 }
@@ -77,7 +78,7 @@ void DisplayPowerServiceProvider::SetDisplaySoftwareDimming(
   if (reader.PopBool(&dimmed)) {
     delegate_->SetDimming(dimmed);
   } else {
-    LOG(ERROR) << "Unable to parse " << kSetDisplaySoftwareDimming
+    LOG(ERROR) << "Unable to parse " << kDisplayServiceSetSoftwareDimmingMethod
                << " request";
   }
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
