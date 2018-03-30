@@ -227,6 +227,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
                                    "MAP *.test 127.0.0.1");
 
     command_line.AppendSwitch(switches::kEnablePartialRaster);
+    command_line.AppendSwitch(switches::kEnableWebAuthTestingAPI);
 
     if (!command_line.HasSwitch(switches::kForceGpuRasterization) &&
         !command_line.HasSwitch(switches::kEnableGpuRasterization)) {
