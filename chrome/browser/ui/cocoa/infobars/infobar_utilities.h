@@ -15,9 +15,6 @@ namespace InfoBarUtilities {
 // |after| signifies the side of |anchor| on which to place |toMove|.
 void MoveControl(NSView* anchor, NSView* toMove, int spacing, bool after);
 
-// Vertically center |toMove| in its container.
-void VerticallyCenterView(NSView *toMove);
-
 // Creates a label control in the style we need for the infobar's labels
 // within |bounds|.
 NSTextField* CreateLabel(NSRect bounds);

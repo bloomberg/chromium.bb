@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 #include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
@@ -29,11 +28,19 @@
 #include "ui/base/ui_features.h"
 
 using InfoBarUtilities::MoveControl;
-using InfoBarUtilities::VerticallyCenterView;
 using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
 namespace {
+
+// Vertically center |toMove| in its container.
+void VerticallyCenterView(NSView* toMove) {
+  NSRect superViewFrame = [[toMove superview] frame];
+  NSRect viewFrame = [toMove frame];
+  viewFrame.origin.y =
+      floor((NSHeight(superViewFrame) - NSHeight(viewFrame)) / 2.0);
+  [toMove setFrame:viewFrame];
+}
 
 // Check that the control |before| is ordered visually before the |after|
 // control. Also, check that there is space between them. Is RTL-aware.
