@@ -3241,6 +3241,9 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
   if (target_state == DocumentLifecycle::kPaintClean) {
     ForAllNonThrottledLocalFrameViews(
         [](LocalFrameView& frame_view) { frame_view.NotifyResizeObservers(); });
+
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+      NotifyFrameRectsChangedIfNeededRecursive();
   }
 
   if (auto* layout_view = GetLayoutView()) {
@@ -3268,11 +3271,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       }
 
       if (target_state >= DocumentLifecycle::kCompositingClean) {
-        if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-          NotifyFrameRectsChangedIfNeededRecursive();
-        } else {
+        if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
           ScrollContentsIfNeededRecursive();
-        }
 
         frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing(
             *this);
