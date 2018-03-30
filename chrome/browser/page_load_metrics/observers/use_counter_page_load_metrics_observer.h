@@ -43,9 +43,9 @@ class UseCounterPageLoadMetricsObserver
   // To keep tracks of which features have been measured.
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       features_recorded_;
-  std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId)>
+  std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId + 1)>
       css_properties_recorded_;
-  std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId)>
+  std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId + 1)>
       animated_css_properties_recorded_;
   DISALLOW_COPY_AND_ASSIGN(UseCounterPageLoadMetricsObserver);
 };
