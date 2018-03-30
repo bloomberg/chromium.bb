@@ -61,8 +61,8 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
     return;
   }
 
-  const base::Version current_version(version_info::GetVersionNumber());
-  requirements_met_ = current_version.CompareTo(required_version) >= 0;
+  requirements_met_ =
+      version_info::GetVersion().CompareTo(required_version) >= 0;
   NotifyMinimumVersionStateChanged();
 }
 

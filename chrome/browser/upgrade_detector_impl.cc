@@ -279,7 +279,7 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
       GetCurrentlyInstalledVersionImpl(&critical_update);
 
   // Get the version of the currently *running* instance of Chrome.
-  base::Version running_version(version_info::GetVersionNumber());
+  const base::Version& running_version = version_info::GetVersion();
   if (!running_version.IsValid()) {
     NOTREACHED();
     return;

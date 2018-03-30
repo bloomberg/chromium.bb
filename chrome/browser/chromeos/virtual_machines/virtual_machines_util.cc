@@ -24,7 +24,7 @@ bool AreVirtualMachinesAllowedByPolicy() {
 
 // Disabled for beta/stable channel for M67 and all versions older than M67.
 bool AreVirtualMachinesAllowedByVersionAndChannel() {
-  base::Version current_version(version_info::GetVersionNumber());
+  const base::Version& current_version = version_info::GetVersion();
   if (!current_version.IsValid())
     return false;
   if (current_version.CompareToWildcardString("67.*") < 0)

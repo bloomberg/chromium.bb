@@ -197,16 +197,14 @@ bool CheckServiceProcessReady() {
   if (!service_version.IsValid()) {
     ready = false;
   } else {
-    base::Version running_version(version_info::GetVersionNumber());
+    const base::Version& running_version = version_info::GetVersion();
     if (!running_version.IsValid()) {
       // Our own version is invalid. This is an error case. Pretend that we
       // are out of date.
       NOTREACHED();
       ready = true;
-    } else if (running_version.CompareTo(service_version) > 0) {
-      ready = false;
     } else {
-      ready = true;
+      ready = running_version.CompareTo(service_version) <= 0;
     }
   }
   if (!ready) {
