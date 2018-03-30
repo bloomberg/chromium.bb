@@ -60,8 +60,7 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
   // TODO(layoutng) Replace this with DCHECK(exclusion_space_) when
   // callers guarantee exclusion_space_ != null.
   if (exclusion_space_) {
-    std::unique_ptr<const NGExclusionSpace> exclusion_space(
-        std::make_unique<NGExclusionSpace>(*exclusion_space_));
+    exclusion_space = std::make_unique<NGExclusionSpace>(*exclusion_space_);
   }
   return base::AdoptRef(new NGLayoutResult(
       physical_fragment_->CloneWithoutOffset(), oof_positioned_descendants,
