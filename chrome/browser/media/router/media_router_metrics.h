@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
-#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "media/base/container_names.h"
 
 class GURL;

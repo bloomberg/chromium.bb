@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_SINK_WITH_CAST_MODES_H_
-#define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_SINK_WITH_CAST_MODES_H_
+#ifndef CHROME_BROWSER_UI_MEDIA_ROUTER_MEDIA_SINK_WITH_CAST_MODES_H_
+#define CHROME_BROWSER_UI_MEDIA_ROUTER_MEDIA_SINK_WITH_CAST_MODES_H_
 
 #include <set>
 
-#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/common/media_router/media_sink.h"
 
 namespace media_router {
@@ -29,4 +29,4 @@ struct MediaSinkWithCastModes {
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_SINK_WITH_CAST_MODES_H_
+#endif  // CHROME_BROWSER_UI_MEDIA_ROUTER_MEDIA_SINK_WITH_CAST_MODES_H_

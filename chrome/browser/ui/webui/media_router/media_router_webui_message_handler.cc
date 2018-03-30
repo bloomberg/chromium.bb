@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
