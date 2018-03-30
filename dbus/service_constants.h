@@ -97,29 +97,9 @@ const char kTTSReadySignal[] = "TTSReady";
 const char kTTSFailedSignal[] = "TTSFailed";
 }  // namespace chromium
 
+// Services in the chromeos namespace are owned by Chrome. Different services
+// may be instantiated in different Chrome processes.
 namespace chromeos {
-const char kLibCrosServiceName[] = "org.chromium.LibCrosService";
-const char kLibCrosServicePath[] = "/org/chromium/LibCrosService";
-const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
-// Methods
-// TODO(teravest): Remove this once CheckLiveness is removed from
-// LibCrosService.
-const char kCheckLiveness[] = "CheckLiveness";
-const char kGetKioskAppRequiredPlatforVersion[] =
-    "GetKioskAppRequiredPlatformVersion";
-const char kLockScreen[] = "LockScreen";
-// TODO(lannm): Remove Display methods once removed from LibCrosService.
-const char kSetDisplayPower[] = "SetDisplayPower";
-const char kSetDisplaySoftwareDimming[] = "SetDisplaySoftwareDimming";
-const char kTakeDisplayOwnership[] = "TakeDisplayOwnership";
-const char kReleaseDisplayOwnership[] = "ReleaseDisplayOwnership";
-// Values
-enum DisplayPowerState {
-  DISPLAY_POWER_ALL_ON = 0,
-  DISPLAY_POWER_ALL_OFF = 1,
-  DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON = 2,
-  DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF = 3,
-};
 
 const char kNetworkProxyServiceName[] = "org.chromium.NetworkProxyService";
 const char kNetworkProxyServicePath[] = "/org/chromium/NetworkProxyService";
@@ -148,18 +128,22 @@ const char kKioskAppServiceName[] = "org.chromium.KioskAppService";
 const char kKioskAppServicePath[] = "/org/chromium/KioskAppService";
 const char kKioskAppServiceInterface[] =
     "org.chromium.KioskAppServiceInterface";
-// Methods
 const char kKioskAppServiceGetRequiredPlatformVersionMethod[] =
     "GetRequiredPlatformVersion";
 
 const char kDisplayServiceName[] = "org.chromium.DisplayService";
 const char kDisplayServicePath[] = "/org/chromium/DisplayService";
 const char kDisplayServiceInterface[] = "org.chromium.DisplayServiceInterface";
-// Methods
 const char kDisplayServiceSetPowerMethod[] = "SetPower";
 const char kDisplayServiceSetSoftwareDimmingMethod[] = "SetSoftwareDimming";
 const char kDisplayServiceTakeOwnershipMethod[] = "TakeOwnership";
 const char kDisplayServiceReleaseOwnershipMethod[] = "ReleaseOwnership";
+enum DisplayPowerState {
+  DISPLAY_POWER_ALL_ON = 0,
+  DISPLAY_POWER_ALL_OFF = 1,
+  DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON = 2,
+  DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF = 3,
+};
 
 const char kScreenLockServiceName[] = "org.chromium.ScreenLockService";
 const char kScreenLockServicePath[] = "/org/chromium/ScreenLockService";
@@ -173,7 +157,6 @@ constexpr char kVirtualFileRequestServicePath[] =
     "/org/chromium/VirtualFileRequestService";
 constexpr char kVirtualFileRequestServiceInterface[] =
     "org.chromium.VirtualFileRequestService";
-// Methods
 constexpr char kVirtualFileRequestServiceHandleReadRequestMethod[] =
     "HandleReadRequest";
 constexpr char kVirtualFileRequestServiceHandleIdReleasedMethod[] =
@@ -183,7 +166,6 @@ const char kChromeFeaturesServiceName[] = "org.chromium.ChromeFeaturesService";
 const char kChromeFeaturesServicePath[] = "/org/chromium/ChromeFeaturesService";
 const char kChromeFeaturesServiceInterface[] =
     "org.chromium.ChromeFeaturesServiceInterface";
-// Methods
 const char kChromeFeaturesServiceIsCrostiniEnabledMethod[] =
     "IsCrostiniEnabled";
 
@@ -191,7 +173,6 @@ const char kUrlHandlerServiceName[] = "org.chromium.UrlHandlerService";
 const char kUrlHandlerServicePath[] = "/org/chromium/UrlHandlerService";
 const char kUrlHandlerServiceInterface[] =
     "org.chromium.UrlHandlerServiceInterface";
-// Methods
 const char kUrlHandlerServiceOpenUrlMethod[] = "OpenUrl";
 
 }  // namespace chromeos
