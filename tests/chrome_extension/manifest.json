@@ -1,8 +1,11 @@
 {
   "name": "Hello",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Hello, world!",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": [
     "tabs",
     "http://*/*",
