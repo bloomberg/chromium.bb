@@ -89,6 +89,22 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
             return this;
         }
 
+        /**
+         * Sets a listener that gets invoked after {@link Callback#onCanceled onCanceled()},
+         * {@link Callback#onFailed onFailed()} or {@link Callback#onSucceeded onSucceeded()}
+         * return.
+         *
+         * <p>The listener is invoked  with the request finished info on an
+         * {@link java.util.concurrent.Executor} provided by
+         * {@link RequestFinishedInfo.Listener#getExecutor getExecutor()}.
+         *
+         * @param listener the listener for finished requests.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setRequestFinishedListener(RequestFinishedInfo.Listener listener) {
+            return this;
+        }
+
         // To support method chaining, override superclass methods to return an
         // instance of this class instead of the parent.
 

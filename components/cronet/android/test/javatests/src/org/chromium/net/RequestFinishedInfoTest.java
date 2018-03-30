@@ -26,6 +26,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
+import org.chromium.net.CronetTestRule.RequiresMinApi;
 import org.chromium.net.MetricsTestUtil.TestExecutor;
 import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 import org.chromium.net.impl.CronetMetrics;
@@ -37,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Test RequestFinishedInfo.Listener and the metrics information it provides.
@@ -57,6 +59,8 @@ public class RequestFinishedInfoTest {
             extends TestRequestFinishedListener {
         private final TestUrlRequestCallback mCallback;
         public AssertCallbackDoneRequestFinishedListener(TestUrlRequestCallback callback) {
+            // Use same executor as request callback to verify stable call order.
+            super(callback.getExecutor());
             mCallback = callback;
         }
 
@@ -71,10 +75,12 @@ public class RequestFinishedInfoTest {
     public void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartServer(getContext());
         mUrl = mTestServer.getURL("/echo?status=200");
+        mTestFramework = mTestRule.startCronetTestFramework();
     }
 
     @After
     public void tearDown() throws Exception {
+        mTestFramework.mCronetEngine.shutdown();
         mTestServer.stopAndDestroyServer();
     }
 
@@ -115,7 +121,6 @@ public class RequestFinishedInfoTest {
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
     public void testRequestFinishedListener() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -137,7 +142,6 @@ public class RequestFinishedInfoTest {
         MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, false);
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -146,7 +150,6 @@ public class RequestFinishedInfoTest {
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
     public void testRequestFinishedListenerDirectExecutor() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         DirectExecutor testExecutor = new DirectExecutor();
         TestRequestFinishedListener requestFinishedListener =
                 new TestRequestFinishedListener(testExecutor);
@@ -172,7 +175,6 @@ public class RequestFinishedInfoTest {
         MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, false);
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -181,7 +183,6 @@ public class RequestFinishedInfoTest {
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
     public void testRequestFinishedListenerDifferentThreads() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         TestRequestFinishedListener firstListener = new TestRequestFinishedListener();
         TestRequestFinishedListener secondListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(firstListener);
@@ -217,7 +218,6 @@ public class RequestFinishedInfoTest {
                 new HashSet<Object>(firstRequestInfo.getAnnotations()));
         assertEquals(newHashSet("request annotation", this),
                 new HashSet<Object>(secondRequestInfo.getAnnotations()));
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -227,7 +227,6 @@ public class RequestFinishedInfoTest {
     @SuppressWarnings("deprecation")
     public void testRequestFinishedListenerFailedRequest() throws Exception {
         String connectionRefusedUrl = "http://127.0.0.1:3";
-        mTestFramework = mTestRule.startCronetTestFramework();
         TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -266,7 +265,6 @@ public class RequestFinishedInfoTest {
         MetricsTestUtil.assertAfter(metrics.getRequestEnd(), metrics.getRequestStart());
         assertTrue(metrics.getSentByteCount() == 0);
         assertTrue(metrics.getReceivedByteCount() == 0);
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -275,7 +273,6 @@ public class RequestFinishedInfoTest {
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
     public void testRequestFinishedListenerRemoved() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         TestExecutor testExecutor = new TestExecutor();
         TestRequestFinishedListener requestFinishedListener =
                 new TestRequestFinishedListener(testExecutor);
@@ -291,7 +288,6 @@ public class RequestFinishedInfoTest {
 
         assertNull("RequestFinishedInfo.Listener must not be called",
                 requestFinishedListener.getRequestInfo());
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -299,7 +295,6 @@ public class RequestFinishedInfoTest {
     @OnlyRunNativeCronet
     @Feature({"Cronet"})
     public void testRequestFinishedListenerCanceledRequest() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback() {
@@ -328,7 +323,6 @@ public class RequestFinishedInfoTest {
 
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     private static class RejectAllTasksExecutor implements Executor {
@@ -345,7 +339,6 @@ public class RequestFinishedInfoTest {
     @OnlyRunNativeCronet
     @Feature({"Cronet"})
     public void testExceptionInRequestStart() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         // The listener in this test shouldn't get any tasks.
         Executor executor = new RejectAllTasksExecutor();
         TestRequestFinishedListener requestFinishedListener =
@@ -363,8 +356,6 @@ public class RequestFinishedInfoTest {
         } catch (IllegalArgumentException e) {
             assertEquals("Invalid header =", e.getMessage());
         }
-
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -414,7 +405,6 @@ public class RequestFinishedInfoTest {
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
     public void testOrderSuccessfulRequest() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         final TestUrlRequestCallback callback = new TestUrlRequestCallback();
         TestRequestFinishedListener requestFinishedListener =
                 new AssertCallbackDoneRequestFinishedListener(callback);
@@ -437,7 +427,44 @@ public class RequestFinishedInfoTest {
         MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, false);
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        mTestFramework.mCronetEngine.shutdown();
+    }
+
+    @Test
+    @SmallTest
+    @OnlyRunNativeCronet
+    @Feature({"Cronet"})
+    @RequiresMinApi(11)
+    public void testUpdateAnnotationOnSucceeded() throws Exception {
+        // The annotation that is updated in onSucceeded() callback.
+        AtomicBoolean requestAnnotation = new AtomicBoolean(false);
+        final TestUrlRequestCallback callback = new TestUrlRequestCallback() {
+            @Override
+            public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+                // Add processing information to request annotation.
+                requestAnnotation.set(true);
+                super.onSucceeded(request, info);
+            }
+        };
+        TestRequestFinishedListener requestFinishedListener =
+                new AssertCallbackDoneRequestFinishedListener(callback);
+        ExperimentalUrlRequest.Builder urlRequestBuilder =
+                (ExperimentalUrlRequest.Builder) mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                        mUrl, callback, callback.getExecutor());
+        Date startTime = new Date();
+        urlRequestBuilder.addRequestAnnotation(requestAnnotation)
+                .setRequestFinishedListener(requestFinishedListener)
+                .build()
+                .start();
+        callback.blockForDone();
+        requestFinishedListener.blockUntilDone();
+        Date endTime = new Date();
+        RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
+        MetricsTestUtil.checkRequestFinishedInfo(requestInfo, mUrl, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, false);
+        // Check that annotation got updated in onSucceeded() callback.
+        assertEquals(requestAnnotation, requestInfo.getAnnotations().iterator().next());
+        assertTrue(requestAnnotation.get());
     }
 
     @Test
@@ -446,7 +473,6 @@ public class RequestFinishedInfoTest {
     @Feature({"Cronet"})
     // Tests a failed request where the error originates from Java.
     public void testOrderFailedRequestJava() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         final TestUrlRequestCallback callback = new TestUrlRequestCallback() {
             @Override
             public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
@@ -472,7 +498,6 @@ public class RequestFinishedInfoTest {
                 requestInfo.getException().getMessage());
         RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -482,7 +507,6 @@ public class RequestFinishedInfoTest {
     // Tests a failed request where the error originates from native code.
     public void testOrderFailedRequestNative() throws Exception {
         String connectionRefusedUrl = "http://127.0.0.1:3";
-        mTestFramework = mTestRule.startCronetTestFramework();
         final TestUrlRequestCallback callback = new TestUrlRequestCallback();
         TestRequestFinishedListener requestFinishedListener =
                 new AssertCallbackDoneRequestFinishedListener(callback);
@@ -503,7 +527,6 @@ public class RequestFinishedInfoTest {
                 ((NetworkException) requestInfo.getException()).getErrorCode());
         RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
-        mTestFramework.mCronetEngine.shutdown();
     }
 
     @Test
@@ -511,7 +534,6 @@ public class RequestFinishedInfoTest {
     @OnlyRunNativeCronet
     @Feature({"Cronet"})
     public void testOrderCanceledRequest() throws Exception {
-        mTestFramework = mTestRule.startCronetTestFramework();
         final TestUrlRequestCallback callback = new TestUrlRequestCallback() {
             @Override
             public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
@@ -542,6 +564,5 @@ public class RequestFinishedInfoTest {
 
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        mTestFramework.mCronetEngine.shutdown();
     }
 }

@@ -84,6 +84,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private final int mTrafficStatsTag;
     private final boolean mTrafficStatsUidSet;
     private final int mTrafficStatsUid;
+    private final VersionSafeCallbacks.RequestFinishedInfoListener mRequestFinishedListener;
 
     private CronetUploadDataStream mUploadDataStream;
 
@@ -136,7 +137,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
             UrlRequest.Callback callback, Executor executor, Collection<Object> requestAnnotations,
             boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor,
             boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
-            int trafficStatsUid) {
+            int trafficStatsUid, RequestFinishedInfo.Listener requestFinishedListener) {
         if (url == null) {
             throw new NullPointerException("URL is required");
         }
@@ -161,6 +162,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
         mTrafficStatsTag = trafficStatsTag;
         mTrafficStatsUidSet = trafficStatsUidSet;
         mTrafficStatsUid = trafficStatsUid;
+        mRequestFinishedListener = requestFinishedListener != null
+                ? new VersionSafeCallbacks.RequestFinishedInfoListener(requestFinishedListener)
+                : null;
     }
 
     @Override
@@ -204,8 +208,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
                 mUrlRequestAdapter =
                         nativeCreateRequestAdapter(mRequestContext.getUrlRequestContextAdapter(),
                                 mInitialUrl, mPriority, mDisableCache, mDisableConnectionMigration,
-                                mRequestContext.hasRequestFinishedListener(), mTrafficStatsTagSet,
-                                mTrafficStatsTag, mTrafficStatsUidSet, mTrafficStatsUid);
+                                mRequestContext.hasRequestFinishedListener()
+                                        || mRequestFinishedListener != null,
+                                mTrafficStatsTagSet, mTrafficStatsTag, mTrafficStatsUidSet,
+                                mTrafficStatsUid);
                 mRequestContext.onRequestStarted();
                 if (mInitialMethod != null) {
                     if (!nativeSetHttpMethod(mUrlRequestAdapter, mInitialMethod)) {
@@ -793,8 +799,22 @@ public final class CronetUrlRequest extends UrlRequestBase {
     // after Callback's onSucceeded, onFailed and onCanceled.
     private void maybeReportMetrics() {
         if (mMetrics != null) {
-            mRequestContext.reportFinished(new RequestFinishedInfoImpl(mInitialUrl,
-                    mRequestAnnotations, mMetrics, mFinishedReason, mResponseInfo, mException));
+            final RequestFinishedInfo requestInfo = new RequestFinishedInfoImpl(mInitialUrl,
+                    mRequestAnnotations, mMetrics, mFinishedReason, mResponseInfo, mException);
+            mRequestContext.reportFinished(requestInfo);
+            if (mRequestFinishedListener != null) {
+                try {
+                    mRequestFinishedListener.getExecutor().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mRequestFinishedListener.onRequestFinished(requestInfo);
+                        }
+                    });
+                } catch (RejectedExecutionException failException) {
+                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor",
+                            failException);
+                }
+            }
         }
     }
 
