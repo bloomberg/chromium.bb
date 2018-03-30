@@ -16,6 +16,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/test_helpers.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
 #include "media/gpu/android/fake_codec_allocator.h"
 #include "media/gpu/android/mock_android_video_surface_chooser.h"
@@ -34,7 +35,10 @@ using testing::_;
 namespace media {
 namespace {
 
-void OutputCb(const scoped_refptr<VideoFrame>&) {}
+void OutputCb(scoped_refptr<VideoFrame>* output,
+              const scoped_refptr<VideoFrame>& frame) {
+  *output = frame;
+}
 
 std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
     const base::UnguessableToken&,
@@ -86,6 +90,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
     MockCreateVideoFrame(output_buffer.get(), surface_texture_, timestamp,
                          natural_size, promotion_hint_cb, output_cb);
     last_output_buffer_ = std::move(output_buffer);
+    output_cb.Run(VideoFrame::CreateBlackFrame(gfx::Size(10, 10)));
   }
 
   void RunAfterPendingVideoFrames(base::OnceClosure closure) override {
@@ -169,7 +174,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     bool result = false;
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
     mcvd_->Initialize(config, false, cdm_.get(), base::Bind(init_cb, &result),
-                      base::Bind(&OutputCb),
+                      base::BindRepeating(&OutputCb, &most_recent_frame_),
                       VideoDecoder::WaitingForDecryptionKeyCB());
     base::RunLoop().RunUntilIdle();
 
@@ -245,6 +250,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   ProvideOverlayInfoCB provide_overlay_info_cb_;
   bool restart_for_transitions_;
   gpu::GpuPreferences gpu_preferences_;
+  scoped_refptr<VideoFrame> most_recent_frame_;
 
   // This is not an actual media crypto object.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
@@ -782,6 +788,24 @@ TEST_F(MediaCodecVideoDecoderTest, MissingMediaCryptoFailsInit) {
 TEST_F(MediaCodecVideoDecoderTest, MissingCdmFailsInit) {
   // MCVD should fail init if we don't provide a cdm with an encrypted config.
   ASSERT_FALSE(Initialize(TestVideoConfig::NormalEncrypted(kCodecH264)));
+}
+
+TEST_F(MediaCodecVideoDecoderTest, VideoFramesArePowerEfficient) {
+  // MCVD should mark video frames as POWER_EFFICIENT.
+  auto* codec = InitializeFully_OneDecodePending();
+
+  // Produce one output.
+  codec->AcceptOneInput();
+  codec->ProduceOneOutput();
+  EXPECT_CALL(*video_frame_factory_, MockCreateVideoFrame(_, _, _, _, _, _));
+  PumpCodec();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(!!most_recent_frame_);
+  bool power_efficient = false;
+  EXPECT_TRUE(most_recent_frame_->metadata()->GetBoolean(
+      VideoFrameMetadata::POWER_EFFICIENT, &power_efficient));
+  EXPECT_TRUE(power_efficient);
 }
 
 }  // namespace media

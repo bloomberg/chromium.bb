@@ -342,6 +342,8 @@ void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer) {
   frame->SetReleaseMailboxCB(media::BindToCurrentLoop(base::BindOnce(
       &D3D11VideoDecoderImpl::OnMailboxReleased, weak_factory_.GetWeakPtr(),
       scoped_refptr<D3D11PictureBuffer>(buffer))));
+  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+
   output_cb_.Run(frame);
 }
 

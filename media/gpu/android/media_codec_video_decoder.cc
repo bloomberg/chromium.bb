@@ -20,6 +20,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/avda_codec_allocator.h"
 
@@ -669,8 +670,12 @@ void MediaCodecVideoDecoder::RunEosDecodeCb(int reset_generation) {
 void MediaCodecVideoDecoder::ForwardVideoFrame(
     int reset_generation,
     const scoped_refptr<VideoFrame>& frame) {
-  if (reset_generation == reset_generation_)
+  if (reset_generation == reset_generation_) {
+    // TODO(liberato): We might actually have a SW decoder.  Consider setting
+    // this to false if so, especially for higher bitrates.
+    frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
     output_cb_.Run(frame);
+  }
 }
 
 // Our Reset() provides a slightly stronger guarantee than VideoDecoder does.
