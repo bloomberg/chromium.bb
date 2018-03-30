@@ -37,12 +37,18 @@ extern "C" int WINAPI wWinMain(HINSTANCE /* instance */,
 // MSVC.  __sse2_available determines whether to use SSE2 intructions with
 // std C lib routines, and is set by MSVC's std C lib implementation normally.
 extern "C" {
-#pragma function(memset)
 #ifdef __clang__
 // Marking memset as used is necessary in order to link with LLVM link-time
 // optimization (LTO). It prevents LTO from discarding the memset symbol,
 // allowing for compiler-generated references to memset to be satisfied.
 __attribute__((used))
+#else
+// MSVC only allows declaring an intrinsic function if it's marked
+// as `pragma function` first. `pragma function` also means that calls
+// to memset must not use the intrinsic; we don't care abou this second
+// (and main) meaning of the pragma.
+// clang-cl doesn't implement this pragma at all, so don't use it there.
+#pragma function(memset)
 #endif
 void* memset(void* dest, int c, size_t count) {
   uint8_t* scan = reinterpret_cast<uint8_t*>(dest);
