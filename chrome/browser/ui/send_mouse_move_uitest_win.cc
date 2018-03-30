@@ -56,8 +56,9 @@ IN_PROC_BROWSER_TEST_F(SendMouseMoveUITest, DISABLED_Fullscreen) {
   }
 }
 
+// (crbug.com/827549): Flaky on Win10 bots.
 // Test that the mouse can be positioned at a few locations on the screen.
-IN_PROC_BROWSER_TEST_F(SendMouseMoveUITest, Probe) {
+IN_PROC_BROWSER_TEST_F(SendMouseMoveUITest, DISABLED_Probe) {
   // Make the browser fullscreen so that we can position the mouse anywhere on
   // the display, as ui_controls::SendMouseMoveNotifyWhenDone can only provide
   // notifications when the mouse is moved over a window belonging to the
