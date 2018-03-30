@@ -11,8 +11,8 @@
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/common/data_pipe_drainer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
@@ -54,7 +54,7 @@ struct CreateLoaderParameters {
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation;
 };
 
-class BodyReader : public mojo::common::DataPipeDrainer::Client {
+class BodyReader : public mojo::DataPipeDrainer::Client {
  public:
   explicit BodyReader(base::OnceClosure download_complete_callback)
       : download_complete_callback_(std::move(download_complete_callback)) {}
@@ -98,7 +98,7 @@ class BodyReader : public mojo::common::DataPipeDrainer::Client {
 
   void OnDataComplete() override;
 
-  std::unique_ptr<mojo::common::DataPipeDrainer> body_pipe_drainer_;
+  std::unique_ptr<mojo::DataPipeDrainer> body_pipe_drainer_;
   CallbackVector callbacks_;
   base::OnceClosure download_complete_callback_;
   std::string body_;
@@ -111,8 +111,7 @@ void BodyReader::StartReading(mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(!body_pipe_drainer_);
   DCHECK(!data_complete_);
 
-  body_pipe_drainer_.reset(
-      new mojo::common::DataPipeDrainer(this, std::move(body)));
+  body_pipe_drainer_.reset(new mojo::DataPipeDrainer(this, std::move(body)));
 }
 
 void BodyReader::OnDataComplete() {

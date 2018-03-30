@@ -14,9 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -152,7 +152,7 @@ TEST_F(DataPipeElementReaderTest, InitInterruptsInit) {
 
   // Writes to the first write pipe should either fail, or succeed but be
   // ignored.
-  mojo::common::BlockingCopyFromString("foo", first_write_pipe);
+  mojo::BlockingCopyFromString("foo", first_write_pipe);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(read_callback.have_result());
 }
@@ -218,7 +218,7 @@ TEST_F(DataPipeElementReaderTest, InitInterruptsRead) {
 
   // Writes to the first write pipe should either fail, or succeed but be
   // ignored.
-  mojo::common::BlockingCopyFromString("foo", first_write_pipe);
+  mojo::BlockingCopyFromString("foo", first_write_pipe);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(second_read_callback.have_result());
 }

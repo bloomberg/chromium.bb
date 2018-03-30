@@ -5,7 +5,7 @@
 #include "storage/browser/test/mock_bytes_provider.h"
 
 #include "base/threading/thread_restrictions.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
@@ -35,7 +35,7 @@ void MockBytesProvider::RequestAsStream(
   if (stream_request_count_)
     ++*stream_request_count_;
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
-  mojo::common::BlockingCopyFromString(
+  mojo::BlockingCopyFromString(
       std::string(reinterpret_cast<const char*>(data_.data()), data_.size()),
       pipe);
 }

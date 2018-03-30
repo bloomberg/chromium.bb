@@ -59,7 +59,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
@@ -962,7 +962,7 @@ void CheckSuccessfulRequest(network::TestURLLoaderClient* client,
     ASSERT_TRUE(body.is_valid());
 
     std::string actual;
-    EXPECT_TRUE(mojo::common::BlockingCopyToString(std::move(body), &actual));
+    EXPECT_TRUE(mojo::BlockingCopyToString(std::move(body), &actual));
     EXPECT_EQ(reference_data, actual);
   }
   client->RunUntilComplete();

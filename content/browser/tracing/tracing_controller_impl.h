@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
-#include "mojo/common/data_pipe_drainer.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace base {
@@ -32,7 +32,7 @@ class TracingDelegate;
 class TracingUI;
 
 class TracingControllerImpl : public TracingController,
-                              public mojo::common::DataPipeDrainer::Client {
+                              public mojo::DataPipeDrainer::Client {
  public:
   // Create an endpoint for dumping the trace data to a callback.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
@@ -69,7 +69,7 @@ class TracingControllerImpl : public TracingController,
   void AddAgents();
   std::unique_ptr<base::DictionaryValue> GenerateMetadataDict() const;
 
-  // mojo::Common::DataPipeDrainer::Client
+  // mojo::DataPipeDrainer::Client
   void OnDataAvailable(const void* data, size_t num_bytes) override;
   void OnDataComplete() override;
 
@@ -82,7 +82,7 @@ class TracingControllerImpl : public TracingController,
   std::vector<std::unique_ptr<tracing::mojom::Agent>> agents_;
   std::unique_ptr<TracingDelegate> delegate_;
   std::unique_ptr<base::trace_event::TraceConfig> trace_config_;
-  std::unique_ptr<mojo::common::DataPipeDrainer> drainer_;
+  std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   scoped_refptr<TraceDataEndpoint> trace_data_endpoint_;
   std::unique_ptr<base::DictionaryValue> filtered_metadata_;
   std::set<TracingUI*> tracing_uis_;

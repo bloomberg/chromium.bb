@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/data_pipe_drainer.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace common {
 namespace test {
 
 template <typename Functor>
@@ -61,5 +59,4 @@ TEST_F(DataPipeDrainerTest, TestCompleteIsCalledOnce) {
 }
 
 }  // namespace test
-}  // namespace common
 }  // namespace mojo

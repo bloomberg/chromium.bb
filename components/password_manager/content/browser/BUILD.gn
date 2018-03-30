@@ -27,7 +27,7 @@ static_library("browser") {
     "//components/prefs",
     "//content/public/browser",
     "//content/public/common",
-    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//net",
   ]
 }

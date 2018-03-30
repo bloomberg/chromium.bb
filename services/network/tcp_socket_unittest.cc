@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
@@ -209,8 +209,7 @@ class TestServer {
 
   // Sends data over the most recent connection that is established.
   void SendData(const std::string& msg) {
-    EXPECT_TRUE(
-        mojo::common::BlockingCopyFromString(msg, server_socket_send_handle_));
+    EXPECT_TRUE(mojo::BlockingCopyFromString(msg, server_socket_send_handle_));
   }
 
   // Starts reading. Can be called multiple times. It cancels any previous
@@ -428,8 +427,8 @@ TEST_F(TCPSocketTest, ReadAndWrite) {
     // Test sending data from client to server.
     base::RunLoop read_run_loop;
     server.StartReading(kTestMsg, read_run_loop.QuitClosure());
-    EXPECT_TRUE(mojo::common::BlockingCopyFromString(
-        kTestMsg, client_socket_send_handle));
+    EXPECT_TRUE(
+        mojo::BlockingCopyFromString(kTestMsg, client_socket_send_handle));
     read_run_loop.Run();
   }
 }
@@ -584,8 +583,8 @@ TEST_F(TCPSocketTest, ReadPipeClosed) {
   // Send should proceed as normal.
   base::RunLoop read_run_loop;
   server.StartReading(kTestMsg, read_run_loop.QuitClosure());
-  EXPECT_TRUE(mojo::common::BlockingCopyFromString(kTestMsg,
-                                                   client_socket_send_handle));
+  EXPECT_TRUE(
+      mojo::BlockingCopyFromString(kTestMsg, client_socket_send_handle));
   read_run_loop.Run();
 }
 
@@ -644,8 +643,8 @@ TEST_F(TCPSocketTest, ServerSocketClosedAcceptedSocketAlive) {
 
   base::RunLoop read_run_loop;
   server.StartReading(kTestMsg, read_run_loop.QuitClosure());
-  EXPECT_TRUE(mojo::common::BlockingCopyFromString(kTestMsg,
-                                                   client_socket_send_handle));
+  EXPECT_TRUE(
+      mojo::BlockingCopyFromString(kTestMsg, client_socket_send_handle));
   read_run_loop.Run();
 }
 

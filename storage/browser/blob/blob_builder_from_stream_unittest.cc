@@ -12,7 +12,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -105,7 +105,7 @@ class BlobBuilderFromStreamTest
           << ", disk_usage: " << context_->memory_controller().disk_usage();
     }
 
-    mojo::common::BlockingCopyFromString(data, pipe.producer_handle);
+    mojo::BlockingCopyFromString(data, pipe.producer_handle);
     pipe.producer_handle.reset();
 
     loop.Run();

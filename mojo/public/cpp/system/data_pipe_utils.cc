@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/data_pipe_utils.h"
-
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
 
 namespace mojo {
-namespace common {
 namespace {
 
-bool BlockingCopyHelper(ScopedDataPipeConsumerHandle source,
+bool BlockingCopyHelper(
+    ScopedDataPipeConsumerHandle source,
     const base::Callback<size_t(const void*, uint32_t)>& write_bytes) {
   for (;;) {
     const void* buffer;
@@ -44,8 +43,9 @@ bool BlockingCopyHelper(ScopedDataPipeConsumerHandle source,
   return false;
 }
 
-size_t CopyToStringHelper(
-    std::string* result, const void* buffer, uint32_t num_bytes) {
+size_t CopyToStringHelper(std::string* result,
+                          const void* buffer,
+                          uint32_t num_bytes) {
   result->append(static_cast<const char*>(buffer), num_bytes);
   return num_bytes;
 }
@@ -61,9 +61,9 @@ bool BlockingCopyToString(ScopedDataPipeConsumerHandle source,
                             base::Bind(&CopyToStringHelper, result));
 }
 
-bool MOJO_COMMON_EXPORT BlockingCopyFromString(
-    const std::string& source,
-    const ScopedDataPipeProducerHandle& destination) {
+bool MOJO_CPP_SYSTEM_EXPORT
+BlockingCopyFromString(const std::string& source,
+                       const ScopedDataPipeProducerHandle& destination) {
   auto it = source.begin();
   for (;;) {
     void* buffer = nullptr;
@@ -92,5 +92,4 @@ bool MOJO_COMMON_EXPORT BlockingCopyFromString(
   }
 }
 
-}  // namespace common
 }  // namespace mojo

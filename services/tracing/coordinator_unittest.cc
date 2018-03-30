@@ -14,8 +14,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/common/data_pipe_drainer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 #include "services/tracing/test_util.h"
@@ -24,7 +24,7 @@
 namespace tracing {
 
 class CoordinatorTest : public testing::Test,
-                        public mojo::common::DataPipeDrainer::Client {
+                        public mojo::DataPipeDrainer::Client {
  public:
   CoordinatorTest() : service_ref_factory_(base::DoNothing()) {}
 
@@ -42,12 +42,12 @@ class CoordinatorTest : public testing::Test,
     agent_registry_.reset();
   }
 
-  // mojo::common::DataPipeDrainer::Client
+  // mojo::DataPipeDrainer::Client
   void OnDataAvailable(const void* data, size_t num_bytes) override {
     output_.append(static_cast<const char*>(data), num_bytes);
   }
 
-  // mojo::common::DataPipeDrainer::Client
+  // mojo::DataPipeDrainer::Client
   void OnDataComplete() override { base::ResetAndReturn(&quit_closure_).Run(); }
 
   MockAgent* AddArrayAgent() {
@@ -104,8 +104,8 @@ class CoordinatorTest : public testing::Test,
     };
     coordinator_->StopAndFlush(std::move(data_pipe.producer_handle),
                                base::BindRepeating(dummy_callback));
-    drainer_.reset(new mojo::common::DataPipeDrainer(
-        this, std::move(data_pipe.consumer_handle)));
+    drainer_.reset(
+        new mojo::DataPipeDrainer(this, std::move(data_pipe.consumer_handle)));
   }
 
   void IsTracing(bool expected_response) {
@@ -160,7 +160,7 @@ class CoordinatorTest : public testing::Test,
   std::unique_ptr<AgentRegistry> agent_registry_;
   std::unique_ptr<Coordinator> coordinator_;
   std::vector<std::unique_ptr<MockAgent>> agents_;
-  std::unique_ptr<mojo::common::DataPipeDrainer> drainer_;
+  std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   base::RepeatingClosure quit_closure_;
   std::string output_;
   service_manager::ServiceContextRefFactory service_ref_factory_;

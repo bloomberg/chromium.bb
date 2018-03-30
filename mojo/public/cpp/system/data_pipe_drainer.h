@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_DATA_PIPE_DRAINER_H_
-#define MOJO_COMMON_DATA_PIPE_DRAINER_H_
+#ifndef MOJO_PUBLIC_CPP_SYSTEM_DATA_PIPE_DRAINER_H_
+#define MOJO_PUBLIC_CPP_SYSTEM_DATA_PIPE_DRAINER_H_
 
 #include <stddef.h>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/common/mojo_common_export.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "mojo/public/cpp/system/system_export.h"
 
 namespace mojo {
-namespace common {
 
-class MOJO_COMMON_EXPORT DataPipeDrainer {
+class MOJO_CPP_SYSTEM_EXPORT DataPipeDrainer {
  public:
   class Client {
    public:
@@ -43,7 +42,6 @@ class MOJO_COMMON_EXPORT DataPipeDrainer {
   DISALLOW_COPY_AND_ASSIGN(DataPipeDrainer);
 };
 
-}  // namespace common
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_DATA_PIPE_DRAINER_H_
+#endif  // MOJO_PUBLIC_CPP_SYSTEM_DATA_PIPE_DRAINER_H_

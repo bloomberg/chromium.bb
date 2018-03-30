@@ -8,9 +8,9 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_installed_script_reader.h"
 #include "content/common/content_export.h"
-#include "mojo/common/data_pipe_drainer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
@@ -27,7 +27,7 @@ namespace content {
 class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
     : public network::mojom::URLLoader,
       public ServiceWorkerInstalledScriptReader::Client,
-      public mojo::common::DataPipeDrainer::Client {
+      public mojo::DataPipeDrainer::Client {
  public:
   ServiceWorkerInstalledScriptLoader(
       uint32_t options,
@@ -56,7 +56,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
   void ResumeReadingBodyFromNet() override;
 
  private:
-  // mojo::common::DataPipeDrainer::Client overrides:
+  // mojo::DataPipeDrainer::Client overrides:
   // These just do nothing.
   void OnDataAvailable(const void* data, size_t num_bytes) override {}
   void OnDataComplete() override {}
@@ -69,7 +69,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
   std::string encoding_;
   mojo::ScopedDataPipeConsumerHandle body_handle_;
   uint64_t body_size_ = 0;
-  std::unique_ptr<mojo::common::DataPipeDrainer> metadata_drainer_;
+  std::unique_ptr<mojo::DataPipeDrainer> metadata_drainer_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerInstalledScriptLoader);
 };

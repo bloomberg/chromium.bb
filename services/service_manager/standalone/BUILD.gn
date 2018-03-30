@@ -15,8 +15,8 @@ source_set("standalone") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//mojo/common:common_base",
     "//mojo/edk",
+    "//mojo/public/cpp/system",
     "//services/catalog:lib",
     "//services/service_manager",
     "//services/service_manager/public/cpp",

@@ -52,8 +52,8 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
   // Just drain the metadata (V8 code cache): this entire class is just to
   // handle a corner case for non-installed service workers and high performance
   // is not needed.
-  metadata_drainer_ = std::make_unique<mojo::common::DataPipeDrainer>(
-      this, std::move(metadata_handle));
+  metadata_drainer_ =
+      std::make_unique<mojo::DataPipeDrainer>(this, std::move(metadata_handle));
 
   // We continue in OnHttpInfoRead().
 }
