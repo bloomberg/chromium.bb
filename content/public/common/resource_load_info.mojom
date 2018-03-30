@@ -11,6 +11,9 @@ import "url/mojom/url.mojom";
 // Information pertaining to resource loading.
 // This will be passed to ResourceResponse callback methods.
 struct ResourceLoadInfo {
+  // An ID that uniquely identifies this request.
+  int64 request_id;
+
   // The URL of the response.
   url.mojom.Url url;
 
