@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace chromeos {
 
 class PpdProvider;
@@ -54,6 +58,9 @@ class CupsPrintersManager {
       std::unique_ptr<PrinterDetector> zeroconf_printer_detector,
       scoped_refptr<PpdProvider> ppd_provider,
       PrinterEventTracker* event_tracker);
+
+  // Register the printing preferences with the |registry|.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   virtual ~CupsPrintersManager() = default;
 

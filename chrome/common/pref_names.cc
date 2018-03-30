@@ -1191,6 +1191,12 @@ const char kRecommendedNativePrintersBlacklist[] =
 // List of printer ids that are allowed.  List of strings.
 const char kRecommendedNativePrintersWhitelist[] =
     "native_printing.recommended_printers_whitelist";
+
+// A Boolean flag which represents whether or not users are allowed to configure
+// and use their own native printers.
+const char kUserNativePrintersAllowed[] =
+    "native_printing.user_native_printers_allowed";
+
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content
