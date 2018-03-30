@@ -70,7 +70,7 @@ IntRect ChunkToLayerMapper::MapVisualRect(const FloatRect& rect) const {
     mapped_rect.Intersect(clip_rect_.Rect());
 
   if (mapped_rect.IsEmpty()) {
-    DCHECK_EQ(IntRect(), MapUsingGeometryMapper(rect));
+    DCHECK(MapUsingGeometryMapper(rect).IsEmpty());
     return IntRect();
   }
 
