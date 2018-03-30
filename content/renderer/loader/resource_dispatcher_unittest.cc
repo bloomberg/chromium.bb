@@ -117,7 +117,7 @@ class ResourceDispatcherTest : public testing::Test,
     int request_id = dispatcher()->StartAsync(
         std::move(request), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
+        TRAFFIC_ANNOTATION_FOR_TESTS, false, false, std::move(peer),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         network::mojom::URLLoaderClientEndpointsPtr(),
@@ -180,6 +180,9 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
         const network::ResourceResponseInfo& info) override {
       response_info_ = info;
     }
+
+    void OnStartLoadingResponseBody(
+        mojo::ScopedDataPipeConsumerHandle body) override {}
 
     void OnDownloadedData(int len, int encoded_data_length) override {}
 

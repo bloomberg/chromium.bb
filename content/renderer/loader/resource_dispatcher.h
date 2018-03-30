@@ -29,6 +29,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 
@@ -85,6 +86,8 @@ class CONTENT_EXPORT ResourceDispatcher {
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
   // |timeout| (in seconds) is used to abort the sync request on timeouts.
+  // If |download_to_blob_registry| is not null, it is used to redirect the
+  // download to a blob, using StartAsync's |pass_response_pipe_to_peer| flag.
   virtual void StartSync(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
@@ -92,7 +95,8 @@ class CONTENT_EXPORT ResourceDispatcher {
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      double timeout);
+      double timeout,
+      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry);
 
   // Call this method to initiate the request. If this method succeeds, then
   // the peer's methods will be called asynchronously to report various events.
@@ -100,6 +104,11 @@ class CONTENT_EXPORT ResourceDispatcher {
   //
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
+  //
+  // If |pass_response_pipe_to_peer| is true, the raw datapipe containing the
+  // response body is passed on to |peer| without any extra processing. If it
+  // is set to false instead OnReceivedData is called on the |peer| whenever a
+  // chunk of data is available.
   //
   // You need to pass a non-null |loading_task_runner| to specify task queue to
   // execute loading tasks on.
@@ -109,6 +118,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
+      bool pass_response_pipe_to_peer,
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -218,6 +228,8 @@ class CONTENT_EXPORT ResourceDispatcher {
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void OnStartLoadingResponseBody(int request_id,
+                                  mojo::ScopedDataPipeConsumerHandle body);
   void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(int request_id,
                          const network::URLLoaderCompletionStatus& status);

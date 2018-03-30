@@ -78,6 +78,11 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
     DidReceiveResponse(response);
   }
 
+  // Called when the response body becomes available. This method is only called
+  // if the request's PassResponsePipeToClient flag was set to true.
+  virtual void DidStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) {}
+
   // Called when a chunk of response data is downloaded. This is only called
   // if WebURLRequest's DownloadToFile flag was set to true.
   virtual void DidDownloadData(int data_length, int encoded_data_length) {}

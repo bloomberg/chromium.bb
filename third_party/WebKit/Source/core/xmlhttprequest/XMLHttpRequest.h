@@ -194,6 +194,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // When responseType is set to "blob", didDownloadData() is called instead
   // of didReceiveData().
   void DidDownloadData(int data_length) override;
+  void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
   void DidFinishLoading(unsigned long identifier, double finish_time) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
@@ -202,8 +203,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void DidFinishLoadingInternal();
   void DidFinishLoadingFromBlob();
   void DidFailLoadingFromBlob();
-
-  scoped_refptr<BlobDataHandle> CreateBlobDataHandleFromResponse();
 
   // DocumentParserClient
   void NotifyParserStopped() override;
@@ -312,11 +311,11 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Not converted to ASCII lowercase. Must be lowered later or compared
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;
-  unsigned long timeout_milliseconds_;
+  unsigned long timeout_milliseconds_ = 0;
   TraceWrapperMember<Blob> response_blob_;
 
   Member<ThreadableLoader> loader_;
-  State state_;
+  State state_ = kUnsent;
 
   ResourceResponse response_;
 
@@ -330,24 +329,24 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   scoped_refptr<SharedBuffer> binary_response_builder_;
   size_t binary_response_builder_last_reported_size_ = 0;
-  long long length_downloaded_to_file_;
-  long long length_downloaded_to_file_last_reported_ = 0;
+  long long length_downloaded_to_blob_ = 0;
+  long long length_downloaded_to_blob_last_reported_ = 0;
 
   TraceWrapperMember<DOMArrayBuffer> response_array_buffer_;
 
   // Used for onprogress tracking
-  long long received_length_;
+  long long received_length_ = 0;
 
   // An exception to throw in synchronous mode. It's set when failure
   // notification is received from m_loader and thrown at the end of send() if
   // any.
-  ExceptionCode exception_code_;
+  ExceptionCode exception_code_ = 0;
 
   Member<XMLHttpRequestProgressEventThrottle> progress_event_throttle_;
 
   // An enum corresponding to the allowed string values for the responseType
   // attribute.
-  ResponseTypeCode response_type_code_;
+  ResponseTypeCode response_type_code_ = kResponseTypeDefault;
 
   v8::Isolate* const isolate_;
   // Set to true if the XMLHttpRequest was created in an isolated world.
@@ -362,25 +361,25 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Positive if we are dispatching events.
   // This is an integer specifying the recursion level rather than a boolean
   // because in some cases we have recursive dispatching.
-  int event_dispatch_recursion_level_;
+  int event_dispatch_recursion_level_ = 0;
 
-  bool async_;
+  bool async_ = true;
 
-  bool with_credentials_;
+  bool with_credentials_ = false;
 
   // Used to skip m_responseDocument creation if it's done previously. We need
   // this separate flag since m_responseDocument can be 0 for some cases.
-  bool parsed_response_;
-  bool error_;
-  bool upload_events_allowed_;
-  bool upload_complete_;
-  bool same_origin_request_;
-  // True iff the ongoing resource loading is using the downloadToFile
+  bool parsed_response_ = false;
+  bool error_ = false;
+  bool upload_events_allowed_ = true;
+  bool upload_complete_ = false;
+  bool same_origin_request_ = true;
+  // True iff the ongoing resource loading is using the downloadToBlob
   // option.
-  bool downloading_to_file_;
-  bool response_text_overflow_;
-  bool send_flag_;
-  bool response_array_buffer_failure_;
+  bool downloading_to_blob_ = false;
+  bool response_text_overflow_ = false;
+  bool send_flag_ = false;
+  bool response_array_buffer_failure_ = false;
 };
 
 std::ostream& operator<<(std::ostream&, const XMLHttpRequest*);

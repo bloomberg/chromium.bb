@@ -12,6 +12,7 @@
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/mojom/cors.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/WebKit/public/mojom/blob/serialized_blob.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -46,6 +47,7 @@ struct CONTENT_EXPORT SyncLoadResponse {
   // Used for blob response type XMLHttpRequest.
   base::Optional<int64_t> downloaded_file_length;
   network::mojom::DownloadedTempFilePtr downloaded_tmp_file;
+  blink::mojom::SerializedBlobPtr downloaded_blob;
 };
 
 }  // namespace content

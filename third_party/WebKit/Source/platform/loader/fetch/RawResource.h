@@ -86,6 +86,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   WTF::Optional<int64_t> DownloadedFileLength() const {
     return downloaded_file_length_;
   }
+  scoped_refptr<BlobDataHandle> DownloadedBlob() const {
+    return downloaded_blob_;
+  }
 
  private:
   class RawResourceFactory : public NonTextResourceFactory {
@@ -114,12 +117,14 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void DidSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent) override;
   void DidDownloadData(int) override;
+  void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
   bool MatchPreload(const FetchParameters&,
                     base::SingleThreadTaskRunner*) override;
   void NotifyFinished() override;
 
   WTF::Optional<int64_t> downloaded_file_length_;
+  scoped_refptr<BlobDataHandle> downloaded_blob_;
 
   // Used for preload matching.
   std::unique_ptr<BufferingDataPipeWriter> data_pipe_writer_;
@@ -181,6 +186,11 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
   virtual void RedirectBlocked() {}
   virtual void DataDownloaded(Resource*, int) {}
   virtual void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}
+  // Called for requests that had DownloadToBlob set to true. Can be called with
+  // null if creating the blob failed for some reason (but the download itself
+  // otherwise succeeded). Could also not be called at all if the downloaded
+  // resource ended up being zero bytes.
+  virtual void DidDownloadToBlob(Resource*, scoped_refptr<BlobDataHandle>) {}
 };
 
 // Checks the sequence of callbacks of RawResourceClient. This can be used only
@@ -203,6 +213,7 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
   void SetSerializedCachedMetadata();
   void DataReceived();
   void DataDownloaded();
+  void DidDownloadToBlob();
   void NotifyFinished(Resource*);
 
  private:
@@ -214,6 +225,7 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
     kSetSerializedCachedMetadata,
     kDataReceived,
     kDataDownloaded,
+    kDidDownloadToBlob,
     kNotifyFinished
   };
   State state_;

@@ -113,6 +113,8 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidReceiveCachedMetadata(const char* data, int length) override;
   void DidReceiveData(const char*, int) override;
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
+  void DidStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override;
   void DidDownloadData(int, int) override;
   void DidFinishLoading(double finish_time,
                         int64_t encoded_data_length,
@@ -166,6 +168,8 @@ class PLATFORM_EXPORT ResourceLoader final
 
   void CancelTimerFired(TimerBase*);
 
+  void FinishedCreatingBlob(const scoped_refptr<BlobDataHandle>&);
+
   std::unique_ptr<WebURLLoader> loader_;
   ResourceLoadScheduler::ClientId scheduler_client_id_;
   Member<ResourceFetcher> fetcher_;
@@ -174,6 +178,19 @@ class PLATFORM_EXPORT ResourceLoader final
 
   uint32_t inflight_keepalive_bytes_;
   bool is_cache_aware_loading_activated_;
+
+  bool is_downloading_to_blob_ = false;
+  bool blob_finished_ = false;
+  bool blob_response_started_ = false;
+  // If DidFinishLoading is called while downloading to a blob before the blob
+  // is finished, we might have to defer actually handling the event. This
+  // struct is used to store the information needed to refire DidFinishLoading
+  // when the blob is finished too.
+  struct DeferedFinishLoadingInfo {
+    double finish_time;
+    bool blocked_cross_site_document;
+  };
+  Optional<DeferedFinishLoadingInfo> load_did_finish_before_blob_;
 
   TaskRunnerTimer<ResourceLoader> cancel_timer_;
 };

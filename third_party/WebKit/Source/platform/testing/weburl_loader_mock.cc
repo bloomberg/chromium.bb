@@ -110,7 +110,8 @@ void WebURLLoaderMock::LoadSynchronously(
     WebData& data,
     int64_t& encoded_data_length,
     int64_t& encoded_body_length,
-    base::Optional<int64_t>& downloaded_file_length) {
+    base::Optional<int64_t>& downloaded_file_length,
+    blink::WebBlobInfo& downloaded_blob) {
   if (factory_->IsMockedURL(request.Url())) {
     factory_->LoadSynchronously(request, &response, &error, &data,
                                 &encoded_data_length);
@@ -120,7 +121,7 @@ void WebURLLoaderMock::LoadSynchronously(
   using_default_loader_ = true;
   default_loader_->LoadSynchronously(request, response, error, data,
                                      encoded_data_length, encoded_body_length,
-                                     downloaded_file_length);
+                                     downloaded_file_length, downloaded_blob);
 }
 
 void WebURLLoaderMock::LoadAsynchronously(const WebURLRequest& request,

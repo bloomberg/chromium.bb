@@ -32,6 +32,7 @@
 #define WebURLLoader_h
 
 #include <stdint.h>
+#include "WebBlobInfo.h"
 #include "WebCommon.h"
 #include "WebURLRequest.h"
 #include "base/optional.h"
@@ -51,6 +52,9 @@ class WebURLLoader {
   // Load the request synchronously, returning results directly to the
   // caller upon completion.  There is no mechanism to interrupt a
   // synchronous load!!
+  // If the request's PassResponsePipeToClient flag is set to true, the response
+  // will instead be redirected to a blob, which is passed out in
+  // |downloaded_blob|.
   virtual void LoadSynchronously(
       const WebURLRequest&,
       WebURLResponse&,
@@ -58,7 +62,8 @@ class WebURLLoader {
       WebData&,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
-      base::Optional<int64_t>& downloaded_file_length) = 0;
+      base::Optional<int64_t>& downloaded_file_length,
+      WebBlobInfo& downloaded_blob) = 0;
 
   // Load the request asynchronously, sending notifications to the given
   // client.  The client will receive no further notifications if the

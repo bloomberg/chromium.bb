@@ -86,6 +86,11 @@ void SecurityFilterPeer::OnReceivedResponse(
   NOTREACHED();
 }
 
+void SecurityFilterPeer::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  NOTREACHED();
+}
+
 void SecurityFilterPeer::OnDownloadedData(int len, int encoded_data_length) {
   NOTREACHED();
 }

@@ -407,6 +407,14 @@ void WorkerThreadableLoader::DidDownloadData(int data_length) {
   client_->DidDownloadData(data_length);
 }
 
+void WorkerThreadableLoader::DidDownloadToBlob(
+    scoped_refptr<BlobDataHandle> blob) {
+  DCHECK(!IsMainThread());
+  if (!client_)
+    return;
+  client_->DidDownloadToBlob(std::move(blob));
+}
+
 void WorkerThreadableLoader::DidReceiveResourceTiming(
     std::unique_ptr<CrossThreadResourceTimingInfoData> timing_data) {
   DCHECK(!IsMainThread());
@@ -546,6 +554,18 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidDownloadData(
   forwarder_->ForwardTask(
       FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidDownloadData,
                                  worker_loader, data_length));
+}
+
+void WorkerThreadableLoader::MainThreadLoaderHolder::DidDownloadToBlob(
+    scoped_refptr<BlobDataHandle> blob) {
+  DCHECK(IsMainThread());
+  CrossThreadPersistent<WorkerThreadableLoader> worker_loader =
+      worker_loader_.Get();
+  if (!worker_loader || !forwarder_)
+    return;
+  forwarder_->ForwardTask(
+      FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidDownloadToBlob,
+                                 worker_loader, std::move(blob)));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveCachedMetadata(

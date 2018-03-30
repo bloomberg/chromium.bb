@@ -306,6 +306,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void DidSendData(unsigned long long /* bytesSent */,
                            unsigned long long /* totalBytesToBeSent */) {}
   virtual void DidDownloadData(int) {}
+  virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
   double LoadFinishTime() const { return load_finish_time_; }
 

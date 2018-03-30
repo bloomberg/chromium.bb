@@ -628,6 +628,15 @@ void FrameFetchContext::DispatchDidDownloadData(unsigned long identifier,
                                      encoded_data_length);
 }
 
+void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
+                                                  BlobDataHandle* blob) {
+  if (IsDetached() || !blob)
+    return;
+
+  probe::didReceiveBlob(GetFrame()->GetDocument(), identifier,
+                        MasterDocumentLoader(), blob);
+}
+
 void FrameFetchContext::DispatchDidFinishLoading(
     unsigned long identifier,
     double finish_time,

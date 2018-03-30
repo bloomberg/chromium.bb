@@ -148,6 +148,8 @@ class PLATFORM_EXPORT FetchContext
   virtual void DispatchDidDownloadData(unsigned long identifier,
                                        int data_length,
                                        int encoded_data_length);
+  virtual void DispatchDidDownloadToBlob(unsigned long identifier,
+                                         BlobDataHandle*);
   virtual void DispatchDidFinishLoading(unsigned long identifier,
                                         double finish_time,
                                         int64_t encoded_data_length,

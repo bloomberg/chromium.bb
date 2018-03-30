@@ -46,6 +46,13 @@ void TestRequestPeer::OnReceivedResponse(
   }
 }
 
+void TestRequestPeer::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  EXPECT_TRUE(context_->received_response);
+  EXPECT_FALSE(context_->cancelled);
+  EXPECT_FALSE(context_->complete);
+}
+
 void TestRequestPeer::OnDownloadedData(int len, int encoded_data_length) {
   EXPECT_TRUE(context_->received_response);
   EXPECT_FALSE(context_->cancelled);

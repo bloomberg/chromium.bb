@@ -202,6 +202,16 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
   }
 }
 
+void ResourceDispatcher::OnStartLoadingResponseBody(
+    int request_id,
+    mojo::ScopedDataPipeConsumerHandle body) {
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (!request_info)
+    return;
+
+  request_info->peer->OnStartLoadingResponseBody(std::move(body));
+}
+
 void ResourceDispatcher::OnDownloadedData(int request_id,
                                           int data_len,
                                           int encoded_data_length) {
@@ -417,7 +427,8 @@ void ResourceDispatcher::StartSync(
     SyncLoadResponse* response,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-    double timeout) {
+    double timeout,
+    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) {
   CheckSchemeForReferrerPolicy(*request);
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info =
@@ -443,7 +454,8 @@ void ResourceDispatcher::StartSync(
                      traffic_annotation, std::move(factory_info),
                      std::move(throttles), base::Unretained(response),
                      base::Unretained(&completed_event),
-                     base::Unretained(terminate_sync_load_event_), timeout));
+                     base::Unretained(terminate_sync_load_event_), timeout,
+                     std::move(download_to_blob_registry)));
   completed_event.Wait();
 }
 
@@ -453,6 +465,7 @@ int ResourceDispatcher::StartAsync(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
+    bool pass_response_pipe_to_peer,
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -482,6 +495,9 @@ int ResourceDispatcher::StartAsync(
 
   std::unique_ptr<URLLoaderClientImpl> client(
       new URLLoaderClientImpl(request_id, this, loading_task_runner));
+
+  if (pass_response_pipe_to_peer)
+    client->SetPassResponsePipeToDispatcher(true);
 
   uint32_t options = network::mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once

@@ -247,6 +247,13 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool DownloadToFile() const;
   BLINK_PLATFORM_EXPORT void SetDownloadToFile(bool);
 
+  // If true, the client expects to receive the raw response pipe. Similar to
+  // UseStreamOnResponse but the stream will be a mojo DataPipe rather than a
+  // WebDataConsumerHandle.
+  // If the request is fetched synchronously the response will instead be piped
+  // to a blob if this flag is set to true.
+  BLINK_PLATFORM_EXPORT bool PassResponsePipeToClient() const;
+
   // True if the requestor wants to receive the response body as a stream.
   BLINK_PLATFORM_EXPORT bool UseStreamOnResponse() const;
   BLINK_PLATFORM_EXPORT void SetUseStreamOnResponse(bool);

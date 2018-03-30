@@ -13,6 +13,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
 
 namespace base {
 class WaitableEvent;
@@ -35,6 +36,8 @@ class SyncLoadContext : public RequestPeer {
   // and |response| will be populated with the response data. |abort_event|
   // will be signalled from the main thread to abort the sync request on a
   // worker thread when the worker thread is being terminated.
+  // If |download_to_blob_registry| is not null, it is used to redirect the
+  // download to a blob, with the resulting blob populated in |response|.
   static void StartAsyncWithWaitableEvent(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
@@ -46,7 +49,8 @@ class SyncLoadContext : public RequestPeer {
       SyncLoadResponse* response,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
-      double timeout);
+      double timeout,
+      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry);
 
   ~SyncLoadContext() override;
 
@@ -58,17 +62,22 @@ class SyncLoadContext : public RequestPeer {
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
       double timeout,
+      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const network::ResourceResponseInfo& info) override;
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override;
   void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
+
+  void OnFinishCreatingBlob(blink::mojom::SerializedBlobPtr blob);
 
   void OnAbort(base::WaitableEvent* event);
   void OnTimeout();
@@ -88,6 +97,12 @@ class SyncLoadContext : public RequestPeer {
   // State necessary to run a request on an independent thread.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
+
+  // State for downloading to a blob.
+  blink::mojom::BlobRegistryPtr download_to_blob_registry_;
+  bool blob_response_started_ = false;
+  bool blob_finished_ = false;
+  bool request_completed_ = false;
 
   int request_id_;
 
