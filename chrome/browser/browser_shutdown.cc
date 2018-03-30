@@ -38,7 +38,7 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "rlz/features/features.h"
 
 #if defined(OS_WIN)

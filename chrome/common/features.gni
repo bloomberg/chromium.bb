@@ -12,7 +12,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/webui/webui_features.gni")
 

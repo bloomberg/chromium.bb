@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia_wrapper.h"
 
 #if defined(OS_ANDROID)

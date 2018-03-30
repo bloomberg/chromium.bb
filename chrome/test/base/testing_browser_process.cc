@@ -32,7 +32,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)

@@ -58,7 +58,7 @@
 #include "extensions/common/constants.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/service_manager/embedder/switches.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"

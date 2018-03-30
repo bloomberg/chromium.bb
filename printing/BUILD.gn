@@ -6,7 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//pdf/features.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
@@ -79,7 +79,7 @@ component("printing") {
   defines = [ "PRINTING_IMPLEMENTATION" ]
 
   public_deps = [
-    "//printing/features",
+    "//printing/buildflags",
   ]
   deps = [
     "//base",

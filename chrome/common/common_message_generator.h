@@ -30,7 +30,7 @@
 #include "content/public/common/common_param_traits_macros.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #undef CHROME_COMMON_CAST_MESSAGES_H_

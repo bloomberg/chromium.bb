@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "components/printing/test/mock_printer.h"
 #include "ipc/ipc_sync_message.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"

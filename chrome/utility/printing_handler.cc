@@ -10,7 +10,7 @@
 #include "content/public/utility/utility_thread.h"
 #include "ipc/ipc_message.h"
 #include "printing/backend/print_backend.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace printing {
 

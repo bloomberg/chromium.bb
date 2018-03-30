@@ -108,7 +108,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service_context.h"

@@ -6,7 +6,7 @@
 
 #include "components/printing/browser/print_manager_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_message_handler.h"

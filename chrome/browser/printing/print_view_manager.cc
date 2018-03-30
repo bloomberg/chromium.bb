@@ -24,7 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 using content::BrowserThread;
 

@@ -112,7 +112,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/http/http_server_properties_manager.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "rlz/features/features.h"
 
 #if BUILDFLAG(ENABLE_APP_LIST)

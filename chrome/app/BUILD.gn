@@ -7,7 +7,7 @@ import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/nacl/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
@@ -51,7 +51,7 @@ source_set("chrome_dll_resources") {
       # toggle off of the enable-basic-printing flag in the .rc file.
       defines = [ "ENABLE_BASIC_PRINTING_FOR_RC" ]
     }
-    deps += [ "//printing/features" ]
+    deps += [ "//printing/buildflags" ]
   }
 }
 
@@ -335,7 +335,7 @@ static_library("test_support") {
     "//content/public/common:service_names",
     "//pdf",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//services/service_manager/embedder",
     "//ui/base",
     "//v8:v8_headers",

@@ -155,7 +155,7 @@ if (!is_android && !is_mac) {
       public_deps = []
       deps += [
         "//build/config:exe_and_shlib_deps",
-        "//printing/features",
+        "//printing/buildflags",
       ]
 
       data += [ "$root_out_dir/resources.pak" ]

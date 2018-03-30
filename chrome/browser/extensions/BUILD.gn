@@ -868,7 +868,7 @@ static_library("extensions") {
     "//media:media_buildflags",
     "//net",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//rlz/features",
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",

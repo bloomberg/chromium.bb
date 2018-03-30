@@ -33,7 +33,7 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "ipc/ipc_message_macros.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/common/frame/frame_policy.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"

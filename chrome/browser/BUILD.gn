@@ -20,7 +20,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//rlz/features/features.gni")
 import("//sandbox/features.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -1780,7 +1780,7 @@ jumbo_split_static_library("browser") {
     "//net:extras",
     "//net:net_browser_services",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//rlz/features",
     "//services/data_decoder/public/cpp",
     "//services/device/public/cpp:device_features",

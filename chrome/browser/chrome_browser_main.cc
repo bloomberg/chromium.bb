@@ -185,7 +185,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "rlz/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"

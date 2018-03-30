@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "headless/lib/renderer/headless_render_frame_controller_impl.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "components/printing/renderer/print_render_frame_helper.h"

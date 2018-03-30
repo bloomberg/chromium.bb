@@ -162,7 +162,7 @@ static_library("test_support") {
     "//net:test_support",
     "//pdf",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//skia",
     "//sql",
     "//sql:test_support",
@@ -366,7 +366,7 @@ test("browser_tests") {
     "//media:media_buildflags",
     "//net:test_support",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//rlz/features",
     "//third_party/WebKit/public:features",
   ]

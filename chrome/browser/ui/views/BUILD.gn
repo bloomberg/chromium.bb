@@ -31,7 +31,7 @@ component("views") {
     "//components/keep_alive_registry",
     "//components/vector_icons",
     "//content/public/browser",
-    "//printing/features",
+    "//printing/buildflags",
     "//skia",
     "//ui/base",
     "//ui/events",

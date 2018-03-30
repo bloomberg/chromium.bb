@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
 #error "Not for use on ChromeOS"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINTER_MANAGER_DIALOG_H_
 
 #include "base/macros.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if !BUILDFLAG(ENABLE_PRINTING)
 #error "Printing must be enabled"

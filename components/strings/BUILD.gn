@@ -4,7 +4,7 @@
 
 import("//build/config/locales.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 
 if (is_android) {

@@ -12,7 +12,7 @@ import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -116,7 +116,7 @@ jumbo_source_set("browser") {
     "//net:extras",
     "//net:http_server",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//services/audio:lib",
     "//services/audio/public/cpp",
     "//services/audio/public/mojom:constants",

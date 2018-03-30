@@ -43,7 +43,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/buildflags/buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"

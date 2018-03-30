@@ -6,7 +6,7 @@ assert(is_linux, "This file should only be referenced on Linux")
 
 import("//build/config/features.gni")
 import("//build/config/linux/gtk/gtk.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 
 # Automatically depends on the GTK version associated with the current build
 # flags.

@@ -38,7 +38,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/filename_util.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/base/resource/resource_handle.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

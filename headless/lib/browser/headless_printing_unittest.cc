@@ -7,7 +7,7 @@
 #include "base/values.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
 #include "headless/lib/browser/headless_print_manager.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

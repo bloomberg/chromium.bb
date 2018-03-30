@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cloud_print {

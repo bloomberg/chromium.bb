@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "components/printing/renderer/print_render_frame_helper.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 
 namespace printing {

@@ -1,7 +1,7 @@
 include_rules = [
   "+content/public/browser",
   "+content/public/common",
-  "+printing/features",
+  "+printing/buildflags",
   "+ui/base",
   "+ui/gfx",
   "+ui/views",

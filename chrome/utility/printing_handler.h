@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if !defined(OS_WIN) || !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #error "Windows printing and print preview must be enabled"

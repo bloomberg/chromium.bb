@@ -12,7 +12,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "printing/backend/print_backend.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #define IPC_MESSAGE_START ChromeUtilityPrintingMsgStart
 
