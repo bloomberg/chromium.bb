@@ -533,6 +533,8 @@ class ExtensionProtocolHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
+  bool IsSafeRedirectTarget(const GURL& location) const override;
+
  private:
   const bool is_incognito_;
   extensions::InfoMap* const extension_info_map_;
@@ -659,6 +661,21 @@ ExtensionProtocolHandler::MaybeCreateJob(
                                     send_cors_header,
                                     follow_symlinks_anywhere,
                                     verify_job);
+}
+
+bool ExtensionProtocolHandler::IsSafeRedirectTarget(
+    const GURL& location) const {
+  // Redirects originate from http/https origins, which are subject to
+  // webaccessible resources restrictions. Redirects can also be triggered via
+  // the extensions webrequest API, which is also limited to webaccessible
+  // resources.
+  std::string extension_id = location.host();
+  const Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
+  if (!extension)
+    return false;
+  return WebAccessibleResourcesInfo::IsResourceWebAccessible(extension,
+                                                             location.path());
 }
 
 class FileLoaderObserver : public content::FileURLLoaderObserver {
