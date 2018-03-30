@@ -401,6 +401,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Generic lambdas</td>
+<td><code>[](const auto&amp; x) { <i>...</i> }</code></td>
+<td>Allows lambda argument types to be deduced using <code>auto</code> (according to the rules that apply to templates).</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/lambda">lambda expressions</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/LasGKwE3SFM/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Relaxed constant expressions</td>
 <td><code>constexpr int Factorial(int n) {<br>&nbsp;&nbsp;int result = 1;<br>&nbsp;&nbsp;while (n > 0)<br>&nbsp;&nbsp;&nbsp;&nbsp;result *= n--;<br>&nbsp;&nbsp;return result;<br>}</code></td>
 <td>Allows use of more declarations, conditional statements and loops inside <code>constexpr</code> functions.</td>
@@ -780,14 +788,6 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td>Allows the return type of a function to be automatically deduced from its return statements, according to either template or <code>decltype</code> rules.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/function#Return_type_deduction">Return type deduction</a></td>
 <td>Temporarily banned since it <a href="https://bugs.llvm.org/show_bug.cgi?id=34185">can cause infinite loops in clang</a>. We expect to allow this once that bug is fixed. Usage should be rare, primarily for abstract template code. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/-Ox7YgRS_no/discussion">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Generic lambdas</td>
-<td><code>[](const auto&amp; x) { <i>...</i> }</code></td>
-<td>Allows lambda argument types to be deduced using <code>auto</code> (according to the rules that apply to templates).</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/lambda">lambda expressions</a></td>
-<td>Temporarily banned since it <a href="https://bugs.llvm.org/show_bug.cgi?id=33561">can cause infinite loops in clang</a>. We expect to allow this once that bug is fixed. <a href="https://chromium-review.googlesource.com/#/c/chromium/src/+/855776">Discussion thread</a></td>
 </tr>
 
 </tbody>
