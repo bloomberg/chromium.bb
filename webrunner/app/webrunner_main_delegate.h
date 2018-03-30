@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "content/public/app/content_main_delegate.h"
 
+namespace content {
+class ContentClient;
+}  // namespace content
+
 namespace webrunner {
 
 class WebRunnerMainDelegate : public content::ContentMainDelegate {
@@ -25,6 +29,8 @@ class WebRunnerMainDelegate : public content::ContentMainDelegate {
       const content::MainFunctionParams& main_function_params) override;
 
  private:
+  std::unique_ptr<content::ContentClient> content_client_;
+
   DISALLOW_COPY_AND_ASSIGN(WebRunnerMainDelegate);
 };
 
