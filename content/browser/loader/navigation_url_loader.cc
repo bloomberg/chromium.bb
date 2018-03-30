@@ -34,8 +34,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, delegate);
   }
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsNavigationMojoResponseEnabled()) {
+  if (IsNavigationMojoResponseEnabled()) {
     return std::make_unique<NavigationURLLoaderNetworkService>(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, appcache_handle,

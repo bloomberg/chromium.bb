@@ -86,6 +86,15 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     const base::Callback<WebContents*(void)>& web_contents_getter) {
   CHECK(IsBrowserSideNavigationEnabled());
 
+  // S13nServiceWorker enabled, NetworkService disabled:
+  // To start the navigation, InitializeForNavigationNetworkService() is called
+  // instead of this, but when that request handler falls back to network,
+  // InitializeForNavigation() is called.
+  // Since we already determined to fall back to network, don't create another
+  // handler.
+  if (ServiceWorkerUtils::IsServicificationEnabled())
+    return;
+
   // Only create a handler when there is a ServiceWorkerNavigationHandlerCore
   // to take ownership of a pre-created SeviceWorkerProviderHost.
   if (!navigation_handle_core)

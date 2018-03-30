@@ -321,6 +321,9 @@ void ServiceWorkerNavigationLoader::StartResponse(
   // We have a non-redirect response. Send the headers to the client.
   CommitResponseHeaders();
 
+  // S13nServiceWorker without NetworkService:
+  // TODO(shimazu): Wait to respond body until ProceedWithResponse().
+
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
     stream_waiter_ = std::make_unique<StreamWaiter>(

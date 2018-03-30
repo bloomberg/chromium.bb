@@ -31,6 +31,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         bool is_for_guests_only,
                         bool report_raw_headers,
                         bool is_prerendering);
+  NavigationRequestInfo(const NavigationRequestInfo& other);
   ~NavigationRequestInfo();
 
   const CommonNavigationParams common_params;

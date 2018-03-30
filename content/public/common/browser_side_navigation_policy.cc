@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -23,7 +24,10 @@ bool IsNavigationMojoResponseEnabled() {
     return false;
 
   return base::FeatureList::IsEnabled(features::kNavigationMojoResponse) ||
-         base::FeatureList::IsEnabled(features::kSignedHTTPExchange);
+         base::FeatureList::IsEnabled(
+             features::kServiceWorkerServicification) ||
+         base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
+         base::FeatureList::IsEnabled(network::features::kNetworkService);
 }
 
 }  // namespace content
