@@ -119,7 +119,7 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
 
  protected:
   ContentMainDelegate* CreateContentMainDelegate() override {
-    return new ShellMainDelegate();
+    return new ShellMainDelegate(true);
   }
 
  private:
