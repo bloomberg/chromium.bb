@@ -537,17 +537,11 @@ bool QuicChromiumClientStream::WritevStreamData(
   // Must not be called when data is buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
-  if (session_->can_use_slices()) {
-    WriteMemSlices(QuicMemSliceSpan(QuicMemSliceSpanImpl(
-                       buffers.data(), lengths.data(), buffers.size())),
-                   fin);
-  } else {
     for (size_t i = 0; i < buffers.size(); ++i) {
       bool is_fin = fin && (i == buffers.size() - 1);
       QuicStringPiece string_data(buffers[i]->data(), lengths[i]);
       WriteOrBufferData(string_data, is_fin, nullptr);
     }
-  }
   return !HasBufferedData();  // Was all data written?
 }
 

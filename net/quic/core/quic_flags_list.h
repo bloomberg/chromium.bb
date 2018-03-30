@@ -98,10 +98,6 @@ QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 // protocol.
 QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
 
-// If true, QUIC can take ownership of data provided in a reference counted
-// memory to avoid data copy.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_mem_slices, false)
-
 // Allow QUIC to accept initial packet numbers that are random, not 1.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_accept_random_ipn, false)
 

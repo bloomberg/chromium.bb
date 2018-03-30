@@ -396,7 +396,6 @@ QuicConsumedData QuicStream::WritevData(const struct iovec* iov,
 }
 
 QuicConsumedData QuicStream::WriteMemSlices(QuicMemSliceSpan span, bool fin) {
-  DCHECK(session_->can_use_slices());
   QuicConsumedData consumed_data(0, false);
   if (span.empty() && !fin) {
     QUIC_BUG << "span.empty() && !fin";
