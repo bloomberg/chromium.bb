@@ -15,8 +15,10 @@
 #include "base/timer/timer.h"
 #include "content/browser/bad_message.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
@@ -278,8 +280,10 @@ std::string Base64UrlEncode(const base::span<const uint8_t> input) {
 }  // namespace
 
 AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
-    : timer_(std::make_unique<base::OneShotTimer>()),
+    : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
+      timer_(std::make_unique<base::OneShotTimer>()),
+      binding_(this),
       weak_factory_(this) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
@@ -293,21 +297,21 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
 AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
                                      service_manager::Connector* connector,
                                      std::unique_ptr<base::OneShotTimer> timer)
-    : protocols_({/* no protocols in tests */}),
-      timer_(std::move(timer)),
+    : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
       connector_(connector),
+      timer_(std::move(timer)),
+      binding_(this),
       weak_factory_(this) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
 }
 
-AuthenticatorImpl::~AuthenticatorImpl() {
-  bindings_.CloseAllBindings();
-}
+AuthenticatorImpl::~AuthenticatorImpl() {}
 
 void AuthenticatorImpl::Bind(webauth::mojom::AuthenticatorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  DCHECK(!binding_.is_bound());
+  binding_.Bind(std::move(request));
 }
 
 // static
@@ -534,6 +538,18 @@ void AuthenticatorImpl::GetAssertion(
       alternative_application_parameter,
       base::BindOnce(&AuthenticatorImpl::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
+}
+
+void AuthenticatorImpl::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  if (navigation_handle->GetRenderFrameHost() != render_frame_host_ ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  binding_.Close();
+  Cleanup();
 }
 
 // Callback to handle the async registration response from a U2fDevice.
