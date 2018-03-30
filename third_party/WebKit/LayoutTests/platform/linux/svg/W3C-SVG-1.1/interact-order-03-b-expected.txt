@@ -21,8 +21,8 @@ layer at (0,0) size 800x600
             LayoutSVGText {text} at (20,169.39) size 392.39x37.80 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (20,169.39) size 392.39x37.80
                 chunk 1 text run 1 at (20.00,200.00) startOffset 0 endOffset 27 width 392.40: "interact-order-03b-targ.svg"
-          LayoutSVGText {text} at (29.39,234) size 448.80x45 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (29.39,234) size 448.80x45
+          LayoutSVGText {text} at (30,234) size 448.19x45 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (30,234) size 448.19x45
               chunk 1 text run 1 at (30.00,270.00) startOffset 0 endOffset 27 width 448.20: "All strings are selectable."
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59

@@ -47,8 +47,8 @@ layer at (0,0) size 800x600
         LayoutSVGContainer {g} at (380,210) size 67.50x67.50
           LayoutSVGRect {rect} at (380,210) size 67.50x67.50 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#C0C0C0]}] [x=380.00] [y=210.00] [width=67.50] [height=67.50]
         LayoutSVGContainer {g} at (15.50,44.39) size 399.58x212.19
-          LayoutSVGText {text} at (58,44.39) size 12x19.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (58,44.39) size 12x19.19
+          LayoutSVGText {text} at (58.59,44.39) size 10.80x19.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (58.59,44.39) size 10.80x19.19
               chunk 1 (middle anchor) text run 1 at (58.60,60.00) startOffset 0 endOffset 1 width 10.80: "A"
           LayoutSVGText {text} at (127.59,44.39) size 10.80x19.19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (127.59,44.39) size 10.80x19.19

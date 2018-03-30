@@ -10,8 +10,8 @@ layer at (8,8) size 58x138 clip at (9,9) size 41x121 scrollHeight 170
       LayoutText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"
     LayoutBlockFlow {OPTION} at (1,18) size 41x17
-      LayoutText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "Two"
+      LayoutText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
     LayoutBlockFlow {OPTION} at (1,35) size 41x17
       LayoutText {#text} at (2,0) size 33x16
         text run at (2,0) width 33: "Three"
@@ -34,5 +34,5 @@ layer at (8,8) size 58x138 clip at (9,9) size 41x121 scrollHeight 170
       LayoutText {#text} at (2,0) size 26x16
         text run at (2,0) width 26: "Nine"
     LayoutBlockFlow {OPTION} at (1,154) size 41x17
-      LayoutText {#text} at (2,0) size 20x16
-        text run at (2,0) width 20: "Ten"
+      LayoutText {#text} at (2,0) size 21x16
+        text run at (2,0) width 21: "Ten"

@@ -9,17 +9,17 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (30,131) size 342x23 [transform={m=((0.42,0.42)(-0.42,0.42)) t=(0.00,0.00)}] contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (30,131) size 342x23
               chunk 1 text run 1 at (30.00,150.00) startOffset 0 endOffset 37 width 342.00: "Rotated Text for testing SVGLocatable"
-          LayoutSVGText {text} at (100,112) size 294x22.28 [transform={m=((0.70,0.00)(0.00,0.70)) t=(0.00,0.00)}] contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (100,112) size 294x22.28
-              chunk 1 text run 1 at (100.00,130.00) startOffset 0 endOffset 35 width 294.00: "Some other text with id 'otherText'"
+          LayoutSVGText {text} at (100,112) size 293.14x22.28 [transform={m=((0.70,0.00)(0.00,0.70)) t=(0.00,0.00)}] contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (100,112) size 293.14x22.28
+              chunk 1 text run 1 at (100.00,130.00) startOffset 0 endOffset 35 width 293.14: "Some other text with id 'otherText'"
           LayoutSVGViewportContainer {svg} at (-50,-50) size 100x100
             LayoutSVGEllipse {circle} at (-50,-50) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=0.00] [cy=0.00] [r=50.00]
-        LayoutSVGText {text} at (10,188.59) size 291.59x13.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,188.59) size 291.59x13.80
-            chunk 1 text run 1 at (10.00,200.00) startOffset 0 endOffset 52 width 291.60: ".getScreenCTM(): 0.71,0.71,-0.71,0.71,116.67,-100.00"
-        LayoutSVGText {text} at (10,208.59) size 253.80x13.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,208.59) size 253.80x13.80
-            chunk 1 text run 1 at (10.00,220.00) startOffset 0 endOffset 46 width 253.80: ".getCTM(): 0.71,0.71,-0.71,0.71,116.67,-100.00"
+        LayoutSVGText {text} at (10,188.59) size 292.19x13.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,188.59) size 292.19x13.80
+            chunk 1 text run 1 at (10.00,200.00) startOffset 0 endOffset 52 width 292.20: ".getScreenCTM(): 0.71,0.71,-0.71,0.71,116.67,-100.00"
+        LayoutSVGText {text} at (10,208.59) size 254.39x13.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,208.59) size 254.39x13.80
+            chunk 1 text run 1 at (10.00,220.00) startOffset 0 endOffset 46 width 254.40: ".getCTM(): 0.71,0.71,-0.71,0.71,116.67,-100.00"
         LayoutSVGText {text} at (10,228.59) size 343.19x13.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,228.59) size 343.19x13.80
             chunk 1 text run 1 at (10.00,240.00) startOffset 0 endOffset 65 width 343.20: ".getBBox() for 'blueCircle': .x=-50,.y=-50,.width=100,.height=100"

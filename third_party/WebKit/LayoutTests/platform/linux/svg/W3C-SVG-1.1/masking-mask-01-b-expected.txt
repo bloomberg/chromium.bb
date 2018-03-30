@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (10,7.39) size 387.39x297.19
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (10,7.39) size 133.80x15.59 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,7.39) size 133.80x15.59
-          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 133.20: "Test for mask support"
+      LayoutSVGText {text} at (10,7.39) size 133.19x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,7.39) size 133.19x15.59
+          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 132.60: "Test for mask support"
       LayoutSVGRect {rect} at (10,30) size 100x260 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=30.00] [width=100.00] [height=260.00]
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0

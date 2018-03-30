@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (10,28.59) size 291.59x124.41
-      LayoutSVGText {text} at (10,28.59) size 291.59x13.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,28.59) size 291.59x13.80
+    LayoutSVGContainer {g} at (10,28.59) size 292.19x124.41
+      LayoutSVGText {text} at (10,28.59) size 292.19x13.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,28.59) size 292.19x13.80
           chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 56 width 291.60: "Test pointer-events=\"painted\" with paint server fallback"
       LayoutSVGRect {rect} at (10,80) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=10.00] [y=80.00] [width=50.00] [height=50.00]
       LayoutSVGRect {rect} at (10,80) size 50x50 [x=10.00] [y=80.00] [width=50.00] [height=50.00]

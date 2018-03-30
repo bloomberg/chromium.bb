@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (1,1) size 207x19
                   text run at (1,1) width 207: "text with value property changed"
               LayoutTableCell {TD} at (389,0) size 240x24 [r=0 c=1 rs=1 cs=1]
-                LayoutTextControl {INPUT} at (1,1) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (631,1) size 62x22 [r=0 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 28x19
                   text run at (1,1) width 28: "after"
@@ -44,7 +44,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (1,1) size 244x19
                   text run at (1,1) width 244: "password with value property changed"
               LayoutTableCell {TD} at (389,26) size 240x24 [r=1 c=1 rs=1 cs=1]
-                LayoutTextControl {INPUT} at (1,1) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (631,27) size 62x22 [r=1 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 28x19
                   text run at (1,1) width 28: "after"
@@ -123,7 +123,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (1,1) size 205x19
                   text run at (1,1) width 205: "text with value attribute changed"
               LayoutTableCell {TD} at (389,174) size 240x24 [r=7 c=1 rs=1 cs=1]
-                LayoutTextControl {INPUT} at (1,1) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (631,175) size 62x22 [r=7 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 28x19
                   text run at (1,1) width 28: "after"
@@ -159,7 +159,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (1,1) size 383x19
                   text run at (1,1) width 383: "check box with value property changed, then turned into text"
               LayoutTableCell {TD} at (389,248) size 240x24 [r=10 c=1 rs=1 cs=1]
-                LayoutTextControl {INPUT} at (1,1) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (631,249) size 62x22 [r=10 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 28x19
                   text run at (1,1) width 28: "after"
@@ -183,7 +183,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (1,1) size 381x19
                   text run at (1,1) width 381: "check box with value attribute changed, then turned into text"
               LayoutTableCell {TD} at (389,298) size 240x24 [r=12 c=1 rs=1 cs=1]
-                LayoutTextControl {INPUT} at (1,1) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (631,299) size 62x22 [r=12 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 28x19
                   text run at (1,1) width 28: "after"
@@ -206,23 +206,23 @@ layer at (0,0) size 800x600
                   text run at (1,1) width 40: "before"
 layer at (8,100) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (400,140) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (400,140) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
     LayoutText {#text} at (0,0) size 36x16
       text run at (0,0) width 36: "before"
-layer at (400,166) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (400,166) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
     LayoutText {#text} at (0,0) size 30x16
       text run at (0,0) width 30: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
-layer at (400,314) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (400,314) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
     LayoutText {#text} at (0,0) size 26x16
       text run at (0,0) width 26: "after"
-layer at (400,388) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (400,388) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
     LayoutText {#text} at (0,0) size 26x16
       text run at (0,0) width 26: "after"
-layer at (400,438) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (400,438) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
     LayoutText {#text} at (0,0) size 26x16
       text run at (0,0) width 26: "after"

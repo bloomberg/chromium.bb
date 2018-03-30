@@ -39,8 +39,8 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (230,68) size 162.59x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (230,68) size 162.59x15
             chunk 1 text run 1 at (230.00,80.00) startOffset 0 endOffset 30 width 162.60: "Relative to font x-height (ex)"
-        LayoutSVGContainer {g} at (20,80) size 200x1
-          LayoutSVGRect {rect} at (20,80) size 200x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=80.00] [width=200.00] [height=1.00]
+        LayoutSVGContainer {g} at (20,80) size 211.33x1
+          LayoutSVGRect {rect} at (20,80) size 211.33x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=80.00] [width=211.33] [height=1.00]
         LayoutSVGText {text} at (20,86) size 98.39x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (20,86) size 98.39x15
             chunk 1 text run 1 at (20.00,98.00) startOffset 0 endOffset 15 width 98.40: "41.67% = 200 px"

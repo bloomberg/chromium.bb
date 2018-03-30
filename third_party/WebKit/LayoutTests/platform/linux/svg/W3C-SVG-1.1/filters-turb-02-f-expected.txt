@@ -27,9 +27,9 @@ layer at (0,0) size 800x600
           [feTurbulence type="TURBULENCE" baseFrequency="0.01, 0.01" seed="-2.00" numOctaves="1" stitchTiles="0"]
         LayoutSVGResourceFilter {filter} [id="turbneg7"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feTurbulence type="TURBULENCE" baseFrequency="0.01, 0.01" seed="-2.60" numOctaves="1" stitchTiles="0"]
-      LayoutSVGText {text} at (142.19,26.39) size 195.59x27 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (142.19,26.39) size 195.59x27
-          chunk 1 (middle anchor) text run 1 at (142.20,48.00) startOffset 0 endOffset 17 width 195.60: "feTurbulence seed"
+      LayoutSVGText {text} at (141.89,26.39) size 196.19x27 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (141.89,26.39) size 196.19x27
+          chunk 1 (middle anchor) text run 1 at (141.90,48.00) startOffset 0 endOffset 17 width 196.20: "feTurbulence seed"
       LayoutSVGContainer {g} at (-5,-5) size 360x220 [transform={m=((1.00,0.00)(0.00,1.00)) t=(65.00,80.00)}]
         LayoutSVGRect {rect} at (0,0) size 50x50 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbneg3"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50

@@ -39,8 +39,8 @@ layer at (0,0) size 800x600
           LayoutSVGEllipse {circle} at (0,0) size 10x10 [fill={[type=SOLID] [color=#008000]}] [cx=5.00] [cy=5.00] [r=5.00]
         LayoutSVGContainer {g} at (0,0) size 10x10 [transform={m=((1.60,0.00)(0.00,1.60)) t=(172.00,177.00)}]
           LayoutSVGPath {path} at (0,0) size 10x10 [fill={[type=SOLID] [color=#0000FF]}] [data="M 5 0 L 10 10 L 0 10 Z"]
-      LayoutSVGText {text} at (144.39,207.39) size 133.19x15.59 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (144.39,207.39) size 133.19x15.59
+      LayoutSVGText {text} at (145,207.39) size 132.59x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (145,207.39) size 132.59x15.59
           chunk 1 text run 1 at (145.00,220.00) startOffset 0 endOffset 21 width 132.60: "Automatic Orientation"
       LayoutSVGPath {path} at (130,230) size 50x50 [stroke={[type=SOLID] [color=#000000] [stroke width=8.00]}] [start marker=marker2] [middle marker=marker2] [end marker=marker2] [data="M 130 230 L 180 230 L 180 280"]
       LayoutSVGContainer {g} at (122,218.69) size 69.31x69.31 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,0.00)}]

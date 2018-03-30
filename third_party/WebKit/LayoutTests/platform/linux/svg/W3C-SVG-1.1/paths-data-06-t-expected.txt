@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (68.40,34.20) size 367.20x232.20
       LayoutSVGContainer {g} at (238,19) size 204x129 [transform={m=((1.80,0.00)(0.00,1.80)) t=(-360.00,0.00)}]
-        LayoutSVGText {text} at (288,19) size 57.33x13.66 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (288,19) size 57.33x13.66
-            chunk 1 text run 1 at (288.00,30.00) startOffset 0 endOffset 11 width 57.33: "M, H, V, H,"
-        LayoutSVGText {text} at (288,35) size 54x13.66 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (288,35) size 54x13.66
-            chunk 1 text run 1 at (288.00,46.00) startOffset 0 endOffset 11 width 54.00: "V. H, V, H,"
-        LayoutSVGText {text} at (304,51) size 20.66x13.66 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (304,51) size 20.66x13.66
-            chunk 1 text run 1 at (304.00,62.00) startOffset 0 endOffset 4 width 20.67: "V, Z"
+        LayoutSVGText {text} at (288,19) size 57.66x13.66 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (288,19) size 57.66x13.66
+            chunk 1 text run 1 at (288.00,30.00) startOffset 0 endOffset 11 width 57.67: "M, H, V, H,"
+        LayoutSVGText {text} at (288,35) size 54.66x13.66 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (288,35) size 54.66x13.66
+            chunk 1 text run 1 at (288.00,46.00) startOffset 0 endOffset 11 width 54.67: "V. H, V, H,"
+        LayoutSVGText {text} at (304,51) size 21x13.66 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (304,51) size 21x13.66
+            chunk 1 text run 1 at (304.00,62.00) startOffset 0 endOffset 4 width 21.00: "V, Z"
         LayoutSVGPath {path} at (240,56) size 90x90 [stroke={[type=SOLID] [color=#000000]}] [data="M 240 56 H 270 V 86 H 300 V 116 H 330 V 146 H 240 V 56 Z"]
         LayoutSVGRect {rect} at (238,54) size 4x4 [fill={[type=SOLID] [color=#FFFF00]}] [x=238.00] [y=54.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (268,54) size 4x4 [fill={[type=SOLID] [color=#FFFF00]}] [x=268.00] [y=54.00] [width=4.00] [height=4.00]

@@ -30,9 +30,9 @@ layer at (0,0) size 450x500
           chunk 1 text run 1 at (90.00,140.00) startOffset 0 endOffset 1 width 7.00: "t"
           chunk 1 text run 1 at (110.00,140.00) startOffset 0 endOffset 1 width 7.00: "i"
           chunk 1 text run 1 at (130.00,140.00) startOffset 0 endOffset 1 width 12.00: "k"
-      LayoutSVGText {text} at (50,150) size 175x13 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (50,150) size 175x13
-          chunk 1 text run 1 at (50.00,160.00) startOffset 0 endOffset 35 width 175.00: "<text x=\"50 70 90 110 130\" y=\"140\">"
+      LayoutSVGText {text} at (50,150) size 174x13 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (50,150) size 174x13
+          chunk 1 text run 1 at (50.00,160.00) startOffset 0 endOffset 35 width 174.00: "<text x=\"50 70 90 110 130\" y=\"140\">"
       LayoutSVGText {text} at (240,119) size 134x27 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (240,119) size 134x27
           chunk 1 text run 1 at (240.00,140.00) startOffset 0 endOffset 1 width 16.00: "B"
@@ -70,9 +70,9 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (90.00,260.00) startOffset 0 endOffset 1 width 7.00: "t"
             chunk 1 text run 1 at (110.00,260.00) startOffset 0 endOffset 1 width 7.00: "i"
             chunk 1 text run 1 at (130.00,260.00) startOffset 0 endOffset 1 width 12.00: "k"
-      LayoutSVGText {text} at (50,270) size 184x13 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (50,270) size 184x13
-          chunk 1 text run 1 at (50.00,280.00) startOffset 0 endOffset 36 width 184.00: "<tspan x=\"50 70 90 110 130\" y=\"260\">"
+      LayoutSVGText {text} at (50,270) size 183x13 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (50,270) size 183x13
+          chunk 1 text run 1 at (50.00,280.00) startOffset 0 endOffset 36 width 183.00: "<tspan x=\"50 70 90 110 130\" y=\"260\">"
       LayoutSVGText {text} at (240,239) size 134x27 contains 1 chunk(s)
         LayoutSVGTSpan {tspan} at (240,239) size 134x27
           LayoutSVGInlineText {#text} at (240,239) size 134x27

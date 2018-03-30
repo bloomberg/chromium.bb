@@ -107,10 +107,10 @@ TEST_F(FontRenderParamsTest, Default) {
           base::CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
           base::CreateFontconfigEditStanza("rgba", "const", "rgb") +
           kFontconfigMatchFooter +
-          // Add a font match for Arial. Since it specifies a family, it
+          // Add a font match for Arimo. Since it specifies a family, it
           // shouldn't take effect when querying default settings.
           kFontconfigMatchFontHeader +
-          base::CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
+          base::CreateFontconfigTestStanza("family", "eq", "string", "Arimo") +
           base::CreateFontconfigEditStanza("antialias", "bool", "true") +
           base::CreateFontconfigEditStanza("autohint", "bool", "false") +
           base::CreateFontconfigEditStanza("hinting", "bool", "true") +
@@ -347,7 +347,7 @@ TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
   test_font_delegate_.set_params(system_params);
 
   FontRenderParamsQuery query;
-  query.families.push_back("Arial");
+  query.families.push_back("Arimo");
   query.families.push_back("Times New Roman");
   query.pixel_size = 10;
   std::string suggested_family;
@@ -361,25 +361,25 @@ TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
 }
 
 TEST_F(FontRenderParamsTest, MissingFamily) {
-  // With Arial and Verdana installed, request (in order) Helvetica, Arial, and
-  // Verdana and check that Arial is returned.
+  // With Arimo and Verdana installed, request (in order) Helvetica, Arimo, and
+  // Verdana and check that Arimo is returned.
   FontRenderParamsQuery query;
   query.families.push_back("Helvetica");
-  query.families.push_back("Arial");
+  query.families.push_back("Arimo");
   query.families.push_back("Verdana");
   std::string suggested_family;
   GetFontRenderParams(query, &suggested_family);
-  EXPECT_EQ("Arial", suggested_family);
+  EXPECT_EQ("Arimo", suggested_family);
 }
 
 TEST_F(FontRenderParamsTest, SubstituteFamily) {
-  // Configure Fontconfig to use Verdana for both Helvetica and Arial.
+  // Configure Fontconfig to use Verdana for both Helvetica and Arimo.
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) +
           base::CreateFontconfigAliasStanza("Helvetica", "Verdana") +
           kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
+          base::CreateFontconfigTestStanza("family", "eq", "string", "Arimo") +
           base::CreateFontconfigEditStanza("family", "string", "Verdana") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
@@ -390,7 +390,7 @@ TEST_F(FontRenderParamsTest, SubstituteFamily) {
   EXPECT_EQ("Verdana", suggested_family);
 
   query.families.clear();
-  query.families.push_back("Arial");
+  query.families.push_back("Arimo");
   suggested_family.clear();
   GetFontRenderParams(query, &suggested_family);
   EXPECT_EQ("Verdana", suggested_family);

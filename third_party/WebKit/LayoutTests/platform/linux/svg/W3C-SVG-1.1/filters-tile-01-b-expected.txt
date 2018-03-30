@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (115,11.19) size 250x278.81
-      LayoutSVGText {text} at (140.39,11.19) size 199.19x16.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (140.39,11.19) size 199.19x16.80
-          chunk 1 (middle anchor) text run 1 at (140.40,25.00) startOffset 0 endOffset 35 width 199.20: "feTile filter test: a tiled pattern"
+      LayoutSVGText {text} at (140.69,11.19) size 198.59x16.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (140.69,11.19) size 198.59x16.80
+          chunk 1 (middle anchor) text run 1 at (140.70,25.00) startOffset 0 endOffset 35 width 198.60: "feTile filter test: a tiled pattern"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="feTileFilter"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
           [feTile]

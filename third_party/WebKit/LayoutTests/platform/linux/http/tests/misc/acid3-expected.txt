@@ -43,7 +43,7 @@ layer at (20,20) size 644x433
         LayoutBlockFlow (floating) {SPAN} at (562,0) size 20x20 [bgcolor=#FFFFFF]
         LayoutText {#text} at (114,0) size 560x56
           text run at (114,0) width 446: " a browser must use its default settings, the animation has to be"
-          text run at (0,19) width 559: "smooth, the score has to end on 100/100, and the final page has to look exactly,"
+          text run at (0,19) width 560: "smooth, the score has to end on 100/100, and the final page has to look exactly,"
           text run at (0,38) width 131: "pixel for pixel, like "
         LayoutInline {A} at (0,0) size 168x18 [color=#0000FF]
           LayoutText {#text} at (131,38) size 168x18
@@ -232,7 +232,7 @@ layer at (17,18) size 80x36
     LayoutText {#text} at (0,0) size 71x36
       text run at (0,0) width 67: "YOU SHOULD"
       text run at (0,12) width 71: "NOT SEE THIS"
-      text run at (0,24) width 35: "AT ALL"
+      text run at (0,24) width 34: "AT ALL"
 layer at (638,18) size 20x20
   LayoutBlockFlow (positioned) {<pseudo:after>} at (638,18) size 20x20 [color=#FFFFFF] [bgcolor=#FF00FF]
     LayoutTextFragment (anonymous) at (0,0) size 20x20

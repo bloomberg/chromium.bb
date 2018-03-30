@@ -43,18 +43,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
 
     <!-- Do not add more fonts to this list. -->
     <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf</glob>
     </acceptfont>
     <acceptfont>
@@ -135,7 +123,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>sans serif</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
   </match>
 
@@ -146,7 +134,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>Helvetica</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
   </match>
 
@@ -155,7 +143,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>sans-serif</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
   </match>
 
@@ -224,6 +212,15 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
 
   <match target="pattern">
     <test qual="any" name="family">
+      <string>Arial</string>
+    </test>
+    <edit name="family" mode="assign">
+      <string>Arimo</string>
+    </edit>
+  </match>
+
+  <match target="pattern">
+    <test qual="any" name="family">
       <string>Courier New</string>
     </test>
     <edit name="family" mode="assign">
@@ -246,7 +243,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>NonAntiAliasedSans</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
     <edit name="antialias" mode="assign">
       <bool>false</bool>
@@ -287,7 +284,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>AutohintedSerif</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
     <edit name="autohint" mode="assign">
       <bool>true</bool>
@@ -302,7 +299,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>HintedSerif</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
     <edit name="autohint" mode="assign">
       <bool>false</bool>
@@ -317,7 +314,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>FullAndAutoHintedSerif</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
     <edit name="autohint" mode="assign">
       <bool>true</bool>
@@ -332,7 +329,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>SubpixelEnabledArial</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
     <edit name="rgba" mode="assign">
       <const>rgb</const>
@@ -344,7 +341,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>SubpixelDisabledArial</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Arial</string>
+      <string>Arimo</string>
     </edit>
     <edit name="rgba" mode="assign">
       <const>none</const>

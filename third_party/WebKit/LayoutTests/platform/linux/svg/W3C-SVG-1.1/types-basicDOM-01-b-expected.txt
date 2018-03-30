@@ -4,10 +4,10 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (10,7.88) size 365x275.12
       LayoutSVGContainer {g} at (10,7.88) size 365x275.12
-        LayoutSVGContainer {g} at (-53.03,67.88) size 358.03x155.55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
-          LayoutSVGText {text} at (30,130) size 341.66x24.98 [transform={m=((0.42,0.42)(-0.42,0.42)) t=(0.00,0.00)}] contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (30,130) size 341.66x24.98
-              chunk 1 text run 1 at (30.00,150.00) startOffset 0 endOffset 37 width 341.67: "Rotated Text for testing SVGLocatable"
+        LayoutSVGContainer {g} at (-53.03,67.88) size 358.03x156.26 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
+          LayoutSVGText {text} at (30,130) size 343.33x24.98 [transform={m=((0.42,0.42)(-0.42,0.42)) t=(0.00,0.00)}] contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (30,130) size 343.33x24.98
+              chunk 1 text run 1 at (30.00,150.00) startOffset 0 endOffset 37 width 343.33: "Rotated Text for testing SVGLocatable"
           LayoutSVGText {text} at (100,111.42) size 305.70x22.84 [transform={m=((0.70,0.00)(0.00,0.70)) t=(0.00,0.00)}] contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (100,111.42) size 305.70x22.84
               chunk 1 text run 1 at (100.00,130.00) startOffset 0 endOffset 35 width 305.71: "Some other text with id 'otherText'"

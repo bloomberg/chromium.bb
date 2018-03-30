@@ -28,8 +28,8 @@ layer at (8,8) size 79x342 clip at (9,9) size 62x340
         LayoutInline {<pseudo:before>} at (0,0) size 16x16
           LayoutTextFragment (anonymous) at (2,0) size 16x16
             text run at (2,0) width 16: "    "
-        LayoutText {#text} at (18,0) size 24x16
-          text run at (18,0) width 24: "Two"
+        LayoutText {#text} at (18,0) size 23x16
+          text run at (18,0) width 23: "Two"
       LayoutBlockFlow {OPTION} at (0,51) size 62x17 [color=#0000FF]
         LayoutInline {<pseudo:before>} at (0,0) size 16x16
           LayoutTextFragment (anonymous) at (2,0) size 16x16
@@ -56,8 +56,8 @@ layer at (8,8) size 79x342 clip at (9,9) size 62x340
         LayoutInline {<pseudo:before>} at (0,0) size 16x16
           LayoutTextFragment (anonymous) at (2,0) size 16x16
             text run at (2,0) width 16: "    "
-        LayoutText {#text} at (18,0) size 24x16
-          text run at (18,0) width 24: "Two"
+        LayoutText {#text} at (18,0) size 23x16
+          text run at (18,0) width 23: "Two"
       LayoutBlockFlow {OPTION} at (0,51) size 62x17 [color=#FF0000]
         LayoutInline {<pseudo:before>} at (0,0) size 16x16
           LayoutTextFragment (anonymous) at (2,0) size 16x16
@@ -84,8 +84,8 @@ layer at (8,8) size 79x342 clip at (9,9) size 62x340
         LayoutInline {<pseudo:before>} at (0,0) size 16x16
           LayoutTextFragment (anonymous) at (2,0) size 16x16
             text run at (2,0) width 16: "    "
-        LayoutText {#text} at (18,0) size 24x16
-          text run at (18,0) width 24: "Two"
+        LayoutText {#text} at (18,0) size 23x16
+          text run at (18,0) width 23: "Two"
       LayoutBlockFlow {OPTION} at (0,51) size 62x17 [color=#FFFFFF] [bgcolor=#999999]
         LayoutInline {<pseudo:before>} at (0,0) size 16x16
           LayoutTextFragment (anonymous) at (2,0) size 16x16

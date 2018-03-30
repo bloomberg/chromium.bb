@@ -39,7 +39,7 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (239.19,-9) size 21.59x15.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (239.19,-9) size 21.59x15.59
             chunk 1 (middle anchor) text run 1 at (239.20,3.00) startOffset 0 endOffset 3 width 21.60: "<a>"
-      LayoutSVGContainer {g} at (9.39,2.59) size 272.20x197.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,5.00)}]
+      LayoutSVGContainer {g} at (10,2.59) size 271.59x197.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,5.00)}]
         LayoutSVGText {text} at (10,2.59) size 14.39x22.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,2.59) size 14.39x22.19
             chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 1 width 14.40: "A"
@@ -175,35 +175,35 @@ layer at (0,0) size 800x600
             LayoutSVGText {text} at (230,-7) size 21.59x34.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,0.00)}] contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (230,-7) size 21.59x34.19
                 chunk 1 text run 1 at (230.00,20.00) startOffset 0 endOffset 1 width 21.60: "A"
-        LayoutSVGContainer {g} at (9.39,-7.59) size 272.20x34.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,105.00)}]
-          LayoutSVGHiddenContainer {defs} at (9.39,-7.59) size 52.20x34.78
-            LayoutSVGContainer {g} at (9.39,-7.59) size 52.20x34.78
-              LayoutSVGText {text} at (9.39,-7.59) size 21x34.19 contains 1 chunk(s)
-                LayoutSVGInlineText {#text} at (9.39,-7.59) size 21x34.19
+        LayoutSVGContainer {g} at (10,-7.59) size 271.59x34.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,105.00)}]
+          LayoutSVGHiddenContainer {defs} at (10,-7.59) size 51.59x34.78
+            LayoutSVGContainer {g} at (10,-7.59) size 51.59x34.78
+              LayoutSVGText {text} at (10,-7.59) size 20.39x34.19 contains 1 chunk(s)
+                LayoutSVGInlineText {#text} at (10,-7.59) size 20.39x34.19
                   chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 1 width 19.80: "A"
               LayoutSVGText {text} at (40,-7) size 21.59x34.19 contains 1 chunk(s)
                 LayoutSVGInlineText {#text} at (40,-7) size 21.59x34.19
                   chunk 1 text run 1 at (40.00,20.00) startOffset 0 endOffset 1 width 21.60: "A"
-          LayoutSVGContainer {use} at (9.39,-7.59) size 52.20x34.78
-            LayoutSVGContainer {g} at (9.39,-7.59) size 52.20x34.78
-              LayoutSVGText {text} at (9.39,-7.59) size 21x34.19 contains 1 chunk(s)
-                LayoutSVGInlineText {#text} at (9.39,-7.59) size 21x34.19
+          LayoutSVGContainer {use} at (10,-7.59) size 51.59x34.78
+            LayoutSVGContainer {g} at (10,-7.59) size 51.59x34.78
+              LayoutSVGText {text} at (10,-7.59) size 20.39x34.19 contains 1 chunk(s)
+                LayoutSVGInlineText {#text} at (10,-7.59) size 20.39x34.19
                   chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 1 width 19.80: "A"
               LayoutSVGText {text} at (40,-7) size 21.59x34.19 contains 1 chunk(s)
                 LayoutSVGInlineText {#text} at (40,-7) size 21.59x34.19
                   chunk 1 text run 1 at (40.00,20.00) startOffset 0 endOffset 1 width 21.60: "A"
-          LayoutSVGContainer {use} at (9.39,-7.59) size 52.20x34.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(110.00,0.00)}]
-            LayoutSVGContainer {g} at (9.39,-7.59) size 52.20x34.78
-              LayoutSVGText {text} at (9.39,-7.59) size 21x34.19 contains 1 chunk(s)
-                LayoutSVGInlineText {#text} at (9.39,-7.59) size 21x34.19
+          LayoutSVGContainer {use} at (10,-7.59) size 51.59x34.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(110.00,0.00)}]
+            LayoutSVGContainer {g} at (10,-7.59) size 51.59x34.78
+              LayoutSVGText {text} at (10,-7.59) size 20.39x34.19 contains 1 chunk(s)
+                LayoutSVGInlineText {#text} at (10,-7.59) size 20.39x34.19
                   chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 1 width 19.80: "A"
               LayoutSVGText {text} at (40,-7) size 21.59x34.19 contains 1 chunk(s)
                 LayoutSVGInlineText {#text} at (40,-7) size 21.59x34.19
                   chunk 1 text run 1 at (40.00,20.00) startOffset 0 endOffset 1 width 21.60: "A"
-          LayoutSVGContainer {use} at (9.39,-7.59) size 52.20x34.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,0.00)}]
-            LayoutSVGContainer {g} at (9.39,-7.59) size 52.20x34.78
-              LayoutSVGText {text} at (9.39,-7.59) size 21x34.19 contains 1 chunk(s)
-                LayoutSVGInlineText {#text} at (9.39,-7.59) size 21x34.19
+          LayoutSVGContainer {use} at (10,-7.59) size 51.59x34.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,0.00)}]
+            LayoutSVGContainer {g} at (10,-7.59) size 51.59x34.78
+              LayoutSVGText {text} at (10,-7.59) size 20.39x34.19 contains 1 chunk(s)
+                LayoutSVGInlineText {#text} at (10,-7.59) size 20.39x34.19
                   chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 1 width 19.80: "A"
               LayoutSVGText {text} at (40,-7) size 21.59x34.19 contains 1 chunk(s)
                 LayoutSVGInlineText {#text} at (40,-7) size 21.59x34.19

@@ -79,7 +79,7 @@
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [184, 257, 32, 29],
+          "rect": [183, 257, 32, 29],
           "reason": "appeared"
         }
       ]

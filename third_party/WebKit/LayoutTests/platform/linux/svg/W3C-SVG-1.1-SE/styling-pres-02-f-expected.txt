@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (-10,-16.80) size 449x241.80
-      LayoutSVGText {text} at (10,3.19) size 343.19x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,3.19) size 343.19x21
-          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 44 width 343.20: "Testing inapplicable presentation attributes"
+      LayoutSVGText {text} at (10,3.19) size 343.80x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,3.19) size 343.80x21
+          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 44 width 343.80: "Testing inapplicable presentation attributes"
       LayoutSVGContainer {g} at (-10,-16.80) size 30.39x26.80
         LayoutSVGPath {path} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M 0 0"]
         LayoutSVGImage {image} at (0,0) size 10x10
@@ -54,8 +54,8 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (40,207.39) size 154.19x15.59
             chunk 1 text run 1 at (40.00,220.00) startOffset 0 endOffset 26 width 154.20: "letter-spacing on polyline"
         LayoutSVGRect {rect} at (250,25) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=250.00] [y=25.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (280,27.39) size 109.19x15.59 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (280,27.39) size 109.19x15.59
+        LayoutSVGText {text} at (280,27.39) size 108.59x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (280,27.39) size 108.59x15.59
             chunk 1 text run 1 at (280.00,40.00) startOffset 0 endOffset 19 width 108.00: "flood-color on tref"
         LayoutSVGRect {rect} at (250,55) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=250.00] [y=55.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (280,57.39) size 152.39x15.59 contains 1 chunk(s)

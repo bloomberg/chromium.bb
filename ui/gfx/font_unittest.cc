@@ -21,6 +21,12 @@ namespace {
 
 using FontTest = testing::Test;
 
+#if defined(OS_LINUX)
+const char kTestFontName[] = "Arimo";
+#else
+const char kTestFontName[] = "Arial";
+#endif
+
 #if defined(OS_WIN)
 class ScopedMinimumFontSizeCallback {
  public:
@@ -54,14 +60,15 @@ int ScopedMinimumFontSizeCallback::minimum_size_ = 0;
 #define MAYBE_LoadArial LoadArial
 #endif
 TEST_F(FontTest, MAYBE_LoadArial) {
-  Font cf("Arial", 16);
+  Font cf(kTestFontName, 16);
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
   EXPECT_TRUE(cf.GetNativeFont());
 #endif
   EXPECT_EQ(cf.GetStyle(), Font::NORMAL);
   EXPECT_EQ(cf.GetFontSize(), 16);
-  EXPECT_EQ(cf.GetFontName(), "Arial");
-  EXPECT_EQ("arial", base::ToLowerASCII(cf.GetActualFontNameForTesting()));
+  EXPECT_EQ(cf.GetFontName(), kTestFontName);
+  EXPECT_EQ(base::ToLowerASCII(kTestFontName),
+            base::ToLowerASCII(cf.GetActualFontNameForTesting()));
 }
 
 #if defined(OS_ANDROID)
@@ -70,14 +77,15 @@ TEST_F(FontTest, MAYBE_LoadArial) {
 #define MAYBE_LoadArialBold LoadArialBold
 #endif
 TEST_F(FontTest, MAYBE_LoadArialBold) {
-  Font cf("Arial", 16);
+  Font cf(kTestFontName, 16);
   Font bold(cf.Derive(0, Font::NORMAL, Font::Weight::BOLD));
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
   EXPECT_TRUE(bold.GetNativeFont());
 #endif
   EXPECT_EQ(bold.GetStyle(), Font::NORMAL);
   EXPECT_EQ(bold.GetWeight(), Font::Weight::BOLD);
-  EXPECT_EQ("arial", base::ToLowerASCII(cf.GetActualFontNameForTesting()));
+  EXPECT_EQ(base::ToLowerASCII(kTestFontName),
+            base::ToLowerASCII(cf.GetActualFontNameForTesting()));
 }
 
 #if defined(OS_ANDROID)
@@ -86,7 +94,7 @@ TEST_F(FontTest, MAYBE_LoadArialBold) {
 #define MAYBE_Ascent Ascent
 #endif
 TEST_F(FontTest, MAYBE_Ascent) {
-  Font cf("Arial", 16);
+  Font cf(kTestFontName, 16);
   EXPECT_GT(cf.GetBaseline(), 2);
   EXPECT_LE(cf.GetBaseline(), 22);
 }
@@ -97,7 +105,7 @@ TEST_F(FontTest, MAYBE_Ascent) {
 #define MAYBE_Height Height
 #endif
 TEST_F(FontTest, MAYBE_Height) {
-  Font cf("Arial", 16);
+  Font cf(kTestFontName, 16);
   EXPECT_GE(cf.GetHeight(), 16);
   // TODO(akalin): Figure out why height is so large on Linux.
   EXPECT_LE(cf.GetHeight(), 26);
@@ -109,7 +117,7 @@ TEST_F(FontTest, MAYBE_Height) {
 #define MAYBE_CapHeight CapHeight
 #endif
 TEST_F(FontTest, MAYBE_CapHeight) {
-  Font cf("Arial", 16);
+  Font cf(kTestFontName, 16);
   EXPECT_GT(cf.GetCapHeight(), 0);
   EXPECT_GT(cf.GetCapHeight(), cf.GetHeight() / 2);
   EXPECT_LT(cf.GetCapHeight(), cf.GetBaseline());
@@ -121,7 +129,7 @@ TEST_F(FontTest, MAYBE_CapHeight) {
 #define MAYBE_AvgWidths AvgWidths
 #endif
 TEST_F(FontTest, MAYBE_AvgWidths) {
-  Font cf("Arial", 16);
+  Font cf(kTestFontName, 16);
   EXPECT_EQ(cf.GetExpectedTextWidth(0), 0);
   EXPECT_GT(cf.GetExpectedTextWidth(1), cf.GetExpectedTextWidth(0));
   EXPECT_GT(cf.GetExpectedTextWidth(2), cf.GetExpectedTextWidth(1));
@@ -140,8 +148,9 @@ TEST_F(FontTest, MAYBE_AvgWidths) {
 // fonts may be installed but still need enabling in Font Book.app.
 // http://crbug.com/347429
 TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
-  Font arial("Arial", 16);
-  EXPECT_EQ("arial", base::ToLowerASCII(arial.GetActualFontNameForTesting()))
+  Font arial(kTestFontName, 16);
+  EXPECT_EQ(base::ToLowerASCII(kTestFontName),
+            base::ToLowerASCII(arial.GetActualFontNameForTesting()))
       << "********\n"
       << "Your test environment seems to be missing Arial font, which is "
       << "needed for unittests.  Check if Arial font is installed.\n"
@@ -169,7 +178,7 @@ TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
 #define MAYBE_DeriveFont DeriveFont
 #endif
 TEST_F(FontTest, MAYBE_DeriveFont) {
-  Font cf("Arial", 8);
+  Font cf(kTestFontName, 8);
   const int kSizeDelta = 2;
   Font cf_underlined =
       cf.Derive(0, cf.GetStyle() | gfx::Font::UNDERLINE, cf.GetWeight());
@@ -183,7 +192,7 @@ TEST_F(FontTest, MAYBE_DeriveFont) {
 
 #if defined(OS_WIN)
 TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
-  Font cf("Arial", 8);
+  Font cf(kTestFontName, 8);
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 
@@ -192,7 +201,7 @@ TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
 }
 
 TEST_F(FontTest, DeriveKeepsOriginalSizeIfHeightOk) {
-  Font cf("Arial", 8);
+  Font cf(kTestFontName, 8);
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 

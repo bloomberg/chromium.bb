@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
       LayoutSVGContainer {g} at (50,223.39) size 380x67
         LayoutSVGRect {rect} at (50,225) size 380x64 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [x=50.00] [y=225.00] [width=380.00] [height=64.00]
         LayoutSVGContainer {g} at (55,223.39) size 347.39x67
-          LayoutSVGText {text} at (55,223.39) size 343.80x27 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (55,223.39) size 343.80x27
+          LayoutSVGText {text} at (55,223.39) size 344.39x27 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (55,223.39) size 344.39x27
               chunk 1 text run 1 at (55.00,245.00) startOffset 0 endOffset 34 width 343.80: "Each line of text which flows in a"
           LayoutSVGText {text} at (55,243.39) size 347.39x27 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (55,243.39) size 347.39x27

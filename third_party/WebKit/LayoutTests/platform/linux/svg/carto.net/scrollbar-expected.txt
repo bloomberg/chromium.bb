@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGRect {rect} at (-1000,-1000) size 5000x5000 [x=-1000.00] [y=-1000.00] [width=5000.00] [height=5000.00]
-    LayoutSVGText {text} at (50,11.25) size 340x23.75 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (50,11.25) size 340x23.75
+    LayoutSVGText {text} at (50,11.25) size 338.75x23.75 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (50,11.25) size 338.75x23.75
         chunk 1 text run 1 at (50.00,30.00) startOffset 0 endOffset 34 width 338.75: "Demonstration of the SVG Scrollbar"
     LayoutSVGText {text} at (548.75,15) size 401.25x18.75 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (548.75,15) size 401.25x18.75
@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
     LayoutSVGViewportContainer {svg} at (0,0) size 3607x420.50
       LayoutSVGContainer {g} at (0,0) size 3607x420.50
         LayoutSVGImage {image} at (0,0) size 3607x420.50
-        LayoutSVGContainer {g} at (410.38,64.80) size 2034.81x325.45
+        LayoutSVGContainer {g} at (410.38,64.80) size 2035.44x325.45
           LayoutSVGText {text} at (410.38,73.80) size 91.25x18.75 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (410.38,73.80) size 91.25x18.75
               chunk 1 (middle anchor) text run 1 at (410.38,88.80) startOffset 0 endOffset 13 width 91.25: "Furggeltihorn"
@@ -31,9 +31,9 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (2250.77,147.59) size 81.25x18.75 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (2250.77,147.59) size 81.25x18.75
               chunk 1 (middle anchor) text run 1 at (2250.77,162.60) startOffset 0 endOffset 11 width 81.25: "Crap Grisch"
-          LayoutSVGText {text} at (2380.19,134.59) size 65x18.75 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (2380.19,134.59) size 65x18.75
-              chunk 1 (middle anchor) text run 1 at (2380.20,149.60) startOffset 0 endOffset 9 width 65.00: "Piz Tom\x{FC}l"
+          LayoutSVGText {text} at (2379.56,134.59) size 66.25x18.75 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (2379.56,134.59) size 66.25x18.75
+              chunk 1 (middle anchor) text run 1 at (2379.57,149.60) startOffset 0 endOffset 9 width 66.25: "Piz Tom\x{FC}l"
           LayoutSVGText {text} at (1734.47,97.59) size 56.25x18.75 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (1734.47,97.59) size 56.25x18.75
               chunk 1 (middle anchor) text run 1 at (1734.47,112.60) startOffset 0 endOffset 8 width 56.25: "Fruntalp"
@@ -55,9 +55,9 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (950.50,234.50) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=234.50] [width=15.00] [height=15.00]
         LayoutSVGPath {path} at (954.50,54.50) size 8x8 [fill={[type=SOLID] [color=#696969]}] [data="M 958 54.5 L 962.5 62.5 L 954.5 62.5 Z"]
         LayoutSVGPath {path} at (954.50,238.50) size 8x8 [fill={[type=SOLID] [color=#696969]}] [data="M 958 246.5 L 954.5 238.5 L 962.5 238.5 Z"]
-    LayoutSVGText {text} at (396.25,267.50) size 553.75x16.25 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (396.25,267.50) size 553.75x16.25
-        chunk 1 (end anchor) text run 1 at (396.25,280.00) startOffset 0 endOffset 89 width 553.75: "Panorama Zervreilastausee, Vals, Graub\x{FC}nden, Switzerland, taken 2006-02-04 (\x{A9} A. Neumann)"
+    LayoutSVGText {text} at (397.50,267.50) size 552.50x16.25 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (397.50,267.50) size 552.50x16.25
+        chunk 1 (end anchor) text run 1 at (397.50,280.00) startOffset 0 endOffset 89 width 552.50: "Panorama Zervreilastausee, Vals, Graub\x{FC}nden, Switzerland, taken 2006-02-04 (\x{A9} A. Neumann)"
     LayoutSVGViewportContainer {svg} at (0,0) size 3560.75x689
       LayoutSVGContainer {g} at (0,0) size 3560.75x689
         LayoutSVGImage {image} at (0,0) size 3560.75x689

@@ -4,9 +4,9 @@ layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (12.50,26) size 468.50x306
-      LayoutSVGText {text} at (144,26) size 162x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (144,26) size 162x17
-          chunk 1 (middle anchor) text run 1 at (144.00,40.00) startOffset 0 endOffset 28 width 162.00: "Text display and visibility."
+      LayoutSVGText {text} at (143.50,26) size 163x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (143.50,26) size 163x17
+          chunk 1 (middle anchor) text run 1 at (143.50,40.00) startOffset 0 endOffset 28 width 163.00: "Text display and visibility."
       LayoutSVGText {text} at (143,59) size 164x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (143,59) size 164x19
           chunk 1 (middle anchor) text run 1 at (143.00,74.00) startOffset 0 endOffset 27 width 164.00: "Visibility on text & tspans"

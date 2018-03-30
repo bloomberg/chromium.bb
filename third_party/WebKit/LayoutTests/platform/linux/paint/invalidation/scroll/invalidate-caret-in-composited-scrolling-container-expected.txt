@@ -20,42 +20,42 @@
     {
       "name": "LayoutTextControl INPUT id='root'",
       "position": [7, 7],
-      "bounds": [66, 24],
+      "bounds": [63, 24],
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 66, 24],
+          "rect": [0, 0, 63, 24],
           "reason": "appeared"
         },
         {
           "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 66, 24],
+          "rect": [0, 0, 63, 24],
           "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 64, 22],
+          "rect": [0, 0, 61, 22],
           "reason": "full"
         },
         {
           "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 64, 22],
+          "rect": [0, 0, 61, 22],
           "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [2, 3, 60, 16],
+          "rect": [2, 3, 57, 16],
           "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [3, 4, 59, 16],
+          "rect": [3, 4, 56, 16],
           "reason": "paint property change"
         },
         {
           "object": "Caret",
-          "rect": [61, 4, 1, 16],
+          "rect": [58, 4, 1, 16],
           "reason": "appeared"
         }
       ]

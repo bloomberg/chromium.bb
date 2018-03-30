@@ -40,8 +40,8 @@ layer at (0,0) size 800x600
               chunk 1 text run 1 at (258.00,90.00) startOffset 0 endOffset 4 width 28.80: "text"
         LayoutSVGContainer {g} at (252,118) size 80x32
           LayoutSVGRect {rect} at (252,118) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=252.00] [y=118.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (258,123) size 31.80x19.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (258,123) size 31.80x19.19
+          LayoutSVGText {text} at (257.39,123) size 32.39x19.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (257.39,123) size 32.39x19.19
               chunk 1 text run 1 at (258.00,138.00) startOffset 0 endOffset 4 width 31.80: "wait"
         LayoutSVGContainer {g} at (252,166) size 80x32
           LayoutSVGRect {rect} at (252,166) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=252.00] [y=166.00] [width=80.00] [height=32.00]

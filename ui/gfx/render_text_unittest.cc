@@ -4241,11 +4241,17 @@ TEST_P(RenderTextTest, StringFitsOwnWidth) {
 // Ensure that RenderText examines all of the fonts in its FontList before
 // falling back to other fonts.
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_FontListFallback) {
+#if defined(OS_LINUX)
+  const char kTestFont[] = "Arimo";
+#else
+  const char kTestFont[] = "Arial";
+#endif
   // Double-check that the requested fonts are present.
-  FontList font_list(base::StringPrintf("Arial, %s, 12px", kSymbolFontName));
+  std::string format = std::string(kTestFont) + ", %s, 12px";
+  FontList font_list(base::StringPrintf(format.c_str(), kSymbolFontName));
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2u, fonts.size());
-  ASSERT_EQ("arial",
+  ASSERT_EQ(base::ToLowerASCII(kTestFont),
             base::ToLowerASCII(fonts[0].GetActualFontNameForTesting()));
   ASSERT_EQ(base::ToLowerASCII(kSymbolFontName),
             base::ToLowerASCII(fonts[1].GetActualFontNameForTesting()));

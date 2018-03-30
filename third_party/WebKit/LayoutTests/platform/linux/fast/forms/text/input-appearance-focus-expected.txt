@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 753x19
           text run at (0,0) width 753: "This test uses the new text field to test focus() and blur() and to make sure that onFocus and onBlur events fire correctly."
       LayoutBlockFlow {P} at (0,36) size 784x22
-        LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (154,1) size 4x19
-          text run at (154,1) width 4: " "
-        LayoutTextControl {INPUT} at (158,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (181,1) size 4x19
+          text run at (181,1) width 4: " "
+        LayoutTextControl {INPUT} at (185,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,74) size 784x80
         LayoutBR {BR} at (0,0) size 0x19
@@ -23,12 +23,12 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,60) size 318x19
           text run at (0,60) width 318: "Test Passed. Text field 2's onFocus event has fired."
       LayoutBlockFlow {P} at (0,170) size 784x0
-layer at (10,47) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 89x16
-      text run at (0,0) width 89: "My Text Field 1"
-layer at (168,47) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 89x16
-      text run at (0,0) width 89: "My Text Field 2"
+layer at (10,47) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
+    LayoutText {#text} at (0,0) size 90x16
+      text run at (0,0) width 90: "My Text Field 1"
+layer at (195,47) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
+    LayoutText {#text} at (0,0) size 90x16
+      text run at (0,0) width 90: "My Text Field 2"
 caret: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of child 1 {P} of body
