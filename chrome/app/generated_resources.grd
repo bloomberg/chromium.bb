@@ -6267,9 +6267,6 @@ I don't think this site should be blocked!
       <message name="IDS_LOAD_STATE_WAITING_FOR_RESPONSE">
         Waiting for <ph name="HOST_NAME">$1<ex>www.google.com</ex></ph>...
       </message>
-      <message name="IDS_LOAD_STATE_THROTTLED" desc="Tab status shown when tab loading is blocked on other in process network operations">
-        Waiting for other requests to complete...
-      </message>
 
       <!-- Tab Context Menu -->
       <if expr="not use_titlecase">

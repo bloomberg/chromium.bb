@@ -57,7 +57,6 @@ class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
 class NetworkQualityProvider;
-class NetworkThrottleManager;
 class ProxyDelegate;
 class ProxyResolutionService;
 class QuicClock;
@@ -296,9 +295,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   HttpStreamFactory* http_stream_factory() {
     return http_stream_factory_.get();
   }
-  NetworkThrottleManager* throttler() {
-    return network_stream_throttler_.get();
-  }
   NetLog* net_log() {
     return net_log_;
   }
@@ -376,8 +372,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   std::unique_ptr<HttpStreamFactory> http_stream_factory_;
   std::map<HttpResponseBodyDrainer*, std::unique_ptr<HttpResponseBodyDrainer>>
       response_drainers_;
-  std::unique_ptr<NetworkThrottleManager> network_stream_throttler_;
-
   NextProtoVector next_protos_;
 
   Params params_;
