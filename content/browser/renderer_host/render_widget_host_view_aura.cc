@@ -273,6 +273,11 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
     view_->ParentHierarchyChanged();
   }
 
+  void OnWindowTitleChanged(aura::Window* window) override {
+    if (window == view_->window_)
+      view_->WindowTitleChanged();
+  }
+
  private:
   RenderWidgetHostViewAura* view_;
 
@@ -732,6 +737,13 @@ void RenderWidgetHostViewAura::UpdateBackgroundColorFromRenderer(
   bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
   window_->layer()->SetFillsBoundsOpaquely(opaque);
   window_->layer()->SetColor(color);
+}
+
+void RenderWidgetHostViewAura::WindowTitleChanged() {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->WindowTitleChanged(
+        base::UTF16ToUTF8(window_->GetTitle()));
+  }
 }
 
 bool RenderWidgetHostViewAura::IsMouseLocked() {

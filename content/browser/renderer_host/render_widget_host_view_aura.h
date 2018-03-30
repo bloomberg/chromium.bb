@@ -532,6 +532,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // color to new views on navigation.
   void UpdateBackgroundColorFromRenderer(SkColor color);
 
+  // Called when the window title is changed.
+  void WindowTitleChanged();
+
   const bool is_mus_browser_plugin_guest_;
 
   // NOTE: this is null if |is_mus_browser_plugin_guest_| is true.

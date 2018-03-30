@@ -199,6 +199,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   bool IsPrimarySurfaceEvicted() const;
 
+  void WindowTitleChanged(const std::string& title);
+
  private:
   friend class DelegatedFrameHostClient;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,

@@ -719,4 +719,10 @@ bool DelegatedFrameHost::IsPrimarySurfaceEvicted() const {
          !HasSavedFrame();
 }
 
+void DelegatedFrameHost::WindowTitleChanged(const std::string& title) {
+  auto* host_frame_sink_manager = GetHostFrameSinkManager();
+  if (host_frame_sink_manager)
+    host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, title);
+}
+
 }  // namespace content
