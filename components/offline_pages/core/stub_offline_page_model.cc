@@ -17,6 +17,7 @@ void StubOfflinePageModel::RemoveObserver(Observer* observer) {}
 void StubOfflinePageModel::SavePage(
     const SavePageParams& save_page_params,
     std::unique_ptr<OfflinePageArchiver> archiver,
+    content::WebContents* web_contents,
     const SavePageCallback& callback) {}
 void StubOfflinePageModel::AddPage(const OfflinePageItem& page,
                                    const AddPageCallback& callback) {}
@@ -63,6 +64,10 @@ void StubOfflinePageModel::GetPagesByNamespace(
     const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesSupportedByDownloads(
     const MultipleOfflinePageItemCallback& callback) {}
+void StubOfflinePageModel::PublishInternalArchive(
+    const OfflinePageItem& offline_page,
+    std::unique_ptr<OfflinePageArchiver> archiver,
+    PublishPageCallback publish_done_callback){};
 const base::FilePath& StubOfflinePageModel::GetInternalArchiveDirectory(
     const std::string& name_space) const {
   return archive_directory_;

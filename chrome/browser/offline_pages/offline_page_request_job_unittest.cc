@@ -294,6 +294,7 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
 
   void CreateArchive(const base::FilePath& archives_dir,
                      const CreateArchiveParams& create_archive_params,
+                     content::WebContents* web_contents,
                      const CreateArchiveCallback& callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -954,7 +955,7 @@ int64_t OfflinePageRequestJobTest::SavePage(const GURL& url,
       ClientId(kDownloadNamespace, base::IntToString(item_counter));
   save_page_params.original_url = original_url;
   OfflinePageModelFactory::GetForBrowserContext(profile())->SavePage(
-      save_page_params, std::move(archiver),
+      save_page_params, std::move(archiver), nullptr,
       base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
                  base::Unretained(this)));
   WaitForAsyncOperation();

@@ -81,6 +81,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   void SavePage(const SavePageParams& save_page_params,
                 std::unique_ptr<OfflinePageArchiver> archiver,
+                content::WebContents* web_contents,
                 const SavePageCallback& callback) override;
   void AddPage(const OfflinePageItem& page,
                const AddPageCallback& callback) override;
@@ -136,6 +137,12 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   ClientPolicyController* GetPolicyController() override;
 
   OfflineEventLogger* GetLogger() override;
+
+  // Publish an offline page from our internal directory to a public directory.
+  void PublishInternalArchive(
+      const OfflinePageItem& offline_page,
+      std::unique_ptr<OfflinePageArchiver> archiver,
+      PublishPageCallback publish_done_callback) override;
 
   // Methods for testing only:
   OfflinePageMetadataStoreSQL* GetStoreForTesting() { return store_.get(); }
@@ -205,6 +212,11 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void PublishArchiveDone(const SavePageCallback& save_page_callback,
                           const OfflinePageItem& offline_page,
                           PublishArchiveResult* archive_result);
+
+  // Callback for when publishing an internal archive has completed.
+  void PublishInternalArchiveDone(PublishPageCallback publish_done_callback,
+                                  const OfflinePageItem& offline_page,
+                                  PublishArchiveResult* move_results);
 
   // Method for unpublishing the page from the system download manager.
   static void RemoveFromDownloadManager(

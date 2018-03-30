@@ -128,6 +128,17 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
                      const base::android::JavaParamRef<jstring>& j_origin,
                      jboolean user_requested);
 
+  void PublishInternalPage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_profile,
+      const jlong j_offline_id,
+      const base::android::JavaParamRef<jstring>& j_title,
+      const base::android::JavaParamRef<jstring>& j_url,
+      const base::android::JavaParamRef<jstring>& j_file_path,
+      const jlong j_size,
+      const base::android::JavaParamRef<jobject>& j_published_callback);
+
   jboolean IsShowingOfflinePreview(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -254,4 +265,3 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
 }  // namespace offline_pages
 
 #endif  // CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_BRIDGE_H_
-

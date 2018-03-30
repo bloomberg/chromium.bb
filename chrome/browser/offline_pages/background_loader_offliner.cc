@@ -495,8 +495,7 @@ void BackgroundLoaderOffliner::StartSnapshot() {
     }
   }
 
-  std::unique_ptr<OfflinePageArchiver> archiver(
-      new OfflinePageMHTMLArchiver(web_contents));
+  std::unique_ptr<OfflinePageArchiver> archiver(new OfflinePageMHTMLArchiver());
 
   OfflinePageModel::SavePageParams params;
   params.url = web_contents->GetLastCommittedURL();
@@ -514,7 +513,7 @@ void BackgroundLoaderOffliner::StartSnapshot() {
     params.original_url = request.url();
 
   offline_page_model_->SavePage(
-      params, std::move(archiver),
+      params, std::move(archiver), web_contents,
       base::Bind(&BackgroundLoaderOffliner::OnPageSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }

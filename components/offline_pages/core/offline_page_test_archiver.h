@@ -46,6 +46,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   // OfflinePageArchiver implementation:
   void CreateArchive(const base::FilePath& archives_dir,
                      const CreateArchiveParams& create_archive_params,
+                     content::WebContents* web_contents,
                      const CreateArchiveCallback& callback) override;
 
   void PublishArchive(

@@ -66,6 +66,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
 
   void SavePage(const SavePageParams& save_page_params,
                 std::unique_ptr<OfflinePageArchiver> archiver,
+                content::WebContents* web_contents,
                 const SavePageCallback& callback) override {
     mock_saving_ = true;
     save_page_callback_ = callback;

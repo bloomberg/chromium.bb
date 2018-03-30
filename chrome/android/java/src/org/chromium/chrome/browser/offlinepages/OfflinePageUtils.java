@@ -354,7 +354,8 @@ public class OfflinePageUtils {
      * @param currentTab The current tab from which the page is being shared.
      * @param shareCallback The callback to be used to send the ShareParams. This will only be
      *                      called if this function call returns true.
-     * @return true if the sharing of the page is possible and the callback will be invoked.
+     * @return true if the sharing of the page is possible.  The callback will be invoked if
+     *                      publishing the page succeeds.
      */
     public static boolean maybeShareOfflinePage(
             final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
@@ -382,30 +383,16 @@ public class OfflinePageUtils {
         offlinePageBridge.acquireFileAccessPermission(webContents, (granted) -> {
             if (!granted) return;
 
-            final String tabTitle = tab.getTitle();
+            // If the page is not in a public location, we must publish it before sharing it.
+            if (offlinePageBridge.isInPrivateDirectory(offlinePath)) {
+                publishThenShareInternalPage(
+                        activity, tab.getProfile(), offlinePageBridge, offlinePage, shareCallback);
+                return;
+            }
+
+            final String pageTitle = tab.getTitle();
             final File offlinePageFile = new File(offlinePath);
-            AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
-                @Override
-                protected Uri doInBackground(Void... v) {
-                    // If we have a content or file URI, we will not have a filename, just return
-                    // the URI.
-                    if (offlinePath.isEmpty()) {
-                        Uri uri = Uri.parse(pageUrl);
-                        assert(isSchemeContentOrFile(uri));
-                        return uri;
-                    }
-                    return ChromeFileProvider.generateUri(activity, offlinePageFile);
-                }
-                @Override
-                protected void onPostExecute(Uri uri) {
-                    ShareParams shareParams = new ShareParams.Builder(activity, tabTitle, pageUrl)
-                                                      .setShareDirectly(false)
-                                                      .setOfflineUri(uri)
-                                                      .build();
-                    shareCallback.onResult(shareParams);
-                }
-            };
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            sharePage(activity, pageUrl, pageTitle, offlinePath, offlinePageFile, shareCallback);
         });
 
         return true;
@@ -413,8 +400,9 @@ public class OfflinePageUtils {
 
     /**
      * Check to see if the offline page is sharable.
+     * @param offlinePageBridge Bridge to native code for offline pages use.
      * @param offlinePage Page to check for sharability.
-     * @param pageUri Uri of the page to check
+     * @param pageUri Uri of the page to check.
      * @return true if this page can be shared.
      */
     public static boolean isOfflinePageShareable(
@@ -454,6 +442,75 @@ public class OfflinePageUtils {
         boolean isFileScheme = TextUtils.equals(uri.getScheme(), UrlConstants.FILE_SCHEME);
 
         return isContentScheme || isFileScheme;
+    }
+
+    /**
+     * For internal pages, we must publish them, then share them.
+     * @param offlinePageBridge Bridge to native code for offline pages use.
+     * @param offlinePage Page to publish and share.
+     * @param shareCallback The callback to be used to send the ShareParams.
+     */
+    public static void publishThenShareInternalPage(final Activity activity, Profile profile,
+            OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage,
+            final Callback<ShareParams> shareCallback) {
+        Callback<OfflinePageItem> publishPageCallback =
+                new PublishPageCallback(activity, shareCallback);
+        offlinePageBridge.publishInternalPage(profile, offlinePage.getOfflineId(),
+                offlinePage.getTitle(), offlinePage.getUrl(), offlinePage.getFilePath(),
+                offlinePage.getFileSize(), publishPageCallback);
+    }
+
+    /**
+     * Callback from the native code to publish a page.  This will take the page, now in
+     * a public directory, and share it.
+     */
+    public static void sharePublishedPage(OfflinePageItem page, final Activity activity,
+            final Callback<ShareParams> shareCallback) {
+        if (page == null) {
+            // Set the source component name to null to indicate failure, causing ShareHelper.share
+            // to return.
+            ShareParams shareParams =
+                    new ShareParams.Builder(activity, page.getTitle(), page.getUrl())
+                            .setShareDirectly(false)
+                            .setOfflineUri(Uri.parse(page.getUrl()))
+                            .setSourcePackageName(null)
+                            .build();
+            shareCallback.onResult(shareParams);
+            return;
+        }
+        final String pageUrl = page.getUrl();
+        final String pageTitle = page.getTitle();
+        final File offlinePageFile = new File(page.getFilePath());
+        sharePage(activity, pageUrl, pageTitle, page.getFilePath(), offlinePageFile, shareCallback);
+    }
+
+    /**
+     * Share the page.
+     */
+    public static void sharePage(Activity activity, String pageUrl, String pageTitle,
+            String offlinePath, File offlinePageFile, final Callback<ShareParams> shareCallback) {
+        AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
+            @Override
+            protected Uri doInBackground(Void... v) {
+                // If we have a content or file URI, we will not have a filename, just return the
+                // URI.
+                if (offlinePath.isEmpty()) {
+                    Uri uri = Uri.parse(pageUrl);
+                    assert(isSchemeContentOrFile(uri));
+                    return uri;
+                }
+                return ChromeFileProvider.generateUri(activity, offlinePageFile);
+            }
+            @Override
+            protected void onPostExecute(Uri uri) {
+                ShareParams shareParams = new ShareParams.Builder(activity, pageTitle, pageUrl)
+                                                  .setShareDirectly(false)
+                                                  .setOfflineUri(uri)
+                                                  .build();
+                shareCallback.onResult(shareParams);
+            }
+        };
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

@@ -283,7 +283,7 @@ void OfflinePageModelTaskifiedTest::SavePageWithCallback(
   save_page_params.original_url = original_url;
   save_page_params.request_origin = request_origin;
   save_page_params.is_background = false;
-  model()->SavePage(save_page_params, std::move(archiver), callback);
+  model()->SavePage(save_page_params, std::move(archiver), nullptr, callback);
   PumpLoop();
 }
 
@@ -704,7 +704,8 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOnBackground) {
 
   base::MockCallback<SavePageCallback> callback;
   EXPECT_CALL(callback, Run(Eq(SavePageResult::SUCCESS), A<int64_t>()));
-  model()->SavePage(save_page_params, std::move(archiver), callback.Get());
+  model()->SavePage(save_page_params, std::move(archiver), nullptr,
+                    callback.Get());
   EXPECT_TRUE(archiver_ptr->create_archive_called());
   // |remove_popup_overlay| should be turned on on background mode.
   EXPECT_TRUE(archiver_ptr->create_archive_params().remove_popup_overlay);

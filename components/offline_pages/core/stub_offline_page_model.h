@@ -26,6 +26,7 @@ class StubOfflinePageModel : public OfflinePageModel {
   void RemoveObserver(Observer* observer) override;
   void SavePage(const SavePageParams& save_page_params,
                 std::unique_ptr<OfflinePageArchiver> archiver,
+                content::WebContents* web_contents,
                 const SavePageCallback& callback) override;
   void AddPage(const OfflinePageItem& page,
                const AddPageCallback& callback) override;
@@ -69,6 +70,10 @@ class StubOfflinePageModel : public OfflinePageModel {
       const MultipleOfflinePageItemCallback& callback) override;
   void GetPagesSupportedByDownloads(
       const MultipleOfflinePageItemCallback& callback) override;
+  void PublishInternalArchive(
+      const OfflinePageItem& offline_page,
+      std::unique_ptr<OfflinePageArchiver> archiver,
+      PublishPageCallback publish_done_callback) override;
   const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
