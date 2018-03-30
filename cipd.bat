@@ -25,6 +25,6 @@ if not errorlevel 0 goto :END
 
 :END
 endlocal & (
-  set ERRORLEVEL=%ERRORLEVEL%
+  set EXPORT_ERRORLEVEL=%ERRORLEVEL%
 )
-exit /b %ERRORLEVEL%
+exit /b %EXPORT_ERRORLEVEL%
