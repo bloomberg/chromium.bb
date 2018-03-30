@@ -37,6 +37,7 @@ OfflinePageTestArchiver::~OfflinePageTestArchiver() {
 void OfflinePageTestArchiver::CreateArchive(
     const base::FilePath& archives_dir,
     const CreateArchiveParams& create_archive_params,
+    content::WebContents* web_contents,
     const CreateArchiveCallback& callback) {
   create_archive_called_ = true;
   callback_ = callback;

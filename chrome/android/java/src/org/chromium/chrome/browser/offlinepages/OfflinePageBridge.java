@@ -561,6 +561,22 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Ask the native code to publish the internal page asychronously.
+     * @param profile Profile for current user.
+     * @param offlineId ID of the offline page to publish.
+     * @param title Title of the offline page.
+     * @param url Url of the offline page.
+     * @param filePath Path to the file for the offline page.
+     * @param size Length of the offline page file.
+     * @param publishedCallback Function to call when publishing is done.
+     */
+    public void publishInternalPage(Profile profile, long offlineId, String title, String url,
+            String filePath, long size, Callback<OfflinePageItem> publishedCallback) {
+        nativePublishInternalPage(mNativeOfflinePageBridge, profile, offlineId, title, url,
+                filePath, size, publishedCallback);
+    }
+
+    /**
      * Whether or not the underlying offline page model is loaded.
      */
     public boolean isOfflinePageModelLoaded() {
@@ -839,6 +855,10 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeDeletePagesByOfflineId(
             long nativeOfflinePageBridge, long[] offlineIds, Callback<Integer> callback);
+    @VisibleForTesting
+    private native void nativePublishInternalPage(long nativeOfflinePageBridge, Profile profile,
+            long offlineId, String title, String url, String filePath, long size,
+            Callback<OfflinePageItem> publishedCallback);
 
     private native void nativeSelectPageForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl, int tabId,

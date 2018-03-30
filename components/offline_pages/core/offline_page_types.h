@@ -103,6 +103,9 @@ typedef base::Callback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;
 typedef base::Callback<bool(const GURL&)> UrlPredicate;
 typedef base::Callback<void(int64_t)> SizeInBytesCallback;
+
+// Callback used for publishing an offline page.
+using PublishPageCallback = base::OnceCallback<void(const OfflinePageItem&)>;
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_PAGE_TYPES_H_

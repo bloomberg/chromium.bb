@@ -131,6 +131,7 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   // id in |save_page_params| and returns it.
   virtual void SavePage(const SavePageParams& save_page_params,
                         std::unique_ptr<OfflinePageArchiver> archiver,
+                        content::WebContents* web_contents,
                         const SavePageCallback& callback) = 0;
 
   // Adds a page entry to the metadata store.
@@ -210,6 +211,14 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   virtual void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) = 0;
+
+  // Publishes an offline page from the internal offline page directory.  This
+  // includes putting it in a public directory, updating the system download
+  // manager, if any, and updating the offline page model database.
+  virtual void PublishInternalArchive(
+      const OfflinePageItem& offline_page,
+      std::unique_ptr<OfflinePageArchiver> archiver,
+      PublishPageCallback publish_done_callback) = 0;
 
   // Returns the policy controller.
   virtual ClientPolicyController* GetPolicyController() = 0;

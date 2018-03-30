@@ -202,6 +202,7 @@ void OfflinePageModelTaskified::OnTaskQueueIsIdle() {}
 void OfflinePageModelTaskified::SavePage(
     const SavePageParams& save_page_params,
     std::unique_ptr<OfflinePageArchiver> archiver,
+    content::WebContents* web_contents,
     const SavePageCallback& callback) {
   // Skip saving the page that is not intended to be saved, like local file
   // page.
@@ -231,7 +232,7 @@ void OfflinePageModelTaskified::SavePage(
       save_page_params.use_page_problem_detectors;
   archiver->CreateArchive(
       GetInternalArchiveDirectory(save_page_params.client_id.name_space),
-      create_archive_params,
+      create_archive_params, web_contents,
       base::Bind(&OfflinePageModelTaskified::OnCreateArchiveDone,
                  weak_ptr_factory_.GetWeakPtr(), save_page_params, offline_id,
                  GetCurrentTime(), callback));
@@ -523,6 +524,39 @@ void OfflinePageModelTaskified::PublishArchiveDone(
   AddPage(page,
           base::Bind(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
                      weak_ptr_factory_.GetWeakPtr(), save_page_callback, page));
+}
+
+void OfflinePageModelTaskified::PublishInternalArchive(
+    const OfflinePageItem& offline_page,
+    std::unique_ptr<OfflinePageArchiver> archiver,
+    PublishPageCallback publish_done_callback) {
+  archiver->PublishArchive(
+      offline_page, task_runner_, archive_manager_->GetPublicArchivesDir(),
+      download_manager_.get(),
+      base::BindOnce(&OfflinePageModelTaskified::PublishInternalArchiveDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(publish_done_callback)));
+}
+
+void OfflinePageModelTaskified::PublishInternalArchiveDone(
+    PublishPageCallback publish_done_callback,
+    const OfflinePageItem& offline_page,
+    PublishArchiveResult* publish_results) {
+  // Return an empty OfflinePageItem if we were unable to move the page.  The
+  // offline_id will be 0, which marks it as invalid.
+  if (publish_results->move_result != SavePageResult::SUCCESS) {
+    OfflinePageItem empty_offline_page;
+    std::move(publish_done_callback).Run(empty_offline_page);
+    return;
+  }
+
+  // TODO(petewil): Update the OfflinePageModel with the new location for the
+  // page, which is found in move_results.new_file_path, and with the download
+  // ID found at move_results.download_id.  Return the updated offline_page to
+  // the callback.
+
+  // Return to the OfflinePageBridge callback passed in.
+  std::move(publish_done_callback).Run(offline_page);
 }
 
 void OfflinePageModelTaskified::OnAddPageForSavePageDone(

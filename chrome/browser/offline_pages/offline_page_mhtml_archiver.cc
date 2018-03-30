@@ -48,17 +48,8 @@ void ComputeDigestOnFileThread(
 }  // namespace
 
 // static
-OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver(
-    content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      weak_ptr_factory_(this) {
-  DCHECK(web_contents_);
-}
-
 OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver()
-    : web_contents_(nullptr),
-      weak_ptr_factory_(this) {
-}
+    : weak_ptr_factory_(this) {}
 
 OfflinePageMHTMLArchiver::~OfflinePageMHTMLArchiver() {
 }
@@ -66,6 +57,7 @@ OfflinePageMHTMLArchiver::~OfflinePageMHTMLArchiver() {
 void OfflinePageMHTMLArchiver::CreateArchive(
     const base::FilePath& archives_dir,
     const CreateArchiveParams& create_archive_params,
+    content::WebContents* web_contents,
     const CreateArchiveCallback& callback) {
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
@@ -73,29 +65,30 @@ void OfflinePageMHTMLArchiver::CreateArchive(
 
   // TODO(chili): crbug/710248 These checks should probably be done inside
   // the offliner.
-  if (HasConnectionSecurityError()) {
+  if (HasConnectionSecurityError(web_contents)) {
     ReportFailure(ArchiverResult::ERROR_SECURITY_CERTIFICATE);
     return;
   }
 
   // Don't save chrome error pages.
-  if (GetPageType() == content::PageType::PAGE_TYPE_ERROR) {
+  if (GetPageType(web_contents) == content::PageType::PAGE_TYPE_ERROR) {
     ReportFailure(ArchiverResult::ERROR_ERROR_PAGE);
     return;
   }
 
   // Don't save chrome-injected interstitial info pages
   // i.e. "This site may be dangerous. Are you sure you want to continue?"
-  if (GetPageType() == content::PageType::PAGE_TYPE_INTERSTITIAL) {
+  if (GetPageType(web_contents) == content::PageType::PAGE_TYPE_INTERSTITIAL) {
     ReportFailure(ArchiverResult::ERROR_INTERSTITIAL_PAGE);
     return;
   }
 
-  GenerateMHTML(archives_dir, create_archive_params);
+  GenerateMHTML(archives_dir, web_contents, create_archive_params);
 }
 
 void OfflinePageMHTMLArchiver::GenerateMHTML(
     const base::FilePath& archives_dir,
+    content::WebContents* web_contents,
     const CreateArchiveParams& create_archive_params) {
   if (archives_dir.empty()) {
     DVLOG(1) << "Archive path was empty. Can't create archive.";
@@ -103,20 +96,20 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
     return;
   }
 
-  if (!web_contents_) {
+  if (!web_contents) {
     DVLOG(1) << "WebContents is missing. Can't create archive.";
     ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
     return;
   }
 
-  if (!web_contents_->GetRenderViewHost()) {
+  if (!web_contents->GetRenderViewHost()) {
     DVLOG(1) << "RenderViewHost is not created yet. Can't create archive.";
     ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
     return;
   }
 
-  GURL url(web_contents_->GetLastCommittedURL());
-  base::string16 title(web_contents_->GetTitle());
+  GURL url(web_contents->GetLastCommittedURL());
+  base::string16 title(web_contents->GetTitle());
   base::FilePath file_path(
       archives_dir.Append(base::GenerateGUID())
           .AddExtension(OfflinePageUtils::kMHTMLExtension));
@@ -126,7 +119,7 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   params.use_page_problem_detectors =
       create_archive_params.use_page_problem_detectors;
 
-  web_contents_->GenerateMHTML(
+  web_contents->GenerateMHTML(
       params,
       base::BindOnce(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
                      weak_ptr_factory_.GetWeakPtr(), url, file_path, title));
@@ -166,10 +159,11 @@ void OfflinePageMHTMLArchiver::OnComputeDigestDone(
                  file_path, title, file_size, digest));
 }
 
-bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
-  SecurityStateTabHelper::CreateForWebContents(web_contents_);
+bool OfflinePageMHTMLArchiver::HasConnectionSecurityError(
+    content::WebContents* web_contents) {
+  SecurityStateTabHelper::CreateForWebContents(web_contents);
   SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents_);
+      SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
@@ -177,8 +171,9 @@ bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
          security_info.security_level;
 }
 
-content::PageType OfflinePageMHTMLArchiver::GetPageType() {
-  return web_contents_->GetController().GetVisibleEntry()->GetPageType();
+content::PageType OfflinePageMHTMLArchiver::GetPageType(
+    content::WebContents* web_contents) {
+  return web_contents->GetController().GetVisibleEntry()->GetPageType();
 }
 
 void OfflinePageMHTMLArchiver::DeleteFileAndReportFailure(

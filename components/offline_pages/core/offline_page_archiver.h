@@ -20,6 +20,10 @@ namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace offline_pages {
 
 class SystemDownloadManager;
@@ -106,6 +110,7 @@ class OfflinePageArchiver {
   // with the result and additional information.
   virtual void CreateArchive(const base::FilePath& archives_dir,
                              const CreateArchiveParams& create_archive_params,
+                             content::WebContents* web_contents,
                              const CreateArchiveCallback& callback) = 0;
 
   // Publishes the page on a background thread, then returns to the

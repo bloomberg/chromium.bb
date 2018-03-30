@@ -53,9 +53,10 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
 
  private:
   void GenerateMHTML(const base::FilePath& archives_dir,
+                     content::WebContents* web_contents,
                      const CreateArchiveParams& create_archive_params) override;
-  bool HasConnectionSecurityError() override;
-  content::PageType GetPageType() override;
+  bool HasConnectionSecurityError(content::WebContents* web_contents) override;
+  content::PageType GetPageType(content::WebContents* web_contents) override;
 
   const GURL url_;
   const TestScenario test_scenario_;
@@ -74,6 +75,7 @@ TestMHTMLArchiver::~TestMHTMLArchiver() {
 
 void TestMHTMLArchiver::GenerateMHTML(
     const base::FilePath& archives_dir,
+    content::WebContents* web_contents,
     const CreateArchiveParams& create_archive_params) {
   if (test_scenario_ == TestScenario::WEB_CONTENTS_MISSING) {
     ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
@@ -93,11 +95,13 @@ void TestMHTMLArchiver::GenerateMHTML(
                                 kTestTitle, kTestFileSize));
 }
 
-bool TestMHTMLArchiver::HasConnectionSecurityError() {
+bool TestMHTMLArchiver::HasConnectionSecurityError(
+    content::WebContents* web_contents) {
   return test_scenario_ == TestScenario::CONNECTION_SECURITY_ERROR;
 }
 
-content::PageType TestMHTMLArchiver::GetPageType() {
+content::PageType TestMHTMLArchiver::GetPageType(
+    content::WebContents* web_contents) {
   if (test_scenario_ == TestScenario::ERROR_PAGE)
     return content::PageType::PAGE_TYPE_ERROR;
   if (test_scenario_ == TestScenario::INTERSTITIAL_PAGE)
@@ -185,7 +189,7 @@ std::unique_ptr<TestMHTMLArchiver> OfflinePageMHTMLArchiverTest::CreateArchive(
   std::unique_ptr<TestMHTMLArchiver> archiver(
       new TestMHTMLArchiver(url, scenario));
   archiver->CreateArchive(archive_dir_path_,
-                          OfflinePageArchiver::CreateArchiveParams(),
+                          OfflinePageArchiver::CreateArchiveParams(), nullptr,
                           callback());
   PumpLoop();
   return archiver;
