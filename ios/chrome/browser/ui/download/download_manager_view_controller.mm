@@ -30,6 +30,10 @@ GuideName* const kActionButtonGuide = @"kDownloadManagerActionButtonGuide";
 // button). Defines the minimal distance between elements.
 const CGFloat kElementMargin = 16;
 
+// The size of the shadow used for background resizable image.
+const CGFloat kTopShadowHeight = 8;
+const CGFloat kLeftRightShadowHeight = 16;
+
 // Returns formatted size string.
 NSString* GetSizeString(long long size_in_bytes) {
   return [NSByteCountFormatter
@@ -56,11 +60,8 @@ NSString* GetSizeString(long long size_in_bytes) {
   BOOL _installDriveButtonVisible;
   BOOL _addedConstraints;  // YES if NSLayoutConstraits were added.
 }
-// Shadow view sits on top of background view. Union of shadow and background
-// views fills self.view area. The shadow is dropped to web page, not to white
-// Download Manager background.
-@property(nonatomic, readonly) UIImageView* shadow;
-@property(nonatomic, readonly) UIView* background;
+// Background is a resizable image with edge shadows.
+@property(nonatomic, readonly) UIImageView* background;
 
 // Download Manager UI has 2 rows. First row is always visible and contains
 // essential download controls: close button, action button and status label.
@@ -92,7 +93,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 @implementation DownloadManagerViewController
 
 @synthesize delegate = _delegate;
-@synthesize shadow = _shadow;
 @synthesize background = _background;
 @synthesize downloadControlsRow = _downloadControlsRow;
 @synthesize installDriveControlsRow = _installDriveControlsRow;
@@ -105,7 +105,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  [self.view addSubview:self.shadow];
   [self.view addSubview:self.background];
   [self.view addSubview:self.downloadControlsRow];
   [self.view addSubview:self.installDriveControlsRow];
@@ -136,33 +135,23 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self updateBottomConstraints];
   [self updateWidthConstraintsForTraitCollection:self.traitCollection];
 
-  // shadow constraints.
-  UIImageView* shadow = self.shadow;
-  [NSLayoutConstraint activateConstraints:@[
-    [shadow.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
-    [shadow.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
-    [shadow.topAnchor constraintEqualToAnchor:view.topAnchor],
-  ]];
-
   // background constraints.
   UIView* background = self.background;
   [NSLayoutConstraint activateConstraints:@[
     [background.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
     [background.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
     [background.bottomAnchor constraintEqualToAnchor:view.bottomAnchor],
-    [background.topAnchor constraintEqualToAnchor:shadow.bottomAnchor],
+    [background.topAnchor constraintEqualToAnchor:view.topAnchor],
   ]];
 
   // download controls row constraints.
   UIView* downloadRow = self.downloadControlsRow;
   UIButton* closeButton = self.closeButton;
-  // Account for bottom white pixel on shadow image.
-  CGFloat shadowHeight = CGRectGetHeight(shadow.frame) - 1;
   [NSLayoutConstraint activateConstraints:@[
     [downloadRow.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
     [downloadRow.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
     [downloadRow.topAnchor constraintEqualToAnchor:view.topAnchor
-                                          constant:shadowHeight],
+                                          constant:kTopShadowHeight],
     [downloadRow.layoutMarginsGuide.heightAnchor
         constraintEqualToAnchor:closeButton.heightAnchor],
   ]];
@@ -281,6 +270,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
         [self updateWidthConstraintsForTraitCollection:newCollection];
+        [self updateBackgroundForTraitCollection:newCollection];
       };
   [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
 }
@@ -342,20 +332,11 @@ NSString* GetSizeString(long long size_in_bytes) {
 
 #pragma mark - UI elements
 
-- (UIImageView*)shadow {
-  if (!_shadow) {
-    UIImage* shadowImage = [UIImage imageNamed:@"infobar_shadow"];
-    _shadow = [[UIImageView alloc] initWithImage:shadowImage];
-    _shadow.translatesAutoresizingMaskIntoConstraints = NO;
-  }
-  return _shadow;
-}
-
-- (UIView*)background {
+- (UIImageView*)background {
   if (!_background) {
-    _background = [[UIView alloc] initWithFrame:CGRectZero];
+    _background = [[UIImageView alloc] initWithImage:nil];
     _background.translatesAutoresizingMaskIntoConstraints = NO;
-    _background.backgroundColor = [UIColor whiteColor];
+    [self updateBackgroundForTraitCollection:self.traitCollection];
   }
   return _background;
 }
@@ -570,6 +551,20 @@ NSString* GetSizeString(long long size_in_bytes) {
   self.bottomConstraint = [firstAnchor constraintEqualToAnchor:secondAnchor];
 
   self.bottomConstraint.active = YES;
+}
+
+// Updates background image for the given UITraitCollection.
+- (void)updateBackgroundForTraitCollection:(UITraitCollection*)traitCollection {
+  NSString* imageName =
+      traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular
+          ? @"background_regular"
+          : @"background_compact";
+
+  UIImage* image = [UIImage imageNamed:imageName];
+  UIEdgeInsets insets = UIEdgeInsetsMake(
+      kTopShadowHeight, kLeftRightShadowHeight, 0, kLeftRightShadowHeight);
+
+  self.background.image = [image resizableImageWithCapInsets:insets];
 }
 
 // Updates and activates self.widthConstraint anchored to superview width. Uses
