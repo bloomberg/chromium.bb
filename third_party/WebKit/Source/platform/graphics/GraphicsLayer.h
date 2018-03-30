@@ -433,6 +433,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<CompositedLayerRasterInvalidator> raster_invalidator_;
 
   base::WeakPtrFactory<GraphicsLayer> weak_ptr_factory_;
+
+  FRIEND_TEST_ALL_PREFIXES(CompositingLayerPropertyUpdaterTest, MaskLayerState);
 };
 
 // ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext uses

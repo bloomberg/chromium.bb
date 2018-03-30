@@ -98,6 +98,8 @@ class CORE_EXPORT ObjectPaintProperties {
   // |    Clips to a fragment's bounds.
   // |    This is only present for content under a fragmentation
   // |    container.
+  // | NOTE: for composited SPv1/SPv175 clip path clips, we move clip path clip
+  // |       below mask.
   // +-[ clip path clip ]
   //   |  Clip created by path-based CSS clip-path. Only exists if the
   //  /   clip-path is "simple" that can be applied geometrically. This and
