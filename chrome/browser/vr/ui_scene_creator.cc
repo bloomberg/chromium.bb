@@ -2831,23 +2831,32 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
 
   parent = CreateTransientParent(kWebVrIndicatorTransience,
                                  kToastTimeoutSeconds, true);
-  parent->AddBinding(std::make_unique<Binding<std::pair<bool, bool>>>(
+  parent->AddBinding(std::make_unique<Binding<std::tuple<bool, bool, bool>>>(
       VR_BIND_LAMBDA(
           [](Model* model, UiElement* splash_screen) {
-            return std::make_pair(model->web_vr_enabled() &&
-                                      model->web_vr.presenting_web_vr() &&
-                                      model->web_vr.has_received_permissions &&
-                                      splash_screen->GetTargetOpacity() == 0.f,
-                                  model->controller.app_button_long_pressed);
+            return std::tuple<bool, bool, bool>(
+                model->web_vr_enabled() && model->web_vr.presenting_web_vr() &&
+                    model->web_vr.has_received_permissions &&
+                    splash_screen->GetTargetOpacity() == 0.f,
+                model->controller.app_button_long_pressed,
+                model->web_vr.showing_hosted_ui);
           },
           base::Unretained(model_),
           base::Unretained(
               scene_->GetUiElementByName(kSplashScreenTransientParent))),
       VR_BIND_LAMBDA(
           [](TransientElement* e, Model* model, UiScene* scene,
-             const base::Optional<std::pair<bool, bool>>& last_value,
-             const std::pair<bool, bool>& value) {
-            if (!value.first) {
+             const base::Optional<std::tuple<bool, bool, bool>>& last_value,
+             const std::tuple<bool, bool, bool>& value) {
+            const bool in_web_vr_presentation = std::get<0>(value);
+            const bool in_long_press = std::get<1>(value);
+            const bool showing_hosted_ui = std::get<2>(value);
+            const bool was_in_long_press =
+                last_value && std::get<1>(last_value.value());
+            const bool was_showing_hosted_ui =
+                last_value && std::get<2>(last_value.value());
+
+            if (!in_web_vr_presentation) {
               e->SetVisibleImmediately(false);
               return;
             }
@@ -2856,7 +2865,12 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             // situation where the app button has been released after a long
             // press, and the situation when we want to initially show the
             // indicators.
-            if (last_value && last_value.value().second && !value.second)
+            if (was_in_long_press && !in_long_press)
+              return;
+
+            // Similarly, we need to know when we've finished presenting hosted
+            // ui because we should not show indicators then.
+            if (was_showing_hosted_ui && !showing_hosted_ui)
               return;
 
             e->SetVisible(true);
@@ -2864,7 +2878,7 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             SetVisibleInLayout(
                 scene->GetUiElementByName(kWebVrExclusiveScreenToast),
                 !model->web_vr_autopresentation_enabled() &&
-                    !model->browsing_disabled && !value.second);
+                    !model->browsing_disabled && !in_long_press);
             SetVisibleInLayout(scene->GetUiElementByName(kWebVrUrlToast),
                                model->web_vr_autopresentation_enabled() &&
                                    model->toolbar_state.should_display_url);
@@ -2879,7 +2893,8 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             }
 
             e->RemoveKeyframeModels(TRANSFORM);
-            if (value.second) {
+            if (in_long_press) {
+              // We do not do a translation animation for long press.
               e->SetTranslate(0, 0, 0);
               return;
             }

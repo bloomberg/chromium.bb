@@ -1382,6 +1382,24 @@ TEST_F(UiTest, RepositionHostedUi) {
   EXPECT_EQ(original, hosted_ui->world_space_transform());
 }
 
+// Ensures that permissions do not appear after showing hosted UI.
+TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
+  CreateScene(kNotInCct, kInWebVr);
+  ui_->SetWebVrMode(true);
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
+  ui_->OnWebVrFrameAvailable();
+  ui_->SetCapturingState(CapturingStateModel());
+  OnBeginFrame();
+  EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
+  RunFor(MsToDelta(8000));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
+  model_->web_vr.showing_hosted_ui = true;
+  OnBeginFrame();
+  model_->web_vr.showing_hosted_ui = false;
+  OnBeginFrame();
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
+}
+
 // Ensures that permissions appear on long press, and that when the app button
 // is released that we do not show the exclusive screen toast. Distinguishing
 // these cases requires knowledge of the previous state.
