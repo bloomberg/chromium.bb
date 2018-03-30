@@ -211,7 +211,6 @@ ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h
 ppapi/native_client/src/untrusted/pnacl_irt_shim/irt_shim_ppapi.h
 ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_shim.h
 ppapi/native_client/src/untrusted/pnacl_irt_shim/shim_ppapi.h
-ppapi/proxy/content_decryptor_private_serializer.h
 ppapi/proxy/dispatch_reply_message.h
 ppapi/proxy/plugin_proxy_delegate.h
 ppapi/proxy/plugin_resource_callback.h

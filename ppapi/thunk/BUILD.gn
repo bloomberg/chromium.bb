@@ -169,7 +169,6 @@ source_set("thunk") {
       "ppb_browser_font_trusted_thunk.cc",
       "ppb_buffer_thunk.cc",
       "ppb_char_set_thunk.cc",
-      "ppb_content_decryptor_private_thunk.cc",
       "ppb_flash_clipboard_thunk.cc",
       "ppb_flash_device_id_thunk.cc",
       "ppb_flash_drm_thunk.cc",

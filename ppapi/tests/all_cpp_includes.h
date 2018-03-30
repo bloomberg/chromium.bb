@@ -48,7 +48,6 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/private/camera_capabilities_private.h"
 #include "ppapi/cpp/private/camera_device_private.h"
-#include "ppapi/cpp/private/content_decryptor_private.h"
 #include "ppapi/cpp/private/find_private.h"
 #include "ppapi/cpp/private/flash_font_file.h"
 #include "ppapi/cpp/private/flash_fullscreen.h"

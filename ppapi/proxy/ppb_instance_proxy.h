@@ -27,9 +27,6 @@
 #undef PostMessage
 #endif
 
-struct PP_DecryptedBlockInfo;
-struct PP_DecryptedFrameInfo;
-
 namespace ppapi {
 namespace proxy {
 
@@ -114,57 +111,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                               PP_URLComponents_Dev* components) override;
   PP_Var GetPluginReferrerURL(PP_Instance instance,
                               PP_URLComponents_Dev* components) override;
-  void PromiseResolved(PP_Instance instance, uint32_t promise_id) override;
-  void PromiseResolvedWithKeyStatus(PP_Instance instance,
-                                    uint32_t promise_id,
-                                    PP_CdmKeyStatus key_status) override;
-  void PromiseResolvedWithSession(PP_Instance instance,
-                                  uint32_t promise_id,
-                                  PP_Var session_id_var) override;
-  void PromiseRejected(PP_Instance instance,
-                       uint32_t promise_id,
-                       PP_CdmExceptionCode exception_code,
-                       uint32_t system_code,
-                       PP_Var error_description_var) override;
-  void SessionMessage(PP_Instance instance,
-                      PP_Var session_id_var,
-                      PP_CdmMessageType message_type,
-                      PP_Var message_var,
-                      PP_Var legacy_destination_url_var) override;
-  void SessionKeysChange(
-      PP_Instance instance,
-      PP_Var session_id_var,
-      PP_Bool has_additional_usable_key,
-      uint32_t key_count,
-      const struct PP_KeyInformation key_information[]) override;
-  void SessionExpirationChange(PP_Instance instance,
-                               PP_Var session_id_var,
-                               PP_Time new_expiry_time) override;
-  void SessionClosed(PP_Instance instance, PP_Var session_id_var) override;
-  void LegacySessionError(PP_Instance instance,
-                          PP_Var session_id_var,
-                          PP_CdmExceptionCode exception_code,
-                          uint32_t system_code,
-                          PP_Var error_description_var) override;
-  void DeliverBlock(PP_Instance instance,
-                    PP_Resource decrypted_block,
-                    const PP_DecryptedBlockInfo* block_info) override;
-  void DecoderInitializeDone(PP_Instance instance,
-                             PP_DecryptorStreamType decoder_type,
-                             uint32_t request_id,
-                             PP_Bool success) override;
-  void DecoderDeinitializeDone(PP_Instance instance,
-                               PP_DecryptorStreamType decoder_type,
-                               uint32_t request_id) override;
-  void DecoderResetDone(PP_Instance instance,
-                        PP_DecryptorStreamType decoder_type,
-                        uint32_t request_id) override;
-  void DeliverFrame(PP_Instance instance,
-                    PP_Resource decrypted_frame,
-                    const PP_DecryptedFrameInfo* frame_info) override;
-  void DeliverSamples(PP_Instance instance,
-                      PP_Resource audio_frames,
-                      const PP_DecryptedSampleInfo* sample_info) override;
 #endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_PPB_INSTANCE;
@@ -243,68 +189,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                      SerializedVarReturnValue result);
   void OnHostMsgGetPluginReferrerURL(PP_Instance instance,
                                      SerializedVarReturnValue result);
-
-  virtual void OnHostMsgPromiseResolved(PP_Instance instance,
-                                        uint32_t promise_id);
-  virtual void OnHostMsgPromiseResolvedWithKeyStatus(
-      PP_Instance instance,
-      uint32_t promise_id,
-      PP_CdmKeyStatus key_status);
-  virtual void OnHostMsgPromiseResolvedWithSession(
-      PP_Instance instance,
-      uint32_t promise_id,
-      SerializedVarReceiveInput session_id);
-  virtual void OnHostMsgPromiseRejected(
-      PP_Instance instance,
-      uint32_t promise_id,
-      PP_CdmExceptionCode exception_code,
-      uint32_t system_code,
-      SerializedVarReceiveInput error_description);
-  virtual void OnHostMsgSessionMessage(
-      PP_Instance instance,
-      SerializedVarReceiveInput session_id,
-      PP_CdmMessageType message_type,
-      SerializedVarReceiveInput message,
-      SerializedVarReceiveInput legacy_destination_url);
-  virtual void OnHostMsgSessionKeysChange(
-      PP_Instance instance,
-      const std::string& session_id,
-      PP_Bool has_additional_usable_key,
-      const std::vector<PP_KeyInformation>& key_information);
-  virtual void OnHostMsgSessionExpirationChange(
-      PP_Instance instance,
-      const std::string& session_id,
-      PP_Time new_expiry_time);
-  virtual void OnHostMsgSessionClosed(PP_Instance instance,
-                                      SerializedVarReceiveInput session_id);
-  virtual void OnHostMsgLegacySessionError(
-      PP_Instance instance,
-      SerializedVarReceiveInput session_id,
-      PP_CdmExceptionCode exception_code,
-      uint32_t system_code,
-      SerializedVarReceiveInput error_description);
-  virtual void OnHostMsgDecoderInitializeDone(
-      PP_Instance instance,
-      PP_DecryptorStreamType decoder_type,
-      uint32_t request_id,
-      PP_Bool success);
-  virtual void OnHostMsgDecoderDeinitializeDone(
-      PP_Instance instance,
-      PP_DecryptorStreamType decoder_type,
-      uint32_t request_id);
-  virtual void OnHostMsgDecoderResetDone(PP_Instance instance,
-                                         PP_DecryptorStreamType decoder_type,
-                                         uint32_t request_id);
-  virtual void OnHostMsgDeliverBlock(PP_Instance instance,
-                                     PP_Resource decrypted_block,
-                                     const std::string& serialized_block_info);
-  virtual void OnHostMsgDeliverFrame(PP_Instance instance,
-                                     PP_Resource decrypted_frame,
-                                     const std::string& serialized_block_info);
-  virtual void OnHostMsgDeliverSamples(
-      PP_Instance instance,
-      PP_Resource audio_frames,
-      const std::string& serialized_sample_info);
 #endif  // !defined(OS_NACL)
 
   // Host -> Plugin message handlers.

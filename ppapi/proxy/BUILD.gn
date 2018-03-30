@@ -259,8 +259,6 @@ component("proxy") {
       "ppb_var_deprecated_proxy.h",
       "ppb_video_decoder_proxy.cc",
       "ppb_video_decoder_proxy.h",
-      "ppp_content_decryptor_private_proxy.cc",
-      "ppp_content_decryptor_private_proxy.h",
       "ppp_instance_private_proxy.cc",
       "ppp_instance_private_proxy.h",
       "ppp_video_decoder_proxy.cc",

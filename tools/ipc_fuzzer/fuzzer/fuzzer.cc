@@ -1257,14 +1257,6 @@ struct FuzzTraits<PP_Bool> {
 };
 
 template <>
-struct FuzzTraits<PP_KeyInformation> {
-  static bool Fuzz(PP_KeyInformation* p, Fuzzer* fuzzer) {
-    // TODO(mbarbella): This should actually do something.
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<PP_NetAddress_Private> {
   static bool Fuzz(PP_NetAddress_Private* p, Fuzzer* fuzzer) {
     p->size = RandInRange(sizeof(p->data) + 1);

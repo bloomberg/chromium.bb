@@ -76,7 +76,6 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_camera_capabilities_private.h"
 #include "ppapi/c/private/ppb_camera_device_private.h"
-#include "ppapi/c/private/ppb_content_decryptor_private.h"
 #include "ppapi/c/private/ppb_ext_crx_file_system_private.h"
 #include "ppapi/c/private/ppb_file_io_private.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
@@ -105,7 +104,6 @@
 #include "ppapi/c/private/ppb_video_destination_private.h"
 #include "ppapi/c/private/ppb_video_source_private.h"
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
-#include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/c/trusted/ppb_char_set_trusted.h"
@@ -128,7 +126,6 @@
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
-#include "ppapi/proxy/ppp_content_decryptor_private_proxy.h"
 #include "ppapi/proxy/ppp_find_proxy.h"
 #include "ppapi/proxy/ppp_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppp_input_event_proxy.h"
@@ -276,13 +273,6 @@ InterfaceList::InterfaceList() {
   AddProxy(API_ID_PPB_VAR_DEPRECATED, &ProxyFactory<PPB_Var_Deprecated_Proxy>);
   AddPPB(PPB_VAR_DEPRECATED_INTERFACE,
          PPB_Var_Deprecated_Proxy::GetProxyInterface(), PERMISSION_FLASH);
-
-  // TODO(tomfinegan): Figure out where to put these once we refactor things
-  // to load the PPP interface struct from the PPB interface.
-  AddProxy(API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
-           &ProxyFactory<PPP_ContentDecryptor_Private_Proxy>);
-  AddPPP(PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE,
-         PPP_ContentDecryptor_Private_Proxy::GetProxyInterface());
 #endif
   AddProxy(API_ID_PPB_TESTING, &ProxyFactory<PPB_Testing_Proxy>);
   AddPPB(PPB_TESTING_PRIVATE_INTERFACE,
