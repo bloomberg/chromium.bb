@@ -161,15 +161,7 @@ class CRWWebControllerTest : public WebTestWithWebController {
   // Creates WebView mock.
   UIView* CreateMockWebView() {
     id result = [OCMockObject mockForClass:[WKWebView class]];
-
-    if (@available(iOS 10, *)) {
-      [[result stub] serverTrust];
-    }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-    else {
-      [[result stub] certificateChain];
-    }
-#endif
+    [[result stub] serverTrust];
 
     mock_wk_list_ = [[CRWFakeBackForwardList alloc] init];
     OCMStub([result backForwardList]).andReturn(mock_wk_list_);

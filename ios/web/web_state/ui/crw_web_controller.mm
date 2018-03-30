@@ -1032,25 +1032,14 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 - (NSDictionary*)WKWebViewObservers {
-  NSMutableDictionary* result = [NSMutableDictionary dictionary];
-  if (@available(iOS 10, *)) {
-    result[@"serverTrust"] = @"webViewSecurityFeaturesDidChange";
-  }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-  else {
-    result[@"certificateChain"] = @"webViewSecurityFeaturesDidChange";
-  }
-#endif
-
-  [result addEntriesFromDictionary:@{
+  return @{
+    @"serverTrust" : @"webViewSecurityFeaturesDidChange",
     @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
     @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
     @"title" : @"webViewTitleDidChange",
     @"loading" : @"webViewLoadingStateDidChange",
     @"URL" : @"webViewURLDidChange",
-  }];
-
-  return result;
+  };
 }
 
 // NativeControllerDelegate method, called to inform that title has changed.
@@ -3669,14 +3658,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   NSString* host = base::SysUTF8ToNSString(_documentURL.host());
   BOOL hasOnlySecureContent = [_webView hasOnlySecureContent];
   base::ScopedCFTypeRef<SecTrustRef> trust;
-  if (@available(iOS 10, *)) {
-    trust.reset([_webView serverTrust], base::scoped_policy::RETAIN);
-  }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-  else {
-    trust = web::CreateServerTrustFromChain([_webView certificateChain], host);
-  }
-#endif
+  trust.reset([_webView serverTrust], base::scoped_policy::RETAIN);
 
   [_SSLStatusUpdater updateSSLStatusForNavigationItem:currentNavItem
                                          withCertHost:host
@@ -4630,14 +4612,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Report cases where SSL cert is missing for a secure connection.
   if (_documentURL.SchemeIsCryptographic()) {
     scoped_refptr<net::X509Certificate> cert;
-    if (@available(iOS 10, *)) {
-      cert = web::CreateCertFromTrust([_webView serverTrust]);
-    }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-    else {
-      cert = web::CreateCertFromChain([_webView certificateChain]);
-    }
-#endif
+    cert = web::CreateCertFromTrust([_webView serverTrust]);
     UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
                           static_cast<bool>(cert));
   }

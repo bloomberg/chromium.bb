@@ -1097,14 +1097,8 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   }
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  if (@available(iOS 10, *)) {
-    // Starting from iOS10, ShouldAllowResponse is not called when going back
-    // after form submission.
-  } else {
-    EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-        .WillOnce(Return(true));
-  }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  // ShouldAllowResponse is not called when going back after form submission.
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
