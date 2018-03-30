@@ -22,11 +22,12 @@ class Message;
 
 namespace content {
 class RenderFrameHost;
+class WebContentsImpl;
 
 class CONTENT_EXPORT WebUIImpl : public WebUI,
                                  public base::SupportsWeakPtr<WebUIImpl> {
  public:
-  WebUIImpl(WebContents* contents);
+  explicit WebUIImpl(WebContentsImpl* contents);
   ~WebUIImpl() override;
 
   // Called when a RenderFrame is created for a WebUI (reload after a renderer
@@ -85,7 +86,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // IPC message handling.
   void OnWebUISend(RenderFrameHost* sender,
-                   const GURL& source_url,
                    const std::string& message,
                    const base::ListValue& args);
 
@@ -107,8 +107,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // The WebUIMessageHandlers we own.
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;
 
-  // Non-owning pointer to the WebContents this WebUI is associated with.
-  WebContents* web_contents_;
+  // Non-owning pointer to the WebContentsImpl this WebUI is associated with.
+  WebContentsImpl* web_contents_;
 
   // Notifies this WebUI about notifications in the main frame.
   std::unique_ptr<MainFrameNavigationObserver> web_contents_observer_;

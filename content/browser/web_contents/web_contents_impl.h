@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -283,6 +284,17 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   ManifestManagerHost* GetManifestManagerHost() const {
     return manifest_manager_host_.get();
+  }
+
+  // TODO(https://crbug.com/826293): This is a simple mitigation to validate
+  // that an action that requires a user gesture actually has one in the
+  // trustworthy browser process, rather than relying on the untrustworthy
+  // renderer. This should be eventually merged into and accounted for in the
+  // user activation work.
+  bool HasRecentUserInteraction() const {
+    static constexpr base::TimeDelta kMaxInterval =
+        base::TimeDelta::FromSeconds(1);
+    return base::TimeTicks::Now() - last_user_interaction_ <= kMaxInterval;
   }
 
 #if defined(OS_ANDROID)
@@ -1516,6 +1528,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The time that this WebContents was last made active. The initial value is
   // the WebContents creation time.
   base::TimeTicks last_active_time_;
+
+  // The time that the user last interacted with this WebContents.
+  base::TimeTicks last_user_interaction_;
 
   // See description above setter.
   bool closed_by_user_gesture_;

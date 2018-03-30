@@ -5536,10 +5536,13 @@ void WebContentsImpl::OnUserInteraction(
     observer.DidGetUserInteraction(type);
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  // Exclude scroll events as user gestures for resource load dispatches.
-  // rdh is NULL in unittests.
-  if (rdh && type != blink::WebInputEvent::kMouseWheel)
-    rdh->OnUserGesture();
+  if (type != blink::WebInputEvent::kMouseWheel) {
+    // Exclude scroll events as user gestures for resource load dispatches.
+    // rdh is NULL in unittests.
+    if (rdh)
+      rdh->OnUserGesture();
+    last_user_interaction_ = base::TimeTicks::Now();
+  }
 }
 
 void WebContentsImpl::FocusOwningWebContents(
