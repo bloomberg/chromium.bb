@@ -107,6 +107,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Kicks off an attempt to emit the "login-prompt-visible" upstart signal.
   virtual void EmitLoginPromptVisible() = 0;
 
+  // Kicks off an attempt to emit the "ash-initialized" upstart signal.
+  virtual void EmitAshInitialized() = 0;
+
   // Restarts the browser job, passing |argv| as the updated command line.
   // The session manager requires a RestartJob caller to open a socket pair and
   // pass one end while holding the local end open for the duration of the call.

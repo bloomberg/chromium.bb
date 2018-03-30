@@ -41,6 +41,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   bool HasObserver(const Observer* observer) const override;
   bool IsScreenLocked() const override;
   void EmitLoginPromptVisible() override;
+  void EmitAshInitialized() override;
   void RestartJob(int socket_fd,
                   const std::vector<std::string>& argv,
                   VoidDBusMethodCallback callback) override;
