@@ -9,20 +9,11 @@ Checkpoints" of the signed-exchange spec [3].
  [2] https://github.com/nyaxt/webpackage
  [3] https://jyasskin.github.io/webpackage/implementation-draft/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
 
-# Download the webpackage repository
-go get -d github.com/WICG/webpackage/go/signedexchange
-
-# Switch to the fork repository
-cd ${GOPATH:-~/go}/src/github.com/WICG/webpackage
-git remote add impl https://github.com/nyaxt/webpackage.git
-git fetch impl master
-git checkout -b impl impl/master
-
 # Install gen-certurl command
-go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
+go get github.com/nyaxt/webpackage/go/signedexchange/cmd/gen-certurl
 
 # Install gen-signedexchange command
-go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-signedexchange
+go get github.com/nyaxt/webpackage/go/signedexchange/cmd/gen-signedexchange
 
 
 # Get the private key of "*.example.org".
