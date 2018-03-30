@@ -404,10 +404,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return MdBookmarksUI::IsEnabled() ? &NewWebUI<MdBookmarksUI>
                                       : &NewWebUI<BookmarksUI>;
   }
-  if (base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature) &&
-      url.host_piece() == security_interstitials::kChromeUIConnectionHelpHost) {
-    return &NewWebUI<security_interstitials::ConnectionHelpUI>;
-  }
   // Downloads list on Android uses the built-in download manager.
   if (url.host_piece() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<MdDownloadsUI>;
@@ -605,6 +601,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;
+
+  if (base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature) &&
+      url.host_piece() == security_interstitials::kChromeUIConnectionHelpHost) {
+    return &NewWebUI<security_interstitials::ConnectionHelpUI>;
+  }
 
   if (dom_distiller::IsEnableDomDistillerSet() &&
       url.host_piece() == dom_distiller::kChromeUIDomDistillerHost) {
