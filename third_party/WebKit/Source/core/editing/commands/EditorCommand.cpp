@@ -46,6 +46,7 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/WritingDirection.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/ClipboardCommands.h"
 #include "core/editing/commands/CreateLinkCommand.h"
@@ -533,13 +534,13 @@ WritingDirection StyleCommands::TextDirectionForSelection(
   has_nested_or_multiple_embeddings = true;
 
   if (selection.IsNone())
-    return NaturalWritingDirection;
+    return WritingDirection::kNatural;
 
   Position position = MostForwardCaretPosition(selection.Start());
 
   Node* node = position.AnchorNode();
   if (!node)
-    return NaturalWritingDirection;
+    return WritingDirection::kNatural;
 
   Position end;
   if (selection.IsRange()) {
@@ -562,7 +563,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
       CSSValueID unicode_bidi_value =
           ToCSSIdentifierValue(unicode_bidi)->GetValueID();
       if (IsUnicodeBidiNestedOrMultipleEmbeddings(unicode_bidi_value))
-        return NaturalWritingDirection;
+        return WritingDirection::kNatural;
     }
   }
 
@@ -579,7 +580,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
   // The selection is either a caret with no typing attributes or a range in
   // which no embedding is added, so just use the start position to decide.
   Node* block = EnclosingBlock(node);
-  WritingDirection found_direction = NaturalWritingDirection;
+  WritingDirection found_direction = WritingDirection::kNatural;
 
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*node)) {
     if (runner == block)
@@ -601,7 +602,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
       continue;
 
     if (unicode_bidi_value == CSSValueBidiOverride)
-      return NaturalWritingDirection;
+      return WritingDirection::kNatural;
 
     DCHECK(EditingStyleUtilities::IsEmbedOrIsolate(unicode_bidi_value))
         << unicode_bidi_value;
@@ -614,17 +615,17 @@ WritingDirection StyleCommands::TextDirectionForSelection(
     if (direction_value != CSSValueLtr && direction_value != CSSValueRtl)
       continue;
 
-    if (found_direction != NaturalWritingDirection)
-      return NaturalWritingDirection;
+    if (found_direction != WritingDirection::kNatural)
+      return WritingDirection::kNatural;
 
     // In the range case, make sure that the embedding element persists until
     // the end of the range.
     if (selection.IsRange() && !end.AnchorNode()->IsDescendantOf(element))
-      return NaturalWritingDirection;
+      return WritingDirection::kNatural;
 
     found_direction = direction_value == CSSValueLtr
-                          ? LeftToRightWritingDirection
-                          : RightToLeftWritingDirection;
+                          ? WritingDirection::kLeftToRight
+                          : WritingDirection::kRightToLeft;
   }
   has_nested_or_multiple_embeddings = false;
   return found_direction;
@@ -1715,19 +1716,19 @@ EditingTriState StyleCommands::StateSuperscript(LocalFrame& frame, Event*) {
 EditingTriState StyleCommands::StateTextWritingDirectionLeftToRight(
     LocalFrame& frame,
     Event*) {
-  return StateTextWritingDirection(frame, LeftToRightWritingDirection);
+  return StateTextWritingDirection(frame, WritingDirection::kLeftToRight);
 }
 
 EditingTriState StyleCommands::StateTextWritingDirectionNatural(
     LocalFrame& frame,
     Event*) {
-  return StateTextWritingDirection(frame, NaturalWritingDirection);
+  return StateTextWritingDirection(frame, WritingDirection::kNatural);
 }
 
 EditingTriState StyleCommands::StateTextWritingDirectionRightToLeft(
     LocalFrame& frame,
     Event*) {
-  return StateTextWritingDirection(frame, RightToLeftWritingDirection);
+  return StateTextWritingDirection(frame, WritingDirection::kRightToLeft);
 }
 
 EditingTriState StyleCommands::StateUnderline(LocalFrame& frame, Event*) {

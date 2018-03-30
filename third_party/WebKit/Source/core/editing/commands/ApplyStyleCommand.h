@@ -26,7 +26,6 @@
 #ifndef ApplyStyleCommand_h
 #define ApplyStyleCommand_h
 
-#include "core/editing/WritingDirection.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 #include "core/html/HTMLElement.h"
 
@@ -37,6 +36,8 @@ class HTMLSpanElement;
 class StyleChange;
 
 enum ShouldIncludeTypingStyle { kIncludeTypingStyle, kIgnoreTypingStyle };
+
+enum class WritingDirection;
 
 class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
  public:

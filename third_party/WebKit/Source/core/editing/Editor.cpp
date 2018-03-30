@@ -50,6 +50,7 @@
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/WritingDirection.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/DeleteSelectionCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
@@ -648,10 +649,10 @@ void Editor::Redo() {
 void Editor::SetBaseWritingDirection(WritingDirection direction) {
   Element* focused_element = GetFrame().GetDocument()->FocusedElement();
   if (IsTextControlElement(focused_element)) {
-    if (direction == NaturalWritingDirection)
+    if (direction == WritingDirection::kNatural)
       return;
     focused_element->setAttribute(
-        dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
+        dirAttr, direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
     focused_element->DispatchInputEvent();
     return;
   }
@@ -660,9 +661,9 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(
       CSSPropertyDirection,
-      direction == LeftToRightWritingDirection
+      direction == WritingDirection::kLeftToRight
           ? "ltr"
-          : direction == RightToLeftWritingDirection ? "rtl" : "inherit",
+          : direction == WritingDirection::kRightToLeft ? "rtl" : "inherit",
       /* important */ false, GetFrame().GetDocument()->GetSecureContextMode());
   ApplyParagraphStyleToSelection(
       style, InputEvent::InputType::kFormatSetBlockTextDirection);

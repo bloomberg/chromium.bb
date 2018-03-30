@@ -54,6 +54,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/editing/WritingDirection.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/serializers/HTMLInterchange.h"
 #include "core/frame/LocalFrame.h"
@@ -637,14 +638,14 @@ bool EditingStyle::GetTextDirection(WritingDirection& writing_direction) const {
 
     writing_direction =
         ToCSSIdentifierValue(direction)->GetValueID() == CSSValueLtr
-            ? LeftToRightWritingDirection
-            : RightToLeftWritingDirection;
+            ? WritingDirection::kLeftToRight
+            : WritingDirection::kRightToLeft;
 
     return true;
   }
 
   if (unicode_bidi_value == CSSValueNormal) {
-    writing_direction = NaturalWritingDirection;
+    writing_direction = WritingDirection::kNatural;
     return true;
   }
 

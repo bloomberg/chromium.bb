@@ -26,10 +26,10 @@
 #ifndef WritingDirection_h
 #define WritingDirection_h
 
-enum WritingDirection {
-  NaturalWritingDirection,
-  LeftToRightWritingDirection,
-  RightToLeftWritingDirection
-};
+namespace blink {
+
+enum class WritingDirection { kNatural, kLeftToRight, kRightToLeft };
+
+}  // namespace blink
 
 #endif
