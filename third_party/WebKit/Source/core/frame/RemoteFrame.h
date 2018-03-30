@@ -35,6 +35,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void Detach(FrameDetachType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
   bool PrepareForCommit() override;
+  void CheckCompleted() override;
   bool ShouldClose() override;
   void DidFreeze() override;
   void DidResume() override;

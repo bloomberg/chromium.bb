@@ -133,6 +133,10 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   void SetIsLoading(bool is_loading) { is_loading_ = is_loading; }
   bool IsLoading() const { return is_loading_; }
 
+  // Tells the frame to check whether its load has completed, based on the state
+  // of its subframes, etc.
+  virtual void CheckCompleted() = 0;
+
   WindowProxyManager* GetWindowProxyManager() const {
     return window_proxy_manager_;
   }

@@ -152,6 +152,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ReloadImage(const WebNode&) override;
   void ReloadLoFiImages() override;
   void LoadRequest(const WebURLRequest&) override;
+  void CheckCompleted() override;
   void LoadHTMLString(const WebData& html,
                       const WebURL& base_url,
                       const WebURL& unreachable_url,

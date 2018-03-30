@@ -113,6 +113,11 @@ bool RemoteFrame::PrepareForCommit() {
   return !!GetPage();
 }
 
+void RemoteFrame::CheckCompleted() {
+  // Notify the client so that the corresponding LocalFrame can do the check.
+  Client()->CheckCompleted();
+}
+
 RemoteSecurityContext* RemoteFrame::GetSecurityContext() const {
   return security_context_.Get();
 }

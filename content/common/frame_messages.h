@@ -965,6 +965,10 @@ IPC_MESSAGE_ROUTED0(FrameMsg_WillEnterFullscreen)
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
                     FrameMsg_TextTrackSettings_Params /* params */)
 
+// Sent to a frame when one of its remote children finishes loading, so that the
+// frame can update its loading state.
+IPC_MESSAGE_ROUTED0(FrameMsg_CheckCompleted)
+
 // Posts a message from a frame in another process to the current renderer.
 IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 
@@ -1612,6 +1616,10 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardResourceTimingToParent,
 // Dispatch a load event for this frame in the iframe element of an
 // out-of-process parent frame.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DispatchLoad)
+
+// Sent by a frame proxy to the browser when a child frame finishes loading, so
+// that the corresponding RenderFrame can check whether its load has completed.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_CheckCompleted)
 
 // Sent to the browser from a frame proxy to post a message to the frame's
 // active renderer.

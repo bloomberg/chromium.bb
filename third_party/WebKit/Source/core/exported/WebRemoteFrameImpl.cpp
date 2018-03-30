@@ -293,11 +293,6 @@ void WebRemoteFrameImpl::DidStartLoading() {
 
 void WebRemoteFrameImpl::DidStopLoading() {
   GetFrame()->SetIsLoading(false);
-  if (Parent() && Parent()->IsWebLocalFrame()) {
-    WebLocalFrameImpl* parent_frame =
-        ToWebLocalFrameImpl(Parent()->ToWebLocalFrame());
-    parent_frame->GetFrame()->GetDocument()->CheckCompleted();
-  }
 }
 
 bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {

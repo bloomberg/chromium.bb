@@ -939,6 +939,10 @@ void WebLocalFrameImpl::LoadRequest(const WebURLRequest& request) {
        base::UnguessableToken::Create());
 }
 
+void WebLocalFrameImpl::CheckCompleted() {
+  GetFrame()->GetDocument()->CheckCompleted();
+}
+
 void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
                                        const WebURL& base_url,
                                        const WebURL& unreachable_url,

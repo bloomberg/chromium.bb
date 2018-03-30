@@ -28,6 +28,10 @@ class RemoteFrameClient : public FrameClient {
   virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
   virtual unsigned BackForwardLength() = 0;
 
+  // Notifies the remote frame to check whether it is done loading, after one
+  // of its children finishes loading.
+  virtual void CheckCompleted() = 0;
+
   // Forwards a postMessage for a remote frame.
   virtual void ForwardPostMessage(MessageEvent*,
                                   scoped_refptr<const SecurityOrigin> target,
