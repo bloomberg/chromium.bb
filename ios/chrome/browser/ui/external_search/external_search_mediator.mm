@@ -25,16 +25,9 @@
   NSURL* externalSearchAppLaunchURL = ios::GetChromeBrowserProvider()
                                           ->GetExternalSearchProvider()
                                           ->GetLaunchURL();
-  if (@available(iOS 10, *)) {
-    [self.application openURL:externalSearchAppLaunchURL
-                      options:@{}
-            completionHandler:nil];
-  }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-  else {
-    [self.application openURL:externalSearchAppLaunchURL];
-  }
-#endif
+  [self.application openURL:externalSearchAppLaunchURL
+                    options:@{}
+          completionHandler:nil];
 }
 
 @end
