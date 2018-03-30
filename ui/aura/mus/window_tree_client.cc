@@ -86,7 +86,7 @@ struct WindowPortPropertyDataMus : public ui::PropertyData {
 // message loop starts, or upon destruction.
 class EventAckHandler : public base::RunLoop::NestingObserver {
  public:
-  explicit EventAckHandler(std::unique_ptr<EventResultCallback> ack_callback)
+  explicit EventAckHandler(EventResultCallback ack_callback)
       : ack_callback_(std::move(ack_callback)) {
     DCHECK(ack_callback_);
     base::RunLoop::AddNestingObserverOnCurrentThread(this);
@@ -96,8 +96,8 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
     base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
     if (ack_callback_) {
       NotifyPlatformEventSource();
-      ack_callback_->Run(handled_ ? ui::mojom::EventResult::HANDLED
-                                  : ui::mojom::EventResult::UNHANDLED);
+      ack_callback_.Run(handled_ ? ui::mojom::EventResult::HANDLED
+                                 : ui::mojom::EventResult::UNHANDLED);
     }
   }
 
@@ -118,8 +118,8 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
     // Otherwise we appear unresponsive for the life of the nested run loop.
     if (ack_callback_) {
       NotifyPlatformEventSource();
-      ack_callback_->Run(ui::mojom::EventResult::HANDLED);
-      ack_callback_.reset();
+      ack_callback_.Run(ui::mojom::EventResult::HANDLED);
+      ack_callback_.Reset();
     }
   }
 
@@ -131,7 +131,7 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
 #endif
   }
 
-  std::unique_ptr<EventResultCallback> ack_callback_;
+  EventResultCallback ack_callback_;
   bool handled_ = false;
 #if defined(USE_OZONE)
   ui::Event* event_ = nullptr;
@@ -885,11 +885,10 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
   return window_tree_host_ptr;
 }
 
-std::unique_ptr<EventResultCallback>
-WindowTreeClient::CreateEventResultCallback(int32_t event_id) {
-  return std::make_unique<EventResultCallback>(
-      base::Bind(&ui::mojom::WindowTree::OnWindowInputEventAck,
-                 base::Unretained(tree_), event_id));
+EventResultCallback WindowTreeClient::CreateEventResultCallback(
+    int32_t event_id) {
+  return base::Bind(&ui::mojom::WindowTree::OnWindowInputEventAck,
+                    base::Unretained(tree_), event_id);
 }
 
 void WindowTreeClient::OnReceivedCursorLocationMemory(

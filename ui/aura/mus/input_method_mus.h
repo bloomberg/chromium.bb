@@ -33,9 +33,9 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   ~InputMethodMus() override;
 
   void Init(service_manager::Connector* connector);
-  ui::EventDispatchDetails DispatchKeyEvent(
-      ui::KeyEvent* event,
-      std::unique_ptr<EventResultCallback> ack_callback) WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event,
+                                            EventResultCallback ack_callback)
+      WARN_UNUSED_RESULT;
 
   // Overridden from ui::InputMethod:
   void OnFocus() override;
@@ -56,7 +56,7 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   // Called from DispatchKeyEvent() to call to the InputMethod.
   ui::EventDispatchDetails SendKeyEventToInputMethod(
       const ui::KeyEvent& event,
-      std::unique_ptr<EventResultCallback> ack_callback) WARN_UNUSED_RESULT;
+      EventResultCallback ack_callback) WARN_UNUSED_RESULT;
 
   // Overridden from ui::InputMethodBase:
   void OnDidChangeFocusedClient(ui::TextInputClient* focused_before,
@@ -89,7 +89,7 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   // Callbacks supplied to DispatchKeyEvent() are added here while awaiting
   // the response from the server. These are removed when the response is
   // received (ProcessKeyEventCallback()).
-  base::circular_deque<std::unique_ptr<EventResultCallback>> pending_callbacks_;
+  base::circular_deque<EventResultCallback> pending_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMus);
 };

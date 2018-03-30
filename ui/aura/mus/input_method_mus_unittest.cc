@@ -104,9 +104,8 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromDestruction) {
     TestInputMethod test_input_method;
     InputMethodMusTestApi::SetInputMethod(&input_method_mus,
                                           &test_input_method);
-    std::unique_ptr<EventResultCallback> callback =
-        std::make_unique<EventResultCallback>(base::Bind(
-            &RunFunctionWithEventResult, &was_event_result_callback_run));
+    EventResultCallback callback =
+        base::Bind(&RunFunctionWithEventResult, &was_event_result_callback_run);
 
     ui::EventDispatchDetails details =
         InputMethodMusTestApi::CallSendKeyEventToInputMethod(
@@ -118,7 +117,7 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromDestruction) {
     // Add a null callback as well, to make sure null is deal with.
     details = InputMethodMusTestApi::CallSendKeyEventToInputMethod(
         &input_method_mus, ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0),
-        nullptr);
+        InputMethodMus::EventResultCallback());
     ASSERT_TRUE(!details.dispatcher_destroyed && !details.target_destroyed);
     // The event should have been queued.
     EXPECT_EQ(2u, test_input_method.process_key_event_callbacks()->size());
@@ -140,9 +139,8 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromOnDidChangeFocusedClient) {
   InputMethodMus input_method_mus(&input_method_delegate, &window);
   TestInputMethod test_input_method;
   InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
-  std::unique_ptr<EventResultCallback> callback =
-      std::make_unique<EventResultCallback>(base::Bind(
-          &RunFunctionWithEventResult, &was_event_result_callback_run));
+  EventResultCallback callback =
+      base::Bind(&RunFunctionWithEventResult, &was_event_result_callback_run);
   ui::EventDispatchDetails details =
       InputMethodMusTestApi::CallSendKeyEventToInputMethod(
           &input_method_mus,
@@ -206,9 +204,8 @@ TEST_F(InputMethodMusTest, ChangeTextInputTypeWhileProcessingCallback) {
                                                 &test_input_client);
   TestInputMethod test_input_method;
   InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
-  std::unique_ptr<EventResultCallback> callback =
-      std::make_unique<EventResultCallback>(base::Bind(
-          &RunFunctionWithEventResult, &was_event_result_callback_run));
+  EventResultCallback callback =
+      base::Bind(&RunFunctionWithEventResult, &was_event_result_callback_run);
   const ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
   ui::EventDispatchDetails details =
       InputMethodMusTestApi::CallSendKeyEventToInputMethod(
