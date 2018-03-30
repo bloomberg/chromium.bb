@@ -129,6 +129,9 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   // performs additional setup.
   void InitializeClients();
 
+  // Returns either BlueZ or newblue dispatcher depending on feature.
+  std::string GetBluetoothServiceName();
+
   dbus::Bus* bus_;
   std::unique_ptr<BluetoothDBusClientBundle> client_bundle_;
 
