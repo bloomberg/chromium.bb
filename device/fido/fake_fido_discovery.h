@@ -110,6 +110,7 @@ class ScopedFakeFidoDiscoveryFactory
   // It is an error not to call the relevant method prior to a call to
   // FidoDiscovery::Create with the respective transport.
   FakeFidoDiscovery* ForgeNextHidDiscovery(StartMode mode = StartMode::kManual);
+  FakeFidoDiscovery* ForgeNextNfcDiscovery(StartMode mode = StartMode::kManual);
   FakeFidoDiscovery* ForgeNextBleDiscovery(StartMode mode = StartMode::kManual);
 
  protected:
@@ -119,6 +120,7 @@ class ScopedFakeFidoDiscoveryFactory
 
  private:
   std::unique_ptr<FakeFidoDiscovery> next_hid_discovery_;
+  std::unique_ptr<FakeFidoDiscovery> next_nfc_discovery_;
   std::unique_ptr<FakeFidoDiscovery> next_ble_discovery_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeFidoDiscoveryFactory);

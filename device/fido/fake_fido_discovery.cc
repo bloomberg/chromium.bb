@@ -59,6 +59,13 @@ FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextHidDiscovery(
   return next_hid_discovery_.get();
 }
 
+FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextNfcDiscovery(
+    FakeFidoDiscovery::StartMode mode) {
+  next_nfc_discovery_ = std::make_unique<FakeFidoDiscovery>(
+      U2fTransportProtocol::kNearFieldCommunication, mode);
+  return next_nfc_discovery_.get();
+}
+
 FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextBleDiscovery(
     FakeFidoDiscovery::StartMode mode) {
   next_ble_discovery_ = std::make_unique<FakeFidoDiscovery>(
@@ -71,12 +78,12 @@ ScopedFakeFidoDiscoveryFactory::CreateFidoDiscovery(
     U2fTransportProtocol transport,
     ::service_manager::Connector* connector) {
   switch (transport) {
-    case U2fTransportProtocol::kBluetoothLowEnergy:
-      DCHECK(next_ble_discovery_);
-      return std::move(next_ble_discovery_);
     case U2fTransportProtocol::kUsbHumanInterfaceDevice:
-      DCHECK(next_hid_discovery_);
       return std::move(next_hid_discovery_);
+    case U2fTransportProtocol::kNearFieldCommunication:
+      return std::move(next_nfc_discovery_);
+    case U2fTransportProtocol::kBluetoothLowEnergy:
+      return std::move(next_ble_discovery_);
   }
   NOTREACHED();
   return nullptr;
