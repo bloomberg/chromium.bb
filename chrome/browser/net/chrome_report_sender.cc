@@ -33,7 +33,7 @@ class SimpleURLLoaderOwner {
     // We don't care to read the response, and since it can come from untrusted
     // endpoints it's better to not buffer. So we'll match net::ReportSender by
     // closing the loader as soon as we start getting the response.
-    loader_->SetOnResponseStartedCallback(base::BindRepeating(
+    loader_->SetOnResponseStartedCallback(base::BindOnce(
         &SimpleURLLoaderOwner::OnResponseStarted, base::Unretained(this)));
     loader_->DownloadToString(
         url_loader_factory.get(),
