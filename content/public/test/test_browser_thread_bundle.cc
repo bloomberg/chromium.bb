@@ -98,9 +98,8 @@ void TestBrowserThreadBundle::Init() {
                 ? base::test::ScopedTaskEnvironment::MainThreadType::IO
                 : base::test::ScopedTaskEnvironment::MainThreadType::UI);
   }
-  CHECK(base::MessageLoop::current()->IsType(options_ & IO_MAINLOOP
-                                                 ? base::MessageLoop::TYPE_IO
-                                                 : base::MessageLoop::TYPE_UI));
+  CHECK(options_ & IO_MAINLOOP ? base::MessageLoopForIO::IsCurrent()
+                               : base::MessageLoopForUI::IsCurrent());
 
   // Set the current thread as the UI thread.
   ui_thread_ = std::make_unique<TestBrowserThread>(
