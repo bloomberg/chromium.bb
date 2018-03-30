@@ -1424,6 +1424,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
+#if defined(OS_MACOSX)
+  AddObserver(MachBroker::GetInstance());
+#endif
 
   InitializeChannelProxy();
 
