@@ -263,8 +263,10 @@ TEST_F(U2fSignTest, TestSignSuccessWithFake) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<VirtualFidoDevice>();
-  device->AddRegistration(key_handle, std::move(private_key),
-                          GetTestRelyingPartyIdSHA256(), 42);
+  device->mutable_state()->registrations.emplace(
+      key_handle,
+      VirtualFidoDevice::RegistrationData(std::move(private_key),
+                                          GetTestRelyingPartyIdSHA256(), 42));
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();

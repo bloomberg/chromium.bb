@@ -83,6 +83,7 @@
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
+#include "content/browser/webauth/scoped_virtual_authenticator_environment.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -153,6 +154,7 @@
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/common/frame/frame_policy.h"
 #include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom.h"
+#include "third_party/WebKit/public/platform/modules/webauth/virtual_authenticator.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -3206,6 +3208,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(
         base::Bind(&RenderFrameHostImpl::BindAuthenticatorRequest,
                    base::Unretained(this)));
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableWebAuthTestingAPI)) {
+      auto* environment_singleton =
+          ScopedVirtualAuthenticatorEnvironment::GetInstance();
+      registry_->AddInterface(base::BindRepeating(
+          &ScopedVirtualAuthenticatorEnvironment::AddBinding,
+          base::Unretained(environment_singleton)));
+    }
   }
 #endif  // !defined(OS_ANDROID)
 

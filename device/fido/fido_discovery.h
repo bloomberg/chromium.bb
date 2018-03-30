@@ -126,6 +126,7 @@ namespace internal {
 // invoked instead.
 class COMPONENT_EXPORT(DEVICE_FIDO) ScopedFidoDiscoveryFactory {
  public:
+  // There should be at most one instance of any subclass in scope at a time.
   ScopedFidoDiscoveryFactory();
   virtual ~ScopedFidoDiscoveryFactory();
 
@@ -141,7 +142,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ScopedFidoDiscoveryFactory {
       ::service_manager::Connector* connector);
 
   static ScopedFidoDiscoveryFactory* g_current_factory;
-  ScopedFidoDiscoveryFactory* original_factory_;
   FidoDiscovery::FactoryFuncPtr original_factory_func_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFidoDiscoveryFactory);

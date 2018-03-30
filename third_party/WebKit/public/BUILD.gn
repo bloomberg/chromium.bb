@@ -768,6 +768,7 @@ mojom("mojo_bindings") {
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
+    "platform/modules/webauth/virtual_authenticator.mojom",
     "platform/modules/webdatabase/web_database.mojom",
     "platform/oom_intervention.mojom",
     "platform/referrer.mojom",

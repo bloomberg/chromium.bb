@@ -1440,6 +1440,9 @@ extern const char kVoiceSearchOnLocalNtpDescription[];
 extern const char kEnableWebAuthenticationAPIName[];
 extern const char kEnableWebAuthenticationAPIDescription[];
 
+extern const char kEnableWebAuthenticationTestingAPIName[];
+extern const char kEnableWebAuthenticationTestingAPIDescription[];
+
 #if defined(GOOGLE_CHROME_BUILD)
 
 extern const char kGoogleBrandedContextMenuName[];

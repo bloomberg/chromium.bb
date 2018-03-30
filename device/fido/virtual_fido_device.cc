@@ -4,6 +4,7 @@
 
 #include "device/fido/virtual_fido_device.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,41 +19,11 @@
 #include "crypto/ec_signature_creator.h"
 #include "crypto/sha2.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/u2f_parsing_utils.h"
 #include "net/cert/x509_util.h"
 
 namespace device {
 
-struct RegistrationData {
-  RegistrationData() = default;
-  RegistrationData(std::unique_ptr<crypto::ECPrivateKey> private_key,
-                   std::vector<uint8_t> application_parameter,
-                   uint32_t counter)
-      : private_key(std::move(private_key)),
-        application_parameter(std::move(application_parameter)),
-        counter(counter) {}
-  RegistrationData(RegistrationData&& data) = default;
-  ~RegistrationData() = default;
-
-  RegistrationData& operator=(RegistrationData&& other) = default;
-
-  std::unique_ptr<crypto::ECPrivateKey> private_key;
-  std::vector<uint8_t> application_parameter;
-  uint32_t counter = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(RegistrationData);
-};
-
-struct VirtualFidoDevice::State::Internal {
-  // Keyed on key handle (a.k.a. "credential ID").
-  std::map<std::vector<uint8_t>, RegistrationData> registrations;
-};
-
-VirtualFidoDevice::State::State()
-    : attestation_cert_common_name("Batch Certificate"),
-      individual_attestation_cert_common_name("Individual Certificate"),
-      internal_(new Internal) {}
-
-VirtualFidoDevice::State::~State() = default;
 
 namespace {
 
@@ -98,8 +69,33 @@ base::Optional<std::vector<uint8_t>> ErrorStatus(
 
 }  // namespace
 
+// VirtualFidoDevice::RegistrationData ----------------------------------------
+
+VirtualFidoDevice::RegistrationData::RegistrationData() = default;
+VirtualFidoDevice::RegistrationData::RegistrationData(
+    std::unique_ptr<crypto::ECPrivateKey> private_key,
+    std::vector<uint8_t> application_parameter,
+    uint32_t counter)
+    : private_key(std::move(private_key)),
+      application_parameter(std::move(application_parameter)),
+      counter(counter) {}
+VirtualFidoDevice::RegistrationData::RegistrationData(RegistrationData&& data) =
+    default;
+VirtualFidoDevice::RegistrationData::~RegistrationData() = default;
+
+VirtualFidoDevice::RegistrationData& VirtualFidoDevice::RegistrationData::
+operator=(RegistrationData&& other) = default;
+
+// VirtualFidoDevice::State ---------------------------------------------------
+
+VirtualFidoDevice::State::State()
+    : attestation_cert_common_name("Batch Certificate"),
+      individual_attestation_cert_common_name("Individual Certificate") {}
+VirtualFidoDevice::State::~State() = default;
 VirtualFidoDevice::VirtualFidoDevice()
     : state_(new State), weak_factory_(this) {}
+
+// VirtualFidoDevice ----------------------------------------------------------
 
 VirtualFidoDevice::VirtualFidoDevice(scoped_refptr<State> state)
     : state_(std::move(state)), weak_factory_(this) {}
@@ -113,15 +109,6 @@ void VirtualFidoDevice::TryWink(WinkCallback cb) {
 std::string VirtualFidoDevice::GetId() const {
   // Use our heap address to get a unique-ish number. (0xffe1 is a prime).
   return "VirtualFidoDevice-" + std::to_string((size_t)this % 0xffe1);
-}
-
-void VirtualFidoDevice::AddRegistration(
-    std::vector<uint8_t> key_handle,
-    std::unique_ptr<crypto::ECPrivateKey> private_key,
-    std::vector<uint8_t> application_parameter,
-    uint32_t counter) {
-  state_->internal_->registrations[std::move(key_handle)] = RegistrationData(
-      std::move(private_key), std::move(application_parameter), counter);
 }
 
 void VirtualFidoDevice::DeviceTransact(std::vector<uint8_t> command,
@@ -232,11 +219,15 @@ base::Optional<std::vector<uint8_t>> VirtualFidoDevice::DoRegister(
   AppendTo(&response, attestation_cert);
   AppendTo(&response, sig);
 
-  // Store the registration.
-  AddRegistration(std::move(key_handle), std::move(private_key),
-                  std::vector<uint8_t>(application_parameter.begin(),
-                                       application_parameter.end()),
-                  1);
+  // Store the registration. Because the key handle is the hashed public key we
+  // just generated, no way this should already be registered.
+  bool did_insert = false;
+  std::tie(std::ignore, did_insert) = state_->registrations.emplace(
+      std::move(key_handle),
+      RegistrationData(std::move(private_key),
+                       u2f_parsing_utils::Materialize(application_parameter),
+                       1));
+  DCHECK(did_insert);
 
   return apdu::ApduResponse(std::move(response),
                             apdu::ApduResponse::Status::SW_NO_ERROR)
@@ -257,21 +248,16 @@ base::Optional<std::vector<uint8_t>> VirtualFidoDevice::DoSign(
   auto challenge_param = data.first(32);
   auto application_parameter = data.subspan(32, 32);
   size_t key_handle_length = data[64];
-  if (key_handle_length != 32) {
-    // Our own keyhandles are always 32 bytes long, if the request has something
-    // else then we already know it is not ours.
-    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
-  }
   if (data.size() != 32 + 32 + 1 + key_handle_length) {
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_LENGTH);
   }
   auto key_handle = data.last(key_handle_length);
 
   // Check if this is our key_handle and it's for this appId.
-  auto it = state_->internal_->registrations.find(
+  auto it = state_->registrations.find(
       std::vector<uint8_t>(key_handle.cbegin(), key_handle.cend()));
 
-  if (it == state_->internal_->registrations.end()) {
+  if (it == state_->registrations.end()) {
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
 

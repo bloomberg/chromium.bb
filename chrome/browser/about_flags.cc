@@ -3657,6 +3657,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebAuth)},
 #endif  // !defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+    {"enable-web-authentication-testing-api",
+     flag_descriptions::kEnableWebAuthenticationTestingAPIName,
+     flag_descriptions::kEnableWebAuthenticationTestingAPIDescription,
+     kOsDesktop, SINGLE_VALUE_TYPE(switches::kEnableWebAuthTestingAPI)},
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_ANDROID)
     {"enable-sole-integration", flag_descriptions::kSoleIntegrationName,
      flag_descriptions::kSoleIntegrationDescription, kOsAndroid,

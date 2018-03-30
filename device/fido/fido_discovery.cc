@@ -142,14 +142,15 @@ bool FidoDiscovery::RemoveDevice(base::StringPiece device_id) {
 namespace internal {
 
 ScopedFidoDiscoveryFactory::ScopedFidoDiscoveryFactory() {
-  original_factory_ = std::exchange(g_current_factory, this);
+  DCHECK(!g_current_factory);
+  g_current_factory = this;
   original_factory_func_ =
       std::exchange(FidoDiscovery::g_factory_func_,
                     &ForwardCreateFidoDiscoveryToCurrentFactory);
 }
 
 ScopedFidoDiscoveryFactory::~ScopedFidoDiscoveryFactory() {
-  g_current_factory = original_factory_;
+  g_current_factory = nullptr;
   FidoDiscovery::g_factory_func_ = original_factory_func_;
 }
 
