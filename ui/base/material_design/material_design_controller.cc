@@ -14,17 +14,14 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/touch/touch_device.h"
-#include "ui/events/devices/device_data_manager.h"
-
-#if defined(USE_OZONE)
 #include <fcntl.h>
 
 #include "base/files/file_enumerator.h"
+#include "base/files/scoped_file.h"
 #include "base/threading/thread_restrictions.h"
+#include "ui/base/touch/touch_device.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/ozone/evdev/event_device_info.h"  // nogncheck
-#endif  // defined(USE_OZONE)
-
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -33,6 +30,48 @@
 #endif
 
 namespace ui {
+namespace {
+
+#if defined(OS_CHROMEOS)
+
+// Whether to use MATERIAL_TOUCH_OPTIMIZED when a touch device is detected.
+// Enabled by default on ChromeOS.
+const base::Feature kTouchOptimizedUi = {"TouchOptimizedUi",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+MaterialDesignController::Mode GetDefaultTouchDeviceMode() {
+  return base::FeatureList::IsEnabled(kTouchOptimizedUi)
+             ? MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED
+             : MaterialDesignController::MATERIAL_HYBRID;
+}
+
+bool HasTouchscreen() {
+  // If a scan of available devices has already completed, use that.
+  if (DeviceDataManager::HasInstance() &&
+      DeviceDataManager::GetInstance()->AreDeviceListsComplete())
+    return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED;
+
+  // Otherwise perform our own scan to determine the presence of a touchscreen.
+  // Note this is a one-time call that occurs during device startup or restart.
+  base::FileEnumerator file_enum(
+      base::FilePath(FILE_PATH_LITERAL("/dev/input")), false,
+      base::FileEnumerator::FILES, FILE_PATH_LITERAL("event*[0-9]"));
+  for (base::FilePath path = file_enum.Next(); !path.empty();
+       path = file_enum.Next()) {
+    EventDeviceInfo devinfo;
+    base::ScopedFD fd(
+        open(path.value().c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC));
+    if (fd.is_valid() && devinfo.Initialize(fd.get(), path) &&
+        devinfo.HasTouchscreen())
+      return true;
+  }
+
+  return false;
+}
+
+#endif  // OS_CHROMEOS
+
+}  // namespace
 
 bool MaterialDesignController::is_mode_initialized_ = false;
 
@@ -97,35 +136,11 @@ bool MaterialDesignController::IsNewerMaterialUi() {
 // static
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
-  // If a scan of available devices has already completed, use material-hybrid
-  // if a touchscreen is present.
-  if (DeviceDataManager::HasInstance() &&
-      DeviceDataManager::GetInstance()->AreDeviceListsComplete()) {
-    return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED
-               ? MATERIAL_HYBRID
-               : MATERIAL_NORMAL;
-  }
-
-#if defined(USE_OZONE)
-  // Otherwise perform our own scan to determine the presence of a touchscreen.
-  // Note this is a one-time call that occurs during device startup or restart.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  base::FileEnumerator file_enum(
-      base::FilePath(FILE_PATH_LITERAL("/dev/input")), false,
-      base::FileEnumerator::FILES, FILE_PATH_LITERAL("event*[0-9]"));
-  for (base::FilePath path = file_enum.Next(); !path.empty();
-       path = file_enum.Next()) {
-    EventDeviceInfo devinfo;
-    int fd = open(path.value().c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC);
-    if (fd >= 0) {
-      if (devinfo.Initialize(fd, path) && devinfo.HasTouchscreen()) {
-        close(fd);
-        return MATERIAL_HYBRID;
-      }
-      close(fd);
-    }
-  }
-#endif  // defined(USE_OZONE)
+  // This is called (once) early in device startup to initialize core UI, so
+  // the UI thread should be blocked to perform the device query.
+  base::ScopedAllowBlocking allow_io;
+  if (HasTouchscreen())
+    return GetDefaultTouchDeviceMode();
 #endif  // defined(OS_CHROMEOS)
 
   return MATERIAL_NORMAL;
