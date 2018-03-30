@@ -22,6 +22,7 @@
 #include "content/shell/browser/shell.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
+#include "device/fido/test_callback_receiver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -38,58 +39,28 @@ using webauth::mojom::AuthenticatorStatus;
 using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
 using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
 
-class MockCreateCallback {
- public:
-  MockCreateCallback() = default;
-  MOCK_METHOD1_T(Run, void(AuthenticatorStatus));
+using TestCreateCallbackReceiver =
+    ::device::test::StatusAndValueCallbackReceiver<
+        AuthenticatorStatus,
+        MakeCredentialAuthenticatorResponsePtr>;
 
-  using MakeCredentialCallback =
-      base::OnceCallback<void(AuthenticatorStatus,
-                              MakeCredentialAuthenticatorResponsePtr)>;
+using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
+    AuthenticatorStatus,
+    GetAssertionAuthenticatorResponsePtr>;
 
-  void RunWrapper(AuthenticatorStatus status,
-                  MakeCredentialAuthenticatorResponsePtr unused_response) {
-    Run(status);
-  }
+}  // namespace
 
-  MakeCredentialCallback Get() {
-    return base::BindOnce(&MockCreateCallback::RunWrapper,
-                          base::Unretained(this));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCreateCallback);
-};
-
-class MockGetCallback {
- public:
-  MockGetCallback() = default;
-  MOCK_METHOD1_T(Run, void(AuthenticatorStatus));
-
-  using GetAssertionCallback =
-      base::OnceCallback<void(AuthenticatorStatus,
-                              GetAssertionAuthenticatorResponsePtr)>;
-
-  void RunWrapper(AuthenticatorStatus status,
-                  GetAssertionAuthenticatorResponsePtr unused_response) {
-    Run(status);
-  }
-
-  GetAssertionCallback Get() {
-    return base::BindOnce(&MockGetCallback::RunWrapper, base::Unretained(this));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockGetCallback);
-};
-
-// Helper object for common tasks.
+// Test fixture base class for common tasks.
 class WebAuthBrowserTestBase : public content::ContentBrowserTest {
  protected:
   WebAuthBrowserTestBase()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  void SetUp() override { content::ContentBrowserTest::SetUp(); }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -100,19 +71,11 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     ConnectToAuthenticator(shell()->web_contents());
   }
 
-  virtual void ConnectToAuthenticator(WebContents* web_contents) {
+  void ConnectToAuthenticator(WebContents* web_contents) {
     authenticator_impl_.reset(
         new content::AuthenticatorImpl(web_contents->GetMainFrame()));
     authenticator_impl_->Bind(mojo::MakeRequest(&authenticator_ptr_));
   }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-  }
-
-  static constexpr int32_t kCOSEAlgorithmIdentifierES256 = -7;
 
   webauth::mojom::PublicKeyCredentialCreationOptionsPtr
   BuildBasicCreateOptions() {
@@ -123,6 +86,7 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     auto user = webauth::mojom::PublicKeyCredentialUserEntity::New(
         kTestUserId, "name", base::nullopt, "displayName");
 
+    static constexpr int32_t kCOSEAlgorithmIdentifierES256 = -7;
     auto param = webauth::mojom::PublicKeyCredentialParameters::New();
     param->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
     param->algorithm_identifier = kCOSEAlgorithmIdentifierES256;
@@ -159,7 +123,7 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     return mojo_options;
   }
 
-  void ResetAuthenticatorImplAndWaitForConnectionError() {
+  void SimulateNavigationAndWaitForConnectionError() {
     EXPECT_TRUE(authenticator_impl_);
     EXPECT_TRUE(authenticator_ptr_);
     EXPECT_TRUE(authenticator_ptr_.is_bound());
@@ -179,14 +143,17 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
 
   AuthenticatorPtr& authenticator() { return authenticator_ptr_; }
   net::EmbeddedTestServer& https_server() { return https_server_; }
+  device::test::ScopedFakeFidoDiscoveryFactory* discovery_factory() {
+    return &factory_;
+  }
 
  private:
   net::EmbeddedTestServer https_server_;
+  device::test::ScopedFakeFidoDiscoveryFactory factory_;
   std::unique_ptr<content::AuthenticatorImpl> authenticator_impl_;
   AuthenticatorPtr authenticator_ptr_;
 };
 
-}  // namespace
 
 class WebAuthBrowserTest : public WebAuthBrowserTestBase {
  public:
@@ -294,49 +261,88 @@ class WebAuthBrowserBleDisabledTest : public WebAuthBrowserTestBase {
 // pending create(publicKey) request.
 IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
                        CreatePublicKeyCredentialNavigateAway) {
-  MockCreateCallback create_callback;
-  EXPECT_CALL(create_callback, Run(::testing::_)).Times(0);
-
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  TestCreateCallbackReceiver create_callback_receiver;
   authenticator()->MakeCredential(BuildBasicCreateOptions(),
-                                  create_callback.Get());
-  authenticator().FlushForTesting();
+                                  create_callback_receiver.callback());
 
-  ResetAuthenticatorImplAndWaitForConnectionError();
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+  SimulateNavigationAndWaitForConnectionError();
 }
 
 // Tests that no crash occurs when the implementation is destroyed with a
 // pending get(publicKey) request.
 IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialNavigateAway) {
-  MockGetCallback get_callback;
-  EXPECT_CALL(get_callback, Run(::testing::_)).Times(0);
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  TestGetCallbackReceiver get_callback_receiver;
+  authenticator()->GetAssertion(BuildBasicGetOptions(),
+                                get_callback_receiver.callback());
 
-  authenticator()->GetAssertion(BuildBasicGetOptions(), get_callback.Get());
-  authenticator().FlushForTesting();
-
-  ResetAuthenticatorImplAndWaitForConnectionError();
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+  SimulateNavigationAndWaitForConnectionError();
 }
 
 // Regression test for https://crbug.com/818219.
 IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
                        CreatePublicKeyCredentialTwiceInARow) {
-  MockCreateCallback callback_1;
-  MockCreateCallback callback_2;
-  EXPECT_CALL(callback_1, Run(::testing::_)).Times(0);
-  EXPECT_CALL(callback_2, Run(AuthenticatorStatus::PENDING_REQUEST)).Times(1);
-  authenticator()->MakeCredential(BuildBasicCreateOptions(), callback_1.Get());
-  authenticator()->MakeCredential(BuildBasicCreateOptions(), callback_2.Get());
-  authenticator().FlushForTesting();
+  TestCreateCallbackReceiver callback_receiver_1;
+  TestCreateCallbackReceiver callback_receiver_2;
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  callback_receiver_1.callback());
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  callback_receiver_2.callback());
+  callback_receiver_2.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver_2.status());
+  EXPECT_FALSE(callback_receiver_1.was_called());
 }
 
 // Regression test for https://crbug.com/818219.
 IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialTwiceInARow) {
-  MockGetCallback callback_1;
-  MockGetCallback callback_2;
-  EXPECT_CALL(callback_1, Run(::testing::_)).Times(0);
-  EXPECT_CALL(callback_2, Run(AuthenticatorStatus::PENDING_REQUEST)).Times(1);
-  authenticator()->GetAssertion(BuildBasicGetOptions(), callback_1.Get());
-  authenticator()->GetAssertion(BuildBasicGetOptions(), callback_2.Get());
-  authenticator().FlushForTesting();
+  TestGetCallbackReceiver callback_receiver_1;
+  TestGetCallbackReceiver callback_receiver_2;
+  authenticator()->GetAssertion(BuildBasicGetOptions(),
+                                callback_receiver_1.callback());
+  authenticator()->GetAssertion(BuildBasicGetOptions(),
+                                callback_receiver_2.callback());
+  callback_receiver_2.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver_2.status());
+  EXPECT_FALSE(callback_receiver_1.was_called());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+                       CreatePublicKeyCredentialWhileRequestIsPending) {
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  TestCreateCallbackReceiver callback_receiver_1;
+  TestCreateCallbackReceiver callback_receiver_2;
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  callback_receiver_1.callback());
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  callback_receiver_2.callback());
+  callback_receiver_2.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver_2.status());
+  EXPECT_FALSE(callback_receiver_1.was_called());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+                       GetPublicKeyCredentialWhileRequestIsPending) {
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  TestGetCallbackReceiver callback_receiver_1;
+  TestGetCallbackReceiver callback_receiver_2;
+  authenticator()->GetAssertion(BuildBasicGetOptions(),
+                                callback_receiver_1.callback());
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+
+  authenticator()->GetAssertion(BuildBasicGetOptions(),
+                                callback_receiver_2.callback());
+  callback_receiver_2.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver_2.status());
+  EXPECT_FALSE(callback_receiver_1.was_called());
 }
 
 // Tests that when navigator.credentials.create() is called with unsupported
@@ -365,14 +371,13 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
 // Tests that the BLE discovery does not start when the WebAuthnBle feature
 // flag is disabled.
 IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
-  device::test::ScopedFakeFidoDiscoveryFactory factory;
-  auto* fake_hid_discovery = factory.ForgeNextHidDiscovery();
-  auto* fake_ble_discovery = factory.ForgeNextBleDiscovery();
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  auto* fake_ble_discovery = discovery_factory()->ForgeNextBleDiscovery();
 
   // Do something that will start discoveries.
-  MockCreateCallback create_callback;
+  TestCreateCallbackReceiver create_callback_receiver;
   authenticator()->MakeCredential(BuildBasicCreateOptions(),
-                                  create_callback.Get());
+                                  create_callback_receiver.callback());
 
   fake_hid_discovery->WaitForCallToStart();
   EXPECT_TRUE(fake_hid_discovery->is_start_requested());
