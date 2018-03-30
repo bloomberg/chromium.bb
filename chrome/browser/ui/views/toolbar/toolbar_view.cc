@@ -206,11 +206,18 @@ void ToolbarView::Init() {
     avatar_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                          ui::EF_MIDDLE_MOUSE_BUTTON);
     avatar_->set_tag(IDC_SHOW_AVATAR_MENU);
-    // TODO(pbos): Incorporate GetAvatarButtonTextForProfile. See AvatarButton.
-    avatar_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
-    avatar_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
+    if (browser_->profile()->IsOffTheRecord()) {
+      avatar_->SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_INCOGNITO_AVATAR_BUTTON_TOOLTIP));
+      avatar_->SetEnabled(false);
+    } else {
+      // TODO(pbos): Incorporate GetAvatarButtonTextForProfile. See
+      // AvatarButton.
+      avatar_->SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
+      avatar_->SetAccessibleName(
+          l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
+    }
     avatar_->set_id(VIEW_ID_AVATAR_BUTTON);
     avatar_->Init();
   }
