@@ -171,7 +171,7 @@ static void write_tx_size_vartx(MACROBLOCKD *xd, const MB_MODE_INFO *mbmi,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
     // TODO(yuec): set correct txfm partition update for qttx
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
@@ -200,9 +200,9 @@ static void write_selected_tx_size(const MACROBLOCKD *xd, aom_writer *w) {
   if (block_signals_txsize(bsize)) {
     const TX_SIZE tx_size = mbmi->tx_size;
     const int tx_size_ctx = get_tx_size_context(xd);
-    const int depth = tx_size_to_depth(tx_size, bsize, 0);
-    const int max_depths = bsize_to_max_depth(bsize, 0);
-    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
+    const int depth = tx_size_to_depth(tx_size, bsize);
+    const int max_depths = bsize_to_max_depth(bsize);
+    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
 
     assert(depth >= 0 && depth <= max_depths);
     assert(!is_inter_block(mbmi));
@@ -375,7 +375,7 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
     token_stats->cost += tmp_token_stats.cost;
 #endif
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 

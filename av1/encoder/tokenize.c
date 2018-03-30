@@ -156,7 +156,7 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
     }
   } else {
     // Half the block size in transform block unit.
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
     const int step = bsw * bsh;

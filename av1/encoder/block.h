@@ -358,13 +358,12 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
          !xd->lossless[mbmi->segment_id];
 }
 
-static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize,
-                                   int is_inter) {
+static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize) {
   TX_SIZE ctx_size = get_max_rect_tx_size(bsize);
   int depth = 0;
   while (tx_size != ctx_size) {
     depth++;
-    ctx_size = sub_tx_size_map[is_inter][ctx_size];
+    ctx_size = sub_tx_size_map[ctx_size];
     assert(depth <= MAX_TX_DEPTH);
   }
   return depth;

@@ -242,7 +242,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #endif
     *eob_total += eob;
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
     assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
     const int bsw = tx_size_wide_unit[sub_txs];
@@ -548,7 +548,7 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   is_split = aom_read_symbol(r, ec_ctx->txfm_partition_cdf[ctx], 2, ACCT_STR);
 
   if (is_split) {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
@@ -588,19 +588,18 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   }
 }
 
-static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, int is_inter,
-                                     aom_reader *r) {
+static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, aom_reader *r) {
   // TODO(debargha): Clean up the logic here. This function should only
   // be called for intra.
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
-  const int max_depths = bsize_to_max_depth(bsize, 0);
+  const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
+  const int max_depths = bsize_to_max_depth(bsize);
   const int ctx = get_tx_size_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
                                     max_depths + 1, ACCT_STR);
   assert(depth >= 0 && depth <= max_depths);
-  const TX_SIZE tx_size = depth_to_tx_size(depth, bsize, 0);
+  const TX_SIZE tx_size = depth_to_tx_size(depth, bsize);
   return tx_size;
 }
 
@@ -612,7 +611,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
 
   if (block_signals_txsize(bsize)) {
     if ((!is_inter || allow_select_inter) && tx_mode == TX_MODE_SELECT) {
-      const TX_SIZE coded_tx_size = read_selected_tx_size(xd, is_inter, r);
+      const TX_SIZE coded_tx_size = read_selected_tx_size(xd, r);
       return coded_tx_size;
     } else {
       return tx_size_from_tx_mode(bsize, tx_mode);

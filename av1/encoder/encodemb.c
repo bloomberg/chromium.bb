@@ -313,7 +313,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
                  mi_row, mi_col, dry_run);
   } else {
     assert(tx_size < TX_SIZES_ALL);
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
     assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
     // This is the square transform block partition entry point.

@@ -336,8 +336,7 @@ static void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
     mbmi->tx_size = tx_size_from_tx_mode(mbmi->sb_type, tx_mode);
   } else {
     BLOCK_SIZE bsize = mbmi->sb_type;
-    TX_SIZE min_tx_size =
-        depth_to_tx_size(MAX_TX_DEPTH, bsize, is_inter_block(mbmi));
+    TX_SIZE min_tx_size = depth_to_tx_size(MAX_TX_DEPTH, bsize);
     mbmi->tx_size = (TX_SIZE)TXSIZEMAX(mbmi->tx_size, min_tx_size);
   }
   if (is_inter_block(mbmi)) {
@@ -4454,7 +4453,7 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
@@ -4530,7 +4529,7 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
                             xd->left_txfm_context + blk_row, TX_4X4, tx_size);
       return;
     }
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
     for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
@@ -4722,9 +4721,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         if (mbmi->tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
         if (block_signals_txsize(bsize)) {
           const int tx_size_ctx = get_tx_size_context(xd);
-          const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
-          const int depth = tx_size_to_depth(mbmi->tx_size, bsize, 0);
-          const int max_depths = bsize_to_max_depth(bsize, 0);
+          const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
+          const int depth = tx_size_to_depth(mbmi->tx_size, bsize);
+          const int max_depths = bsize_to_max_depth(bsize);
 
           if (tile_data->allow_update_cdf)
             update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],

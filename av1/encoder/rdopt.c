@@ -2357,9 +2357,8 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
   const MB_MODE_INFO *const mbmi = xd->mi[0];
 
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type)) {
-    const int is_inter = is_inter_block(mbmi);
-    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
-    const int depth = tx_size_to_depth(tx_size, bsize, is_inter);
+    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
+    const int depth = tx_size_to_depth(tx_size, bsize);
     const int tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
     return r_tx_size;
@@ -2541,8 +2540,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16, 0);
 
-  for (n = start_tx; depth <= MAX_TX_DEPTH;
-       depth++, n = sub_tx_size_map[0][n]) {
+  for (n = start_tx; depth <= MAX_TX_DEPTH; depth++, n = sub_tx_size_map[n]) {
     RD_STATS this_rd_stats;
     if (mbmi->ref_mv_idx > 0) x->rd_model = LOW_TXFM_RD;
     rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n);
@@ -3654,7 +3652,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   // TX split
   if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && tx_split_prune_flag == 0) {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
     const int sub_step = bsw * bsh;
@@ -4003,7 +4001,7 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     txfm_partition_update(tx_above + blk_col, tx_left + blk_row, tx_size,
                           tx_size);
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
     const int step = bsh * bsw;
@@ -4219,7 +4217,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
     const int cur_tx_bw = tx_size_wide[cur_tx_size];
     const int cur_tx_bh = tx_size_high[cur_tx_size];
     if (cur_tx_bw < 8 || cur_tx_bh < 8) break;
-    const TX_SIZE next_tx_size = sub_tx_size_map[1][cur_tx_size];
+    const TX_SIZE next_tx_size = sub_tx_size_map[cur_tx_size];
     for (int row = 0; row < bh; row += cur_tx_bh) {
       for (int col = 0; col < bw; col += cur_tx_bw) {
         if (cur_tx_bw != cur_tx_bh) {
@@ -4415,7 +4413,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   const int n4 = bsize_to_num_blk(bsize);
   // Get the tx_size 1 level down
-  const TX_SIZE min_tx_size = sub_tx_size_map[1][max_txsize_rect_lookup[bsize]];
+  const TX_SIZE min_tx_size = sub_tx_size_map[max_txsize_rect_lookup[bsize]];
   const TxSetType tx_set_type =
       get_ext_tx_set_type(min_tx_size, is_inter, cm->reduced_tx_set_used);
   const int within_border =
