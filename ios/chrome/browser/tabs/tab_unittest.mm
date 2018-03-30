@@ -223,6 +223,7 @@ class TabTest : public BlockCleanupTest {
     context2.SetUrl(redirect_url);
     web_state_impl_->OnNavigationStarted(&context2);
     [tab_ navigationManagerImpl]->CommitPendingItem();
+    context2.SetHasCommitted(true);
     web_state_impl_->UpdateHttpResponseHeaders(redirect_url);
     web_state_impl_->OnNavigationFinished(&context2);
     web_state_impl_->SetIsLoading(true);
