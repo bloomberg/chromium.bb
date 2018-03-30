@@ -26,6 +26,7 @@ source_set("internal") {
     "download_ukm_helper.cc",
     "download_utils.cc",
     "download_worker.cc",
+    "parallel_download_job.cc",
     "parallel_download_utils.cc",
     "rate_estimator.cc",
     "resource_downloader.cc",
@@ -57,6 +58,7 @@ source_set("unit_tests") {
     "download_file_unittest.cc",
     "download_stats_unittest.cc",
     "download_ukm_helper_unittest.cc",
+    "parallel_download_job_unittest.cc",
     "parallel_download_utils_unittest.cc",
     "rate_estimator_unittest.cc",
   ]

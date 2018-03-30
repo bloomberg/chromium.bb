@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/parallel_download_job.h"
+#include "components/download/public/common/parallel_download_job.h"
 
 #include <algorithm>
 
@@ -13,49 +13,43 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/parallel_download_utils.h"
-#include "content/browser/download/download_utils.h"
-#include "content/browser/download/parallel_download_utils.h"
-#include "content/browser/storage_partition_impl.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item_utils.h"
-#include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace content {
+namespace download {
 namespace {
-
 const int kDownloadJobVerboseLevel = 1;
-
 }  // namespace
 
 ParallelDownloadJob::ParallelDownloadJob(
-    download::DownloadItem* download_item,
-    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
-    const download::DownloadCreateInfo& create_info,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
-    : download::DownloadJobImpl(download_item, std::move(request_handle), true),
+    DownloadItem* download_item,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+    const DownloadCreateInfo& create_info,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    net::URLRequestContextGetter* url_request_context_getter)
+    : DownloadJobImpl(download_item, std::move(request_handle), true),
       initial_request_offset_(create_info.offset),
       initial_received_slices_(download_item->GetReceivedSlices()),
       content_length_(create_info.total_bytes),
       requests_sent_(false),
       is_canceled_(false),
-      shared_url_loader_factory_(std::move(shared_url_loader_factory)) {}
+      shared_url_loader_factory_(std::move(shared_url_loader_factory)),
+      url_request_context_getter_(url_request_context_getter) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
 void ParallelDownloadJob::OnDownloadFileInitialized(
-    download::DownloadFile::InitializeCallback callback,
-    download::DownloadInterruptReason result,
+    DownloadFile::InitializeCallback callback,
+    DownloadInterruptReason result,
     int64_t bytes_wasted) {
-  download::DownloadJobImpl::OnDownloadFileInitialized(std::move(callback),
-                                                       result, bytes_wasted);
-  if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
+  DownloadJobImpl::OnDownloadFileInitialized(std::move(callback), result,
+                                             bytes_wasted);
+  if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
     BuildParallelRequestAfterDelay();
 }
 
 void ParallelDownloadJob::Cancel(bool user_cancel) {
   is_canceled_ = true;
-  download::DownloadJobImpl::Cancel(user_cancel);
+  DownloadJobImpl::Cancel(user_cancel);
 
   if (!requests_sent_) {
     timer_.Stop();
@@ -67,7 +61,7 @@ void ParallelDownloadJob::Cancel(bool user_cancel) {
 }
 
 void ParallelDownloadJob::Pause() {
-  download::DownloadJobImpl::Pause();
+  DownloadJobImpl::Pause();
 
   if (!requests_sent_) {
     timer_.Stop();
@@ -79,7 +73,7 @@ void ParallelDownloadJob::Pause() {
 }
 
 void ParallelDownloadJob::Resume(bool resume_request) {
-  download::DownloadJobImpl::Resume(resume_request);
+  DownloadJobImpl::Resume(resume_request);
   if (!resume_request)
     return;
 
@@ -108,7 +102,7 @@ int ParallelDownloadJob::GetMinRemainingTimeInSeconds() const {
 
 void ParallelDownloadJob::CancelRequestWithOffset(int64_t offset) {
   if (initial_request_offset_ == offset) {
-    download::DownloadJobImpl::Cancel(false);
+    DownloadJobImpl::Cancel(false);
     return;
   }
 
@@ -127,11 +121,11 @@ void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
 }
 
 void ParallelDownloadJob::OnInputStreamReady(
-    download::DownloadWorker* worker,
-    std::unique_ptr<download::InputStream> input_stream) {
+    DownloadWorker* worker,
+    std::unique_ptr<InputStream> input_stream) {
   bool success = DownloadJob::AddInputStream(
       std::move(input_stream), worker->offset(), worker->length());
-  download::RecordParallelDownloadAddStreamSuccess(success);
+  RecordParallelDownloadAddStreamSuccess(success);
 
   // Destroy the request if the sink is gone.
   if (!success) {
@@ -144,8 +138,8 @@ void ParallelDownloadJob::OnInputStreamReady(
 void ParallelDownloadJob::BuildParallelRequests() {
   DCHECK(!requests_sent_);
   DCHECK(!is_paused());
-  if (is_canceled_ || download_item_->GetState() !=
-                          download::DownloadItem::DownloadState::IN_PROGRESS) {
+  if (is_canceled_ ||
+      download_item_->GetState() != DownloadItem::DownloadState::IN_PROGRESS) {
     return;
   }
 
@@ -156,10 +150,10 @@ void ParallelDownloadJob::BuildParallelRequests() {
   // Get the next |kParallelRequestCount - 1| slices and fork
   // new requests. For the remaining slices, they will be handled once some
   // of the workers finish their job.
-  const download::DownloadItem::ReceivedSlices& received_slices =
+  const DownloadItem::ReceivedSlices& received_slices =
       download_item_->GetReceivedSlices();
-  download::DownloadItem::ReceivedSlices slices_to_download =
-      download::FindSlicesToDownload(received_slices);
+  DownloadItem::ReceivedSlices slices_to_download =
+      FindSlicesToDownload(received_slices);
 
   DCHECK(!slices_to_download.empty());
   int64_t first_slice_offset = slices_to_download[0].offset;
@@ -194,9 +188,8 @@ void ParallelDownloadJob::BuildParallelRequests() {
           content_length_ - first_slice_offset + initial_request_offset_,
           GetParallelRequestCount(), GetMinSliceSize());
     } else {
-      download::RecordParallelDownloadCreationEvent(
-          download::ParallelDownloadCreationEvent::
-              FALLBACK_REASON_REMAINING_TIME);
+      RecordParallelDownloadCreationEvent(
+          ParallelDownloadCreationEvent::FALLBACK_REASON_REMAINING_TIME);
     }
   }
 
@@ -209,18 +202,18 @@ void ParallelDownloadJob::BuildParallelRequests() {
     slices_to_download.pop_back();
 
   ForkSubRequests(slices_to_download);
-  download::RecordParallelDownloadRequestCount(
+  RecordParallelDownloadRequestCount(
       static_cast<int>(slices_to_download.size()));
   requests_sent_ = true;
 }
 
 void ParallelDownloadJob::ForkSubRequests(
-    const download::DownloadItem::ReceivedSlices& slices_to_download) {
+    const DownloadItem::ReceivedSlices& slices_to_download) {
   // If the initial request is working on the first hole, don't create parallel
   // request for this hole.
   bool skip_first_slice = true;
-  download::DownloadItem::ReceivedSlices initial_slices_to_download =
-      download::FindSlicesToDownload(initial_received_slices_);
+  DownloadItem::ReceivedSlices initial_slices_to_download =
+      FindSlicesToDownload(initial_received_slices_);
   if (initial_slices_to_download.size() > 1) {
     DCHECK_EQ(initial_request_offset_, initial_slices_to_download[0].offset);
     int64_t first_hole_max = initial_slices_to_download[0].offset +
@@ -239,21 +232,15 @@ void ParallelDownloadJob::ForkSubRequests(
     // All parallel requests are half open, which sends request headers like
     // "Range:50-".
     // If server rejects a certain request, others should take over.
-    CreateRequest(it->offset, download::DownloadSaveInfo::kLengthFullContent);
+    CreateRequest(it->offset, DownloadSaveInfo::kLengthFullContent);
   }
 }
 
 void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   DCHECK(download_item_);
-  DCHECK_EQ(download::DownloadSaveInfo::kLengthFullContent, length);
+  DCHECK_EQ(DownloadSaveInfo::kLengthFullContent, length);
 
-  auto worker =
-      std::make_unique<download::DownloadWorker>(this, offset, length);
-
-  StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartitionForSite(
-          DownloadItemUtils::GetBrowserContext(download_item_),
-          download_item_->GetSiteUrl());
+  auto worker = std::make_unique<DownloadWorker>(this, offset, length);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("parallel_download_job", R"(
@@ -278,10 +265,10 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
           }
         })");
   // The parallel requests only use GET method.
-  std::unique_ptr<download::DownloadUrlParameters> download_params(
-      new download::DownloadUrlParameters(
-          download_item_->GetURL(), storage_partition->GetURLRequestContext(),
-          traffic_annotation));
+  std::unique_ptr<DownloadUrlParameters> download_params(
+      new DownloadUrlParameters(download_item_->GetURL(),
+                                url_request_context_getter_.get(),
+                                traffic_annotation));
   download_params->set_file_path(download_item_->GetFullPath());
   download_params->set_last_modified(download_item_->GetLastModifiedTime());
   download_params->set_etag(download_item_->GetETag());
@@ -305,4 +292,4 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   workers_[offset] = std::move(worker);
 }
 
-}  // namespace content
+}  // namespace download

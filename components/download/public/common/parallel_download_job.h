@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_JOB_H_
-#define CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_JOB_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_PARALLEL_DOWNLOAD_JOB_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_PARALLEL_DOWNLOAD_JOB_H_
 
 #include <memory>
 #include <unordered_map>
@@ -11,24 +11,31 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_job_impl.h"
 #include "components/download/public/common/download_worker.h"
-#include "content/common/content_export.h"
 
-namespace content {
+namespace net {
+class URLRequestContextGetter;
+}
+
+namespace download {
 
 // DownloadJob that can create concurrent range requests to fetch different
 // parts of the file.
 // The original request is hold in base class.
-class CONTENT_EXPORT ParallelDownloadJob
-    : public download::DownloadJobImpl,
-      public download::DownloadWorker::Delegate {
+class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
+    : public DownloadJobImpl,
+      public DownloadWorker::Delegate {
  public:
+  // TODO(qinmin): Remove |url_request_context_getter| once network service is
+  // enabled.
   ParallelDownloadJob(
-      download::DownloadItem* download_item,
-      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
-      const download::DownloadCreateInfo& create_info,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
+      DownloadItem* download_item,
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      const DownloadCreateInfo& create_info,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      net::URLRequestContextGetter* url_request_context_getter);
   ~ParallelDownloadJob() override;
 
   // DownloadJobImpl implementation.
@@ -39,10 +46,9 @@ class CONTENT_EXPORT ParallelDownloadJob
 
  protected:
   // DownloadJobImpl implementation.
-  void OnDownloadFileInitialized(
-      download::DownloadFile::InitializeCallback callback,
-      download::DownloadInterruptReason result,
-      int64_t bytes_wasted) override;
+  void OnDownloadFileInitialized(DownloadFile::InitializeCallback callback,
+                                 DownloadInterruptReason result,
+                                 int64_t bytes_wasted) override;
 
   // Virtual for testing.
   virtual int GetParallelRequestCount() const;
@@ -50,7 +56,7 @@ class CONTENT_EXPORT ParallelDownloadJob
   virtual int GetMinRemainingTimeInSeconds() const;
 
   using WorkerMap =
-      std::unordered_map<int64_t, std::unique_ptr<download::DownloadWorker>>;
+      std::unordered_map<int64_t, std::unique_ptr<DownloadWorker>>;
 
   // Map from the offset position of the slice to the worker that downloads the
   // slice.
@@ -60,9 +66,8 @@ class CONTENT_EXPORT ParallelDownloadJob
   friend class ParallelDownloadJobTest;
 
   // DownloadWorker::Delegate implementation.
-  void OnInputStreamReady(
-      download::DownloadWorker* worker,
-      std::unique_ptr<download::InputStream> input_stream) override;
+  void OnInputStreamReady(DownloadWorker* worker,
+                          std::unique_ptr<InputStream> input_stream) override;
 
   // Build parallel requests after a delay, to effectively measure the single
   // stream bandwidth.
@@ -74,8 +79,7 @@ class CONTENT_EXPORT ParallelDownloadJob
 
   // Build one http request for each slice from the second slice.
   // The first slice represents the original request.
-  void ForkSubRequests(
-      const download::DownloadItem::ReceivedSlices& slices_to_download);
+  void ForkSubRequests(const DownloadItem::ReceivedSlices& slices_to_download);
 
   // Create one range request, virtual for testing. Range request will start
   // from |offset| to |length|. Range request will be half open, e.g.
@@ -88,7 +92,7 @@ class CONTENT_EXPORT ParallelDownloadJob
   // A snapshot of received slices when creating the parallel download job.
   // Download item's received slices may be different from this snapshot when
   // |BuildParallelRequests| is called.
-  download::DownloadItem::ReceivedSlices initial_received_slices_;
+  DownloadItem::ReceivedSlices initial_received_slices_;
 
   // The length of the response body of the original request.
   // Used to estimate the remaining size of the content when the initial
@@ -105,12 +109,16 @@ class CONTENT_EXPORT ParallelDownloadJob
   // If the download progress is canceled.
   bool is_canceled_;
 
-  // SharedURLLoaderFactory to issue network requests.
+  // SharedURLLoaderFactory to issue network requests with network service
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+
+  // URLRequestContextGetter for issueing network requests when network service
+  // is disabled.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ParallelDownloadJob);
 };
 
-}  //  namespace content
+}  //  namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_JOB_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_PARALLEL_DOWNLOAD_JOB_H_

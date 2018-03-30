@@ -46,6 +46,7 @@ component("public") {
     "download_worker.h",
     "input_stream.cc",
     "input_stream.h",
+    "parallel_download_job.h",
     "parallel_download_utils.h",
     "rate_estimator.h",
     "resource_downloader.h",
