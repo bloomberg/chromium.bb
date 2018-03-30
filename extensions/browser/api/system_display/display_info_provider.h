@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace display {
 class Display;
@@ -29,49 +30,59 @@ struct DisplayUnitInfo;
 struct Insets;
 struct MirrorModeInfo;
 struct TouchCalibrationPairQuad;
-}
-}
+}  // namespace system_display
+}  // namespace api
 
+// Implementation class for chrome.system.display extension API
+// (system_display_api.cc). Callbacks that provide an error string use an
+// empty string for success.
 class DisplayInfoProvider {
  public:
   using DisplayUnitInfoList = std::vector<api::system_display::DisplayUnitInfo>;
   using DisplayLayoutList = std::vector<api::system_display::DisplayLayout>;
-  using TouchCalibrationCallback = base::OnceCallback<void(bool)>;
+  using ErrorCallback = base::OnceCallback<void(base::Optional<std::string>)>;
 
   virtual ~DisplayInfoProvider();
 
-  // Returns a pointer to DisplayInfoProvider or NULL if Create()
-  // or InitializeForTesting() or not called yet.
+  // Returns a pointer to DisplayInfoProvider or null if Create() or
+  // InitializeForTesting() have not been called yet.
   static DisplayInfoProvider* Get();
 
-  // This is for tests that run in its own process (e.g. browser_tests).
-  // Using this in other tests (e.g. unit_tests) will result in DCHECK failure.
+  // Called by tests to provide a test implementation for the extension API.
   static void InitializeForTesting(DisplayInfoProvider* display_info_provider);
 
-  // Updates the display with |display_id| according to |info|. Returns whether
-  // the display was successfully updated. On failure, no display parameters
-  // should be changed, and |error| should be set to the error string.
-  virtual bool SetInfo(const std::string& display_id,
-                       const api::system_display::DisplayProperties& info,
-                       std::string* error) = 0;
+  // Called by tests to reset the global instance.
+  static void ResetForTesting();
 
-  // Implements SetDisplayLayout methods. See system_display.idl. Returns
-  // false if the layout input is invalid.
-  virtual bool SetDisplayLayout(const DisplayLayoutList& layouts,
-                                std::string* error);
+  // Updates display |display_id| with |properties|. If the operation fails,
+  // |callback| will be called with a non empty error string and no display
+  // properties will be changed.
+  virtual void SetDisplayProperties(
+      const std::string& display_id,
+      const api::system_display::DisplayProperties& properties,
+      ErrorCallback callback);
+
+  // Updates the display layout with |layouts|. If the operation fails,
+  // |callback| will be called with a non empty error string and the layout will
+  // not be changed.
+  virtual void SetDisplayLayout(const DisplayLayoutList& layouts,
+                                ErrorCallback callback);
 
   // Enables the unified desktop feature.
   virtual void EnableUnifiedDesktop(bool enable);
 
-  // Returns a list of information for all displays. If |single_unified| is
+  // Requests a list of information for all displays. If |single_unified| is
   // true, when in unified mode a single display will be returned representing
   // the single unified desktop.
-  virtual DisplayUnitInfoList GetAllDisplaysInfo(bool single_unified);
+  virtual void GetAllDisplaysInfo(
+      bool single_unified,
+      base::OnceCallback<void(DisplayUnitInfoList result)> callback);
 
   // Gets display layout information.
-  virtual DisplayLayoutList GetDisplayLayout();
+  virtual void GetDisplayLayout(
+      base::OnceCallback<void(DisplayLayoutList result)> callback);
 
-  // Implements overscan calbiration methods. See system_display.idl. These
+  // Implements overscan calibration methods. See system_display.idl. These
   // return false if |id| is invalid.
   virtual bool OverscanCalibrationStart(const std::string& id);
   virtual bool OverscanCalibrationAdjust(
@@ -80,30 +91,31 @@ class DisplayInfoProvider {
   virtual bool OverscanCalibrationReset(const std::string& id);
   virtual bool OverscanCalibrationComplete(const std::string& id);
 
-  // Implements touch calibration methods. See system_display.idl. This returns
-  // false in case any error occurs. In such cases the |error| string will also
-  // be set.
-  virtual bool ShowNativeTouchCalibration(const std::string& id,
-                                          std::string* error,
-                                          TouchCalibrationCallback callback);
-  virtual bool StartCustomTouchCalibration(const std::string& id,
-                                           std::string* error);
+  // Shows the native touch calibration UI. Returns false if native touch
+  // calibration cannot be started. Otherwise |callback| will be run when the
+  // calibration has completed.
+  virtual void ShowNativeTouchCalibration(const std::string& id,
+                                          ErrorCallback callback);
+  // Returns true if native touch calibration is in progress.
+  virtual bool IsNativeTouchCalibrationActive();
+
+  // These methods implement custom touch calibration. They will return false
+  // if |id| is invalid or if the operation is invalid.
+  virtual bool StartCustomTouchCalibration(const std::string& id);
   virtual bool CompleteCustomTouchCalibration(
       const api::system_display::TouchCalibrationPairQuad& pairs,
-      const api::system_display::Bounds& bounds,
-      std::string* error);
-  virtual bool ClearTouchCalibration(const std::string& id, std::string* error);
-  virtual bool IsNativeTouchCalibrationActive(std::string* error);
+      const api::system_display::Bounds& bounds);
+  virtual bool ClearTouchCalibration(const std::string& id);
+  // Returns true if custom touch calibration is in progress.
+  virtual bool IsCustomTouchCalibrationActive();
 
   // Sets the display mode to the specified mirror mode. See system_display.idl.
-  // Returns false if the parameters are invalid.
-  // |info|: The information of the mirror mode that should be applied to the
-  //     display mode.
-  virtual bool SetMirrorMode(const api::system_display::MirrorModeInfo& info,
-                             std::string* out_error);
+  // |info|: Mirror mode properties to apply.
+  virtual void SetMirrorMode(const api::system_display::MirrorModeInfo& info,
+                             ErrorCallback callback);
 
  protected:
-  DisplayInfoProvider();
+  DisplayInfoProvider() = default;
 
   // Create a DisplayUnitInfo from a display::Display for implementations of
   // GetAllDisplaysInfo()
@@ -118,7 +130,7 @@ class DisplayInfoProvider {
   // platform specific method.
   virtual void UpdateDisplayUnitInfoForPlatform(
       const display::Display& display,
-      api::system_display::DisplayUnitInfo* unit) = 0;
+      api::system_display::DisplayUnitInfo* unit);
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProvider);
 };

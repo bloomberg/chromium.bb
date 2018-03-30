@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -36,6 +37,8 @@ class SystemDisplayGetInfoFunction : public SystemDisplayFunction {
 
   bool PreRunValidation(std::string* error) override;
   ResponseAction Run() override;
+
+  void Response(DisplayInfoProvider::DisplayUnitInfoList all_displays_info);
 };
 
 class SystemDisplayGetDisplayLayoutFunction : public SystemDisplayFunction {
@@ -47,6 +50,8 @@ class SystemDisplayGetDisplayLayoutFunction : public SystemDisplayFunction {
   ~SystemDisplayGetDisplayLayoutFunction() override {}
   ResponseAction Run() override;
   bool ShouldRestrictToKioskAndWebUI() override;
+
+  void Response(DisplayInfoProvider::DisplayLayoutList display_layout);
 };
 
 class SystemDisplaySetDisplayPropertiesFunction : public SystemDisplayFunction {
@@ -57,6 +62,8 @@ class SystemDisplaySetDisplayPropertiesFunction : public SystemDisplayFunction {
  protected:
   ~SystemDisplaySetDisplayPropertiesFunction() override {}
   ResponseAction Run() override;
+
+  void Response(base::Optional<std::string> error);
 };
 
 class SystemDisplaySetDisplayLayoutFunction : public SystemDisplayFunction {
@@ -67,6 +74,8 @@ class SystemDisplaySetDisplayLayoutFunction : public SystemDisplayFunction {
  protected:
   ~SystemDisplaySetDisplayLayoutFunction() override {}
   ResponseAction Run() override;
+
+  void Response(base::Optional<std::string> error);
 };
 
 class SystemDisplayEnableUnifiedDesktopFunction : public SystemDisplayFunction {
@@ -126,7 +135,6 @@ class SystemDisplayOverscanCalibrationCompleteFunction
 class SystemDisplayShowNativeTouchCalibrationFunction
     : public SystemDisplayFunction {
  public:
-  static const char kTouchCalibrationError[];
   DECLARE_EXTENSION_FUNCTION("system.display.showNativeTouchCalibration",
                              SYSTEM_DISPLAY_SHOWNATIVETOUCHCALIBRATION);
 
@@ -134,7 +142,7 @@ class SystemDisplayShowNativeTouchCalibrationFunction
   ~SystemDisplayShowNativeTouchCalibrationFunction() override {}
   ResponseAction Run() override;
 
-  void OnCalibrationComplete(bool success);
+  void OnCalibrationComplete(base::Optional<std::string> error);
 };
 
 class SystemDisplayStartCustomTouchCalibrationFunction
@@ -178,6 +186,8 @@ class SystemDisplaySetMirrorModeFunction : public SystemDisplayFunction {
  protected:
   ~SystemDisplaySetMirrorModeFunction() override {}
   ResponseAction Run() override;
+
+  void Response(base::Optional<std::string> error);
 };
 
 }  // namespace extensions

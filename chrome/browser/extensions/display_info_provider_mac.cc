@@ -8,28 +8,12 @@
 
 namespace extensions {
 
-DisplayInfoProviderMac::DisplayInfoProviderMac() {
-}
-
-DisplayInfoProviderMac::~DisplayInfoProviderMac() {
-}
-
-bool DisplayInfoProviderMac::SetInfo(
-    const std::string& display_id,
-    const api::system_display::DisplayProperties& info,
-    std::string* error) {
-  *error = "Not implemented";
-  return false;
-}
+DisplayInfoProviderMac::DisplayInfoProviderMac() = default;
 
 void DisplayInfoProviderMac::UpdateDisplayUnitInfoForPlatform(
     const display::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
-  static bool logged_once = false;
-  if (!logged_once) {
-    NOTIMPLEMENTED();
-    logged_once = true;
-  }
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 // static

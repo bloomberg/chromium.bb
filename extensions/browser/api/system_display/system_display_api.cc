@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/common/api/system_display.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -30,10 +29,6 @@ const char SystemDisplayFunction::kCrosOnlyError[] =
     "Function available only on ChromeOS.";
 const char SystemDisplayFunction::kKioskOnlyError[] =
     "Only kiosk enabled extensions are allowed to use this function.";
-
-const char
-    SystemDisplayShowNativeTouchCalibrationFunction::kTouchCalibrationError[] =
-        "Touch calibration failed";
 
 namespace {
 
@@ -178,7 +173,7 @@ bool SystemDisplayFunction::PreRunValidation(std::string* error) {
 bool SystemDisplayFunction::ShouldRestrictToKioskAndWebUI() {
   // Allow autotest extension to access for Chrome OS testing.
   if (extension() && extension()->permissions_data()->HasAPIPermission(
-      APIPermission::kAutoTestPrivate)) {
+                         APIPermission::kAutoTestPrivate)) {
     return false;
   }
 
@@ -196,22 +191,31 @@ ExtensionFunction::ResponseAction SystemDisplayGetInfoFunction::Run() {
       display::GetInfo::Params::Create(*args_));
   bool single_unified = params->flags && params->flags->single_unified &&
                         *params->flags->single_unified;
-  DisplayInfoProvider::DisplayUnitInfoList all_displays_info =
-      DisplayInfoProvider::Get()->GetAllDisplaysInfo(single_unified);
+  DisplayInfoProvider::Get()->GetAllDisplaysInfo(
+      single_unified,
+      base::BindOnce(&SystemDisplayGetInfoFunction::Response, this));
+  return RespondLater();
+}
 
-  // Only |edid| is meant to be restricted to kiosk mode.
-  if (ShouldRestrictToKioskAndWebUI())
+void SystemDisplayGetInfoFunction::Response(
+    DisplayInfoProvider::DisplayUnitInfoList all_displays_info) {
+  // |edid| is restricted to kiosk mode.
+  if (ShouldRestrictToKioskAndWebUI()) {
     for (auto& display_info : all_displays_info)
       display_info.edid.release();
-
-  return RespondNow(
-      ArgumentList(display::GetInfo::Results::Create(all_displays_info)));
+  }
+  Respond(ArgumentList(display::GetInfo::Results::Create(all_displays_info)));
 }
 
 ExtensionFunction::ResponseAction SystemDisplayGetDisplayLayoutFunction::Run() {
-  DisplayInfoProvider::DisplayLayoutList display_layout =
-      DisplayInfoProvider::Get()->GetDisplayLayout();
-  return RespondNow(
+  DisplayInfoProvider::Get()->GetDisplayLayout(
+      base::BindOnce(&SystemDisplayGetDisplayLayoutFunction::Response, this));
+  return RespondLater();
+}
+
+void SystemDisplayGetDisplayLayoutFunction::Response(
+    DisplayInfoProvider::DisplayLayoutList display_layout) {
+  return Respond(
       ArgumentList(display::GetDisplayLayout::Results::Create(display_layout)));
 }
 
@@ -221,23 +225,32 @@ bool SystemDisplayGetDisplayLayoutFunction::ShouldRestrictToKioskAndWebUI() {
 
 ExtensionFunction::ResponseAction
 SystemDisplaySetDisplayPropertiesFunction::Run() {
-  std::string error;
   std::unique_ptr<display::SetDisplayProperties::Params> params(
       display::SetDisplayProperties::Params::Create(*args_));
-  bool result =
-      DisplayInfoProvider::Get()->SetInfo(params->id, params->info, &error);
-  if (!result)
-    return RespondNow(Error(error));
-  return RespondNow(NoArguments());
+  DisplayInfoProvider::Get()->SetDisplayProperties(
+      params->id, params->info,
+      base::BindOnce(&SystemDisplaySetDisplayPropertiesFunction::Response,
+                     this));
+  return RespondLater();
+}
+
+void SystemDisplaySetDisplayPropertiesFunction::Response(
+    base::Optional<std::string> error) {
+  Respond(error ? Error(*error) : NoArguments());
 }
 
 ExtensionFunction::ResponseAction SystemDisplaySetDisplayLayoutFunction::Run() {
   std::unique_ptr<display::SetDisplayLayout::Params> params(
       display::SetDisplayLayout::Params::Create(*args_));
-  std::string error;
-  if (!DisplayInfoProvider::Get()->SetDisplayLayout(params->layouts, &error))
-    return RespondNow(Error("Unable to set display layout: " + error));
-  return RespondNow(NoArguments());
+  DisplayInfoProvider::Get()->SetDisplayLayout(
+      params->layouts,
+      base::BindOnce(&SystemDisplaySetDisplayLayoutFunction::Response, this));
+  return RespondLater();
+}
+
+void SystemDisplaySetDisplayLayoutFunction::Response(
+    base::Optional<std::string> error) {
+  Respond(error ? Error(*error) : NoArguments());
 }
 
 ExtensionFunction::ResponseAction
@@ -299,26 +312,24 @@ SystemDisplayShowNativeTouchCalibrationFunction::Run() {
   std::unique_ptr<display::ShowNativeTouchCalibration::Params> params(
       display::ShowNativeTouchCalibration::Params::Create(*args_));
 
-  std::string error;
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
-    return RespondNow(Error(error));
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
+    return RespondNow(Error("Native touch calibration already active."));
 
-  if (!DisplayInfoProvider::Get()->ShowNativeTouchCalibration(
-          params->id, &error,
-          base::BindOnce(&SystemDisplayShowNativeTouchCalibrationFunction::
-                             OnCalibrationComplete,
-                         this))) {
-    return RespondNow(Error(error));
-  }
+  if (DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive())
+    return RespondNow(Error("Custom touch calibration is active."));
+
+  DisplayInfoProvider::Get()->ShowNativeTouchCalibration(
+      params->id,
+      base::BindOnce(&SystemDisplayShowNativeTouchCalibrationFunction::
+                         OnCalibrationComplete,
+                     this));
   return RespondLater();
 }
 
 void SystemDisplayShowNativeTouchCalibrationFunction::OnCalibrationComplete(
-    bool success) {
-  if (success)
-    Respond(OneArgument(std::make_unique<base::Value>(true)));
-  else
-    Respond(Error(kTouchCalibrationError));
+    base::Optional<std::string> error) {
+  Respond(error ? Error(*error)
+                : OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction
@@ -326,13 +337,13 @@ SystemDisplayStartCustomTouchCalibrationFunction::Run() {
   std::unique_ptr<display::StartCustomTouchCalibration::Params> params(
       display::StartCustomTouchCalibration::Params::Create(*args_));
 
-  std::string error;
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
-    return RespondNow(Error(error));
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
+    return RespondNow(Error("Native touch calibration is active."));
 
-  if (!DisplayInfoProvider::Get()->StartCustomTouchCalibration(params->id,
-                                                               &error))
-    return RespondNow(Error(error));
+  if (!DisplayInfoProvider::Get()->StartCustomTouchCalibration(params->id)) {
+    return RespondNow(
+        Error("Custom touch calibration not available for display."));
+  }
   return RespondNow(NoArguments());
 }
 
@@ -341,13 +352,15 @@ SystemDisplayCompleteCustomTouchCalibrationFunction::Run() {
   std::unique_ptr<display::CompleteCustomTouchCalibration::Params> params(
       display::CompleteCustomTouchCalibration::Params::Create(*args_));
 
-  std::string error;
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
-    return RespondNow(Error(error));
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
+    return RespondNow(Error("Native touch calibration is active."));
+
+  if (!DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive())
+    return RespondNow(Error("Custom touch calibration is not active."));
 
   if (!DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
-          params->pairs, params->bounds, &error)) {
-    return RespondNow(Error(error));
+          params->pairs, params->bounds)) {
+    return RespondNow(Error("Custom touch calibration completion failed."));
   }
   return RespondNow(NoArguments());
 }
@@ -357,12 +370,15 @@ SystemDisplayClearTouchCalibrationFunction::Run() {
   std::unique_ptr<display::ClearTouchCalibration::Params> params(
       display::ClearTouchCalibration::Params::Create(*args_));
 
-  std::string error;
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
-    return RespondNow(Error(error));
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
+    return RespondNow(Error("Native touch calibration is active."));
 
-  if (!DisplayInfoProvider::Get()->ClearTouchCalibration(params->id, &error))
-    return RespondNow(Error(error));
+  // TODO(malaykeshav@): Document and test whether
+  // IsCustomTouchCalibrationActive() should be true or false and enforce in
+  // DisplayInfoProvider::ClearTouchCalibration.
+
+  if (!DisplayInfoProvider::Get()->ClearTouchCalibration(params->id))
+    return RespondNow(Error("Failed to clear custom touch calibration data."));
   return RespondNow(NoArguments());
 }
 
@@ -370,12 +386,15 @@ ExtensionFunction::ResponseAction SystemDisplaySetMirrorModeFunction::Run() {
   std::unique_ptr<display::SetMirrorMode::Params> params(
       display::SetMirrorMode::Params::Create(*args_));
 
-  std::string error;
-  if (!DisplayInfoProvider::Get()->SetMirrorMode(params->info, &error)) {
-    return RespondNow(Error(error));
-  }
+  DisplayInfoProvider::Get()->SetMirrorMode(
+      params->info,
+      base::BindOnce(&SystemDisplaySetMirrorModeFunction::Response, this));
+  return RespondLater();
+}
 
-  return RespondNow(NoArguments());
+void SystemDisplaySetMirrorModeFunction::Response(
+    base::Optional<std::string> error) {
+  Respond(error ? Error(*error) : NoArguments());
 }
 
 }  // namespace extensions

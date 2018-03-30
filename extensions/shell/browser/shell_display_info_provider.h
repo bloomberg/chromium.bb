@@ -13,15 +13,6 @@ namespace extensions {
 class ShellDisplayInfoProvider : public DisplayInfoProvider {
  public:
   ShellDisplayInfoProvider();
-  ~ShellDisplayInfoProvider() override;
-
-  // DisplayInfoProvider implementation.
-  bool SetInfo(const std::string& display_id,
-               const api::system_display::DisplayProperties& info,
-               std::string* error) override;
-  void UpdateDisplayUnitInfoForPlatform(
-      const display::Display& display,
-      extensions::api::system_display::DisplayUnitInfo* unit) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDisplayInfoProvider);

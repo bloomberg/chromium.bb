@@ -13,12 +13,8 @@ namespace extensions {
 class DisplayInfoProviderMac : public DisplayInfoProvider {
  public:
   DisplayInfoProviderMac();
-  ~DisplayInfoProviderMac() override;
 
   // DisplayInfoProvider implementation.
-  bool SetInfo(const std::string& display_id,
-               const api::system_display::DisplayProperties& info,
-               std::string* error) override;
   void UpdateDisplayUnitInfoForPlatform(
       const display::Display& display,
       api::system_display::DisplayUnitInfo* unit) override;
