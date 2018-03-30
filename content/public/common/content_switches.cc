@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -460,6 +460,10 @@ const char kEnableVtune[]                   = "enable-vtune-support";
 
 // Enable Vulkan support, must also have ENABLE_VULKAN defined.
 const char kEnableVulkan[] = "enable-vulkan";
+
+// Enable the Web Authentication Testing API.
+// https://w3c.github.io/webauthn
+const char kEnableWebAuthTestingAPI[] = "enable-web-authentication-testing-api";
 
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";

@@ -27,6 +27,26 @@ namespace device {
 
 class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
  public:
+  // Encapsulates information corresponding to one registered key on the virtual
+  // authenticator device.
+  struct COMPONENT_EXPORT(DEVICE_FIDO) RegistrationData {
+    RegistrationData();
+    RegistrationData(std::unique_ptr<crypto::ECPrivateKey> private_key,
+                     std::vector<uint8_t> application_parameter,
+                     uint32_t counter);
+
+    RegistrationData(RegistrationData&& data);
+    RegistrationData& operator=(RegistrationData&& other);
+
+    ~RegistrationData();
+
+    std::unique_ptr<crypto::ECPrivateKey> private_key;
+    std::vector<uint8_t> application_parameter;
+    uint32_t counter = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(RegistrationData);
+  };
+
   // Stores the state of the device. Since |U2fDevice| objects only persist for
   // the lifetime of a single request, keeping state in an external object is
   // neccessary in order to provide continuity between requests.
@@ -41,13 +61,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // is requested.
     std::string individual_attestation_cert_common_name;
 
+    // Registered keys. Keyed on key handle (a.k.a. "credential ID").
+    std::map<std::vector<uint8_t>, RegistrationData> registrations;
+
    private:
-    friend class ::device::VirtualFidoDevice;
     friend class base::RefCounted<State>;
     ~State();
 
-    struct Internal;
-    std::unique_ptr<Internal> internal_;
+    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   // Constructs an object with ephemeral state. In order to have the state of
@@ -60,10 +81,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   ~VirtualFidoDevice() override;
 
-  void AddRegistration(std::vector<uint8_t> key_handle,
-                       std::unique_ptr<crypto::ECPrivateKey> private_key,
-                       std::vector<uint8_t> application_parameter,
-                       uint32_t counter);
+  State* mutable_state() { return state_.get(); }
 
  protected:
   // U2fDevice:

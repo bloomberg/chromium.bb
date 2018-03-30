@@ -145,6 +145,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h",
   "+third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.h",
+  "+third_party/WebKit/public/platform/modules/webauth/virtual_authenticator.mojom.h",
   "+third_party/WebKit/public/platform/modules/webdatabase/web_database.mojom.h",
   "+third_party/WebKit/public/platform/modules/websockets/websocket.mojom.h",
   "+third_party/WebKit/public/platform/oom_intervention.mojom.h",

@@ -191,7 +191,8 @@
           "shape_detection::mojom::FaceDetectionProvider",
           "shape_detection::mojom::TextDetection",
           "ui::mojom::Gpu",
-          "webauth::mojom::Authenticator"
+          "webauth::mojom::Authenticator",
+          "webauth::test::mojom::VirtualAuthenticatorManager"
         ]
       },
       "requires": {

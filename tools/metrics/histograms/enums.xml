@@ -26284,6 +26284,7 @@ from previous Chrome versions.
   <int value="-844537521" label="HttpFormWarning:disabled"/>
   <int value="-844381918" label="ArcNativeBridgeExperiment:disabled"/>
   <int value="-842438090" label="enable-md-feedback"/>
+  <int value="-839664591" label="enable-web-authentication-testing-api"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
