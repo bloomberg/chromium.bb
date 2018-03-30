@@ -74,6 +74,8 @@ class ErrorResilienceTestLarge
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
+    frame_flags_ &=
+        ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF);
 
     if (droppable_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
