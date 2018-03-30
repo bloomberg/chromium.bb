@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/mock_location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #endif  // defined(OS_ANDROID)
@@ -421,6 +422,11 @@ TEST_F(PermissionManagerTest, SubscribeMIDIPermission) {
 }
 
 TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
+#if defined(OS_ANDROID)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chrome::android::kVrBrowsingNativeAndroidUi);
+
   content::WebContents* contents = web_contents();
   vr::VrTabHelper::CreateForWebContents(contents);
   NavigateAndCommit(url());
@@ -434,7 +440,6 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 
   vr::VrTabHelper* vr_tab_helper = vr::VrTabHelper::FromWebContents(contents);
-#if defined(OS_ANDROID)
   vr_tab_helper->SetIsInVr(true);
   EXPECT_EQ(
       kNoPendingOperation,
@@ -444,7 +449,7 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
                      base::Unretained(this))));
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::DENIED, callback_result());
-#endif
+
   vr_tab_helper->SetIsInVr(false);
   GetPermissionManager()->RequestPermission(
       PermissionType::NOTIFICATIONS, main_rfh(), url(), false,
@@ -452,6 +457,7 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
                  base::Unretained(this)));
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
+#endif
 }
 
 TEST_F(PermissionManagerTest, PermissionIgnoredCleanup) {

@@ -384,7 +384,7 @@ const base::Feature kVrBrowsingInCustomTab{"VrBrowsingInCustomTab",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kVrBrowsingNativeAndroidUi{
-    "VrBrowsingNativeAndroidUi", base::FEATURE_DISABLED_BY_DEFAULT};
+    "VrBrowsingNativeAndroidUi", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kVrIconInDaydreamHome{"VrIconInDaydreamHome",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
