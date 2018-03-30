@@ -1110,11 +1110,11 @@
     'multidevice': {
       'filepath': 'ash/multidevice_setup/'\
                   '|chrome/browser/resources/chromeos/multidevice_setup/'\
+                  '|chromeos/components/proximity_auth/'\
                   '|chromeos/services/device_sync/'\
                   '|chromeos/services/multidevice_setup/'\
                   '|chromeos/services/secure_channel/'\
-                  '|components/cryptauth/'\
-                  '|components/proximity_auth/'\
+                  '|components/cryptauth/'
     },
     'mus': {
       'filepath': 'services/ui/'\
