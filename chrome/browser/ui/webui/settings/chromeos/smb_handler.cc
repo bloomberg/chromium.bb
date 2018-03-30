@@ -42,6 +42,7 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
 
   chromeos::file_system_provider::MountOptions mo;
   mo.display_name = mountUrl;
+  mo.writable = true;
 
   service->Mount(mo, base::FilePath(mountUrl),
                  base::BindOnce(&DoNothingCallback));
