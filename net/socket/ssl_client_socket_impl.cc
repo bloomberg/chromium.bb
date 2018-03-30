@@ -487,8 +487,7 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
   cert_request_info->cert_authorities.clear();
   const STACK_OF(CRYPTO_BUFFER)* authorities =
       SSL_get0_server_requested_CAs(ssl_.get());
-  for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(authorities); i++) {
-    const CRYPTO_BUFFER* ca_name = sk_CRYPTO_BUFFER_value(authorities, i);
+  for (const CRYPTO_BUFFER* ca_name : authorities) {
     cert_request_info->cert_authorities.push_back(
         std::string(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(ca_name)),
                     CRYPTO_BUFFER_len(ca_name)));
@@ -755,8 +754,7 @@ void SSLClientSocketImpl::DumpMemoryStats(SocketMemoryStats* stats) const {
   const STACK_OF(CRYPTO_BUFFER)* server_cert_chain =
       SSL_get0_peer_certificates(ssl_.get());
   if (server_cert_chain) {
-    for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(server_cert_chain); ++i) {
-      const CRYPTO_BUFFER* cert = sk_CRYPTO_BUFFER_value(server_cert_chain, i);
+    for (const CRYPTO_BUFFER* cert : server_cert_chain) {
       stats->cert_size += CRYPTO_BUFFER_len(cert);
     }
     stats->cert_count = sk_CRYPTO_BUFFER_num(server_cert_chain);
