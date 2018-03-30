@@ -94,11 +94,15 @@ source_set("history") {
 source_set("history_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "history_table_container_view_controller.h",
+    "history_table_container_view_controller.mm",
     "history_table_view_controller.h",
     "history_table_view_controller.mm",
   ]
   deps = [
+    "//components/strings",
     "//ios/chrome/browser/ui/table_view",
+    "//ui/base",
   ]
 }
 
