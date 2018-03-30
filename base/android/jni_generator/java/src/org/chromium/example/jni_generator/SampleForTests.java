@@ -30,64 +30,6 @@ import java.util.Map;
 //   * link a native executable to prove the generated header + cc file are self-contained.
 // All comments are informational only, and are ignored by the jni generator.
 //
-// Binding C/C++ with Java is not trivial, especially when ownership and object lifetime
-// semantics needs to be managed across boundaries.
-// Following a few guidelines will make the code simpler and less buggy:
-//
-// - Never write any JNI "by hand". Rely on the bindings generator to have a thin
-// layer of type-safety.
-//
-// - Treat the types from the other side as "opaque" as possible. Do not inspect any
-// object directly, but rather, rely on well-defined getters / setters.
-//
-// - Minimize the surface API between the two sides, and rather than calling multiple
-// functions across boundaries, call only one (and then, internally in the other side,
-// call as many little functions as required).
-//
-// - If a Java object "owns" a native object, stash the pointer in a "long mNativeClassName".
-// Note that it needs to have a "destruction path", i.e., it must eventually call a method
-// to delete the native object (for example, the java object has a "close()" method that
-// in turn deletes the native object). Avoid relying on finalizers: those run in a different
-// thread and makes the native lifetime management more difficult.
-//
-// - For native object "owning" java objects:
-//   - If there's a strong 1:1 to relationship between native and java, the best way is to
-//   stash the java object into a base::android::ScopedJavaGlobalRef. This will ensure the
-//   java object can be GC'd once the native object is destroyed but note that this global strong
-//   ref implies a new GC root, so be sure it will not leak and it must never rely on being
-//   triggered (transitively) from a java side GC.
-//   - In all other cases, the native side should keep a JavaObjectWeakGlobalRef, and check whether
-//   that reference is still valid before de-referencing it. Note that you will need another
-//   java-side object to be holding a strong reference to this java object while it is in use, to
-//   avoid unpredictable GC of the object before native side has finished with it.
-//
-// - The best way to pass "compound" datatypes across in either direction is to create an inner
-// class with PODs and a factory function. If possible, make it immutable (i.e., mark all the
-// fields as "final"). See examples with "InnerStructB" below.
-//
-// - It's simpler to create thin wrappers with a well defined JNI interface than to
-// expose a lot of internal details. This is specially significant for system classes where it's
-// simpler to wrap factory methods and a few getters / setters than expose the entire class.
-//
-// - Iterate over containers where they are originally owned, then create inner structs or
-// directly call methods on the other side. It's much simpler than trying to amalgamate
-// java and stl containers.
-//
-// An important note about qualified class name resolution:
-// The generator doesn't compile the class and have little context about the
-// classes being passed through the JNI layers. It adds a few simple rules:
-//
-// - all classes are either explicitly imported, or they are assumed to be in
-// the same package.
-//
-// - Inner class needs to be done through an import and usage of the
-// outer class, so that the generator knows how to qualify it:
-// import foo.bar.Zoo;
-// void call(Zoo.Inner);
-//
-// - implicitly imported classes aren't supported, so in order to pass
-// things like Runnable, please import java.lang.Runnable;
-//
 // This JNINamespace annotation indicates that all native methods should be
 // generated inside this namespace, including the native class that this
 // object binds to.
