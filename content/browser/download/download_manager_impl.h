@@ -236,6 +236,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;
   void DownloadInterrupted(DownloadItemImpl* download) override;
+  base::Optional<download::DownloadEntry> GetInProgressEntry(
+      DownloadItemImpl* download) override;
+  bool IsOffTheRecord() const override;
+  void ReportBytesWasted(DownloadItemImpl* download) override;
 
   // Helper method to start or resume a download.
   void BeginDownloadInternal(

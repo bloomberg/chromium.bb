@@ -862,6 +862,35 @@ void DownloadManagerImpl::DownloadInterrupted(DownloadItemImpl* download) {
   }
 }
 
+base::Optional<download::DownloadEntry> DownloadManagerImpl::GetInProgressEntry(
+    DownloadItemImpl* download) {
+  if (!download || !delegate_)
+    return base::Optional<download::DownloadEntry>();
+
+  download::InProgressCache* in_progress_cache =
+      delegate_->GetInProgressCache();
+  if (in_progress_cache)
+    return in_progress_cache->RetrieveEntry(download->GetGuid());
+  return base::Optional<download::DownloadEntry>();
+}
+
+bool DownloadManagerImpl::IsOffTheRecord() const {
+  return browser_context_->IsOffTheRecord();
+}
+
+void DownloadManagerImpl::ReportBytesWasted(DownloadItemImpl* download) {
+  if (!delegate_)
+    return;
+  auto entry_opt = GetInProgressEntry(download);
+  if (entry_opt.has_value()) {
+    download::DownloadEntry entry = entry_opt.value();
+    entry.bytes_wasted = download->GetBytesWasted();
+    download::InProgressCache* in_progress_cache =
+        delegate_->GetInProgressCache();
+    in_progress_cache->AddOrReplaceEntry(entry);
+  }
+}
+
 void DownloadManagerImpl::OnUrlDownloadHandlerCreated(
     download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
