@@ -16,6 +16,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
+#include "base/optional.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/strings/sys_string_conversions.h"
@@ -24,6 +25,7 @@
 #include "media/audio/mac/audio_auhal_mac.h"
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
+#include "media/audio/mac/core_audio_util_mac.h"
 #include "media/audio/mac/coreaudio_dispatch_override.h"
 #include "media/audio/mac/scoped_audio_unit.h"
 #include "media/base/audio_parameters.h"
@@ -126,106 +128,23 @@ static std::string GetAudioDeviceNameFromDeviceId(AudioDeviceID device_id,
 static void GetAudioDeviceInfo(bool is_input,
                                media::AudioDeviceNames* device_names) {
   DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
-  // Query the number of total devices.
-  AudioObjectPropertyAddress property_address = {
-    kAudioHardwarePropertyDevices,
-    kAudioObjectPropertyScopeGlobal,
-    kAudioObjectPropertyElementMaster
-  };
-  UInt32 size = 0;
-  OSStatus result = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject,
-                                                   &property_address,
-                                                   0,
-                                                   NULL,
-                                                   &size);
-  if (result || !size)
-    return;
-
-  int device_count = size / sizeof(AudioDeviceID);
-
-  // Get the array of device ids for all the devices, which includes both
-  // input devices and output devices.
-  std::unique_ptr<AudioDeviceID, base::FreeDeleter> devices(
-      static_cast<AudioDeviceID*>(malloc(size)));
-  AudioDeviceID* device_ids = devices.get();
-  result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
-                                      &property_address,
-                                      0,
-                                      NULL,
-                                      &size,
-                                      device_ids);
-  if (result)
-    return;
-
-  // Iterate over all available devices to gather information.
-  for (int i = 0; i < device_count; ++i) {
-    // Get the number of input or output channels of the device.
-    property_address.mScope = is_input ?
-        kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
-    property_address.mSelector = kAudioDevicePropertyStreams;
-    size = 0;
-    result = AudioObjectGetPropertyDataSize(device_ids[i],
-                                            &property_address,
-                                            0,
-                                            NULL,
-                                            &size);
-    if (result || !size)
+  std::vector<AudioObjectID> device_ids =
+      core_audio_mac::GetAllAudioDeviceIDs();
+  for (AudioObjectID device_id : device_ids) {
+    if (core_audio_mac::GetNumStreams(device_id, is_input) == 0)
       continue;
 
-    // Ignore aggregate devices that get created when we use
-    // kAudioUnitSubType_VoiceProcessingIO.
-    property_address.mSelector = kAudioDevicePropertyTransportType;
-    property_address.mScope = kAudioObjectPropertyScopeGlobal;
-    UInt32 transport_type = 0;
-    size = sizeof(transport_type);
-    result = AudioObjectGetPropertyData(device_ids[i], &property_address, 0,
-                                        NULL, &size, &transport_type);
-    if (result == noErr && transport_type == kAudioDeviceTransportTypeAggregate)
+    base::Optional<std::string> unique_id =
+        core_audio_mac::GetDeviceUniqueID(device_id);
+    if (!unique_id)
       continue;
 
-    // Get device UID.
-    CFStringRef uid = NULL;
-    size = sizeof(uid);
-    property_address.mSelector = kAudioDevicePropertyDeviceUID;
-    property_address.mScope = kAudioObjectPropertyScopeGlobal;
-    result = AudioObjectGetPropertyData(device_ids[i],
-                                        &property_address,
-                                        0,
-                                        NULL,
-                                        &size,
-                                        &uid);
-    if (result)
+    base::Optional<std::string> label =
+        core_audio_mac::GetDeviceLabel(device_id, is_input);
+    if (!label)
       continue;
 
-    // Get device name.
-    CFStringRef name = NULL;
-    property_address.mSelector = kAudioObjectPropertyName;
-    property_address.mScope = kAudioObjectPropertyScopeGlobal;
-    result = AudioObjectGetPropertyData(device_ids[i],
-                                        &property_address,
-                                        0,
-                                        NULL,
-                                        &size,
-                                        &name);
-    if (result) {
-      if (uid)
-        CFRelease(uid);
-      continue;
-    }
-
-    // Store the device name and UID.
-    media::AudioDeviceName device_name;
-    device_name.device_name = base::SysCFStringRefToUTF8(name);
-    device_name.unique_id = base::SysCFStringRefToUTF8(uid);
-    device_names->push_back(device_name);
-
-    // We are responsible for releasing the returned CFObject.  See the
-    // comment in the AudioHardware.h for constant
-    // kAudioDevicePropertyDeviceUID.
-    if (uid)
-      CFRelease(uid);
-    if (name)
-      CFRelease(name);
+    device_names->emplace_back(std::move(*label), std::move(*unique_id));
   }
 
   if (!device_names->empty()) {
@@ -731,82 +650,33 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
 }
 
 std::string AudioManagerMac::GetAssociatedOutputDeviceID(
-    const std::string& input_device_id) {
+    const std::string& input_device_unique_id) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  AudioDeviceID device = GetAudioDeviceIdByUId(true, input_device_id);
-  if (device == kAudioObjectUnknown)
+  AudioObjectID input_device_id =
+      GetAudioDeviceIdByUId(true, input_device_unique_id);
+  if (input_device_id == kAudioObjectUnknown)
     return std::string();
 
-  UInt32 size = 0;
-  AudioObjectPropertyAddress pa = {
-    kAudioDevicePropertyRelatedDevices,
-    kAudioDevicePropertyScopeOutput,
-    kAudioObjectPropertyElementMaster
-  };
-  OSStatus result = AudioObjectGetPropertyDataSize(device, &pa, 0, 0, &size);
-  if (result || !size)
-    return std::string();
+  std::vector<AudioObjectID> related_device_ids =
+      core_audio_mac::GetRelatedDeviceIDs(input_device_id);
 
-  int device_count = size / sizeof(AudioDeviceID);
-  std::unique_ptr<AudioDeviceID, base::FreeDeleter> devices(
-      static_cast<AudioDeviceID*>(malloc(size)));
-  result = AudioObjectGetPropertyData(
-      device, &pa, 0, NULL, &size, devices.get());
-  if (result)
-    return std::string();
-
-  std::vector<std::string> associated_devices;
-  for (int i = 0; i < device_count; ++i) {
-    // Get the number of output channels of the device.
-    pa.mSelector = kAudioDevicePropertyStreams;
-    size = 0;
-    result = AudioObjectGetPropertyDataSize(devices.get()[i],
-                                            &pa,
-                                            0,
-                                            NULL,
-                                            &size);
-    if (result || !size)
-      continue;  // Skip if there aren't any output channels.
-
-    // Get device UID.
-    CFStringRef uid = NULL;
-    size = sizeof(uid);
-    pa.mSelector = kAudioDevicePropertyDeviceUID;
-    result = AudioObjectGetPropertyData(devices.get()[i],
-                                        &pa,
-                                        0,
-                                        NULL,
-                                        &size,
-                                        &uid);
-    if (result || !uid)
-      continue;
-
-    std::string ret(base::SysCFStringRefToUTF8(uid));
-    CFRelease(uid);
-    associated_devices.push_back(ret);
+  std::vector<AudioObjectID> related_output_device_ids;
+  for (AudioObjectID device_id : related_device_ids) {
+    if (core_audio_mac::GetNumStreams(device_id, false /* is_input */) > 0)
+      related_output_device_ids.push_back(device_id);
   }
 
-  // No matching device found.
-  if (associated_devices.empty())
-    return std::string();
-
-  // Return the device if there is only one associated device.
-  if (associated_devices.size() == 1)
-    return associated_devices[0];
-
+  // Return the device ID if there is only one associated device.
   // When there are multiple associated devices, we currently do not have a way
   // to detect if a device (e.g. a digital output device) is actually connected
   // to an endpoint, so we cannot randomly pick a device.
-  // We pick the device iff the associated device is the default output device.
-  const std::string default_device = GetDefaultOutputDeviceID();
-  for (std::vector<std::string>::const_iterator iter =
-           associated_devices.begin();
-       iter != associated_devices.end(); ++iter) {
-    if (default_device == *iter)
-      return *iter;
+  if (related_output_device_ids.size() == 1) {
+    base::Optional<std::string> related_unique_id =
+        core_audio_mac::GetDeviceUniqueID(related_output_device_ids[0]);
+    if (related_unique_id)
+      return std::move(*related_unique_id);
   }
 
-  // Failed to figure out which is the matching device, return an empty string.
   return std::string();
 }
 
