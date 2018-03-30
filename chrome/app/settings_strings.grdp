@@ -167,6 +167,12 @@
     <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibility options in the system menu.">
       Always show accessibility options in the system menu
     </message>
+    <message name="IDS_SETTINGS_MANAGE_TTS_SETTINGS" desc="Link to manage text-to-speech settings">
+      Text-to-Speech voice settings
+    </message>
+    <message name="IDS_SETTINGS_TTS_LINK_DESCRIPTION" desc="Description of link to manage text-to-speech settings">
+      Select and customize text-to-speech voices
+    </message>
     <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL" desc="Label for checkbox which enables showing a larger mouse cursor than normal.">
       Show large mouse cursor
     </message>
@@ -337,6 +343,24 @@
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_TEXT_TO_SPEECH_HEADING" desc="In the settings tab, the heading for accessibility features that enable the computer to speak text from the computer screen.">
       Text-to-Speech
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_VOICES" desc="Heading describing a collection of listboxes on the text-to-speech settings page. Each listbox is associated with a language, and contains all possible voices for that language">
+      Preferred Voices
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PROPERTIES" desc="Heading describing a collection of input controls for a section of text-to-speech settings on speech properties, including speech pitch and rate">
+      Speech Properties
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_RATE" desc="The rate (speed) of speech in text-to-speech settings.">
+      Rate
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PITCH" desc="The pitch of speech in text-to-speech settings.">
+      Pitch
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_ENGINES" desc="Heading for a section of text-to-speech settings to do per-engine settings">
+      Speech Engines
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_INSTALL_ENGINES" desc="A link to install additional text-to-speech engines">
+      Install additional speech engines
     </message>
   </if>
 

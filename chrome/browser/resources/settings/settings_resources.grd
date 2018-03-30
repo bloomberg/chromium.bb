@@ -28,6 +28,12 @@
         <structure name="IDR_SETTINGS_MANAGE_A11Y_PAGE_HTML"
                    file="a11y_page/manage_a11y_page.html"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_TTS_SUBPAGE_JS"
+                   file="a11y_page/tts_subpage.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_TTS_SUBPAGE_HTML"
+                   file="a11y_page/tts_subpage.html"
+                   type="chrome_html" />
       </if>
       <structure name="IDR_SETTINGS_ABOUT_PAGE_BROWSER_PROXY_HTML"
                  file="about_page/about_page_browser_proxy.html"

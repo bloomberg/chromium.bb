@@ -8,6 +8,7 @@
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
+<link rel="import" href="tts_subpage.html">
 
 <dom-module id="settings-manage-a11y-page">
   <template>
@@ -67,6 +68,21 @@
         </paper-icon-button-light>
       </div>
     </iron-collapse>
+    <template is="dom-if" if="[[showExperimentalFeatures_]]">
+      <div class="settings-box two-line" on-click="onManageTtsSettingsTap_"
+          actionable>
+        <div class="start">
+          $i18n{manageTtsSettings}
+          <div class="secondary" id="appearanceSettingsSecondary">
+            $i18n{ttsSettingsLinkDescription}
+          </div>
+        </div>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{manageTtsSettings}"
+              aria-describedby="appearanceSettingsSecondary"></button>
+        </paper-icon-button-light>
+      </div>
+    </template>
 
     <h2>$i18n{displayHeading}</h2>
     <settings-toggle-button class="first"

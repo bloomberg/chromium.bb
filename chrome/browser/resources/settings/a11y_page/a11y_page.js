@@ -43,6 +43,20 @@ Polymer({
         return map;
       },
     },
+
+    // <if expr="chromeos">
+    /**
+     * Whether to show experimental accessibility features.
+     * Only used in Chrome OS.
+     * @private {boolean}
+     */
+    showExperimentalFeatures_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showExperimentalA11yFeatures');
+      },
+    },
+    // </if>
   },
 
   // <if expr="chromeos">
