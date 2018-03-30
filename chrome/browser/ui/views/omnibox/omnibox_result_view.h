@@ -136,6 +136,7 @@ class OmniboxResultView : public views::View,
   views::ImageView* keyword_icon_view_;  // An icon resembling a '>'.
   OmniboxTextView* keyword_content_view_;
   OmniboxTextView* keyword_description_view_;
+  OmniboxTextView* keyword_separator_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };
