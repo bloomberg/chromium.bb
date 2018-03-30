@@ -38,6 +38,10 @@ base::LazyInstance<SkColorSpaceCache>::Leaky g_sk_color_space_cache =
 base::LazyInstance<base::Lock>::Leaky g_sk_color_space_cache_lock =
     LAZY_INSTANCE_INITIALIZER;
 
+static bool IsAlmostZero(float value) {
+  return std::abs(value) < std::numeric_limits<float>::epsilon();
+}
+
 }  // namespace
 
 ColorSpace::ColorSpace() {}
@@ -306,7 +310,8 @@ size_t ColorSpace::GetHash() const {
 std::string ColorSpace::ToString() const {
   std::stringstream ss;
   ss << std::fixed << std::setprecision(4);
-  ss << "{primaries:";
+  if (primaries_ != PrimaryID::CUSTOM)
+    ss << "{primaries:";
   switch (primaries_) {
     PRINT_ENUM_CASE(PrimaryID, INVALID)
     PRINT_ENUM_CASE(PrimaryID, BT709)
@@ -324,14 +329,22 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(PrimaryID, APPLE_GENERIC_RGB)
     PRINT_ENUM_CASE(PrimaryID, WIDE_GAMUT_COLOR_SPIN)
     case PrimaryID::CUSTOM:
-      ss << "[";
-      for (size_t i = 0; i < 3; ++i) {
-        ss << "[";
-        for (size_t j = 0; j < 3; ++j)
-          ss << custom_primary_matrix_[3 * i + j] << ",";
-        ss << "],";
-      }
-      ss << "]";
+      // |custom_primary_matrix_| is in column-major order.
+      const float sum_X = custom_primary_matrix_[0] +
+                          custom_primary_matrix_[3] + custom_primary_matrix_[6];
+      const float sum_Y = custom_primary_matrix_[1] +
+                          custom_primary_matrix_[4] + custom_primary_matrix_[7];
+      const float sum_Z = custom_primary_matrix_[2] +
+                          custom_primary_matrix_[5] + custom_primary_matrix_[8];
+      if (IsAlmostZero(sum_X) || IsAlmostZero(sum_Y) || IsAlmostZero(sum_Z))
+        break;
+
+      ss << "{primaries_d50_referred: [[" << (custom_primary_matrix_[0] / sum_X)
+         << ", " << (custom_primary_matrix_[3] / sum_X) << "], "
+         << " [" << (custom_primary_matrix_[1] / sum_Y) << ", "
+         << (custom_primary_matrix_[4] / sum_Y) << "], "
+         << " [" << (custom_primary_matrix_[2] / sum_Z) << ", "
+         << (custom_primary_matrix_[5] / sum_Z) << "]]";
       break;
   }
   ss << ", transfer:";
