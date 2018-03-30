@@ -4,6 +4,8 @@
 
 #include "base/memory/ref_counted_memory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 namespace base {
@@ -78,6 +80,26 @@ const unsigned char* RefCountedString::front() const {
 
 size_t RefCountedString::size() const {
   return data_.size();
+}
+
+RefCountedSharedMemory::RefCountedSharedMemory(
+    std::unique_ptr<SharedMemory> shm,
+    size_t size)
+    : shm_(std::move(shm)), size_(size) {
+  DCHECK(shm_);
+  DCHECK(shm_->memory());
+  DCHECK_GT(size_, 0U);
+  DCHECK_LE(size_, shm_->mapped_size());
+}
+
+RefCountedSharedMemory::~RefCountedSharedMemory() = default;
+
+const unsigned char* RefCountedSharedMemory::front() const {
+  return reinterpret_cast<const unsigned char*>(shm_->memory());
+}
+
+size_t RefCountedSharedMemory::size() const {
+  return size_;
 }
 
 }  //  namespace base

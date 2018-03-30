@@ -67,9 +67,8 @@ scoped_refptr<base::RefCountedMemory> GetDataFromHandle(
     return nullptr;
   }
 
-  unsigned char* data_begin = static_cast<unsigned char*>(shared_buf->memory());
-  std::vector<unsigned char> data(data_begin, data_begin + data_size);
-  return base::RefCountedBytes::TakeVector(&data);
+  return base::MakeRefCounted<base::RefCountedSharedMemory>(
+      std::move(shared_buf), data_size);
 }
 
 }  // namespace
