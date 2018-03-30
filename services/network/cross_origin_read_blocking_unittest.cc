@@ -11,7 +11,7 @@
 
 using base::StringPiece;
 using MimeType = network::CrossOriginReadBlocking::MimeType;
-using Result = network::CrossOriginReadBlocking::Result;
+using SniffingResult = network::CrossOriginReadBlocking::SniffingResult;
 
 namespace network {
 
@@ -62,24 +62,26 @@ TEST(CrossOriginReadBlockingTest, SniffForHTML) {
       " <!-- this is comment\n document.write(1);\n// -->window.open()");
   StringPiece empty_data("");
 
-  EXPECT_EQ(Result::kYes, CrossOriginReadBlocking::SniffForHTML(html_data));
-  EXPECT_EQ(Result::kYes,
+  EXPECT_EQ(SniffingResult::kYes,
+            CrossOriginReadBlocking::SniffForHTML(html_data));
+  EXPECT_EQ(SniffingResult::kYes,
             CrossOriginReadBlocking::SniffForHTML(comment_html_data));
-  EXPECT_EQ(Result::kYes,
+  EXPECT_EQ(SniffingResult::kYes,
             CrossOriginReadBlocking::SniffForHTML(two_comments_html_data));
-  EXPECT_EQ(Result::kYes,
+  EXPECT_EQ(SniffingResult::kYes,
             CrossOriginReadBlocking::SniffForHTML(commented_out_html_tag_data));
-  EXPECT_EQ(Result::kYes,
+  EXPECT_EQ(SniffingResult::kYes,
             CrossOriginReadBlocking::SniffForHTML(mixed_comments_html_data));
-  EXPECT_EQ(Result::kNo, CrossOriginReadBlocking::SniffForHTML(non_html_data));
-  EXPECT_EQ(Result::kNo,
+  EXPECT_EQ(SniffingResult::kNo,
+            CrossOriginReadBlocking::SniffForHTML(non_html_data));
+  EXPECT_EQ(SniffingResult::kNo,
             CrossOriginReadBlocking::SniffForHTML(comment_js_data));
 
   // Prefixes of |commented_out_html_tag_data| should be indeterminate.
   StringPiece almost_html = commented_out_html_tag_data;
   while (!almost_html.empty()) {
     almost_html.remove_suffix(1);
-    EXPECT_EQ(Result::kMaybe,
+    EXPECT_EQ(SniffingResult::kMaybe,
               CrossOriginReadBlocking::SniffForHTML(almost_html))
         << almost_html;
   }
@@ -90,11 +92,14 @@ TEST(CrossOriginReadBlockingTest, SniffForXML) {
   StringPiece non_xml_data("        var name=window.location;\nadfadf");
   StringPiece empty_data("");
 
-  EXPECT_EQ(Result::kYes, CrossOriginReadBlocking::SniffForXML(xml_data));
-  EXPECT_EQ(Result::kNo, CrossOriginReadBlocking::SniffForXML(non_xml_data));
+  EXPECT_EQ(SniffingResult::kYes,
+            CrossOriginReadBlocking::SniffForXML(xml_data));
+  EXPECT_EQ(SniffingResult::kNo,
+            CrossOriginReadBlocking::SniffForXML(non_xml_data));
 
   // Empty string should be indeterminate.
-  EXPECT_EQ(Result::kMaybe, CrossOriginReadBlocking::SniffForXML(empty_data));
+  EXPECT_EQ(SniffingResult::kMaybe,
+            CrossOriginReadBlocking::SniffForXML(empty_data));
 }
 
 TEST(CrossOriginReadBlockingTest, SniffForJSON) {
@@ -106,50 +111,59 @@ TEST(CrossOriginReadBlockingTest, SniffForJSON) {
   StringPiece non_json_data1("\t\t\r\n   foo({ \"name\" : \"chrome\", ");
   StringPiece empty_data("");
 
-  EXPECT_EQ(Result::kYes, CrossOriginReadBlocking::SniffForJSON(json_data));
-  EXPECT_EQ(Result::kYes, CrossOriginReadBlocking::SniffForJSON(
-                              json_corrupt_after_first_key));
+  EXPECT_EQ(SniffingResult::kYes,
+            CrossOriginReadBlocking::SniffForJSON(json_data));
+  EXPECT_EQ(SniffingResult::kYes, CrossOriginReadBlocking::SniffForJSON(
+                                      json_corrupt_after_first_key));
 
-  EXPECT_EQ(Result::kYes, CrossOriginReadBlocking::SniffForJSON(json_data2));
+  EXPECT_EQ(SniffingResult::kYes,
+            CrossOriginReadBlocking::SniffForJSON(json_data2));
 
   // All prefixes prefixes of |json_data2| ought to be indeterminate.
   StringPiece almost_json = json_data2;
   while (!almost_json.empty()) {
     almost_json.remove_suffix(1);
-    EXPECT_EQ(Result::kMaybe,
+    EXPECT_EQ(SniffingResult::kMaybe,
               CrossOriginReadBlocking::SniffForJSON(almost_json))
         << almost_json;
   }
 
-  EXPECT_EQ(Result::kNo, CrossOriginReadBlocking::SniffForJSON(non_json_data0));
-  EXPECT_EQ(Result::kNo, CrossOriginReadBlocking::SniffForJSON(non_json_data1));
+  EXPECT_EQ(SniffingResult::kNo,
+            CrossOriginReadBlocking::SniffForJSON(non_json_data0));
+  EXPECT_EQ(SniffingResult::kNo,
+            CrossOriginReadBlocking::SniffForJSON(non_json_data1));
 
-  EXPECT_EQ(Result::kYes, CrossOriginReadBlocking::SniffForJSON(R"({"" : 1})"))
+  EXPECT_EQ(SniffingResult::kYes,
+            CrossOriginReadBlocking::SniffForJSON(R"({"" : 1})"))
       << "Empty strings are accepted";
-  EXPECT_EQ(Result::kNo, CrossOriginReadBlocking::SniffForJSON(R"({'' : 1})"))
+  EXPECT_EQ(SniffingResult::kNo,
+            CrossOriginReadBlocking::SniffForJSON(R"({'' : 1})"))
       << "Single quotes are not accepted";
-  EXPECT_EQ(Result::kYes,
+  EXPECT_EQ(SniffingResult::kYes,
             CrossOriginReadBlocking::SniffForJSON("{\"\\\"\" : 1}"))
       << "Escaped quotes are recognized";
-  EXPECT_EQ(Result::kYes,
+  EXPECT_EQ(SniffingResult::kYes,
             CrossOriginReadBlocking::SniffForJSON(R"({"\\\u000a" : 1})"))
       << "Escaped control characters are recognized";
-  EXPECT_EQ(Result::kMaybe,
+  EXPECT_EQ(SniffingResult::kMaybe,
             CrossOriginReadBlocking::SniffForJSON(R"({"\\\u00)"))
       << "Incomplete escape results in maybe";
-  EXPECT_EQ(Result::kMaybe, CrossOriginReadBlocking::SniffForJSON("{\"\\"))
+  EXPECT_EQ(SniffingResult::kMaybe,
+            CrossOriginReadBlocking::SniffForJSON("{\"\\"))
       << "Incomplete escape results in maybe";
-  EXPECT_EQ(Result::kMaybe, CrossOriginReadBlocking::SniffForJSON("{\"\\\""))
+  EXPECT_EQ(SniffingResult::kMaybe,
+            CrossOriginReadBlocking::SniffForJSON("{\"\\\""))
       << "Incomplete escape results in maybe";
-  EXPECT_EQ(Result::kNo,
+  EXPECT_EQ(SniffingResult::kNo,
             CrossOriginReadBlocking::SniffForJSON("{\"\n\" : true}"))
       << "Unescaped control characters are rejected";
-  EXPECT_EQ(Result::kNo, CrossOriginReadBlocking::SniffForJSON("{}"))
+  EXPECT_EQ(SniffingResult::kNo, CrossOriginReadBlocking::SniffForJSON("{}"))
       << "Empty dictionary is not recognized (since it's valid JS too)";
-  EXPECT_EQ(Result::kNo,
+  EXPECT_EQ(SniffingResult::kNo,
             CrossOriginReadBlocking::SniffForJSON("[true, false, 1, 2]"))
       << "Lists dictionary are not recognized (since they're valid JS too)";
-  EXPECT_EQ(Result::kNo, CrossOriginReadBlocking::SniffForJSON(R"({":"})"))
+  EXPECT_EQ(SniffingResult::kNo,
+            CrossOriginReadBlocking::SniffForJSON(R"({":"})"))
       << "A colon character inside a string does not trigger a match";
 }
 

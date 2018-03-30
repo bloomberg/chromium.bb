@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   //    possible to get a Yes result. For example, if we are sniffing for a tag
   //    like "<html", a kMaybe result would occur if the data contains just
   //    "<ht".
-  enum Result {
+  enum SniffingResult {
     kNo,
     kMaybe,
     kYes,
@@ -68,15 +68,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   static bool IsValidCorsHeaderSet(const url::Origin& frame_origin,
                                    const std::string& access_control_origin);
 
-  static Result SniffForHTML(base::StringPiece data);
-  static Result SniffForXML(base::StringPiece data);
-  static Result SniffForJSON(base::StringPiece data);
+  static SniffingResult SniffForHTML(base::StringPiece data);
+  static SniffingResult SniffForXML(base::StringPiece data);
+  static SniffingResult SniffForJSON(base::StringPiece data);
 
   // Sniff for patterns that indicate |data| only ought to be consumed by XHR()
   // or fetch(). This detects Javascript parser-breaker and particular JS
   // infinite-loop patterns, which are used conventionally as a defense against
   // JSON data exfiltration by means of a <script> tag.
-  static Result SniffForFetchOnlyResource(base::StringPiece data);
+  static SniffingResult SniffForFetchOnlyResource(base::StringPiece data);
 
  private:
   CrossOriginReadBlocking();  // Not instantiable.
