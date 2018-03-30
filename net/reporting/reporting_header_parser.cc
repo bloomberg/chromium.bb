@@ -276,6 +276,8 @@ void ReportingHeaderParser::ParseHeader(ReportingContext* context,
     if (new_endpoints.count(old_endpoint) == 0u)
       cache->RemoveClientForOriginAndEndpoint(origin, old_endpoint);
   }
+
+  RecordHeaderOutcome(HeaderOutcome::PARSED);
 }
 
 }  // namespace net
