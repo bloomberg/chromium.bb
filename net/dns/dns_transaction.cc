@@ -414,6 +414,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
                                           "is disabled by default"
         }
       )"));
+    net_log_ = request_->net_log();
 
     if (use_post) {
       request_->set_method("POST");
@@ -454,9 +455,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     const DnsResponse* resp = response_.get();
     return (resp != NULL && resp->IsValid()) ? resp : NULL;
   }
-  const NetLogWithSource& GetSocketNetLog() const override {
-    return request_->net_log();
-  }
+  const NetLogWithSource& GetSocketNetLog() const override { return net_log_; }
 
   // URLRequest::Delegate overrides
 
@@ -574,6 +573,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
   CompletionCallback callback_;
   std::unique_ptr<DnsResponse> response_;
   std::unique_ptr<URLRequest> request_;
+  NetLogWithSource net_log_;
 
   base::WeakPtrFactory<DnsHTTPAttempt> weak_factory_;
 
