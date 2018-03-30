@@ -16,6 +16,15 @@
 
 namespace blink {
 
+// If the |AXSelection| is defined by endpoints that are present in the
+// accessibility tree but not in the DOM tree, determines whether setting the
+// selection will shrink or extend the |AXSelection| to encompass endpoints that
+// are in the DOM.
+enum class AXSelectionBehavior {
+  kShrinkToValidDOMRange,
+  kExtendToValidDOMRange
+};
+
 class MODULES_EXPORT AXSelection final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -33,10 +42,13 @@ class MODULES_EXPORT AXSelection final {
   // invalid, or if the positions are in two separate documents.
   bool IsValid() const;
 
-  const SelectionInDOMTree AsSelection() const;
+  const SelectionInDOMTree AsSelection(
+      const AXSelectionBehavior =
+          AXSelectionBehavior::kExtendToValidDOMRange) const;
 
   // Tries to set the DOM selection to this.
-  void Select();
+  void Select(
+      const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
 
  private:
   AXSelection();
