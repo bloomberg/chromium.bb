@@ -390,7 +390,7 @@ TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
   web_resource::TestRequestAllowedNotifier* raw_notifier = test_notifier.get();
   TestVariationsService test_service(std::move(test_notifier), &prefs_,
                                      GetMetricsStateManager(), true);
-  test_service.PerformPreMainMessageLoopStartup();
+  test_service.InitResourceRequestedAllowedNotifier();
 
   // Force the notifier to initially disallow requests.
   raw_notifier->SetRequestsAllowedOverride(false);
