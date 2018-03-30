@@ -261,19 +261,19 @@ IPC_STRUCT_TRAITS_BEGIN(net::SignedCertificateTimestampAndStatus)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSError,
-                          network::mojom::CORSError::kLast)
+                          network::mojom::CORSError::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchCredentialsMode,
-                          network::mojom::FetchCredentialsMode::kLast)
+                          network::mojom::FetchCredentialsMode::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRedirectMode,
-                          network::mojom::FetchRedirectMode::kLast)
+                          network::mojom::FetchRedirectMode::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
-                          network::mojom::FetchRequestMode::kLast)
+                          network::mojom::FetchRequestMode::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestContextFrameType,
-                          network::mojom::RequestContextFrameType::kLast)
+                          network::mojom::RequestContextFrameType::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error)
@@ -394,7 +394,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::HttpResponseInfo::ConnectionInfo,
                           net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS - 1)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,
-                          network::mojom::FetchResponseType::kLast)
+                          network::mojom::FetchResponseType::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::EffectiveConnectionType,
                           net::EFFECTIVE_CONNECTION_TYPE_LAST - 1)

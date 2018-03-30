@@ -13,5 +13,4 @@ enum ServiceWorkerState {
   kActivating,
   kActivated,
   kRedundant,
-  kLast = kRedundant
 };

@@ -27,13 +27,13 @@
 #define IPC_MESSAGE_START ServiceWorkerMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerErrorType,
-                          blink::mojom::ServiceWorkerErrorType::kLast)
+                          blink::mojom::ServiceWorkerErrorType::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerState,
-                          blink::mojom::ServiceWorkerState::kLast)
+                          blink::mojom::ServiceWorkerState::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerResponseError,
-                          blink::mojom::ServiceWorkerResponseError::kLast)
+                          blink::mojom::ServiceWorkerResponseError::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(mode)

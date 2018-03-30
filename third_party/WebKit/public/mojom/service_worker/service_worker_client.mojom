@@ -16,7 +16,6 @@ enum ServiceWorkerClientType {
   kWindow,
   kSharedWorker,
   kAll,
-  kLast = kAll
 };
 
 // Indicates the options for the service worker clients matching operation.

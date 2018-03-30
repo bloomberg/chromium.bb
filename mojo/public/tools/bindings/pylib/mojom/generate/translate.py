@@ -450,11 +450,15 @@ def _ResolveNumericEnumValues(enum_fields):
   """
   Given a reference to a list of mojom.EnumField, resolves and assigns their
   values to EnumField.numeric_value.
+
+  Returns:
+    The highest assigned enumerator value or None if no values were assigned.
   """
 
   # map of <mojom_name> -> integral value
   resolved_enum_values = {}
   prev_value = -1
+  max_value = None
   for field in enum_fields:
     # This enum value is +1 the previous enum value (e.g: BEGIN).
     if field.value is None:
@@ -472,6 +476,10 @@ def _ResolveNumericEnumValues(enum_fields):
 
     resolved_enum_values[field.mojom_name] = prev_value
     field.numeric_value = prev_value
+    if max_value is None or prev_value > max_value:
+      max_value = prev_value
+
+  return max_value
 
 def _Enum(module, parsed_enum, parent_kind):
   """
@@ -491,13 +499,11 @@ def _Enum(module, parsed_enum, parent_kind):
   enum.spec = 'x:%s.%s' % (module.mojom_namespace, mojom_name)
   enum.parent_kind = parent_kind
   enum.attributes = _AttributeListToDict(parsed_enum.attribute_list)
-  if enum.native_only:
-    enum.fields = []
-  else:
+  if not enum.native_only:
     enum.fields = map(
         lambda field: _EnumField(module, enum, field, parent_kind),
         parsed_enum.enum_value_list)
-    _ResolveNumericEnumValues(enum.fields)
+    enum.max_value = _ResolveNumericEnumValues(enum.fields)
 
   module.kinds[enum.spec] = enum
 

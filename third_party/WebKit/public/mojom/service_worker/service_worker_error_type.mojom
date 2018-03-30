@@ -22,8 +22,6 @@ enum ServiceWorkerErrorType {
   kTimeout,
   kType,
   kUnknown,
-  // Add a new type in alphabetical order, and update kLast if needed.
-  kLast = kUnknown,
 };
 
 // This enum is used in UMA histograms to indicate detailed error types for
@@ -48,6 +46,5 @@ enum ServiceWorkerResponseError {
   kRedirectedResponseForNotFollowRequest = 14,
   kDataPipeCreationFailed = 15,
   kResponseTypeCORSForRequestModeSameOrigin = 16,
-  // Add a new type here, then update kLast and enums.xml.
-  kLast = kResponseTypeCORSForRequestModeSameOrigin
+  // Add a new type here, then update enums.xml.
 };

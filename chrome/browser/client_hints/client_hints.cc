@@ -172,7 +172,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   // the newly added client hint can be added to the request.
   static_assert(
       blink::mojom::WebClientHintsType::kViewportWidth ==
-          blink::mojom::WebClientHintsType::kLast,
+          blink::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 
   // TODO(crbug.com/735518): If the request is redirected, the client hint

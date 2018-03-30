@@ -175,12 +175,8 @@ class CacheWithRequestsCallbacks
 };
 
 void RecordResponseTypeForAdd(const Member<Response>& response) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, response_type_histogram,
-      ("ServiceWorkerCache.Cache.AddResponseType",
-       static_cast<int>(network::mojom::FetchResponseType::kLast) + 1));
-  response_type_histogram.Count(
-      static_cast<int>(response->GetResponse()->GetType()));
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.Cache.AddResponseType",
+                            response->GetResponse()->GetType());
 }
 
 bool VaryHeaderContainsAsterisk(const Response* response) {

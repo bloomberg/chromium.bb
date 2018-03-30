@@ -501,7 +501,10 @@ connection error and break out of the run loop.
 
 [Mojom enums](/mojo/public/tools/bindings#Enumeration-Types) translate directly
 to equivalent strongly-typed C++11 enum classes with `int32_t` as the underlying
-type. The typename and value names are identical between Mojom and C++.
+type. The typename and value names are identical between Mojom and C++. Mojo
+also always defines a special enumerator `kMaxValue` that shares the value of
+the highest enumerator: this makes it easy to record Mojo enums in histograms
+and interoperate with legacy IPC.
 
 For example, consider the following Mojom definition:
 
@@ -525,6 +528,7 @@ enum class Department : int32_t {
   kEngineering,
   kMarketing,
   kSales,
+  kMaxValue = kSales,
 };
 
 }  // namespace mojom

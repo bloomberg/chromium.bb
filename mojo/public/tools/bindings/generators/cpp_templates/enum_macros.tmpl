@@ -12,6 +12,9 @@ enum class {{enum_name}} : int32_t {
   {{field.name}},
 {%-     endif %}
 {%-   endfor %}
+{%-   if enum.max_value is not none %}
+  kMaxValue = {{enum.max_value}},
+{%-   endif %}
 };
 
 inline std::ostream& operator<<(std::ostream& os, {{enum_name}} value) {

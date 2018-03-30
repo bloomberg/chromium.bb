@@ -43,12 +43,14 @@ void ClientHintsObserver::PersistClientHints(
     return;
 
   DCHECK(!client_hints.empty());
-  DCHECK_LE(client_hints.size(),
-            static_cast<size_t>(blink::mojom::WebClientHintsType::kLast) + 1);
+  DCHECK_LE(
+      client_hints.size(),
+      static_cast<size_t>(blink::mojom::WebClientHintsType::kMaxValue) + 1);
 
   if (client_hints.empty() ||
       client_hints.size() >
-          (static_cast<size_t>(blink::mojom::WebClientHintsType::kLast) + 1)) {
+          (static_cast<size_t>(blink::mojom::WebClientHintsType::kMaxValue) +
+           1)) {
     // Return early if the list does not have the right number of values.
     // Persisting wrong number of values to the disk may cause errors when
     // reading them back in the future.

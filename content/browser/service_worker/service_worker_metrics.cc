@@ -769,20 +769,17 @@ void ServiceWorkerMetrics::RecordStatusZeroResponseError(
     blink::mojom::ServiceWorkerResponseError error) {
   if (is_main_resource) {
     UMA_HISTOGRAM_ENUMERATION(
-        "ServiceWorker.URLRequestJob.MainResource.StatusZeroError", error,
-        static_cast<int>(blink::mojom::ServiceWorkerResponseError::kLast) + 1);
+        "ServiceWorker.URLRequestJob.MainResource.StatusZeroError", error);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
-        "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error,
-        static_cast<int>(blink::mojom::ServiceWorkerResponseError::kLast) + 1);
+        "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error);
   }
 }
 
 void ServiceWorkerMetrics::RecordFallbackedRequestMode(
     network::mojom::FetchRequestMode mode) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.URLRequestJob.FallbackedRequestMode", mode,
-      static_cast<int>(network::mojom::FetchRequestMode::kLast) + 1);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.FallbackedRequestMode",
+                            mode);
 }
 
 void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {

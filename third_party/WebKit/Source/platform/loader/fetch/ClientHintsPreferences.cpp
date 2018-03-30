@@ -21,8 +21,8 @@ void ParseAcceptChHeader(const String& header_value,
   CommaDelimitedHeaderSet accept_client_hints_header;
   ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
 
-  for (size_t i = 0; i < static_cast<int>(mojom::WebClientHintsType::kLast) + 1;
-       ++i) {
+  for (size_t i = 0;
+       i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
     enabled_hints.SetIsEnabled(
         static_cast<mojom::WebClientHintsType>(i),
         accept_client_hints_header.Contains(kClientHintsHeaderMapping[i]));
@@ -37,14 +37,14 @@ void ParseAcceptChHeader(const String& header_value,
 }  // namespace
 
 ClientHintsPreferences::ClientHintsPreferences() {
-  DCHECK_EQ(static_cast<size_t>(mojom::WebClientHintsType::kLast) + 1,
+  DCHECK_EQ(static_cast<size_t>(mojom::WebClientHintsType::kMaxValue) + 1,
             kClientHintsHeaderMappingCount);
 }
 
 void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {
-  for (size_t i = 0; i < static_cast<int>(mojom::WebClientHintsType::kLast) + 1;
-       ++i) {
+  for (size_t i = 0;
+       i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
     mojom::WebClientHintsType type = static_cast<mojom::WebClientHintsType>(i);
     enabled_hints_.SetIsEnabled(type, preferences.ShouldSend(type));
   }
@@ -68,8 +68,8 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
 
   ParseAcceptChHeader(header_value, new_enabled_types);
 
-  for (size_t i = 0; i < static_cast<int>(mojom::WebClientHintsType::kLast) + 1;
-       ++i) {
+  for (size_t i = 0;
+       i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
     mojom::WebClientHintsType type = static_cast<mojom::WebClientHintsType>(i);
     enabled_hints_.SetIsEnabled(type, enabled_hints_.IsEnabled(type) ||
                                           new_enabled_types.IsEnabled(type));
@@ -77,7 +77,7 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
 
   if (context) {
     for (size_t i = 0;
-         i < static_cast<int>(mojom::WebClientHintsType::kLast) + 1; ++i) {
+         i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
       mojom::WebClientHintsType type =
           static_cast<mojom::WebClientHintsType>(i);
       if (enabled_hints_.IsEnabled(type))

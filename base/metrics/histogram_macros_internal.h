@@ -16,11 +16,39 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/time/time.h"
 
-// This is for macros internal to base/metrics. They should not be used outside
-// of this directory. For writing to UMA histograms, see histogram_macros.h.
+// This is for macros and helpers internal to base/metrics. They should not be
+// used outside of this directory. For writing to UMA histograms, see
+// histogram_macros.h.
+
+namespace base {
+namespace internal {
+
+// Helper traits for deducing the boundary value for enums.
+template <typename Enum, typename SFINAE = void>
+struct EnumSizeTraits {
+  static constexpr Enum Count() {
+    static_assert(sizeof(Enum) == 0,
+                  "enumerator must define kLast enumerator to use this macro!");
+    return Enum();
+  }
+};
+
+// Since the UMA histogram macros expect a value one larger than the max defined
+// enumerator value, add one.
+template <typename Enum>
+struct EnumSizeTraits<
+    Enum,
+    std::enable_if_t<std::is_enum<decltype(Enum::kMaxValue)>::value>> {
+  static constexpr Enum Count() {
+    return static_cast<Enum>(
+        static_cast<std::underlying_type_t<Enum>>(Enum::kMaxValue) + 1);
+  }
+};
+
+}  // namespace internal
+}  // namespace base
 
 // TODO(rkaplow): Improve commenting of these methods.
-
 //------------------------------------------------------------------------------
 // Histograms are often put in areas where they are called many many times, and
 // performance is critical.  As a result, they are designed to have a very low
@@ -30,7 +58,6 @@
 // through the macro. We leak the histograms at shutdown time so that we don't
 // have to validate using the pointers at any time during the running of the
 // process.
-
 
 // In some cases (integration into 3rd party code), it's useful to separate the
 // definition of |atomic_histogram_pointer| from its use. To achieve this we
@@ -126,6 +153,21 @@
         base::LinearHistogram::FactoryGet(name, 1, boundary, boundary + 1, \
                                           flag));                          \
   } while (0)
+
+// Helper for 'overloading' UMA_HISTOGRAM_ENUMERATION with a variable number of
+// arguments.
+#define INTERNAL_UMA_HISTOGRAM_ENUMERATION_GET_MACRO(_1, _2, NAME, ...) NAME
+
+#define INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY(name, sample)       \
+  INTERNAL_HISTOGRAM_ENUMERATION_WITH_FLAG(                                    \
+      name, sample, base::internal::EnumSizeTraits<decltype(sample)>::Count(), \
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+
+// Note: The value in |sample| must be strictly less than |enum_size|.
+#define INTERNAL_UMA_HISTOGRAM_ENUMERATION_SPECIFY_BOUNDARY(name, sample, \
+                                                            enum_size)    \
+  INTERNAL_HISTOGRAM_ENUMERATION_WITH_FLAG(                               \
+      name, sample, enum_size, base::HistogramBase::kUmaTargetedHistogramFlag)
 
 // Similar to the previous macro but intended for enumerations. This delegates
 // the work to the previous macro, but supports scoped enumerations as well by

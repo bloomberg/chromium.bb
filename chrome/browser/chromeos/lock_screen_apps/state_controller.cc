@@ -302,7 +302,7 @@ void StateController::RequestNewLockScreenNote(LockScreenNoteOrigin origin) {
   DCHECK(app_manager_->IsNoteTakingAppAvailable());
 
   UMA_HISTOGRAM_ENUMERATION("Apps.LockScreen.NoteTakingApp.LaunchRequestReason",
-                            origin, LockScreenNoteOrigin::kCount);
+                            origin);
 
   // Update state to launching even if app fails to launch - this is to notify
   // listeners that a lock screen note request was handled.
@@ -504,8 +504,7 @@ void StateController::ResetNoteTakingWindowAndMoveToNextState(
   if (lock_screen_note_state_ != TrayActionState::kAvailable &&
       lock_screen_note_state_ != TrayActionState::kNotAvailable) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Apps.LockScreen.NoteTakingApp.NoteTakingExitReason", reason,
-        CloseLockScreenNoteReason::kCount);
+        "Apps.LockScreen.NoteTakingApp.NoteTakingExitReason", reason);
   }
 
   if (focus_cycler_delegate_ &&

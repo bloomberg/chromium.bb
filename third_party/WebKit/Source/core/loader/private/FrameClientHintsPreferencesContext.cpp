@@ -18,7 +18,7 @@ static constexpr WebFeature kWebFeatureMapping[] = {
     WebFeature::kClientHintsViewportWidth,
 };
 
-static_assert(static_cast<int>(mojom::WebClientHintsType::kLast) + 1 ==
+static_assert(static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1 ==
                   arraysize(kWebFeatureMapping),
               "unhandled client hint type");
 

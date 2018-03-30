@@ -42,7 +42,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeFirst,
                               blink::WebInputEvent::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PageVisibilityState,
-                          blink::mojom::PageVisibilityState::kLast)
+                          blink::mojom::PageVisibilityState::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::ImeTextSpanThickness,

@@ -12,7 +12,7 @@ namespace network {
 // valid enum value range. The value is meaningless and should be overriden
 // immediately by IPC desrtialization code.
 CORSErrorStatus::CORSErrorStatus()
-    : CORSErrorStatus(network::mojom::CORSError::kLast) {}
+    : CORSErrorStatus(network::mojom::CORSError::kMaxValue) {}
 
 CORSErrorStatus::CORSErrorStatus(const CORSErrorStatus& status) = default;
 

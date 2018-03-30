@@ -683,6 +683,7 @@ class Enum(Kind):
     Kind.__init__(self, spec, module)
     self.fields = []
     self.attributes = attributes
+    self.max_value = None
 
   def Repr(self, as_ref=True):
     if as_ref:

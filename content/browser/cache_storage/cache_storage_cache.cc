@@ -1218,10 +1218,8 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   if (response->side_data_blob)
     side_data_blob = response->side_data_blob->Clone();
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorkerCache.Cache.AllWritesResponseType",
-      operation.response.response_type,
-      static_cast<int>(network::mojom::FetchResponseType::kLast) + 1);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.Cache.AllWritesResponseType",
+                            operation.response.response_type);
 
   auto put_context = std::make_unique<PutContext>(
       std::move(request), std::move(response), std::move(blob),
@@ -1795,8 +1793,7 @@ void CacheStorageCache::InitGotCacheSizeAndPadding(
                        : BACKEND_CLOSED;
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.InitBackendResult",
-                            cache_create_error,
-                            static_cast<int>(CacheStorageError::kLast) + 1);
+                            cache_create_error);
 
   if (cache_observer_)
     cache_observer_->CacheSizeUpdated(this);

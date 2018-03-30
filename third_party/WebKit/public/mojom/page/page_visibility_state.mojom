@@ -10,5 +10,4 @@ enum PageVisibilityState {
   kVisible,
   kHidden,
   kPrerender,
-  kLast = kPrerender
 };

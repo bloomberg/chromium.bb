@@ -42,10 +42,6 @@ enum LockScreenNoteOrigin {
 
   // The user ejected the stylus tool from the device.
   kStylusEject = 4,
-
-  // Not a real value - used primarily for UMA reporting (to report upper bound
-  // of valid histogram values).
-  kCount
 };
 
 // Reason for closing a lock screen note, and consequentially closing any
@@ -76,10 +72,6 @@ enum CloseLockScreenNoteReason {
 
   // The user pressed "Unlock" button on the lock screen UI.
   kUnlockButtonPressed = 6,
-
-  // Not a real value - used primarily for UMA reporting (to report upper bound
-  // of valid histogram values).
-  kCount
 };
 
 // Used by a client (e.g. Chrome) to set up a handler for a tray action, and

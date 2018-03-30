@@ -21,8 +21,8 @@ struct WebEnabledClientHints {
     enabled_types_[static_cast<int>(type)] = should_send;
   }
 
-  bool enabled_types_[static_cast<int>(mojom::WebClientHintsType::kLast) + 1] =
-      {};
+  bool enabled_types_[static_cast<int>(mojom::WebClientHintsType::kMaxValue) +
+                      1] = {};
 };
 
 }  // namespace blink

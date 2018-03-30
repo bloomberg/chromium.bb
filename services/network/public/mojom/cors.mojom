@@ -47,6 +47,4 @@ enum CORSError {
   // Redirect
   kRedirectDisallowedScheme,
   kRedirectContainsCredentials,
-
-  kLast = kRedirectContainsCredentials,
 };
