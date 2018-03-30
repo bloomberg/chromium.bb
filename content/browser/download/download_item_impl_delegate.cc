@@ -5,6 +5,7 @@
 #include "content/browser/download/download_item_impl_delegate.h"
 
 #include "base/logging.h"
+#include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "content/browser/download/download_item_impl.h"
 
@@ -67,10 +68,6 @@ void DownloadItemImplDelegate::ResumeInterruptedDownload(
     uint32_t id,
     const GURL& site_url) {}
 
-BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
-  return nullptr;
-}
-
 void DownloadItemImplDelegate::UpdatePersistence(DownloadItemImpl* download) {}
 
 void DownloadItemImplDelegate::OpenDownload(DownloadItemImpl* download) {}
@@ -90,5 +87,16 @@ void DownloadItemImplDelegate::AssertStateConsistent(
 
 void DownloadItemImplDelegate::DownloadInterrupted(DownloadItemImpl* download) {
 }
+
+base::Optional<download::DownloadEntry>
+DownloadItemImplDelegate::GetInProgressEntry(DownloadItemImpl* download) {
+  return base::Optional<download::DownloadEntry>();
+}
+
+bool DownloadItemImplDelegate::IsOffTheRecord() const {
+  return false;
+}
+
+void DownloadItemImplDelegate::ReportBytesWasted(DownloadItemImpl* download) {}
 
 }  // namespace content

@@ -39,7 +39,6 @@ class URLRequestContextGetter;
 }
 
 namespace content {
-class BrowserContext;
 class DownloadItemImplDelegate;
 
 // See download_item.h for usage.
@@ -620,9 +619,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // last_reason_ to be set, but doesn't require the download to be in
   // INTERRUPTED state.
   download::ResumeMode GetResumeMode() const;
-
-  // Helper method to get BrowserContext of the DownloadItem.;
-  BrowserContext* GetBrowserContext() const;
 
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);

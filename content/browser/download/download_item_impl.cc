@@ -53,7 +53,6 @@
 #include "content/browser/download/download_job_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_utils.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -1166,10 +1165,6 @@ download::ResumeMode DownloadItemImpl::GetResumeMode() const {
   return download::ResumeMode::IMMEDIATE_CONTINUE;
 }
 
-BrowserContext* DownloadItemImpl::GetBrowserContext() const {
-  return delegate_->GetBrowserContext();
-}
-
 void DownloadItemImpl::UpdateValidatorsOnResumption(
     const download::DownloadCreateInfo& new_create_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1385,7 +1380,7 @@ void DownloadItemImpl::Init(
                          std::move(active_data));
 
     // Read data from in-progress cache.
-    auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
+    auto in_progress_entry = delegate_->GetInProgressEntry(this);
     if (in_progress_entry) {
       download_source_ = in_progress_entry->download_source;
       fetch_error_body_ = in_progress_entry->fetch_error_body;
@@ -1474,14 +1469,14 @@ void DownloadItemImpl::Start(
     download::RecordDownloadMimeType(mime_type_);
     download::DownloadContent file_type =
         download::DownloadContentFromMimeType(mime_type_, false);
-    auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
+    auto in_progress_entry = delegate_->GetInProgressEntry(this);
     if (in_progress_entry) {
       download::DownloadUkmHelper::RecordDownloadStarted(
           in_progress_entry->ukm_download_id, new_create_info.ukm_source_id,
           file_type, download_source_);
     }
 
-    if (!GetBrowserContext()->IsOffTheRecord()) {
+    if (!delegate_->IsOffTheRecord()) {
       download::RecordDownloadCountWithSource(
           download::NEW_DOWNLOAD_COUNT_NORMAL_PROFILE, download_source_);
       download::RecordDownloadMimeTypeForNormalProfile(mime_type_);
@@ -1522,31 +1517,13 @@ void DownloadItemImpl::OnDownloadFileInitialized(
   DVLOG(20) << __func__
             << "() result:" << DownloadInterruptReasonToString(result);
 
-  // Record bytes wasted.
   if (bytes_wasted > 0) {
-    // Since |bytes_wasted_| is only used for testing, set it here.
     bytes_wasted_ = bytes_wasted;
-
-    if (!GetBrowserContext())
-      return;
-
-    // Get in-progress cache entry.
-    DownloadManagerDelegate* manager_delegate =
-        GetBrowserContext()->GetDownloadManagerDelegate();
-    if (manager_delegate) {
-      download::InProgressCache* in_progress_cache =
-          manager_delegate->GetInProgressCache();
-      if (in_progress_cache) {
-        // Add |bytes_wasted| to tallying count.
-        base::Optional<download::DownloadEntry> entry_opt =
-            in_progress_cache->RetrieveEntry(guid_);
-        if (entry_opt.has_value()) {
-          download::DownloadEntry entry = entry_opt.value();
-          entry.bytes_wasted += bytes_wasted;
-          bytes_wasted_ = entry.bytes_wasted;
-          in_progress_cache->AddOrReplaceEntry(entry);
-        }
-      }
+    auto in_progress_entry = delegate_->GetInProgressEntry(this);
+    if (in_progress_entry.has_value()) {
+      download::DownloadEntry entry = in_progress_entry.value();
+      bytes_wasted_ = entry.bytes_wasted + bytes_wasted;
+      delegate_->ReportBytesWasted(this);
     }
   }
 
@@ -1844,7 +1821,7 @@ void DownloadItemImpl::Completed() {
   bool is_parallelizable = job_ && job_->IsParallelizable();
   download::RecordDownloadCompleted(start_tick_, GetReceivedBytes(),
                                     is_parallelizable, download_source_);
-  if (!GetBrowserContext()->IsOffTheRecord()) {
+  if (!delegate_->IsOffTheRecord()) {
     download::RecordDownloadCountWithSource(
         download::COMPLETED_COUNT_NORMAL_PROFILE, download_source_);
   }
@@ -1883,7 +1860,7 @@ void DownloadItemImpl::Completed() {
   // If all data is saved, the number of received bytes is resulting file size.
   int resulting_file_size = GetReceivedBytes();
 
-  auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
+  auto in_progress_entry = delegate_->GetInProgressEntry(this);
   if (in_progress_entry) {
     download::DownloadUkmHelper::RecordDownloadCompleted(
         in_progress_entry->ukm_download_id, resulting_file_size,
@@ -2042,7 +2019,7 @@ void DownloadItemImpl::InterruptWithPartialState(
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
   int resulting_file_size = GetReceivedBytes();
-  auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
+  auto in_progress_entry = delegate_->GetInProgressEntry(this);
   base::Optional<int> change_in_file_size;
   if (in_progress_entry) {
     if (total_bytes_ >= 0) {
@@ -2394,10 +2371,9 @@ void DownloadItemImpl::ResumeInterruptedDownload(
     download_params->add_request_header(header.first, header.second);
   }
 
-  auto entry = GetInProgressEntry(GetGuid(), GetBrowserContext());
-  if (entry) {
+  auto entry = delegate_->GetInProgressEntry(this);
+  if (entry)
     download_params->set_request_origin(entry.value().request_origin);
-  }
 
   // Note that resumed downloads disallow redirects. Hence the referrer URL
   // (which is the contents of the Referer header for the last download request)
@@ -2413,7 +2389,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
       download_source_);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
-  auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
+  auto in_progress_entry = delegate_->GetInProgressEntry(this);
   if (in_progress_entry) {
     download::DownloadUkmHelper::RecordDownloadResumed(
         in_progress_entry->ukm_download_id, GetResumeMode(), time_since_start);

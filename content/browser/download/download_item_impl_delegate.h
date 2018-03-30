@@ -10,13 +10,17 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_manager_delegate.h"
 
+namespace download {
+struct DownloadEntry;
+}
+
 namespace content {
-class BrowserContext;
 class DownloadItemImpl;
 
 // Delegate for operations that a DownloadItemImpl can't do for itself.
@@ -76,9 +80,6 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
       uint32_t id,
       const GURL& site_url);
 
-  // For contextual issues like language and prefs.
-  virtual BrowserContext* GetBrowserContext() const;
-
   // Update the persistent store with our information.
   virtual void UpdatePersistence(DownloadItemImpl* download);
 
@@ -101,6 +102,16 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   // Called when the download is interrupted.
   virtual void DownloadInterrupted(DownloadItemImpl* download);
+
+  // Get the in progress entry for the download item.
+  virtual base::Optional<download::DownloadEntry> GetInProgressEntry(
+      DownloadItemImpl* download);
+
+  // Whether the download is off the record.
+  virtual bool IsOffTheRecord() const;
+
+  // Report extra bytes wasted during resumption.
+  virtual void ReportBytesWasted(DownloadItemImpl* download);
 
  private:
   // For "Outlives attached DownloadItemImpl" invariant assertion.
