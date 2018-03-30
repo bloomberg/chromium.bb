@@ -101,7 +101,7 @@ FakeOAuth2TokenServiceDelegate::GetRequestContext() const {
   return request_context_.get();
 }
 
-void FakeOAuth2TokenServiceDelegate::SetLastErrorForAccount(
+void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   auto it = refresh_tokens_.find(account_id);

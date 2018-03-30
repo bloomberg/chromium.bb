@@ -85,7 +85,8 @@ class SigninManagerTest : public testing::Test {
         cookie_manager_service_(&token_service_,
                                 GaiaConstants::kChromeSource,
                                 &test_signin_client_),
-        url_fetcher_factory_(nullptr) {
+        url_fetcher_factory_(nullptr),
+        account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
     test_signin_client_.SetURLRequestContext(
         new net::TestURLRequestContextGetter(loop_.task_runner()));
     cookie_manager_service_.Init(&url_fetcher_factory_);
@@ -131,7 +132,7 @@ class SigninManagerTest : public testing::Test {
     manager_ = std::make_unique<SigninManager>(
         &test_signin_client_, &token_service_, &account_tracker_,
         &cookie_manager_service_, nullptr /* signin_error_controller */,
-        signin::AccountConsistencyMethod::kDisabled);
+        account_consistency_);
     manager_->Initialize(&local_state_);
     manager_->AddObserver(&test_observer_);
   }
@@ -176,6 +177,7 @@ class SigninManagerTest : public testing::Test {
   TestSigninManagerObserver test_observer_;
   std::vector<std::string> oauth_tokens_fetched_;
   std::vector<std::string> cookies_;
+  signin::AccountConsistencyMethod account_consistency_;
 };
 
 TEST_F(SigninManagerTest, SignInWithRefreshToken) {
@@ -256,6 +258,79 @@ TEST_F(SigninManagerTest, SignOut) {
   EXPECT_FALSE(manager_->IsAuthenticated());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
+}
+
+TEST_F(SigninManagerTest, SignOutRevoke) {
+  CreateSigninManager();
+  std::string main_account_id =
+      AddToAccountTracker("main_id", "user@gmail.com");
+  std::string other_account_id =
+      AddToAccountTracker("other_id", "other@gmail.com");
+  token_service_.UpdateCredentials(main_account_id, "token");
+  token_service_.UpdateCredentials(other_account_id, "token");
+  manager_->OnExternalSigninCompleted("user@gmail.com");
+  EXPECT_TRUE(manager_->IsAuthenticated());
+  EXPECT_EQ(main_account_id, manager_->GetAuthenticatedAccountId());
+
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST,
+                    signin_metrics::SignoutDelete::IGNORE_METRIC);
+
+  // Tokens are revoked.
+  EXPECT_FALSE(manager_->IsAuthenticated());
+  EXPECT_TRUE(token_service_.GetAccounts().empty());
+}
+
+TEST_F(SigninManagerTest, SignOutDiceNoRevoke) {
+  account_consistency_ = signin::AccountConsistencyMethod::kDice;
+  CreateSigninManager();
+  std::string main_account_id =
+      AddToAccountTracker("main_id", "user@gmail.com");
+  std::string other_account_id =
+      AddToAccountTracker("other_id", "other@gmail.com");
+  token_service_.UpdateCredentials(main_account_id, "token");
+  token_service_.UpdateCredentials(other_account_id, "token");
+  manager_->OnExternalSigninCompleted("user@gmail.com");
+  EXPECT_TRUE(manager_->IsAuthenticated());
+  EXPECT_EQ(main_account_id, manager_->GetAuthenticatedAccountId());
+
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST,
+                    signin_metrics::SignoutDelete::IGNORE_METRIC);
+
+  // Tokens are not revoked.
+  EXPECT_FALSE(manager_->IsAuthenticated());
+  std::vector<std::string> expected_tokens = {main_account_id,
+                                              other_account_id};
+  EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
+}
+
+TEST_F(SigninManagerTest, SignOutDiceWithError) {
+  account_consistency_ = signin::AccountConsistencyMethod::kDice;
+  CreateSigninManager();
+  std::string main_account_id =
+      AddToAccountTracker("main_id", "user@gmail.com");
+  std::string other_account_id =
+      AddToAccountTracker("other_id", "other@gmail.com");
+  token_service_.UpdateCredentials(main_account_id, "token");
+  token_service_.UpdateCredentials(other_account_id, "token");
+  manager_->OnExternalSigninCompleted("user@gmail.com");
+
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  token_service_.GetDelegate()->UpdateAuthError(main_account_id, error);
+  token_service_.GetDelegate()->UpdateAuthError(other_account_id, error);
+  ASSERT_TRUE(token_service_.RefreshTokenHasError(main_account_id));
+  ASSERT_TRUE(token_service_.RefreshTokenHasError(other_account_id));
+
+  EXPECT_TRUE(manager_->IsAuthenticated());
+  EXPECT_EQ(main_account_id, manager_->GetAuthenticatedAccountId());
+
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST,
+                    signin_metrics::SignoutDelete::IGNORE_METRIC);
+
+  // Only main token is revoked.
+  EXPECT_FALSE(manager_->IsAuthenticated());
+  std::vector<std::string> expected_tokens = {other_account_id};
+  EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
 }
 
 TEST_F(SigninManagerTest, SignOutWhileProhibited) {

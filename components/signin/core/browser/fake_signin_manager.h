@@ -66,7 +66,7 @@ class FakeSigninManager : public SigninManager {
  protected:
   void DoSignOut(signin_metrics::ProfileSignout signout_source_metric,
                  signin_metrics::SignoutDelete signout_delete_metric,
-                 bool remove_all_accounts) override;
+                 RemoveAccountsOption remove_option) override;
 
   // Username specified in StartSignInWithRefreshToken() call.
   std::string username_;
