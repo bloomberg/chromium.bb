@@ -2200,6 +2200,17 @@ fuzzer_test("blink_harfbuzz_shaper_fuzzer") {
   libfuzzer_options = [ "max_len=256" ]
 }
 
+fuzzer_test("blink_http_parsers_fuzzer") {
+  sources = [
+    "network/HTTPParsersFuzzer.cpp",
+  ]
+  deps = [
+    ":blink_fuzzer_test_support",
+    ":platform",
+  ]
+  dict = "network/HTTPParsersFuzzer.dict"
+}
+
 # Fuzzer template for WTF::TextCodec.
 template("blink_text_codec_fuzzer") {
   forward_variables_from(invoker, "*")
@@ -2222,6 +2233,7 @@ template("blink_text_codec_fuzzer") {
 
 blink_text_codec_fuzzer("UTF_8") {
 }
+
 blink_text_codec_fuzzer("WINDOWS_1252") {
 }
 
