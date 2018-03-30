@@ -141,7 +141,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_SelectedMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor selectedMenuItemTextColor]);
     case kColorId_FocusedMenuItemBackgroundColor:
-      return NSSystemColorToSkColor([NSColor selectedMenuItemColor]);
+      return ApplySystemControlTint(
+          NSSystemColorToSkColor([NSColor selectedMenuItemColor]));
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
