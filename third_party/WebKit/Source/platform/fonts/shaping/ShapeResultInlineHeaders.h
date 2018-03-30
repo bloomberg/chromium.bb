@@ -50,8 +50,6 @@ struct HarfBuzzRunGlyphData {
   FloatSize offset;
 };
 
-enum AdjustMidCluster { kAdjustToStart, kAdjustToEnd };
-
 struct ShapeResult::RunInfo {
   USING_FAST_MALLOC(RunInfo);
 

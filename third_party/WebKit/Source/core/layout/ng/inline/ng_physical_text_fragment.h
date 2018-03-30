@@ -17,7 +17,10 @@
 namespace blink {
 
 class ShapeResult;
+
 struct NGPhysicalOffsetRect;
+
+enum class AdjustMidCluster;
 
 // In CSS Writing Modes Levle 4, line orientation for layout and line
 // orientation for paint are not always the same.
@@ -139,6 +142,10 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const override;
 
  private:
+  LayoutUnit InlinePositionForOffset(unsigned offset,
+                                     LayoutUnit (*round)(float),
+                                     AdjustMidCluster) const;
+
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
   const String text_;
