@@ -661,6 +661,7 @@ if (enable_vr) {
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrInstallUpdateInfoBarTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellCompositorViewHolderTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellControllerInputTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellDialogTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNativeUiTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNavigationTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTransitionTest.java",
