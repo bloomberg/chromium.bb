@@ -21,6 +21,7 @@ const int kMaxErrorFrames = 12;
 const int kMaxDroppableFrames = 12;
 const int kMaxErrorResilientFrames = 12;
 const int kMaxNoMFMVFrames = 12;
+const int kMaxSFrames = 12;
 const int kCpuUsed = 1;
 
 class ErrorResilienceTestLarge
@@ -40,7 +41,16 @@ class ErrorResilienceTestLarge
     droppable_nframes_ = 0;
     error_resilient_nframes_ = 0;
     nomfmv_nframes_ = 0;
-    pattern_switch_ = 0;
+    s_nframes_ = 0;
+  }
+
+  void SetupEncoder(int bitrate, int lag) {
+    const aom_rational timebase = { 33333333, 1000000000 };
+    cfg_.g_timebase = timebase;
+    cfg_.rc_target_bitrate = bitrate;
+    cfg_.kf_mode = AOM_KF_DISABLED;
+    cfg_.g_lag_in_frames = lag;
+    init_flags_ = AOM_CODEC_USE_PSNR;
   }
 
   virtual void SetUp() {
@@ -64,6 +74,7 @@ class ErrorResilienceTestLarge
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
+
     if (droppable_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < droppable_nframes_; ++i) {
@@ -76,6 +87,7 @@ class ErrorResilienceTestLarge
         }
       }
     }
+
     encoder->Control(AV1E_SET_ERROR_RESILIENT_MODE, 0);
     if (error_resilient_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
@@ -88,6 +100,7 @@ class ErrorResilienceTestLarge
         }
       }
     }
+
     encoder->Control(AV1E_SET_ALLOW_REF_FRAME_MVS, 1);
     if (nomfmv_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
@@ -96,6 +109,19 @@ class ErrorResilienceTestLarge
           std::cout << "             Encoding no mfmv frame: "
                     << nomfmv_frames_[i] << "\n";
           encoder->Control(AV1E_SET_ALLOW_REF_FRAME_MVS, 0);
+          break;
+        }
+      }
+    }
+
+    encoder->Control(AV1E_SET_S_FRAME_MODE, 0);
+    if (s_nframes_ > 0 &&
+        (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
+      for (unsigned int i = 0; i < s_nframes_; ++i) {
+        if (s_frames_[i] == video->frame()) {
+          std::cout << "             Encoding S frame: " << s_frames_[i]
+                    << "\n";
+          encoder->Control(AV1E_SET_S_FRAME_MODE, 1);
           break;
         }
       }
@@ -184,12 +210,20 @@ class ErrorResilienceTestLarge
       nomfmv_frames_[i] = list[i];
   }
 
+  void SetSFrames(int num, unsigned int *list) {
+    if (num > kMaxSFrames)
+      num = kMaxSFrames;
+    else if (num < 0)
+      num = 0;
+    s_nframes_ = num;
+    for (unsigned int i = 0; i < s_nframes_; ++i) s_frames_[i] = list[i];
+  }
+
   unsigned int GetMismatchFrames() { return mismatch_nframes_; }
   unsigned int GetEncodedFrames() { return nframes_; }
   unsigned int GetDecodedFrames() { return decoded_nframes_; }
 
   void SetAllowMismatch(int allow) { allow_mismatch_ = allow; }
-  void SetPatternSwitch(int frame_switch) { pattern_switch_ = frame_switch; }
 
  private:
   double psnr_;
@@ -199,27 +233,23 @@ class ErrorResilienceTestLarge
   unsigned int droppable_nframes_;
   unsigned int error_resilient_nframes_;
   unsigned int nomfmv_nframes_;
-  unsigned int pattern_switch_;
+  unsigned int s_nframes_;
   double mismatch_psnr_;
   unsigned int mismatch_nframes_;
   unsigned int error_frames_[kMaxErrorFrames];
   unsigned int droppable_frames_[kMaxDroppableFrames];
   unsigned int error_resilient_frames_[kMaxErrorResilientFrames];
   unsigned int nomfmv_frames_[kMaxNoMFMVFrames];
+  unsigned int s_frames_[kMaxSFrames];
   libaom_test::TestMode encoding_mode_;
   int allow_mismatch_;
 };
 
 TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
-  const aom_rational timebase = { 33333333, 1000000000 };
-  cfg_.g_timebase = timebase;
-  cfg_.rc_target_bitrate = 2000;
-  cfg_.g_lag_in_frames = 10;
-
-  init_flags_ = AOM_CODEC_USE_PSNR;
-
+  SetupEncoder(2000, 10);
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                     timebase.den, timebase.num, 0, 12);
+                                     cfg_.g_timebase.den, cfg_.g_timebase.num,
+                                     0, 12);
 
   // Global error resilient mode OFF.
   cfg_.g_error_resilient = 0;
@@ -249,17 +279,10 @@ TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
 // if we lose (i.e., drop before decoding) a set of droppable
 // frames (i.e., frames that don't update any reference buffers).
 TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
-  const aom_rational timebase = { 33333333, 1000000000 };
-  cfg_.g_timebase = timebase;
-  cfg_.rc_target_bitrate = 500;
-  cfg_.g_lag_in_frames = 10;
-
-  init_flags_ = AOM_CODEC_USE_PSNR;
-
+  SetupEncoder(500, 10);
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                     timebase.den, timebase.num, 0, 20);
-
-  cfg_.kf_mode = AOM_KF_DISABLED;
+                                     cfg_.g_timebase.den, cfg_.g_timebase.num,
+                                     0, 20);
 
   // Set an arbitrary set of error frames same as droppable frames.
   unsigned int num_droppable_frames = 3;
@@ -279,19 +302,13 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
 // subsequent frames from using MFMV. If frames are dropped before the
 // E frame, all frames starting from the E frame should be parse-able.
 TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
-  const aom_rational timebase = { 33333333, 1000000000 };
-  cfg_.g_timebase = timebase;
-  cfg_.rc_target_bitrate = 500;
   // TODO(sarahparker, debargha): Make control setting work correctly for
   // lag_in_frames > 0
-  cfg_.g_lag_in_frames = 0;
-
-  init_flags_ = AOM_CODEC_USE_PSNR;
+  SetupEncoder(500, 0);
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                     timebase.den, timebase.num, 0, 15);
-
-  cfg_.kf_mode = AOM_KF_DISABLED;
+                                     cfg_.g_timebase.den, cfg_.g_timebase.num,
+                                     0, 15);
 
   SetAllowMismatch(1);
 
