@@ -1129,6 +1129,7 @@ fuzzer_test("audio_decoder_fuzzer") {
   deps = [
     "//content/public/renderer:renderer_sources",
     "//content/renderer:renderer",
+    "//content/test:test_support",
   ]
   seed_corpus = "//media/test/data"
 }
