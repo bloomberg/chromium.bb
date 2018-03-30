@@ -35,7 +35,6 @@
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/installer_state.h"
-#include "chrome/installer/setup/persistent_histogram_storage.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
@@ -825,7 +824,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   // Create the directory in which persistent metrics will be stored.
   const base::FilePath histogram_storage_dir(
-      PersistentHistogramStorage::GetReportedStorageDir(target_path));
+      target_path.AppendASCII(kSetupHistogramAllocatorName));
   install_list->AddCreateDirWorkItem(histogram_storage_dir);
 
   if (installer_state.system_install()) {

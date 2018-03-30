@@ -1147,6 +1147,8 @@ jumbo_component("base") {
       "base_paths_posix.h",
       "base_paths_win.cc",
       "base_paths_win.h",
+      "metrics/persistent_histogram_storage.cc",
+      "metrics/persistent_histogram_storage.h",
       "posix/unix_domain_socket.cc",
     ]
 
@@ -2251,6 +2253,7 @@ test("base_unittests") {
     "metrics/histogram_unittest.cc",
     "metrics/metrics_hashes_unittest.cc",
     "metrics/persistent_histogram_allocator_unittest.cc",
+    "metrics/persistent_histogram_storage_unittest.cc",
     "metrics/persistent_memory_allocator_unittest.cc",
     "metrics/persistent_sample_map_unittest.cc",
     "metrics/sample_map_unittest.cc",
@@ -3083,9 +3086,9 @@ fuzzer_test("utf_string_conversions_fuzzer") {
 #                  and are confident that the transition was ok.
 fuzzer_test("utf_string_conversions_regression_fuzzer") {
   sources = [
-    "strings/utf_string_conversions_regression_fuzzer.cc",
     "strings/old_utf_string_conversions.cc",
     "strings/old_utf_string_conversions.h",
+    "strings/utf_string_conversions_regression_fuzzer.cc",
   ]
   deps = [
     ":base",

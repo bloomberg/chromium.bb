@@ -58,8 +58,6 @@ if (is_win) {
       "installer_crash_reporting.h",
       "installer_state.cc",
       "installer_state.h",
-      "persistent_histogram_storage.cc",
-      "persistent_histogram_storage.h",
       "progress_calculator.cc",
       "progress_calculator.h",
       "setup_constants.cc",

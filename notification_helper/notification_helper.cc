@@ -7,10 +7,14 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/persistent_histogram_storage.h"
 #include "base/process/memory.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/win/process_startup_helper.h"
 #include "base/win/scoped_winrt_initializer.h"
 #include "chrome/install_static/product_install_details.h"
+#include "chrome/install_static/user_data_dir.h"
 #include "notification_helper/com_server_module.h"
 #include "notification_helper/notification_helper_crash_reporter_client.h"
 #include "notification_helper/notification_helper_util.h"
@@ -20,6 +24,13 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
                                HINSTANCE prev_instance,
                                wchar_t* command_line,
                                int show_command) {
+  // Persist histograms so they can be uploaded later.
+  // The allocator name must be kept in sync with the writer in
+  // chrome/browser/metrics/chrome_metrics_service_client.cc.
+  base::PersistentHistogramStorage persistent_histogram_storage(
+      "NotificationHelperMetrics",
+      base::PersistentHistogramStorage::StorageDirCreation::kEnable);
+
   // Initialize the CommandLine singleton from the environment.
   base::CommandLine::Init(0, nullptr);
 
@@ -31,6 +42,13 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
     return 0;
 
   install_static::InitializeProductDetailsForPrimaryModule();
+
+  // The histogram storage folder should be under folder "User Data".
+  base::string16 user_data_dir;
+  install_static::GetUserDataDirectory(&user_data_dir, nullptr);
+
+  persistent_histogram_storage.set_storage_base_dir(
+      base::FilePath(std::move(user_data_dir)));
 
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
@@ -54,8 +72,13 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
     return -1;
   }
 
+  base::ElapsedTimer run_timer;
+
   notification_helper::ComServerModule com_server_module;
   com_server_module.Run();
+
+  base::UmaHistogramMediumTimes(
+      "Notifications.NotificationHelper.ServerRuntime", run_timer.Elapsed());
 
   return 0;
 }
