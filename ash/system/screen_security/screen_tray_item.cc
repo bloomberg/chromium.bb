@@ -10,7 +10,6 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/message_center/message_center.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -90,44 +89,31 @@ void ScreenStatusView::UpdateFromScreenTrayItem() {
   SetVisible(screen_tray_item_->is_started());
 }
 
-ScreenNotificationDelegate::ScreenNotificationDelegate(
-    ScreenTrayItem* screen_tray)
-    : screen_tray_(screen_tray) {}
-
-ScreenNotificationDelegate::~ScreenNotificationDelegate() = default;
-
-void ScreenNotificationDelegate::ButtonClick(int button_index) {
-  DCHECK_EQ(0, button_index);
-  screen_tray_->Stop();
-  screen_tray_->RecordStoppedFromNotificationViewMetric();
-}
-
 }  // namespace tray
 
 ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray, UmaType uma_type)
     : SystemTrayItem(system_tray, uma_type),
       tray_view_(nullptr),
       default_view_(nullptr),
-      is_started_(false),
-      stop_callback_(base::DoNothing()) {}
+      is_started_(false) {}
 
 ScreenTrayItem::~ScreenTrayItem() = default;
+
+void ScreenTrayItem::SetIsStarted(bool is_started) {
+  if (!is_started)
+    stop_callback_.Reset();
+  is_started_ = is_started;
+}
 
 void ScreenTrayItem::Update() {
   if (tray_view_)
     tray_view_->Update();
   if (default_view_)
     default_view_->UpdateFromScreenTrayItem();
-  if (is_started_) {
-    CreateOrUpdateNotification();
-  } else {
-    message_center::MessageCenter::Get()->RemoveNotification(
-        GetNotificationId(), false /* by_user */);
-  }
 }
 
-void ScreenTrayItem::Start(const base::Closure& stop_callback) {
-  stop_callback_ = stop_callback;
+void ScreenTrayItem::Start(base::OnceClosure stop_callback) {
+  stop_callback_ = std::move(stop_callback);
   is_started_ = true;
 
   if (tray_view_)
@@ -135,11 +121,6 @@ void ScreenTrayItem::Start(const base::Closure& stop_callback) {
 
   if (default_view_)
     default_view_->UpdateFromScreenTrayItem();
-
-  if (!system_tray()->HasSystemTrayType(
-          SystemTrayView::SYSTEM_TRAY_TYPE_DEFAULT)) {
-    CreateOrUpdateNotification();
-  }
 }
 
 void ScreenTrayItem::Stop() {
@@ -149,19 +130,13 @@ void ScreenTrayItem::Stop() {
   if (stop_callback_.is_null())
     return;
 
-  base::Closure callback = stop_callback_;
-  stop_callback_.Reset();
-  callback.Run();
+  std::move(stop_callback_).Run();
 }
 
 views::View* ScreenTrayItem::CreateTrayView(LoginStatus status) {
   tray_view_ = new tray::ScreenTrayView(this);
   return tray_view_;
 }
-
-void ScreenTrayItem::RecordStoppedFromDefaultViewMetric() {}
-
-void ScreenTrayItem::RecordStoppedFromNotificationViewMetric() {}
 
 void ScreenTrayItem::OnTrayViewDestroyed() {
   tray_view_ = nullptr;

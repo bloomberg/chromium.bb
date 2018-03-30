@@ -15,18 +15,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/notification.h"
-
-using message_center::Notification;
 
 namespace ash {
-namespace {
-
-const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
-const char kNotifierScreenCapture[] = "ash.screen-capture";
-
-}  // namespace
 
 ScreenCaptureTrayItem::ScreenCaptureTrayItem(SystemTray* system_tray)
     : ScreenTrayItem(system_tray, UMA_SCREEN_CAPTURE) {
@@ -46,42 +36,9 @@ views::View* ScreenCaptureTrayItem::CreateDefaultView(LoginStatus status) {
   return default_view();
 }
 
-void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
-  message_center::RichNotificationData data;
-  data.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP)));
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kScreenCaptureNotificationId,
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
-          screen_capture_status_, gfx::Image(),
-          base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kNotifierScreenCapture),
-          data, new tray::ScreenNotificationDelegate(this),
-          kNotificationScreenshareIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->SetSystemPriority();
-  if (features::IsSystemTrayUnifiedEnabled())
-    notification->set_pinned(true);
-  message_center::MessageCenter::Get()->AddNotification(
-      std::move(notification));
-}
-
-std::string ScreenCaptureTrayItem::GetNotificationId() {
-  return kScreenCaptureNotificationId;
-}
-
 void ScreenCaptureTrayItem::RecordStoppedFromDefaultViewMetric() {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_SCREEN_CAPTURE_DEFAULT_STOP);
-}
-
-void ScreenCaptureTrayItem::RecordStoppedFromNotificationViewMetric() {
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
 }
 
 void ScreenCaptureTrayItem::OnScreenCaptureStart(
@@ -105,7 +62,7 @@ void ScreenCaptureTrayItem::OnScreenCaptureStart(
 void ScreenCaptureTrayItem::OnScreenCaptureStop() {
   // We do not need to run the stop callback when
   // screen capture is stopped externally.
-  set_is_started(false);
+  SetIsStarted(false);
   Update();
 }
 

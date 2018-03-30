@@ -98,6 +98,7 @@
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
 #include "ash/system/screen_layout_observer.h"
+#include "ash/system/screen_security/screen_security_notification_controller.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -792,6 +793,7 @@ Shell::~Shell() {
   screen_pinning_controller_.reset();
 
   resolution_notification_controller_.reset();
+  screen_security_notification_controller_.reset();
   screenshot_controller_.reset();
   mouse_cursor_filter_.reset();
   modality_filter_.reset();
@@ -904,6 +906,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
           detachable_base_handler_.get());
+  screen_security_notification_controller_ =
+      std::make_unique<ScreenSecurityNotificationController>();
 
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector()) {

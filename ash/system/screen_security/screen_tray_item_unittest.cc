@@ -163,25 +163,6 @@ TEST_F(ScreenShareTest, NotificationStartAndStop) {
   TestNotificationStartAndStop(this, start_func, stop_func);
 }
 
-void TestNotificationView(ScreenTrayItemTest* test) {
-  ScreenTrayItem* tray_item = test->tray_item();
-
-  test->StartSession();
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
-  EXPECT_TRUE(message_center->FindVisibleNotificationById(
-      tray_item->GetNotificationId()));
-  test->StopSession();
-}
-
-TEST_F(ScreenCaptureTest, NotificationView) {
-  TestNotificationView(this);
-}
-
-TEST_F(ScreenShareTest, NotificationView) {
-  TestNotificationView(this);
-}
-
 void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   ScreenTrayItem* tray_item = test->tray_item();
   EXPECT_FALSE(tray_item->tray_view()->visible());
