@@ -28,6 +28,7 @@
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -667,7 +668,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   scoped_refptr<ChromeBlobStorageContext> blob_context =
       ChromeBlobStorageContext::GetFor(context);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      ServiceWorkerUtils::IsServicificationEnabled()) {
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
         base::BindOnce(&BlobStorageContextGetterForStorage, blob_context);
     partition->blob_url_loader_factory_ =
