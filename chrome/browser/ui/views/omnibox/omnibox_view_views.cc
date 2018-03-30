@@ -1075,9 +1075,15 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   const bool shift = event.IsShiftDown();
   const bool control = event.IsControlDown();
   const bool alt = event.IsAltDown() || event.IsAltGrDown();
+#if defined(OS_MACOSX)
+  const bool command = event.IsCommandDown();
+#else
+  const bool command = false;
+#endif
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
-      model()->AcceptInput(alt ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+      model()->AcceptInput(alt || command
+                               ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                : WindowOpenDisposition::CURRENT_TAB,
                            false);
       return true;
