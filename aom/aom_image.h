@@ -135,29 +135,6 @@ typedef enum aom_matrix_coefficients {
   AOM_CICP_MC_RESERVED_15 = 15 /**< For future use (values 15-255)  */
 } aom_matrix_coefficients_t;
 
-/*!\brief List of supported color spaces */
-typedef enum aom_color_space {
-  AOM_CS_UNKNOWN = 0,     /**< Unknown */
-  AOM_CS_BT_601 = 1,      /**< BT.601 */
-  AOM_CS_BT_709 = 2,      /**< BT.709 */
-  AOM_CS_SMPTE_170 = 3,   /**< SMPTE.170 */
-  AOM_CS_SMPTE_240 = 4,   /**< SMPTE.240 */
-  AOM_CS_BT_2020_NCL = 5, /**< BT.2020 non-constant luminance (BT.2100) */
-  AOM_CS_BT_2020_CL = 6,  /**< BT.2020 constant luminance */
-  AOM_CS_SRGB = 7,        /**< sRGB */
-  AOM_CS_ICTCP = 8,       /**< ICtCp, ITU-R BT.2100 */
-  AOM_CS_RESERVED = 9,    /**< Values 10..31 are reserved */
-} aom_color_space_t;      /**< alias for enum aom_color_space */
-
-/*!\brief List of supported transfer functions */
-typedef enum aom_transfer_function {
-  AOM_TF_UNKNOWN = 0,      /**< Unknown */
-  AOM_TF_BT_709 = 1,       /**< BT.709 */
-  AOM_TF_PQ = 2,           /**< PQ TF BT.2100 / ST.2084 */
-  AOM_TF_HLG = 3,          /**< Hybrid Log-Gamma */
-  AOM_TF_RESERVED = 4      /**< Values 4..31 are reserved */
-} aom_transfer_function_t; /**< alias for enum aom_transfer_function */
-
 /*!\brief List of supported color range */
 typedef enum aom_color_range {
   AOM_CR_STUDIO_RANGE = 0, /**< Y [16..235], UV [16..240] */
@@ -179,8 +156,6 @@ typedef struct aom_image {
   aom_color_primaries_t cp;          /**< CICP Color Primaries */
   aom_transfer_characteristics_t tc; /**< CICP Transfer Characteristics */
   aom_matrix_coefficients_t mc;      /**< CICP Matrix Coefficients */
-  aom_color_space_t cs;              /**< Color Space */
-  aom_transfer_function_t tf;        /**< transfer function */
   int monochrome;                    /**< Whether image is monochrome */
   aom_chroma_sample_position_t csp;  /**< chroma sample position */
   aom_color_range_t range;           /**< Color Range */
