@@ -91,6 +91,35 @@ int FuzzedDatagramClientSocket::GetLocalAddress(IPEndPoint* address) const {
 
 void FuzzedDatagramClientSocket::UseNonBlockingIO() {}
 
+int FuzzedDatagramClientSocket::WriteAsync(
+    DatagramBuffers buffers,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  return -1;
+}
+
+int FuzzedDatagramClientSocket::WriteAsync(
+    const char* buffer,
+    size_t buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  return -1;
+}
+
+DatagramBuffers FuzzedDatagramClientSocket::GetUnwrittenBuffers() {
+  DatagramBuffers result;
+  return result;
+}
+
+void FuzzedDatagramClientSocket::SetWriteAsyncEnabled(bool enabled) {}
+bool FuzzedDatagramClientSocket::WriteAsyncEnabled() {
+  return false;
+}
+void FuzzedDatagramClientSocket::SetMaxPacketSize(size_t max_packet_size) {}
+void FuzzedDatagramClientSocket::SetWriteMultiCoreEnabled(bool enabled) {}
+void FuzzedDatagramClientSocket::SetSendmmsgEnabled(bool enabled) {}
+void FuzzedDatagramClientSocket::SetWriteBatchingActive(bool active) {}
+
 const NetLogWithSource& FuzzedDatagramClientSocket::NetLog() const {
   return net_log_;
 }

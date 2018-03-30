@@ -46,6 +46,23 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
   void UseNonBlockingIO() override;
+  int WriteAsync(
+      const char* buffer,
+      size_t buf_len,
+      const CompletionCallback& callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  int WriteAsync(
+      DatagramBuffers buffers,
+      const CompletionCallback& callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  DatagramBuffers GetUnwrittenBuffers() override;
+  void SetWriteAsyncEnabled(bool enabled) override;
+  void SetMaxPacketSize(size_t max_packet_size) override;
+  bool WriteAsyncEnabled() override;
+  void SetWriteMultiCoreEnabled(bool enabled) override;
+  void SetSendmmsgEnabled(bool enabled) override;
+  void SetWriteBatchingActive(bool active) override;
+
   const NetLogWithSource& NetLog() const override;
 
   // Socket implementation:
