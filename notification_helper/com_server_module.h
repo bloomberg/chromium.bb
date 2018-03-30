@@ -25,8 +25,9 @@ class ComServerModule {
   // connect to it. Returns the registration status.
   HRESULT RegisterClassObjects();
 
-  // Unregisters the NotificationActivator COM object.
-  void UnregisterClassObjects();
+  // Unregisters the NotificationActivator COM object. Returns the
+  // unregistration status.
+  HRESULT UnregisterClassObjects();
 
   // Returns the state of the event.
   bool IsEventSignaled();
