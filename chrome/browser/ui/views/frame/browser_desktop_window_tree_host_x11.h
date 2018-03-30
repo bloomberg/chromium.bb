@@ -35,8 +35,7 @@ class BrowserDesktopWindowTreeHostX11
   bool UsesNativeSystemMenu() const override;
 
   // Overridden from views::DesktopWindowTreeHostX11:
-  void Init(aura::Window* content_window,
-            const views::Widget::InitParams& params) override;
+  void Init(const views::Widget::InitParams& params) override;
   void CloseNow() override;
   void OnMaximizedStateChanged() override;
   void OnFullscreenStateChanged() override;

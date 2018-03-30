@@ -56,8 +56,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
 
  protected:
   // Overridden from DesktopWindowTreeHost:
-  void Init(aura::Window* content_window,
-            const Widget::InitParams& params) override;
+  void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   void OnActiveWindowChanged(bool active) override;
   void OnWidgetInitDone() override;
@@ -233,6 +232,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // has changed, and, if so, inform the aura::WindowTreeHost.
   void CheckForMonitorChange();
 
+  // Accessor for DesktopNativeWidgetAura::content_window().
+  aura::Window* content_window();
+
   HMONITOR last_monitor_from_window_ = nullptr;
 
   std::unique_ptr<HWNDMessageHandler> message_handler_;
@@ -243,8 +245,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   DesktopNativeWidgetAura* desktop_native_widget_aura_;
-
-  aura::Window* content_window_;
 
   // Owned by DesktopNativeWidgetAura.
   DesktopDragDropClientWin* drag_drop_client_;

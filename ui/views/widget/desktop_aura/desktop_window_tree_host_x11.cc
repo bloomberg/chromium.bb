@@ -148,7 +148,6 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       drag_drop_client_(NULL),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
-      content_window_(NULL),
       window_parent_(NULL),
       custom_window_shape_(false),
       urgency_hint_set_(false),
@@ -388,13 +387,11 @@ void DesktopWindowTreeHostX11::CleanUpWindowList(
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, DesktopWindowTreeHost implementation:
 
-void DesktopWindowTreeHostX11::Init(aura::Window* content_window,
-                                    const Widget::InitParams& params) {
-  content_window_ = content_window;
+void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
   activatable_ = (params.activatable == Widget::InitParams::ACTIVATABLE_YES);
 
   if (params.type == Widget::InitParams::TYPE_WINDOW)
-    content_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
+    content_window()->SetProperty(aura::client::kAnimationsDisabledKey, true);
 
   // TODO(erg): Check whether we *should* be building a WindowTreeHost here, or
   // whether we should be proxying requests to another DRWHL.
@@ -414,7 +411,7 @@ void DesktopWindowTreeHostX11::Init(aura::Window* content_window,
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  window()->SetProperty(kViewsWindowForRootWindow, content_window_);
+  window()->SetProperty(kViewsWindowForRootWindow, content_window());
   window()->SetProperty(kHostForRootWindow, this);
 
   // Ensure that the X11DesktopHandler exists so that it tracks create/destroy
@@ -605,9 +602,9 @@ void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
 
   // If |window_|'s transient parent bounds are big enough to contain |size|,
   // use them instead.
-  if (wm::GetTransientParent(content_window_)) {
+  if (wm::GetTransientParent(content_window())) {
     gfx::Rect transient_parent_rect =
-        wm::GetTransientParent(content_window_)->GetBoundsInScreen();
+        wm::GetTransientParent(content_window())->GetBoundsInScreen();
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width()) {
       parent_bounds_in_pixels = ToPixelRect(transient_parent_rect);
@@ -939,12 +936,13 @@ bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {
 
 void DesktopWindowTreeHostX11::ClearNativeFocus() {
   // This method is weird and misnamed. Instead of clearing the native focus,
-  // it sets the focus to our |content_window_|, which will trigger a cascade
+  // it sets the focus to our content_window(), which will trigger a cascade
   // of focus changes into views.
-  if (content_window_ && aura::client::GetFocusClient(content_window_) &&
-      content_window_->Contains(
-          aura::client::GetFocusClient(content_window_)->GetFocusedWindow())) {
-    aura::client::GetFocusClient(content_window_)->FocusWindow(content_window_);
+  if (content_window() && aura::client::GetFocusClient(content_window()) &&
+      content_window()->Contains(
+          aura::client::GetFocusClient(content_window())->GetFocusedWindow())) {
+    aura::client::GetFocusClient(content_window())
+        ->FocusWindow(content_window());
   }
 }
 
@@ -955,7 +953,7 @@ Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
   wm::WindowMoveSource window_move_source =
       source == Widget::MOVE_LOOP_SOURCE_MOUSE ? wm::WINDOW_MOVE_SOURCE_MOUSE
                                                : wm::WINDOW_MOVE_SOURCE_TOUCH;
-  if (x11_window_move_client_->RunMoveLoop(content_window_, drag_offset,
+  if (x11_window_move_client_->RunMoveLoop(content_window(), drag_offset,
                                            window_move_source) ==
       wm::MOVE_SUCCESSFUL)
     return Widget::MOVE_LOOP_SUCCESSFUL;
@@ -1635,9 +1633,9 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   if (is_minimized != was_minimized) {
     if (is_minimized) {
       SetVisible(false);
-      content_window_->Hide();
+      content_window()->Hide();
     } else {
-      content_window_->Show();
+      content_window()->Show();
       SetVisible(true);
     }
   }
@@ -1765,10 +1763,10 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   // events on the ash desktop are clicking in what Windows considers to be a
   // non client area.) Likewise, we won't want to do the following in any
   // WindowTreeHost that hosts ash.
-  if (content_window_ && content_window_->delegate()) {
+  if (content_window() && content_window()->delegate()) {
     int flags = event->flags();
     int hit_test_code =
-        content_window_->delegate()->GetNonClientComponent(event->location());
+        content_window()->delegate()->GetNonClientComponent(event->location());
     if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
       flags |= ui::EF_IS_NON_CLIENT;
     event->set_flags(flags);
@@ -1933,7 +1931,7 @@ void DesktopWindowTreeHostX11::SetWindowTransparency() {
   compositor()->SetBackgroundColor(use_argb_visual_ ? SK_ColorTRANSPARENT
                                                     : SK_ColorWHITE);
   window()->SetTransparent(use_argb_visual_);
-  content_window_->SetTransparent(use_argb_visual_);
+  content_window()->SetTransparent(use_argb_visual_);
 }
 
 void DesktopWindowTreeHostX11::Relayout() {
@@ -2342,6 +2340,10 @@ void DesktopWindowTreeHostX11::RestartDelayedResizeTask() {
                  close_widget_factory_.GetWeakPtr(), bounds_in_pixels_.size()));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, delayed_resize_task_.callback());
+}
+
+aura::Window* DesktopWindowTreeHostX11::content_window() {
+  return desktop_native_widget_aura_->content_window();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

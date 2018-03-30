@@ -53,9 +53,8 @@ bool BrowserDesktopWindowTreeHostX11::UsesNativeSystemMenu() const {
 //     views::DesktopWindowTreeHostX11 implementation:
 
 void BrowserDesktopWindowTreeHostX11::Init(
-    aura::Window* content_window,
     const views::Widget::InitParams& params) {
-  views::DesktopWindowTreeHostX11::Init(content_window, params);
+  views::DesktopWindowTreeHostX11::Init(params);
 
   // We have now created our backing X11 window. We now need to (possibly)
   // alert Unity that there's a menu bar attached to it.
