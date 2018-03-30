@@ -394,7 +394,28 @@ component("bluetooth") {
       }
       deps += [ "//dbus" ]
     } else {  # !use_dbus
-      sources += [ "bluetooth_adapter_stub.cc" ]
+      if (is_chromecast && is_linux) {
+        sources += [
+          "cast/bluetooth_adapter_cast.cc",
+          "cast/bluetooth_adapter_cast.h",
+          "cast/bluetooth_device_cast.cc",
+          "cast/bluetooth_device_cast.h",
+          "cast/bluetooth_remote_gatt_characteristic_cast.cc",
+          "cast/bluetooth_remote_gatt_characteristic_cast.h",
+          "cast/bluetooth_remote_gatt_descriptor_cast.cc",
+          "cast/bluetooth_remote_gatt_descriptor_cast.h",
+          "cast/bluetooth_remote_gatt_service_cast.cc",
+          "cast/bluetooth_remote_gatt_service_cast.h",
+        ]
+
+        deps += [
+          "//chromecast/device/bluetooth:util",
+          "//chromecast/device/bluetooth/le",
+        ]
+      } else {
+        sources += [ "bluetooth_adapter_stub.cc" ]
+      }
+
       if (is_linux) {
         defines += [ "LINUX_WITHOUT_DBUS" ]
         sources += [
