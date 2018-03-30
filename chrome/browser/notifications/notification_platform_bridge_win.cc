@@ -310,35 +310,6 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
-    winui::Notifications::NotificationSetting setting;
-    HRESULT hr = notifier_->get_Setting(&setting);
-    if (FAILED(hr)) {
-      LogDisplayHistogram(DisplayStatus::GET_NOTIFICATION_SETTING_FAILED);
-      DLOG(ERROR) << "Unable to fetch notification settings";
-      return;
-    }
-
-    switch (setting) {
-      case winui::Notifications::NotificationSetting_Enabled:
-        break;
-      case winui::Notifications::NotificationSetting_DisabledForApplication:
-        LogDisplayHistogram(DisplayStatus::DISABLED_FOR_APPLICATION);
-        DLOG(ERROR) << "Notification disabled for application";
-        return;
-      case winui::Notifications::NotificationSetting_DisabledForUser:
-        LogDisplayHistogram(DisplayStatus::DISABLED_FOR_USER);
-        DLOG(ERROR) << "Notification disabled for user";
-        return;
-      case winui::Notifications::NotificationSetting_DisabledByGroupPolicy:
-        LogDisplayHistogram(DisplayStatus::DISABLED_BY_GROUP_POLICY);
-        DLOG(ERROR) << "Notification disabled by group policy";
-        return;
-      case winui::Notifications::NotificationSetting_DisabledByManifest:
-        LogDisplayHistogram(DisplayStatus::DISABLED_BY_MANIFEST);
-        DLOG(ERROR) << "Notification disabled by manifest";
-        return;
-    }
-
     NotificationLaunchId launch_id(notification_type, notification->id(),
                                    profile_id, incognito,
                                    notification->origin_url());
@@ -346,8 +317,8 @@ class NotificationPlatformBridgeWinImpl
         NotificationTemplateBuilder::Build(image_retainer_.get(), launch_id,
                                            profile_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
-    hr = GetToastNotification(*notification, *notification_template, profile_id,
-                              incognito, &toast);
+    HRESULT hr = GetToastNotification(*notification, *notification_template,
+                                      profile_id, incognito, &toast);
     if (FAILED(hr)) {
       // A histogram should have already been logged for this failure.
       DLOG(ERROR) << "Unable to get a toast notification";
