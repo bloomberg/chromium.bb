@@ -2199,7 +2199,8 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     cm->matrix_coefficients = AOM_CICP_MC_UNSPECIFIED;
   }
   if (is_monochrome) {
-    cm->color_range = AOM_CR_FULL_RANGE;
+    // [16,235] (including xvycc) vs [0,255] range
+    cm->color_range = aom_rb_read_bit(rb);
     cm->subsampling_y = cm->subsampling_x = 1;
     cm->chroma_sample_position = AOM_CSP_UNKNOWN;
     cm->separate_uv_delta_q = 0;

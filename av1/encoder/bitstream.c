@@ -2446,7 +2446,11 @@ static void write_bitdepth_colorspace_sampling(
     aom_wb_write_literal(wb, cm->transfer_characteristics, 8);
     aom_wb_write_literal(wb, cm->matrix_coefficients, 8);
   }
-  if (is_monochrome) return;
+  if (is_monochrome) {
+    // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
+    aom_wb_write_bit(wb, cm->color_range);
+    return;
+  }
   if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
       cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
       cm->matrix_coefficients ==
