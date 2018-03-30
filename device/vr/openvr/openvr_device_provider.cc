@@ -25,10 +25,14 @@ OpenVRDeviceProvider::OpenVRDeviceProvider() = default;
 OpenVRDeviceProvider::~OpenVRDeviceProvider() {
   device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
       device::GAMEPAD_SOURCE_OPENVR);
-  // We must set device_ to null before calling VR_Shutdown, because VR_Shutdown
-  // will unload OpenVR's dll, and device_ (or its render loop) are potentially
-  // still using it.
-  device_ = nullptr;
+  // We must shutdown device_ and set it to null before calling VR_Shutdown,
+  // because VR_Shutdown will unload OpenVR's dll, and device_ (or its render
+  // loop) are potentially still using it.
+  if (device_) {
+    device_->Shutdown();
+    device_ = nullptr;
+  }
+
   vr::VR_Shutdown();
 }
 

@@ -149,12 +149,22 @@ OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr)
   DCHECK(vr_system_);
   SetVRDisplayInfo(CreateVRDisplayInfo(vr_system_, GetId()));
 
-  render_loop_ = std::make_unique<OpenVRRenderLoop>();
+  render_loop_ = std::make_unique<OpenVRRenderLoop>(vr);
 
   OnPollingEvents();
 }
 
-OpenVRDevice::~OpenVRDevice() {}
+OpenVRDevice::~OpenVRDevice() {
+  Shutdown();
+}
+
+void OpenVRDevice::Shutdown() {
+  // Wait for the render loop to stop before completing destruction. This will
+  // ensure that the IVRSystem doesn't get shutdown until the render loop is no
+  // longer referencing it.
+  if (render_loop_->IsRunning())
+    render_loop_->Stop();
+}
 
 void OpenVRDevice::RequestPresent(
     VRDisplayImpl* display,
@@ -211,6 +221,7 @@ void OpenVRDevice::ExitPresent() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&OpenVRRenderLoop::ExitPresent, render_loop_->GetWeakPtr()));
+  render_loop_->Stop();
 }
 
 void OpenVRDevice::OnMagicWindowPoseRequest(
