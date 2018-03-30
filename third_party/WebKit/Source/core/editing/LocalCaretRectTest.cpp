@@ -854,4 +854,71 @@ TEST_P(ParameterizedLocalCaretRectTest, AbsoluteSelectionBoundsOfWithImage) {
   EXPECT_FALSE(rect.IsEmpty());
 }
 
+static std::pair<LayoutRect, LayoutRect> GetLayoutRects(const Position& caret) {
+  const PositionWithAffinity position(caret);
+  const LayoutRect& position_rect = LocalCaretRectOfPosition(position).rect;
+  const PositionWithAffinity visible_position(
+      CreateVisiblePosition(position).DeepEquivalent());
+  const LayoutRect& visible_position_rect =
+      LocalCaretRectOfPosition(visible_position).rect;
+  return {position_rect, visible_position_rect};
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineLTR) {
+  LoadAhem();
+  InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
+  const Position& caret =
+      SetCaretTextToBody("<pre dir='ltr'>foo\n|<bdo dir='ltr'>abc</bdo></pre>");
+  LayoutRect position_rect, visible_position_rect;
+  std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(30, 0, 1, 10) : LayoutRect(0, 0, 0, 0),
+      position_rect);
+  EXPECT_EQ(LayoutRect(0, 10, 1, 10), visible_position_rect);
+};
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineRTL) {
+  LoadAhem();
+  InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
+  const Position& caret =
+      SetCaretTextToBody("<pre dir='ltr'>foo\n|<bdo dir='rtl'>abc</bdo></pre>");
+  LayoutRect position_rect, visible_position_rect;
+  std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
+  // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(30, 0, 1, 10) : LayoutRect(0, 0, 0, 0),
+      position_rect);
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(30, 10, 1, 10) : LayoutRect(0, 10, 1, 10),
+      visible_position_rect);
+};
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineLTR) {
+  LoadAhem();
+  InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
+  const Position& caret =
+      SetCaretTextToBody("<pre dir='rtl'>foo\n|<bdo dir='ltr'>abc</bdo></pre>");
+  LayoutRect position_rect, visible_position_rect;
+  std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(270, 0, 1, 10) : LayoutRect(0, 0, 0, 0),
+      position_rect);
+  // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(270, 10, 1, 10)
+                              : LayoutRect(299, 10, 1, 10),
+            visible_position_rect);
+};
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
+  LoadAhem();
+  InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
+  const Position& caret =
+      SetCaretTextToBody("<pre dir='rtl'>foo\n|<bdo dir='rtl'>abc</bdo></pre>");
+  LayoutRect position_rect, visible_position_rect;
+  std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(270, 0, 1, 10) : LayoutRect(0, 0, 0, 0),
+      position_rect);
+  EXPECT_EQ(LayoutRect(299, 10, 1, 10), visible_position_rect);
+};
 }  // namespace blink
