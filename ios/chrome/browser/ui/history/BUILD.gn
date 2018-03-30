@@ -13,11 +13,8 @@ source_set("history") {
     "favicon_view_provider.mm",
     "history_coordinator.h",
     "history_coordinator.mm",
-    "history_entries_status_item_delegate.h",
     "history_entry_inserter.h",
     "history_entry_inserter.mm",
-    "history_entry_item_delegate.h",
-    "history_entry_item_interface.h",
     "history_panel_view_controller.h",
     "history_panel_view_controller.mm",
     "history_search_view.h",
@@ -94,14 +91,23 @@ source_set("history") {
 source_set("history_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "history_entries_status_item.h",
+    "history_entries_status_item.mm",
+    "history_entries_status_item_delegate.h",
+    "history_entry_item.h",
+    "history_entry_item.mm",
+    "history_entry_item_delegate.h",
+    "history_entry_item_interface.h",
     "history_table_container_view_controller.h",
     "history_table_container_view_controller.mm",
     "history_table_view_controller.h",
     "history_table_view_controller.mm",
   ]
   deps = [
+    "//components/history/core/browser",
     "//components/strings",
     "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view/cells",
     "//ui/base",
   ]
 }
@@ -130,6 +136,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":history",
+    ":history_ui",
     ":resources_unit_tests",
     "//base",
     "//base/test:test_support",

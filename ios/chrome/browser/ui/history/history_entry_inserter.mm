@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_interface.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
-#import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "url/gurl.h"
@@ -53,11 +52,11 @@
       [self sectionIdentifierForTimestamp:item.timestamp];
 
   NSComparator objectComparator = ^(id obj1, id obj2) {
-    LegacyHistoryEntryItem* firstObject =
-        base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(obj1);
-    LegacyHistoryEntryItem* secondObject =
-        base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(obj2);
-    if ([firstObject isEqualToHistoryEntryItem:secondObject])
+    ListItem<HistoryEntryItemInterface>* firstObject =
+        base::mac::ObjCCastStrict<ListItem<HistoryEntryItemInterface>>(obj1);
+    ListItem<HistoryEntryItemInterface>* secondObject =
+        base::mac::ObjCCastStrict<ListItem<HistoryEntryItemInterface>>(obj2);
+    if ([firstObject isEqual:secondObject])
       return NSOrderedSame;
 
     // History entries are ordered from most to least recent.

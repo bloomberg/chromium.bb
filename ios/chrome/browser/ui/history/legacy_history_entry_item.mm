@@ -122,7 +122,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
   return nil;
 }
 
-- (BOOL)isEqualToHistoryEntryItem:(LegacyHistoryEntryItem*)item {
+- (BOOL)isEqualToHistoryEntryItem:(id<HistoryEntryItemInterface>)item {
   return item && item.URL == _URL && item.timestamp == _timestamp;
 }
 
