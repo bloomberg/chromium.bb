@@ -337,5 +337,39 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
   EXPECT_EQ(GetMismatchFrames(), num_nomfmv_frames + 1);
 }
 
+// Check for ParseAbility property of an S frame.
+// Encode an S-frame. If frames are dropped before the S-frame, all frames
+// starting from the S frame should be parse-able.
+TEST_P(ErrorResilienceTestLarge, SFrameTest) {
+  // TODO(sarahparker, debargha): Make control setting work correctly for
+  // lag_in_frames > 0
+  SetupEncoder(500, 0);
+
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+                                     cfg_.g_timebase.den, cfg_.g_timebase.num,
+                                     0, 15);
+
+  SetAllowMismatch(1);
+
+  // Set an arbitrary S-frame
+  unsigned int num_s_frames = 1;
+  unsigned int s_frame_list[] = { 7 };
+  SetSFrames(num_s_frames, s_frame_list);
+
+  // Set a few frames before the S frame that are lost (not decoded)
+  unsigned int num_error_frames = 4;
+  unsigned int error_frame_list[] = { 3, 4, 5, 6 };
+  SetErrorFrames(num_error_frames, error_frame_list);
+
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  std::cout << "             Encoded frames: " << GetEncodedFrames() << "\n";
+  std::cout << "             Decoded frames: " << GetDecodedFrames() << "\n";
+  std::cout << "             Mismatch frames: " << GetMismatchFrames() << "\n";
+  EXPECT_EQ(GetEncodedFrames() - GetDecodedFrames(), num_error_frames);
+  // All frames following the S-frame and the S-frame are expected to have
+  // mismatches, but still be parse-able.
+  EXPECT_EQ(GetMismatchFrames(), GetEncodedFrames() - s_frame_list[0]);
+}
+
 AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, NONREALTIME_TEST_MODES);
 }  // namespace
