@@ -33,7 +33,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -153,21 +152,10 @@ SplitViewController::~SplitViewController() {
 
 // static
 bool SplitViewController::ShouldAllowSplitView() {
-#if defined(GOOGLE_CHROME_BUILD)
-  // Disable splitscreen on M66 stable channel unless it is explicity enabled by
-  // the user, and keep it enabled by default for all other channels on M66.
-  // It will be reverted later on M67.
-  constexpr char ChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
-  constexpr char kChromeOSStableChannelString[] = "stable-channel";
-  std::string channel;
-  if (base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &channel) &&
-      channel == kChromeOSStableChannelString &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTabletSplitView)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableTabletSplitView)) {
     return false;
   }
-#endif
-
   if (!Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled()) {
