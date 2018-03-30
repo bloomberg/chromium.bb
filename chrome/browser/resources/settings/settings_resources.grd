@@ -548,12 +548,6 @@
         <structure name="IDR_SETTINGS_DEVICE_NIGHT_LIGHT_SLIDER_JS"
                    file="device_page/night_light_slider.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_DEVICE_DISPLAY_SIZE_SLIDER_HTML"
-                   file="device_page/display_size_slider.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_DEVICE_DISPLAY_SIZE_SLIDER_JS"
-                   file="device_page/display_size_slider.js"
-                   type="chrome_html" />
 
       </if>
       <structure name="IDR_SETTINGS_DOWNLOADS_BROWSER_PROXY_HTML"

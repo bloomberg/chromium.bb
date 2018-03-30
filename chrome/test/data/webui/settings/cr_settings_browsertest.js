@@ -1874,28 +1874,3 @@ CrSettingsOnStartupPageTest.prototype = {
 TEST_F('CrSettingsOnStartupPageTest', 'All', function() {
   mocha.run();
 });
-GEN('#if defined(OS_CHROMEOS)');
-
-/**
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsDisplaySizeSliderTest() {}
-
-CrSettingsDisplaySizeSliderTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/device_page/display_size_slider.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'display_size_slider_test.js',
-  ]),
-};
-
-TEST_F('CrSettingsDisplaySizeSliderTest', 'All', function() {
-  mocha.run();
-});
-GEN('#endif  // defined(OS_CHROMEOS)');
-

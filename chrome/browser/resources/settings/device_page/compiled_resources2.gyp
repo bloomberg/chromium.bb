@@ -65,8 +65,7 @@
         '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):system_display',
         '<(INTERFACES_GYP):system_display_interface',
-        'display_layout',
-        'display_size_slider'
+        'display_layout'
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -114,19 +113,6 @@
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-behaviors/compiled_resources2.gyp:paper-inky-focus-behavior-extracted',
-        '../prefs/compiled_resources2.gyp:prefs_behavior',
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'display_size_slider',
-      'dependencies': [
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-progress/compiled_resources2.gyp:paper-progress-extracted',
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-range-behavior/compiled_resources2.gyp:iron-range-behavior-extracted',
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-behaviors/compiled_resources2.gyp:paper-inky-focus-behavior-extracted',
-        '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_pref_behavior',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

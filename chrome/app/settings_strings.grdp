@@ -3703,9 +3703,6 @@
     <message name="IDS_SETTINGS_DISPLAY_ZOOM_TITLE" desc="In Device Settings > Displays, the title for the section for changing the display's zoom.">
       Display Size
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_ZOOM_SUBLABEL" desc="In Device Settings > Displays, the text describing the display's zoom.">
-      Make items on your screen smaller or larger
-    </message>
     <message name="IDS_SETTINGS_DISPLAY_ZOOM_VALUE" desc="The currently selected display zoom percentage.">
       <ph name="DISPLAY_ZOOM">$1<ex>120</ex>%</ph>
     </message>
