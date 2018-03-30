@@ -11,6 +11,7 @@ namespace device {
 // supported.
 enum class U2fTransportProtocol {
   kUsbHumanInterfaceDevice,
+  kNearFieldCommunication,
   kBluetoothLowEnergy,
 };
 

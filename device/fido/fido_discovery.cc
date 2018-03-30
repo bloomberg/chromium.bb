@@ -22,24 +22,23 @@ namespace {
 std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
     U2fTransportProtocol transport,
     service_manager::Connector* connector) {
-  std::unique_ptr<FidoDiscovery> discovery;
   switch (transport) {
     case U2fTransportProtocol::kUsbHumanInterfaceDevice:
 #if !defined(OS_ANDROID)
       DCHECK(connector);
-      discovery = std::make_unique<FidoHidDiscovery>(connector);
+      return std::make_unique<FidoHidDiscovery>(connector);
 #else
       NOTREACHED() << "USB HID not supported on Android.";
+      return nullptr;
 #endif  // !defined(OS_ANDROID)
-      break;
     case U2fTransportProtocol::kBluetoothLowEnergy:
-      discovery = std::make_unique<FidoBleDiscovery>();
-      break;
+      return std::make_unique<FidoBleDiscovery>();
+    case U2fTransportProtocol::kNearFieldCommunication:
+      // TODO(https://crbug.com/825949): Add NFC support.
+      return nullptr;
   }
-
-  DCHECK(discovery);
-  DCHECK_EQ(discovery->transport(), transport);
-  return discovery;
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace

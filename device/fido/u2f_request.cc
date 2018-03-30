@@ -31,8 +31,8 @@ U2fRequest::U2fRequest(service_manager::Connector* connector,
   for (const auto transport : transports) {
     auto discovery = FidoDiscovery::Create(transport, connector);
     if (discovery == nullptr) {
-      // This can occur in tests when a ScopedVirtualFidoDevice is in effect and
-      // non-HID transports are configured.
+      // This can occur if the given transport is not supported, or in tests
+      // when the given transport is not configured.
       continue;
     }
     discovery->set_observer(this);
