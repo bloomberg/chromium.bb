@@ -56,7 +56,8 @@ def _is_histogram(json_file):
   return False
 
 
-def _merge_json_output(output_json, jsons_to_merge, perf_results_link):
+def _merge_json_output(output_json, jsons_to_merge, perf_results_link,
+    perf_results_file_name):
   """Merges the contents of one or more results JSONs.
 
   Args:
@@ -68,7 +69,7 @@ def _merge_json_output(output_json, jsons_to_merge, perf_results_link):
   merged_results = results_merger.merge_test_results(jsons_to_merge)
 
   merged_results['links'] = {
-    'perf results': perf_results_link
+    perf_results_file_name: perf_results_link
   }
 
   with open(output_json, 'w') as f:
@@ -152,11 +153,14 @@ def _process_perf_results(output_json, configuration_name,
             oauth_file, tmpfile_dir, logdog_dict, is_ref)
         upload_failure = upload_failure or upload_fail
 
-      logdog_file_name = 'perf_results'
+      logdog_file_name = 'Results_Dashboard'
+      if upload_failure:
+        logdog_file_name += '_Upload_Failure'
       _merge_json_output(output_json, test_results_list,
           logdog_helper.text(logdog_file_name,
               json.dumps(logdog_dict, sort_keys=True,
-                  indent=4, separators=(',', ':'))))
+                  indent=4, separators=(',', ':'))),
+          logdog_file_name.replace('_', ' '))
   finally:
     shutil.rmtree(tmpfile_dir)
   return upload_failure
@@ -187,11 +191,15 @@ def _upload_and_write_perf_data_to_logfile(benchmark_name, directory,
     logdog_dict[base_benchmark_name]['perf_results_ref'] = \
         output_json_file.get_viewer_url()
   else:
-    logdog_dict[base_benchmark_name]['dashboard_url'] = \
-        upload_results_to_perf_dashboard.GetDashboardUrl(
-            benchmark_name,
-            configuration_name, RESULTS_URL,
-            build_properties['got_revision_cp'])
+    if upload_failure:
+      logdog_dict[base_benchmark_name]['dashboard_url'] = \
+          'upload failed'
+    else:
+      logdog_dict[base_benchmark_name]['dashboard_url'] = \
+          upload_results_to_perf_dashboard.GetDashboardUrl(
+              benchmark_name,
+              configuration_name, RESULTS_URL,
+              build_properties['got_revision_cp'])
     logdog_dict[base_benchmark_name]['perf_results'] = \
         output_json_file.get_viewer_url()
 
