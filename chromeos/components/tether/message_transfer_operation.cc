@@ -8,10 +8,10 @@
 #include <set>
 
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/timer_factory.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

@@ -10,13 +10,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/device_to_device_secure_context.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/cryptauth/wire_message.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 

@@ -20,7 +20,6 @@
       <part file="password_manager_internals_resources.grdp" />
       <part file="physical_web_ui_resources.grdp" />
       <part file="printing_resources.grdp" />
-      <part file="proximity_auth_resources.grdp" />
       <part file="safe_browsing_resources.grdp" />
       <part file="security_interstitials_resources.grdp" />
       <part file="signin_resources.grdp" />

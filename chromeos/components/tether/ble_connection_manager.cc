@@ -7,13 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/ad_hoc_ble_advertiser.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace chromeos {

@@ -15,8 +15,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/login/login_state.h"
-#include "components/proximity_auth/screenlock_bridge.h"
 
 namespace proximity_auth {
 class ProximityAuthLocalStatePrefManager;

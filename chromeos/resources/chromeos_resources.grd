@@ -16,6 +16,7 @@
           file="${mojom_root}/chromeos/services/multidevice_setup/public/mojom/constants.mojom.js"
           use_base_dir="false"
           type="BINDATA" />
+      <part file="proximity_auth_resources.grdp" />
     </includes>
   </release>
 </grit>

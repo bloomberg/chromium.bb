@@ -1,7 +1,8 @@
 include_rules = [
   "+components/gcm_driver",
   "+components/prefs",
-  "+components/proximity_auth/logging",
+  # TODO(khorimoto): Remove this once CryptAuth is refactored into chromeos/.
+  "+chromeos/components/proximity_auth/logging",
   "+crypto",
   "+device/bluetooth",
   "+google_apis",

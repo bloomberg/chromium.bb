@@ -57,9 +57,9 @@ mojom("interfaces_internal") {
   ]
 
   public_deps = [
+    "//chromeos/components/proximity_auth/public/interfaces",
     "//chromeos/services/assistant/public/mojom",
     "//components/password_manager/public/interfaces",
-    "//components/proximity_auth/public/interfaces",
     "//components/signin/public/interfaces",
     "//components/sync/mojo:interfaces",
     "//mojo/common:common_custom_types",

@@ -5,6 +5,7 @@
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 
 #include "base/bind.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/pref_names.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -12,7 +13,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

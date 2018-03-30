@@ -13,13 +13,13 @@
 #include "base/base64url.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/cryptauth/sync_scheduler_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/proximity_auth/logging/logging.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace cryptauth {

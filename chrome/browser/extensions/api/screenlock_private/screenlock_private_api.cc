@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 

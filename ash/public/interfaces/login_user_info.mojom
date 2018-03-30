@@ -5,7 +5,7 @@
 module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
-import "components/proximity_auth/public/interfaces/auth_type.mojom";
+import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "mojo/common/values.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 

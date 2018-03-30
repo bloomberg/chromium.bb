@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/proximity_auth/screenlock_bridge.h"
-#include "components/proximity_auth/screenlock_state.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/screenlock_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

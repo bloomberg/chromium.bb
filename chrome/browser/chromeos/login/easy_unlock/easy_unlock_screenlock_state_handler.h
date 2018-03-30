@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/proximity_auth/screenlock_bridge.h"
-#include "components/proximity_auth/screenlock_state.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/screenlock_state.h"
 #include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {

@@ -5,10 +5,10 @@
 #include "chromeos/components/tether/active_host_network_state_updater.h"
 
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

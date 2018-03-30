@@ -19,9 +19,9 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
+#include "chromeos/components/proximity_auth/screenlock_state.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/proximity_auth/screenlock_state.h"
 
 class AccountId;
 

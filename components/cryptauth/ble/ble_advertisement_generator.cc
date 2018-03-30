@@ -7,10 +7,10 @@
 #include <memory>
 #include <vector>
 
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 

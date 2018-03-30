@@ -27,7 +27,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"

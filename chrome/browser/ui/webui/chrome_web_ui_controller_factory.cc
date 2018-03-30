@@ -154,8 +154,8 @@
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
-#include "components/proximity_auth/webui/proximity_auth_ui.h"
-#include "components/proximity_auth/webui/url_constants.h"
+#include "chromeos/components/proximity_auth/webui/proximity_auth_ui.h"
+#include "chromeos/components/proximity_auth/webui/url_constants.h"
 #endif
 
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)

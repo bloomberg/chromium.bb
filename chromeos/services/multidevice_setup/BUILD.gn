@@ -18,8 +18,8 @@ static_library("multidevice_setup") {
 
   deps = [
     "//base",
+    "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/multidevice_setup/public/mojom",
-    "//components/proximity_auth/logging",
     "//services/service_manager/public/cpp",
   ]
 }

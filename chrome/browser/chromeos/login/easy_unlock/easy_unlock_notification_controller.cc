@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"

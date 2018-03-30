@@ -25,12 +25,12 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
+#include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/proximity_auth_local_state_pref_manager.h"
-#include "components/proximity_auth/switches.h"
 
 using proximity_auth::ScreenlockState;
 

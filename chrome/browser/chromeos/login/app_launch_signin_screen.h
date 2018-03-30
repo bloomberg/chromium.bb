@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/authenticator.h"
-#include "components/proximity_auth/screenlock_bridge.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 

@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
-#include "components/proximity_auth/logging/logging.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

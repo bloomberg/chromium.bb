@@ -5,8 +5,8 @@
 module ash.mojom;
 
 import "ash/public/interfaces/login_user_info.mojom";
+import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/password_manager/public/interfaces/sync_password_data.mojom";
-import "components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
 import "mojo/common/values.mojom";
 import "mojo/public/mojom/base/string16.mojom";

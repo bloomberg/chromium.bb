@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/wire_message.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 

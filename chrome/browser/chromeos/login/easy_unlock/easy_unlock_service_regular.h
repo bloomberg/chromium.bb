@@ -15,9 +15,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/proximity_auth/screenlock_bridge.h"
 
 namespace base {
 class DictionaryValue;

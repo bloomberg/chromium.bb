@@ -5,11 +5,11 @@
 #include "chromeos/components/tether/ad_hoc_ble_advertiser_impl.h"
 
 #include "base/bind.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

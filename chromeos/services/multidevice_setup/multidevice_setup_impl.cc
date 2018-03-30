@@ -4,7 +4,7 @@
 
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 
-#include "components/proximity_auth/logging/logging.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

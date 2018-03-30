@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/tether_disconnector.h"
@@ -18,7 +19,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

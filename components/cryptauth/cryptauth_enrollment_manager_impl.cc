@@ -11,13 +11,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/cryptauth/sync_scheduler_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 
