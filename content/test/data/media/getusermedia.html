@@ -599,7 +599,7 @@
         var big_stream = new MediaStream();
         big_stream.addTrack(canvas_stream.getVideoTracks()[0]);
         big_stream.addTrack(gum_stream.getVideoTracks()[0]);
-        video.onprogress = function() {
+        video.onloadedmetadata = function() {
           assertEquals(canvas_width, video.videoWidth);
           assertEquals(canvas_height, video.videoHeight);
           assertNotEquals(video.videoWidth, gum_width)
@@ -753,7 +753,7 @@
     var video = document.createElement('video');
     video.autoplay = true;
     assertEquals(video.srcObject, null);
-    video.onprogress = () => {
+    video.onloadedmetadata = () => {
       assertEquals(video.videoWidth, canvas_width);
       assertEquals(video.videoHeight, canvas_height);
       var new_width = canvas_width - 1;
