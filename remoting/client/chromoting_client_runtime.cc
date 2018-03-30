@@ -31,19 +31,17 @@ ChromotingClientRuntime* ChromotingClientRuntime::GetInstance() {
 ChromotingClientRuntime::ChromotingClientRuntime() {
   base::TaskScheduler::CreateAndStartWithDefaultParams("Remoting");
 
-  if (!base::MessageLoop::current()) {
-    VLOG(1) << "Starting main message loop";
-    ui_loop_.reset(new base::MessageLoopForUI());
+  DCHECK(!base::MessageLoop::current());
+
+  VLOG(1) << "Starting main message loop";
+  ui_loop_.reset(new base::MessageLoopForUI());
 #if defined(OS_ANDROID)
-    // On Android, the UI thread is managed by Java, so we need to attach and
-    // start a special type of message loop to allow Chromium code to run tasks.
-    ui_loop_->Start();
+  // On Android, the UI thread is managed by Java, so we need to attach and
+  // start a special type of message loop to allow Chromium code to run tasks.
+  ui_loop_->Start();
 #elif defined(OS_IOS)
-    base::MessageLoopForUI::current()->Attach();
+  ui_loop_->Attach();
 #endif  // OS_ANDROID, OS_IOS
-  } else {
-    ui_loop_.reset(base::MessageLoopForUI::current());
-  }
 
 #if defined(DEBUG)
   net::URLFetcher::SetIgnoreCertificateRequests(true);
