@@ -38,5 +38,6 @@ console.assert(keys(window).indexOf('__commandLineAPI') === -1)
 undefined
 
 queryObjects(Foo)
-[Foo]
+undefined
+Array(1)
 
