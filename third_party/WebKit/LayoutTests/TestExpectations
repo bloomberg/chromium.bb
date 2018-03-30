@@ -1300,8 +1300,6 @@ crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-006.html [ Failure ]
 crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-006a.html [ Failure ]
 
-crbug.com/825349 http/tests/devtools/console/command-line-api.js [ Skip ]
-
 crbug.com/752449 [ Mac10.12 Mac10.13 Retina ] external/wpt/css/css-fonts/matching/fixed-stretch-style-over-weight.html [ Failure ]
 crbug.com/752449 [ Mac10.12 Retina ] external/wpt/css/css-fonts/matching/stretch-distance-over-weight-distance.html [ Failure ]
 crbug.com/752449 [ Mac10.12 Retina ] external/wpt/css/css-fonts/matching/style-ranges-over-weight-direction.html [ Failure ]
