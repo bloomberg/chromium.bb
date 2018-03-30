@@ -218,6 +218,18 @@ specialize qw/aom_smooth_h_predictor_8x4 ssse3/;
 specialize qw/aom_smooth_h_predictor_8x8 ssse3/;
 specialize qw/aom_smooth_h_predictor_8x16 ssse3/;
 specialize qw/aom_smooth_h_predictor_8x32 ssse3/;
+specialize qw/aom_smooth_h_predictor_16x4 ssse3/;
+specialize qw/aom_smooth_h_predictor_16x8 ssse3/;
+specialize qw/aom_smooth_h_predictor_16x16 ssse3/;
+specialize qw/aom_smooth_h_predictor_16x32 ssse3/;
+specialize qw/aom_smooth_h_predictor_16x64 ssse3/;
+specialize qw/aom_smooth_h_predictor_32x8 ssse3/;
+specialize qw/aom_smooth_h_predictor_32x16 ssse3/;
+specialize qw/aom_smooth_h_predictor_32x32 ssse3/;
+specialize qw/aom_smooth_h_predictor_32x64 ssse3/;
+specialize qw/aom_smooth_h_predictor_64x64 ssse3/;
+specialize qw/aom_smooth_h_predictor_64x32 ssse3/;
+specialize qw/aom_smooth_h_predictor_64x16 ssse3/;
 
 # TODO(yunqingwang): optimize rectangular DC_PRED to replace division
 # by multiply and shift.
