@@ -102,7 +102,7 @@ Polymer({
     /** @private {!Array<number>} Mode index values for slider. */
     modeValues_: Array,
 
-    /** @private {!Array<number>} Display zoom percentage values for slider */
+    /** @private {SliderTicks} Display zoom slider tick values. */
     zoomValues_: Array,
 
     /** @private {!DropdownMenuOptionList} */
@@ -183,6 +183,7 @@ Polymer({
     'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
         ' prefs.ash.night_light.enabled.*)',
     'onSelectedModeChange_(selectedModePref_.value)',
+    'onSelectedZoomChange_(selectedZoomPref_.value)',
   ],
 
   /** @private {number} Selected mode index received from chrome. */
@@ -315,32 +316,35 @@ Polymer({
    */
   getSelectedDisplayZoom_: function(selectedDisplay) {
     const selectedZoom = selectedDisplay.displayZoomFactor * 100;
-    let closestMatch = this.zoomValues_[0];
+    let closestMatch = this.zoomValues_[0].value;
     let minimumDiff = Math.abs(closestMatch - selectedZoom);
 
     for (let i = 0; i < this.zoomValues_.length; i++) {
-      const currentDiff = Math.abs(this.zoomValues_[i] - selectedZoom);
+      const currentDiff = Math.abs(this.zoomValues_[i].value - selectedZoom);
       if (currentDiff < minimumDiff) {
-        closestMatch = this.zoomValues_[i];
+        closestMatch = this.zoomValues_[i].value;
         minimumDiff = currentDiff;
       }
     }
 
-    return closestMatch;
+    return /** @type {number} */ (closestMatch);
   },
 
   /**
    * Given the display with the current display mode, this function lists all
-   * the display zoom values in percentage.
+   * the display zoom values and their labels to be used by the slider.
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
-   * @return {!Array<number>}
+   * @return {SliderTicks}
    */
   getZoomValues_: function(selectedDisplay) {
+    /** @type {SliderTicks} */
     let zoomValues = [];
     for (let i = 0; i < selectedDisplay.availableDisplayZoomFactors.length;
          i++) {
-      zoomValues.push(
-          Math.round(selectedDisplay.availableDisplayZoomFactors[i] * 100));
+      const value =
+          Math.round(selectedDisplay.availableDisplayZoomFactors[i] * 100);
+      const label = this.i18n('displayZoomValue', value.toString());
+      zoomValues.push({value: value, label: label});
     }
     return zoomValues;
   },
@@ -565,16 +569,6 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
-   * @return {string}
-   * @private
-   */
-  getDisplayZoomText_: function(selectedDisplay) {
-    return this.i18n(
-        'displayZoomValue', this.selectedZoomPref_.value.toString());
-  },
-
-  /**
    * @param {!{detail: string}} e |e.detail| is the id of the selected display.
    * @private
    */
@@ -663,10 +657,14 @@ Polymer({
    * @private
    */
   onSelectedZoomChange_: function() {
+    if (this.currentSelectedModeIndex_ == -1 || !this.selectedDisplay)
+      return;
+
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       displayZoomFactor:
           /** @type {number} */ (this.selectedZoomPref_.value) / 100.0
     };
+
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,
         this.setPropertiesCallback_.bind(this));
