@@ -245,6 +245,8 @@ class VariationsService
     LOAD_COUNTRY_MAX,
   };
 
+  void InitResourceRequestedAllowedNotifier();
+
   // Attempts a seed fetch from the set |url|. Returns true if the fetch was
   // started successfully, false otherwise. |is_http_retry| should be true if
   // this is a retry over HTTP, false otherwise.
