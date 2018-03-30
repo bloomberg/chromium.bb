@@ -27,6 +27,7 @@
 #include "components/cryptauth/cryptauth_enrollment_manager_impl.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
+#include "components/cryptauth/device_classifier_util.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -58,26 +59,6 @@ std::string GetDeviceId() {
   return device_id;
 }
 
-cryptauth::DeviceClassifier GetDeviceClassifierImpl() {
-  cryptauth::DeviceClassifier device_classifier;
-
-  int32_t major_version;
-  int32_t minor_version;
-  int32_t bugfix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  device_classifier.set_device_os_version_code(major_version);
-  device_classifier.set_device_type(cryptauth::CHROME);
-
-  const std::vector<uint32_t> version_components =
-      base::Version(version_info::GetVersionNumber()).components();
-  if (!version_components.empty())
-    device_classifier.set_device_software_version_code(version_components[0]);
-
-  device_classifier.set_device_software_package(version_info::GetProductName());
-  return device_classifier;
-}
-
 cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
   cryptauth::GcmDeviceInfo device_info;
   device_info.set_long_device_id(GetDeviceId());
@@ -105,7 +86,8 @@ CreateCryptAuthClientFactoryImpl(Profile* profile) {
   return std::make_unique<cryptauth::CryptAuthClientFactoryImpl>(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId(),
-      profile->GetRequestContext(), GetDeviceClassifierImpl());
+      profile->GetRequestContext(),
+      cryptauth::device_classifier_util::GetDeviceClassifier());
 }
 
 std::unique_ptr<cryptauth::SecureMessageDelegate>
@@ -233,7 +215,7 @@ ChromeCryptAuthService::GetCryptAuthEnrollmentManager() {
 }
 
 cryptauth::DeviceClassifier ChromeCryptAuthService::GetDeviceClassifier() {
-  return GetDeviceClassifierImpl();
+  return cryptauth::device_classifier_util::GetDeviceClassifier();
 }
 
 std::string ChromeCryptAuthService::GetAccountId() {
