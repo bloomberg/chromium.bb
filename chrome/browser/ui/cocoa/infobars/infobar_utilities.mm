@@ -6,8 +6,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
-#include "chrome/browser/ui/infobar_container_delegate.h"
 #import "components/infobars/core/infobar.h"
 #import "ui/base/cocoa/nsview_additions.h"
 
@@ -48,21 +46,6 @@ void MoveControl(NSView* anchor, NSView* toMove, int spacing, bool after) {
         spacing - NSWidth(toMoveFrame);
   }
   [toMove setFrame:toMoveFrame];
-}
-
-// Vertically center |toMove| in its container.
-void VerticallyCenterView(NSView* toMove) {
-  NSRect superViewFrame = [[toMove superview] frame];
-  NSRect viewFrame = [toMove frame];
-  // If the superview is the infobar view, then subtract out the anti-spoof
-  // height so that the content is centered in the content area of the infobar,
-  // rather than in the total height (which includes the bulge).
-  CGFloat superHeight = NSHeight(superViewFrame);
-  if ([[toMove superview] isKindOfClass:[InfoBarGradientView class]])
-    superHeight = InfoBarContainerDelegate::kDefaultBarTargetHeight;
-  viewFrame.origin.y =
-      floor((superHeight - NSHeight(viewFrame)) / 2.0);
-  [toMove setFrame:viewFrame];
 }
 
 // Creates a label control in the style we need for the infobar's labels
