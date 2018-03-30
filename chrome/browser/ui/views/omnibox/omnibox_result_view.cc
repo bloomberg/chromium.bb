@@ -123,7 +123,8 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       suggestion_separator_view_(AddOmniboxTextView(font_list)),
       keyword_icon_view_(AddOmniboxImageView()),
       keyword_content_view_(AddOmniboxTextView(font_list)),
-      keyword_description_view_(AddOmniboxTextView(font_list)) {
+      keyword_description_view_(AddOmniboxTextView(font_list)),
+      keyword_separator_view_(AddOmniboxTextView(font_list)) {
   CHECK_GE(model_index, 0);
 
   keyword_icon_view_->EnableCanvasFlippingForRTLUI(true);
@@ -207,6 +208,8 @@ void OmniboxResultView::Invalidate() {
       l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
   suggestion_separator_view_->SetText(separator);
   suggestion_separator_view_->Dim();
+  keyword_separator_view_->SetText(separator);
+  keyword_separator_view_->Dim();
 
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
   keyword_content_view_->SetVisible(keyword_match);
@@ -445,6 +448,7 @@ void OmniboxResultView::Layout() {
   if (IsTwoLineLayout())
     row_height += match_.answer ? GetAnswerHeight() : GetTextHeight();
   suggestion_separator_view_->SetVisible(false);
+  keyword_separator_view_->SetVisible(false);
 
   // TODO(dschuyler): Refactor these if/else's into separate pieces of code to
   // improve readability/maintainability.
@@ -466,7 +470,7 @@ void OmniboxResultView::Layout() {
     int description_width =
         keyword_description_view_->CalculatePreferredSize().width();
     OmniboxPopupModel::ComputeMatchMaxWidths(
-        content_width, suggestion_separator_view_->width(), description_width,
+        content_width, keyword_separator_view_->width(), description_width,
         width(),
         /*description_on_separate_line=*/false,
         !AutocompleteMatch::IsSearchType(match_.type), &content_width,
@@ -475,10 +479,10 @@ void OmniboxResultView::Layout() {
     keyword_content_view_->SetBounds(kw_x, y, content_width, text_height);
     if (description_width != 0) {
       kw_x += keyword_content_view_->width();
-      suggestion_separator_view_->SetVisible(true);
-      suggestion_separator_view_->SetBounds(
-          kw_x, y, suggestion_separator_view_->width(), text_height);
-      kw_x += suggestion_separator_view_->width();
+      keyword_separator_view_->SetVisible(true);
+      keyword_separator_view_->SetBounds(
+          kw_x, y, keyword_separator_view_->width(), text_height);
+      kw_x += keyword_separator_view_->width();
       keyword_description_view_->SetBounds(kw_x, y, description_width,
                                            text_height);
     } else if (IsTwoLineLayout()) {
