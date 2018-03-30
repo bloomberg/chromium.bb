@@ -308,8 +308,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
 
-  bool can_use_slices() const { return can_use_slices_; }
-
   bool session_unblocks_stream() const { return session_unblocks_stream_; }
 
   bool register_streams_early() const { return register_streams_early_; }
@@ -548,10 +546,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   bool goaway_received_;
 
   QuicControlFrameManager control_frame_manager_;
-
-  // QUIC stream can take ownership of application data provided in reference
-  // counted memory to avoid data copy.
-  const bool can_use_slices_;
 
   // TODO(fayang): switch to linked_hash_set when chromium supports it. The bool
   // is not used here.

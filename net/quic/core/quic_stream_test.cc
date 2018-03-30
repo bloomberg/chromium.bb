@@ -967,9 +967,6 @@ TEST_F(QuicStreamTest, WriteMemSlices) {
   set_initial_flow_control_window_bytes(500000);
 
   Initialize(kShouldProcessData);
-  if (!session_->can_use_slices()) {
-    return;
-  }
   char data[1024];
   std::vector<std::pair<char*, size_t>> buffers;
   buffers.push_back(std::make_pair(data, QUIC_ARRAYSIZE(data)));
@@ -1032,9 +1029,6 @@ TEST_F(QuicStreamTest, WriteMemSlices) {
 TEST_F(QuicStreamTest, WriteMemSlicesReachStreamLimit) {
   SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize(kShouldProcessData);
-  if (!session_->can_use_slices()) {
-    return;
-  }
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - 5u, stream_);
   char data[5];
   std::vector<std::pair<char*, size_t>> buffers;

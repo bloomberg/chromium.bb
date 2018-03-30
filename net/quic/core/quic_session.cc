@@ -59,7 +59,6 @@ QuicSession::QuicSession(QuicConnection* connection,
       goaway_sent_(false),
       goaway_received_(false),
       control_frame_manager_(this),
-      can_use_slices_(GetQuicReloadableFlag(quic_use_mem_slices)),
       session_unblocks_stream_(
           GetQuicReloadableFlag(quic_streams_unblocked_by_session2)),
       register_streams_early_(
