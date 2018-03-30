@@ -43,7 +43,6 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
-#include "ios/web/navigation/placeholder_navigation_util.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
@@ -121,10 +120,11 @@ using web::WebStateImpl;
 
 namespace {
 
-using web::placeholder_navigation_util::IsPlaceholderUrl;
-using web::placeholder_navigation_util::CreatePlaceholderUrlForUrl;
-using web::placeholder_navigation_util::ExtractUrlFromPlaceholderUrl;
+using web::wk_navigation_util::IsPlaceholderUrl;
+using web::wk_navigation_util::CreatePlaceholderUrlForUrl;
+using web::wk_navigation_util::ExtractUrlFromPlaceholderUrl;
 using web::wk_navigation_util::IsRestoreSessionUrl;
+using web::wk_navigation_util::IsWKInternalUrl;
 
 // Struct to capture data about a user interaction. Records the time of the
 // interaction and the main document URL at that time.
@@ -1196,8 +1196,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // it can be implemented using NavigationManager API after removal of legacy
   // navigation stack.
   GURL webViewURL = net::GURLWithNSURL(_webView.URL);
-  if (_webView && !IsPlaceholderUrl(webViewURL) &&
-      !IsRestoreSessionUrl(webViewURL)) {
+  if (_webView && !IsWKInternalUrl(webViewURL)) {
     return [self webURLWithTrustLevel:trustLevel];
   }
   // Any non-web URL source is trusted.
@@ -2080,9 +2079,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self restoreStateFromHistory];
   // Placeholder and restore session URLs are implementation details so should
   // not notify WebStateObservers.
-  bool isInternalURL = context && (IsPlaceholderUrl(context->GetUrl()) ||
-                                   IsRestoreSessionUrl(context->GetUrl()));
-  if (!isInternalURL) {
+  if (!context || !IsWKInternalUrl(context->GetUrl())) {
     _webStateImpl->SetIsLoading(false);
     _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
   }

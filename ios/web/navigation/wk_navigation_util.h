@@ -2,7 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file contains utility functions for WKBasedNavigationManagerImpl.
+// This file contains utility functions for creating and managing magic URLs
+// used to implement WKBasedNavigationManagerImpl.
+//
+// A restore session URL is a specific local file that is used to inject history
+// into a new web view. See ios/web/navigation/resources/restore_session.html.
+//
+// A placeholder navigation is an "about:blank" page loaded into the WKWebView
+// that corresponds to Native View or WebUI URL. This navigation is inserted to
+// generate a WKBackForwardListItem for the Native View or WebUI URL in the
+// WebView so that the WKBackForwardList contains the full list of user-visible
+// navigations. See "Handling App-specific URLs" section in
+// go/bling-navigation-experiment for more details.
 
 #ifndef IOS_WEB_NAVIGATION_WK_NAVIGATION_UTIL_H_
 #define IOS_WEB_NAVIGATION_WK_NAVIGATION_UTIL_H_
@@ -24,6 +35,9 @@ extern const char kRestoreSessionSessionQueryKey[];
 
 // Query parameter key used to encode target URL in a restore_session.html URL.
 extern const char kRestoreSessionTargetUrlQueryKey[];
+
+// Returns true if |url| is a placeholder URL or restore_session.html URL.
+bool IsWKInternalUrl(const GURL& url);
 
 // Returns a file:// URL that points to the magic restore_session.html file.
 // This is used in unit tests.
@@ -52,6 +66,16 @@ GURL CreateRedirectUrl(const GURL& target_url);
 // |restore_session_url| to |target_url| and returns true. If no such query
 // component exists, returns false.
 bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url);
+
+// Returns true if |URL| is a placeholder navigation URL.
+bool IsPlaceholderUrl(const GURL& url);
+
+// Creates the URL for the placeholder navigation required for Native View and
+// WebUI URLs.
+GURL CreatePlaceholderUrlForUrl(const GURL& original_url);
+
+// Extracts the original URL from the placeholder URL.
+GURL ExtractUrlFromPlaceholderUrl(const GURL& url);
 
 }  // namespace wk_navigation_util
 }  // namespace web

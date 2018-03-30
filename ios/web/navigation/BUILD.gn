@@ -60,8 +60,6 @@ source_set("core") {
     "navigation_manager_impl.mm",
     "navigation_manager_util.h",
     "navigation_manager_util.mm",
-    "placeholder_navigation_util.h",
-    "placeholder_navigation_util.mm",
     "wk_navigation_util.h",
     "wk_navigation_util.mm",
   ]
