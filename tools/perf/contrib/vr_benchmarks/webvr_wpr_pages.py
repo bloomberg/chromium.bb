@@ -92,7 +92,7 @@ class WebVrWprPageSet(story.StorySet):
     # opening when you enter VR, but we're still viewing a relatively complex
     # WebGL scene, so it's still useful for perf testing
     def UnderNeonLightsInteraction(action_runner, _):
-      action_runner.WaitForNetworkQuiescence()
+      action_runner.WaitForNetworkQuiescence(timeout_in_seconds=30)
       # The VR button doesn't have any unique ID or anything, so instead select
       # based on the unique text in a child div
       action_runner.WaitForElement(text='Start in VR')
