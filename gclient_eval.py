@@ -495,7 +495,8 @@ def RenderDEPSFile(gclient_dict):
 
 def _UpdateAstString(tokens, node, value):
   position = node.lineno, node.col_offset
-  tokens[position][1] = repr(value)
+  quote_char = tokens[position][1][0]
+  tokens[position][1] = quote_char + value + quote_char
   node.s = value
 
 
@@ -554,6 +555,37 @@ def SetCIPD(gclient_dict, dep_name, package_name, new_version):
 
 
 def SetRevision(gclient_dict, dep_name, new_revision):
+  def _GetVarName(node):
+    if isinstance(node, ast.Call):
+      return node.args[0].s
+    elif node.s.endswith('}'):
+      last_brace = node.s.rfind('{')
+      return node.s[last_brace+1:-1]
+    return None
+
+  def _UpdateRevision(dep_dict, dep_key, new_revision):
+    dep_node = dep_dict.GetNode(dep_key)
+    if dep_node is None:
+      raise ValueError(
+          "The deps entry for %s has no formatting information." % dep_name)
+
+    node = dep_node
+    if isinstance(node, ast.BinOp):
+      node = node.right
+
+    if not isinstance(node, ast.Call) and not isinstance(node, ast.Str):
+      raise ValueError(
+          "Unsupported dependency revision format. Please file a bug.")
+
+    var_name = _GetVarName(node)
+    if var_name is not None:
+      SetVar(gclient_dict, var_name, new_revision)
+    else:
+      if '@' in node.s:
+        new_revision = node.s.split('@')[0] + '@' + new_revision
+      _UpdateAstString(tokens, node, new_revision)
+      dep_dict.SetNode(dep_key, new_revision, node)
+
   if not isinstance(gclient_dict, _NodeDict) or gclient_dict.tokens is None:
     raise ValueError(
         "Can't use SetRevision for the given gclient dict. It contains no "
@@ -564,24 +596,7 @@ def SetRevision(gclient_dict, dep_name, new_revision):
     raise ValueError(
         "Could not find any dependency called %s." % dep_name)
 
-  def _UpdateRevision(dep_dict, dep_key):
-    dep_node = dep_dict.GetNode(dep_key)
-    if dep_node is None:
-      raise ValueError(
-          "The deps entry for %s has no formatting information." % dep_name)
-
-    node = dep_node
-    if isinstance(node, ast.BinOp):
-      node = node.right
-    if isinstance(node, ast.Call):
-      SetVar(gclient_dict, node.args[0].s, new_revision)
-    else:
-      _UpdateAstString(tokens, node, new_revision)
-      value = _gclient_eval(dep_node, gclient_dict.get('vars', None),
-                            expand_vars=True, filename='<unknown>')
-      dep_dict.SetNode(dep_key, value, dep_node)
-
   if isinstance(gclient_dict['deps'][dep_name], _NodeDict):
-    _UpdateRevision(gclient_dict['deps'][dep_name], 'url')
+    _UpdateRevision(gclient_dict['deps'][dep_name], 'url', new_revision)
   else:
-    _UpdateRevision(gclient_dict['deps'], dep_name)
+    _UpdateRevision(gclient_dict['deps'], dep_name, new_revision)

@@ -8,7 +8,6 @@ import itertools
 import logging
 import os
 import sys
-import textwrap
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -17,44 +16,6 @@ from third_party import schema
 
 import gclient
 import gclient_eval
-
-
-_SAMPLE_DEPS_FILE = textwrap.dedent("""\
-vars = {
-    'git_repo': 'https://example.com/repo.git',
-     # Some comment with bad indentation
-     'dep_2_rev': '1ced',
- # Some more comments with bad indentation
-   # and trailing whitespaces  """ + """
-   'dep_3_rev': '5p1e5',
-}
-
-deps = {
-    'src/dep': Var('git_repo') + '/dep' + '@' + 'deadbeef',
-    # Some comment
-    'src/android/dep_2': {
-        'url': Var('git_repo') + '/dep_2' + '@' + Var('dep_2_rev'),
-        'condition': 'checkout_android',
-    },
-
-    'src/dep_3': Var('git_repo') + '/dep_3@' + Var('dep_3_rev'),
-
-    'src/cipd/package': {
-        'packages': [
-            {
-                'package': 'some/cipd/package',
-                'version': 'version:1234',
-            },
-            {
-                'package': 'another/cipd/package',
-                'version': 'version:5678',
-            },
-        ],
-        'condition': 'checkout_android',
-        'dep_type': 'cipd',
-    },
-}
-""")
 
 
 class GClientEvalTest(unittest.TestCase):
@@ -277,51 +238,226 @@ class EvaluateConditionTest(unittest.TestCase):
 
 class SetVarTest(unittest.TestCase):
   def test_sets_var(self):
-    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE, True)
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '  "foo": "bar",',
+        '}',
+    ]))
 
-    gclient_eval.SetVar(local_scope, 'dep_2_rev', 'c0ffee')
+    gclient_eval.SetVar(local_scope, 'foo', 'baz')
     result = gclient_eval.RenderDEPSFile(local_scope)
 
-    self.assertEqual(
-        result,
-        _SAMPLE_DEPS_FILE.replace('1ced', 'c0ffee'))
+    self.assertEqual(result, '\n'.join([
+        'vars = {',
+        '  "foo": "baz",',
+        '}',
+    ]))
+
+  def test_preserves_formatting(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '   # Comment with trailing space ',
+        ' "foo": \'bar\',',
+        '}',
+    ]))
+
+    gclient_eval.SetVar(local_scope, 'foo', 'baz')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, '\n'.join([
+        'vars = {',
+        '   # Comment with trailing space ',
+        ' "foo": \'baz\',',
+        '}',
+    ]))
+
 
 
 class SetCipdTest(unittest.TestCase):
   def test_sets_cipd(self):
-    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE, True)
+    local_scope = gclient_eval.Exec('\n'.join([
+        'deps = {',
+        '    "src/cipd/package": {',
+        '        "packages": [',
+        '            {',
+        '                "package": "some/cipd/package",',
+        '                "version": "version:1234",',
+        '            },',
+        '            {',
+        '                "package": "another/cipd/package",',
+        '                "version": "version:5678",',
+        '            },',
+        '        ],',
+        '        "condition": "checkout_android",',
+        '        "dep_type": "cipd",',
+        '    },',
+        '}',
+    ]))
 
     gclient_eval.SetCIPD(
         local_scope, 'src/cipd/package', 'another/cipd/package', '6.789')
     result = gclient_eval.RenderDEPSFile(local_scope)
 
-    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('5678', '6.789'))
+    self.assertEqual(result, '\n'.join([
+        'deps = {',
+        '    "src/cipd/package": {',
+        '        "packages": [',
+        '            {',
+        '                "package": "some/cipd/package",',
+        '                "version": "version:1234",',
+        '            },',
+        '            {',
+        '                "package": "another/cipd/package",',
+        '                "version": "version:6.789",',
+        '            },',
+        '        ],',
+        '        "condition": "checkout_android",',
+        '        "dep_type": "cipd",',
+        '    },',
+        '}',
+    ]))
 
 
 class SetRevisionTest(unittest.TestCase):
-  def setUp(self):
-    self.local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE, True)
+  def assert_changes_revision(self, before, after):
+    local_scope = gclient_eval.Exec('\n'.join(before))
+    gclient_eval.SetRevision(local_scope, 'src/dep', 'deadfeed')
+    self.assertEqual('\n'.join(after), gclient_eval.RenderDEPSFile(local_scope))
 
   def test_sets_revision(self):
-    gclient_eval.SetRevision(
-        self.local_scope, 'src/dep', 'deadfeed')
-    result = gclient_eval.RenderDEPSFile(self.local_scope)
+    before = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@deadbeef",',
+        '}',
+    ]
+    after = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@deadfeed",',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
 
-    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('deadbeef', 'deadfeed'))
+  def test_sets_revision_new_line(self):
+    before = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@"',
+        '             + "deadbeef",',
+        '}',
+    ]
+    after = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@"',
+        '             + "deadfeed",',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
 
   def test_sets_revision_inside_dict(self):
-    gclient_eval.SetRevision(
-        self.local_scope, 'src/dep_3', '0ff1ce')
-    result = gclient_eval.RenderDEPSFile(self.local_scope)
+    before = [
+        'deps = {',
+        '  "src/dep": {',
+        '    "url": "https://example.com/dep.git@deadbeef",',
+        '    "condition": "some_condition",',
+        '  },',
+        '}',
+    ]
+    after = [
+        'deps = {',
+        '  "src/dep": {',
+        '    "url": "https://example.com/dep.git@deadfeed",',
+        '    "condition": "some_condition",',
+        '  },',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
 
-    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('5p1e5', '0ff1ce'))
+  def test_follows_var_braces(self):
+    before = [
+        'vars = {',
+        '  "dep_revision": "deadbeef",',
+        '}',
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@{dep_revision}",',
+        '}',
+    ]
+    after = [
+        'vars = {',
+        '  "dep_revision": "deadfeed",',
+        '}',
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@{dep_revision}",',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
 
-  def test_sets_revision_in_vars(self):
-    gclient_eval.SetRevision(
-        self.local_scope, 'src/android/dep_2', 'c0ffee')
-    result = gclient_eval.RenderDEPSFile(self.local_scope)
+  def test_follows_var_braces_newline(self):
+    before = [
+        'vars = {',
+        '  "dep_revision": "deadbeef",',
+        '}',
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git"',
+        '             + "@{dep_revision}",',
+        '}',
+    ]
+    after = [
+        'vars = {',
+        '  "dep_revision": "deadfeed",',
+        '}',
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git"',
+        '             + "@{dep_revision}",',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
 
-    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('1ced', 'c0ffee'))
+  def test_follows_var_function(self):
+    before = [
+        'vars = {',
+        '  "dep_revision": "deadbeef",',
+        '}',
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@" + Var("dep_revision"),',
+        '}',
+    ]
+    after = [
+        'vars = {',
+        '  "dep_revision": "deadfeed",',
+        '}',
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@" + Var("dep_revision"),',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
+
+  def test_preserves_formatting(self):
+    before = [
+        'vars = {',
+        ' # Some coment on deadbeef ',
+        '  "dep_revision": "deadbeef",',
+        '}',
+        'deps = {',
+        '  "src/dep": {',
+        '    "url": "https://example.com/dep.git@" + Var("dep_revision"),',
+        '',
+        '    "condition": "some_condition",',
+        ' },',
+        '}',
+    ]
+    after = [
+        'vars = {',
+        ' # Some coment on deadbeef ',
+        '  "dep_revision": "deadfeed",',
+        '}',
+        'deps = {',
+        '  "src/dep": {',
+        '    "url": "https://example.com/dep.git@" + Var("dep_revision"),',
+        '',
+        '    "condition": "some_condition",',
+        ' },',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
 
 
 class ParseTest(unittest.TestCase):
