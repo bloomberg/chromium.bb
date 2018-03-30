@@ -47,6 +47,7 @@
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
  *   MANAGE_PASSWORDS: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
+ *   MANAGE_TTS_SETTINGS: (undefined|!settings.Route),
  *   MULTIDEVICE: (undefined|!settings.Route),
  *   NETWORK_DETAIL: (undefined|!settings.Route),
  *   ON_STARTUP: (undefined|!settings.Route),
@@ -384,6 +385,8 @@ cr.define('settings', function() {
       // <if expr="chromeos">
       r.MANAGE_ACCESSIBILITY =
           r.ACCESSIBILITY.createChild('/manageAccessibility');
+      r.MANAGE_TTS_SETTINGS =
+          r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
       // </if>
 
       r.SYSTEM = r.ADVANCED.createSection('/system', 'system');

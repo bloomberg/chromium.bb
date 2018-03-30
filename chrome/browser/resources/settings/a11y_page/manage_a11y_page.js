@@ -99,6 +99,11 @@ Polymer({
   },
 
   /** @private */
+  onManageTtsSettingsTap_: function() {
+    settings.navigateTo(settings.routes.MANAGE_TTS_SETTINGS);
+  },
+
+  /** @private */
   onChromeVoxSettingsTap_: function() {
     chrome.send('showChromeVoxSettings');
   },

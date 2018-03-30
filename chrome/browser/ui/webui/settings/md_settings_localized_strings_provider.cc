@@ -246,6 +246,14 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"audioHeading", IDS_SETTINGS_ACCESSIBILITY_AUDIO_HEADING},
     {"additionalFeaturesTitle",
      IDS_SETTINGS_ACCESSIBILITY_ADDITIONAL_FEATURES_TITLE},
+    {"manageTtsSettings", IDS_SETTINGS_MANAGE_TTS_SETTINGS},
+    {"ttsSettingsLinkDescription", IDS_SETTINGS_TTS_LINK_DESCRIPTION},
+    {"textToSpeechVoices", IDS_SETTINGS_TEXT_TO_SPEECH_VOICES},
+    {"textToSpeechProperties", IDS_SETTINGS_TEXT_TO_SPEECH_PROPERTIES},
+    {"textToSpeechRate", IDS_SETTINGS_TEXT_TO_SPEECH_RATE},
+    {"textToSpeechPitch", IDS_SETTINGS_TEXT_TO_SPEECH_PITCH},
+    {"textToSpeechEngines", IDS_SETTINGS_TEXT_TO_SPEECH_ENGINES},
+    {"textToSpeechInstallEngines", IDS_SETTINGS_TEXT_TO_SPEECH_INSTALL_ENGINES},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
