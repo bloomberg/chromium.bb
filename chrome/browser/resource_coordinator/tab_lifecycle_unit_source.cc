@@ -14,12 +14,38 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace resource_coordinator {
 
 namespace {
 TabLifecycleUnitSource* instance_ = nullptr;
 }  // namespace
+
+// Allows storage of a TabLifecycleUnit on a WebContents.
+class TabLifecycleUnitSource::TabLifecycleUnitHolder
+    : public content::WebContentsUserData<
+          TabLifecycleUnitSource::TabLifecycleUnitHolder> {
+ public:
+  ~TabLifecycleUnitHolder() override = default;
+
+  TabLifecycleUnit* lifecycle_unit() const { return lifecycle_unit_.get(); }
+  void set_lifecycle_unit(std::unique_ptr<TabLifecycleUnit> lifecycle_unit) {
+    lifecycle_unit_ = std::move(lifecycle_unit);
+  }
+  std::unique_ptr<TabLifecycleUnit> TakeTabLifecycleUnit() {
+    return std::move(lifecycle_unit_);
+  }
+
+ private:
+  friend class content::WebContentsUserData<TabLifecycleUnitHolder>;
+
+  explicit TabLifecycleUnitHolder(content::WebContents*) {}
+
+  std::unique_ptr<TabLifecycleUnit> lifecycle_unit_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitHolder);
+};
 
 TabLifecycleUnitSource::TabLifecycleUnitSource()
     : browser_tab_strip_tracker_(this, nullptr, this) {
@@ -41,10 +67,7 @@ TabLifecycleUnitSource* TabLifecycleUnitSource::GetInstance() {
 
 TabLifecycleUnitExternal* TabLifecycleUnitSource::GetTabLifecycleUnitExternal(
     content::WebContents* web_contents) const {
-  auto it = tabs_.find(web_contents);
-  if (it == tabs_.end())
-    return nullptr;
-  return it->second.get();
+  return GetTabLifecycleUnit(web_contents);
 }
 
 void TabLifecycleUnitSource::AddTabLifecycleObserver(
@@ -63,6 +86,15 @@ void TabLifecycleUnitSource::SetFocusedTabStripModelForTesting(
   UpdateFocusedTab();
 }
 
+TabLifecycleUnitSource::TabLifecycleUnit*
+TabLifecycleUnitSource::GetTabLifecycleUnit(
+    content::WebContents* web_contents) const {
+  auto* holder = TabLifecycleUnitHolder::FromWebContents(web_contents);
+  if (holder)
+    return holder->lifecycle_unit();
+  return nullptr;
+}
+
 TabStripModel* TabLifecycleUnitSource::GetFocusedTabStripModel() const {
   if (focused_tab_strip_model_for_testing_)
     return focused_tab_strip_model_for_testing_;
@@ -77,34 +109,41 @@ void TabLifecycleUnitSource::UpdateFocusedTab() {
   content::WebContents* const focused_web_contents =
       focused_tab_strip_model ? focused_tab_strip_model->GetActiveWebContents()
                               : nullptr;
-  DCHECK(!focused_web_contents ||
-         base::ContainsKey(tabs_, focused_web_contents));
-  UpdateFocusedTabTo(focused_web_contents ? tabs_[focused_web_contents].get()
-                                          : nullptr);
+  TabLifecycleUnit* focused_lifecycle_unit =
+      focused_web_contents ? GetTabLifecycleUnit(focused_web_contents)
+                           : nullptr;
+  DCHECK(!focused_web_contents || focused_lifecycle_unit);
+  UpdateFocusedTabTo(focused_lifecycle_unit);
 }
 
 void TabLifecycleUnitSource::UpdateFocusedTabTo(
-    TabLifecycleUnit* new_focused_tab_lifecycle_unit) {
-  if (new_focused_tab_lifecycle_unit == focused_tab_lifecycle_unit_)
+    TabLifecycleUnit* new_focused_lifecycle_unit) {
+  if (new_focused_lifecycle_unit == focused_lifecycle_unit_)
     return;
-  if (focused_tab_lifecycle_unit_)
-    focused_tab_lifecycle_unit_->SetFocused(false);
-  if (new_focused_tab_lifecycle_unit)
-    new_focused_tab_lifecycle_unit->SetFocused(true);
-  focused_tab_lifecycle_unit_ = new_focused_tab_lifecycle_unit;
+  if (focused_lifecycle_unit_)
+    focused_lifecycle_unit_->SetFocused(false);
+  if (new_focused_lifecycle_unit)
+    new_focused_lifecycle_unit->SetFocused(true);
+  focused_lifecycle_unit_ = new_focused_lifecycle_unit;
 }
 
 void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
                                            content::WebContents* contents,
                                            int index,
                                            bool foreground) {
-  auto it = tabs_.find(contents);
-  if (it == tabs_.end()) {
+  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
+  if (lifecycle_unit) {
+    // An existing tab was moved to a new window.
+    lifecycle_unit->SetTabStripModel(tab_strip_model);
+    if (foreground)
+      UpdateFocusedTab();
+  } else {
     // A tab was created.
-    auto res = tabs_.insert(std::make_pair(
-        contents, std::make_unique<TabLifecycleUnit>(
-                      &tab_lifecycle_observers_, contents, tab_strip_model)));
-    TabLifecycleUnit* lifecycle_unit = res.first->second.get();
+    TabLifecycleUnitHolder::CreateForWebContents(contents);
+    auto* holder = TabLifecycleUnitHolder::FromWebContents(contents);
+    holder->set_lifecycle_unit(std::make_unique<TabLifecycleUnit>(
+        &tab_lifecycle_observers_, contents, tab_strip_model));
+    TabLifecycleUnit* lifecycle_unit = holder->lifecycle_unit();
     if (GetFocusedTabStripModel() == tab_strip_model && foreground)
       UpdateFocusedTabTo(lifecycle_unit);
 
@@ -112,39 +151,14 @@ void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
     lifecycle_unit->AddObserver(new DiscardMetricsLifecycleUnitObserver());
 
     NotifyLifecycleUnitCreated(lifecycle_unit);
-  } else {
-    // A tab was moved to another window.
-    it->second->SetTabStripModel(tab_strip_model);
-    if (foreground)
-      UpdateFocusedTab();
   }
-}
-
-void TabLifecycleUnitSource::TabClosingAt(TabStripModel* tab_strip_model,
-                                          content::WebContents* contents,
-                                          int index) {
-  auto it = tabs_.find(contents);
-  DCHECK(it != tabs_.end());
-  TabLifecycleUnit* lifecycle_unit = it->second.get();
-  if (focused_tab_lifecycle_unit_ == lifecycle_unit)
-    UpdateFocusedTabTo(nullptr);
-  tabs_.erase(contents);
 }
 
 void TabLifecycleUnitSource::TabDetachedAt(content::WebContents* contents,
                                            int index) {
-  auto it = tabs_.find(contents);
-
-  // TabDetachedAt() can be called after the TabLifecycleUnit has been destroyed
-  // by TabClosingAt().
-  // TODO(fdoray): Changed this to a DCHECK once TabLifecycleUnits are destroyed
-  // from WebContentsDestroyed() rather than TabClosingAt().
-  // https://crbug.com/775644
-  if (it == tabs_.end())
-    return;
-
-  TabLifecycleUnit* lifecycle_unit = it->second.get();
-  if (focused_tab_lifecycle_unit_ == lifecycle_unit)
+  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
+  DCHECK(lifecycle_unit);
+  if (focused_lifecycle_unit_ == lifecycle_unit)
     UpdateFocusedTabTo(nullptr);
   lifecycle_unit->SetTabStripModel(nullptr);
 }
@@ -161,13 +175,18 @@ void TabLifecycleUnitSource::TabReplacedAt(TabStripModel* tab_strip_model,
                                            content::WebContents* old_contents,
                                            content::WebContents* new_contents,
                                            int index) {
-  DCHECK(!base::ContainsKey(tabs_, new_contents));
-  auto it = tabs_.find(old_contents);
-  DCHECK(it != tabs_.end());
-  std::unique_ptr<TabLifecycleUnit> lifecycle_unit = std::move(it->second);
-  lifecycle_unit->SetWebContents(new_contents);
-  tabs_.erase(it);
-  tabs_[new_contents] = std::move(lifecycle_unit);
+  auto* old_contents_holder =
+      TabLifecycleUnitHolder::FromWebContents(old_contents);
+  DCHECK(old_contents_holder);
+  DCHECK(old_contents_holder->lifecycle_unit());
+  TabLifecycleUnitHolder::CreateForWebContents(new_contents);
+  auto* new_contents_holder =
+      TabLifecycleUnitHolder::FromWebContents(new_contents);
+  DCHECK(new_contents_holder);
+  DCHECK(!new_contents_holder->lifecycle_unit());
+  new_contents_holder->set_lifecycle_unit(
+      old_contents_holder->TakeTabLifecycleUnit());
+  new_contents_holder->lifecycle_unit()->SetWebContents(new_contents);
 }
 
 void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
@@ -175,9 +194,8 @@ void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
                                           TabChangeType change_type) {
   if (change_type != TabChangeType::kAll)
     return;
-  auto it = tabs_.find(contents);
-  DCHECK(it != tabs_.end());
-  TabLifecycleUnit* lifecycle_unit = it->second.get();
+  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
+  DCHECK(lifecycle_unit);
   lifecycle_unit->SetRecentlyAudible(contents->WasRecentlyAudible());
 }
 
@@ -190,3 +208,6 @@ void TabLifecycleUnitSource::OnBrowserNoLongerActive(Browser* browser) {
 }
 
 }  // namespace resource_coordinator
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(
+    resource_coordinator::TabLifecycleUnitSource::TabLifecycleUnitHolder);
