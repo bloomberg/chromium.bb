@@ -26,6 +26,8 @@ class OpenVRDevice : public VRDeviceBase {
   OpenVRDevice(vr::IVRSystem* vr);
   ~OpenVRDevice() override;
 
+  void Shutdown();
+
   // VRDeviceBase
   void RequestPresent(
       VRDisplayImpl* display,
