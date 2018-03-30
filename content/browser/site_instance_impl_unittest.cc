@@ -104,8 +104,8 @@ class SiteInstanceTest : public testing::Test {
 
   void SetUp() override {
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
-    url::AddStandardScheme(kPrivilegedScheme, url::SCHEME_WITHOUT_PORT);
-    url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme(kPrivilegedScheme, url::SCHEME_WITH_HOST);
+    url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
 
     RenderProcessHostImpl::set_render_process_host_factory(&rph_factory_);
   }
@@ -127,6 +127,8 @@ class SiteInstanceTest : public testing::Test {
     // scheduled for deletion. Here, call DrainMessageLoop() again so the
     // AppCacheDatabase actually gets deleted.
     DrainMessageLoop();
+
+    ResetSchemesAndOriginsWhitelist();
   }
 
   void set_privileged_process_id(int process_id) {

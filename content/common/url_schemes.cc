@@ -55,15 +55,15 @@ void RegisterContentSchemes(bool lock_schemes) {
   ContentClient::Schemes schemes;
   GetContentClient()->AddAdditionalSchemes(&schemes);
 
-  url::AddStandardScheme(kChromeDevToolsScheme, url::SCHEME_WITHOUT_PORT);
-  url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
-  url::AddStandardScheme(kGuestScheme, url::SCHEME_WITHOUT_PORT);
+  url::AddStandardScheme(kChromeDevToolsScheme, url::SCHEME_WITH_HOST);
+  url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
+  url::AddStandardScheme(kGuestScheme, url::SCHEME_WITH_HOST);
 
   for (auto& scheme : schemes.standard_schemes)
-    url::AddStandardScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme(scheme.c_str(), url::SCHEME_WITH_HOST);
 
   for (auto& scheme : schemes.referrer_schemes)
-    url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
+    url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITH_HOST);
 
   schemes.secure_schemes.push_back(kChromeUIScheme);
   schemes.secure_schemes.push_back(kChromeErrorScheme);

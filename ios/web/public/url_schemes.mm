@@ -20,7 +20,7 @@ void RegisterWebSchemes(bool lock_schemes) {
   web::WebClient::Schemes schemes;
   GetWebClient()->AddAdditionalSchemes(&schemes);
   for (const auto& scheme : schemes.standard_schemes)
-    url::AddStandardScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme(scheme.c_str(), url::SCHEME_WITH_HOST);
 
   for (const auto& scheme : schemes.secure_schemes)
     url::AddSecureScheme(scheme.c_str());

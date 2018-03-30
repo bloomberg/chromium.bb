@@ -50,6 +50,9 @@ class ComponentsTestSuite : public base::TestSuite {
 
     mojo::edk::Init();
 
+    // Before registering any schemes, clear GURL's internal state.
+    url::Shutdown();
+
 #if !defined(OS_IOS)
     gl::GLSurfaceTestSupport::InitializeOneOff();
 
@@ -79,10 +82,10 @@ class ComponentsTestSuite : public base::TestSuite {
 
     // These schemes need to be added globally to pass tests of
     // autocomplete_input_unittest.cc and content_settings_pattern*
-    url::AddStandardScheme("chrome", url::SCHEME_WITHOUT_PORT);
-    url::AddStandardScheme("chrome-extension", url::SCHEME_WITHOUT_PORT);
-    url::AddStandardScheme("chrome-devtools", url::SCHEME_WITHOUT_PORT);
-    url::AddStandardScheme("chrome-search", url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme("chrome", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("chrome-devtools", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("chrome-search", url::SCHEME_WITH_HOST);
 
     ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
         kNonWildcardDomainNonPortSchemes,
@@ -91,7 +94,6 @@ class ComponentsTestSuite : public base::TestSuite {
 
   void Shutdown() override {
     ui::ResourceBundle::CleanupSharedInstance();
-
     base::TestSuite::Shutdown();
   }
 

@@ -33,7 +33,7 @@ class WebStateMock : public web::TestWebState {
 class U2FControllerTest : public PlatformTest {
  protected:
   U2FControllerTest() : _U2FController([[U2FController alloc] init]) {
-    url::AddStandardScheme("chromium", url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme("chromium", url::SCHEME_WITH_HOST);
     [[ChromeAppConstants sharedInstance]
         setCallbackSchemeForTesting:@"chromium"];
   }

@@ -103,7 +103,7 @@ class WKBasedNavigationManagerTest : public PlatformTest {
     manager_->SetBrowserState(&browser_state_);
 
     BrowserURLRewriter::GetInstance()->AddURLRewriter(WebUIUrlRewriter);
-    url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITH_HOST);
   }
 
   std::unique_ptr<NavigationManagerImpl> manager_;
