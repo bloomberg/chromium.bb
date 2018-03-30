@@ -2307,6 +2307,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // services it wraps.
   ios::GetChromeBrowserProvider()->GetChromeIdentityService()->DismissDialogs();
 
+  // MailtoHandlerProvider is responsible for the dialogs displayed by the
+  // services it wraps.
+  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+    ios::GetChromeBrowserProvider()
+        ->GetMailtoHandlerProvider()
+        ->DismissAllMailtoHandlerInterfaces();
+  }
+
   // Cancel interaction with SSO.
   // First, cancel the signin interaction.
   [self.signinInteractionCoordinator cancel];
