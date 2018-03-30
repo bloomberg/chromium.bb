@@ -6,11 +6,12 @@
 
 #include "base/json/json_writer.h"
 #include "base/mac/bundle_locations.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "ios/web/navigation/placeholder_navigation_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
+#include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "url/url_constants.h"
 
@@ -23,6 +24,11 @@ namespace wk_navigation_util {
 
 const char kRestoreSessionSessionQueryKey[] = "session";
 const char kRestoreSessionTargetUrlQueryKey[] = "targetUrl";
+const char kOriginalUrlKey[] = "for";
+
+bool IsWKInternalUrl(const GURL& url) {
+  return IsPlaceholderUrl(url) || IsRestoreSessionUrl(url);
+}
 
 GURL GetRestoreSessionBaseUrl() {
   std::string restore_session_resource_path = base::SysNSStringToUTF8(
@@ -51,8 +57,7 @@ GURL CreateRestoreSessionUrl(
     GURL original_url = items[index]->GetURL();
     GURL restored_url = original_url;
     if (web::GetWebClient()->IsAppSpecificURL(original_url)) {
-      restored_url =
-          placeholder_navigation_util::CreatePlaceholderUrlForUrl(original_url);
+      restored_url = CreatePlaceholderUrlForUrl(original_url);
     }
     restored_urls.GetList().push_back(base::Value(restored_url.spec()));
     restored_titles.GetList().push_back(base::Value(items[index]->GetTitle()));
@@ -90,6 +95,32 @@ bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
     *target_url = GURL(target_url_spec);
 
   return success;
+}
+
+bool IsPlaceholderUrl(const GURL& url) {
+  return url.IsAboutBlank() && base::StartsWith(url.query(), kOriginalUrlKey,
+                                                base::CompareCase::SENSITIVE);
+}
+
+GURL CreatePlaceholderUrlForUrl(const GURL& original_url) {
+  if (!original_url.is_valid())
+    return GURL::EmptyGURL();
+
+  GURL placeholder_url = net::AppendQueryParameter(
+      GURL(url::kAboutBlankURL), kOriginalUrlKey, original_url.spec());
+  DCHECK(placeholder_url.is_valid());
+  return placeholder_url;
+}
+
+GURL ExtractUrlFromPlaceholderUrl(const GURL& url) {
+  std::string value;
+  if (IsPlaceholderUrl(url) &&
+      net::GetValueForKeyInQuery(url, kOriginalUrlKey, &value)) {
+    GURL decoded_url(value);
+    if (decoded_url.is_valid())
+      return decoded_url;
+  }
+  return GURL::EmptyGURL();
 }
 
 }  // namespace wk_navigation_util

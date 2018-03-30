@@ -17,9 +17,9 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
-#include "ios/web/navigation/placeholder_navigation_util.h"
 #import "ios/web/navigation/session_storage_builder.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -50,7 +50,7 @@
 #error "This file requires ARC support."
 #endif
 
-using web::placeholder_navigation_util::IsPlaceholderUrl;
+using web::wk_navigation_util::IsPlaceholderUrl;
 
 namespace web {
 

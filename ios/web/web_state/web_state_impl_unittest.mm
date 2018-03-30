@@ -17,7 +17,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "ios/web/navigation/placeholder_navigation_util.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/features.h"
@@ -495,8 +495,8 @@ TEST_F(WebStateImplTest, ObserverTest) {
 TEST_F(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
   TestWebStateObserver observer(web_state_.get());
   FakeNavigationContext context;
-  context.SetUrl(placeholder_navigation_util::CreatePlaceholderUrlForUrl(
-      GURL("chrome://newtab")));
+  context.SetUrl(
+      wk_navigation_util::CreatePlaceholderUrlForUrl(GURL("chrome://newtab")));
 
   // Test that OnPageLoaded() is not called.
   web_state_->OnPageLoaded(context.GetUrl(), true /* load_success */);

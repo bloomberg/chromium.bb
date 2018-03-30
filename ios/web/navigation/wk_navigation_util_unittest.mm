@@ -73,5 +73,43 @@ TEST_F(WKNavigationUtilTest, CreateAndExtractTargetURL) {
   EXPECT_EQ(target_url, extracted_url);
 }
 
+TEST_F(WKNavigationUtilTest, IsPlaceholderUrl) {
+  // Valid placeholder URLs.
+  EXPECT_TRUE(IsPlaceholderUrl(GURL("about:blank?for=")));
+  EXPECT_TRUE(IsPlaceholderUrl(GURL("about:blank?for=chrome%3A%2F%2Fnewtab")));
+
+  // Not an about:blank URL.
+  EXPECT_FALSE(IsPlaceholderUrl(GURL::EmptyGURL()));
+  // Missing ?for= query parameter.
+  EXPECT_FALSE(IsPlaceholderUrl(GURL("about:blank")));
+  EXPECT_FALSE(IsPlaceholderUrl(GURL("about:blank?chrome:%3A%2F%2Fnewtab")));
+}
+
+TEST_F(WKNavigationUtilTest, EncodReturnsEmptyOnInvalidUrls) {
+  EXPECT_EQ(GURL::EmptyGURL(), CreatePlaceholderUrlForUrl(GURL::EmptyGURL()));
+  EXPECT_EQ(GURL::EmptyGURL(), CreatePlaceholderUrlForUrl(GURL("notaurl")));
+}
+
+TEST_F(WKNavigationUtilTest, EncodeDecodeValidUrls) {
+  {
+    GURL original("chrome://chrome-urls");
+    GURL encoded("about:blank?for=chrome%3A%2F%2Fchrome-urls");
+    EXPECT_EQ(encoded, CreatePlaceholderUrlForUrl(original));
+    EXPECT_EQ(original, ExtractUrlFromPlaceholderUrl(encoded));
+  }
+  {
+    GURL original("about:blank");
+    GURL encoded("about:blank?for=about%3Ablank");
+    EXPECT_EQ(encoded, CreatePlaceholderUrlForUrl(original));
+    EXPECT_EQ(original, ExtractUrlFromPlaceholderUrl(encoded));
+  }
+}
+
+// Tests that invalid URLs will be rejected in decoding.
+TEST_F(WKNavigationUtilTest, DecodeRejectInvalidUrls) {
+  GURL encoded("about:blank?for=thisisnotanurl");
+  EXPECT_EQ(GURL::EmptyGURL(), ExtractUrlFromPlaceholderUrl(encoded));
+}
+
 }  // namespace wk_navigation_util
 }  // namespace web

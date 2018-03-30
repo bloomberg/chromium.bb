@@ -15,7 +15,6 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
-#include "ios/web/navigation/placeholder_navigation_util.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
@@ -143,9 +142,8 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
   GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
   bool current_item_is_pending_item =
       current_item_url == pending_item_->GetURL() ||
-      current_item_url ==
-          placeholder_navigation_util::CreatePlaceholderUrlForUrl(
-              pending_item_->GetURL());
+      current_item_url == wk_navigation_util::CreatePlaceholderUrlForUrl(
+                              pending_item_->GetURL());
   if (proxy.backForwardList.currentItem &&
       current_item_url == net::GURLWithNSURL(proxy.URL) &&
       current_item_is_pending_item) {
@@ -538,7 +536,7 @@ void WKBasedNavigationManagerImpl::FinishGoToIndex(
 }
 
 bool WKBasedNavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {
-  return placeholder_navigation_util::IsPlaceholderUrl(url);
+  return wk_navigation_util::IsPlaceholderUrl(url);
 }
 
 int WKBasedNavigationManagerImpl::GetWKCurrentItemIndex() const {
