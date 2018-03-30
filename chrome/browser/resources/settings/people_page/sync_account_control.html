@@ -95,19 +95,17 @@
       }
 
       #banner {
-        background-color: var(--google-blue-500);
+        background-image: -webkit-image-set(
+            url(../images/sync_banner.png) 1x,
+            url(../images/sync_banner_2x.png) 2x);
+        background-repeat: no-repeat;
+        background-size: 100% auto;
         display: none;
-      }
-
-      #banner img {
-        -webkit-margin-start: 380px;
-        height: 100px;
-        margin-bottom: -12px;
-        margin-top: 32px;
+        padding-top: calc(120 / 680 * 100%); /* Keep background ratio. */
       }
 
       :host([showing-promo]) #banner {
-        display: flex;
+        display: block;
       }
 
       :host([showing-promo]) #promo-headers {
@@ -128,9 +126,7 @@
         display: none;
       }
     </style>
-    <div class="settings-box" id="banner">
-      <img src="../images/sync_banner.svg" alt="">
-    </div>
+    <div id="banner"></div>
     <div class="settings-box first two-line" id="promo-headers"
         hidden="[[syncStatus.signedIn]]">
       <div class="start">
