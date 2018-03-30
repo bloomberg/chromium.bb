@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/ui/user_feedback_features.h"
 
 const base::Feature kFeedbackKitV2{"FeedbackKitV2",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFeedbackKitV2WithSSOService{
     "FeedbackKitV2WithSSOService", base::FEATURE_DISABLED_BY_DEFAULT};
