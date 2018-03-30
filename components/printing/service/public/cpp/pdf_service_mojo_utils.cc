@@ -42,9 +42,9 @@ scoped_refptr<base::RefCountedMemory> GetDataFromMojoHandle(
   if (!shm)
     return nullptr;
 
-  return base::MakeRefCounted<base::RefCountedBytes>(
-      reinterpret_cast<const unsigned char*>(shm->memory()),
-      shm->mapped_size());
+  size_t size = shm->mapped_size();
+  return base::MakeRefCounted<base::RefCountedSharedMemory>(std::move(shm),
+                                                            size);
 }
 
 }  // namespace printing

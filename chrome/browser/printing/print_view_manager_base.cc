@@ -334,11 +334,13 @@ void PrintViewManagerBase::OnComposePdfDone(
 
   std::unique_ptr<base::SharedMemory> shared_buf =
       GetShmFromMojoHandle(std::move(handle));
-  scoped_refptr<base::RefCountedBytes> bytes =
-      base::MakeRefCounted<base::RefCountedBytes>(
-          reinterpret_cast<const unsigned char*>(shared_buf->memory()),
-          shared_buf->mapped_size());
-  PrintDocument(document, bytes, params.page_size, params.content_area,
+  if (!shared_buf)
+    return;
+
+  size_t size = shared_buf->mapped_size();
+  auto data = base::MakeRefCounted<base::RefCountedSharedMemory>(
+      std::move(shared_buf), size);
+  PrintDocument(document, data, params.page_size, params.content_area,
                 params.physical_offsets);
 }
 
@@ -372,11 +374,10 @@ void PrintViewManagerBase::OnDidPrintDocument(
     web_contents()->Stop();
     return;
   }
-  scoped_refptr<base::RefCountedBytes> bytes =
-      base::MakeRefCounted<base::RefCountedBytes>(
-          reinterpret_cast<const unsigned char*>(shared_buf->memory()),
-          content.data_size);
-  PrintDocument(document, bytes, params.page_size, params.content_area,
+
+  auto data = base::MakeRefCounted<base::RefCountedSharedMemory>(
+      std::move(shared_buf), content.data_size);
+  PrintDocument(document, data, params.page_size, params.content_area,
                 params.physical_offsets);
 }
 
