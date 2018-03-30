@@ -15,6 +15,24 @@
 
 namespace blink {
 
+LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
+    unsigned offset) const {
+  DCHECK_GE(offset, start_offset_);
+  DCHECK_LE(offset, end_offset_);
+
+  offset -= start_offset_;
+  if (shape_result_) {
+    return LayoutUnit::FromFloatRound(shape_result_->PositionForOffset(offset));
+  }
+
+  // All non-flow controls have ShapeResult.
+  DCHECK(IsFlowControl());
+  DCHECK_EQ(1u, Length());
+  if (!offset || UNLIKELY(IsRtl(Style().Direction())))
+    return LayoutUnit();
+  return IsHorizontal() ? Size().width : Size().height;
+}
+
 NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
     unsigned start_offset,
     unsigned end_offset) const {

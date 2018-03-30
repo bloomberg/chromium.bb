@@ -105,6 +105,10 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return IsHorizontal() ? kAlphabeticBaseline : kIdeographicBaseline;
   }
 
+  // Compute the inline position from text offset, in logical coordinate
+  // relative to this fragment.
+  LayoutUnit InlinePositionForOffset(unsigned offset) const;
+
   // The layout box of text in (start, end) range in local coordinate.
   // Start and end offsets must be between StartOffset() and EndOffset().
   NGPhysicalOffsetRect LocalRect(unsigned start_offset,
