@@ -1228,6 +1228,68 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals('https://example.com/foo_package@foo_version', dep0.url)
     self.assertEquals('https://example.com/bar_package@bar_version', dep1.url)
 
+  def testFuzzyMatchUrlByURL(self):
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "https://example.com/foo.git",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "https://example.com/bar.git@bar_version",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    foo_sol = obj.dependencies[0]
+    self.assertEqual(
+        'https://example.com/foo.git',
+        foo_sol.FuzzyMatchUrl('https://example.com/foo.git',
+                                   ['https://example.com/foo.git', 'foo']))
+
+  def testFuzzyMatchUrlByURLNoGit(self):
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "https://example.com/foo.git",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "https://example.com/bar.git@bar_version",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    foo_sol = obj.dependencies[0]
+    self.assertEqual(
+        'https://example.com/foo',
+        foo_sol.FuzzyMatchUrl('https://example.com/foo.git',
+                                   ['https://example.com/foo', 'foo']))
+
+  def testFuzzyMatchUrlByName(self):
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "https://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "https://example.com/bar.git@bar_version",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    foo_sol = obj.dependencies[0]
+    self.assertEqual(
+        'foo',
+        foo_sol.FuzzyMatchUrl('https://example.com/foo.git', ['foo']))
+
 
 if __name__ == '__main__':
   sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)

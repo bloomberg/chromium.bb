@@ -702,7 +702,7 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
-    results = self.gclient(['revinfo', '--deps', 'mac', '--path', 'src'])
+    results = self.gclient(['revinfo', '--deps', 'mac', '--filter', 'src'])
     out = ('src: %(base)srepo_1\n' %
           {
             'base': self.git_base,
@@ -715,7 +715,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac',
-                            '--url', '%srepo_2' % self.git_base])
+                            '--filter', '%srepo_2' % self.git_base])
     out = ('src/repo2: %(base)srepo_2@%(hash2)s\n' %
           {
             'base': self.git_base,
@@ -728,8 +728,8 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
-    results = self.gclient(['revinfo', '--deps', 'mac', '--path', 'src',
-                            '--url', '%srepo_2' % self.git_base])
+    results = self.gclient(['revinfo', '--deps', 'mac', '--filter', 'src',
+                            '--filter', '%srepo_2' % self.git_base])
     out = ('src: %(base)srepo_1\n'
            'src/repo2: %(base)srepo_2@%(hash2)s\n' %
           {
