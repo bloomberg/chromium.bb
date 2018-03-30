@@ -78,10 +78,10 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   ReadOnlySharedMemoryMapping MapAt(off_t offset, size_t size);
 
   // Whether the underlying platform handle is valid.
-  bool IsValid();
+  bool IsValid() const;
 
   // Returns the maximum mapping size that can be created from this region.
-  size_t GetSize() {
+  size_t GetSize() const {
     DCHECK(IsValid());
     return handle_.GetSize();
   }

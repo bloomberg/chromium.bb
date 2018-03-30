@@ -55,6 +55,7 @@ source_set("tests") {
     "process_id_unittest.cc",
     "read_only_buffer_unittest.cc",
     "ref_counted_memory_unittest.cc",
+    "shared_memory_unittest.cc",
     "string16_unittest.cc",
     "text_direction_unittest.cc",
     "thread_priority_unittest.cc",

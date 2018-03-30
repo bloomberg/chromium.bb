@@ -75,10 +75,10 @@ class BASE_EXPORT WritableSharedMemoryRegion {
   WritableSharedMemoryMapping MapAt(off_t offset, size_t size);
 
   // Whether underlying platform handles are valid.
-  bool IsValid();
+  bool IsValid() const;
 
   // Returns the maximum mapping size that can be created from this region.
-  size_t GetSize() {
+  size_t GetSize() const {
     DCHECK(IsValid());
     return handle_.GetSize();
   }

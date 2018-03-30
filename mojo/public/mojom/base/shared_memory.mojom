@@ -1,0 +1,59 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo_base.mojom;
+
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+// Mirrors the base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle
+// type.
+//
+// TODO(https://crbug.com/826213): Remove this once Mojo shared buffers are
+// properly backed by base::subtle::PlatformSharedMemoryRegion.
+struct PlatformSharedMemoryHandle {
+  handle handle_value;
+
+  [EnableIf=shared_memory_region_uses_fd_pair]
+  handle? readonly_fd;
+};
+
+// Mirrors the base::subtle::PlatformSharedMemoryRegion type.
+//
+// This should not be used directly. Use one of the specific region types below
+// instead.
+//
+// TODO(https://crbug.com/826213): Remove this once Mojo shared buffers are
+// properly backed by base::subtle::PlatformSharedMemoryRegion.
+struct PlatformSharedMemoryRegion {
+  enum Mode {
+    kReadOnly,
+    kWritable,
+    kUnsafe,
+  };
+
+  PlatformSharedMemoryHandle platform_handle;
+  Mode mode;
+  uint64 size;
+  UnguessableToken guid;
+};
+
+// Wraps a shared memory handle with additional type information to convey that
+// the handle is only mappable to read-only memory.
+struct ReadOnlySharedMemoryRegion {
+  PlatformSharedMemoryRegion region;
+};
+
+// Wraps a shared memory handle with additional type information to convey that
+// the handle is mappable to writable memory but can also be converted to
+// a ReadOnlySharedMemoryRegion for sharing with other clients.
+struct WritableSharedMemoryRegion {
+  PlatformSharedMemoryRegion region;
+};
+
+// Wraps a shared memory handle with additional type information to convey that
+// the handle is always mappable to writable memory by any client which obtains
+// a handle duplicated from this one.
+struct UnsafeSharedMemoryRegion {
+  PlatformSharedMemoryRegion region;
+};
