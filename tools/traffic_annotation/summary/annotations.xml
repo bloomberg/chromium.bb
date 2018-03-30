@@ -128,6 +128,7 @@ Refer to README.md for content description and update process.
  <item id="icon_cacher" hash_code="103133150" type="0" content_hash_code="116368348" os_list="linux,windows" file_path="components/ntp_tiles/icon_cacher_impl.cc"/>
  <item id="icon_catcher_get_large_icon" hash_code="44494884" type="0" content_hash_code="98262037" os_list="linux,windows" file_path="components/ntp_tiles/icon_cacher_impl.cc"/>
  <item id="indexed_db_internals_handler" hash_code="131180348" type="0" content_hash_code="59026406" os_list="linux,windows" file_path="content/browser/indexed_db/indexed_db_internals_ui.cc"/>
+ <item id="interest_feed_send" hash_code="76717919" type="0" content_hash_code="34678180" os_list="linux,windows" file_path="components/feed/core/feed_networking_host.cc"/>
  <item id="intranet_redirect_detector" hash_code="21785164" type="0" content_hash_code="62025595" os_list="linux,windows" file_path="chrome/browser/intranet_redirect_detector.cc"/>
  <item id="invalidation_service" hash_code="72354423" type="0" content_hash_code="78425687" os_list="linux,windows" file_path="components/invalidation/impl/gcm_network_channel.cc"/>
  <item id="lib_address_input" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
