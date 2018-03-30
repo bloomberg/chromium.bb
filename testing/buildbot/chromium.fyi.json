@@ -2876,12 +2876,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mini_installer_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "native_theme_unittests"
       },
       {
@@ -3178,12 +3172,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mini_installer_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "native_theme_unittests"
       },
       {
@@ -3468,12 +3456,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mini_installer_tests"
       },
       {
         "swarming": {
@@ -7584,12 +7566,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mini_installer_tests"
       },
       {
         "swarming": {
