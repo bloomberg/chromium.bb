@@ -533,10 +533,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool CanPlayThrough();
 
   // Internal implementation of Pipeline::Client::OnBufferingStateChange(). When
-  // |force_update| is true, the given state will be set even if the pipeline is
-  // not currently stable.
+  // |for_suspended_start| is true, the given state will be set even if the
+  // pipeline is not currently stable.
   void OnBufferingStateChangeInternal(BufferingState state,
-                                      bool force_update = false);
+                                      bool for_suspended_start = false);
 
   // Records |natural_size| to MediaLog and video height to UMA.
   void RecordVideoNaturalSize(const gfx::Size& natural_size);
@@ -785,6 +785,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // The time at which DoLoad() is executed.
   base::TimeTicks load_start_time_;
+
+  // Time elapsed time from |load_start_time_| to OnMetadata(). Used to later
+  // adjust |load_start_time_| if a suspended startup occurred.
+  base::TimeDelta time_to_metadata_;
+  bool skip_metrics_due_to_startup_suspend_ = false;
+
   bool have_reported_time_to_play_ready_ = false;
 
   // Records pipeline statistics for describing media capabilities.

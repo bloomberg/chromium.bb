@@ -1386,7 +1386,20 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   // has been told about the ReadyState change.
   if (attempting_suspended_start_ &&
       pipeline_controller_.IsPipelineSuspended()) {
+    skip_metrics_due_to_startup_suspend_ = true;
     OnBufferingStateChangeInternal(BUFFERING_HAVE_ENOUGH, true);
+
+    // If |skip_metrics_due_to_startup_suspend_| is unset by a resume started by
+    // the OnBufferingStateChangeInternal() call, record a histogram of it here.
+    //
+    // If the value is unset, that means we should not have suspended and we've
+    // likely incurred some cost to TimeToFirstFrame and TimeToPlayReady which
+    // will be reflected in those statistics.
+    base::UmaHistogramBoolean(
+        std::string("Media.PreloadMetadataSuspendWasIdeal.") +
+            ((HasVideo() && HasAudio()) ? "AudioVideo"
+                                        : (HasVideo() ? "Video" : "Audio")),
+        skip_metrics_due_to_startup_suspend_);
   }
 
   attempting_suspended_start_ = false;
@@ -1415,6 +1428,20 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
 }
 
 void WebMediaPlayerImpl::OnBeforePipelineResume() {
+  // We went through suspended startup, so the player is only just now spooling
+  // up for playback. As such adjust |load_start_time_| so it reports the same
+  // metric as what would be reported if we had not suspended at startup.
+  if (skip_metrics_due_to_startup_suspend_) {
+    // In the event that the call to SetReadyState() initiated after pipeline
+    // startup immediately tries to start playback, we should not update
+    // |load_start_time_| to avoid losing visibility into the impact of a
+    // suspended startup on the time until first frame / play ready for cases
+    // where suspended startup was applied incorrectly.
+    if (!attempting_suspended_start_)
+      load_start_time_ = base::TimeTicks::Now() - time_to_metadata_;
+    skip_metrics_due_to_startup_suspend_ = false;
+  }
+
   // Enable video track if we disabled it in the background - this way the new
   // renderer will attach its callbacks to the video stream properly.
   // TODO(avayvod): Remove this when disabling and enabling video tracks in
@@ -1533,9 +1560,12 @@ void WebMediaPlayerImpl::OnEnded() {
 void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  const base::TimeDelta elapsed = base::TimeTicks::Now() - load_start_time_;
-  media_metrics_provider_->SetTimeToMetadata(elapsed);
-  RecordTimingUMA("Media.TimeToMetadata", elapsed);
+
+  // Cache the |time_to_metadata_| to use for adjusting the TimeToFirstFrame and
+  // TimeToPlayReady metrics later if we end up doing a suspended startup.
+  time_to_metadata_ = base::TimeTicks::Now() - load_start_time_;
+  media_metrics_provider_->SetTimeToMetadata(time_to_metadata_);
+  RecordTimingUMA("Media.TimeToMetadata", time_to_metadata_);
 
   pipeline_metadata_ = metadata;
 
@@ -1665,30 +1695,39 @@ bool WebMediaPlayerImpl::CanPlayThrough() {
       playback_rate_ == 0.0 ? 1.0 : playback_rate_);
 }
 
-void WebMediaPlayerImpl::OnBufferingStateChangeInternal(BufferingState state,
-                                                        bool force_update) {
+void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
+    BufferingState state,
+    bool for_suspended_start) {
   DVLOG(1) << __func__ << "(" << state << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Ignore buffering state changes until we've completed all outstanding
-  // operations unless we've been asked to force the update.
-  if (!pipeline_controller_.IsStable() && !force_update)
+  // operations unless this is a buffering update for a suspended startup.
+  if (!pipeline_controller_.IsStable() && !for_suspended_start)
     return;
 
-  media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
-      "pipeline_buffering_state", state));
+  auto log_event = media_log_->CreateBufferingStateChangedEvent(
+      "pipeline_buffering_state", state);
+  log_event->params.SetBoolean("for_suspended_start", for_suspended_start);
+  media_log_->AddEvent(std::move(log_event));
 
   if (state == BUFFERING_HAVE_ENOUGH) {
     TRACE_EVENT1("media", "WebMediaPlayerImpl::BufferingHaveEnough", "id",
                  media_log_->id());
-    SetReadyState(CanPlayThrough() ? WebMediaPlayer::kReadyStateHaveEnoughData
-                                   : WebMediaPlayer::kReadyStateHaveFutureData);
-    if (!have_reported_time_to_play_ready_) {
+    // The SetReadyState() call below may clear
+    // |skip_metrics_due_to_startup_suspend_| so report this first.
+    if (!have_reported_time_to_play_ready_ &&
+        !skip_metrics_due_to_startup_suspend_) {
+      DCHECK(!for_suspended_start);
       have_reported_time_to_play_ready_ = true;
       const base::TimeDelta elapsed = base::TimeTicks::Now() - load_start_time_;
       media_metrics_provider_->SetTimeToPlayReady(elapsed);
       RecordTimingUMA("Media.TimeToPlayReady", elapsed);
     }
+
+    // Warning: This call may be re-entrant.
+    SetReadyState(CanPlayThrough() ? WebMediaPlayer::kReadyStateHaveEnoughData
+                                   : WebMediaPlayer::kReadyStateHaveFutureData);
 
     // Let the DataSource know we have enough data. It may use this information
     // to release unused network connections.
@@ -3058,6 +3097,7 @@ void WebMediaPlayerImpl::SetTickClockForTest(base::TickClock* tick_clock) {
 
 void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time) {
   DCHECK(!load_start_time_.is_null());
+  DCHECK(!skip_metrics_due_to_startup_suspend_);
   const base::TimeDelta elapsed = frame_time - load_start_time_;
   media_metrics_provider_->SetTimeToFirstFrame(elapsed);
   RecordTimingUMA("Media.TimeToFirstFrame", elapsed);
