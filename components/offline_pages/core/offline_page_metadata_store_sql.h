@@ -90,6 +90,13 @@ class OfflinePageMetadataStoreSQL {
   template <typename T>
   using ResultCallback = base::OnceCallback<void(T)>;
 
+  // This is the first version saved in the meta table, which was introduced in
+  // the store in M65. It is set once a legacy upgrade is run successfully for
+  // the last time in |UpgradeFromLegacyVersion|.
+  static const int kFirstPostLegacyVersion = 1;
+  static const int kCurrentVersion = 3;
+  static const int kCompatibleVersion = kFirstPostLegacyVersion;
+
   // Defines inactivity time of DB after which it is going to be closed.
   // TODO(fgorski): Derive appropriate value in a scientific way.
   static constexpr base::TimeDelta kClosingDelay =
