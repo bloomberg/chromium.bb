@@ -1901,7 +1901,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   }
 
   // No tiles to decode.
-  if (tile_rows_end <= tile_rows_start || tile_cols_end <= tile_cols_start)
+  if (tile_rows_end <= tile_rows_start || tile_cols_end <= tile_cols_start ||
+      // First tile is larger then endTile.
+      tile_rows_start * cm->tile_cols + tile_cols_start > endTile ||
+      // Last tile is smaller than startTile.
+      (tile_rows_end - 1) * cm->tile_cols + tile_cols_end - 1 < startTile)
     return data;
 
   allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
