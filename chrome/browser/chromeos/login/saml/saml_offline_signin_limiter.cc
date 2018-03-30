@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -84,7 +85,8 @@ void SAMLOfflineSigninLimiter::Shutdown() {
 
 SAMLOfflineSigninLimiter::SAMLOfflineSigninLimiter(Profile* profile,
                                                    base::Clock* clock)
-    : profile_(profile), clock_(clock ? clock : &default_clock_) {}
+    : profile_(profile),
+      clock_(clock ? clock : base::DefaultClock::GetInstance()) {}
 
 SAMLOfflineSigninLimiter::~SAMLOfflineSigninLimiter() {}
 

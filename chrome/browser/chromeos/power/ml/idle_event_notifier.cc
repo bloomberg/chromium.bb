@@ -61,7 +61,7 @@ IdleEventNotifier::IdleEventNotifier(
     PowerManagerClient* power_manager_client,
     ui::UserActivityDetector* detector,
     viz::mojom::VideoDetectorObserverRequest request)
-    : clock_(std::make_unique<base::DefaultClock>()),
+    : clock_(base::DefaultClock::GetInstance()),
       boot_clock_(std::make_unique<RealBootClock>()),
       power_manager_client_observer_(this),
       user_activity_observer_(this),
@@ -86,10 +86,10 @@ IdleEventNotifier::~IdleEventNotifier() = default;
 
 void IdleEventNotifier::SetClockForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    std::unique_ptr<base::Clock> test_clock,
+    base::Clock* test_clock,
     std::unique_ptr<BootClock> test_boot_clock) {
   idle_delay_timer_.SetTaskRunner(task_runner);
-  clock_ = std::move(test_clock);
+  clock_ = test_clock;
   boot_clock_ = std::move(test_boot_clock);
 }
 
