@@ -29,11 +29,13 @@ namespace offline_pages {
 // Original schema was delivered in M57. Since then the following changes
 // happened:
 // * In M58 original_url was added.
+// * In M61 request_origin was added.
+// * In M67 fail_state was added.
 //
 // TODO(romax): remove all activation_time related code the next we change the
 // schema.
 //
-// Looking for procesure to update the schema, please refer to
+// Looking for procedure to update the schema, please refer to
 // offline_page_metadata_store_sql.h
 class RequestQueueStoreSQL : public RequestQueueStore {
  public:

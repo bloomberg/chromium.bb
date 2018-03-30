@@ -134,6 +134,55 @@ void BuildTestStoreWithSchemaFromM58(const base::FilePath& file) {
       connection.DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "request_origin"));
 }
 
+void BuildTestStoreWithSchemaFromM61(const base::FilePath& file) {
+  sql::Connection connection;
+  ASSERT_TRUE(
+      connection.Open(file.Append(FILE_PATH_LITERAL("RequestQueue.db"))));
+  ASSERT_TRUE(connection.is_open());
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(
+      connection.Execute("CREATE TABLE " REQUEST_QUEUE_TABLE_NAME
+                         " (request_id INTEGER PRIMARY KEY NOT NULL,"
+                         " creation_time INTEGER NOT NULL,"
+                         " activation_time INTEGER NOT NULL DEFAULT 0,"
+                         " last_attempt_time INTEGER NOT NULL DEFAULT 0,"
+                         " started_attempt_count INTEGER NOT NULL,"
+                         " completed_attempt_count INTEGER NOT NULL,"
+                         " state INTEGER NOT NULL DEFAULT 0,"
+                         " url VARCHAR NOT NULL,"
+                         " client_namespace VARCHAR NOT NULL,"
+                         " client_id VARCHAR NOT NULL,"
+                         " original_url VARCHAR NOT NULL DEFAULT '',"
+                         " request_origin VARCHAR NOT NULL DEFAULT ''"
+                         ")"));
+
+  ASSERT_TRUE(connection.CommitTransaction());
+  sql::Statement statement(connection.GetUniqueStatement(
+      "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
+      " (request_id, creation_time, activation_time,"
+      " last_attempt_time, started_attempt_count, completed_attempt_count,"
+      " state, url, client_namespace, client_id, original_url, request_origin)"
+      " VALUES "
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+
+  statement.BindInt64(0, kRequestId);
+  statement.BindInt64(1, 0);
+  statement.BindInt64(2, 0);
+  statement.BindInt64(3, 0);
+  statement.BindInt64(4, 0);
+  statement.BindInt64(5, 0);
+  statement.BindInt64(6, 0);
+  statement.BindString(7, kUrl.spec());
+  statement.BindString(8, kClientId.name_space);
+  statement.BindString(9, kClientId.id);
+  statement.BindString(10, kUrl2.spec());
+  statement.BindString(11, kRequestOrigin);
+  ASSERT_TRUE(statement.Run());
+  ASSERT_TRUE(connection.DoesTableExist(REQUEST_QUEUE_TABLE_NAME));
+  ASSERT_FALSE(
+      connection.DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "fail_state"));
+}
+
 }  // namespace
 
 // Class that serves as a base for testing different implementations of the
@@ -285,6 +334,8 @@ class RequestQueueStoreSQLFactory : public RequestQueueStoreFactory {
       BuildTestStoreWithSchemaFromM57(path);
     } else if (version == 58) {
       BuildTestStoreWithSchemaFromM58(path);
+    } else if (version == 61) {
+      BuildTestStoreWithSchemaFromM61(path);
     }
 
     RequestQueueStore* store =
@@ -362,6 +413,25 @@ TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion58Store) {
   EXPECT_EQ(kUrl, this->last_requests()[0]->url());
   EXPECT_EQ(kUrl2, this->last_requests()[0]->original_url());
   EXPECT_EQ("", this->last_requests()[0]->request_origin());
+}
+
+TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion61Store) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStoreWithOldSchema(61));
+  // In-memory store does not support upgrading.
+  if (!store)
+    return;
+  this->InitializeStore(store.get());
+
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
+  ASSERT_EQ(1u, this->last_requests().size());
+  EXPECT_EQ(kRequestId, this->last_requests()[0]->request_id());
+  EXPECT_EQ(kUrl, this->last_requests()[0]->url());
+  EXPECT_EQ(kUrl2, this->last_requests()[0]->original_url());
+  EXPECT_EQ(kRequestOrigin, this->last_requests()[0]->request_origin());
+  EXPECT_EQ(0, static_cast<int>(this->last_requests()[0]->fail_state()));
 }
 
 TYPED_TEST(RequestQueueStoreTest, GetRequestsEmpty) {
