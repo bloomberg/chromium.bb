@@ -321,6 +321,55 @@ cr.define('print_preview_test', function() {
     checkElementDisplayed(advancedSettingsCloseButton, true);
   }
 
+  /**
+   * Creates a destination with a certificate status tag.
+   * @param {string} id Printer id
+   * @param {string} name Printer display name
+   * @param {boolean} invalid Whether printer has an invalid certificate.
+   * @return {!print_preview.Destination}
+   */
+  function getDestinationWithCertificateStatus(id, name, invalid) {
+    const tags = {
+      certificateStatus: invalid ?
+          print_preview.DestinationCertificateStatus.NO :
+          print_preview.DestinationCertificateStatus.UNKNOWN,
+    };
+    const dest = new print_preview.Destination(
+        id, print_preview.DestinationType.GOOGLE,
+        print_preview.DestinationOrigin.COOKIES, name, true /* isRecent */,
+        print_preview.DestinationConnectionStatus.ONLINE, tags);
+    return dest;
+  }
+
+  /**
+   * Performs some setup for invalid certificate tests using 2 destinations
+   * in |printers|. printers[0] will be set as the most recent destination,
+   * and printers[1] will be the second most recent destination. Sets up
+   * cloud print interface, user info, and runs initialize().
+   * @param {!Array<!print_preview.Destination>} printers
+   */
+  function setupInvalidCertificateTest(printers) {
+    initialSettings.printerName = '';
+    initialSettings.serializedAppStateStr = JSON.stringify({
+      version: 2,
+      recentDestinations: [
+          print_preview.makeRecentDestination(printers[0]),
+          print_preview.makeRecentDestination(printers[1]),
+      ],
+    });
+
+    nativeLayer.setInitialSettings(initialSettings);
+    localDestinationInfos = [];
+    nativeLayer.setLocalDestinations(localDestinationInfos);
+    printPreview.userInfo_.setUsers(
+        'foo@chromium.org', ['foo@chromium.org']);
+    printPreview.initialize();
+    cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
+    printers.forEach(printer => {
+      printPreview.cloudPrintInterface_.setPrinter(printer.id, printer);
+    });
+  }
+
   /** @return {boolean} */
   function isPrintAsImageEnabled() {
     // Should be enabled by default on non Windows/Mac.
@@ -1458,49 +1507,15 @@ cr.define('print_preview_test', function() {
 
     // Test that GCP invalid certificate printers disable the print preview when
     // selected and display an error and that the preview dialog can be
-    // recovered by selecting a new destination.
+    // recovered by selecting a new destination. Verifies this works when the
+    // invalid printer is the most recent destination and is selected by
+    // default.
     test('InvalidCertificateError', function() {
-      const fooPrinter = new print_preview.Destination(
-          'FooDevice',
-          print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES,
-          'FooName',
-          true /* isRecent */,
-          print_preview.DestinationConnectionStatus.ONLINE,
-          {
-            certificateStatus: print_preview.DestinationCertificateStatus.NO,
-          }
-      );
-      const barPrinter = new print_preview.Destination(
-          'BarDevice',
-          print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES,
-          'BarName',
-          true /* isRecent */,
-          print_preview.DestinationConnectionStatus.ONLINE,
-          {
-            certificateStatus:
-                print_preview.DestinationCertificateStatus.UNKNOWN,
-          }
-      );
-      initialSettings.printerName = '';
-      initialSettings.serializedAppStateStr = JSON.stringify({
-        version: 2,
-        recentDestinations: [
-            print_preview.makeRecentDestination(fooPrinter),
-            print_preview.makeRecentDestination(barPrinter),
-        ],
-      });
-
-      nativeLayer.setInitialSettings(initialSettings);
-      localDestinationInfos = [];
-      nativeLayer.setLocalDestinations(localDestinationInfos);
-      printPreview.userInfo_.setUsers(
-          'foo@chromium.org', ['foo@chromium.org']);
-      printPreview.initialize();
-      cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
-      printPreview.cloudPrintInterface_.setPrinter('FooDevice', fooPrinter);
-      printPreview.cloudPrintInterface_.setPrinter('BarDevice', barPrinter);
+      const invalidPrinter =
+          getDestinationWithCertificateStatus('FooDevice', 'FooName', true);
+      const validPrinter =
+          getDestinationWithCertificateStatus('BarDevice', 'BarName', false);
+      setupInvalidCertificateTest([invalidPrinter, validPrinter]);
 
       // Get references to a few elements for testing.
       const printButton = $('print-header').querySelector('button.print');
@@ -1535,11 +1550,9 @@ cr.define('print_preview_test', function() {
         nativeLayer.reset();
 
         // Select a new, valid cloud destination.
-        printPreview.destinationStore_.selectDestination(barPrinter);
+        printPreview.destinationStore_.selectDestination(validPrinter);
         return nativeLayer.whenCalled('getPreview');
       }).then(function() {
-        // Pretend that the plugin has loaded.
-        printPreview.previewArea_.onPluginLoad_();
         // Has active print button, indicating recovery from error state.
         expectFalse(printButton.disabled);
 
@@ -1551,6 +1564,136 @@ cr.define('print_preview_test', function() {
         // be visible, so that the message is no longer visible to the user.
         expectTrue(cloudPrintMessageEl.hidden ||
                    overlayEl.classList.contains('invisible'));
+      });
+    });
+
+    // Test that GCP invalid certificate printers disable the print preview when
+    // selected and display an error and that the preview dialog can be
+    // recovered by selecting a new destination. Tests that even if destination
+    // was previously selected, the error is cleared.
+    test('InvalidCertificateErrorReselectDestination', function() {
+      const invalidPrinter =
+          getDestinationWithCertificateStatus('FooDevice', 'FooName', true);
+      const validPrinter =
+          getDestinationWithCertificateStatus('BarDevice', 'BarName', false);
+      setupInvalidCertificateTest([validPrinter, invalidPrinter]);
+
+      // Get references to a few elements for testing.
+      const printButton = $('print-header').querySelector('button.print');
+      const previewAreaEl = $('preview-area');
+      const overlayEl = previewAreaEl.getElementsByClassName(
+          'preview-area-overlay-layer')[0];
+      const cloudPrintMessageEl =
+          previewAreaEl.
+          getElementsByClassName('preview-area-unsupported-cloud-printer')[0];
+
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        // Start loading cloud destinations so that the printer capabilities
+        // arrive.
+        printPreview.destinationStore_.startLoadCloudDestinations();
+        return nativeLayer.whenCalled('getPreview');
+      }).then(function() {
+        // Has active print button.
+        expectFalse(printButton.disabled);
+        // No error message.
+        expectTrue(cloudPrintMessageEl.hidden ||
+                   overlayEl.classList.contains('invisible'));
+
+        // Select the invalid destination and wait for the event.
+        const whenInvalid = test_util.eventToPromise(
+            print_preview.DestinationStore.EventType
+                .SELECTED_DESTINATION_UNSUPPORTED,
+            printPreview.destinationStore_);
+        printPreview.destinationStore_.selectDestination(invalidPrinter);
+        return whenInvalid;
+      }).then(function() {
+        // Should have error message.
+        expectFalse(overlayEl.classList.contains('invisible'));
+        expectFalse(cloudPrintMessageEl.hidden);
+
+        // Reset
+        nativeLayer.reset();
+
+        // Reselect the valid cloud destination.
+        const whenSelected = test_util.eventToPromise(
+            print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+            printPreview.destinationStore_);
+        printPreview.destinationStore_.selectDestination(validPrinter);
+        return whenSelected;
+      }).then(function() {
+        // Has active print button.
+        expectFalse(printButton.disabled);
+        // No error message.
+        expectTrue(cloudPrintMessageEl.hidden ||
+                   overlayEl.classList.contains('invisible'));
+      });
+    });
+
+    // Test that GCP invalid certificate printers disable the print preview when
+    // selected and display an error. Verifies that the error prevents the
+    // preview from regenerating when settings are toggled.
+    test('InvalidCertificateErrorNoPreview', function() {
+      const invalidPrinter =
+          getDestinationWithCertificateStatus('FooDevice', 'FooName', true);
+      const validPrinter =
+          getDestinationWithCertificateStatus('BarDevice', 'BarName', false);
+
+      // Set the valid printer first. If the invalid printer is the first
+      // printer loaded the bug does not occur since the print ticket store is
+      // never initialized.
+      setupInvalidCertificateTest([validPrinter, invalidPrinter]);
+
+      // Get references to a few elements for testing.
+      const printButton = $('print-header').querySelector('button.print');
+      const previewAreaEl = $('preview-area');
+      const overlayEl = previewAreaEl.getElementsByClassName(
+          'preview-area-overlay-layer')[0];
+      const cloudPrintMessageEl =
+          previewAreaEl.
+          getElementsByClassName('preview-area-unsupported-cloud-printer')[0];
+
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        printPreview.destinationStore_.startLoadCloudDestinations();
+        return nativeLayer.whenCalled('getPreview');
+      }).then(function() {
+        // Select the invalid destination and wait for the event.
+        const whenInvalid = test_util.eventToPromise(
+            print_preview.DestinationStore.EventType
+                .SELECTED_DESTINATION_UNSUPPORTED,
+            printPreview.destinationStore_);
+        printPreview.destinationStore_.selectDestination(invalidPrinter);
+        return whenInvalid;
+      }).then(function() {
+        // FooDevice will be selected since it is the most recently used
+        // printer, so the invalid certificate error should be shown.
+        // The overlay must be visible for the message to be seen.
+        expectFalse(overlayEl.classList.contains('invisible'));
+        expectFalse(cloudPrintMessageEl.hidden);
+
+        // Verify that the print button is disabled
+        checkElementDisplayed(printButton, true);
+        expectTrue(printButton.disabled);
+
+        // Reset
+        nativeLayer.resetResolver('getPreview');
+
+        // Update the print ticket by changing portrait to landscape and wait
+        // for the event to fire.
+        const whenTicketChanged = test_util.eventToPromise(
+            print_preview.ticket_items.TicketItem.EventType.CHANGE,
+            printPreview.printTicketStore_.landscape);
+        const promise = nativeLayer.whenCalled('getPreview');
+        promise.then(function() { assertTrue(false); });
+        assertFalse(printPreview.printTicketStore_.landscape.getValue());
+        printPreview.printTicketStore_.landscape.updateValue(true);
+        // Wait for update. It should not result in a call to getPreview().
+        return whenTicketChanged;
+      }).then(function() {
+        // Still disabled.
+        expectTrue(printButton.disabled);
+        // Overlay still visible.
+        expectFalse(overlayEl.classList.contains('invisible'));
+        expectFalse(cloudPrintMessageEl.hidden);
       });
     });
 
