@@ -121,12 +121,11 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
         completely_reset_count_(0),
         add_count_(0) {}
 
-  void NewTable(mojo::SharedBufferHandle table) override {
-    if (table.is_valid()) {
+  void NewTable(base::ReadOnlySharedMemoryRegion* table_region) override {
+    if (table_region->IsValid()) {
       for (std::vector<VisitedLinkSlave>::size_type i = 0;
            i < g_slaves.size(); i++) {
-        g_slaves[i]->UpdateVisitedLinks(
-            table.Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY));
+        g_slaves[i]->UpdateVisitedLinks(table_region->Duplicate());
       }
     }
   }
@@ -206,8 +205,7 @@ class VisitedLinkTest : public testing::Test {
 
     // Create a slave database.
     VisitedLinkSlave slave;
-    slave.UpdateVisitedLinks(master_->shared_memory().Clone(
-        mojo::SharedBufferHandle::AccessMode::READ_ONLY));
+    slave.UpdateVisitedLinks(master_->mapped_table_memory().region.Duplicate());
     g_slaves.push_back(&slave);
 
     bool found;
@@ -335,8 +333,7 @@ TEST_F(VisitedLinkTest, DeleteAll) {
 
   {
     VisitedLinkSlave slave;
-    slave.UpdateVisitedLinks(master_->shared_memory().Clone(
-        mojo::SharedBufferHandle::AccessMode::READ_ONLY));
+    slave.UpdateVisitedLinks(master_->mapped_table_memory().region.Duplicate());
     g_slaves.push_back(&slave);
 
     // Add the test URLs.
@@ -380,8 +377,7 @@ TEST_F(VisitedLinkTest, Resizing) {
 
   // ...and a slave
   VisitedLinkSlave slave;
-  slave.UpdateVisitedLinks(master_->shared_memory().Clone(
-      mojo::SharedBufferHandle::AccessMode::READ_ONLY));
+  slave.UpdateVisitedLinks(master_->mapped_table_memory().region.Duplicate());
   g_slaves.push_back(&slave);
 
   int32_t used_count = master_->GetUsedCount();
@@ -558,7 +554,7 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
   }
 
   void UpdateVisitedLinks(
-      mojo::ScopedSharedBufferHandle table_handle) override {
+      base::ReadOnlySharedMemoryRegion table_region) override {
     new_table_count_++;
     NotifyUpdate();
   }

@@ -4,10 +4,12 @@
 
 module visitedlink.mojom;
 
+import "mojo/public/mojom/base/shared_memory.mojom";
+
 interface VisitedLinkNotificationSink {
   // Notification that the visited link database has been replaced. It has one
   // SharedMemoryHandle argument consisting of the table handle.
-  UpdateVisitedLinks(handle<shared_buffer> table_handle);
+  UpdateVisitedLinks(mojo_base.mojom.ReadOnlySharedMemoryRegion table_region);
 
   // Notification that one or more links have been added and the link coloring
   // state for the given hashes must be re-calculated.
