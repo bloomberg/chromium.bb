@@ -2212,10 +2212,12 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                                           // to remove this
                                                           // dependency too
     cm->subsampling_y = cm->subsampling_x = 0;
+    cm->color_range = 1;  // assume full color-range
     if (!(cm->profile == PROFILE_1 ||
           (cm->profile == PROFILE_2 && cm->bit_depth == AOM_BITS_12))) {
-      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                         "SRGB colorspace not copatible with profile");
+      aom_internal_error(
+          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+          "sRGB colorspace not compatible with specified profile");
     }
   } else {
     // [16,235] (including xvycc) vs [0,255] range
