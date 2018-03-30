@@ -4311,35 +4311,3 @@ TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
 }
-
-TEST_F(DiskCacheBackendTest, SparseEvict) {
-  const int kMaxSize = 512;
-
-  SetMaxSize(kMaxSize);
-  InitCache();
-
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(64));
-
-  disk_cache::Entry* entry0 = nullptr;
-  ASSERT_THAT(CreateEntry("http://www.0.com/", &entry0), IsOk());
-
-  disk_cache::Entry* entry1 = nullptr;
-  ASSERT_THAT(CreateEntry("http://www.1.com/", &entry1), IsOk());
-
-  disk_cache::Entry* entry2 = nullptr;
-  // This strange looking domain name affects cache trim order
-  // due to hashing
-  ASSERT_THAT(CreateEntry("http://www.15360.com/", &entry2), IsOk());
-
-  // Write sparse data to put us over the eviction threshold
-  ASSERT_EQ(64, WriteSparseData(entry0, 0, buffer.get(), 64));
-  ASSERT_EQ(1, WriteSparseData(entry0, 67108923, buffer.get(), 1));
-  ASSERT_EQ(1, WriteSparseData(entry1, 53, buffer.get(), 1));
-  ASSERT_EQ(1, WriteSparseData(entry2, 0, buffer.get(), 1));
-
-  // Closing these in a special order should not lead to buggy reentrant
-  // eviction.
-  entry1->Close();
-  entry2->Close();
-  entry0->Close();
-}
