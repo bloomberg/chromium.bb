@@ -23,7 +23,8 @@
 namespace arc {
 
 // static
-const char ArcNotificationView::kViewClassName[] = "ArcNotificationView";
+const char ArcNotificationView::kMessageViewSubClassName[] =
+    "ArcNotificationView";
 
 ArcNotificationView::ArcNotificationView(
     ArcNotificationItem* item,
@@ -96,8 +97,8 @@ void ArcNotificationView::RequestFocusOnCloseButton() {
   }
 }
 
-const char* ArcNotificationView::GetClassName() const {
-  return kViewClassName;
+const char* ArcNotificationView::GetMessageViewSubClassName() const {
+  return kMessageViewSubClassName;
 }
 
 void ArcNotificationView::UpdateControlButtonsVisibility() {
