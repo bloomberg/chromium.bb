@@ -12,3 +12,12 @@ imageset("popup_background") {
     "popup_background.imageset/popup_background@3x.png",
   ]
 }
+
+imageset("popup_menu_shadow") {
+  sources = [
+    "popup_menu_shadow.imageset/Contents.json",
+    "popup_menu_shadow.imageset/popup_menu_shadow.png",
+    "popup_menu_shadow.imageset/popup_menu_shadow@2x.png",
+    "popup_menu_shadow.imageset/popup_menu_shadow@3x.png",
+  ]
+}

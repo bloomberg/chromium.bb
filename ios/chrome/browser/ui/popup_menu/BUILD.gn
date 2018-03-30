@@ -49,10 +49,12 @@ source_set("popup_menu_ui") {
   deps = [
     ":flags",
     "resources:popup_background",
+    "resources:popup_menu_shadow",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/popup_menu/cells",
     "//ios/chrome/browser/ui/presenters",
     "//ios/chrome/browser/ui/table_view",
