@@ -62,7 +62,7 @@ BluezDBusManager::BluezDBusManager(dbus::Bus* bus, bool use_dbus_fakes)
                                dbus::kObjectManagerGetManagedObjects);
   GetSystemBus()
       ->GetObjectProxy(
-          bluetooth_object_manager::kBluetoothObjectManagerServiceName,
+          GetBluetoothServiceName(),
           dbus::ObjectPath(
               bluetooth_object_manager::kBluetoothObjectManagerServicePath))
       ->CallMethodWithErrorCallback(
@@ -184,10 +184,7 @@ void BluezDBusManager::OnObjectManagerNotSupported(
 }
 
 void BluezDBusManager::InitializeClients() {
-  std::string bluetooth_service_name =
-      base::FeatureList::IsEnabled(device::kNewblueDaemon)
-          ? bluetooth_object_manager::kBluetoothObjectManagerServiceName
-          : bluez_object_manager::kBluezObjectManagerServiceName;
+  std::string bluetooth_service_name = GetBluetoothServiceName();
   client_bundle_->bluetooth_adapter_client()->Init(GetSystemBus(),
                                                    bluetooth_service_name);
   client_bundle_->bluetooth_agent_manager_client()->Init(
@@ -212,6 +209,12 @@ void BluezDBusManager::InitializeClients() {
       GetSystemBus(), bluetooth_service_name);
   client_bundle_->bluetooth_profile_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
+}
+
+std::string BluezDBusManager::GetBluetoothServiceName() {
+  return base::FeatureList::IsEnabled(device::kNewblueDaemon)
+             ? bluetooth_object_manager::kBluetoothObjectManagerServiceName
+             : bluez_object_manager::kBluezObjectManagerServiceName;
 }
 
 // static
