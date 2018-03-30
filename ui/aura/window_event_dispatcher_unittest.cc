@@ -2158,8 +2158,9 @@ class WindowEventDispatcherTestWithMessageLoop
         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
     message_loop()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&WindowEventDispatcherTestWithMessageLoop::RepostEventHelper,
-                   host()->dispatcher(), base::Passed(&mouse)));
+        base::BindOnce(
+            &WindowEventDispatcherTestWithMessageLoop::RepostEventHelper,
+            host()->dispatcher(), std::move(mouse)));
     message_loop()->task_runner()->PostTask(
         FROM_HERE, message_loop()->QuitWhenIdleClosure());
 
@@ -2205,8 +2206,9 @@ TEST_P(WindowEventDispatcherTestWithMessageLoop, EventRepostedInNonNestedLoop) {
   // Perform the test in a callback, so that it runs after the message-loop
   // starts.
   message_loop()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&WindowEventDispatcherTestWithMessageLoop::RunTest,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&WindowEventDispatcherTestWithMessageLoop::RunTest,
+                     base::Unretained(this)));
   base::RunLoop().Run();
 }
 
@@ -3205,8 +3207,8 @@ class NestedLocationDelegate : public test::TestWindowDelegate {
     // is considered the first nested loop.
     base::RunLoop run_loop;
     base::MessageLoop::current()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&NestedLocationDelegate::InInitialMessageLoop,
-                              base::Unretained(this), &run_loop));
+        FROM_HERE, base::BindOnce(&NestedLocationDelegate::InInitialMessageLoop,
+                                  base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 
@@ -3216,8 +3218,8 @@ class NestedLocationDelegate : public test::TestWindowDelegate {
     // RunLoop.
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     base::MessageLoop::current()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&NestedLocationDelegate::InRunMessageLoop,
-                              base::Unretained(this), &run_loop));
+        FROM_HERE, base::BindOnce(&NestedLocationDelegate::InRunMessageLoop,
+                                  base::Unretained(this), &run_loop));
     run_loop.Run();
     initial_run_loop->Quit();
   }

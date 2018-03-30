@@ -183,7 +183,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   // Window was re-sized, so the expectation is to re-create the buffers first.
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
-      base::Bind(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
+      base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(1, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
             last_swap_buffers_result_);
@@ -191,7 +191,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
 
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
-      base::Bind(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
+      base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(2, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_buffers_result_);
   EXPECT_EQ(gfx::PresentationFeedback(), last_presentation_feedback_);

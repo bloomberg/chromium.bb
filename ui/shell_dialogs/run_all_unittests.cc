@@ -68,7 +68,7 @@ void ShellDialogsTestSuite::Shutdown() {
 int main(int argc, char** argv) {
   ShellDialogsTestSuite test_suite(argc, argv);
 
-  return base::LaunchUnitTests(
-      argc, argv,
-      base::Bind(&ShellDialogsTestSuite::Run, base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(argc, argv,
+                               base::BindOnce(&ShellDialogsTestSuite::Run,
+                                              base::Unretained(&test_suite)));
 }

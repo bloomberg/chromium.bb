@@ -15,8 +15,9 @@ int main(int argc, char** argv) {
   ui::test::CompositorTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
-      argc, argv, base::Bind(&ui::test::CompositorTestSuite::Run,
-                             base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&ui::test::CompositorTestSuite::Run,
+                     base::Unretained(&test_suite)));
 #else
   base::TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(

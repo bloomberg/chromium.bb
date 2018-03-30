@@ -781,10 +781,10 @@ void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
 
   WindowTreeConnectionEstablished(tree_ptr_.get());
   tree_ptr_->GetCursorLocationMemory(
-      base::Bind(&WindowTreeClient::OnReceivedCursorLocationMemory,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&WindowTreeClient::OnReceivedCursorLocationMemory,
+                     weak_factory_.GetWeakPtr()));
 
-  tree_ptr_.set_connection_error_handler(base::Bind(
+  tree_ptr_.set_connection_error_handler(base::BindOnce(
       &WindowTreeClient::OnConnectionLost, weak_factory_.GetWeakPtr()));
 
   if (window_manager_delegate_) {
@@ -887,8 +887,8 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
 
 EventResultCallback WindowTreeClient::CreateEventResultCallback(
     int32_t event_id) {
-  return base::Bind(&ui::mojom::WindowTree::OnWindowInputEventAck,
-                    base::Unretained(tree_), event_id);
+  return base::BindOnce(&ui::mojom::WindowTree::OnWindowInputEventAck,
+                        base::Unretained(tree_), event_id);
 }
 
 void WindowTreeClient::OnReceivedCursorLocationMemory(
@@ -1025,7 +1025,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
           base::FeatureList::IsEnabled(features::kMash)
               ? display_init_params->mirrors
               : std::vector<display::Display>(),
-          base::Bind(&OnAckMustSucceed, FROM_HERE));
+          base::BindOnce(&OnAckMustSucceed, FROM_HERE));
     }
   }
 }
@@ -1896,7 +1896,7 @@ void WindowTreeClient::SetBlockingContainers(
   }
   window_manager_client_->SetBlockingContainers(
       std::move(transport_all_blocking_containers),
-      base::Bind(&OnAckMustSucceed, FROM_HERE));
+      base::BindOnce(&OnAckMustSucceed, FROM_HERE));
 }
 
 void WindowTreeClient::GetWindowManager(
@@ -2372,7 +2372,8 @@ void WindowTreeClient::SetDisplayConfiguration(
             : display::kInvalidDisplayId;
     window_manager_client_->SetDisplayConfiguration(
         displays, std::move(viewport_metrics), primary_display_id,
-        internal_display_id, mirrors, base::Bind(&OnAckMustSucceed, FROM_HERE));
+        internal_display_id, mirrors,
+        base::BindOnce(&OnAckMustSucceed, FROM_HERE));
   }
 }
 
@@ -2391,7 +2392,7 @@ void WindowTreeClient::AddDisplayReusingWindowTreeHost(
     window_manager_client_->SetDisplayRoot(
         display, std::move(viewport_metrics), is_primary_display,
         display_root_window->server_id(), mirrors,
-        base::Bind(&OnAckMustSucceed, FROM_HERE));
+        base::BindOnce(&OnAckMustSucceed, FROM_HERE));
     window_tree_host->compositor()->SetLocalSurfaceId(
         display_root_window->GetOrAllocateLocalSurfaceId(
             window_tree_host->GetBoundsInPixels().size()));
@@ -2415,7 +2416,7 @@ void WindowTreeClient::SwapDisplayRoots(WindowTreeHostMus* window_tree_host1,
 
   if (window_manager_client_) {
     window_manager_client_->SwapDisplayRoots(
-        display_id1, display_id2, base::Bind(&OnAckMustSucceed, FROM_HERE));
+        display_id1, display_id2, base::BindOnce(&OnAckMustSucceed, FROM_HERE));
   }
 }
 

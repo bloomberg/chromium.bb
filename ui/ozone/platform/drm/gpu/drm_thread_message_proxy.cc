@@ -65,23 +65,23 @@ bool DrmThreadMessageProxy::OnMessageReceived(const IPC::Message& message) {
 void DrmThreadMessageProxy::OnCreateWindow(gfx::AcceleratedWidget widget) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::CreateWindow,
-                            base::Unretained(drm_thread_), widget));
+      FROM_HERE, base::BindOnce(&DrmThread::CreateWindow,
+                                base::Unretained(drm_thread_), widget));
 }
 
 void DrmThreadMessageProxy::OnDestroyWindow(gfx::AcceleratedWidget widget) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::DestroyWindow,
-                            base::Unretained(drm_thread_), widget));
+      FROM_HERE, base::BindOnce(&DrmThread::DestroyWindow,
+                                base::Unretained(drm_thread_), widget));
 }
 
 void DrmThreadMessageProxy::OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
                                                   const gfx::Rect& bounds) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::SetWindowBounds,
-                            base::Unretained(drm_thread_), widget, bounds));
+      FROM_HERE, base::BindOnce(&DrmThread::SetWindowBounds,
+                                base::Unretained(drm_thread_), widget, bounds));
 }
 
 void DrmThreadMessageProxy::OnCursorSet(gfx::AcceleratedWidget widget,
@@ -91,16 +91,17 @@ void DrmThreadMessageProxy::OnCursorSet(gfx::AcceleratedWidget widget,
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::SetCursor, base::Unretained(drm_thread_), widget,
-                 bitmaps, location, frame_delay_ms));
+      base::BindOnce(&DrmThread::SetCursor, base::Unretained(drm_thread_),
+                     widget, bitmaps, location, frame_delay_ms));
 }
 
 void DrmThreadMessageProxy::OnCursorMove(gfx::AcceleratedWidget widget,
                                          const gfx::Point& location) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::MoveCursor,
-                            base::Unretained(drm_thread_), widget, location));
+      FROM_HERE,
+      base::BindOnce(&DrmThread::MoveCursor, base::Unretained(drm_thread_),
+                     widget, location));
 }
 
 void DrmThreadMessageProxy::OnCheckOverlayCapabilities(
@@ -191,15 +192,15 @@ void DrmThreadMessageProxy::OnAddGraphicsDevice(
   base::File file(fd.fd);
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::AddGraphicsDevice, base::Unretained(drm_thread_),
-                 path, Passed(&file)));
+      base::BindOnce(&DrmThread::AddGraphicsDevice,
+                     base::Unretained(drm_thread_), path, std::move(file)));
 }
 
 void DrmThreadMessageProxy::OnRemoveGraphicsDevice(const base::FilePath& path) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::RemoveGraphicsDevice,
-                            base::Unretained(drm_thread_), path));
+      FROM_HERE, base::BindOnce(&DrmThread::RemoveGraphicsDevice,
+                                base::Unretained(drm_thread_), path));
 }
 
 void DrmThreadMessageProxy::OnGetHDCPState(int64_t display_id) {
@@ -232,9 +233,9 @@ void DrmThreadMessageProxy::OnSetColorCorrection(
     const std::vector<float>& correction_matrix) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DrmThread::SetColorCorrection, base::Unretained(drm_thread_),
-                 id, degamma_lut, gamma_lut, correction_matrix));
+      FROM_HERE, base::BindOnce(&DrmThread::SetColorCorrection,
+                                base::Unretained(drm_thread_), id, degamma_lut,
+                                gamma_lut, correction_matrix));
 }
 
 void DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback(

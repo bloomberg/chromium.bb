@@ -240,7 +240,7 @@ void HandleKeyboardDevicesInWorker(
     devices.push_back(keyboard);
   }
 
-  reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
+  reply_runner->PostTask(FROM_HERE, base::BindOnce(callback, devices));
 }
 
 // Helper used to parse mouse information. When it is done it uses
@@ -259,7 +259,7 @@ void HandleMouseDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
     devices.push_back(InputDevice(device_info.id, type, device_info.name));
   }
 
-  reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
+  reply_runner->PostTask(FROM_HERE, base::BindOnce(callback, devices));
 }
 
 // Helper used to parse touchpad information. When it is done it uses
@@ -278,7 +278,7 @@ void HandleTouchpadDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
     devices.push_back(InputDevice(device_info.id, type, device_info.name));
   }
 
-  reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
+  reply_runner->PostTask(FROM_HERE, base::BindOnce(callback, devices));
 }
 
 // Helper used to parse touchscreen information. When it is done it uses
@@ -337,7 +337,7 @@ void HandleTouchscreenDevicesInWorker(
     }
   }
 
-  reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
+  reply_runner->PostTask(FROM_HERE, base::BindOnce(callback, devices));
 }
 
 // Called on a worker thread to parse the device information.

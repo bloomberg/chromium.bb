@@ -74,8 +74,8 @@ void CursorIPC::Move(gfx::AcceleratedWidget window, const gfx::Point& point) {
 void CursorIPC::InitializeOnEvdevIfNecessary() {}
 
 void CursorIPC::Send(IPC::Message* message) {
-  if (IsConnected() &&
-      send_runner_->PostTask(FROM_HERE, base::Bind(send_callback_, message)))
+  if (IsConnected() && send_runner_->PostTask(
+                           FROM_HERE, base::BindOnce(send_callback_, message)))
     return;
 
   // Drop disconnected updates. DrmWindowHost will call
@@ -182,8 +182,8 @@ void DrmGpuPlatformSupportHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool DrmGpuPlatformSupportHost::Send(IPC::Message* message) {
-  if (IsConnected() &&
-      send_runner_->PostTask(FROM_HERE, base::Bind(send_callback_, message)))
+  if (IsConnected() && send_runner_->PostTask(
+                           FROM_HERE, base::BindOnce(send_callback_, message)))
     return true;
 
   delete message;

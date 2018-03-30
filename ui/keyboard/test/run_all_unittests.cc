@@ -53,7 +53,6 @@ int main(int argc, char** argv) {
   mojo::edk::Init();
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&KeyboardTestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&KeyboardTestSuite::Run, base::Unretained(&test_suite)));
 }

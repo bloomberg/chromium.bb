@@ -29,8 +29,8 @@ class ProxyHelpersTest : public testing::Test {
     EXPECT_TRUE(drm_checker_.CalledOnValidThread());
 
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ProxyHelpersTest::QuitFunctionCallback,
-                              base::Unretained(this), 8));
+        FROM_HERE, base::BindOnce(&ProxyHelpersTest::QuitFunctionCallback,
+                                  base::Unretained(this), 8));
   }
 
   // QuitFunctionCallback runs on the main thread.
@@ -106,7 +106,7 @@ TEST_F(ProxyHelpersTest, PostTask) {
   // Binds the thread checker on the drm thread.
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ProxyHelpersTest::SetDrmChecker, base::Unretained(this)));
+      base::BindOnce(&ProxyHelpersTest::SetDrmChecker, base::Unretained(this)));
 
   // Test passing a type by value.
   auto value_callback = base::BindOnce(&ProxyHelpersTest::ValueTypeCallback,
@@ -147,8 +147,8 @@ TEST_F(ProxyHelpersTest, PostTask) {
 
   // Shutdown the RunLoop.
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ProxyHelpersTest::QuitFunction, base::Unretained(this), 42));
+      FROM_HERE, base::BindOnce(&ProxyHelpersTest::QuitFunction,
+                                base::Unretained(this), 42));
 
   run_loop_.Run();
 

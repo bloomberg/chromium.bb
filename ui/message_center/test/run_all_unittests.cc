@@ -62,8 +62,7 @@ int main(int argc, char** argv) {
   MessageCenterTestSuite test_suite(argc, argv);
   mojo::edk::Init();
 
-  return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&MessageCenterTestSuite::Run, base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(argc, argv,
+                               base::BindOnce(&MessageCenterTestSuite::Run,
+                                              base::Unretained(&test_suite)));
 }

@@ -520,8 +520,8 @@ void NativeWidgetAura::Close() {
 
   if (!close_widget_factory_.HasWeakPtrs()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&NativeWidgetAura::CloseNow,
-                              close_widget_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&NativeWidgetAura::CloseNow,
+                                  close_widget_factory_.GetWeakPtr()));
   }
 }
 

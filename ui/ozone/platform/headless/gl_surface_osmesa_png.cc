@@ -67,7 +67,7 @@ void GLSurfaceOSMesaPng::WriteBufferToPng() {
     base::PostTaskWithTraits(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(&WritePngToFile, output_path_, base::Passed(&png_data)));
+        base::BindOnce(&WritePngToFile, output_path_, std::move(png_data)));
   }
 }
 

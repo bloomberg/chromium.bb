@@ -64,8 +64,9 @@ class MouseWatcher::Observer : public ui::EventHandler {
         // Mouse moved outside the host's zone, start a timer to notify the
         // listener.
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE, base::Bind(&Observer::NotifyListener,
-                                  notify_listener_factory_.GetWeakPtr()),
+            FROM_HERE,
+            base::BindOnce(&Observer::NotifyListener,
+                           notify_listener_factory_.GetWeakPtr()),
             event_type == MouseWatcherHost::MOUSE_MOVE
                 ? base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)
                 : mouse_watcher_->notify_on_exit_time_);

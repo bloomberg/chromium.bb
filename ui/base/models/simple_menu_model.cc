@@ -400,8 +400,8 @@ void SimpleMenuModel::MenuWillClose() {
   // called after this.  It's more convenient for the delegate to be called
   // afterwards though, so post a task.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&SimpleMenuModel::OnMenuClosed, method_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SimpleMenuModel::OnMenuClosed,
+                                method_factory_.GetWeakPtr()));
 }
 
 void SimpleMenuModel::SetMenuModelDelegate(

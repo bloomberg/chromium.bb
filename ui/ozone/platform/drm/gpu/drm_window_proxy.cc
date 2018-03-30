@@ -30,9 +30,9 @@ void DrmWindowProxy::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
 void DrmWindowProxy::GetVSyncParameters(
     const gfx::VSyncProvider::UpdateVSyncCallback& callback) {
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DrmThread::GetVSyncParameters, base::Unretained(drm_thread_),
-                 widget_, CreateSafeCallback(callback)));
+      FROM_HERE, base::BindOnce(&DrmThread::GetVSyncParameters,
+                                base::Unretained(drm_thread_), widget_,
+                                CreateSafeCallback(callback)));
 }
 
 }  // namespace ui

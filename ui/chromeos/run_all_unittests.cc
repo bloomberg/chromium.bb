@@ -56,7 +56,6 @@ int main(int argc, char** argv) {
   mojo::edk::Init();
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&UIChromeOSTestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&UIChromeOSTestSuite::Run, base::Unretained(&test_suite)));
 }

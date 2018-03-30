@@ -204,7 +204,7 @@ void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
   drm_device->plane_manager()->RequestPlanesReadyCallback(
       planes, base::BindOnce(&DrmThread::OnPlanesReadyForPageFlip,
                              weak_ptr_factory_.GetWeakPtr(), widget, planes,
-                             base::Passed(&callback)));
+                             std::move(callback)));
 }
 
 void DrmThread::OnPlanesReadyForPageFlip(

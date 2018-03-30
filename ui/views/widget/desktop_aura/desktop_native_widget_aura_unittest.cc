@@ -301,8 +301,8 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
   base::Closure quit_runloop = run_loop.QuitClosure();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&QuitNestedLoopAndCloseWidget, base::Passed(&widget),
-                 base::Unretained(&quit_runloop)));
+      base::BindOnce(&QuitNestedLoopAndCloseWidget, std::move(widget),
+                     base::Unretained(&quit_runloop)));
   run_loop.Run();
 }
 

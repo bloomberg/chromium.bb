@@ -124,7 +124,6 @@ int main(int argc, char** argv) {
   GlTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&GlTestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&GlTestSuite::Run, base::Unretained(&test_suite)));
 }

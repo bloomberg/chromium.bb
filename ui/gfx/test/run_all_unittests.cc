@@ -94,7 +94,6 @@ int main(int argc, char** argv) {
 #endif
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&GfxTestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&GfxTestSuite::Run, base::Unretained(&test_suite)));
 }

@@ -115,7 +115,7 @@ void SelectFileDialog::SelectFile(
     // that the listener is called asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&SelectFileDialog::CancelFileSelection, this, params));
+        base::BindOnce(&SelectFileDialog::CancelFileSelection, this, params));
     return;
   }
 
