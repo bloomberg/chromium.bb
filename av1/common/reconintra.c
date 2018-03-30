@@ -60,7 +60,7 @@ static const uint8_t extend_modes[INTRA_MODES] = {
 //       . . . .
 //       . . o .
 //       . . . .
-uint8_t has_tr_4x4[128] = {
+static uint8_t has_tr_4x4[128] = {
   255, 255, 255, 255, 85, 85, 85, 85, 119, 119, 119, 119, 85, 85, 85, 85,
   127, 127, 127, 127, 85, 85, 85, 85, 119, 119, 119, 119, 85, 85, 85, 85,
   255, 127, 255, 127, 85, 85, 85, 85, 119, 119, 119, 119, 85, 85, 85, 85,
@@ -70,59 +70,59 @@ uint8_t has_tr_4x4[128] = {
   255, 127, 255, 127, 85, 85, 85, 85, 119, 119, 119, 119, 85, 85, 85, 85,
   127, 127, 127, 127, 85, 85, 85, 85, 119, 119, 119, 119, 85, 85, 85, 85,
 };
-uint8_t has_tr_4x8[64] = {
+static uint8_t has_tr_4x8[64] = {
   255, 255, 255, 255, 119, 119, 119, 119, 127, 127, 127, 127, 119,
   119, 119, 119, 255, 127, 255, 127, 119, 119, 119, 119, 127, 127,
   127, 127, 119, 119, 119, 119, 255, 255, 255, 127, 119, 119, 119,
   119, 127, 127, 127, 127, 119, 119, 119, 119, 255, 127, 255, 127,
   119, 119, 119, 119, 127, 127, 127, 127, 119, 119, 119, 119,
 };
-uint8_t has_tr_8x4[64] = {
+static uint8_t has_tr_8x4[64] = {
   255, 255, 0, 0, 85, 85, 0, 0, 119, 119, 0, 0, 85, 85, 0, 0,
   127, 127, 0, 0, 85, 85, 0, 0, 119, 119, 0, 0, 85, 85, 0, 0,
   255, 127, 0, 0, 85, 85, 0, 0, 119, 119, 0, 0, 85, 85, 0, 0,
   127, 127, 0, 0, 85, 85, 0, 0, 119, 119, 0, 0, 85, 85, 0, 0,
 };
-uint8_t has_tr_8x8[32] = {
+static uint8_t has_tr_8x8[32] = {
   255, 255, 85, 85, 119, 119, 85, 85, 127, 127, 85, 85, 119, 119, 85, 85,
   255, 127, 85, 85, 119, 119, 85, 85, 127, 127, 85, 85, 119, 119, 85, 85,
 };
-uint8_t has_tr_8x16[16] = {
+static uint8_t has_tr_8x16[16] = {
   255, 255, 119, 119, 127, 127, 119, 119,
   255, 127, 119, 119, 127, 127, 119, 119,
 };
-uint8_t has_tr_16x8[16] = {
+static uint8_t has_tr_16x8[16] = {
   255, 0, 85, 0, 119, 0, 85, 0, 127, 0, 85, 0, 119, 0, 85, 0,
 };
-uint8_t has_tr_16x16[8] = {
+static uint8_t has_tr_16x16[8] = {
   255, 85, 119, 85, 127, 85, 119, 85,
 };
-uint8_t has_tr_16x32[4] = { 255, 119, 127, 119 };
-uint8_t has_tr_32x16[4] = { 15, 5, 7, 5 };
-uint8_t has_tr_32x32[2] = { 95, 87 };
-uint8_t has_tr_32x64[1] = { 127 };
-uint8_t has_tr_64x32[1] = { 19 };
-uint8_t has_tr_64x64[1] = { 7 };
-uint8_t has_tr_64x128[1] = { 3 };
-uint8_t has_tr_128x64[1] = { 1 };
-uint8_t has_tr_128x128[1] = { 1 };
-uint8_t has_tr_4x16[32] = {
+static uint8_t has_tr_16x32[4] = { 255, 119, 127, 119 };
+static uint8_t has_tr_32x16[4] = { 15, 5, 7, 5 };
+static uint8_t has_tr_32x32[2] = { 95, 87 };
+static uint8_t has_tr_32x64[1] = { 127 };
+static uint8_t has_tr_64x32[1] = { 19 };
+static uint8_t has_tr_64x64[1] = { 7 };
+static uint8_t has_tr_64x128[1] = { 3 };
+static uint8_t has_tr_128x64[1] = { 1 };
+static uint8_t has_tr_128x128[1] = { 1 };
+static uint8_t has_tr_4x16[32] = {
   255, 255, 255, 255, 127, 127, 127, 127, 255, 127, 255,
   127, 127, 127, 127, 127, 255, 255, 255, 127, 127, 127,
   127, 127, 255, 127, 255, 127, 127, 127, 127, 127,
 };
-uint8_t has_tr_16x4[32] = {
+static uint8_t has_tr_16x4[32] = {
   255, 0, 0, 0, 85, 0, 0, 0, 119, 0, 0, 0, 85, 0, 0, 0,
   127, 0, 0, 0, 85, 0, 0, 0, 119, 0, 0, 0, 85, 0, 0, 0,
 };
-uint8_t has_tr_8x32[8] = {
+static uint8_t has_tr_8x32[8] = {
   255, 255, 127, 127, 255, 127, 127, 127,
 };
-uint8_t has_tr_32x8[8] = {
+static uint8_t has_tr_32x8[8] = {
   15, 0, 5, 0, 7, 0, 5, 0,
 };
-uint8_t has_tr_16x64[2] = { 255, 127 };
-uint8_t has_tr_64x16[2] = { 3, 1 };
+static uint8_t has_tr_16x64[2] = { 255, 127 };
+static uint8_t has_tr_64x16[2] = { 3, 1 };
 
 static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
   // 4X4
@@ -143,15 +143,15 @@ static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
   has_tr_32x8, has_tr_16x64, has_tr_64x16
 };
 
-uint8_t has_tr_vert_8x8[32] = {
+static uint8_t has_tr_vert_8x8[32] = {
   255, 255, 0, 0, 119, 119, 0, 0, 127, 127, 0, 0, 119, 119, 0, 0,
   255, 127, 0, 0, 119, 119, 0, 0, 127, 127, 0, 0, 119, 119, 0, 0,
 };
-uint8_t has_tr_vert_16x16[8] = {
+static uint8_t has_tr_vert_16x16[8] = {
   255, 0, 119, 0, 127, 0, 119, 0,
 };
-uint8_t has_tr_vert_32x32[2] = { 15, 7 };
-uint8_t has_tr_vert_64x64[1] = { 3 };
+static uint8_t has_tr_vert_32x32[2] = { 15, 7 };
+static uint8_t has_tr_vert_64x64[1] = { 3 };
 
 // The _vert_* tables are like the ordinary tables above, but describe the
 // order we visit square blocks when doing a PARTITION_VERT_A or
@@ -249,7 +249,7 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
 
 // Similar to the has_tr_* tables, but store if the bottom-left reference
 // pixels are available.
-uint8_t has_bl_4x4[128] = {
+static uint8_t has_bl_4x4[128] = {
   84, 85, 85, 85, 16, 17, 17, 17, 84, 85, 85, 85, 0,  1,  1,  1,  84, 85, 85,
   85, 16, 17, 17, 17, 84, 85, 85, 85, 0,  0,  1,  0,  84, 85, 85, 85, 16, 17,
   17, 17, 84, 85, 85, 85, 0,  1,  1,  1,  84, 85, 85, 85, 16, 17, 17, 17, 84,
@@ -258,56 +258,56 @@ uint8_t has_bl_4x4[128] = {
   0,  84, 85, 85, 85, 16, 17, 17, 17, 84, 85, 85, 85, 0,  1,  1,  1,  84, 85,
   85, 85, 16, 17, 17, 17, 84, 85, 85, 85, 0,  0,  0,  0,
 };
-uint8_t has_bl_4x8[64] = {
+static uint8_t has_bl_4x8[64] = {
   16, 17, 17, 17, 0, 1, 1, 1, 16, 17, 17, 17, 0, 0, 1, 0,
   16, 17, 17, 17, 0, 1, 1, 1, 16, 17, 17, 17, 0, 0, 0, 0,
   16, 17, 17, 17, 0, 1, 1, 1, 16, 17, 17, 17, 0, 0, 1, 0,
   16, 17, 17, 17, 0, 1, 1, 1, 16, 17, 17, 17, 0, 0, 0, 0,
 };
-uint8_t has_bl_8x4[64] = {
+static uint8_t has_bl_8x4[64] = {
   254, 255, 84, 85, 254, 255, 16, 17, 254, 255, 84, 85, 254, 255, 0, 1,
   254, 255, 84, 85, 254, 255, 16, 17, 254, 255, 84, 85, 254, 255, 0, 0,
   254, 255, 84, 85, 254, 255, 16, 17, 254, 255, 84, 85, 254, 255, 0, 1,
   254, 255, 84, 85, 254, 255, 16, 17, 254, 255, 84, 85, 254, 255, 0, 0,
 };
-uint8_t has_bl_8x8[32] = {
+static uint8_t has_bl_8x8[32] = {
   84, 85, 16, 17, 84, 85, 0, 1, 84, 85, 16, 17, 84, 85, 0, 0,
   84, 85, 16, 17, 84, 85, 0, 1, 84, 85, 16, 17, 84, 85, 0, 0,
 };
-uint8_t has_bl_8x16[16] = {
+static uint8_t has_bl_8x16[16] = {
   16, 17, 0, 1, 16, 17, 0, 0, 16, 17, 0, 1, 16, 17, 0, 0,
 };
-uint8_t has_bl_16x8[16] = {
+static uint8_t has_bl_16x8[16] = {
   254, 84, 254, 16, 254, 84, 254, 0, 254, 84, 254, 16, 254, 84, 254, 0,
 };
-uint8_t has_bl_16x16[8] = {
+static uint8_t has_bl_16x16[8] = {
   84, 16, 84, 0, 84, 16, 84, 0,
 };
-uint8_t has_bl_16x32[4] = { 16, 0, 16, 0 };
-uint8_t has_bl_32x16[4] = { 78, 14, 78, 14 };
-uint8_t has_bl_32x32[2] = { 4, 4 };
-uint8_t has_bl_32x64[1] = { 0 };
-uint8_t has_bl_64x32[1] = { 34 };
-uint8_t has_bl_64x64[1] = { 0 };
-uint8_t has_bl_64x128[1] = { 0 };
-uint8_t has_bl_128x64[1] = { 0 };
-uint8_t has_bl_128x128[1] = { 0 };
-uint8_t has_bl_4x16[32] = {
+static uint8_t has_bl_16x32[4] = { 16, 0, 16, 0 };
+static uint8_t has_bl_32x16[4] = { 78, 14, 78, 14 };
+static uint8_t has_bl_32x32[2] = { 4, 4 };
+static uint8_t has_bl_32x64[1] = { 0 };
+static uint8_t has_bl_64x32[1] = { 34 };
+static uint8_t has_bl_64x64[1] = { 0 };
+static uint8_t has_bl_64x128[1] = { 0 };
+static uint8_t has_bl_128x64[1] = { 0 };
+static uint8_t has_bl_128x128[1] = { 0 };
+static uint8_t has_bl_4x16[32] = {
   0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0,
   0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0,
 };
-uint8_t has_bl_16x4[32] = {
+static uint8_t has_bl_16x4[32] = {
   254, 254, 254, 84, 254, 254, 254, 16, 254, 254, 254, 84, 254, 254, 254, 0,
   254, 254, 254, 84, 254, 254, 254, 16, 254, 254, 254, 84, 254, 254, 254, 0,
 };
-uint8_t has_bl_8x32[8] = {
+static uint8_t has_bl_8x32[8] = {
   0, 1, 0, 0, 0, 1, 0, 0,
 };
-uint8_t has_bl_32x8[8] = {
+static uint8_t has_bl_32x8[8] = {
   238, 78, 238, 14, 238, 78, 238, 14,
 };
-uint8_t has_bl_16x64[2] = { 0, 0 };
-uint8_t has_bl_64x16[2] = { 42, 42 };
+static uint8_t has_bl_16x64[2] = { 0, 0 };
+static uint8_t has_bl_64x16[2] = { 42, 42 };
 
 static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
   // 4X4
@@ -328,15 +328,15 @@ static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
   has_bl_32x8, has_bl_16x64, has_bl_64x16
 };
 
-uint8_t has_bl_vert_8x8[32] = {
+static uint8_t has_bl_vert_8x8[32] = {
   254, 255, 16, 17, 254, 255, 0, 1, 254, 255, 16, 17, 254, 255, 0, 0,
   254, 255, 16, 17, 254, 255, 0, 1, 254, 255, 16, 17, 254, 255, 0, 0,
 };
-uint8_t has_bl_vert_16x16[8] = {
+static uint8_t has_bl_vert_16x16[8] = {
   254, 16, 254, 0, 254, 16, 254, 0,
 };
-uint8_t has_bl_vert_32x32[2] = { 14, 14 };
-uint8_t has_bl_vert_64x64[1] = { 2 };
+static uint8_t has_bl_vert_32x32[2] = { 14, 14 };
+static uint8_t has_bl_vert_64x64[1] = { 2 };
 
 // The _vert_* tables are like the ordinary tables above, but describe the
 // order we visit square blocks when doing a PARTITION_VERT_A or
