@@ -4,8 +4,6 @@
 
 #include "services/shape_detection/face_detection_impl_win.h"
 
-#include <windows.media.faceanalysis.h>
-
 #include "base/bind.h"
 #include "base/logging.h"
 
