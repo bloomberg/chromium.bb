@@ -448,8 +448,8 @@ void HWNDMessageHandler::Close() {
     // dereference us when the callback returns).
     waiting_for_close_now_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&HWNDMessageHandler::CloseNow, weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&HWNDMessageHandler::CloseNow,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1383,8 +1383,9 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
     if (--attempts <= 0)
       return;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&HWNDMessageHandler::ForceRedrawWindow,
-                              weak_factory_.GetWeakPtr(), attempts),
+        FROM_HERE,
+        base::BindOnce(&HWNDMessageHandler::ForceRedrawWindow,
+                       weak_factory_.GetWeakPtr(), attempts),
         base::TimeDelta::FromMilliseconds(500));
     return;
   }
@@ -2396,8 +2397,9 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
                            event_time, &touch_events);
         touch_down_contexts_++;
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE, base::Bind(&HWNDMessageHandler::ResetTouchDownContext,
-                                  weak_factory_.GetWeakPtr()),
+            FROM_HERE,
+            base::BindOnce(&HWNDMessageHandler::ResetTouchDownContext,
+                           weak_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
       } else {
         if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
@@ -2430,8 +2432,8 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
     // events on windows don't fire if we enter a modal loop in the context of
     // a touch event.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&HWNDMessageHandler::HandleTouchEvents,
-                              weak_factory_.GetWeakPtr(), touch_events));
+        FROM_HERE, base::BindOnce(&HWNDMessageHandler::HandleTouchEvents,
+                                  weak_factory_.GetWeakPtr(), touch_events));
   }
   CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(l_param));
   SetMsgHandled(FALSE);
@@ -2536,8 +2538,9 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         // and send us further updates.
         ignore_window_pos_changes_ = true;
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(&HWNDMessageHandler::StopIgnoringPosChanges,
-                                  weak_factory_.GetWeakPtr()));
+            FROM_HERE,
+            base::BindOnce(&HWNDMessageHandler::StopIgnoringPosChanges,
+                           weak_factory_.GetWeakPtr()));
       }
       last_monitor_ = monitor;
       last_monitor_rect_ = monitor_rect;

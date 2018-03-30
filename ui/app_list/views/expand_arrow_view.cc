@@ -268,8 +268,8 @@ void ExpandArrowView::ScheduleHintingAnimation(bool is_first_time) {
     delay_in_sec = kAnimationInitialWaitTimeInSec;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ExpandArrowView::StartHintingAnimation,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ExpandArrowView::StartHintingAnimation,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(delay_in_sec));
 }
 

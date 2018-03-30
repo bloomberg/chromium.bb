@@ -24,7 +24,7 @@ void PostSyncTask(
   base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool success = task_runner->PostTask(
-      FROM_HERE, base::Bind(OnRunPostedTaskAndSignal, callback, &wait));
+      FROM_HERE, base::BindOnce(OnRunPostedTaskAndSignal, callback, &wait));
   if (success)
     wait.Wait();
 }

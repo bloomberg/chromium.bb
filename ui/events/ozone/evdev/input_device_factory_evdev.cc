@@ -189,8 +189,8 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&InputDeviceFactoryEvdev::AttachInputDevice,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&converter)));
+      base::BindOnce(&InputDeviceFactoryEvdev::AttachInputDevice,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(converter)));
 
   ++pending_device_changes_;
 }

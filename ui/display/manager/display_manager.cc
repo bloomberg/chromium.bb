@@ -1573,8 +1573,8 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
   if (software_mirroring_display_list_.empty() || !delegate_)
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DisplayManager::CreateMirrorWindowIfAny,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&DisplayManager::CreateMirrorWindowIfAny,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DisplayManager::UpdateInternalManagedDisplayModeListForTest() {

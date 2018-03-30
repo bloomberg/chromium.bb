@@ -540,7 +540,7 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
         CreateGestureScrollFlingPinch(type, source_device, delta_y_or_scale, x,
                                       y),
         latency,
-        base::Bind(
+        base::BindOnce(
             &InputHandlerProxyEventQueueTest::DidHandleInputEventAndOverscroll,
             weak_ptr_factory_.GetWeakPtr()));
   }

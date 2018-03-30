@@ -59,7 +59,7 @@ static void FinishedAsyncCopyRequest(
     aura::Window* window = tracker->windows()[0];
     MakeAsyncCopyRequest(
         window->layer(), source_rect,
-        base::BindOnce(&FinishedAsyncCopyRequest, base::Passed(&tracker),
+        base::BindOnce(&FinishedAsyncCopyRequest, std::move(tracker),
                        source_rect, std::move(callback), retry_count + 1));
     return;
   }
@@ -75,8 +75,8 @@ static void MakeInitialAsyncCopyRequest(
   tracker->Add(window);
   MakeAsyncCopyRequest(
       window->layer(), source_rect,
-      base::BindOnce(&FinishedAsyncCopyRequest, base::Passed(&tracker),
-                     source_rect, std::move(callback), 0));
+      base::BindOnce(&FinishedAsyncCopyRequest, std::move(tracker), source_rect,
+                     std::move(callback), 0));
 }
 
 void GrabWindowSnapshotAndScaleAsyncAura(

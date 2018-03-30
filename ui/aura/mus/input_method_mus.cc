@@ -145,8 +145,8 @@ ui::EventDispatchDetails InputMethodMus::SendKeyEventToInputMethod(
   pending_callbacks_.push_back(std::move(ack_callback));
   input_method_->ProcessKeyEvent(
       ui::Event::Clone(event),
-      base::Bind(&InputMethodMus::ProcessKeyEventCallback,
-                 base::Unretained(this), event));
+      base::BindOnce(&InputMethodMus::ProcessKeyEventCallback,
+                     base::Unretained(this), event));
 
   return ui::EventDispatchDetails();
 }

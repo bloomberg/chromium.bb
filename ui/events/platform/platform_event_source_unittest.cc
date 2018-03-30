@@ -499,8 +499,9 @@ class PlatformEventTestWithMessageLoop : public PlatformEventTest {
 
   void Run() {
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&PlatformEventTestWithMessageLoop::RunTestImpl,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&PlatformEventTestWithMessageLoop::RunTestImpl,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -650,7 +651,7 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
     base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
     loop->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration::
                 NestedTask,
             base::Unretained(this), base::Unretained(&list),
@@ -715,8 +716,8 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
     base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
     loop->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(&TestPlatformEventSource::Dispatch),
-                   base::Unretained(source()), *event));
+        base::BindOnce(base::IgnoreResult(&TestPlatformEventSource::Dispatch),
+                       base::Unretained(source()), *event));
     run_loop.Run();
     ASSERT_EQ(2u, list->size());
     EXPECT_EQ(15, (*list)[0]);
@@ -752,10 +753,10 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
     base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
     loop->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration::
                 NestedTask,
-            base::Unretained(this), base::Passed(&override_handle),
+            base::Unretained(this), std::move(override_handle),
             base::Unretained(&list)));
     run_loop_.Run();
 

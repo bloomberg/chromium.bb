@@ -729,9 +729,8 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
     std::unique_ptr<ui::Event> pending_event = ui::Event::Clone(*event);
     if (pending_events_.empty()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&EventGenerator::DispatchNextPendingEvent,
-                     base::Unretained(this)));
+          FROM_HERE, base::BindOnce(&EventGenerator::DispatchNextPendingEvent,
+                                    base::Unretained(this)));
     }
     pending_events_.push_back(std::move(pending_event));
   } else {
@@ -775,9 +774,8 @@ void EventGenerator::DispatchNextPendingEvent() {
   pending_events_.pop_front();
   if (!pending_events_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&EventGenerator::DispatchNextPendingEvent,
-                   base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&EventGenerator::DispatchNextPendingEvent,
+                                  base::Unretained(this)));
   }
 }
 

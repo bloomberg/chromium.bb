@@ -344,8 +344,8 @@ void SelectFileDialogImpl::SelectFileImpl(
                                      default_extension, BeginRun(owner),
                                      owner, params);
   execute_params.run_state.dialog_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SelectFileDialogImpl::ExecuteSelectFile, this,
-                            execute_params));
+      FROM_HERE, base::BindOnce(&SelectFileDialogImpl::ExecuteSelectFile, this,
+                                execute_params));
 }
 
 bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
@@ -390,20 +390,22 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     if (RunOpenMultiFileDialog(params.title, filter,
                                params.run_state.owner, &paths)) {
       params.ui_task_runner->PostTask(
-          FROM_HERE, base::Bind(&SelectFileDialogImpl::MultiFilesSelected, this,
-                                paths, params.params, params.run_state));
+          FROM_HERE,
+          base::BindOnce(&SelectFileDialogImpl::MultiFilesSelected, this, paths,
+                         params.params, params.run_state));
       return;
     }
   }
 
   if (success) {
     params.ui_task_runner->PostTask(
-        FROM_HERE, base::Bind(&SelectFileDialogImpl::FileSelected, this, path,
-                              filter_index, params.params, params.run_state));
+        FROM_HERE,
+        base::BindOnce(&SelectFileDialogImpl::FileSelected, this, path,
+                       filter_index, params.params, params.run_state));
   } else {
     params.ui_task_runner->PostTask(
-        FROM_HERE, base::Bind(&SelectFileDialogImpl::FileNotSelected, this,
-                              params.params, params.run_state));
+        FROM_HERE, base::BindOnce(&SelectFileDialogImpl::FileNotSelected, this,
+                                  params.params, params.run_state));
   }
 }
 

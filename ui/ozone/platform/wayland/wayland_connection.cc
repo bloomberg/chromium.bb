@@ -92,7 +92,8 @@ void WaylandConnection::ScheduleFlush() {
     return;
   DCHECK(base::MessageLoopForUI::IsCurrent());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&WaylandConnection::Flush, base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&WaylandConnection::Flush, base::Unretained(this)));
   scheduled_flush_ = true;
 }
 

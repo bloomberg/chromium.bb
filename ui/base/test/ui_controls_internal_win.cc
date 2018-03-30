@@ -169,7 +169,8 @@ void InputDispatcher::InstallHook() {
       // too long.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&InputDispatcher::OnTimeout, weak_factory_.GetWeakPtr()),
+          base::BindOnce(&InputDispatcher::OnTimeout,
+                         weak_factory_.GetWeakPtr()),
           TestTimeouts::action_timeout());
     }
   }

@@ -67,7 +67,6 @@ int main(int argc, char** argv) {
   mojo::edk::Init();
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&AppListTestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&AppListTestSuite::Run, base::Unretained(&test_suite)));
 }

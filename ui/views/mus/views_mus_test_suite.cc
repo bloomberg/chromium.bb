@@ -86,8 +86,8 @@ class ServiceManagerConnection {
     base::Thread::Options options;
     thread_.StartWithOptions(options);
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ServiceManagerConnection::SetUpConnections,
-                              base::Unretained(this), &wait));
+        FROM_HERE, base::BindOnce(&ServiceManagerConnection::SetUpConnections,
+                                  base::Unretained(this), &wait));
     wait.Wait();
   }
 
@@ -95,8 +95,9 @@ class ServiceManagerConnection {
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ServiceManagerConnection::TearDownConnections,
-                              base::Unretained(this), &wait));
+        FROM_HERE,
+        base::BindOnce(&ServiceManagerConnection::TearDownConnections,
+                       base::Unretained(this), &wait));
     wait.Wait();
   }
 
@@ -111,8 +112,8 @@ class ServiceManagerConnection {
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ServiceManagerConnection::CloneConnector,
-                              base::Unretained(this), &wait));
+        FROM_HERE, base::BindOnce(&ServiceManagerConnection::CloneConnector,
+                                  base::Unretained(this), &wait));
     wait.Wait();
     DCHECK(service_manager_connector_);
     return service_manager_connector_.get();

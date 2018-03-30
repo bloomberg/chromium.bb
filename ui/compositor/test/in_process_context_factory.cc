@@ -102,8 +102,8 @@ class DirectOutputSurface : public viz::OutputSurface {
     gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
 
     context_provider_->ContextSupport()->SignalSyncToken(
-        sync_token, base::Bind(&DirectOutputSurface::OnSwapBuffersComplete,
-                               weak_ptr_factory_.GetWeakPtr(), ++swap_id_));
+        sync_token, base::BindOnce(&DirectOutputSurface::OnSwapBuffersComplete,
+                                   weak_ptr_factory_.GetWeakPtr(), ++swap_id_));
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());

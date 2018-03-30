@@ -19,7 +19,7 @@ void PostAsyncTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::Callback<void(Args...)>& callback,
     Args... args) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, args...));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, args...));
 }
 
 template <typename... Args>

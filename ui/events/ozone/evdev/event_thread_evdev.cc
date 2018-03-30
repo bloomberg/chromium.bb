@@ -48,7 +48,7 @@ class EvdevThread : public base::Thread {
       cursor_->InitializeOnEvdev();
 
     init_runner_->PostTask(FROM_HERE,
-                           base::Bind(init_callback_, base::Passed(&proxy)));
+                           base::BindOnce(init_callback_, std::move(proxy)));
   }
 
   void CleanUp() override {

@@ -31,12 +31,14 @@ ViewsTestSuite::~ViewsTestSuite() {}
 
 int ViewsTestSuite::RunTests() {
   return base::LaunchUnitTests(
-      argc_, argv_, base::Bind(&ViewsTestSuite::Run, base::Unretained(this)));
+      argc_, argv_,
+      base::BindOnce(&ViewsTestSuite::Run, base::Unretained(this)));
 }
 
 int ViewsTestSuite::RunTestsSerially() {
   return base::LaunchUnitTestsSerially(
-      argc_, argv_, base::Bind(&ViewsTestSuite::Run, base::Unretained(this)));
+      argc_, argv_,
+      base::BindOnce(&ViewsTestSuite::Run, base::Unretained(this)));
 }
 
 void ViewsTestSuite::Initialize() {

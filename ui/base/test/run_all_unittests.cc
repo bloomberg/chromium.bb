@@ -99,8 +99,7 @@ int main(int argc, char** argv) {
   UIBaseTestSuite test_suite(argc, argv);
 
   mojo::edk::Init();
-  return base::LaunchUnitTests(argc,
-                               argv,
-                               base::Bind(&UIBaseTestSuite::Run,
-                                          base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(
+      argc, argv,
+      base::BindOnce(&UIBaseTestSuite::Run, base::Unretained(&test_suite)));
 }

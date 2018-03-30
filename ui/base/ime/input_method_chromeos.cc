@@ -450,10 +450,10 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
     AckCallback ack_callback) {
   return DispatchKeyEventPostIME(
       event,
-      base::Bind(&InputMethodChromeOS::PostProcessUnfilteredKeyPressEvent,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(new ui::KeyEvent(*event)), GetTextInputClient(),
-                 Passed(&ack_callback)));
+      base::BindOnce(&InputMethodChromeOS::PostProcessUnfilteredKeyPressEvent,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Owned(new ui::KeyEvent(*event)),
+                     GetTextInputClient(), std::move(ack_callback)));
 }
 
 void InputMethodChromeOS::PostProcessUnfilteredKeyPressEvent(

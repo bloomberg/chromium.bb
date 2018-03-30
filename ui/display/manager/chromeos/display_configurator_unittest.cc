@@ -1407,8 +1407,8 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
   InitWithSingleOutput();
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
   configurator_.RelinquishControl(
-      base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
-                 base::Unretained(this)));
+      base::BindOnce(&DisplayConfiguratorTest::OnDisplayControlUpdated,
+                     base::Unretained(this)));
   EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
   EXPECT_EQ(
       JoinActions(
@@ -1416,8 +1416,8 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
           kRelinquishDisplayControl, nullptr),
       log_->GetActionsAndClear());
   configurator_.TakeControl(
-      base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
-                 base::Unretained(this)));
+      base::BindOnce(&DisplayConfiguratorTest::OnDisplayControlUpdated,
+                     base::Unretained(this)));
   EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
   EXPECT_EQ(
       JoinActions(

@@ -104,8 +104,8 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromDestruction) {
     TestInputMethod test_input_method;
     InputMethodMusTestApi::SetInputMethod(&input_method_mus,
                                           &test_input_method);
-    EventResultCallback callback =
-        base::Bind(&RunFunctionWithEventResult, &was_event_result_callback_run);
+    EventResultCallback callback = base::BindOnce(
+        &RunFunctionWithEventResult, &was_event_result_callback_run);
 
     ui::EventDispatchDetails details =
         InputMethodMusTestApi::CallSendKeyEventToInputMethod(
@@ -139,8 +139,8 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromOnDidChangeFocusedClient) {
   InputMethodMus input_method_mus(&input_method_delegate, &window);
   TestInputMethod test_input_method;
   InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
-  EventResultCallback callback =
-      base::Bind(&RunFunctionWithEventResult, &was_event_result_callback_run);
+  EventResultCallback callback = base::BindOnce(&RunFunctionWithEventResult,
+                                                &was_event_result_callback_run);
   ui::EventDispatchDetails details =
       InputMethodMusTestApi::CallSendKeyEventToInputMethod(
           &input_method_mus,
@@ -204,8 +204,8 @@ TEST_F(InputMethodMusTest, ChangeTextInputTypeWhileProcessingCallback) {
                                                 &test_input_client);
   TestInputMethod test_input_method;
   InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
-  EventResultCallback callback =
-      base::Bind(&RunFunctionWithEventResult, &was_event_result_callback_run);
+  EventResultCallback callback = base::BindOnce(&RunFunctionWithEventResult,
+                                                &was_event_result_callback_run);
   const ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
   ui::EventDispatchDetails details =
       InputMethodMusTestApi::CallSendKeyEventToInputMethod(

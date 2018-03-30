@@ -131,7 +131,8 @@ void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent* event) {
 
   if (held_repostable_event_) {
     base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
-        FROM_HERE, base::Bind(
+        FROM_HERE,
+        base::BindOnce(
             base::IgnoreResult(&WindowEventDispatcher::DispatchHeldEvents),
             repost_event_factory_.GetWeakPtr()));
   }
@@ -823,8 +824,8 @@ void WindowEventDispatcher::PostSynthesizeMouseMove() {
   synthesize_mouse_move_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(
-          &WindowEventDispatcher::SynthesizeMouseMoveEvent),
+      base::BindOnce(
+          base::IgnoreResult(&WindowEventDispatcher::SynthesizeMouseMoveEvent),
           held_event_factory_.GetWeakPtr()));
 }
 
