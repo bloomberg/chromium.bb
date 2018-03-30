@@ -73,7 +73,7 @@ static void *vc4_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t m
 	}
 
 	vma->length = bo->total_size;
-	return mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	return mmap(NULL, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    bo_map.offset);
 }
 

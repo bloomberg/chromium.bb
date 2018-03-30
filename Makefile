@@ -31,6 +31,9 @@ endif
 ifdef DRV_ROCKCHIP
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_rockchip)
 endif
+ifdef DRV_VC4
+	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_vc4)
+endif
 
 CPPFLAGS += $(PC_CFLAGS)
 LDLIBS += $(PC_LIBS)
