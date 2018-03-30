@@ -21,6 +21,7 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("channel.gni")
 import("java_sources.gni")
 import("static_initializers.gni")
+import("//build/config/android/extract_unwind_tables.gni")
 
 manifest_package = "org.chromium.chrome"
 
@@ -733,6 +734,22 @@ java_group("chrome_public_non_pak_assets") {
   }
 }
 
+# Enable stack unwinding only for local official builds. Enabling on all local
+# builds would increase build time for developers. Choosing a release channel
+# should be done based on the size of the unwind file and performance of
+# unwinding.
+_add_unwind_tables_in_apk = can_unwind_with_cfi_table && is_android &&
+                            is_official_build && android_channel == "default"
+
+if (_add_unwind_tables_in_apk) {
+  unwind_table_asset("chrome_public_unwind_assets") {
+    library_target = "chrome"
+    deps = [
+      ":libchrome",
+    ]
+  }
+}
+
 android_assets("chrome_public_pak_assets") {
   sources = [
     "$root_out_dir/chrome_100_percent.pak",
@@ -744,6 +761,9 @@ android_assets("chrome_public_pak_assets") {
     ":chrome_public_locale_pak_assets",
     "//chrome:packed_resources",
   ]
+  if (_add_unwind_tables_in_apk) {
+    deps += [ ":chrome_public_unwind_assets" ]
+  }
 }
 
 # This target is separate from chrome_public_pak_assets because it does not
@@ -969,6 +989,15 @@ if (current_toolchain == default_toolchain) {
     ]
   }
 
+  if (_add_unwind_tables_in_apk) {
+    unwind_table_asset("monochrome_unwind_assets") {
+      library_target = "monochrome"
+      deps = [
+        ":monochrome",
+      ]
+    }
+  }
+
   # This target explicitly includes locale paks via deps.
   android_assets("monochrome_pak_assets") {
     sources = [
@@ -982,6 +1011,9 @@ if (current_toolchain == default_toolchain) {
       ":monochrome_paks",
       "//android_webview:locale_pak_assets",
     ]
+    if (_add_unwind_tables_in_apk) {
+      deps += [ ":monochrome_unwind_assets" ]
+    }
   }
 }  # current_toolchain == host_toolchain
 

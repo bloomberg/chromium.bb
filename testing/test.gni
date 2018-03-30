@@ -110,6 +110,9 @@ template("test") {
         unwind_table_asset(_unwind_table_asset_name) {
           testonly = true
           library_target = _library_target
+          deps = [
+            ":$_library_target",
+          ]
         }
       }
 
