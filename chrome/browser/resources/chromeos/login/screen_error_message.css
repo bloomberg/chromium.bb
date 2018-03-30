@@ -3,10 +3,6 @@
  * found in the LICENSE file. */
 
 #error-message {
-  width: 650px;
-}
-
-#error-message[md-mode] {
   width: 768px;
 }
 
@@ -46,16 +42,6 @@
   display: block;
 }
 
-#error-message-classic .error-header {
-  background-clip: padding-box;
-  background-color: white;
-  border-bottom: 1px solid rgb(238,238,238);
-  padding: 71px 20px 50px;
-  text-align: center;
-  /* A hack used to prevent aliasing on High-DPI displays. */
-  transform: scale3d(1,1,1);
-}
-
 .error-icon {
   height: 64px;
   margin-bottom: 40px;
@@ -65,31 +51,9 @@ oobe-dialog .error-icon {
   display: none;
 }
 
-#error-message-classic .error-title {
-  color: #606060;
-  font-size: 15px;
-}
-
-#error-message-classic .error-body {
-  background-color: rgb(249,249,249);
-  padding: 20px 20px 20px;
-}
-
-.error-controls {
-  background-color: rgb(249,249,249);
-  padding: 20px 20px 20px;
-}
-
 .error-message-paragraph {
   font-size: 12px;
   line-height: 18px;
-}
-
-#error-message-classic .error-message-paragraph {
-  margin-top: 20px;
-}
-
-#error-message-md .error-message-paragraph {
   margin-bottom: 20px;
 }
 
@@ -145,15 +109,6 @@ oobe-dialog .error-icon {
 
 #connecting-indicator-ellipsis-3 {
   animation: connecting-indicator-ellipsis 3s 1s infinite;
-}
-
-#error-navigation {
-  color: rgba(0, 0, 0, .54);
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 1;
 }
 
 #error-message-md-bottom-margin {
