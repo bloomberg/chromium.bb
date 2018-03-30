@@ -16,8 +16,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver_proc.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
+
+namespace network {
+class SimpleURLLoader;
+}
 
 class PrefRegistrySimple;
 
@@ -38,8 +41,7 @@ class PrefRegistrySimple;
 // return a value at all times (even during startup or in unittest mode).  If no
 // redirection is in place, the returned GURL will be empty.
 class IntranetRedirectDetector
-    : public net::URLFetcherDelegate,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->intranet_redirect_detector_.  No code other than the
@@ -61,15 +63,17 @@ class IntranetRedirectDetector
   // switch sleep has finished.  Runs any pending fetch.
   void FinishSleep();
 
-  // net::URLFetcherDelegate
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Invoked from SimpleURLLoader after download is complete.
+  void OnSimpleLoaderComplete(network::SimpleURLLoader* source,
+                              std::unique_ptr<std::string> response_body);
 
   // NetworkChangeNotifier::NetworkChangeObserver
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   GURL redirect_origin_;
-  std::map<net::URLFetcher*, std::unique_ptr<net::URLFetcher>> fetchers_;
+  std::map<network::SimpleURLLoader*, std::unique_ptr<network::SimpleURLLoader>>
+      simple_loaders_;
   std::vector<GURL> resulting_origins_;
   bool in_sleep_;  // True if we're in the seven-second "no fetching" period
                    // that begins at browser start, or the one-second "no
