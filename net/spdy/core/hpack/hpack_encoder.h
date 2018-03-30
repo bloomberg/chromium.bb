@@ -50,10 +50,6 @@ class SPDY_EXPORT_PRIVATE HpackEncoder {
   explicit HpackEncoder(const HpackHuffmanTable& table);
   ~HpackEncoder();
 
-  // Encodes a sequence of Representations into the given string.
-  void EncodeHeaderSet(const Representations& representations,
-                       SpdyString* output);
-
   // Encodes the given header set into the given string. Returns
   // whether or not the encoding was successful.
   bool EncodeHeaderSet(const SpdyHeaderBlock& header_set, SpdyString* output);
