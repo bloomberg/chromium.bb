@@ -926,7 +926,7 @@ static bool ExecuteFindString(LocalFrame& frame,
                               Event*,
                               EditorCommandSource,
                               const String& value) {
-  return frame.GetEditor().FindString(value, kCaseInsensitive | kWrapAround);
+  return Editor::FindString(frame, value, kCaseInsensitive | kWrapAround);
 }
 
 bool StyleCommands::ExecuteFontName(LocalFrame& frame,

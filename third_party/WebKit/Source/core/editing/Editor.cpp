@@ -746,24 +746,27 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
   }
 }
 
-bool Editor::FindString(const String& target, FindOptions options) {
+bool Editor::FindString(LocalFrame& frame,
+                        const String& target,
+                        FindOptions options) {
   VisibleSelection selection =
-      GetFrameSelection().ComputeVisibleSelectionInDOMTreeDeprecated();
+      frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
 
   // TODO(yosin) We should make |findRangeOfString()| to return
   // |EphemeralRange| rather than|Range| object.
-  Range* result_range = FindRangeOfString(
-      target, EphemeralRange(selection.Start(), selection.End()),
-      static_cast<FindOptions>(options | kFindAPICall));
+  Range* const result_range =
+      FindRangeOfString(*frame.GetDocument(), target,
+                        EphemeralRange(selection.Start(), selection.End()),
+                        static_cast<FindOptions>(options | kFindAPICall));
 
   if (!result_range)
     return false;
 
-  GetFrameSelection().SetSelectionAndEndTyping(
+  frame.Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange(result_range))
           .Build());
-  GetFrameSelection().RevealSelection();
+  frame.Selection().RevealSelection();
   return true;
 }
 
@@ -874,18 +877,20 @@ static Range* FindRangeOfStringAlgorithm(
   return result_range;
 }
 
-Range* Editor::FindRangeOfString(const String& target,
+Range* Editor::FindRangeOfString(Document& document,
+                                 const String& target,
                                  const EphemeralRange& reference,
                                  FindOptions options) {
-  return FindRangeOfStringAlgorithm<EditingStrategy>(
-      *GetFrame().GetDocument(), target, reference, options);
+  return FindRangeOfStringAlgorithm<EditingStrategy>(document, target,
+                                                     reference, options);
 }
 
-Range* Editor::FindRangeOfString(const String& target,
+Range* Editor::FindRangeOfString(Document& document,
+                                 const String& target,
                                  const EphemeralRangeInFlatTree& reference,
                                  FindOptions options) {
   return FindRangeOfStringAlgorithm<EditingInFlatTreeStrategy>(
-      *GetFrame().GetDocument(), target, reference, options);
+      document, target, reference, options);
 }
 
 void Editor::SetMarkedTextMatchesAreHighlighted(bool flag) {
