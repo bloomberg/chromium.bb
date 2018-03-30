@@ -67,8 +67,8 @@ TEST_F(ManifestUnitTest, Extension) {
       new base::DictionaryValue());
   manifest_value->SetString(keys::kName, "extension");
   manifest_value->SetString(keys::kVersion, "1");
-  // Only supported in manifest_version=1.
-  manifest_value->SetString(keys::kBackgroundPageLegacy, "bg.html");
+  manifest_value->SetInteger(keys::kManifestVersion, 2);
+  manifest_value->SetString(keys::kBackgroundPage, "bg.html");
   manifest_value->SetString("unknown_key", "foo");
 
   std::unique_ptr<Manifest> manifest(
@@ -80,36 +80,15 @@ TEST_F(ManifestUnitTest, Extension) {
   ASSERT_EQ(1u, warnings.size());
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
 
-  // The known key 'background_page' should be accessible.
+  // The known key 'background.page' should be accessible.
   std::string value;
-  EXPECT_TRUE(manifest->GetString(keys::kBackgroundPageLegacy, &value));
+  EXPECT_TRUE(manifest->GetString(keys::kBackgroundPage, &value));
   EXPECT_EQ("bg.html", value);
 
   // The unknown key 'unknown_key' should be accesible.
   value.clear();
   EXPECT_TRUE(manifest->GetString("unknown_key", &value));
   EXPECT_EQ("foo", value);
-
-  // Set the manifest_version to 2; background_page should stop working.
-  value.clear();
-  MutateManifest(&manifest, keys::kManifestVersion,
-                 std::make_unique<base::Value>(2));
-  EXPECT_FALSE(manifest->GetString("background_page", &value));
-  EXPECT_EQ("", value);
-
-  // Validate should also give a warning.
-  warnings.clear();
-  EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));
-  EXPECT_TRUE(error.empty());
-  ASSERT_EQ(2u, warnings.size());
-  {
-    SimpleFeature feature;
-    feature.set_name("background_page");
-    feature.set_max_manifest_version(1);
-    EXPECT_EQ(
-        "'background_page' requires manifest version of 1 or lower.",
-        warnings[0].message);
-  }
 
   // Test DeepCopy and Equals.
   std::unique_ptr<Manifest> manifest2(manifest->DeepCopy());

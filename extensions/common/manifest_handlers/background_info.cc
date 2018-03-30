@@ -189,16 +189,10 @@ bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
 
 bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
                                         base::string16* error) {
-  if (extension->is_platform_app()) {
-    return LoadBackgroundPage(
-        extension, keys::kPlatformAppBackgroundPage, error);
-  }
-
-  if (!LoadBackgroundPage(extension, keys::kBackgroundPage, error))
-    return false;
-  if (background_url_.is_empty())
-    return LoadBackgroundPage(extension, keys::kBackgroundPageLegacy, error);
-  return true;
+  const char* key = extension->is_platform_app()
+                        ? keys::kPlatformAppBackgroundPage
+                        : keys::kBackgroundPage;
+  return LoadBackgroundPage(extension, key, error);
 }
 
 bool BackgroundInfo::LoadBackgroundPersistent(const Extension* extension,
@@ -333,10 +327,9 @@ bool BackgroundManifestHandler::AlwaysParseForType(Manifest::Type type) const {
 
 const std::vector<std::string> BackgroundManifestHandler::Keys() const {
   static const char* keys[] = {
-      keys::kBackgroundAllowJsAccess,     keys::kBackgroundPage,
-      keys::kBackgroundPageLegacy,        keys::kBackgroundPersistent,
-      keys::kBackgroundScripts,           keys::kPlatformAppBackgroundPage,
-      keys::kPlatformAppBackgroundScripts};
+      keys::kBackgroundAllowJsAccess,   keys::kBackgroundPage,
+      keys::kBackgroundPersistent,      keys::kBackgroundScripts,
+      keys::kPlatformAppBackgroundPage, keys::kPlatformAppBackgroundScripts};
   return std::vector<std::string>(keys, keys + arraysize(keys));
 }
 

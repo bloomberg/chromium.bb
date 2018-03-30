@@ -23,7 +23,6 @@ extern const char kAppThemeColor[];
 extern const char kAutomation[];
 extern const char kBackgroundAllowJsAccess[];
 extern const char kBackgroundPage[];
-extern const char kBackgroundPageLegacy[];
 extern const char kBackgroundPersistent[];
 extern const char kBackgroundScripts[];
 extern const char kBluetooth[];

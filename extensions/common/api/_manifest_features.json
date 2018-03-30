@@ -55,13 +55,6 @@
     ],
     "min_manifest_version": 2
   },
-  "background_page": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app"
-    ],
-    "max_manifest_version": 1
-  },
   "bluetooth": [{
     // Note: The "bluetooth" manifest permission is used by the
     // chrome.bluetooth, chrome.bluetoothSocket and chrome.bluetoothLowEnergy
