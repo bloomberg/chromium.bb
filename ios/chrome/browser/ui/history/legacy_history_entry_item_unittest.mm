@@ -73,7 +73,7 @@ TEST_F(LegacyHistoryEntryItemTest, IsEqual) {
   LegacyHistoryEntryItem* different_url_entry =
       GetHistoryEntryItem(GURL(kTestUrl2), kTestTitle, timestamp);
 
-  EXPECT_TRUE([history_entry isEqualToHistoryEntryItem:same_entry]);
-  EXPECT_FALSE([history_entry isEqualToHistoryEntryItem:different_time_entry]);
-  EXPECT_FALSE([history_entry isEqualToHistoryEntryItem:different_url_entry]);
+  EXPECT_TRUE([history_entry isEqual:same_entry]);
+  EXPECT_FALSE([history_entry isEqual:different_time_entry]);
+  EXPECT_FALSE([history_entry isEqual:different_url_entry]);
 }

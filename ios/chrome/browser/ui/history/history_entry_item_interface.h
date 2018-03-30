@@ -5,20 +5,17 @@
 #ifndef IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRY_ITEM_INTERFACE_H_
 #define IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRY_ITEM_INTERFACE_H_
 
+#import <Foundation/Foundation.h>
+
 namespace base {
 class Time;
 }  // namespace base
 
 class GURL;
-@class LegacyHistoryEntryItem;
 
 // Delegate for HistoryEntryItem. Handles actions invoked as custom
 // accessibility actions.
 @protocol HistoryEntryItemInterface
-// HistoryEntryItems are equal if they have the same URL and
-// timestamp.
-- (BOOL)isEqualToHistoryEntryItem:(LegacyHistoryEntryItem*)item;
-
 // Text for the content view. Rendered at the top trailing the favicon.
 @property(nonatomic, copy) NSString* text;
 // Detail text for content view. Rendered below text.
