@@ -41,7 +41,7 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
   ZeroOverlapped();
 
   DCHECK(!read_outstanding_);
-  read_outstanding_ = true;
+  read_outstanding_ = this;
   if (!::ReadFile(handle_.get().handle, read_buffer_.get(),
                   MemlogSenderPipe::kPipeSize, &bytes_read,
                   &context_.overlapped)) {
@@ -69,7 +69,9 @@ void MemlogReceiverPipe::OnIOCompleted(
   // Note: any crashes with this on the stack are likely a result of destroying
   // a relevant class while there is I/O pending.
   DCHECK(read_outstanding_);
-  read_outstanding_ = false;
+  // Clear |read_outstanding_| but retain the reference to keep ourself alive
+  // until this function returns.
+  scoped_refptr<MemlogReceiverPipe> self(std::move(read_outstanding_));
 
   if (bytes_transfered && receiver_) {
     receiver_task_runner_->PostTask(
