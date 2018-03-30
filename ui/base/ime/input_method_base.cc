@@ -143,17 +143,17 @@ ui::EventDispatchDetails InputMethodBase::DispatchKeyEventPostIME(
 
 ui::EventDispatchDetails InputMethodBase::DispatchKeyEventPostIME(
     ui::KeyEvent* event,
-    std::unique_ptr<base::OnceCallback<void(bool)>> ack_callback) const {
+    base::OnceCallback<void(bool)> ack_callback) const {
   if (delegate_) {
     ui::EventDispatchDetails details =
         delegate_->DispatchKeyEventPostIME(event);
-    if (ack_callback && !ack_callback->is_null())
-      std::move(*ack_callback).Run(event->stopped_propagation());
+    if (ack_callback)
+      std::move(ack_callback).Run(event->stopped_propagation());
     return details;
   }
 
-  if (ack_callback && !ack_callback->is_null())
-    std::move(*ack_callback).Run(false);
+  if (ack_callback)
+    std::move(ack_callback).Run(false);
   return EventDispatchDetails();
 }
 

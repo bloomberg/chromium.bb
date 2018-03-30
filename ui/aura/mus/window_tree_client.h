@@ -349,8 +349,7 @@ class AURA_EXPORT WindowTreeClient
       bool parent_drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id);
 
-  std::unique_ptr<EventResultCallback> CreateEventResultCallback(
-      int32_t event_id);
+  EventResultCallback CreateEventResultCallback(int32_t event_id);
 
   void OnReceivedCursorLocationMemory(mojo::ScopedSharedBufferHandle handle);
 

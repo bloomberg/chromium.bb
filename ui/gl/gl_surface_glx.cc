@@ -346,8 +346,8 @@ class SGIVideoSyncVSyncProvider
       const gfx::VSyncProvider::UpdateVSyncCallback& callback) override {
     // Only one outstanding request per surface.
     if (!pending_callback_) {
-      pending_callback_ =
-          std::make_unique<gfx::VSyncProvider::UpdateVSyncCallback>(callback);
+      DCHECK(callback);
+      pending_callback_ = callback;
       vsync_thread_->task_runner()->PostTask(
           FROM_HERE,
           base::BindOnce(&SGIVideoSyncProviderThreadShim::GetVSyncParameters,
@@ -370,8 +370,7 @@ class SGIVideoSyncVSyncProvider
   void PendingCallbackRunner(const base::TimeTicks timebase,
                              const base::TimeDelta interval) {
     DCHECK(pending_callback_);
-    pending_callback_->Run(timebase, interval);
-    pending_callback_.reset();
+    std::move(pending_callback_).Run(timebase, interval);
   }
 
   scoped_refptr<SGIVideoSyncThread> vsync_thread_;
@@ -379,7 +378,7 @@ class SGIVideoSyncVSyncProvider
   // Thread shim through which the sync provider is accessed on |vsync_thread_|.
   std::unique_ptr<SGIVideoSyncProviderThreadShim> shim_;
 
-  std::unique_ptr<gfx::VSyncProvider::UpdateVSyncCallback> pending_callback_;
+  gfx::VSyncProvider::UpdateVSyncCallback pending_callback_;
 
   // Raw pointers to sync primitives owned by the shim_.
   // These will only be referenced before we post a task to destroy

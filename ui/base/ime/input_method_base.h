@@ -100,8 +100,7 @@ class UI_BASE_IME_EXPORT InputMethodBase
 
   virtual ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      std::unique_ptr<base::OnceCallback<void(bool)>> ack_callback) const
-      WARN_UNUSED_RESULT;
+      base::OnceCallback<void(bool)> ack_callback) const WARN_UNUSED_RESULT;
 
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);

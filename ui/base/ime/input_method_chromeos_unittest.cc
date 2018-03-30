@@ -70,11 +70,10 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
   };
 
   // Overridden from InputMethodChromeOS:
-  ui::EventDispatchDetails ProcessKeyEventPostIME(
-      ui::KeyEvent* key_event,
-      std::unique_ptr<AckCallback> ack_callback,
-      bool skip_process_filtered,
-      bool handled) override {
+  ui::EventDispatchDetails ProcessKeyEventPostIME(ui::KeyEvent* key_event,
+                                                  AckCallback ack_callback,
+                                                  bool skip_process_filtered,
+                                                  bool handled) override {
     ui::EventDispatchDetails details =
         InputMethodChromeOS::ProcessKeyEventPostIME(
             key_event, std::move(ack_callback), skip_process_filtered, handled);
@@ -974,7 +973,8 @@ TEST_F(InputMethodChromeOSKeyEventTest, DeadKeyPressTest) {
                       0,
                       DomKey::DeadKeyFromCombiningCharacter('^'),
                       EventTimeForNow());
-  ime_->ProcessKeyEventPostIME(&eventA, nullptr, false, true);
+  ime_->ProcessKeyEventPostIME(&eventA, InputMethodChromeOS::AckCallback(),
+                               false, true);
 
   const ui::KeyEvent& key_event = dispatched_key_event_;
 
