@@ -32,7 +32,6 @@ namespace ash {
 
 using message_center::FakeMessageCenter;
 using message_center::MessageCenter;
-using message_center::UiController;
 using message_center::MessageView;
 using message_center::Notification;
 using message_center::NotificationList;
@@ -128,7 +127,6 @@ class FakeMessageCenterImpl : public FakeMessageCenter {
 class MockMessageCenterView : public MessageCenterView {
  public:
   MockMessageCenterView(MessageCenter* message_center,
-                        UiController* ui_controller,
                         int max_height,
                         bool initially_settings_visible);
 
@@ -141,11 +139,9 @@ class MockMessageCenterView : public MessageCenterView {
 };
 
 MockMessageCenterView::MockMessageCenterView(MessageCenter* message_center,
-                                             UiController* ui_controller,
                                              int max_height,
                                              bool initially_settings_visible)
     : MessageCenterView(message_center,
-                        ui_controller,
                         max_height,
                         initially_settings_visible) {}
 
@@ -269,7 +265,7 @@ void MessageCenterViewTest::SetUp() {
 
   // Then create a new MockMessageCenterView with that single notification.
   message_center_view_.reset(
-      new MockMessageCenterView(message_center_.get(), NULL, 600, false));
+      new MockMessageCenterView(message_center_.get(), 600, false));
   GetMessageCenterView()->SetBounds(0, 0, 380, 100);
   message_center_view_->SetNotifications(notifications);
   message_center_view_->set_owned_by_client();
