@@ -148,11 +148,13 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   const HeapVector<Member<Node>>& ChildrenInFlatTreeIfAssignmentIsSupported();
 
-  void LazyReattachDistributedNodesNaive();
-
-  static void LazyReattachDistributedNodesByDynamicProgramming(
-      const HeapVector<Member<Node>>&,
-      const HeapVector<Member<Node>>&);
+  static void LazyReattachNodesIfNeeded(const HeapVector<Member<Node>>& nodes1,
+                                        const HeapVector<Member<Node>>& nodes2);
+  static void LazyReattachNodesNaive(const HeapVector<Member<Node>>& nodes1,
+                                     const HeapVector<Member<Node>>& nodes2);
+  static void LazyReattachNodesByDynamicProgramming(
+      const HeapVector<Member<Node>>& nodes1,
+      const HeapVector<Member<Node>>& nodes2);
 
   void SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
 

@@ -248,13 +248,7 @@ void HTMLSlotElement::RecalcFlatTreeChildren() {
     flat_tree_children_ = assigned_nodes_;
   }
 
-  // Tentative naive version.
-  // TODO(hayato): Optimize this, as we do in
-  // |LazyReattachDistributedNodesIfNeeded|.
-  for (auto& node : old_flat_tree_children)
-    node->LazyReattachIfAttached();
-  for (auto& node : flat_tree_children_)
-    node->LazyReattachIfAttached();
+  LazyReattachNodesIfNeeded(old_flat_tree_children, flat_tree_children_);
 }
 
 void HTMLSlotElement::ClearDistribution() {
@@ -502,7 +496,7 @@ void HTMLSlotElement::UpdateDistributedNodesWithFallback() {
   }
 }
 
-void HTMLSlotElement::LazyReattachDistributedNodesByDynamicProgramming(
+void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
     const HeapVector<Member<Node>>& nodes1,
     const HeapVector<Member<Node>>& nodes2) {
   // Use dynamic programming to minimize the number of nodes being reattached.
@@ -542,20 +536,27 @@ void HTMLSlotElement::LazyReattachDistributedNodesByDynamicProgramming(
 }
 
 void HTMLSlotElement::LazyReattachDistributedNodesIfNeeded() {
-  if (old_distributed_nodes_ == distributed_nodes_)
-    return;
+  // TODO(hayato): Move this probe to a better place.
   probe::didPerformSlotDistribution(this);
 
-  if (old_distributed_nodes_.size() + 1 > kLCSTableSizeLimit ||
-      distributed_nodes_.size() + 1 > kLCSTableSizeLimit) {
+  LazyReattachNodesIfNeeded(old_distributed_nodes_, distributed_nodes_);
+  old_distributed_nodes_.clear();
+}
+
+void HTMLSlotElement::LazyReattachNodesIfNeeded(
+    const HeapVector<Member<Node>>& nodes1,
+    const HeapVector<Member<Node>>& nodes2) {
+  if (nodes1 == nodes2)
+    return;
+
+  if (nodes1.size() + 1 > kLCSTableSizeLimit ||
+      nodes2.size() + 1 > kLCSTableSizeLimit) {
     // Since DP takes O(N^2), we don't use DP if the size is larger than the
     // pre-defined limit.
-    LazyReattachDistributedNodesNaive();
+    LazyReattachNodesNaive(nodes1, nodes2);
   } else {
-    LazyReattachDistributedNodesByDynamicProgramming(old_distributed_nodes_,
-                                                     distributed_nodes_);
+    LazyReattachNodesByDynamicProgramming(nodes1, nodes2);
   }
-  old_distributed_nodes_.clear();
 }
 
 void HTMLSlotElement::DidSlotChangeAfterRemovedFromShadowTree() {
@@ -571,11 +572,13 @@ void HTMLSlotElement::DidSlotChangeAfterRenaming() {
   CheckSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
 }
 
-void HTMLSlotElement::LazyReattachDistributedNodesNaive() {
+void HTMLSlotElement::LazyReattachNodesNaive(
+    const HeapVector<Member<Node>>& nodes1,
+    const HeapVector<Member<Node>>& nodes2) {
   // TODO(hayato): Use some heuristic to avoid reattaching all nodes
-  for (auto& node : old_distributed_nodes_)
+  for (auto& node : nodes1)
     node->LazyReattachIfAttached();
-  for (auto& node : distributed_nodes_)
+  for (auto& node : nodes2)
     node->LazyReattachIfAttached();
 }
 
