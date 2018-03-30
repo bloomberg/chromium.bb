@@ -40,9 +40,24 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
             int buf_len,
             const CompletionCallback& callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
+
+  int WriteAsync(
+      const char* buffer,
+      size_t buf_len,
+      const CompletionCallback& callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  int WriteAsync(
+      DatagramBuffers buffers,
+      const CompletionCallback& callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override;
+
+  DatagramBuffers GetUnwrittenBuffers() override;
+
   void Close() override;
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
+  // Switch to use non-blocking IO. Must be called right after construction and
+  // before other calls.
   void UseNonBlockingIO() override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
@@ -51,8 +66,13 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   const NetLogWithSource& NetLog() const override;
   void EnableRecvOptimization() override;
 
-  // Switch to use non-blocking IO. Must be called right after construction and
-  // before other calls.
+  void SetWriteAsyncEnabled(bool enabled) override;
+  bool WriteAsyncEnabled() override;
+  void SetMaxPacketSize(size_t max_packet_size) override;
+  void SetWriteMultiCoreEnabled(bool enabled) override;
+  void SetSendmmsgEnabled(bool enabled) override;
+  void SetWriteBatchingActive(bool active) override;
+
  private:
   UDPSocket socket_;
   NetworkChangeNotifier::NetworkHandle network_;

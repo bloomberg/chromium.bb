@@ -5216,6 +5216,7 @@ test("net_unittests") {
     "socket/transport_client_socket_pool_test_util.h",
     "socket/transport_client_socket_pool_unittest.cc",
     "socket/transport_client_socket_unittest.cc",
+    "socket/udp_socket_posix_unittest.cc",
     "socket/udp_socket_unittest.cc",
     "socket/websocket_endpoint_lock_manager_unittest.cc",
     "socket/websocket_transport_client_socket_pool_unittest.cc",

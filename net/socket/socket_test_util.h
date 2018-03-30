@@ -785,6 +785,17 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
             int buf_len,
             const CompletionCallback& callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  int WriteAsync(
+      DatagramBuffers buffers,
+      const CompletionCallback& callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  int WriteAsync(
+      const char* buffer,
+      size_t buf_len,
+      const CompletionCallback& callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  DatagramBuffers GetUnwrittenBuffers() override;
+
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
   int SetDoNotFragment() override;
@@ -794,6 +805,12 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
   void UseNonBlockingIO() override;
+  void SetWriteAsyncEnabled(bool enabled) override;
+  void SetMaxPacketSize(size_t max_packet_size) override;
+  bool WriteAsyncEnabled() override;
+  void SetWriteMultiCoreEnabled(bool enabled) override;
+  void SetSendmmsgEnabled(bool enabled) override;
+  void SetWriteBatchingActive(bool active) override;
   const NetLogWithSource& NetLog() const override;
 
   // DatagramClientSocket implementation.
@@ -849,6 +866,8 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   CompletionCallback pending_write_callback_;
 
   NetLogWithSource net_log_;
+
+  DatagramBuffers unwritten_buffers_;
 
   SocketTag tag_;
   bool data_transferred_ = false;

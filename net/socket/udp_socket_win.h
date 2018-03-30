@@ -20,6 +20,7 @@
 #include "base/win/scoped_handle.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
+#include "net/base/datagram_buffer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
@@ -205,6 +206,23 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // This class by default uses overlapped IO. Call this method before Open()
   // to switch to non-blocking IO.
   void UseNonBlockingIO();
+
+  void SetWriteAsyncEnabled(bool enabled);
+  bool WriteAsyncEnabled();
+  void SetMaxPacketSize(size_t max_packet_size);
+  void SetWriteMultiCoreEnabled(bool enabled);
+  void SetSendmmsgEnabled(bool enabled);
+  void SetWriteBatchingActive(bool active);
+
+  int WriteAsync(DatagramBuffers buffers,
+                 const CompletionCallback& callback,
+                 const NetworkTrafficAnnotationTag& traffic_annotation);
+  int WriteAsync(const char* buffer,
+                 size_t buf_len,
+                 const CompletionCallback& callback,
+                 const NetworkTrafficAnnotationTag& traffic_annotation);
+
+  DatagramBuffers GetUnwrittenBuffers();
 
   // Apply |tag| to this socket.
   void ApplySocketTag(const SocketTag& tag);
