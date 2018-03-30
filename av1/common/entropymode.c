@@ -17,7 +17,7 @@
 #include "av1/common/seg_common.h"
 #include "av1/common/txb_common.h"
 
-const aom_cdf_prob
+static const aom_cdf_prob
     default_kf_y_mode_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS][CDF_SIZE(
         INTRA_MODES)] = {
       { { AOM_CDF13(15588, 17027, 19338, 20218, 20682, 21110, 21825, 23244,
@@ -638,7 +638,7 @@ static const aom_cdf_prob
       { { AOM_CDF2(30606) }, { AOM_CDF2(30489) } }
     };
 
-const aom_cdf_prob
+static const aom_cdf_prob
     default_palette_y_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
       { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
       { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
@@ -651,18 +651,20 @@ const aom_cdf_prob
       { AOM_CDF7(14940, 20797, 21678, 24186, 27033, 28999) }
     };
 
-const aom_cdf_prob default_palette_uv_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(
-    PALETTE_SIZES)] = { { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
-                        { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
-                        { AOM_CDF7(8713, 19979, 27128, 29609, 31331, 32272) },
-                        { AOM_CDF7(5839, 15573, 23581, 26947, 29848, 31700) },
-                        { AOM_CDF7(4426, 11260, 17999, 21483, 25863, 29430) },
-                        { AOM_CDF7(3228, 9464, 14993, 18089, 22523, 27420) },
-                        { AOM_CDF7(3768, 8886, 13091, 17852, 22495, 27207) },
-                        { AOM_CDF7(2464, 8451, 12861, 21632, 25525, 28555) },
-                        { AOM_CDF7(1269, 5435, 10433, 18963, 21700, 25865) } };
+static const aom_cdf_prob
+    default_palette_uv_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
+      { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
+      { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
+      { AOM_CDF7(8713, 19979, 27128, 29609, 31331, 32272) },
+      { AOM_CDF7(5839, 15573, 23581, 26947, 29848, 31700) },
+      { AOM_CDF7(4426, 11260, 17999, 21483, 25863, 29430) },
+      { AOM_CDF7(3228, 9464, 14993, 18089, 22523, 27420) },
+      { AOM_CDF7(3768, 8886, 13091, 17852, 22495, 27207) },
+      { AOM_CDF7(2464, 8451, 12861, 21632, 25525, 28555) },
+      { AOM_CDF7(1269, 5435, 10433, 18963, 21700, 25865) }
+    };
 
-const aom_cdf_prob default_palette_y_mode_cdf
+static const aom_cdf_prob default_palette_y_mode_cdf
     [PALATTE_BSIZE_CTXS][PALETTE_Y_MODE_CONTEXTS][CDF_SIZE(2)] = {
       { { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) } },
       { { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) } },
@@ -675,12 +677,12 @@ const aom_cdf_prob default_palette_y_mode_cdf
       { { AOM_CDF2(32450) }, { AOM_CDF2(7946) }, { AOM_CDF2(129) } }
     };
 
-const aom_cdf_prob
+static const aom_cdf_prob
     default_palette_uv_mode_cdf[PALETTE_UV_MODE_CONTEXTS][CDF_SIZE(2)] = {
       { AOM_CDF2(32461) }, { AOM_CDF2(21488) }
     };
 
-const aom_cdf_prob default_palette_y_color_index_cdf
+static const aom_cdf_prob default_palette_y_color_index_cdf
     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {
       {
           { AOM_CDF2(28710) },
@@ -733,7 +735,7 @@ const aom_cdf_prob default_palette_y_color_index_cdf
       },
     };
 
-const aom_cdf_prob default_palette_uv_color_index_cdf
+static const aom_cdf_prob default_palette_uv_color_index_cdf
     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {
       {
           { AOM_CDF2(29089) },

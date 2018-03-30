@@ -256,10 +256,6 @@ typedef struct FRAME_COUNTS {
   unsigned int sgrproj_restore[2];
 } FRAME_COUNTS;
 
-extern const aom_cdf_prob default_kf_y_mode_cdf[KF_MODE_CONTEXTS]
-                                               [KF_MODE_CONTEXTS]
-                                               [CDF_SIZE(INTRA_MODES)];
-
 static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
