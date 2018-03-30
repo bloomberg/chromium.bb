@@ -976,6 +976,14 @@ void TabAndroid::DidFinishNavigation(
                                      j_publisher_url);
 }
 
+bool TabAndroid::AreRendererInputEventsIgnored(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  content::RenderProcessHost* render_process_host =
+      web_contents()->GetMainFrame()->GetProcess();
+  return render_process_host->IgnoreInputEvents();
+}
+
 void TabAndroid::ShowMediaDownloadInProductHelp(
     const gfx::Rect& rect_in_frame) {
   DCHECK(web_contents_);

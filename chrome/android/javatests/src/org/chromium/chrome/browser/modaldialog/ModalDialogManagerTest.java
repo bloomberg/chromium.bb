@@ -77,6 +77,9 @@ public class ModalDialogManagerTest {
         mTestObserver = new TestObserver();
         mActivity.getToolbarManager().getToolbarLayout().getLocationBar().addUrlFocusChangeListener(
                 mTestObserver);
+        TabModalPresenter presenter =
+                (TabModalPresenter) mManager.getPresenterForTest(ModalDialogManager.TAB_MODAL);
+        presenter.disableAnimationForTest();
     }
 
     @Test
