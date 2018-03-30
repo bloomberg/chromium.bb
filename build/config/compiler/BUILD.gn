@@ -1229,13 +1229,6 @@ config("default_warnings") {
         exec_script("../../win_is_xtree_patched.py", [], "value") == 0) {
       cflags += [ "/wd4702" ]  # Unreachable code.
     }
-
-    if (is_clang) {
-      cflags += [
-        # TODO(hans): Enable these, http://crbug.com/504657
-        "-Wno-unknown-pragmas",  # http://crbug.com/505314
-      ]
-    }
   } else {
     if ((is_mac || is_ios) && !is_nacl) {
       # When compiling Objective-C, warns if a method is used whose
@@ -1347,6 +1340,7 @@ config("default_warnings") {
         "-Wno-null-pointer-arithmetic",
 
         # Ignore warnings about MSVC optimization pragmas.
+        # TODO(thakis): Only for no_chromium_code? http://crbug.com/505314
         "-Wno-ignored-pragma-optimize",
       ]
     } else if (use_xcode_clang) {

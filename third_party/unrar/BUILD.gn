@@ -24,7 +24,6 @@ if (safe_browsing_mode == 1) {
       "src/filestr.cpp",
       "src/find.cpp",
       "src/getbits.cpp",
-      "src/global.cpp",
       "src/hash.cpp",
       "src/headers.cpp",
       "src/isnt.cpp",
