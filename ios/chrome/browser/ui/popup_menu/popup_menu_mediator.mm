@@ -216,6 +216,11 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 - (void)setPopupMenu:(PopupMenuTableViewController*)popupMenu {
   _popupMenu = popupMenu;
+
+  if (self.type == PopupMenuTypeToolsMenu) {
+    _popupMenu.tableView.accessibilityIdentifier = kToolsMenuTableViewId;
+  }
+
   [_popupMenu setPopupMenuItems:self.items];
   _popupMenu.commandHandler = self;
   if (self.webState) {

@@ -10,9 +10,6 @@
 #include "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_controller.h"
 
-// The a11y ID of the tools menu table view (used by integration tests).
-extern NSString* const kToolsMenuTableViewId;
-
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ToolsMenuConfiguration;

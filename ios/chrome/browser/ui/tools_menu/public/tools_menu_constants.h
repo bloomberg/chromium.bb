@@ -17,6 +17,9 @@ extern NSString* const kToolsMenuDidShowNotification;
 // Notification that the tools menu did dismiss.
 extern NSString* const kToolsMenuDidHideNotification;
 
+// Tools menu table view ID.
+extern NSString* const kToolsMenuTableViewId;
+
 // Tools Menu item IDs.
 // Reload item accessibility Identifier.
 extern NSString* const kToolsMenuReload;
