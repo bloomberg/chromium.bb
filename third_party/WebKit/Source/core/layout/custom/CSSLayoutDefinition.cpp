@@ -274,11 +274,6 @@ void CSSLayoutDefinition::Instance::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);
 }
 
-void CSSLayoutDefinition::Instance::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(instance_.Cast<v8::Value>());
-}
-
 void CSSLayoutDefinition::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(constructor_.Cast<v8::Value>());
