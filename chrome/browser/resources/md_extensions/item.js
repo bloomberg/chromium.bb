@@ -109,7 +109,12 @@ cr.define('extensions', function() {
 
     /** @private string */
     a11yAssociation_: function() {
-      return this.i18n('extensionA11yAssociation', this.data.name);
+      // Don't use I18nBehavior.i18n because of additional checks it performs.
+      // Polymer ensures that this string is not stamped into arbitrary HTML.
+      // |this.data.name| can contain any data including html tags.
+      // ex: "My <video> download extension!"
+      return loadTimeData.getStringF(
+          'extensionA11yAssociation', this.data.name);
     },
 
     /** @private */

@@ -74,6 +74,7 @@ cr.define('extension_item_tests', function() {
     SourceIndicator: 'source indicator',
     EnableToggle: 'toggle is disabled when necessary',
     RemoveButton: 'remove button hidden when necessary',
+    HtmlInName: 'html in extension name',
   };
 
   var suiteName = 'ExtensionItemTest';
@@ -321,6 +322,16 @@ cr.define('extension_item_tests', function() {
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
       Polymer.dom.flush();
       expectTrue(item.$['remove-button'].hidden);
+    });
+
+    test(assert(TestNames.HtmlInName), function() {
+      let name = '<HTML> in the name!';
+      item.set('data.name', name);
+      Polymer.dom.flush();
+      assertEquals(name, item.$.name.textContent.trim());
+      // "Related to $1" is IDS_MD_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION.
+      assertEquals(
+          `Related to ${name}`, item.$.a11yAssociation.textContent.trim());
     });
   });
 
