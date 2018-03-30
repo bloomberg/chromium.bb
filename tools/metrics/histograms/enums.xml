@@ -6096,6 +6096,7 @@ Called by update_net_error_codes.py.-->
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-375" label="TOO_MANY_RETRIES"/>
   <int value="-374" label="SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
   <int value="-373" label="SPDY_PUSHED_STREAM_NOT_AVAILABLE"/>
   <int value="-372" label="SPDY_RST_STREAM_NO_ERROR_RECEIVED"/>
@@ -30204,6 +30205,7 @@ Called by update_net_error_codes.py.-->
   <int value="372" label="SPDY_RST_STREAM_NO_ERROR_RECEIVED"/>
   <int value="373" label="SPDY_PUSHED_STREAM_NOT_AVAILABLE"/>
   <int value="374" label="SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
+  <int value="375" label="TOO_MANY_RETRIES"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>

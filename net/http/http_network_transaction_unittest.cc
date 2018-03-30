@@ -2690,6 +2690,77 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
   EXPECT_EQ("127.0.0.2:80", endpoint.ToString());
 }
 
+// Test that, if the server requests auth indefinitely, HttpNetworkTransaction
+// will eventually give up.
+TEST_F(HttpNetworkTransactionTest, BasicAuthForever) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  TestNetLog log;
+  session_deps_.net_log = &log;
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  MockWrite data_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 401 Unauthorized\r\n"),
+      // Give a couple authenticate options (only the middle one is actually
+      // supported).
+      MockRead("WWW-Authenticate: Basic invalid\r\n"),  // Malformed.
+      MockRead("WWW-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+      MockRead("WWW-Authenticate: UNSUPPORTED realm=\"FOO\"\r\n"),
+      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
+      // Large content-length -- won't matter, as connection will be reset.
+      MockRead("Content-Length: 10000\r\n\r\n"),
+      MockRead(SYNCHRONOUS, ERR_FAILED),
+  };
+
+  // After calling trans->RestartWithAuth(), this is the request we should
+  // be issuing -- the final header line contains the credentials.
+  MockWrite data_writes_restart[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+  int rv = callback.GetResult(
+      trans.Start(&request, callback.callback(), NetLogWithSource()));
+
+  std::vector<std::unique_ptr<StaticSocketDataProvider>> data_restarts;
+  for (int i = 0; i < 32; i++) {
+    // Check the previous response was a 401.
+    EXPECT_THAT(rv, IsOk());
+    const HttpResponseInfo* response = trans.GetResponseInfo();
+    ASSERT_TRUE(response);
+    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+
+    data_restarts.push_back(std::make_unique<StaticSocketDataProvider>(
+        data_reads, arraysize(data_reads), data_writes_restart,
+        arraysize(data_writes_restart)));
+    session_deps_.socket_factory->AddSocketDataProvider(
+        data_restarts.back().get());
+    rv = callback.GetResult(trans.RestartWithAuth(AuthCredentials(kFoo, kBar),
+                                                  callback.callback()));
+  }
+
+  // After too many tries, the transaction should have given up.
+  EXPECT_THAT(rv, IsError(ERR_TOO_MANY_RETRIES));
+}
+
 TEST_F(HttpNetworkTransactionTest, DoNotSendAuth) {
   HttpRequestInfo request;
   request.method = "GET";

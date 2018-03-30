@@ -253,6 +253,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // HTTP2 or QUIC network errors, and no further retries should be attempted.
   bool HasExceededMaxRetries() const;
 
+  // Increments the number of restarts and returns true if the restart may
+  // proceed.
+  bool CheckMaxRestarts();
+
   // Resets the connection and the request headers for resend.  Called when
   // ShouldResendRequest() is true.
   void ResetConnectionAndRequestForResend();
@@ -420,6 +424,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // behaved server may time those out and thus the number
   // of times we can retry a request on reused sockets is limited.
   size_t retry_attempts_;
+
+  // Number of times the transaction was restarted via a RestartWith* call.
+  size_t num_restarts_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };

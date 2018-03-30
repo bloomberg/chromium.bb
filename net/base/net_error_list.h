@@ -742,6 +742,12 @@ NET_ERROR(SPDY_PUSHED_STREAM_NOT_AVAILABLE, -373)
 // the request should be retried.
 NET_ERROR(SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER, -374)
 
+// An HTTP transaction was retried too many times due for authentication or
+// invalid certificates. This may be due to a bug in the net stack that would
+// otherwise infinite loop, or if the server or proxy continually requests fresh
+// credentials or presents a fresh invalid certificate.
+NET_ERROR(TOO_MANY_RETRIES, -375)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

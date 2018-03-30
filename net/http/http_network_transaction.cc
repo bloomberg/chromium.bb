@@ -71,9 +71,21 @@
 #include "url/url_canon.h"
 
 namespace {
+
 // Max number of |retry_attempts| (excluding the initial request) after which
 // we give up and show an error page.
 const size_t kMaxRetryAttempts = 2;
+
+// Max number of calls to RestartWith* allowed for a single connection. A single
+// HttpNetworkTransaction should not signal very many restartable errors, but it
+// may occur due to a bug (e.g. https://crbug.com/823387 or
+// https://crbug.com/488043) or simply if the server or proxy requests
+// authentication repeatedly. Although these calls are often associated with a
+// user prompt, in other scenarios (remembered preferences, extensions,
+// multi-leg authentication), they may be triggered automatically. To avoid
+// looping forever, bound the number of restarts.
+const size_t kMaxRestarts = 32;
+
 }  // namespace
 
 namespace net {
@@ -99,7 +111,8 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       enable_alternative_services_(true),
       websocket_handshake_stream_base_create_helper_(NULL),
       net_error_details_(),
-      retry_attempts_(0) {}
+      retry_attempts_(0),
+      num_restarts_(0) {}
 
 HttpNetworkTransaction::~HttpNetworkTransaction() {
   if (stream_.get()) {
@@ -157,6 +170,9 @@ int HttpNetworkTransaction::RestartIgnoringLastError(
   DCHECK(!stream_request_.get());
   DCHECK_EQ(STATE_NONE, next_state_);
 
+  if (!CheckMaxRestarts())
+    return ERR_TOO_MANY_RETRIES;
+
   next_state_ = STATE_CREATE_STREAM;
 
   int rv = DoLoop(OK);
@@ -174,6 +190,9 @@ int HttpNetworkTransaction::RestartWithCertificate(
   DCHECK(!stream_request_.get());
   DCHECK(!stream_.get());
   DCHECK_EQ(STATE_NONE, next_state_);
+
+  if (!CheckMaxRestarts())
+    return ERR_TOO_MANY_RETRIES;
 
   SSLConfig* ssl_config = response_.cert_request_info->is_proxy ?
       &proxy_ssl_config_ : &server_ssl_config_;
@@ -195,6 +214,9 @@ int HttpNetworkTransaction::RestartWithCertificate(
 
 int HttpNetworkTransaction::RestartWithAuth(
     const AuthCredentials& credentials, const CompletionCallback& callback) {
+  if (!CheckMaxRestarts())
+    return ERR_TOO_MANY_RETRIES;
+
   HttpAuth::Target target = pending_auth_target_;
   if (target == HttpAuth::AUTH_NONE) {
     NOTREACHED();
@@ -1684,6 +1706,11 @@ bool HttpNetworkTransaction::ShouldResendRequest() const {
 
 bool HttpNetworkTransaction::HasExceededMaxRetries() const {
   return (retry_attempts_ >= kMaxRetryAttempts);
+}
+
+bool HttpNetworkTransaction::CheckMaxRestarts() {
+  num_restarts_++;
+  return num_restarts_ < kMaxRestarts;
 }
 
 void HttpNetworkTransaction::ResetConnectionAndRequestForResend() {
