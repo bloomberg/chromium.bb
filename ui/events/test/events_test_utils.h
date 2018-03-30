@@ -76,8 +76,10 @@ class EventTargetTestApi {
  public:
   explicit EventTargetTestApi(EventTarget* target);
 
-  const EventHandlerList& pre_target_handlers() {
-    return target_->pre_target_list_;
+  ui::EventHandlerList GetPreTargetHandlers() {
+    ui::EventHandlerList list;
+    target_->GetPreTargetHandlers(&list);
+    return list;
   }
 
  private:

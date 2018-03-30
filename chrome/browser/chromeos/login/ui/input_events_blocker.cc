@@ -15,7 +15,8 @@ InputEventsBlocker::InputEventsBlocker() {
   // TODO(mash): Implement a mash version. This will probably need to talk to
   // the window server.
   if (!ash_util::IsRunningInMash()) {
-    ash::Shell::Get()->PrependPreTargetHandler(this);
+    ash::Shell::Get()->AddPreTargetHandler(this,
+                                           ui::EventTarget::Priority::kSystem);
     VLOG(1) << "InputEventsBlocker " << this << " created.";
   } else {
     NOTIMPLEMENTED();

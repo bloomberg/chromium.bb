@@ -150,7 +150,8 @@ TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
 TrayBubbleView::RerouteEventHandler::RerouteEventHandler(
     TrayBubbleView* tray_bubble_view)
     : tray_bubble_view_(tray_bubble_view) {
-  aura::Env::GetInstance()->PrependPreTargetHandler(this);
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
 }
 
 TrayBubbleView::RerouteEventHandler::~RerouteEventHandler() {

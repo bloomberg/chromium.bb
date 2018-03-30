@@ -464,7 +464,8 @@ TEST_F(SystemGestureEventFilterTest,
   child->Show();
 
   ui::test::TestEventHandler event_handler;
-  aura::Env::GetInstance()->PrependPreTargetHandler(&event_handler);
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      &event_handler, ui::EventTarget::Priority::kSystem);
 
   GetEventGenerator().MoveMouseTo(0, 0);
   for (int i = 1; i <= 3; ++i)

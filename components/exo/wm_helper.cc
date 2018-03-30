@@ -179,7 +179,8 @@ void WMHelper::AddPreTargetHandler(ui::EventHandler* handler) {
 }
 
 void WMHelper::PrependPreTargetHandler(ui::EventHandler* handler) {
-  ash::Shell::Get()->PrependPreTargetHandler(handler);
+  ash::Shell::Get()->AddPreTargetHandler(handler,
+                                         ui::EventTarget::Priority::kSystem);
 }
 
 void WMHelper::RemovePreTargetHandler(ui::EventHandler* handler) {

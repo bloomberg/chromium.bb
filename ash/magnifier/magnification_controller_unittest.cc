@@ -61,7 +61,8 @@ class MagnificationControllerTest : public AshTestBase {
     GetMagnificationController()->DisableMoveMagnifierDelayForTesting();
 
     touch_event_watcher_ = std::make_unique<TouchEventWatcher>();
-    GetRootWindow()->PrependPreTargetHandler(touch_event_watcher_.get());
+    GetRootWindow()->AddPreTargetHandler(touch_event_watcher_.get(),
+                                         ui::EventTarget::Priority::kSystem);
   }
 
   void TearDown() override {

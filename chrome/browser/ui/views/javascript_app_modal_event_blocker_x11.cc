@@ -34,7 +34,8 @@ JavascriptAppModalEventBlockerX11::JavascriptAppModalEventBlockerX11(
   // |browser_view_with_modal_dialog_| is NULL if the dialog was opened by an
   // extension background page.
 
-  aura::Env::GetInstance()->PrependPreTargetHandler(this);
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
 
   // WindowModalityController will cancel touches as appropriate.
 }
