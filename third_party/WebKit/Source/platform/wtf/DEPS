@@ -19,6 +19,7 @@ include_rules = [
     "+base/strings",
     "+base/template_util.h",
     "+base/threading/thread_checker.h",
+    "+base/threading/thread_local_storage.h",
     "+base/time/time.h",
     "+base/tuple.h",
     # To avoid recursive dependency, we impose a blanket ban on using other

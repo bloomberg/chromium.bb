@@ -113,7 +113,6 @@ jumbo_component("wtf") {
     "ThreadRestrictionVerifier.h",
     "ThreadSafeRefCounted.h",
     "ThreadSpecific.h",
-    "ThreadSpecificWin.cpp",
     "Threading.h",
     "ThreadingPrimitives.h",
     "ThreadingPthreads.cpp",
@@ -276,10 +275,7 @@ jumbo_component("wtf") {
   } else {
     # Non-Windows.
     if (!snake_case_source_files) {
-      sources -= [
-        "ThreadSpecificWin.cpp",
-        "ThreadingWin.cpp",
-      ]
+      sources -= [ "ThreadingWin.cpp" ]
     }
   }
 
