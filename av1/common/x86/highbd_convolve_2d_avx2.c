@@ -238,12 +238,10 @@ void av1_highbd_convolve_2d_copy_sr_avx2(
 
   if (w == 2) {
     do {
-      __m128i s = _mm_loadl_epi64((__m128i *)src);
-      *(uint32_t *)dst = _mm_cvtsi128_si32(s);
+      memcpy(dst, src, 2 * sizeof(*src));
       src += src_stride;
       dst += dst_stride;
-      s = _mm_loadl_epi64((__m128i *)src);
-      *(uint32_t *)dst = _mm_cvtsi128_si32(s);
+      memcpy(dst, src, 2 * sizeof(*src));
       src += src_stride;
       dst += dst_stride;
       h -= 2;
