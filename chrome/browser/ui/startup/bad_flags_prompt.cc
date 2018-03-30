@@ -39,12 +39,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#endif  // OS_ANDROID
+
 namespace chrome {
 
 namespace {
 
-// Unsupported flags for which to display a warning that "stability and security
-// will suffer".
+#if !defined(OS_ANDROID)
+// Dangerous command line flags for which to display a warning that "stability
+// and security will suffer".
 static const char* kBadFlags[] = {
     network::switches::kIgnoreCertificateErrorsSPKIList,
     // These flags disable sandbox-related security.
@@ -99,11 +104,15 @@ static const char* kBadFlags[] = {
     // This flag allows sites to access protected media identifiers without
     // getting the user's permission.
     switches::kUnsafelyAllowProtectedMediaIdentifierForDomain};
+#endif  // OS_ANDROID
 
-// Unsupported feature flags for which to display a warning that "stability
-// and security will suffer".
-static const base::Feature* kBadFeatureFlags[] = {
+// Dangerous feature flags in about:flags for which to display a warning that
+// "stability and security will suffer".
+static const base::Feature* kBadFeatureFlagsInAboutFlags[] = {
     &features::kSignedHTTPExchange,
+#if defined(OS_ANDROID)
+    &chrome::android::kCommandLineOnNonRooted,
+#endif  // OS_ANDROID
 };
 
 void ShowBadFeatureFlagsInfoBar(content::WebContents* web_contents,
@@ -119,6 +128,9 @@ void ShowBadFeatureFlagsInfoBar(content::WebContents* web_contents,
 }  // namespace
 
 void ShowBadFlagsPrompt(content::WebContents* web_contents) {
+// On Android, ShowBadFlagsPrompt doesn't show the warning notification
+// for flags which are not available in about:flags.
+#if !defined(OS_ANDROID)
   // Flags only available in specific builds, for which to display a warning
   // "the flag is not implemented in this build", if necessary.
   struct {
@@ -144,8 +156,9 @@ void ShowBadFlagsPrompt(content::WebContents* web_contents) {
       return;
     }
   }
+#endif  // OS_ANDROID
 
-  for (const base::Feature* feature : kBadFeatureFlags) {
+  for (const base::Feature* feature : kBadFeatureFlagsInAboutFlags) {
     if (base::FeatureList::IsEnabled(*feature)) {
       ShowBadFeatureFlagsInfoBar(web_contents, IDS_BAD_FEATURES_WARNING_MESSAGE,
                                  feature);
