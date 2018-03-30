@@ -38,12 +38,19 @@ body.large-view {
   line-height: 20px;
 }
 
+.large-view .play-contained h1 {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+  line-height: 20px;
+}
+
 .large-view .play-contained h2,
 .large-view .play-contained strong {
   color: rgba(0, 0, 0, 0.87);
   font-size: 13px;
   line-height: 20px;
 }
+
 .large-view .play-contained select {
   color: rgba(0, 0, 0, 0.87);
   font-size: 13px;
@@ -60,6 +67,15 @@ body.large-view {
   margin: 0;
   padding: 0;
   width: 100%;
+}
+
+.play-contained h1 {
+  color: rgba(0, 0, 0, 0.54);
+  font-family: 'Roboto';
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
 }
 
 .play-contained h2,
@@ -86,7 +102,6 @@ body.large-view {
   padding: 0;
 }
 
-.play-contained h1,
 #play-footer ul {
   display: none;
 }

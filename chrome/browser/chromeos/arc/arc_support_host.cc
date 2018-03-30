@@ -516,6 +516,11 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "textBackupRestore",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE));
+  loadtime_data->SetString("textPaiService",
+                           l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_PAI));
+  loadtime_data->SetString(
+      "textGoogleServiceConfirmation",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_GOOGLE_SERVICE_CONFIRMATION));
   loadtime_data->SetString(
       "textLocationService",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LOCATION_SETTING));
@@ -534,6 +539,9 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "learnMoreLocationServices",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES));
+  loadtime_data->SetString(
+      "learnMorePaiService",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE));
   loadtime_data->SetString(
       "overlayClose",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_CLOSE));
