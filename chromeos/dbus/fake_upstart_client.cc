@@ -73,8 +73,4 @@ void FakeUpstartClient::StopMediaAnalytics(VoidDBusMethodCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
-void FakeUpstartClient::StartHammerd() {
-  hammerd_start_count_++;
-}
-
 }  // namespace chromeos

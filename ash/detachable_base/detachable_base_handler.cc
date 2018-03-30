@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -194,15 +193,6 @@ void DetachableBaseHandler::OnGotPowerManagerSwitchStates(
     base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
   if (!switch_states.has_value() || tablet_mode_.has_value())
     return;
-
-  // If the device is initially not in tablet mode, run the hammerd, which
-  // should ensure that pairing and authentication is run again for the
-  // attached base (if any). The goal is to have hammerd emit pairing signals
-  // now that hammerd client is listening for signals.
-  if (switch_states->tablet_mode ==
-      chromeos::PowerManagerClient::TabletMode::OFF) {
-    chromeos::DBusThreadManager::Get()->GetUpstartClient()->StartHammerd();
-  }
 
   UpdateTabletMode(switch_states->tablet_mode);
 }

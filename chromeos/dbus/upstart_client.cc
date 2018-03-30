@@ -23,7 +23,6 @@ const char kUpstartStopMethod[] = "Stop";
 const char kUpstartAuthPolicyPath[] = "/com/ubuntu/Upstart/jobs/authpolicyd";
 const char kUpstartMediaAnalyticsPath[] =
     "/com/ubuntu/Upstart/jobs/rtanalytics";
-const char kUpstartHammerdPath[] = "/com/ubuntu/Upstart/jobs/hammerd";
 
 class UpstartClientImpl : public UpstartClient {
  public:
@@ -99,17 +98,6 @@ class UpstartClientImpl : public UpstartClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void StartHammerd() override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartStartMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(true /* wait for response */);
-    hammerd_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::HandleHammerdResponse,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-
  protected:
   void Init(dbus::Bus* bus) override {
     bus_ = bus;
@@ -117,8 +105,6 @@ class UpstartClientImpl : public UpstartClient {
         kUpstartServiceName, dbus::ObjectPath(kUpstartAuthPolicyPath));
     ma_proxy_ = bus_->GetObjectProxy(
         kUpstartServiceName, dbus::ObjectPath(kUpstartMediaAnalyticsPath));
-    hammerd_proxy_ = bus_->GetObjectProxy(
-        kUpstartServiceName, dbus::ObjectPath(kUpstartHammerdPath));
   }
 
  private:
@@ -134,14 +120,9 @@ class UpstartClientImpl : public UpstartClient {
     LOG_IF(ERROR, !response) << "Failed to signal Upstart, response is null";
   }
 
-  void HandleHammerdResponse(dbus::Response* response) {
-    LOG_IF(ERROR, !response) << "Failed to signal Upstart to hammerd.";
-  }
-
   dbus::Bus* bus_ = nullptr;
   dbus::ObjectProxy* auth_proxy_ = nullptr;
   dbus::ObjectProxy* ma_proxy_ = nullptr;
-  dbus::ObjectProxy* hammerd_proxy_ = nullptr;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
