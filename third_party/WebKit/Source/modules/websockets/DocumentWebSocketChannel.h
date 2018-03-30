@@ -154,10 +154,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
                       unsigned short code,
                       const String& reason);
 
-  // This may return nullptr.
-  // TODO(nhiroki): Remove dependency to document (https://crbug.com/825740).
-  Document* GetDocument();
-  ExecutionContext* GetExecutionContext();
+  ExecutionContext* GetExecutionContext() const;
 
   // WebSocketHandleClient functions.
   void DidConnect(WebSocketHandle*,
