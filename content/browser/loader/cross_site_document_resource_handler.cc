@@ -35,7 +35,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 using MimeType = network::CrossOriginReadBlocking::MimeType;
-using SniffingResult = network::CrossOriginReadBlocking::Result;
+using SniffingResult = network::CrossOriginReadBlocking::SniffingResult;
 
 namespace content {
 

@@ -53,7 +53,7 @@ void AdvancePastWhitespace(StringPiece* data) {
 // |signatures|, and kNo otherwise.
 //
 // When kYes is returned, the matching prefix is erased from |data|.
-CrossOriginReadBlocking::Result MatchesSignature(
+CrossOriginReadBlocking::SniffingResult MatchesSignature(
     StringPiece* data,
     const StringPiece signatures[],
     size_t arr_size,
@@ -177,7 +177,7 @@ bool CrossOriginReadBlocking::IsValidCorsHeaderSet(
 }
 
 // This function is a slight modification of |net::SniffForHTML|.
-CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForHTML(
+CrossOriginReadBlocking::SniffingResult CrossOriginReadBlocking::SniffForHTML(
     StringPiece data) {
   // The content sniffers used by Chrome and Firefox are using "<!--" as one of
   // the HTML signatures, but it also appears in valid JavaScript, considered as
@@ -213,7 +213,7 @@ CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForHTML(
   while (data.length() > 0) {
     AdvancePastWhitespace(&data);
 
-    Result signature_match =
+    SniffingResult signature_match =
         MatchesSignature(&data, kHtmlSignatures, arraysize(kHtmlSignatures),
                          base::CompareCase::INSENSITIVE_ASCII);
     if (signature_match != kNo)
@@ -222,9 +222,9 @@ CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForHTML(
     // "<!--" (the HTML comment syntax) is a special case, since it's valid JS
     // as well. Skip over them.
     static const StringPiece kBeginCommentSignature[] = {"<!--"};
-    Result comment_match = MatchesSignature(&data, kBeginCommentSignature,
-                                            arraysize(kBeginCommentSignature),
-                                            base::CompareCase::SENSITIVE);
+    SniffingResult comment_match = MatchesSignature(
+        &data, kBeginCommentSignature, arraysize(kBeginCommentSignature),
+        base::CompareCase::SENSITIVE);
     if (comment_match != kYes)
       return comment_match;
 
@@ -240,7 +240,7 @@ CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForHTML(
   return kMaybe;
 }
 
-CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForXML(
+CrossOriginReadBlocking::SniffingResult CrossOriginReadBlocking::SniffForXML(
     base::StringPiece data) {
   // TODO(dsjang): Once CrossOriginReadBlocking is moved into the browser
   // process, we should do single-thread checking here for the static
@@ -251,7 +251,7 @@ CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForXML(
                           base::CompareCase::SENSITIVE);
 }
 
-CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForJSON(
+CrossOriginReadBlocking::SniffingResult CrossOriginReadBlocking::SniffForJSON(
     base::StringPiece data) {
   // Currently this function looks for an opening brace ('{'), followed by a
   // double-quoted string literal, followed by a colon. Importantly, such a
@@ -316,7 +316,7 @@ CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForJSON(
   return kMaybe;
 }
 
-CrossOriginReadBlocking::Result
+CrossOriginReadBlocking::SniffingResult
 CrossOriginReadBlocking::SniffForFetchOnlyResource(base::StringPiece data) {
   // kScriptBreakingPrefixes contains prefixes that are conventionally used to
   // prevent a JSON response from becoming a valid Javascript program (an attack
@@ -352,7 +352,7 @@ CrossOriginReadBlocking::SniffForFetchOnlyResource(base::StringPiece data) {
       StringPiece("while(1);"), StringPiece("for (;;);"),
       StringPiece("while (1);"),
   };
-  Result has_parser_breaker = MatchesSignature(
+  SniffingResult has_parser_breaker = MatchesSignature(
       &data, kScriptBreakingPrefixes, arraysize(kScriptBreakingPrefixes),
       base::CompareCase::SENSITIVE);
   if (has_parser_breaker != kNo)
