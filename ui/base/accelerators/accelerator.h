@@ -104,6 +104,9 @@ class UI_BASE_EXPORT Accelerator {
   }
 
  private:
+  base::string16 ApplyLongFormModifiers(base::string16 shortcut) const;
+  base::string16 ApplyShortFormModifiers(base::string16 shortcut) const;
+
   // The keycode (VK_...).
   KeyboardCode key_code_;
 
