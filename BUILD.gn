@@ -225,14 +225,14 @@ target(link_target_type, "ffmpeg_internal") {
   }
 
   if (ffmpeg_use_atomics_fallback) {
-    if (is_posix) {
+    if (is_posix || is_fuchsia) {
       include_dirs += [ "compat/atomics/gcc" ]
     } else if (is_win) {
       include_dirs += [ "compat/atomics/win32" ]
     }
   }
 
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     # Remove default stack frames config so we can force -fomit-frame-pointer.
     configs -= [ "//build/config/compiler:default_stack_frames" ]
 
@@ -270,7 +270,7 @@ target(link_target_type, "ffmpeg_internal") {
     }
   }
 
-  if (is_posix && !is_mac) {
+  if (is_fuchsia || (is_posix && !is_mac)) {
     defines += [
       "_ISOC99_SOURCE",
       "_LARGEFILE_SOURCE",
@@ -393,7 +393,7 @@ if (is_component_ffmpeg) {
     # So we can append below and assume they're defined.
     ldflags = []
 
-    if (is_posix && !is_mac) {
+    if (is_fuchsia || (is_posix && !is_mac)) {
       # Fixes warnings PIC relocation when building as component.
       ldflags += [
         "-Wl,-Bsymbolic",
