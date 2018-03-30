@@ -81,7 +81,6 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
     : message_handler_(new HWNDMessageHandler(this)),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
-      content_window_(NULL),
       drag_drop_client_(NULL),
       should_animate_window_close_(false),
       pending_close_(false),
@@ -90,7 +89,6 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
 }
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
-  // WARNING: |content_window_| has been destroyed by the time we get here.
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
 }
@@ -108,16 +106,13 @@ aura::Window* DesktopWindowTreeHostWin::GetContentWindowForHWND(HWND hwnd) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, DesktopWindowTreeHost implementation:
 
-void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
-                                    const Widget::InitParams& params) {
-  // TODO(beng): SetInitParams().
-  content_window_ = content_window;
+void DesktopWindowTreeHostWin::Init(const Widget::InitParams& params) {
   wants_mouse_events_when_inactive_ = params.wants_mouse_events_when_inactive;
 
-  wm::SetAnimationHost(content_window_, this);
+  wm::SetAnimationHost(content_window(), this);
   if (params.type == Widget::InitParams::TYPE_WINDOW &&
       !params.remove_standard_frame)
-    content_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
+    content_window()->SetProperty(aura::client::kAnimationsDisabledKey, true);
 
   ConfigureWindowStyles(message_handler_.get(), params,
                         GetWidget()->widget_delegate(),
@@ -148,12 +143,12 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
   if (cursor_client)
     is_cursor_visible_ = cursor_client->IsCursorVisible();
 
-  window()->SetProperty(kContentWindowForRootWindow, content_window_);
+  window()->SetProperty(kContentWindowForRootWindow, content_window());
   window()->SetProperty(kDesktopWindowTreeHostKey, this);
 
   should_animate_window_close_ =
-      content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
-      !wm::WindowAnimationsDisabled(content_window_);
+      content_window()->type() != aura::client::WINDOW_TYPE_NORMAL &&
+      !wm::WindowAnimationsDisabled(content_window());
 
   // TODO this is not invoked *after* Init(), but should be ok.
   SetWindowTransparency();
@@ -181,7 +176,7 @@ void DesktopWindowTreeHostWin::Close() {
   if (should_animate_window_close_) {
     pending_close_ = true;
     const bool is_animating =
-        content_window_->layer()->GetAnimator()->IsAnimatingProperty(
+        content_window()->layer()->GetAnimator()->IsAnimatingProperty(
             ui::LayerAnimationElement::VISIBILITY);
     // Animation may not start for a number of reasons.
     if (!is_animating)
@@ -401,7 +396,7 @@ void DesktopWindowTreeHostWin::EndMoveLoop() {
 void DesktopWindowTreeHostWin::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   message_handler_->SetVisibilityChangedAnimationsEnabled(value);
-  content_window_->SetProperty(aura::client::kAnimationsDisabledKey, !value);
+  content_window()->SetProperty(aura::client::kAnimationsDisabledKey, !value);
 }
 
 NonClientFrameView* DesktopWindowTreeHostWin::CreateNonClientFrameView() {
@@ -434,10 +429,10 @@ void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
   // TODO(sky): workaround for ScopedFullscreenVisibility showing window
   // directly. Instead of this should listen for visibility changes and then
   // update window.
-  if (message_handler_->IsVisible() && !content_window_->TargetVisibility()) {
+  if (message_handler_->IsVisible() && !content_window()->TargetVisibility()) {
     if (compositor())
       compositor()->SetVisible(true);
-    content_window_->Show();
+    content_window()->Show();
   }
   SetWindowTransparency();
 }
@@ -447,7 +442,7 @@ bool DesktopWindowTreeHostWin::IsFullscreen() const {
 }
 
 void DesktopWindowTreeHostWin::SetOpacity(float opacity) {
-  content_window_->layer()->SetOpacity(opacity);
+  content_window()->layer()->SetOpacity(opacity);
 }
 
 void DesktopWindowTreeHostWin::SetWindowIcons(
@@ -1014,7 +1009,7 @@ void DesktopWindowTreeHostWin::SetWindowTransparency() {
   compositor()->SetBackgroundColor(transparent ? SK_ColorTRANSPARENT
                                                : SK_ColorWHITE);
   window()->SetTransparent(transparent);
-  content_window_->SetTransparent(transparent);
+  content_window()->SetTransparent(transparent);
 }
 
 bool DesktopWindowTreeHostWin::IsModalWindowActive() const {
@@ -1041,6 +1036,10 @@ void DesktopWindowTreeHostWin::CheckForMonitorChange() {
     return;
   last_monitor_from_window_ = monitor_from_window;
   OnHostDisplayChanged();
+}
+
+aura::Window* DesktopWindowTreeHostWin::content_window() {
+  return desktop_native_widget_aura_->content_window();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

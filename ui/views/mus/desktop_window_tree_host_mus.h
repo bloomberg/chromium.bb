@@ -61,8 +61,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool ShouldSendClientAreaToServer() const;
 
   // DesktopWindowTreeHost:
-  void Init(aura::Window* content_window,
-            const Widget::InitParams& params) override;
+  void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   void OnActiveWindowChanged(bool active) override;
   void OnWidgetInitDone() override;
@@ -142,6 +141,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void ShowImpl() override;
   void HideImpl() override;
   void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) override;
+
+  // Accessor for DesktopNativeWidgetAura::content_window().
+  aura::Window* content_window();
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
