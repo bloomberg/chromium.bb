@@ -275,8 +275,8 @@ bool DocumentWebSocketChannel::Connect(
   TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorWebSocketCreateEvent::Data(
-                           GetDocument(), identifier_, url, protocol));
-  probe::didCreateWebSocket(GetDocument(), identifier_, url, protocol);
+                           GetExecutionContext(), identifier_, url, protocol));
+  probe::didCreateWebSocket(GetExecutionContext(), identifier_, url, protocol);
   return true;
 }
 
@@ -296,7 +296,7 @@ void DocumentWebSocketChannel::Send(const CString& message) {
   NETWORK_DVLOG(1) << this << " Send(" << message << ") (CString argument)";
   // FIXME: Change the inspector API to show the entire message instead
   // of individual frames.
-  probe::didSendWebSocketFrame(GetDocument(), identifier_,
+  probe::didSendWebSocketFrame(GetExecutionContext(), identifier_,
                                WebSocketOpCode::kOpCodeText, true,
                                message.data(), message.length());
   messages_.push_back(new Message(message));
@@ -314,7 +314,7 @@ void DocumentWebSocketChannel::Send(
   // FIXME: We can't access the data here.
   // Since Binary data are not displayed in Inspector, this does not
   // affect actual behavior.
-  probe::didSendWebSocketFrame(GetDocument(), identifier_,
+  probe::didSendWebSocketFrame(GetExecutionContext(), identifier_,
                                WebSocketOpCode::kOpCodeBinary, true, "", 0);
   messages_.push_back(new Message(std::move(blob_data_handle)));
   ProcessSendQueue();
@@ -329,7 +329,7 @@ void DocumentWebSocketChannel::Send(const DOMArrayBuffer& buffer,
   // FIXME: Change the inspector API to show the entire message instead
   // of individual frames.
   probe::didSendWebSocketFrame(
-      GetDocument(), identifier_, WebSocketOpCode::kOpCodeBinary, true,
+      GetExecutionContext(), identifier_, WebSocketOpCode::kOpCodeBinary, true,
       static_cast<const char*>(buffer.Data()) + byte_offset, byte_length);
   // buffer.slice copies its contents.
   // FIXME: Reduce copy by sending the data immediately when we don't need to
@@ -346,7 +346,7 @@ void DocumentWebSocketChannel::SendTextAsCharVector(
                    << ")";
   // FIXME: Change the inspector API to show the entire message instead
   // of individual frames.
-  probe::didSendWebSocketFrame(GetDocument(), identifier_,
+  probe::didSendWebSocketFrame(GetExecutionContext(), identifier_,
                                WebSocketOpCode::kOpCodeText, true, data->data(),
                                data->size());
   messages_.push_back(
@@ -361,7 +361,7 @@ void DocumentWebSocketChannel::SendBinaryAsCharVector(
                    << ")";
   // FIXME: Change the inspector API to show the entire message instead
   // of individual frames.
-  probe::didSendWebSocketFrame(GetDocument(), identifier_,
+  probe::didSendWebSocketFrame(GetExecutionContext(), identifier_,
                                WebSocketOpCode::kOpCodeBinary, true,
                                data->data(), data->size());
   messages_.push_back(
@@ -382,8 +382,8 @@ void DocumentWebSocketChannel::Fail(const String& reason,
                                     MessageLevel level,
                                     std::unique_ptr<SourceLocation> location) {
   NETWORK_DVLOG(1) << this << " Fail(" << reason << ")";
-  if (GetDocument())
-    probe::didReceiveWebSocketFrameError(GetDocument(), identifier_, reason);
+  probe::didReceiveWebSocketFrameError(GetExecutionContext(), identifier_,
+                                       reason);
   const String message =
       "WebSocket connection to '" + url_.ElidedString() + "' failed: " + reason;
   GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
@@ -398,8 +398,9 @@ void DocumentWebSocketChannel::Disconnect() {
   if (identifier_) {
     TRACE_EVENT_INSTANT1(
         "devtools.timeline", "WebSocketDestroy", TRACE_EVENT_SCOPE_THREAD,
-        "data", InspectorWebSocketEvent::Data(GetDocument(), identifier_));
-    probe::didCloseWebSocket(GetDocument(), identifier_);
+        "data",
+        InspectorWebSocketEvent::Data(GetExecutionContext(), identifier_));
+    probe::didCloseWebSocket(GetExecutionContext(), identifier_);
   }
   connection_handle_for_scheduler_.reset();
   AbortAsyncOperations();
@@ -596,14 +597,12 @@ void DocumentWebSocketChannel::DidStartOpeningHandshake(
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
 
-  if (GetDocument()) {
-    TRACE_EVENT_INSTANT1(
-        "devtools.timeline", "WebSocketSendHandshakeRequest",
-        TRACE_EVENT_SCOPE_THREAD, "data",
-        InspectorWebSocketEvent::Data(GetDocument(), identifier_));
-    probe::willSendWebSocketHandshakeRequest(GetDocument(), identifier_,
-                                             request.get());
-  }
+  TRACE_EVENT_INSTANT1(
+      "devtools.timeline", "WebSocketSendHandshakeRequest",
+      TRACE_EVENT_SCOPE_THREAD, "data",
+      InspectorWebSocketEvent::Data(GetExecutionContext(), identifier_));
+  probe::willSendWebSocketHandshakeRequest(GetExecutionContext(), identifier_,
+                                           request.get());
   handshake_request_ = std::move(request);
 }
 
@@ -615,14 +614,12 @@ void DocumentWebSocketChannel::DidFinishOpeningHandshake(
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
 
-  if (GetDocument()) {
-    TRACE_EVENT_INSTANT1(
-        "devtools.timeline", "WebSocketReceiveHandshakeResponse",
-        TRACE_EVENT_SCOPE_THREAD, "data",
-        InspectorWebSocketEvent::Data(GetDocument(), identifier_));
-    probe::didReceiveWebSocketHandshakeResponse(
-        GetDocument(), identifier_, handshake_request_.get(), response);
-  }
+  TRACE_EVENT_INSTANT1(
+      "devtools.timeline", "WebSocketReceiveHandshakeResponse",
+      TRACE_EVENT_SCOPE_THREAD, "data",
+      InspectorWebSocketEvent::Data(GetExecutionContext(), identifier_));
+  probe::didReceiveWebSocketHandshakeResponse(
+      GetExecutionContext(), identifier_, handshake_request_.get(), response);
   handshake_request_ = nullptr;
 }
 
@@ -678,16 +675,14 @@ void DocumentWebSocketChannel::DidReceiveData(WebSocketHandle* handle,
   if (!fin) {
     return;
   }
-  if (GetDocument()) {
-    // FIXME: Change the inspector API to show the entire message instead
-    // of individual frames.
-    auto opcode = receiving_message_type_is_text_
-                      ? WebSocketOpCode::kOpCodeText
-                      : WebSocketOpCode::kOpCodeBinary;
-    probe::didReceiveWebSocketFrame(GetDocument(), identifier_, opcode, false,
-                                    receiving_message_data_.data(),
-                                    receiving_message_data_.size());
-  }
+  // FIXME: Change the inspector API to show the entire message instead
+  // of individual frames.
+  auto opcode = receiving_message_type_is_text_
+                    ? WebSocketOpCode::kOpCodeText
+                    : WebSocketOpCode::kOpCodeBinary;
+  probe::didReceiveWebSocketFrame(GetExecutionContext(), identifier_, opcode,
+                                  false, receiving_message_data_.data(),
+                                  receiving_message_data_.size());
   if (receiving_message_type_is_text_) {
     String message = receiving_message_data_.IsEmpty()
                          ? g_empty_string
@@ -722,11 +717,12 @@ void DocumentWebSocketChannel::DidClose(WebSocketHandle* handle,
 
   handle_.reset();
 
-  if (identifier_ && GetDocument()) {
+  if (identifier_) {
     TRACE_EVENT_INSTANT1(
         "devtools.timeline", "WebSocketDestroy", TRACE_EVENT_SCOPE_THREAD,
-        "data", InspectorWebSocketEvent::Data(GetDocument(), identifier_));
-    probe::didCloseWebSocket(GetDocument(), identifier_);
+        "data",
+        InspectorWebSocketEvent::Data(GetExecutionContext(), identifier_));
+    probe::didCloseWebSocket(GetExecutionContext(), identifier_);
     identifier_ = 0;
   }
 

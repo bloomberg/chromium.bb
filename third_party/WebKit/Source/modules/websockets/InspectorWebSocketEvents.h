@@ -15,14 +15,14 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 class KURL;
 
 class InspectorWebSocketCreateEvent {
   STATIC_ONLY(InspectorWebSocketCreateEvent);
 
  public:
-  static std::unique_ptr<TracedValue> Data(Document*,
+  static std::unique_ptr<TracedValue> Data(ExecutionContext*,
                                            unsigned long identifier,
                                            const KURL&,
                                            const String& protocol);
@@ -32,7 +32,8 @@ class InspectorWebSocketEvent {
   STATIC_ONLY(InspectorWebSocketEvent);
 
  public:
-  static std::unique_ptr<TracedValue> Data(Document*, unsigned long identifier);
+  static std::unique_ptr<TracedValue> Data(ExecutionContext*,
+                                           unsigned long identifier);
 };
 
 }  // namespace blink
