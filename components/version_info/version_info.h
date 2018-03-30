@@ -9,6 +9,10 @@
 
 #include "components/version_info/channel.h"
 
+namespace base {
+class Version;
+}
+
 namespace version_info {
 
 // Returns the product name and version information for UserAgent header,
@@ -20,6 +24,9 @@ std::string GetProductName();
 
 // Returns the version number, e.g. "6.0.490.1".
 std::string GetVersionNumber();
+
+// Returns the result of GetVersionNumber() as a base::Version.
+const base::Version& GetVersion();
 
 // Returns a version control specific identifier of this release.
 std::string GetLastChange();

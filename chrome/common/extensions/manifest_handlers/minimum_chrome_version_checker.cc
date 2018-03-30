@@ -39,7 +39,7 @@ bool MinimumChromeVersionChecker::Parse(Extension* extension,
     return false;
   }
 
-  base::Version current_version(version_info::GetVersionNumber());
+  const base::Version& current_version = version_info::GetVersion();
   if (!current_version.IsValid()) {
     NOTREACHED();
     return false;

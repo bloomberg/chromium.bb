@@ -74,7 +74,7 @@ bool ShouldShowDefaultBrowserPrompt(Profile* profile) {
   const base::Version disable_version(disable_version_string);
   DCHECK(disable_version_string.empty() || disable_version.IsValid());
   if (disable_version.IsValid() &&
-      disable_version == base::Version(version_info::GetVersionNumber())) {
+      disable_version == version_info::GetVersion()) {
     return false;
   }
 

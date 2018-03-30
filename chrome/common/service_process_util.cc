@@ -86,7 +86,7 @@ ServiceProcessRunningState GetServiceProcessRunningState(
     return SERVICE_OLDER_VERSION_RUNNING;
 
   // Get the version of the currently *running* instance of Chrome.
-  base::Version running_version(version_info::GetVersionNumber());
+  const base::Version& running_version = version_info::GetVersion();
   if (!running_version.IsValid()) {
     NOTREACHED() << "Failed to parse version info";
     // Our own version is invalid. This is an error case. Pretend that we
@@ -94,12 +94,11 @@ ServiceProcessRunningState GetServiceProcessRunningState(
     return SERVICE_NEWER_VERSION_RUNNING;
   }
 
-  if (running_version.CompareTo(service_version) > 0) {
-    return SERVICE_OLDER_VERSION_RUNNING;
-  } else if (service_version.CompareTo(running_version) > 0) {
-    return SERVICE_NEWER_VERSION_RUNNING;
-  }
-  return SERVICE_SAME_VERSION_RUNNING;
+  int comp = running_version.CompareTo(service_version);
+  if (comp == 0)
+    return SERVICE_SAME_VERSION_RUNNING;
+  return comp > 0 ? SERVICE_OLDER_VERSION_RUNNING
+                  : SERVICE_NEWER_VERSION_RUNNING;
 }
 
 }  // namespace
@@ -109,8 +108,7 @@ ServiceProcessRunningState GetServiceProcessRunningState(
 // use the user-data-dir and the version as a scoping prefix.
 std::string GetServiceProcessScopedVersionedName(
     const std::string& append_str) {
-  std::string versioned_str;
-  versioned_str.append(version_info::GetVersionNumber());
+  std::string versioned_str = version_info::GetVersionNumber();
   versioned_str.append(append_str);
   return GetServiceProcessScopedName(versioned_str);
 }

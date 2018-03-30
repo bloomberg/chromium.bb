@@ -4,12 +4,11 @@
 
 #include "components/version_info/version_info.h"
 
+#include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/version.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info_values.h"
-
-#if defined(USE_UNOFFICIAL_VERSION_NUMBER)
-#include "ui/base/l10n/l10n_util.h"  // nogncheck
-#endif  // USE_UNOFFICIAL_VERSION_NUMBER
 
 namespace version_info {
 
@@ -23,6 +22,11 @@ std::string GetProductName() {
 
 std::string GetVersionNumber() {
   return PRODUCT_VERSION;
+}
+
+const base::Version& GetVersion() {
+  static const base::NoDestructor<base::Version> version(GetVersionNumber());
+  return *version;
 }
 
 std::string GetLastChange() {
@@ -65,20 +69,16 @@ std::string GetChannelString(Channel channel) {
   switch (channel) {
     case Channel::STABLE:
       return "stable";
-      break;
     case Channel::BETA:
       return "beta";
-      break;
     case Channel::DEV:
       return "dev";
-      break;
     case Channel::CANARY:
       return "canary";
-      break;
     case Channel::UNKNOWN:
       return "unknown";
-      break;
   }
+  NOTREACHED();
   return std::string();
 }
 
