@@ -14,7 +14,6 @@ set(AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_ 1)
 include(FindGit)
 include(FindPerl)
 include(FindThreads)
-include(FindwxWidgets)
 
 set(AOM_SUPPORTED_CPU_TARGETS
     "arm64 armv7 armv7s generic mips32 mips64 ppc x86 x86_64")
@@ -157,6 +156,7 @@ elseif ("${AOM_TARGET_CPU}" MATCHES "arm")
 endif ()
 
 if (CONFIG_ANALYZER)
+  include(FindwxWidgets)
   find_package(wxWidgets REQUIRED adv base core)
   include(${wxWidgets_USE_FILE})
 endif ()
