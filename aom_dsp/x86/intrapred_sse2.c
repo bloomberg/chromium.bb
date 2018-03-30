@@ -13,9 +13,9 @@
 
 #include "./aom_dsp_rtcd.h"
 
-static INLINE void dc_store_4x8(uint32_t dc, uint8_t *dst, ptrdiff_t stride) {
-  int i;
-  for (i = 0; i < 4; ++i) {
+static INLINE void dc_store_4xh(uint32_t dc, int height, uint8_t *dst,
+                                ptrdiff_t stride) {
+  for (int i = 0; i < height; i += 2) {
     *(uint32_t *)dst = dc;
     dst += stride;
     *(uint32_t *)dst = dc;
@@ -126,7 +126,22 @@ void aom_dc_predictor_4x8_sse2(uint8_t *dst, ptrdiff_t stride,
 
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   const uint32_t pred = _mm_cvtsi128_si32(row);
-  dc_store_4x8(pred, dst, stride);
+  dc_store_4xh(pred, 8, dst, stride);
+}
+
+void aom_dc_predictor_4x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m128i sum_left = dc_sum_16(left);
+  __m128i sum_above = dc_sum_4(above);
+  sum_above = _mm_add_epi16(sum_left, sum_above);
+
+  uint32_t sum = _mm_cvtsi128_si32(sum_above);
+  sum += 10;
+  sum /= 20;
+
+  const __m128i row = _mm_set1_epi8((uint8_t)sum);
+  const uint32_t pred = _mm_cvtsi128_si32(row);
+  dc_store_4xh(pred, 16, dst, stride);
 }
 
 void aom_dc_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t stride,
@@ -274,7 +289,21 @@ void aom_dc_top_predictor_4x8_sse2(uint8_t *dst, ptrdiff_t stride,
   sum_above = _mm_packus_epi16(sum_above, sum_above);
 
   const uint32_t pred = _mm_cvtsi128_si32(sum_above);
-  dc_store_4x8(pred, dst, stride);
+  dc_store_4xh(pred, 8, dst, stride);
+}
+
+void aom_dc_top_predictor_4x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                    const uint8_t *above, const uint8_t *left) {
+  (void)left;
+  __m128i sum_above = dc_sum_4(above);
+  const __m128i two = _mm_set1_epi16((int16_t)2);
+  sum_above = _mm_add_epi16(sum_above, two);
+  sum_above = _mm_srai_epi16(sum_above, 2);
+  sum_above = _mm_shufflelo_epi16(sum_above, 0);
+  sum_above = _mm_packus_epi16(sum_above, sum_above);
+
+  const uint32_t pred = _mm_cvtsi128_si32(sum_above);
+  dc_store_4xh(pred, 16, dst, stride);
 }
 
 void aom_dc_top_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t stride,
@@ -426,7 +455,22 @@ void aom_dc_left_predictor_4x8_sse2(uint8_t *dst, ptrdiff_t stride,
   sum_left = _mm_packus_epi16(sum_left, sum_left);
 
   const uint32_t pred = _mm_cvtsi128_si32(sum_left);
-  dc_store_4x8(pred, dst, stride);
+  dc_store_4xh(pred, 8, dst, stride);
+}
+
+void aom_dc_left_predictor_4x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  __m128i sum_left = dc_sum_16(left);
+  const __m128i eight = _mm_set1_epi16((uint16_t)8);
+  sum_left = _mm_add_epi16(sum_left, eight);
+  sum_left = _mm_srai_epi16(sum_left, 4);
+  sum_left = _mm_shufflelo_epi16(sum_left, 0);
+  sum_left = _mm_packus_epi16(sum_left, sum_left);
+
+  const uint32_t pred = _mm_cvtsi128_si32(sum_left);
+  dc_store_4xh(pred, 16, dst, stride);
 }
 
 void aom_dc_left_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t stride,
@@ -574,7 +618,15 @@ void aom_dc_128_predictor_4x8_sse2(uint8_t *dst, ptrdiff_t stride,
   (void)above;
   (void)left;
   const uint32_t pred = 0x80808080;
-  dc_store_4x8(pred, dst, stride);
+  dc_store_4xh(pred, 8, dst, stride);
+}
+
+void aom_dc_128_predictor_4x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                    const uint8_t *above, const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const uint32_t pred = 0x80808080;
+  dc_store_4xh(pred, 16, dst, stride);
 }
 
 void aom_dc_128_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t stride,
@@ -671,7 +723,14 @@ void aom_v_predictor_4x8_sse2(uint8_t *dst, ptrdiff_t stride,
                               const uint8_t *above, const uint8_t *left) {
   const uint32_t pred = *(uint32_t *)above;
   (void)left;
-  dc_store_4x8(pred, dst, stride);
+  dc_store_4xh(pred, 8, dst, stride);
+}
+
+void aom_v_predictor_4x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                               const uint8_t *above, const uint8_t *left) {
+  const uint32_t pred = *(uint32_t *)above;
+  (void)left;
+  dc_store_4xh(pred, 16, dst, stride);
 }
 
 void aom_v_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t stride,
@@ -790,6 +849,67 @@ void aom_h_predictor_4x8_sse2(uint8_t *dst, ptrdiff_t stride,
   row1 = _mm_shufflelo_epi16(left_col, 0x55);
   row2 = _mm_shufflelo_epi16(left_col, 0xaa);
   row3 = _mm_shufflelo_epi16(left_col, 0xff);
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row0);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row1);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row2);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row3);
+}
+
+void aom_h_predictor_4x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                               const uint8_t *above, const uint8_t *left) {
+  (void)above;
+  const __m128i left_col = _mm_load_si128((__m128i const *)left);
+  __m128i left_col_low = _mm_unpacklo_epi8(left_col, left_col);
+  __m128i left_col_high = _mm_unpackhi_epi8(left_col, left_col);
+
+  __m128i row0 = _mm_shufflelo_epi16(left_col_low, 0);
+  __m128i row1 = _mm_shufflelo_epi16(left_col_low, 0x55);
+  __m128i row2 = _mm_shufflelo_epi16(left_col_low, 0xaa);
+  __m128i row3 = _mm_shufflelo_epi16(left_col_low, 0xff);
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row0);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row1);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row2);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row3);
+  dst += stride;
+
+  left_col_low = _mm_unpackhi_epi64(left_col_low, left_col_low);
+  row0 = _mm_shufflelo_epi16(left_col_low, 0);
+  row1 = _mm_shufflelo_epi16(left_col_low, 0x55);
+  row2 = _mm_shufflelo_epi16(left_col_low, 0xaa);
+  row3 = _mm_shufflelo_epi16(left_col_low, 0xff);
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row0);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row1);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row2);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row3);
+  dst += stride;
+
+  row0 = _mm_shufflelo_epi16(left_col_high, 0);
+  row1 = _mm_shufflelo_epi16(left_col_high, 0x55);
+  row2 = _mm_shufflelo_epi16(left_col_high, 0xaa);
+  row3 = _mm_shufflelo_epi16(left_col_high, 0xff);
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row0);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row1);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row2);
+  dst += stride;
+  *(uint32_t *)dst = _mm_cvtsi128_si32(row3);
+  dst += stride;
+
+  left_col_high = _mm_unpackhi_epi64(left_col_high, left_col_high);
+  row0 = _mm_shufflelo_epi16(left_col_high, 0);
+  row1 = _mm_shufflelo_epi16(left_col_high, 0x55);
+  row2 = _mm_shufflelo_epi16(left_col_high, 0xaa);
+  row3 = _mm_shufflelo_epi16(left_col_high, 0xff);
   *(uint32_t *)dst = _mm_cvtsi128_si32(row0);
   dst += stride;
   *(uint32_t *)dst = _mm_cvtsi128_si32(row1);
