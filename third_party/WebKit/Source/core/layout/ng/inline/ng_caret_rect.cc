@@ -264,17 +264,9 @@ NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
       is_horizontal ? fragment.Size().height : fragment.Size().width;
   LayoutUnit caret_top;
 
-  LayoutUnit caret_left;
-  if (!fragment.IsLineBreak()) {
-    unsigned offset_in_fragment = offset - fragment.StartOffset();
-    const ShapeResult* shape_result = fragment.TextShapeResult();
-    DCHECK(shape_result);
-    CharacterRange character_range =
-        shape_result->GetCharacterRange(offset_in_fragment, offset_in_fragment);
-
-    LayoutUnit caret_center = LayoutUnit(character_range.start);
-    caret_left = caret_center - caret_width / 2;
-  }
+  LayoutUnit caret_left = fragment.InlinePositionForOffset(offset);
+  if (!fragment.IsLineBreak())
+    caret_left -= caret_width / 2;
 
   if (!is_horizontal) {
     std::swap(caret_top, caret_left);
