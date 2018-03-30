@@ -285,7 +285,7 @@ ScreenshotController::ScreenshotController(
       screenshot_delegate_(std::move(delegate)) {
   // Keep this here and don't move it to StartPartialScreenshotSession(), as it
   // needs to be pre-pended by MouseCursorEventFilter in Shell::Init().
-  Shell::Get()->PrependPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 }
 
 ScreenshotController::~ScreenshotController() {

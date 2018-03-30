@@ -389,7 +389,8 @@ protocol::Response OverlayAgent::setInspectMode(
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
   if (in_mode.compare("searchForNode") == 0)
-    aura::Env::GetInstance()->PrependPreTargetHandler(this);
+    aura::Env::GetInstance()->AddPreTargetHandler(
+        this, ui::EventTarget::Priority::kSystem);
   else if (in_mode.compare("none") == 0)
     aura::Env::GetInstance()->RemovePreTargetHandler(this);
   return protocol::Response::OK();

@@ -18,7 +18,8 @@ WindowCycleEventFilterClassic::WindowCycleEventFilterClassic() {
   // (specifically, the partial screenshot handler). See crbug.com/651939
   // We can't do all key event handling that early though because it prevents
   // other accelerators (like triggering a partial screenshot) from working.
-  Shell::Get()->PrependPreTargetHandler(&alt_release_handler_);
+  Shell::Get()->AddPreTargetHandler(&alt_release_handler_,
+                                    ui::EventTarget::Priority::kSystem);
 }
 
 WindowCycleEventFilterClassic::~WindowCycleEventFilterClassic() {

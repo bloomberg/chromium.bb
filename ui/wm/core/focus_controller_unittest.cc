@@ -954,7 +954,8 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
     EXPECT_EQ(NULL, GetActiveWindow());
     aura::Window* w1 = root_window()->GetChildById(1);
     SimpleEventHandler handler;
-    root_window()->PrependPreTargetHandler(&handler);
+    root_window()->AddPreTargetHandler(&handler,
+                                       ui::EventTarget::Priority::kSystem);
     ui::test::EventGenerator generator(root_window(), w1);
     generator.ClickLeftButton();
     EXPECT_EQ(NULL, GetActiveWindow());

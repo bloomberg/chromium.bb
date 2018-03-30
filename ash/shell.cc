@@ -1091,7 +1091,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   screenshot_controller_ = std::make_unique<ScreenshotController>(
       shell_delegate_->CreateScreenshotDelegate());
   mouse_cursor_filter_ = std::make_unique<MouseCursorEventFilter>();
-  PrependPreTargetHandler(mouse_cursor_filter_.get());
+  AddPreTargetHandler(mouse_cursor_filter_.get(),
+                      ui::EventTarget::Priority::kAccessibility);
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating

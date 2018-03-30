@@ -509,7 +509,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
     Refresh();
     // Make sure we are in front of the fullscreen magnifier which also handles
     // scroll events.
-    shell->PrependPreTargetHandler(this);
+    shell->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
     shell->window_tree_host_manager()->AddObserver(this);
   } else {
     shell->window_tree_host_manager()->RemoveObserver(this);

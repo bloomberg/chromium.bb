@@ -394,6 +394,7 @@ if (!is_ios) {
       "event_dispatcher_unittest.cc",
       "event_processor_unittest.cc",
       "event_rewriter_unittest.cc",
+      "event_target_unittest.cc",
       "event_unittest.cc",
       "fraction_of_time_without_user_input_recorder_unittest.cc",
       "gesture_detection/bitset_32_unittest.cc",

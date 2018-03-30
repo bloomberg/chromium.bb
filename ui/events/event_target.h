@@ -26,10 +26,6 @@ class EVENTS_EXPORT EventTarget {
    public:
     explicit DispatcherApi(EventTarget* target) : target_(target) {}
 
-    const EventHandlerList& pre_target_list() const {
-      return target_->pre_target_list_;
-    }
-
    private:
     DispatcherApi();
     EventTarget* target_;
@@ -58,14 +54,26 @@ class EVENTS_EXPORT EventTarget {
   virtual void ConvertEventToTarget(EventTarget* target,
                                     LocatedEvent* event);
 
+  // Priority levels for PreTargetHandlers.
+  enum class Priority {
+    // The Accessibility level is the highest, and gets events before
+    // other priority levels. This allows accessibility features to
+    // modify events directly from the user.
+    kAccessibility,
+
+    // System priority EventHandlers get events before default level, and
+    // should be used for drag and drop, menus, etc.
+    kSystem,
+
+    // The default level should be used by most EventHandlers.
+    kDefault,
+  };
+
   // Adds a handler to receive events before the target. The handler must be
   // explicitly removed from the target before the handler is destroyed. The
   // EventTarget does not take ownership of the handler.
-  void AddPreTargetHandler(EventHandler* handler);
-
-  // Same as AddPreTargetHandler except that the |handler| is added to the front
-  // of the list so it is the first one to receive events.
-  void PrependPreTargetHandler(EventHandler* handler);
+  void AddPreTargetHandler(EventHandler* handler,
+                           Priority priority = Priority::kDefault);
   void RemovePreTargetHandler(EventHandler* handler);
 
   // Adds a handler to receive events after the target. The handler must be
@@ -87,6 +95,17 @@ class EVENTS_EXPORT EventTarget {
   friend class EventDispatcher;
   friend class EventTargetTestApi;
 
+  // A handler with a priority.
+  struct PrioritizedHandler {
+    EventHandler* handler = nullptr;
+    Priority priority = Priority::kDefault;
+
+    bool operator<(const PrioritizedHandler& ph) const {
+      return priority < ph.priority;
+    }
+  };
+  using EventHandlerPriorityList = std::vector<PrioritizedHandler>;
+
   // Returns the list of handlers that should receive the event before the
   // target. The handlers from the outermost target are first in the list, and
   // the handlers on |this| are the last in the list.
@@ -97,7 +116,7 @@ class EVENTS_EXPORT EventTarget {
   // the handlers on |this| are the first in the list.
   void GetPostTargetHandlers(EventHandlerList* list);
 
-  EventHandlerList pre_target_list_;
+  EventHandlerPriorityList pre_target_list_;
   EventHandlerList post_target_list_;
   EventHandler* target_handler_;
 

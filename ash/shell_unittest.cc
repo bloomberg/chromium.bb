@@ -491,7 +491,7 @@ TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   ui::EventTargetTestApi test_api(shell);
   ShellTestApi shell_test_api(shell);
 
-  const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
+  ui::EventHandlerList handlers = test_api.GetPreTargetHandlers();
   ui::EventHandlerList::const_iterator cursor_filter =
       std::find(handlers.begin(), handlers.end(), shell->mouse_cursor_filter());
   ui::EventHandlerList::const_iterator drag_drop = std::find(

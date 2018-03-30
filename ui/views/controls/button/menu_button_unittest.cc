@@ -579,7 +579,8 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
 
   TestDragDropClient drag_client;
   SetDragDropClient(GetContext(), &drag_client);
-  button()->PrependPreTargetHandler(&drag_client);
+  button()->AddPreTargetHandler(&drag_client,
+                                ui::EventTarget::Priority::kSystem);
 
   generator()->DragMouseBy(10, 0);
   EXPECT_EQ(nullptr, menu_button_listener.last_source());

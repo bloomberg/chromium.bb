@@ -195,7 +195,7 @@ TEST_F(TouchCalibratorControllerTest, StartCalibration) {
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
 
   ui::EventTargetTestApi test_api(Shell::Get());
-  const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
+  ui::EventHandlerList handlers = test_api.GetPreTargetHandlers();
   EXPECT_TRUE(base::ContainsValue(handlers, &touch_calibrator_controller));
 }
 
