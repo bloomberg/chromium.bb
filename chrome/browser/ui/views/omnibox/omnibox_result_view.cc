@@ -96,7 +96,69 @@ int GetIconAlignmentOffset() {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxResultView:
+// OmniboxSeparatedLineView:
+
+class OmniboxSeparatedLineView : public views::View {
+ public:
+  explicit OmniboxSeparatedLineView(OmniboxResultView* result_view);
+  ~OmniboxSeparatedLineView() override;
+
+ protected:
+  // views::View:
+  void Layout() override;
+  const char* GetClassName() const override;
+
+  OmniboxResultView* result_view_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OmniboxSeparatedLineView);
+};
+
+OmniboxSeparatedLineView::OmniboxSeparatedLineView(
+    OmniboxResultView* result_view)
+    : result_view_(result_view) {}
+
+OmniboxSeparatedLineView::~OmniboxSeparatedLineView() = default;
+
+const char* OmniboxSeparatedLineView::GetClassName() const {
+  return "OmniboxSeparatedLineView";
+}
+
+void OmniboxSeparatedLineView::Layout() {
+  // TODO(dschuyler): Fill this in.
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OmniboxSuggestionView:
+
+class OmniboxSuggestionView : public OmniboxSeparatedLineView {
+ public:
+  explicit OmniboxSuggestionView(OmniboxResultView* result_view);
+  ~OmniboxSuggestionView() override;
+
+ private:
+  // views::View:
+  void Layout() override;
+  const char* GetClassName() const override;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxSuggestionView);
+};
+
+OmniboxSuggestionView::OmniboxSuggestionView(OmniboxResultView* result_view)
+    : OmniboxSeparatedLineView::OmniboxSeparatedLineView(result_view) {}
+
+OmniboxSuggestionView::~OmniboxSuggestionView() = default;
+
+const char* OmniboxSuggestionView::GetClassName() const {
+  return "OmniboxSuggestionView";
+}
+
+void OmniboxSuggestionView::Layout() {
+  // TODO(dschuyler): Fill this in.
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OmniboxImageView:
 
 class OmniboxImageView : public views::ImageView {
  public:
@@ -126,6 +188,9 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       keyword_description_view_(AddOmniboxTextView(font_list)),
       keyword_separator_view_(AddOmniboxTextView(font_list)) {
   CHECK_GE(model_index, 0);
+
+  AddChildView(suggestion_view_ = new OmniboxSuggestionView(this));
+  AddChildView(keyword_view_ = new OmniboxSeparatedLineView(this));
 
   keyword_icon_view_->EnableCanvasFlippingForRTLUI(true);
   keyword_icon_view_->SetImage(gfx::CreateVectorIcon(

@@ -31,6 +31,8 @@ class Image;
 }
 
 class OmniboxImageView;
+class OmniboxSeparatedLineView;
+class OmniboxSuggestionView;
 class OmniboxTabSwitchButton;
 class OmniboxTextView;
 
@@ -126,6 +128,12 @@ class OmniboxResultView : public views::View,
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // Weak pointers for easy reference.
+  OmniboxSuggestionView* suggestion_view_;  // The leading (or left) view.
+  OmniboxSeparatedLineView* keyword_view_;  // The trailing (or right) view.
+
+  // TODO(dschuyler): Move these views into either suggestion_view_ or
+  // keyword_view_. I intend to do so by May, 2018.
+
   views::ImageView* suggestion_icon_view_;   // Small icon. e.g. favicon.
   views::ImageView* suggestion_image_view_;  // For rich suggestions.
   OmniboxTextView* suggestion_content_view_;
