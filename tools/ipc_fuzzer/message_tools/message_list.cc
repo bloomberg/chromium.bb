@@ -47,16 +47,15 @@ static bool check_msgtable() {
   // Exclude test and other non-browser files from consideration.  Do not
   // include message files used inside the actual chrome browser in this list.
   exemptions.push_back(TestMsgStart);
-  exemptions.push_back(FirefoxImporterUnittestMsgStart);
   exemptions.push_back(ShellMsgStart);
   exemptions.push_back(LayoutTestMsgStart);
-  exemptions.push_back(MetroViewerMsgStart);
-  exemptions.push_back(CCMsgStart);  // Nothing but param traits.
   exemptions.push_back(CastCryptoMsgStart);   // Reserved for chromecast.
   exemptions.push_back(CastChannelMsgStart);  // Reserved for chromecast.
   exemptions.push_back(CastMediaMsgStart);    // Reserved for chromecast.
   exemptions.push_back(IPCTestMsgStart);
-  exemptions.push_back(WorkerMsgStart);  // Now only used by tests.
+  exemptions.push_back(WorkerMsgStart);    // Now only used by tests.
+  exemptions.push_back(ResourceMsgStart);  // Cleanup underway.
+  exemptions.push_back(ChromeUtilityPrintingMsgStart);  // BUILDFLAGS, sigh.
 
 #if !BUILDFLAG(ENABLE_NACL)
   exemptions.push_back(NaClMsgStart);
@@ -80,10 +79,6 @@ static bool check_msgtable() {
 #if !defined(USE_OZONE)
   exemptions.push_back(OzoneGpuMsgStart);
 #endif  // !defined(USE_OZONE)
-
-#if !defined(OS_WIN)
-  exemptions.push_back(DWriteFontProxyMsgStart);
-#endif
 
   for (size_t i = 0; i < MSGTABLE_SIZE; ++i) {
     int class_id = IPC_MESSAGE_ID_CLASS(msgtable[i].id);
