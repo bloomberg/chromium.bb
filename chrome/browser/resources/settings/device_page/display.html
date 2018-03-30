@@ -12,7 +12,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
-<link rel="import" href="display_size_slider.html">
 <link rel="import" href="night_light_slider.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
 <link rel="import" href="../controls/settings_slider.html">
@@ -162,13 +161,16 @@
         <div class="settings-box indented two-line">
           <div class="start text-area layout vertical">
             <div>$i18n{displayZoomTitle}</div>
-            <div class="secondary self-start">$i18n{displayZoomSublabel}</div>
+            <div class="secondary self-start">
+              [[getDisplayZoomText_(selectedDisplay, selectedZoomPref_.value)]]
+            </div>
           </div>
-          <display-size-slider id="displaySizeSlider"
-              ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
-              min-label="$i18n{displaySizeSliderMinLabel}"
-              max-label="$i18n{displaySizeSliderMaxLabel}">
-          </display-size-slider>
+          <settings-slider tick-values="[[zoomValues_]]"
+              disabled="[[!enableDisplayZoomSlider_(selectedDisplay)]]"
+              pref="{{selectedZoomPref_}}" on-change="onSelectedZoomChange_"
+              label-min="$i18n{displaySizeSliderMinLabel}"
+              label-max="$i18n{displaySizeSliderMaxLabel}">
+          </settings-slider>
         </div>
 
         <!-- Drop down select menu for resolution -->
