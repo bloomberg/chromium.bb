@@ -114,6 +114,45 @@ void ReportSavedPagesCount(const MultipleOfflinePageItemCallback& callback,
   callback.Run(all_items);
 }
 
+void ReportStorageUsage(const ArchiveManager::StorageStats& storage_stats) {
+  const int kMiB = 1024 * 1024;
+  int internal_free_disk_space_mib =
+      static_cast<int>(storage_stats.internal_free_disk_space / kMiB);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.StorageInfo.InternalFreeSpaceMiB",
+                              internal_free_disk_space_mib, 1, 500000, 50);
+  int external_free_disk_space_mib =
+      static_cast<int>(storage_stats.external_free_disk_space / kMiB);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.StorageInfo.ExternalFreeSpaceMiB",
+                              external_free_disk_space_mib, 1, 500000, 50);
+  int internal_page_size_mib =
+      static_cast<int>(storage_stats.internal_archives_size() / kMiB);
+  UMA_HISTOGRAM_COUNTS_10000("OfflinePages.StorageInfo.InternalArchiveSizeMiB",
+                             internal_page_size_mib);
+  int external_page_size_mib =
+      static_cast<int>(storage_stats.public_archives_size / kMiB);
+  UMA_HISTOGRAM_COUNTS_10000("OfflinePages.StorageInfo.ExternalArchiveSizeMiB",
+                             external_page_size_mib);
+
+  int64_t internal_volume_storage = storage_stats.internal_archives_size() +
+                                    storage_stats.internal_free_disk_space;
+  if (internal_volume_storage > 0) {
+    int internal_percentage =
+        static_cast<int>(100.0 * storage_stats.internal_archives_size() /
+                         internal_volume_storage);
+    UMA_HISTOGRAM_PERCENTAGE("OfflinePages.StorageInfo.InternalUsagePercentage",
+                             internal_percentage);
+  }
+
+  int64_t external_volume_storage = storage_stats.public_archives_size +
+                                    storage_stats.external_free_disk_space;
+  if (external_volume_storage > 0) {
+    int external_percentage = static_cast<int>(
+        100.0 * storage_stats.public_archives_size / external_volume_storage);
+    UMA_HISTOGRAM_PERCENTAGE("OfflinePages.StorageInfo.ExternalUsagePercentage",
+                             external_percentage);
+  }
+}
+
 }  // namespace
 
 // static
@@ -381,6 +420,10 @@ void OfflinePageModelTaskified::InformSavePageDone(
       model_utils::AddHistogramSuffix(client_id.name_space,
                                       "OfflinePages.SavePageResult"),
       result, SavePageResult::RESULT_COUNT);
+
+  // Report storage usage if saving page succeeded.
+  if (result == SavePageResult::SUCCESS)
+    archive_manager_->GetStorageStats(base::BindOnce(&ReportStorageUsage));
 
   if (result == SavePageResult::ARCHIVE_CREATION_FAILED)
     CreateArchivesDirectoryIfNeeded();

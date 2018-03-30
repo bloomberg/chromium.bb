@@ -364,6 +364,18 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessful) {
       model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       1);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.StorageInfo.InternalFreeSpaceMiB", 1);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.StorageInfo.ExternalFreeSpaceMiB", 1);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.StorageInfo.InternalUsagePercentage", 1);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.StorageInfo.ExternalUsagePercentage", 1);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.StorageInfo.InternalArchiveSizeMiB", 1);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.StorageInfo.ExternalArchiveSizeMiB", 1);
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessfulWithSameOriginalUrl) {
