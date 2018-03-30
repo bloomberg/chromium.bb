@@ -1713,8 +1713,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
     static const char brand[] = "brand";
     static const char board[] = "board";
     static const char exception_info[] = "exception_info";
-    static const char custom_themes[] = "custom_themes";
-    static const char resources_version[] = "resources_version";
 
     base::android::BuildInfo* android_build_info =
         base::android::BuildInfo::GetInstance();
@@ -1739,11 +1737,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
                          android_build_info->installer_package_name());
     writer.AddBoundary();
     writer.AddPairString(abi_name, android_build_info->abi_name());
-    writer.AddBoundary();
-    writer.AddPairString(custom_themes, android_build_info->custom_themes());
-    writer.AddBoundary();
-    writer.AddPairString(resources_version,
-                         android_build_info->resources_version());
     writer.AddBoundary();
     WriteAndroidPackage(writer, android_build_info);
     writer.AddBoundary();
