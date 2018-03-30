@@ -306,6 +306,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // The background color of the widget.
   SkColor background_color_;
 
+  gfx::Insets insets_;
+
   std::unique_ptr<TouchSelectionControllerClientChildFrame>
       selection_controller_client_;
 
