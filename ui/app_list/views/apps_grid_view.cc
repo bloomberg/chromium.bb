@@ -1844,10 +1844,12 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
   // Drag zones are at the edges of the scroll axis.
   if (pagination_controller_->scroll_axis() ==
       PaginationController::SCROLL_AXIS_VERTICAL) {
-    if (drag_point.y() < kPageFlipZoneSize)
+    if (drag_point.y() < kPageFlipZoneSize) {
       new_page_flip_target = pagination_model_.selected_page() - 1;
-    else if (drag_point.y() > height() - kPageFlipZoneSize)
+    } else if (IsPointWithinBottomDragBuffer(drag_point)) {
+      // If the drag point is within the drag buffer, but not over the shelf.
       new_page_flip_target = pagination_model_.selected_page() + 1;
+    }
   } else {
     // TODO(xiyuan): Fix this for RTL.
     if (new_page_flip_target == -1 && drag_point.x() < kPageFlipZoneSize)
@@ -2170,6 +2172,19 @@ bool AppsGridView::IsPointWithinPageFlipBuffer(const gfx::Point& point) const {
       display::Screen::GetScreen()->GetDisplayNearestView(
           GetWidget()->GetNativeView());
   return display.work_area().Contains(point_in_screen);
+}
+
+bool AppsGridView::IsPointWithinBottomDragBuffer(
+    const gfx::Point& point) const {
+  gfx::Point point_in_screen = point;
+  ConvertPointToScreen(this, &point_in_screen);
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestView(
+          GetWidget()->GetNativeView());
+
+  return point_in_screen.y() >
+             GetBoundsInScreen().height() - kPageFlipZoneSize &&
+         point_in_screen.y() < display.work_area().height();
 }
 
 void AppsGridView::ButtonPressed(views::Button* sender,

@@ -127,6 +127,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
         base::i18n::SetICUDefaultLocale("he");
     }
     gfx::NativeView parent = GetContext();
+    // Ensure that parent is big enough to show the full AppListView.
+    parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
     delegate_.reset(new AppListTestViewDelegate);
     app_list_view_ = new AppListView(delegate_.get());
     app_list_view_->set_short_animation_for_testing();

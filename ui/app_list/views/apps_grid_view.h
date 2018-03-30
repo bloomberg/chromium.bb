@@ -423,6 +423,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // buffer area surrounding it that can trigger page flip.
   bool IsPointWithinPageFlipBuffer(const gfx::Point& point) const;
 
+  // Returns whether |point| is in the bottom drag buffer, and not over the
+  // shelf.
+  bool IsPointWithinBottomDragBuffer(const gfx::Point& point) const;
+
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
