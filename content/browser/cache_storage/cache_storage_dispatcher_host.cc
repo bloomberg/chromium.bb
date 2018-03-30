@@ -271,6 +271,8 @@ void CacheStorageDispatcherHost::Has(
     bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
     return;
   }
+  if (!ValidState())
+    return;
   context_->cache_manager()->HasCache(
       origin, base::UTF16ToUTF8(cache_name),
       base::BindOnce(&CacheStorageDispatcherHost::OnHasCallback, this,
@@ -287,6 +289,8 @@ void CacheStorageDispatcherHost::Open(
     bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
     return;
   }
+  if (!ValidState())
+    return;
   context_->cache_manager()->OpenCache(
       origin, base::UTF16ToUTF8(cache_name),
       base::BindOnce(&CacheStorageDispatcherHost::OnOpenCallback, this, origin,
@@ -303,6 +307,8 @@ void CacheStorageDispatcherHost::Delete(
     bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
     return;
   }
+  if (!ValidState())
+    return;
   context_->cache_manager()->DeleteCache(origin, base::UTF16ToUTF8(cache_name),
                                          std::move(callback));
 }
@@ -317,6 +323,8 @@ void CacheStorageDispatcherHost::Keys(
     bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
     return;
   }
+  if (!ValidState())
+    return;
   context_->cache_manager()->EnumerateCaches(
       origin, base::BindOnce(&CacheStorageDispatcherHost::OnKeysCallback, this,
                              std::move(callback)));
@@ -333,6 +341,8 @@ void CacheStorageDispatcherHost::Match(
     bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
     return;
   }
+  if (!ValidState())
+    return;
   auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
       request.url, request.method, request.headers, request.referrer,
       request.is_reload);
@@ -440,6 +450,15 @@ void CacheStorageDispatcherHost::AddBinding(
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bindings_.AddBinding(this, std::move(request), origin);
+}
+
+bool CacheStorageDispatcherHost::ValidState() {
+  // cache_manager() can return nullptr when process is shutting down.
+  if (!(context_ && context_->cache_manager())) {
+    bindings_.CloseAllBindings();
+    return false;
+  }
+  return true;
 }
 
 }  // namespace content
