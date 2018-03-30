@@ -48,7 +48,6 @@
 #include "ppapi/c/ppb_text_input_controller.h"
 #include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/ppb_video_encoder.h"
-#include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/pp_video_capture_format.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -95,11 +94,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(ppapi::TCPSocketVersion,
                           ppapi::TCP_SOCKET_VERSION_1_1_OR_ABOVE)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_AudioSampleRate, PP_AUDIOSAMPLERATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_BlendMode, PP_BLENDMODE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_CdmExceptionCode, PP_CDMEXCEPTIONCODE_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_CdmKeyStatus, PP_CDMKEYSTATUS_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_CdmMessageType, PP_CDMMESSAGETYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_DeviceType_Dev, PP_DEVICETYPE_DEV_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_DecryptorStreamType, PP_DECRYPTORSTREAMTYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_FileSystemType, PP_FILESYSTEMTYPE_ISOLATED)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_FileType, PP_FILETYPE_OTHER)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_Flash_BrowserOperations_Permission,
@@ -109,9 +104,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_Flash_BrowserOperations_SettingType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(PP_FlashSetting,
                               PP_FLASHSETTING_FIRST,
                               PP_FLASHSETTING_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_HdcpVersion, PP_HDCPVERSION_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_ImageDataFormat, PP_IMAGEDATAFORMAT_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_InitDataType, PP_INITDATATYPE_MAX)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(PP_InputEvent_MouseButton,
                               PP_INPUTEVENT_MOUSEBUTTON_FIRST,
                               PP_INPUTEVENT_MOUSEBUTTON_LAST)
@@ -130,7 +123,6 @@ IPC_ENUM_TRAITS(PP_PrintOutputFormat_Dev)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrintScalingOption_Dev, PP_PRINTSCALINGOPTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateDuplexMode_Dev, PP_PRIVATEDUPLEXMODE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateFontCharset, PP_PRIVATEFONTCHARSET_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_SessionType, PP_SESSIONTYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TCPSocket_Option,
                           PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TextInput_Type, PP_TEXTINPUT_TYPE_LAST)
@@ -883,74 +875,6 @@ IPC_MESSAGE_ROUTED3(
     IPC::PlatformFileForTransit /* handle */,
     int32_t /* result */)
 
-// PPP_ContentDecryptor_Dev
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPPContentDecryptor_Initialize,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    ppapi::proxy::SerializedVar /* key_system, String */,
-                    PP_Bool /* allow_distinctive_identifier */,
-                    PP_Bool /* allow_persistent_state */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_SetServerCertificate,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    std::vector<uint8_t> /* certificate */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_GetStatusForPolicy,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    PP_HdcpVersion /* min_hdcp_version */)
-IPC_MESSAGE_ROUTED5(
-    PpapiMsg_PPPContentDecryptor_CreateSessionAndGenerateRequest,
-    PP_Instance /* instance */,
-    uint32_t /* promise_id */,
-    PP_SessionType /* session_type */,
-    PP_InitDataType /* init_data_type */,
-    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_LoadSession,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    PP_SessionType /* session_type */,
-                    ppapi::proxy::SerializedVar /* session_id, String */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_UpdateSession,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    ppapi::proxy::SerializedVar /* session_id, String */,
-                    ppapi::proxy::SerializedVar /* response, ArrayBuffer */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_CloseSession,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    std::string /* session_id */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_RemoveSession,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    std::string /* session_id */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
-                    PP_Instance /* instance */,
-                    ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
-                    std::string /* serialized_block_info */)
-IPC_MESSAGE_ROUTED3(
-    PpapiMsg_PPPContentDecryptor_InitializeAudioDecoder,
-    PP_Instance /* instance */,
-    std::string /* serialized_decoder_config */,
-    ppapi::proxy::PPPDecryptor_Buffer /* extra_data_buffer */)
-IPC_MESSAGE_ROUTED3(
-    PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder,
-    PP_Instance /* instance */,
-    std::string /* serialized_decoder_config */,
-    ppapi::proxy::PPPDecryptor_Buffer /* extra_data_buffer. */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DeinitializeDecoder,
-                    PP_Instance /* instance */,
-                    PP_DecryptorStreamType /* decoder_type */,
-                    uint32_t /* request_id */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_ResetDecoder,
-                    PP_Instance /* instance */,
-                    PP_DecryptorStreamType /* decoder_type */,
-                    uint32_t /* request_id */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
-                    PP_Instance /* instance */,
-                    PP_DecryptorStreamType /* decoder_type */,
-                    ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
-                    std::string /* serialized_block_info */)
-
 // PPP_Instance_Private.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
                            PP_Instance /* instance */,
@@ -1323,73 +1247,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(
     ppapi::HostResource /* result_resource */,
     ppapi::proxy::SerializedHandle /* result_shm_handle */)
 
-// PPB_ContentDecryptor_Dev messages handled in PPB_Instance_Proxy.
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PromiseResolved,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_PromiseResolvedWithKeyStatus,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    PP_CdmKeyStatus /* key_status */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_PromiseResolvedWithSession,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    ppapi::proxy::SerializedVar /* session_id, String */)
-IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_PromiseRejected,
-                    PP_Instance /* instance */,
-                    uint32_t /* promise_id */,
-                    PP_CdmExceptionCode /* exception_code */,
-                    int32_t /* system_code */,
-                    ppapi::proxy::SerializedVar /* error_description, String */)
-IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_SessionMessage,
-                    PP_Instance /* instance */,
-                    ppapi::proxy::SerializedVar /* session_id, String */,
-                    PP_CdmMessageType /* message_type */,
-                    ppapi::proxy::SerializedVar /* message, ArrayBuffer */,
-                    ppapi::proxy::SerializedVar /* destination_url, String */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionKeysChange,
-                    PP_Instance /* instance */,
-                    std::string /* session_id */,
-                    PP_Bool /* has_additional_usable_key */,
-                    std::vector<PP_KeyInformation> /* key_information */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_SessionExpirationChange,
-                    PP_Instance /* instance */,
-                    std::string /* session_id */,
-                    PP_Time /* new_expiry_time */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SessionClosed,
-                    PP_Instance /* instance */,
-                    ppapi::proxy::SerializedVar /* session_id, String */)
-IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_LegacySessionError,
-                    PP_Instance /* instance */,
-                    ppapi::proxy::SerializedVar /* session_id, String */,
-                    PP_CdmExceptionCode /* exception_code */,
-                    int32_t /* system_code */,
-                    ppapi::proxy::SerializedVar /* error_description, String */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
-                    PP_Instance /* instance */,
-                    PP_Resource /* decrypted_block, PPB_Buffer_Dev */,
-                    std::string /* serialized_block_info */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_DecoderInitializeDone,
-                    PP_Instance /* instance */,
-                    PP_DecryptorStreamType /* decoder_type */,
-                    uint32_t /* request_id */,
-                    PP_Bool /* success */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderDeinitializeDone,
-                    PP_Instance /* instance */,
-                    PP_DecryptorStreamType /* decoder_type */,
-                    uint32_t /* request_id */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderResetDone,
-                    PP_Instance /* instance */,
-                    PP_DecryptorStreamType /* decoder_type */,
-                    uint32_t /* request_id */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverFrame,
-                    PP_Instance /* instance */,
-                    PP_Resource /* decrypted_frame, PPB_Buffer_Dev */,
-                    std::string /* serialized_block_info */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverSamples,
-                    PP_Instance /* instance */,
-                    PP_Resource /* audio_frames, PPB_Buffer_Dev */,
-                    std::string /* serialized_block_info */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // PPB_Testing.

@@ -112,14 +112,12 @@ source_set("c") {
     "dev/ppp_video_decoder_dev.h",
 
     # Private interfaces.
-    "private/pp_content_decryptor.h",
     "private/pp_file_handle.h",
     "private/pp_private_font_charset.h",
     "private/pp_video_capture_format.h",
     "private/pp_video_frame_private.h",
     "private/ppb_camera_capabilities_private.h",
     "private/ppb_camera_device_private.h",
-    "private/ppb_content_decryptor_private.h",
     "private/ppb_display_color_profile_private.h",
     "private/ppb_ext_crx_file_system_private.h",
     "private/ppb_file_io_private.h",
@@ -151,7 +149,6 @@ source_set("c") {
     "private/ppb_video_destination_private.h",
     "private/ppb_video_source_private.h",
     "private/ppb_x509_certificate_private.h",
-    "private/ppp_content_decryptor_private.h",
     "private/ppp_find_private.h",
     "private/ppp_flash_browser_operations.h",
     "private/ppp_instance_private.h",

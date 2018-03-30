@@ -206,8 +206,6 @@ source_set("objects") {
     "private/camera_capabilities_private.h",
     "private/camera_device_private.cc",
     "private/camera_device_private.h",
-    "private/content_decryptor_private.cc",
-    "private/content_decryptor_private.h",
     "private/ext_crx_file_system_private.cc",
     "private/ext_crx_file_system_private.h",
     "private/file_io_private.cc",

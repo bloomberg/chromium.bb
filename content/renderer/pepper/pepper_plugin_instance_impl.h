@@ -46,7 +46,6 @@
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_mouse_lock.h"
-#include "ppapi/c/private/ppb_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_find_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/c/private/ppp_pdf.h"
@@ -486,59 +485,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                               PP_URLComponents_Dev* components) override;
   PP_Var GetPluginReferrerURL(PP_Instance instance,
                               PP_URLComponents_Dev* components) override;
-
-  // PPB_ContentDecryptor_Private implementation.
-  void PromiseResolved(PP_Instance instance, uint32_t promise_id) override;
-  void PromiseResolvedWithKeyStatus(PP_Instance instance,
-                                    uint32_t promise_id,
-                                    PP_CdmKeyStatus key_status) override;
-  void PromiseResolvedWithSession(PP_Instance instance,
-                                  uint32_t promise_id,
-                                  PP_Var session_id_var) override;
-  void PromiseRejected(PP_Instance instance,
-                       uint32_t promise_id,
-                       PP_CdmExceptionCode exception_code,
-                       uint32_t system_code,
-                       PP_Var error_description_var) override;
-  void SessionMessage(PP_Instance instance,
-                      PP_Var session_id_var,
-                      PP_CdmMessageType message_type,
-                      PP_Var message_var,
-                      PP_Var legacy_destination_url) override;
-  void SessionKeysChange(
-      PP_Instance instance,
-      PP_Var session_id_var,
-      PP_Bool has_additional_usable_key,
-      uint32_t key_count,
-      const struct PP_KeyInformation key_information[]) override;
-  void SessionExpirationChange(PP_Instance instance,
-                               PP_Var session_id_var,
-                               PP_Time new_expiry_time) override;
-  void SessionClosed(PP_Instance instance, PP_Var session_id_var) override;
-  void LegacySessionError(PP_Instance instance,
-                          PP_Var session_id_var,
-                          PP_CdmExceptionCode exception_code,
-                          uint32_t system_code,
-                          PP_Var error_description_var) override;
-  void DeliverBlock(PP_Instance instance,
-                    PP_Resource decrypted_block,
-                    const PP_DecryptedBlockInfo* block_info) override;
-  void DecoderInitializeDone(PP_Instance instance,
-                             PP_DecryptorStreamType decoder_type,
-                             uint32_t request_id,
-                             PP_Bool success) override;
-  void DecoderDeinitializeDone(PP_Instance instance,
-                               PP_DecryptorStreamType decoder_type,
-                               uint32_t request_id) override;
-  void DecoderResetDone(PP_Instance instance,
-                        PP_DecryptorStreamType decoder_type,
-                        uint32_t request_id) override;
-  void DeliverFrame(PP_Instance instance,
-                    PP_Resource decrypted_frame,
-                    const PP_DecryptedFrameInfo* frame_info) override;
-  void DeliverSamples(PP_Instance instance,
-                      PP_Resource audio_frames,
-                      const PP_DecryptedSampleInfo* sample_info) override;
 
   // Reset this instance as proxied. Assigns the instance a new module, resets
   // cached interfaces to point to the out-of-process proxy and re-sends

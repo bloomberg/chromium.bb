@@ -48,9 +48,6 @@ enum ApiID {
   API_ID_PPB_VIDEO_DECODER_DEV,
   API_ID_PPB_X509_CERTIFICATE_PRIVATE,
   API_ID_PPP_CLASS,
-  // TODO(tomfinegan): Remove this after we refactor things to load the PPP
-  // interface struct from the PPB interface.
-  API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
   API_ID_PPP_FIND_PRIVATE,
   API_ID_PPP_GRAPHICS_3D,
   API_ID_PPP_INPUT_EVENT,
