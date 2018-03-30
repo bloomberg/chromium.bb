@@ -47,27 +47,32 @@ TEST(CFIBacktraceAndroidTest, TestUnwinding) {
 
 TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
   auto* unwinder = CFIBacktraceAndroid::GetInstance();
-  size_t input[] = {// Function 1 - 0x1000
-                    0x1001, 0x500,
-                    0x1002, 0x111,
-                    0x1008, 0x220,
-                    0x1040, 0x330,
-                    0x1050, 0x332,
-                    0x1080, 0x330,
+  /* Input is generated from the CFI file:
+  STACK CFI INIT 1000 500
+  STACK CFI 1002 .cfa: sp 272 + .ra: .cfa -4 + ^ r4: .cfa -16 +
+  STACK CFI 1008 .cfa: sp 544 + .r1: .cfa -0 + ^ r4: .cfa -16 + ^
+  STACK CFI 1040 .cfa: sp 816 + .r1: .cfa -0 + ^ r4: .cfa -16 + ^
+  STACK CFI 1050 .cfa: sp 816 + .ra: .cfa -8 + ^ r4: .cfa -16 + ^
+  STACK CFI 1080 .cfa: sp 544 + .r1: .cfa -0 + ^ r4: .cfa -16 + ^
 
-                    // Function 2 - 0x2000
-                    0x2001, 0x22,
-                    0x2004, 0x13,
-                    0x2008, 0x23,
+  STACK CFI INIT 2000 22
+  STACK CFI 2004 .cfa: sp 16 + .ra: .cfa -12 + ^ r4: .cfa -16 + ^
+  STACK CFI 2008 .cfa: sp 16 + .ra: .cfa -12 + ^ r4: .cfa -16 + ^
 
-                    // Function 3 - 0x2024
-                    0x2025, 0x100,
-                    0x2030, 0x33,
-                    0x2100, 0x40,
+  STACK CFI INIT 2024 100
+  STACK CFI 2030 .cfa: sp 48 + .ra: .cfa -12 + ^ r4: .cfa -16 + ^
+  STACK CFI 2100 .cfa: sp 64 + .r1: .cfa -0 + ^ r4: .cfa -16 + ^
 
-                    // Function 4 - 0x2200
-                    0x2201, 0x10,
-                    0x2204, 0x2e};
+  STACK CFI INIT 2200 10
+  STACK CFI 2204 .cfa: sp 44 + .ra: .cfa -8 + ^ r4: .cfa -16 + ^
+  */
+  uint16_t input[] = {0x2A,   0x0,    0x1000, 0x0,    0x0,    0x1502, 0x0,
+                      0xffff, 0x2000, 0x0,    0xb,    0x2024, 0x0,    0x10,
+                      0x2126, 0x0,    0xffff, 0x2200, 0x0,    0x15,   0x2212,
+                      0x0,    0xffff, 0x5,    0x2,    0x111,  0x8,    0x220,
+                      0x40,   0x330,  0x50,   0x332,  0x80,   0x220,  0x2,
+                      0x4,    0x13,   0x8,    0x13,   0x2,    0xc,    0x33,
+                      0xdc,   0x40,   0x1,    0x4,    0x2e};
   FilePath temp_path;
   CreateTemporaryFile(&temp_path);
   EXPECT_EQ(
@@ -75,20 +80,24 @@ TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
       WriteFile(temp_path, reinterpret_cast<char*>(input), sizeof(input)));
 
   unwinder->cfi_mmap_.reset(new MemoryMappedFile());
-  ASSERT_TRUE(unwinder->cfi_mmap_->Initialize(temp_path));
-  unwinder->unwind_table_row_count_ = sizeof(input) / (2 * sizeof(size_t));
+  unwinder->cfi_mmap_->Initialize(temp_path);
+  unwinder->unw_index_start_addr_ =
+      reinterpret_cast<const size_t*>(unwinder->cfi_mmap_->data()) + 1;
+  unwinder->unw_index_row_count_ = input[0] / 6;
+  unwinder->unw_data_start_addr_ = reinterpret_cast<const uint16_t*>(
+      reinterpret_cast<uintptr_t>(unwinder->unw_index_start_addr_) + input[0]);
 
   CFIBacktraceAndroid::CFIRow cfi_row = {0};
   EXPECT_FALSE(unwinder->FindCFIRowForPC(0x00, &cfi_row));
   EXPECT_FALSE(unwinder->FindCFIRowForPC(0x100, &cfi_row));
-  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x1501, &cfi_row));
+  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x1502, &cfi_row));
   EXPECT_FALSE(unwinder->FindCFIRowForPC(0x3000, &cfi_row));
-  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x2023, &cfi_row));
-  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x2215, &cfi_row));
+  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x2024, &cfi_row));
+  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x2212, &cfi_row));
 
   const CFIBacktraceAndroid::CFIRow kRow1 = {0x110, 0x4};
   const CFIBacktraceAndroid::CFIRow kRow2 = {0x220, 0x4};
-  const CFIBacktraceAndroid::CFIRow kRow3 = {0x330, 0x8};
+  const CFIBacktraceAndroid::CFIRow kRow3 = {0x220, 0x8};
   const CFIBacktraceAndroid::CFIRow kRow4 = {0x30, 0xc};
   const CFIBacktraceAndroid::CFIRow kRow5 = {0x2c, 0x8};
   EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1002, &cfi_row));

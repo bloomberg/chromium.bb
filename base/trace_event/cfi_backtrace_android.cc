@@ -28,21 +28,25 @@ the CFA offset tells the offset from original SP before the function call. The
 RA offset tells us the offset from the previous SP into the current function
 where the return address is stored.
 
-The unwind table contains rows of 64 bits each.
-We have 2 types of rows, FUNCTION and CFI.
-Each function with CFI info has a single FUNCTION row, followed by one or more
-CFI rows. All the addresses of the CFI rows will be within the function.
-1. FUNCTION. Bits in order of high to low represent:
-    31 bits: specifies function address, without the last bit (always 0).
-     1 bit : always 1. Last bit of the address, specifies the row type is
-             FUNCTION.
-    32 bits: length of the current function.
+The unwind table file has 2 tables UNW_INDEX and UNW_DATA, inspired from ARM
+EHABI format. The first table contains function addresses and an index into the
+UNW_DATA table. The second table contains one or more rows for the function
+unwind information.
 
-2. CFI. Bits in order of high to low represent:
-    31 bits: instruction address in the current function.
-     1 bit : always 0. Last bit of the address, specifies the row type is CFI.
-    30 bits: CFA offset / 4.
-     2 bits: RA offset / 4.
+The output file starts with 4 bytes counting the size of UNW_INDEX in bytes.
+Then UNW_INDEX table and UNW_DATA table.
+UNW_INDEX contains one row for each function. Each row is 6 bytes long:
+  4 bytes: Function start address.
+  2 bytes: offset (in count of 2 bytes) of function data from start of UNW_DATA.
+The last entry in the table always contains CANT_UNWIND index to specify the
+end address of the last function.
+
+UNW_DATA contains data of all the functions. Each function data contains N rows.
+The data found at the address pointed from UNW_INDEX will be:
+  2 bytes: N - number of rows that belong to current function.
+  N * 4 bytes: N rows of data. 16 bits : Address offset from function start.
+                               14 bits : CFA offset / 4.
+                                2 bits : RA offset / 4.
 If the RA offset of a row is 0, then use the offset of the previous rows in the
 same function.
 TODO(ssid): Make sure RA offset is always present.
@@ -61,81 +65,78 @@ namespace trace_event {
 
 namespace {
 
-// The bit of the address that is used to specify the type of the row is
-// FUNCTION or CFI type.
-constexpr uint32_t kFunctionTypeMask = 0x1;
+// The value of index when the function does not have unwind information.
+constexpr uint32_t kCantUnwind = 0xFFFF;
 
-// The mask on the CFI row data that is used to get the high 30 bits and
+// The mask on the CFI row data that is used to get the high 14 bits and
 // multiply it by 4 to get CFA offset. Since the last 2 bits are masked out, a
 // shift is not necessary.
-constexpr uint32_t kCFAMask = 0xfffffffc;
+constexpr uint16_t kCFAMask = 0xfffc;
 
 // The mask on the CFI row data that is used to get the low 2 bits and multiply
 // it by 4 to get the RA offset.
-constexpr uint32_t kRAMask = 0x3;
-constexpr uint32_t kRAShift = 2;
+constexpr uint16_t kRAMask = 0x3;
+constexpr uint16_t kRAShift = 2;
 
 // The code in this file assumes we are running in 32-bit builds since all the
 // addresses in the unwind table are specified in 32 bits.
 static_assert(sizeof(uintptr_t) == 4,
               "The unwind table format is only valid for 32 bit builds.");
 
-// The struct that corresponds to each row in the unwind table. The row can be
-// of any type, CFI or FUNCTION. The first 4 bytes in the row represents the
-// address and the next 4 bytes have data. The members of this struct is in
-// order of the input format. We cast the memory map of the unwind table as an
-// array of CFIUnwindInfo and use it to read data and search. So, the size of
-// this struct should be 8 bytes and the order of the members is fixed according
-// to the given format.
-struct CFIUnwindInfo {
-  // The address is either the start address of the function or the instruction
-  // address where the CFI information changes in a function. If the last bit of
-  // the address is 1 then it specifies that the row is of type FUNCTION and if
-  // the last bit is 0 then it specifies the row is of type CFI.
-  uintptr_t addr;
+// The struct that corresponds to each row in the UNW_INDEX table. The first 4
+// bytes in the row represents the address of the function w.r.t. to the start
+// of the binary and the next 2 bytes have the index. The members of this struct
+// is in order of the input format. We cast the memory map of the unwind table
+// as an array of CFIUnwindIndexRow and use it to read data and search. So, the
+// size of this struct should be 6 bytes and the order of the members is fixed
+// according to the given format.
+struct CFIUnwindIndexRow {
+  // Declare all the members of the function with size 2 bytes to make sure the
+  // alignment is 2 bytes and the struct is not padded to 8 bytes. The |addr_l|
+  // and |addr_r| represent the lower and higher 2 bytes of the function
+  // address.
+  uint16_t addr_l;
+  uint16_t addr_r;
 
-  // If the row type is function, |data| is |function_length|. If the row type
-  // is CFI, |data| is |cfi_data|.
-  union {
-    // Represents the total length of the function that start with the |addr|.
-    uintptr_t function_length;
-    // Represents the CFA and RA offsets to get information about next stack
-    // frame.
-    uintptr_t cfi_data;
-  } data;
+  // The |index| is count in terms of 2 byte address into the UNW_DATA table,
+  // where the CFI data of the function exists.
+  uint16_t index;
 
-  bool is_function_type() const { return !!(addr & kFunctionTypeMask); }
+  // Returns the address of the function as offset from the start of the binary,
+  // to which the index row corresponds to.
+  uintptr_t addr() const { return (addr_r << 16) | addr_l; }
+};
 
-  // Returns the address of the current row, CFI or FUNCTION type.
-  uintptr_t address() const {
-    return is_function_type() ? (addr & ~kFunctionTypeMask) : addr;
-  }
+// The CFI data in UNW_DATA table starts with number of rows (N) and then
+// followed by N rows of 4 bytes long. The CFIUnwindDataRow represents a single
+// row of CFI data of a function in the table. Since we cast the memory at the
+// address after the address of number of rows, into an array of
+// CFIUnwindDataRow, the size of the struct should be 4 bytes and the order of
+// the members is fixed according to the given format. The first 2 bytes tell
+// the address of function and last 2 bytes give the CFI data for the offset.
+struct CFIUnwindDataRow {
+  // The address of the instruction in terms of offset from the start of the
+  // function.
+  uint16_t addr_offset;
+  // Represents the CFA and RA offsets to get information about next stack
+  // frame. This is the CFI data at the point before executing the instruction
+  // at |addr_offset| from the start of the function.
+  uint16_t cfi_data;
 
-  // Return the RA offset when the current row is CFI type.
-  uintptr_t ra_offset() const {
-    DCHECK(!is_function_type());
-    return (data.cfi_data & kRAMask) << kRAShift;
-  }
+  // Return the RA offset for the current unwind row.
+  size_t ra_offset() const { return (cfi_data & kRAMask) << kRAShift; }
 
-  // Returns the CFA offset if the current row is CFI type.
-  uintptr_t cfa_offset() const {
-    DCHECK(!is_function_type());
-    return data.cfi_data & kCFAMask;
-  }
-
-  // Returns true if the instruction is within the function address range, given
-  // that the current row is FUNCTION type and the |instruction_addr| is offset
-  // address of instruction from the start of the binary.
-  bool is_instruction_in_function(uintptr_t instruction_addr) const {
-    DCHECK(is_function_type());
-    return (instruction_addr >= address()) &&
-           (instruction_addr <= address() + data.function_length);
-  }
+  // Returns the CFA offset for the current unwind row.
+  size_t cfa_offset() const { return cfi_data & kCFAMask; }
 };
 
 static_assert(
-    sizeof(CFIUnwindInfo) == 8,
-    "The CFIUnwindInfo struct must be exactly 8 bytes for searching.");
+    sizeof(CFIUnwindIndexRow) == 6,
+    "The CFIUnwindIndexRow struct must be exactly 6 bytes for searching.");
+
+static_assert(
+    sizeof(CFIUnwindDataRow) == 4,
+    "The CFIUnwindDataRow struct must be exactly 4 bytes for searching.");
 
 }  // namespace
 
@@ -171,9 +172,22 @@ void CFIBacktraceAndroid::Initialize() {
   // The CFI region starts at |cfi_region.offset|.
   if (!cfi_mmap_->Initialize(base::File(fd), cfi_region))
     return;
-  // The CFI file should contain rows of 8 bytes each.
-  DCHECK_EQ(0u, cfi_region.size % sizeof(CFIUnwindInfo));
-  unwind_table_row_count_ = cfi_region.size / sizeof(CFIUnwindInfo);
+
+  // The first 4 bytes in the file is the size of UNW_INDEX table. The UNW_INDEX
+  // table contains rows of 6 bytes each.
+  size_t unw_index_size = 0;
+  memcpy(&unw_index_size, cfi_mmap_->data(), sizeof(unw_index_size));
+  DCHECK_EQ(0u, unw_index_size % sizeof(CFIUnwindIndexRow));
+  DCHECK_GT(cfi_region.size, unw_index_size);
+  unw_index_start_addr_ =
+      reinterpret_cast<const size_t*>(cfi_mmap_->data()) + 1;
+  unw_index_row_count_ = unw_index_size / sizeof(CFIUnwindIndexRow);
+
+  // The UNW_DATA table data is right after the end of UNW_INDEX table.
+  // Interpret the UNW_DATA table as an array of 2 byte numbers since the
+  // indexes we have from the UNW_INDEX table are in terms of 2 bytes.
+  unw_data_start_addr_ = reinterpret_cast<const uint16_t*>(
+      reinterpret_cast<uintptr_t>(unw_index_start_addr_) + unw_index_size);
   can_unwind_stack_frames_ = true;
 }
 
@@ -218,57 +232,75 @@ size_t CFIBacktraceAndroid::Unwind(const void** out_trace,
 bool CFIBacktraceAndroid::FindCFIRowForPC(
     uintptr_t func_addr,
     CFIBacktraceAndroid::CFIRow* cfi) const {
-  // Consider the CFI mapped region as an array of CFIUnwindInfo since each row
-  // is 8 bytes long and it contains |cfi_region_size_| / 8 rows. We define
+  // Consider the UNW_TABLE as an array of CFIUnwindIndexRow since each row
+  // is 6 bytes long and it contains |unw_index_size_| / 6 rows. We define
   // start and end iterator on this array and use std::lower_bound() to binary
   // search on this array. std::lower_bound() returns the row that corresponds
   // to the first row that has address greater than the current value, since
   // address is used in compartor.
-  const CFIUnwindInfo* start =
-      reinterpret_cast<const CFIUnwindInfo*>(cfi_mmap_->data());
-  const CFIUnwindInfo* end = start + unwind_table_row_count_;
-  const CFIUnwindInfo to_find = {func_addr, {0}};
-  const CFIUnwindInfo* found = std::lower_bound(
+  const CFIUnwindIndexRow* start =
+      static_cast<const CFIUnwindIndexRow*>(unw_index_start_addr_);
+  const CFIUnwindIndexRow* end = start + unw_index_row_count_;
+  const CFIUnwindIndexRow to_find = {func_addr & 0xffff, func_addr >> 16, 0};
+  const CFIUnwindIndexRow* found = std::lower_bound(
       start, end, to_find,
-      [](const auto& a, const auto& b) { return a.addr < b.addr; });
+      [](const auto& a, const auto& b) { return a.addr() < b.addr(); });
   *cfi = {0};
 
-  // The given address is less than the start address in the CFI table if
-  // lower_bound() returns start.
-  if (found == start)
+  // If found is start, then the given function is not in the table. If the
+  // given pc is start of a function then we cannot unwind.
+  if (found == start || found->addr() == func_addr)
     return false;
-  // If the given address is equal to the found address, then use the found row.
-  // Otherwise the required row is always one less than the value returned by
+
+  // The required row is always one less than the value returned by
   // std::lower_bound().
-  if (found == end || found->address() != func_addr)
-    found--;
+  found--;
+  uintptr_t func_start_addr = found->addr();
+  DCHECK_LE(func_start_addr, func_addr);
+  // If the index is CANT_UNWIND then we do not have unwind infomation for the
+  // function.
+  if (found->index == kCantUnwind)
+    return false;
 
-  DCHECK_LE(found->address(), func_addr);
-  DCHECK(!found->is_function_type())
-      << "Current PC cannot be start of a function";
+  // The unwind data for the current function is at an offsset of the index
+  // found in UNW_INDEX table.
+  const uint16_t* unwind_data = unw_data_start_addr_ + found->index;
+  // The value of first 2 bytes is the CFI data row count for the function.
+  uint16_t row_count = 0;
+  memcpy(&row_count, unwind_data, sizeof(row_count));
+  // And the actual CFI rows start after 2 bytes from the |unwind_data|. Cast
+  // the data into an array of CFIUnwindDataRow since the struct is designed to
+  // represent each row. We should be careful to read only |row_count| number of
+  // elements in the array.
+  const CFIUnwindDataRow* function_data =
+      reinterpret_cast<const CFIUnwindDataRow*>(unwind_data + 1);
 
-  // The CFIUnwindInfo::data field hold the CFI information since the row
-  // found should not correspond to function start address. So, interpret the
-  // data in the found row as CFI data which contains the CFA and RA offsets.
-  *cfi = {found->cfa_offset(), found->ra_offset()};
-  DCHECK(cfi->cfa_offset);
+  // Iterate through the CFI rows of the function to find the row that gives
+  // offset for the given instruction address.
+  CFIUnwindDataRow cfi_row = {0, 0};
+  uint16_t ra_offset = 0;
+  for (uint16_t i = 0; i < row_count; ++i) {
+    CFIUnwindDataRow row;
+    memcpy(&row, function_data + i, sizeof(CFIUnwindDataRow));
+    // The return address of the function is the instruction that is not yet
+    // been executed. The cfi row specifies the unwind info before executing the
+    // given instruction. If the given address is equal to the instruction
+    // offset, then use the current row. Or use the row with highest address
+    // less than the given address.
+    if (row.addr_offset + func_start_addr > func_addr)
+      break;
 
-  // Find the function data for the current row by iterating till we reach the a
-  // row of type FUNCTION, to check if the unwind information is valid. Also
-  // find the RA offset if we do not have it in the CFI row found.
-  const CFIUnwindInfo* it = found;
-  for (; !it->is_function_type() && it >= start; it--) {
-    // If ra offset of the last specified row should be used, if unspecified.
+    cfi_row = row;
+    // The ra offset of the last specified row should be used, if unspecified.
+    // So, keep updating the RA offset till we reach the correct CFI row.
     // TODO(ssid): This should be fixed in the format and we should always
     // output ra offset.
-    if (!cfi->ra_offset)
-      cfi->ra_offset = it->ra_offset();
+    if (cfi_row.ra_offset())
+      ra_offset = cfi_row.ra_offset();
   }
-  // If the given function adddress does not belong to the function found, then
-  // the unwind info is invalid.
-  if (!it->is_instruction_in_function(func_addr))
-    return false;
-
+  DCHECK_NE(0u, cfi_row.addr_offset);
+  *cfi = {cfi_row.cfa_offset(), ra_offset};
+  DCHECK(cfi->cfa_offset);
   DCHECK(cfi->ra_offset);
   return true;
 }
