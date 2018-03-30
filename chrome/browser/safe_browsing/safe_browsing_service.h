@@ -44,6 +44,13 @@ class URLRequest;
 class URLRequestContextGetter;
 }
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace prefs {
 namespace mojom {
 class TrackedPreferenceValidationDelegate;
@@ -58,6 +65,7 @@ struct ResourceRequestInfo;
 struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingNavigationObserverManager;
+class SafeBrowsingNetworkContext;
 class SafeBrowsingPingManager;
 class SafeBrowsingProtocolManager;
 class SafeBrowsingProtocolManagerDelegate;
@@ -141,6 +149,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   }
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context();
+
+  // NetworkContext and URLLoaderFactory used for safe browsing requests.
+  network::mojom::NetworkContext* GetNetworkContext();
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
   // Called on IO thread thread when QUIC should be disabled (e.g. because of
   // policy). This should not be necessary anymore when http://crbug.com/678653
@@ -293,6 +305,8 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // |url_request_context_|. Accessed on UI thread.
   scoped_refptr<SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
+
+  std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // Handles interaction with SafeBrowsing servers. Accessed on IO thread.
