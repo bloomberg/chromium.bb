@@ -1360,14 +1360,6 @@ message RegisterBrowserRequest {
   optional string os_version = 3;
 }
 
-// Response to a Chrome browser registration request.
-message RegisterBrowserResponse {
-  // Device management token for this registration.  This token MUST be
-  // part of HTTP Authorization header for all future requests from
-  // device to server.
-  required string device_management_token = 1;
-}
-
 // Gets an enrollment token to a managed Google Play account for using it with
 // Active Directory. Sent when a new user logs in with Active Directory and
 // opens Play Store for the first time.
@@ -1762,6 +1754,8 @@ message DeviceManagementRequest {
 // 903 Deprovisioned: the device has been deprovisioned.
 // 904 Arc Disabled: ARC is not enabled on the domain.
 message DeviceManagementResponse {
+  reserved 24;
+
   // TODO(hong): move error handling to HTTP level.
   // Error code to client.
   enum ErrorCode {
@@ -1861,9 +1855,6 @@ message DeviceManagementResponse {
 
   // Response to a Chrome desktop report request.
   optional ChromeDesktopReportResponse chrome_desktop_report_response = 23;
-
-  // Response to a Chrome browser registration request.
-  optional RegisterBrowserResponse register_browser_response = 24;
 
   // Response a report on the status of app push-installs
   optional AppInstallReportResponse app_install_report_response = 25;
