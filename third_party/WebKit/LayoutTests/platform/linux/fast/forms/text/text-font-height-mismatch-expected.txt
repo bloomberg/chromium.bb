@@ -10,9 +10,9 @@ layer at (0,0) size 800x144
         LayoutTextControl {INPUT} at (0,0) size 369x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutTextControl {INPUT} at (369,0) size 369x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,64) size 784x28
-        LayoutTextControl {INPUT} at (0,0) size 276x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        LayoutTextControl {INPUT} at (0,0) size 312x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,92) size 784x28
-        LayoutTextControl {INPUT} at (0,0) size 180x28 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 205x28 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
 layer at (9,54) size 367x24
   LayoutBlockFlow {DIV} at (1,2) size 367x24
     LayoutText {#text} at (0,0) size 74x24
@@ -21,11 +21,11 @@ layer at (378,54) size 367x24
   LayoutBlockFlow {DIV} at (1,2) size 367x24
     LayoutText {#text} at (0,0) size 74x24
       text run at (0,0) width 74: "\x{3075} ABCgjy"
-layer at (9,80) size 274x28 backgroundClip at (9,81) size 274x26 clip at (9,81) size 274x26
-  LayoutBlockFlow {DIV} at (1,0) size 274x28
+layer at (9,80) size 310x28 backgroundClip at (9,81) size 310x26 clip at (9,81) size 310x26
+  LayoutBlockFlow {DIV} at (1,0) size 310x28
     LayoutText {#text} at (0,0) size 79x27
       text run at (0,0) width 79: "ABCgjy"
-layer at (10,113) size 176x19
-  LayoutBlockFlow {DIV} at (2,4.50) size 176x19
+layer at (10,113) size 201x19
+  LayoutBlockFlow {DIV} at (2,4.50) size 201x19
     LayoutText {#text} at (0,0) size 55x18
       text run at (0,0) width 55: "ABCgjy"

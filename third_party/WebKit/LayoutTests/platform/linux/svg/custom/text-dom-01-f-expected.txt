@@ -25,36 +25,36 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (30,66) size 245x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (30,66) size 245x17
             chunk 1 text run 1 at (30.00,80.00) startOffset 0 endOffset 36 width 245.00: ".getComputedTextLength() result: 355"
-        LayoutSVGText {text} at (30,86) size 294x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (30,86) size 294x17
-            chunk 1 text run 1 at (30.00,100.00) startOffset 0 endOffset 46 width 294.00: ".getEndPositionOfChar(11) result ('e'): 134,30"
-        LayoutSVGText {text} at (30,106) size 290x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (30,106) size 290x17
-            chunk 1 text run 1 at (30.00,120.00) startOffset 0 endOffset 46 width 290.00: ".getExtentOfChar(11) result ('e'): 126,16,8,17"
+        LayoutSVGText {text} at (30,86) size 295x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (30,86) size 295x17
+            chunk 1 text run 1 at (30.00,100.00) startOffset 0 endOffset 46 width 295.00: ".getEndPositionOfChar(11) result ('e'): 134,30"
+        LayoutSVGText {text} at (30,106) size 291x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (30,106) size 291x17
+            chunk 1 text run 1 at (30.00,120.00) startOffset 0 endOffset 46 width 291.00: ".getExtentOfChar(11) result ('e'): 126,16,8,17"
         LayoutSVGText {text} at (30,126) size 207x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (30,126) size 207x17
             chunk 1 text run 1 at (30.00,140.00) startOffset 0 endOffset 30 width 207.00: ".getNumberOfChars() result: 54"
         LayoutSVGText {text} at (30,146) size 208x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (30,146) size 208x17
             chunk 1 text run 1 at (30.00,160.00) startOffset 0 endOffset 32 width 208.00: ".getRotationOfChar(5) result: 45"
-        LayoutSVGText {text} at (30,166) size 299x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (30,166) size 299x17
-            chunk 1 text run 1 at (30.00,180.00) startOffset 0 endOffset 48 width 299.00: ".getStartPositionOfChar(11) result ('e'): 126,30"
+        LayoutSVGText {text} at (30,166) size 300x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (30,166) size 300x17
+            chunk 1 text run 1 at (30.00,180.00) startOffset 0 endOffset 48 width 300.00: ".getStartPositionOfChar(11) result ('e'): 126,30"
         LayoutSVGText {text} at (30,186) size 310x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (30,186) size 310x17
             chunk 1 text run 1 at (30.00,200.00) startOffset 0 endOffset 50 width 310.00: ".getSubStringLength(22,9) result ('interface'): 56"
         LayoutSVGText {text} at (30,206) size 405x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (30,206) size 405x17
             chunk 1 text run 1 at (30.00,220.00) startOffset 0 endOffset 64 width 405.00: ".selectSubString(18,3) result: the word 'the' should be selected"
-        LayoutSVGText {text} at (30,226) size 238x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (30,226) size 238x17
-            chunk 1 text run 1 at (30.00,240.00) startOffset 0 endOffset 37 width 238.00: ".textLength.baseVal.value result: 355"
-        LayoutSVGText {text} at (30,246) size 238x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (30,246) size 238x17
-            chunk 1 text run 1 at (30.00,260.00) startOffset 0 endOffset 37 width 238.00: ".textLength.animVal.value result: 355"
-        LayoutSVGText {text} at (30,266) size 378x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (30,266) size 378x17
-            chunk 1 text run 1 at (30.00,280.00) startOffset 0 endOffset 59 width 378.00: ".lengthAdjust.baseVal and .lengthAdjust.animVal result: 1,1"
+        LayoutSVGText {text} at (30,226) size 239x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (30,226) size 239x17
+            chunk 1 text run 1 at (30.00,240.00) startOffset 0 endOffset 37 width 239.00: ".textLength.baseVal.value result: 355"
+        LayoutSVGText {text} at (30,246) size 239x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (30,246) size 239x17
+            chunk 1 text run 1 at (30.00,260.00) startOffset 0 endOffset 37 width 239.00: ".textLength.animVal.value result: 355"
+        LayoutSVGText {text} at (30,266) size 380x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (30,266) size 380x17
+            chunk 1 text run 1 at (30.00,280.00) startOffset 0 endOffset 59 width 380.00: ".lengthAdjust.baseVal and .lengthAdjust.animVal result: 1,1"
     LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 264x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.1 $"

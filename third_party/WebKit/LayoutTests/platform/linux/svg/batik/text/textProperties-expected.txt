@@ -10,9 +10,9 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (-22,-15) size 44x19
           chunk 1 (middle anchor) text run 1 at (-22.00,0.00) startOffset 0 endOffset 6 width 44.00: "sample"
     LayoutSVGContainer {g} at (15.50,36) size 414.50x433
-      LayoutSVGText {text} at (60,36) size 330x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (60,36) size 330x17
-          chunk 1 (middle anchor) text run 1 at (60.00,50.00) startOffset 0 endOffset 47 width 330.00: "Text Alignment, Geometry, References, and Spans"
+      LayoutSVGText {text} at (59.50,36) size 331x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (59.50,36) size 331x17
+          chunk 1 (middle anchor) text run 1 at (59.50,50.00) startOffset 0 endOffset 47 width 331.00: "Text Alignment, Geometry, References, and Spans"
       LayoutSVGContainer {g} at (111,70) size 231x70
         LayoutSVGPath {line} at (225,70) size 0x70 [stroke={[type=SOLID] [color=#808080]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=70.00] [x2=225.00] [y2=140.00]
         LayoutSVGText {text} at (225,77) size 117x17 contains 1 chunk(s)

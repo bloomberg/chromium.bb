@@ -7,12 +7,12 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 341x19
           text run at (0,0) width 341: "Focus the field, focus away, then focus the field again."
       LayoutBlockFlow {DIV} at (0,36) size 784x22
-        LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (10,47) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16 [color=#757575]
+layer at (10,47) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16 [color=#757575]
     LayoutText {#text} at (0,0) size 68x16
       text run at (0,0) width 68: "Placeholder"
-layer at (10,47) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (10,47) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
 caret: position 0 of child 1 {DIV} of {#document-fragment} of child 1 {INPUT} of child 3 {DIV} of body

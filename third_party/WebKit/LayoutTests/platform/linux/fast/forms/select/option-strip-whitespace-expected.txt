@@ -9,11 +9,11 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,36) size 784x282
         LayoutText {#text} at (0,51) size 69x19
           text run at (0,51) width 69: "Five Tabs: "
-        LayoutBR {BR} at (146,66) size 0x0
+        LayoutBR {BR} at (147,66) size 0x0
         LayoutBR {BR} at (0,71) size 0x19
         LayoutText {#text} at (0,142) size 84x19
           text run at (0,142) width 84: "Five Spaces: "
-        LayoutBR {BR} at (161,157) size 0x0
+        LayoutBR {BR} at (162,157) size 0x0
         LayoutBR {BR} at (0,162) size 0x19
         LayoutText {#text} at (0,182) size 298x19
           text run at (0,182) width 298: "Five Spaces (with leading/trailing whitespace): "
@@ -25,26 +25,26 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,202) size 0x19
         LayoutText {#text} at (0,222) size 283x19
           text run at (0,222) width 283: "Five Tabs (with leading/trailing whitespace): "
-        LayoutMenuList {SELECT} at (283,222) size 78x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 76x18
-            LayoutText (anonymous) at (4,1) size 56x16
-              text run at (4,1) width 56: "Five Tabs"
-        LayoutBR {BR} at (361,237) size 0x0
+        LayoutMenuList {SELECT} at (283,222) size 79x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 77x18
+            LayoutText (anonymous) at (4,1) size 57x16
+              text run at (4,1) width 57: "Five Tabs"
+        LayoutBR {BR} at (362,237) size 0x0
         LayoutBR {BR} at (0,242) size 0x19
         LayoutText {#text} at (0,262) size 126x19
           text run at (0,262) width 126: "Mixed Whitespace: "
-        LayoutMenuList {SELECT} at (126,262) size 78x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 76x18
-            LayoutText (anonymous) at (4,1) size 56x16
-              text run at (4,1) width 56: "Five Tabs"
+        LayoutMenuList {SELECT} at (126,262) size 79x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 77x18
+            LayoutText (anonymous) at (4,1) size 57x16
+              text run at (4,1) width 57: "Five Tabs"
         LayoutText {#text} at (0,0) size 0x0
-layer at (77,44) size 77x70 clip at (78,45) size 60x68
-  LayoutListBox {SELECT} at (69,0) size 77x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutBlockFlow {OPTION} at (1,1) size 60x17
-      LayoutText {#text} at (2,0) size 56x16
-        text run at (2,0) width 56: "Five Tabs"
-layer at (92,135) size 77x70 clip at (93,136) size 60x68
-  LayoutListBox {SELECT} at (84,91) size 77x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutBlockFlow {OPTION} at (1,1) size 60x17
-      LayoutText {#text} at (2,0) size 56x16
-        text run at (2,0) width 56: "Five Tabs"
+layer at (77,44) size 78x70 clip at (78,45) size 61x68
+  LayoutListBox {SELECT} at (69,0) size 78x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {OPTION} at (1,1) size 61x17
+      LayoutText {#text} at (2,0) size 57x16
+        text run at (2,0) width 57: "Five Tabs"
+layer at (92,135) size 78x70 clip at (93,136) size 61x68
+  LayoutListBox {SELECT} at (84,91) size 78x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {OPTION} at (1,1) size 61x17
+      LayoutText {#text} at (2,0) size 57x16
+        text run at (2,0) width 57: "Five Tabs"

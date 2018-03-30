@@ -29,12 +29,12 @@
         },
         {
           "object": "InlineTextBox 'FAILURE'",
-          "rect": [80, 117, 56, 16],
+          "rect": [81, 117, 54, 16],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'FAILURE'",
-          "rect": [9, 87, 55, 16],
+          "rect": [9, 87, 54, 16],
           "reason": "disappeared"
         }
       ]

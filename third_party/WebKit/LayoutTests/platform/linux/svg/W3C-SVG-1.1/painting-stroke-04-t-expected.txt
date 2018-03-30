@@ -11,9 +11,9 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (65,182.39) size 349.80x34.19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (65,182.39) size 349.80x34.19
           chunk 1 text run 1 at (65.00,210.00) startOffset 0 endOffset 25 width 349.80: "stroke-dasharray=\"10, 10\""
-      LayoutSVGText {text} at (75,232.39) size 304.19x34.19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (75,232.39) size 304.19x34.19
-          chunk 1 text run 1 at (75.00,260.00) startOffset 0 endOffset 22 width 304.20: "stroke-dashoffset=\"10\""
+      LayoutSVGText {text} at (75,232.39) size 303.59x34.19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (75,232.39) size 303.59x34.19
+          chunk 1 text run 1 at (75.00,260.00) startOffset 0 endOffset 22 width 303.60: "stroke-dashoffset=\"10\""
     LayoutSVGText {text} at (10,304) size 288.59x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 288.59x45.59
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 288.60: "$Revision: 1.10 $"

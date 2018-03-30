@@ -25,8 +25,8 @@ layer at (0,0) size 800x600
           text run at (99,0) width 8: ": "
         LayoutMenuList {SELECT} at (107,1) size 100x18 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x16
-            LayoutText (anonymous) at (0,0) size 189x16
-              text run at (0,0) width 189: "Very long option that does not fit"
+            LayoutText (anonymous) at (0,0) size 188x16
+              text run at (0,0) width 188: "Very long option that does not fit"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,72) size 784x20
         LayoutText {#text} at (0,0) size 55x19
@@ -38,6 +38,6 @@ layer at (0,0) size 800x600
           text run at (87,0) width 8: ": "
         LayoutMenuList {SELECT} at (95,1) size 100x18 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x16
-            LayoutText (anonymous) at (0,0) size 189x16
-              text run at (0,0) width 189: "Very long option that does not fit"
+            LayoutText (anonymous) at (0,0) size 188x16
+              text run at (0,0) width 188: "Very long option that does not fit"
         LayoutText {#text} at (0,0) size 0x0

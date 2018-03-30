@@ -44,9 +44,9 @@ layer at (0,0) size 800x600
         LayoutSVGResourceFilter {filter} [id="xMaxYMaxSlice"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feImage image-size="100x100"]
       LayoutSVGContainer {g} at (10.50,-15.59) size 419.50x280.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
-        LayoutSVGText {text} at (57.59,-15.59) size 364.80x19.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (57.59,-15.59) size 364.80x19.19
-            chunk 1 (middle anchor) text run 1 at (57.60,0.00) startOffset 0 endOffset 47 width 364.80: "Test preserveAspectRatio on an feImage element."
+        LayoutSVGText {text} at (57.89,-15.59) size 364.19x19.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (57.89,-15.59) size 364.19x19.19
+            chunk 1 (middle anchor) text run 1 at (57.90,0.00) startOffset 0 endOffset 47 width 364.20: "Test preserveAspectRatio on an feImage element."
         LayoutSVGText {text} at (17.50,21.59) size 45.59x10.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (17.50,21.59) size 45.59x10.19
             chunk 1 (middle anchor) text run 1 at (17.50,30.00) startOffset 0 endOffset 13 width 45.00: "Raster to fit"

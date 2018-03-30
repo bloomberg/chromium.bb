@@ -40,8 +40,8 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (165,21.59) size 9.59x10.19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (165,21.59) size 9.59x10.19
               chunk 1 text run 1 at (165.00,30.00) startOffset 0 endOffset 2 width 9.60: "20"
-          LayoutSVGText {text} at (259.39,21.59) size 65.39x10.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (259.39,21.59) size 65.39x10.19
+          LayoutSVGText {text} at (260,21.59) size 64.80x10.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (260,21.59) size 64.80x10.19
               chunk 1 text run 1 at (260.00,30.00) startOffset 0 endOffset 16 width 64.80: "Animated (0..50)"
           LayoutSVGText {text} at (355,21.59) size 4.80x10.19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (355,21.59) size 4.80x10.19
@@ -53,8 +53,8 @@ layer at (0,0) size 800x600
             LayoutSVGText {text} at (165,21.59) size 12.59x10.19 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (165,21.59) size 12.59x10.19
                 chunk 1 text run 1 at (165.00,30.00) startOffset 0 endOffset 3 width 12.60: "-20"
-            LayoutSVGText {text} at (259.39,21.59) size 68.39x10.19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (259.39,21.59) size 68.39x10.19
+            LayoutSVGText {text} at (260,21.59) size 67.80x10.19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (260,21.59) size 67.80x10.19
                 chunk 1 text run 1 at (260.00,30.00) startOffset 0 endOffset 17 width 67.80: "Animated (0..-50)"
             LayoutSVGText {text} at (355,21.59) size 7.80x10.19 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (355,21.59) size 7.80x10.19

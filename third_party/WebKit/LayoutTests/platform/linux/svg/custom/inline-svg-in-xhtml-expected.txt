@@ -21,12 +21,12 @@ layer at (48,38) size 722x542 layerType: foreground only
               text run at (0,1) width 107: "Enter something:"
           LayoutText {#text} at (107,1) size 4x19
             text run at (107,1) width 4: " "
-          LayoutTextControl {input} at (111,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutTextControl {input} at (111,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {p} at (14,79.59) size 688x22
           LayoutButton {button} at (0,0) size 68x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             LayoutBlockFlow (anonymous) at (8,3) size 52x16
               LayoutText {#text} at (0,0) size 52x16
                 text run at (0,0) width 52: "Activate!"
-layer at (178,84) size 150x16
-  LayoutBlockFlow {div} at (2,3) size 150x16
+layer at (178,84) size 177x16
+  LayoutBlockFlow {div} at (2,3) size 177x16

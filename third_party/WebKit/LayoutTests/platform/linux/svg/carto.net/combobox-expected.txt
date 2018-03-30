@@ -113,28 +113,28 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (50,550) size 154x128 [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=550.00] [width=154.00] [height=128.00]
       LayoutSVGContainer {g} at (51.50,550) size 151x128.33
         LayoutSVGRect {rect} at (51.50,550) size 151x16 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=550.00] [width=151.00] [height=16.00]
-        LayoutSVGText {text} at (51.72,550.97) size 52.47x15.36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51.72,550.97) size 52.47x15.36
+        LayoutSVGText {text} at (53,550.97) size 51.19x15.36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53,550.97) size 51.19x15.36
             chunk 1 text run 1 at (53.00,562.50) startOffset 0 endOffset 8 width 51.20: "Amaranth"
         LayoutSVGRect {rect} at (51.50,566) size 151x16 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=566.00] [width=151.00] [height=16.00]
-        LayoutSVGText {text} at (51.72,566.97) size 61.44x15.36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51.72,566.97) size 61.44x15.36
+        LayoutSVGText {text} at (53,566.97) size 60.16x15.36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53,566.97) size 60.16x15.36
             chunk 1 text run 1 at (53.00,578.50) startOffset 0 endOffset 10 width 60.16: "Anthericum"
         LayoutSVGRect {rect} at (51.50,582) size 151x16 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=582.00] [width=151.00] [height=16.00]
-        LayoutSVGText {text} at (51.72,582.97) size 29.44x15.36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51.72,582.97) size 29.44x15.36
+        LayoutSVGText {text} at (53,582.97) size 28.16x15.36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53,582.97) size 28.16x15.36
             chunk 1 text run 1 at (53.00,594.50) startOffset 0 endOffset 4 width 28.16: "Arum"
         LayoutSVGRect {rect} at (51.50,598) size 151x16 [fill={[type=SOLID] [color=#696969] [opacity=0.30]}] [x=51.50] [y=598.00] [width=151.00] [height=16.00]
-        LayoutSVGText {text} at (51.72,598.97) size 21.75x15.36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51.72,598.97) size 21.75x15.36
+        LayoutSVGText {text} at (53,598.97) size 20.47x15.36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53,598.97) size 20.47x15.36
             chunk 1 text run 1 at (53.00,610.50) startOffset 0 endOffset 3 width 20.48: "Ash"
         LayoutSVGRect {rect} at (51.50,614) size 151x16 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=614.00] [width=151.00] [height=16.00]
-        LayoutSVGText {text} at (51.72,614.97) size 34.55x15.36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51.72,614.97) size 34.55x15.36
+        LayoutSVGText {text} at (53,614.97) size 33.27x15.36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53,614.97) size 33.27x15.36
             chunk 1 text run 1 at (53.00,626.50) startOffset 0 endOffset 5 width 33.28: "Aspen"
         LayoutSVGRect {rect} at (51.50,630) size 151x16 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=630.00] [width=151.00] [height=16.00]
-        LayoutSVGText {text} at (51.72,630.97) size 30.72x15.36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51.72,630.97) size 30.72x15.36
+        LayoutSVGText {text} at (53,630.97) size 28.16x15.36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53,630.97) size 28.16x15.36
             chunk 1 text run 1 at (53.00,642.50) startOffset 0 endOffset 5 width 28.16: "Aster"
         LayoutSVGRect {rect} at (51.50,646) size 151x16 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=646.00] [width=151.00] [height=16.00]
         LayoutSVGText {text} at (53,646.97) size 26.88x15.36 contains 1 chunk(s)
@@ -189,8 +189,8 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (53,50.97) size 44.80x15.36
             chunk 1 text run 1 at (53.00,62.50) startOffset 0 endOffset 7 width 44.80: "Orangen"
         LayoutSVGRect {rect} at (51.50,66) size 151x16 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=66.00] [width=151.00] [height=16.00]
-        LayoutSVGText {text} at (51.72,66.97) size 28.16x15.36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51.72,66.97) size 28.16x15.36
+        LayoutSVGText {text} at (53,66.97) size 26.88x15.36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53,66.97) size 26.88x15.36
             chunk 1 text run 1 at (53.00,78.50) startOffset 0 endOffset 5 width 26.88: "\x{C4}pfel"
         LayoutSVGRect {rect} at (51.50,82) size 151x16 [fill={[type=SOLID] [color=#696969] [opacity=0.30]}] [x=51.50] [y=82.00] [width=151.00] [height=16.00]
         LayoutSVGText {text} at (53,82.97) size 46.08x15.36 contains 1 chunk(s)

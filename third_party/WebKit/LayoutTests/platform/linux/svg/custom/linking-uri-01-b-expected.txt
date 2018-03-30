@@ -29,8 +29,8 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (315,141.13) size 102.56x13.50 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (315,141.13) size 102.56x13.50
               chunk 1 text run 1 at (315.00,152.00) startOffset 0 endOffset 20 width 102.56: "Click element's line"
-          LayoutSVGText {text} at (315,153.13) size 87.75x13.50 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (315,153.13) size 87.75x13.50
+          LayoutSVGText {text} at (315,153.13) size 87.94x13.50 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (315,153.13) size 87.94x13.50
               chunk 1 text run 1 at (315.00,164.00) startOffset 0 endOffset 19 width 87.75: "to link to its view"
         LayoutSVGRect {rect} at (295,36) size 135x68 [fill={[type=SOLID] [color=#800080]}] [x=295.00] [y=36.00] [width=135.00] [height=68.00]
         LayoutSVGText {text} at (330.63,103.44) size 63.75x15.56 contains 1 chunk(s)

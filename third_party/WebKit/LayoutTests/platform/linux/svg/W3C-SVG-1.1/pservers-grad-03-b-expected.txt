@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (20,102.39) size 142.19x34.19
           chunk 1 text run 1 at (20.00,130.00) startOffset 0 endOffset 13 width 142.20: "Pattern fill."
       LayoutSVGRect {rect} at (20,150) size 440x80 [fill={[type=PATTERN] [id="Pat3b"]}] [x=20.00] [y=150.00] [width=440.00] [height=80.00]
-      LayoutSVGText {text} at (20,232.39) size 396x34.19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (20,232.39) size 396x34.19
-          chunk 1 text run 1 at (20.00,260.00) startOffset 0 endOffset 31 width 396.00: "Referencing pattern fill below."
+      LayoutSVGText {text} at (20,232.39) size 395.39x34.19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (20,232.39) size 395.39x34.19
+          chunk 1 text run 1 at (20.00,260.00) startOffset 0 endOffset 31 width 395.40: "Referencing pattern fill below."
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.6 $"

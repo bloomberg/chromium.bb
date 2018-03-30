@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (50,7.39) size 350x265
-      LayoutSVGText {text} at (150,7.39) size 156x15.59 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (150,7.39) size 156x15.59
-          chunk 1 text run 1 at (150.00,20.00) startOffset 0 endOffset 28 width 156.00: "Test for clip-rule property."
+      LayoutSVGText {text} at (150,7.39) size 155.39x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (150,7.39) size 155.39x15.59
+          chunk 1 text run 1 at (150.00,20.00) startOffset 0 endOffset 28 width 155.40: "Test for clip-rule property."
       LayoutSVGResourceClipper {clipPath} [id="clip1"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGPath {path} at (180,40) size 80x80 [fill={[type=SOLID] [color=#000000]}] [clip rule=EVEN-ODD] [data="M 200 40 l 20 0 l 0 60 l 20 0 l 0 -20 l -60 0 l 0 -20 l 80 0 l 0 60 l -60 0 l 0 -80 Z"]
       LayoutSVGRect {rect} at (50,30) size 350x100 [fill={[type=SOLID] [color=#FF0000]}] [x=50.00] [y=30.00] [width=350.00] [height=100.00]
