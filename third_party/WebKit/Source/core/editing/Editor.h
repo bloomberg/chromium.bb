@@ -158,14 +158,17 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void AddToKillRing(const EphemeralRange&);
 
-  bool FindString(const String&, FindOptions);
+  static bool FindString(LocalFrame&, const String&, FindOptions);
 
-  Range* FindRangeOfString(const String& target,
-                           const EphemeralRange& reference_range,
-                           FindOptions);
-  Range* FindRangeOfString(const String& target,
-                           const EphemeralRangeInFlatTree& reference_range,
-                           FindOptions);
+  static Range* FindRangeOfString(Document&,
+                                  const String& target,
+                                  const EphemeralRange& reference_range,
+                                  FindOptions);
+  static Range* FindRangeOfString(
+      Document&,
+      const String& target,
+      const EphemeralRangeInFlatTree& reference_range,
+      FindOptions);
 
   const VisibleSelection& Mark() const;  // Mark, to be used as emacs uses it.
   bool MarkIsDirectional() const;

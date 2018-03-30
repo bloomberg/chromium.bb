@@ -902,7 +902,7 @@ bool LocalDOMWindow::find(const String& string,
   FindOptions options =
       (backwards ? kBackwards : 0) | (case_sensitive ? 0 : kCaseInsensitive) |
       (wrap ? kWrapAround : 0) | (whole_word ? kWholeWord | kAtWordStarts : 0);
-  return GetFrame()->GetEditor().FindString(string, options);
+  return Editor::FindString(*GetFrame(), string, options);
 }
 
 bool LocalDOMWindow::offscreenBuffering() const {

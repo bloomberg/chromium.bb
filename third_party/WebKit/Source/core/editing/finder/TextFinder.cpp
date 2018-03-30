@@ -159,8 +159,9 @@ bool TextFinder::Find(int identifier,
       (options.medial_capital_as_word_start ? kTreatMedialCapitalAsWordStart
                                             : 0) |
       (options.find_next ? 0 : kStartInSelection);
-  active_match_ = OwnerFrame().GetFrame()->GetEditor().FindRangeOfString(
-      search_text, EphemeralRangeInFlatTree(active_match_.Get()), find_options);
+  active_match_ = Editor::FindRangeOfString(
+      *OwnerFrame().GetFrame()->GetDocument(), search_text,
+      EphemeralRangeInFlatTree(active_match_.Get()), find_options);
 
   if (!active_match_) {
     // If we're finding next the next active match might not be in the current
