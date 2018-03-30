@@ -268,9 +268,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // update its draggable region.
   void SetDraggable(bool draggable);
 
-  // Called by |mouse_down_monitor_| to close a bubble.
-  void OnRightMouseDownWithBubble(NSEvent* event);
-
   // Overridden from CocoaMouseCaptureDelegate:
   void PostCapturedEvent(NSEvent* event) override;
   void OnMouseCaptureLost() override;
@@ -359,9 +356,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // modal windows, the window's alpha value is set to 0, till the frame from
   // the compositor arrives to avoid "blinking".
   bool initial_visibility_suppressed_ = false;
-
-  // Right mouse down monitor for bubble widget.
-  id mouse_down_monitor_;
 
   AssociatedViews associated_views_;
 

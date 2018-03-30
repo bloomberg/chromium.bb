@@ -399,8 +399,7 @@ BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
       target_fullscreen_state_(false),
       in_fullscreen_transition_(false),
       window_visible_(false),
-      wants_to_be_visible_(false),
-      mouse_down_monitor_(nullptr) {
+      wants_to_be_visible_(false) {
   if (BridgedNativeWidget::ShouldUseDragEventMonitor())
     SetupDragEventMonitor();
 
@@ -447,17 +446,6 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
          selector:@selector(onSystemControlTintChanged:)
              name:NSControlTintDidChangeNotification
            object:nil];
-
-  // Right-clicks outside a bubble should dismiss them, but that doesn't cause
-  // loss of focus on Mac, so add an event monitor to detect.
-  if (params.type == Widget::InitParams::TYPE_BUBBLE) {
-    mouse_down_monitor_ = [NSEvent
-        addLocalMonitorForEventsMatchingMask:NSRightMouseDownMask
-        handler:^NSEvent* (NSEvent* event) {
-          OnRightMouseDownWithBubble(event);
-          return event;
-        }];
-  }
 
   // Validate the window's initial state, otherwise the bridge's initial
   // tracking state will be incorrect.
@@ -798,10 +786,6 @@ void BridgedNativeWidget::OnWindowWillClose() {
     parent_ = nullptr;
   }
   [[NSNotificationCenter defaultCenter] removeObserver:window_delegate_];
-  if (mouse_down_monitor_) {
-    [NSEvent removeMonitor:mouse_down_monitor_];
-    mouse_down_monitor_ = nullptr;
-  }
 
   [show_animation_ stopAnimation];  // If set, calls OnShowAnimationComplete().
   DCHECK(!show_animation_);
@@ -1582,28 +1566,6 @@ void BridgedNativeWidget::SetDraggable(bool draggable) {
   // Calling the below seems to be an effective solution.
   [window_ setMovableByWindowBackground:NO];
   [window_ setMovableByWindowBackground:YES];
-}
-
-void BridgedNativeWidget::OnRightMouseDownWithBubble(NSEvent* event) {
-  NSWindow* target = [event window];
-  if ([target isSheet])
-    return;
-
-  // Do not close the bubble if the event happened on a window with a higher
-  // level.  For example, the content of a browser action bubble opens a
-  // calendar picker window with NSPopUpMenuWindowLevel, and a date selection
-  // closes the picker window, but it should not close the bubble.
-  if ([target level] > [window_ level])
-    return;
-
-  // If the event is in |window_|'s hierarchy, do not close the bubble.
-  while (target) {
-    if (target == window_.get())
-      return;
-    target = [target parentWindow];
-  }
-
-  OnWindowKeyStatusChangedTo(false);
 }
 
 }  // namespace views
