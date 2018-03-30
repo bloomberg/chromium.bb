@@ -14,7 +14,19 @@
 
 namespace url {
 
-TEST(URLUtilTest, FindAndCompareScheme) {
+class URLUtilTest : public testing::Test {
+ public:
+  URLUtilTest() = default;
+  ~URLUtilTest() override {
+    // Reset any added schemes.
+    Shutdown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLUtilTest);
+};
+
+TEST_F(URLUtilTest, FindAndCompareScheme) {
   Component found_scheme;
 
   // Simple case where the scheme is found and matches.
@@ -63,7 +75,7 @@ TEST(URLUtilTest, FindAndCompareScheme) {
   EXPECT_TRUE(found_scheme == Component(1, 11));
 }
 
-TEST(URLUtilTest, IsStandard) {
+TEST_F(URLUtilTest, IsStandard) {
   const char kHTTPScheme[] = "http";
   EXPECT_TRUE(IsStandard(kHTTPScheme, Component(0, strlen(kHTTPScheme))));
 
@@ -71,7 +83,7 @@ TEST(URLUtilTest, IsStandard) {
   EXPECT_FALSE(IsStandard(kFooScheme, Component(0, strlen(kFooScheme))));
 }
 
-TEST(URLUtilTest, IsReferrerScheme) {
+TEST_F(URLUtilTest, IsReferrerScheme) {
   const char kHTTPScheme[] = "http";
   EXPECT_TRUE(IsReferrerScheme(kHTTPScheme, Component(0, strlen(kHTTPScheme))));
 
@@ -79,14 +91,14 @@ TEST(URLUtilTest, IsReferrerScheme) {
   EXPECT_FALSE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
 }
 
-TEST(URLUtilTest, AddReferrerScheme) {
+TEST_F(URLUtilTest, AddReferrerScheme) {
   const char kFooScheme[] = "foo";
   EXPECT_FALSE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
-  AddReferrerScheme(kFooScheme, url::SCHEME_WITHOUT_PORT);
+  AddReferrerScheme(kFooScheme, url::SCHEME_WITH_HOST);
   EXPECT_TRUE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
 }
 
-TEST(URLUtilTest, GetStandardSchemeType) {
+TEST_F(URLUtilTest, GetStandardSchemeType) {
   url::SchemeType scheme_type;
 
   const char kHTTPScheme[] = "http";
@@ -94,23 +106,23 @@ TEST(URLUtilTest, GetStandardSchemeType) {
   EXPECT_TRUE(GetStandardSchemeType(kHTTPScheme,
                                     Component(0, strlen(kHTTPScheme)),
                                     &scheme_type));
-  EXPECT_EQ(url::SCHEME_WITH_PORT, scheme_type);
+  EXPECT_EQ(url::SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION, scheme_type);
 
   const char kFilesystemScheme[] = "filesystem";
-  scheme_type = url::SCHEME_WITH_PORT;
+  scheme_type = url::SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
   EXPECT_TRUE(GetStandardSchemeType(kFilesystemScheme,
                                     Component(0, strlen(kFilesystemScheme)),
                                     &scheme_type));
   EXPECT_EQ(url::SCHEME_WITHOUT_AUTHORITY, scheme_type);
 
   const char kFooScheme[] = "foo";
-  scheme_type = url::SCHEME_WITH_PORT;
+  scheme_type = url::SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
   EXPECT_FALSE(GetStandardSchemeType(kFooScheme,
                                      Component(0, strlen(kFooScheme)),
                                      &scheme_type));
 }
 
-TEST(URLUtilTest, ReplaceComponents) {
+TEST_F(URLUtilTest, ReplaceComponents) {
   Parsed parsed;
   RawCanonOutputT<char> output;
   Parsed new_parsed;
@@ -153,7 +165,7 @@ static std::string CheckReplaceScheme(const char* base_url,
   return output_string;
 }
 
-TEST(URLUtilTest, ReplaceScheme) {
+TEST_F(URLUtilTest, ReplaceScheme) {
   EXPECT_EQ("https://google.com/",
             CheckReplaceScheme("http://google.com/", "https"));
   EXPECT_EQ("file://google.com/",
@@ -183,7 +195,7 @@ TEST(URLUtilTest, ReplaceScheme) {
             CheckReplaceScheme("myscheme:example.com/ hello # world ", "http"));
 }
 
-TEST(URLUtilTest, DecodeURLEscapeSequences) {
+TEST_F(URLUtilTest, DecodeURLEscapeSequences) {
   struct DecodeCase {
     const char* input;
     const char* output;
@@ -254,7 +266,7 @@ TEST(URLUtilTest, DecodeURLEscapeSequences) {
   }
 }
 
-TEST(URLUtilTest, TestEncodeURIComponent) {
+TEST_F(URLUtilTest, TestEncodeURIComponent) {
   struct EncodeCase {
     const char* input;
     const char* output;
@@ -287,7 +299,7 @@ TEST(URLUtilTest, TestEncodeURIComponent) {
   }
 }
 
-TEST(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
+TEST_F(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
   // This tests non-standard (in the sense that IsStandard() == false)
   // hierarchical schemes.
   struct ResolveRelativeCase {
@@ -372,7 +384,7 @@ TEST(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
   }
 }
 
-TEST(URLUtilTest, TestNoRefComponent) {
+TEST_F(URLUtilTest, TestNoRefComponent) {
   // The hash-mark must be ignored when mailto: scheme is parsed,
   // even if the URL has a base and relative part.
   const char* base = "mailto://to/";
@@ -393,7 +405,7 @@ TEST(URLUtilTest, TestNoRefComponent) {
   EXPECT_FALSE(resolved_parsed.ref.is_valid());
 }
 
-TEST(URLUtilTest, PotentiallyDanglingMarkup) {
+TEST_F(URLUtilTest, PotentiallyDanglingMarkup) {
   struct ResolveRelativeCase {
     const char* base;
     const char* rel;
@@ -441,7 +453,7 @@ TEST(URLUtilTest, PotentiallyDanglingMarkup) {
   }
 }
 
-TEST(URLUtilTest, TestDomainIs) {
+TEST_F(URLUtilTest, TestDomainIs) {
   const struct {
     const char* canonicalized_host;
     const char* lower_ascii_domain;

@@ -128,7 +128,7 @@ class NavigationManagerTest
 
     // Setup rewriter.
     BrowserURLRewriter::GetInstance()->AddURLRewriter(UrlRewriter);
-    url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITH_HOST);
 
     manager_->SetDelegate(&delegate_);
     manager_->SetBrowserState(&browser_state_);

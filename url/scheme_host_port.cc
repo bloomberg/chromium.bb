@@ -51,7 +51,7 @@ bool IsValidInput(const base::StringPiece& scheme,
                   const base::StringPiece& host,
                   uint16_t port,
                   SchemeHostPort::ConstructPolicy policy) {
-  SchemeType scheme_type = SCHEME_WITH_PORT;
+  SchemeType scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
   bool is_standard = GetStandardSchemeType(
       scheme.data(),
       Component(0, base::checked_cast<int>(scheme.length())),
@@ -60,7 +60,7 @@ bool IsValidInput(const base::StringPiece& scheme,
     return false;
 
   switch (scheme_type) {
-    case SCHEME_WITH_PORT:
+    case SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION:
       // A URL with |scheme| is required to have the host and port (may be
       // omitted in a serialization if it's the same as the default value).
       // Return an invalid instance if either of them is not given.
@@ -78,7 +78,7 @@ bool IsValidInput(const base::StringPiece& scheme,
 
       return true;
 
-    case SCHEME_WITHOUT_PORT:
+    case SCHEME_WITH_HOST:
       if (port != 0) {
         // Return an invalid object if a URL with the scheme never represents
         // the port data but the given |port| is non-zero.

@@ -42,12 +42,17 @@ URL_EXPORT void Shutdown();
 // Types of a scheme representing the requirements on the data represented by
 // the authority component of a URL with the scheme.
 enum SchemeType {
-  // The authority component of a URL with the scheme, if any, has the port
-  // (the default values may be omitted in a serialization).
-  SCHEME_WITH_PORT,
-  // The authority component of a URL with the scheme, if any, doesn't have a
-  // port.
-  SCHEME_WITHOUT_PORT,
+  // The authority component of a URL with the scheme, if any, has the form
+  // "username:password@host:port". The username and password entries are
+  // optional; the host may not be empty. The default value of the port
+  // can be omitted in serialization. This type occurs with network schemes
+  // like http, https, and ftp.
+  SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION,
+  // The authority component of a URL with this scheme, if any, consists only
+  // of a host. It does not contain port, username, or password. Schemes used
+  // internally by browser features usually work this way, as hostnames do not
+  // correspond to network hosts.
+  SCHEME_WITH_HOST,
   // A URL with the scheme doesn't have the authority component.
   SCHEME_WITHOUT_AUTHORITY,
 };

@@ -13,6 +13,18 @@
 
 namespace {
 
+class SchemeHostPortTest : public testing::Test {
+ public:
+  SchemeHostPortTest() = default;
+  ~SchemeHostPortTest() override {
+    // Reset any added schemes.
+    url::Shutdown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SchemeHostPortTest);
+};
+
 void ExpectParsedUrlsEqual(const GURL& a, const GURL& b) {
   EXPECT_EQ(a, b);
   const url::Parsed& a_parsed = a.parsed_for_possibly_invalid_spec();
@@ -35,7 +47,7 @@ void ExpectParsedUrlsEqual(const GURL& a, const GURL& b) {
   EXPECT_EQ(a_parsed.ref.len, b_parsed.ref.len);
 }
 
-TEST(SchemeHostPortTest, Invalid) {
+TEST_F(SchemeHostPortTest, Invalid) {
   url::SchemeHostPort invalid;
   EXPECT_EQ("", invalid.scheme());
   EXPECT_EQ("", invalid.host());
@@ -72,7 +84,7 @@ TEST(SchemeHostPortTest, Invalid) {
   }
 }
 
-TEST(SchemeHostPortTest, ExplicitConstruction) {
+TEST_F(SchemeHostPortTest, ExplicitConstruction) {
   struct TestCases {
     const char* scheme;
     const char* host;
@@ -99,7 +111,7 @@ TEST(SchemeHostPortTest, ExplicitConstruction) {
   }
 }
 
-TEST(SchemeHostPortTest, InvalidConstruction) {
+TEST_F(SchemeHostPortTest, InvalidConstruction) {
   struct TestCases {
     const char* scheme;
     const char* host;
@@ -135,7 +147,7 @@ TEST(SchemeHostPortTest, InvalidConstruction) {
   }
 }
 
-TEST(SchemeHostPortTest, InvalidConstructionWithEmbeddedNulls) {
+TEST_F(SchemeHostPortTest, InvalidConstructionWithEmbeddedNulls) {
   struct TestCases {
     const char* scheme;
     size_t scheme_length;
@@ -163,7 +175,7 @@ TEST(SchemeHostPortTest, InvalidConstructionWithEmbeddedNulls) {
   }
 }
 
-TEST(SchemeHostPortTest, GURLConstruction) {
+TEST_F(SchemeHostPortTest, GURLConstruction) {
   struct TestCases {
     const char* url;
     const char* scheme;
@@ -199,7 +211,7 @@ TEST(SchemeHostPortTest, GURLConstruction) {
   }
 }
 
-TEST(SchemeHostPortTest, Serialization) {
+TEST_F(SchemeHostPortTest, Serialization) {
   struct TestCases {
     const char* url;
     const char* expected;
@@ -224,7 +236,7 @@ TEST(SchemeHostPortTest, Serialization) {
   }
 }
 
-TEST(SchemeHostPortTest, Comparison) {
+TEST_F(SchemeHostPortTest, Comparison) {
   // These tuples are arranged in increasing order:
   struct SchemeHostPorts {
     const char* scheme;
@@ -256,10 +268,10 @@ TEST(SchemeHostPortTest, Comparison) {
 // Some schemes have optional authority. Make sure that GURL conversion from
 // SchemeHostPort is not opinionated in that regard. For more info, See
 // crbug.com/820194, where we considered all SchemeHostPorts with
-// SCHEME_WITHOUT_PORT as valid with empty hosts, even though some are not (e.g.
-// chrome URLs).
-TEST(SchemeHostPortTest, EmptyHostGurlConversion) {
-  url::AddStandardScheme("chrome", url::SCHEME_WITHOUT_PORT);
+// SCHEME_WITH_HOST (i.e., without ports) as valid with empty hosts, even though
+// most are not (e.g. chrome URLs).
+TEST_F(SchemeHostPortTest, EmptyHostGurlConversion) {
+  url::AddStandardScheme("chrome", url::SCHEME_WITH_HOST);
 
   GURL chrome_url("chrome:");
   EXPECT_FALSE(chrome_url.is_valid());
