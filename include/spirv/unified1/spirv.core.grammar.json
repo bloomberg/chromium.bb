@@ -3937,6 +3937,7 @@
         { "kind" : "IdRef", "name" : "'Value'" }
       ],
       "capabilities" : [ "GroupNonUniformPartitionedNV" ],
+      "extensions" : [ "SPV_NV_shader_subgroup_partitioned" ],
       "version" : "None"
     }
   ],
