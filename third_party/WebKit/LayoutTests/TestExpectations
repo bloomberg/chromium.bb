@@ -3383,3 +3383,10 @@ crbug.com/680741 external/wpt/uievents/mouse/mouse_buttons_back_forward-manual.h
 crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
 crbug.com/827209 fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
 crbug.com/827209 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
+
+# Utility for manual testing, not intended to be run as part of layout tests.
+crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
+crbug.com/785955 virtual/enable-webauthn/http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
+
+# Only run virtual/enable-webauthn tests where the Credential Management/WebAuthn API are enabled.
+crbug.com/785955 http/tests/credentialmanager [ Skip ]

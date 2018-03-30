@@ -1,5 +1,19 @@
 'use strict';
 
+// A minimal HTML document that loads this very file. This can be
+// document.write()'en to nested documents to include test input/outputs.
+const HTML_WITH_TEST_INPUTS = "<script src='/credentialmanager/resources/test-inputs.js'></script>";
+
+// Constructs a script that loads this very script file, and runs |code| once
+// loaded. This can be window.eval()'ed in nested documents to include test
+// input/outputs (and then run the |code| under test).
+function getScriptThatLoadsTestInputsAndRuns(code) {
+  return "var script = document.createElement('script');"
+       + "script.src = '/credentialmanager/resources/test-inputs.js';"
+       + "script.onload = _ => {" + code + "};"
+       + "document.head.appendChild(script);"
+}
+
 // Common mock values for the mockAuthenticator.
 var CHALLENGE = new TextEncoder().encode("climb a mountain");
 
@@ -34,9 +48,11 @@ var MAKE_CREDENTIAL_OPTIONS = {
     excludeCredentials: [],
 };
 
+var ACCEPTABLE_CREDENTIAL_ID = new TextEncoder().encode("acceptableCredential");
+
 var ACCEPTABLE_CREDENTIAL = {
     type: "public-key",
-    id: new TextEncoder().encode("acceptableCredential"),
+    id: ACCEPTABLE_CREDENTIAL_ID,
     transports: ["usb", "nfc", "ble"]
 };
 
@@ -54,42 +70,16 @@ var ATTESTATION_OBJECT = new TextEncoder("utf-8").encode("attestationObject");
 var AUTHENTICATOR_DATA = new TextEncoder("utf-8").encode("authenticatorData");
 var SIGNATURE = new TextEncoder("utf-8").encode("signature");
 
-var TEST_NESTED_CREDENTIAL_ID = "nestedCredentialId";
-
-// Use a 3-second timeout in the parameters for "success" cases
-// so that each test will exercise the rpID checks in both the renderer
-// and browser but will time out instead of wait for a device response.
-var CUSTOM_MAKE_CREDENTIAL_OPTIONS = 'var customPublicKey = '
-    + '{challenge: new TextEncoder().encode("challenge"), '
-    + 'rp: {id: "subdomain.example.test", name: "Acme"}, '
-    + 'user: {id: new TextEncoder().encode("1098237235409872"), '
-    + 'name: "acme@example.com", displayName: "Acme", icon:"iconUrl"}, '
-    + 'timeout: 2000, '
-    + 'pubKeyCredParams: [{type: "public-key", alg: -7,},], excludeCredentials:[],};';
-
-var CREATE_CUSTOM_CREDENTIALS = CUSTOM_MAKE_CREDENTIAL_OPTIONS
-    + "navigator.credentials.create({publicKey : customPublicKey})"
-    + ".then(c => window.parent.postMessage(c.id, '*'))"
-    + ".catch(e => window.parent.postMessage(e.name, '*'));";
-
-var CREATE_CREDENTIALS = "navigator.credentials.create({publicKey : MAKE_CREDENTIAL_OPTIONS})"
-    + ".then(c => window.parent.postMessage(c.id, '*'));";
-
-var CUSTOM_GET_CREDENTIAL_OPTIONS = 'var customPublicKey = '
-    + '{challenge: new TextEncoder().encode("challenge"), '
-    + 'rpId: "subdomain.example.test", '
-    + 'timeout: 2000, '
-    + 'allowCredentials: [{type: "public-key", id: new TextEncoder().encode("allowedCredential"), transports: ["usb", "nfc", "ble"]},],};';
-
-var GET_CUSTOM_CREDENTIALS = CUSTOM_GET_CREDENTIAL_OPTIONS
-    + "navigator.credentials.get({publicKey : customPublicKey})"
-    + ".then(c => window.parent.postMessage(c.id, '*'))"
-    + ".catch(e => window.parent.postMessage(e.name, '*'));";
+var CREATE_CREDENTIALS =
+    "navigator.credentials.create({publicKey : MAKE_CREDENTIAL_OPTIONS})"
+    + ".then(c => window.parent.postMessage(String(c), '*'))";
+    + ".catch(e => window.parent.postMessage(String(e), '*'));";
 
 var GET_CREDENTIAL = "navigator.credentials.get({publicKey : GET_CREDENTIAL_OPTIONS})"
-    + ".then(c => window.parent.postMessage(c.id, '*'));";
+    + ".then(c => window.parent.postMessage(String(c), '*'))";
+    + ".catch(e => window.parent.postMessage(String(e), '*'));";
 
-function EncloseInScriptTag(code) {
+function encloseInScriptTag(code) {
   return "<script>" + code + "</scr" + "ipt>";
 }
 
