@@ -120,6 +120,7 @@
 #import "ios/chrome/browser/ui/external_file_remover_impl.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
+#include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_panel_view_controller.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
@@ -388,8 +389,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Cached launchOptions from -didFinishLaunchingWithOptions.
   NSDictionary* _launchOptions;
 
-  // View controller for displaying the history panel.
+  // View controller for displaying the legacy history panel.
   UIViewController* _historyPanelViewController;
+
+  // Coordinator for displaying history.
+  HistoryCoordinator* _historyCoordinator;
 
   // Variable backing metricsMediator property.
   __weak MetricsMediator* _metricsMediator;
@@ -1435,13 +1439,23 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)showHistory {
-  _historyPanelViewController = [[HistoryPanelViewController alloc]
-      initWithLoader:self.currentBVC
-        browserState:_mainBrowserState
-          dispatcher:self.mainBVC.dispatcher];
-  [self.currentBVC presentViewController:_historyPanelViewController
-                                animated:YES
-                              completion:nil];
+  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+    // New History UIReboot coordinator.
+    _historyCoordinator = [[HistoryCoordinator alloc]
+        initWithBaseViewController:self.currentBVC
+                      browserState:_mainBrowserState];
+    _historyCoordinator.loader = self.currentBVC;
+    _historyCoordinator.dispatcher = self.mainBVC.dispatcher;
+    [_historyCoordinator start];
+  } else {
+    _historyPanelViewController = [[HistoryPanelViewController alloc]
+        initWithLoader:self.currentBVC
+          browserState:_mainBrowserState
+            dispatcher:self.mainBVC.dispatcher];
+    [self.currentBVC presentViewController:_historyPanelViewController
+                                  animated:YES
+                                completion:nil];
+  }
 }
 
 - (void)closeSettingsUIAndOpenURL:(OpenUrlCommand*)command {

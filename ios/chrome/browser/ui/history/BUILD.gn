@@ -11,6 +11,8 @@ source_set("history") {
     "favicon_view.mm",
     "favicon_view_provider.h",
     "favicon_view_provider.mm",
+    "history_coordinator.h",
+    "history_coordinator.mm",
     "history_entries_status_item_delegate.h",
     "history_entry_inserter.h",
     "history_entry_inserter.mm",
@@ -35,6 +37,7 @@ source_set("history") {
   ]
   deps = [
     ":history_base_feature",
+    ":history_ui",
     "//base",
     "//base:i18n",
     "//components/browser_sync",
@@ -61,6 +64,7 @@ source_set("history") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/context_menu",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
@@ -68,6 +72,7 @@ source_set("history") {
     "//ios/chrome/browser/ui/ntp/recent_tabs/views",
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
@@ -83,6 +88,17 @@ source_set("history") {
     "MobileCoreServices.framework",
     "QuartzCore.framework",
     "UIKit.framework",
+  ]
+}
+
+source_set("history_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "history_table_view_controller.h",
+    "history_table_view_controller.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser/ui/table_view",
   ]
 }
 
