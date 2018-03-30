@@ -53,7 +53,6 @@
 #include "content/browser/download/download_job_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_utils.h"
-#include "content/browser/download/parallel_download_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "net/http/http_response_headers.h"
@@ -415,7 +414,7 @@ DownloadItemImpl::DownloadItemImpl(
       weak_ptr_factory_(this) {
   job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
                                        download::DownloadCreateInfo(), true,
-                                       nullptr);
+                                       nullptr, nullptr);
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
 }
@@ -1402,7 +1401,8 @@ void DownloadItemImpl::Start(
     std::unique_ptr<download::DownloadFile> file,
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
     const download::DownloadCreateInfo& new_create_info,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!download_file_.get());
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
@@ -1410,12 +1410,12 @@ void DownloadItemImpl::Start(
                                           download_source_);
 
   download_file_ = std::move(file);
-  job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
-                                       new_create_info, false,
-                                       std::move(shared_url_loader_factory));
+  job_ = DownloadJobFactory::CreateJob(
+      this, std::move(req_handle), new_create_info, false,
+      std::move(shared_url_loader_factory), url_request_context_getter);
   if (job_->IsParallelizable()) {
-    download::RecordParallelizableDownloadCount(download::START_COUNT,
-                                                IsParallelDownloadEnabled());
+    download::RecordParallelizableDownloadCount(
+        download::START_COUNT, download::IsParallelDownloadEnabled());
   }
 
   deferred_interrupt_reason_ = download::DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -1468,8 +1468,8 @@ void DownloadItemImpl::Start(
     download::RecordDownloadCountWithSource(download::NEW_DOWNLOAD_COUNT,
                                             download_source_);
     if (job_->IsParallelizable()) {
-      download::RecordParallelizableDownloadCount(download::NEW_DOWNLOAD_COUNT,
-                                                  IsParallelDownloadEnabled());
+      download::RecordParallelizableDownloadCount(
+          download::NEW_DOWNLOAD_COUNT, download::IsParallelDownloadEnabled());
     }
     download::RecordDownloadMimeType(mime_type_);
     download::DownloadContent file_type =
@@ -1849,8 +1849,8 @@ void DownloadItemImpl::Completed() {
         download::COMPLETED_COUNT_NORMAL_PROFILE, download_source_);
   }
   if (is_parallelizable) {
-    download::RecordParallelizableDownloadCount(download::COMPLETED_COUNT,
-                                                IsParallelDownloadEnabled());
+    download::RecordParallelizableDownloadCount(
+        download::COMPLETED_COUNT, download::IsParallelDownloadEnabled());
     int64_t content_length = -1;
     if (response_headers_->response_code() != net::HTTP_PARTIAL_CONTENT) {
       content_length = response_headers_->GetContentLength();
@@ -2027,8 +2027,8 @@ void DownloadItemImpl::InterruptWithPartialState(
     download::RecordDownloadCountWithSource(download::CANCELLED_COUNT,
                                             download_source_);
     if (job_ && job_->IsParallelizable()) {
-      download::RecordParallelizableDownloadCount(download::CANCELLED_COUNT,
-                                                  IsParallelDownloadEnabled());
+      download::RecordParallelizableDownloadCount(
+          download::CANCELLED_COUNT, download::IsParallelDownloadEnabled());
     }
     DCHECK_EQ(last_reason_, reason);
     TransitionTo(CANCELLED_INTERNAL);
@@ -2037,7 +2037,7 @@ void DownloadItemImpl::InterruptWithPartialState(
 
   download::RecordDownloadInterrupted(reason, GetReceivedBytes(), total_bytes_,
                                       job_ && job_->IsParallelizable(),
-                                      IsParallelDownloadEnabled(),
+                                      download::IsParallelDownloadEnabled(),
                                       download_source_);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();

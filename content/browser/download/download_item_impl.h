@@ -34,6 +34,10 @@ class DownloadFile;
 class DownloadJob;
 }  // namespace download
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace content {
 class BrowserContext;
 class DownloadItemImplDelegate;
@@ -298,11 +302,14 @@ class CONTENT_EXPORT DownloadItemImpl
   // parameters. It may be different from the DownloadCreateInfo used to create
   // the download::DownloadItem if Start() is being called in response for a
   // download resumption request.
+  // TODO(qinmin): Remove |url_request_context_getter| once network service is
+  // enabled.
   virtual void Start(
       std::unique_ptr<download::DownloadFile> download_file,
       std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
       const download::DownloadCreateInfo& new_create_info,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      net::URLRequestContextGetter* url_request_context_getter);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 

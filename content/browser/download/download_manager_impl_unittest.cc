@@ -38,16 +38,13 @@
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
-
-#if !defined(OS_ANDROID)
-#include "content/public/browser/zoom_level_delegate.h"
-#endif  // !defined(OS_ANDROID)
 
 using ::testing::AllOf;
 using ::testing::DoAll;
@@ -310,61 +307,6 @@ class MockDownloadFileFactory
   }
 };
 
-class MockBrowserContext : public BrowserContext {
- public:
-  MockBrowserContext() {
-    content::BrowserContext::Initialize(this, base::FilePath());
-  }
-  ~MockBrowserContext() { BrowserContext::NotifyWillBeDestroyed(this); }
-
-  MOCK_CONST_METHOD0(GetPath, base::FilePath());
-#if !defined(OS_ANDROID)
-  MOCK_METHOD1(CreateZoomLevelDelegateMock,
-               ZoomLevelDelegate*(const base::FilePath&));
-#endif  // !defined(OS_ANDROID)
-  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD0(GetResourceContext, ResourceContext*());
-  MOCK_METHOD0(GetDownloadManagerDelegate, DownloadManagerDelegate*());
-  MOCK_METHOD0(GetGuestManager, BrowserPluginGuestManager* ());
-  MOCK_METHOD0(GetSpecialStoragePolicy, storage::SpecialStoragePolicy*());
-  MOCK_METHOD0(GetPushMessagingService, PushMessagingService*());
-  MOCK_METHOD0(GetSSLHostStateDelegate, SSLHostStateDelegate*());
-  MOCK_METHOD0(GetPermissionManager, PermissionManager*());
-  MOCK_METHOD0(GetBackgroundFetchDelegate, BackgroundFetchDelegate*());
-  MOCK_METHOD0(GetBackgroundSyncController, BackgroundSyncController*());
-  MOCK_METHOD0(GetBrowsingDataRemoverDelegate, BrowsingDataRemoverDelegate*());
-  MOCK_METHOD0(CreateMediaRequestContext,
-               net::URLRequestContextGetter*());
-  MOCK_METHOD2(CreateMediaRequestContextForStoragePartition,
-               net::URLRequestContextGetter*(
-                   const base::FilePath& partition_path, bool in_memory));
-
-  // Define these two methods to avoid a
-  // 'cannot access private member declared in class
-  // URLRequestInterceptorScopedVector'
-  // build error if they're put in MOCK_METHOD.
-  net::URLRequestContextGetter* CreateRequestContext(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override {
-    return nullptr;
-  }
-
-  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override {
-    return nullptr;
-  }
-#if !defined(OS_ANDROID)
-  std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
-      const base::FilePath& path) override {
-    return std::unique_ptr<ZoomLevelDelegate>(
-        CreateZoomLevelDelegateMock(path));
-  }
-#endif  // !defined(OS_ANDROID)
-};
-
 class MockDownloadManagerObserver : public DownloadManager::Observer {
  public:
   MockDownloadManagerObserver() {}
@@ -413,12 +355,8 @@ class DownloadManagerTest : public testing::Test {
         new StrictMock<MockDownloadManagerDelegate>);
     EXPECT_CALL(*mock_download_manager_delegate_.get(), Shutdown())
         .WillOnce(Return());
-    mock_browser_context_.reset(new StrictMock<MockBrowserContext>);
-    EXPECT_CALL(*mock_browser_context_.get(), IsOffTheRecord())
-        .WillRepeatedly(Return(false));
-
-    download_manager_.reset(
-        new DownloadManagerImpl(mock_browser_context_.get()));
+    browser_context_ = std::make_unique<TestBrowserContext>();
+    download_manager_.reset(new DownloadManagerImpl(browser_context_.get()));
     download_manager_->SetDownloadItemFactoryForTesting(
         std::unique_ptr<DownloadItemFactory>(
             mock_download_item_factory_.get()));
@@ -448,7 +386,6 @@ class DownloadManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     ASSERT_FALSE(mock_download_item_factory_);
     mock_download_manager_delegate_.reset();
-    mock_browser_context_.reset();
     download_urls_.clear();
   }
 
@@ -468,7 +405,7 @@ class DownloadManagerTest : public testing::Test {
     // in the factory.
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle;
     item.Start(std::unique_ptr<download::DownloadFile>(), std::move(req_handle),
-               info, nullptr);
+               info, nullptr, nullptr);
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 
@@ -539,8 +476,8 @@ class DownloadManagerTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   base::WeakPtr<MockDownloadItemFactory> mock_download_item_factory_;
   std::unique_ptr<MockDownloadManagerDelegate> mock_download_manager_delegate_;
-  std::unique_ptr<MockBrowserContext> mock_browser_context_;
   std::unique_ptr<MockDownloadManagerObserver> observer_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   uint32_t next_download_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerTest);

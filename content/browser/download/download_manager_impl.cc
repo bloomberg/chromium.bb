@@ -695,8 +695,13 @@ void DownloadManagerImpl::StartDownloadWithId(
   // so that the download::DownloadItem can salvage what it can out of a failed
   // resumption attempt.
 
-  download->Start(std::move(download_file), std::move(info->request_handle),
-                  *info, std::move(shared_url_loader_factory));
+  StoragePartition* storage_partition = GetStoragePartition(
+      browser_context_, info->render_process_id, info->render_frame_id);
+
+  download->Start(
+      std::move(download_file), std::move(info->request_handle), *info,
+      std::move(shared_url_loader_factory),
+      storage_partition ? storage_partition->GetURLRequestContext() : nullptr);
 
   // For interrupted downloads, Start() will transition the state to
   // IN_PROGRESS and consumers will be notified via OnDownloadUpdated().

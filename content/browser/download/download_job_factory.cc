@@ -10,8 +10,8 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_job_impl.h"
 #include "components/download/public/common/download_stats.h"
-#include "content/browser/download/parallel_download_job.h"
-#include "content/browser/download/parallel_download_utils.h"
+#include "components/download/public/common/parallel_download_job.h"
+#include "components/download/public/common/parallel_download_utils.h"
 #include "content/browser/download/save_package_download_job.h"
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -41,7 +41,7 @@ bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
   bool has_content_length = create_info.total_bytes > 0;
   bool satisfy_min_file_size =
       !download_item->GetReceivedSlices().empty() ||
-      create_info.total_bytes >= GetMinSliceSizeConfig();
+      create_info.total_bytes >= download::GetMinSliceSizeConfig();
   bool satisfy_connection_type = create_info.connection_info ==
                                  net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
   bool http_get_method =
@@ -51,7 +51,7 @@ bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
                            has_content_length && satisfy_min_file_size &&
                            satisfy_connection_type && http_get_method;
 
-  if (!IsParallelDownloadEnabled())
+  if (!download::IsParallelDownloadEnabled())
     return is_parallelizable;
 
   download::RecordParallelDownloadCreationEvent(
@@ -100,7 +100,8 @@ std::unique_ptr<download::DownloadJob> DownloadJobFactory::CreateJob(
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
     const download::DownloadCreateInfo& create_info,
     bool is_save_package_download,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    net::URLRequestContextGetter* url_request_context_getter) {
   if (is_save_package_download) {
     return std::make_unique<SavePackageDownloadJob>(download_item,
                                                     std::move(req_handle));
@@ -108,10 +109,10 @@ std::unique_ptr<download::DownloadJob> DownloadJobFactory::CreateJob(
 
   bool is_parallelizable = IsParallelizableDownload(create_info, download_item);
   // Build parallel download job.
-  if (IsParallelDownloadEnabled() && is_parallelizable) {
-    return std::make_unique<ParallelDownloadJob>(
+  if (download::IsParallelDownloadEnabled() && is_parallelizable) {
+    return std::make_unique<download::ParallelDownloadJob>(
         download_item, std::move(req_handle), create_info,
-        std::move(shared_url_loader_factory));
+        std::move(shared_url_loader_factory), url_request_context_getter);
   }
 
   // An ordinary download job.

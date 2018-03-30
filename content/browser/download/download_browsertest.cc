@@ -36,10 +36,10 @@
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_file_impl.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/download/public/common/parallel_download_utils.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_request_utils.h"
@@ -914,11 +914,11 @@ class ParallelDownloadTest : public DownloadContentTest {
  protected:
   ParallelDownloadTest() {
     std::map<std::string, std::string> params = {
-        {content::kMinSliceSizeFinchKey, "1"},
-        {content::kParallelRequestCountFinchKey,
+        {download::kMinSliceSizeFinchKey, "1"},
+        {download::kParallelRequestCountFinchKey,
          base::IntToString(kTestRequestCount)},
-        {content::kParallelRequestDelayFinchKey, "0"},
-        {content::kParallelRequestRemainingTimeFinchKey, "0"}};
+        {download::kParallelRequestDelayFinchKey, "0"},
+        {download::kParallelRequestRemainingTimeFinchKey, "0"}};
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         download::features::kParallelDownloading, params);
   }
