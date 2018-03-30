@@ -220,6 +220,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
       public NotificationInputDelegate,
       public views::ButtonListener {
  public:
+  static const char kMessageViewSubClassName[];
+
   explicit NotificationViewMD(const Notification& notification);
   ~NotificationViewMD() override;
 
@@ -255,8 +257,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void SetExpanded(bool expanded) override;
   bool IsManuallyExpandedOrCollapsed() const override;
   void SetManuallyExpandedOrCollapsed(bool value) override;
-
   void OnSettingsButtonPressed(const ui::Event& event) override;
+  const char* GetMessageViewSubClassName() const final;
 
   // views::InkDropObserver:
   void InkDropAnimationStarted() override;

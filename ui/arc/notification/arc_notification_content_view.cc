@@ -333,8 +333,11 @@ void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
   DCHECK(!control_buttons_view_);
   DCHECK(!floating_control_buttons_widget_);
 
-  CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
+  CHECK_EQ(message_center::MessageView::kViewClassName,
+           parent()->GetClassName());
   auto* notification_view = static_cast<ArcNotificationView*>(parent());
+  CHECK_EQ(ArcNotificationView::kMessageViewSubClassName,
+           notification_view->GetMessageViewSubClassName());
 
   // Creates the control_buttons_view_, which collects all control buttons into
   // a horizontal box.
@@ -625,10 +628,14 @@ void ArcNotificationContentView::OnMouseExited(const ui::MouseEvent&) {
 }
 
 void ArcNotificationContentView::OnFocus() {
-  CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
+  CHECK_EQ(message_center::MessageView::kViewClassName,
+           parent()->GetClassName());
+  auto* notification_view = static_cast<ArcNotificationView*>(parent());
+  CHECK_EQ(ArcNotificationView::kMessageViewSubClassName,
+           notification_view->GetMessageViewSubClassName());
 
   NativeViewHost::OnFocus();
-  static_cast<ArcNotificationView*>(parent())->OnContentFocused();
+  notification_view->OnContentFocused();
 
   if (surface_ && surface_->GetAXTreeId() != -1)
     Activate();
@@ -640,10 +647,14 @@ void ArcNotificationContentView::OnBlur() {
     return;
   }
 
-  CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
+  CHECK_EQ(message_center::MessageView::kViewClassName,
+           parent()->GetClassName());
+  auto* notification_view = static_cast<ArcNotificationView*>(parent());
+  CHECK_EQ(ArcNotificationView::kMessageViewSubClassName,
+           notification_view->GetMessageViewSubClassName());
 
   NativeViewHost::OnBlur();
-  static_cast<ArcNotificationView*>(parent())->OnContentBlured();
+  notification_view->OnContentBlured();
 }
 
 void ArcNotificationContentView::Activate() {

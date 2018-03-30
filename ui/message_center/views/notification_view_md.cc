@@ -170,6 +170,10 @@ class ClickActivator : public ui::EventHandler {
 
 }  // anonymous namespace
 
+// static
+const char NotificationViewMD::kMessageViewSubClassName[] =
+    "NotificationViewMD";
+
 // ItemView ////////////////////////////////////////////////////////////////////
 
 ItemView::ItemView(const NotificationItem& item) {
@@ -1308,6 +1312,10 @@ void NotificationViewMD::OnSettingsButtonPressed(const ui::Event& event) {
     ToggleInlineSettings(event);
   else
     MessageView::OnSettingsButtonPressed(event);
+}
+
+const char* NotificationViewMD::GetMessageViewSubClassName() const {
+  return kMessageViewSubClassName;
 }
 
 void NotificationViewMD::Activate() {
