@@ -63,7 +63,9 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
                format == gfx::BufferFormat::YVU_420;
       case gfx::BufferUsage::SCANOUT:
         return format == gfx::BufferFormat::BGRX_8888 ||
-               format == gfx::BufferFormat::RGBX_8888;
+               format == gfx::BufferFormat::RGBX_8888 ||
+               format == gfx::BufferFormat::RGBA_8888 ||
+               format == gfx::BufferFormat::BGRA_8888;
       case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
         return
 #if defined(ARCH_CPU_X86_FAMILY)
