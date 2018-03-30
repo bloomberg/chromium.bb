@@ -53,8 +53,9 @@ ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(
   if (!GetTextInputClient()) {
     ui::EventDispatchDetails dispatch_details = DispatchKeyEventPostIME(event);
     if (ack_callback) {
-      ack_callback.Run(event->handled() ? EventResult::HANDLED
-                                        : EventResult::UNHANDLED);
+      std::move(ack_callback)
+          .Run(event->handled() ? EventResult::HANDLED
+                                : EventResult::UNHANDLED);
     }
     return dispatch_details;
   }

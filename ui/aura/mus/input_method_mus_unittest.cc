@@ -33,7 +33,7 @@ class TestInputMethodDelegate : public ui::internal::InputMethodDelegate {
 
 using ProcessKeyEventCallback = base::OnceCallback<void(bool)>;
 using ProcessKeyEventCallbacks = std::vector<ProcessKeyEventCallback>;
-using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
+using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
 
 // InputMethod implementation that queues up the callbacks supplied to
 // ProcessKeyEvent().
