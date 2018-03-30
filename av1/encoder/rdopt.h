@@ -82,35 +82,21 @@ static INLINE int av1_cost_skip_txb(MACROBLOCK *x, TXB_CTX *txb_ctx, int plane,
   return coeff_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][1];
 }
 
-static INLINE int av1_cost_coeffs(const struct AV1_COMP *const cpi,
-                                  MACROBLOCK *x, int plane, int blk_row,
-                                  int blk_col, int block, TX_SIZE tx_size,
-                                  const SCAN_ORDER *scan_order,
-                                  const ENTROPY_CONTEXT *a,
+static INLINE int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x,
+                                  BLOCK_SIZE plane_bsize, int plane,
+                                  int blk_row, int blk_col, int block,
+                                  TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
                                   const ENTROPY_CONTEXT *l,
                                   int use_fast_coef_costing) {
 #if TXCOEFF_COST_TIMER
   struct aom_usec_timer timer;
   aom_usec_timer_start(&timer);
 #endif
-  const AV1_COMMON *const cm = &cpi->common;
-  (void)scan_order;
   (void)use_fast_coef_costing;
-  const MACROBLOCKD *xd = &x->e_mbd;
-  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  const struct macroblockd_plane *pd = &xd->plane[plane];
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  const int eob = x->plane[plane].eobs[block];
-  int cost;
-  if (eob) {
-    cost = av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
-                               &txb_ctx);
-  } else {
-    cost = av1_cost_skip_txb(x, &txb_ctx, plane, tx_size);
-  }
+  const int cost = av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block,
+                                       tx_size, &txb_ctx);
 #if TXCOEFF_COST_TIMER
   AV1_COMMON *tmp_cm = (AV1_COMMON *)&cpi->common;
   aom_usec_timer_mark(&timer);

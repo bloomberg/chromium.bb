@@ -2023,16 +2023,14 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (!allowed_tx_mask[tx_type]) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
     last_tx_type = tx_type;
-    const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
     if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
-      rate_cost =
-          av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
-                          scan_order, a, l, use_fast_coef_costing);
+      rate_cost = av1_cost_coeffs(cm, x, plane_bsize, plane, blk_row, blk_col,
+                                  block, tx_size, a, l, use_fast_coef_costing);
     } else {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
@@ -2043,8 +2041,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                    &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS, 1);
         rate_cost =
-            av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
-                            scan_order, a, l, use_fast_coef_costing);
+            av1_cost_coeffs(cm, x, plane_bsize, plane, blk_row, blk_col, block,
+                            tx_size, a, l, use_fast_coef_costing);
         const int64_t rd_estimate =
             AOMMIN(RDCOST(x->rdmult, rate_cost, this_rd_stats.dist),
                    RDCOST(x->rdmult, 0, this_rd_stats.sse));
