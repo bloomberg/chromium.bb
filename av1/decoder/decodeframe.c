@@ -2707,8 +2707,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
           cm->ref_frame_map[ref_idx] = buf_idx;
           frame_bufs[buf_idx].cur_frame_offset = frame_offset;
-        } else {
-          assert(frame_offset == frame_bufs[buf_idx].cur_frame_offset);
         }
       }
     }
