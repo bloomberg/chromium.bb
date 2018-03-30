@@ -17,6 +17,7 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "aom/aom_integer.h"
 #include "aom/aom_image.h"
+#include "aom_ports/aom_timer.h"
 
 // Macros
 #define GET_PARAM(k) ::testing::get<k>(GetParam())
@@ -42,6 +43,11 @@ inline double compute_psnr(const aom_image_t *img1, const aom_image_t *img2) {
     psnr = 10 * log10(255.0 * 255.0 / mse);
   }
   return psnr;
+}
+
+static INLINE double get_time_mark(aom_usec_timer *t) {
+  aom_usec_timer_mark(t);
+  return static_cast<double>(aom_usec_timer_elapsed(t));
 }
 
 #endif  // TEST_UTIL_H_

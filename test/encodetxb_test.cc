@@ -185,10 +185,6 @@ class EncodeTxbInitLevelTest : public ::testing::TestWithParam<int> {
   virtual void TearDown() { libaom_test::ClearSystemState(); }
   void RunTest(int tx_size, int is_speed);
 };
-static double get_time_mark(aom_usec_timer *t) {
-  aom_usec_timer_mark(t);
-  return static_cast<double>(aom_usec_timer_elapsed(t));
-}
 
 void EncodeTxbInitLevelTest::RunTest(int tx_size, int is_speed) {
   const int width = get_txb_wide((TX_SIZE)tx_size);
