@@ -315,13 +315,22 @@ gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() const {
     if (parent_view)
       return parent_view->GetVisibleViewportSize();
   }
-  return GetViewBounds().size();
+
+  gfx::Rect bounds = GetViewBounds();
+
+  // It doesn't make sense to set insets on an OOP iframe. The only time this
+  // should happen is when the virtual keyboard comes up on a <webview>.
+  if (is_guest)
+    bounds.Inset(insets_);
+
+  return bounds.size();
 }
 
 void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {
-  // Do nothing here. For subframes, the visual viewport corresponds to the main
-  // frame viewport size, so this request will be handled in SetInsets of the
-  // main frame's RenderWidgetHostView.
+  // Insets are used only for <webview> and are used to let the UI know it's
+  // being obscured (for e.g. by the virtual keyboard).
+  insets_ = insets;
+  host()->WasResized(!insets_.IsEmpty());
 }
 
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
