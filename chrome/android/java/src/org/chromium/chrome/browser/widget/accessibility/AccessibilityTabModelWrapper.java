@@ -189,7 +189,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         if (FeatureUtilities.isChromeModernDesignEnabled()) {
             if (incognitoSelected) {
                 setBackgroundColor(ApiCompatibilityUtils.getColor(
-                        getResources(), R.color.incognito_primary_color));
+                        getResources(), R.color.incognito_modern_primary_color));
                 mModernStackButtonWrapper.setSelectedTabIndicatorColor(
                         mTabIconSelectedLightColor.getDefaultColor());
                 mModernStandardButtonIcon.setTint(mTabIconLightColor);

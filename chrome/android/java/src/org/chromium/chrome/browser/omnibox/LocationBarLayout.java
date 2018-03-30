@@ -125,9 +125,9 @@ public class LocationBarLayout extends FrameLayout
     private static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
 
     private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFF5F5F6;
-    private static final int OMNIBOX_RESULTS_CHROME_HOME_MODERN_BG_COLOR = 0xFFFFFFFF;
+    private static final int OMNIBOX_RESULTS_CHROME_MODERN_BG_COLOR = 0xFFFFFFFF;
     private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
-    private static final int OMNIBOX_INCOGNITO_RESULTS_CHROME_HOME_MODERN_BG_COLOR = 0xFF505050;
+    private static final int OMNIBOX_INCOGNITO_RESULTS_CHROME_MODERN_BG_COLOR = 0xFF3C4043;
 
     // Unicode "Left-To-Right Mark" (LRM) character.
     private static final char LRM = '\u200E';
@@ -1763,8 +1763,10 @@ public class LocationBarLayout extends FrameLayout
         int omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_BG_COLOR;
         int omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_BG_COLOR;
         if (useModernDesign()) {
-            omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_CHROME_HOME_MODERN_BG_COLOR;
-            omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_CHROME_HOME_MODERN_BG_COLOR;
+            omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_CHROME_MODERN_BG_COLOR;
+            if (!mIsTablet) {
+                omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_CHROME_MODERN_BG_COLOR;
+            }
         }
 
         int color = mToolbarDataProvider.isIncognito() ? omniboxResultsColorForIncognito

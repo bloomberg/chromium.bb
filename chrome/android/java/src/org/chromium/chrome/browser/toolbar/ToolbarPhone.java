@@ -852,7 +852,7 @@ public class ToolbarPhone extends ToolbarLayout
                     if (!DeviceClassManager.enableAccessibilityLayout()) return Color.TRANSPARENT;
                     int colorId = visualState == VisualState.TAB_SWITCHER_NORMAL
                             ? R.color.modern_primary_color
-                            : R.color.incognito_primary_color;
+                            : R.color.incognito_modern_primary_color;
                     return ApiCompatibilityUtils.getColor(res, colorId);
                 }
                 return ApiCompatibilityUtils.getColor(res, R.color.tab_switcher_background);
