@@ -146,13 +146,17 @@ void InitializeThreading() {
 }
 
 namespace {
-ThreadSpecificKey g_current_thread_key;
+DWORD g_current_thread_key;
 bool g_current_thread_key_initialized = false;
 }  // namespace
 
 void InitializeCurrentThread() {
   DCHECK(!g_current_thread_key_initialized);
-  ThreadSpecificKeyCreate(&g_current_thread_key, [](void*) {});
+
+  // This key is never destroyed.
+  g_current_thread_key = ::TlsAlloc();
+
+  CHECK_NE(g_current_thread_key, TLS_OUT_OF_INDEXES);
   g_current_thread_key_initialized = true;
 }
 
@@ -169,13 +173,13 @@ ThreadIdentifier CurrentThread() {
   static_assert(sizeof(ThreadIdentifier) <= sizeof(void*),
                 "ThreadIdentifier must fit in a void*.");
   DCHECK(g_current_thread_key_initialized);
-  void* value = ThreadSpecificGet(g_current_thread_key);
+  void* value = ::TlsGetValue(g_current_thread_key);
   if (UNLIKELY(!value)) {
     value = reinterpret_cast<void*>(internal::CurrentThreadSyscall());
     DCHECK(value);
-    ThreadSpecificSet(g_current_thread_key, value);
+    ::TlsSetValue(g_current_thread_key, value);
   }
-  return reinterpret_cast<intptr_t>(ThreadSpecificGet(g_current_thread_key));
+  return reinterpret_cast<intptr_t>(::TlsGetValue(g_current_thread_key));
 }
 
 MutexBase::MutexBase(bool recursive) {
