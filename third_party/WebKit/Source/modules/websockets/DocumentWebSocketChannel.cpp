@@ -206,15 +206,17 @@ bool DocumentWebSocketChannel::Connect(
   if (!handle_)
     return false;
 
-  if (GetDocument() && GetDocument()->GetFrame()) {
-    if (MixedContentChecker::ShouldBlockWebSocket(GetDocument()->GetFrame(),
-                                                  url)) {
+  // TODO(nhiroki): Remove dependencies on LocalFrame.
+  // (https://crbug.com/825740)
+  LocalFrame* frame = nullptr;
+  if (GetExecutionContext()->IsDocument())
+    frame = ToDocument(GetExecutionContext())->GetFrame();
+
+  if (frame) {
+    if (MixedContentChecker::ShouldBlockWebSocket(frame, url))
       return false;
-    }
-    connection_handle_for_scheduler_ = GetDocument()
-                                           ->GetFrame()
-                                           ->GetFrameScheduler()
-                                           ->OnActiveConnectionCreated();
+    connection_handle_for_scheduler_ =
+        frame->GetFrameScheduler()->OnActiveConnectionCreated();
   }
 
   if (MixedContentChecker::IsMixedContent(
@@ -257,14 +259,11 @@ bool DocumentWebSocketChannel::Connect(
                        ->GetTaskRunner(TaskType::kNetworking)
                        .get());
 
-  // TODO(ricea): Maybe lookup GetDocument()->GetFrame() less often?
-  if (handshake_throttle_ && GetDocument() && GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->GetPage()) {
+  if (handshake_throttle_ && frame && frame->GetPage()) {
     // TODO(ricea): We may need to do something special here for SharedWorkers
     // and ServiceWorkers
     // TODO(ricea): Figure out who owns this WebFrame object and how long it can
     // be expected to live.
-    LocalFrame* frame = GetDocument()->GetFrame();
     WebLocalFrame* web_frame = WebLocalFrameImpl::FromFrame(frame);
     handshake_throttle_->ThrottleHandshake(url, web_frame, this);
   } else {
@@ -284,11 +283,10 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
                                        const String& protocol) {
   network::mojom::blink::WebSocketPtr socket_ptr;
   auto socket_request = mojo::MakeRequest(&socket_ptr);
-  if (GetDocument() && GetDocument()->GetFrame()) {
-    GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
-        std::move(socket_request));
-  }
-
+  service_manager::InterfaceProvider* interface_provider =
+      GetExecutionContext()->GetInterfaceProvider();
+  if (interface_provider)
+    interface_provider->GetInterface(std::move(socket_request));
   return Connect(url, protocol, std::move(socket_ptr));
 }
 
@@ -554,14 +552,7 @@ void DocumentWebSocketChannel::HandleDidClose(bool was_clean,
   // client->DidClose may delete this object.
 }
 
-Document* DocumentWebSocketChannel::GetDocument() {
-  ExecutionContext* context = GetExecutionContext();
-  if (context->IsDocument())
-    return ToDocument(context);
-  return nullptr;
-}
-
-ExecutionContext* DocumentWebSocketChannel::GetExecutionContext() {
+ExecutionContext* DocumentWebSocketChannel::GetExecutionContext() const {
   return loading_context_->GetExecutionContext();
 }
 
