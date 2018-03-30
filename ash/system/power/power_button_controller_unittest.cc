@@ -919,21 +919,43 @@ TEST_F(PowerButtonControllerTest, SuspendWithMenuOn) {
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
-// Tests that the menu is inactive by default.
-TEST_F(PowerButtonControllerTest, InactivePowerMenuByDefault) {
-  aura::Window* window = CreateTestWindowInShellWithId(0);
-  wm::ActivateWindow(window);
-  ASSERT_EQ(window, wm::GetActiveWindow());
+// Tests the formerly-active window state in showing power menu.
+TEST_F(PowerButtonControllerTest, FormerlyActiveWindowInShowingMenu) {
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  ASSERT_TRUE(widget->IsActive());
 
-  PressPowerButton();
-  EXPECT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
-  ReleasePowerButton();
-  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
-  EXPECT_EQ(window, wm::GetActiveWindow());
-  EXPECT_FALSE(
+  OpenPowerButtonMenu();
+  // The active window becomes inactive after menu is shown but it is still
+  // painted as active to avoid frame color change.
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_TRUE(widget->IsAlwaysRenderAsActive());
+  EXPECT_TRUE(widget->non_client_view()->frame_view()->ShouldPaintAsActive());
+  EXPECT_TRUE(
       wm::IsActiveWindow(power_button_test_api_->GetPowerButtonMenuView()
                              ->GetWidget()
                              ->GetNativeWindow()));
+  // Should reset the previous painting as active setting of the active window
+  // if dismissing the menu.
+  TapToDismissPowerButtonMenu();
+  EXPECT_FALSE(widget->IsAlwaysRenderAsActive());
+  EXPECT_TRUE(widget->IsActive());
+
+  // Showing or dismissing menu should not change the original setting of the
+  // formerly-active window.
+  widget->SetAlwaysRenderAsActive(true);
+  OpenPowerButtonMenu();
+  TapToDismissPowerButtonMenu();
+  EXPECT_TRUE(widget->IsAlwaysRenderAsActive());
+  widget->SetAlwaysRenderAsActive(false);
+
+  // Dismiss menu should work well after the active window is closed between
+  // showing and dismissing menu.
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(widget->IsAlwaysRenderAsActive());
+  OpenPowerButtonMenu();
+  EXPECT_TRUE(widget->IsAlwaysRenderAsActive());
+  widget->Close();
+  TapToDismissPowerButtonMenu();
 }
 
 // Tests that cursor is hidden after show the menu and should reappear if mouse

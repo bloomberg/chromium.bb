@@ -144,6 +144,7 @@ class ASH_EXPORT PowerButtonController
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
  private:
+  class ActiveWindowWidgetController;
   friend class PowerButtonControllerTestApi;
 
   // Returns true if the screen should be turned off in response to the power
@@ -267,6 +268,11 @@ class ASH_EXPORT PowerButtonController
 
   ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
       backlights_forced_off_observer_;
+
+  // Used to maintain active state of the active window that exists before
+  // showing menu.
+  std::unique_ptr<ActiveWindowWidgetController>
+      active_window_widget_controller_;
 
   base::WeakPtrFactory<PowerButtonController> weak_factory_;
 
