@@ -1,0 +1,32 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+
+/* This is common style file for all OOBE paper-toggle buttons. */
+
+:root {
+    --oobe-toggle-button-size: {
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+      height: 16px;
+      top: -2px;
+      width: 16px;
+    };
+    --oobe-toggle-bar-size: {
+      height: 12px;
+      left: 4px;
+      width: 24px;
+    };
+    --paper-toggle-button-checked-bar-color: var(--google-blue-500);
+    --paper-toggle-button-checked-bar: var(--oobe-toggle-bar-size);
+    --paper-toggle-button-checked-button: {
+      @apply(--oobe-toggle-button-size);
+      transform: translate(14px, 0);
+    };
+    --paper-toggle-button-checked-button-color: var(--google-blue-500);
+    --paper-toggle-button-checked-ink-color: var(--google-blue-500);
+    --paper-toggle-button-label-spacing: 0;
+    --paper-toggle-button-unchecked-bar: var(--oobe-toggle-bar-size);
+    --paper-toggle-button-unchecked-button:
+        var(--oobe-toggle-button-size);
+}
