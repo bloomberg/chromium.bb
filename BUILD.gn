@@ -742,6 +742,7 @@ group("gn_all") {
       "//headless",
       "//headless:headless_shell",
       "//headless:headless_tests",
+      "//webrunner",
     ]
   }
 }

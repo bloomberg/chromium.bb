@@ -1,0 +1,29 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_fuchsia)
+
+import("//build/config/fuchsia/rules.gni")
+
+executable("webrunner") {
+  public_deps = [
+    "//content/public/app:both",
+    "//content/public/browser",
+    "//content/public/child",
+    "//content/public/common",
+    "//content/public/renderer",
+  ]
+
+  sources = [
+    "app/webrunner_main.cc",
+    "app/webrunner_main_delegate.cc",
+    "app/webrunner_main_delegate.h",
+    "browser/webrunner_browser_main.cc",
+    "browser/webrunner_browser_main.h",
+  ]
+}
+
+fuchsia_executable_runner("webrunner_fuchsia") {
+  exe_target = ":webrunner"
+}
