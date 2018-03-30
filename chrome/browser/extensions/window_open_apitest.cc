@@ -340,12 +340,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   EXPECT_FALSE(newtab->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
       extensions::kExtensionScheme));
 
-  // Verify that the blocking was recorded correctly in UMA.
+  // Verify that the blocking was recorded correctly in UMA. ShouldAllowOpenURL
+  // is called twice by the content layer, once when creating the window, and
+  // again when attempting to navigate the newly-created window.
   uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure",
                          2, /* FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION */
-                         1);
+                         2);
   uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure.Scheme",
-                         6 /* SCHEME_DATA */, 1);
+                         6 /* SCHEME_DATA */, 2);
 }
 
 // Test that navigating to an extension URL is allowed on chrome:// and

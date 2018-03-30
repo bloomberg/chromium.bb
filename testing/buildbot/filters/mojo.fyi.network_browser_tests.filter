@@ -42,6 +42,11 @@
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
 
+# Redirects to chrome-extension:// should be blocked unless the resource is
+# webaccessible.  https://crbug.com/821586
+-ProcessManagerBrowserTest.ServerRedirectToNonWebAccessibleResource
+-ProcessManagerBrowserTest.CrossExtensionEmbeddingOfWebAccessibleResources
+
 # Need support for blocking cookies via content settings:
 # https://crbug.com/803452.
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
