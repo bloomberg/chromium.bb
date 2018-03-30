@@ -34,6 +34,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/db/database_manager.h"
@@ -145,6 +146,10 @@ void SafeBrowsingService::Initialize() {
   url_request_context_getter_ = new SafeBrowsingURLRequestContextGetter(
       g_browser_process->system_request_context(), user_data_dir);
 
+  network_context_ =
+      std::make_unique<safe_browsing::SafeBrowsingNetworkContext>(
+          url_request_context_getter_);
+
   ui_manager_ = CreateUIManager();
 
   if (!use_v4_only_) {
@@ -192,6 +197,7 @@ void SafeBrowsingService::ShutDown() {
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SafeBrowsingURLRequestContextGetter::ServiceShuttingDown,
                      url_request_context_getter_));
+  network_context_->ServiceShuttingDown();
 
   // Release the URLRequestContextGetter after passing it to the IOThread.  It
   // has to be released now rather than in the destructor because it can only
@@ -216,6 +222,17 @@ scoped_refptr<net::URLRequestContextGetter>
 SafeBrowsingService::url_request_context() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return url_request_context_getter_;
+}
+
+network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return network_context_->GetNetworkContext();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+SafeBrowsingService::GetURLLoaderFactory() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return network_context_->GetURLLoaderFactory();
 }
 
 void SafeBrowsingService::DisableQuicOnIOThread() {
