@@ -150,6 +150,13 @@ cr.define('print_preview', function() {
     this.isDocumentReady_ = false;
 
     /**
+     * Whether the current destination is valid.
+     * @type {boolean}
+     * @private
+     */
+    this.isDestinationValid_ = true;
+
+    /**
      * Timeout object used to display a loading message if the preview is taking
      * a long time to generate.
      * @type {?number}
@@ -321,6 +328,16 @@ cr.define('print_preview', function() {
      */
     showCustomMessage: function(message) {
       this.showMessage_(print_preview.PreviewAreaMessageId_.CUSTOM, message);
+    },
+
+    /** @param {boolean} valid Whether the current destination is valid. */
+    setDestinationValid: function(valid) {
+      this.isDestinationValid_ = valid;
+      // If destination is valid and preview is ready, hide the error message.
+      if (valid && this.isPluginReloaded_ && this.isDocumentReady_) {
+        this.setOverlayVisible_(false);
+        this.dispatchPreviewGenerationDoneIfReady_();
+      }
     },
 
     /** @override */
@@ -549,7 +566,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onTicketChange_: function() {
-      if (!this.previewGenerator_)
+      if (!this.previewGenerator_ || !this.isDestinationValid_)
         return;
       const previewRequest = this.previewGenerator_.requestPreview();
       if (previewRequest.id <= -1) {
