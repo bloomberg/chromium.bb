@@ -13,8 +13,7 @@ namespace media {
 
 struct MEDIA_EXPORT AudioDeviceName {
   AudioDeviceName();
-  AudioDeviceName(const std::string& device_name,
-                  const std::string& unique_id);
+  AudioDeviceName(std::string device_name, std::string unique_id);
 
   // Creates default device representation.
   static AudioDeviceName CreateDefault();
