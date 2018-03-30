@@ -8,9 +8,11 @@
 #include "chrome/browser/ui/simple_message_box.h"
 
 #include "ui/views/controls/message_box_view.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class SimpleMessageBoxViews : public views::DialogDelegate {
+class SimpleMessageBoxViews : public views::DialogDelegate,
+                              public views::WidgetObserver {
  public:
   using MessageBoxResultCallback =
       base::OnceCallback<void(chrome::MessageBoxResult result)>;
@@ -36,6 +38,9 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
+
+  // views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
  private:
   SimpleMessageBoxViews(const base::string16& title,

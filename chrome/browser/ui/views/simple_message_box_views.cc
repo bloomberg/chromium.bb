@@ -206,6 +206,12 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
+void SimpleMessageBoxViews::OnWidgetActivationChanged(views::Widget* widget,
+                                                      bool active) {
+  if (!active)
+    GetWidget()->Close();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, private:
 
@@ -240,9 +246,12 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIMPLE_MESSAGE_BOX);
 }
 
-SimpleMessageBoxViews::~SimpleMessageBoxViews() {}
+SimpleMessageBoxViews::~SimpleMessageBoxViews() {
+  GetWidget()->RemoveObserver(this);
+}
 
 void SimpleMessageBoxViews::Run(MessageBoxResultCallback result_callback) {
+  GetWidget()->AddObserver(this);
   result_callback_ = std::move(result_callback);
 }
 
