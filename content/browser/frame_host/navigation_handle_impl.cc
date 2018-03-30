@@ -57,19 +57,26 @@ void UpdateThrottleCheckResult(
   *to_update = result;
 }
 
-#define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, value)       \
-  do {                                                                      \
-    UMA_HISTOGRAM_TIMES("Navigation." histogram, value);                    \
-    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {                    \
-      UMA_HISTOGRAM_TIMES("Navigation." histogram ".BackForward", value);   \
-    } else if (ui::PageTransitionCoreTypeIs(transition,                     \
-                                            ui::PAGE_TRANSITION_RELOAD)) {  \
-      UMA_HISTOGRAM_TIMES("Navigation." histogram ".Reload", value);        \
-    } else if (ui::PageTransitionIsNewNavigation(transition)) {             \
-      UMA_HISTOGRAM_TIMES("Navigation." histogram ".NewNavigation", value); \
-    } else {                                                                \
-      NOTREACHED() << "Invalid page transition: " << transition;            \
-    }                                                                       \
+#define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, value,      \
+                                        max_time)                          \
+  do {                                                                     \
+    const base::TimeDelta kMinTime = base::TimeDelta::FromMilliseconds(1); \
+    const int kBuckets = 50;                                               \
+    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram, value, kMinTime,   \
+                               max_time, kBuckets);                        \
+    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {                   \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".BackForward",   \
+                                 value, kMinTime, max_time, kBuckets);     \
+    } else if (ui::PageTransitionCoreTypeIs(transition,                    \
+                                            ui::PAGE_TRANSITION_RELOAD)) { \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".Reload", value, \
+                                 kMinTime, max_time, kBuckets);            \
+    } else if (ui::PageTransitionIsNewNavigation(transition)) {            \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".NewNavigation", \
+                                 value, kMinTime, max_time, kBuckets);     \
+    } else {                                                               \
+      NOTREACHED() << "Invalid page transition: " << transition;           \
+    }                                                                      \
   } while (0)
 
 void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
@@ -164,7 +171,6 @@ NavigationHandleImpl::NavigationHandleImpl(
       original_url_(url),
       method_(method),
       state_(INITIAL),
-      is_transferring_(false),
       frame_tree_node_(frame_tree_node),
       next_index_(0),
       navigation_start_(navigation_start),
@@ -173,18 +179,20 @@ NavigationHandleImpl::NavigationHandleImpl(
       mixed_content_context_type_(mixed_content_context_type),
       navigation_ui_data_(std::move(navigation_ui_data)),
       navigation_id_(CreateUniqueHandleID()),
-      should_replace_current_entry_(false),
       redirect_chain_(redirect_chain),
-      is_download_(false),
-      is_stream_(false),
-      started_from_context_menu_(started_from_context_menu),
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE),
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       should_check_main_world_csp_(should_check_main_world_csp),
-      is_form_submission_(is_form_submission),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
       suggested_filename_(suggested_filename),
+      is_transferring_(false),
+      is_form_submission_(is_form_submission),
+      should_replace_current_entry_(false),
+      is_download_(false),
+      is_stream_(false),
+      started_from_context_menu_(started_from_context_menu),
+      is_same_process_(false),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",
@@ -805,12 +813,15 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.
   if (!IsSameDocument() && !is_error) {
+    // TODO(csharrison,nasko): Increase the max value to 3 minutes in M68 or
+    // M69.
     LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_,
-                                    ready_to_commit_time_ - navigation_start_);
-    bool is_same_process =
+                                    ready_to_commit_time_ - navigation_start_,
+                                    base::TimeDelta::FromSeconds(10));
+    is_same_process_ =
         render_frame_host_->GetProcess()->GetID() ==
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
-    LogIsSameProcess(transition_, is_same_process);
+    LogIsSameProcess(transition_, is_same_process_);
   }
 
   SetExpectedProcess(render_frame_host->GetProcess());
@@ -853,12 +864,51 @@ void NavigationHandleImpl::DidCommitNavigation(
     state_ = DID_COMMIT;
   }
 
-  // Record metrics for the time it takes to get from ReadyToCommit state
-  // until this moment where the commit occurs.
-  if (!ready_to_commit_time_.is_null() && !IsSameDocument() && !IsErrorPage()) {
-    LOG_NAVIGATION_TIMING_HISTOGRAM(
-        "ReadyToCommitUntilCommit", transition_,
-        base::TimeTicks::Now() - ready_to_commit_time_);
+  // Record metrics for the time it took to commit the navigation if it was to
+  // another document without error.
+  if (!IsSameDocument() && !IsErrorPage()) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeDelta delta = now - navigation_start_;
+    ui::PageTransition transition = GetPageTransition();
+    // 3 minutes aligns with UMA_HISTOGRAM_MEDIUM_TIMES.
+    const base::TimeDelta kMaxTime = base::TimeDelta::FromMinutes(3);
+    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit", transition, delta,
+                                    kMaxTime);
+    if (IsInMainFrame()) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.MainFrame", transition,
+                                      delta, kMaxTime);
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.Subframe", transition,
+                                      delta, kMaxTime);
+    }
+    if (is_same_process_) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess", transition,
+                                      delta, kMaxTime);
+      if (IsInMainFrame()) {
+        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.MainFrame",
+                                        transition, delta, kMaxTime);
+      } else {
+        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.Subframe",
+                                        transition, delta, kMaxTime);
+      }
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess", transition,
+                                      delta, kMaxTime);
+      if (IsInMainFrame()) {
+        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.MainFrame",
+                                        transition, delta, kMaxTime);
+      } else {
+        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.Subframe",
+                                        transition, delta, kMaxTime);
+      }
+    }
+
+    // 10 seconds aligns with UMA_HISTOGRAM_TIMES.
+    if (!ready_to_commit_time_.is_null()) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit", transition_,
+                                      now - ready_to_commit_time_,
+                                      base::TimeDelta::FromSeconds(10));
+    }
   }
 
   DCHECK(!IsInMainFrame() || navigation_entry_committed)
