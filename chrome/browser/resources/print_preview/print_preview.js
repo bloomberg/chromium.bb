@@ -1026,6 +1026,7 @@ cr.define('print_preview', function() {
       this.uiState_ = PrintPreviewUiState_.ERROR;
       this.isPreviewGenerationInProgress_ = false;
       this.printHeader_.isPrintButtonEnabled = false;
+      this.previewArea_.setDestinationValid(false);
       this.updateLinks_();
     },
 
@@ -1324,6 +1325,7 @@ cr.define('print_preview', function() {
       if (this.uiState_ == PrintPreviewUiState_.ERROR) {
         this.uiState_ = PrintPreviewUiState_.READY;
         this.updateLinks_();
+        this.previewArea_.setDestinationValid(true);
       }
       if (this.destinationStore_.selectedDestination &&
           this.isInKioskAutoPrintMode_) {
