@@ -34,11 +34,14 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
+#include "chrome/browser/ui/app_list/search/internal_app_metadata.h"
+#include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using extensions::ExtensionRegistry;
 
@@ -297,6 +300,36 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   DISALLOW_COPY_AND_ASSIGN(ArcDataSource);
 };
 
+class InternalDataSource : public AppSearchProvider::DataSource {
+ public:
+  InternalDataSource(Profile* profile, AppSearchProvider* owner)
+      : AppSearchProvider::DataSource(profile, owner) {}
+
+  ~InternalDataSource() override = default;
+
+  // AppSearchProvider::DataSource overrides:
+  void AddApps(AppSearchProvider::Apps* apps) override {
+    const base::Time time;
+    for (const auto& internal_app : GetInternalAppList()) {
+      apps->emplace_back(std::make_unique<AppSearchProvider::App>(
+          this, internal_app.app_id,
+          l10n_util::GetStringUTF8(internal_app.name_string_resource_id), time,
+          time));
+    }
+  }
+
+  std::unique_ptr<AppResult> CreateResult(
+      const std::string& app_id,
+      AppListControllerDelegate* list_controller,
+      bool is_recommended) override {
+    return std::make_unique<InternalAppResult>(profile(), app_id,
+                                               list_controller, is_recommended);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InternalDataSource);
+};
+
 }  // namespace
 
 AppSearchProvider::AppSearchProvider(Profile* profile,
@@ -311,6 +344,8 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       std::make_unique<ExtensionDataSource>(profile, this));
   if (arc::IsArcAllowedForProfile(profile))
     data_sources_.emplace_back(std::make_unique<ArcDataSource>(profile, this));
+  data_sources_.emplace_back(
+      std::make_unique<InternalDataSource>(profile, this));
 }
 
 AppSearchProvider::~AppSearchProvider() {}
