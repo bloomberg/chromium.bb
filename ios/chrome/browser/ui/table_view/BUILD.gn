@@ -7,6 +7,8 @@ source_set("table_view") {
   sources = [
     "chrome_table_view_controller.h",
     "chrome_table_view_controller.mm",
+    "table_container_bottom_toolbar.h",
+    "table_container_bottom_toolbar.mm",
     "table_container_view_controller.h",
     "table_container_view_controller.mm",
     "table_view_model.h",
@@ -48,6 +50,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chrome_table_view_controller_unittest.mm",
+    "table_container_bottom_toolbar_unittest.mm",
     "table_view_model_unittest.mm",
   ]
   deps = [

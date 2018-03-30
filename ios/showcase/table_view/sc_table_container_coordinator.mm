@@ -5,6 +5,7 @@
 #import "ios/showcase/table_view/sc_table_container_coordinator.h"
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_container_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,7 +25,12 @@
       initWithTable:[[ChromeTableViewController alloc]
                         initWithStyle:UITableViewStylePlain]];
   self.viewController.title = @"Table View";
-  self.viewController.bottomToolbar = [[UIView alloc] initWithFrame:CGRectZero];
+  TableContainerBottomToolbar* toolbar =
+      [[TableContainerBottomToolbar alloc] initWithLeadingButtonText:@"Left"
+                                                  trailingButtonText:@"Right"];
+  [toolbar.trailingButton setTitleColor:[UIColor redColor]
+                               forState:UIControlStateNormal];
+  self.viewController.bottomToolbar = toolbar;
   [self.baseViewController pushViewController:self.viewController animated:YES];
 }
 
