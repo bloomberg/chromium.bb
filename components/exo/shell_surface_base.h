@@ -276,6 +276,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set the parent window of this surface.
   void SetParentWindow(aura::Window* parent);
 
+  const gfx::Rect& geometry() const { return geometry_; }
+
   views::Widget* widget_ = nullptr;
   aura::Window* parent_ = nullptr;
   bool movement_disabled_ = false;

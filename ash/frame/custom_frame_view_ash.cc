@@ -145,7 +145,6 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
         immersive_fullscreen_controller_->SetEnabled(
             ImmersiveFullscreenController::WINDOW_TYPE_OTHER, true);
       }
-
       return;
     }
 
@@ -155,6 +154,13 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
       immersive_fullscreen_controller_->SetEnabled(
           ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
     }
+  }
+
+  CustomFrameViewAsh* GetFrameView() {
+    views::Widget* widget =
+        views::Widget::GetWidgetForNativeWindow(window_state_->window());
+    return static_cast<CustomFrameViewAsh*>(
+        widget->non_client_view()->frame_view());
   }
 
   wm::WindowState* window_state_;
@@ -270,7 +276,7 @@ void CustomFrameViewAsh::OverlayView::Layout() {
   int onscreen_height = header_height_
                             ? *header_height_
                             : header_view_->GetPreferredOnScreenHeight();
-  if (onscreen_height == 0 || !enabled()) {
+  if (onscreen_height == 0 || !visible()) {
     header_view_->SetVisible(false);
   } else {
     const int height =
@@ -372,6 +378,13 @@ void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
 
 views::View* CustomFrameViewAsh::GetHeaderView() {
   return header_view_;
+}
+
+gfx::Rect CustomFrameViewAsh::GetClientBoundsForWindowBounds(
+    const gfx::Rect& window_bounds) const {
+  gfx::Rect client_bounds(window_bounds);
+  client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
+  return client_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -138,6 +138,10 @@ TEST_F(ClientControlledStateTest, Maximize) {
   // Bounds is controlled by client.
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
 
+  // Bounds can't be changed in maximized state.
+  widget()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(gfx::Rect(), delegate()->requested_bounds());
+
   widget()->Restore();
   EXPECT_TRUE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());

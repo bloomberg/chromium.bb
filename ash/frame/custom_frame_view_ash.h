@@ -84,6 +84,10 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   // Get the view of the header.
   views::View* GetHeaderView();
 
+  // Calculate the client bounds for given window bounds.
+  gfx::Rect GetClientBoundsForWindowBounds(
+      const gfx::Rect& window_bounds) const;
+
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(

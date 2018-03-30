@@ -98,6 +98,7 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
       : CustomFrameViewAsh(widget),
         client_controlled_move_resize_(client_controlled_move_resize) {
     SetEnabled(enabled);
+    SetVisible(enabled);
     if (!enabled)
       CustomFrameViewAsh::SetShouldPaintHeader(false);
   }
@@ -106,7 +107,7 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
 
   // Overridden from ash::CustomFrameViewAshBase:
   void SetShouldPaintHeader(bool paint) override {
-    if (enabled()) {
+    if (visible()) {
       CustomFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
@@ -146,41 +147,41 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
 
   // Overridden from views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override {
-    if (enabled())
+    if (visible())
       return ash::CustomFrameViewAsh::GetBoundsForClientView();
     return bounds();
   }
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
-    if (enabled()) {
+    if (visible()) {
       return ash::CustomFrameViewAsh::GetWindowBoundsForClientBounds(
           client_bounds);
     }
     return client_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    if (enabled() || !client_controlled_move_resize_)
+    if (visible() || !client_controlled_move_resize_)
       return ash::CustomFrameViewAsh::NonClientHitTest(point);
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
-    if (enabled())
+    if (visible())
       return ash::CustomFrameViewAsh::GetWindowMask(size, window_mask);
   }
   void ResetWindowControls() override {
-    if (enabled())
+    if (visible())
       return ash::CustomFrameViewAsh::ResetWindowControls();
   }
   void UpdateWindowIcon() override {
-    if (enabled())
+    if (visible())
       return ash::CustomFrameViewAsh::ResetWindowControls();
   }
   void UpdateWindowTitle() override {
-    if (enabled())
+    if (visible())
       return ash::CustomFrameViewAsh::UpdateWindowTitle();
   }
   void SizeConstraintsChanged() override {
-    if (enabled())
+    if (visible())
       return ash::CustomFrameViewAsh::SizeConstraintsChanged();
   }
   gfx::Size GetMinimumSize() const override {
@@ -246,7 +247,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (ash::wm::GetWindowState(widget_->GetNativeWindow())
                 ->allow_set_bounds_direct()
             ? client_controlled_move_resize_
-            : !widget_->non_client_view()->frame_view()->enabled()) {
+            : !widget_->non_client_view()->frame_view()->visible()) {
       return false;
     }
 
