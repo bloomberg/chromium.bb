@@ -34,9 +34,6 @@ class InfoBarContainer : public InfoBarManager::Observer {
  public:
   class Delegate {
    public:
-    // The separator color may vary depending on where the container is hosted.
-    virtual SkColor GetInfoBarSeparatorColor() const = 0;
-
     // The delegate is notified each time the infobar container changes height,
     // as well as when it stops animating.
     virtual void InfoBarContainerStateChanged(bool is_animating) = 0;

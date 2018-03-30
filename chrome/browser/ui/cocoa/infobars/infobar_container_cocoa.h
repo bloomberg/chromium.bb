@@ -27,7 +27,6 @@ class InfoBarContainerCocoa : public infobars::InfoBarContainer,
   void PlatformSpecificRemoveInfoBar(infobars::InfoBar* infobar) override;
 
   // InfoBarContainerDelegate:
-  SkColor GetInfoBarSeparatorColor() const override;
   void InfoBarContainerStateChanged(bool is_animating) override;
   bool DrawInfoBarArrows(int* x) const override;
 

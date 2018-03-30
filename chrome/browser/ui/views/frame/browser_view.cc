@@ -2149,11 +2149,6 @@ void BrowserView::OnOmniboxPopupShownOrHidden() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, InfoBarContainerDelegate overrides:
 
-SkColor BrowserView::GetInfoBarSeparatorColor() const {
-  return GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
-}
-
 void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
   ToolbarSizeChanged(is_animating);
 }

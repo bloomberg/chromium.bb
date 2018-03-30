@@ -6,10 +6,12 @@
 
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/view.h"
@@ -41,7 +43,8 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   SkScalar arrow_height = scale(infobar->arrow_height());
   SkScalar infobar_width = scale(infobar->width());
   if (delegate) {
-    separator_color = delegate->GetInfoBarSeparatorColor();
+    separator_color = view->GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
     int arrow_x;
     if (delegate->DrawInfoBarArrows(&arrow_x) && infobar->arrow_height() > 0) {
       // Compensate for the fact that a relative movement of n creates a line of

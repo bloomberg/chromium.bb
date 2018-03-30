@@ -12,11 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-SkColor InfoBarContainerDelegateIOS::GetInfoBarSeparatorColor() const {
-  NOTIMPLEMENTED();
-  return SK_ColorBLACK;
-}
-
 int InfoBarContainerDelegateIOS::ArrowTargetHeightForInfoBar(
     size_t index,
     const gfx::SlideAnimation& animation) const {
