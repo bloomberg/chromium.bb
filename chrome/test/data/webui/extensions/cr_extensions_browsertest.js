@@ -192,6 +192,10 @@ TEST_F('CrExtensionsItemsTest', 'RemoveButton', function() {
   this.runMochaTest(extension_item_tests.TestNames.RemoveButton);
 });
 
+TEST_F('CrExtensionsItemsTest', 'HtmlInName', function() {
+  this.runMochaTest(extension_item_tests.TestNames.HtmlInName);
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 
