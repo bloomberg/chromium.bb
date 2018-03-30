@@ -132,6 +132,7 @@ class BackgroundImageGeometry {
   LayoutSize repeat_spacing_;
   bool has_non_local_geometry_;
   bool coordinate_offset_by_paint_rect_;
+  bool painting_table_cell_;
   bool cell_using_container_background_;
 };
 
