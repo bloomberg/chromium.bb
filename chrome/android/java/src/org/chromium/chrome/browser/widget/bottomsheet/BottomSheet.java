@@ -1142,26 +1142,28 @@ public class BottomSheet extends FrameLayout
     /**
      * Sends notifications if the sheet is transitioning from the peeking to half expanded state and
      * from the peeking to fully expanded state. The peek to half events are only sent when the
-     * sheet is between the peeking and half states. Events are not sent for states less than
-     * peeking (i.e. hidden).
+     * sheet is between the peeking and half states.
      */
     private void sendOffsetChangeEvents() {
-        // Do not send events for states less than the peeking state unless 0 has not been sent.
-        if (getCurrentOffsetPx() < getSheetHeightForState(SHEET_STATE_PEEK)
+        float offsetWithBrowserControls = getCurrentOffsetPx() - getOffsetFromBrowserControls();
+
+        // Do not send events for states less than the hidden state unless 0 has not been sent.
+        if (offsetWithBrowserControls < getSheetHeightForState(SHEET_STATE_HIDDEN)
                 && mLastOffsetRatioSent <= 0) {
             return;
         }
 
-        float screenRatio = mContainerHeight > 0 ? getCurrentOffsetPx() / mContainerHeight : 0;
+        float screenRatio = mContainerHeight > 0 ? offsetWithBrowserControls / mContainerHeight : 0;
 
         // This ratio is relative to the peek and full positions of the sheet.
-        float peekFullRatio = MathUtils.clamp(
-                (screenRatio - getPeekRatio()) / (getFullRatio() - getPeekRatio()), 0, 1);
+        float hiddenFullRatio = MathUtils.clamp(
+                (screenRatio - getHiddenRatio()) / (getFullRatio() - getHiddenRatio()), 0, 1);
 
-        if (getCurrentOffsetPx() < getSheetHeightForState(SHEET_STATE_PEEK)) {
+        if (offsetWithBrowserControls < getSheetHeightForState(SHEET_STATE_HIDDEN)) {
             mLastOffsetRatioSent = 0;
         } else {
-            mLastOffsetRatioSent = MathUtils.areFloatsEqual(peekFullRatio, 0) ? 0 : peekFullRatio;
+            mLastOffsetRatioSent =
+                    MathUtils.areFloatsEqual(hiddenFullRatio, 0) ? 0 : hiddenFullRatio;
         }
 
         for (BottomSheetObserver o : mObservers) o.onSheetOffsetChanged(mLastOffsetRatioSent);

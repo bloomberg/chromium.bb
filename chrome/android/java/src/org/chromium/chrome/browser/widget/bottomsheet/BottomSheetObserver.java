@@ -44,8 +44,8 @@ public interface BottomSheetObserver {
      * An event for when the sheet's offset from the bottom of the screen changes.
      *
      * @param heightFraction The fraction of the way to the fully expanded state that the sheet
-     *                       is. This will be 0.0f when the sheet is peeking and 1.0f when the
-     *                       sheet is completely expanded.
+     *                       is. This will be 0.0f when the sheet is hidden or scrolled off-screen
+     *                       and 1.0f when the sheet is completely expanded.
      */
     void onSheetOffsetChanged(float heightFraction);
 
