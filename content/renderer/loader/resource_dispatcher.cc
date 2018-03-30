@@ -280,6 +280,7 @@ void ResourceDispatcher::OnRequestComplete(
   resource_load_info->referrer = request_info->response_referrer;
   resource_load_info->method = request_info->response_method;
   resource_load_info->resource_type = request_info->resource_type;
+  resource_load_info->request_id = request_id;
   if (request_info->parsed_ip.IsValid())
     resource_load_info->ip = request_info->parsed_ip;
   resource_load_info->mime_type = request_info->mime_type;
