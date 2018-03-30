@@ -23,18 +23,16 @@
 #include "sql/transaction.h"
 
 namespace offline_pages {
+
+const int OfflinePageMetadataStoreSQL::kFirstPostLegacyVersion;
+const int OfflinePageMetadataStoreSQL::kCurrentVersion;
+const int OfflinePageMetadataStoreSQL::kCompatibleVersion;
+
 namespace {
 
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
 #define OFFLINE_PAGES_TABLE_NAME "offlinepages_v1"
-
-// This is the first version saved in the meta table, which was introduced in
-// the store in M65. It is set once a legacy upgrade is run successfully for the
-// last time in |UpgradeFromLegacyVersion|.
-static const int kFirstPostLegacyVersion = 1;
-static const int kCurrentVersion = 2;
-static const int kCompatibleVersion = kFirstPostLegacyVersion;
 
 void ReportStoreEvent(OfflinePagesStoreEvent event) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.SQLStorage.StoreEvent", event,
@@ -175,6 +173,16 @@ bool UpgradeFrom61(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
+bool CreatePageThumbnailsTable(sql::Connection* db) {
+  const char kSql[] =
+      "CREATE TABLE IF NOT EXISTS page_thumbnails"
+      " (offline_id INTEGER PRIMARY KEY NOT NULL,"
+      " expiration INTEGER NOT NULL,"
+      " thumbnail BLOB NOT NULL"
+      ")";
+  return db->Execute(kSql);
+}
+
 bool CreateLatestSchema(sql::Connection* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
@@ -183,14 +191,19 @@ bool CreateLatestSchema(sql::Connection* db) {
   // First time database initialization.
   if (!CreateOfflinePagesTable(db))
     return false;
+  if (!CreatePageThumbnailsTable(db))
+    return false;
 
   sql::MetaTable meta_table;
-  if (!meta_table.Init(db, kCurrentVersion, kCompatibleVersion))
+  if (!meta_table.Init(db, OfflinePageMetadataStoreSQL::kCurrentVersion,
+                       OfflinePageMetadataStoreSQL::kCompatibleVersion))
     return false;
 
   return transaction.Commit();
 }
 
+// Upgrades the database from before the database version was stored in the
+// MetaTable. This function should never need to be modified.
 bool UpgradeFromLegacyVersion(sql::Connection* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
@@ -222,7 +235,8 @@ bool UpgradeFromLegacyVersion(sql::Connection* db) {
   }
 
   sql::MetaTable meta_table;
-  if (!meta_table.Init(db, kFirstPostLegacyVersion, kCompatibleVersion))
+  if (!meta_table.Init(db, OfflinePageMetadataStoreSQL::kFirstPostLegacyVersion,
+                       OfflinePageMetadataStoreSQL::kCompatibleVersion))
     return false;
 
   return transaction.Commit();
@@ -249,6 +263,19 @@ bool UpgradeFromVersion1ToVersion2(sql::Connection* db,
   return transaction.Commit();
 }
 
+bool UpgradeFromVersion2ToVersion3(sql::Connection* db,
+                                   sql::MetaTable* meta_table) {
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
+  if (!CreatePageThumbnailsTable(db)) {
+    return false;
+  }
+  meta_table->SetVersionNumber(3);
+  return transaction.Commit();
+}
+
 bool CreateSchema(sql::Connection* db) {
   if (!sql::MetaTable::DoesTableExist(db)) {
     // If this looks like a completely empty DB, simply start from scratch.
@@ -261,16 +288,26 @@ bool CreateSchema(sql::Connection* db) {
   }
 
   sql::MetaTable meta_table;
-  if (!meta_table.Init(db, kCurrentVersion, kCompatibleVersion))
+  if (!meta_table.Init(db, OfflinePageMetadataStoreSQL::kCurrentVersion,
+                       OfflinePageMetadataStoreSQL::kCompatibleVersion))
     return false;
 
-  if (meta_table.GetVersionNumber() == 1) {
-    if (!UpgradeFromVersion1ToVersion2(db, &meta_table))
-      return false;
+  for (;;) {
+    switch (meta_table.GetVersionNumber()) {
+      case 1:
+        if (!UpgradeFromVersion1ToVersion2(db, &meta_table))
+          return false;
+        break;
+      case 2:
+        if (!UpgradeFromVersion2ToVersion3(db, &meta_table))
+          return false;
+        break;
+      case OfflinePageMetadataStoreSQL::kCurrentVersion:
+        return true;
+      default:
+        return false;
+    }
   }
-
-  // This would be a great place to add indices when we need them.
-  return true;
 }
 
 bool PrepareDirectory(const base::FilePath& path) {
