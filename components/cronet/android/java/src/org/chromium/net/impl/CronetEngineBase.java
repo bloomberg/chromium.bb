@@ -4,6 +4,7 @@
 package org.chromium.net.impl;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 
 import static org.chromium.net.UrlRequest.Builder.REQUEST_PRIORITY_HIGHEST;
 import static org.chromium.net.UrlRequest.Builder.REQUEST_PRIORITY_IDLE;
@@ -15,6 +16,7 @@ import org.chromium.net.BidirectionalStream;
 import org.chromium.net.ExperimentalBidirectionalStream;
 import org.chromium.net.ExperimentalCronetEngine;
 import org.chromium.net.ExperimentalUrlRequest;
+import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.UrlRequest;
 
 import java.lang.annotation.Retention;
@@ -56,13 +58,15 @@ public abstract class CronetEngineBase extends ExperimentalCronetEngine {
      * @param trafficStatsUidSet {@code true} if {@code trafficStatsUid} represents a UID to
      *         attribute traffic used to perform this request.
      * @param trafficStatsUid UID to attribute traffic used to perform this request.
+     * @param requestFinishedListener callback to get invoked with metrics when request is finished.
+     *        Set to {@code null} if not used.
      * @return new request.
      */
     protected abstract UrlRequestBase createRequest(String url, UrlRequest.Callback callback,
             Executor executor, @RequestPriority int priority, Collection<Object> requestAnnotations,
             boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor,
             boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
-            int trafficStatsUid);
+            int trafficStatsUid, @Nullable RequestFinishedInfo.Listener requestFinishedListener);
 
     /**
      * Creates a {@link BidirectionalStream} object. {@code callback} methods will
