@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
 
@@ -72,7 +73,7 @@ class CONTENT_EXPORT WebUI {
   // Used by WebUIMessageHandlers. If the given message is already registered,
   // the call has no effect.
   using MessageCallback = base::RepeatingCallback<void(const base::ListValue*)>;
-  virtual void RegisterMessageCallback(const std::string& message,
+  virtual void RegisterMessageCallback(base::StringPiece message,
                                        const MessageCallback& callback) = 0;
 
   // This is only needed if an embedder overrides handling of a WebUIMessage and
