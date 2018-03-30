@@ -14,15 +14,23 @@ const RADIUS_PX = 9;
 Polymer({
   is: 'print-preview-margin-control',
 
+  behaviors: [print_preview_new.InputBehavior],
+
   properties: {
     side: {
       type: String,
       reflectToAttribute: true,
     },
 
+    invalid: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
     invisible: {
       type: Boolean,
       reflectToAttribute: true,
+      observer: 'onClipSizeChange_',
     },
 
     /** @private {number} */
@@ -62,11 +70,25 @@ Polymer({
       ['updatePosition_(positionInPts_, scaleTransform, translateTransform, ' +
        'pageSize, side)'],
 
+  listeners: {
+    'input-change': 'onInputChange_',
+  },
+
+  /** @return {!HTMLInputElement} The input element for InputBehavior. */
+  getInput: function() {
+    return this.$.textbox;
+  },
+
   /** @param {string} value New value of the margin control's textbox. */
   setTextboxValue: function(value) {
     const textbox = this.$.textbox;
     if (textbox.value != value)
       textbox.value = value;
+  },
+
+  /** @return {number} The current position of the margin control. */
+  getPositionInPts: function() {
+    return this.positionInPts_;
   },
 
   /** @param {number} position The new position for the margin control. */
@@ -119,9 +141,19 @@ Polymer({
         (event.path[0] == this || event.path[0] == this.$.line);
   },
 
+  /**
+   * @param {!CustomEvent} e Contains the new value of the input.
+   * @private
+   */
+  onInputChange_: function(e) {
+    this.fire('text-change', e.detail);
+  },
+
   /** @private */
-  onInput_: function() {
-    this.fire('text-change', this.$.textbox.value);
+  onBlur_: function() {
+    this.resetAndUpdate();
+    if (this.invalid)
+      this.fire('text-blur');
   },
 
   /** @private */

@@ -11,6 +11,10 @@
 <dom-module id="print-preview-margin-control-container">
   <template>
     <style>
+      :host {
+        display: block;
+      }
+
       :host([dragging_=dragging-vertical]) {
         cursor: ns-resize;
       }
@@ -20,12 +24,12 @@
       }
     </style>
     <template is="dom-repeat" items="[[marginSides_]]">
-      <print-preview-margin-control side="[[item]]"
-          invisible="[[isInvisible_(available_, visible)]]"
+      <print-preview-margin-control side="[[item]]" invisible="[[invisible_]]"
           translate-transform="[[translateTransform_]]"
           clip-size="[[clipSize_]]" scale-transform="[[scaleTransform_]]"
           page-size="[[pageSize]]" on-pointerdown="onPointerDown_"
-          on-text-change="onTextChange_">
+          on-text-change="onTextChange_" on-text-blur="onTextBlur_"
+          on-transition-end="onTransitionEnd_">
       </print-preview-margin-control>
     </template>
   </template>

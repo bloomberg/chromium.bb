@@ -3,6 +3,7 @@
 <link rel="import" href="../data/coordinate2d.html">
 <link rel="import" href="../data/margins.html">
 <link rel="import" href="../data/size.html">
+<link rel="import" href="input_behavior.html">
 
 <dom-module id="print-preview-margin-control">
   <template>
@@ -32,16 +33,8 @@
         padding: 0 8px;
       }
 
-      :host(.disabled) {
-        cursor: default;
-      }
-
       #line {
         border: 1px dashed rgb(64, 128, 250);
-      }
-
-      .disabled #line  {
-        border-color: gray;
       }
 
       :host([side=top]) #line,
@@ -68,7 +61,7 @@
         width: 60px;
       }
 
-      #textbox.invalid {
+      :host([invalid]) #textbox {
         background-color: rgb(193, 27, 23);
       }
 
@@ -94,7 +87,7 @@
     </style>
     <div id="line"></div>
     <input id="textbox" aria-hidden$="[[getAriaHidden_(invisible)]]" type="text"
-        disabled="[[invisible]]" on-input="onInput_">
+        disabled="[[invisible]]" on-blur="onBlur_" data-timeout-delay="1000">
   </template>
   <script src="margin_control.js"></script>
 </dom-module>
