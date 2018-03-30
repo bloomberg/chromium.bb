@@ -344,8 +344,8 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings,
     // TODO(yoshiki): Support non-primary desktop on multi-display environment.
     Shell::Get()->GetPrimaryRootWindowController()->sidebar()->Show(mode);
   } else {
-    MessageCenterBubble* message_center_bubble = new MessageCenterBubble(
-        message_center(), message_center_ui_controller_.get());
+    MessageCenterBubble* message_center_bubble =
+        new MessageCenterBubble(message_center());
 
     // In the horizontal case, message center starts from the top of the shelf.
     // In the vertical case, it starts from the bottom of WebNotificationTray.

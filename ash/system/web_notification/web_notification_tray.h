@@ -93,10 +93,6 @@ class ASH_EXPORT WebNotificationTray
 
   message_center::MessageCenter* message_center() const;
 
-  message_center::UiController* message_center_ui_controller() {
-    return message_center_ui_controller_.get();
-  }
-
  private:
   friend class WebNotificationTrayTest;
 
