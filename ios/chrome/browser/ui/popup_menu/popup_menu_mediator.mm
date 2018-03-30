@@ -34,15 +34,17 @@
 namespace {
 PopupMenuToolsItem* CreateTableViewItem(int titleID,
                                         PopupMenuAction action,
+                                        NSString* imageName,
                                         NSString* accessibilityID) {
   PopupMenuToolsItem* item =
       [[PopupMenuToolsItem alloc] initWithType:kItemTypeEnumZero];
   item.title = l10n_util::GetNSString(titleID);
   item.actionIdentifier = action;
   item.accessibilityIdentifier = accessibilityID;
-  // TODO(crbug.com/817795): Use real assets instead.
-  item.image = [ImageWithColor([UIColor colorWithWhite:0 alpha:0.75])
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  if (imageName) {
+    item.image = [[UIImage imageNamed:imageName]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  }
   return item;
 }
 }
@@ -287,14 +289,20 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   // TODO(crbug.com/804773): update the items to take into account the state.
   self.readLater.enabled = [self isWebURL];
   self.findInPage.enabled = [self isFindInPageEnabled];
-  if ([self isPageLoading]) {
+  if ([self isPageLoading] &&
+      self.reloadStop.accessibilityIdentifier == kToolsMenuReload) {
     self.reloadStop.title = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_STOP);
     self.reloadStop.actionIdentifier = PopupMenuActionStop;
     self.reloadStop.accessibilityIdentifier = kToolsMenuStop;
-  } else {
+    self.reloadStop.image = [[UIImage imageNamed:@"popup_menu_stop"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  } else if (![self isPageLoading] &&
+             self.reloadStop.accessibilityIdentifier == kToolsMenuStop) {
     self.reloadStop.title = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_RELOAD);
     self.reloadStop.actionIdentifier = PopupMenuActionReload;
     self.reloadStop.accessibilityIdentifier = kToolsMenuReload;
+    self.reloadStop.image = [[UIImage imageNamed:@"popup_menu_reload"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   }
 
   // Reload the items.
@@ -333,12 +341,12 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   if (self.isIncognito) {
     [items addObject:CreateTableViewItem(
                          IDS_IOS_TOOLS_MENU_CLOSE_ALL_INCOGNITO_TABS,
-                         PopupMenuActionCloseAllIncognitoTabs,
+                         PopupMenuActionCloseAllIncognitoTabs, nil,
                          kToolsMenuCloseAllIncognitoTabsId)];
   }
 
   [items addObject:CreateTableViewItem(IDS_IOS_TOOLS_MENU_CLOSE_TAB,
-                                       PopupMenuActionCloseTab,
+                                       PopupMenuActionCloseTab, nil,
                                        kToolsMenuCloseTabId)];
 
   self.items = @[ items ];
@@ -347,8 +355,9 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // Creates the menu items for the tools menu.
 - (void)createToolsMenuItems {
   // Reload or stop page action, created as reload.
-  self.reloadStop = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_RELOAD, PopupMenuActionReload, kToolsMenuReload);
+  self.reloadStop =
+      CreateTableViewItem(IDS_IOS_TOOLS_MENU_RELOAD, PopupMenuActionReload,
+                          @"popup_menu_reload", kToolsMenuReload);
 
   NSArray* tabActions = [@[ self.reloadStop ]
       arrayByAddingObjectsFromArray:[self itemsForNewTab]];
@@ -364,12 +373,12 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   // Open New Tab.
   TableViewItem* openNewTabItem =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_NEW_TAB, PopupMenuActionOpenNewTab,
-                          kToolsMenuNewTabId);
+                          @"popup_menu_new_tab", kToolsMenuNewTabId);
 
-  // Open New Incogntio Tab.
+  // Open New Incognito Tab.
   TableViewItem* openNewIncognitoTabItem = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB, PopupMenuActionOpenNewIncognitoTab,
-      kToolsMenuNewIncognitoTabId);
+      @"popup_menu_new_incognito_tab", kToolsMenuNewIncognitoTabId);
 
   return @[ openNewTabItem, openNewIncognitoTabItem ];
 }
@@ -377,22 +386,22 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (NSArray<TableViewItem*>*)actionItems {
   NSMutableArray* actionsArray = [NSMutableArray array];
   // Read Later.
-  self.readLater =
-      CreateTableViewItem(IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST,
-                          PopupMenuActionReadLater, kToolsMenuReadLater);
+  self.readLater = CreateTableViewItem(
+      IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST, PopupMenuActionReadLater,
+      @"popup_menu_read_later", kToolsMenuReadLater);
   [actionsArray addObject:self.readLater];
 
   // Find in Pad.
-  self.findInPage =
-      CreateTableViewItem(IDS_IOS_TOOLS_MENU_FIND_IN_PAGE,
-                          PopupMenuActionFindInPage, kToolsMenuFindInPageId);
+  self.findInPage = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_FIND_IN_PAGE, PopupMenuActionFindInPage,
+      @"popup_menu_find_in_page", kToolsMenuFindInPageId);
   [actionsArray addObject:self.findInPage];
 
   if ([self userAgentType] != web::UserAgentType::DESKTOP) {
     // Request Desktop Site.
     PopupMenuToolsItem* requestDesktopSite = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, PopupMenuActionRequestDesktop,
-        kToolsMenuRequestDesktopId);
+        @"popup_menu_request_desktop_site", kToolsMenuRequestDesktopId);
     // Disable the action if the user agent is not mobile.
     requestDesktopSite.enabled =
         [self userAgentType] == web::UserAgentType::MOBILE;
@@ -401,14 +410,14 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     // Request Mobile Site.
     TableViewItem* requestMobileSite = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, PopupMenuActionRequestMobile,
-        kToolsMenuRequestMobileId);
+        @"popup_menu_request_mobile_site", kToolsMenuRequestMobileId);
     [actionsArray addObject:requestMobileSite];
   }
 
   // Site Information.
   self.siteInformation = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_SITE_INFORMATION, PopupMenuActionSiteInformation,
-      kToolsMenuSiteInformation);
+      @"popup_menu_site_information", kToolsMenuSiteInformation);
   [actionsArray addObject:self.siteInformation];
 
   // Report an Issue.
@@ -417,13 +426,14 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
           ->IsUserFeedbackEnabled()) {
     TableViewItem* reportIssue = CreateTableViewItem(
         IDS_IOS_OPTIONS_REPORT_AN_ISSUE, PopupMenuActionReportIssue,
-        kToolsMenuReportAnIssueId);
+        @"popup_menu_report_an_issue", kToolsMenuReportAnIssueId);
     [actionsArray addObject:reportIssue];
   }
 
   // Help.
-  TableViewItem* help = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_HELP_MOBILE, PopupMenuActionHelp, kToolsMenuHelpId);
+  TableViewItem* help =
+      CreateTableViewItem(IDS_IOS_TOOLS_MENU_HELP_MOBILE, PopupMenuActionHelp,
+                          @"popup_menu_help", kToolsMenuHelpId);
   [actionsArray addObject:help];
 
   return actionsArray;
@@ -431,28 +441,29 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 - (NSArray<TableViewItem*>*)collectionItems {
   // Bookmarks.
-  TableViewItem* bookmarks =
-      CreateTableViewItem(IDS_IOS_TOOLS_MENU_BOOKMARKS,
-                          PopupMenuActionBookmarks, kToolsMenuBookmarksId);
+  TableViewItem* bookmarks = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_BOOKMARKS, PopupMenuActionBookmarks,
+      @"popup_menu_bookmarks", kToolsMenuBookmarksId);
 
   // Reading List.
-  TableViewItem* readingList =
-      CreateTableViewItem(IDS_IOS_TOOLS_MENU_READING_LIST,
-                          PopupMenuActionReadingList, kToolsMenuReadingListId);
+  TableViewItem* readingList = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_READING_LIST, PopupMenuActionReadingList,
+      @"popup_menu_reading_list", kToolsMenuReadingListId);
 
   // Recent Tabs.
-  TableViewItem* recentTabs =
-      CreateTableViewItem(IDS_IOS_TOOLS_MENU_RECENT_TABS,
-                          PopupMenuActionRecentTabs, kToolsMenuOtherDevicesId);
+  TableViewItem* recentTabs = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_RECENT_TABS, PopupMenuActionRecentTabs,
+      @"popup_menu_recent_tabs", kToolsMenuOtherDevicesId);
 
   // History.
-  TableViewItem* history = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_HISTORY, PopupMenuActionHistory, kToolsMenuHistoryId);
+  TableViewItem* history =
+      CreateTableViewItem(IDS_IOS_TOOLS_MENU_HISTORY, PopupMenuActionHistory,
+                          @"popup_menu_history", kToolsMenuHistoryId);
 
   // Settings.
   TableViewItem* settings =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_SETTINGS, PopupMenuActionSettings,
-                          kToolsMenuSettingsId);
+                          @"popup_menu_settings", kToolsMenuSettingsId);
 
   return @[ bookmarks, readingList, recentTabs, history, settings ];
 }
