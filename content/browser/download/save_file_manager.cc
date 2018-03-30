@@ -80,7 +80,7 @@ class SaveFileManager::SimpleURLLoaderHelper
                                                    annotation_tag);
     // We can use Unretained below as |url_loader_| is owned by |this|, so the
     // callback won't be invoked if |this| gets deleted.
-    url_loader_->SetOnResponseStartedCallback(base::BindRepeating(
+    url_loader_->SetOnResponseStartedCallback(base::BindOnce(
         &SimpleURLLoaderHelper::OnResponseStarted, base::Unretained(this), url,
         render_process_id, render_frame_routing_id));
     url_loader_->DownloadAsStream(url_loader_factory, this);

@@ -416,7 +416,7 @@ class DevToolsUIBindings::NetworkResourceLoader
         loader_(std::move(loader)),
         callback_(callback) {
     loader_->DownloadAsStream(url_loader_factory, this);
-    loader_->SetOnResponseStartedCallback(base::BindRepeating(
+    loader_->SetOnResponseStartedCallback(base::BindOnce(
         &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
   }
 
