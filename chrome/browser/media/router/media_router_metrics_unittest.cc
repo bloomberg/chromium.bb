@@ -9,7 +9,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

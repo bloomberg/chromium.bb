@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_QUERY_RESULT_MANAGER_H_
-#define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_QUERY_RESULT_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_MEDIA_ROUTER_QUERY_RESULT_MANAGER_H_
+#define CHROME_BROWSER_UI_MEDIA_ROUTER_QUERY_RESULT_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -15,9 +15,9 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
-#include "chrome/browser/ui/webui/media_router/cast_modes_with_media_sources.h"
-#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
-#include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
+#include "chrome/browser/ui/media_router/cast_modes_with_media_sources.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
+#include "chrome/browser/ui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 
@@ -178,4 +178,4 @@ class QueryResultManager {
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_QUERY_RESULT_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_MEDIA_ROUTER_QUERY_RESULT_MANAGER_H_

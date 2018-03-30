@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media_router/query_result_manager.h"
+#include "chrome/browser/ui/media_router/query_result_manager.h"
 
 #include <utility>
 
@@ -127,7 +127,7 @@ std::unique_ptr<MediaSource> QueryResultManager::GetSourceForCastModeAndSink(
                                                         sink_pair.second);
     }
   }
-  return std::unique_ptr<MediaSource>();
+  return nullptr;
 }
 
 std::vector<MediaSource> QueryResultManager::GetSourcesForCastMode(
@@ -159,9 +159,8 @@ void QueryResultManager::AddObserversForCastMode(
     const url::Origin& origin) {
   for (const MediaSource& source : sources) {
     if (!base::ContainsKey(sinks_observers_, source)) {
-      std::unique_ptr<MediaSourceMediaSinksObserver> observer(
-          new MediaSourceMediaSinksObserver(cast_mode, source, origin, router_,
-                                            this));
+      auto observer = std::make_unique<MediaSourceMediaSinksObserver>(
+          cast_mode, source, origin, router_, this);
       observer->Init();
       sinks_observers_[source] = std::move(observer);
     }
@@ -200,13 +199,13 @@ QueryResultManager::GetHighestPrioritySourceForCastModeAndSink(
     const CastModesWithMediaSources& sources_for_sink) const {
   const auto& cast_mode_it = cast_mode_sources_.find(cast_mode);
   if (cast_mode_it == cast_mode_sources_.end())
-    return std::unique_ptr<MediaSource>();
+    return nullptr;
 
   for (const MediaSource& source : cast_mode_it->second) {
     if (sources_for_sink.HasSource(cast_mode, source))
       return std::make_unique<MediaSource>(source.id());
   }
-  return std::unique_ptr<MediaSource>();
+  return nullptr;
 }
 
 bool QueryResultManager::AreSourcesValidForCastMode(

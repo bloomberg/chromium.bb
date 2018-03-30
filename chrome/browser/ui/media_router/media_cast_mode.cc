@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
