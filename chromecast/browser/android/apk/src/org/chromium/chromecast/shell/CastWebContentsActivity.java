@@ -47,6 +47,8 @@ public class CastWebContentsActivity extends Activity {
     private final Controller<Intent> mGotIntentState = new Controller<>();
     // Set this to cause the Activity to finish.
     private final Controller<String> mIsFinishingState = new Controller<>();
+    // Set this to provide the Activity with a CastAudioManager.
+    private final Controller<CastAudioManager> mAudioManagerState = new Controller<>();
     // Set in unittests to skip some behavior.
     private final Controller<Unit> mIsTestingState = new Controller<>();
 
@@ -90,6 +92,23 @@ public class CastWebContentsActivity extends Activity {
                             false /* showInFragment */);
                 }));
 
+        // Initialize the audio manager in onCreate() if tests haven't already.
+        mCreatedState.and(Observable.not(mAudioManagerState)).watch(ScopeFactories.onEnter(() -> {
+            mAudioManagerState.set(CastAudioManager.getAudioManager(this));
+        }));
+
+        // Request audio focus when Activity is resumed.
+        mAudioManagerState.watch(ScopeFactories.onEnter((CastAudioManager audioManager) -> {
+            audioManager.requestAudioFocusWhen(
+                    mResumedState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        }));
+
+        // Clean up stream mute state on pause events.
+        mAudioManagerState.andThen(Observable.not(mResumedState))
+                .watch(ScopeFactories.onEnter((CastAudioManager audioManager, Unit u) -> {
+                    audioManager.releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
+                }));
+
         // Handle each new Intent.
         hasIntentState.watch(ScopeFactories.onEnter(this ::handleIntent));
 
@@ -114,8 +133,6 @@ public class CastWebContentsActivity extends Activity {
         super.onCreate(savedInstanceState);
         mCreatedState.set(Unit.unit());
         mGotIntentState.set(getIntent());
-        CastAudioManager.getAudioManager(this).requestAudioFocusWhen(
-                mResumedState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
     }
 
     private void handleIntent(Intent intent) {
@@ -271,5 +288,10 @@ public class CastWebContentsActivity extends Activity {
     @RemovableInRelease
     public void testingModeForTesting() {
         mIsTestingState.set(Unit.unit());
+    }
+
+    @RemovableInRelease
+    public void setAudioManagerForTesting(CastAudioManager audioManager) {
+        mAudioManagerState.set(audioManager);
     }
 }

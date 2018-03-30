@@ -7,8 +7,11 @@ package org.chromium.chromecast.shell;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import android.content.Intent;
+import android.media.AudioManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -91,5 +94,14 @@ public class CastWebContentsActivityTest {
                 shadowAudioManager.getLastAudioFocusRequest();
         assertEquals(
                 shadowAudioManager.getLastAbandonedAudioFocusListener(), originalRequest.listener);
+    }
+
+    @Test
+    public void testReleasesStreamMuteIfNecessaryOnPause() {
+        CastAudioManager mockAudioManager = mock(CastAudioManager.class);
+        mActivity.setAudioManagerForTesting(mockAudioManager);
+        mActivityLifecycle.create().start().resume();
+        mActivityLifecycle.pause();
+        verify(mockAudioManager).releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
     }
 }
