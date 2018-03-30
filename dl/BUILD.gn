@@ -116,7 +116,7 @@ static_library("dl") {
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {
-    if (is_posix) {
+    if (is_posix || is_fuchsia) {
       cflags += [ "-msse2" ]
     }
 
