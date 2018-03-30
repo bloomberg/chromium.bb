@@ -1501,7 +1501,7 @@ def GeneralTemplates(site_config, ge_build_config):
       build_type=constants.CANARY_TYPE,
       suite_scheduling=True,
       build_timeout=12 * 60 * 60 if is_release_branch else (7 * 60 + 50) * 60,
-      useflags=append_useflags(['-cros-debug', 'thinlto']),
+      useflags=append_useflags(['-cros-debug']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
