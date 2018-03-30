@@ -361,7 +361,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
                                       // check for reserved values?
   RANGE_CHECK(extra_cfg, transfer_characteristics, AOM_CICP_TC_BT_709,
               AOM_CICP_TC_HLG);
-  RANGE_CHECK(extra_cfg, matrix_coefficients, AOM_CICP_MC_BT_709,
+  RANGE_CHECK(extra_cfg, matrix_coefficients, AOM_CICP_MC_IDENTITY,
               AOM_CICP_MC_ICTCP);
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 
