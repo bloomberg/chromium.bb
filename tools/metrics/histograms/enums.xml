@@ -6863,6 +6863,16 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="CONTEXT_LOST_INVALID_GPU_MESSAGE"/>
 </enum>
 
+<enum name="ContextMenuDOMElementFrame">
+  <summary>The frame that the element was found in.</summary>
+  <int value="0" label="Main frame">
+    Recorded when the element was found in the main frame.
+  </int>
+  <int value="1" label="iframe">
+    Recorded when the element was found in an iframe.
+  </int>
+</enum>
+
 <enum name="ContextMenuOption">
   <summary>The item selected from a context menu</summary>
   <int value="0" label="Open in new tab"/>
