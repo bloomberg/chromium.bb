@@ -39,7 +39,9 @@ class MemlogReceiverPipe : public MemlogReceiverPipeBase,
 
   base::MessagePumpForIO::IOContext context_;
 
-  bool read_outstanding_ = false;
+  // Used to keep |this| live while awaiting IO completion, which is required
+  // to avoid premature destruction during shutdown.
+  scoped_refptr<MemlogReceiverPipe> read_outstanding_;
 
   std::unique_ptr<char[]> read_buffer_;
 
