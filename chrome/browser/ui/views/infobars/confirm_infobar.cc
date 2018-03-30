@@ -91,7 +91,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
       if (delegate->OKButtonTriggersUACPrompt()) {
         elevation_icon_setter_.reset(new ElevationIconSetter(
             ok_button_,
-            base::Bind(&ConfirmInfoBar::Layout, base::Unretained(this))));
+            base::BindOnce(&ConfirmInfoBar::Layout, base::Unretained(this))));
       }
     }
 

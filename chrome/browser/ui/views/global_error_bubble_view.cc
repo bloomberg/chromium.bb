@@ -180,8 +180,8 @@ void GlobalErrorBubbleView::UpdateButton(views::LabelButton* button,
     if (type == ui::DIALOG_BUTTON_OK &&
         error_->ShouldAddElevationIconToAcceptButton()) {
       elevation_icon_setter_.reset(new ElevationIconSetter(
-          button, base::Bind(&GlobalErrorBubbleView::SizeToContents,
-                             base::Unretained(this))));
+          button, base::BindOnce(&GlobalErrorBubbleView::SizeToContents,
+                                 base::Unretained(this))));
     }
   }
 }
