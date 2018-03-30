@@ -1054,6 +1054,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetFocusedFrame();
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
+  void OnCheckCompleted();
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);
   void OnReportContentSecurityPolicyViolation(
       const content::CSPViolationParams& violation_params);

@@ -149,6 +149,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_CheckCompleted, OnCheckCompleted)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
@@ -305,6 +306,11 @@ void RenderFrameProxyHost::OnOpenURL(
       params.should_replace_current_entry, params.uses_post ? "POST" : "GET",
       params.resource_request_body, params.extra_headers,
       params.suggested_filename);
+}
+
+void RenderFrameProxyHost::OnCheckCompleted() {
+  RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
+  target_rfh->Send(new FrameMsg_CheckCompleted(target_rfh->GetRoutingID()));
 }
 
 void RenderFrameProxyHost::OnRouteMessageEvent(

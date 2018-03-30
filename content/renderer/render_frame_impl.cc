@@ -1795,6 +1795,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
+    IPC_MESSAGE_HANDLER(FrameMsg_CheckCompleted, OnCheckCompleted)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
     IPC_MESSAGE_HANDLER(FrameMsg_ReportContentSecurityPolicyViolation,
                         OnReportContentSecurityPolicyViolation)
@@ -2491,6 +2492,10 @@ void RenderFrameImpl::OnTextTrackSettingsChanged(
       WebString::FromUTF8(params.text_track_text_shadow));
   render_view_->webview()->GetSettings()->SetTextTrackTextSize(
       WebString::FromUTF8(params.text_track_text_size));
+}
+
+void RenderFrameImpl::OnCheckCompleted() {
+  frame_->CheckCompleted();
 }
 
 void RenderFrameImpl::OnPostMessageEvent(

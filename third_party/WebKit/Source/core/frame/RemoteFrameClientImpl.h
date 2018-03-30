@@ -33,6 +33,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                 bool should_replace_current_entry) override;
   void Reload(FrameLoadType, ClientRedirectPolicy) override;
   unsigned BackForwardLength() override;
+  void CheckCompleted() override;
   void ForwardPostMessage(MessageEvent*,
                           scoped_refptr<const SecurityOrigin> target,
                           LocalFrame* source) const override;

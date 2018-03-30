@@ -667,6 +667,10 @@ void RenderFrameProxy::FrameDetached(DetachType type) {
   delete this;
 }
 
+void RenderFrameProxy::CheckCompleted() {
+  Send(new FrameHostMsg_CheckCompleted(routing_id_));
+}
+
 void RenderFrameProxy::ForwardPostMessage(
     blink::WebLocalFrame* source_frame,
     blink::WebRemoteFrame* target_frame,

@@ -263,6 +263,92 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
             load_observer.controller_);
 }
 
+namespace {
+
+// Class that waits for a particular load to finish in any frame.  This happens
+// after the commit event.
+class LoadFinishedWaiter : public WebContentsObserver {
+ public:
+  LoadFinishedWaiter(WebContents* web_contents, const GURL& expected_url)
+      : WebContentsObserver(web_contents),
+        expected_url_(expected_url),
+        run_loop_(new base::RunLoop()) {
+    EXPECT_TRUE(web_contents != nullptr);
+  }
+
+  void Wait() { run_loop_->Run(); }
+
+ private:
+  void DidFinishLoad(RenderFrameHost* render_frame_host,
+                     const GURL& url) override {
+    if (url == expected_url_)
+      run_loop_->Quit();
+  }
+
+  GURL expected_url_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
+}  // namespace
+
+// Ensure that cross-site subframes always notify their parents when they finish
+// loading, so that the page eventually reaches DidStopLoading.  There was a bug
+// where an OOPIF would not notify its parent if (1) it finished loading, but
+// (2) later added a subframe that kept the main frame in the loading state, and
+// (3) all subframes then finished loading.
+// Note that this test makes sense to run with and without OOPIFs.
+// See https://crbug.com/822013#c12.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DidStopLoadingWithNestedFrames) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to an A(B, C) page where B is slow to load.  Wait for C to reach
+  // load stop.  A will still be loading due to B.
+  GURL url_a = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)");
+  GURL url_b = embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b()");
+  GURL url_c = embedded_test_server()->GetURL(
+      "c.com", "/cross_site_iframe_factory.html?c()");
+  TestNavigationManager delayer_b(web_contents, url_b);
+  LoadFinishedWaiter load_waiter_c(web_contents, url_c);
+  shell()->LoadURL(url_a);
+  EXPECT_TRUE(delayer_b.WaitForRequestStart());
+  load_waiter_c.Wait();
+  EXPECT_TRUE(web_contents->IsLoading());
+
+  // At this point, C has finished loading and B is stalled.  Add a slow D frame
+  // within C.
+  GURL url_d = embedded_test_server()->GetURL("d.com", "/title1.html");
+  FrameTreeNode* subframe_c = web_contents->GetFrameTree()->root()->child_at(1);
+  EXPECT_EQ(url_c, subframe_c->current_url());
+  TestNavigationManager delayer_d(web_contents, url_d);
+  const std::string add_d_script = base::StringPrintf(
+      "var f = document.createElement('iframe');"
+      "f.src='%s';"
+      "document.body.appendChild(f);",
+      url_d.spec().c_str());
+  EXPECT_TRUE(content::ExecuteScript(subframe_c, add_d_script));
+  EXPECT_TRUE(delayer_d.WaitForRequestStart());
+  EXPECT_TRUE(web_contents->IsLoading());
+
+  // Let B finish and wait for another load stop.  A will still be loading due
+  // to D.
+  LoadFinishedWaiter load_waiter_b(web_contents, url_b);
+  delayer_b.WaitForNavigationFinished();
+  load_waiter_b.Wait();
+  EXPECT_TRUE(web_contents->IsLoading());
+
+  // Let D finish.  We should get a load stop in the main frame.
+  LoadFinishedWaiter load_waiter_d(web_contents, url_d);
+  delayer_d.WaitForNavigationFinished();
+  load_waiter_d.Wait();
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+  EXPECT_FALSE(web_contents->IsLoading());
+}
+
 // Test that a renderer-initiated navigation to an invalid URL does not leave
 // around a pending entry that could be used in a URL spoof.  We test this in
 // a browser test because our unit test framework incorrectly calls

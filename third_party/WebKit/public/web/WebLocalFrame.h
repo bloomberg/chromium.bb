@@ -798,6 +798,9 @@ class WebLocalFrame : public WebFrame {
   // Load the given URL.
   virtual void LoadRequest(const WebURLRequest&) = 0;
 
+  // Check whether loading has completed based on subframe state, etc.
+  virtual void CheckCompleted() = 0;
+
   // Geometry -----------------------------------------------------------------
 
   // NOTE: These routines do not force page layout so their results may

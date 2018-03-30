@@ -407,6 +407,10 @@ bool LocalFrame::PrepareForCommit() {
   return Loader().PrepareForCommit();
 }
 
+void LocalFrame::CheckCompleted() {
+  GetDocument()->CheckCompleted();
+}
+
 SecurityContext* LocalFrame::GetSecurityContext() const {
   return GetDocument();
 }
