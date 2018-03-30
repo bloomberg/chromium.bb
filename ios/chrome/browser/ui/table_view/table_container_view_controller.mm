@@ -42,9 +42,9 @@
 // TODO(crbug.com/805178): Temporary Toolbar code for prototyping purposes.
 - (void)setBottomToolbar:(UIView*)bottomToolbar {
   _bottomToolbar = bottomToolbar;
-  _bottomToolbar.backgroundColor = [UIColor grayColor];
+  _bottomToolbar.backgroundColor = [UIColor lightGrayColor];
   _bottomToolbar.translatesAutoresizingMaskIntoConstraints = NO;
-  _bottomToolbar.alpha = 0.5;
+  _bottomToolbar.alpha = 0.8;
 }
 
 #pragma mark - View Lifecycle
