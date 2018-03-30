@@ -563,8 +563,20 @@ def RunCrosConfigHost(buildroot, board, args, log_output=True):
     return None
   tool = path_util.ToChrootPath(tool)
 
-  config_fname = os.path.join(cros_build_lib.GetSysroot(board), 'usr', 'share',
-                              'chromeos-config', 'config.dtb')
+  config_fname = os.path.join(
+      cros_build_lib.GetSysroot(board),
+      'usr',
+      'share',
+      'chromeos-config',
+      'yaml',
+      'config.yaml')
+  if not os.path.isfile(config_fname):
+    config_fname = os.path.join(
+        cros_build_lib.GetSysroot(board),
+        'usr',
+        'share',
+        'chromeos-config',
+        'config.dtb')
   result = cros_build_lib.RunCommand(
       [tool, '-c', config_fname] + args,
       enter_chroot=True, capture_output=True, log_output=log_output,
