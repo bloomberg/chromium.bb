@@ -310,6 +310,7 @@ void BackendIO::ExecuteBackendOperation() {
   }
   DCHECK_NE(net::ERR_IO_PENDING, result_);
   NotifyController();
+  backend_->OnSyncBackendOpComplete();
 }
 
 // Runs on the background thread.

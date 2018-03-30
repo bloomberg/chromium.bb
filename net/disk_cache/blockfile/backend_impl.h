@@ -89,6 +89,9 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void SyncEndEnumeration(std::unique_ptr<Rankings::Iterator> iterator);
   void SyncOnExternalCacheHit(const std::string& key);
 
+  // Called at end of any backend operation on the background thread.
+  void OnSyncBackendOpComplete();
+
   // Open or create an entry for the given |key| or |iter|.
   scoped_refptr<EntryImpl> OpenEntryImpl(const std::string& key);
   scoped_refptr<EntryImpl> CreateEntryImpl(const std::string& key);
@@ -417,6 +420,9 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   bool new_eviction_;  // What eviction algorithm should be used.
   bool first_timer_;  // True if the timer has not been called.
   bool user_load_;  // True if we see a high load coming from the caller.
+
+  // True if we should consider doing eviction at end of current operation.
+  bool consider_evicting_at_op_end_;
 
   net::NetLog* net_log_;
 
