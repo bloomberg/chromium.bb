@@ -83,7 +83,7 @@ class WindowTreeClientObserver;
 class WindowTreeClientTestObserver;
 class WindowTreeHostMus;
 
-using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
+using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
 
 // Used to enable Aura to act as the client-library for the Window Service.
 //

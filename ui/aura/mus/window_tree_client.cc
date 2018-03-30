@@ -96,8 +96,9 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
     base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
     if (ack_callback_) {
       NotifyPlatformEventSource();
-      ack_callback_.Run(handled_ ? ui::mojom::EventResult::HANDLED
-                                 : ui::mojom::EventResult::UNHANDLED);
+      std::move(ack_callback_)
+          .Run(handled_ ? ui::mojom::EventResult::HANDLED
+                        : ui::mojom::EventResult::UNHANDLED);
     }
   }
 
@@ -118,8 +119,7 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
     // Otherwise we appear unresponsive for the life of the nested run loop.
     if (ack_callback_) {
       NotifyPlatformEventSource();
-      ack_callback_.Run(ui::mojom::EventResult::HANDLED);
-      ack_callback_.Reset();
+      std::move(ack_callback_).Run(ui::mojom::EventResult::HANDLED);
     }
   }
 

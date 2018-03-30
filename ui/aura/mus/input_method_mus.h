@@ -27,7 +27,7 @@ class Window;
 
 class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
  public:
-  using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
+  using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
 
   InputMethodMus(ui::internal::InputMethodDelegate* delegate, Window* window);
   ~InputMethodMus() override;
