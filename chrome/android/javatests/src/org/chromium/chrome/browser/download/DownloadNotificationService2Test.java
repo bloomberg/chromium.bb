@@ -54,8 +54,10 @@ public class DownloadNotificationService2Test {
 
     @ClassParameter
     private static List<ParameterSet> sClassParams = Arrays.asList(
-            new ParameterSet().value(false).name("DisableOfflinePagesDescriptivePendingStatus"),
-            new ParameterSet().value(true).name("EnableOfflinePagesDescriptivePendingStatus"));
+            new ParameterSet().value(false, false).name("GenericStatus"),
+            new ParameterSet().value(true, false).name("EnableDescriptivePendingStatusOnly"),
+            new ParameterSet().value(false, true).name("EnableDescriptiveFailStatusOnly"),
+            new ParameterSet().value(true, true).name("EnableDescriptivePendingAndFailStatus"));
 
     @Rule
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
@@ -69,9 +71,12 @@ public class DownloadNotificationService2Test {
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
 
     private final boolean mEnableOfflinePagesDescriptivePendingStatus;
+    private final boolean mEnableOfflinePagesDescriptiveFailStatus;
 
-    public DownloadNotificationService2Test(boolean enableOfflinePagesDescriptivePendingStatus) {
+    public DownloadNotificationService2Test(boolean enableOfflinePagesDescriptivePendingStatus,
+            boolean enableOfflinePagesDescriptiveFailStatus) {
         mEnableOfflinePagesDescriptivePendingStatus = enableOfflinePagesDescriptivePendingStatus;
+        mEnableOfflinePagesDescriptiveFailStatus = enableOfflinePagesDescriptiveFailStatus;
     }
 
     private static DownloadSharedPreferenceEntry buildEntryStringWithGuid(ContentId contentId,
@@ -88,6 +93,11 @@ public class DownloadNotificationService2Test {
         } else {
             Features.getInstance().disable(
                     ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS);
+        }
+        if (mEnableOfflinePagesDescriptiveFailStatus) {
+            Features.getInstance().enable(ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS);
+        } else {
+            Features.getInstance().disable(ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS);
         }
         DownloadNotificationService2.clearResumptionAttemptLeft();
         mDownloadNotificationService = new MockDownloadNotificationService2();

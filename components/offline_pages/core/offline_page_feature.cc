@@ -60,6 +60,9 @@ const base::Feature kOfflinePagesPrefetchingUIFeature{
 const base::Feature kOfflinePagesLimitlessPrefetchingFeature{
     "OfflinePagesLimitlessPrefetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOfflinePagesDescriptiveFailStatusFeature{
+    "OfflinePagesDescriptiveFailStatus", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kOfflinePagesDescriptivePendingStatusFeature{
     "OfflinePagesDescriptivePendingStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -127,6 +130,11 @@ bool ShouldUseTestingSnapshotDelay() {
 
 bool IsOfflinePagesCTV2Enabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesCTV2Feature);
+}
+
+bool IsOfflinePagesDescriptiveFailStatusEnabled() {
+  return base::FeatureList::IsEnabled(
+      kOfflinePagesDescriptiveFailStatusFeature);
 }
 
 bool IsOfflinePagesDescriptivePendingStatusEnabled() {
