@@ -31,8 +31,6 @@ namespace download {
 class DownloadItem;
 }
 
-class Profile;
-
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
 class MdDownloadsDOMHandler : public content::WebContentsObserver,
@@ -107,9 +105,6 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // dangerous ones are immediately removed. Protected for testing.
   void RemoveDownloads(const DownloadVector& to_remove);
 
-  // Helper function to handle save download event.
-  void SaveDownload(download::DownloadItem* download);
-
  private:
   using IdSet = std::set<uint32_t>;
 
@@ -131,8 +126,7 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
 
   // Conveys danger acceptance from the DownloadDangerPrompt to the
   // DownloadItem.
-  virtual void DangerPromptDone(int download_id,
-                                DownloadDangerPrompt::Action action);
+  void DangerPromptDone(int download_id, DownloadDangerPrompt::Action action);
 
   // Returns true if the records of any downloaded items are allowed (and able)
   // to be deleted.
@@ -154,9 +148,6 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
 
   // IDs of downloads to remove when this handler gets deleted.
   std::vector<IdSet> removals_;
-
-  // User profile that corresponds to this handler.
-  Profile* profile_ = nullptr;
 
   // Whether the render process has gone.
   bool render_process_gone_ = false;
