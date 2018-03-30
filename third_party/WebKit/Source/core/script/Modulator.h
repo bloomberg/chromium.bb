@@ -70,7 +70,7 @@ enum class ModuleGraphLevel { kTopLevelModuleFetch, kDependentModuleFetch };
 
 // A Modulator is an interface for "environment settings object" concept for
 // module scripts.
-// https://html.spec.whatwg.org/#environment-settings-object
+// https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object
 //
 // A Modulator also serves as an entry point for various module spec algorithms.
 class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
@@ -106,7 +106,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   // Asynchronously retrieve a module script from the module map, or fetch it
   // and put it in the map if it's not there already.
-  // https://html.spec.whatwg.org/#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
   virtual void FetchSingle(const ModuleScriptFetchRequest&,
                            ModuleGraphLevel,
                            SingleModuleClient*) = 0;
@@ -120,7 +120,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // is still "fetching".
   virtual ModuleScript* GetFetchedModuleScript(const KURL&) = 0;
 
-  // https://html.spec.whatwg.org/#resolve-a-module-specifier
+  // https://html.spec.whatwg.org/multipage/webappapis.html#resolve-a-module-specifier
   static KURL ResolveModuleSpecifier(const String& module_request,
                                      const KURL& base_url,
                                      String* failure_reason = nullptr);
@@ -131,7 +131,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                                   const ReferrerScriptInfo&,
                                   ScriptPromiseResolver*) = 0;
 
-  // https://html.spec.whatwg.org/#hostgetimportmetaproperties
+  // https://html.spec.whatwg.org/multipage/webappapis.html#hostgetimportmetaproperties
   virtual ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const = 0;
 
   virtual bool HasValidContext() = 0;

@@ -110,7 +110,7 @@ void ModulatorImplBase::ResolveDynamically(
                                                referrer_info, resolver);
 }
 
-// https://html.spec.whatwg.org/#hostgetimportmetaproperties
+// https://html.spec.whatwg.org/multipage/webappapis.html#hostgetimportmetaproperties
 ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
     ScriptModule record) const {
   // 1. Let module script be moduleRecord.[[HostDefined]]. [spec text]
@@ -175,7 +175,7 @@ ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
 ScriptValue ModulatorImplBase::ExecuteModule(
     const ModuleScript* module_script,
     CaptureEvalErrorFlag capture_error) {
-  // https://html.spec.whatwg.org/#run-a-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-module-script
 
   // Step 1. "If rethrow errors is not given, let it be false." [spec text]
 

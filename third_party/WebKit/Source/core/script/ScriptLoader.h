@@ -80,12 +80,12 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   static network::mojom::FetchCredentialsMode ModuleScriptCredentialsMode(
       CrossOriginAttributeValue);
 
-  // https://html.spec.whatwg.org/#prepare-a-script
+  // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
   bool PrepareScript(const TextPosition& script_start_position =
                          TextPosition::MinimumPosition(),
                      LegacyTypeSupport = kDisallowLegacyTypeInTypeAttribute);
 
-  // https://html.spec.whatwg.org/#execute-the-script-block
+  // https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
   // The single entry point of script execution.
   // PendingScript::Dispose() is called in ExecuteScriptBlock().
   void ExecuteScriptBlock(PendingScript*, const KURL&);
@@ -143,15 +143,15 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool IsScriptForEventSupported() const;
 
   // FetchClassicScript corresponds to Step 21.6 of
-  // https://html.spec.whatwg.org/#prepare-a-script
+  // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
   // and must NOT be called from outside of PendingScript().
   //
-  // https://html.spec.whatwg.org/#fetch-a-classic-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
   void FetchClassicScript(const KURL&,
                           Document&,
                           const ScriptFetchOptions&,
                           const WTF::TextEncoding&);
-  // https://html.spec.whatwg.org/#fetch-a-module-script-tree
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   void FetchModuleScriptTree(const KURL&,
                              Modulator*,
                              const ScriptFetchOptions&);
@@ -172,30 +172,30 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   Member<ScriptElementBase> element_;
   WTF::OrdinalNumber start_line_number_;
 
-  // https://html.spec.whatwg.org/#script-processing-model
+  // https://html.spec.whatwg.org/multipage/scripting.html#script-processing-model
   // "A script element has several associated pieces of state.":
 
-  // https://html.spec.whatwg.org/#already-started
+  // https://html.spec.whatwg.org/multipage/scripting.html#already-started
   // "Initially, script elements must have this flag unset"
   bool already_started_ = false;
 
-  // https://html.spec.whatwg.org/#parser-inserted
+  // https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
   // "Initially, script elements must have this flag unset."
   bool parser_inserted_ = false;
 
-  // https://html.spec.whatwg.org/#non-blocking
+  // https://html.spec.whatwg.org/multipage/scripting.html#non-blocking
   // "Initially, script elements must have this flag set."
   bool non_blocking_ = true;
 
-  // https://html.spec.whatwg.org/#ready-to-be-parser-executed
+  // https://html.spec.whatwg.org/multipage/scripting.html#ready-to-be-parser-executed
   // "Initially, script elements must have this flag unset"
   bool ready_to_be_parser_executed_ = false;
 
-  // https://html.spec.whatwg.org/#concept-script-type
+  // https://html.spec.whatwg.org/multipage/scripting.html#concept-script-type
   // "It is determined when the script is prepared"
   ScriptType script_type_ = ScriptType::kClassic;
 
-  // https://html.spec.whatwg.org/#concept-script-external
+  // https://html.spec.whatwg.org/multipage/scripting.html#concept-script-external
   // "It is determined when the script is prepared"
   bool is_external_script_ = false;
 

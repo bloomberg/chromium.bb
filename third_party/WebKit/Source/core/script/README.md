@@ -8,16 +8,16 @@ The interaction between `<script>` elements and these components is controlled b
 
 This directory implements the following scripting concepts in the HTML spec:
 
-*   [`<script>` elements](https://html.spec.whatwg.org/#the-script-element)
+*   [`<script>` elements](https://html.spec.whatwg.org/multipage/scripting.html#the-script-element)
 *   Interactions between scripts and HTML/XML documents/parsers
-*   A part of [Scripting](https://html.spec.whatwg.org/#scripting)
-    * [scripts](https://html.spec.whatwg.org/#definitions-2)
-        * [classic scripts](https://html.spec.whatwg.org/#classic-script)
-        * [module scripts](https://html.spec.whatwg.org/#module-script)
-    * [Fetching](https://html.spec.whatwg.org/#fetching-scripts) scripts
-    * [creating](https://html.spec.whatwg.org/#creating-scripts) scripts
-    * [calling](https://html.spec.whatwg.org/#calling-scripts) scripts
-    * [Integration with the JavaScript module system](https://html.spec.whatwg.org/#integration-with-the-javascript-module-system)
+*   A part of [Scripting](https://html.spec.whatwg.org/multipage/webappapis.html#scripting)
+    * [scripts](https://html.spec.whatwg.org/multipage/webappapis.html#definitions-2)
+        * [classic scripts](https://html.spec.whatwg.org/multipage/webappapis.html#classic-script)
+        * [module scripts](https://html.spec.whatwg.org/multipage/webappapis.html#module-script)
+    * [Fetching](https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts) scripts
+    * [creating](https://html.spec.whatwg.org/multipage/webappapis.html#creating-scripts) scripts
+    * [calling](https://html.spec.whatwg.org/multipage/webappapis.html#calling-scripts) scripts
+    * [Integration with the JavaScript module system](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-module-system)
 
 ## See Also
 

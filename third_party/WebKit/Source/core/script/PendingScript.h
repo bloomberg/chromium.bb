@@ -57,7 +57,8 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 // A container for an script after "prepare a script" until it is executed.
 // ScriptLoader creates a PendingScript in ScriptLoader::PrepareScript(), and
 // a Script is created via PendingScript::GetSource() when it becomes ready.
-// When "script is ready" https://html.spec.whatwg.org/#the-script-is-ready,
+// When "script is ready"
+// https://html.spec.whatwg.org/multipage/scripting.html#the-script-is-ready,
 // PendingScriptClient is notified.
 class CORE_EXPORT PendingScript
     : public GarbageCollectedFinalized<PendingScript>,
@@ -93,7 +94,7 @@ class CORE_EXPORT PendingScript
   virtual Script* GetSource(const KURL& document_url,
                             bool& error_occurred) const = 0;
 
-  // https://html.spec.whatwg.org/#the-script-is-ready
+  // https://html.spec.whatwg.org/multipage/scripting.html#the-script-is-ready
   virtual bool IsReady() const = 0;
   virtual bool IsExternal() const = 0;
   virtual bool ErrorOccurred() const = 0;
@@ -106,7 +107,7 @@ class CORE_EXPORT PendingScript
 
   // Used only for tracing, and can return a null URL.
   // TODO(hiroshige): It's preferable to return the base URL consistently
-  // https://html.spec.whatwg.org/#concept-script-base-url
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
   // but it requires further refactoring.
   virtual KURL UrlForTracing() const = 0;
 

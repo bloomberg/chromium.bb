@@ -46,7 +46,7 @@ class CORE_EXPORT ScriptModuleResolverImpl final
   ModuleScript* GetHostDefined(const ScriptModule&) const final;
 
   // Implements "Runtime Semantics: HostResolveImportedModule" per HTML spec.
-  // https://html.spec.whatwg.org/#hostresolveimportedmodule(referencingmodule,-specifier)
+  // https://html.spec.whatwg.org/multipage/webappapis.html#hostresolveimportedmodule(referencingscriptormodule,-specifier))
   ScriptModule Resolve(const String& specifier,
                        const ScriptModule& referrer,
                        ExceptionState&) final;

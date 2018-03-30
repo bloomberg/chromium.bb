@@ -116,7 +116,7 @@ void ModuleMap::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
 void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
                                         ModuleGraphLevel level,
                                         SingleModuleClient* client) {
-  // https://html.spec.whatwg.org/#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
 
   // Step 1. "Let moduleMap be module map settings object's module map."
   // [spec text]

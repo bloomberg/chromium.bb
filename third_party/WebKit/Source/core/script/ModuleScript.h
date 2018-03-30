@@ -24,7 +24,7 @@ namespace blink {
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
 class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
  public:
-  // https://html.spec.whatwg.org/#creating-a-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
   static ModuleScript* Create(
       const String& source_text,
       Modulator*,
@@ -92,7 +92,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
   Member<Modulator> settings_object_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-module-record
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-record
   TraceWrapperV8Reference<v8::Module> record_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-parse-error
@@ -132,7 +132,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   //   will require moderate code changes (e.g. to move compilation timing).
   TraceWrapperV8Reference<v8::Value> parse_error_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html##concept-script-error-to-rethrow
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-error-to-rethrow
   TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
 
   // For CSP check.
