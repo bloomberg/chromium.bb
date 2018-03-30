@@ -532,11 +532,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode);
   localized_strings->SetString("newOobeUI", oobe_ui_md_mode_ ? "on" : "off");
   localized_strings->SetString(
-      "errorScreenMDMode", base::CommandLine::ForCurrentProcess()->HasSwitch(
-                               chromeos::switches::kDisableMdErrorScreen)
-                               ? "off"
-                               : "on");
-  localized_strings->SetString(
       "showViewsLock", ash::switches::IsUsingViewsLock() ? "on" : "off");
   localized_strings->SetString(
       "showViewsLogin", ash::switches::IsUsingViewsLogin() ? "on" : "off");

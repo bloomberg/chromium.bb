@@ -941,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest,
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
 
   // Continue button should be visible since we are online.
-  JsExpect("$('continue-network-config-btn').hidden == false");
+  JsExpect("$('error-message-md-continue-button').hidden == false");
 
   // Let app launching resume.
   AppLaunchController::SetBlockAppLaunchForTesting(false);
@@ -951,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest,
       GetLoginUI()->GetWebContents(),
       "(function() {"
       "var e = new Event('click');"
-      "$('continue-network-config-btn').dispatchEvent(e);"
+      "$('error-message-md-continue-button').dispatchEvent(e);"
       "})();"));
 
   WaitForAppLaunchSuccess();

@@ -1053,8 +1053,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
   // Emulates user click on the "Restart and Powerwash" button.
   ASSERT_EQ(0, fake_session_manager_client()->start_device_wipe_call_count());
   ASSERT_TRUE(content::ExecuteScript(
-      GetWebContents(),
-      "$('error-message-restart-and-powerwash-button').click();"));
+      GetWebContents(), "$('error-message-md-powerwash-button').click();"));
   ASSERT_EQ(1, fake_session_manager_client()->start_device_wipe_call_count());
 }
 

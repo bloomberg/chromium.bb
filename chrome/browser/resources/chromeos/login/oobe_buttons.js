@@ -92,4 +92,8 @@ Polymer({
   updateIconVisibility_: function() {
     this.$.icon.hidden = (this.icon1x === undefined || this.icon1x.length == 0);
   },
+
+  click: function() {
+    this.$.button.click();
+  },
 });
