@@ -360,6 +360,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 
         mbd->mi[0]->mv[0].as_mv.row = 0;
         mbd->mi[0]->mv[0].as_mv.col = 0;
+        mbd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
 
         if (frame == alt_ref_index) {
           filter_weight = 2;
