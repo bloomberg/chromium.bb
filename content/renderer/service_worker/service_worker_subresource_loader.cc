@@ -541,12 +541,27 @@ void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
 
 // ServiceWorkerSubresourceLoaderFactory ------------------------------------
 
+// static
+void ServiceWorkerSubresourceLoaderFactory::Create(
+    scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
+    network::mojom::URLLoaderFactoryRequest request) {
+  new ServiceWorkerSubresourceLoaderFactory(std::move(controller_connector),
+                                            std::move(network_loader_factory),
+                                            std::move(request));
+}
+
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
+    network::mojom::URLLoaderFactoryRequest request)
     : controller_connector_(std::move(controller_connector)),
       network_loader_factory_(std::move(network_loader_factory)) {
   DCHECK(network_loader_factory_);
+  bindings_.AddBinding(this, std::move(request));
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &ServiceWorkerSubresourceLoaderFactory::OnConnectionError,
+      base::Unretained(this)));
 }
 
 ServiceWorkerSubresourceLoaderFactory::
@@ -572,7 +587,13 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
-  NOTREACHED();
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void ServiceWorkerSubresourceLoaderFactory::OnConnectionError() {
+  if (!bindings_.empty())
+    return;
+  delete this;
 }
 
 }  // namespace content

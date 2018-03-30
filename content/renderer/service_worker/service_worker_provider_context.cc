@@ -199,9 +199,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
   }
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   if (!state->subresource_loader_factory) {
-    mojo::MakeStrongBinding(
-        std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
-            state->controller_connector, state->default_loader_factory),
+    ServiceWorkerSubresourceLoaderFactory::Create(
+        state->controller_connector, state->default_loader_factory,
         mojo::MakeRequest(&state->subresource_loader_factory));
   }
   return state->subresource_loader_factory.get();
