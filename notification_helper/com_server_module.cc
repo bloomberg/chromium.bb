@@ -13,9 +13,31 @@
 
 #include <wrl/module.h>
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/install_static/install_util.h"
 #include "notification_helper/notification_activator.h"
 #include "notification_helper/trace_util.h"
+
+namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ComServerModuleStatus {
+  SUCCESS = 0,
+  FACTORY_CREATION_FAILED = 1,
+  ICLASSFACTORY_OBJECT_CREATION_FAILED = 2,
+  REGISTRATION_FAILED = 3,
+  UNREGISTRATION_FAILED = 4,
+  COUNT  // Must be the final value.
+};
+
+void LogComServerModuleHistogram(ComServerModuleStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Notifications.NotificationHelper.ComServerModuleStatus", status,
+      ComServerModuleStatus::COUNT);
+}
+
+}  // namespace
 
 namespace notification_helper {
 
@@ -31,8 +53,11 @@ HRESULT ComServerModule::Run() {
   HRESULT hr = RegisterClassObjects();
   if (SUCCEEDED(hr)) {
     WaitForZeroObjectCount();
-    UnregisterClassObjects();
+    hr = UnregisterClassObjects();
   }
+  if (SUCCEEDED(hr))
+    LogComServerModuleHistogram(ComServerModuleStatus::SUCCESS);
+
   return hr;
 }
 
@@ -56,6 +81,7 @@ HRESULT ComServerModule::RegisterClassObjects() {
       Microsoft::WRL::SimpleClassFactory<NotificationActivator>>(
       &flags, nullptr, __uuidof(IClassFactory), &factory);
   if (FAILED(hr)) {
+    LogComServerModuleHistogram(ComServerModuleStatus::FACTORY_CREATION_FAILED);
     Trace(L"%hs(Factory creation failed; hr: 0x%08X)\n", __func__, hr);
     return hr;
   }
@@ -63,6 +89,8 @@ HRESULT ComServerModule::RegisterClassObjects() {
   Microsoft::WRL::ComPtr<IClassFactory> class_factory;
   hr = factory.As(&class_factory);
   if (FAILED(hr)) {
+    LogComServerModuleHistogram(
+        ComServerModuleStatus::ICLASSFACTORY_OBJECT_CREATION_FAILED);
     Trace(L"%hs(IClassFactory object creation failed; hr: 0x%08X)\n", __func__,
           hr);
     return hr;
@@ -80,6 +108,7 @@ HRESULT ComServerModule::RegisterClassObjects() {
   hr = module.RegisterCOMObject(nullptr, class_ids, class_factories, cookies_,
                                 arraysize(cookies_));
   if (FAILED(hr)) {
+    LogComServerModuleHistogram(ComServerModuleStatus::REGISTRATION_FAILED);
     Trace(L"%hs(NotificationActivator registration failed; hr: 0x%08X)\n",
           __func__, hr);
   }
@@ -87,15 +116,17 @@ HRESULT ComServerModule::RegisterClassObjects() {
   return hr;
 }
 
-void ComServerModule::UnregisterClassObjects() {
+HRESULT ComServerModule::UnregisterClassObjects() {
   auto& module = Microsoft::WRL::Module<
       Microsoft::WRL::OutOfProcDisableCaching>::GetModule();
   HRESULT hr =
       module.UnregisterCOMObject(nullptr, cookies_, arraysize(cookies_));
   if (FAILED(hr)) {
+    LogComServerModuleHistogram(ComServerModuleStatus::UNREGISTRATION_FAILED);
     Trace(L"%hs(NotificationActivator unregistration failed; hr: 0x%08X)\n",
           __func__, hr);
   }
+  return hr;
 }
 
 bool ComServerModule::IsEventSignaled() {

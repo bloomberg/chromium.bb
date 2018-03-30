@@ -32089,6 +32089,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Invalid Argument error"/>
 </enum>
 
+<enum name="NotificationHelperComServerModuleStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="FACTORY_CREATION_FAILED"/>
+  <int value="2" label="ICLASSFACTORY_OBJECT_CREATION_FAILED"/>
+  <int value="3" label="REGISTRATION_FAILED"/>
+  <int value="4" label="UNREGISTRATION_FAILED"/>
+</enum>
+
 <enum name="NotifierType">
   <int value="0" label="Application"/>
   <int value="1" label="Arc++"/>
