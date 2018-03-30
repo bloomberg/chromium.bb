@@ -7,7 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//chrome/common/features.gni")
 import("//extensions/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 static_library("utility") {
@@ -43,7 +43,7 @@ static_library("utility") {
     "//ipc",
     "//media",
     "//net:net_with_v8",
-    "//printing/features",
+    "//printing/buildflags",
     "//services/network:network_service",
     "//services/service_manager/public/cpp",
     "//skia",

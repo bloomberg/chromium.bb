@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/base/ui_features.h"
 
 // Don't add more switch files here. This is linked into some places like the

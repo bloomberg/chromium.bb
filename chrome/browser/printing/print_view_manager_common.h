@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_COMMON_H_
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_COMMON_H_
 
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace content {
 class RenderFrameHost;

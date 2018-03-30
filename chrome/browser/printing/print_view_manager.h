@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/printing/print_view_manager_base.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace content {
 class RenderFrameHost;

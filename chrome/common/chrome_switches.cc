@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace switches {
 

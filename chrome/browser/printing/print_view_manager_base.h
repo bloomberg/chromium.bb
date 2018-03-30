@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 struct PrintHostMsg_DidPrintDocument_Params;
 

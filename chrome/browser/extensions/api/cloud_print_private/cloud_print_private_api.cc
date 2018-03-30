@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/network_interfaces.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace extensions {
 

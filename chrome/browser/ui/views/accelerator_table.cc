@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
 

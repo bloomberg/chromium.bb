@@ -23,7 +23,7 @@ static_library("renderer_context_menu") {
     "//content/public/browser",
     "//content/public/common",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//third_party/WebKit/public:blink_headers",
     "//ui/base",
   ]

@@ -14,7 +14,7 @@ import("//components/signin/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//rlz/features/features.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
@@ -1054,7 +1054,7 @@ split_static_library("ui") {
     "//media",
     "//net:net",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//rlz/features",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/service_manager/runner/common",

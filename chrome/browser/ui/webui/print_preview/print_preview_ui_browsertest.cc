@@ -21,7 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)

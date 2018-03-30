@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;

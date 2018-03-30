@@ -7,7 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
 import("//media/media_options.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//rlz/features/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
@@ -473,7 +473,7 @@ if (!is_ios) {
       "//google_apis",
       "//ipc:test_support",
       "//net:test_support",
-      "//printing/features",
+      "//printing/buildflags",
       "//services/device/public/mojom",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",

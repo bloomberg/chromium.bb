@@ -32,7 +32,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/window_features_converter.h"
 #include "extensions/common/constants.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"

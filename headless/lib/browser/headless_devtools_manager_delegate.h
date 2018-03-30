@@ -15,7 +15,7 @@
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "headless/lib/browser/headless_network_conditions.h"
 #include "headless/public/headless_browser_context.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "headless/lib/browser/headless_print_manager.h"

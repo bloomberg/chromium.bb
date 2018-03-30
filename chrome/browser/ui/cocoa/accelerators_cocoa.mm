@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"

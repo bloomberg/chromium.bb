@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/win_helper.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
 #include "printing/printing_context_system_dialog_win.h"

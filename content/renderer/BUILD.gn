@@ -10,7 +10,7 @@ import("//build/split_static_library.gni")
 import("//content/common/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/features/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -567,7 +567,7 @@ target(link_target_type, "renderer") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//sandbox",
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/mojom",

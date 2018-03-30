@@ -86,7 +86,7 @@
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/escape.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "rlz/features/features.h"
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"

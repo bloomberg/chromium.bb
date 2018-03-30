@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string16.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
 // Generating implementations for all aspects of the IPC message

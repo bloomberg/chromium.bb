@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace {
 

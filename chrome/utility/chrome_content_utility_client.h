@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/utility/content_utility_client.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 class MashServiceFactory;
 

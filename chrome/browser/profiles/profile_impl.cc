@@ -124,7 +124,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"

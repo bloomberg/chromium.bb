@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/test/mock_render_thread.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace base {
 class DictionaryValue;

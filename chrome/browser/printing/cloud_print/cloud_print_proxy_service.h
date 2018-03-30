@@ -16,7 +16,7 @@
 #include "chrome/common/cloud_print.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if !BUILDFLAG(ENABLE_PRINT_PREVIEW) || defined(OS_CHROMEOS)
 #error "Print Preview must be enabled / Not supported on ChromeOS"

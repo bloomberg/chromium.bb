@@ -266,7 +266,7 @@ static_library("common") {
     "//mojo/public/cpp/bindings",
     "//pdf:buildflags",
     "//ppapi/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//services/service_manager/sandbox",
     "//skia",
     "//third_party/icu",
@@ -531,7 +531,7 @@ static_library("non_code_constants") {
   ]
 
   public_deps = [
-    "//printing/features",
+    "//printing/buildflags",
     "//ui/base:ui_features",
   ]
 }
@@ -559,7 +559,7 @@ static_library("constants") {
     ":non_code_constants",
     "//content/public/common:result_codes",
     "//extensions/buildflags",
-    "//printing/features",
+    "//printing/buildflags",
     "//rlz/features",
     "//ui/base:ui_features",
   ]

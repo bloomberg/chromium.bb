@@ -29,7 +29,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 class ChromeChildProcessWatcher;

@@ -6,7 +6,7 @@
 #define PRINTING_PRINT_JOB_CONSTANTS_H_
 
 #include "build/build_config.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/printing_export.h"
 
 namespace printing {

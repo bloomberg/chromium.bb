@@ -19,7 +19,7 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/backend/print_backend.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 class PdfPrinterHandler;
 class PrinterHandler;

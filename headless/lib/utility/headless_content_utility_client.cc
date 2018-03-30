@@ -4,7 +4,7 @@
 
 #include "headless/lib/utility/headless_content_utility_client.h"
 
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "components/printing/service/public/cpp/pdf_compositor_service_factory.h"
