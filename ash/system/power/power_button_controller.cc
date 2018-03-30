@@ -22,6 +22,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/time/default_tick_clock.h"
@@ -29,6 +30,7 @@
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 namespace {
@@ -53,7 +55,6 @@ std::unique_ptr<views::Widget> CreateMenuWidget() {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.keep_on_top = true;
   params.accept_events = true;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "PowerButtonMenuWindow";
   params.layer_type = ui::LAYER_SOLID_COLOR;
@@ -83,6 +84,53 @@ constexpr const char* PowerButtonController::kLeftPosition;
 constexpr const char* PowerButtonController::kRightPosition;
 constexpr const char* PowerButtonController::kTopPosition;
 constexpr const char* PowerButtonController::kBottomPosition;
+
+// Maintain active state of the given |widget|. Sets |widget| to always render
+// as active if it's not already initially configured that way. Resets the
+// setting if |widget| still exists when this class is destroyed.
+class PowerButtonController::ActiveWindowWidgetController
+    : public views::WidgetObserver {
+ public:
+  static std::unique_ptr<ActiveWindowWidgetController> Create(
+      views::Widget* widget) {
+    if (!widget || widget->IsAlwaysRenderAsActive())
+      return nullptr;
+
+    widget->SetAlwaysRenderAsActive(true);
+    return std::unique_ptr<ActiveWindowWidgetController>(
+        base::WrapUnique(new ActiveWindowWidgetController(widget)));
+  }
+
+  ~ActiveWindowWidgetController() override {
+    if (!widget_)
+      return;
+    widget_->SetAlwaysRenderAsActive(false);
+    widget_->RemoveObserver(this);
+  }
+
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override {
+    DCHECK_EQ(widget_, widget);
+    widget_ = nullptr;
+    widget->RemoveObserver(this);
+  }
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override {
+    OnWidgetClosing(widget);
+  }
+
+ private:
+  explicit ActiveWindowWidgetController(views::Widget* widget)
+      : widget_(widget) {
+    if (widget)
+      widget->AddObserver(this);
+  }
+
+  views::Widget* widget_ = nullptr;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveWindowWidgetController);
+};
 
 PowerButtonController::PowerButtonController(
     BacklightsForcedOffSetter* backlights_forced_off_setter)
@@ -253,6 +301,8 @@ bool PowerButtonController::IsMenuOpened() const {
 void PowerButtonController::DismissMenu() {
   if (IsMenuOpened())
     menu_widget_->Hide();
+
+  active_window_widget_controller_.reset();
 }
 
 void PowerButtonController::OnDisplayModeChanged(
@@ -372,6 +422,13 @@ void PowerButtonController::StopTimersAndDismissMenu() {
 }
 
 void PowerButtonController::StartPowerMenuAnimation() {
+  // Avoid a distracting deactivation animation on the formerly-active
+  // window when the menu is activated.
+  views::Widget* active_toplevel_widget =
+      views::Widget::GetTopLevelWidgetForNativeView(wm::GetActiveWindow());
+  active_window_widget_controller_ =
+      ActiveWindowWidgetController::Create(active_toplevel_widget);
+
   if (!menu_widget_)
     menu_widget_ = CreateMenuWidget();
   menu_widget_->SetContentsView(new PowerButtonMenuScreenView(
