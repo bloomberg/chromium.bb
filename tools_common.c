@@ -250,8 +250,7 @@ static void highbd_img_upshift(aom_image_t *dst, aom_image_t *src,
   switch (src->fmt) {
     case AOM_IMG_FMT_I42016:
     case AOM_IMG_FMT_I42216:
-    case AOM_IMG_FMT_I44416:
-    case AOM_IMG_FMT_I44016: break;
+    case AOM_IMG_FMT_I44416: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -286,8 +285,7 @@ static void lowbd_img_upshift(aom_image_t *dst, aom_image_t *src,
   switch (src->fmt) {
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_I422:
-    case AOM_IMG_FMT_I444:
-    case AOM_IMG_FMT_I440: break;
+    case AOM_IMG_FMT_I444: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -327,8 +325,7 @@ void aom_img_truncate_16_to_8(aom_image_t *dst, aom_image_t *src) {
   switch (dst->fmt) {
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_I422:
-    case AOM_IMG_FMT_I444:
-    case AOM_IMG_FMT_I440: break;
+    case AOM_IMG_FMT_I444: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -362,8 +359,7 @@ static void highbd_img_downshift(aom_image_t *dst, aom_image_t *src,
   switch (src->fmt) {
     case AOM_IMG_FMT_I42016:
     case AOM_IMG_FMT_I42216:
-    case AOM_IMG_FMT_I44416:
-    case AOM_IMG_FMT_I44016: break;
+    case AOM_IMG_FMT_I44416: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -396,8 +392,7 @@ static void lowbd_img_downshift(aom_image_t *dst, aom_image_t *src,
   switch (dst->fmt) {
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_I422:
-    case AOM_IMG_FMT_I444:
-    case AOM_IMG_FMT_I440: break;
+    case AOM_IMG_FMT_I444: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {

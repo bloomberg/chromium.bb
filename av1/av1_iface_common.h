@@ -30,13 +30,8 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
       bps = 16;
     }
   } else {
-    if (!yv12->subsampling_x) {
-      img->fmt = AOM_IMG_FMT_I440;
-      bps = 16;
-    } else {
-      img->fmt = AOM_IMG_FMT_I420;
-      bps = 12;
-    }
+    img->fmt = AOM_IMG_FMT_I420;
+    bps = 12;
   }
   img->cp = yv12->color_primaries;
   img->tc = yv12->transfer_characteristics;

@@ -57,11 +57,9 @@ static aom_image_t *img_alloc_helper(aom_image_t *img, aom_img_fmt_t fmt,
     case AOM_IMG_FMT_AOMI420:
     case AOM_IMG_FMT_AOMYV12: bps = 12; break;
     case AOM_IMG_FMT_I422:
-    case AOM_IMG_FMT_I440: bps = 16; break;
     case AOM_IMG_FMT_I444: bps = 24; break;
     case AOM_IMG_FMT_I42016: bps = 24; break;
     case AOM_IMG_FMT_I42216:
-    case AOM_IMG_FMT_I44016: bps = 32; break;
     case AOM_IMG_FMT_I44416: bps = 48; break;
     default: bps = 16; break;
   }
@@ -80,12 +78,10 @@ static aom_image_t *img_alloc_helper(aom_image_t *img, aom_img_fmt_t fmt,
 
   switch (fmt) {
     case AOM_IMG_FMT_I420:
-    case AOM_IMG_FMT_I440:
     case AOM_IMG_FMT_YV12:
     case AOM_IMG_FMT_AOMI420:
     case AOM_IMG_FMT_AOMYV12:
-    case AOM_IMG_FMT_I42016:
-    case AOM_IMG_FMT_I44016: ycs = 1; break;
+    case AOM_IMG_FMT_I42016: ycs = 1; break;
     default: ycs = 0; break;
   }
 

@@ -140,8 +140,6 @@ static const arg_def_t use_i422 =
     ARG_DEF(NULL, "i422", 0, "Input file is I422");
 static const arg_def_t use_i444 =
     ARG_DEF(NULL, "i444", 0, "Input file is I444");
-static const arg_def_t use_i440 =
-    ARG_DEF(NULL, "i440", 0, "Input file is I440");
 static const arg_def_t codecarg = ARG_DEF(NULL, "codec", 1, "Codec to use");
 static const arg_def_t passes =
     ARG_DEF("p", "passes", 1, "Number of passes (1/2)");
@@ -276,7 +274,6 @@ static const arg_def_t *global_args[] = { &use_yv12,
                                           &use_i420,
                                           &use_i422,
                                           &use_i444,
-                                          &use_i440,
                                           &usage,
                                           &threads,
                                           &profile,
@@ -889,8 +886,6 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
       global->color_type = I422;
     else if (arg_match(&arg, &use_i444, argi))
       global->color_type = I444;
-    else if (arg_match(&arg, &use_i440, argi))
-      global->color_type = I440;
     else if (arg_match(&arg, &quietarg, argi))
       global->quiet = 1;
     else if (arg_match(&arg, &verbosearg, argi))
@@ -1344,12 +1339,10 @@ static const char *image_format_to_string(aom_img_fmt_t f) {
     case AOM_IMG_FMT_I420: return "I420";
     case AOM_IMG_FMT_I422: return "I422";
     case AOM_IMG_FMT_I444: return "I444";
-    case AOM_IMG_FMT_I440: return "I440";
     case AOM_IMG_FMT_YV12: return "YV12";
     case AOM_IMG_FMT_I42016: return "I42016";
     case AOM_IMG_FMT_I42216: return "I42216";
     case AOM_IMG_FMT_I44416: return "I44416";
-    case AOM_IMG_FMT_I44016: return "I44016";
     default: return "Other";
   }
 }
@@ -1890,7 +1883,6 @@ int main(int argc, const char **argv_) {
     case I420: input.fmt = AOM_IMG_FMT_I420; break;
     case I422: input.fmt = AOM_IMG_FMT_I422; break;
     case I444: input.fmt = AOM_IMG_FMT_I444; break;
-    case I440: input.fmt = AOM_IMG_FMT_I440; break;
     case YV12: input.fmt = AOM_IMG_FMT_YV12; break;
   }
 

@@ -926,10 +926,6 @@ static int main_loop(int argc, const char **argv_) {
         if (use_y4m) {
           char y4m_buf[Y4M_BUFFER_SIZE] = { 0 };
           size_t len = 0;
-          if (img->fmt == AOM_IMG_FMT_I440 || img->fmt == AOM_IMG_FMT_I44016) {
-            fprintf(stderr, "Cannot produce y4m output for 440 sampling.\n");
-            goto fail;
-          }
           if (frame_out == 1) {
             // Y4M file header
             len = y4m_write_file_header(
