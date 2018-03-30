@@ -462,13 +462,9 @@ void WebServiceWorkerCacheStorageImpl::PopulateWebResponseFromResponse(
 
   if (!response.blob_uuid.empty()) {
     DCHECK(response.blob);
-    mojo::ScopedMessagePipeHandle blob_pipe;
-    if (response.blob)
-      blob_pipe = response.blob->Clone().PassInterface().PassHandle();
     web_response->SetBlob(WebString::FromUTF8(response.blob_uuid),
-                          response.blob_size, std::move(blob_pipe));
-    // Let the host know that it can release its reference to the blob.
-    GetCacheStorage().BlobDataHandled(response.blob_uuid);
+                          response.blob_size,
+                          response.blob->Clone().PassInterface().PassHandle());
   }
 }
 

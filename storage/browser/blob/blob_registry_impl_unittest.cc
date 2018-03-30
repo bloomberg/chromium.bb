@@ -64,6 +64,8 @@ class MockBlob : public blink::mojom::Blob {
     NOTREACHED();
   }
 
+  void ReadSideData(ReadSideDataCallback) override { NOTREACHED(); }
+
   void GetInternalUUID(GetInternalUUIDCallback callback) override {
     std::move(callback).Run(uuid_);
   }

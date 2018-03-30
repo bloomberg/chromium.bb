@@ -23,7 +23,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -84,15 +83,11 @@ class CacheStorageDispatcherHost::CacheImpl
       blink::mojom::CacheStorageCache::MatchCallback callback,
       CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
+      std::unique_ptr<ServiceWorkerResponse> response) {
     if (error != CacheStorageError::kSuccess) {
       std::move(callback).Run(blink::mojom::MatchResult::NewStatus(error));
       return;
     }
-
-    if (blob_data_handle)
-      owner_->StoreBlobDataHandle(*blob_data_handle);
 
     std::move(callback).Run(blink::mojom::MatchResult::NewResponse(*response));
   }
@@ -138,18 +133,11 @@ class CacheStorageDispatcherHost::CacheImpl
       blink::mojom::CacheStorageCache::MatchAllCallback callback,
       CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
-      std::vector<ServiceWorkerResponse> responses,
-      std::unique_ptr<content::CacheStorageCache::BlobDataHandles>
-          blob_data_handles) {
+      std::vector<ServiceWorkerResponse> responses) {
     if (error != CacheStorageError::kSuccess &&
         error != CacheStorageError::kErrorNotFound) {
       std::move(callback).Run(blink::mojom::MatchAllResult::NewStatus(error));
       return;
-    }
-
-    for (const auto& handle : *blob_data_handles) {
-      if (handle)
-        owner_->StoreBlobDataHandle(*handle);
     }
 
     std::move(callback).Run(
@@ -160,19 +148,14 @@ class CacheStorageDispatcherHost::CacheImpl
       blink::mojom::CacheStorageCache::MatchAllCallback callback,
       CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
+      std::unique_ptr<ServiceWorkerResponse> response) {
     std::vector<ServiceWorkerResponse> responses;
-    auto blob_data_handles =
-        std::make_unique<content::CacheStorageCache::BlobDataHandles>();
     if (error == CacheStorageError::kSuccess) {
       DCHECK(response);
       responses.push_back(std::move(*response.release()));
-      if (blob_data_handle)
-        blob_data_handles->push_back(std::move(blob_data_handle));
     }
     OnCacheMatchAllCallback(std::move(callback), std::move(cache_handle), error,
-                            std::move(responses), std::move(blob_data_handles));
+                            std::move(responses));
   }
 
   void Keys(const ServiceWorkerFetchRequest& request,
@@ -361,10 +344,6 @@ void CacheStorageDispatcherHost::Match(
                      std::move(callback)));
 }
 
-void CacheStorageDispatcherHost::BlobDataHandled(const std::string& uuid) {
-  DropBlobDataHandle(uuid);
-}
-
 void CacheStorageDispatcherHost::OnHasCallback(
     blink::mojom::CacheStorage::HasCallback callback,
     bool has_cache,
@@ -413,36 +392,14 @@ void CacheStorageDispatcherHost::OnKeysCallback(
 void CacheStorageDispatcherHost::OnMatchCallback(
     blink::mojom::CacheStorage::MatchCallback callback,
     CacheStorageError error,
-    std::unique_ptr<ServiceWorkerResponse> response,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
+    std::unique_ptr<ServiceWorkerResponse> response) {
   if (error != CacheStorageError::kSuccess) {
     std::move(callback).Run(blink::mojom::MatchResult::NewStatus(error));
     return;
   }
 
-  if (blob_data_handle)
-    StoreBlobDataHandle(*blob_data_handle);
-
   std::move(callback).Run(
       blink::mojom::MatchResult::NewResponse(std::move(*response)));
-}
-
-void CacheStorageDispatcherHost::StoreBlobDataHandle(
-    const storage::BlobDataHandle& blob_data_handle) {
-  std::pair<UUIDToBlobDataHandleList::iterator, bool> rv =
-      blob_handle_store_.insert(std::make_pair(
-          blob_data_handle.uuid(), std::list<storage::BlobDataHandle>()));
-  rv.first->second.push_front(storage::BlobDataHandle(blob_data_handle));
-}
-
-void CacheStorageDispatcherHost::DropBlobDataHandle(const std::string& uuid) {
-  UUIDToBlobDataHandleList::iterator it = blob_handle_store_.find(uuid);
-  if (it == blob_handle_store_.end())
-    return;
-  DCHECK(!it->second.empty());
-  it->second.pop_front();
-  if (it->second.empty())
-    blob_handle_store_.erase(it);
 }
 
 void CacheStorageDispatcherHost::AddBinding(

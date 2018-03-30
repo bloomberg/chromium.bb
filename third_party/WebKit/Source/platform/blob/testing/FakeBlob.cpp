@@ -32,6 +32,10 @@ void FakeBlob::ReadAll(mojo::ScopedDataPipeProducerHandle,
   NOTREACHED();
 }
 
+void FakeBlob::ReadSideData(ReadSideDataCallback callback) {
+  NOTREACHED();
+}
+
 void FakeBlob::GetInternalUUID(GetInternalUUIDCallback callback) {
   std::move(callback).Run(uuid_);
 }

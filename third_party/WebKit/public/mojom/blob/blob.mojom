@@ -45,6 +45,11 @@ interface Blob {
   ReadRange(uint64 offset, uint64 length, handle<data_pipe_producer> pipe,
             BlobReaderClient? client);
 
+  // Reads the side-data (if any) associated with this blob. This is the same
+  // data that would be passed to OnReceivedCachedMetadata if you were reading
+  // this blob through a blob URL.
+  ReadSideData() => (array<uint8>? data);
+
   // This method is an implementation detail of the blob system. You should not
   // ever need to call it directly.
   // This returns the internal UUID of the blob, used by the blob system to

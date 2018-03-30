@@ -33,7 +33,6 @@ class URLRequestContextGetter;
 }
 
 namespace storage {
-class BlobDataHandle;
 class BlobStorageContext;
 class QuotaManagerProxy;
 }
@@ -67,13 +66,10 @@ class CONTENT_EXPORT CacheStorageCache {
   using BadMessageCallback = base::OnceCallback<void()>;
   using ResponseCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
-                              std::unique_ptr<ServiceWorkerResponse>,
-                              std::unique_ptr<storage::BlobDataHandle>)>;
-  using BlobDataHandles = std::vector<std::unique_ptr<storage::BlobDataHandle>>;
+                              std::unique_ptr<ServiceWorkerResponse>)>;
   using ResponsesCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
-                              std::vector<ServiceWorkerResponse>,
-                              std::unique_ptr<BlobDataHandles>)>;
+                              std::vector<ServiceWorkerResponse>)>;
   using Requests = std::vector<ServiceWorkerFetchRequest>;
   using RequestsCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
@@ -288,8 +284,7 @@ class CONTENT_EXPORT CacheStorageCache {
                  ResponseCallback callback);
   void MatchDidMatchAll(ResponseCallback callback,
                         blink::mojom::CacheStorageError match_all_error,
-                        std::vector<ServiceWorkerResponse> match_all_responses,
-                        std::unique_ptr<BlobDataHandles> match_all_handles);
+                        std::vector<ServiceWorkerResponse> match_all_responses);
 
   // MatchAll callbacks
   void MatchAllImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
@@ -436,9 +431,8 @@ class CONTENT_EXPORT CacheStorageCache {
       int64_t cache_padding);
   void DeleteBackendCompletedIO();
 
-  std::unique_ptr<storage::BlobDataHandle> PopulateResponseBody(
-      disk_cache::ScopedEntryPtr entry,
-      ServiceWorkerResponse* response);
+  void PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
+                            ServiceWorkerResponse* response);
 
   // Virtual for testing.
   virtual CacheStorageCacheHandle CreateCacheHandle();

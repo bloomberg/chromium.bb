@@ -116,8 +116,4 @@ interface CacheStorage {
 
   // Opens and returns a mojo interface to a cache, it creates if doesn't exist.
   Open(mojo_base.mojom.String16 cache_name) => (OpenResult result);
-
-  // Deletes a blob reference held by CacheStorage implementation, client must
-  // call after handling the blob.
-  BlobDataHandled(string uuid);
 };

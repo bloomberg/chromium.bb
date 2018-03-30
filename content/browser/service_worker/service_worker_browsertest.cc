@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -2818,46 +2819,17 @@ class CacheStorageSideDataSizeChecker
       const base::Closure& continuation,
       CacheStorageCacheHandle cache_handle,
       CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
+      std::unique_ptr<ServiceWorkerResponse> response) {
     ASSERT_EQ(CacheStorageError::kSuccess, error);
-    blob_data_handle_ = std::move(blob_data_handle);
-    blob_reader_ = blob_data_handle_->CreateReader();
-    const storage::BlobReader::Status status = blob_reader_->CalculateSize(
-        base::BindOnce(&self::OnBlobReaderCalculateSizeCallback, this, result,
-                       continuation));
-
-    ASSERT_NE(storage::BlobReader::Status::NET_ERROR, status);
-    if (status == storage::BlobReader::Status::DONE)
-      OnBlobReaderCalculateSizeCallback(result, continuation, net::OK);
-  }
-
-  void OnBlobReaderCalculateSizeCallback(int* result,
-                                         const base::Closure& continuation,
-                                         int size_result) {
-    ASSERT_EQ(net::OK, size_result);
-    if (!blob_reader_->has_side_data()) {
-      blob_reader_ = nullptr;
-      continuation.Run();
-      return;
-    }
-    const storage::BlobReader::Status status = blob_reader_->ReadSideData(
-        base::Bind(&self::OnBlobReaderReadSideDataCallback, this, result,
-                   continuation));
-    ASSERT_NE(storage::BlobReader::Status::NET_ERROR, status);
-    if (status == storage::BlobReader::Status::DONE) {
-      OnBlobReaderReadSideDataCallback(result, continuation,
-                                       storage::BlobReader::Status::DONE);
-    }
-  }
-
-  void OnBlobReaderReadSideDataCallback(int* result,
-                                        const base::Closure& continuation,
-                                        storage::BlobReader::Status status) {
-    ASSERT_NE(storage::BlobReader::Status::NET_ERROR, status);
-    *result = blob_reader_->side_data()->size();
-    blob_reader_ = nullptr;
-    continuation.Run();
+    ASSERT_TRUE(response->blob);
+    auto blob = response->blob;
+    response->blob->get()->ReadSideData(base::BindLambdaForTesting(
+        [blob, result,
+         continuation](const base::Optional<std::vector<uint8_t>>& data) {
+          if (data)
+            *result = data->size();
+          continuation.Run();
+        }));
   }
 
   CacheStorageContextImpl* cache_storage_context_;
@@ -2865,8 +2837,6 @@ class CacheStorageSideDataSizeChecker
   const GURL origin_;
   const std::string cache_name_;
   const GURL url_;
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
-  std::unique_ptr<storage::BlobReader> blob_reader_;
   DISALLOW_COPY_AND_ASSIGN(CacheStorageSideDataSizeChecker);
 };
 
