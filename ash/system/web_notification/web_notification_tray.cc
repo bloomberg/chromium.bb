@@ -40,15 +40,10 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 namespace {
-
-// Menu commands
-constexpr int kToggleQuietMode = 0;
-constexpr int kEnableQuietModeDay = 2;
 
 constexpr int kMaximumSmallIconCount = 3;
 
@@ -531,28 +526,6 @@ bool WebNotificationTray::ShowNotifierSettings() {
   }
   return ShowMessageCenterInternal(true /* show_settings */,
                                    false /* show_by_click */);
-}
-
-bool WebNotificationTray::IsCommandIdChecked(int command_id) const {
-  if (command_id != kToggleQuietMode)
-    return false;
-  return message_center()->IsQuietMode();
-}
-
-bool WebNotificationTray::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id == kToggleQuietMode) {
-    bool in_quiet_mode = message_center()->IsQuietMode();
-    message_center()->SetQuietMode(!in_quiet_mode);
-    return;
-  }
-  base::TimeDelta expires_in = command_id == kEnableQuietModeDay
-                                   ? base::TimeDelta::FromDays(1)
-                                   : base::TimeDelta::FromHours(1);
-  message_center()->EnterQuietModeWithExpire(expires_in);
 }
 
 void WebNotificationTray::OnMessageCenterContentsChanged() {

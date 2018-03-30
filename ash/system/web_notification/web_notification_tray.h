@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/message_center/ui_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -45,8 +44,7 @@ class WebNotificationLabel;
 class ASH_EXPORT WebNotificationTray
     : public TrayBackgroundView,
       public message_center::UiDelegate,
-      public base::SupportsWeakPtr<WebNotificationTray>,
-      public ui::SimpleMenuModel::Delegate {
+      public base::SupportsWeakPtr<WebNotificationTray> {
  public:
   WebNotificationTray(Shelf* shelf, aura::Window* status_area_window);
   ~WebNotificationTray() override;
@@ -60,9 +58,6 @@ class ASH_EXPORT WebNotificationTray
 
   // Returns the current tray bubble height or 0 if there is no bubble.
   int tray_bubble_height_for_test() const;
-
-  // Returns true if it should block the auto hide behavior of the shelf.
-  bool ShouldBlockShelfAutoHide() const;
 
   // Returns true if the message center bubble is visible.
   bool IsMessageCenterVisible() const;
@@ -95,11 +90,6 @@ class ASH_EXPORT WebNotificationTray
   bool ShowPopups() override;
   void HidePopups() override;
   bool ShowNotifierSettings() override;
-
-  // Overridden from ui::SimpleMenuModel::Delegate.
-  bool IsCommandIdChecked(int command_id) const override;
-  bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
 
   message_center::MessageCenter* message_center() const;
 
@@ -134,15 +124,6 @@ class ASH_EXPORT WebNotificationTray
   // the message center.
   bool ShouldShowMessageCenter() const;
 
-  // Returns true if it should show the quiet mode menu.
-  bool ShouldShowQuietModeMenu(const ui::Event& event);
-
-  // Shows the quiet mode menu.
-  void ShowQuietModeMenu(const ui::Event& event);
-
-  // Creates the menu model for quiet mode and returns it.
-  ui::MenuModel* CreateQuietModeMenu();
-
   WebNotificationBubbleWrapper* message_center_bubble() const {
     return message_center_bubble_.get();
   }
@@ -168,12 +149,6 @@ class ASH_EXPORT WebNotificationTray
   bool show_message_center_on_unlock_;
 
   bool should_update_tray_content_;
-
-  // True when the shelf auto hide behavior has to be blocked. Previously
-  // this was done by checking |message_center_bubble_| but actually
-  // the check can be called when creating this object, so it would cause
-  // flickers of the shelf from hidden to shown. See: crbug.com/181213
-  bool should_block_shelf_auto_hide_;
 
   std::unique_ptr<AshPopupAlignmentDelegate> popup_alignment_delegate_;
 
