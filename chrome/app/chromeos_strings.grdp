@@ -4808,6 +4808,12 @@
   <message name="IDS_PIN_UNLOCK_FEATURE_NOTIFIER_NAME" desc="The name of PIN unlock feature notifier that is a system component">
     PIN Unlock Feature
   </message>
+  <message name="IDS_PIN_UNLOCK_MIGRATION_PROMPT" desc="String shown in a notification asking the user to re-enter their PIN so it can be used in sign-in.">
+    Re-enter your PIN to use it to sign in to your device.
+  </message>
+  <message name="IDS_PIN_UNLOCK_MIGRATION_PROMPT_CONTINUE" desc="Continue button in notification prompt.">
+    Continue
+  </message>
 
   <message name="IDS_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
     Searching for Wi-Fi networks...
