@@ -462,26 +462,28 @@ const int8_t fwd_cos_bit_row[MAX_TXWH_IDX /*txw_idx*/]
                               { 0, 0, 12, 11, 10 }
                             };
 
-const int8_t fdct4_range_mult2[4] = { 0, 2, 3, 3 };
-const int8_t fdct8_range_mult2[6] = { 0, 2, 4, 5, 5, 5 };
-const int8_t fdct16_range_mult2[8] = { 0, 2, 4, 6, 7, 7, 7, 7 };
-const int8_t fdct32_range_mult2[10] = { 0, 2, 4, 6, 8, 9, 9, 9, 9, 9 };
-const int8_t fdct64_range_mult2[12] = { 0,  2,  4,  6,  8,  10,
-                                        11, 11, 11, 11, 11, 11 };
+static const int8_t fdct4_range_mult2[4] = { 0, 2, 3, 3 };
+static const int8_t fdct8_range_mult2[6] = { 0, 2, 4, 5, 5, 5 };
+static const int8_t fdct16_range_mult2[8] = { 0, 2, 4, 6, 7, 7, 7, 7 };
+static const int8_t fdct32_range_mult2[10] = { 0, 2, 4, 6, 8, 9, 9, 9, 9, 9 };
+static const int8_t fdct64_range_mult2[12] = { 0,  2,  4,  6,  8,  10,
+                                               11, 11, 11, 11, 11, 11 };
 
-const int8_t fadst4_range_mult2[7] = { 0, 2, 4, 3, 3, 3, 3 };
-const int8_t fadst8_range_mult2[8] = { 0, 0, 1, 3, 3, 5, 5, 5 };
-const int8_t fadst16_range_mult2[10] = { 0, 0, 1, 3, 3, 5, 5, 7, 7, 7 };
-const int8_t fadst32_range_mult2[12] = { 0, 0, 1, 3, 3, 5, 5, 7, 7, 9, 9, 9 };
+static const int8_t fadst4_range_mult2[7] = { 0, 2, 4, 3, 3, 3, 3 };
+static const int8_t fadst8_range_mult2[8] = { 0, 0, 1, 3, 3, 5, 5, 5 };
+static const int8_t fadst16_range_mult2[10] = { 0, 0, 1, 3, 3, 5, 5, 7, 7, 7 };
+static const int8_t fadst32_range_mult2[12] = { 0, 0, 1, 3, 3, 5,
+                                                5, 7, 7, 9, 9, 9 };
 
-const int8_t max_fwd_range_mult2_col[5] = { 3, 5, 7, 9, 11 };
+static const int8_t max_fwd_range_mult2_col[5] = { 3, 5, 7, 9, 11 };
 
-const int8_t fidtx4_range_mult2[1] = { 1 };
-const int8_t fidtx8_range_mult2[1] = { 2 };
-const int8_t fidtx16_range_mult2[1] = { 3 };
-const int8_t fidtx32_range_mult2[1] = { 4 };
-const int8_t fidtx64_range_mult2[1] = { 5 };
+static const int8_t fidtx4_range_mult2[1] = { 1 };
+static const int8_t fidtx8_range_mult2[1] = { 2 };
+static const int8_t fidtx16_range_mult2[1] = { 3 };
+static const int8_t fidtx32_range_mult2[1] = { 4 };
+static const int8_t fidtx64_range_mult2[1] = { 5 };
 
+#if 0
 const int8_t fwd_idtx_range_row[MAX_TXWH_IDX /*txw_idx*/]
                                [MAX_TXWH_IDX /*txh_idx*/] = { { 2, 4, 5, 0, 0 },
                                                               { 3, 4, 5, 6, 0 },
@@ -489,6 +491,7 @@ const int8_t fwd_idtx_range_row[MAX_TXWH_IDX /*txw_idx*/]
                                                               { 0, 5, 6, 7, 8 },
                                                               { 0, 0, 7, 8,
                                                                 9 } };
+#endif
 
 const int8_t *fwd_txfm_range_mult2_list[TXFM_TYPES] = {
   fdct4_range_mult2,   fdct8_range_mult2,   fdct16_range_mult2,
