@@ -136,6 +136,11 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
             GetU2fSignApduCommand(*alt_application_parameter_, *it),
             base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
                        ApplicationParameterType::kAlternative));
+      } else if (it == registered_keys_.cend()) {
+        // The fake enrollment errored out. Move on to the next device.
+        state_ = State::IDLE;
+        current_device_ = nullptr;
+        Transition();
       } else if (++it != registered_keys_.end()) {
         // Key is not for this device. Try signing with the next key.
         InitiateDeviceTransaction(
