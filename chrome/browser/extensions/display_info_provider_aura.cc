@@ -4,34 +4,9 @@
 
 #include "chrome/browser/extensions/display_info_provider_aura.h"
 
-#include "base/logging.h"
-#include "ui/display/screen.h"
-
 namespace extensions {
 
-DisplayInfoProviderAura::DisplayInfoProviderAura() {
-}
-
-DisplayInfoProviderAura::~DisplayInfoProviderAura() {
-}
-
-bool DisplayInfoProviderAura::SetInfo(
-    const std::string& display_id,
-    const api::system_display::DisplayProperties& info,
-    std::string* error) {
-  *error = "Not implemented";
-  return false;
-}
-
-void DisplayInfoProviderAura::UpdateDisplayUnitInfoForPlatform(
-    const display::Display& display,
-    extensions::api::system_display::DisplayUnitInfo* unit) {
-  static bool logged_once = false;
-  if (!logged_once) {
-    NOTIMPLEMENTED();
-    logged_once = true;
-  }
-}
+DisplayInfoProviderAura::DisplayInfoProviderAura() = default;
 
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {

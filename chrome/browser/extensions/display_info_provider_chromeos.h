@@ -14,64 +14,48 @@
 namespace ash {
 class OverscanCalibrator;
 class TouchCalibratorController;
-}
+}  // namespace ash
 
 namespace extensions {
 
 class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
  public:
-  static const char kCustomTouchCalibrationInProgressError[];
-  static const char kCompleteCalibrationCalledBeforeStartError[];
-  static const char kTouchBoundsNegativeError[];
-  static const char kTouchCalibrationPointsNegativeError[];
-  static const char kTouchCalibrationPointsTooLargeError[];
-  static const char kNativeTouchCalibrationActiveError[];
-  static const char kNoExternalTouchDevicePresent[];
-  static const char kMirrorModeSourceIdNotSpecifiedError[];
-  static const char kMirrorModeDestinationIdsNotSpecifiedError[];
-  static const char kMirrorModeSourceIdBadFormatError[];
-  static const char kMirrorModeDestinationIdBadFormatError[];
-  static const char kMirrorModeSingleDisplayError[];
-  static const char kMirrorModeSourceIdNotFoundError[];
-  static const char kMirrorModeDestinationIdsEmptyError[];
-  static const char kMirrorModeDestinationIdNotFoundError[];
-  static const char kMirrorModeDuplicateIdError[];
-
   DisplayInfoProviderChromeOS();
   ~DisplayInfoProviderChromeOS() override;
 
   // DisplayInfoProvider implementation.
-  bool SetInfo(const std::string& display_id,
-               const api::system_display::DisplayProperties& info,
-               std::string* error) override;
-  bool SetDisplayLayout(const DisplayLayoutList& layouts,
-                        std::string* error) override;
-  void UpdateDisplayUnitInfoForPlatform(
-      const display::Display& display,
-      api::system_display::DisplayUnitInfo* unit) override;
+  void SetDisplayProperties(
+      const std::string& display_id,
+      const api::system_display::DisplayProperties& properties,
+      ErrorCallback callback) override;
+  void SetDisplayLayout(const DisplayLayoutList& layouts,
+                        ErrorCallback callback) override;
   void EnableUnifiedDesktop(bool enable) override;
-  DisplayUnitInfoList GetAllDisplaysInfo(bool single_unified) override;
-  DisplayLayoutList GetDisplayLayout() override;
+  void GetAllDisplaysInfo(
+      bool single_unified,
+      base::OnceCallback<void(DisplayUnitInfoList result)> callback) override;
+  void GetDisplayLayout(
+      base::OnceCallback<void(DisplayLayoutList result)> callback) override;
   bool OverscanCalibrationStart(const std::string& id) override;
   bool OverscanCalibrationAdjust(
       const std::string& id,
       const api::system_display::Insets& delta) override;
   bool OverscanCalibrationReset(const std::string& id) override;
   bool OverscanCalibrationComplete(const std::string& id) override;
-  bool ShowNativeTouchCalibration(const std::string& id,
-                                  std::string* error,
-                                  TouchCalibrationCallback callback) override;
-  bool StartCustomTouchCalibration(const std::string& id,
-                                   std::string* error) override;
+  void ShowNativeTouchCalibration(const std::string& id,
+                                  ErrorCallback callback) override;
+  bool IsNativeTouchCalibrationActive() override;
+  bool StartCustomTouchCalibration(const std::string& id) override;
   bool CompleteCustomTouchCalibration(
       const api::system_display::TouchCalibrationPairQuad& pairs,
-      const api::system_display::Bounds& bounds,
-      std::string* error) override;
-  bool ClearTouchCalibration(const std::string& id,
-                             std::string* error) override;
-  bool IsNativeTouchCalibrationActive(std::string* error) override;
-  bool SetMirrorMode(const api::system_display::MirrorModeInfo& info,
-                     std::string* out_error) override;
+      const api::system_display::Bounds& bounds) override;
+  bool ClearTouchCalibration(const std::string& id) override;
+  bool IsCustomTouchCalibrationActive() override;
+  void SetMirrorMode(const api::system_display::MirrorModeInfo& info,
+                     ErrorCallback callback) override;
+  void UpdateDisplayUnitInfoForPlatform(
+      const display::Display& display,
+      api::system_display::DisplayUnitInfo* unit) override;
 
  private:
   ash::TouchCalibratorController* GetTouchCalibrator();

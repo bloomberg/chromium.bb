@@ -50,19 +50,7 @@ EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
 
 }  // namespace
 
-DisplayInfoProviderWin::DisplayInfoProviderWin() {
-}
-
-DisplayInfoProviderWin::~DisplayInfoProviderWin() {
-}
-
-bool DisplayInfoProviderWin::SetInfo(
-    const std::string& display_id,
-    const api::system_display::DisplayProperties& info,
-    std::string* error) {
-  *error = "Not implemented";
-  return false;
-}
+DisplayInfoProviderWin::DisplayInfoProviderWin() = default;
 
 void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
     const display::Display& display,

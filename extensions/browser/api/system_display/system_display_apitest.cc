@@ -82,14 +82,16 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
 
   ~MockDisplayInfoProvider() override {}
 
-  bool SetInfo(const std::string& display_id,
-               const api::system_display::DisplayProperties& params,
-               std::string* error) override {
+  void SetDisplayProperties(
+      const std::string& display_id,
+      const api::system_display::DisplayProperties& properties,
+      ErrorCallback callback) override {
     // Should get called only once per test case.
     EXPECT_FALSE(set_info_value_);
-    set_info_value_ = params.ToValue();
+    set_info_value_ = properties.ToValue();
     set_info_display_id_ = display_id;
-    return true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
   }
 
   void EnableUnifiedDesktop(bool enable) override {
@@ -150,24 +152,20 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     native_touch_calibration_success_ = success;
   }
 
-  bool IsNativeTouchCalibrationActive(std::string* error) override {
-    return false;
-  }
-
-  bool ShowNativeTouchCalibration(
-      const std::string& id,
-      std::string* error,
-      DisplayInfoProvider::TouchCalibrationCallback callback) override {
+  void ShowNativeTouchCalibration(const std::string& id,
+                                  ErrorCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), native_touch_calibration_success_));
-    return true;
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  native_touch_calibration_success_
+                                      ? base::nullopt
+                                      : base::Optional<std::string>("failed")));
   }
 
-  bool SetMirrorMode(const api::system_display::MirrorModeInfo& info,
-                     std::string* error) override {
+  void SetMirrorMode(const api::system_display::MirrorModeInfo& info,
+                     ErrorCallback callback) override {
     mirror_mode_ = info.mode;
-    return true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
   }
 
  private:
@@ -223,6 +221,12 @@ class SystemDisplayApiTest : public ShellApiTest {
   }
 
  protected:
+  void SetInfo(const std::string& display_id,
+               const api::system_display::DisplayProperties& properties) {
+    provider_->SetDisplayProperties(
+        display_id, properties,
+        base::BindOnce([](base::Optional<std::string>) {}));
+  }
   std::unique_ptr<MockDisplayInfoProvider> provider_;
   std::unique_ptr<display::Screen> screen_;
 
@@ -386,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, OverscanCalibrationStart) {
 
   // Setup MockDisplayInfoProvider.
   api::system_display::DisplayProperties params;
-  provider_->SetInfo(id, params, nullptr);
+  SetInfo(id, params);
 
   // Call OverscanCalibrationStart.
   scoped_refptr<SystemDisplayOverscanCalibrationStartFunction> start_function(
@@ -413,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, OverscanCalibrationApp) {
   // Setup MockDisplayInfoProvider.
   const std::string id = "display0";
   api::system_display::DisplayProperties params;
-  provider_->SetInfo(id, params, nullptr);
+  SetInfo(id, params);
 
   ASSERT_TRUE(RunAppTest("system/display/overscan")) << message_;
 
@@ -425,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, OverscanCalibrationAppNoComplete) {
   // Setup MockDisplayInfoProvider.
   const std::string id = "display0";
   api::system_display::DisplayProperties params;
-  provider_->SetInfo(id, params, nullptr);
+  SetInfo(id, params);
 
   ResultCatcher catcher;
   const Extension* extension = LoadApp("system/display/overscan_no_complete");
@@ -460,9 +464,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibrationFail) {
   std::string result(api_test_utils::RunFunctionAndReturnError(
       show_native_calibration.get(), "[\"" + id + "\"]", browser_context()));
 
-  EXPECT_EQ(
-      result,
-      SystemDisplayShowNativeTouchCalibrationFunction::kTouchCalibrationError);
+  EXPECT_FALSE(result.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibration) {

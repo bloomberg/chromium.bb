@@ -8,18 +8,7 @@
 
 namespace extensions {
 
-CastDisplayInfoProvider::CastDisplayInfoProvider() {}
-
-CastDisplayInfoProvider::~CastDisplayInfoProvider() {}
-
-bool CastDisplayInfoProvider::SetInfo(
-    const std::string& display_id,
-    const api::system_display::DisplayProperties& info,
-    std::string* error) {
-  DCHECK(error);
-  *error = "Not implemented";
-  return false;
-}
+CastDisplayInfoProvider::CastDisplayInfoProvider() = default;
 
 void CastDisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
     const display::Display& display,
