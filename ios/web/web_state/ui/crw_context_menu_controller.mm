@@ -51,6 +51,26 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 // response.
 NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
 
+// Enum used to record element details fetched for the context menu.
+enum class ContextMenuElementFrame {
+  // Recorded when the element was found in the main frame.
+  MainFrame = 0,
+  // Recorded when the element was found in an iframe.
+  Iframe = 1,
+  Count
+};
+
+// Struct to track the details of the element at |location| in |webView|.
+struct ContextMenuInfo {
+  // The location of the long press.
+  CGPoint location;
+  // True if the element is in the page's main frame, false if in an iframe.
+  BOOL is_main_frame;
+  // DOM element information. May contain the keys defined in
+  // ios/web/web_state/context_menu_constants.h. All values are strings.
+  NSDictionary* dom_element;
+};
+
 }  // namespace
 
 @interface CRWContextMenuController ()<UIGestureRecognizerDelegate>
@@ -80,11 +100,11 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
 // Cancels all touch events in the web view (long presses, tapping, scrolling).
 - (void)cancelAllTouches;
 // Asynchronously fetches information about DOM element for the given point (in
-// UIView coordinates). |handler| can not be nil. See |_DOMElementForLastTouch|
-// for element format description.
+// UIView coordinates). |handler| can not be nil. See
+// |_contextMenuInfoForLastTouch.dom_element| for element format description.
 - (void)fetchDOMElementAtPoint:(CGPoint)point
              completionHandler:(void (^)(NSDictionary*))handler;
-// Sets the value of |_DOMElementForLastTouch|.
+// Sets the value of |_contextMenuInfoForLastTouch.dom_element|.
 - (void)setDOMElementForLastTouch:(NSDictionary*)element;
 // Called to process a message received from JavaScript.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
@@ -104,11 +124,9 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
   // Long press recognizer that allows showing context menus.
   UILongPressGestureRecognizer* _contextMenuRecognizer;
   // DOM element information for the point where the user made the last touch.
-  // Can be nil if has not been calculated yet. Precalculation is necessary
-  // because retreiving DOM element relies on async API so element info can not
-  // be built on demand. May contain the keys defined in
-  // ios/web/web_state/context_menu_constants.h. All values are strings.
-  NSDictionary* _DOMElementForLastTouch;
+  // Precalculation is necessary because retreiving DOM element relies on async
+  // API so element info can not be built on demand.
+  ContextMenuInfo _contextMenuInfoForLastTouch;
   // Whether or not the cotext menu should be displayed as soon as the DOM
   // element details are returned. Since fetching the details from the |webView|
   // of the element the user long pressed is asyncrounous, it may not be
@@ -117,8 +135,6 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
   // |_contextMenuRecognizer| finished, but couldn't yet show the context menu
   // becuase the DOM element details were not yet available.
   BOOL _contextMenuNeedsDisplay;
-  // The location of the last reconized long press in the |webView|.
-  CGPoint _locationForLastTouch;
   // Details for currently in progress element fetches. The objects are
   // instances of HTMLElementFetchRequest and are keyed by a unique requestId
   // string.
@@ -140,6 +156,10 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
     _delegate = delegate;
     _injectionEvaluator = injectionEvaluator;
     _pendingElementFetchRequests = [[NSMutableDictionary alloc] init];
+    // Default to assuming all elements are from the main frame since this value
+    // will not be updated unless the
+    // |web::features::kContextMenuElementPostMessage| feature is enabled.
+    _contextMenuInfoForLastTouch.is_main_frame = YES;
 
     // The system context menu triggers after 0.55 second. Add a gesture
     // recognizer with a shorter delay to be able to cancel the system menu if
@@ -251,7 +271,7 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
 }
 
 - (void)longPressGestureRecognizerBegan {
-  if ([_DOMElementForLastTouch count]) {
+  if ([_contextMenuInfoForLastTouch.dom_element count]) {
     // User long pressed on a link or an image. Cancelling all touches will
     // intentionally suppress system context menu UI.
     [self cancelAllTouches];
@@ -261,9 +281,10 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
   }
 
   if ([_delegate respondsToSelector:@selector(webView:handleContextMenu:)]) {
-    _locationForLastTouch = [_contextMenuRecognizer locationInView:_webView];
+    _contextMenuInfoForLastTouch.location =
+        [_contextMenuRecognizer locationInView:_webView];
 
-    if ([_DOMElementForLastTouch count]) {
+    if ([_contextMenuInfoForLastTouch.dom_element count]) {
       [self showContextMenu];
     } else {
       // Shows the context menu once the DOM element information is set.
@@ -274,7 +295,7 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
 
 - (void)longPressGestureRecognizerChanged {
   if (!_contextMenuNeedsDisplay ||
-      CGPointEqualToPoint(_locationForLastTouch, CGPointZero)) {
+      CGPointEqualToPoint(_contextMenuInfoForLastTouch.location, CGPointZero)) {
     return;
   }
 
@@ -284,8 +305,10 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
   // |_contextMenuNeedsDisplay| has already been set to True.
   CGPoint currentTouchLocation =
       [_contextMenuRecognizer locationInView:_webView];
-  float deltaX = std::abs(_locationForLastTouch.x - currentTouchLocation.x);
-  float deltaY = std::abs(_locationForLastTouch.y - currentTouchLocation.y);
+  float deltaX = std::abs(_contextMenuInfoForLastTouch.location.x -
+                          currentTouchLocation.x);
+  float deltaY = std::abs(_contextMenuInfoForLastTouch.location.y -
+                          currentTouchLocation.y);
   if (deltaX > kLongPressMoveDeltaPixels ||
       deltaY > kLongPressMoveDeltaPixels) {
     [self cancelContextMenuDisplay];
@@ -293,10 +316,17 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
 }
 
 - (void)showContextMenu {
-  web::ContextMenuParams params =
-      web::ContextMenuParamsFromElementDictionary(_DOMElementForLastTouch);
+  // Log if the element is in the main frame or a child frame.
+  UMA_HISTOGRAM_ENUMERATION("ContextMenu.DOMElementFrame",
+                            (_contextMenuInfoForLastTouch.is_main_frame
+                                 ? ContextMenuElementFrame::MainFrame
+                                 : ContextMenuElementFrame::Iframe),
+                            ContextMenuElementFrame::Count);
+
+  web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(
+      _contextMenuInfoForLastTouch.dom_element);
   params.view = _webView;
-  params.location = _locationForLastTouch;
+  params.location = _contextMenuInfoForLastTouch.location;
   [_delegate webView:_webView handleContextMenu:params];
 }
 
@@ -320,14 +350,16 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
 }
 
 - (void)setDOMElementForLastTouch:(NSDictionary*)element {
-  _DOMElementForLastTouch = [element copy];
+  _contextMenuInfoForLastTouch.dom_element = [element copy];
   if (_contextMenuNeedsDisplay) {
     [self showContextMenu];
   }
 }
 
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message {
-  NSDictionary* response = message.body;
+  NSMutableDictionary* response =
+      [[NSMutableDictionary alloc] initWithDictionary:message.body];
+  _contextMenuInfoForLastTouch.is_main_frame = message.frameInfo.mainFrame;
   NSString* requestID = response[web::kContextMenuElementRequestId];
   HTMLElementFetchRequest* fetchRequest =
       _pendingElementFetchRequests[requestID];
