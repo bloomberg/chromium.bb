@@ -20,6 +20,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/external_begin_frame_controller_client_impl.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -391,6 +392,8 @@ void VizProcessTransportFactory::CompositingModeFallbackToSoftware() {
     if (visible)
       compositor->SetVisible(true);
   }
+
+  GpuDataManagerImpl::GetInstance()->NotifyGpuInfoUpdate();
 }
 
 void VizProcessTransportFactory::OnContextLost() {

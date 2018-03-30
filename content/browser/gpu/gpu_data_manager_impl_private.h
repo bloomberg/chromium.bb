@@ -101,6 +101,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void OnGpuProcessInitFailure();
 
+  // Notify all observers whenever there is a GPU info update.
+  void NotifyGpuInfoUpdate();
+
   virtual ~GpuDataManagerImplPrivate();
 
  private:
@@ -142,9 +145,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   };
 
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
-
-  // Notify all observers whenever there is a GPU info update.
-  void NotifyGpuInfoUpdate();
 
   // Called when GPU access (hardware acceleration and swiftshader) becomes
   // blocked.

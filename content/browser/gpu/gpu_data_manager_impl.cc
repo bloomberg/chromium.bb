@@ -212,6 +212,11 @@ void GpuDataManagerImpl::Notify3DAPIBlocked(const GURL& top_origin_url,
       top_origin_url, render_process_id, render_frame_id, requester);
 }
 
+void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
+  base::AutoLock auto_lock(lock_);
+  private_->NotifyGpuInfoUpdate();
+}
+
 void GpuDataManagerImpl::OnGpuProcessInitFailure() {
   base::AutoLock auto_lock(lock_);
   private_->OnGpuProcessInitFailure();

@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -53,6 +54,19 @@ bool IsForceGpuRasterizationEnabled() {
   return command_line->HasSwitch(switches::kForceGpuRasterization);
 }
 
+gpu::GpuFeatureStatus GetGpuCompositingStatus() {
+  gpu::GpuFeatureStatus status =
+      GpuDataManagerImpl::GetInstance()->GetFeatureStatus(
+          gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING);
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  if (status == gpu::kGpuFeatureStatusEnabled &&
+      ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled()) {
+    status = gpu::kGpuFeatureStatusDisabled;
+  }
+#endif
+  return status;
+}
+
 const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -66,8 +80,7 @@ const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
        "Accelerated 2D canvas is unavailable: either disabled via blacklist or"
        " the command line.",
        true},
-      {"gpu_compositing",
-       manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
+      {"gpu_compositing", GetGpuCompositingStatus(),
        command_line.HasSwitch(switches::kDisableGpuCompositing),
        "Gpu compositing has been disabled, either via blacklist, about:flags"
        " or the command line. The browser will fall back to software "
