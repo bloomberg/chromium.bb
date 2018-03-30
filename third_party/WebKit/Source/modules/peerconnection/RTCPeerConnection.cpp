@@ -428,11 +428,11 @@ bool FingerprintMismatch(String old_sdp, String new_sdp) {
   // Look for fingerprint being modified. Not allowed.  Handle differences in
   // line endings ('\r\n' vs, '\n' when looking for the end of the fingerprint).
   size_t old_fingerprint_end = old_sdp.Find("\r\n", old_fingerprint_pos + 1);
-  if (old_fingerprint_end == std::string::npos) {
+  if (old_fingerprint_end == WTF::kNotFound) {
     old_fingerprint_end = old_sdp.Find("\n", old_fingerprint_pos + 1);
   }
   size_t new_fingerprint_end = new_sdp.Find("\r\n", new_fingerprint_pos + 1);
-  if (new_fingerprint_end == std::string::npos) {
+  if (new_fingerprint_end == WTF::kNotFound) {
     new_fingerprint_end = new_sdp.Find("\n", new_fingerprint_pos + 1);
   }
   return old_sdp.Substring(old_fingerprint_pos,
