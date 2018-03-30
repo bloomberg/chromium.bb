@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/callback_helpers.h"
-#import "base/ios/ios_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
@@ -136,45 +135,6 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
       NSError* error) {
     if (error)
       DLOG(ERROR) << "Air printing error: " << error.description;
-
-    // When printing a NSData object given to the
-    // UIPrintInteractionController's |printingItem| object, a PDF file
-    // representing the NSData object is created in the app's tmp directory
-    // by the OS and never deleted. So, this workaround deletes PDF files in
-    // tmp now that printing is done. When iOS9 is deprecated, this can
-    // be removed since PDFs will no longer need to be downloaded to print,
-    // and |printingItem| will no longer be used.
-    if (!base::ios::IsRunningOnIOS10OrLater() && isPDF) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-          base::BindBlockArc(^{
-            NSFileManager* manager = [NSFileManager defaultManager];
-            NSString* tempDir = NSTemporaryDirectory();
-            NSError* tempDirError = nil;
-
-            // Iterate over files in tmp directory.
-            for (NSString* file in
-                 [manager contentsOfDirectoryAtPath:tempDir
-                                              error:&tempDirError]) {
-              // If the file is a PDF file, delete it.
-              if ([[file pathExtension] isEqualToString:@"pdf"]) {
-                NSError* deletionError = nil;
-                NSString* fullFilePath =
-                    [tempDir stringByAppendingPathComponent:file];
-                BOOL success = [manager removeItemAtPath:fullFilePath
-                                                   error:&deletionError];
-                if (!success) {
-                  DLOG(ERROR) << "AirPrint unable to remove tmp file:" << file
-                              << " error: " << deletionError.description;
-                }
-              }
-            }
-            if (tempDirError) {
-              DLOG(ERROR) << "AirPrint tmp dir access error:"
-                          << tempDirError.description;
-            }
-          }));
-    }
   };
   [printInteractionController presentAnimated:YES
                             completionHandler:completionHandler];
@@ -202,47 +162,13 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   printInfo.outputType = UIPrintInfoOutputGeneral;
   printInfo.jobName = title;
   printInteractionController.printInfo = printInfo;
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-  printInteractionController.showsPageRange = YES;
-#endif
 
-  // Print Formatters do not work for PDFs in iOS9 WKWebView, but do in iOS10.
-  // Instead, download the PDF and (eventually) pass it to the
-  // UIPrintInteractionController. Remove this workaround and all associated PDF
-  // specific code when iOS9 is deprecated.
-  BOOL isPDFURL = NO;
-  if (!base::ios::IsRunningOnIOS10OrLater() &&
-      [view isMemberOfClass:[WKWebView class]]) {
-    WKWebView* webView = base::mac::ObjCCastStrict<WKWebView>(view);
-    NSURL* URL = webView.URL;
-    CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(
-        kUTTagClassFilenameExtension,
-        (__bridge CFStringRef)[[URL path] pathExtension], NULL);
-    if (UTI) {
-      CFStringRef MIMEType =
-          UTTypeCopyPreferredTagWithClass(UTI, kUTTagClassMIMEType);
-      if (MIMEType) {
-        isPDFURL =
-            [@(kPDFMimeType) isEqualToString:(__bridge NSString*)MIMEType];
-        if (isPDFURL) {
-          [self downloadPDFFileWithURL:net::GURLWithNSURL(URL)
-                        viewController:viewController];
-        }
-        CFRelease(MIMEType);
-      }
-      CFRelease(UTI);
-    }
-  }
-
-  if (!isPDFURL) {
-    UIPrintPageRenderer* renderer = [[UIPrintPageRenderer alloc] init];
-    [renderer addPrintFormatter:[view viewPrintFormatter]
-          startingAtPageAtIndex:0];
-    printInteractionController.printPageRenderer = renderer;
-    [PrintController
-        displayPrintInteractionController:printInteractionController
-                                   forPDF:NO];
-  }
+  UIPrintPageRenderer* renderer = [[UIPrintPageRenderer alloc] init];
+  [renderer addPrintFormatter:[view viewPrintFormatter]
+        startingAtPageAtIndex:0];
+  printInteractionController.printPageRenderer = renderer;
+  [PrintController displayPrintInteractionController:printInteractionController
+                                              forPDF:NO];
 }
 
 - (void)dismissAnimated:(BOOL)animated {
