@@ -16,7 +16,7 @@
 namespace blink {
 
 // PendingScript for a classic script
-// https://html.spec.whatwg.org/#classic-script.
+// https://html.spec.whatwg.org/multipage/webappapis.html#classic-script.
 //
 // TODO(kochi): The comment below is from pre-oilpan age and may not be correct
 // now.
@@ -115,7 +115,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   const ScriptFetchOptions options_;
 
   // "base url" snapshot taken at #prepare-a-script timing.
-  // https://html.spec.whatwg.org/#prepare-a-script
+  // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
   // which will eventually be used as #concept-script-base-url.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
   const KURL base_url_for_inline_script_;

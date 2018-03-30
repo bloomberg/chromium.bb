@@ -18,7 +18,7 @@ ModuleScript* ModuleScript::Create(const String& source_text,
                                    const ScriptFetchOptions& options,
                                    AccessControlStatus access_control_status,
                                    const TextPosition& start_position) {
-  // https://html.spec.whatwg.org/#creating-a-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
 
   // Step 1. "If scripting is disabled for settings's responsible browsing
   // context, then set source to the empty string." [spec text]
@@ -114,7 +114,7 @@ ModuleScript* ModuleScript::CreateInternal(const String& source_text,
                                            const KURL& base_url,
                                            const ScriptFetchOptions& options,
                                            const TextPosition& start_position) {
-  // https://html.spec.whatwg.org/#creating-a-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
   // Step 4. Set script's parse error and error to rethrow to null.
   // Step 8. Set script's record to result.
   // Step 9. Set script's base URL to baseURL.

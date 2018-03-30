@@ -48,7 +48,7 @@ class ScriptLoader;
 // HTMLParserScriptRunner is responsible for for arranging the execution of
 // script elements inserted by the parser, according to the rules for
 // 'An end tag whose tag name is "script"':
-// https://html.spec.whatwg.org/multipage/syntax.html#scriptEndTag
+// https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
 //
 // If a script blocks parsing, this class is responsible for holding it, and
 // executing it when required.
@@ -135,10 +135,10 @@ class HTMLParserScriptRunner final
   Member<Document> document_;
   Member<HTMLParserScriptRunnerHost> host_;
 
-  // https://html.spec.whatwg.org/#pending-parsing-blocking-script
+  // https://html.spec.whatwg.org/multipage/scripting.html#pending-parsing-blocking-script
   TraceWrapperMember<PendingScript> parser_blocking_script_;
 
-  // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
+  // https://html.spec.whatwg.org/multipage/scripting.html#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   HeapDeque<TraceWrapperMember<PendingScript>>
       scripts_to_execute_after_parsing_;
 

@@ -17,7 +17,7 @@ class XMLParserScriptRunnerHost;
 // XMLParserScriptRunner implements the interaction between an XML parser
 // (XMLDocumentParser) and <script> elements and their loading/execution.
 //
-// https://html.spec.whatwg.org/#parsing-xhtml-documents
+// https://html.spec.whatwg.org/multipage/xhtml.html#parsing-xhtml-documents
 class XMLParserScriptRunner final
     : public GarbageCollectedFinalized<XMLParserScriptRunner>,
       public PendingScriptClient {
@@ -42,7 +42,7 @@ class XMLParserScriptRunner final
   // from PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
 
-  // https://html.spec.whatwg.org/#pending-parsing-blocking-script
+  // https://html.spec.whatwg.org/multipage/scripting.html#pending-parsing-blocking-script
   // TODO(crbug/717643): Support module scripts, and turn this into
   // TraceWrapperMember<>.
   Member<PendingScript> parser_blocking_script_;
@@ -50,7 +50,7 @@ class XMLParserScriptRunner final
   Member<XMLParserScriptRunnerHost> host_;
 
   // TODO(crbug/717643): Implement
-  // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
+  // https://html.spec.whatwg.org/multipage/scripting.html#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   DISALLOW_COPY_AND_ASSIGN(XMLParserScriptRunner);
 };
 

@@ -23,7 +23,7 @@ class SingleModuleClient;
 enum class ModuleGraphLevel;
 
 // A ModuleMap implements "module map" spec.
-// https://html.spec.whatwg.org/#module-map
+// https://html.spec.whatwg.org/multipage/webappapis.html#module-map
 class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
                                     public TraceWrapperBase {
   class Entry;

@@ -42,7 +42,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   pending_script->intervened_ =
       MaybeDisallowFetchForDocWrittenScript(params, element_document);
 
-  // https://html.spec.whatwg.org/#fetch-a-classic-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
   // Step 2. Set request's client to settings object. [spec text]
   //
   // Note: |element_document| corresponds to the settings object.

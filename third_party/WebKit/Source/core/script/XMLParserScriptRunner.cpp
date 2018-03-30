@@ -13,8 +13,10 @@
 namespace blink {
 
 // Spec links:
-// [Parsing] https://html.spec.whatwg.org/#parsing-xhtml-documents
-// [Prepare] https://html.spec.whatwg.org/#prepare-a-script
+// [Parsing]
+// https://html.spec.whatwg.org/multipage/xhtml.html#parsing-xhtml-documents
+// [Prepare]
+// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 
 XMLParserScriptRunner::XMLParserScriptRunner(XMLParserScriptRunnerHost* host)
     : host_(host) {}

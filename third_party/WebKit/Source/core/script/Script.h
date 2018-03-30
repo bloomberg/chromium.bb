@@ -18,7 +18,7 @@ class SecurityOrigin;
 
 enum class ScriptType { kClassic, kModule };
 
-// https://html.spec.whatwg.org/#concept-script
+// https://html.spec.whatwg.org/multipage/webappapis.html#concept-script
 class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
  public:
   virtual void Trace(blink::Visitor* visitor) {}
@@ -27,8 +27,9 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
 
   virtual ScriptType GetScriptType() const = 0;
 
-  // https://html.spec.whatwg.org/#run-a-classic-script or
-  // https://html.spec.whatwg.org/#run-a-module-script,
+  // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-classic-script
+  // or
+  // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-module-script,
   // depending on the script type.
   virtual void RunScript(LocalFrame*, const SecurityOrigin*) const = 0;
 
@@ -43,7 +44,7 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
       : fetch_options_(fetch_options), base_url_(base_url) {}
 
  private:
-  // https://html.spec.whatwg.org/#concept-script-script-fetch-options
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-script-fetch-options
   const ScriptFetchOptions fetch_options_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url

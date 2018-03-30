@@ -190,9 +190,9 @@ bool HTMLParserScriptRunner::IsParserBlockingScriptReady() {
 // This has two callers and corresponds to different concepts in the spec:
 // - When called from executeParsingBlockingScripts(), this corresponds to some
 //   steps of the "Otherwise" Clause of 'An end tag whose tag name is "script"'
-//   https://html.spec.whatwg.org/#scriptEndTag
+//   https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
 // - When called from executeScriptsWaitingForParsing(), this corresponds
-//   https://html.spec.whatwg.org/#execute-the-script-block
+//   https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
 //   and thus currently this function does more than specced.
 // TODO(hiroshige): Make the spec and implementation consistent.
 void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
@@ -277,7 +277,7 @@ void HTMLParserScriptRunner::PendingScriptFinished(
 }
 
 // 'An end tag whose tag name is "script"'
-// https://html.spec.whatwg.org/#scriptEndTag
+// https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
 //
 // Script handling lives outside the tree builder to keep each class simple.
 void HTMLParserScriptRunner::ProcessScriptElement(
@@ -328,7 +328,7 @@ bool HTMLParserScriptRunner::HasParserBlockingScript() const {
 }
 
 // The "Otherwise" Clause of 'An end tag whose tag name is "script"'
-// https://html.spec.whatwg.org/#scriptEndTag
+// https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
 void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
   // 3. "If (1) the parser's Document has a style sheet that is blocking scripts
   //     or (2) the script's "ready to be parser-executed" flag is not set:
@@ -380,7 +380,7 @@ void HTMLParserScriptRunner::ExecuteScriptsWaitingForResources() {
   ExecuteParsingBlockingScripts();
 }
 
-// Step 3 of https://html.spec.whatwg.org/#the-end:
+// Step 3 of https://html.spec.whatwg.org/multipage/parsing.html#the-end:
 // "If the list of scripts that will execute when the document has
 //  finished parsing is not empty, run these substeps:"
 bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
@@ -426,7 +426,8 @@ bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
   return true;
 }
 
-// 2nd Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
+// 2nd Clause, Step 23 of
+// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 void HTMLParserScriptRunner::RequestParsingBlockingScript(
     ScriptLoader* script_loader) {
   // "The element is the pending parsing-blocking script of the Document of
@@ -449,7 +450,8 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
   }
 }
 
-// 1st Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
+// 1st Clause, Step 23 of
+// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 void HTMLParserScriptRunner::RequestDeferredScript(
     ScriptLoader* script_loader) {
   PendingScript* pending_script = script_loader->TakePendingScript();
@@ -470,7 +472,7 @@ void HTMLParserScriptRunner::RequestDeferredScript(
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'
-// https://html.spec.whatwg.org/#scriptEndTag
+// https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
 void HTMLParserScriptRunner::ProcessScriptElementInternal(
     Element* script,
     const TextPosition& script_start_position) {
@@ -508,7 +510,8 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
     //  reentrant invocation of the parser."
     script_loader->PrepareScript(script_start_position);
 
-    // A part of Step 23 of https://html.spec.whatwg.org/#prepare-a-script:
+    // A part of Step 23 of
+    // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script:
     if (!script_loader->WillBeParserExecuted())
       return;
 

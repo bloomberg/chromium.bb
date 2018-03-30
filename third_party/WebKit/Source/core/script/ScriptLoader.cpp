@@ -73,7 +73,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
       will_execute_when_document_finished_parsing_(false),
       created_during_document_write_(created_during_document_write),
       async_exec_type_(ScriptRunner::kNone) {
-  // https://html.spec.whatwg.org/#already-started
+  // https://html.spec.whatwg.org/multipage/scripting.html#already-started
   // "The cloning steps for script elements must set the "already started"
   //  flag on the copy if it is set on the element being cloned."
   // TODO(hiroshige): Cloning is implemented together with
@@ -83,12 +83,12 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
     already_started_ = true;
 
   if (parser_inserted) {
-    // https://html.spec.whatwg.org/#parser-inserted
+    // https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
     // "It is set by the HTML parser and the XML parser
     //  on script elements they insert"
     parser_inserted_ = true;
 
-    // https://html.spec.whatwg.org/#non-blocking
+    // https://html.spec.whatwg.org/multipage/scripting.html#non-blocking
     // "It is unset by the HTML parser and the XML parser
     //  on script elements they insert."
     non_blocking_ = false;
@@ -136,7 +136,7 @@ void ScriptLoader::HandleSourceAttribute(const String& source_url) {
 }
 
 void ScriptLoader::HandleAsyncAttribute() {
-  // https://html.spec.whatwg.org/#non-blocking
+  // https://html.spec.whatwg.org/multipage/scripting.html#non-blocking
   // "In addition, whenever a script element whose "non-blocking" flag is set
   //  has an async content attribute added, the element's "non-blocking" flag
   //  must be unset."
@@ -190,7 +190,8 @@ bool IsValidClassicScriptTypeAndLanguage(
 
 }  // namespace
 
-// Step 6 of https://html.spec.whatwg.org/#prepare-a-script
+// Step 6 of
+// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 bool ScriptLoader::IsValidScriptTypeAndLanguage(
     const String& type,
     const String& language,
@@ -221,7 +222,8 @@ bool ScriptLoader::BlockForNoModule(ScriptType script_type, bool nomodule) {
   return nomodule && script_type == ScriptType::kClassic;
 }
 
-// Step 16 of https://html.spec.whatwg.org/#prepare-a-script
+// Step 16 of
+// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
     CrossOriginAttributeValue cross_origin) {
   switch (cross_origin) {
@@ -243,7 +245,7 @@ bool ScriptLoader::IsScriptTypeSupported(LegacyTypeSupport support_legacy_types,
                                       support_legacy_types, out_script_type);
 }
 
-// https://html.spec.whatwg.org/#prepare-a-script
+// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                                  LegacyTypeSupport support_legacy_types) {
   // 1. "If the script element is marked as having "already started", then
@@ -699,7 +701,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
 void ScriptLoader::FetchModuleScriptTree(const KURL& url,
                                          Modulator* modulator,
                                          const ScriptFetchOptions& options) {
-  // https://html.spec.whatwg.org/#prepare-a-script
+  // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
   // 22.6, "module":
   //     "Fetch a module script graph given url, settings object, "script", and
   //      options."
@@ -729,7 +731,7 @@ void ScriptLoader::Execute() {
   resource_keep_alive_ = nullptr;
 }
 
-// https://html.spec.whatwg.org/#execute-the-script-block
+// https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
 void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
                                       const KURL& document_url) {
   DCHECK(pending_script);
@@ -898,7 +900,8 @@ bool ScriptLoader::IgnoresLoadRequest() const {
          !element_->IsConnected();
 }
 
-// Step 13 of https://html.spec.whatwg.org/#prepare-a-script
+// Step 13 of
+// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 bool ScriptLoader::IsScriptForEventSupported() const {
   // 1. "Let for be the value of the for attribute."
   String event_attribute = element_->EventAttributeValue();
