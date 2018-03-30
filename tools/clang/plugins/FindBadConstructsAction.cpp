@@ -49,10 +49,10 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.check_base_classes = true;
     } else if (args[i] == "enforce-in-thirdparty-webkit") {
       options_.enforce_in_thirdparty_webkit = true;
-    } else if (args[i] == "check-enum-last-value") {
+    } else if (args[i] == "check-enum-max-value") {
       // TODO(tsepez): Enable this by default once http://crbug.com/356815
       // and http://crbug.com/356816 are fixed.
-      options_.check_enum_last_value = true;
+      options_.check_enum_max_value = true;
     } else if (args[i] == "no-realpath") {
       options_.no_realpath = true;
     } else if (args[i] == "check-ipc") {

@@ -67,13 +67,6 @@ void ChromeClassTester::CheckTag(TagDecl* tag) {
         return;
 
     CheckChromeClass(location_type, location, record);
-  } else if (EnumDecl* enum_decl = dyn_cast<EnumDecl>(tag)) {
-    std::string base_name = enum_decl->getNameAsString();
-    // TODO(dcheng): This should probably consult a separate list.
-    if (IsIgnoredType(base_name))
-      return;
-
-    CheckChromeEnum(location_type, location, enum_decl);
   }
 }
 
@@ -232,9 +225,6 @@ void ChromeClassTester::BuildBannedLists() {
   // non-pod class member. Probably harmless.
   ignored_record_names_.emplace("MockTransaction");
 
-  // Enum type with _LAST members where _LAST doesn't mean last enum value.
-  ignored_record_names_.emplace("ServerFieldType");
-
   // Used heavily in ui_base_unittests and once in views_unittests. Fixing this
   // isn't worth the overhead of an additional library.
   ignored_record_names_.emplace("TestAnimationDelegate");
@@ -246,9 +236,6 @@ void ChromeClassTester::BuildBannedLists() {
   // Measured performance improvement on cc_perftests. See
   // https://codereview.chromium.org/11299290/
   ignored_record_names_.emplace("QuadF");
-
-  // Enum type with _LAST members where _LAST doesn't mean last enum value.
-  ignored_record_names_.emplace("ViewID");
 
   // Ignore IPC::NoParams bases, since these structs are generated via
   // macros and it makes it difficult to add explicit ctors.

@@ -70,12 +70,6 @@ class ChromeClassTester {
                                 clang::SourceLocation record_location,
                                 clang::CXXRecordDecl* record) = 0;
 
-  // Filtered versions of enum type that are only called with things defined
-  // in chrome header files.
-  virtual void CheckChromeEnum(LocationType location_type,
-                               clang::SourceLocation enum_location,
-                               clang::EnumDecl* enum_decl) = 0;
-
   // Utility methods used for filtering out non-chrome classes (and ones we
   // deliberately ignore) in HandleTagDeclDefinition().
   std::string GetNamespaceImpl(const clang::DeclContext* context,
