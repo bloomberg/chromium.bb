@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_CHROME_PROXIMITY_AUTH_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/proximity_auth/proximity_auth_client.h"
+#include "chromeos/components/proximity_auth/proximity_auth_client.h"
 
 class Profile;
 

@@ -16,6 +16,7 @@ test("chromeos_components_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//chromeos/components/proximity_auth:unit_tests",
     "//chromeos/components/tether:unit_tests",
   ]
 }

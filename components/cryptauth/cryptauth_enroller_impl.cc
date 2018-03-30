@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_client_impl.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/secure_message_delegate.h"
-#include "components/proximity_auth/logging/logging.h"
 #include "crypto/sha2.h"
 
 namespace cryptauth {

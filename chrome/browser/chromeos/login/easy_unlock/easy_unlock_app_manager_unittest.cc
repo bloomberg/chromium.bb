@@ -27,7 +27,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/proximity_auth/switches.h"
+#include "chromeos/components/proximity_auth/switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"

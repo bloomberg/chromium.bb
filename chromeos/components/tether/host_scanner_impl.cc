@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/connection_preserver.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/device_status_util.h"
@@ -17,7 +18,6 @@
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/network/network_state.h"
 #include "components/cryptauth/remote_device_loader.h"
-#include "components/proximity_auth/logging/logging.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {

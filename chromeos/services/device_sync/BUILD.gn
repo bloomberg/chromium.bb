@@ -23,17 +23,17 @@ static_library("device_sync") {
   ]
 
   public_deps = [
+    "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync/public/mojom",
     "//components/cryptauth",
-    "//components/proximity_auth/logging",
     "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 
   deps = [
     "//base",
+    "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync/public/mojom",
-    "//components/proximity_auth/logging",
     "//net",
     "//services/identity/public/cpp",
     "//services/service_manager/public/cpp",

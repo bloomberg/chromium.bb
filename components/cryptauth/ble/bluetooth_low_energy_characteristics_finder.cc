@@ -4,7 +4,7 @@
 
 #include "components/cryptauth/ble/bluetooth_low_energy_characteristics_finder.h"
 
-#include "components/proximity_auth/logging/logging.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"

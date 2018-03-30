@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 

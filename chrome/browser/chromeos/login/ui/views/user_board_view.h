@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 
 class AccountId;
 

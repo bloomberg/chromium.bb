@@ -6,10 +6,10 @@
 
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/tether_connector.h"
 #include "chromeos/components/tether/tether_disconnector.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

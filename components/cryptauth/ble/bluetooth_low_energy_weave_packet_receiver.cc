@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #endif
 
-#include "components/proximity_auth/logging/logging.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 namespace weave {

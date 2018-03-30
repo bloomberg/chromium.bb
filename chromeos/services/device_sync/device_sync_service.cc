@@ -4,8 +4,8 @@
 
 #include "chromeos/services/device_sync/device_sync_service.h"
 
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

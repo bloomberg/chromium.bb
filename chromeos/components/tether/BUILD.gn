@@ -146,12 +146,12 @@ static_library("tether") {
   deps = [
     "//base",
     "//chromeos",
+    "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/tether/proto",
     "//components/cryptauth",
     "//components/cryptauth/ble",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/proximity_auth/logging",
     "//components/session_manager/core",
     "//components/signin/core/browser",
     "//device/bluetooth",

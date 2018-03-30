@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_OBSERVER_H_
 
-#include "components/proximity_auth/screenlock_state.h"
+#include "chromeos/components/proximity_auth/screenlock_state.h"
 
 namespace chromeos {
 

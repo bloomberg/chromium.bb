@@ -308,7 +308,6 @@ test("components_unittests") {
       "//components/cryptauth:unit_tests",
       "//components/ownership:unit_tests",
       "//components/pairing:unit_tests",
-      "//components/proximity_auth:unit_tests",
       "//components/sync_wifi:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",

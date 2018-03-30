@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/proto/securemessage.pb.h"
 #include "components/cryptauth/secure_message_delegate.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 

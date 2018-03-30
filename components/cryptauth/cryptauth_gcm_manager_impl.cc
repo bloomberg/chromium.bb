@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/prefs/pref_service.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 

@@ -4,7 +4,7 @@
 
 #include "components/cryptauth/sync_scheduler.h"
 
-#include "components/proximity_auth/logging/logging.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 

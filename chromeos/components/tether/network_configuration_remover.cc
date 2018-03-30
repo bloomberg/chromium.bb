@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace {
 

@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 
 #include "base/bind.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/easy_unlock_client.h"
-#include "components/proximity_auth/logging/logging.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using cryptauth::SecureMessageDelegate;

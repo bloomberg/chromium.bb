@@ -28,8 +28,8 @@ static_library("ble") {
     # TODO (hansberry): This component has a circular dependency
     # with the root cryptauth target. It is whitelisted in that target for
     # includes.
+    "//chromeos/components/proximity_auth/logging",
     "//components/prefs",
-    "//components/proximity_auth/logging",
     "//device/bluetooth",
     "//net",
   ]
@@ -72,10 +72,10 @@ source_set("unit_tests") {
   deps = [
     ":ble",
     "//base/test:test_support",
+    "//chromeos/components/proximity_auth/logging",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
     "//components/prefs:test_support",
-    "//components/proximity_auth/logging",
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",

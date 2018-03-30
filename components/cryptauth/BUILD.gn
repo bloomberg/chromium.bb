@@ -92,11 +92,11 @@ static_library("cryptauth") {
 
   deps = [
     "//base",
+    "//chromeos/components/proximity_auth/logging",
     "//components/cryptauth/ble",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
     "//components/prefs",
-    "//components/proximity_auth/logging",
     "//crypto",
     "//google_apis",
     "//net",
@@ -163,7 +163,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
-    "//components/proximity_auth/logging",
+    "//chromeos/components/proximity_auth/logging",
     "//testing/gmock",
   ]
 }
