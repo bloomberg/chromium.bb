@@ -59,9 +59,7 @@ chrome::MessageBoxResult ShowSync(gfx::NativeWindow parent,
 
   // TODO(pkotwicz): Exit message loop when the dialog is closed by some other
   // means than |Cancel| or |Accept|. crbug.com/404385
-  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-  base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
   SimpleMessageBoxViews::Show(
       parent, title, message, type, yes_text, no_text, checkbox_text,
