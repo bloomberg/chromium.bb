@@ -134,8 +134,6 @@ config("compiler") {
     # supported when incrementally linking, or using /debug:fastlink).
     if (!is_win_fastlink) {
       ldflags += [ "/PROFILE" ]
-    } else {
-      assert(!is_syzyasan, "fastlink is incompatible with SyzyASan")
     }
   }
 
