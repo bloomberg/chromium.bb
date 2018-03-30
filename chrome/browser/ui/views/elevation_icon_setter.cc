@@ -58,9 +58,8 @@ std::unique_ptr<SkBitmap> GetElevationIcon() {
 // ElevationIconSetter --------------------------------------------------------
 
 ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
-                                         const base::Closure& callback)
-    : button_(button),
-      weak_factory_(this) {
+                                         base::OnceClosure callback)
+    : button_(button), weak_factory_(this) {
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunnerWithTraits(
@@ -68,14 +67,14 @@ ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
           .get(),
       FROM_HERE, base::BindOnce(&GetElevationIcon),
       base::BindOnce(&ElevationIconSetter::SetButtonIcon,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 #endif
 }
 
 ElevationIconSetter::~ElevationIconSetter() {
 }
 
-void ElevationIconSetter::SetButtonIcon(const base::Closure& callback,
+void ElevationIconSetter::SetButtonIcon(base::OnceClosure callback,
                                         std::unique_ptr<SkBitmap> icon) {
   if (icon) {
     float device_scale_factor = 1.0f;
@@ -91,6 +90,6 @@ void ElevationIconSetter::SetButtonIcon(const base::Closure& callback,
     if (button_->parent())
       button_->parent()->Layout();
     if (!callback.is_null())
-      callback.Run();
+      std::move(callback).Run();
   }
 }
