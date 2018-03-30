@@ -7,11 +7,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
 #include "components/visitedlink/common/visitedlink.mojom.h"
 #include "components/visitedlink/common/visitedlink_common.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/buffer.h"
 
 namespace visitedlink {
 
@@ -27,7 +28,8 @@ class VisitedLinkSlave : public VisitedLinkCommon,
   GetBindCallback();
 
   // mojom::VisitedLinkNotificationSink overrides.
-  void UpdateVisitedLinks(mojo::ScopedSharedBufferHandle table) override;
+  void UpdateVisitedLinks(
+      base::ReadOnlySharedMemoryRegion table_region) override;
   void AddVisitedLinks(
       const std::vector<VisitedLinkSlave::Fingerprint>& fingerprints) override;
   void ResetVisitedLinks(bool invalidate_hashes) override;
@@ -37,7 +39,7 @@ class VisitedLinkSlave : public VisitedLinkCommon,
 
   void Bind(mojom::VisitedLinkNotificationSinkRequest request);
 
-  mojo::ScopedSharedBufferMapping table_mapping_;
+  base::ReadOnlySharedMemoryMapping table_mapping_;
 
   mojo::Binding<mojom::VisitedLinkNotificationSink> binding_;
 

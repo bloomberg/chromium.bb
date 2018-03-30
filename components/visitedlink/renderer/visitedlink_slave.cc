@@ -28,8 +28,7 @@ VisitedLinkSlave::GetBindCallback() {
 // Initializes the table with the given shared memory handle. This memory is
 // mapped into the process.
 void VisitedLinkSlave::UpdateVisitedLinks(
-    mojo::ScopedSharedBufferHandle table) {
-  DCHECK(table.is_valid()) << "Bad table handle";
+    base::ReadOnlySharedMemoryRegion table_region) {
   // Since this function may be called again to change the table, we may need
   // to free old objects.
   FreeTable();
@@ -39,24 +38,25 @@ void VisitedLinkSlave::UpdateVisitedLinks(
   {
     // Map the header into our process so we can see how long the rest is,
     // and set the salt.
-    mojo::ScopedSharedBufferMapping header_memory =
-        table->Map(sizeof(SharedHeader));
-    if (!header_memory)
+    base::ReadOnlySharedMemoryMapping header_mapping =
+        table_region.MapAt(0, sizeof(SharedHeader));
+    if (!header_mapping.IsValid())
       return;
 
-    SharedHeader* header = static_cast<SharedHeader*>(header_memory.get());
+    const SharedHeader* header =
+        static_cast<const SharedHeader*>(header_mapping.memory());
     table_len = header->length;
     memcpy(salt_, header->salt, sizeof(salt_));
   }
 
   // Now we know the length, so map the table contents.
-  table_mapping_ =
-      table->MapAtOffset(table_len * sizeof(Fingerprint), sizeof(SharedHeader));
-  if (!table_mapping_)
+  table_mapping_ = table_region.Map();
+  if (!table_mapping_.IsValid())
     return;
 
   // Commit the data.
-  hash_table_ = reinterpret_cast<Fingerprint*>(table_mapping_.get());
+  hash_table_ = const_cast<Fingerprint*>(reinterpret_cast<const Fingerprint*>(
+      static_cast<const SharedHeader*>(table_mapping_.memory()) + 1));
   table_length_ = table_len;
 }
 
@@ -74,7 +74,7 @@ void VisitedLinkSlave::FreeTable() {
   if (!hash_table_)
     return;
 
-  table_mapping_.reset();
+  table_mapping_ = base::ReadOnlySharedMemoryMapping();
   hash_table_ = nullptr;
   table_length_ = 0;
 }

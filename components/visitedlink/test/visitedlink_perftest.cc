@@ -72,7 +72,7 @@ GURL TestURL(const char* prefix, int i) {
 class DummyVisitedLinkEventListener : public VisitedLinkMaster::Listener {
  public:
   DummyVisitedLinkEventListener() {}
-  void NewTable(mojo::SharedBufferHandle) override {}
+  void NewTable(base::ReadOnlySharedMemoryRegion*) override {}
   void Add(VisitedLinkCommon::Fingerprint) override {}
   void Reset(bool invalidate_hashes) override {}
 };
