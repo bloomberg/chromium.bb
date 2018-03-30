@@ -156,7 +156,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
                     ImageDecodeCache* image_decode_cache,
                     TaskGraphRunner* task_graph_runner,
                     RasterBufferProvider* raster_buffer_provider,
-                    size_t scheduled_raster_task_limit,
                     bool use_gpu_rasterization);
 
   // This causes any completed raster work to finalize, so that tiles get up to
