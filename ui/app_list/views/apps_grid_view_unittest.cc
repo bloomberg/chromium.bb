@@ -950,5 +950,35 @@ TEST_F(AppsGridViewTest, FolderColsAndRows) {
   app_list_folder_view()->CloseFolderPage();
 }
 
+TEST_P(AppsGridViewTest, ScrollDownShouldNotExitFolder) {
+  const size_t kTotalItems = kMaxFolderItemsPerPage;
+  model_->CreateAndPopulateFolderWithApps(kTotalItems);
+  EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
+  EXPECT_EQ(AppListFolderItem::kItemType,
+            model_->top_level_item_list()->item_at(0)->GetItemType());
+
+  // Open the folder.
+  test_api_->PressItemAt(0);
+  EXPECT_TRUE(contents_view_->GetAppsContainerView()->IsInFolderView());
+
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  gfx::Point apps_grid_view_origin =
+      items_grid_view->GetBoundsInScreen().origin();
+  ui::GestureEvent scroll_begin(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 1));
+  ui::GestureEvent scroll_update(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, 10));
+
+  // Drag down on the items grid, this should be handled by items grid view and
+  // the folder should not be closed.
+  items_grid_view->OnGestureEvent(&scroll_begin);
+  EXPECT_TRUE(scroll_begin.handled());
+  EXPECT_TRUE(contents_view_->GetAppsContainerView()->IsInFolderView());
+}
+
 }  // namespace test
 }  // namespace app_list
