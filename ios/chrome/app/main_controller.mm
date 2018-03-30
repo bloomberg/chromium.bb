@@ -133,6 +133,7 @@
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_mode.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -241,19 +242,6 @@ void RegisterComponentsForUpdate() {
 // switcher view is being dimissed.  This is different than ApplicationMode in
 // that it can be set to |NONE| when not in use.
 enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
-
-// The style of tab switcher, with a utility function to fetch it.
-enum class TabSwitcherMode { STACK, TABLET_SWITCHER, GRID };
-
-TabSwitcherMode SwitcherMode() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return TabSwitcherMode::GRID;
-  } else if (IsIPadIdiom()) {
-    return TabSwitcherMode::TABLET_SWITCHER;
-  } else {
-    return TabSwitcherMode::STACK;
-  }
-}
 
 // The delay, in seconds, for cleaning external files.
 const int kExternalFilesCleanupDelaySeconds = 60;
@@ -861,7 +849,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)deleteIncognitoBrowserState {
   BOOL otrBVCIsCurrent = (self.currentBVC == self.otrBVC);
-  TabSwitcherMode mode = SwitcherMode();
+  TabSwitcherMode mode = GetTabSwitcherMode();
 
   // If the stack view is in use,and the current BVC is the otr BVC, then the
   // user should be in the tab switcher (the stack view).
@@ -916,7 +904,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
   if (!_mainCoordinator) {
     // Lazily create the main coordinator.
-    if (SwitcherMode() == TabSwitcherMode::GRID) {
+    if (GetTabSwitcherMode() == TabSwitcherMode::GRID) {
       TabGridCoordinator* tabGridCoordinator =
           [[TabGridCoordinator alloc] initWithWindow:self.window
                           applicationCommandEndpoint:self];
@@ -1798,7 +1786,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     return;
   }
 
-  if (SwitcherMode() == TabSwitcherMode::TABLET_SWITCHER) {
+  if (GetTabSwitcherMode() == TabSwitcherMode::TABLET_SWITCHER) {
     [self showTabSwitcher];
   } else {
     self.currentBVC = self.mainBVC;
@@ -1888,7 +1876,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
   _tabSwitcherIsActive = YES;
   [_tabSwitcher setDelegate:self];
-  switch (SwitcherMode()) {
+  switch (GetTabSwitcherMode()) {
     case TabSwitcherMode::TABLET_SWITCHER: {
       TabSwitcherTransitionContext* transitionContext =
           [TabSwitcherTransitionContext
@@ -1992,7 +1980,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _dismissingTabSwitcher = YES;
   // Prevent wayward touches from wreaking havoc while the stack view is being
   // dismissed.
-  if (SwitcherMode() == TabSwitcherMode::STACK) {
+  if (GetTabSwitcherMode() == TabSwitcherMode::STACK) {
     [[_tabSwitcher viewController].view setUserInteractionEnabled:NO];
   }
 
@@ -2541,7 +2529,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 // Creates and returns a tab switcher object according to the tab switcher stye.
 - (id<TabSwitcher>)newTabSwitcher {
-  switch (SwitcherMode()) {
+  switch (GetTabSwitcherMode()) {
     case TabSwitcherMode::GRID: {
       DCHECK(_mainCoordinator)
           << " Main coordinator not created when tab switcher needed.";
