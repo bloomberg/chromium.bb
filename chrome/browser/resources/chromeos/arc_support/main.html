@@ -96,13 +96,15 @@
             aria-live="polite"></p>
         <p class="subtitle" i18n-content="greetingDescription">
         </p>
-        <div class="section-terms" id="terms-container">
-          <webview id="terms-view"></webview>
-        </div>
-        <div class="subcontentcontainer">
+        <div class ="section-flex" id="service-container">
+          <div class="section-terms" id="terms-container">
+            <webview id="terms-view"></webview>
+          </div>
           <div>
-            <a class="checkbox-text" id="privacy-policy-link"
-                href="#" i18n-content="privacyPolicyLink"></a>
+            <label class="layout horizontal section-checkbox-container">
+              <a class="checkbox-text" id="privacy-policy-link"
+                  href="#" i18n-content="privacyPolicyLink"></a>
+            </label>
           </div>
           <div id="metrics-preference">
             <label class="layout horizontal section-checkbox-container">
@@ -128,12 +130,29 @@
               </paper-checkbox>
             </label>
           </div>
+          <div id="pai-service-descirption">
+            <label class="layout horizontal section-checkbox-container">
+                <p class="content-text"
+                    i18n-values=".innerHTML:textPaiService"></p>
+            </label>
+          </div>
+          <div id="google-service-confirmation">
+            <label class="layout horizontal section-checkbox-container">
+              <p class="content-text"
+                    i18n-values=".innerHTML:textGoogleServiceConfirmation">
+              </p>
+            </label>
+          </div>
         </div>
       </div>
       <div class="layout horizontal center end-justified section-buttons">
         <div class="flex"></div>
         <paper-button class="white" id="button-cancel">
           <div class="container flex" i18n-content="buttonCancel">
+          </div>
+        </paper-button>
+        <paper-button class="blue" id="button-next">
+          <div class="container flex" i18n-content="buttonNext">
           </div>
         </paper-button>
         <paper-button class="blue" id="button-agree">

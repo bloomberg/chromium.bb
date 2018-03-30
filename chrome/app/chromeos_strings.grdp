@@ -4487,13 +4487,13 @@
     No thanks
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE" desc="Agree button of the opt-in dialog for Android apps.">
-    Agree
+    I Agree
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_CANCEL" desc="Cancel button of the opt-in dialog for Android apps.">
     Cancel
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_NEXT" desc="Next button of the opt-in dialog for Android apps.">
-    Next
+    More
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY" desc="Retry button of the opt-in dialog for Android apps.">
     Try again
@@ -4514,42 +4514,59 @@
     Terms of Service
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_ENABLED" desc="Message in the opt-in dialog for Android apps in case metrics are managed on the device and on.">
-    This device currently sends diagnostic and usage data to Google. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are enabled on the device and off.">
-    The owner may choose to send diagnostic and usage data for this device to Google. You may view this <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> here. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are managed on the device and off.">
+    Send system data. Automatically send diagnostic and device and app usage data to Google. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. You may view this in <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_ENABLED" desc="Message in the opt-in dialog for Android apps in case metrics are already enabled on the device. User has no way to deactivate them using opt-in dialog.">
-    This device currently sends diagnostic and usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are disabled on the device. User has an option to active them using opt-in dialog">
-    Automatically send diagnostic and usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send system data. Automatically send diagnostic and device and app usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE" desc="Message in the opt-in dialog for users to enable Backup and Restore for Android apps.">
-    Automatically back up and restore Play app data to Google Drive. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Back up to Google Drive. Easily restore your data or switch device at any time. Your backup includes app data. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are managed on the device and on.">
-    This device currently sends diagnostic and usage data to Google. This setting is enforced by the owner. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. This setting is enforced by the owner. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are enabled on the device and off.">
-    The owner may choose to send diagnostic and usage data for this device to Google. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are managed on the device and off.">
+    Send system data. Automatically send diagnostic and device and app usage data to Google. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. You may view this in settings. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_ARC_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services">
-    Let Google’s location service help apps find your location quickly and accurately, which can reduce battery consumption. Anonymous location data will be sent to Google, even when no apps are running. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are already enabled on the device.">
+    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. You can change this at any time in your device settings. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services.">
+    Help apps find location. Use Google’s location service to help improve location for apps. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_PAI" desc="Message in the opt-in dialog for Play auto install.">
+    Install updates &#38; apps. By continuing, you agree that this device may also automatically download and install updates and apps from Google, your carrier, and your device's manufacturer, possibly using cellular data. Some of these apps may offer in-app purchases. You can remove these apps at any time. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-pai"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_GOOGLE_SERVICE_CONFIRMATION" desc="Message in the opt-in dialog for Accepting Google services.">
+    By clicking the "I Agree" button, you agree to the processing described above for these Google services.
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_CLOSE" desc="Text for close button in learn more dialog">
     Close
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS" desc="Message shown in pop up overlay dialog when user clicks learn more UMA">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This is general information about your device and how you use it, such as battery level, how often you use your apps, the quality and duration of your network connections (like Wi-Fi and Bluetooth), and crash reports when things aren’t working the way they should. It will be used to improve Google’s products and services for everyone. Some aggregated information will help partners, such as Android developers, make their apps and products better, too.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn this on or off a any time in the Android apps Settings. This doesn’t affect your device’s ability to send the information it needs to receive essential services such as system updates and security.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This is general information about your device and how you use it (such as battery level, app usage, and network connectivity). The data will be used to improve Google's products and services for everyone. Some aggregated information will help partners, such as Android developers, make their apps and products better, too.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can control this feature from Settings &gt; Google. Select Usage &#38; diagnostics from the menu.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE" desc="Message shown in pop up overlay dialog when user clicks learn more backup and restore">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>When you turn on automatic backup, device and app data is periodically saved to a private folder in Google Drive. App data can be any data that an app has saved (based on developer settings), including potentially sensitive data such as contacts, messages, and photos.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Backup data will not count towards your Drive storage quota. Large files, or files developers have chosen to exclude from the service will not be backed up.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Back up to Google Drive. Easily restore your data or switch device at any time. Your backup includes app data.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>App data can be any data that an app has saved (based on developer settings), including potentially sensitive data such as contacts, messages, and photos.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Backup data will not count toward your Drive storage quota.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>You can turn this service off in Settings.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
-    <ph name="BEGIN_PARAGRAPH">&lt;p&gt;</ph>Google’s location service uses sources like Wi-Fi to help estimate your device’s location faster and more accurately. When you turn on Google’s location services, your device enters a mode that uses Wi-Fi to provide location information. You can turn this off in location settings anytime.<ph name="END_PARAGRAPH">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Help apps find location. Use Google’s location service to help improve location for apps. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device’s location. This service is active when your device’s Location setting is on.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE" desc="Message shown in pop up overlay dialog when user clicks learn more play auto install services.">
+    To remove apps, go to Settings &gt; Apps or Application manager. Then tap the app you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.
   </message>
   <message name="IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK" desc="Text of the Link to Goolge Privacy Policy in opt-in dialog">
     Google privacy policy
@@ -4603,7 +4620,7 @@
     Installing the Google Play Store on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. This could take a few minutes.
   </message>
   <message name="IDS_ARC_OOBE_TERMS_HEADING" desc="Heading of the Arc Terms OOBE dialog.">
-    Google Play Terms of Service
+    Google Play apps and services
   </message>
   <message name="IDS_ARC_OOBE_TERMS_DESCRIPTION" desc="Description of the Arc Terms OOBE dialog.">
     Use Google Play to install Android apps
@@ -4615,7 +4632,7 @@
     Google Play Terms of Service cannot be loaded. Please retry.
   </message>
   <message name="IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT" desc="Accept button of the Arc Terms OOBE dialog.">
-    Agree
+    I Agree
   </message>
   <message name="IDS_ARC_OOBE_TERMS_BUTTON_SKIP" desc="Skip button of the Arc Terms OOBE dialog.">
     Skip

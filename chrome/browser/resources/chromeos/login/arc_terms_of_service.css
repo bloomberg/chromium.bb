@@ -26,13 +26,15 @@ p {
 .arc-tos-loading .arc-tos-content,
 .arc-tos-loading .arc-tos-error,
 .arc-tos-loading #arc-tos-retry-button-md,
+.arc-tos-loading #arc-tos-accept-button-md,
 .error .arc-tos-content,
 .error .arc-tos-loading,
-.error #arc-tos-accept-button-md {
+.error #arc-tos-accept-button-md,
+.error #arc-tos-next-button-md {
   display: none;
 }
 
-.arc-tos-loading #arc-tos-accept-button-md,
+.arc-tos-loading #arc-tos-next-button-md,
 .arc-tos-loading #arc-tos-skip-button-md,
 .arc-tos-loading #arc-tos-retry-button-md {
   pointer-events: none;
@@ -69,6 +71,24 @@ p {
   color: rgba(0, 0, 0, 0.54);
 }
 
+
+#google-service-confirmation-text {
+  font-weight: 600;
+}
+
+#arc-tos-dialog-md {
+  height: 640px;
+}
+
+#arc-tos-container-md {
+  box-shadow: 0 -2px 2px -2px rgba(0, 0, 0, 0.14);
+  padding: -4px 0 0 0;
+}
+
+#arc-tos-container-md::-webkit-scrollbar {
+  display: none;
+}
+
 #arc-tos-view-md {
   display: block;
   height: 10px;
@@ -81,7 +101,7 @@ p {
   border: 1px solid #d9d9d9;
   box-sizing: border-box;
   flex: auto;
-  margin: -4px 0 0 0;
+  margin: 0;
   padding: 0;
   width: 100%;
 }
@@ -91,6 +111,7 @@ p {
 }
 
 #arc-tos-accept-button-md,
+#arc-tos-next-button-md,
 #arc-tos-retry-button-md {
   -webkit-padding-end: 18px;
 }
