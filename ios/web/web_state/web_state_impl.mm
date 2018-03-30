@@ -50,8 +50,6 @@
 #error "This file requires ARC support."
 #endif
 
-using web::wk_navigation_util::IsPlaceholderUrl;
-
 namespace web {
 
 /* static */
@@ -249,9 +247,10 @@ bool WebStateImpl::IsBeingDestroyed() const {
 }
 
 void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
-  // Native Content and WebUI placeholder URL is an internal implementation
-  // detail of //ios/web/ navigation. Do not trigger external callbacks.
-  if (IsPlaceholderUrl(url))
+  // Navigation manager loads internal URLs to restore session history and
+  // create back-forward entries for Native View and WebUI. Do not trigger
+  // external callbacks.
+  if (wk_navigation_util::IsWKInternalUrl(url))
     return;
 
   PageLoadCompletionStatus load_completion_status =
@@ -750,9 +749,10 @@ void WebStateImpl::TakeSnapshot(const SnapshotCallback& callback,
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
-  // Native Content and WebUI placeholder URL is an internal implementation
-  // detail of //ios/web/ navigation. Do not trigger external callbacks.
-  if (IsPlaceholderUrl(context->GetUrl()))
+  // Navigation manager loads internal URLs to restore session history and
+  // create back-forward entries for Native View and WebUI. Do not trigger
+  // external callbacks.
+  if (wk_navigation_util::IsWKInternalUrl(context->GetUrl()))
     return;
 
   for (auto& observer : observers_)
@@ -760,9 +760,10 @@ void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
 }
 
 void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
-  // Native Content and WebUI placeholder URL is an internal implementation
-  // detail of //ios/web/ navigation. Do not trigger external callbacks.
-  if (IsPlaceholderUrl(context->GetUrl()))
+  // Navigation manager loads internal URLs to restore session history and
+  // create back-forward entries for Native View and WebUI. Do not trigger
+  // external callbacks.
+  if (wk_navigation_util::IsWKInternalUrl(context->GetUrl()))
     return;
 
   for (auto& observer : observers_)
