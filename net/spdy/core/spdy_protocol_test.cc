@@ -10,7 +10,6 @@
 
 #include "net/spdy/core/spdy_bitmasks.h"
 #include "net/spdy/core/spdy_test_utils.h"
-#include "net/spdy/platform/api/spdy_flags.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -119,12 +118,7 @@ TEST(SpdyProtocolTest, ParseSettingsId) {
   EXPECT_EQ(SETTINGS_MAX_FRAME_SIZE, setting_id);
   EXPECT_TRUE(ParseSettingsId(6, &setting_id));
   EXPECT_EQ(SETTINGS_MAX_HEADER_LIST_SIZE, setting_id);
-  if (GetSpdyReloadableFlag(http2_check_settings_id_007)) {
-    EXPECT_FALSE(ParseSettingsId(7, &setting_id));
-  } else {
-    EXPECT_TRUE(ParseSettingsId(7, &setting_id));
-    EXPECT_EQ(0x07, setting_id);
-  }
+  EXPECT_FALSE(ParseSettingsId(7, &setting_id));
   EXPECT_TRUE(ParseSettingsId(8, &setting_id));
   EXPECT_EQ(SETTINGS_ENABLE_CONNECT_PROTOCOL, setting_id);
   EXPECT_FALSE(ParseSettingsId(9, &setting_id));

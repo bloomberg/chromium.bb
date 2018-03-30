@@ -12,13 +12,6 @@
 namespace net {
 namespace test {
 
-// Returns a vector of all supported frame types.
-std::vector<Http2FrameType> AllHttp2FrameTypes();
-
-// Returns a vector of all supported frame flags for the specified
-// frame type. Empty if the type is unknown.
-std::vector<Http2FrameFlag> AllHttp2FrameFlagsForFrameType(Http2FrameType type);
-
 // Returns a vector of all supported RST_STREAM and GOAWAY error codes.
 std::vector<Http2ErrorCode> AllHttp2ErrorCodes();
 

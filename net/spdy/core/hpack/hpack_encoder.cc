@@ -85,12 +85,6 @@ HpackEncoder::HpackEncoder(const HpackHuffmanTable& table)
 
 HpackEncoder::~HpackEncoder() = default;
 
-void HpackEncoder::EncodeHeaderSet(const Representations& representations,
-                                   SpdyString* output) {
-  RepresentationIterator iter(representations);
-  EncodeRepresentations(&iter, output);
-}
-
 bool HpackEncoder::EncodeHeaderSet(const SpdyHeaderBlock& header_set,
                                    SpdyString* output) {
   // Separate header set into pseudo-headers and regular headers.

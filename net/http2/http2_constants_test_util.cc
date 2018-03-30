@@ -7,63 +7,6 @@
 namespace net {
 namespace test {
 
-std::vector<Http2FrameType> AllHttp2FrameTypes() {
-  // clang-format off
-  return {
-      Http2FrameType::DATA,
-      Http2FrameType::HEADERS,
-      Http2FrameType::PRIORITY,
-      Http2FrameType::RST_STREAM,
-      Http2FrameType::SETTINGS,
-      Http2FrameType::PUSH_PROMISE,
-      Http2FrameType::PING,
-      Http2FrameType::GOAWAY,
-      Http2FrameType::WINDOW_UPDATE,
-      Http2FrameType::CONTINUATION,
-      Http2FrameType::ALTSVC,
-  };
-  // clang-format on
-}
-
-std::vector<Http2FrameFlag> AllHttp2FrameFlagsForFrameType(
-    Http2FrameType type) {
-  // clang-format off
-  switch (type) {
-    case Http2FrameType::DATA:
-      return {
-          Http2FrameFlag::END_STREAM,
-          Http2FrameFlag::PADDED,
-      };
-    case Http2FrameType::HEADERS:
-      return {
-          Http2FrameFlag::END_STREAM,
-          Http2FrameFlag::END_HEADERS,
-          Http2FrameFlag::PADDED,
-          Http2FrameFlag::PRIORITY,
-      };
-    case Http2FrameType::SETTINGS:
-      return {
-          Http2FrameFlag::ACK,
-      };
-    case Http2FrameType::PUSH_PROMISE:
-      return {
-          Http2FrameFlag::END_HEADERS,
-          Http2FrameFlag::PADDED,
-      };
-    case Http2FrameType::PING:
-      return {
-          Http2FrameFlag::ACK,
-      };
-    case Http2FrameType::CONTINUATION:
-      return {
-          Http2FrameFlag::END_HEADERS,
-      };
-    default:
-      return std::vector<Http2FrameFlag>{};
-  }
-  // clang-format on
-}
-
 std::vector<Http2ErrorCode> AllHttp2ErrorCodes() {
   // clang-format off
   return {
