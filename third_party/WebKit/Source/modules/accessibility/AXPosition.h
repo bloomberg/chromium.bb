@@ -20,6 +20,11 @@ namespace blink {
 
 class AXObject;
 
+// When converting to a DOM position from an |AXPosition| and the corresponding
+// DOM position is invalid or doesn't exist, determines how to adjust the
+// |AXPosition| in order to make it valid.
+enum class AXPositionAdjustmentBehavior { kMoveLeft, kMoveRight };
+
 // Describes a position in the Blink accessibility tree.
 // A position is either anchored to before or after a child object inside a
 // container object, or is anchored to a character inside a text object.
@@ -58,7 +63,12 @@ class MODULES_EXPORT AXPosition final {
   // object.
   bool IsTextPosition() const;
 
-  const PositionWithAffinity ToPositionWithAffinity() const;
+  const AXPosition CreateNextPosition() const;
+  const AXPosition CreatePreviousPosition() const;
+
+  const PositionWithAffinity ToPositionWithAffinity(
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveLeft) const;
 
  private:
   AXPosition();

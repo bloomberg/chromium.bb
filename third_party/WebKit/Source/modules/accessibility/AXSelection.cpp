@@ -94,12 +94,38 @@ bool AXSelection::IsValid() const {
   return true;
 }
 
-const SelectionInDOMTree AXSelection::AsSelection() const {
+const SelectionInDOMTree AXSelection::AsSelection(
+    const AXSelectionBehavior selection_behavior) const {
   if (!IsValid())
     return {};
 
-  const auto dom_base = base_.ToPositionWithAffinity();
-  const auto dom_extent = extent_.ToPositionWithAffinity();
+  AXPositionAdjustmentBehavior base_adjustment =
+      AXPositionAdjustmentBehavior::kMoveLeft;
+  AXPositionAdjustmentBehavior extent_adjustment =
+      AXPositionAdjustmentBehavior::kMoveLeft;
+  switch (selection_behavior) {
+    case AXSelectionBehavior::kShrinkToValidDOMRange:
+      if (base_ <= extent_) {
+        base_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
+        extent_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
+      } else {
+        base_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
+        extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
+      }
+      break;
+    case AXSelectionBehavior::kExtendToValidDOMRange:
+      if (base_ <= extent_) {
+        base_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
+        extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
+      } else {
+        base_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
+        extent_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
+      }
+      break;
+  }
+
+  const auto dom_base = base_.ToPositionWithAffinity(base_adjustment);
+  const auto dom_extent = extent_.ToPositionWithAffinity(extent_adjustment);
   SelectionInDOMTree::Builder selection_builder;
   selection_builder.SetBaseAndExtent(dom_base.GetPosition(),
                                      dom_extent.GetPosition());
@@ -107,13 +133,13 @@ const SelectionInDOMTree AXSelection::AsSelection() const {
   return selection_builder.Build();
 }
 
-void AXSelection::Select() {
+void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   if (!IsValid()) {
     NOTREACHED();
     return;
   }
 
-  const SelectionInDOMTree selection = AsSelection();
+  const SelectionInDOMTree selection = AsSelection(selection_behavior);
   DCHECK(selection.AssertValid());
   Document* document = selection.Base().GetDocument();
   if (!document) {

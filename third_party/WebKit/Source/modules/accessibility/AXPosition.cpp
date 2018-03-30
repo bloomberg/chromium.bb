@@ -223,11 +223,41 @@ bool AXPosition::IsTextPosition() const {
   return IsValid() && container_object_->GetNode()->IsTextNode();
 }
 
-const PositionWithAffinity AXPosition::ToPositionWithAffinity() const {
+const AXPosition AXPosition::CreateNextPosition() const {
+  if (IsTextPosition()) {
+    if (!ContainerObject()->NextInTreeObject())
+      return {};
+    return CreatePositionBeforeObject(*ContainerObject()->NextInTreeObject());
+  }
+
+  if (!ObjectAfterPosition())
+    return {};
+  return CreatePositionBeforeObject(*ObjectAfterPosition());
+}
+
+const AXPosition AXPosition::CreatePreviousPosition() const {
+  if (!ContainerObject()->PreviousInTreeObject())
+    return {};
+  return CreatePositionAfterObject(*ContainerObject()->PreviousInTreeObject());
+}
+
+const PositionWithAffinity AXPosition::ToPositionWithAffinity(
+    const AXPositionAdjustmentBehavior adjustment_behavior) const {
   if (!IsValid())
     return {};
 
   const Node* container_node = container_object_->GetNode();
+  if (!container_node) {
+    switch (adjustment_behavior) {
+      case AXPositionAdjustmentBehavior::kMoveRight:
+        CreateNextPosition().ToPositionWithAffinity(adjustment_behavior);
+        break;
+      case AXPositionAdjustmentBehavior::kMoveLeft:
+        CreatePreviousPosition().ToPositionWithAffinity(adjustment_behavior);
+        break;
+    }
+  }
+
   if (!IsTextPosition()) {
     if (ChildIndex() ==
         static_cast<int>(container_object_->Children().size())) {
