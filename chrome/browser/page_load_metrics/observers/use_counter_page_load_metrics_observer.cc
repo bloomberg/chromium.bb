@@ -68,16 +68,16 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");
       return;
     }
-    // Same as above, the usage of each CSS property should be only measured
-    // once.
-    if (css_properties_recorded_.test(css_property))
-      continue;
     if (css_property > blink::mojom::kMaximumCSSSampleId) {
       mojo::ReportBadMessage(
           "Invalid CSS property passed to "
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");
       return;
     }
+    // Same as above, the usage of each CSS property should be only measured
+    // once.
+    if (css_properties_recorded_.test(css_property))
+      continue;
     // There are about 600 enums, so the memory required for a vector histogram
     // is about 600 * 8 byes = 5KB
     // 50% of the time there are about 100 CSS properties recorded per page
@@ -100,16 +100,16 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");
       return;
     }
-    // Same as above, the usage of each animated CSS property should be only
-    // measured once.
-    if (animated_css_properties_recorded_.test(animated_css_property))
-      continue;
     if (animated_css_property > blink::mojom::kMaximumCSSSampleId) {
       mojo::ReportBadMessage(
           "Invalid animated CSS property passed to "
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");
       return;
     }
+    // Same as above, the usage of each animated CSS property should be only
+    // measured once.
+    if (animated_css_properties_recorded_.test(animated_css_property))
+      continue;
     // See comments above (in the css property section) for reasoning of using
     // a vector histogram here instead of a sparse histogram.
     UMA_HISTOGRAM_ENUMERATION(internal::kAnimatedCssPropertiesHistogramName,

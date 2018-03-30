@@ -197,3 +197,9 @@ TEST_F(UseCounterPageLoadMetricsObserverTest, RecordAnimatedCSSProperties) {
   page_load_features_1.css_properties = {19};
   AnimatedCssHistogramBasicTest(page_load_features_0, page_load_features_1);
 }
+
+TEST_F(UseCounterPageLoadMetricsObserverTest, RecordCSSPropertiesInRange) {
+  page_load_metrics::mojom::PageLoadFeatures page_load_features;
+  page_load_features.css_properties = {2, blink::mojom::kMaximumCSSSampleId};
+  CssHistogramBasicTest(page_load_features);
+}
