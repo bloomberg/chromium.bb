@@ -34,9 +34,8 @@ class ArchiveManager {
   //   directory and records the total file size. This will include mhtml files
   //   shared into the public directory through other approaches.
   struct StorageStats {
-    int64_t total_archives_size() const {
-      return temporary_archives_size + private_archives_size +
-             public_archives_size;
+    int64_t internal_archives_size() const {
+      return temporary_archives_size + private_archives_size;
     }
     int64_t internal_free_disk_space;
     int64_t external_free_disk_space;
@@ -44,6 +43,10 @@ class ArchiveManager {
     int64_t private_archives_size;
     int64_t public_archives_size;
   };
+
+  typedef base::OnceCallback<void(
+      const ArchiveManager::StorageStats& storage_stats)>
+      StorageStatsCallback;
 
   ArchiveManager(const base::FilePath& temporary_archives_dir,
                  const base::FilePath& private_archives_dir_,
@@ -56,9 +59,7 @@ class ArchiveManager {
 
   // Gets stats about archive storage, i.e. sizes of all archive directories
   // and free disk spaces.
-  virtual void GetStorageStats(
-      base::OnceCallback<void(const StorageStats& storage_sizes)> callback)
-      const;
+  virtual void GetStorageStats(StorageStatsCallback callback) const;
 
   // Gets the archive directories.
   const base::FilePath& GetTemporaryArchivesDir() const;
