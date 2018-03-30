@@ -9,7 +9,7 @@ namespace blink {
 
 // See http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox
 // for a list of the sandbox flags.  This enum should be kept in sync with
-// Source/core/dom/SandboxFlags.h, as enforced in SandboxFlags.cpp.
+// Source/core/frame/SandboxFlags.h, as enforced in SandboxFlags.cpp.
 enum class WebSandboxFlags : int {
   kNone = 0,
   kNavigation = 1,

@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/dom/SandboxFlags.h"
+#include "core/frame/SandboxFlags.h"
 
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"

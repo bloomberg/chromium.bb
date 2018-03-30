@@ -28,7 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
-#include "core/dom/SandboxFlags.h"
+#include "core/frame/SandboxFlags.h"
 #include "core/html/forms/PopupMenu.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/loader/FrameLoader.h"

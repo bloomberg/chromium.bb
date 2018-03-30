@@ -128,6 +128,8 @@ blink_core_sources("frame") {
     "RootFrameViewport.h",
     "RotationViewportAnchor.cpp",
     "RotationViewportAnchor.h",
+    "SandboxFlags.cpp",
+    "SandboxFlags.h",
     "Screen.cpp",
     "Screen.h",
     "ScreenOrientationController.cpp",

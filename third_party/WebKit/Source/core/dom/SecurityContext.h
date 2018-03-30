@@ -30,7 +30,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
-#include "core/dom/SandboxFlags.h"
+#include "core/frame/SandboxFlags.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/StringHash.h"

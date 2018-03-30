@@ -6,7 +6,7 @@
 #define FrameOwner_h
 
 #include "core/CoreExport.h"
-#include "core/dom/SandboxFlags.h"
+#include "core/frame/SandboxFlags.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
