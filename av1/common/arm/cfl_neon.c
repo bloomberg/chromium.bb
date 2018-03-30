@@ -123,6 +123,63 @@ static void cfl_luma_subsampling_444_lbd_neon(const uint8_t *input,
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
 }
 
+#if __ARM_ARCH <= 7
+uint16x8_t vpaddq_u16(uint16x8_t a, uint16x8_t b) {
+  return vcombine_u16(vpadd_u16(vget_low_u16(a), vget_high_u16(a)),
+                      vpadd_u16(vget_low_u16(b), vget_high_u16(b)));
+}
+#endif
+
+static void cfl_luma_subsampling_420_hbd_neon(const uint16_t *input,
+                                              int input_stride,
+                                              int16_t *pred_buf_q3, int width,
+                                              int height) {
+  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  const int luma_stride = input_stride << 1;
+  do {
+    if (width == 4) {
+      const uint16x4_t top = vld1_u16(input);
+      const uint16x4_t bot = vld1_u16(input + input_stride);
+      const uint16x4_t sum = vadd_u16(top, bot);
+      const uint16x4_t hsum = vpadd_u16(sum, sum);
+      vsth_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(hsum), 1));
+    } else if (width < 32) {
+      const uint16x8_t top = vld1q_u16(input);
+      const uint16x8_t bot = vld1q_u16(input + input_stride);
+      const uint16x8_t sum = vaddq_u16(top, bot);
+      if (width == 8) {
+        const int16x4_t hsum =
+            vreinterpret_s16_u16(vget_low_u16(vpaddq_u16(sum, sum)));
+        vst1_s16(pred_buf_q3, vshl_n_s16(hsum, 1));
+      } else {
+        const uint16x8_t top_1 = vld1q_u16(input + 8);
+        const uint16x8_t bot_1 = vld1q_u16(input + 8 + input_stride);
+        const uint16x8_t sum_1 = vaddq_u16(top_1, bot_1);
+        const int16x8_t hsum = vreinterpretq_s16_u16(vpaddq_u16(sum, sum_1));
+        vst1q_s16(pred_buf_q3, vshlq_n_s16(hsum, 1));
+      }
+    } else {
+      const uint16x8x4_t top = vld4q_u16(input);
+      const uint16x8x4_t bot = vld4q_u16(input + input_stride);
+      // equivalent to a vpaddq_u16 (because vld4q interleaves)
+      const uint16x8_t top_0 = vaddq_u16(top.val[0], top.val[1]);
+      // equivalent to a vpaddq_u16 (because vld4q interleaves)
+      const uint16x8_t bot_0 = vaddq_u16(bot.val[0], bot.val[1]);
+      // equivalent to a vpaddq_u16 (because vld4q interleaves)
+      const uint16x8_t top_1 = vaddq_u16(top.val[2], top.val[3]);
+      // equivalent to a vpaddq_u16 (because vld4q interleaves)
+      const uint16x8_t bot_1 = vaddq_u16(bot.val[2], bot.val[3]);
+      int16x8x2_t sum;
+      sum.val[0] =
+          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_0, bot_0)), 1);
+      sum.val[1] =
+          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_1, bot_1)), 1);
+      vst2q_s16(pred_buf_q3, sum);
+    }
+    input += luma_stride;
+  } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+}
+
 CFL_GET_SUBSAMPLE_FUNCTION(neon)
 
 static INLINE void subtract_average_neon(int16_t *pred_buf, int width,

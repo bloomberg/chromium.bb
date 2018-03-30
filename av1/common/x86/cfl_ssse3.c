@@ -223,10 +223,6 @@ static INLINE void cfl_luma_subsampling_420_hbd_ssse3(const uint16_t *input,
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
 }
 
-// TODO(ltrudeau) Move this function into CFL_GET_SUBSAMPLE_FUNCTION when AVX2
-// and NEON versions are ready.
-CFL_SUBSAMPLE_FUNCTIONS(ssse3, 420, hbd)
-
 CFL_GET_SUBSAMPLE_FUNCTION(ssse3)
 
 static INLINE __m128i predict_unclipped(const __m128i *input, __m128i alpha_q12,

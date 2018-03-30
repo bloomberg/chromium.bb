@@ -335,10 +335,6 @@ static void cfl_luma_subsampling_444_hbd_c(const uint16_t *input,
   }
 }
 
-// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when HBD 420 SIMD
-// will be implemented
-CFL_SUBSAMPLE_FUNCTIONS(c, 420, hbd)
-
 // TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when HBD 422 SIMD
 // will be implemented
 CFL_SUBSAMPLE_FUNCTIONS(c, 422, hbd)
