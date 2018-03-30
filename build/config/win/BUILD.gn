@@ -115,25 +115,27 @@ config("compiler") {
     cflags += [ "/Brepro" ]
   }
 
-  # TODO(siggi): Is this of any use anymore?
-  # /PROFILE ensures that the PDB file contains FIXUP information (growing the
-  # PDB file by about 5%) but does not otherwise alter the output binary. It is
-  # enabled opportunistically for builds where it is not prohibited (not
-  # supported when incrementally linking, or using /debug:fastlink).
   if (!is_debug && !is_component_build) {
-    if (is_win_fastlink && !use_lld) {
-      # /PROFILE implies the following linker flags. Therefore if we are
-      # skipping /PROFILE because it is incompatible with /DEBUG:FASTLINK
-      # we should explicitly add these flags in order to avoid unintended
-      # consequences such as larger binaries.
-      ldflags = [
-        "/OPT:REF",
-        "/OPT:ICF",
-        "/INCREMENTAL:NO",
-        "/FIXED:NO",
-      ]
+    # Enable standard linker optimizations like GC (/OPT:REF) and ICF in static
+    # release builds. These are implied by /PROFILE below, but /PROFILE is
+    # incompatible with /debug:fastlink and LLD ignores it as of this writing.
+    # Release builds always want these optimizations, so enable them explicitly.
+    ldflags = [
+      "/OPT:REF",
+      "/OPT:ICF",
+      "/INCREMENTAL:NO",
+      "/FIXED:NO",
+    ]
+
+    # TODO(siggi): Is this of any use anymore?
+    # /PROFILE ensures that the PDB file contains FIXUP information (growing the
+    # PDB file by about 5%) but does not otherwise alter the output binary. It
+    # is enabled opportunistically for builds where it is not prohibited (not
+    # supported when incrementally linking, or using /debug:fastlink).
+    if (!is_win_fastlink) {
+      ldflags += [ "/PROFILE" ]
     } else {
-      ldflags = [ "/PROFILE" ]
+      assert(!is_syzyasan, "fastlink is incompatible with SyzyASan")
     }
   }
 
