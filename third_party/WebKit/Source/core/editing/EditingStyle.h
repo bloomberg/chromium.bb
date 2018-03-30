@@ -36,7 +36,6 @@
 #include "core/css_property_names.h"
 #include "core/css_value_keywords.h"
 #include "core/editing/Forward.h"
-#include "core/editing/WritingDirection.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
@@ -58,6 +57,7 @@ class ComputedStyle;
 class CSSPropertyValueSet;
 enum class EditingTriState;
 enum class SecureContextMode;
+enum class WritingDirection;
 
 class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
  public:

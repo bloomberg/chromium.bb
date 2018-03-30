@@ -117,6 +117,7 @@
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/WritingDirection.h"
 #include "core/editing/finder/FindInPageCoordinates.h"
 #include "core/editing/finder/TextFinder.h"
 #include "core/editing/ime/ImeTextSpanVectorBuilder.h"
@@ -1156,15 +1157,15 @@ void WebLocalFrameImpl::SetTextDirection(WebTextDirection direction) {
 
   switch (direction) {
     case kWebTextDirectionDefault:
-      editor.SetBaseWritingDirection(NaturalWritingDirection);
+      editor.SetBaseWritingDirection(WritingDirection::kNatural);
       break;
 
     case kWebTextDirectionLeftToRight:
-      editor.SetBaseWritingDirection(LeftToRightWritingDirection);
+      editor.SetBaseWritingDirection(WritingDirection::kLeftToRight);
       break;
 
     case kWebTextDirectionRightToLeft:
-      editor.SetBaseWritingDirection(RightToLeftWritingDirection);
+      editor.SetBaseWritingDirection(WritingDirection::kRightToLeft);
       break;
 
     default:

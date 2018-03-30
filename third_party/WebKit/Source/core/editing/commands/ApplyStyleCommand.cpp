@@ -44,6 +44,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/WritingDirection.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/HTMLInterchange.h"
@@ -594,7 +595,7 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
   HTMLElement* unsplit_ancestor = nullptr;
 
   WritingDirection highest_ancestor_direction;
-  if (allowed_direction != NaturalWritingDirection &&
+  if (allowed_direction != WritingDirection::kNatural &&
       highest_ancestor_unicode_bidi != CSSValueBidiOverride &&
       highest_ancestor_with_unicode_bidi->IsHTMLElement() &&
       EditingStyle::Create(highest_ancestor_with_unicode_bidi,
@@ -740,7 +741,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
   // selection and prevent us from adding redundant ones, as described in:
   // <rdar://problem/3724344> Bolding and unbolding creates extraneous tags
   Position remove_start = MostBackwardCaretPosition(start);
-  WritingDirection text_direction = NaturalWritingDirection;
+  WritingDirection text_direction = WritingDirection::kNatural;
   bool has_text_direction = style->GetTextDirection(text_direction);
   EditingStyle* style_without_embedding = nullptr;
   EditingStyle* embedding_style = nullptr;

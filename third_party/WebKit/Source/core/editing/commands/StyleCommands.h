@@ -32,7 +32,6 @@
 #ifndef StyleCommands_h
 #define StyleCommands_h
 
-#include "core/editing/WritingDirection.h"
 #include "core/events/InputEvent.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
@@ -47,6 +46,7 @@ class LocalFrame;
 
 enum class EditingTriState;
 enum class EditorCommandSource;
+enum class WritingDirection;
 
 // This class provides static functions about commands related to style.
 class StyleCommands {
