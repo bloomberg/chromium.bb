@@ -200,7 +200,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       if (!cdef_left) cstart = -CDEF_HBORDER;
       nhb = AOMMIN(MI_SIZE_64X64, cm->mi_cols - MI_SIZE_64X64 * fbc);
       nvb = AOMMIN(MI_SIZE_64X64, cm->mi_rows - MI_SIZE_64X64 * fbr);
-      int tile_top, tile_left, tile_bottom, tile_right;
+      int frame_top, frame_left, frame_bottom, frame_right;
 
       int mi_row = MI_SIZE_64X64 * fbr;
       int mi_col = MI_SIZE_64X64 * fbc;
@@ -209,34 +209,29 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       int mi_idx_bl = (mi_row + MI_SIZE_64X64 - 1) * cm->mi_stride + mi_col;
       // for the current filter block, it's top left corner mi structure (mi_tl)
       // is first accessed to check whether the top and left boundaries are
-      // tile boundaries. Then bottom-left and top-right mi structures are
+      // frame boundaries. Then bottom-left and top-right mi structures are
       // accessed to check whether the bottom and right boundaries
-      // (respectively) are tile boundaries.
+      // (respectively) are frame boundaries.
       //
       // Note that we can't just check the bottom-right mi structure - eg. if
       // we're at the right-hand edge of the frame but not the bottom, then
       // the bottom-right mi is NULL but the bottom-left is not.
-      //
-      // We assume the boundary information is set correctly based on the
-      // loop_filter_across_tiles_enabled flag, i.e, if this flag is set to 1,
-      // then boundary_info should not be treated as tile boundaries. Also
-      // assume CDEF filter block size is 64x64.
       BOUNDARY_TYPE *const bi_tl = cm->boundary_info + mi_idx_tl;
       BOUNDARY_TYPE *const bi_tr = cm->boundary_info + mi_idx_tr;
       BOUNDARY_TYPE *const bi_bl = cm->boundary_info + mi_idx_bl;
       BOUNDARY_TYPE boundary_tl = *bi_tl;
-      tile_top = boundary_tl & TILE_ABOVE_BOUNDARY;
-      tile_left = boundary_tl & TILE_LEFT_BOUNDARY;
+      frame_top = boundary_tl & FRAME_ABOVE_BOUNDARY;
+      frame_left = boundary_tl & FRAME_LEFT_BOUNDARY;
 
       if (fbr != nvfb - 1 && bi_bl)
-        tile_bottom = *bi_bl & TILE_BOTTOM_BOUNDARY;
+        frame_bottom = *bi_bl & FRAME_BOTTOM_BOUNDARY;
       else
-        tile_bottom = 1;
+        frame_bottom = 1;
 
       if (fbc != nhfb - 1 && bi_tr)
-        tile_right = *bi_tr & TILE_RIGHT_BOUNDARY;
+        frame_right = *bi_tr & FRAME_RIGHT_BOUNDARY;
       else
-        tile_right = 1;
+        frame_right = 1;
 
       const int mbmi_cdef_strength =
           cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
@@ -357,19 +352,19 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
             (MI_SIZE_64X64 << mi_high_l2[pli]) * (fbr + 1) - CDEF_VBORDER,
             coffset, xd->plane[pli].dst.stride, CDEF_VBORDER, hsize);
 
-        if (tile_top) {
+        if (frame_top) {
           fill_rect(src, CDEF_BSTRIDE, CDEF_VBORDER, hsize + 2 * CDEF_HBORDER,
                     CDEF_VERY_LARGE);
         }
-        if (tile_left) {
+        if (frame_left) {
           fill_rect(src, CDEF_BSTRIDE, vsize + 2 * CDEF_VBORDER, CDEF_HBORDER,
                     CDEF_VERY_LARGE);
         }
-        if (tile_bottom) {
+        if (frame_bottom) {
           fill_rect(&src[(vsize + CDEF_VBORDER) * CDEF_BSTRIDE], CDEF_BSTRIDE,
                     CDEF_VBORDER, hsize + 2 * CDEF_HBORDER, CDEF_VERY_LARGE);
         }
-        if (tile_right) {
+        if (frame_right) {
           fill_rect(&src[hsize + CDEF_HBORDER], CDEF_BSTRIDE,
                     vsize + 2 * CDEF_VBORDER, CDEF_HBORDER, CDEF_VERY_LARGE);
         }

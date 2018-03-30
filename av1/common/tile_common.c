@@ -125,26 +125,26 @@ void av1_setup_frame_boundary_info(const AV1_COMMON *const cm) {
   BOUNDARY_TYPE *bi = cm->boundary_info;
   int col;
   for (col = 0; col < cm->mi_cols; ++col) {
-    *bi |= FRAME_ABOVE_BOUNDARY | TILE_ABOVE_BOUNDARY;
+    *bi |= FRAME_ABOVE_BOUNDARY;
     bi += 1;
   }
 
   bi = cm->boundary_info;
   int row;
   for (row = 0; row < cm->mi_rows; ++row) {
-    *bi |= FRAME_LEFT_BOUNDARY | TILE_LEFT_BOUNDARY;
+    *bi |= FRAME_LEFT_BOUNDARY;
     bi += cm->mi_stride;
   }
 
   bi = cm->boundary_info + (cm->mi_rows - 1) * cm->mi_stride;
   for (col = 0; col < cm->mi_cols; ++col) {
-    *bi |= FRAME_BOTTOM_BOUNDARY | TILE_BOTTOM_BOUNDARY;
+    *bi |= FRAME_BOTTOM_BOUNDARY;
     bi += 1;
   }
 
   bi = cm->boundary_info + cm->mi_cols - 1;
   for (row = 0; row < cm->mi_rows; ++row) {
-    *bi |= FRAME_RIGHT_BOUNDARY | TILE_RIGHT_BOUNDARY;
+    *bi |= FRAME_RIGHT_BOUNDARY;
     bi += cm->mi_stride;
   }
 }
