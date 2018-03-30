@@ -357,6 +357,28 @@ TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
                                   {first_lifecycle_unit});
 }
 
+// Regression test for https://crbug.com/818454. Previously, TabLifecycleUnits
+// were destroyed from TabStripModelObserver::TabClosingAt(). If a tab was
+// detached (TabStripModel::DetachWebContentsAt) and its WebContents destroyed,
+// the TabLifecycleUnit was never destroyed. This was solved by giving ownership
+// of a TabLifecycleUnit to a WebContentsUserData.
+TEST_F(TabLifecycleUnitSourceTest, DetachAndDeleteWebContents) {
+  LifecycleUnit* first_lifecycle_unit = nullptr;
+  LifecycleUnit* second_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &first_lifecycle_unit,
+                &second_lifecycle_unit);
+
+  testing::StrictMock<MockLifecycleUnitObserver> observer;
+  first_lifecycle_unit->AddObserver(&observer);
+
+  // Detach and destroy the non-active tab. Verify that the LifecycleUnit is
+  // destroyed.
+  tab_strip_model_->DetachWebContentsAt(0);
+  EXPECT_CALL(observer, OnLifecycleUnitDestroyed(first_lifecycle_unit));
+  delete first_lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents();
+  testing::Mock::VerifyAndClear(&observer);
+}
+
 // Tab discarding is tested here rather than in TabLifecycleUnitTest because
 // collaboration from the TabLifecycleUnitSource is required to replace the
 // WebContents in the TabLifecycleUnit.

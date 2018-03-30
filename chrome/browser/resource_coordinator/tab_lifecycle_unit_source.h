@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_base.h"
@@ -37,7 +36,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   static TabLifecycleUnitSource* GetInstance();
 
   // Returns the TabLifecycleUnitExternal instance associated with
-  // |web_contents|, or nullptr if |web_contents| isn't associated with a tab.
+  // |web_contents|, or nullptr if |web_contents| isn't a tab.
   TabLifecycleUnitExternal* GetTabLifecycleUnitExternal(
       content::WebContents* web_contents) const;
 
@@ -49,10 +48,17 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Pretend that |tab_strip| is the TabStripModel of the focused window.
   void SetFocusedTabStripModelForTesting(TabStripModel* tab_strip);
 
+  class TabLifecycleUnitHolder;
+
  private:
   friend class TabLifecycleUnitTest;
 
   class TabLifecycleUnit;
+
+  // Returns the TabLifecycleUnit instance associated with |web_contents|, or
+  // nullptr if |web_contents| isn't a tab.
+  TabLifecycleUnit* GetTabLifecycleUnit(
+      content::WebContents* web_contents) const;
 
   // Returns the TabStripModel of the focused browser window, if any.
   TabStripModel* GetFocusedTabStripModel() const;
@@ -60,20 +66,17 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Updates the focused TabLifecycleUnit.
   void UpdateFocusedTab();
 
-  // Updates the focused TabLifecycleUnit to |new_focused_tab_lifecycle_unit|.
+  // Updates the focused TabLifecycleUnit to |new_focused_lifecycle_unit|.
   // TabInsertedAt() calls this directly instead of UpdateFocusedTab() because
   // the active WebContents of a TabStripModel isn't updated when
   // TabInsertedAt() is called.
-  void UpdateFocusedTabTo(TabLifecycleUnit* new_focused_tab_lifecycle_unit);
+  void UpdateFocusedTabTo(TabLifecycleUnit* new_focused_lifecycle_unit);
 
   // TabStripModelObserver:
   void TabInsertedAt(TabStripModel* tab_strip_model,
                      content::WebContents* contents,
                      int index,
                      bool foreground) override;
-  void TabClosingAt(TabStripModel* tab_strip_model,
-                    content::WebContents* contents,
-                    int index) override;
   void TabDetachedAt(content::WebContents* contents, int index) override;
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,
@@ -98,12 +101,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   TabStripModel* focused_tab_strip_model_for_testing_ = nullptr;
 
   // The currently focused TabLifecycleUnit. Updated by UpdateFocusedTab().
-  TabLifecycleUnit* focused_tab_lifecycle_unit_ = nullptr;
-
-  // Map from content::WebContents to TabLifecycleUnit. Should contain an entry
-  // for each tab in the current Chrome instance.
-  base::flat_map<content::WebContents*, std::unique_ptr<TabLifecycleUnit>>
-      tabs_;
+  TabLifecycleUnit* focused_lifecycle_unit_ = nullptr;
 
   // Observers notified when the discarded or auto-discardable state of a tab
   // changes.
