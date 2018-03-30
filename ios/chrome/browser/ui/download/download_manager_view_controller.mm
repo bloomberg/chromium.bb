@@ -86,7 +86,15 @@ NSString* GetSizeString(long long size_in_bytes) {
 // Represents constraint for self.view.widthAnchor, which is anchored to
 // superview with different multipliers depending on size class. Stored in a
 // property to allow deactivating the old constraint.
-@property(nonatomic) NSLayoutConstraint* widthConstraint;
+@property(nonatomic) NSLayoutConstraint* viewWidthConstraint;
+
+// Leading and trailing constraints for download and install drive controls.
+@property(nonatomic) NSLayoutConstraint* downloadControlsRowLeadingConstraint;
+@property(nonatomic) NSLayoutConstraint* downloadControlsRowTrailingConstraint;
+@property(nonatomic)
+    NSLayoutConstraint* installDriveControlsRowLeadingConstraint;
+@property(nonatomic)
+    NSLayoutConstraint* installDriveControlsRowTrailingConstraint;
 
 @end
 
@@ -98,7 +106,15 @@ NSString* GetSizeString(long long size_in_bytes) {
 @synthesize installDriveControlsRow = _installDriveControlsRow;
 @synthesize horizontalLine = _horizontalLine;
 @synthesize bottomConstraint = _bottomConstraint;
-@synthesize widthConstraint = _widthConstraint;
+@synthesize viewWidthConstraint = _viewWidthConstraint;
+@synthesize downloadControlsRowLeadingConstraint =
+    _downloadControlsRowLeadingConstraint;
+@synthesize downloadControlsRowTrailingConstraint =
+    _downloadControlsRowTrailingConstraint;
+@synthesize installDriveControlsRowLeadingConstraint =
+    _installDriveControlsRowLeadingConstraint;
+@synthesize installDriveControlsRowTrailingConstraint =
+    _installDriveControlsRowTrailingConstraint;
 
 #pragma mark - UIViewController overrides
 
@@ -133,7 +149,6 @@ NSString* GetSizeString(long long size_in_bytes) {
   // self.view constraints.
   UIView* view = self.view;
   [self updateBottomConstraints];
-  [self updateWidthConstraintsForTraitCollection:self.traitCollection];
 
   // background constraints.
   UIView* background = self.background;
@@ -147,9 +162,13 @@ NSString* GetSizeString(long long size_in_bytes) {
   // download controls row constraints.
   UIView* downloadRow = self.downloadControlsRow;
   UIButton* closeButton = self.closeButton;
+  self.downloadControlsRowLeadingConstraint =
+      [downloadRow.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
+  self.downloadControlsRowTrailingConstraint =
+      [downloadRow.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
   [NSLayoutConstraint activateConstraints:@[
-    [downloadRow.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
-    [downloadRow.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
+    self.downloadControlsRowLeadingConstraint,
+    self.downloadControlsRowTrailingConstraint,
     [downloadRow.topAnchor constraintEqualToAnchor:view.topAnchor
                                           constant:kTopShadowHeight],
     [downloadRow.layoutMarginsGuide.heightAnchor
@@ -159,10 +178,14 @@ NSString* GetSizeString(long long size_in_bytes) {
   // install drive controls row constraints.
   UIView* installDriveRow = self.installDriveControlsRow;
   UIButton* installDriveButton = self.installDriveButton;
+  self.installDriveControlsRowLeadingConstraint = [installDriveRow.leadingAnchor
+      constraintEqualToAnchor:view.leadingAnchor],
+  self.installDriveControlsRowTrailingConstraint =
+      [installDriveRow.trailingAnchor
+          constraintEqualToAnchor:view.trailingAnchor],
   [NSLayoutConstraint activateConstraints:@[
-    [installDriveRow.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
-    [installDriveRow.trailingAnchor
-        constraintEqualToAnchor:view.trailingAnchor],
+    self.installDriveControlsRowLeadingConstraint,
+    self.installDriveControlsRowTrailingConstraint,
     [installDriveRow.topAnchor
         constraintEqualToAnchor:downloadRow.bottomAnchor],
     [installDriveRow.heightAnchor
@@ -260,6 +283,8 @@ NSString* GetSizeString(long long size_in_bytes) {
         constraintEqualToAnchor:installDriveRow.trailingAnchor],
   ]];
 
+  [self updateConstraintsForTraitCollection:self.traitCollection];
+
   _addedConstraints = YES;
   [super updateViewConstraints];
 }
@@ -267,12 +292,11 @@ NSString* GetSizeString(long long size_in_bytes) {
 - (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
               withTransitionCoordinator:
                   (id<UIViewControllerTransitionCoordinator>)coordinator {
-  void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
-      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self updateWidthConstraintsForTraitCollection:newCollection];
-        [self updateBackgroundForTraitCollection:newCollection];
-      };
-  [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
+  auto block = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+    [self updateConstraintsForTraitCollection:newCollection];
+    [self updateBackgroundForTraitCollection:newCollection];
+  };
+  [coordinator animateAlongsideTransition:block completion:nil];
 }
 
 #pragma mark - Public
@@ -567,25 +591,26 @@ NSString* GetSizeString(long long size_in_bytes) {
   self.background.image = [image resizableImageWithCapInsets:insets];
 }
 
-// Updates and activates self.widthConstraint anchored to superview width. Uses
-// smaller multiplier for regular ui size class, because otherwise the bar will
-// be too wide.
-- (void)updateWidthConstraintsForTraitCollection:
+// Updates and activates constraints which depend on ui size class.
+- (void)updateConstraintsForTraitCollection:
     (UITraitCollection*)traitCollection {
-  self.widthConstraint.active = NO;
+  self.viewWidthConstraint.active = NO;
 
   // With regular horizontal size class, UI is too wide to take the full width,
   // because there will be a lot of blank space.
-  CGFloat multiplier =
-      traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular
-          ? 0.6
-          : 1.0;
-
-  self.widthConstraint = [self.view.widthAnchor
+  BOOL regularSizeClass =
+      traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
+  self.viewWidthConstraint = [self.view.widthAnchor
       constraintEqualToAnchor:self.view.superview.widthAnchor
-                   multiplier:multiplier];
+                   multiplier:regularSizeClass ? 0.6 : 1.0];
 
-  self.widthConstraint.active = YES;
+  self.viewWidthConstraint.active = YES;
+
+  CGFloat constant = regularSizeClass ? kLeftRightShadowHeight / 2 : 0;
+  self.downloadControlsRowLeadingConstraint.constant = constant;
+  self.downloadControlsRowTrailingConstraint.constant = -constant;
+  self.installDriveControlsRowLeadingConstraint.constant = constant;
+  self.installDriveControlsRowTrailingConstraint.constant = -constant;
 }
 
 // Updates state icon depending.
