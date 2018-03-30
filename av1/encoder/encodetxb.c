@@ -119,11 +119,11 @@ static INLINE tran_low_t get_lower_coeff(tran_low_t qc) {
 static INLINE tran_low_t qcoeff_to_dqcoeff(tran_low_t qc, int coeff_idx,
                                            int dqv, int shift,
                                            const qm_val_t *iqmatrix) {
-  int sgn = qc < 0 ? -1 : 1;
+  int sign = qc < 0 ? -1 : 1;
   if (iqmatrix != NULL)
     dqv =
         ((iqmatrix[coeff_idx] * dqv) + (1 << (AOM_QM_BITS - 1))) >> AOM_QM_BITS;
-  return sgn * ((abs(qc) * dqv) >> shift);
+  return sign * ((abs(qc) * dqv) >> shift);
 }
 
 static INLINE int64_t get_coeff_dist(tran_low_t tcoeff, tran_low_t dqcoeff,
@@ -247,9 +247,8 @@ static INLINE int get_sign_bit_cost(tran_low_t qc, int coeff_idx,
   // sign bit cost
   if (coeff_idx == 0) {
     return dc_sign_cost[dc_sign_ctx][sign];
-  } else {
-    return av1_cost_literal(1);
   }
+  return av1_cost_literal(1);
 }
 
 static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
@@ -258,13 +257,13 @@ static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
   const tran_low_t max_level = 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE;
   (void)ctx;
   if (abs_qc >= min_level) {
-    if (abs_qc >= max_level)
+    if (abs_qc >= max_level) {
       return coeff_lps[COEFF_BASE_RANGE];  // COEFF_BASE_RANGE * cost0;
-    else
+    } else {
       return coeff_lps[(abs_qc - min_level)];  //  * cost0 + cost1;
-  } else {
-    return 0;
+    }
   }
+  return 0;
 }
 
 static INLINE int get_golomb_cost(int abs_qc) {
@@ -1189,7 +1188,7 @@ static INLINE int get_coeff_cost_simple(int ci, tran_low_t abs_qc,
                                         const LV_MAP_COEFF_COST *txb_costs,
                                         int bwl, TX_TYPE tx_type,
                                         const uint8_t *levels) {
-  // this simple version assume the coeff's scan_idx is not DC (scan_idx != 0)
+  // this simple version assumes the coeff's scan_idx is not DC (scan_idx != 0)
   // and not the last (scan_idx != eob - 1)
   assert(ci > 0);
   int cost = txb_costs->base_cost[coeff_ctx][AOMMIN(abs_qc, 3)];
@@ -1205,7 +1204,7 @@ static INLINE int get_coeff_cost_simple(int ci, tran_low_t abs_qc,
 }
 
 static INLINE int get_coeff_cost_general(int is_last, int ci, tran_low_t abs_qc,
-                                         int sgn, int coeff_ctx,
+                                         int sign, int coeff_ctx,
                                          int dc_sign_ctx,
                                          const LV_MAP_COEFF_COST *txb_costs,
                                          int bwl, TX_TYPE tx_type,
@@ -1218,7 +1217,7 @@ static INLINE int get_coeff_cost_general(int is_last, int ci, tran_low_t abs_qc,
   }
   if (abs_qc != 0) {
     if (ci == 0) {
-      cost += txb_costs->dc_sign_cost[dc_sign_ctx][sgn];
+      cost += txb_costs->dc_sign_cost[dc_sign_ctx][sign];
     } else {
       cost += av1_cost_literal(1);
     }
@@ -1231,15 +1230,15 @@ static INLINE int get_coeff_cost_general(int is_last, int ci, tran_low_t abs_qc,
   return cost;
 }
 
-static INLINE void get_qc_dqc_low(tran_low_t abs_qc, int sgn, int dqv,
+static INLINE void get_qc_dqc_low(tran_low_t abs_qc, int sign, int dqv,
                                   int shift, tran_low_t *qc_low,
                                   tran_low_t *dqc_low) {
   tran_low_t abs_qc_low = abs_qc - 1;
-  *qc_low = (-sgn ^ abs_qc_low) + sgn;
-  assert((sgn ? -abs_qc_low : abs_qc_low) == *qc_low);
+  *qc_low = (-sign ^ abs_qc_low) + sign;
+  assert((sign ? -abs_qc_low : abs_qc_low) == *qc_low);
   tran_low_t abs_dqc_low = (abs_qc_low * dqv) >> shift;
-  *dqc_low = (-sgn ^ abs_dqc_low) + sgn;
-  assert((sgn ? -abs_dqc_low : abs_dqc_low) == *dqc_low);
+  *dqc_low = (-sign ^ abs_dqc_low) + sign;
+  assert((sign ? -abs_dqc_low : abs_dqc_low) == *dqc_low);
 }
 
 static INLINE void update_coeff_general(
@@ -1257,23 +1256,23 @@ static INLINE void update_coeff_general(
   if (qc == 0) {
     *accu_rate += txb_costs->base_cost[coeff_ctx][0];
   } else {
-    const int sgn = (qc < 0) ? 1 : 0;
+    const int sign = (qc < 0) ? 1 : 0;
     const tran_low_t abs_qc = abs(qc);
     const tran_low_t tqc = tcoeff[ci];
     const tran_low_t dqc = dqcoeff[ci];
     const int64_t dist = get_coeff_dist(tqc, dqc, shift);
     const int64_t dist0 = get_coeff_dist(tqc, 0, shift);
     const int rate =
-        get_coeff_cost_general(is_last, ci, abs_qc, sgn, coeff_ctx, dc_sign_ctx,
-                               txb_costs, bwl, tx_type, levels);
+        get_coeff_cost_general(is_last, ci, abs_qc, sign, coeff_ctx,
+                               dc_sign_ctx, txb_costs, bwl, tx_type, levels);
     const int64_t rd = RDCOST(rdmult, rate, dist);
 
     tran_low_t qc_low, dqc_low;
-    get_qc_dqc_low(abs_qc, sgn, dqv, shift, &qc_low, &dqc_low);
+    get_qc_dqc_low(abs_qc, sign, dqv, shift, &qc_low, &dqc_low);
     const tran_low_t abs_qc_low = abs_qc - 1;
     const int64_t dist_low = get_coeff_dist(tqc, dqc_low, shift);
     const int rate_low =
-        get_coeff_cost_general(is_last, ci, abs_qc_low, sgn, coeff_ctx,
+        get_coeff_cost_general(is_last, ci, abs_qc_low, sign, coeff_ctx,
                                dc_sign_ctx, txb_costs, bwl, tx_type, levels);
     const int64_t rd_low = RDCOST(rdmult, rate_low, dist_low);
     if (rd_low < rd) {
@@ -1296,7 +1295,7 @@ static INLINE void update_coeff_simple(
     tran_low_t *qcoeff, tran_low_t *dqcoeff, uint8_t *levels) {
   const int dqv = dequant[1];
   (void)eob;
-  // this simple version assume the coeff's scan_idx is not DC (scan_idx != 0)
+  // this simple version assumes the coeff's scan_idx is not DC (scan_idx != 0)
   // and not the last (scan_idx != eob - 1)
   assert(si != eob - 1);
   assert(si > 0);
@@ -1314,9 +1313,9 @@ static INLINE void update_coeff_simple(
                                            bwl, tx_type, levels);
     const int64_t rd = RDCOST(rdmult, rate, dist);
 
-    const int sgn = (qc < 0) ? 1 : 0;
+    const int sign = (qc < 0) ? 1 : 0;
     tran_low_t qc_low, dqc_low;
-    get_qc_dqc_low(abs_qc, sgn, dqv, shift, &qc_low, &dqc_low);
+    get_qc_dqc_low(abs_qc, sign, dqv, shift, &qc_low, &dqc_low);
     const tran_low_t abs_qc_low = abs_qc - 1;
     const int64_t dist_low = get_coeff_dist(tqc, dqc_low, shift);
     const int rate_low = get_coeff_cost_simple(ci, abs_qc_low, coeff_ctx,
@@ -1352,20 +1351,20 @@ static INLINE void update_coeff_eob(
     const tran_low_t abs_qc = abs(qc);
     const tran_low_t tqc = tcoeff[ci];
     const tran_low_t dqc = dqcoeff[ci];
-    const int sgn = (qc < 0) ? 1 : 0;
+    const int sign = (qc < 0) ? 1 : 0;
     const int64_t dist0 = get_coeff_dist(tqc, 0, shift);
     int64_t dist = get_coeff_dist(tqc, dqc, shift) - dist0;
     int rate =
-        get_coeff_cost_general(0, ci, abs_qc, sgn, coeff_ctx, dc_sign_ctx,
+        get_coeff_cost_general(0, ci, abs_qc, sign, coeff_ctx, dc_sign_ctx,
                                txb_costs, bwl, tx_type, levels);
     int64_t rd = RDCOST(rdmult, *accu_rate + rate, *accu_dist + dist);
 
     tran_low_t qc_low, dqc_low;
-    get_qc_dqc_low(abs_qc, sgn, dqv, shift, &qc_low, &dqc_low);
+    get_qc_dqc_low(abs_qc, sign, dqv, shift, &qc_low, &dqc_low);
     const tran_low_t abs_qc_low = abs_qc - 1;
     const int64_t dist_low = get_coeff_dist(tqc, dqc_low, shift) - dist0;
     const int rate_low =
-        get_coeff_cost_general(0, ci, abs_qc_low, sgn, coeff_ctx, dc_sign_ctx,
+        get_coeff_cost_general(0, ci, abs_qc_low, sign, coeff_ctx, dc_sign_ctx,
                                txb_costs, bwl, tx_type, levels);
     const int64_t rd_low =
         RDCOST(rdmult, *accu_rate + rate_low, *accu_dist + dist_low);
@@ -1384,7 +1383,7 @@ static INLINE void update_coeff_eob(
     const int new_eob_cost =
         get_eob_cost(new_eob, txb_eob_costs, txb_costs, tx_type);
     int rate_coeff_eob =
-        new_eob_cost + get_coeff_cost_general(1, ci, abs_qc, sgn,
+        new_eob_cost + get_coeff_cost_general(1, ci, abs_qc, sign,
                                               coeff_ctx_new_eob, dc_sign_ctx,
                                               txb_costs, bwl, tx_type, levels);
     int64_t dist_new_eob = dist;
@@ -1393,7 +1392,7 @@ static INLINE void update_coeff_eob(
     if (abs_qc_low > 0) {
       const int rate_coeff_eob_low =
           new_eob_cost +
-          get_coeff_cost_general(1, ci, abs_qc_low, sgn, coeff_ctx_new_eob,
+          get_coeff_cost_general(1, ci, abs_qc_low, sign, coeff_ctx_new_eob,
                                  dc_sign_ctx, txb_costs, bwl, tx_type, levels);
       const int64_t dist_new_eob_low = dist_low;
       const int64_t rd_new_eob_low =
@@ -1515,7 +1514,7 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const int ci = scan[si];
   const tran_low_t qc = qcoeff[ci];
   const tran_low_t abs_qc = abs(qc);
-  const int sgn = qc < 0;
+  const int sign = qc < 0;
   const int max_nz_num = 2;
   int nz_num = 1;
   int nz_ci[3] = { ci, 0, 0 };
@@ -1528,7 +1527,7 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
     assert(abs_qc == 1);
     const int coeff_ctx = get_lower_levels_ctx_general(
         1, si, bwl, height, levels, ci, tx_size, tx_type);
-    accu_rate += get_coeff_cost_general(1, ci, abs_qc, sgn, coeff_ctx,
+    accu_rate += get_coeff_cost_general(1, ci, abs_qc, sign, coeff_ctx,
                                         txb_ctx->dc_sign_ctx, txb_costs, bwl,
                                         tx_type, levels);
     const tran_low_t tqc = tcoeff[ci];
@@ -1581,7 +1580,7 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   return eob;
 }
 
-// This functio is deprecated, but we keep it here becasue hash trellis
+// This function is deprecated, but we keep it here because hash trellis
 // is not integrated with av1_optimize_txb_new yet
 int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                      int blk_row, int blk_col, int block, TX_SIZE tx_size,
