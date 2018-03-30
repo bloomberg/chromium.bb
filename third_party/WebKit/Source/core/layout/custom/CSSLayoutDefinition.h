@@ -7,6 +7,7 @@
 
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css_property_names.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
@@ -39,8 +40,7 @@ class CSSLayoutDefinition final
 
   // This class represents an instance of the layout class defined by the
   // CSSLayoutDefinition.
-  class Instance final : public GarbageCollectedFinalized<Instance>,
-                         public TraceWrapperBase {
+  class Instance final : public GarbageCollectedFinalized<Instance> {
    public:
     Instance(CSSLayoutDefinition*, v8::Local<v8::Object> instance);
 
@@ -49,16 +49,12 @@ class CSSLayoutDefinition final
     bool Layout(const LayoutCustom&, FragmentResultOptions*);
 
     void Trace(blink::Visitor*);
-    void TraceWrappers(const ScriptWrappableVisitor*) const override;
-    const char* NameInHeapSnapshot() const override {
-      return "CSSLayoutDefinition::Instance";
-    }
 
    private:
     void ReportException(ExceptionState*);
 
     Member<CSSLayoutDefinition> definition_;
-    TraceWrapperV8Reference<v8::Object> instance_;
+    ScopedPersistent<v8::Object> instance_;
   };
 
   // Creates an instance of the web developer defined class. May return a
