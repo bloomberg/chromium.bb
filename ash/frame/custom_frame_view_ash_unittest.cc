@@ -526,26 +526,34 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
 TEST_F(CustomFrameViewAshTest, FrameVisibility) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
   views::Widget* widget = new views::Widget();
+  gfx::Rect window_bounds(10, 10, 200, 100);
   views::Widget::InitParams params;
-  params.bounds = gfx::Rect(10, 10, 200, 100);
+  params.bounds = window_bounds;
   params.context = CurrentContext();
   params.delegate = delegate;
   widget->Init(params);
   widget->Show();
 
+  // The height is smaller by the top border height.
+  gfx::Size client_bounds(200, 67);
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
-  EXPECT_EQ(gfx::Size(200, 67), widget->client_view()->GetLocalBounds().size());
+  EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
 
   custom_frame_view->SetVisible(false);
   widget->GetRootView()->Layout();
   EXPECT_EQ(gfx::Size(200, 100),
             widget->client_view()->GetLocalBounds().size());
   EXPECT_FALSE(widget->non_client_view()->frame_view()->visible());
+  EXPECT_EQ(window_bounds,
+            custom_frame_view->GetClientBoundsForWindowBounds(window_bounds));
 
   custom_frame_view->SetVisible(true);
   widget->GetRootView()->Layout();
-  EXPECT_EQ(gfx::Size(200, 67), widget->client_view()->GetLocalBounds().size());
+  EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
   EXPECT_TRUE(widget->non_client_view()->frame_view()->visible());
+  EXPECT_EQ(33, delegate->GetCustomFrameViewTopBorderHeight());
+  EXPECT_EQ(gfx::Rect(gfx::Point(10, 43), client_bounds),
+            custom_frame_view->GetClientBoundsForWindowBounds(window_bounds));
 }
 
 TEST_F(CustomFrameViewAshTest, CustomButtonModel) {

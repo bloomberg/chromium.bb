@@ -4,6 +4,7 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -89,8 +90,6 @@ class ClientControlledStateDelegate
   void HandleBoundsRequest(ash::wm::WindowState* window_state,
                            ash::mojom::WindowStateType requested_state,
                            const gfx::Rect& bounds) override {
-    bool is_resize = window_state->window()->bounds().size() != bounds.size();
-
     gfx::Rect bounds_in_screen(bounds);
     ::wm::ConvertRectToScreen(window_state->window()->GetRootWindow(),
                               &bounds_in_screen);
@@ -100,7 +99,7 @@ class ClientControlledStateDelegate
 
     shell_surface_->OnBoundsChangeEvent(
         window_state->GetStateType(), requested_state, display_id,
-        bounds_in_screen, is_resize,
+        bounds_in_screen,
         window_state->drag_details()
             ? window_state->drag_details()->bounds_change
             : 0);
@@ -125,11 +124,9 @@ class ClientControlledWindowStateDelegate
   // Overridden from ash::wm::WindowStateDelegate:
   bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
     ash::mojom::WindowStateType next_state;
-    // ash::mojom::WindowStateType current_state = window_state->GetStateType();
     aura::Window* window = window_state->window();
     switch (window_state->GetStateType()) {
       case ash::mojom::WindowStateType::DEFAULT:
-      // current_state = ash::mojom::WindowStateType::NORMAL;
       case ash::mojom::WindowStateType::NORMAL:
         window->SetProperty(aura::client::kPreFullscreenShowStateKey,
                             ui::SHOW_STATE_NORMAL);
@@ -408,12 +405,20 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     ash::mojom::WindowStateType current_state,
     ash::mojom::WindowStateType requested_state,
     int64_t display_id,
-    const gfx::Rect& bounds,
-    bool is_resize,
+    const gfx::Rect& window_bounds,
     int bounds_change) {
-  if (!bounds.IsEmpty() && !bounds_changed_callback_.is_null()) {
+  // Do no update the bounds unless we have geometry from client.
+  if (!geometry().IsEmpty() && !window_bounds.IsEmpty() &&
+      !bounds_changed_callback_.is_null()) {
+    // Sends the client bounds, which matches the geometry
+    // when frame is enabled.
+    ash::CustomFrameViewAsh* frame_view = GetFrameView();
+    gfx::Rect client_bounds =
+        frame_view->GetClientBoundsForWindowBounds(window_bounds);
+    gfx::Size current_size = frame_view->GetBoundsForClientView().size();
+    bool is_resize = client_bounds.size() != current_size;
     bounds_changed_callback_.Run(current_state, requested_state, display_id,
-                                 bounds, is_resize, bounds_change);
+                                 client_bounds, is_resize, bounds_change);
   }
 }
 
@@ -783,6 +788,11 @@ void ClientControlledShellSurface::
 
 ash::wm::WindowState* ClientControlledShellSurface::GetWindowState() {
   return ash::wm::GetWindowState(widget_->GetNativeWindow());
+}
+
+ash::CustomFrameViewAsh* ClientControlledShellSurface::GetFrameView() {
+  return static_cast<ash::CustomFrameViewAsh*>(
+      widget_->non_client_view()->frame_view());
 }
 
 // static
