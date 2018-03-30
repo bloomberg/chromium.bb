@@ -21,7 +21,7 @@ struct WebServiceWorkerError;
 
 struct WebServiceWorkerClientInfo {
   WebServiceWorkerClientInfo()
-      : page_visibility_state(mojom::PageVisibilityState::kLast),
+      : page_visibility_state(mojom::PageVisibilityState::kMaxValue),
         is_focused(false),
         frame_type(network::mojom::RequestContextFrameType::kNone),
         client_type(mojom::ServiceWorkerClientType::kWindow) {}

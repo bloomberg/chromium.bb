@@ -32,9 +32,6 @@ interface NightLightController {
     // Toggled automatically based on the custom set start and end times
     // selected by the user from the system settings.
     kCustom = 2,
-
-    // Must be the last item, used for UMA histograms.
-    kLast = kCustom,
   };
 
   // Sets the client that will be notified of changes in the Night Light

@@ -15,8 +15,7 @@ enum FetchRequestMode {
   kCORS,
   kCORSWithForcedPreflight,
   kNavigate,
-  // Add a new type here, then update kLast and enums.xml.
-  kLast = kNavigate
+  // Add a new type here, then update enums.xml.
 };
 
 // Corresponds to Fetch request's "redirect mode":
@@ -25,9 +24,6 @@ enum FetchRedirectMode {
   kFollow,
   kError,
   kManual,
-
-  // Update kLast if a new type is appended. Used for IPC_ENUM_TRAITS_MAX_VALUE.
-  kLast = kManual
 };
 
 // Corresponds to Fetch request's "credentials mode":
@@ -36,9 +32,6 @@ enum FetchCredentialsMode {
   kOmit,
   kSameOrigin,
   kInclude,
-
-  // Update kLast if a new type is appended. Used for IPC_ENUM_TRAITS_MAX_VALUE.
-  kLast = kInclude
 };
 
 // Corresponds to response types from the Fetch spec:
@@ -53,6 +46,5 @@ enum FetchResponseType {
   kError,
   kOpaque,
   kOpaqueRedirect,
-  // Add a new type here, then update kLast and enums.xml.
-  kLast = kOpaqueRedirect
+  // Add a new type here, then update enums.xml.
 };

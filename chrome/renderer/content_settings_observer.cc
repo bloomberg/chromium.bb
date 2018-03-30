@@ -475,7 +475,7 @@ void ContentSettingsObserver::PersistClientHints(
   // this method should not return early if |update_count| is 0.
   std::vector<::blink::mojom::WebClientHintsType> client_hints;
   static constexpr size_t kWebClientHintsCount =
-      static_cast<size_t>(blink::mojom::WebClientHintsType::kLast) + 1;
+      static_cast<size_t>(blink::mojom::WebClientHintsType::kMaxValue) + 1;
   client_hints.reserve(kWebClientHintsCount);
 
   for (size_t i = 0; i < kWebClientHintsCount; ++i) {

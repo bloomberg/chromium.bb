@@ -5,6 +5,7 @@
 #ifndef BASE_METRICS_HISTOGRAM_MACROS_H_
 #define BASE_METRICS_HISTOGRAM_MACROS_H_
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros_internal.h"
 #include "base/metrics/histogram_macros_local.h"
@@ -35,6 +36,28 @@
 // an element of the Enum.
 // All of these macros must be called with |name| as a runtime constant.
 
+// The first variant of UMA_HISTOGRAM_ENUMERATION accepts two arguments: the
+// histogram name and the enum sample. It deduces the correct boundary value to
+// use by looking for an enumerator with the name kMaxValue. kMaxValue should
+// share the value of the highest enumerator: this avoids switch statements
+// having to handle a sentinel no-op value.
+//
+// Sample usage:
+//   // These values are persisted to logs. Entries should not be renumbered and
+//   // numeric values should never be reused.
+//   enum class MyEnum {
+//     kFirstValue = 0,
+//     kSecondValue = 1,
+//     ...
+//     kFinalValue = N,
+//     kMaxValue = kFinalValue,
+//   };
+//   UMA_HISTOGRAM_ENUMERATION("My.Enumeration", MyEnum::kSomeValue);
+//
+// The second variant requires three arguments: the first two are the same as
+// before, and the third argument is the enum boundary: this must be strictly
+// greater than any other enumerator that will be sampled.
+//
 // Sample usage:
 //   // These values are persisted to logs. Entries should not be renumbered and
 //   // numeric values should never be reused.
@@ -48,11 +71,15 @@
 //   UMA_HISTOGRAM_ENUMERATION("My.Enumeration",
 //                             MyEnum::SOME_VALUE, MyEnum::COUNT);
 //
-// Note: The value in |sample| must be strictly less than |enum_size|.
-
-#define UMA_HISTOGRAM_ENUMERATION(name, sample, enum_size) \
-  INTERNAL_HISTOGRAM_ENUMERATION_WITH_FLAG(                \
-      name, sample, enum_size, base::HistogramBase::kUmaTargetedHistogramFlag)
+// Note: If the enum is used in a switch, it is often desirable to avoid writing
+// a case statement to handle an unused sentinel value (i.e. COUNT in the above
+// example). For scoped enums, this is awkward since it requires casting the
+// enum to an arithmetic type and adding one. Instead, prefer the two argument
+// version of the macro which automatically deduces the boundary from kMaxValue.
+#define UMA_HISTOGRAM_ENUMERATION(name, ...)                            \
+  CR_EXPAND_ARG(INTERNAL_UMA_HISTOGRAM_ENUMERATION_GET_MACRO(           \
+      __VA_ARGS__, INTERNAL_UMA_HISTOGRAM_ENUMERATION_SPECIFY_BOUNDARY, \
+      INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY)(name, __VA_ARGS__))
 
 // Histogram for boolean values.
 

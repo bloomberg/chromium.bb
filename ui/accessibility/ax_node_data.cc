@@ -32,7 +32,7 @@ uint32_t ModifyFlag(uint32_t bitfield, uint32_t flag, bool set) {
 std::string StateBitfieldToString(uint32_t state) {
   std::string str;
   for (uint32_t i = static_cast<uint32_t>(ax::mojom::State::kNone) + 1;
-       i <= static_cast<uint32_t>(ax::mojom::State::kLast); ++i) {
+       i <= static_cast<uint32_t>(ax::mojom::State::kMaxValue); ++i) {
     if (IsFlagSet(state, i))
       str += " " +
              base::ToUpperASCII(ui::ToString(static_cast<ax::mojom::State>(i)));
@@ -43,7 +43,7 @@ std::string StateBitfieldToString(uint32_t state) {
 std::string ActionsBitfieldToString(uint32_t actions) {
   std::string str;
   for (uint32_t i = static_cast<uint32_t>(ax::mojom::Action::kNone) + 1;
-       i <= static_cast<uint32_t>(ax::mojom::Action::kLast); ++i) {
+       i <= static_cast<uint32_t>(ax::mojom::Action::kMaxValue); ++i) {
     if (IsFlagSet(actions, i)) {
       str += ui::ToString(static_cast<ax::mojom::Action>(i));
       actions = ModifyFlag(actions, i, false);

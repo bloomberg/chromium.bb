@@ -252,23 +252,23 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::WindowFeatures)
   IPC_STRUCT_TRAITS_MEMBER(scrollbars_visible)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Event, ax::mojom::Event::kLast)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Role, ax::mojom::Role::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Event, ax::mojom::Event::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Role, ax::mojom::Role::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::BoolAttribute,
-                          ax::mojom::BoolAttribute::kLast)
+                          ax::mojom::BoolAttribute::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::FloatAttribute,
-                          ax::mojom::FloatAttribute::kLast)
+                          ax::mojom::FloatAttribute::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::IntAttribute,
-                          ax::mojom::IntAttribute::kLast)
+                          ax::mojom::IntAttribute::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::IntListAttribute,
-                          ax::mojom::IntListAttribute::kLast)
+                          ax::mojom::IntListAttribute::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::StringListAttribute,
-                          ax::mojom::StringListAttribute::kLast)
+                          ax::mojom::StringListAttribute::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::StringAttribute,
-                          ax::mojom::StringAttribute::kLast)
+                          ax::mojom::StringAttribute::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::TextAffinity,
-                          ax::mojom::TextAffinity::kLast)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::EventFrom, ax::mojom::EventFrom::kLast)
+                          ax::mojom::TextAffinity::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::EventFrom, ax::mojom::EventFrom::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::AXRelativeBounds)
   IPC_STRUCT_TRAITS_MEMBER(offset_container_id)

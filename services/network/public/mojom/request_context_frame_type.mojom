@@ -19,6 +19,4 @@ enum RequestContextFrameType {
   kNested,
   kNone,
   kTopLevel,
-  // TODO(xiaofeng.zhang): Remove it when legacy IPC is removed.
-  kLast = kTopLevel
 };

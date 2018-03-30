@@ -937,7 +937,7 @@ void AutomationInternalCustomBindings::GetSchemaAdditions(
 
   gin::DataObjectBuilder name_from_type(isolate);
   for (int32_t i = static_cast<int32_t>(ax::mojom::NameFrom::kNone);
-       i <= static_cast<int32_t>(ax::mojom::NameFrom::kLast); ++i) {
+       i <= static_cast<int32_t>(ax::mojom::NameFrom::kMaxValue); ++i) {
     name_from_type.Set(
         i,
         base::StringPiece(ui::ToString(static_cast<ax::mojom::NameFrom>(i))));
@@ -945,14 +945,14 @@ void AutomationInternalCustomBindings::GetSchemaAdditions(
 
   gin::DataObjectBuilder restriction(isolate);
   for (int32_t i = static_cast<int32_t>(ax::mojom::Restriction::kNone);
-       i <= static_cast<int32_t>(ax::mojom::Restriction::kLast); ++i) {
+       i <= static_cast<int32_t>(ax::mojom::Restriction::kMaxValue); ++i) {
     restriction.Set(i, base::StringPiece(ui::ToString(
                            static_cast<ax::mojom::Restriction>(i))));
   }
 
   gin::DataObjectBuilder description_from_type(isolate);
   for (int32_t i = static_cast<int32_t>(ax::mojom::DescriptionFrom::kNone);
-       i <= static_cast<int32_t>(ax::mojom::DescriptionFrom::kLast); ++i) {
+       i <= static_cast<int32_t>(ax::mojom::DescriptionFrom::kMaxValue); ++i) {
     description_from_type.Set(
         i, base::StringPiece(
                ui::ToString(static_cast<ax::mojom::DescriptionFrom>(i))));

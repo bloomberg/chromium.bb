@@ -22,7 +22,6 @@ enum CacheStorageError {
   // TODO(cmumford): kErrorNotImplemented is deprecated. Remove use in code.
   kErrorNotImplemented = 7,
   // Add new values here.
-  kLast = kErrorNotImplemented
 };
 
 // Controls how requests are matched in the Cache API.

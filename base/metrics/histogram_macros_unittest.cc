@@ -40,10 +40,12 @@ TEST(HistogramMacro, ScopedEnumeration) {
     FIRST_VALUE,
     SECOND_VALUE,
     THIRD_VALUE,
+    kMaxValue = THIRD_VALUE,
     MAX_ENTRIES,
   };
   UMA_HISTOGRAM_ENUMERATION("Test.ScopedEnumeration", TestEnum::SECOND_VALUE,
                             TestEnum::MAX_ENTRIES);
+  UMA_HISTOGRAM_ENUMERATION("Test.ScopedEnumeration2", TestEnum::SECOND_VALUE);
 }
 
 }  // namespace base

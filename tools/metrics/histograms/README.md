@@ -47,28 +47,59 @@ If few buckets will be emitted to, consider using a [sparse
 histogram](#When-To-Use-Sparse-Histograms).
 
 You may append to your enum if the possible states/actions grows.  However, you
-should not reorder, renumber, or otherwise reuse existing values.  As such,
-please put this warning by the enum definition:
+should not reorder, renumber, or otherwise reuse existing values. Definitions
+for enums recorded in histograms should be prefixed by the following warning:
 ```
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class NEW_TAB_PAGE_ACTION {
-  USE_OMNIBOX = 0,
-  CLICK_TILE = 1,
-  OPEN_BOOKMARK = 2,
-  COUNT
-};
 ```
 
-Also, please explicitly set enum values `= 0`, `= 1`, `= 2`, etc.  This makes
-clearer that the actual values are important.  In addition, it helps confirm
-the values align between the enum definition and
-[histograms.xml](./histograms.xml).  The COUNT value should not include an
-explicit value--this lets the compiler keep the COUNT up-to-date.
+The enums themselves should have explicit enumerator values set (`= 0`, `= 1`,
+`= 2`), to make it clear that the actual values are important and to make it
+easy to match the values between the C++ definition and
+[histograms.xml](./histograms.xml).
 
-If your enum histogram has a catch-all / miscellaneous bucket, put that bucket
-first (`= 0`).  This will make the bucket easy to find on the dashboard if
-later you add additional buckets to your histogram.
+There are two common patterns for defining enums. If an enum is used in a
+`switch` statement, it should be defined like this:
+```
+enum class NewTabPageAction {
+  kUseOmnibox = 0,
+  kClickTitle = 1,
+  kOpenBookmark = 2,
+  kMaxValue = kOpenBookmark,
+};
+```
+`kMaxValue` is a special enumerator value that shares the value of the highest
+enumerator: this should be done by assigning it the name of the enumerator with
+the highest explicit integral value. `switch` statements will not need to handle
+an otherwise unused sentinel value.
+
+Enumerators defined in this way should be recorded using the two argument
+version of `UMA_HISTOGRAM_ENUMERATION`:
+```
+UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action);
+```
+which automatically deduces the range of the enum from `kMaxValue`.
+
+Alternatively, enums can be defined with a sentinel enumerator value at the end:
+```
+enum class NewTabPageAction {
+  kUseOmnibox = 0,
+  kClickTitle = 1,
+  kOpenBookmark = 2,
+  kCount,
+};
+```
+The `kCount` enumerator should not include an explicit value--this lets the
+compiler keep `kCount` up-to-date. Enumerators defined in this way should be
+recoded using the three argument version of `UMA_HISTOGRAM_ENUMERATION`:
+```
+UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action, NewTabPageAction::kCount);
+```
+
+Finally, if your enum histogram has a catch-all / miscellaneous bucket, put that
+bucket first (`= 0`).  This will make the bucket easy to find on the dashboard
+if later you add additional buckets to your histogram.
 
 ### Flag Histograms
 

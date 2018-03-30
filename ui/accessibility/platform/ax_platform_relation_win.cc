@@ -122,7 +122,7 @@ int AXPlatformRelationWin::EnumerateRelationships(
   if (first_time) {
     for (int32_t attr_index =
              static_cast<int32_t>(ax::mojom::IntAttribute::kNone);
-         attr_index <= static_cast<int32_t>(ax::mojom::IntAttribute::kLast);
+         attr_index <= static_cast<int32_t>(ax::mojom::IntAttribute::kMaxValue);
          ++attr_index) {
       auto attr = static_cast<ax::mojom::IntAttribute>(attr_index);
       if (!GetIA2ReverseRelationFromIntAttr(attr).empty())
@@ -130,7 +130,8 @@ int AXPlatformRelationWin::EnumerateRelationships(
     }
     for (int32_t attr_index =
              static_cast<int32_t>(ax::mojom::IntListAttribute::kNone);
-         attr_index <= static_cast<int32_t>(ax::mojom::IntListAttribute::kLast);
+         attr_index <=
+         static_cast<int32_t>(ax::mojom::IntListAttribute::kMaxValue);
          ++attr_index) {
       auto attr = static_cast<ax::mojom::IntListAttribute>(attr_index);
       if (!GetIA2ReverseRelationFromIntListAttr(attr).empty())

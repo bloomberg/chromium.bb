@@ -470,9 +470,7 @@ void NightLightController::OnScheduleTypePrefChanged() {
   NotifyClientWithScheduleChange();
   Refresh(true /* did_schedule_change */);
 
-  // TODO(https://crbug.com/742517).
-  UMA_HISTOGRAM_ENUMERATION("Ash.NightLight.ScheduleType", GetScheduleType(),
-                            static_cast<int>(ScheduleType::kLast) + 1);
+  UMA_HISTOGRAM_ENUMERATION("Ash.NightLight.ScheduleType", GetScheduleType());
 }
 
 void NightLightController::OnCustomSchedulePrefsChanged() {
