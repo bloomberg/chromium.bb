@@ -104,6 +104,8 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
     const auto* properties = fragment_data.PaintProperties();
     DCHECK(properties && properties->Mask());
     state.SetEffect(properties->Mask());
+    state.SetClip(properties->MaskClip());
+
     mask_layer->SetLayerState(
         state, snapped_paint_offset + mask_layer->OffsetFromLayoutObject());
   }
