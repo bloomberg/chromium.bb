@@ -3383,5 +3383,5 @@ crbug.com/680741 external/wpt/uievents/mouse/mouse_buttons_back_forward-manual.h
 
 # Sheriff 2018-03-29
 crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
-crbug.com/827209 [ Win7 ] fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
-crbug.com/827209 [ Win7 ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
+crbug.com/827209 fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
+crbug.com/827209 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
