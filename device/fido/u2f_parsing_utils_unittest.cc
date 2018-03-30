@@ -117,5 +117,21 @@ TEST(U2fParsingUtils, ExtractSuffixOutOfBounds) {
   EXPECT_THAT(ExtractSuffix(kOneTwoThree, 4), ::testing::IsEmpty());
 }
 
+TEST(U2fParsingUtils, ExtractArray) {
+  const std::vector<uint8_t> empty;
+  std::array<uint8_t, 0> array_empty;
+  EXPECT_TRUE(ExtractArray(empty, 0, &array_empty));
+
+  std::array<uint8_t, 2> array_two_three;
+  EXPECT_TRUE(ExtractArray(kTwoThree, 0, &array_two_three));
+  EXPECT_THAT(array_two_three, ::testing::ElementsAreArray(kTwoThree));
+
+  EXPECT_FALSE(ExtractArray(kOneTwoThree, 2, &array_two_three));
+
+  std::array<uint8_t, 1> array_three;
+  EXPECT_TRUE(ExtractArray(kOneTwoThree, 2, &array_three));
+  EXPECT_THAT(array_three, ::testing::ElementsAreArray(kThree));
+}
+
 }  // namespace u2f_parsing_utils
 }  // namespace device
