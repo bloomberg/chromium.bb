@@ -68,6 +68,7 @@ Bug(none) xmlviewer/ [ Skip ]
 
 Bug(none) virtual/android/ [ Skip ]
 Bug(none) virtual/color_space/ [ Skip ]
+Bug(none) virtual/disable-rls/ [ Skip ]
 Bug(none) virtual/enable_asmjs/ [ Skip ]
 Bug(none) virtual/enable_wasm/ [ Skip ]
 Bug(none) virtual/exotic-color-space/ [ Skip ]
@@ -1454,3 +1455,5 @@ Bug(none) paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-layer-with-reflection.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
 Bug(none) svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
+
+Bug(none) compositing/squashing/frame-clip-squashed-scrolled.html [ Failure ]

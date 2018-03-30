@@ -293,6 +293,12 @@
     "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
+    "prefix": "disable-rls",
+    "base": "compositing/squashing",
+    "args": ["--disable-blink-features=RootLayerScrolling"]
+  },
+
+  {
     "prefix": "scalefactor200",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=2"]
