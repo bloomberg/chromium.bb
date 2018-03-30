@@ -56,7 +56,7 @@ void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
   DCHECK(!automatic_reboot_manager_);
 
   automatic_reboot_manager_.reset(new chromeos::system::AutomaticRebootManager(
-      std::unique_ptr<base::TickClock>(new base::DefaultTickClock)));
+      base::DefaultTickClock::GetInstance()));
 }
 
 void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {

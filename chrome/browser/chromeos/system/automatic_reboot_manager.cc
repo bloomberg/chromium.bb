@@ -141,11 +141,10 @@ AutomaticRebootManager::SystemEventTimes::SystemEventTimes(
   has_update_reboot_needed_time = true;
 }
 
-AutomaticRebootManager::AutomaticRebootManager(
-    std::unique_ptr<base::TickClock> clock)
+AutomaticRebootManager::AutomaticRebootManager(base::TickClock* clock)
     : initialized_(base::WaitableEvent::ResetPolicy::MANUAL,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
-      clock_(std::move(clock)),
+      clock_(clock),
       have_boot_time_(false),
       have_update_reboot_needed_time_(false),
       reboot_reason_(AutomaticRebootManagerObserver::REBOOT_REASON_UNKNOWN),

@@ -456,7 +456,7 @@ void AutomaticRebootManagerBasicTest::ExpectNoRebootRequest() {
 void AutomaticRebootManagerBasicTest::CreateAutomaticRebootManager(
     bool expect_reboot) {
   automatic_reboot_manager_.reset(
-      new AutomaticRebootManager(task_runner_->DeprecatedGetMockTickClock()));
+      new AutomaticRebootManager(task_runner_->GetMockTickClock()));
   automatic_reboot_manager_observer_.Init(automatic_reboot_manager_.get());
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,

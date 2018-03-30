@@ -436,15 +436,13 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     focus_cycler_delegate_ = std::make_unique<TestFocusCyclerDelegate>();
 
-    auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
     // Advance the clock to have non-null value.
-    tick_clock->Advance(base::TimeDelta::FromMilliseconds(1));
-    tick_clock_ = tick_clock.get();
+    tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
 
     state_controller_ = std::make_unique<lock_screen_apps::StateController>();
     state_controller_->SetTrayActionPtrForTesting(
         tray_action_.CreateInterfacePtrAndBind());
-    state_controller_->SetTickClockForTesting(std::move(tick_clock));
+    state_controller_->SetTickClockForTesting(&tick_clock_);
     state_controller_->SetLockScreenLockScreenProfileCreatorForTesting(
         std::move(profile_creator));
     state_controller_->SetAppManagerForTesting(std::move(app_manager));
@@ -676,7 +674,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     return lock_screen_profile_creator_;
   }
 
-  base::SimpleTestTickClock* tick_clock() { return tick_clock_; }
+  base::SimpleTestTickClock* tick_clock() { return &tick_clock_; }
 
  protected:
   // Should be set by tests that excercise the logic for the first lock screen
@@ -719,7 +717,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   std::unique_ptr<TestAppWindow> app_window_;
   scoped_refptr<const extensions::Extension> app_;
 
-  base::SimpleTestTickClock* tick_clock_;
+  base::SimpleTestTickClock tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateTest);
 };

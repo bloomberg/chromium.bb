@@ -87,7 +87,7 @@ class IdleEventNotifierTest : public testing::Test {
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
         &power_client_, &user_activity_detector_, mojo::MakeRequest(&observer));
     idle_event_notifier_->SetClockForTesting(
-        task_runner_, task_runner_->DeprecatedGetMockClock(),
+        task_runner_, task_runner_->GetMockClock(),
         std::make_unique<FakeBootClock>(task_runner_,
                                         base::TimeDelta::FromSeconds(10)));
     idle_event_notifier_->AddObserver(&test_observer_);

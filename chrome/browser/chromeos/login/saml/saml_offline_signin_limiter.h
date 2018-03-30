@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/login/auth/user_context.h"
@@ -47,7 +46,7 @@ class SAMLOfflineSigninLimiter : public KeyedService {
   friend class SAMLOfflineSigninLimiterTest;
 
   // |profile| and |clock| must remain valid until Shutdown() is called. If
-  // |clock| is NULL, the |default_clock_| will be used.
+  // |clock| is NULL, the shared base::DefaultClock instance will be used.
   SAMLOfflineSigninLimiter(Profile* profile, base::Clock* clock);
   ~SAMLOfflineSigninLimiter() override;
 
@@ -59,8 +58,6 @@ class SAMLOfflineSigninLimiter : public KeyedService {
   // Sets the flag enforcing online login. This will cause the user's next login
   // to use online authentication against GAIA.
   void ForceOnlineLogin();
-
-  base::DefaultClock default_clock_;
 
   Profile* profile_;
   base::Clock* clock_;
