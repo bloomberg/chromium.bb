@@ -14,19 +14,18 @@ class LifecycleUnit;
 // Interface to be notified when the state of a LifecycleUnit changes.
 class LifecycleUnitObserver {
  public:
-  virtual ~LifecycleUnitObserver() = default;
+  virtual ~LifecycleUnitObserver();
 
   // Invoked when the state of the observed LifecycleUnit changes.
-  virtual void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) = 0;
+  virtual void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit);
 
   // Invoked when the visibility of the observed LifecyleUnit changes.
-  virtual void OnLifecycleUnitVisibilityChanged(
-      LifecycleUnit* lifecycle_unit,
-      content::Visibility visibility) = 0;
+  virtual void OnLifecycleUnitVisibilityChanged(LifecycleUnit* lifecycle_unit,
+                                                content::Visibility visibility);
 
   // Invoked before the observed LifecycleUnit starts being destroyed (i.e.
   // |lifecycle_unit| is still valid when this is invoked).
-  virtual void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) = 0;
+  virtual void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit);
 };
 
 }  // namespace resource_coordinator

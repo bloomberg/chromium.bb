@@ -2617,6 +2617,7 @@ jumbo_split_static_library("browser") {
       "resource_coordinator/lifecycle_unit.h",
       "resource_coordinator/lifecycle_unit_base.cc",
       "resource_coordinator/lifecycle_unit_base.h",
+      "resource_coordinator/lifecycle_unit_observer.cc",
       "resource_coordinator/lifecycle_unit_observer.h",
       "resource_coordinator/lifecycle_unit_source.h",
       "resource_coordinator/lifecycle_unit_source_base.cc",
