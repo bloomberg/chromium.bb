@@ -519,7 +519,7 @@ const base::Feature kWebRtcUseEchoCanceller3{"WebRtcUseEchoCanceller3",
 
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
-    "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
