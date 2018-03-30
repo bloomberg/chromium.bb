@@ -53,6 +53,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       report_raw_headers_(false),
       has_user_gesture_(false),
       download_to_file_(false),
+      download_to_blob_(false),
       use_stream_on_response_(false),
       keepalive_(false),
       should_reset_app_cache_(false),
@@ -97,6 +98,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetReportUploadProgress(data->report_upload_progress_);
   SetHasUserGesture(data->has_user_gesture_);
   SetDownloadToFile(data->download_to_file_);
+  SetDownloadToBlob(data->download_to_blob_);
   SetUseStreamOnResponse(data->use_stream_on_response_);
   SetKeepalive(data->keepalive_);
   SetCacheMode(data->cache_mode_);
@@ -148,6 +150,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
 
   // Copy from parameters for |this|.
   request->SetDownloadToFile(DownloadToFile());
+  request->SetDownloadToBlob(DownloadToBlob());
   request->SetUseStreamOnResponse(UseStreamOnResponse());
   request->SetRequestContext(GetRequestContext());
   request->SetFrameType(GetFrameType());
@@ -186,6 +189,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->report_upload_progress_ = report_upload_progress_;
   data->has_user_gesture_ = has_user_gesture_;
   data->download_to_file_ = download_to_file_;
+  data->download_to_blob_ = download_to_blob_;
   data->use_stream_on_response_ = use_stream_on_response_;
   data->keepalive_ = keepalive_;
   data->cache_mode_ = GetCacheMode();

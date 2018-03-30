@@ -966,6 +966,13 @@ void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
       resources_data_->GetAndClearPendingEncodedDataLength(request_id));
 }
 
+void InspectorNetworkAgent::DidReceiveBlob(unsigned long identifier,
+                                           DocumentLoader* loader,
+                                           scoped_refptr<BlobDataHandle> blob) {
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
+  resources_data_->BlobReceived(request_id, std::move(blob));
+}
+
 void InspectorNetworkAgent::DidReceiveEncodedDataLength(
     DocumentLoader* loader,
     unsigned long identifier,

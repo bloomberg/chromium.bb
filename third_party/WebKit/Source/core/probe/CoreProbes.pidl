@@ -96,6 +96,7 @@ interface CoreProbes {
   void markResourceAsCached(LocalFrame*, DocumentLoader*, unsigned long identifier);
   void didReceiveResourceResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didReceiveData(ExecutionContext*, unsigned long identifier, DocumentLoader*, const char* data, int dataLength);
+  void didReceiveBlob(ExecutionContext*, unsigned long identifier, DocumentLoader*, BlobDataHandle*);
   void didReceiveEncodedDataLength(ExecutionContext*, DocumentLoader* loader, unsigned long identifier, int encodedDataLength);
   void didFinishLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encoded_data_length, int64_t decodedBodyLength, bool blocked_cross_site_document);
   void didReceiveCORSRedirectResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);

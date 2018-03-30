@@ -213,6 +213,7 @@ class NetworkResourcesData final
   void ResponseReceived(const String& request_id,
                         const String& frame_id,
                         const ResourceResponse&);
+  void BlobReceived(const String& request_id, scoped_refptr<BlobDataHandle>);
   void SetResourceType(const String& request_id,
                        InspectorPageAgent::ResourceType);
   InspectorPageAgent::ResourceType GetResourceType(const String& request_id);

@@ -51,6 +51,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
 
@@ -123,6 +124,8 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
     Cancel();
     return;
   }
+
+  is_downloading_to_blob_ = request.DownloadToBlob();
 
   loader_->SetDefersLoading(Context().DefersLoading());
 
@@ -607,6 +610,22 @@ void ResourceLoader::DidReceiveResponse(const WebURLResponse& response) {
   DidReceiveResponse(response, nullptr);
 }
 
+void ResourceLoader::DidStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  DCHECK(is_downloading_to_blob_);
+  DCHECK(!blob_response_started_);
+  blob_response_started_ = true;
+
+  const ResourceResponse& response = resource_->GetResponse();
+  AtomicString mime_type = response.MimeType();
+
+  mojom::blink::BlobRegistry* blob_registry = BlobDataHandle::GetBlobRegistry();
+  blob_registry->RegisterFromStream(
+      mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
+      std::max(0ll, response.ExpectedContentLength()), std::move(body),
+      WTF::Bind(&ResourceLoader::FinishedCreatingBlob, WrapPersistent(this)));
+}
+
 void ResourceLoader::DidDownloadData(int length, int encoded_data_length) {
   Context().DispatchDidDownloadData(resource_->Identifier(), length,
                                     encoded_data_length);
@@ -644,6 +663,12 @@ void ResourceLoader::DidFinishLoading(double finish_time,
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
+
+  if (is_downloading_to_blob_ && !blob_finished_ && blob_response_started_) {
+    load_did_finish_before_blob_ =
+        DeferedFinishLoadingInfo{finish_time, blocked_cross_site_document};
+    return;
+  }
 
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
           ResourceLoadScheduler::TrafficReportHints(encoded_data_length,
@@ -700,9 +725,10 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   int64_t encoded_data_length = WebURLLoaderClient::kUnknownEncodedDataLength;
   int64_t encoded_body_length = 0;
   base::Optional<int64_t> downloaded_file_length;
+  WebBlobInfo downloaded_blob;
   loader_->LoadSynchronously(request_in, response_out, error_out, data_out,
                              encoded_data_length, encoded_body_length,
-                             downloaded_file_length);
+                             downloaded_file_length, downloaded_blob);
 
   // A message dispatched while synchronously fetching the resource
   // can bring about the cancellation of this load.
@@ -736,6 +762,16 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   if (downloaded_file_length) {
     DCHECK(request.DownloadToFile());
     DidDownloadData(*downloaded_file_length, encoded_body_length);
+  }
+  if (request.DownloadToBlob()) {
+    auto blob = downloaded_blob.GetBlobHandle();
+    if (blob) {
+      Context().DispatchDidReceiveData(resource_->Identifier(), nullptr,
+                                       blob->size());
+      resource_->DidDownloadData(blob->size());
+    }
+    Context().DispatchDidDownloadToBlob(resource_->Identifier(), blob.get());
+    resource_->DidDownloadToBlob(blob);
   }
   DidFinishLoading(CurrentTimeTicksInSeconds(), encoded_data_length,
                    encoded_body_length, decoded_body_length, false);
@@ -789,6 +825,33 @@ bool ResourceLoader::ShouldBeKeptAliveWhenDetached() const {
 scoped_refptr<base::SingleThreadTaskRunner>
 ResourceLoader::GetLoadingTaskRunner() {
   return Context().GetLoadingTaskRunner();
+}
+
+void ResourceLoader::FinishedCreatingBlob(
+    const scoped_refptr<BlobDataHandle>& blob) {
+  DCHECK(!blob_finished_);
+
+  if (scheduler_client_id_ == ResourceLoadScheduler::kInvalidClientId)
+    return;
+
+  // TODO(mek): Implement proper progress events once streaming data to a blob
+  // supports reporting progress.
+  if (blob) {
+    Context().DispatchDidReceiveData(resource_->Identifier(), nullptr,
+                                     blob->size());
+    resource_->DidDownloadData(blob->size());
+  }
+  Context().DispatchDidDownloadToBlob(resource_->Identifier(), blob.get());
+  resource_->DidDownloadToBlob(blob);
+
+  blob_finished_ = true;
+  if (load_did_finish_before_blob_) {
+    const ResourceResponse& response = resource_->GetResponse();
+    DidFinishLoading(load_did_finish_before_blob_->finish_time,
+                     response.EncodedDataLength(), response.EncodedBodyLength(),
+                     response.DecodedBodyLength(),
+                     load_did_finish_before_blob_->blocked_cross_site_document);
+  }
 }
 
 }  // namespace blink

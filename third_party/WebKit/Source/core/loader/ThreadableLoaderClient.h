@@ -35,6 +35,7 @@
 
 #include "base/macros.h"
 #include "core/CoreExport.h"
+#include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
@@ -64,6 +65,11 @@ class CORE_EXPORT ThreadableLoaderClient {
   virtual bool IsDocumentThreadableLoaderClient() { return false; }
 
   virtual void DidDownloadData(int /*dataLength*/) {}
+  // Called for requests that had DownloadToBlob set to true. Can be called with
+  // null if creating the blob failed for some reason (but the download itself
+  // otherwise succeeded). Could also not be called at all if the downloaded
+  // resource ended up being zero bytes.
+  virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
   virtual ~ThreadableLoaderClient() = default;
 

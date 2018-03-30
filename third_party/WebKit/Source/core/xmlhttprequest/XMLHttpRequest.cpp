@@ -288,34 +288,16 @@ XMLHttpRequest::XMLHttpRequest(
     bool is_isolated_world,
     scoped_refptr<SecurityOrigin> isolated_world_security_origin)
     : PausableObject(context),
-      timeout_milliseconds_(0),
-      state_(kUnsent),
-      length_downloaded_to_file_(0),
-      received_length_(0),
-      exception_code_(0),
       progress_event_throttle_(
           XMLHttpRequestProgressEventThrottle::Create(this)),
-      response_type_code_(kResponseTypeDefault),
       isolate_(isolate),
       is_isolated_world_(is_isolated_world),
       isolated_world_security_origin_(
-          std::move(isolated_world_security_origin)),
-      event_dispatch_recursion_level_(0),
-      async_(true),
-      with_credentials_(false),
-      parsed_response_(false),
-      error_(false),
-      upload_events_allowed_(true),
-      upload_complete_(false),
-      same_origin_request_(true),
-      downloading_to_file_(false),
-      response_text_overflow_(false),
-      send_flag_(false),
-      response_array_buffer_failure_(false) {}
+          std::move(isolated_world_security_origin)) {}
 
 XMLHttpRequest::~XMLHttpRequest() {
   binary_response_builder_ = nullptr;
-  length_downloaded_to_file_ = 0;
+  length_downloaded_to_blob_ = 0;
   ReportMemoryUsageToV8();
 }
 
@@ -427,33 +409,22 @@ Blob* XMLHttpRequest::ResponseBlob() {
     return nullptr;
 
   if (!response_blob_) {
-    if (downloading_to_file_) {
-      DCHECK(!binary_response_builder_);
-
-      // When responseType is set to "blob", we redirect the downloaded
-      // data to a file-handle directly in the browser process. We get
-      // the file-path from the ResourceResponse directly instead of
-      // copying the bytes between the browser and the renderer.
-      response_blob_ = Blob::Create(CreateBlobDataHandleFromResponse());
-    } else {
-      std::unique_ptr<BlobData> blob_data = BlobData::Create();
-      size_t size = 0;
-      if (binary_response_builder_ && binary_response_builder_->size()) {
-        binary_response_builder_->ForEachSegment(
-            [&blob_data](const char* segment, size_t segment_size,
-                         size_t segment_offset) -> bool {
-              blob_data->AppendBytes(segment, segment_size);
-              return true;
-            });
-        size = binary_response_builder_->size();
-        blob_data->SetContentType(
-            FinalResponseMIMETypeWithFallback().LowerASCII());
-        binary_response_builder_ = nullptr;
-        ReportMemoryUsageToV8();
-      }
-      response_blob_ =
-          Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
+    size_t size = 0;
+    if (binary_response_builder_ && binary_response_builder_->size()) {
+      binary_response_builder_->ForEachSegment(
+          [&blob_data](const char* segment, size_t segment_size,
+                       size_t segment_offset) -> bool {
+            blob_data->AppendBytes(segment, segment_size);
+            return true;
+          });
+      size = binary_response_builder_->size();
+      binary_response_builder_ = nullptr;
+      ReportMemoryUsageToV8();
     }
+    response_blob_ =
+        Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
   }
 
   return response_blob_;
@@ -1115,15 +1086,12 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   }
 
   // When responseType is set to "blob", we redirect the downloaded data to a
-  // file-handle directly, except for data: URLs, since those are loaded by
-  // renderer side code, and don't support being downloaded to a file.
-  // TODO: implement this for network service code path. http://crbug.com/754493
-  if (!RuntimeEnabledFeatures::NetworkServiceEnabled()) {
-    downloading_to_file_ =
-        GetResponseTypeCode() == kResponseTypeBlob && !url_.ProtocolIsData();
-  }
-  if (downloading_to_file_) {
-    request.SetDownloadToFile(true);
+  // blob directly, except for data: URLs, since those are loaded by
+  // renderer side code, and don't support being downloaded to a blob.
+  downloading_to_blob_ =
+      GetResponseTypeCode() == kResponseTypeBlob && !url_.ProtocolIsData();
+  if (downloading_to_blob_) {
+    request.SetDownloadToBlob(true);
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
   }
 
@@ -1285,8 +1253,8 @@ void XMLHttpRequest::ClearResponse() {
 
   response_blob_ = nullptr;
 
-  downloading_to_file_ = false;
-  length_downloaded_to_file_ = 0;
+  length_downloaded_to_blob_ = 0;
+  downloading_to_blob_ = false;
 
   // These variables may referred by the response accessors. So, we can clear
   // this only when we clear the response holder variables above.
@@ -1661,13 +1629,13 @@ void XMLHttpRequest::DidFinishLoading(unsigned long identifier, double) {
   if (state_ < kHeadersReceived)
     ChangeState(kHeadersReceived);
 
-  if (downloading_to_file_ && response_type_code_ != kResponseTypeBlob &&
-      length_downloaded_to_file_) {
-    DCHECK_EQ(kLoading, state_);
-    // In this case, we have sent the request with DownloadToFile true,
+  if (downloading_to_blob_ && response_type_code_ != kResponseTypeBlob &&
+      response_blob_) {
+    // In this case, we have sent the request with DownloadToBlob true,
     // but the user changed the response type after that. Hence we need to
     // read the response data and provide it to this object.
-    blob_loader_ = BlobLoader::Create(this, CreateBlobDataHandleFromResponse());
+    blob_loader_ =
+        BlobLoader::Create(this, response_blob_->GetBlobDataHandle());
   } else {
     DidFinishLoadingInternal();
   }
@@ -1711,21 +1679,6 @@ void XMLHttpRequest::DidFailLoadingFromBlob() {
   if (error_)
     return;
   HandleNetworkError();
-}
-
-scoped_refptr<BlobDataHandle>
-XMLHttpRequest::CreateBlobDataHandleFromResponse() {
-  DCHECK(downloading_to_file_);
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
-  String file_path = response_.DownloadedFilePath();
-  // If we errored out or got no data, we return an empty handle.
-  if (!file_path.IsEmpty() && length_downloaded_to_file_) {
-    blob_data->AppendFile(file_path, 0, length_downloaded_to_file_,
-                          InvalidFileTime());
-  }
-  blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
-  return BlobDataHandle::Create(std::move(blob_data),
-                                length_downloaded_to_file_);
 }
 
 void XMLHttpRequest::NotifyParserStopped() {
@@ -1872,6 +1825,8 @@ void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {
   if (error_)
     return;
 
+  DCHECK(!downloading_to_blob_ || blob_loader_);
+
   if (state_ < kHeadersReceived)
     ChangeState(kHeadersReceived);
 
@@ -1919,7 +1874,7 @@ void XMLHttpRequest::DidDownloadData(int data_length) {
   if (error_)
     return;
 
-  DCHECK(downloading_to_file_);
+  DCHECK(downloading_to_blob_);
 
   if (state_ < kHeadersReceived)
     ChangeState(kHeadersReceived);
@@ -1932,10 +1887,43 @@ void XMLHttpRequest::DidDownloadData(int data_length) {
   if (error_)
     return;
 
-  length_downloaded_to_file_ += data_length;
+  length_downloaded_to_blob_ += data_length;
   ReportMemoryUsageToV8();
 
   TrackProgress(data_length);
+}
+
+void XMLHttpRequest::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
+  ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
+  if (error_)
+    return;
+
+  DCHECK(downloading_to_blob_);
+
+  if (!blob) {
+    // This generally indicates not enough quota for the blob, or somehow
+    // failing to write the blob to disk. Treat this as a network error.
+    // TODO(mek): Maybe print a more helpful/specific error message to the
+    // console, to distinguish this from true network errors?
+    // TODO(mek): This would best be treated as a network error, but for sync
+    // requests this could also just mean succesfully reading a zero-byte blob
+    // from a misbehaving URLLoader, so for now just ignore this and don't do
+    // anything, which will result in an empty blob being returned by XHR.
+    // HandleNetworkError();
+  } else {
+    // Fix content type if overrides or fallbacks are in effect.
+    String mime_type = FinalResponseMIMETypeWithFallback().LowerASCII();
+    if (blob->GetType() != mime_type) {
+      auto blob_size = blob->size();
+      auto blob_data = BlobData::Create();
+      blob_data->SetContentType(mime_type);
+      blob_data->AppendBlob(std::move(blob), 0, blob_size);
+      response_blob_ =
+          Blob::Create(BlobDataHandle::Create(std::move(blob_data), blob_size));
+    } else {
+      response_blob_ = Blob::Create(std::move(blob));
+    }
+  }
 }
 
 void XMLHttpRequest::HandleDidTimeout() {
@@ -1996,10 +1984,10 @@ void XMLHttpRequest::ReportMemoryUsageToV8() {
       static_cast<int64_t>(binary_response_builder_last_reported_size_);
   binary_response_builder_last_reported_size_ = size;
 
-  // Blob (downloading_to_file_, length_downloaded_to_file_)
-  diff += static_cast<int64_t>(length_downloaded_to_file_) -
-          static_cast<int64_t>(length_downloaded_to_file_last_reported_);
-  length_downloaded_to_file_last_reported_ = length_downloaded_to_file_;
+  // Blob (downloading_to_blob_, length_downloaded_to_blob_)
+  diff += static_cast<int64_t>(length_downloaded_to_blob_) -
+          static_cast<int64_t>(length_downloaded_to_blob_last_reported_);
+  length_downloaded_to_blob_last_reported_ = length_downloaded_to_blob_;
 
   if (diff)
     isolate_->AdjustAmountOfExternalAllocatedMemory(diff);

@@ -60,6 +60,8 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/WebKit/public/common/mime_util/mime_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
+#include "third_party/WebKit/public/platform/InterfaceProvider.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSecurityStyle.h"
@@ -432,6 +434,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const network::ResourceResponseInfo& info);
   void OnReceivedResponse(const network::ResourceResponseInfo& info);
+  void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnDownloadedData(int len, int encoded_data_length);
   void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnTransferSizeUpdated(int transfer_size_diff);
@@ -491,6 +494,8 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const network::ResourceResponseInfo& info) override;
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override;
   void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
@@ -516,6 +521,8 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
     return true;
   }
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override {}
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {}
   void OnDownloadedData(int len, int encoded_data_length) override {}
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override {}
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
@@ -748,11 +755,16 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
 
+    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry;
+    if (request.PassResponsePipeToClient()) {
+      blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
+          MakeRequest(&download_to_blob_registry));
+    }
     resource_dispatcher_->StartSync(
         std::move(resource_request), request.RequestorID(),
         GetTrafficAnnotationTag(request), sync_load_response,
         url_loader_factory_, extra_data->TakeURLLoaderThrottles(),
-        request.TimeoutInterval());
+        request.TimeoutInterval(), std::move(download_to_blob_registry));
     return;
   }
 
@@ -771,8 +783,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   base::OnceClosure continue_navigation_function;
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(resource_request), request.RequestorID(), task_runner_,
-      GetTrafficAnnotationTag(request), false /* is_sync */, std::move(peer),
-      url_loader_factory_, extra_data->TakeURLLoaderThrottles(),
+      GetTrafficAnnotationTag(request), false /* is_sync */,
+      request.PassResponsePipeToClient(), std::move(peer), url_loader_factory_,
+      extra_data->TakeURLLoaderThrottles(),
       std::move(url_loader_client_endpoints), &continue_navigation_function);
   extra_data->set_continue_navigation_function(
       std::move(continue_navigation_function));
@@ -903,6 +916,12 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   }
 }
 
+void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  if (client_)
+    client_->DidStartLoadingResponseBody(std::move(body));
+}
+
 void WebURLLoaderImpl::Context::OnDownloadedData(int len,
                                                  int encoded_data_length) {
   if (client_)
@@ -1026,7 +1045,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
 
   // The fast paths for data URL, Start() and HandleDataURL(), don't support
   // the downloadToFile option.
-  if (request.DownloadToFile())
+  if (request.DownloadToFile() || request.PassResponsePipeToClient())
     return false;
 
   // Data url requests from object tags may need to be intercepted as streams
@@ -1114,6 +1133,11 @@ bool WebURLLoaderImpl::RequestPeerImpl::OnReceivedRedirect(
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedResponse(
     const network::ResourceResponseInfo& info) {
   context_->OnReceivedResponse(info);
+}
+
+void WebURLLoaderImpl::RequestPeerImpl::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  context_->OnStartLoadingResponseBody(std::move(body));
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnDownloadedData(
@@ -1316,7 +1340,8 @@ void WebURLLoaderImpl::LoadSynchronously(
     WebData& data,
     int64_t& encoded_data_length,
     int64_t& encoded_body_length,
-    base::Optional<int64_t>& downloaded_file_length) {
+    base::Optional<int64_t>& downloaded_file_length,
+    blink::WebBlobInfo& downloaded_blob) {
   TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
   context_->Start(request, &sync_load_response);
@@ -1351,6 +1376,13 @@ void WebURLLoaderImpl::LoadSynchronously(
   encoded_data_length = sync_load_response.info.encoded_data_length;
   encoded_body_length = sync_load_response.info.encoded_body_length;
   downloaded_file_length = sync_load_response.downloaded_file_length;
+  if (sync_load_response.downloaded_blob) {
+    downloaded_blob = blink::WebBlobInfo(
+        WebString::FromLatin1(sync_load_response.downloaded_blob->uuid),
+        WebString::FromLatin1(sync_load_response.downloaded_blob->content_type),
+        sync_load_response.downloaded_blob->size,
+        sync_load_response.downloaded_blob->blob.PassHandle());
+  }
 
   data.Assign(sync_load_response.data.data(), sync_load_response.data.size());
 }

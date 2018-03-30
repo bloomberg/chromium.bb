@@ -47,8 +47,16 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   // Unsets |is_deferred_|.
   void UnsetDefersLoading();
 
-  // Disaptches the messages received after SetDefersLoading is called.
+  // Dispatches the messages received after SetDefersLoading is called.
   void FlushDeferredMessages();
+
+  // If set to true, this causes the raw datapipe containing the response body
+  // to be passed on to the ResourceDispatcher. Otherwise a
+  // URLResponseBodyConsumer is created that passes individual chunks of data
+  // from teh body to the dispatcher.
+  void SetPassResponsePipeToDispatcher(bool pass_pipe) {
+    pass_response_pipe_to_dispatcher_ = true;
+  }
 
   // Binds this instance to the given URLLoaderClient endpoints so that it can
   // start getting the mojo calls from the given loader. This is used only for
@@ -99,6 +107,7 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   bool has_received_response_ = false;
   bool has_received_complete_ = false;
   bool is_deferred_ = false;
+  bool pass_response_pipe_to_dispatcher_ = false;
   int32_t accumulated_transfer_size_diff_during_deferred_ = 0;
   ResourceDispatcher* const resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -147,6 +147,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                             std::unique_ptr<WebDataConsumerHandle>) override;
     void DidReceiveData(const char*, unsigned data_length) override;
     void DidDownloadData(int data_length) override;
+    void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
     void DidReceiveCachedMetadata(const char*, int data_length) override;
     void DidFinishLoading(unsigned long identifier,
                           double finish_time) override;
@@ -190,6 +191,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   void DidFail(const ResourceError&);
   void DidFailRedirectCheck();
   void DidDownloadData(int data_length);
+  void DidDownloadToBlob(scoped_refptr<BlobDataHandle>);
   void DidReceiveResourceTiming(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 

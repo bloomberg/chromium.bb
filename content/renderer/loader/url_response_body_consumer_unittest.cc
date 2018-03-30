@@ -50,6 +50,11 @@ class TestRequestPeer : public RequestPeer {
     ADD_FAILURE() << "OnReceivedResponse should not be called.";
   }
 
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    ADD_FAILURE() << "OnStartLoadingResponseBody should not be called.";
+  }
+
   void OnDownloadedData(int len, int encoded_data_length) override {
     ADD_FAILURE() << "OnDownloadedData should not be called.";
   }
@@ -152,6 +157,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
         std::move(request), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
+        false /* pass_response_pipe_to_peer */,
         std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(&factory_),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),

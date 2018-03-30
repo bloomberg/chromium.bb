@@ -878,6 +878,17 @@ void DocumentThreadableLoader::DidReceiveResourceTiming(
   client_->DidReceiveResourceTiming(info);
 }
 
+void DocumentThreadableLoader::DidDownloadToBlob(
+    Resource* resource,
+    scoped_refptr<BlobDataHandle> blob) {
+  DCHECK(client_);
+  DCHECK_EQ(resource, GetResource());
+  DCHECK(async_);
+
+  checker_.DidDownloadToBlob();
+  client_->DidDownloadToBlob(std::move(blob));
+}
+
 void DocumentThreadableLoader::ResponseReceived(
     Resource* resource,
     const ResourceResponse& response,
@@ -1328,6 +1339,11 @@ void DocumentThreadableLoader::LoadRequestSync(
       resource->DownloadedFileLength();
   if (downloaded_file_length) {
     client_->DidDownloadData(*downloaded_file_length);
+  }
+  if (request.DownloadToBlob()) {
+    if (resource->DownloadedBlob())
+      client_->DidDownloadData(resource->DownloadedBlob()->size());
+    client_->DidDownloadToBlob(resource->DownloadedBlob());
   }
 
   HandleSuccessfulFinish(identifier, 0.0);

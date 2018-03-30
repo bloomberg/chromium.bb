@@ -89,6 +89,9 @@ void FetchContext::DispatchDidReceiveEncodedData(unsigned long, int) {}
 
 void FetchContext::DispatchDidDownloadData(unsigned long, int, int) {}
 
+void FetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
+                                             BlobDataHandle*) {}
+
 void FetchContext::DispatchDidFinishLoading(unsigned long,
                                             double,
                                             int64_t,

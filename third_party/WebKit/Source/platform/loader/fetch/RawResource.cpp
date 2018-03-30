@@ -240,6 +240,13 @@ void RawResource::DidDownloadData(int data_length) {
     c->DataDownloaded(this, data_length);
 }
 
+void RawResource::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
+  downloaded_blob_ = blob;
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next())
+    c->DidDownloadToBlob(this, blob);
+}
+
 void RawResource::ReportResourceTimingToClients(
     const ResourceTimingInfo& info) {
   ResourceClientWalker<RawResourceClient> w(Clients());
@@ -423,6 +430,13 @@ NEVER_INLINE void RawResourceClientStateChecker::DataDownloaded() {
   state_ = kDataDownloaded;
 }
 
+NEVER_INLINE void RawResourceClientStateChecker::DidDownloadToBlob() {
+  SECURITY_CHECK(state_ == kResponseReceived ||
+                 state_ == kSetSerializedCachedMetadata ||
+                 state_ == kDataDownloaded);
+  state_ = kDidDownloadToBlob;
+}
+
 NEVER_INLINE void RawResourceClientStateChecker::NotifyFinished(
     Resource* resource) {
   SECURITY_CHECK(state_ != kNotAddedAsClient);
@@ -430,7 +444,8 @@ NEVER_INLINE void RawResourceClientStateChecker::NotifyFinished(
   SECURITY_CHECK(resource->ErrorOccurred() ||
                  (state_ == kResponseReceived ||
                   state_ == kSetSerializedCachedMetadata ||
-                  state_ == kDataReceived || state_ == kDataDownloaded));
+                  state_ == kDataReceived || state_ == kDataDownloaded ||
+                  state_ == kDidDownloadToBlob));
   state_ = kNotifyFinished;
 }
 

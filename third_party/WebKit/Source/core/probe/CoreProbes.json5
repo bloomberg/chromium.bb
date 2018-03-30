@@ -115,6 +115,7 @@
         "didFinishXHRLoading",
         "didReceiveCORSRedirectResponse",
         "didReceiveData",
+        "didReceiveBlob",
         "didReceiveEncodedDataLength",
         "didReceiveResourceResponse",
         "didReceiveScriptResponse",

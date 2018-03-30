@@ -240,6 +240,14 @@ void NetworkResourcesData::ResponseReceived(const String& request_id,
   }
 }
 
+void NetworkResourcesData::BlobReceived(const String& request_id,
+                                        scoped_refptr<BlobDataHandle> blob) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
+    return;
+  resource_data->SetDownloadedFileBlob(std::move(blob));
+}
+
 void NetworkResourcesData::SetResourceType(
     const String& request_id,
     InspectorPageAgent::ResourceType type) {

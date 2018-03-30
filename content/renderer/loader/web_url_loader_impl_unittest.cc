@@ -77,7 +77,8 @@ class TestResourceDispatcher : public ResourceDispatcher {
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      double timeout) override {
+      double timeout,
+      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) override {
     *response = std::move(sync_load_response_);
   }
 
@@ -87,6 +88,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
+      bool pass_response_pipe_to_peer,
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -786,13 +788,15 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   int64_t encoded_data_length = 0;
   int64_t encoded_body_length = 0;
   base::Optional<int64_t> downloaded_file_length;
+  blink::WebBlobInfo downloaded_blob;
   client()->loader()->LoadSynchronously(
       request, response, error, data, encoded_data_length, encoded_body_length,
-      downloaded_file_length);
+      downloaded_file_length, downloaded_blob);
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);
   EXPECT_FALSE(downloaded_file_length);
+  EXPECT_TRUE(downloaded_blob.Uuid().IsNull());
 }
 
 }  // namespace

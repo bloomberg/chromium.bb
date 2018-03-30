@@ -28,15 +28,19 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     SyncLoadResponse* response,
     base::WaitableEvent* completed_event,
     base::WaitableEvent* abort_event,
-    double timeout) {
+    double timeout,
+    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) {
+  bool download_to_blob = download_to_blob_registry.is_valid();
   auto* context = new SyncLoadContext(
       request.get(), std::move(url_loader_factory_info), response,
-      completed_event, abort_event, timeout, loading_task_runner);
+      completed_event, abort_event, timeout,
+      std::move(download_to_blob_registry), loading_task_runner);
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
-      traffic_annotation, true /* is_sync */, base::WrapUnique(context),
-      context->url_loader_factory_, std::move(throttles),
-      network::mojom::URLLoaderClientEndpointsPtr(),
+      traffic_annotation, true /* is_sync */,
+      download_to_blob /* pass_response_pipe_to_peer */,
+      base::WrapUnique(context), context->url_loader_factory_,
+      std::move(throttles), network::mojom::URLLoaderClientEndpointsPtr(),
       nullptr /* continue_for_navigation */);
 }
 
@@ -47,9 +51,11 @@ SyncLoadContext::SyncLoadContext(
     base::WaitableEvent* completed_event,
     base::WaitableEvent* abort_event,
     double timeout,
+    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : response_(response),
       completed_event_(completed_event),
+      download_to_blob_registry_(std::move(download_to_blob_registry)),
       task_runner_(std::move(task_runner)) {
   url_loader_factory_ =
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory));
@@ -101,6 +107,20 @@ void SyncLoadContext::OnReceivedResponse(
   response_->info = info;
 }
 
+void SyncLoadContext::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  DCHECK(download_to_blob_registry_);
+  DCHECK(!blob_response_started_);
+
+  blob_response_started_ = true;
+
+  download_to_blob_registry_->RegisterFromStream(
+      response_->info.mime_type, "",
+      std::max<int64_t>(0, response_->info.content_length), std::move(body),
+      base::BindOnce(&SyncLoadContext::OnFinishCreatingBlob,
+                     base::Unretained(this)));
+}
+
 void SyncLoadContext::OnDownloadedData(int len, int encoded_data_length) {
   downloaded_file_length_ =
       (downloaded_file_length_ ? *downloaded_file_length_ : 0) + len;
@@ -129,7 +149,20 @@ void SyncLoadContext::OnCompletedRequest(
       resource_dispatcher_->TakeDownloadedTempFile(request_id_);
   DCHECK_EQ(!response_->downloaded_file_length,
             !response_->downloaded_tmp_file);
+  if (blob_response_started_ && !blob_finished_) {
+    request_completed_ = true;
+    return;
+  }
   CompleteRequest(true /* remove_pending_request */);
+}
+
+void SyncLoadContext::OnFinishCreatingBlob(
+    blink::mojom::SerializedBlobPtr blob) {
+  DCHECK(!Completed());
+  blob_finished_ = true;
+  response_->downloaded_blob = std::move(blob);
+  if (request_completed_)
+    CompleteRequest(true /* remove_pending_request */);
 }
 
 void SyncLoadContext::OnAbort(base::WaitableEvent* event) {

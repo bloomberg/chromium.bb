@@ -220,6 +220,12 @@ class PLATFORM_EXPORT ResourceRequest final {
     download_to_file_ = download_to_file;
   }
 
+  // True if request shuold be downloaded to blob.
+  bool DownloadToBlob() const { return download_to_blob_; }
+  void SetDownloadToBlob(bool download_to_blob) {
+    download_to_blob_ = download_to_blob;
+  }
+
   // True if the requestor wants to receive a response body as
   // WebDataConsumerHandle.
   bool UseStreamOnResponse() const { return use_stream_on_response_; }
@@ -390,6 +396,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool report_raw_headers_ : 1;
   bool has_user_gesture_ : 1;
   bool download_to_file_ : 1;
+  bool download_to_blob_ : 1;
   bool use_stream_on_response_ : 1;
   bool keepalive_ : 1;
   bool should_reset_app_cache_ : 1;
@@ -457,6 +464,7 @@ struct CrossThreadResourceRequestData {
   bool report_upload_progress_;
   bool has_user_gesture_;
   bool download_to_file_;
+  bool download_to_blob_;
   bool skip_service_worker_;
   bool use_stream_on_response_;
   bool keepalive_;

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace net {
 struct RedirectInfo;
@@ -68,6 +69,13 @@ class CONTENT_EXPORT RequestPeer {
   // been followed).
   virtual void OnReceivedResponse(
       const network::ResourceResponseInfo& info) = 0;
+
+  // Called when the response body becomes available. This method is only called
+  // if |pass_response_pipe_to_peer| was set to true when calling StartAsync.
+  // TODO(mek): Deprecate OnReceivedData in favor of this method, and always use
+  // this codepath.
+  virtual void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) = 0;
 
   // Called when a chunk of response data is downloaded.  This method may be
   // called multiple times or not at all if an error occurs.  This method is
