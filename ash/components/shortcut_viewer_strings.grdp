@@ -2,7 +2,7 @@
 <grit-part>
   <!-- Title -->
   <message name="IDS_KSV_TITLE" desc="The tooltip text of the keyboard shortcut viewer shelf icon.">
-    Keyboard Shortcut Viewer
+    Keyboard Shortcut Helper
   </message>
 
   <!-- Accessibility -->

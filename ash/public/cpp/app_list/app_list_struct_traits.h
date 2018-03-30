@@ -95,6 +95,8 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return ash::mojom::SearchResultType::kPlayStoreApp;
       case ash::SearchResultType::kInstantApp:
         return ash::mojom::SearchResultType::kInstantApp;
+      case ash::SearchResultType::kInternalApp:
+        return ash::mojom::SearchResultType::kInternalApp;
       case ash::SearchResultType::kUnknown:
         break;
     }
@@ -113,6 +115,9 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return true;
       case ash::mojom::SearchResultType::kInstantApp:
         *out = ash::SearchResultType::kInstantApp;
+        return true;
+      case ash::mojom::SearchResultType::kInternalApp:
+        *out = ash::SearchResultType::kInternalApp;
         return true;
     }
     NOTREACHED();

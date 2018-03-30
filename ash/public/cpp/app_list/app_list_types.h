@@ -38,6 +38,7 @@ enum class SearchResultType {
   kInstalledApp,  // Installed apps.
   kPlayStoreApp,  // Uninstalled apps from playstore.
   kInstantApp,    // Instant apps.
+  kInternalApp,   // Chrome OS apps.
   // Add new values here.
 };
 

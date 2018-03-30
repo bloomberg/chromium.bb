@@ -111,6 +111,9 @@
         <include name="IDR_APPS_FOLDER_OVERLAY_128" file="mac/apps_folder_overlay_128.png" type="BINDATA" />
         <include name="IDR_APPS_FOLDER_OVERLAY_512" file="mac/apps_folder_overlay_512.png" type="BINDATA" />
       </if>
+      <if expr="chromeos">
+        <include name="IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192" file="cros/keyboard_shortcut_viewer_logo_192.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
