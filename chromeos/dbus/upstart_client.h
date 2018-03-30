@@ -48,9 +48,6 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
   // Provides an interface for stopping the media analytics process.
   virtual void StopMediaAnalytics(VoidDBusMethodCallback callback) = 0;
 
-  // Starts hammerd.
-  virtual void StartHammerd() = 0;
-
  protected:
   // Create() should be used instead.
   UpstartClient();
