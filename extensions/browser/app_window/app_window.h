@@ -72,9 +72,6 @@ class AppWindowContents {
   // native window is closed before AppWindowCreateFunction responds.
   virtual void NativeWindowClosed(bool send_onclosed) = 0;
 
-  // Called when the renderer notifies the browser that the window is ready.
-  virtual void OnWindowReady() = 0;
-
   virtual content::WebContents* GetWebContents() const = 0;
 
   virtual extensions::WindowController* GetWindowController() const = 0;

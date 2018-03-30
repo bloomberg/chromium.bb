@@ -1142,10 +1142,12 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
 }
 
 void DocumentLoader::BlockParser() {
+  DCHECK(!is_parser_blocked_);
   is_parser_blocked_ = true;
 }
 
 void DocumentLoader::ResumeParser() {
+  DCHECK(is_parser_blocked_);
   is_parser_blocked_ = false;
 
   if (committed_data_buffer_ && !committed_data_buffer_->IsEmpty()) {

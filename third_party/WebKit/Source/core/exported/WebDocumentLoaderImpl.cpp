@@ -206,6 +206,14 @@ bool WebDocumentLoaderImpl::GetIsAdSubframe() const {
   return GetSubresourceFilter()->GetIsAssociatedWithAdSubframe();
 }
 
+void WebDocumentLoaderImpl::BlockParser() {
+  DocumentLoader::BlockParser();
+}
+
+void WebDocumentLoaderImpl::ResumeParser() {
+  DocumentLoader::ResumeParser();
+}
+
 void WebDocumentLoaderImpl::Trace(blink::Visitor* visitor) {
   DocumentLoader::Trace(visitor);
 }

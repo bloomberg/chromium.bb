@@ -27,8 +27,6 @@ void TestAppWindowContents::NativeWindowChanged(
 
 void TestAppWindowContents::NativeWindowClosed(bool send_onclosed) {}
 
-void TestAppWindowContents::OnWindowReady() {}
-
 content::WebContents* TestAppWindowContents::GetWebContents() const {
   return web_contents_.get();
 }

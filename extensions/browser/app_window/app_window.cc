@@ -912,9 +912,6 @@ void AppWindow::ExitFullscreenModeForTab(content::WebContents* source) {
 void AppWindow::OnAppWindowReady() {
   window_ready_ = true;
 
-  if (app_window_contents_)
-    app_window_contents_->OnWindowReady();
-
   if (app_icon_url_.is_valid())
     StartAppIconDownload();
 }
