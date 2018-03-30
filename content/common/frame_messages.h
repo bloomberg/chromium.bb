@@ -1705,7 +1705,8 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateFaviconURL,
 
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_WebUISend,
+IPC_MESSAGE_ROUTED3(FrameHostMsg_WebUISend,
+                    GURL /* source_url */,
                     std::string /* message */,
                     base::ListValue /* args */)
 

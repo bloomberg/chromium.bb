@@ -11,9 +11,7 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -81,7 +79,7 @@ base::string16 WebUI::GetJavascriptCall(
   return result;
 }
 
-WebUIImpl::WebUIImpl(WebContentsImpl* contents)
+WebUIImpl::WebUIImpl(WebContents* contents)
     : bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents),
       web_contents_observer_(new MainFrameNavigationObserver(this, contents)) {
@@ -107,9 +105,9 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message,
 }
 
 void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
+                            const GURL& source_url,
                             const std::string& message,
                             const base::ListValue& args) {
-  const GURL& source_url = sender->GetLastCommittedURL();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           sender->GetProcess()->GetID()) ||
       !WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
@@ -124,14 +122,7 @@ void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
   if (!sender->IsCurrent())
     return;
 
-  if (base::EndsWith(message, "RequiringGesture",
-                     base::CompareCase::SENSITIVE) &&
-      !web_contents_->HasRecentUserInteraction()) {
-    LOG(ERROR) << message << " received without recent user interaction";
-    return;
-  }
-
-  ProcessWebUIMessage(sender->GetLastCommittedURL(), message, args);
+  ProcessWebUIMessage(source_url, message, args);
 }
 
 void WebUIImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
