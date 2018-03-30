@@ -110,9 +110,9 @@ typedef void (*HBDSubtractFunc)(int rows, int cols, int16_t *diff_ptr,
                                 ptrdiff_t src_stride, const uint8_t *pred_ptr,
                                 ptrdiff_t pred_stride, int bd);
 
-using ::std::tr1::get;
-using ::std::tr1::make_tuple;
-using ::std::tr1::tuple;
+using ::testing::get;
+using ::testing::make_tuple;
+using ::testing::tuple;
 
 // <width, height, bit_dpeth, subtract>
 typedef tuple<int, int, int, HBDSubtractFunc> Params;

@@ -26,8 +26,8 @@ using libaom_test::ACMRandom;
 namespace {
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                         const TxfmParam *txfm_param);
+using ::testing::tuple;
 using libaom_test::FhtFunc;
-using std::tr1::tuple;
 typedef tuple<FhtFunc, IhtFunc, TX_TYPE, aom_bit_depth_t, int> Ht32x32Param;
 
 void fht32x32_ref(const int16_t *in, tran_low_t *out, int stride,
@@ -159,7 +159,7 @@ void AV1HighbdTrans32x32HT::RunBitexactCheck() {
 
 TEST_P(AV1HighbdTrans32x32HT, HighbdCoeffCheck) { RunBitexactCheck(); }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 #if HAVE_SSE2
 const Ht32x32Param kArrayHt32x32Param_sse2[] = {

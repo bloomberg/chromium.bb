@@ -31,7 +31,7 @@ using std::vector;
 
 namespace {
 // tx_type_, tx_size_, max_error_, max_avg_error_
-typedef std::tr1::tuple<TX_TYPE, TX_SIZE, double, double> AV1FwdTxfm2dParam;
+typedef ::testing::tuple<TX_TYPE, TX_SIZE, double, double> AV1FwdTxfm2dParam;
 
 class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
  public:

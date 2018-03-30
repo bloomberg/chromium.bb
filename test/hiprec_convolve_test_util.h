@@ -34,7 +34,7 @@ typedef void (*hiprec_convolve_func)(const uint8_t *src, ptrdiff_t src_stride,
                                      int w, int h,
                                      const ConvolveParams *conv_params);
 
-typedef std::tr1::tuple<int, int, int, hiprec_convolve_func>
+typedef ::testing::tuple<int, int, int, hiprec_convolve_func>
     HiprecConvolveParam;
 
 ::testing::internal::ParamGenerator<HiprecConvolveParam> BuildParams(
@@ -64,7 +64,7 @@ typedef void (*highbd_hiprec_convolve_func)(
     const int16_t *filter_y, int y_step_q4, int w, int h,
     const ConvolveParams *conv_params, int bps);
 
-typedef std::tr1::tuple<int, int, int, int, highbd_hiprec_convolve_func>
+typedef ::testing::tuple<int, int, int, int, highbd_hiprec_convolve_func>
     HighbdHiprecConvolveParam;
 
 ::testing::internal::ParamGenerator<HighbdHiprecConvolveParam> BuildParams(

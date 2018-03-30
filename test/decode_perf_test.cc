@@ -22,7 +22,7 @@
 #include "./ivfenc.h"
 #include "./aom_version.h"
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 namespace {
 
@@ -36,7 +36,7 @@ const char kNewEncodeOutputFile[] = "new_encode.ivf";
 /*
  DecodePerfTest takes a tuple of filename + number of threads to decode with
  */
-typedef std::tr1::tuple<const char *, unsigned> DecodePerfParam;
+typedef ::testing::tuple<const char *, unsigned> DecodePerfParam;
 
 // TODO(jimbankoski): Add actual test vectors here when available.
 // const DecodePerfParam kAV1DecodePerfVectors[] = {};

@@ -96,7 +96,7 @@ static uint32_t GetCrc32cValueRef(void *calculator, uint8_t *p, int length) {
 typedef uint32_t (*get_crc_value_func)(void *calculator, uint8_t *p,
                                        int length);
 
-typedef std::tr1::tuple<get_crc_value_func, get_crc_value_func, int> HashParam;
+typedef ::testing::tuple<get_crc_value_func, get_crc_value_func, int> HashParam;
 
 class AV1CrcHashTest : public ::testing::TestWithParam<HashParam> {
  public:

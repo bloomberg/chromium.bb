@@ -35,7 +35,7 @@ typedef void (*IdctFunc)(const tran_low_t *in, uint8_t *out, int stride);
 
 using libaom_test::FhtFunc;
 
-typedef std::tr1::tuple<FdctFunc, IdctFunc, TX_TYPE, aom_bit_depth_t, int>
+typedef ::testing::tuple<FdctFunc, IdctFunc, TX_TYPE, aom_bit_depth_t, int>
     Dct4x4Param;
 
 void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
@@ -87,7 +87,7 @@ TEST_P(Trans4x4WHT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(Trans4x4WHT, MemCheck) { RunMemCheck(); }
 
 TEST_P(Trans4x4WHT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 INSTANTIATE_TEST_CASE_P(
     C, Trans4x4WHT,

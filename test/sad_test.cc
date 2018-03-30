@@ -27,34 +27,34 @@
 
 typedef unsigned int (*SadMxNFunc)(const uint8_t *src_ptr, int src_stride,
                                    const uint8_t *ref_ptr, int ref_stride);
-typedef std::tr1::tuple<int, int, SadMxNFunc, int> SadMxNParam;
+typedef ::testing::tuple<int, int, SadMxNFunc, int> SadMxNParam;
 
 typedef uint32_t (*SadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                   const uint8_t *ref_ptr, int ref_stride,
                                   const uint8_t *second_pred);
-typedef std::tr1::tuple<int, int, SadMxNAvgFunc, int> SadMxNAvgParam;
+typedef ::testing::tuple<int, int, SadMxNAvgFunc, int> SadMxNAvgParam;
 
 typedef void (*JntCompAvgFunc)(uint8_t *comp_pred, const uint8_t *pred,
                                int width, int height, const uint8_t *ref,
                                int ref_stride,
                                const JNT_COMP_PARAMS *jcp_param);
-typedef std::tr1::tuple<int, int, JntCompAvgFunc, int> JntCompAvgParam;
+typedef ::testing::tuple<int, int, JntCompAvgFunc, int> JntCompAvgParam;
 
 typedef unsigned int (*JntSadMxhFunc)(const uint8_t *src_ptr, int src_stride,
                                       const uint8_t *ref_ptr, int ref_stride,
                                       int width, int height);
-typedef std::tr1::tuple<int, int, JntSadMxhFunc, int> JntSadMxhParam;
+typedef ::testing::tuple<int, int, JntSadMxhFunc, int> JntSadMxhParam;
 
 typedef uint32_t (*JntSadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                      const uint8_t *ref_ptr, int ref_stride,
                                      const uint8_t *second_pred,
                                      const JNT_COMP_PARAMS *jcp_param);
-typedef std::tr1::tuple<int, int, JntSadMxNAvgFunc, int> JntSadMxNAvgParam;
+typedef ::testing::tuple<int, int, JntSadMxNAvgFunc, int> JntSadMxNAvgParam;
 
 typedef void (*SadMxNx4Func)(const uint8_t *src_ptr, int src_stride,
                              const uint8_t *const ref_ptr[], int ref_stride,
                              uint32_t *sad_array);
-typedef std::tr1::tuple<int, int, SadMxNx4Func, int> SadMxNx4Param;
+typedef ::testing::tuple<int, int, SadMxNx4Func, int> SadMxNx4Param;
 
 using libaom_test::ACMRandom;
 
@@ -805,7 +805,7 @@ TEST_P(SADx4Test, SrcAlignedByWidth) {
   source_data_ = tmp_source_data;
 }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 //------------------------------------------------------------------------------
 // C functions

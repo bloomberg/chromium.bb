@@ -66,7 +66,7 @@ void reference_32x32_dct_2d(const int16_t input[kNumCoeffs],
 typedef void (*FwdTxfmFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*InvTxfmFunc)(const tran_low_t *in, uint8_t *out, int stride);
 
-typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmFunc, int, aom_bit_depth_t>
+typedef ::testing::tuple<FwdTxfmFunc, InvTxfmFunc, int, aom_bit_depth_t>
     Trans32x32Param;
 
 class Trans32x32Test : public ::testing::TestWithParam<Trans32x32Param> {
@@ -192,7 +192,7 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
 
 class PartialTrans32x32Test
     : public ::testing::TestWithParam<
-          std::tr1::tuple<FwdTxfmFunc, aom_bit_depth_t> > {
+          ::testing::tuple<FwdTxfmFunc, aom_bit_depth_t> > {
  public:
   virtual ~PartialTrans32x32Test() {}
   virtual void SetUp() {

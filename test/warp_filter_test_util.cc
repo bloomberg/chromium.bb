@@ -11,8 +11,8 @@
 #include "aom_ports/aom_timer.h"
 #include "test/warp_filter_test_util.h"
 
-using std::tr1::make_tuple;
-using std::tr1::tuple;
+using ::testing::make_tuple;
+using ::testing::tuple;
 
 namespace libaom_test {
 

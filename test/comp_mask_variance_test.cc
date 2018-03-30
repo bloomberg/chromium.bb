@@ -38,7 +38,7 @@ const BLOCK_SIZE kValidBlockSize[] = {
   BLOCK_16X32, BLOCK_32X8, BLOCK_32X16, BLOCK_32X32,
 };
 #endif
-typedef std::tr1::tuple<comp_mask_pred_func, BLOCK_SIZE> CompMaskPredParam;
+typedef ::testing::tuple<comp_mask_pred_func, BLOCK_SIZE> CompMaskPredParam;
 
 class AV1CompMaskVarianceTest
     : public ::testing::TestWithParam<CompMaskPredParam> {

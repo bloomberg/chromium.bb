@@ -20,8 +20,8 @@
 
 namespace {
 
+using ::testing::tuple;
 using libaom_test::ACMRandom;
-using std::tr1::tuple;
 
 typedef void (*Predictor)(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                           const uint8_t *above, const uint8_t *left, int mode);
@@ -42,9 +42,9 @@ class AV1FilterIntraPredTest : public ::testing::TestWithParam<PredParams> {
   virtual ~AV1FilterIntraPredTest() {}
   virtual void SetUp() {
     PredFuncMode funcMode = GET_PARAM(0);
-    predFuncRef_ = std::tr1::get<0>(funcMode);
-    predFunc_ = std::tr1::get<1>(funcMode);
-    mode_ = std::tr1::get<2>(funcMode);
+    predFuncRef_ = ::testing::get<0>(funcMode);
+    predFunc_ = ::testing::get<1>(funcMode);
+    mode_ = ::testing::get<2>(funcMode);
     txSize_ = GET_PARAM(1);
 
     alloc_ = new uint8_t[2 * MaxTxSize + 1];
@@ -107,7 +107,7 @@ class AV1FilterIntraPredTest : public ::testing::TestWithParam<PredParams> {
 
 TEST_P(AV1FilterIntraPredTest, BitExactCheck) { RunTest(); }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 const PredFuncMode kPredFuncMdArray[] = {
   make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,

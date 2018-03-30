@@ -84,7 +84,7 @@ class TransTestBase {
   FdctFuncRef fwd_txfm_ref_;
 };
 
-typedef std::tr1::tuple<FdctFunc, FdctFuncRef, int, int> FdctParam;
+typedef ::testing::tuple<FdctFunc, FdctFuncRef, int, int> FdctParam;
 class AV1FwdTxfm : public TransTestBase,
                    public ::testing::TestWithParam<FdctParam> {
  public:

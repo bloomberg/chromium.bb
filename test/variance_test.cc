@@ -599,9 +599,9 @@ void MainTestClass<FunctionType>::MaxTestSse() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using ::std::tr1::get;
-using ::std::tr1::make_tuple;
-using ::std::tr1::tuple;
+using ::testing::get;
+using ::testing::make_tuple;
+using ::testing::tuple;
 
 template <typename FunctionType>
 class SubpelVarianceTest

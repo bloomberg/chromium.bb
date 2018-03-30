@@ -53,17 +53,17 @@ class CodecFactory {
 template <class T1>
 class CodecTestWithParam
     : public ::testing::TestWithParam<
-          std::tr1::tuple<const libaom_test::CodecFactory *, T1> > {};
+          ::testing::tuple<const libaom_test::CodecFactory *, T1> > {};
 
 template <class T1, class T2>
 class CodecTestWith2Params
     : public ::testing::TestWithParam<
-          std::tr1::tuple<const libaom_test::CodecFactory *, T1, T2> > {};
+          ::testing::tuple<const libaom_test::CodecFactory *, T1, T2> > {};
 
 template <class T1, class T2, class T3>
 class CodecTestWith3Params
     : public ::testing::TestWithParam<
-          std::tr1::tuple<const libaom_test::CodecFactory *, T1, T2, T3> > {};
+          ::testing::tuple<const libaom_test::CodecFactory *, T1, T2, T3> > {};
 
 /*
  * AV1 Codec Definitions

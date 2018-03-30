@@ -36,7 +36,7 @@ typedef unsigned int (*MaskedSubPixelVarianceFunc)(
     const uint8_t *ref, int ref_stride, const uint8_t *second_pred,
     const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse);
 
-typedef std::tr1::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc>
+typedef ::testing::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc>
     MaskedSubPixelVarianceParam;
 
 class MaskedSubPixelVarianceTest
@@ -169,8 +169,8 @@ TEST_P(MaskedSubPixelVarianceTest, ExtremeValues) {
                           << " y_offset = " << first_failure_y;
 }
 
-typedef std::tr1::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc,
-                        aom_bit_depth_t>
+typedef ::testing::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc,
+                         aom_bit_depth_t>
     HighbdMaskedSubPixelVarianceParam;
 
 class HighbdMaskedSubPixelVarianceTest
@@ -311,7 +311,7 @@ TEST_P(HighbdMaskedSubPixelVarianceTest, ExtremeValues) {
                           << " y_offset = " << first_failure_y;
 }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 #if HAVE_SSSE3
 

@@ -27,8 +27,8 @@ using libaom_test::ACMRandom;
 
 namespace {
 
-typedef std::tr1::tuple<cdef_filter_block_func, cdef_filter_block_func,
-                        BLOCK_SIZE, int, int>
+typedef ::testing::tuple<cdef_filter_block_func, cdef_filter_block_func,
+                         BLOCK_SIZE, int, int>
     cdef_dir_param_t;
 
 class CDEFBlockTest : public ::testing::TestWithParam<cdef_dir_param_t> {
@@ -184,7 +184,7 @@ void test_cdef_speed(int bsize, int iterations, cdef_filter_block_func cdef,
 typedef int (*find_dir_t)(const uint16_t *img, int stride, int32_t *var,
                           int coeff_shift);
 
-typedef std::tr1::tuple<find_dir_t, find_dir_t> find_dir_param_t;
+typedef ::testing::tuple<find_dir_t, find_dir_t> find_dir_param_t;
 
 class CDEFFindDirTest : public ::testing::TestWithParam<find_dir_param_t> {
  public:
@@ -284,7 +284,7 @@ TEST_P(CDEFFindDirSpeedTest, DISABLED_TestSpeed) {
   test_finddir_speed(finddir, ref_finddir);
 }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 // VS compiling for 32 bit targets does not support vector types in
 // structs as arguments, which makes the v256 type of the intrinsics

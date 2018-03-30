@@ -75,7 +75,7 @@ class AverageTestBase : public ::testing::Test {
 typedef void (*IntProRowFunc)(int16_t hbuf[16], uint8_t const *ref,
                               const int ref_stride, const int height);
 
-typedef std::tr1::tuple<int, IntProRowFunc, IntProRowFunc> IntProRowParam;
+typedef ::testing::tuple<int, IntProRowFunc, IntProRowFunc> IntProRowParam;
 
 class IntProRowTest : public AverageTestBase,
                       public ::testing::WithParamInterface<IntProRowParam> {
@@ -117,7 +117,7 @@ class IntProRowTest : public AverageTestBase,
 
 typedef int16_t (*IntProColFunc)(uint8_t const *ref, const int width);
 
-typedef std::tr1::tuple<int, IntProColFunc, IntProColFunc> IntProColParam;
+typedef ::testing::tuple<int, IntProColFunc, IntProColFunc> IntProColParam;
 
 class IntProColTest : public AverageTestBase,
                       public ::testing::WithParamInterface<IntProColParam> {
@@ -142,7 +142,7 @@ class IntProColTest : public AverageTestBase,
 };
 
 typedef int (*SatdFunc)(const int16_t *coeffs, int length);
-typedef std::tr1::tuple<int, SatdFunc> SatdTestParam;
+typedef ::testing::tuple<int, SatdFunc> SatdTestParam;
 
 class SatdTest : public ::testing::Test,
                  public ::testing::WithParamInterface<SatdTestParam> {
@@ -244,7 +244,7 @@ TEST_P(SatdTest, Random) {
   Check(expected);
 }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 INSTANTIATE_TEST_CASE_P(C, SatdTest,
                         ::testing::Values(make_tuple(16, &aom_satd_c),

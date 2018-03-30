@@ -23,7 +23,7 @@ const int kTestMode = 0;
 const int kTileCols = 1;
 const int kTileRows = 2;
 
-typedef std::tr1::tuple<libaom_test::TestMode, int, int> SuperframeTestParam;
+typedef ::testing::tuple<libaom_test::TestMode, int, int> SuperframeTestParam;
 
 class SuperframeTest
     : public ::libaom_test::CodecTestWithParam<SuperframeTestParam>,
@@ -35,12 +35,12 @@ class SuperframeTest
   virtual void SetUp() {
     InitializeConfig();
     const SuperframeTestParam input = GET_PARAM(1);
-    const libaom_test::TestMode mode = std::tr1::get<kTestMode>(input);
+    const libaom_test::TestMode mode = ::testing::get<kTestMode>(input);
     SetMode(mode);
     sf_count_ = 0;
     sf_count_max_ = INT_MAX;
-    n_tile_cols_ = std::tr1::get<kTileCols>(input);
-    n_tile_rows_ = std::tr1::get<kTileRows>(input);
+    n_tile_cols_ = ::testing::get<kTileCols>(input);
+    n_tile_rows_ = ::testing::get<kTileRows>(input);
   }
 
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,

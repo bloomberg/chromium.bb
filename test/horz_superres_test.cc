@@ -21,8 +21,8 @@
 
 namespace {
 
-using std::tr1::make_tuple;
-using std::tr1::tuple;
+using ::testing::make_tuple;
+using ::testing::tuple;
 
 /* TESTING PARAMETERS */
 
@@ -88,8 +88,8 @@ class HorzSuperresEndToEndTest
     test_video_param_ = kTestVideoVectors[test_video_idx_];
 
     SuperresDenominatorPair denoms = GET_PARAM(3);
-    superres_denom_ = std::tr1::get<0>(denoms);
-    superres_kf_denom_ = std::tr1::get<1>(denoms);
+    superres_denom_ = ::testing::get<0>(denoms);
+    superres_kf_denom_ = ::testing::get<1>(denoms);
   }
 
   virtual ~HorzSuperresEndToEndTest() {}
@@ -205,12 +205,12 @@ class HorzSuperresQThreshEndToEndTest
     test_video_param_ = kTestVideoVectors[test_video_idx_];
 
     SuperresDenominatorPair denoms = GET_PARAM(2);
-    superres_denom_ = std::tr1::get<0>(denoms);
-    superres_kf_denom_ = std::tr1::get<1>(denoms);
+    superres_denom_ = ::testing::get<0>(denoms);
+    superres_kf_denom_ = ::testing::get<1>(denoms);
 
     SuperresQThresholdPair qthresholds = GET_PARAM(3);
-    superres_qthresh_ = std::tr1::get<0>(qthresholds);
-    superres_kf_qthresh_ = std::tr1::get<1>(qthresholds);
+    superres_qthresh_ = ::testing::get<0>(qthresholds);
+    superres_kf_qthresh_ = ::testing::get<1>(qthresholds);
   }
 
   virtual ~HorzSuperresQThreshEndToEndTest() {}

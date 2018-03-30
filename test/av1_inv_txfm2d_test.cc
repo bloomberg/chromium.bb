@@ -41,7 +41,7 @@ namespace {
 
 // AV1InvTxfm2dParam argument list:
 // tx_type_, tx_size_, max_error_, max_avg_error_
-typedef std::tr1::tuple<TX_TYPE, TX_SIZE, int, double> AV1InvTxfm2dParam;
+typedef ::testing::tuple<TX_TYPE, TX_SIZE, int, double> AV1InvTxfm2dParam;
 
 class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
  public:
@@ -212,7 +212,7 @@ TEST(AV1InvTxfm2d, CfgTest) {
   }
 }
 
-typedef std::tr1::tuple<const LbdInvTxfm2dFunc> AV1LbdInvTxfm2dParam;
+typedef ::testing::tuple<const LbdInvTxfm2dFunc> AV1LbdInvTxfm2dParam;
 class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
  public:
   virtual void SetUp() { target_func_ = GET_PARAM(0); }

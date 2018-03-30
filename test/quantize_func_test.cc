@@ -62,8 +62,8 @@ void highbd_quan64x64_wrapper(QUAN_PARAM_LIST) {
 
 typedef enum { TYPE_B, TYPE_DC, TYPE_FP } QuantType;
 
-typedef std::tr1::tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, QuantType,
-                        aom_bit_depth_t>
+typedef ::testing::tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, QuantType,
+                         aom_bit_depth_t>
     QuantizeParam;
 
 typedef struct {
@@ -293,7 +293,7 @@ TEST_P(QuantizeTest, DISABLED_Speed) {
   printf("Elapsed time: %d us\n", elapsed_time);
 }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 #if HAVE_AVX2
 const QuantizeParam kQParamArrayAvx2[] = {

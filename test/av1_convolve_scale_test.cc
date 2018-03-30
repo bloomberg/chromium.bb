@@ -31,9 +31,9 @@ const int kHPad = 32;
 const int kXStepQn = 16;
 const int kYStepQn = 20;
 
+using ::testing::make_tuple;
+using ::testing::tuple;
 using libaom_test::ACMRandom;
-using std::tr1::make_tuple;
-using std::tr1::tuple;
 
 enum NTaps { EIGHT_TAP, TEN_TAP, TWELVE_TAP };
 int NTapsToInt(NTaps ntaps) { return 8 + static_cast<int>(ntaps) * 2; }
@@ -268,8 +268,8 @@ class ConvolveScaleTestBase : public ::testing::Test {
 
  protected:
   void SetParams(const BaseParams &params, int bd) {
-    width_ = std::tr1::get<0>(params.dims);
-    height_ = std::tr1::get<1>(params.dims);
+    width_ = ::testing::get<0>(params.dims);
+    height_ = ::testing::get<1>(params.dims);
     ntaps_x_ = params.ntaps_x;
     ntaps_y_ = params.ntaps_y;
     bd_ = bd;

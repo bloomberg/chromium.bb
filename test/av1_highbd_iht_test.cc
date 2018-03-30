@@ -22,8 +22,8 @@
 
 namespace {
 
+using ::testing::tuple;
 using libaom_test::ACMRandom;
-using std::tr1::tuple;
 
 typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
                           TX_TYPE tx_type, int bd);
@@ -135,7 +135,7 @@ void AV1HighbdInvHTNxN::RunBitexactCheck() {
 
 TEST_P(AV1HighbdInvHTNxN, InvTransResultCheck) { RunBitexactCheck(); }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 #if HAVE_SSE4_1
 #define PARAM_LIST_4X4                                   \

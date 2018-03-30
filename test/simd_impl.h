@@ -23,9 +23,9 @@ class TestIntrinsic : public ::testing::TestWithParam<param_signature> {
  public:
   virtual ~TestIntrinsic() {}
   virtual void SetUp() {
-    mask = std::tr1::get<0>(this->GetParam());
-    maskwidth = std::tr1::get<1>(this->GetParam());
-    name = std::tr1::get<2>(this->GetParam());
+    mask = ::testing::get<0>(this->GetParam());
+    maskwidth = ::testing::get<1>(this->GetParam());
+    name = ::testing::get<2>(this->GetParam());
   }
 
   virtual void TearDown() { libaom_test::ClearSystemState(); }
@@ -36,8 +36,8 @@ class TestIntrinsic : public ::testing::TestWithParam<param_signature> {
 };
 
 // Create one typedef for each function signature
-#define TYPEDEF_SIMD(name)                                                  \
-  typedef TestIntrinsic<std::tr1::tuple<uint32_t, uint32_t, const char *> > \
+#define TYPEDEF_SIMD(name)                                                    \
+  typedef TestIntrinsic< ::testing::tuple<uint32_t, uint32_t, const char *> > \
       ARCH_POSTFIX(name)
 
 TYPEDEF_SIMD(V64_U8);
@@ -305,7 +305,7 @@ MY_TEST_P(ARCH_POSTFIX(V64_V256), TestIntrinsics) {
   INSTANTIATE_TEST_CASE_P(name, type, ::testing::Values(__VA_ARGS__))
 
 #define SIMD_TUPLE(name, mask, maskwidth) \
-  std::tr1::make_tuple(mask, maskwidth, static_cast<const char *>(#name))
+  ::testing::make_tuple(mask, maskwidth, static_cast<const char *>(#name))
 
 INSTANTIATE(ARCH, ARCH_POSTFIX(U32_V64V64),
             (SIMD_TUPLE(v64_sad_u8, 0U, 0U), SIMD_TUPLE(v64_ssd_u8, 0U, 0U)));

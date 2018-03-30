@@ -34,7 +34,7 @@ typedef int64_t (*ErrorBlockFunc)(const tran_low_t *coeff,
                                   const tran_low_t *dqcoeff,
                                   intptr_t block_size, int64_t *ssz, int bps);
 
-typedef std::tr1::tuple<ErrorBlockFunc, ErrorBlockFunc, aom_bit_depth_t>
+typedef ::testing::tuple<ErrorBlockFunc, ErrorBlockFunc, aom_bit_depth_t>
     ErrorBlockParam;
 
 class ErrorBlockTest : public ::testing::TestWithParam<ErrorBlockParam> {
@@ -156,7 +156,7 @@ TEST_P(ErrorBlockTest, ExtremeValues) {
 }
 
 #if (HAVE_SSE2 || HAVE_AVX)
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 INSTANTIATE_TEST_CASE_P(
     SSE2, ErrorBlockTest,

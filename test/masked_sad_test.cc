@@ -32,7 +32,7 @@ typedef unsigned int (*MaskedSADFunc)(const uint8_t *src, int src_stride,
                                       const uint8_t *second_pred,
                                       const uint8_t *msk, int msk_stride,
                                       int invert_mask);
-typedef std::tr1::tuple<MaskedSADFunc, MaskedSADFunc> MaskedSADParam;
+typedef ::testing::tuple<MaskedSADFunc, MaskedSADFunc> MaskedSADParam;
 
 class MaskedSADTest : public ::testing::TestWithParam<MaskedSADParam> {
  public:
@@ -94,7 +94,7 @@ typedef unsigned int (*HighbdMaskedSADFunc)(const uint8_t *src, int src_stride,
                                             const uint8_t *second_pred,
                                             const uint8_t *msk, int msk_stride,
                                             int invert_mask);
-typedef std::tr1::tuple<HighbdMaskedSADFunc, HighbdMaskedSADFunc>
+typedef ::testing::tuple<HighbdMaskedSADFunc, HighbdMaskedSADFunc>
     HighbdMaskedSADParam;
 
 class HighbdMaskedSADTest
@@ -155,7 +155,7 @@ TEST_P(HighbdMaskedSADTest, OperationCheck) {
       << "First failed at test case " << first_failure;
 }
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 #if HAVE_SSSE3
 const MaskedSADParam msad_test[] = {
