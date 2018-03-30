@@ -74,7 +74,14 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // A ViewAndroidDelegate that delegates to the current container view.
     private ViewAndroidDelegate mViewAndroidDelegate;
 
+    // TODO(mthiesse): Clean up the focus code here, this boolean doesn't actually reflect view
+    // focus. It reflects a combination of both view focus and resumed state.
     private Boolean mHasViewFocus;
+
+    // This is used in place of window focus, as we can't actually use window focus due to issues
+    // where content expects to be focused while a popup steals window focus.
+    // See https://crbug.com/686232 for more context.
+    private boolean mPaused;
 
     // The list of observers that are notified when ContentViewCore changes its WindowAndroid.
     private final ObserverList<WindowAndroidChangedObserver> mWindowAndroidChangedObservers =
@@ -383,11 +390,13 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     @Override
     public void onPause() {
+        mPaused = true;
         onFocusChanged(false, true);
     }
 
     @Override
     public void onResume() {
+        mPaused = false;
         onFocusChanged(ViewUtils.hasFocus(getContainerView()), true);
     }
 
@@ -402,6 +411,9 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {
         if (mHasViewFocus != null && mHasViewFocus == gainFocus) return;
+        // TODO(mthiesse): Clean this up. mHasViewFocus isn't view focus really, it's a combination
+        // of view focus and resumed state.
+        if (gainFocus && mPaused) return;
         mHasViewFocus = gainFocus;
 
         if (mWebContents == null) {
