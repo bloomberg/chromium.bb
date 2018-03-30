@@ -33,7 +33,6 @@ const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
   { 0, 0, 1, 11 },  { 0, 0, 1, 14 },  { 2, 30, 0, 0 },  { 2, 75, 0, 0 },
 };
 
-#if CONFIG_SIMPLE_LRUNIT
 static AV1PixelRect whole_frame_rect(const AV1_COMMON *cm, int is_uv) {
   AV1PixelRect rect;
 
@@ -46,7 +45,6 @@ static AV1PixelRect whole_frame_rect(const AV1_COMMON *cm, int is_uv) {
   rect.right = ROUND_POWER_OF_TWO(cm->superres_upscaled_width, ss_x);
   return rect;
 }
-#endif  // CONFIG_SIMPLE_LRUNIT
 
 // Count horizontal or vertical units per tile (use a width or height for
 // tile_size, respectively). We basically want to divide the tile size by the
@@ -61,38 +59,12 @@ static int count_units_in_tile(int unit_size, int tile_size) {
 
 void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
                                   int is_uv) {
-// We need to allocate enough space for restoration units to cover the
-// largest tile. Without CONFIG_MAX_TILE, this is always the tile at the
-// top-left and we can use av1_get_tile_rect(). With CONFIG_MAX_TILE, we have
-// to do the computation ourselves, iterating over the tiles and keeping
-// track of the largest width and height, then upscaling.
-#if CONFIG_SIMPLE_LRUNIT
+  // We need to allocate enough space for restoration units to cover the
+  // largest tile. Without CONFIG_MAX_TILE, this is always the tile at the
+  // top-left and we can use av1_get_tile_rect(). With CONFIG_MAX_TILE, we have
+  // to do the computation ourselves, iterating over the tiles and keeping
+  // track of the largest width and height, then upscaling.
   const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
-#else
-  TileInfo tile;
-  int max_mi_w = 0;
-  int max_mi_h = 0;
-  int tile_col = 0;
-  int tile_row = 0;
-  for (int i = 0; i < cm->tile_cols; ++i) {
-    av1_tile_set_col(&tile, cm, i);
-    if (tile.mi_col_end - tile.mi_col_start > max_mi_w) {
-      max_mi_w = tile.mi_col_end - tile.mi_col_start;
-      tile_col = i;
-    }
-  }
-  for (int i = 0; i < cm->tile_rows; ++i) {
-    av1_tile_set_row(&tile, cm, i);
-    if (tile.mi_row_end - tile.mi_row_start > max_mi_h) {
-      max_mi_h = tile.mi_row_end - tile.mi_row_start;
-      tile_row = i;
-    }
-  }
-  TileInfo tile_info;
-  av1_tile_init(&tile_info, cm, tile_row, tile_col);
-
-  const AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
-#endif  // CONFIG_SIMPLE_LRUNIT
   const int max_tile_w = tile_rect.right - tile_rect.left;
   const int max_tile_h = tile_rect.bottom - tile_rect.top;
 
@@ -111,11 +83,7 @@ void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
   rsi->horz_units_per_tile = hpertile;
   rsi->vert_units_per_tile = vpertile;
 
-#if CONFIG_SIMPLE_LRUNIT
   const int ntiles = 1;
-#else
-  const int ntiles = cm->tile_rows * cm->tile_cols;
-#endif  // CONFIG_SIMPLE_LRUNIT
   const int nunits = ntiles * rsi->units_per_tile;
 
   aom_free(rsi->unit_info);
@@ -1235,7 +1203,6 @@ void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
 
   const RestorationInfo *rsi = &cm->rst_info[plane];
 
-#if CONFIG_SIMPLE_LRUNIT
   const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
 
   if (on_tile) on_tile(0, 0, priv);
@@ -1243,48 +1210,7 @@ void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
   foreach_rest_unit_in_tile(&tile_rect, 0, 0, 1, rsi->horz_units_per_tile,
                             rsi->units_per_tile, rsi->restoration_unit_size,
                             ss_y, on_rest_unit, priv);
-#else
-  TileInfo tile_info;
-  for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
-    av1_tile_set_row(&tile_info, cm, tile_row);
-    for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
-      av1_tile_set_col(&tile_info, cm, tile_col);
-
-      const AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
-
-      if (on_tile) on_tile(tile_row, tile_col, priv);
-
-      foreach_rest_unit_in_tile(&tile_rect, tile_row, tile_col, cm->tile_cols,
-                                rsi->horz_units_per_tile, rsi->units_per_tile,
-                                rsi->restoration_unit_size, ss_y, on_rest_unit,
-                                priv);
-    }
-  }
-#endif  // CONFIG_SIMPLE_LRUNIT
 }
-
-#if !CONFIG_SIMPLE_LRUNIT
-// Get the horizontal or vertical index of the tile containing mi_x. For a
-// horizontal index, mi_x should be the left-most column for some block in mi
-// units and tile_x_start_sb should be cm->tile_col_start_sb. The return value
-// will be "tile_col" for the tile containing that block.
-//
-// For a vertical index, mi_x should be the block's top row and tile_x_start_sb
-// should be cm->tile_row_start_sb. The return value will be "tile_row" for the
-// tile containing the block.
-static int get_tile_idx(const int *tile_x_start_sb, int mi_x, int mib_log2) {
-  int sb_x = mi_x >> mib_log2;
-
-  for (int i = 0; i < MAX_TILE_COLS; ++i) {
-    if (tile_x_start_sb[i + 1] > sb_x) return i;
-  }
-
-  // This shouldn't happen if tile_x_start_sb has been filled in
-  // correctly.
-  assert(0);
-  return 0;
-}
-#endif  // !CONFIG_SIMPLE_LRUNIT
 
 int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
                                        int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -1299,30 +1225,12 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 
   const int is_uv = plane > 0;
 
-#if CONFIG_SIMPLE_LRUNIT
   const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
   const int tile_w = tile_rect.right - tile_rect.left;
   const int tile_h = tile_rect.bottom - tile_rect.top;
 
   const int mi_top = 0;
   const int mi_left = 0;
-#else
-  // Which tile contains the superblock? Find that tile's top-left in mi-units,
-  // together with the tile's size in pixels.
-  const int mib_log2 = cm->seq_params.mib_size_log2;
-  const int tile_row = get_tile_idx(cm->tile_row_start_sb, mi_row, mib_log2);
-  const int tile_col = get_tile_idx(cm->tile_col_start_sb, mi_col, mib_log2);
-
-  TileInfo tile_info;
-  av1_tile_init(&tile_info, cm, tile_row, tile_col);
-
-  const AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
-  const int tile_w = tile_rect.right - tile_rect.left;
-  const int tile_h = tile_rect.bottom - tile_rect.top;
-
-  const int mi_top = tile_info.mi_row_start;
-  const int mi_left = tile_info.mi_col_start;
-#endif  // CONFIG_SIMPLE_LRUNIT
 
   // Compute the mi-unit corners of the superblock relative to the top-left of
   // the tile
@@ -1377,11 +1285,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   *rcol1 = AOMMIN((mi_rel_col1 * mi_to_num_x + rnd_x) / denom_x, horz_units);
   *rrow1 = AOMMIN((mi_rel_row1 * mi_to_num_y + rnd_y) / denom_y, vert_units);
 
-#if CONFIG_SIMPLE_LRUNIT
   const int tile_idx = 0;
-#else
-  const int tile_idx = tile_col + tile_row * cm->tile_cols;
-#endif  // CONFIG_SIMPLE_LRUNIT
   *tile_tl_idx = tile_idx * rsi->units_per_tile;
 
   return *rcol0 < *rcol1 && *rrow0 < *rrow1;
@@ -1494,10 +1398,6 @@ static void save_cdef_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 }
 
 static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
-#if !CONFIG_SIMPLE_LRUNIT
-                                         int tile_row,
-                                         const TileInfo *tile_info,
-#endif  // !CONFIG_SIMPLE_LRUNIT
                                          int use_highbd, int plane,
                                          AV1_COMMON *cm, int after_cdef) {
   const int is_uv = plane > 0;
@@ -1507,13 +1407,8 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 
   // Get the tile rectangle, with height rounded up to the next multiple of 8
   // luma pixels (only relevant for the bottom tile of the frame)
-#if CONFIG_SIMPLE_LRUNIT
   const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
   const int stripe0 = 0;
-#else
-  const AV1PixelRect tile_rect = av1_get_tile_rect(tile_info, cm, is_uv);
-  const int stripe0 = (tile_row == 0) ? 0 : cm->rst_end_stripe[tile_row - 1];
-#endif  // CONFIG_SIMPLE_LRUNIT
 
   RestorationStripeBoundaries *boundaries = &cm->rst_info[plane].boundaries;
 
@@ -1574,15 +1469,6 @@ void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
   const int num_planes = av1_num_planes(cm);
   const int use_highbd = cm->use_highbitdepth;
   for (int p = 0; p < num_planes; ++p) {
-#if CONFIG_SIMPLE_LRUNIT
     save_tile_row_boundary_lines(frame, use_highbd, p, cm, after_cdef);
-#else
-    TileInfo tile_info;
-    for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
-      av1_tile_init(&tile_info, cm, tile_row, 0);
-      save_tile_row_boundary_lines(frame, tile_row, &tile_info, use_highbd, p,
-                                   cm, after_cdef);
-    }
-#endif  // CONFIG_SIMPLE_LRUNIT
   }
 }
