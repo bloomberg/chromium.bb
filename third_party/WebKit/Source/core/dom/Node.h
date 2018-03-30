@@ -572,11 +572,6 @@ class CORE_EXPORT Node : public EventTarget {
   Node* CommonAncestor(const Node&,
                        ContainerNode* (*parent)(const Node&)) const;
 
-  // Number of DOM 16-bit units contained in node. Note that laid out text
-  // length can be different - e.g. because of css-transform:capitalize breaking
-  // up precomposed characters and ligatures.
-  virtual int MaxCharacterOffset() const;
-
   // Whether or not a selection can be started in this object
   virtual bool CanStartSelection() const;
 

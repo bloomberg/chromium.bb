@@ -1123,11 +1123,6 @@ const ComputedStyle* Node::VirtualEnsureComputedStyle(
              : nullptr;
 }
 
-int Node::MaxCharacterOffset() const {
-  NOTREACHED();
-  return 0;
-}
-
 // FIXME: Shouldn't these functions be in the editing code?  Code that asks
 // questions about HTML in the core DOM class is obviously misplaced.
 bool Node::CanStartSelection() const {
