@@ -59,31 +59,60 @@ STACK CFI 3b92e74 .cfa: sp 8 + .ra: .cfa -4 + ^ r4: .cfa -8 + ^
 STACK CFI 3b92e90 .cfa: sp 0 + .ra: .ra r4: r4
 STACK CFI INIT 3b93114 6c .cfa: sp 0 + .ra: lr
 STACK CFI 3b93118 .cfa: r7 16 + .ra: .cfa -4 + ^
+STACK CFI INIT 3b92114 6c .cfa: sp 0 + .ra: lr
+STACK CFI 3b92118 .cfa: r7 16 + .ra: .cfa -20 + ^
+STACK CFI INIT 3b93214 fffff .cfa: sp 0 + .ra: lr
+STACK CFI 3b93218 .cfa: r7 16 + .ra: .cfa -4 + ^
 """)
       input_file.flush()
       extract_unwind_tables._ParseCfiData(input_file.name, output_file.name)
 
-      expected_output_rows = [
-        0xe1a1e4 | 1, 0xb0,
-        0xe1a1e6    , 16 + 4 / 4,
-        0xe1a1e8    , 80 + 0,
+      expected_cfi_data = {
+        0xe1a1e4 : [0x2, 0x11, 0x4, 0x50],
+        0xe1a296 : [],
+        0xe1a96e : [0x2, 0x4, 0x4, 0xe, 0x6, 0x10],
+        0xe1a990 : [],
+        0x3b92e24: [0x28, 0x13],
+        0x3b92e62: [],
+      }
+      expected_function_count = len(expected_cfi_data)
 
-        0xe1a96e | 1, 0x20,
-        0xe1a970    , 4 + 0,
-        0xe1a972    , 12 + 8 / 4,
-        0xe1a974    , 16 + 0,
-
-        0x3b92e24 | 1, 0x3c,
-        0x3b92e4c    , 16 + 12 / 4
-      ]
       actual_output = []
       with open(output_file.name, 'rb') as f:
         while True:
-          read = f.read(4)
+          read = f.read(2)
           if not read:
             break
-          actual_output.append(struct.unpack('i', read)[0])
-      self.assertEqual(expected_output_rows, actual_output)
+          actual_output.append(struct.unpack('H', read)[0])
+
+      # First value is size of unw_index table.
+      unw_index_size = actual_output[1] << 16 | actual_output[0]
+      # Each function index is 6 bytes data.
+      self.assertEqual(expected_function_count * 6, unw_index_size)
+      # |actual_output| is in blocks of 2 bytes. Skip first 4 bytes representing
+      # size.
+      unw_index_start = 2
+      unw_index_end = unw_index_start + unw_index_size / 2
+      unw_index = actual_output[unw_index_start: unw_index_end]
+
+      unw_data_start = unw_index_end
+      unw_data = actual_output[unw_data_start:]
+
+      for func_iter in range(0, expected_function_count):
+        func_addr = (unw_index[func_iter * 3 + 1] << 16 |
+                     unw_index[func_iter * 3])
+        index = unw_index[func_iter * 3 + 2]
+        # If index is CANT_UNWIND then invalid function.
+        if index == 0xFFFF:
+          self.assertEqual(expected_cfi_data[func_addr], [])
+          continue
+
+        func_start = index + 1
+        func_end = func_start + unw_data[index] * 2
+        self.assertEquals(
+            len(expected_cfi_data[func_addr]), func_end - func_start)
+        func_cfi = unw_data[func_start : func_end]
+        self.assertEqual(expected_cfi_data[func_addr], func_cfi)
 
 
 if __name__ == '__main__':

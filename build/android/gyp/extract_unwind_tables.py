@@ -15,19 +15,39 @@ See doc https://github.com/google/breakpad/blob/master/docs/symbol_files.md.
 2. The RA rules should be of postfix form "CFA <val> + ^".
 Note: breakpad represents dereferencing address with '^' operator.
 
-The output rows are all 64 bits. We have 2 types of rows, FUNCTION and CFI.
-Each function with CFI info has a single FUNCTION row, followed by one or more
-CFI rows. All the addresses of the CFI rows will be within the function.
-1. FUNCTION. Bits in order of high to low represent:
-    31 bits: specifies function address, without the last bit (always 0).
-     1 bit : always 1. Specifies the row type is FUNCTION.
-    32 bits: length of the current function.
+The output file has 2 tables UNW_INDEX and UNW_DATA, inspired from ARM EHABI
+format. The first table contains function addresses and an index into the
+UNW_DATA table. The second table contains one or more rows for the function
+unwind information.
 
-2. CFI. Bits in order of high to low represent:
-    31 bits: instruction address in the current function.
-     1 bit : always 0. Specifies teh row type is CFI.
-    30 bits: CFA offset / 4.
-     2 bits: RA offset / 4.
+The output file starts with 4 bytes counting the size of UNW_INDEX in bytes.
+Then UNW_INDEX table and UNW_DATA table.
+UNW_INDEX contains one row for each function. Each row is 6 bytes long:
+  4 bytes: Function start address.
+  2 bytes: offset (in count of 2 bytes) of function data from start of UNW_DATA.
+The last entry in the table always contains CANT_UNWIND index to specify the
+end address of the last function.
+
+UNW_DATA contains data of all the functions. Each function data contains N rows.
+The data found at the address pointed from UNW_INDEX will be:
+  2 bytes: N - number of rows that belong to current function.
+  N * 4 bytes: N rows of data. 16 bits : Address offset from function start.
+                               14 bits : CFA offset / 4.
+                                2 bits : RA offset / 4.
+
+The function is not added to the unwind table in following conditions:
+C1. If length of the function code (number of instructions) is greater than
+    0xFFFF (2 byte address span). This is because we use 16 bits to refer to
+    offset of instruction from start of the address.
+C2. If the function moves the SP by more than 0xFFFF bytes. This is because we
+    use 14 bits to denote CFA offset (last 2 bits are 0).
+C3. If the Return Address is stored at an offset >= 16 from the CFA. Some
+    functions which have variable arguments can have offset upto 16.
+    TODO(ssid): We can actually store offset 16 by subtracting 1 from RA/4 since
+    we never have 0.
+C4: Some functions do not have unwind information defined in dwarf info. These
+    functions have index value CANT_UNWIND(0xFFFF) in UNW_INDEX table.
+
 
 Usage:
   extract_unwind_tables.py --input_path [root path to unstripped chrome.so]
@@ -48,10 +68,17 @@ _RA_REG = '.ra'
 _ADDR_ENTRY = 0
 _LENGTH_ENTRY = 1
 
+_CANT_UNWIND = 0xFFFF
+
 
 def _Write4Bytes(output_file, val):
   """Writes a 32 bit unsigned integer to the given output file."""
   output_file.write(struct.pack('<L', val));
+
+
+def _Write2Bytes(output_file, val):
+  """Writes a 16 bit unsigned integer to the given output file."""
+  output_file.write(struct.pack('<H', val));
 
 
 def _FindRuleForRegister(cfi_row, reg):
@@ -117,7 +144,9 @@ def _GetAllCfiRows(symbol_file):
       # The function line is of format "STACK CFI INIT <addr> <length> ..."
       data[_ADDR_ENTRY] = int(parts[3], 16)
       data[_LENGTH_ENTRY] = int(parts[4], 16)
-      if data[_LENGTH_ENTRY] == 0:
+
+      # Condition C1: Skip if length is large.
+      if data[_LENGTH_ENTRY] == 0 or data[_LENGTH_ENTRY] > 0xffff:
         continue  # Skip the current function.
     else:
       # The current function is skipped.
@@ -127,10 +156,15 @@ def _GetAllCfiRows(symbol_file):
       # The CFI row is of format "STACK CFI <addr> .cfa: <expr> .ra: <expr> ..."
       data[_ADDR_ENTRY] = int(parts[2], 16)
       (data[_CFA_REG], data[_RA_REG]) = _GetCfaAndRaOffset(parts)
-      if (data[_CFA_REG]) == 0 or data[_RA_REG] >= 16:
+
+      # Condition C2 and C3: Skip based on limits on offsets.
+      if data[_CFA_REG] == 0 or data[_RA_REG] >= 16 or data[_CFA_REG] > 0xffff:
         current_func = []
         continue
       assert data[_CFA_REG] % 4 == 0
+      # Since we skipped functions with code size larger than 0xffff, we should
+      # have no function offset larger than the same value.
+      assert data[_ADDR_ENTRY] - current_func[0][_ADDR_ENTRY] < 0xffff
 
     if data[_ADDR_ENTRY] == 0:
       # Skip current function, delete all previous entries.
@@ -139,6 +173,7 @@ def _GetAllCfiRows(symbol_file):
     assert data[_ADDR_ENTRY] % 2 == 0
     current_func.append(data)
 
+  # Condition C4: Skip function without CFI rows.
   if len(current_func) > 1:
     cfi_data[current_func[0][_ADDR_ENTRY]] = current_func
   return cfi_data
@@ -146,13 +181,70 @@ def _GetAllCfiRows(symbol_file):
 
 def _WriteCfiData(cfi_data, out_file):
   """Writes the CFI data in defined format to out_file."""
+  # Stores the final data that will be written to UNW_DATA table, in order
+  # with 2 byte items.
+  unw_data = []
+
+  # Represent all the CFI data of functions as set of numbers and map them to an
+  # index in the |unw_data|. This index is later written to the UNW_INDEX table
+  # for each function. This map is used to find index of the data for functions.
+  data_to_index = {}
+  # Store mapping between the functions to the index.
+  func_addr_to_index = {}
+  previous_func_end = 0
   for addr, function in sorted(cfi_data.iteritems()):
+    # Add an empty function entry when functions CFIs are missing between 2
+    # functions.
+    if previous_func_end != 0 and addr - previous_func_end  > 4:
+      func_addr_to_index[previous_func_end + 2] = _CANT_UNWIND
+    previous_func_end = addr + cfi_data[addr][0][_LENGTH_ENTRY]
+
     assert len(function) > 1
-    _Write4Bytes(out_file, addr | 1)
-    _Write4Bytes(out_file, function[0][_LENGTH_ENTRY])
+    func_data_arr = []
+    func_data = 0
+    # The first row contains the function address and length. The rest of the
+    # rows have CFI data. Create function data array as given in the format.
     for row in function[1:]:
-      _Write4Bytes(out_file, row[_ADDR_ENTRY])
-      _Write4Bytes(out_file, (row[_CFA_REG]) | (row[_RA_REG] / 4))
+      addr_offset = row[_ADDR_ENTRY] - addr
+      cfa_offset = (row[_CFA_REG]) | (row[_RA_REG] / 4)
+
+      func_data_arr.append(addr_offset)
+      func_data_arr.append(cfa_offset)
+
+    # Consider all the rows in the data as one large integer and add it as a key
+    # to the |data_to_index|.
+    for data in func_data_arr:
+      func_data = (func_data << 16) | data
+
+    row_count = len(func_data_arr) / 2
+    if func_data not in data_to_index:
+      # When data is not found, create a new index = len(unw_data), and write
+      # the data to |unw_data|.
+      index = len(unw_data)
+      data_to_index[func_data] = index
+      unw_data.append(row_count)
+      for row in func_data_arr:
+        unw_data.append(row)
+    else:
+      # If the data was found, then use the same index for the function.
+      index = data_to_index[func_data]
+      assert row_count == unw_data[index]
+    func_addr_to_index[addr] = data_to_index[func_data]
+
+  # Mark the end end of last function entry.
+  func_addr_to_index[previous_func_end + 2] = _CANT_UNWIND
+
+  # Write the size of UNW_INDEX file in bytes.
+  _Write4Bytes(out_file, len(func_addr_to_index) * 6)
+
+  # Write the UNW_INDEX table.
+  for addr, index in sorted(func_addr_to_index.iteritems()):
+    _Write4Bytes(out_file, addr)
+    _Write2Bytes(out_file, index)
+
+  # Write the UNW_DATA table.
+  for data in unw_data:
+    _Write2Bytes(out_file, data)
 
 
 def _ParseCfiData(sym_file, output_path):
@@ -177,7 +269,6 @@ def main():
 
   args = parser.parse_args()
 
-  sym_file = tempfile.NamedTemporaryFile()
   with tempfile.NamedTemporaryFile() as sym_file:
     out = subprocess.call(
         ['./' +args.dump_syms_path, args.input_path], stdout=sym_file)

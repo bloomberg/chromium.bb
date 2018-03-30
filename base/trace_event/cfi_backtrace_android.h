@@ -93,7 +93,15 @@ class BASE_EXPORT CFIBacktraceAndroid {
   // The start address of the memory mapped unwind table asset file. Unique ptr
   // because it is replaced in tests.
   std::unique_ptr<MemoryMappedFile> cfi_mmap_;
-  size_t unwind_table_row_count_ = 0;
+
+  // The start address of UNW_IDX table.
+  const void* unw_index_start_addr_ = nullptr;
+  // The number of rows in UNW_INDEX table.
+  size_t unw_index_row_count_ = 0;
+
+  // The start address of UNW_DATA table.
+  const uint16_t* unw_data_start_addr_ = nullptr;
+
   bool can_unwind_stack_frames_ = false;
 };
 
