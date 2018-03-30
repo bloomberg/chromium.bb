@@ -34,6 +34,7 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Threading.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 
@@ -368,6 +369,93 @@ void NetworkStateNotifier::CollectZeroedObservers(
     MutexLocker locker(mutex_);
     map.erase(task_runner);  // deletes list
   }
+}
+
+// static
+String NetworkStateNotifier::EffectiveConnectionTypeToString(
+    WebEffectiveConnectionType type) {
+  switch (type) {
+    case WebEffectiveConnectionType::kTypeUnknown:
+    case WebEffectiveConnectionType::kTypeOffline:
+    case WebEffectiveConnectionType::kType4G:
+      return "4g";
+    case WebEffectiveConnectionType::kTypeSlow2G:
+      return "slow-2g";
+    case WebEffectiveConnectionType::kType2G:
+      return "2g";
+    case WebEffectiveConnectionType::kType3G:
+      return "3g";
+  }
+  NOTREACHED();
+  return "4g";
+}
+
+double NetworkStateNotifier::GetRandomMultiplier(const String& host) const {
+  // The random number should be a function of the hostname to reduce
+  // cross-origin fingerprinting. The random number should also be a function
+  // of randomized salt which is known only to the device. This prevents
+  // origin from removing noise from the estimates.
+  if (!host)
+    return 1.0;
+
+  unsigned hash = StringHash::GetHash(host) + RandomizationSalt();
+  double random_multiplier = 0.9 + static_cast<double>((hash % 21)) * 0.01;
+  DCHECK_LE(0.90, random_multiplier);
+  DCHECK_GE(1.10, random_multiplier);
+  return random_multiplier;
+}
+
+unsigned long NetworkStateNotifier::RoundRtt(
+    const String& host,
+    const Optional<TimeDelta>& rtt) const {
+  // Limit the size of the buckets and the maximum reported value to reduce
+  // fingerprinting.
+  static const size_t kBucketSize = 50;
+  static const double kMaxRttMsec = 3.0 * 1000;
+
+  if (!rtt.has_value()) {
+    // RTT is unavailable. So, return the fastest value.
+    return 0;
+  }
+
+  double rtt_msec = static_cast<double>(rtt.value().InMilliseconds());
+  rtt_msec *= GetRandomMultiplier(host);
+  rtt_msec = std::min(rtt_msec, kMaxRttMsec);
+
+  DCHECK_LE(0, rtt_msec);
+  DCHECK_GE(kMaxRttMsec, rtt_msec);
+
+  // Round down to the nearest kBucketSize msec value.
+  return std::round(rtt_msec / kBucketSize) * kBucketSize;
+}
+
+double NetworkStateNotifier::RoundMbps(
+    const String& host,
+    const Optional<double>& downlink_mbps) const {
+  // Limit the size of the buckets and the maximum reported value to reduce
+  // fingerprinting.
+  static const size_t kBucketSize = 50;
+  static const double kMaxDownlinkKbps = 10.0 * 1000;
+
+  double downlink_kbps = 0;
+  if (!downlink_mbps.has_value()) {
+    // Throughput is unavailable. So, return the fastest value.
+    downlink_kbps = kMaxDownlinkKbps;
+  } else {
+    downlink_kbps = downlink_mbps.value() * 1000;
+  }
+  downlink_kbps *= GetRandomMultiplier(host);
+
+  downlink_kbps = std::min(downlink_kbps, kMaxDownlinkKbps);
+
+  DCHECK_LE(0, downlink_kbps);
+  DCHECK_GE(kMaxDownlinkKbps, downlink_kbps);
+  // Round down to the nearest kBucketSize kbps value.
+  double downlink_kbps_rounded =
+      std::round(downlink_kbps / kBucketSize) * kBucketSize;
+
+  // Convert from Kbps to Mbps.
+  return downlink_kbps_rounded / 1000;
 }
 
 }  // namespace blink

@@ -74,19 +74,10 @@ class NetworkInformation final
   void StartObserving();
   void StopObserving();
 
-  // A random number by which the RTT and downlink estimates are multiplied
-  // with. Adding this noise reduces the chances of cross-origin fingerprinting.
-  double GetRandomMultiplier() const;
-
-  // Rounds |rtt| as per the NetInfo spec and to improve privacy.
-  unsigned long RoundRtt(const Optional<TimeDelta>& rtt) const;
-
-  // Rounds |downlink_mbps| as per the NetInfo spec and to improve privacy. The
-  // returned value is in Mbps.
-  double RoundMbps(const Optional<double>& downlink_mbps) const;
-
   // Whether this object is listening for events from NetworkStateNotifier.
   bool IsObserving() const;
+
+  const String Host() const;
 
   // Touched only on context thread.
   WebConnectionType type_;

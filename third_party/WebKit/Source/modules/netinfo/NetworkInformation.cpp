@@ -42,23 +42,6 @@ String ConnectionTypeToString(WebConnectionType type) {
   return "none";
 }
 
-String EffectiveConnectionTypeToString(WebEffectiveConnectionType type) {
-  switch (type) {
-    case WebEffectiveConnectionType::kTypeUnknown:
-    case WebEffectiveConnectionType::kTypeOffline:
-    case WebEffectiveConnectionType::kType4G:
-      return "4g";
-    case WebEffectiveConnectionType::kTypeSlow2G:
-      return "slow-2g";
-    case WebEffectiveConnectionType::kType2G:
-      return "2g";
-    case WebEffectiveConnectionType::kType3G:
-      return "3g";
-  }
-  NOTREACHED();
-  return "4g";
-}
-
 }  // namespace
 
 NetworkInformation* NetworkInformation::Create(ExecutionContext* context) {
@@ -94,24 +77,28 @@ String NetworkInformation::effectiveType() const {
   // effective_type_ is only updated when listening for events, so ask
   // networkStateNotifier if not listening (crbug.com/379841).
   if (!IsObserving()) {
-    return EffectiveConnectionTypeToString(
+    return NetworkStateNotifier::EffectiveConnectionTypeToString(
         GetNetworkStateNotifier().EffectiveType());
   }
 
   // If observing, return m_type which changes when the event fires, per spec.
-  return EffectiveConnectionTypeToString(effective_type_);
+  return NetworkStateNotifier::EffectiveConnectionTypeToString(effective_type_);
 }
 
 unsigned long NetworkInformation::rtt() const {
-  if (!IsObserving())
-    return RoundRtt(GetNetworkStateNotifier().HttpRtt());
+  if (!IsObserving()) {
+    return GetNetworkStateNotifier().RoundRtt(
+        Host(), GetNetworkStateNotifier().HttpRtt());
+  }
 
   return http_rtt_msec_;
 }
 
 double NetworkInformation::downlink() const {
-  if (!IsObserving())
-    return RoundMbps(GetNetworkStateNotifier().DownlinkThroughputMbps());
+  if (!IsObserving()) {
+    return GetNetworkStateNotifier().RoundMbps(
+        Host(), GetNetworkStateNotifier().DownlinkThroughputMbps());
+  }
 
   return downlink_mbps_;
 }
@@ -131,8 +118,11 @@ void NetworkInformation::ConnectionChange(
     bool save_data) {
   DCHECK(GetExecutionContext()->IsContextThread());
 
-  unsigned long new_http_rtt_msec = RoundRtt(http_rtt);
-  double new_downlink_mbps = RoundMbps(downlink_mbps);
+  const String host = Host();
+  unsigned long new_http_rtt_msec =
+      GetNetworkStateNotifier().RoundRtt(host, http_rtt);
+  double new_downlink_mbps =
+      GetNetworkStateNotifier().RoundMbps(host, downlink_mbps);
 
   // This can happen if the observer removes and then adds itself again
   // during notification, or if |transport_rtt| was the only metric that
@@ -232,9 +222,12 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
       type_(GetNetworkStateNotifier().ConnectionType()),
       downlink_max_mbps_(GetNetworkStateNotifier().MaxBandwidth()),
       effective_type_(GetNetworkStateNotifier().EffectiveType()),
-      http_rtt_msec_(RoundRtt(GetNetworkStateNotifier().HttpRtt())),
-      downlink_mbps_(
-          RoundMbps(GetNetworkStateNotifier().DownlinkThroughputMbps())),
+      http_rtt_msec_(GetNetworkStateNotifier().RoundRtt(
+          Host(),
+          GetNetworkStateNotifier().HttpRtt())),
+      downlink_mbps_(GetNetworkStateNotifier().RoundMbps(
+          Host(),
+          GetNetworkStateNotifier().DownlinkThroughputMbps())),
       save_data_(GetNetworkStateNotifier().SaveDataEnabled()),
       context_stopped_(false) {
   DCHECK_LE(1u, GetNetworkStateNotifier().RandomizationSalt());
@@ -246,75 +239,8 @@ void NetworkInformation::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-double NetworkInformation::GetRandomMultiplier() const {
-  if (!GetExecutionContext())
-    return 0.0;
-
-  // The random number should be a function of the hostname to reduce
-  // cross-origin fingerprinting. The random number should also be a function
-  // of randomized salt which is known only to the device. This prevents
-  // origin from removing noise from the estimates.
-  const String host = GetExecutionContext()->Url().Host();
-  if (!host)
-    return 1.0;
-
-  unsigned hash =
-      StringHash::GetHash(host) + GetNetworkStateNotifier().RandomizationSalt();
-  double random_multiplier = 0.9 + static_cast<double>((hash % 21)) * 0.01;
-  DCHECK_LE(0.90, random_multiplier);
-  DCHECK_GE(1.10, random_multiplier);
-  return random_multiplier;
-}
-
-unsigned long NetworkInformation::RoundRtt(
-    const Optional<TimeDelta>& rtt) const {
-  // Limit the size of the buckets and the maximum reported value to reduce
-  // fingerprinting.
-  static const size_t kBucketSize = 50;
-  static const double kMaxRttMsec = 3.0 * 1000;
-
-  if (!rtt.has_value() || !GetExecutionContext()) {
-    // RTT is unavailable. So, return the fastest value.
-    return 0;
-  }
-
-  double rtt_msec = static_cast<double>(rtt.value().InMilliseconds());
-  rtt_msec *= GetRandomMultiplier();
-  rtt_msec = std::min(rtt_msec, kMaxRttMsec);
-
-  DCHECK_LE(0, rtt_msec);
-  DCHECK_GE(kMaxRttMsec, rtt_msec);
-
-  // Round down to the nearest kBucketSize msec value.
-  return std::round(rtt_msec / kBucketSize) * kBucketSize;
-}
-
-double NetworkInformation::RoundMbps(
-    const Optional<double>& downlink_mbps) const {
-  // Limit the size of the buckets and the maximum reported value to reduce
-  // fingerprinting.
-  static const size_t kBucketSize = 50;
-  static const double kMaxDownlinkKbps = 10.0 * 1000;
-
-  double downlink_kbps = 0;
-  if (!downlink_mbps.has_value()) {
-    // Throughput is unavailable. So, return the fastest value.
-    downlink_kbps = kMaxDownlinkKbps;
-  } else {
-    downlink_kbps = downlink_mbps.value() * 1000;
-  }
-  downlink_kbps *= GetRandomMultiplier();
-
-  downlink_kbps = std::min(downlink_kbps, kMaxDownlinkKbps);
-
-  DCHECK_LE(0, downlink_kbps);
-  DCHECK_GE(kMaxDownlinkKbps, downlink_kbps);
-  // Round down to the nearest kBucketSize kbps value.
-  double downlink_kbps_rounded =
-      std::round(downlink_kbps / kBucketSize) * kBucketSize;
-
-  // Convert from Kbps to Mbps.
-  return downlink_kbps_rounded / 1000;
+const String NetworkInformation::Host() const {
+  return GetExecutionContext() ? GetExecutionContext()->Url().Host() : String();
 }
 
 }  // namespace blink
