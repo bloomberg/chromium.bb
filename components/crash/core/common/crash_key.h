@@ -21,7 +21,7 @@
 // source-compatible interface is provided on top of the older Breakpad
 // storage mechanism.
 #if BUILDFLAG(USE_CRASHPAD_ANNOTATION)
-#include "third_party/crashpad/crashpad/client/annotation.h"
+#include "third_party/crashpad/crashpad/client/annotation.h"  // nogncheck
 #endif
 
 namespace crash_reporter {
