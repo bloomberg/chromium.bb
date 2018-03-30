@@ -12,6 +12,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/back_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -169,6 +170,16 @@ void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
     if (app_list_button && app_list_button->GetWidget() &&
         target == app_list_button->GetWidget()->GetNativeWindow() &&
         app_list_button->bounds().Contains(event->location())) {
+      return;
+    }
+
+    // If the event happened on the back button, it'll get handled by the
+    // button.
+    BackButton* back_button =
+        Shelf::ForWindow(target)->shelf_widget()->GetBackButton();
+    if (back_button && back_button->GetWidget() &&
+        target == back_button->GetWidget()->GetNativeWindow() &&
+        back_button->bounds().Contains(event->location())) {
       return;
     }
   }
