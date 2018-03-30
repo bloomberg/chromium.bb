@@ -714,7 +714,7 @@ TEST_P(AccountReconcilorTestDice, TableRowTest) {
     else
       token_service()->UpdateCredentials(account_id, "refresh_token");
     if (token.has_error) {
-      token_service_delegate()->SetLastErrorForAccount(
+      token_service_delegate()->UpdateAuthError(
           account_id, GoogleServiceAuthError(
                           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     }
@@ -1835,7 +1835,7 @@ TEST_F(AccountReconcilorTest, NoLoopWithBadPrimary) {
 
   // Now that we've tried once, the token service knows that the primary
   // account has an auth error.
-  token_service_delegate()->SetLastErrorForAccount(account_id1, error);
+  token_service_delegate()->UpdateAuthError(account_id1, error);
 
   // A second attempt to reconcile should be a noop.
   reconcilor->StartReconcile();
@@ -1854,7 +1854,7 @@ TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
   token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   // Mark the secondary account in auth error state.
-  token_service_delegate()->SetLastErrorForAccount(
+  token_service_delegate()->UpdateAuthError(
       account_id2,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 

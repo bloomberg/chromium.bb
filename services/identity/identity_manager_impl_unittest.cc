@@ -557,7 +557,7 @@ TEST_F(IdentityManagerImplTest,
   FakeOAuth2TokenServiceDelegate* delegate =
       static_cast<FakeOAuth2TokenServiceDelegate*>(
           token_service()->GetDelegate());
-  delegate->SetLastErrorForAccount(
+  delegate->UpdateAuthError(
       signin_manager()->GetAuthenticatedAccountId(),
       GoogleServiceAuthError(
           GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
@@ -576,8 +576,8 @@ TEST_F(IdentityManagerImplTest,
 
   // Clear the auth error, update credentials, and check that the callback
   // fires.
-  delegate->SetLastErrorForAccount(
-      signin_manager()->GetAuthenticatedAccountId(), GoogleServiceAuthError());
+  delegate->UpdateAuthError(signin_manager()->GetAuthenticatedAccountId(),
+                            GoogleServiceAuthError());
   token_service()->UpdateCredentials(
       signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
   run_loop.Run();

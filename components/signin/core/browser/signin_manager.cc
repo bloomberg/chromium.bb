@@ -160,38 +160,41 @@ void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
 void SigninManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
-  StartSignOut(signout_source_metric, signout_delete_metric,
-               account_consistency_ != signin::AccountConsistencyMethod::kDice);
+  RemoveAccountsOption remove_option =
+      (account_consistency_ == signin::AccountConsistencyMethod::kDice)
+          ? RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError
+          : RemoveAccountsOption::kRemoveAllAccounts;
+  StartSignOut(signout_source_metric, signout_delete_metric, remove_option);
 }
 
 void SigninManager::SignOutAndRemoveAllAccounts(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   StartSignOut(signout_source_metric, signout_delete_metric,
-               true /* remove_all_tokens */);
+               RemoveAccountsOption::kRemoveAllAccounts);
 }
 
 void SigninManager::SignOutAndKeepAllAccounts(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   StartSignOut(signout_source_metric, signout_delete_metric,
-               false /* remove_all_tokens */);
+               RemoveAccountsOption::kKeepAllAccounts);
 }
 
 void SigninManager::StartSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
-    bool remove_all_accounts) {
-  client_->PreSignOut(base::Bind(&SigninManager::DoSignOut,
-                                 base::Unretained(this), signout_source_metric,
-                                 signout_delete_metric, remove_all_accounts),
-                      signout_source_metric);
+    RemoveAccountsOption remove_option) {
+  client_->PreSignOut(
+      base::Bind(&SigninManager::DoSignOut, base::Unretained(this),
+                 signout_source_metric, signout_delete_metric, remove_option),
+      signout_source_metric);
 }
 
 void SigninManager::DoSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
-    bool remove_all_accounts) {
+    RemoveAccountsOption remove_option) {
   DCHECK(IsInitialized());
 
   signin_metrics::LogSignout(signout_source_metric, signout_delete_metric);
@@ -241,10 +244,19 @@ void SigninManager::DoSignOut(
   // Revoke all tokens before sending signed_out notification, because there
   // may be components that don't listen for token service events when the
   // profile is not connected to an account.
-  if (remove_all_accounts) {
-    LOG(WARNING) << "Revoking all refresh tokens on server. Reason: sign out, "
-                 << "IsSigninAllowed: " << IsSigninAllowed();
-    token_service_->RevokeAllCredentials();
+  switch (remove_option) {
+    case RemoveAccountsOption::kRemoveAllAccounts:
+      VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out, "
+              << "IsSigninAllowed: " << IsSigninAllowed();
+      token_service_->RevokeAllCredentials();
+      break;
+    case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
+      if (token_service_->RefreshTokenHasError(account_id))
+        token_service_->RevokeCredentials(account_id);
+      break;
+    case RemoveAccountsOption::kKeepAllAccounts:
+      // Do nothing.
+      break;
   }
 
   FireGoogleSignedOut(account_id, account_info);
