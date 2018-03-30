@@ -465,10 +465,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The state the navigation is in.
   State state_;
 
-  // Whether the navigation is in the middle of a transfer. Set to false when
-  // the DidStartProvisionalLoad is received from the new renderer.
-  bool is_transferring_;
-
   // The FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node_;
 
@@ -524,18 +520,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The id of the URLRequest tied to this navigation.
   GlobalRequestID request_id_;
 
-  // Whether the current NavigationEntry should be replaced upon commit.
-  bool should_replace_current_entry_;
-
   // The chain of redirects.
   std::vector<GURL> redirect_chain_;
-
-  // Whether the navigation ended up being a download or a stream.
-  bool is_download_;
-  bool is_stream_;
-
-  // False by default unless the navigation started within a context menu.
-  bool started_from_context_menu_;
 
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;
@@ -557,9 +543,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // in the main world should not apply.
   CSPDisposition should_check_main_world_csp_;
 
-  // Whether or not the navigation results from the submission of a form.
-  bool is_form_submission_;
-
   // Information about the JavaScript that started the navigation. For
   // navigations initiated by Javascript.
   SourceLocation source_location_;
@@ -572,6 +555,26 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // attribute, the |suggested_filename_| contains the attribute's (possibly
   // empty) value.
   base::Optional<std::string> suggested_filename_;
+
+  // Whether the navigation is in the middle of a transfer. Set to false when
+  // the DidStartProvisionalLoad is received from the new renderer.
+  bool is_transferring_;
+
+  // Whether or not the navigation results from the submission of a form.
+  bool is_form_submission_;
+
+  // Whether the current NavigationEntry should be replaced upon commit.
+  bool should_replace_current_entry_;
+
+  // Whether the navigation ended up being a download or a stream.
+  bool is_download_;
+  bool is_stream_;
+
+  // False by default unless the navigation started within a context menu.
+  bool started_from_context_menu_;
+
+  // Set in ReadyToCommitNavigation.
+  bool is_same_process_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
