@@ -605,6 +605,8 @@ public class VrShellDelegate
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
 
+        if (sInstance != null) sInstance.swapHostActivity(activity);
+
         // If we're already in VR, nothing to do here.
         if (sInstance != null && sInstance.mInVr) return;
         if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
@@ -1016,6 +1018,7 @@ public class VrShellDelegate
         assert mActivity != null;
         if (mActivity == activity) return;
         mActivity = activity;
+        mListeningForWebVrActivateBeforePause = false;
         if (mVrDaydreamApi != null) mVrDaydreamApi.close();
         mVrDaydreamApi = getVrClassesWrapper().createVrDaydreamApi(mActivity);
     }
@@ -1306,13 +1309,29 @@ public class VrShellDelegate
             return;
         }
 
-        // Note that cancelling the animation below is what causes us to enter VR mode when Chrome
-        // is cold-started. We start an intermediate activity to cancel the animation which causes
-        // onPause and onResume to be called and we enter VR mode in onResume (because we set the
-        // mEnterVrOnStartup bit above). If Chrome is already running, onResume which will be called
-        // after VrShellDelegate#onNewIntentWithNative which will cancel the animation and enter VR
-        // after that.
-        if (!mPaused) cancelStartupAnimationIfNeeded();
+        if (!mPaused) {
+            // Note that cancelling the animation below is what causes us to enter VR mode. We start
+            // an intermediate activity to cancel the animation which causes onPause and onResume to
+            // be called and we enter VR mode in onResume (because we set the mEnterVrOnStartup bit
+            // above). If Chrome is already running, onResume which will be called after
+            // VrShellDelegate#onNewIntentWithNative which will cancel the animation and enter VR
+            // after that.
+            if (!cancelStartupAnimationIfNeeded()) {
+                // If we didn't cancel the startup animation, we won't be getting another onResume
+                // call, so enter VR here.
+                handleDonFlowSuccess();
+
+                // This is extremely unlikely to happen in practice, but it's theoretically possible
+                // for the page to have loaded and registered an activate handler before this point.
+                // Usually the displayActivate is sent from
+                // VrShellDelegate#setListeningForWebVrActivate.
+                if (mAutopresentWebVr && mListeningForWebVrActivate) {
+                    // Dispatch vrdisplayactivate so that the WebVr page can call requestPresent
+                    // to start presentation.
+                    nativeDisplayActivate(mNativeVrShellDelegate);
+                }
+            }
+        }
     }
 
     @Override
