@@ -478,6 +478,15 @@ const subsample_lbd_param subsample_lbd_sizes_avx2[] = {
                              cfl_get_luma_subsampling_444_lbd_avx2)
 };
 
+const subsample_hbd_param subsample_hbd_sizes_avx2[] = {
+  ALL_CFL_TX_SIZES_SUBSAMPLE(
+      cfl_get_luma_subsampling_420_hbd_avx2,
+      cfl_get_luma_subsampling_420_hbd_avx2,  // TODO(ltrudeau) replace with
+      // 422 when SIMD is available
+      cfl_get_luma_subsampling_420_hbd_avx2)  // TODO(ltrudeau) replace with
+                                              // 444 when SIMD is available
+};
+
 const predict_param predict_sizes_avx2[] = { ALL_CFL_TX_SIZES(
     get_predict_lbd_fn_avx2) };
 
@@ -489,6 +498,9 @@ INSTANTIATE_TEST_CASE_P(AVX2, CFLSubAvgTest,
 
 INSTANTIATE_TEST_CASE_P(AVX2, CFLSubsampleLBDTest,
                         ::testing::ValuesIn(subsample_lbd_sizes_avx2));
+
+INSTANTIATE_TEST_CASE_P(AVX2, CFLSubsampleHBDTest,
+                        ::testing::ValuesIn(subsample_hbd_sizes_avx2));
 
 INSTANTIATE_TEST_CASE_P(AVX2, CFLPredictTest,
                         ::testing::ValuesIn(predict_sizes_avx2));
