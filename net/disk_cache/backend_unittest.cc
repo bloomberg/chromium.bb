@@ -1930,6 +1930,45 @@ TEST_F(DiskCacheBackendTest, DoomAllSparse) {
   EXPECT_EQ(0, cache_->GetEntryCount());
 }
 
+// This test is for https://crbug.com/827492.
+TEST_F(DiskCacheBackendTest, InMemorySparseEvict) {
+  const int kMaxSize = 512;
+
+  SetMaxSize(kMaxSize);
+  SetMemoryOnlyMode();
+  InitCache();
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(64));
+  CacheTestFillBuffer(buffer->data(), 64, false /* no_nulls */);
+
+  std::vector<disk_cache::ScopedEntryPtr> entries;
+
+  disk_cache::Entry* entry = nullptr;
+  // Create a bunch of entries
+  for (size_t i = 0; i < 14; i++) {
+    std::string name = "http://www." + std::to_string(i) + ".com/";
+    ASSERT_THAT(CreateEntry(name, &entry), IsOk());
+    entries.push_back(disk_cache::ScopedEntryPtr(entry));
+  }
+
+  // Create several sparse entries and fill with enough data to
+  // pass eviction threshold
+  ASSERT_EQ(64, WriteSparseData(entries[0].get(), 0, buffer.get(), 64));
+  ASSERT_EQ(net::ERR_FAILED,
+            WriteSparseData(entries[0].get(), 10000, buffer.get(), 4));
+  ASSERT_EQ(63, WriteSparseData(entries[1].get(), 0, buffer.get(), 63));
+  ASSERT_EQ(64, WriteSparseData(entries[2].get(), 0, buffer.get(), 64));
+  ASSERT_EQ(64, WriteSparseData(entries[3].get(), 0, buffer.get(), 64));
+
+  // Close all the entries, leaving a populated LRU list
+  // with all entries having refcount 0 (doom implies deletion)
+  entries.clear();
+
+  // Create a new entry, triggering buggy eviction
+  ASSERT_THAT(CreateEntry("http://www.14.com/", &entry), IsOk());
+  entry->Close();
+}
+
 void DiskCacheBackendTest::BackendDoomBetween() {
   InitCache();
 
