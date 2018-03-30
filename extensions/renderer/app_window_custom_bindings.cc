@@ -13,6 +13,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/script_context.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,9 +25,13 @@ AppWindowCustomBindings::AppWindowCustomBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void AppWindowCustomBindings::AddRoutes() {
+  RouteHandlerFunction("GetFrame",
+                       base::BindRepeating(&AppWindowCustomBindings::GetFrame,
+                                           base::Unretained(this)));
   RouteHandlerFunction(
-      "GetFrame",
-      base::Bind(&AppWindowCustomBindings::GetFrame, base::Unretained(this)));
+      "ResumeParser",
+      base::BindRepeating(&AppWindowCustomBindings::ResumeParser,
+                          base::Unretained(this)));
 }
 
 void AppWindowCustomBindings::GetFrame(
@@ -57,7 +62,48 @@ void AppWindowCustomBindings::GetFrame(
 
   v8::Local<v8::Value> window =
       app_frame->GetWebFrame()->MainWorldScriptContext()->Global();
+
+  // If the new window loads a sandboxed page and has started loading its
+  // document, its security origin is unique and the background script is not
+  // allowed accessing its window.
+  v8::Local<v8::Context> caller_context =
+      args.GetIsolate()->GetCurrentContext();
+  if (!ContextCanAccessObject(caller_context,
+                              v8::Local<v8::Object>::Cast(window), true)) {
+    return;
+  }
+
   args.GetReturnValue().Set(window);
+}
+
+void AppWindowCustomBindings::ResumeParser(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (args.Length() != 1 || !args[0]->IsInt32()) {
+    NOTREACHED();
+    return;
+  }
+
+  int frame_id = args[0]->Int32Value();
+  content::RenderFrame* app_frame =
+      content::RenderFrame::FromRoutingID(frame_id);
+  if (!app_frame) {
+    NOTREACHED();
+    return;
+  }
+
+  // The current DocumentLoader hasn't parsed any data, but it may have started
+  // reading it. So it may be in the 'provisional' state or not.
+  blink::WebDocumentLoader* loader =
+      app_frame->GetWebFrame()->GetProvisionalDocumentLoader()
+          ? app_frame->GetWebFrame()->GetProvisionalDocumentLoader()
+          : app_frame->GetWebFrame()->GetDocumentLoader();
+
+  if (!loader) {
+    NOTREACHED();
+    return;
+  }
+
+  loader->ResumeParser();
 }
 
 }  // namespace extensions

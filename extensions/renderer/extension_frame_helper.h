@@ -183,6 +183,12 @@ class ExtensionFrameHelper
 
   bool delayed_main_world_script_initialization_ = false;
 
+  // Whether or not a DocumentLoader has been created at least once for this
+  // RenderFrame.
+  // Note: Chrome Apps intentionally do not support new navigations. When a
+  // navigation happens, it is either the initial one or a reload.
+  bool has_started_first_navigation_ = false;
+
   base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFrameHelper);

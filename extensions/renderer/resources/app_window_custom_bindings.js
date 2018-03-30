@@ -130,34 +130,29 @@ appWindow.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('create',
       function(name, request, callback, windowParams) {
-    var view = null;
+    // |callback| is optional.
+    let maybeCallback = callback || function() {};
 
-    // When window creation fails, |windowParams| will be undefined.
-    if (windowParams && windowParams.frameId) {
-      view = appWindowNatives.GetFrame(
-          windowParams.frameId, true /* notifyBrowser */);
-    }
-
-    if (!view) {
-      // No route to created window. If given a callback, trigger it with an
-      // undefined object.
-      if (callback)
-        callback();
+    // When window creation fails, windowParams is undefined. Return undefined
+    // to the caller.
+    if (!windowParams || !windowParams.frameId) {
+      maybeCallback(undefined);
       return;
     }
+
+    let view = appWindowNatives.GetFrame(windowParams.frameId,
+                                         true /* notifyBrowser */);
 
     if (windowParams.existingWindow) {
       // Not creating a new window, but activating an existing one, so trigger
       // callback with existing window and don't do anything else.
-      if (callback)
-        callback(view.chrome.app.window.current());
+      let windowResult = view ? view.chrome.app.window.current() : undefined;
+      maybeCallback(windowResult);
       return;
     }
 
-    // Initialize appWindowData in the newly created JS context
-    if (view.chrome.app) {
-      view.chrome.app.window.initializeAppWindow(windowParams);
-    } else {
+    // Handle the sandboxed page case.
+    if (!view || !view.chrome.app) {
       var sandbox_window_message = 'Creating sandboxed window, it doesn\'t ' +
           'have access to the chrome.app API.';
       if (callback) {
@@ -166,28 +161,30 @@ appWindow.registerCustomHook(function(bindingsAPI) {
             'there will be no object provided for the sandboxed window.';
       }
       console.warn(sandbox_window_message);
+      maybeCallback(undefined);
+      return;
     }
 
-    if (callback) {
-      if (!view || !view.chrome.app /* sandboxed window */) {
-        callback(undefined);
-        return;
-      }
-
-      var willCallback =
-          renderFrameObserverNatives.OnDocumentElementCreated(
-              windowParams.frameId,
-              function(success) {
-                if (success) {
-                  callback(view.chrome.app.window.current());
-                } else {
-                  callback(undefined);
-                }
-              });
-      if (!willCallback) {
-        callback(undefined);
-      }
+    // Handle error pages.
+    // TODO(arthursonzogni): Figure out why view.chrome.app is defined for error
+    // pages and stop doing it.
+    if (!view.chrome.app.window) {
+      maybeCallback(undefined);
+      return;
     }
+
+    // Initialize appWindowData in the newly created JS context
+    view.chrome.app.window.initializeAppWindow(windowParams);
+
+    var willCallback = renderFrameObserverNatives.OnDocumentElementCreated(
+        windowParams.frameId, function(success) {
+          let windowResult = success ? view.chrome.app.window.current()
+                                     : undefined;
+          maybeCallback(windowResult);
+        });
+    appWindowNatives.ResumeParser(windowParams.frameId);
+    if (!willCallback)
+      maybeCallback(undefined);
   });
 
   apiFunctions.setHandleRequest('current', function() {

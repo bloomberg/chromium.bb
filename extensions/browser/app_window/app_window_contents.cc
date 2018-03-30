@@ -21,8 +21,7 @@
 
 namespace extensions {
 
-AppWindowContentsImpl::AppWindowContentsImpl(AppWindow* host)
-    : host_(host), is_blocking_requests_(false), is_window_ready_(false) {}
+AppWindowContentsImpl::AppWindowContentsImpl(AppWindow* host) : host_(host) {}
 
 AppWindowContentsImpl::~AppWindowContentsImpl() {}
 
@@ -44,19 +43,14 @@ void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
 }
 
 void AppWindowContentsImpl::LoadContents(int32_t creator_process_id) {
-  // If the new view is in the same process as the creator, block the created
-  // RVH from loading anything until the background page has had a chance to
-  // do any initialization it wants. If it's a different process, the new RVH
-  // shouldn't communicate with the background page anyway (e.g. sandboxed).
-  if (web_contents_->GetMainFrame()->GetProcess()->GetID() ==
+  // Sandboxed page that are not in the Chrome App package are loaded in a
+  // different process.
+  if (web_contents_->GetMainFrame()->GetProcess()->GetID() !=
       creator_process_id) {
-    SuspendRenderFrameHost(web_contents_->GetMainFrame());
-  } else {
     VLOG(1) << "AppWindow created in new process ("
             << web_contents_->GetMainFrame()->GetProcess()->GetID()
             << ") != creator (" << creator_process_id << "). Routing disabled.";
   }
-
   web_contents_->GetController().LoadURL(
       url_, content::Referrer(), ui::PAGE_TRANSITION_LINK,
       std::string());
@@ -82,14 +76,6 @@ void AppWindowContentsImpl::NativeWindowClosed(bool send_onclosed) {
       new ExtensionMsg_AppWindowClosed(rfh->GetRoutingID(), send_onclosed));
 }
 
-void AppWindowContentsImpl::OnWindowReady() {
-  is_window_ready_ = true;
-  if (is_blocking_requests_) {
-    is_blocking_requests_ = false;
-    web_contents_->GetMainFrame()->ResumeBlockedRequestsForFrame();
-  }
-}
-
 content::WebContents* AppWindowContentsImpl::GetWebContents() const {
   return web_contents_.get();
 }
@@ -112,8 +98,7 @@ bool AppWindowContentsImpl::OnMessageReceived(
 
 void AppWindowContentsImpl::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
-  if (!is_window_ready_)
-    host_->OnReadyToCommitFirstNavigation();
+  host_->OnReadyToCommitFirstNavigation();
 }
 
 void AppWindowContentsImpl::UpdateDraggableRegions(
@@ -121,16 +106,6 @@ void AppWindowContentsImpl::UpdateDraggableRegions(
     const std::vector<DraggableRegion>& regions) {
   if (!sender->GetParent())  // Only process events from the main frame.
     host_->UpdateDraggableRegions(regions);
-}
-
-void AppWindowContentsImpl::SuspendRenderFrameHost(
-    content::RenderFrameHost* rfh) {
-  DCHECK(rfh);
-  // Don't bother blocking requests if the renderer side is already good to go.
-  if (is_window_ready_)
-    return;
-  is_blocking_requests_ = true;
-  rfh->BlockRequestsForFrame();
 }
 
 }  // namespace extensions
