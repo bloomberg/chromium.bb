@@ -8,14 +8,9 @@
 #include <windows.storage.streams.h>
 #include <wrl/client.h>
 #include <wrl/event.h>
-#include <wrl/implements.h>
-#include <utility>
 
-#include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/macros.h"
-#include "base/sequenced_task_runner.h"
 
 class SkBitmap;
 
@@ -24,7 +19,6 @@ namespace shape_detection {
 namespace WRL = Microsoft::WRL;
 
 using ABI::Windows::Foundation::IAsyncOperation;
-using ABI::Windows::Foundation::IAsyncOperationCompletedHandler;
 using ABI::Windows::Graphics::Imaging::ISoftwareBitmapStatics;
 using ABI::Windows::Graphics::Imaging::ISoftwareBitmap;
 using ABI::Windows::Graphics::Imaging::BitmapPixelFormat;
@@ -46,32 +40,7 @@ class AsyncOperation {
   // Creates an AsyncOperation instance which sets |callback| to be called when
   // the asynchronous action completes.
   static HRESULT BeginAsyncOperation(Callback callback,
-                                     IAsyncOperationPtr async_op_ptr) {
-    auto instance =
-        new AsyncOperation<RuntimeType>(std::move(callback), async_op_ptr);
-
-    scoped_refptr<base::SequencedTaskRunner> task_runner =
-        base::SequencedTaskRunnerHandle::Get();
-
-    typedef WRL::Implements<WRL::RuntimeClassFlags<WRL::ClassicCom>,
-                            IAsyncOperationCompletedHandler<RuntimeType*>,
-                            WRL::FtmBase>
-        AsyncCallback;
-    auto async_callback = WRL::Callback<AsyncCallback>(
-        [instance, task_runner](IAsyncOperation<RuntimeType*>* async_op,
-                                AsyncStatus status) {
-          // A reference to |async_op| is kept in |async_op_ptr_|, safe to pass
-          // outside.  This is happening on an OS thread.
-          task_runner->PostTask(
-              FROM_HERE, base::BindOnce(&AsyncOperation::AsyncCallbackInternal,
-                                        base::Owned(instance),
-                                        base::Unretained(async_op), status));
-
-          return S_OK;
-        });
-
-    return async_op_ptr->put_Completed(async_callback.Get());
-  }
+                                     IAsyncOperationPtr async_op_ptr);
 
  private:
   AsyncOperation(Callback callback, IAsyncOperationPtr async_op_ptr)
@@ -79,13 +48,7 @@ class AsyncOperation {
         callback_(std::move(callback)) {}
 
   void AsyncCallbackInternal(IAsyncOperation<RuntimeType*>* async_op,
-                             AsyncStatus status) {
-    DCHECK_EQ(async_op, async_op_ptr_.Get());
-
-    std::move(callback_).Run((async_op && status == AsyncStatus::Completed)
-                                 ? std::move(async_op_ptr_)
-                                 : nullptr);
-  }
+                             AsyncStatus status);
 
   IAsyncOperationPtr async_op_ptr_;
   Callback callback_;

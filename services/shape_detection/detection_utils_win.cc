@@ -4,11 +4,79 @@
 
 #include "services/shape_detection/detection_utils_win.h"
 
+#include <windows.foundation.collections.h>
+#include <windows.media.faceanalysis.h>
+#include <windows.media.ocr.h>
+#include <wrl/implements.h>
+#include <utility>
+
+#include "base/bind.h"
+#include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/winrt_storage_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace shape_detection {
+
+using ABI::Windows::Foundation::Collections::IVector;
+using ABI::Windows::Foundation::IAsyncOperationCompletedHandler;
+using ABI::Windows::Media::FaceAnalysis::DetectedFace;
+using ABI::Windows::Media::Ocr::OcrResult;
+using ABI::Windows::Media::FaceAnalysis::FaceDetector;
+
+template <typename RuntimeType>
+HRESULT AsyncOperation<RuntimeType>::BeginAsyncOperation(
+    typename AsyncOperation<RuntimeType>::Callback callback,
+    typename AsyncOperation<RuntimeType>::IAsyncOperationPtr async_op_ptr) {
+  auto instance =
+      new AsyncOperation<RuntimeType>(std::move(callback), async_op_ptr);
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::SequencedTaskRunnerHandle::Get();
+
+  typedef WRL::Implements<WRL::RuntimeClassFlags<WRL::ClassicCom>,
+                          IAsyncOperationCompletedHandler<RuntimeType*>,
+                          WRL::FtmBase>
+      AsyncCallback;
+  auto async_callback = WRL::Callback<AsyncCallback>(
+      [instance, task_runner](IAsyncOperation<RuntimeType*>* async_op,
+                              AsyncStatus status) {
+        // A reference to |async_op| is kept in |async_op_ptr_|, safe to pass
+        // outside.  This is happening on an OS thread.
+        task_runner->PostTask(
+            FROM_HERE, base::BindOnce(&AsyncOperation::AsyncCallbackInternal,
+                                      base::Owned(instance),
+                                      base::Unretained(async_op), status));
+
+        return S_OK;
+      });
+
+  return async_op_ptr->put_Completed(async_callback.Get());
+}
+
+template HRESULT AsyncOperation<IVector<DetectedFace*>>::BeginAsyncOperation(
+    AsyncOperation<IVector<DetectedFace*>>::Callback callback,
+    AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op_ptr);
+
+template HRESULT AsyncOperation<FaceDetector>::BeginAsyncOperation(
+    AsyncOperation<FaceDetector>::Callback callback,
+    AsyncOperation<FaceDetector>::IAsyncOperationPtr async_op_ptr);
+
+template HRESULT AsyncOperation<OcrResult>::BeginAsyncOperation(
+    AsyncOperation<OcrResult>::Callback callback,
+    AsyncOperation<OcrResult>::IAsyncOperationPtr async_op_ptr);
+
+template <typename RuntimeType>
+void AsyncOperation<RuntimeType>::AsyncCallbackInternal(
+    IAsyncOperation<RuntimeType*>* async_op,
+    AsyncStatus status) {
+  DCHECK_EQ(async_op, async_op_ptr_.Get());
+
+  std::move(callback_).Run((async_op && status == AsyncStatus::Completed)
+                               ? std::move(async_op_ptr_)
+                               : nullptr);
+}
 
 WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
     const SkBitmap& bitmap,
