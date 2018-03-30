@@ -832,8 +832,12 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {
-  if (!is_mus_browser_plugin_guest_)
+  if (!is_mus_browser_plugin_guest_) {
     window_->SetTitle(title);
+    aura::Window* child_window = GetContentNativeView();
+    if (child_window)
+      child_window->SetTitle(title);
+  }
 }
 
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
