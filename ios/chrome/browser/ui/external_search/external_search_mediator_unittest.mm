@@ -24,16 +24,9 @@ TEST_F(ExternalSearchMediatorTest, LaunchExternalSearch) {
   id application = OCMClassMock([UIApplication class]);
   mediator.application = application;
   NSURL* expectedURL = [NSURL URLWithString:@"testexternalsearch://"];
-  if (@available(iOS 10, *)) {
-    OCMExpect([application openURL:expectedURL
-                           options:[OCMArg any]
-                 completionHandler:[OCMArg any]]);
-  }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-  else {
-    OCMExpect([application openURL:expectedURL]);
-  }
-#endif
+  OCMExpect([application openURL:expectedURL
+                         options:[OCMArg any]
+               completionHandler:[OCMArg any]]);
   [mediator launchExternalSearch];
 
   EXPECT_OCMOCK_VERIFY(application);
