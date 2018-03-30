@@ -91,14 +91,10 @@ Most UMS headers:
 Status: ?
 Promote to fixed size ints, which match the current (32bit) ones.
 
-i915_drm.h
- - Missing PARAMS - HAS_POOLED_EU, MIN_EU_IN_POOL CONTEXT_PARAM_NO_ERROR_CAPTURE
-Status: Trivial.
-
 nouveau_drm.h
  - Missing macros NOUVEAU_GETPARAM*, NOUVEAU_DRM_HEADER_PATCHLEVEL, structs,
 enums
-Status: ?
+Status: Deliberate UABI choice; nouveau hides the exact kernel ABI behind libdrm
 
 r128_drm.h
  - Broken compat ioctls.
