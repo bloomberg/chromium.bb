@@ -31,8 +31,8 @@
 #define DocumentInit_h
 
 #include "core/CoreExport.h"
-#include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
+#include "core/frame/SandboxFlags.h"
 #include "core/html/custom/V0CustomElementRegistrationContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"

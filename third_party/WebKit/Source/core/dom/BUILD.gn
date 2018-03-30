@@ -199,8 +199,6 @@ blink_core_sources("dom") {
     "RawDataDocumentParser.h",
     "RemoteSecurityContext.cpp",
     "RemoteSecurityContext.h",
-    "SandboxFlags.cpp",
-    "SandboxFlags.h",
     "ScopedWindowFocusAllowedIndicator.h",
     "ScriptableDocumentParser.cpp",
     "ScriptableDocumentParser.h",
