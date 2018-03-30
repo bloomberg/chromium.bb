@@ -3,33 +3,7 @@
 
 <dom-module id="oobe-a11y-option">
   <template>
-    <style>
-      :root {
-          --oobe-toggle-button-size: {
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-            height: 16px;
-            top: -2px;
-            width: 16px;
-          };
-          --oobe-toggle-bar-size: {
-            height: 12px;
-            left: 4px;
-            width: 24px;
-          };
-          --paper-toggle-button-checked-bar-color: var(--google-blue-500);
-          --paper-toggle-button-checked-bar: var(--oobe-toggle-bar-size);
-          --paper-toggle-button-checked-button: {
-            @apply(--oobe-toggle-button-size);
-            transform: translate(14px, 0);
-          };
-          --paper-toggle-button-checked-button-color: var(--google-blue-500);
-          --paper-toggle-button-checked-ink-color: var(--google-blue-500);
-          --paper-toggle-button-label-spacing: 0;
-          --paper-toggle-button-unchecked-bar: var(--oobe-toggle-bar-size);
-          --paper-toggle-button-unchecked-button:
-              var(--oobe-toggle-button-size);
-      }
-    </style>
+    <link rel="stylesheet" href="oobe_toggle_button.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_a11y_option.css">
     <div id="elementBox" class="layout horizontal">

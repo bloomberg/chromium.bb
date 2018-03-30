@@ -35,15 +35,11 @@ a {
 #logging {
   -webkit-margin-start: 20px;
   color: rgba(0, 0, 0, 0.54);
-  margin-bottom: 20px;
   margin-top: 23px; /* = 36 - font size */
 }
 
-#usageStats {
-  --paper-checkbox-size: 16px;
-  --paper-checkbox-checked-color: var(--google-blue-500);
-  --paper-checkbox-ink-size: 44px;
-  size: 16px;
+paper-toggle-button {
+  width: 36px;
 }
 
 #usageStatsLabelContainer {
