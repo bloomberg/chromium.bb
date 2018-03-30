@@ -58,9 +58,6 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
 
   class CacheImpl;
 
-  typedef std::map<std::string, std::list<storage::BlobDataHandle>>
-      UUIDToBlobDataHandleList;
-
   ~CacheStorageDispatcherHost() override;
 
   // Called by Init() on IO thread.
@@ -77,7 +74,6 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
              blink::mojom::CacheStorage::MatchCallback callback) override;
   void Open(const base::string16& cache_name,
             blink::mojom::CacheStorage::OpenCallback callback) override;
-  void BlobDataHandled(const std::string& uuid) override;
 
   // Callbacks used by Mojo implementation:
   void OnKeysCallback(KeysCallback callback,
@@ -85,27 +81,18 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
   void OnHasCallback(blink::mojom::CacheStorage::HasCallback callback,
                      bool has_cache,
                      blink::mojom::CacheStorageError error);
-  void OnMatchCallback(
-      blink::mojom::CacheStorage::MatchCallback callback,
-      blink::mojom::CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
+  void OnMatchCallback(blink::mojom::CacheStorage::MatchCallback callback,
+                       blink::mojom::CacheStorageError error,
+                       std::unique_ptr<ServiceWorkerResponse> response);
   void OnOpenCallback(url::Origin origin,
                       blink::mojom::CacheStorage::OpenCallback callback,
                       CacheStorageCacheHandle cache_handle,
                       blink::mojom::CacheStorageError error);
 
-  // Stores blob handles while waiting for acknowledgement of receipt from the
-  // renderer.
-  void StoreBlobDataHandle(const storage::BlobDataHandle& blob_data_handle);
-  void DropBlobDataHandle(const std::string& uuid);
-
   // Validate the current state of required members, returns false if they
   // aren't valid and also close |bindings_|, so it's safe to not run
   // mojo callbacks.
   bool ValidState();
-
-  UUIDToBlobDataHandleList blob_handle_store_;
 
   scoped_refptr<CacheStorageContextImpl> context_;
 

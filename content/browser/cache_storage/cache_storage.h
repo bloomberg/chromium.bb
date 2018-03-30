@@ -206,8 +206,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
                           CacheStorageCache::ResponseCallback callback,
                           blink::mojom::CacheStorageError error,
-                          std::unique_ptr<ServiceWorkerResponse> response,
-                          std::unique_ptr<storage::BlobDataHandle> handle);
+                          std::unique_ptr<ServiceWorkerResponse> response);
 
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
@@ -218,8 +217,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
       CacheMatchResponse* out_match_response,
       const base::RepeatingClosure& barrier_closure,
       blink::mojom::CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> service_worker_response,
-      std::unique_ptr<storage::BlobDataHandle> handle);
+      std::unique_ptr<ServiceWorkerResponse> service_worker_response);
   void MatchAllCachesDidMatchAll(
       std::unique_ptr<std::vector<CacheMatchResponse>> match_responses,
       CacheStorageCache::ResponseCallback callback);

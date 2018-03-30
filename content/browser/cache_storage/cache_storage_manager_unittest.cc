@@ -195,14 +195,11 @@ class CacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
-  void CacheMatchCallback(
-      base::RunLoop* run_loop,
-      CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
+  void CacheMatchCallback(base::RunLoop* run_loop,
+                          CacheStorageError error,
+                          std::unique_ptr<ServiceWorkerResponse> response) {
     callback_error_ = error;
     callback_cache_handle_response_ = std::move(response);
-    callback_data_handle_ = std::move(blob_data_handle);
     run_loop->Quit();
   }
 
@@ -269,7 +266,6 @@ class CacheStorageManagerTest : public testing::Test {
     callback_cache_handle_ = CacheStorageCacheHandle();
     callback_bool_ = false;
     callback_cache_handle_response_ = nullptr;
-    callback_data_handle_ = nullptr;
     callback_cache_index_ = CacheStorageIndex();
     callback_all_origins_usage_.clear();
 

@@ -30,6 +30,7 @@ class STORAGE_EXPORT BlobImpl : public blink::mojom::Blob,
                  blink::mojom::BlobReaderClientPtr client) override;
   void ReadAll(mojo::ScopedDataPipeProducerHandle handle,
                blink::mojom::BlobReaderClientPtr client) override;
+  void ReadSideData(ReadSideDataCallback callback) override;
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 
   // network::mojom::DataPipeGetter:
