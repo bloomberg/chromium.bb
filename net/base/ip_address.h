@@ -176,6 +176,9 @@ class NET_EXPORT IPAddress {
 
   // Parses an IP address literal (either IPv4 or IPv6) to its numeric value.
   // Returns true on success and fills |ip_address_| with the numeric value.
+  //
+  // When parsing fails, the original value of |this| will be overwritten such
+  // that |this->empty()| and |!this->IsValid()|.
   bool AssignFromIPLiteral(const base::StringPiece& ip_literal)
       WARN_UNUSED_RESULT;
 
@@ -248,7 +251,8 @@ NET_EXPORT bool IPAddressMatchesPrefix(const IPAddress& ip_address,
 // Parses an IP block specifier from CIDR notation to an
 // (IP address, prefix length) pair. Returns true on success and fills
 // |*ip_address| with the numeric value of the IP address and sets
-// |*prefix_length_in_bits| with the length of the prefix.
+// |*prefix_length_in_bits| with the length of the prefix. On failure,
+// |ip_address| will be cleared to an empty value.
 //
 // CIDR notation literals can use either IPv4 or IPv6 literals. Some examples:
 //
@@ -262,7 +266,8 @@ NET_EXPORT bool ParseCIDRBlock(const std::string& cidr_literal,
 // Parses a URL-safe IP literal (see RFC 3986, Sec 3.2.2) to its numeric value.
 // Returns true on success, and fills |ip_address| with the numeric value.
 // In other words, |hostname| must be an IPv4 literal, or an IPv6 literal
-// surrounded by brackets as in [::1].
+// surrounded by brackets as in [::1]. On failure |ip_address| may have been
+// overwritten and could contain an invalid IPAddress.
 NET_EXPORT bool ParseURLHostnameToAddress(const base::StringPiece& hostname,
                                           IPAddress* ip_address)
     WARN_UNUSED_RESULT;
