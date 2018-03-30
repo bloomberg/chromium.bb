@@ -1304,7 +1304,11 @@ class MetaBuildWrapper(object):
 
   def Build(self, target):
     build_dir = self.ToSrcRelPath(self.args.path)
-    ninja_cmd = ['ninja', '-C', build_dir]
+    if self.platform == 'win32':
+      # On Windows use the batch script since there is no exe
+      ninja_cmd = ['autoninja.bat', '-C', build_dir]
+    else:
+      ninja_cmd = ['autoninja', '-C', build_dir]
     if self.args.jobs:
       ninja_cmd.extend(['-j', '%d' % self.args.jobs])
     ninja_cmd.append(target)

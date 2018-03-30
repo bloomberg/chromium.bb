@@ -7,7 +7,6 @@
 
 import json
 import StringIO
-import os
 import sys
 import unittest
 
@@ -647,6 +646,38 @@ class UnitTest(unittest.TestCase):
                     '\tbuilder = try_builder\n'
                     '[bucket "master.tryserver.chromium.mac"]\n'
                     '\tbuilder = try_builder2\n'))
+
+  def test_build_command_unix(self):
+    files = {
+      '/fake_src/out/Default/toolchain.ninja': '',
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          '{"base_unittests": {'
+          '  "label": "//base:base_unittests",'
+          '  "type": "raw",'
+          '  "args": [],'
+          '}}\n')
+    }
+
+    mbw = self.fake_mbw(files)
+    self.check(['run', '//out/Default', 'base_unittests'], mbw=mbw, ret=0)
+    self.assertIn(['autoninja', '-C', 'out/Default', 'base_unittests'],
+                  mbw.calls)
+
+  def test_build_command_windows(self):
+    files = {
+      'c:\\fake_src\\out\\Default\\toolchain.ninja': '',
+      'c:\\fake_src\\testing\\buildbot\\gn_isolate_map.pyl': (
+          '{"base_unittests": {'
+          '  "label": "//base:base_unittests",'
+          '  "type": "raw",'
+          '  "args": [],'
+          '}}\n')
+    }
+
+    mbw = self.fake_mbw(files, True)
+    self.check(['run', '//out/Default', 'base_unittests'], mbw=mbw, ret=0)
+    self.assertIn(['autoninja.bat', '-C', 'out\\Default', 'base_unittests'],
+                  mbw.calls)
 
 
 if __name__ == '__main__':
