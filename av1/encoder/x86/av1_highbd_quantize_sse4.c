@@ -131,10 +131,10 @@ void av1_highbd_quantize_fp_sse4_1(
 
   if (!skip_block) {
     coeff[0] = _mm_loadu_si128((__m128i const *)src);
+    const int round1 = ROUND_POWER_OF_TWO(round_ptr[1], log_scale);
+    const int round0 = ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
 
-    qparam[0] =
-        _mm_set_epi32(round_ptr[1] >> log_scale, round_ptr[1] >> log_scale,
-                      round_ptr[1] >> log_scale, round_ptr[0] >> log_scale);
+    qparam[0] = _mm_set_epi32(round1, round1, round1, round0);
     qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[0]);
     qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[0]);
 
