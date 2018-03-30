@@ -7,6 +7,10 @@ assert(is_fuchsia)
 import("//build/config/fuchsia/rules.gni")
 
 executable("webrunner") {
+  deps = [
+    "//build/config:exe_and_shlib_deps",
+  ]
+
   public_deps = [
     "//content/public/app:both",
     "//content/public/browser",
