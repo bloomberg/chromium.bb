@@ -157,6 +157,10 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // Return true if it's a different GPU from the previous active one.
   bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);
 
+  // Notify all observers whenever there is a GPU info or GPU feature
+  // status update.
+  void NotifyGpuInfoUpdate();
+
   // Called when GPU process initialization failed.
   void OnGpuProcessInitFailure();
 
