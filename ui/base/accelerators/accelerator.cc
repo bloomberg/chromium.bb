@@ -9,6 +9,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -249,26 +250,11 @@ base::string16 Accelerator::GetShortcutText() const {
     shortcut_rtl.assign(shortcut);
   }
 
-  if (IsShiftDown())
-    shortcut = l10n_util::GetStringFUTF16(IDS_APP_SHIFT_MODIFIER, shortcut);
-
-  // Note that we use 'else-if' in order to avoid using Ctrl+Alt as a shortcut.
-  // See http://blogs.msdn.com/oldnewthing/archive/2004/03/29/101121.aspx for
-  // more information.
-  if (IsCtrlDown())
-    shortcut = l10n_util::GetStringFUTF16(IDS_APP_CONTROL_MODIFIER, shortcut);
-  else if (IsAltDown())
-    shortcut = l10n_util::GetStringFUTF16(IDS_APP_ALT_MODIFIER, shortcut);
-
-  if (IsCmdDown()) {
 #if defined(OS_MACOSX)
-    shortcut = l10n_util::GetStringFUTF16(IDS_APP_COMMAND_MODIFIER, shortcut);
-#elif defined(OS_CHROMEOS)
-    shortcut = l10n_util::GetStringFUTF16(IDS_APP_SEARCH_MODIFIER, shortcut);
+  shortcut = ApplyShortFormModifiers(shortcut);
 #else
-    NOTREACHED();
+  shortcut = ApplyLongFormModifiers(shortcut);
 #endif
-  }
 
   // For some reason, menus in Windows ignore standard Unicode directionality
   // marks (such as LRE, PDF, etc.). On RTL locales, we use RTL menus and
@@ -301,6 +287,49 @@ base::string16 Accelerator::GetShortcutText() const {
   }
 
   return shortcut;
+}
+
+base::string16 Accelerator::ApplyLongFormModifiers(
+    base::string16 shortcut) const {
+  if (IsShiftDown())
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_SHIFT_MODIFIER, shortcut);
+
+  // Note that we use 'else-if' in order to avoid using Ctrl+Alt as a shortcut.
+  // See http://blogs.msdn.com/oldnewthing/archive/2004/03/29/101121.aspx for
+  // more information.
+  if (IsCtrlDown())
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_CONTROL_MODIFIER, shortcut);
+  else if (IsAltDown())
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_ALT_MODIFIER, shortcut);
+
+  if (IsCmdDown()) {
+#if defined(OS_MACOSX)
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_COMMAND_MODIFIER, shortcut);
+#elif defined(OS_CHROMEOS)
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_SEARCH_MODIFIER, shortcut);
+#else
+    NOTREACHED();
+#endif
+  }
+
+  return shortcut;
+}
+
+base::string16 Accelerator::ApplyShortFormModifiers(
+    base::string16 shortcut) const {
+  const base::char16 kCommandSymbol[] = {0x2318, 0};
+  const base::char16 kCtrlSymbol[] = {0x2303, 0};
+  const base::char16 kShiftSymbol[] = {0x21e7, 0};
+  const base::char16 kOptionSymbol[] = {0x2325, 0};
+  const base::char16 kNoSymbol[] = {0};
+
+  std::vector<base::string16> parts;
+  parts.push_back(base::string16(IsCtrlDown() ? kCtrlSymbol : kNoSymbol));
+  parts.push_back(base::string16(IsAltDown() ? kOptionSymbol : kNoSymbol));
+  parts.push_back(base::string16(IsShiftDown() ? kShiftSymbol : kNoSymbol));
+  parts.push_back(base::string16(IsCmdDown() ? kCommandSymbol : kNoSymbol));
+  parts.push_back(shortcut);
+  return base::StrCat(parts);
 }
 
 }  // namespace ui
