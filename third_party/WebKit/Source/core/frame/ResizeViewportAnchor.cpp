@@ -22,7 +22,8 @@ void ResizeViewportAnchor::ResizeFrameView(const IntSize& size) {
   ScrollOffset offset = root_viewport->GetScrollOffset();
 
   frame_view->Resize(size);
-  drift_ += root_viewport->GetScrollOffset() - offset;
+  if (scope_count_ > 0)
+    drift_ += root_viewport->GetScrollOffset() - offset;
 }
 
 void ResizeViewportAnchor::EndScope() {
