@@ -55,9 +55,7 @@ cr.define('print_preview_new', function() {
       if (event.code != 'Enter')
         return;
 
-      if (this.timeout_)
-        clearTimeout(this.timeout_);
-      this.onTimeout_();
+      this.resetAndUpdate_();
     },
 
     /**
@@ -84,6 +82,14 @@ cr.define('print_preview_new', function() {
         this.lastValue_ = value;
         this.fire('input-change', value);
       }
+    },
+
+    /** Called to clear the timeout and update the value. */
+    resetAndUpdate: function() {
+      if (this.timeout_) {
+        clearTimeout(this.timeout_);
+      }
+      this.onTimeout_();
     },
   };
 

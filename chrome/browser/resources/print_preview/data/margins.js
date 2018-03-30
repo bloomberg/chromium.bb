@@ -26,6 +26,18 @@ print_preview.ticket_items.MarginsTypeValue = {
   CUSTOM: 3
 };
 
+/**
+ * Keep in sync with the C++ kSettingMargin... values in
+ * printing/print_job_constants.h.
+ * @typedef {{
+ *   marginTop: number,
+ *   marginRight: number,
+ *   marginBottom: number,
+ *   marginLeft: number,
+ * }}
+ */
+print_preview.MarginsSetting;
+
 cr.define('print_preview', function() {
   'use strict';
 

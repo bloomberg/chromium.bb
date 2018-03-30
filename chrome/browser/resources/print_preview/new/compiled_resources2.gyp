@@ -222,6 +222,7 @@
         '../data/compiled_resources2.gyp:coordinate2d',
         '../data/compiled_resources2.gyp:margins',
         '../data/compiled_resources2.gyp:size',
+        'input_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

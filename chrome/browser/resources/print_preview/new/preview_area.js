@@ -104,9 +104,10 @@ Polymer({
     'onSettingsChanged_(settings.color.value, settings.cssBackground.value, ' +
         'settings.fitToPage.value, settings.headerFooter.value, ' +
         'settings.layout.value, settings.margins.value, ' +
-        'settings.mediaSize.value, settings.ranges.value,' +
-        'settings.selectionOnly.value, settings.scaling.value, ' +
-        'settings.rasterize.value, destination.id, destination.capabilities)',
+        'settings.customMargins.value, settings.mediaSize.value, ' +
+        'settings.ranges.value, settings.selectionOnly.value, ' +
+        'settings.scaling.value, settings.rasterize.value, destination.id, ' +
+        'destination.capabilities)',
   ],
 
   /** @private {print_preview.NativeLayer} */
@@ -171,7 +172,7 @@ Polymer({
 
       fromElement = fromElement.parentElement;
     }
-    marginControlContainer.visible = true;
+    marginControlContainer.setInvisible(false);
   },
 
   /**
@@ -189,11 +190,7 @@ Polymer({
 
       toElement = toElement.parentElement;
     }
-
-    if (marginControlContainer.isDragging())
-      return;
-
-    marginControlContainer.visible = false;
+    marginControlContainer.setInvisible(true);
   },
 
   /** @private */
@@ -248,7 +245,7 @@ Polymer({
     if (this.previewState_ == PreviewAreaState_.OPEN_IN_PREVIEW)
       return this.i18n('openingPDFInPreview');
     if (this.previewState_ == PreviewAreaState_.INVALID_SETTINGS)
-      return this.i18n('invalidSettings');
+      return this.i18n('invalidPrinterSettings');
     if (this.previewState_ == PreviewAreaState_.PREVIEW_FAILED)
       return this.i18n('previewFailed');
     return '';
@@ -547,14 +544,7 @@ Polymer({
 
     if (this.getSettingValue('margins') ==
         print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
-      // TODO (rbpotter): Replace this with real values when custom margins are
-      // implemented.
-      ticket.marginsCustom = {
-        marginTop: 70,
-        marginRight: 70,
-        marginBottom: 70,
-        marginLeft: 70,
-      };
+      ticket.marginsCustom = this.getSettingValue('customMargins');
     }
     let pageCount = -1;
     if (this.inFlightRequestId_ > 0) {
