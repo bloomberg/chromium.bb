@@ -445,7 +445,6 @@ class BrowserView : public BrowserWindow,
   gfx::Size GetMinimumSize() const override;
 
   // InfoBarContainerDelegate:
-  SkColor GetInfoBarSeparatorColor() const override;
   void InfoBarContainerStateChanged(bool is_animating) override;
   bool DrawInfoBarArrows(int* x) const override;
 

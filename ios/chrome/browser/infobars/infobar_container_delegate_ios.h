@@ -28,9 +28,6 @@ class InfoBarContainerDelegateIOS
 
   ~InfoBarContainerDelegateIOS() override {}
 
-  // Calling this method on iOS is a programming error.
-  SkColor GetInfoBarSeparatorColor() const override;
-
   // This method always returns 0 on iOS.
   int ArrowTargetHeightForInfoBar(
       size_t index,
