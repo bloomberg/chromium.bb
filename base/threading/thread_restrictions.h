@@ -93,6 +93,7 @@ namespace ui {
 class CommandBufferClientImpl;
 class CommandBufferLocal;
 class GpuState;
+class MaterialDesignController;
 }
 namespace net {
 class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
@@ -218,6 +219,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class cronet::CronetURLRequestContext;
   friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
+  friend class ui::MaterialDesignController;
   friend class ScopedAllowBlockingForTesting;
   friend class StackSamplingProfiler;
 
