@@ -86,7 +86,7 @@
             android:inputType="text"
             android:singleLine="true"
             android:textSize="@dimen/location_bar_url_text_size"
-            android:textColorHint="@color/ntp_search_box_hint" />
+            android:textColorHint="@color/search_box_hint" />
         <org.chromium.chrome.browser.widget.TintedImageView
             android:id="@+id/voice_search_button"
             android:layout_width="wrap_content"

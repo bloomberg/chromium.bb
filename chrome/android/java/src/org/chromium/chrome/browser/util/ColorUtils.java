@@ -61,10 +61,13 @@ public class ColorUtils {
      */
     public static int getDefaultThemeColor(
             Resources res, boolean useModernDesign, boolean isIncognito) {
-        return isIncognito ? ApiCompatibilityUtils.getColor(res, R.color.incognito_primary_color)
-                : useModernDesign
-                    ? ApiCompatibilityUtils.getColor(res, R.color.modern_primary_color)
-                    : ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
+        if (isIncognito) {
+            return useModernDesign
+                    ? ApiCompatibilityUtils.getColor(res, R.color.incognito_modern_primary_color)
+                    : ApiCompatibilityUtils.getColor(res, R.color.incognito_primary_color);
+        }
+        return useModernDesign ? ApiCompatibilityUtils.getColor(res, R.color.modern_primary_color)
+                               : ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
     }
 
     /**
