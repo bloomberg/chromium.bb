@@ -87,6 +87,8 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       height += ceil(sizeForCell.height);
     }
   }
+  height +=
+      self.tableView.contentInset.top + self.tableView.contentInset.bottom;
   return CGSizeMake(width, height);
 }
 
