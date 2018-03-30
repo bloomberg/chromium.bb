@@ -9,8 +9,10 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -20,6 +22,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/did_commit_provisional_load_interceptor.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/test_callback_receiver.h"
@@ -34,6 +37,7 @@ namespace content {
 
 namespace {
 
+using webauth::mojom::Authenticator;
 using webauth::mojom::AuthenticatorPtr;
 using webauth::mojom::AuthenticatorStatus;
 using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
@@ -48,7 +52,64 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
-}  // namespace
+constexpr char kNotSupportedErrorMessage[] =
+    "NotSupportedError: Parameters for this operation are not supported.";
+
+// Templates to be used with base::ReplaceStringPlaceholders. Can be
+// modified to include up to 9 replacements.
+constexpr char kCreatePublicKeyTemplate[] =
+    "navigator.credentials.create({ publicKey: {"
+    "  challenge: new TextEncoder().encode('climb a mountain'),"
+    "  rp: { id: 'example.com', name: 'Acme' },"
+    "  user: { "
+    "    id: new TextEncoder().encode('1098237235409872'),"
+    "    name: 'avery.a.jones@example.com',"
+    "    displayName: 'Avery A. Jones', "
+    "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
+    "  pubKeyCredParams: [{ type: 'public-key', alg: '-7'}],"
+    "  timeout: 60000,"
+    "  excludeCredentials: [],"
+    "  authenticatorSelection : { "
+    "     requireResidentKey: $1, "
+    "     userVerification: '$2' }}"
+    "}).catch(c => window.domAutomationController.send(c.toString()));";
+
+constexpr char kGetPublicKeyTemplate[] =
+    "navigator.credentials.get({ publicKey: {"
+    "  challenge: new TextEncoder().encode('climb a mountain'),"
+    "  rp: 'example.com',"
+    "  timeout: 60000,"
+    "  userVerification: '$1',"
+    "  allowCredentials: [{ type: 'public-key',"
+    "     id: new TextEncoder().encode('allowedCredential'),"
+    "     transports: ['usb', 'nfc', 'ble']}] }"
+    "}).catch(c => window.domAutomationController.send(c.toString()));";
+
+// Helper class that executes the given |closure| the very last moment before
+// the next navigation commits in a given WebContents.
+class ClosureExecutorBeforeNavigationCommit
+    : public DidCommitProvisionalLoadInterceptor {
+ public:
+  ClosureExecutorBeforeNavigationCommit(WebContents* web_contents,
+                                        base::OnceClosure closure)
+      : DidCommitProvisionalLoadInterceptor(web_contents),
+        closure_(std::move(closure)) {}
+  ~ClosureExecutorBeforeNavigationCommit() override = default;
+
+ protected:
+  void WillDispatchDidCommitProvisionalLoad(
+      RenderFrameHost* render_frame_host,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      service_manager::mojom::InterfaceProviderRequest*
+          interface_provider_request) override {
+    if (closure_)
+      std::move(closure_).Run();
+  }
+
+ private:
+  base::OnceClosure closure_;
+  DISALLOW_COPY_AND_ASSIGN(ClosureExecutorBeforeNavigationCommit);
+};
 
 // Test fixture base class for common tasks.
 class WebAuthBrowserTestBase : public content::ContentBrowserTest {
@@ -56,10 +117,8 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
   WebAuthBrowserTestBase()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  virtual std::vector<base::Feature> GetFeaturesToEnable() {
+    return {features::kWebAuth, features::kWebAuthBle};
   }
 
   void SetUpOnMainThread() override {
@@ -68,13 +127,59 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     ASSERT_TRUE(https_server().Start());
 
     NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title1.html"));
-    ConnectToAuthenticator(shell()->web_contents());
   }
 
-  void ConnectToAuthenticator(WebContents* web_contents) {
-    authenticator_impl_.reset(
-        new content::AuthenticatorImpl(web_contents->GetMainFrame()));
-    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator_ptr_));
+  GURL GetHttpsURL(const std::string& hostname,
+                   const std::string& relative_url) {
+    return https_server_.GetURL(hostname, relative_url);
+  }
+
+  net::EmbeddedTestServer& https_server() { return https_server_; }
+  device::test::ScopedFakeFidoDiscoveryFactory* discovery_factory() {
+    return &factory_;
+  }
+
+ private:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    scoped_feature_list_.InitWithFeatures(GetFeaturesToEnable(), {});
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  net::EmbeddedTestServer https_server_;
+  device::test::ScopedFakeFidoDiscoveryFactory factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTestBase);
+};
+
+}  // namespace
+
+// WebAuthLocalClientBrowserTest ----------------------------------------------
+
+// Browser test fixture where the webauth::mojom::Authenticator interface is
+// accessed from a testing client in the browser process.
+class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
+ public:
+  WebAuthLocalClientBrowserTest() = default;
+  ~WebAuthLocalClientBrowserTest() override = default;
+
+ protected:
+  void SetUpOnMainThread() override {
+    WebAuthBrowserTestBase::SetUpOnMainThread();
+    ConnectToAuthenticator();
+  }
+
+  void ConnectToAuthenticator() {
+    auto* interface_provider =
+        static_cast<service_manager::mojom::InterfaceProvider*>(
+            static_cast<RenderFrameHostImpl*>(
+                shell()->web_contents()->GetMainFrame()));
+
+    interface_provider->GetInterface(
+        Authenticator::Name_,
+        mojo::MakeRequest(&authenticator_ptr_).PassMessagePipe());
   }
 
   webauth::mojom::PublicKeyCredentialCreationOptionsPtr
@@ -123,167 +228,105 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     return mojo_options;
   }
 
-  void SimulateNavigationAndWaitForConnectionError() {
-    EXPECT_TRUE(authenticator_impl_);
-    EXPECT_TRUE(authenticator_ptr_);
-    EXPECT_TRUE(authenticator_ptr_.is_bound());
-    EXPECT_FALSE(authenticator_ptr_.encountered_error());
+  void WaitForConnectionError() {
+    ASSERT_TRUE(authenticator_ptr_);
+    ASSERT_TRUE(authenticator_ptr_.is_bound());
+    if (authenticator_ptr_.encountered_error())
+      return;
 
     base::RunLoop run_loop;
     authenticator_ptr_.set_connection_error_handler(run_loop.QuitClosure());
-
-    authenticator_impl_.reset();
     run_loop.Run();
   }
 
-  GURL GetHttpsURL(const std::string& hostname,
-                   const std::string& relative_url) {
-    return https_server_.GetURL(hostname, relative_url);
-  }
-
   AuthenticatorPtr& authenticator() { return authenticator_ptr_; }
-  net::EmbeddedTestServer& https_server() { return https_server_; }
-  device::test::ScopedFakeFidoDiscoveryFactory* discovery_factory() {
-    return &factory_;
-  }
 
  private:
-  net::EmbeddedTestServer https_server_;
-  device::test::ScopedFakeFidoDiscoveryFactory factory_;
-  std::unique_ptr<content::AuthenticatorImpl> authenticator_impl_;
   AuthenticatorPtr authenticator_ptr_;
-};
 
-
-class WebAuthBrowserTest : public WebAuthBrowserTestBase {
- public:
-  WebAuthBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kWebAuth, features::kWebAuthBle}, {});
-  }
-
-  // Templates to be used with base::ReplaceStringPlaceholders. Can be
-  // modified to include up to 9 replacements.
-  base::StringPiece CREATE_PUBLIC_KEY_TEMPLATE =
-      "navigator.credentials.create({ publicKey: {"
-      "  challenge: new TextEncoder().encode('climb a mountain'),"
-      "  rp: { id: 'example.com', name: 'Acme' },"
-      "  user: { "
-      "    id: new TextEncoder().encode('1098237235409872'),"
-      "    name: 'avery.a.jones@example.com',"
-      "    displayName: 'Avery A. Jones', "
-      "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
-      "  pubKeyCredParams: [{ type: 'public-key', alg: '-7'}],"
-      "  timeout: 60000,"
-      "  excludeCredentials: [],"
-      "  authenticatorSelection : { "
-      "     requireResidentKey: $1, "
-      "     userVerification: '$2' }}"
-      "}).catch(c => window.domAutomationController.send(c.toString()));";
-
-  base::StringPiece GET_PUBLIC_KEY_TEMPLATE =
-      "navigator.credentials.get({ publicKey: {"
-      "  challenge: new TextEncoder().encode('climb a mountain'),"
-      "  rp: 'example.com',"
-      "  timeout: 60000,"
-      "  userVerification: '$1',"
-      "  allowCredentials: [{ type: 'public-key',"
-      "     id: new TextEncoder().encode('allowedCredential'),"
-      "     transports: ['usb', 'nfc', 'ble']}] }"
-      "}).catch(c => window.domAutomationController.send(c.toString()));";
-
-  void CreatePublicKeyCredentialWithUserVerificationAndExpectNotSupported(
-      content::WebContents* web_contents) {
-    std::string result;
-    std::vector<std::string> subst;
-    subst.push_back("false");
-    subst.push_back("required");
-    std::string script = base::ReplaceStringPlaceholders(
-        CREATE_PUBLIC_KEY_TEMPLATE, subst, nullptr);
-
-    ASSERT_TRUE(
-        content::ExecuteScriptAndExtractString(web_contents, script, &result));
-    ASSERT_EQ(
-        "NotSupportedError: Parameters for this operation are not supported.",
-        result);
-  }
-
-  void CreatePublicKeyCredentialWithResidentKeyRequiredAndExpectNotSupported(
-      content::WebContents* web_contents) {
-    std::string result;
-    std::vector<std::string> subst;
-    subst.push_back("true");
-    subst.push_back("preferred");
-    std::string script = base::ReplaceStringPlaceholders(
-        CREATE_PUBLIC_KEY_TEMPLATE, subst, nullptr);
-
-    ASSERT_TRUE(
-        content::ExecuteScriptAndExtractString(web_contents, script, &result));
-    ASSERT_EQ(
-        "NotSupportedError: Parameters for this operation are not supported.",
-        result);
-  }
-
-  void GetPublicKeyCredentialWithUserVerificationAndExpectNotSupported(
-      content::WebContents* web_contents) {
-    std::string result;
-    std::vector<std::string> subst;
-    subst.push_back("required");
-    std::string script = base::ReplaceStringPlaceholders(
-        GET_PUBLIC_KEY_TEMPLATE, subst, nullptr);
-    ASSERT_TRUE(
-        content::ExecuteScriptAndExtractString(web_contents, script, &result));
-    ASSERT_EQ(
-        "NotSupportedError: Parameters for this operation are not supported.",
-        result);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTest);
-};
-
-// A test fixture that does not enable BLE discovery.
-class WebAuthBrowserBleDisabledTest : public WebAuthBrowserTestBase {
- public:
-  WebAuthBrowserBleDisabledTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebAuth);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserBleDisabledTest);
+  DISALLOW_COPY_AND_ASSIGN(WebAuthLocalClientBrowserTest);
 };
 
 // Tests that no crash occurs when the implementation is destroyed with a
-// pending create(publicKey) request.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
-                       CreatePublicKeyCredentialNavigateAway) {
+// pending navigator.credentials.create({publicKey: ...}) call.
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
+                       CreatePublicKeyCredentialThenNavigateAway) {
   auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
   TestCreateCallbackReceiver create_callback_receiver;
   authenticator()->MakeCredential(BuildBasicCreateOptions(),
                                   create_callback_receiver.callback());
 
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  SimulateNavigationAndWaitForConnectionError();
+  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+  WaitForConnectionError();
+
+  // The next active document should be able to successfully call
+  // navigator.credentials.create({publicKey: ...}) again.
+  ConnectToAuthenticator();
+  fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  create_callback_receiver.callback());
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
 }
 
 // Tests that no crash occurs when the implementation is destroyed with a
-// pending get(publicKey) request.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialNavigateAway) {
+// pending navigator.credentials.get({publicKey: ...}) call.
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
+                       GetPublicKeyCredentialThenNavigateAway) {
   auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
   TestGetCallbackReceiver get_callback_receiver;
   authenticator()->GetAssertion(BuildBasicGetOptions(),
                                 get_callback_receiver.callback());
 
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  SimulateNavigationAndWaitForConnectionError();
+  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+  WaitForConnectionError();
+
+  // The next active document should be able to successfully call
+  // navigator.credentials.get({publicKey: ...}) again.
+  ConnectToAuthenticator();
+  fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  authenticator()->GetAssertion(BuildBasicGetOptions(),
+                                get_callback_receiver.callback());
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+}
+
+// Tests that a navigator.credentials.create({publicKey: ...}) issued at the
+// moment just before a navigation commits is not serviced.
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
+                       CreatePublicKeyCredentialRacingWithNavigation) {
+  TestCreateCallbackReceiver create_callback_receiver;
+  auto request_options = BuildBasicCreateOptions();
+
+  ClosureExecutorBeforeNavigationCommit executor(
+      shell()->web_contents(), base::BindLambdaForTesting([&]() {
+        authenticator()->MakeCredential(std::move(request_options),
+                                        create_callback_receiver.callback());
+      }));
+
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+  WaitForConnectionError();
+
+  // Normally, when the request is serviced, the implementation retrieves the
+  // factory as one of the first steps. Here, the request should not have been
+  // serviced at all, so the fake request should still be pending on the fake
+  // factory.
+  auto hid_discovery = ::device::FidoDiscovery::Create(
+      ::device::U2fTransportProtocol::kUsbHumanInterfaceDevice, nullptr);
+  ASSERT_TRUE(!!hid_discovery);
+
+  // The next active document should be able to successfully call
+  // navigator.credentials.create({publicKey: ...}) again.
+  ConnectToAuthenticator();
+  fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  create_callback_receiver.callback());
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
 }
 
 // Regression test for https://crbug.com/818219.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
                        CreatePublicKeyCredentialTwiceInARow) {
   TestCreateCallbackReceiver callback_receiver_1;
   TestCreateCallbackReceiver callback_receiver_2;
@@ -298,7 +341,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
 }
 
 // Regression test for https://crbug.com/818219.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialTwiceInARow) {
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
+                       GetPublicKeyCredentialTwiceInARow) {
   TestGetCallbackReceiver callback_receiver_1;
   TestGetCallbackReceiver callback_receiver_2;
   authenticator()->GetAssertion(BuildBasicGetOptions(),
@@ -311,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialTwiceInARow) {
   EXPECT_FALSE(callback_receiver_1.was_called());
 }
 
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
                        CreatePublicKeyCredentialWhileRequestIsPending) {
   auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
   TestCreateCallbackReceiver callback_receiver_1;
@@ -328,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
   EXPECT_FALSE(callback_receiver_1.was_called());
 }
 
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
                        GetPublicKeyCredentialWhileRequestIsPending) {
   auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
   TestGetCallbackReceiver callback_receiver_1;
@@ -345,28 +389,76 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
   EXPECT_FALSE(callback_receiver_1.was_called());
 }
 
-// Tests that when navigator.credentials.create() is called with unsupported
-// authenticator selection criteria, we get a NotSupportedError.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
-                       CreatePublicKeyCredentialUnsupportedSelectionCriteria) {
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePublicKeyCredentialWithResidentKeyRequiredAndExpectNotSupported(
-          shell()->web_contents()));
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePublicKeyCredentialWithUserVerificationAndExpectNotSupported(
-          shell()->web_contents()));
+// WebAuthJavascriptClientBrowserTest -----------------------------------------
+
+// Browser test fixture where the webauth::mojom::Authenticator interface is
+// normally accessed from Javascript in the renderer process.
+class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
+ public:
+  WebAuthJavascriptClientBrowserTest() = default;
+  ~WebAuthJavascriptClientBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAuthJavascriptClientBrowserTest);
+};
+
+// Tests that when navigator.credentials.create() is called with user
+// verification required we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialWithUserVerification) {
+  const std::string kScript = base::ReplaceStringPlaceholders(
+      kCreatePublicKeyTemplate, {"false", "required"}, nullptr);
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), kScript, &result));
+  ASSERT_EQ(kNotSupportedErrorMessage, result);
 }
 
-// Tests that when navigator.credentials.get() is called with required
-// user verification, we get a NotSupportedError.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+// Tests that when navigator.credentials.create() is called with resident key
+// required, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialWithResidentKeyRequired) {
+  const std::string kScript = base::ReplaceStringPlaceholders(
+      kCreatePublicKeyTemplate, {"true", "preferred"}, nullptr);
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), kScript, &result));
+  ASSERT_EQ(kNotSupportedErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.get() is called with user verification
+// required, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialUserVerification) {
-  ASSERT_NO_FATAL_FAILURE(
-      GetPublicKeyCredentialWithUserVerificationAndExpectNotSupported(
-          shell()->web_contents()));
+  const std::string kScript = base::ReplaceStringPlaceholders(
+      kGetPublicKeyTemplate, {"required"}, nullptr);
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), kScript, &result));
+  ASSERT_EQ(kNotSupportedErrorMessage, result);
 }
 
-// WebAuthBrowserBleDisabledTest ------------------------------
+// WebAuthBrowserBleDisabledTest ----------------------------------------------
+
+// A test fixture that does not enable BLE discovery.
+class WebAuthBrowserBleDisabledTest : public WebAuthLocalClientBrowserTest {
+ public:
+  WebAuthBrowserBleDisabledTest() = default;
+
+ protected:
+  std::vector<base::Feature> GetFeaturesToEnable() override {
+    return {features::kWebAuth};
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserBleDisabledTest);
+};
 
 // Tests that the BLE discovery does not start when the WebAuthnBle feature
 // flag is disabled.
