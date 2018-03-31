@@ -352,8 +352,7 @@ void ContentVerifier::SetObserverForTests(TestObserver* observer) {
 ContentVerifier::ContentVerifier(
     content::BrowserContext* context,
     std::unique_ptr<ContentVerifierDelegate> delegate)
-    : shutdown_(false),
-      context_(context),
+    : context_(context),
       delegate_(std::move(delegate)),
       request_context_getter_(
           content::BrowserContext::GetDefaultStoragePartition(context)
@@ -370,13 +369,18 @@ void ContentVerifier::Start() {
 }
 
 void ContentVerifier::Shutdown() {
-  shutdown_ = true;
+  shutdown_on_ui_ = true;
   delegate_->Shutdown();
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ContentVerifierIOData::Clear, io_data_));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ContentVerifier::ShutdownOnIO, this));
   observer_.RemoveAll();
+}
+
+void ContentVerifier::ShutdownOnIO() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  shutdown_on_io_ = true;
+  io_data_->Clear();
   hash_helper_.reset();
 }
 
@@ -421,7 +425,7 @@ void ContentVerifier::GetContentHash(
     bool force_missing_computed_hashes_creation,
     ContentHashCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (shutdown_) {
+  if (shutdown_on_io_) {
     // NOTE: Release |callback| asynchronously, so that we don't release ref of
     // ContentVerifyJob and possibly destroy it synchronously here while
     // ContentVerifyJob is holding a lock. The lock destroyer would fail DCHECK
@@ -441,8 +445,8 @@ void ContentVerifier::GetContentHash(
                                           delegate_->GetPublicKey());
   ContentHash::FetchParams fetch_params =
       GetFetchParams(extension_id, extension_version);
-  // Since |shutdown_| = false, GetOrCreateHashHelper() must return non-nullptr
-  // instance of HashHelper.
+  // Since |shutdown_on_io_| = false, GetOrCreateHashHelper() must return
+  // non-nullptr instance of HashHelper.
   GetOrCreateHashHelper()->GetContentHash(
       extension_key, fetch_params, force_missing_computed_hashes_creation,
       std::move(callback));
@@ -457,7 +461,7 @@ void ContentVerifier::VerifyFailed(const ExtensionId& extension_id,
                        reason));
     return;
   }
-  if (shutdown_)
+  if (shutdown_on_ui_)
     return;
 
   VLOG(1) << "VerifyFailed " << extension_id << " reason:" << reason;
@@ -484,7 +488,7 @@ void ContentVerifier::VerifyFailed(const ExtensionId& extension_id,
 void ContentVerifier::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  if (shutdown_)
+  if (shutdown_on_ui_)
     return;
 
   ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
@@ -518,6 +522,9 @@ void ContentVerifier::OnExtensionLoadedOnIO(
     const base::FilePath& extension_root,
     const base::Version& extension_version,
     std::unique_ptr<ContentVerifierIOData::ExtensionData> data) {
+  if (shutdown_on_io_)
+    return;
+
   io_data_->AddData(extension_id, std::move(data));
   GetContentHash(extension_id, extension_root, extension_version,
                  false /* force_missing_computed_hashes_creation */,
@@ -529,7 +536,7 @@ void ContentVerifier::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionReason reason) {
-  if (shutdown_)
+  if (shutdown_on_ui_)
     return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -546,6 +553,8 @@ GURL ContentVerifier::GetSignatureFetchUrlForTest(
 void ContentVerifier::OnExtensionUnloadedOnIO(
     const ExtensionId& extension_id,
     const base::Version& extension_version) {
+  if (shutdown_on_io_)
+    return;
   io_data_->RemoveData(extension_id);
   HashHelper* hash_helper = GetOrCreateHashHelper();
   if (hash_helper)
@@ -658,6 +667,8 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
 }
 
 ContentVerifier::HashHelper* ContentVerifier::GetOrCreateHashHelper() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(!shutdown_on_io_) << "Creating HashHelper after IO shutdown";
   // Just checking |hash_helper_| against nullptr isn't enough because we reset
   // hash_helper_ in Shutdown(), and we shouldn't be re-creating it in that
   // case.
