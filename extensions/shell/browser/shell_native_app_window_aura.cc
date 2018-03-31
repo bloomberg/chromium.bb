@@ -5,6 +5,7 @@
 #include "extensions/shell/browser/shell_native_app_window_aura.h"
 
 #include "content/public/browser/web_contents.h"
+#include "extensions/shell/browser/shell_desktop_controller_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/rect.h"
@@ -69,7 +70,16 @@ void ShellNativeAppWindowAura::Deactivate() {
 }
 
 void ShellNativeAppWindowAura::SetBounds(const gfx::Rect& bounds) {
-  GetNativeWindow()->SetBounds(bounds);
+  // When this is called during window creation, set the bounds naively.
+  if (!GetNativeWindow()->GetRootWindow()) {
+    GetNativeWindow()->SetBounds(bounds);
+    return;
+  }
+
+  // ShellDesktopControllerAura will take care of moving the AppWindow to
+  // another display if necessary.
+  static_cast<ShellDesktopControllerAura*>(DesktopController::instance())
+      ->SetWindowBoundsInScreen(app_window(), bounds);
 }
 
 gfx::Size ShellNativeAppWindowAura::GetContentMinimumSize() const {

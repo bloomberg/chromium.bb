@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_client.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/test_app_window_contents.h"
 #include "extensions/common/extension_builder.h"
@@ -85,10 +86,12 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
   }
 
  protected:
-  void CreateAppWindow(const Extension* extension, gfx::Rect bounds = {}) {
+  AppWindow* CreateAppWindow(const Extension* extension,
+                             gfx::Rect bounds = {}) {
     AppWindow* app_window =
         AppWindowClient::Get()->CreateAppWindow(browser_context(), extension);
     InitAppWindow(app_window, bounds);
+    return app_window;
   }
 
   std::unique_ptr<display::ScreenBase> screen_;
@@ -180,18 +183,45 @@ TEST_F(ShellDesktopControllerAuraTest, MultipleDisplays) {
       AppWindowRegistry::Get(browser_context());
   scoped_refptr<Extension> extension = ExtensionBuilder("Test").Build();
 
-  // Create two app window on the primary display. Both should be hosted in the
+  // Create two apps window on the primary display. Both should be hosted in the
   // same RootWindowController.
-  CreateAppWindow(extension.get());
-  CreateAppWindow(extension.get());
+  AppWindow* primary_app_window = CreateAppWindow(extension.get());
+  AppWindow* primary_app_window_2 = CreateAppWindow(extension.get());
   EXPECT_EQ(2u, app_window_registry->app_windows().size());
   EXPECT_EQ(1u, controller_->GetAllRootWindows().size());
 
   // Create an app window near the secondary display, which should result in
   // creating a RootWindowController for that display.
-  CreateAppWindow(extension.get(), gfx::Rect(1900, 1000, 600, 400));
+  AppWindow* secondary_app_window =
+      CreateAppWindow(extension.get(), gfx::Rect(1900, 1000, 600, 400));
   EXPECT_EQ(3u, app_window_registry->app_windows().size());
   EXPECT_EQ(2u, controller_->GetAllRootWindows().size());
+
+  aura::Window* primary_root = controller_->GetPrimaryHost()->window();
+
+  // Move an app window from the second display to the primary display.
+  EXPECT_NE(secondary_app_window->GetNativeWindow()->GetRootWindow(),
+            primary_root);
+  controller_->SetWindowBoundsInScreen(secondary_app_window,
+                                       gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(secondary_app_window->GetNativeWindow()->GetRootWindow(),
+            primary_root);
+
+  // Move an app window from the primary display to the secondary display.
+  EXPECT_EQ(primary_app_window->GetNativeWindow()->GetRootWindow(),
+            primary_root);
+  controller_->SetWindowBoundsInScreen(primary_app_window,
+                                       gfx::Rect(1920, 1080, 800, 600));
+  EXPECT_NE(primary_app_window->GetNativeWindow()->GetRootWindow(),
+            primary_root);
+
+  // Test moving an app window within its display.
+  EXPECT_EQ(primary_app_window_2->GetNativeWindow()->GetRootWindow(),
+            primary_root);
+  controller_->SetWindowBoundsInScreen(primary_app_window_2,
+                                       gfx::Rect(100, 100, 500, 600));
+  EXPECT_EQ(primary_app_window_2->GetNativeWindow()->GetRootWindow(),
+            primary_root);
 }
 
 }  // namespace extensions

@@ -16,6 +16,9 @@
 
 namespace aura {
 class WindowTreeHost;
+namespace client {
+class ScreenPositionClient;
+}  // namespace client
 }  // namespace aura
 
 namespace content {
@@ -61,6 +64,10 @@ class RootWindowController : public aura::client::WindowParentingClient,
   // Attaches a NativeAppWindow's window to our root window.
   void AddAppWindow(AppWindow* app_window, gfx::NativeWindow window);
 
+  // Unparents the AppWindow's window from our root window so it can be added to
+  // a different RootWindowController.
+  void RemoveAppWindow(AppWindow* app_window);
+
   // Closes the root window's AppWindows, resulting in their destruction.
   void CloseAppWindows();
 
@@ -87,6 +94,8 @@ class RootWindowController : public aura::client::WindowParentingClient,
 
   // The BrowserContext used to create AppWindows.
   content::BrowserContext* const browser_context_;
+
+  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   // The host we create.
   std::unique_ptr<aura::WindowTreeHost> host_;
