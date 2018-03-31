@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/device/bluetooth/le/gatt_client_manager.h"
+#include "chromecast/device/bluetooth/le/gatt_client_manager_impl.h"
 
 #include <vector>
 
@@ -10,20 +10,20 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chromecast/base/bind_to_task_runner.h"
-#include "chromecast/device/bluetooth/le/remote_characteristic.h"
-#include "chromecast/device/bluetooth/le/remote_descriptor.h"
-#include "chromecast/device/bluetooth/le/remote_device.h"
-#include "chromecast/device/bluetooth/le/remote_service.h"
+#include "chromecast/device/bluetooth/le/remote_characteristic_impl.h"
+#include "chromecast/device/bluetooth/le/remote_descriptor_impl.h"
+#include "chromecast/device/bluetooth/le/remote_device_impl.h"
+#include "chromecast/device/bluetooth/le/remote_service_impl.h"
 
 namespace chromecast {
 namespace bluetooth {
 
 namespace {
 
-#define RUN_ON_IO_THREAD(method, ...) \
-  io_task_runner_->PostTask(          \
-      FROM_HERE,                      \
-      base::BindOnce(&GattClientManager::method, weak_this_, ##__VA_ARGS__));
+#define RUN_ON_IO_THREAD(method, ...)                                       \
+  io_task_runner_->PostTask(                                                \
+      FROM_HERE, base::BindOnce(&GattClientManagerImpl::method, weak_this_, \
+                                ##__VA_ARGS__));
 
 #define MAKE_SURE_IO_THREAD(method, ...)            \
   DCHECK(io_task_runner_);                          \
@@ -42,37 +42,37 @@ namespace {
 
 }  // namespace
 
-GattClientManager::GattClientManager(
+GattClientManagerImpl::GattClientManagerImpl(
     bluetooth_v2_shlib::GattClient* gatt_client)
     : gatt_client_(gatt_client),
       observers_(new base::ObserverListThreadSafe<Observer>()),
       weak_factory_(
-          std::make_unique<base::WeakPtrFactory<GattClientManager>>(this)) {
+          std::make_unique<base::WeakPtrFactory<GattClientManagerImpl>>(this)) {
   weak_this_ = weak_factory_->GetWeakPtr();
 }
 
-GattClientManager::~GattClientManager() {}
+GattClientManagerImpl::~GattClientManagerImpl() {}
 
-void GattClientManager::Initialize(
+void GattClientManagerImpl::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   io_task_runner_ = std::move(io_task_runner);
 }
 
-void GattClientManager::Finalize() {
+void GattClientManagerImpl::Finalize() {
   io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&GattClientManager::FinalizeOnIoThread,
+      FROM_HERE, base::BindOnce(&GattClientManagerImpl::FinalizeOnIoThread,
                                 std::move(weak_factory_)));
 }
 
-void GattClientManager::AddObserver(Observer* o) {
+void GattClientManagerImpl::AddObserver(Observer* o) {
   observers_->AddObserver(o);
 }
 
-void GattClientManager::RemoveObserver(Observer* o) {
+void GattClientManagerImpl::RemoveObserver(Observer* o) {
   observers_->RemoveObserver(o);
 }
 
-void GattClientManager::GetDevice(
+void GattClientManagerImpl::GetDevice(
     const bluetooth_v2_shlib::Addr& addr,
     base::OnceCallback<void(scoped_refptr<RemoteDevice>)> cb) {
   MAKE_SURE_IO_THREAD(GetDevice, addr, BindToCurrentSequence(std::move(cb)));
@@ -80,7 +80,7 @@ void GattClientManager::GetDevice(
   std::move(cb).Run(GetDeviceSync(addr));
 }
 
-scoped_refptr<RemoteDevice> GattClientManager::GetDeviceSync(
+scoped_refptr<RemoteDevice> GattClientManagerImpl::GetDeviceSync(
     const bluetooth_v2_shlib::Addr& addr) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   auto it = addr_to_device_.find(addr);
@@ -88,24 +88,31 @@ scoped_refptr<RemoteDevice> GattClientManager::GetDeviceSync(
     return it->second.get();
   }
 
-  scoped_refptr<RemoteDevice> new_device(
-      new RemoteDevice(addr, weak_this_, io_task_runner_));
+  scoped_refptr<RemoteDeviceImpl> new_device(
+      new RemoteDeviceImpl(addr, weak_this_, io_task_runner_));
   addr_to_device_[addr] = new_device;
   return new_device;
 }
 
-size_t GattClientManager::GetNumConnected() const {
+size_t GattClientManagerImpl::GetNumConnected() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return connected_devices_.size();
 }
 
-void GattClientManager::NotifyConnect(const bluetooth_v2_shlib::Addr& addr) {
+void GattClientManagerImpl::NotifyConnect(
+    const bluetooth_v2_shlib::Addr& addr) {
   observers_->Notify(FROM_HERE, &Observer::OnConnectInitated, addr);
 }
 
-void GattClientManager::OnConnectChanged(const bluetooth_v2_shlib::Addr& addr,
-                                         bool status,
-                                         bool connected) {
+scoped_refptr<base::SingleThreadTaskRunner>
+GattClientManagerImpl::task_runner() {
+  return io_task_runner_;
+}
+
+void GattClientManagerImpl::OnConnectChanged(
+    const bluetooth_v2_shlib::Addr& addr,
+    bool status,
+    bool connected) {
   MAKE_SURE_IO_THREAD(OnConnectChanged, addr, status, connected);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
@@ -121,9 +128,9 @@ void GattClientManager::OnConnectChanged(const bluetooth_v2_shlib::Addr& addr,
                      connected);
 }
 
-void GattClientManager::OnNotification(const bluetooth_v2_shlib::Addr& addr,
-                                       uint16_t handle,
-                                       const std::vector<uint8_t>& value) {
+void GattClientManagerImpl::OnNotification(const bluetooth_v2_shlib::Addr& addr,
+                                           uint16_t handle,
+                                           const std::vector<uint8_t>& value) {
   MAKE_SURE_IO_THREAD(OnNotification, addr, handle, value);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
@@ -137,7 +144,7 @@ void GattClientManager::OnNotification(const bluetooth_v2_shlib::Addr& addr,
                      it->second, characteristic, value);
 }
 
-void GattClientManager::OnCharacteristicReadResponse(
+void GattClientManagerImpl::OnCharacteristicReadResponse(
     const bluetooth_v2_shlib::Addr& addr,
     bool status,
     uint16_t handle,
@@ -152,10 +159,12 @@ void GattClientManager::OnCharacteristicReadResponse(
     return;
   }
 
-  characteristic->OnReadComplete(status, value);
+  auto* char_impl =
+      static_cast<RemoteCharacteristicImpl*>(characteristic.get());
+  char_impl->OnReadComplete(status, value);
 }
 
-void GattClientManager::OnCharacteristicWriteResponse(
+void GattClientManagerImpl::OnCharacteristicWriteResponse(
     const bluetooth_v2_shlib::Addr& addr,
     bool status,
     uint16_t handle) {
@@ -168,10 +177,12 @@ void GattClientManager::OnCharacteristicWriteResponse(
     return;
   }
 
-  characteristic->OnWriteComplete(status);
+  auto* char_impl =
+      static_cast<RemoteCharacteristicImpl*>(characteristic.get());
+  char_impl->OnWriteComplete(status);
 }
 
-void GattClientManager::OnDescriptorReadResponse(
+void GattClientManagerImpl::OnDescriptorReadResponse(
     const bluetooth_v2_shlib::Addr& addr,
     bool status,
     uint16_t handle,
@@ -185,10 +196,11 @@ void GattClientManager::OnDescriptorReadResponse(
     return;
   }
 
-  descriptor->OnReadComplete(status, value);
+  auto* desc_impl = static_cast<RemoteDescriptorImpl*>(descriptor.get());
+  desc_impl->OnReadComplete(status, value);
 }
 
-void GattClientManager::OnDescriptorWriteResponse(
+void GattClientManagerImpl::OnDescriptorWriteResponse(
     const bluetooth_v2_shlib::Addr& addr,
     bool status,
     uint16_t handle) {
@@ -201,21 +213,23 @@ void GattClientManager::OnDescriptorWriteResponse(
     return;
   }
 
-  descriptor->OnWriteComplete(status);
+  auto* desc_impl = static_cast<RemoteDescriptorImpl*>(descriptor.get());
+  desc_impl->OnWriteComplete(status);
 }
 
-void GattClientManager::OnReadRemoteRssi(const bluetooth_v2_shlib::Addr& addr,
-                                         bool status,
-                                         int rssi) {
+void GattClientManagerImpl::OnReadRemoteRssi(
+    const bluetooth_v2_shlib::Addr& addr,
+    bool status,
+    int rssi) {
   MAKE_SURE_IO_THREAD(OnReadRemoteRssi, addr, status, rssi);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
   it->second->OnReadRemoteRssiComplete(status, rssi);
 }
 
-void GattClientManager::OnMtuChanged(const bluetooth_v2_shlib::Addr& addr,
-                                     bool status,
-                                     int mtu) {
+void GattClientManagerImpl::OnMtuChanged(const bluetooth_v2_shlib::Addr& addr,
+                                         bool status,
+                                         int mtu) {
   MAKE_SURE_IO_THREAD(OnMtuChanged, addr, status, mtu);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
@@ -224,7 +238,7 @@ void GattClientManager::OnMtuChanged(const bluetooth_v2_shlib::Addr& addr,
   observers_->Notify(FROM_HERE, &Observer::OnMtuChanged, it->second, mtu);
 }
 
-void GattClientManager::OnGetServices(
+void GattClientManagerImpl::OnGetServices(
     const bluetooth_v2_shlib::Addr& addr,
     const std::vector<bluetooth_v2_shlib::Gatt::Service>& services) {
   MAKE_SURE_IO_THREAD(OnGetServices, addr, services);
@@ -236,9 +250,10 @@ void GattClientManager::OnGetServices(
                      it->second->GetServicesSync());
 }
 
-void GattClientManager::OnServicesRemoved(const bluetooth_v2_shlib::Addr& addr,
-                                          uint16_t start_handle,
-                                          uint16_t end_handle) {
+void GattClientManagerImpl::OnServicesRemoved(
+    const bluetooth_v2_shlib::Addr& addr,
+    uint16_t start_handle,
+    uint16_t end_handle) {
   MAKE_SURE_IO_THREAD(OnServicesRemoved, addr, start_handle, end_handle);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
@@ -248,21 +263,20 @@ void GattClientManager::OnServicesRemoved(const bluetooth_v2_shlib::Addr& addr,
                      it->second->GetServicesSync());
 }
 
-void GattClientManager::OnServicesAdded(
+void GattClientManagerImpl::OnServicesAdded(
     const bluetooth_v2_shlib::Addr& addr,
     const std::vector<bluetooth_v2_shlib::Gatt::Service>& services) {
   MAKE_SURE_IO_THREAD(OnServicesAdded, addr, services);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
-
   it->second->OnServicesAdded(services);
   observers_->Notify(FROM_HERE, &Observer::OnServicesUpdated, it->second,
                      it->second->GetServicesSync());
 }
 
 // static
-void GattClientManager::FinalizeOnIoThread(
-    std::unique_ptr<base::WeakPtrFactory<GattClientManager>> weak_factory) {
+void GattClientManagerImpl::FinalizeOnIoThread(
+    std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>> weak_factory) {
   weak_factory->InvalidateWeakPtrs();
 }
 

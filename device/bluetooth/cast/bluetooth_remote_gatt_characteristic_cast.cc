@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/cast/bluetooth_remote_gatt_characteristic_cast.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"

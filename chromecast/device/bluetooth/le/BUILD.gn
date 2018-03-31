@@ -6,18 +6,25 @@ import("//chromecast/chromecast.gni")
 
 cast_source_set("le") {
   sources = [
-    "gatt_client_manager.cc",
     "gatt_client_manager.h",
-    "le_scan_manager.cc",
+    "gatt_client_manager_impl.cc",
+    "gatt_client_manager_impl.h",
     "le_scan_manager.h",
-    "remote_characteristic.cc",
+    "le_scan_manager_impl.cc",
+    "le_scan_manager_impl.h",
     "remote_characteristic.h",
+    "remote_characteristic_impl.cc",
+    "remote_characteristic_impl.h",
     "remote_descriptor.cc",
     "remote_descriptor.h",
-    "remote_device.cc",
+    "remote_descriptor_impl.cc",
+    "remote_descriptor_impl.h",
     "remote_device.h",
-    "remote_service.cc",
+    "remote_device_impl.cc",
+    "remote_device_impl.h",
     "remote_service.h",
+    "remote_service_impl.cc",
+    "remote_service_impl.h",
   ]
 
   public_deps = [
@@ -32,15 +39,41 @@ cast_source_set("le") {
   ]
 }
 
+cast_source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_gatt_client_manager.cc",
+    "mock_gatt_client_manager.h",
+    "mock_le_scan_manager.cc",
+    "mock_le_scan_manager.h",
+    "mock_remote_characteristic.cc",
+    "mock_remote_characteristic.h",
+    "mock_remote_descriptor.cc",
+    "mock_remote_descriptor.h",
+    "mock_remote_device.cc",
+    "mock_remote_device.h",
+    "mock_remote_service.cc",
+    "mock_remote_service.h",
+  ]
+  deps = [
+    ":le",
+    "//chromecast/public",
+    "//testing/gmock",
+  ]
+}
+
 cast_source_set("unittests") {
   testonly = true
 
   sources = [
-    "gatt_client_manager_test.cc",
-    "le_scan_manager_test.cc",
+    "gatt_client_manager_impl_test.cc",
+    "instantiate_mocks.cc",
+    "le_scan_manager_impl_test.cc",
   ]
   deps = [
     ":le",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//chromecast/device/bluetooth:test_support",

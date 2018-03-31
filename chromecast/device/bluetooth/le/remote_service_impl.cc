@@ -2,32 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/device/bluetooth/le/remote_service.h"
+#include "chromecast/device/bluetooth/le/remote_service_impl.h"
 
 #include "chromecast/base/bind_to_task_runner.h"
-#include "chromecast/device/bluetooth/le/remote_characteristic.h"
+#include "chromecast/device/bluetooth/le/remote_characteristic_impl.h"
 
 namespace chromecast {
 namespace bluetooth {
 
 // static
 std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteCharacteristic>>
-RemoteService::CreateCharMap(
+RemoteServiceImpl::CreateCharMap(
     RemoteDevice* remote_device,
-    base::WeakPtr<GattClientManager> gatt_client_manager,
+    base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
     const bluetooth_v2_shlib::Gatt::Service& service,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteCharacteristic>> ret;
   for (const auto& characteristic : service.characteristics) {
-    ret[characteristic.uuid] = new RemoteCharacteristic(
+    ret[characteristic.uuid] = new RemoteCharacteristicImpl(
         remote_device, gatt_client_manager, &characteristic, io_task_runner);
   }
   return ret;
 }
 
-RemoteService::RemoteService(
+RemoteServiceImpl::RemoteServiceImpl(
     RemoteDevice* remote_device,
-    base::WeakPtr<GattClientManager> gatt_client_manager,
+    base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
     const bluetooth_v2_shlib::Gatt::Service& service,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : service_(service),
@@ -40,10 +40,10 @@ RemoteService::RemoteService(
   DCHECK(io_task_runner->BelongsToCurrentThread());
 }
 
-RemoteService::~RemoteService() = default;
+RemoteServiceImpl::~RemoteServiceImpl() = default;
 
 std::vector<scoped_refptr<RemoteCharacteristic>>
-RemoteService::GetCharacteristics() {
+RemoteServiceImpl::GetCharacteristics() {
   std::vector<scoped_refptr<RemoteCharacteristic>> ret;
   ret.reserve(uuid_to_characteristic_.size());
   for (const auto& pair : uuid_to_characteristic_) {
@@ -53,12 +53,22 @@ RemoteService::GetCharacteristics() {
   return ret;
 }
 
-scoped_refptr<RemoteCharacteristic> RemoteService::GetCharacteristicByUuid(
+scoped_refptr<RemoteCharacteristic> RemoteServiceImpl::GetCharacteristicByUuid(
     const bluetooth_v2_shlib::Uuid& uuid) {
   auto it = uuid_to_characteristic_.find(uuid);
   if (it == uuid_to_characteristic_.end())
     return nullptr;
   return it->second;
+}
+
+const bluetooth_v2_shlib::Uuid& RemoteServiceImpl::uuid() const {
+  return service_.uuid;
+}
+uint16_t RemoteServiceImpl::handle() const {
+  return service_.handle;
+}
+bool RemoteServiceImpl::primary() const {
+  return service_.primary;
 }
 
 }  // namespace bluetooth

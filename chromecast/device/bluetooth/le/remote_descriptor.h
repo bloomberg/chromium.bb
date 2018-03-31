@@ -11,9 +11,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
-#include "chromecast/device/bluetooth/le/gatt_client_manager.h"
 #include "chromecast/public/bluetooth/gatt.h"
 
 namespace chromecast {
@@ -36,62 +33,31 @@ class RemoteDescriptor : public base::RefCountedThreadSafe<RemoteDescriptor> {
 
   // Read the descriptor with |auth_req|. When completed, |callback| will be
   // called.
-  void ReadAuth(bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
-                ReadCallback callback);
+  virtual void ReadAuth(bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+                        ReadCallback callback) = 0;
 
   // Read the descriptor. When completed, |callback| will be called.
-  void Read(ReadCallback callback);
+  virtual void Read(ReadCallback callback) = 0;
 
   // Write |value| to the descriptor with |auth_req|. When completed, |callback|
   // will be called.
-  void WriteAuth(bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
-                 const std::vector<uint8_t>& value,
-                 StatusCallback callback);
+  virtual void WriteAuth(bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+                         const std::vector<uint8_t>& value,
+                         StatusCallback callback) = 0;
 
   // Write |value| to the descriptor. Will retry if auth_req isn't met. When
   // completed, |callback| will be called.
-  void Write(const std::vector<uint8_t>& value, StatusCallback callback);
+  virtual void Write(const std::vector<uint8_t>& value,
+                     StatusCallback callback) = 0;
 
-  const bluetooth_v2_shlib::Gatt::Descriptor& descriptor() const {
-    return *descriptor_;
-  }
-  const bluetooth_v2_shlib::Uuid uuid() const { return descriptor_->uuid; }
-  uint16_t handle() const { return descriptor_->handle; }
-  bluetooth_v2_shlib::Gatt::Permissions permissions() const {
-    return descriptor_->permissions;
-  }
+  virtual const bluetooth_v2_shlib::Gatt::Descriptor& descriptor() const = 0;
+  virtual const bluetooth_v2_shlib::Uuid uuid() const = 0;
+  virtual uint16_t handle() const = 0;
+  virtual bluetooth_v2_shlib::Gatt::Permissions permissions() const = 0;
 
- private:
-  friend class GattClientManager;
-  friend class RemoteCharacteristic;
-  friend class RemoteDevice;
+ protected:
   friend class base::RefCountedThreadSafe<RemoteDescriptor>;
-
-  RemoteDescriptor(RemoteDevice* device,
-                   base::WeakPtr<GattClientManager> gatt_client_manager,
-                   const bluetooth_v2_shlib::Gatt::Descriptor* characteristic,
-                   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-  ~RemoteDescriptor();
-
-  void OnConnectChanged(bool connected);
-  void OnReadComplete(bool status, const std::vector<uint8_t>& value);
-  void OnWriteComplete(bool status);
-
-  RemoteDevice* const device_;
-  const base::WeakPtr<GattClientManager> gatt_client_manager_;
-  const bluetooth_v2_shlib::Gatt::Descriptor* const descriptor_;
-
-  // All bluetooth_v2_shlib calls are run on this task_runner. All members must
-  // be accessed on this task_runner.
-  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  ReadCallback read_callback_;
-  StatusCallback write_callback_;
-
-  bool pending_read_ = false;
-  bool pending_write_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteDescriptor);
+  virtual ~RemoteDescriptor() = default;
 };
 
 }  // namespace bluetooth

@@ -12,12 +12,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
 namespace chromecast {
 namespace bluetooth {
-class RemoteCharacteristic;
 class RemoteService;
 }  // namespace bluetooth
 }  // namespace chromecast
@@ -48,16 +46,11 @@ class BluetoothRemoteGattServiceCast : public BluetoothRemoteGattService {
       const std::string& identifier) const override;
 
  private:
-  void OnGetCharacteristics(
-      std::vector<scoped_refptr<chromecast::bluetooth::RemoteCharacteristic>>);
-
   BluetoothDeviceCast* const device_;
   scoped_refptr<chromecast::bluetooth::RemoteService> remote_service_;
 
   std::vector<std::unique_ptr<BluetoothRemoteGattCharacteristicCast>>
       characteristics_;
-
-  base::WeakPtrFactory<BluetoothRemoteGattServiceCast> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceCast);
 };

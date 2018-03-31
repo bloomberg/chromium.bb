@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/device/bluetooth/le/le_scan_manager.h"
+#include "chromecast/device/bluetooth/le/le_scan_manager_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -89,7 +89,7 @@ class LeScanManagerTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   FakeLeScannerImpl fake_le_scan_manager_impl_;
-  LeScanManager le_scan_manager_;
+  LeScanManagerImpl le_scan_manager_;
   MockLeScanManagerObserver mock_observer_;
 
  private:

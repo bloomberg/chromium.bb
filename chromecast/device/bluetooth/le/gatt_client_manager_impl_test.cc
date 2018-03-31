@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/device/bluetooth/le/gatt_client_manager.h"
+#include "chromecast/device/bluetooth/le/gatt_client_manager_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -105,7 +105,7 @@ class GattClientManagerTest : public ::testing::Test {
         std::make_unique<base::MessageLoop>(base::MessageLoop::TYPE_DEFAULT);
     gatt_client_ = std::make_unique<bluetooth_v2_shlib::MockGattClient>();
     gatt_client_manager_ =
-        std::make_unique<GattClientManager>(gatt_client_.get());
+        std::make_unique<GattClientManagerImpl>(gatt_client_.get());
     observer_ = std::make_unique<MockGattClientManagerObserver>();
 
     // Normally bluetooth_manager does this.
@@ -171,7 +171,7 @@ class GattClientManagerTest : public ::testing::Test {
 
   StatusCallbackChecker cb_checker_;
   std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<GattClientManager> gatt_client_manager_;
+  std::unique_ptr<GattClientManagerImpl> gatt_client_manager_;
   std::unique_ptr<bluetooth_v2_shlib::MockGattClient> gatt_client_;
   std::unique_ptr<MockGattClientManagerObserver> observer_;
 };

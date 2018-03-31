@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/cast/bluetooth_device_cast.h"
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"
 
