@@ -536,7 +536,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
-  def testSyncGerritRef(self):
+  def testSyncPatchRef(self):
     if not self.enabled:
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
@@ -552,6 +552,28 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+    # Assert that HEAD revision of repo_2 is @1 (the base we synced to) since we
+    # should have done a soft reset.
+    self.assertEqual(
+        self.githash('repo_2', 1),
+        self.gitrevparse(os.path.join(self.root_dir, 'src/repo2')))
+
+  def testSyncPatchRefNoHooks(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient([
+        'sync', '-v', '-v', '-v',
+        '--revision', 'src/repo2@%s' % self.githash('repo_2', 1),
+        '--patch-ref',
+        '%srepo_2@%s' % (self.git_base, self.githash('repo_2', 2)),
+        '--nohooks',
+    ])
+    # Assert that repo_2 files coincide with revision @2 (the patch ref)
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@2', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
     self.assertTree(tree)
     # Assert that HEAD revision of repo_2 is @1 (the base we synced to) since we
     # should have done a soft reset.

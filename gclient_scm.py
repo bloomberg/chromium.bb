@@ -347,7 +347,8 @@ class GitWrapper(SCMWrapper):
         patch_repo, patch_ref, base_rev, self.checkout_path))
     self._Capture(['reset', '--hard'])
     self._Capture(['fetch', patch_repo, patch_ref])
-    file_list.extend(self._GetDiffFilenames('FETCH_HEAD'))
+    if file_list is not None:
+      file_list.extend(self._GetDiffFilenames('FETCH_HEAD'))
     self._Capture(['checkout', 'FETCH_HEAD'])
 
     if options.rebase_patch_ref:

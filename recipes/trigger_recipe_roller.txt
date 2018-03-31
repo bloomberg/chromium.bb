@@ -1,3 +1,4 @@
-No-op file. Edit this to kick recipes. Yep. Ack.
+No-op file. Edit this to kick recipes.
 
 This is a beginning of a story in this silly file.
+Once upon a time,
