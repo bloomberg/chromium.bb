@@ -36,6 +36,7 @@ void InfoBarContainer::ChangeInfoBarManager(InfoBarManager* infobar_manager) {
   if (infobar_manager_)
     infobar_manager_->RemoveObserver(this);
 
+  bool state_changed = false;
   {
     // Ignore intermediate state changes.  We'll manually trigger processing
     // once we're finished.
@@ -48,19 +49,23 @@ void InfoBarContainer::ChangeInfoBarManager(InfoBarManager* infobar_manager) {
       // deletes it.  Otherwise, this ensures the infobar will be deleted if
       // it's closed while it's not in an InfoBarContainer.
       infobar->Hide(false);
+      state_changed = true;
     }
 
     infobar_manager_ = infobar_manager;
     if (infobar_manager_) {
       infobar_manager_->AddObserver(this);
 
-      for (size_t i = 0; i < infobar_manager_->infobar_count(); ++i)
+      for (size_t i = 0; i < infobar_manager_->infobar_count(); ++i) {
         AddInfoBar(infobar_manager_->infobar_at(i), i, false);
+        state_changed = true;
+      }
     }
   }
 
   // Now that everything is up to date, signal the delegate to re-layout.
-  OnInfoBarStateChanged(false);
+  if (state_changed)
+    OnInfoBarStateChanged(false);
 }
 
 int InfoBarContainer::GetVerticalOverlap(int* total_height) const {
