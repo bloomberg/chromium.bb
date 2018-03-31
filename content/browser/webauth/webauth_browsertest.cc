@@ -14,7 +14,10 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -109,6 +112,41 @@ class ClosureExecutorBeforeNavigationCommit
  private:
   base::OnceClosure closure_;
   DISALLOW_COPY_AND_ASSIGN(ClosureExecutorBeforeNavigationCommit);
+};
+
+// Cancels all navigations in a WebContents while in scope.
+class ScopedNavigationCancellingThrottleInstaller : public WebContentsObserver {
+ public:
+  ScopedNavigationCancellingThrottleInstaller(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  ~ScopedNavigationCancellingThrottleInstaller() override = default;
+
+ protected:
+  class CancellingThrottle : public NavigationThrottle {
+   public:
+    CancellingThrottle(NavigationHandle* handle) : NavigationThrottle(handle) {}
+    ~CancellingThrottle() override = default;
+
+   protected:
+    const char* GetNameForLogging() override {
+      return "ScopedNavigationCancellingThrottleInstaller::CancellingThrottle";
+    }
+
+    ThrottleCheckResult WillStartRequest() override {
+      return ThrottleCheckResult(CANCEL);
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(CancellingThrottle);
+  };
+
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    navigation_handle->RegisterThrottleForTesting(
+        std::make_unique<CancellingThrottle>(navigation_handle));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedNavigationCancellingThrottleInstaller);
 };
 
 // Test fixture base class for common tasks.
@@ -288,6 +326,23 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
   authenticator()->GetAssertion(BuildBasicGetOptions(),
                                 get_callback_receiver.callback());
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+}
+
+// Tests that the webauth::mojom::Authenticator connection is not closed on a
+// cancelled navigation.
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
+                       CreatePublicKeyCredentialAfterCancelledNavigation) {
+  ScopedNavigationCancellingThrottleInstaller navigation_canceller(
+      shell()->web_contents());
+
+  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+  TestCreateCallbackReceiver create_callback_receiver;
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  create_callback_receiver.callback());
+
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
 }
 
