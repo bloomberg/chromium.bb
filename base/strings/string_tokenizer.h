@@ -17,14 +17,6 @@ namespace base {
 // refer to the next token in the input string.  The user may optionally
 // configure the tokenizer to return delimiters.
 //
-// Warning: be careful not to pass a C string into the 2-arg constructor:
-// StringTokenizer t("this is a test", " ");  // WRONG
-// This will create a temporary std::string, save the begin() and end()
-// iterators, and then the string will be freed before we actually start
-// tokenizing it.
-// Instead, use a std::string or use the 3 arg constructor of CStringTokenizer.
-//
-//
 // EXAMPLE 1:
 //
 //   char input[] = "this is a test";
@@ -99,12 +91,18 @@ class StringTokenizerT {
     RETURN_DELIMS = 1 << 0,
   };
 
-  // The string object must live longer than the tokenizer.  (In particular this
-  // should not be constructed with a temporary.)
+  // The string object must live longer than the tokenizer. In particular, this
+  // should not be constructed with a temporary. The deleted rvalue constructor
+  // blocks the most obvious instances of this (e.g. passing a string literal to
+  // the constructor), but caution must still be exercised.
   StringTokenizerT(const str& string,
                    const str& delims) {
     Init(string.begin(), string.end(), delims);
   }
+
+  // Don't allow temporary strings to be used with string tokenizer, since
+  // Init() would otherwise save iterators to a temporary string.
+  StringTokenizerT(str&&, const str& delims) = delete;
 
   StringTokenizerT(const_iterator string_begin,
                    const_iterator string_end,
