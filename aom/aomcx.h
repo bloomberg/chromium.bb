@@ -130,6 +130,12 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * resilient.
  */
 #define AOM_EFLAG_ERROR_RESILIENT (1 << 28)
+/*!\brief Enable s frame mode
+ *
+ * When this flag is set, the encoder will code frames as an
+ * s frame.
+ */
+#define AOM_EFLAG_SET_S_FRAME (1 << 29)
 
 /*!\brief AVx encoder control functions
  *

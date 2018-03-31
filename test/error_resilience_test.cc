@@ -74,9 +74,9 @@ class ErrorResilienceTestLarge
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
-    frame_flags_ &=
-        ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
-          AOM_EFLAG_NO_REF_FRAME_MVS | AOM_EFLAG_ERROR_RESILIENT);
+    frame_flags_ &= ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                      AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_FRAME_MVS |
+                      AOM_EFLAG_ERROR_RESILIENT | AOM_EFLAG_SET_S_FRAME);
     if (droppable_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < droppable_nframes_; ++i) {
@@ -121,7 +121,7 @@ class ErrorResilienceTestLarge
         if (s_frames_[i] == video->frame()) {
           std::cout << "             Encoding S frame: " << s_frames_[i]
                     << "\n";
-          encoder->Control(AV1E_SET_S_FRAME_MODE, 1);
+          frame_flags_ |= AOM_EFLAG_SET_S_FRAME;
           break;
         }
       }
@@ -349,6 +349,9 @@ TEST_P(ErrorResilienceTestLarge, SFrameTest) {
 
   SetAllowMismatch(1);
 
+  // TODO(sarahparker) This test currently will not pass if an alt-ref frame
+  // is coded along with a visible s_frame. This will be addressed in a follow
+  // up.
   // Set an arbitrary S-frame
   unsigned int num_s_frames = 1;
   unsigned int s_frame_list[] = { 7 };
@@ -366,7 +369,7 @@ TEST_P(ErrorResilienceTestLarge, SFrameTest) {
   EXPECT_EQ(GetEncodedFrames() - GetDecodedFrames(), num_error_frames);
   // All frames following the S-frame and the S-frame are expected to have
   // mismatches, but still be parse-able.
-  EXPECT_EQ(GetMismatchFrames(), GetEncodedFrames() - s_frame_list[0]);
+  EXPECT_LE(GetMismatchFrames(), GetEncodedFrames() - s_frame_list[0]);
 }
 
 AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, NONREALTIME_TEST_MODES);

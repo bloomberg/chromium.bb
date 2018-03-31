@@ -4499,7 +4499,7 @@ static void set_ext_overrides(AV1_COMP *cpi) {
   // av1_update_reference() and av1_update_entropy() calls
   // Note: The overrides are valid only for the next frame passed
   // to encode_frame_to_data_rate() function
-  if (cpi->oxcf.s_frame_mode) cpi->common.frame_type = S_FRAME;
+  if (cpi->ext_use_s_frame) cpi->common.frame_type = S_FRAME;
 
   if (cpi->ext_refresh_frame_context_pending) {
     cpi->common.refresh_frame_context = cpi->ext_refresh_frame_context;
@@ -6065,6 +6065,8 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
                                ((flags & AOM_EFLAG_NO_REF_FRAME_MVS) == 0);
   cpi->ext_use_error_resilient = cpi->oxcf.error_resilient_mode |
                                  ((flags & AOM_EFLAG_ERROR_RESILIENT) != 0);
+  cpi->ext_use_s_frame =
+      cpi->oxcf.s_frame_mode | ((flags & AOM_EFLAG_SET_S_FRAME) != 0);
 
   if (flags & AOM_EFLAG_NO_UPD_ENTROPY) {
     av1_update_entropy(cpi, 0);
