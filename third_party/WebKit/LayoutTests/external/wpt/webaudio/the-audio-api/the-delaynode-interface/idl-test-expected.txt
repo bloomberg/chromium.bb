@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL DelayNode IDL Test Uncaught DelayOptions inherits AudioNodeOptions, but DelayOptions is not an interface.
-Harness: the test ran to completion.
-

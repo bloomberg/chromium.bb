@@ -1,4 +1,31 @@
 This is a testharness.js-based test.
-FAIL Navigation Timing 2 IDL tests Uncaught PerformanceResourceTiming inherits PerformanceEntry, but PerformanceEntry is undefined.
+PASS PerformanceNavigationTiming interface: existence and properties of interface object
+PASS PerformanceNavigationTiming interface object length
+PASS PerformanceNavigationTiming interface object name
+FAIL PerformanceNavigationTiming interface: existence and properties of interface prototype object Cannot read property 'has_stringifier' of undefined
+PASS PerformanceNavigationTiming interface: existence and properties of interface prototype object's "constructor" property
+PASS PerformanceNavigationTiming interface: existence and properties of interface prototype object's @@unscopables property
+PASS PerformanceNavigationTiming interface: attribute unloadEventStart
+PASS Unscopable handled correctly for unloadEventStart property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute unloadEventEnd
+PASS Unscopable handled correctly for unloadEventEnd property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute domInteractive
+PASS Unscopable handled correctly for domInteractive property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute domContentLoadedEventStart
+PASS Unscopable handled correctly for domContentLoadedEventStart property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute domContentLoadedEventEnd
+PASS Unscopable handled correctly for domContentLoadedEventEnd property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute domComplete
+PASS Unscopable handled correctly for domComplete property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute loadEventStart
+PASS Unscopable handled correctly for loadEventStart property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute loadEventEnd
+PASS Unscopable handled correctly for loadEventEnd property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute type
+PASS Unscopable handled correctly for type property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: attribute redirectCount
+PASS Unscopable handled correctly for redirectCount property on PerformanceNavigationTiming
+PASS PerformanceNavigationTiming interface: operation toJSON()
+PASS Unscopable handled correctly for toJSON() on PerformanceNavigationTiming
 Harness: the test ran to completion.
 

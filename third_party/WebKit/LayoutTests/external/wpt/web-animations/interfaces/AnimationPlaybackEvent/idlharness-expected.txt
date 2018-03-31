@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL AnimationPlaybackEvent interface. promise_test: Unhandled rejection with value: object "AnimationPlaybackEventInit inherits EventInit, but AnimationPlaybackEventInit is not an interface."
-Harness: the test ran to completion.
-
