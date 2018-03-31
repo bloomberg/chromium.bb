@@ -4358,7 +4358,6 @@ test("unit_tests") {
       "../browser/ui/app_list/test/fake_app_list_model_updater.h",
       "../browser/ui/app_list/test/fake_profile.cc",
       "../browser/ui/app_list/test/fake_profile.h",
-      "../browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc",
     ]
     deps += [
       "//components/arc:arc_test_support",

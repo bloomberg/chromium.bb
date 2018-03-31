@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -28,9 +29,11 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/shelf_model.h"  // nogncheck
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -88,6 +91,10 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 #if defined(OS_CHROMEOS)
+    shelf_model_ = std::make_unique<ash::ShelfModel>();
+    chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
+        extension_environment_.profile(), shelf_model_.get());
+    chrome_launcher_controller_->Init();
     arc_test_.SetUp(extension_environment_.profile());
 #endif
     extension_ = extension_environment_.MakePackagedApp(kTestExtensionId, true);
@@ -101,6 +108,8 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     chrome_app_ = nullptr;
 #if defined(OS_CHROMEOS)
     arc_test_.TearDown();
+    chrome_launcher_controller_.reset();
+    shelf_model_.reset();
 #endif
     BrowserWithTestWindowTest::TearDown();
   }
@@ -162,6 +171,8 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
       extensions::TestExtensionEnvironment::Type::
           kInheritExistingTaskEnvironment};
 #if defined(OS_CHROMEOS)
+  std::unique_ptr<ash::ShelfModel> shelf_model_;
+  std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
   ArcAppTest arc_test_;
 #endif
 
@@ -204,6 +215,8 @@ TEST_F(AppInfoDialogViewsTest, DestroyedProfileClosesDialog) {
   browser_window.reset();
 
 #if defined(OS_CHROMEOS)
+  chrome_launcher_controller_.reset();
+  shelf_model_.reset();
   arc_test_.TearDown();
 #endif
 
@@ -304,5 +317,33 @@ TEST_F(AppInfoDialogViewsTest, ArcAppInfoLinks) {
   // The ARC App info links are not available if ARC is not allowed for
   // secondary profile.
   EXPECT_FALSE(dialog_->arc_app_info_links_for_test());
+}
+
+// Tests that the pin/unpin button is focused after unpinning/pinning. This is
+// to verify regression in crbug.com/428704 is fixed.
+TEST_F(AppInfoDialogViewsTest, PinButtonsAreFocusedAfterPinUnpin) {
+  ShowAppInfo(kTestExtensionId);
+  AppInfoFooterPanel* dialog_footer =
+      static_cast<AppInfoFooterPanel*>(dialog_->dialog_footer_);
+  views::View* pin_button = dialog_footer->pin_to_shelf_button_;
+  views::View* unpin_button = dialog_footer->unpin_from_shelf_button_;
+
+  pin_button->RequestFocus();
+  EXPECT_TRUE(pin_button->visible());
+  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->HasFocus());
+
+  // Avoid attempting to use sync, it's not initialized in this test.
+  auto sync_disabler = chrome_launcher_controller_->GetScopedPinSyncDisabler();
+
+  dialog_footer->SetPinnedToShelf(true);
+  EXPECT_FALSE(pin_button->visible());
+  EXPECT_TRUE(unpin_button->visible());
+  EXPECT_TRUE(unpin_button->HasFocus());
+
+  dialog_footer->SetPinnedToShelf(false);
+  EXPECT_TRUE(pin_button->visible());
+  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->HasFocus());
 }
 #endif
