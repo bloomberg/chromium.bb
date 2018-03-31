@@ -78,12 +78,6 @@ class MEDIA_EXPORT VideoRendererImpl
   size_t effective_frames_queued_for_testing() const {
     return algorithm_->effective_frames_queued();
   }
-  size_t min_buffered_frames_for_testing() const {
-    return min_buffered_frames_;
-  }
-  size_t max_buffered_frames_for_testing() const {
-    return max_buffered_frames_;
-  }
 
   // VideoRendererSink::RenderCallback implementation.
   scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
@@ -107,10 +101,8 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnConfigChange(const VideoDecoderConfig& config);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
-  // report video decoding status. |read_time| is the time at which this read
-  // was started.
-  void FrameReady(base::TimeTicks read_time,
-                  VideoFrameStream::Status status,
+  // report video decoding status.
+  void FrameReady(VideoFrameStream::Status status,
                   const scoped_refptr<VideoFrame>& frame);
 
   // Helper method for enqueueing a frame to |alogorithm_|.
@@ -186,10 +178,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // called on |task_runner_|.
   void AttemptReadAndCheckForMetadataChanges(VideoPixelFormat pixel_format,
                                              const gfx::Size& natural_size);
-
-  // Updates |max_buffered_frames_| based on the current memory pressure level,
-  // |max_read_duration_|, and |time_progressing_|.
-  void UpdateMaxBufferedFrames();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -304,30 +292,13 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Current minimum and maximum for buffered frames. |min_buffered_frames_| is
   // the number of frames required to transition from BUFFERING_HAVE_NOTHING to
-  // BUFFERING_HAVE_ENOUGH. |max_buffered_frames_| is the maximum number of
-  // frames the algorithm may queue.
-  //
-  // The maximum is determined by the observed time to decode a frame relative
-  // to the average frame duration. Specifically the maximum observed time for a
-  // call to VideoFrameStream::Read() to yield a new frame.
-  //
-  // During an underflow event, the minimum is set to the maximum. Any increases
-  // are reset upon Flush() to avoid Seek() penalties.
+  // BUFFERING_HAVE_ENOUGH.
   size_t min_buffered_frames_;
-  size_t max_buffered_frames_;
-  MovingAverage read_durations_;
 
   // Last Render() and last FrameReady() times respectively. Used to avoid
   // triggering underflow when background rendering.
   base::TimeTicks last_render_time_;
   base::TimeTicks last_frame_ready_time_;
-
-  // Indicates that the playback has been ongoing for at least
-  // limits::kMinimumElapsedWatchTimeSecs.
-  bool has_playback_met_watch_time_duration_requirement_;
-
-  // Controls enrollment in the complexity based buffering experiment.
-  const bool use_complexity_based_buffering_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
