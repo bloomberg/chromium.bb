@@ -74,8 +74,9 @@ class ErrorResilienceTestLarge
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
-    frame_flags_ &= ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                      AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_FRAME_MVS);
+    frame_flags_ &=
+        ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
+          AOM_EFLAG_NO_REF_FRAME_MVS | AOM_EFLAG_ERROR_RESILIENT);
     if (droppable_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < droppable_nframes_; ++i) {
@@ -89,14 +90,13 @@ class ErrorResilienceTestLarge
       }
     }
 
-    encoder->Control(AV1E_SET_ERROR_RESILIENT_MODE, 0);
     if (error_resilient_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < error_resilient_nframes_; ++i) {
         if (error_resilient_frames_[i] == video->frame()) {
           std::cout << "             Encoding error_resilient frame: "
                     << error_resilient_frames_[i] << "\n";
-          encoder->Control(AV1E_SET_ERROR_RESILIENT_MODE, 1);
+          frame_flags_ |= AOM_EFLAG_ERROR_RESILIENT;
           break;
         }
       }
@@ -302,9 +302,7 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
 // subsequent frames from using MFMV. If frames are dropped before the
 // E frame, all frames starting from the E frame should be parse-able.
 TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
-  // TODO(sarahparker, debargha): Make control setting work correctly for
-  // lag_in_frames > 0
-  SetupEncoder(500, 0);
+  SetupEncoder(500, 10);
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      cfg_.g_timebase.den, cfg_.g_timebase.num,
@@ -334,7 +332,7 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
   EXPECT_EQ(GetEncodedFrames() - GetDecodedFrames(), num_error_frames);
   // All frames following the E-frame and the E-frame are expected to have
   // mismatches, but still be parse-able.
-  EXPECT_EQ(GetMismatchFrames(), num_nomfmv_frames + 1);
+  EXPECT_LE(GetMismatchFrames(), num_nomfmv_frames + 1);
 }
 
 // Check for ParseAbility property of an S frame.
