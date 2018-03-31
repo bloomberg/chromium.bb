@@ -6,6 +6,7 @@
 
 #include "base/containers/span.h"
 #include "base/guid.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -283,14 +284,14 @@ BlobBuilderFromStream::BlobBuilderFromStream(
 }
 
 BlobBuilderFromStream::~BlobBuilderFromStream() {
-  OnError();
+  OnError(Result::kAborted);
 }
 
 void BlobBuilderFromStream::AllocateMoreMemorySpace(
     uint64_t length_hint,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
-    OnError();
+    OnError(Result::kAborted);
     return;
   }
   if (!pipe.is_valid()) {
@@ -310,7 +311,7 @@ void BlobBuilderFromStream::AllocateMoreMemorySpace(
 
   if (context_->memory_controller().GetAvailableMemoryForBlobs() <
       length_hint) {
-    OnError();
+    OnError(Result::kMemoryAllocationFailed);
     return;
   }
 
@@ -337,7 +338,7 @@ void BlobBuilderFromStream::MemoryQuotaAllocated(
     size_t item_to_populate,
     bool success) {
   if (!success || !context_ || !callback_) {
-    OnError();
+    OnError(success ? Result::kAborted : Result::kMemoryAllocationFailed);
     return;
   }
   DCHECK_LT(item_to_populate, chunk_items.size());
@@ -355,7 +356,7 @@ void BlobBuilderFromStream::DidWriteToMemory(
     uint64_t bytes_written,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
-    OnError();
+    OnError(Result::kAborted);
     return;
   }
   DCHECK_LE(populated_item_index, chunk_items.size());
@@ -395,7 +396,7 @@ void BlobBuilderFromStream::AllocateMoreFileSpace(
     uint64_t length_hint,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
-    OnError();
+    OnError(Result::kAborted);
     return;
   }
   if (!pipe.is_valid()) {
@@ -408,7 +409,7 @@ void BlobBuilderFromStream::AllocateMoreFileSpace(
 
   if (context_->memory_controller().GetAvailableFileSpaceForBlobs() <
       length_hint) {
-    OnError();
+    OnError(Result::kFileAllocationFailed);
     return;
   }
 
@@ -458,7 +459,7 @@ void BlobBuilderFromStream::FileQuotaAllocated(
     std::vector<BlobMemoryController::FileCreationInfo> info,
     bool success) {
   if (!success || !context_ || !callback_) {
-    OnError();
+    OnError(success ? Result::kAborted : Result::kFileAllocationFailed);
     return;
   }
   DCHECK_EQ(chunk_items.size(), info.size());
@@ -481,7 +482,7 @@ void BlobBuilderFromStream::DidWriteToFile(
     mojo::ScopedDataPipeConsumerHandle pipe,
     const base::Time& modification_time) {
   if (!success || !context_ || !callback_) {
-    OnError();
+    OnError(success ? Result::kAborted : Result::kFileWriteFailed);
     return;
   }
   DCHECK_EQ(chunk_items.size(), info.size());
@@ -530,7 +531,7 @@ void BlobBuilderFromStream::DidWriteToExtendedFile(
     mojo::ScopedDataPipeConsumerHandle pipe,
     const base::Time& modification_time) {
   if (!success || !context_ || !callback_) {
-    OnError();
+    OnError(success ? Result::kAborted : Result::kFileWriteFailed);
     return;
   }
   DCHECK(!items_.empty());
@@ -558,7 +559,8 @@ void BlobBuilderFromStream::DidWriteToExtendedFile(
   }
 }
 
-void BlobBuilderFromStream::OnError() {
+void BlobBuilderFromStream::OnError(Result result) {
+  RecordResult(result);
   if (pending_quota_task_)
     pending_quota_task_->Cancel();
 
@@ -573,9 +575,14 @@ void BlobBuilderFromStream::OnError() {
 void BlobBuilderFromStream::OnSuccess() {
   DCHECK(context_);
   DCHECK(callback_);
+  RecordResult(Result::kSuccess);
   std::move(callback_).Run(
       this, context_->AddFinishedBlob(base::GenerateGUID(), content_type_,
                                       content_disposition_, std::move(items_)));
+}
+
+void BlobBuilderFromStream::RecordResult(Result result) {
+  UMA_HISTOGRAM_ENUMERATION("Storage.Blob.BuildFromStreamResult", result);
 }
 
 bool BlobBuilderFromStream::ShouldStoreNextBlockOnDisk(uint64_t length_hint) {
