@@ -173,6 +173,11 @@
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#include "chrome/browser/net/trial_comparison_cert_verifier.h"
+#include "net/cert/cert_verify_proc_builtin.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
@@ -1156,6 +1161,11 @@ void ProfileIOData::Init(
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::MultiThreadedCertVerifier>(verify_proc.get()));
     }
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<TrialComparisonCertVerifier>(
+            profile_params_->profile, net::CertVerifyProc::CreateDefault(),
+            net::CreateCertVerifyProcBuiltin()));
 #else
     cert_verifier = std::make_unique<net::CachingCertVerifier>(
         std::make_unique<net::MultiThreadedCertVerifier>(

@@ -10,8 +10,9 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/network_time/network_time_tracker.h"
-#include "net/cert/cert_status_flags.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
 
@@ -19,18 +20,21 @@
 #include "net/cert/cert_verify_proc_android.h"
 #endif
 
+#include "net/cert/cert_verify_result.h"
+
 using network_time::NetworkTimeTracker;
 
 namespace {
 
+// Add any errors from |cert_status| to |cert_errors|. (net::CertStatus can
+// represent both errors and non-error status codes.)
 void AddCertStatusToReportErrors(
     net::CertStatus cert_status,
-    chrome_browser_ssl::CertLoggerRequest* report) {
+    ::google::protobuf::RepeatedField<int>* cert_errors) {
 #define COPY_CERT_STATUS(error) RENAME_CERT_STATUS(error, CERT_##error)
 #define RENAME_CERT_STATUS(status_error, logger_error) \
   if (cert_status & net::CERT_STATUS_##status_error)   \
-    report->add_cert_error(                            \
-        chrome_browser_ssl::CertLoggerRequest::ERR_##logger_error);
+    cert_errors->Add(chrome_browser_ssl::CertLoggerRequest::ERR_##logger_error);
 
   COPY_CERT_STATUS(REVOKED)
   COPY_CERT_STATUS(INVALID)
@@ -53,10 +57,45 @@ void AddCertStatusToReportErrors(
 #undef COPY_CERT_STATUS
 }
 
-bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
+// Add any non-error codes from |cert_status| to |cert_errors|.
+// (net::CertStatus can represent both errors and non-error status codes.)
+void AddCertStatusToReportStatus(
+    net::CertStatus cert_status,
+    ::google::protobuf::RepeatedField<int>* report_status) {
+#define COPY_CERT_STATUS(error)               \
+  if (cert_status & net::CERT_STATUS_##error) \
+    report_status->Add(chrome_browser_ssl::CertLoggerRequest::STATUS_##error);
+
+  COPY_CERT_STATUS(IS_EV)
+  COPY_CERT_STATUS(REV_CHECKING_ENABLED)
+  COPY_CERT_STATUS(SHA1_SIGNATURE_PRESENT)
+  COPY_CERT_STATUS(CT_COMPLIANCE_FAILED)
+
+#undef COPY_CERT_STATUS
+}
+
+void AddVerifyFlagsToReport(
+    int verify_flags,
+    ::google::protobuf::RepeatedField<int>* report_flags) {
+#define COPY_VERIFY_FLAGS(flag)                        \
+  if (verify_flags & net::CertVerifier::VERIFY_##flag) \
+    report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::VERIFY_##flag);
+
+  COPY_VERIFY_FLAGS(REV_CHECKING_ENABLED);
+  COPY_VERIFY_FLAGS(EV_CERT);
+  COPY_VERIFY_FLAGS(CERT_IO_ENABLED);
+  COPY_VERIFY_FLAGS(REV_CHECKING_ENABLED_EV_ONLY);
+  COPY_VERIFY_FLAGS(REV_CHECKING_REQUIRED_LOCAL_ANCHORS);
+  COPY_VERIFY_FLAGS(ENABLE_SHA1_LOCAL_ANCHORS);
+  COPY_VERIFY_FLAGS(DISABLE_SYMANTEC_ENFORCEMENT);
+
+#undef COPY_VERIFY_FLAGS
+}
+
+bool CertificateChainToString(const net::X509Certificate& cert,
                               std::string* result) {
   std::vector<std::string> pem_encoded_chain;
-  if (!cert->GetPEMEncodedChain(&pem_encoded_chain))
+  if (!cert.GetPEMEncodedChain(&pem_encoded_chain))
     return false;
 
   *result = base::StrCat(pem_encoded_chain);
@@ -70,34 +109,40 @@ CertificateErrorReport::CertificateErrorReport()
 
 CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
                                                const net::SSLInfo& ssl_info)
-    : cert_report_(new chrome_browser_ssl::CertLoggerRequest()) {
-  base::Time now = base::Time::Now();
-  cert_report_->set_time_usec(now.ToInternalValue());
-  cert_report_->set_hostname(hostname);
-
-  if (!CertificateChainToString(ssl_info.cert,
-                                cert_report_->mutable_cert_chain())) {
-    LOG(ERROR) << "Could not get PEM encoded chain.";
-  }
-
-  if (ssl_info.unverified_cert &&
-      !CertificateChainToString(
-          ssl_info.unverified_cert,
-          cert_report_->mutable_unverified_cert_chain())) {
-    LOG(ERROR) << "Could not get PEM encoded unverified certificate chain.";
-  }
-
+    : CertificateErrorReport(hostname,
+                             *ssl_info.cert,
+                             ssl_info.unverified_cert.get(),
+                             ssl_info.is_issued_by_known_root,
+                             ssl_info.cert_status) {
   cert_report_->add_pin(ssl_info.pinning_failure_log);
-  cert_report_->set_is_issued_by_known_root(ssl_info.is_issued_by_known_root);
+}
 
-  AddCertStatusToReportErrors(ssl_info.cert_status, cert_report_.get());
-
-#if defined(OS_ANDROID)
+CertificateErrorReport::CertificateErrorReport(
+    const std::string& hostname,
+    const net::X509Certificate& unverified_cert,
+    int verify_flags,
+    const net::CertVerifyResult& primary_result,
+    const net::CertVerifyResult& trial_result)
+    : CertificateErrorReport(hostname,
+                             *primary_result.verified_cert,
+                             &unverified_cert,
+                             primary_result.is_issued_by_known_root,
+                             primary_result.cert_status) {
   chrome_browser_ssl::CertLoggerFeaturesInfo* features_info =
       cert_report_->mutable_features_info();
-  features_info->set_android_aia_fetching_status(
-      chrome_browser_ssl::CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED);
-#endif
+  chrome_browser_ssl::TrialVerificationInfo* trial_report =
+      features_info->mutable_trial_verification_info();
+  if (!CertificateChainToString(*trial_result.verified_cert,
+                                trial_report->mutable_cert_chain())) {
+    LOG(ERROR) << "Could not get PEM encoded chain.";
+  }
+  trial_report->set_is_issued_by_known_root(
+      trial_result.is_issued_by_known_root);
+  AddCertStatusToReportErrors(trial_result.cert_status,
+                              trial_report->mutable_cert_error());
+  AddCertStatusToReportStatus(trial_result.cert_status,
+                              trial_report->mutable_cert_status());
+  AddVerifyFlagsToReport(verify_flags, trial_report->mutable_verify_flags());
 }
 
 CertificateErrorReport::~CertificateErrorReport() {}
@@ -241,4 +286,38 @@ bool CertificateErrorReport::is_enterprise_managed() const {
 
 bool CertificateErrorReport::is_retry_upload() const {
   return cert_report_->is_retry_upload();
+}
+
+CertificateErrorReport::CertificateErrorReport(
+    const std::string& hostname,
+    const net::X509Certificate& cert,
+    const net::X509Certificate* unverified_cert,
+    bool is_issued_by_known_root,
+    net::CertStatus cert_status)
+    : cert_report_(new chrome_browser_ssl::CertLoggerRequest()) {
+  base::Time now = base::Time::Now();
+  cert_report_->set_time_usec(now.ToInternalValue());
+  cert_report_->set_hostname(hostname);
+
+  if (!CertificateChainToString(cert, cert_report_->mutable_cert_chain())) {
+    LOG(ERROR) << "Could not get PEM encoded chain.";
+  }
+
+  if (unverified_cert &&
+      !CertificateChainToString(
+          *unverified_cert, cert_report_->mutable_unverified_cert_chain())) {
+    LOG(ERROR) << "Could not get PEM encoded unverified certificate chain.";
+  }
+
+  cert_report_->set_is_issued_by_known_root(is_issued_by_known_root);
+
+  AddCertStatusToReportErrors(cert_status, cert_report_->mutable_cert_error());
+  AddCertStatusToReportStatus(cert_status, cert_report_->mutable_cert_status());
+
+#if defined(OS_ANDROID)
+  chrome_browser_ssl::CertLoggerFeaturesInfo* features_info =
+      cert_report_->mutable_features_info();
+  features_info->set_android_aia_fetching_status(
+      chrome_browser_ssl::CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED);
+#endif
 }

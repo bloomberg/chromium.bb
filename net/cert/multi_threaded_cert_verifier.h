@@ -31,11 +31,34 @@ class CertVerifyProc;
 // synchronous CertVerifier implementations on worker threads.
 class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
  public:
+  using VerifyCompleteCallback =
+      base::RepeatingCallback<void(const RequestParams&,
+                                   scoped_refptr<CRLSet> crl_set,
+                                   const NetLogWithSource&,
+                                   int,
+                                   const CertVerifyResult&,
+                                   base::TimeDelta,
+                                   bool)>;
+
   explicit MultiThreadedCertVerifier(scoped_refptr<CertVerifyProc> verify_proc);
 
   // When the verifier is destroyed, all certificate verifications requests are
   // canceled, and their completion callbacks will not be called.
   ~MultiThreadedCertVerifier() override;
+
+  // Creates a MultiThreadedCertVerifier that will call
+  // |verify_complete_callback| once for each verification that has completed
+  // (if it is non-null). Histograms will have |histogram_suffix| appended, if
+  // it is non-empty.
+  // This factory method is temporary, and should not be used without
+  // consulting with OWNERS.
+  // TODO(mattm): remove this once the dual verification trial is complete.
+  // (See https://crbug.com/649026.)
+  static std::unique_ptr<MultiThreadedCertVerifier>
+  CreateForDualVerificationTrial(
+      scoped_refptr<CertVerifyProc> verify_proc,
+      VerifyCompleteCallback verify_complete_callback,
+      bool should_record_histograms);
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
@@ -61,6 +84,12 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
                     const CertVerifierJob* job2) const;
   };
 
+  // TODO(mattm): remove this once the dual verification trial is complete.
+  // (See https://crbug.com/649026.)
+  MultiThreadedCertVerifier(scoped_refptr<CertVerifyProc> verify_proc,
+                            VerifyCompleteCallback verify_complete_callback,
+                            bool should_record_histograms);
+
   // Returns an inflight job for |key|. If there is no such job then returns
   // null.
   CertVerifierJob* FindJob(const RequestParams& key);
@@ -84,6 +113,11 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
   uint64_t inflight_joins_;
 
   scoped_refptr<CertVerifyProc> verify_proc_;
+
+  // Members for dual verification trial. TODO(mattm): Remove these.
+  // (See https://crbug.com/649026.)
+  VerifyCompleteCallback verify_complete_callback_;
+  bool should_record_histograms_ = true;
 
   THREAD_CHECKER(thread_checker_);
 

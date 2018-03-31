@@ -87,6 +87,10 @@ message CertLoggerFeaturesInfo {
     ANDROID_AIA_FETCHING_DISABLED = 2;
   }
   optional AndroidAIAFetchingStatus android_aia_fetching_status = 2;
+
+  // Records the results of the dual certificate verification trial, if
+  // enabled. (See https://crbug.com/649026.)
+  optional TrialVerificationInfo trial_verification_info = 3;
 }
 
 message CertLoggerRequest {
@@ -167,4 +171,44 @@ message CertLoggerRequest {
   // True if the machine is enterprise managed. Currently only available for
   // Windows and ChromeOS clients.
   optional bool is_enterprise_managed = 13;
+
+  enum CertStatus {
+    UNKNOWN_CERT_STATUS = 0;
+    STATUS_IS_EV = 1;
+    STATUS_REV_CHECKING_ENABLED = 2;
+    STATUS_SHA1_SIGNATURE_PRESENT = 3;
+    STATUS_CT_COMPLIANCE_FAILED = 4;
+  }
+  // The non-error status results of validating the chain.
+  repeated CertStatus cert_status = 14;
 };
+
+// Contains the results of verification by the trial verifier. All fields
+// have the same meaning as those of the same name in CertLoggerRequest.
+message TrialVerificationInfo {
+  required string cert_chain = 1;
+
+  repeated string public_key_hash = 2;
+
+  repeated CertLoggerRequest.CertError cert_error = 3;
+
+  optional bool is_issued_by_known_root = 4;
+
+  repeated CertLoggerRequest.CertStatus cert_status = 5;
+
+  // Configuration flags used when validating a chain, corresponding to
+  // CertVerifier::VerifyFlags, however the numeric values are NOT equivalent.
+  enum VerifyFlags {
+    UNKNOWN_VERIFY_FLAG = 0;
+    VERIFY_REV_CHECKING_ENABLED = 1;
+    VERIFY_EV_CERT = 2;
+    VERIFY_CERT_IO_ENABLED = 3;
+    VERIFY_REV_CHECKING_ENABLED_EV_ONLY = 4;
+    VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS = 5;
+    VERIFY_ENABLE_SHA1_LOCAL_ANCHORS = 6;
+    VERIFY_DISABLE_SYMANTEC_ENFORCEMENT = 7;
+  }
+  // The VerifyFlags that were used when validating this chain. (Note this
+  // applies to both the primary and trial verifiers.)
+  repeated VerifyFlags verify_flags = 6;
+}

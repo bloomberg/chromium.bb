@@ -142,6 +142,13 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+// Enables the dual certificate verification trial feature.
+// https://crbug.com/649026
+const base::Feature kCertDualVerificationTrialFeature{
+    "CertDualVerificationTrial", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables change picture video mode.
 const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

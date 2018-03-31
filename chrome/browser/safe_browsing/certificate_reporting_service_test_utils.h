@@ -85,6 +85,7 @@ class RequestObserver {
   const ObservedReportMap& successful_reports() const;
   const ObservedReportMap& failed_reports() const;
   const ObservedReportMap& delayed_reports() const;
+  const std::vector<std::string>& full_reports() const;
   void ClearObservedReports();
 
  private:
@@ -95,6 +96,8 @@ class RequestObserver {
   ObservedReportMap successful_reports_;
   ObservedReportMap failed_reports_;
   ObservedReportMap delayed_reports_;
+
+  std::vector<std::string> full_reports_;
 };
 
 // A URLRequestJob that can be delayed until Resume() is called. Returns an
@@ -218,7 +221,11 @@ class CertificateReportingServiceTestHelper {
   void ResumeDelayedRequest();
 
   void WaitForRequestsCreated(const ReportExpectation& expectation);
+  void WaitForRequestsCreated(const ReportExpectation& expectation,
+                              std::vector<std::string>* full_reports);
   void WaitForRequestsDestroyed(const ReportExpectation& expectation);
+  void WaitForRequestsDestroyed(const ReportExpectation& expectation,
+                                std::vector<std::string>* full_reports);
 
   // Checks that all requests are destroyed and that there are no in-flight
   // reports in |service|.
