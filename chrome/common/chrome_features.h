@@ -171,6 +171,10 @@ extern const base::Feature kGrantNotificationsToDSE;
 extern const base::Feature kHappinessTrackingSystem;
 #endif
 
+#if !defined(OS_ANDROID)
+extern const base::Feature kViewsCastDialog;
+#endif
+
 extern const base::Feature kImportantSitesInCbd;
 
 extern const base::Feature kImprovedRecoveryComponent;

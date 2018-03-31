@@ -302,6 +302,12 @@ const base::Feature kHappinessTrackingSystem {
     "HappinessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if !defined(OS_ANDROID)
+// Replaces the WebUI Cast dialog with a Views toolkit one.
+const base::Feature kViewsCastDialog{"ViewsCastDialog",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
+
 const base::Feature kImportantSitesInCbd{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
