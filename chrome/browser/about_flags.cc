@@ -3479,12 +3479,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kV8ContextSnapshot)},
 
-#if defined(OS_CHROMEOS)
     {"enable-pixel-canvas-recording",
      flag_descriptions::kEnablePixelCanvasRecordingName,
-     flag_descriptions::kEnablePixelCanvasRecordingDescription, kOsCrOS,
+     flag_descriptions::kEnablePixelCanvasRecordingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEnablePixelCanvasRecording)},
 
+#if defined(OS_CHROMEOS)
     {"disable-tablet-splitview", flag_descriptions::kDisableTabletSplitViewName,
      flag_descriptions::kDisableTabletSplitViewDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshDisableTabletSplitView)},
