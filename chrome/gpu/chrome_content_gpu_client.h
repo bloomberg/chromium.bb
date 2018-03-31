@@ -18,6 +18,7 @@
 #include "components/arc/common/protected_buffer_manager.mojom.h"
 #include "components/arc/common/video_decode_accelerator.mojom.h"
 #include "components/arc/common/video_encode_accelerator.mojom.h"
+#include "components/arc/common/video_protected_buffer_allocator.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 
 namespace arc {
@@ -51,6 +52,9 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
 
   void CreateArcVideoEncodeAccelerator(
       ::arc::mojom::VideoEncodeAcceleratorRequest request);
+
+  void CreateArcVideoProtectedBufferAllocator(
+      ::arc::mojom::VideoProtectedBufferAllocatorRequest request);
 
   void CreateProtectedBufferManager(
       ::arc::mojom::ProtectedBufferManagerRequest request);

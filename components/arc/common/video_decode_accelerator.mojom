@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 3
+
 // This file defines the mojo interface between Android and Chromium for video
 // decoding. Any Mojo callee that returns a value does so by callback.
 // However, the caller may receive it by out-param (for sync calls) or
@@ -75,8 +77,7 @@ struct VideoDecodeAcceleratorConfig {
 // this will tell the server to import and use the protected buffer instead of
 // the dummy buffer.
 //
-// Next MinVersion: 1
-// Next method ID: 9
+// Next method ID: 10
 interface VideoDecodeAccelerator {
   [Extensible]
   enum Result {
@@ -96,11 +97,12 @@ interface VideoDecodeAccelerator {
   Initialize@0(VideoDecodeAcceleratorConfig config,
                VideoDecodeClient client) => (Result result);
 
+  // TODO(crbug.com/816327): Remove.
   // Allocate protected input buffer with |handle_fd| and aligned |size|.
   // This function can be called only in secure mode.
   // If this is succeeded, this returns true. Otherwise, returns false.
-  AllocateProtectedBuffer@7(handle handle_fd,
-                            uint64 size) => (bool success);
+  AllocateProtectedBufferDeprecated@7(handle handle_fd,
+                                      uint64 size) => (bool success);
 
   // Decodes the content in the shared memory of the bitstream buffer. The
   // callee needs to map the the shared memory to read the content and is
@@ -108,19 +110,30 @@ interface VideoDecodeAccelerator {
   Decode@1(BitstreamBuffer bitstream_buffer);
 
   // Sets the number of output picture buffers.
+  // This releases any buffers in use/imported previously.
   AssignPictureBuffers@2(uint32 count);
 
-  // Assigns a buffer to be used by the accelerator with specified
+  // Imports a buffer to be used by the accelerator with specified
   // |picture_buffer_id|.
-  // In secure mode, a new protected output buffer will be allocated for the
-  // given |picture_buffer_id|. The protected output buffer will then be
-  // imported and used instead of the buffer pointed by |handle_fd|. If there
-  // is any previously-allocated buffer with the same |picture_buffer_id|,
-  // it will be released.
-  // Call VDA::ImportBufferForPicture with |format| and a
-  // gfx::GpuMemoryBufferHandle created from |handle_fd| and |planes|.
+  // Releases any previously imported buffer under given |picture_buffer_id|.
   // This should be preceded by a call to AssignPictureBuffers().
-  ImportBufferForPicture@8(int32 picture_buffer_id, HalPixelFormat format,
+  // In secure mode, a new protected output buffer will be allocated for the
+  // given |picture_buffer_id|.
+  // Calls VDA::ImportBufferForPicture() with |format| and a
+  // gfx::GpuMemoryBufferHandle created from |handle_fd| and |planes|.
+  // TODO(crbug.com/816327): Remove.
+  ImportBufferForPictureDeprecated@8(int32 picture_buffer_id,
+                                     HalPixelFormat format, handle handle_fd,
+                                     array<VideoFramePlane> planes);
+
+  // Imports a buffer to be used by the accelerator with specified
+  // |picture_buffer_id|.
+  // Releases any previously imported buffer under given |picture_buffer_id|.
+  // This should be preceded by a call to AssignPictureBuffers().
+  // Calls VDA::ImportBufferForPicture() with |format| and a
+  // gfx::GpuMemoryBufferHandle created from |handle_fd| and |planes|.
+  [MinVersion=2]
+  ImportBufferForPicture@9(int32 picture_buffer_id, HalPixelFormat format,
                            handle handle_fd, array<VideoFramePlane> planes);
 
   // Returns picture buffer with specified |picture_buffer_id| to be reused by
@@ -138,7 +151,6 @@ interface VideoDecodeAccelerator {
   Flush@6() => (Result result);
 };
 
-// Next MinVersion: 2
 // Next method ID: 5
 interface VideoDecodeClient {
 

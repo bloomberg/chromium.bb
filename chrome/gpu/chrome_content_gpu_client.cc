@@ -26,6 +26,7 @@
 #if defined(OS_CHROMEOS)
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 #include "components/arc/video_accelerator/gpu_arc_video_encode_accelerator.h"
+#include "components/arc/video_accelerator/gpu_arc_video_protected_buffer_allocator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "components/arc/video_accelerator/protected_buffer_manager_proxy.h"
 #include "content/public/common/service_manager_connection.h"
@@ -54,6 +55,11 @@ void ChromeContentGpuClient::InitializeRegistry(
   registry->AddInterface(
       base::Bind(&ChromeContentGpuClient::CreateArcVideoEncodeAccelerator,
                  base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(
+      base::Bind(
+          &ChromeContentGpuClient::CreateArcVideoProtectedBufferAllocator,
+          base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
       base::Bind(&ChromeContentGpuClient::CreateProtectedBufferManager,
@@ -122,6 +128,17 @@ void ChromeContentGpuClient::CreateArcVideoEncodeAccelerator(
   mojo::MakeStrongBinding(
       std::make_unique<arc::GpuArcVideoEncodeAccelerator>(gpu_preferences_),
       std::move(request));
+}
+
+void ChromeContentGpuClient::CreateArcVideoProtectedBufferAllocator(
+    ::arc::mojom::VideoProtectedBufferAllocatorRequest request) {
+  auto gpu_arc_video_protected_buffer_allocator =
+      arc::GpuArcVideoProtectedBufferAllocator::Create(
+          protected_buffer_manager_);
+  if (!gpu_arc_video_protected_buffer_allocator)
+    return;
+  mojo::MakeStrongBinding(std::move(gpu_arc_video_protected_buffer_allocator),
+                          std::move(request));
 }
 
 void ChromeContentGpuClient::CreateProtectedBufferManager(

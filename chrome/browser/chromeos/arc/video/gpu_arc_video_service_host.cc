@@ -73,6 +73,15 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
             std::move(request)));
   }
 
+  void CreateProtectedBufferAllocator(
+      mojom::VideoProtectedBufferAllocatorRequest request) override {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&content::BindInterfaceInGpuProcess<
+                           mojom::VideoProtectedBufferAllocator>,
+                       std::move(request)));
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryService);
 };
@@ -102,6 +111,12 @@ class VideoAcceleratorFactoryServiceViz
       mojom::VideoEncodeAcceleratorRequest request) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     arc_->CreateVideoEncodeAccelerator(std::move(request));
+  }
+
+  void CreateProtectedBufferAllocator(
+      mojom::VideoProtectedBufferAllocatorRequest request) override {
+    // TODO(hiroh): Implement CreateProtectedBufferAllocator path for Viz.
+    NOTIMPLEMENTED();
   }
 
  private:
