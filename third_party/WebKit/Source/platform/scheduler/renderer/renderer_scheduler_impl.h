@@ -113,6 +113,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
   void SetSchedulerKeepActive(bool keep_active) override;
+  bool SchedulerKeepActive();
 #if defined(OS_ANDROID)
   void PauseTimersForAndroidWebView();
   void ResumeTimersForAndroidWebView();

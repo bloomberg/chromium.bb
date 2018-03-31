@@ -64,6 +64,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   bool IsPageVisible() const override;
   void SetPaused(bool frame_paused) override;
   void SetPageFrozen(bool) override;
+  void SetKeepActive(bool) override;
 
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
@@ -168,6 +169,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
       page_visibility_;
   TraceableState<bool, kTracingCategoryNameInfo> page_frozen_;
+  TraceableState<bool, kTracingCategoryNameInfo> keep_active_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
   TraceableState<FrameOriginType, kTracingCategoryNameInfo> frame_origin_type_;
   StateTracer<kTracingCategoryNameInfo> url_tracer_;

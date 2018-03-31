@@ -80,6 +80,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
           can_be_throttled(false),
           can_be_paused(false),
           can_be_stopped(false),
+          freeze_when_keep_active(false),
           used_for_important_tasks(false) {}
 
     QueueCreationParams SetCanBeDeferred(bool value) {
@@ -99,6 +100,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
     QueueCreationParams SetCanBeStopped(bool value) {
       can_be_stopped = value;
+      return *this;
+    }
+
+    QueueCreationParams SetFreezeWhenKeepActive(bool value) {
+      freeze_when_keep_active = value;
       return *this;
     }
 
@@ -131,6 +137,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     bool can_be_throttled;
     bool can_be_paused;
     bool can_be_stopped;
+    bool freeze_when_keep_active;
     bool used_for_important_tasks;
   };
 
@@ -147,6 +154,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   bool CanBePaused() const { return can_be_paused_; }
 
   bool CanBeStopped() const { return can_be_stopped_; }
+
+  bool FreezeWhenKeepActive() const { return freeze_when_keep_active_; }
 
   bool UsedForImportantTasks() const { return used_for_important_tasks_; }
 
@@ -185,6 +194,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   const bool can_be_throttled_;
   const bool can_be_paused_;
   const bool can_be_stopped_;
+  const bool freeze_when_keep_active_;
   const bool used_for_important_tasks_;
 
   // Needed to notify renderer scheduler about completed tasks.

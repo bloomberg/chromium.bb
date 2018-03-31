@@ -338,6 +338,51 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
   EXPECT_EQ(5, counter);
 }
 
+TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
+  int counter = 0;
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  DeferrableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  PausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  UnpausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  frame_scheduler_->SetKeepActive(true);  // say we have a Service Worker
+  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
+  frame_scheduler_->SetPageFrozen(true);
+
+  EXPECT_EQ(0, counter);
+  mock_task_runner_->RunUntilIdle();
+  // Everything runs except throttleable tasks (timers)
+  EXPECT_EQ(4, counter);
+
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  EXPECT_EQ(4, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(5, counter);  // loading task runs
+
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  // KeepActive is false when Service Worker stops.
+  frame_scheduler_->SetKeepActive(false);
+  EXPECT_EQ(5, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(5, counter);  // loading task does not run
+
+  frame_scheduler_->SetKeepActive(true);
+  EXPECT_EQ(5, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(6, counter);  // loading task runs
+}
+
 TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
   ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
