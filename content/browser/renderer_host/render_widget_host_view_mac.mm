@@ -42,7 +42,6 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/secure_password_input.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/display/display.h"
@@ -54,24 +53,6 @@
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebGestureEvent;
-
-// A window subclass that allows the fullscreen window to become main and gain
-// keyboard focus. This is only used for pepper flash. Normal fullscreen is
-// handled by the browser.
-@interface PepperFlashFullscreenWindow : NSWindow
-@end
-
-@implementation PepperFlashFullscreenWindow
-
-- (BOOL)canBecomeKeyWindow {
-  return YES;
-}
-
-- (BOOL)canBecomeMainWindow {
-  return YES;
-}
-
-@end
 
 namespace content {
 
@@ -285,65 +266,10 @@ void RenderWidgetHostViewMac::InitAsPopup(
   ns_view_bridge_->InitAsPopup(pos, popup_type_);
 }
 
-// This function creates the fullscreen window and hides the dock and menubar if
-// necessary. Note, this codepath is only used for pepper flash when
-// pp::FlashFullScreen::SetFullscreen() is called. If
-// pp::FullScreen::SetFullscreen() is called then the entire browser window
-// will enter fullscreen instead.
 void RenderWidgetHostViewMac::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
-  // TODO(ccameron): Delete this if it isn't used.
+  // This path appears never to be reached.
   NOTREACHED();
-  RenderWidgetHostViewMac* parent_view =
-      static_cast<RenderWidgetHostViewMac*>(reference_host_view);
-  NSWindow* parent_window = nil;
-  if (parent_view)
-    parent_window = [parent_view->cocoa_view() window];
-  NSScreen* screen = [parent_window screen];
-  if (!screen)
-    screen = [NSScreen mainScreen];
-
-  pepper_fullscreen_window_.reset([[PepperFlashFullscreenWindow alloc]
-      initWithContentRect:[screen frame]
-                styleMask:NSBorderlessWindowMask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
-  [pepper_fullscreen_window_ setLevel:NSFloatingWindowLevel];
-  [pepper_fullscreen_window_ setReleasedWhenClosed:NO];
-  [cocoa_view() setCanBeKeyView:YES];
-  [cocoa_view() setFrame:[[pepper_fullscreen_window_ contentView] bounds]];
-  [cocoa_view() setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  // If the pepper fullscreen window isn't opaque then there are performance
-  // issues when it's on the discrete GPU and the Chrome window is being drawn
-  // to. http://crbug.com/171911
-  [pepper_fullscreen_window_ setOpaque:YES];
-
-  // Note that this forms a reference cycle between the fullscreen window and
-  // the rwhvmac: The PepperFlashFullscreenWindow retains cocoa_view(),
-  // but cocoa_view() keeps pepper_fullscreen_window_ in an instance variable.
-  // This cycle is normally broken when -keyEvent: receives an <esc> key, which
-  // explicitly calls Shutdown on the host(), which calls
-  // Destroy() on RWHVMac, which drops the reference to
-  // pepper_fullscreen_window_.
-  [[pepper_fullscreen_window_ contentView] addSubview:cocoa_view()];
-
-  // Note that this keeps another reference to pepper_fullscreen_window_.
-  fullscreen_window_manager_.reset([[FullscreenWindowManager alloc]
-      initWithWindow:pepper_fullscreen_window_.get()
-       desiredScreen:screen]);
-  [fullscreen_window_manager_ enterFullscreenMode];
-  [pepper_fullscreen_window_ makeKeyAndOrderFront:nil];
-}
-
-void RenderWidgetHostViewMac::release_pepper_fullscreen_window_for_testing() {
-  // See comment in InitAsFullscreen(): There is a reference cycle between
-  // rwhvmac and fullscreen window, which is usually broken by hitting <esc>.
-  // Tests that test pepper fullscreen mode without sending an <esc> event
-  // need to call this method to break the reference cycle.
-  [fullscreen_window_manager_ exitFullscreenMode];
-  fullscreen_window_manager_.reset();
-  [pepper_fullscreen_window_ close];
-  pepper_fullscreen_window_.reset();
 }
 
 void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
@@ -651,15 +577,6 @@ void RenderWidgetHostViewMac::Destroy() {
   if (ns_view_bridge_)
     ns_view_bridge_->Destroy();
   ns_view_bridge_.reset();
-
-  [fullscreen_window_manager_ exitFullscreenMode];
-  fullscreen_window_manager_.reset();
-  [pepper_fullscreen_window_ close];
-
-  // This can be called as part of processing the window's responder
-  // chain, for instance |-performKeyEquivalent:|.  In that case the
-  // object needs to survive until the stack unwinds.
-  pepper_fullscreen_window_.autorelease();
 
   // Delete the delegated frame state, which will reach back into
   // host().
