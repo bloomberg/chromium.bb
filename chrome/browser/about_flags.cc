@@ -3781,6 +3781,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillDynamicFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
 
+#if defined(TOOLKIT_VIEWS)
+    {"views-cast-dialog", flag_descriptions::kViewsCastDialogName,
+     flag_descriptions::kViewsCastDialogDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kViewsCastDialog)},
+#endif  // defined(TOOLKIT_VIEWS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

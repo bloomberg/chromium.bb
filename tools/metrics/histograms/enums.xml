@@ -25698,6 +25698,7 @@ from previous Chrome versions.
   <int value="-2146613579" label="V8Future:disabled"/>
   <int value="-2145472146" label="OfflinePagesResourceBasedSnapshot:disabled"/>
   <int value="-2143961262" label="D3DVsync:disabled"/>
+  <int value="-2143681040" label="ViewsCastDialog:enabled"/>
   <int value="-2143328006"
       label="enable-fill-on-account-select-no-highlighting"/>
   <int value="-2143113994" label="enable-ephemeral-apps-in-webstore"/>
@@ -26729,6 +26730,8 @@ from previous Chrome versions.
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
+  <int value="292560715" label="ViewsCastDialog:disabled"/>
+  <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>

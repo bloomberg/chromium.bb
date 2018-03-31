@@ -498,6 +498,9 @@ extern const char kGoogleProfileInfoDescription[];
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
 
+extern const char kViewsCastDialogName[];
+extern const char kViewsCastDialogDescription[];
+
 extern const char kHideNonActiveAppsFromShelfName[];
 extern const char kHideNonActiveAppsFromShelfDescription[];
 

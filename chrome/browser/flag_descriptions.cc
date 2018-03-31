@@ -784,6 +784,10 @@ const char kHarfbuzzRendertextDescription[] =
     "Enable cross-platform HarfBuzz layout engine for UI text. Doesn't affect "
     "web content.";
 
+const char kViewsCastDialogName[] = "Views Cast dialog";
+const char kViewsCastDialogDescription[] =
+    "Replace the WebUI Cast dialog with a Views toolkit dialog.";
+
 const char kHideNonActiveAppsFromShelfName[] =
     "Hide apps that are not running from the shelf";
 const char kHideNonActiveAppsFromShelfDescription[] =
