@@ -13,7 +13,6 @@
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/threading/thread.h"
 #include "media/filters/h264_bitstream_buffer.h"
 #include "media/gpu/h264_dpb.h"
@@ -234,15 +233,15 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   VASurface::ReleaseCB va_surface_release_cb_;
 
   // VideoFrames passed from the client, waiting to be encoded.
-  base::queue<linked_ptr<InputFrameRef>> encoder_input_queue_;
+  base::queue<std::unique_ptr<InputFrameRef>> encoder_input_queue_;
 
   // BitstreamBuffers mapped, ready to be filled.
-  base::queue<linked_ptr<BitstreamBufferRef>> available_bitstream_buffers_;
+  base::queue<std::unique_ptr<BitstreamBufferRef>> available_bitstream_buffers_;
 
   // Jobs submitted for encode, awaiting bitstream buffers to become available.
   // A pending flush command, indicated by a null job, will be also put in the
   // queue.
-  base::queue<linked_ptr<EncodeJob>> submitted_encode_jobs_;
+  base::queue<std::unique_ptr<EncodeJob>> submitted_encode_jobs_;
 
   // Encoder thread. All tasks are executed on it.
   base::Thread encoder_thread_;
