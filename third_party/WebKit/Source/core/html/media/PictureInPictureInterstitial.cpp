@@ -10,6 +10,8 @@
 #include "core/html/media/HTMLVideoElement.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/WebLocalizedString.h"
+#include "third_party/WebKit/public/platform/WebLayer.h"
+
 namespace {
 
 constexpr double kPictureInPictureStyleChangeTransSeconds = 0.2;
@@ -59,11 +61,15 @@ void PictureInPictureInterstitial::Show() {
   RemoveInlineStyleProperty(CSSPropertyDisplay);
   interstitial_timer_.StartOneShot(kPictureInPictureStyleChangeTransSeconds,
                                    FROM_HERE);
+
+  DCHECK(GetVideoElement().PlatformLayer());
+  GetVideoElement().PlatformLayer()->SetDrawsContent(false);
 }
 
 void PictureInPictureInterstitial::Hide() {
   if (!should_be_visible_)
     return;
+
   if (interstitial_timer_.IsActive())
     interstitial_timer_.Stop();
   should_be_visible_ = false;
@@ -71,11 +77,15 @@ void PictureInPictureInterstitial::Hide() {
                          CSSPrimitiveValue::UnitType::kNumber);
   interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
                                    FROM_HERE);
+
+  DCHECK(GetVideoElement().PlatformLayer());
+  GetVideoElement().PlatformLayer()->SetDrawsContent(true);
 }
 
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
   interstitial_timer_.Stop();
   if (should_be_visible_) {
+    SetInlineStyleProperty(CSSPropertyBackgroundColor, CSSValueBlack);
     SetInlineStyleProperty(CSSPropertyOpacity, 1,
                            CSSPrimitiveValue::UnitType::kNumber);
   } else {
