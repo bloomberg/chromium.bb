@@ -7,6 +7,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
@@ -14,6 +15,7 @@
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/wm/core/default_screen_position_client.h"
 
 namespace extensions {
 
@@ -61,6 +63,34 @@ class FillLayout : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(FillLayout);
 };
 
+// A simple screen positioning client that translates bounds to screen
+// coordinates using the offset of the root window in screen coordinates.
+class ScreenPositionClient : public wm::DefaultScreenPositionClient {
+ public:
+  ScreenPositionClient() = default;
+  ~ScreenPositionClient() override = default;
+
+  // wm::DefaultScreenPositionClient:
+  void SetBounds(aura::Window* window,
+                 const gfx::Rect& bounds,
+                 const display::Display& display) override {
+    aura::Window* root_window = window->GetRootWindow();
+    DCHECK(window);
+
+    // Convert the window's origin to its root window's coordinates.
+    gfx::Point origin = bounds.origin();
+    aura::Window::ConvertPointToTarget(window->parent(), root_window, &origin);
+
+    // Translate the origin by the root window's offset in screen coordinates.
+    gfx::Point host_origin = GetOriginInScreen(root_window);
+    origin.Offset(-host_origin.x(), -host_origin.y());
+    window->SetBounds(gfx::Rect(origin, bounds.size()));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenPositionClient);
+};
+
 }  // namespace
 
 RootWindowController::RootWindowController(
@@ -68,7 +98,8 @@ RootWindowController::RootWindowController(
     const gfx::Rect& bounds,
     content::BrowserContext* browser_context)
     : desktop_delegate_(desktop_delegate),
-      browser_context_(browser_context) {
+      browser_context_(browser_context),
+      screen_position_client_(std::make_unique<ScreenPositionClient>()) {
   DCHECK(desktop_delegate_);
   DCHECK(browser_context_);
   host_.reset(aura::WindowTreeHost::Create(bounds));
@@ -77,6 +108,8 @@ RootWindowController::RootWindowController(
   host_->window()->Show();
 
   aura::client::SetWindowParentingClient(host_->window(), this);
+  aura::client::SetScreenPositionClient(host_->window(),
+                                        screen_position_client_.get());
 
   // Ensure the window fills the display.
   host_->window()->SetLayoutManager(new FillLayout(host_->window()));
@@ -102,6 +135,13 @@ void RootWindowController::AddAppWindow(AppWindow* app_window,
 
   aura::Window* root_window = host_->window();
   root_window->AddChild(window);
+}
+
+void RootWindowController::RemoveAppWindow(AppWindow* app_window) {
+  host_->window()->RemoveChild(app_window->GetNativeWindow());
+  app_windows_.remove(app_window);
+  if (app_windows_.empty())
+    AppWindowRegistry::Get(browser_context_)->RemoveObserver(this);
 }
 
 void RootWindowController::CloseAppWindows() {
