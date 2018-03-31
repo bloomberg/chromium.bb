@@ -32,9 +32,11 @@ static_library("app") {
     "crashpad_win.cc",
   ]
 
-  if (is_mac || is_win) {
+  if (is_mac || is_win || is_android || (is_linux && !is_chromeos)) {
     sources += [ "crashpad.cc" ]
-  } else if (is_android || is_linux) {
+  }
+
+  if (is_android || is_linux) {
     # Want these files on both Linux and Android.
     set_sources_assignment_filter([])
     sources += [
@@ -42,6 +44,9 @@ static_library("app") {
       "breakpad_linux.h",
       "breakpad_linux_impl.h",
     ]
+    if (!is_chromeos) {
+      sources += [ "crashpad_linux.cc" ]
+    }
   }
 
   defines = [ "CRASH_IMPLEMENTATION" ]
@@ -53,17 +58,21 @@ static_library("app") {
     "//base",
   ]
 
-  if (is_mac || is_win) {
+  if (is_mac || is_win || is_android || (is_linux && !is_chromeos)) {
     deps += [
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/snapshot:snapshot_api",
+      "//third_party/crashpad/crashpad/util",
     ]
-  } else if (is_android || is_linux) {
+  }
+
+  if (is_android || is_linux) {
     deps += [
       "//base:base_static",
       "//components/crash/core/common",
       "//content/public/common:content_descriptors",
       "//content/public/common:result_codes",
+      "//sandbox",
       "//third_party/breakpad:client",
     ]
 

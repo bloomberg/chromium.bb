@@ -46,6 +46,11 @@
 #define SYS_read __NR_read
 #endif
 
+#if !defined(OS_CHROMEOS)
+#include "components/crash/content/app/crashpad.h"
+#include "third_party/crashpad/crashpad/client/crashpad_client.h"
+#endif
+
 using content::BrowserThread;
 using google_breakpad::ExceptionHandler;
 
@@ -489,3 +494,107 @@ bool CrashHandlerHostLinux::IsShuttingDown() const {
 }
 
 }  // namespace breakpad
+
+#if !defined(OS_CHROMEOS)
+
+namespace crashpad {
+
+CrashHandlerHost::CrashHandlerHost()
+    : file_descriptor_watcher_(FROM_HERE),
+      process_socket_(),
+      browser_socket_() {
+  int fds[2];
+  // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
+  // sending datagrams to other sockets on the system. The sandbox may prevent
+  // the process from calling socket() to create new sockets, but it'll still
+  // inherit some sockets. With PF_UNIX+SOCK_DGRAM, it can call sendmsg to send
+  // a datagram to any (abstract) socket on the same system. With
+  // SOCK_SEQPACKET, this is prevented.
+  CHECK_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  process_socket_.reset(fds[0]);
+  browser_socket_.reset(fds[1]);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CrashHandlerHost::Init, base::Unretained(this)));
+}
+
+CrashHandlerHost::~CrashHandlerHost() = default;
+
+void CrashHandlerHost::Init() {
+  base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
+  CHECK(ml->WatchFileDescriptor(browser_socket_.get(), /* persistent= */ true,
+                                base::MessageLoopForIO::WATCH_READ,
+                                &file_descriptor_watcher_, this));
+  ml->AddDestructionObserver(this);
+}
+
+bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
+                                            base::ScopedFD* handler_fd) {
+  msghdr msg;
+  msg.msg_name = nullptr;
+  msg.msg_namelen = 0;
+  msg.msg_iov = nullptr;
+  msg.msg_iovlen = 0;
+
+  char cmsg_buf[CMSG_SPACE(sizeof(int))];
+  msg.msg_control = cmsg_buf;
+  msg.msg_controllen = sizeof(cmsg_buf);
+  msg.msg_flags = 0;
+
+  const ssize_t msg_size = HANDLE_EINTR(recvmsg(client_fd, &msg, 0));
+  if (msg_size < 0) {
+    PLOG(ERROR) << "recvmsg";
+    return false;
+  }
+
+  cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
+  if (!cmsg || cmsg->cmsg_level != SOL_SOCKET ||
+      cmsg->cmsg_type != SCM_RIGHTS || cmsg->cmsg_len < CMSG_LEN(sizeof(int))) {
+    LOG(ERROR) << "Death signal missing descriptor";
+    return false;
+  }
+  DCHECK(!CMSG_NXTHDR(&msg, cmsg));
+
+  handler_fd->reset(*reinterpret_cast<int*>(CMSG_DATA(cmsg)));
+  DCHECK(handler_fd->is_valid());
+  return true;
+}
+
+void CrashHandlerHost::OnFileCanWriteWithoutBlocking(int fd) {
+  NOTREACHED();
+}
+
+void CrashHandlerHost::OnFileCanReadWithoutBlocking(int fd) {
+  DCHECK_EQ(browser_socket_.get(), fd);
+
+  base::ScopedFD handler_fd;
+  if (!ReceiveClientMessage(fd, &handler_fd)) {
+    return;
+  }
+
+  base::FilePath handler_path;
+  base::FilePath database_path;
+  base::FilePath metrics_path;
+  std::string url;
+  std::map<std::string, std::string> process_annotations;
+  std::vector<std::string> arguments;
+  if (!crash_reporter::internal::BuildHandlerArgs(
+          &handler_path, &database_path, &metrics_path, &url,
+          &process_annotations, &arguments)) {
+    return;
+  }
+
+  bool result = CrashpadClient::StartHandlerForClient(
+      handler_path, database_path, metrics_path, url, process_annotations,
+      arguments, handler_fd.get());
+  DCHECK(result);
+}
+
+void CrashHandlerHost::WillDestroyCurrentMessageLoop() {
+  file_descriptor_watcher_.StopWatchingFileDescriptor();
+}
+
+}  // namespace crashpad
+
+#endif  // !defined(OS_CHROMEOS)
