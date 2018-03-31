@@ -87,7 +87,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     kMiss = 0,    // Area not in cache.
     kHit = 1,     // Area with refcount = 0 loaded from cache.
     kUnused = 2,  // Cache was not used. Area had refcount > 0.
-    kMaxValue
+    kMaxValue = kUnused,
   };
 
   auto namespace_it = cached_namespaces_.find(namespace_id);
@@ -110,13 +110,10 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
       result = cache_it->second;
     }
   }
-  if (namespace_id == kLocalStorageNamespaceId) {
-    UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit", metric,
-                              CacheMetrics::kMaxValue);
-  } else {
-    LOCAL_HISTOGRAM_ENUMERATION("SessionStorage.RendererAreaCacheHit", metric,
-                                CacheMetrics::kMaxValue);
-  }
+  if (namespace_id == kLocalStorageNamespaceId)
+    UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit", metric);
+  else
+    LOCAL_HISTOGRAM_ENUMERATION("SessionStorage.RendererAreaCacheHit", metric);
 
   if (!result) {
     ClearAreasIfNeeded();
