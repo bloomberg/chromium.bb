@@ -213,7 +213,7 @@ const base::Feature kMojoVideoCapture {
 // NavigationMojoResponse feature replaces this mechanism by a Mojo DataPipe.
 // Design doc: https://goo.gl/Rrrc7n.
 const base::Feature kNavigationMojoResponse{"NavigationMojoResponse",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
