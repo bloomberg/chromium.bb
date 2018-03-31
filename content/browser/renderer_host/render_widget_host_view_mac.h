@@ -39,7 +39,6 @@ namespace ui {
 class ScopedPasswordInputEnabler;
 }
 
-@class FullscreenWindowManager;
 @protocol RenderWidgetHostViewMacDelegate;
 
 @class RenderWidgetHostViewCocoa;
@@ -267,12 +266,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
     mouse_wheel_phase_handler_.set_mouse_wheel_end_dispatch_timeout(timeout);
   }
 
-  NSWindow* pepper_fullscreen_window() const {
-    return pepper_fullscreen_window_;
-  }
-
-  CONTENT_EXPORT void release_pepper_fullscreen_window_for_testing();
-
   // Update the size, scale factor, color profile, vsync parameters, and any
   // other properties of the NSView or its NSScreen. Propagate these to the
   // RenderWidgetHostImpl as well.
@@ -405,12 +398,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
-
-  // The fullscreen window used for pepper flash.
-  base::scoped_nsobject<NSWindow> pepper_fullscreen_window_;
-  base::scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;
-  // Our parent host view, if this is fullscreen.  NULL otherwise.
-  RenderWidgetHostViewMac* fullscreen_parent_host_view_;
 
   // Display link for getting vsync info.
   scoped_refptr<ui::DisplayLinkMac> display_link_;

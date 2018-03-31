@@ -568,15 +568,6 @@ void ExtractUnderlines(NSAttributedString* string,
 
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 
-  // Force fullscreen windows to close on Escape so they won't keep the keyboard
-  // grabbed or be stuck onscreen if the renderer is hanging.
-  if (event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
-      event.windows_key_code == ui::VKEY_ESCAPE &&
-      renderWidgetHostView_->pepper_fullscreen_window()) {
-    widgetHost->ShutdownAndDestroyWidget(true);
-    return;
-  }
-
   // If there are multiple widgets on the page (such as when there are
   // out-of-process iframes), pick the one that should process this event.
   if (widgetHost->delegate())
