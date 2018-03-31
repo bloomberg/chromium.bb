@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
@@ -105,5 +106,41 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 };
 
 }  // namespace breakpad
+
+#if !defined(OS_CHROMEOS)
+
+namespace crashpad {
+
+class CrashHandlerHost : public base::MessageLoopForIO::Watcher,
+                         public base::MessageLoop::DestructionObserver {
+ public:
+  CrashHandlerHost();
+  ~CrashHandlerHost() override;
+
+  // Get the file descriptor which processes should be given in order to signal
+  // crashes to the browser.
+  int GetDeathSignalSocket() const { return process_socket_.get(); }
+
+ private:
+  void Init();
+  bool ReceiveClientMessage(int client_fd, base::ScopedFD* handler_fd);
+
+  // MessagePumbLibevent::Watcher impl:
+  void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+
+  // MessageLoop::DestructionObserver impl:
+  void WillDestroyCurrentMessageLoop() override;
+
+  base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
+  base::ScopedFD process_socket_;
+  base::ScopedFD browser_socket_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrashHandlerHost);
+};
+
+}  // namespace crashpad
+
+#endif  // !defined(OS_CHROMEOS)
 
 #endif  // COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_HANDLER_HOST_LINUX_H_

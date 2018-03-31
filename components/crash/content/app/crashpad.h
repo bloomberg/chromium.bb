@@ -147,6 +147,17 @@ void UnregisterNonABICompliantCodeRangeImpl(void* start);
 
 #endif  // defined(OS_WIN)
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+// Sets parameters to appropriate values to launch Crashpad's handler process.
+// Returns true on success, otherwise false.
+bool BuildHandlerArgs(base::FilePath* handler_path,
+                      base::FilePath* database_path,
+                      base::FilePath* metrics_path,
+                      std::string* url,
+                      std::map<std::string, std::string>* process_annotations,
+                      std::vector<std::string>* arguments);
+#endif  // OS_LINUX || OS_ANDROID
+
 // The platform-specific portion of InitializeCrashpad(). On Windows, if
 // |user_data_dir| is non-empty, the user data directory will be passed to the
 // handler process for use by Chrome Crashpad extensions; if |exe_path| is

@@ -36,6 +36,9 @@ source_set("browser") {
       "crash_handler_host_linux.h",
     ]
     deps += [ "//third_party/breakpad:client" ]
+    if (!is_chromeos) {
+      deps += [ "//third_party/crashpad/crashpad/client" ]
+    }
   }
 
   # This is not in the GYP build but this target includes breakpad client
