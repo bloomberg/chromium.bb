@@ -410,6 +410,7 @@ typedef struct AV1_COMP {
 
   int ext_refresh_frame_context_pending;
   int ext_refresh_frame_context;
+  int ext_use_ref_frame_mvs;
 
   YV12_BUFFER_CONFIG last_frame_uf;
   YV12_BUFFER_CONFIG trial_frame_rst;
