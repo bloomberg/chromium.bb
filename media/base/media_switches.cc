@@ -229,9 +229,6 @@ const base::Feature kBackgroundVideoTrackOptimization{
 const base::Feature kBackgroundVideoPauseOptimization{
     "BackgroundVideoPauseOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kComplexityBasedVideoBuffering{
-    "ComplexityBasedVideoBuffering", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Make MSE garbage collection algorithm more aggressive when we are under
 // moderate or critical memory pressure. This will relieve memory pressure by
 // releasing stale data from MSE buffers.
