@@ -25,9 +25,12 @@ AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
   if (!public_key)
     return base::nullopt;
 
+  // AAGUID is zeroed out for U2F responses.
+  std::vector<uint8_t> aaguid(16u);
+
   auto attested_credential_data =
       AttestedCredentialData::CreateFromU2fRegisterResponse(
-          u2f_data, std::move(public_key));
+          u2f_data, std::move(aaguid), std::move(public_key));
 
   if (!attested_credential_data)
     return base::nullopt;

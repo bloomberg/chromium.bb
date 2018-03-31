@@ -5,7 +5,6 @@
 #ifndef DEVICE_FIDO_ATTESTED_CREDENTIAL_DATA_H_
 #define DEVICE_FIDO_ATTESTED_CREDENTIAL_DATA_H_
 
-#include <stddef.h>
 #include <stdint.h>
 #include <memory>
 #include <vector>
@@ -27,7 +26,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {
 
   static base::Optional<AttestedCredentialData> CreateFromU2fRegisterResponse(
       base::span<const uint8_t> u2f_data,
+      std::vector<uint8_t> aaguid,
       std::unique_ptr<PublicKey> public_key);
+
+  AttestedCredentialData(std::vector<uint8_t> aaguid,
+                         std::vector<uint8_t> length,
+                         std::vector<uint8_t> credential_id,
+                         std::unique_ptr<PublicKey> public_key);
 
   // Moveable.
   AttestedCredentialData(AttestedCredentialData&& other);
@@ -49,22 +54,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {
   std::vector<uint8_t> SerializeAsBytes() const;
 
  private:
-  static constexpr size_t kAaguidLength = 16;
-  // Number of bytes used to represent length of credential ID.
-  static constexpr size_t kCredentialIdLengthLength = 2;
-
-  AttestedCredentialData(
-      std::array<uint8_t, kAaguidLength> aaguid,
-      std::array<uint8_t, kCredentialIdLengthLength> credential_id_length,
-      std::vector<uint8_t> credential_id,
-      std::unique_ptr<PublicKey> public_key);
-
   // The 16-byte AAGUID of the authenticator.
-  std::array<uint8_t, kAaguidLength> aaguid_;
+  std::vector<uint8_t> aaguid_;
 
   // Big-endian length of the credential (i.e. key handle).
-  std::array<uint8_t, kCredentialIdLengthLength> credential_id_length_;
-
+  std::vector<uint8_t> credential_id_length_;
   std::vector<uint8_t> credential_id_;
   std::unique_ptr<PublicKey> public_key_;
 
