@@ -58,12 +58,19 @@ class GpuArcVideoDecodeAccelerator
   void Initialize(mojom::VideoDecodeAcceleratorConfigPtr config,
                   mojom::VideoDecodeClientPtr client,
                   InitializeCallback callback) override;
-  void AllocateProtectedBuffer(
+  // TODO(crbug.com/816327): Remove.
+  void AllocateProtectedBufferDeprecated(
       mojo::ScopedHandle handle,
       uint64_t size,
-      AllocateProtectedBufferCallback callback) override;
+      AllocateProtectedBufferDeprecatedCallback callback) override;
   void Decode(mojom::BitstreamBufferPtr bitstream_buffer) override;
   void AssignPictureBuffers(uint32_t count) override;
+  // TODO(crbug.com/816327): Remove.
+  void ImportBufferForPictureDeprecated(
+      int32_t picture_buffer_id,
+      mojom::HalPixelFormat format,
+      mojo::ScopedHandle handle,
+      std::vector<VideoFramePlane> planes) override;
   void ImportBufferForPicture(int32_t picture_buffer_id,
                               mojom::HalPixelFormat format,
                               mojo::ScopedHandle handle,
@@ -88,6 +95,15 @@ class GpuArcVideoDecodeAccelerator
   // successful. Otherwise, returns an error status.
   mojom::VideoDecodeAccelerator::Result InitializeTask(
       mojom::VideoDecodeAcceleratorConfigPtr config);
+
+  // A common function called from ImportBufferForPictureDeprecated() and
+  // ImportBufferForPicture().
+  // TODO(crbug.com/816327): Remove
+  void ImportBufferForPictureInternal(int32_t picture_buffer_id,
+                                      mojom::HalPixelFormat format,
+                                      mojo::ScopedHandle handle,
+                                      std::vector<VideoFramePlane> planes,
+                                      bool allocate);
 
   // Execute all pending requests until a VDA::Reset() request is encountered.
   // When that happens, we need to explicitly wait for NotifyResetDone().
@@ -148,6 +164,7 @@ class GpuArcVideoDecodeAccelerator
 
   scoped_refptr<ProtectedBufferManager> protected_buffer_manager_;
 
+  // TODO(crbug.com/816327): Remove them.
   std::unique_ptr<ProtectedBufferAllocator> protected_input_buffer_allocator_;
   std::unique_ptr<ProtectedBufferAllocator> protected_output_buffer_allocator_;
   size_t protected_input_buffer_count_ = 0;

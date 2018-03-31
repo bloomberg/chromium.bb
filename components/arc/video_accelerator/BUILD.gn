@@ -8,6 +8,8 @@ static_library("video_accelerator") {
     "gpu_arc_video_decode_accelerator.h",
     "gpu_arc_video_encode_accelerator.cc",
     "gpu_arc_video_encode_accelerator.h",
+    "gpu_arc_video_protected_buffer_allocator.cc",
+    "gpu_arc_video_protected_buffer_allocator.h",
     "protected_buffer_manager.cc",
     "protected_buffer_manager.h",
     "protected_buffer_manager_proxy.cc",

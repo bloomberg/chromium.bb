@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
 import "components/arc/common/video_decode_accelerator.mojom";
 import "components/arc/common/video_encode_accelerator.mojom";
+import "components/arc/common/video_protected_buffer_allocator.mojom";
 
 // Deprecated method IDs: 0
 // Next method ID: 2
@@ -30,11 +31,15 @@ interface VideoInstance {
 };
 
 // Deprecated method IDs: 0
-// Next method ID: 3
+// Next method ID: 4
 interface VideoAcceleratorFactory {
   [MinVersion=1]
   CreateEncodeAccelerator@1(VideoEncodeAccelerator& video_encoder);
 
   [MinVersion=6]
   CreateDecodeAccelerator@2(VideoDecodeAccelerator& video_decoder);
+
+  [Minversion=7]
+  CreateProtectedBufferAllocator@3(
+      VideoProtectedBufferAllocator& video_protected_buffer_allocator);
 };
