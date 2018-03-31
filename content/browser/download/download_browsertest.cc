@@ -3331,11 +3331,19 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, UploadBytes) {
   }
 }
 
+#if defined(OS_ANDROID)
+// Flaky on Android: https://crbug.com/827525
+#define MAYBE_FetchErrorResponseBodyResumption \
+  DISABLED_FetchErrorResponseBodyResumption
+#else
+#define MAYBE_FetchErrorResponseBodyResumption FetchErrorResponseBodyResumption
+#endif
 // Verify the case that the first response is HTTP 200, and then interrupted,
 // and the second response is HTTP 404, the response body of 404 should be
 // fetched.
 // Also verify the request header is correctly piped to download item.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       MAYBE_FetchErrorResponseBodyResumption) {
   SetupErrorInjectionDownloads();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
   GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
