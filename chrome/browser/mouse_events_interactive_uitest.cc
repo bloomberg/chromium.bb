@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,11 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -24,63 +23,89 @@
 
 namespace {
 
-class MouseLeaveTest : public InProcessBrowserTest {
+// Integration test of browser event forwarding and web content event handling.
+class MouseEventsTest : public InProcessBrowserTest {
  public:
-  MouseLeaveTest() {}
+  MouseEventsTest() {}
 
-  void LoadTestPageAndWaitForMouseOver(content::WebContents* tab) {
-    gfx::Rect tab_view_bounds = tab->GetContainerBounds();
-    GURL test_url = ui_test_utils::GetTestUrl(
-        base::FilePath(), base::FilePath(FILE_PATH_LITERAL("mouseleave.html")));
-
-    gfx::Point in_content(tab_view_bounds.x() + tab_view_bounds.width() / 2,
-                          tab_view_bounds.y() + 10);
-    out_of_content_ =
-        gfx::Point(tab_view_bounds.x() + tab_view_bounds.width() / 2,
-                   tab_view_bounds.y() - 2);
-
-    // Start by moving the point just above the content.
-    ui_controls::SendMouseMove(out_of_content_.x(), out_of_content_.y());
-
-    // Navigate to the test html page.
-    base::string16 load_expected_title(base::ASCIIToUTF16("onload"));
-    content::TitleWatcher load_title_watcher(tab, load_expected_title);
-    ui_test_utils::NavigateToURL(browser(), test_url);
-    // Wait for the onload() handler to complete so we can do the
-    // next part of the test.
-    EXPECT_EQ(load_expected_title, load_title_watcher.WaitAndGetTitle());
-
-    // Move the cursor to the top-center of the content which will trigger
-    // a javascript onMouseOver event.
-    ui_controls::SendMouseMove(in_content.x(), in_content.y());
-
-    // Wait on the correct intermediate title.
-    base::string16 entered_expected_title(base::ASCIIToUTF16("entered"));
-    content::TitleWatcher entered_title_watcher(tab, entered_expected_title);
-    EXPECT_EQ(entered_expected_title, entered_title_watcher.WaitAndGetTitle());
+  // InProcessBrowserTest:
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   }
 
-  void MouseLeaveTestCommon() {
-    content::WebContents* tab =
-        browser()->tab_strip_model()->GetActiveWebContents();
-
-    EXPECT_NO_FATAL_FAILURE(LoadTestPageAndWaitForMouseOver(tab));
-
-    // Move the cursor above the content again, which should trigger
-    // a javascript onMouseOut event.
-    ui_controls::SendMouseMove(out_of_content_.x(), out_of_content_.y());
-
-    // Wait on the correct final value of the cookie.
-    base::string16 left_expected_title(base::ASCIIToUTF16("left"));
-    content::TitleWatcher left_title_watcher(tab, left_expected_title);
-    EXPECT_EQ(left_expected_title, left_title_watcher.WaitAndGetTitle());
+  content::WebContents* GetActiveWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  // The coordinates out of the content to move the mouse point
-  gfx::Point out_of_content_;
+  // Wait for the active web contents title to match |title|.
+  void WaitForTitle(const std::string& title) {
+    // Logging added temporarily to track down flakiness cited below.
+    LOG(INFO) << "Waiting for title: " << title;
+    const base::string16 expected_title(base::ASCIIToUTF16(title));
+    content::TitleWatcher title_watcher(GetActiveWebContents(), expected_title);
+    ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(MouseLeaveTest);
+  // Load the test page and wait for onmouseover to be called.
+  void NavigateAndWaitForMouseOver() {
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+    // Move the mouse 2px above the web contents; allows onmouseover after load.
+    const gfx::Rect bounds = GetActiveWebContents()->GetContainerBounds();
+    ui_controls::SendMouseMove(bounds.CenterPoint().x(), bounds.y() - 2);
+
+    // Navigate to the test page and wait for onload to be called.
+    const GURL url = ui_test_utils::GetTestUrl(
+        base::FilePath(),
+        base::FilePath(FILE_PATH_LITERAL("mouse_events_test.html")));
+    ui_test_utils::NavigateToURL(browser(), url);
+    WaitForTitle("onload");
+
+    // Move the mouse over the div and wait for onmouseover to be called.
+    ui_controls::SendMouseMove(bounds.CenterPoint().x(), bounds.y() + 10);
+    WaitForTitle("onmouseover");
+  }
+
+  // Load the test page and wait for onmouseover then onmouseout to be called.
+  void NavigateAndWaitForMouseOverThenMouseOut() {
+    EXPECT_NO_FATAL_FAILURE(NavigateAndWaitForMouseOver());
+
+    // Moving the mouse outside the div should trigger onmouseout.
+    const gfx::Rect bounds = GetActiveWebContents()->GetContainerBounds();
+    ui_controls::SendMouseMove(bounds.CenterPoint().x(), bounds.y() - 10);
+    WaitForTitle("onmouseout");
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MouseEventsTest);
 };
+
+#if defined(OS_MACOSX)
+// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+#define MAYBE_MouseOver DISABLED_MouseOver
+#else
+#define MAYBE_MouseOver MouseOver
+#endif
+
+IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_MouseOver) {
+  NavigateAndWaitForMouseOver();
+}
+
+#if defined(OS_MACOSX)
+// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+#define MAYBE_ClickAndDoubleClick DISABLED_ClickAndDoubleClick
+#else
+#define MAYBE_ClickAndDoubleClick ClickAndDoubleClick
+#endif
+
+IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ClickAndDoubleClick) {
+  NavigateAndWaitForMouseOver();
+
+  ui_controls::SendMouseClick(ui_controls::LEFT);
+  WaitForTitle("onclick");
+
+  ui_controls::SendMouseClick(ui_controls::LEFT);
+  WaitForTitle("ondblclick");
+}
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 // OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
@@ -93,20 +118,19 @@ class MouseLeaveTest : public InProcessBrowserTest {
 #define MAYBE_TestOnMouseOut TestOnMouseOut
 #endif
 
-IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
-  MouseLeaveTestCommon();
+IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_TestOnMouseOut) {
+  NavigateAndWaitForMouseOverThenMouseOut();
 }
 
 #if defined(OS_WIN)
-// For MAC: Missing automation provider support: http://crbug.com/45892
-// For linux : http://crbug.com/133361. interactive mouse tests are flaky.
-IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MouseDownOnBrowserCaption) {
+// OS_MACOSX: Missing automation provider support: http://crbug.com/45892
+// OS_LINUX: http://crbug.com/133361. interactive mouse tests are flaky.
+IN_PROC_BROWSER_TEST_F(MouseEventsTest, MouseDownOnBrowserCaption) {
   gfx::Rect browser_bounds = browser()->window()->GetBounds();
-  ui_controls::SendMouseMove(browser_bounds.x() + 200,
-                             browser_bounds.y() + 10);
+  ui_controls::SendMouseMove(browser_bounds.x() + 200, browser_bounds.y() + 10);
   ui_controls::SendMouseClick(ui_controls::LEFT);
 
-  MouseLeaveTestCommon();
+  NavigateAndWaitForMouseOverThenMouseOut();
 }
 #endif
 
@@ -124,23 +148,20 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MouseDownOnBrowserCaption) {
 #define MAYBE_ContextMenu ContextMenu
 #endif
 
-IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_ContextMenu) {
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  EXPECT_NO_FATAL_FAILURE(LoadTestPageAndWaitForMouseOver(tab));
+IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ContextMenu) {
+  EXPECT_NO_FATAL_FAILURE(NavigateAndWaitForMouseOver());
 
   ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
   ui_controls::SendMouseClick(ui_controls::RIGHT);
   // Wait until the context menu is opened and closed.
   menu_observer.WaitForMenuOpenAndClose();
 
+  content::WebContents* tab = GetActiveWebContents();
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16("done()"));
   const base::string16 success_title = base::ASCIIToUTF16("without mouseleave");
   const base::string16 failure_title = base::ASCIIToUTF16("with mouseleave");
   content::TitleWatcher done_title_watcher(tab, success_title);
   done_title_watcher.AlsoWaitForTitle(failure_title);
-
   EXPECT_EQ(success_title, done_title_watcher.WaitAndGetTitle());
 }
 
@@ -155,12 +176,10 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_ContextMenu) {
 #define MAYBE_ModalDialog ModalDialog
 #endif
 
-IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_ModalDialog) {
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ModalDialog) {
+  EXPECT_NO_FATAL_FAILURE(NavigateAndWaitForMouseOver());
 
-  EXPECT_NO_FATAL_FAILURE(LoadTestPageAndWaitForMouseOver(tab));
-
+  content::WebContents* tab = GetActiveWebContents();
   JavaScriptDialogTabHelper* js_helper =
       JavaScriptDialogTabHelper::FromWebContents(tab);
   base::RunLoop dialog_wait;

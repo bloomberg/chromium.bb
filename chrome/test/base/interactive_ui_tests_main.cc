@@ -62,7 +62,6 @@ class InteractiveUITestSuite : public ChromeTestSuite {
         views::test::CreateUIControlsDesktopAura());
 #endif  // defined(USE_OZONE)
 #else
-    // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
     ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
 #endif  // defined(OS_LINUX)
 #endif  // defined(USE_AURA)
