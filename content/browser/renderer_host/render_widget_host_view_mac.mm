@@ -89,6 +89,10 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
   browser_compositor_.reset();
 }
 
+void RenderWidgetHostViewMac::WasResized() {
+  host()->WasResized();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMacNSView, public:
 

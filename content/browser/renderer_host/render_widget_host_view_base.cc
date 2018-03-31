@@ -631,4 +631,9 @@ bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
 }
 #endif
 
+void RenderWidgetHostViewBase::DidNavigate() {
+  if (host())
+    host()->WasResized();
+}
+
 }  // namespace content

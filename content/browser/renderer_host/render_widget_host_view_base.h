@@ -522,7 +522,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual bool ShouldContinueToPauseForFrame();
 #endif
 
-  virtual void DidNavigate() {}
+  virtual void DidNavigate();
 
   // Called when the RenderWidgetHostImpl has be initialized.
   virtual void OnRenderWidgetInit() {}

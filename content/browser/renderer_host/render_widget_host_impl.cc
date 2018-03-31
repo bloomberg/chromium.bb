@@ -1114,16 +1114,13 @@ void RenderWidgetHostImpl::DidNavigate(uint32_t next_source_id) {
   current_content_source_id_ = next_source_id;
 
   if (enable_surface_synchronization_) {
-    if (view_)
-      view_->DidNavigate();
     // Resize messages before navigation are not acked, so reset
     // |resize_ack_pending_| and make sure the next resize will be acked if the
     // last resize before navigation was supposed to be acked.
     next_resize_needs_resize_ack_ = resize_ack_pending_;
     resize_ack_pending_ = false;
-    // If |view_| decides we need a new LocalSurfaceId, we should notify
-    // RenderWidget.
-    WasResized();
+    if (view_)
+      view_->DidNavigate();
   } else {
     // It is possible for a compositor frame to arrive before the browser is
     // notified about the page being committed, in which case no timer is

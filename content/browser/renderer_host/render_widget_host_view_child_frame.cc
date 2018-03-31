@@ -1107,6 +1107,7 @@ void RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete(
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {
+  host()->WasResized();
   if (host()->auto_resize_enabled()) {
     host()->DidAllocateLocalSurfaceIdForAutoResize(
         host()->last_auto_resize_request_number());
