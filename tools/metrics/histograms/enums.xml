@@ -3106,6 +3106,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Referenced file unavailable"/>
 </enum>
 
+<enum name="BlobBuildFromStreamResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Aborted while building"/>
+  <int value="2" label="Failed to allocate memory for blob"/>
+  <int value="3" label="Failed to allocate file space for blob"/>
+  <int value="4" label="Failed writing to file"/>
+</enum>
+
 <enum name="BlobStorageDiskSpaceAdjustment">
   <summary>
     When the blob storage system adjusts its max disk space, it can be frozen,

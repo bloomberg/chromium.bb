@@ -98,8 +98,20 @@ class STORAGE_EXPORT BlobBuilderFromStream {
       mojo::ScopedDataPipeConsumerHandle pipe,
       const base::Time& modification_time);
 
-  void OnError();
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class Result {
+    kSuccess = 0,
+    kAborted = 1,
+    kMemoryAllocationFailed = 2,
+    kFileAllocationFailed = 3,
+    kFileWriteFailed = 4,
+    kMaxValue = kFileWriteFailed
+  };
+
+  void OnError(Result result);
   void OnSuccess();
+  void RecordResult(Result result);
 
   bool ShouldStoreNextBlockOnDisk(uint64_t length_hint);
 
