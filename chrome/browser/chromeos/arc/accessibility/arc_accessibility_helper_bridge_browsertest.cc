@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
               aura::client::kAccessibilityTouchExplorationPassThrough));
 
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
-  EXPECT_EQ(mojom::AccessibilityFilterType::ALL,
+  EXPECT_EQ(mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME,
             fake_accessibility_helper_instance_->filter_type());
 
   // Touch exploration pass through of test_window_1 (current active window)
