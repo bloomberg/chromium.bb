@@ -35,7 +35,7 @@ class InfoBarView : public infobars::InfoBar,
   const infobars::InfoBarContainer::Delegate* container_delegate() const;
 
  protected:
-  typedef std::vector<views::Label*> Labels;
+  using Labels = std::vector<views::Label*>;
 
   ~InfoBarView() override;
 
@@ -119,10 +119,10 @@ class InfoBarView : public infobars::InfoBar,
   views::View* child_container_;
 
   // The optional icon at the left edge of the InfoBar.
-  views::ImageView* icon_;
+  views::ImageView* icon_ = nullptr;
 
   // The close button at the right edge of the InfoBar.
-  views::ImageButton* close_button_;
+  views::ImageButton* close_button_ = nullptr;
 
   // Used to run the menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;

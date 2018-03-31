@@ -90,9 +90,7 @@ gfx::Insets GetCloseButtonSpacing() {
 InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
       views::ExternalFocusTracker(this, nullptr),
-      child_container_(new views::View()),
-      icon_(nullptr),
-      close_button_(nullptr) {
+      child_container_(new views::View()) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
   SetBackground(std::make_unique<InfoBarBackground>());
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));

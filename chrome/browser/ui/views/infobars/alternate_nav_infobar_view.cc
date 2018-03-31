@@ -36,10 +36,7 @@ std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
 
 AlternateNavInfoBarView::AlternateNavInfoBarView(
     std::unique_ptr<AlternateNavInfoBarDelegate> delegate)
-    : InfoBarView(std::move(delegate)),
-      label_1_(NULL),
-      link_(NULL),
-      label_2_(NULL) {}
+    : InfoBarView(std::move(delegate)) {}
 
 AlternateNavInfoBarView::~AlternateNavInfoBarView() {
 }

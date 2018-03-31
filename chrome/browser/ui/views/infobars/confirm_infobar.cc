@@ -36,12 +36,7 @@ std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
 // ConfirmInfoBar -------------------------------------------------------------
 
 ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
-    : InfoBarView(std::move(delegate)),
-      label_(nullptr),
-      ok_button_(nullptr),
-      cancel_button_(nullptr),
-      link_(nullptr) {
-}
+    : InfoBarView(std::move(delegate)) {}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
   // Ensure |elevation_icon_setter_| is destroyed before |ok_button_|.
