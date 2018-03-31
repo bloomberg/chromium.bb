@@ -32,7 +32,7 @@ function performActions()
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  var events = PerformanceTestRunner.timelineModel().mainThreadEvents();
+  var events = PerformanceTestRunner.mainTrackEvents();
   for (var i = 0; i < events.length; ++i) {
     if (events[i].name !== TimelineModel.TimelineModel.RecordType.TimerFire)
       continue;

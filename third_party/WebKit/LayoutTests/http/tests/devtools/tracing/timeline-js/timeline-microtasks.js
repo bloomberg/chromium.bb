@@ -27,7 +27,7 @@
   `);
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
-  const event = PerformanceTestRunner.timelineModel().mainThreadEvents().find(
+  const event = PerformanceTestRunner.mainTrackEvents().find(
       e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
   PerformanceTestRunner.printTraceEventProperties(event);
   TestRunner.completeTest();

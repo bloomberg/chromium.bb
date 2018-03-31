@@ -32,7 +32,7 @@
     TestRunner.addResult('FAIL: no paint record found');
   await PerformanceTestRunner.invokeAsyncWithTimeline('updateSubframeAndDisplay');
 
-  var events = PerformanceTestRunner.timelineModel().mainThreadEvents().filter(
+  var events = PerformanceTestRunner.mainTrackEvents().filter(
       e => e.name === TimelineModel.TimelineModel.RecordType.Paint);
   TestRunner.assertGreaterOrEqual(events.length, 2, 'Paint record with subframe paint not found');
   var topQuad = events[0].args['data'].clip;

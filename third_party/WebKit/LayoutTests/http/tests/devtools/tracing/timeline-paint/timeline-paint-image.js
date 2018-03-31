@@ -42,7 +42,7 @@
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('display');
 
-  const events = PerformanceTestRunner.timelineModel().mainThreadEvents()
+  const events = PerformanceTestRunner.mainTrackEvents()
       .filter(e => e.name === TimelineModel.TimelineModel.RecordType.PaintImage);
       TestRunner.assertEquals(events.length, 2, 'PaintImage records not found');
   events.forEach(e => PerformanceTestRunner.printTraceEventProperties(e));

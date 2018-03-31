@@ -29,7 +29,7 @@
   await TestRunner.callFunctionInPageAsync('performActions');
   await PerformanceTestRunner.stopTimeline();
 
-  const sendRequests = PerformanceTestRunner.timelineModel().mainThreadEvents().
+  const sendRequests = PerformanceTestRunner.mainTrackEvents().
       filter(e => e.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest);
   for (let event of sendRequests) {
     printEvent(event);
@@ -39,7 +39,7 @@
 
   function printEventsWithId(id) {
     var model = PerformanceTestRunner.timelineModel();
-    model.mainThreadEvents().forEach(event => {
+    PerformanceTestRunner.mainTrackEvents().forEach(event => {
         if (event.name !== TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse &&
             event.name !== TimelineModel.TimelineModel.RecordType.ResourceFinish) {
           return;

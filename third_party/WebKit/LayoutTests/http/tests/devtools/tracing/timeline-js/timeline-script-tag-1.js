@@ -22,7 +22,7 @@
   await ConsoleTestRunner.waitUntilMessageReceivedPromise();
   await PerformanceTestRunner.stopTimeline();
 
-  PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+  PerformanceTestRunner.mainTrackEvents().forEach(event => {
     if (event.name === TimelineModel.TimelineModel.RecordType.EvaluateScript) {
       PerformanceTestRunner.printTraceEventProperties(event);
     } else if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp) {

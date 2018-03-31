@@ -23,7 +23,7 @@
 
   await PerformanceTestRunner.evaluateWithTimeline('performActions()');
 
-  PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+  PerformanceTestRunner.mainTrackEvents().forEach(event => {
     if (event.name !== TimelineModel.TimelineModel.RecordType.FunctionCall)
       return;
     var data = event.args['data'];

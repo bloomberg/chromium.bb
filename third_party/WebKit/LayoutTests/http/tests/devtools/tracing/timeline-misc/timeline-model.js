@@ -195,7 +195,7 @@
   ];
 
   var tracingTimelineModel = PerformanceTestRunner.createPerformanceModelWithEvents(commonMetadata.concat(traceEvents));
-  PerformanceTestRunner.forAllEvents(tracingTimelineModel.timelineModel().mainThreadEvents(), (event, stack) => {
+  PerformanceTestRunner.forAllEvents(PerformanceTestRunner.mainTrackEvents(), (event, stack) => {
     const prefix = Array(stack.length + 1).join('----') + (stack.length ? '> ' : '');
     const details = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event, null) || '';
     TestRunner.addResult(`${prefix}${event.name}: ${details}`);
