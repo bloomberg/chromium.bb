@@ -25,6 +25,11 @@ void ArcClient::CreateVideoEncodeAccelerator(
   gpu_service_->CreateArcVideoEncodeAccelerator(std::move(vea_request));
 }
 
+void ArcClient::CreateVideoProtectedBufferAllocator(
+    arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) {
+  gpu_service_->CreateArcVideoProtectedBufferAllocator(std::move(pba_request));
+}
+
 void ArcClient::CreateProtectedBufferManager(
     arc::mojom::ProtectedBufferManagerRequest pbm_request) {
   gpu_service_->CreateArcProtectedBufferManager(std::move(pbm_request));

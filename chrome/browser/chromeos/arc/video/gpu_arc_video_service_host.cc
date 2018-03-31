@@ -115,8 +115,8 @@ class VideoAcceleratorFactoryServiceViz
 
   void CreateProtectedBufferAllocator(
       mojom::VideoProtectedBufferAllocatorRequest request) override {
-    // TODO(hiroh): Implement CreateProtectedBufferAllocator path for Viz.
-    NOTIMPLEMENTED();
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    arc_->CreateVideoProtectedBufferAllocator(std::move(request));
   }
 
  private:
