@@ -19,7 +19,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/usb/web_usb_chooser_service_android.h"
 #else
-#include "chrome/browser/usb/web_usb_chooser_service.h"
+#include "chrome/browser/usb/web_usb_chooser_service_desktop.h"
 #endif  // defined(OS_ANDROID)
 
 using content::RenderFrameHost;
@@ -41,7 +41,7 @@ struct FrameUsbServices {
 #if defined(OS_ANDROID)
   std::unique_ptr<WebUsbChooserServiceAndroid> chooser_service;
 #else
-  std::unique_ptr<WebUsbChooserService> chooser_service;
+  std::unique_ptr<WebUsbChooserServiceDesktop> chooser_service;
 #endif  // defined(OS_ANDROID)
   int device_connection_count_ = 0;
 };
@@ -146,7 +146,7 @@ void UsbTabHelper::GetChooserService(
 #if defined(OS_ANDROID)
         new WebUsbChooserServiceAndroid(render_frame_host));
 #else
-        new WebUsbChooserService(render_frame_host));
+        new WebUsbChooserServiceDesktop(render_frame_host));
 #endif  // defined(OS_ANDROID)
   }
   frame_usb_services->chooser_service->Bind(std::move(request));

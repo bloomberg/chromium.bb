@@ -6,13 +6,13 @@
 
 #include <utility>
 
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/chrome_bubble_manager.h"
-#include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
-#include "components/bubble/bubble_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 
 WebUsbChooserService::WebUsbChooserService(
     content::RenderFrameHost* render_frame_host)
@@ -21,28 +21,29 @@ WebUsbChooserService::WebUsbChooserService(
   DCHECK(render_frame_host);
 }
 
-WebUsbChooserService::~WebUsbChooserService() {
-  for (const auto& bubble : bubbles_) {
-    if (bubble)
-      bubble->CloseBubble(BUBBLE_CLOSE_FORCED);
-  }
-}
+WebUsbChooserService::~WebUsbChooserService() {}
 
 void WebUsbChooserService::GetPermission(
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
     GetPermissionCallback callback) {
-  content::WebContents* web_contents =
+  auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  std::unique_ptr<UsbChooserController> usb_chooser_controller(
-      new UsbChooserController(render_frame_host_, std::move(device_filters),
-                               std::move(callback)));
-  std::unique_ptr<ChooserBubbleDelegate> chooser_bubble_delegate(
-      new ChooserBubbleDelegate(render_frame_host_,
-                                std::move(usb_chooser_controller)));
-  BubbleReference bubble_reference = browser->GetBubbleManager()->ShowBubble(
-      std::move(chooser_bubble_delegate));
-  bubbles_.push_back(bubble_reference);
+  GURL requesting_origin =
+      render_frame_host_->GetLastCommittedURL().GetOrigin();
+  GURL embedding_origin =
+      web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  auto* context = UsbChooserContextFactory::GetForProfile(profile);
+  if (!context->CanRequestObjectPermission(requesting_origin,
+                                           embedding_origin)) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  auto controller = std::make_unique<UsbChooserController>(
+      render_frame_host_, std::move(device_filters), std::move(callback));
+  ShowChooser(std::move(controller));
 }
 
 void WebUsbChooserService::Bind(
