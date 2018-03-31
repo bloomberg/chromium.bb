@@ -50,6 +50,7 @@ class FakePageScheduler final : public PageScheduler {
 
   void SetPageVisible(bool is_page_visible) override {}
   void SetPageFrozen(bool is_page_frozen) override {}
+  void SetKeepActive(bool keep_active) override {}
 
   std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       BlameContext* blame_context,

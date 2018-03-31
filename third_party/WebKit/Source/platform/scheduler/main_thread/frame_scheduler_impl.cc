@@ -51,6 +51,14 @@ const char* FrozenStateToString(bool is_frozen) {
   }
 }
 
+const char* KeepActiveStateToString(bool keep_active) {
+  if (keep_active) {
+    return "keep_active";
+  } else {
+    return "no_keep_active";
+  }
+}
+
 }  // namespace
 
 FrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
@@ -100,6 +108,11 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                    this,
                    &tracing_controller_,
                    FrozenStateToString),
+      keep_active_(renderer_scheduler->SchedulerKeepActive(),
+                   "FrameScheduler.KeepActive",
+                   this,
+                   &tracing_controller_,
+                   KeepActiveStateToString),
       frame_paused_(false,
                     "FrameScheduler.FramePaused",
                     this,
@@ -339,6 +352,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
             .SetCanBeThrottled(true)
             .SetCanBeStopped(true)
+            .SetFreezeWhenKeepActive(true)
             .SetCanBeDeferred(true)
             .SetCanBePaused(true));
     throttleable_task_queue_->SetBlameContext(blame_context_);
@@ -520,12 +534,15 @@ void FrameSchedulerImpl::SetPaused(bool frame_paused) {
 }
 
 void FrameSchedulerImpl::SetPageFrozen(bool frozen) {
-  if (frozen == page_frozen_)
-    return;
   DCHECK(page_visibility_ == PageVisibilityState::kHidden);
   page_frozen_ = frozen;
   UpdateTaskQueues();
   UpdateThrottlingState();
+}
+
+void FrameSchedulerImpl::SetKeepActive(bool keep_active) {
+  keep_active_ = keep_active;
+  UpdateTaskQueues();
 }
 
 void FrameSchedulerImpl::UpdateTaskQueues() {
@@ -548,6 +565,9 @@ void FrameSchedulerImpl::UpdateTaskQueue(
     return;
   bool queue_paused = frame_paused_ && queue->CanBePaused();
   bool queue_frozen = page_frozen_ && queue->CanBeStopped();
+  // Override freezing if keep-active is true.
+  if (queue_frozen && !queue->FreezeWhenKeepActive())
+    queue_frozen = !keep_active_;
   voter->SetQueueEnabled(!queue_paused && !queue_frozen);
 }
 

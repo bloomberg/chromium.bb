@@ -100,6 +100,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       can_be_throttled_(params.can_be_throttled),
       can_be_paused_(params.can_be_paused),
       can_be_stopped_(params.can_be_stopped),
+      freeze_when_keep_active_(params.freeze_when_keep_active),
       used_for_important_tasks_(params.used_for_important_tasks),
       renderer_scheduler_(renderer_scheduler),
       frame_scheduler_(nullptr) {

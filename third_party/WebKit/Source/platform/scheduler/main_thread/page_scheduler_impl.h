@@ -45,6 +45,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // PageScheduler implementation:
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
+  void SetKeepActive(bool) override;
+
   std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       BlameContext*,
       FrameScheduler::FrameType) override;

@@ -31,6 +31,10 @@ class PLATFORM_EXPORT PageScheduler {
   virtual void SetPageVisible(bool) = 0;
   // The scheduler transitions app to and from STOPPED state in background.
   virtual void SetPageFrozen(bool) = 0;
+  // Tells the scheduler about "keep-alive" state which can be due to:
+  // service workers, shared workers, or fetch keep-alive.
+  // If true, then the scheduler should not freeze relevant task queues.
+  virtual void SetKeepActive(bool) = 0;
 
   // Creates a new FrameScheduler. The caller is responsible for deleting
   // it. All tasks executed by the frame scheduler will be attributed to

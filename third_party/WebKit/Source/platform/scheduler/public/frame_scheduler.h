@@ -90,6 +90,11 @@ class FrameScheduler {
   // background.
   virtual void SetPageFrozen(bool) {}
 
+  // Tells the scheduler about "keep-alive" state which can be due to:
+  // service workers, shared workers, or fetch keep-alive.
+  // If true, then the scheduler should not freeze relevant task queues.
+  virtual void SetKeepActive(bool) {}
+
   // Set whether this frame is cross origin w.r.t. the top level frame. Cross
   // origin frames may use a different scheduling policy from same origin
   // frames.

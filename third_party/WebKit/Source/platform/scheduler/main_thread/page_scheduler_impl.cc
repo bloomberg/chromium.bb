@@ -142,6 +142,11 @@ void PageSchedulerImpl::SetPageFrozen(bool frozen) {
     delegate_->SetPageFrozen(frozen);
 }
 
+void PageSchedulerImpl::SetKeepActive(bool keep_active) {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+    frame_scheduler->SetKeepActive(keep_active);
+}
+
 std::unique_ptr<FrameSchedulerImpl> PageSchedulerImpl::CreateFrameSchedulerImpl(
     base::trace_event::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type) {

@@ -942,7 +942,13 @@ void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
 
 void RendererSchedulerImpl::SetSchedulerKeepActive(bool keep_active) {
   main_thread_only().keep_active_fetch_or_worker = keep_active;
-  UpdatePolicy();
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    page_scheduler->SetKeepActive(keep_active);
+  }
+}
+
+bool RendererSchedulerImpl::SchedulerKeepActive() {
+  return main_thread_only().keep_active_fetch_or_worker;
 }
 
 #if defined(OS_ANDROID)
@@ -1381,8 +1387,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       main_thread_only().stopped_when_backgrounded;
   bool newly_stopped = false;
   if (main_thread_only().renderer_backgrounded &&
-      main_thread_only().stopping_when_backgrounded_enabled &&
-      !main_thread_only().keep_active_fetch_or_worker) {
+      main_thread_only().stopping_when_backgrounded_enabled) {
     base::TimeTicks stop_at = main_thread_only().background_status_changed_at +
                               delay_for_background_tab_stopping_;
 
