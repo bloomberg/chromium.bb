@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Web Storage IDL tests Uncaught StorageEventInit inherits EventInit, but StorageEventInit is not an interface.
-Harness: the test ran to completion.
-
