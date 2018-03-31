@@ -451,8 +451,14 @@ const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
 
 // Controls whether the WebAuthentication API is enabled:
 // https://w3c.github.io/webauthn
-const base::Feature kWebAuth{"WebAuthentication",
-                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebAuth {
+  "WebAuthentication",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Controls whether BLE authenticators can be used via the WebAuthentication
 // API. https://w3c.github.io/webauthn

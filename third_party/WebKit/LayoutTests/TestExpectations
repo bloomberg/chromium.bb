@@ -3386,7 +3386,18 @@ crbug.com/827209 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll
 
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
-crbug.com/785955 virtual/enable-webauthn/http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
 
-# Only run virtual/enable-webauthn tests where the Credential Management/WebAuthn API are enabled.
-crbug.com/785955 http/tests/credentialmanager [ Skip ]
+# These Web Authentication API would require either real hardware, or
+# virtual simulation thereof (work in progress, see: https://crbug.com/785955).
+crbug.com/826936 external/wpt/webauthn/createcredential-badargs-authnrselection.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/createcredential-badargs-challenge.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/createcredential-badargs-rp.https.html [ Crash ]
+crbug.com/826936 external/wpt/webauthn/createcredential-badargs-user.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/createcredential-excludecredentials.https.html  [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/createcredential-extensions.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/createcredential-passing.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/getcredential-badargs-rpid.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/getcredential-passing.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass Timeout ]

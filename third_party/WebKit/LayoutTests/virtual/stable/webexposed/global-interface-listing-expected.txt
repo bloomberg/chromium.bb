@@ -199,6 +199,20 @@ interface AudioWorkletNode : AudioNode
     getter port
     method constructor
     setter onprocessorerror
+interface AuthenticatorAssertionResponse : AuthenticatorResponse
+    attribute @@toStringTag
+    getter authenticatorData
+    getter signature
+    getter userHandle
+    method constructor
+interface AuthenticatorAttestationResponse : AuthenticatorResponse
+    attribute @@toStringTag
+    getter attestationObject
+    method constructor
+interface AuthenticatorResponse
+    attribute @@toStringTag
+    getter clientDataJSON
+    method constructor
 interface BarProp
     attribute @@toStringTag
     getter visible
@@ -4504,6 +4518,13 @@ interface PromiseRejectionEvent : Event
     getter promise
     getter reason
     method constructor
+interface PublicKeyCredential : Credential
+    static method isUserVerifyingPlatformAuthenticatorAvailable
+    attribute @@toStringTag
+    getter rawId
+    getter response
+    method constructor
+    method getClientExtensionResults
 interface PushManager
     static getter supportedContentEncodings
     attribute @@toStringTag
