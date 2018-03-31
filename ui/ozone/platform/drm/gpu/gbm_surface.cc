@@ -136,7 +136,7 @@ bool GbmSurface::CreatePixmaps() {
     if (!pixmap)
       return false;
     scoped_refptr<gl::GLImageNativePixmap> image =
-        new gl::GLImageNativePixmap(GetSize(), GL_BGRA_EXT);
+        new gl::GLImageNativePixmap(GetSize(), GL_RGB);
     if (!image->Initialize(pixmap.get(),
                            display::DisplaySnapshot::PrimaryFormat()))
       return false;
