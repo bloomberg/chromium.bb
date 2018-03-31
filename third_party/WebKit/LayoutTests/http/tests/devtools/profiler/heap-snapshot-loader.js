@@ -11,7 +11,7 @@
   var sourceStringified = JSON.stringify(source);
   var partSize = sourceStringified.length >> 3;
 
-  function injectMockProfile(callback) {
+  async function injectMockProfile(callback) {
     var dispatcher = TestRunner.mainTarget._dispatchers['HeapProfiler']._dispatchers[0];
     var panel = UI.panels.heap_profiler;
     panel._reset();
@@ -33,6 +33,8 @@
       callback(this);
     }
     TestRunner.addSniffer(Profiler.HeapProfileHeader.prototype, '_didWriteToTempFile', tempFileReady);
+    if (!UI.context.flavor(SDK.HeapProfilerModel))
+      await new Promise(resolve => UI.context.addFlavorChangeListener(SDK.HeapProfilerModel, resolve));
     profileType._takeHeapSnapshot();
   }
 

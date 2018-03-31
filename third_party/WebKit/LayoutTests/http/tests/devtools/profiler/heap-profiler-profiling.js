@@ -9,7 +9,7 @@
 
   HeapProfilerTestRunner.runHeapSnapshotTestSuite([async function testProfiling(next) {
 
-    HeapProfilerTestRunner.startSamplingHeapProfiler();
+    await HeapProfilerTestRunner.startSamplingHeapProfiler();
     await TestRunner.evaluateInPagePromise(`
         function pageFunction() {
           (function () {
