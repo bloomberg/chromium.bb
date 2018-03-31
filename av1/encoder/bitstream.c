@@ -2483,6 +2483,9 @@ static void write_bitdepth_colorspace_sampling(
         assert(cm->subsampling_x == 1 && cm->subsampling_y == 0);
       }
     }
+    if (cm->matrix_coefficients == AOM_CICP_MC_IDENTITY) {
+      assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
+    }
     if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
       aom_wb_write_literal(wb, cm->chroma_sample_position, 2);
     }

@@ -2245,6 +2245,12 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
         cm->subsampling_y = 0;
       }
     }
+    if (cm->matrix_coefficients == AOM_CICP_MC_IDENTITY &&
+        (cm->subsampling_x != 0 || cm->subsampling_y != 0)) {
+      aom_internal_error(
+          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+          "Identity CICP Matrix incompatible with non 4:4:4 color sampling");
+    }
     if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
       cm->chroma_sample_position = aom_rb_read_literal(rb, 2);
     }
