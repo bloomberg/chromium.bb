@@ -1202,7 +1202,8 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 			     const FcChar8  *file,
 			     unsigned int   id,
 			     FcCharSet      **cs_share,
-			     FcLangSet      **ls_share)
+			     FcLangSet      **ls_share,
+			     FcNameMapping  **nm_share)
 {
     FcPattern	    *pat;
     int		    slant = -1;
@@ -1215,7 +1216,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     FcBool	    variable_size = FcFalse;
     FcCharSet       *cs;
     FcLangSet       *ls;
-    FcNameMapping   *name_mapping = 0;
+    FcNameMapping   *name_mapping = NULL;
 #if 0
     FcChar8	    *family = 0;
 #endif
@@ -1407,6 +1408,8 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
      * of them
      */
     name_count = FT_Get_Sfnt_Name_Count (face);
+    if (nm_share)
+	name_mapping = *nm_share;
     if (!name_mapping)
     {
 	int i = 0;
@@ -1435,6 +1438,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	    }
 	}
 	qsort (name_mapping, name_count, sizeof(FcNameMapping), name_mapping_cmp);
+
+	if (nm_share)
+	    *nm_share = name_mapping;
     }
     for (p = 0; p < NUM_PLATFORM_ORDER; p++)
     {
@@ -1590,7 +1596,8 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		   platform == sname.platform_id && lookupid == sname.name_id);
 	}
     }
-    free (name_mapping);
+    if (!nm_share)
+	free (name_mapping);
 
     if (!nfamily && face->family_name &&
 	FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) face->family_name, (FcChar8 *) "") != 0)
@@ -2112,7 +2119,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		     unsigned int   id,
 		     FcBlanks	    *blanks FC_UNUSED)
 {
-    return FcFreeTypeQueryFaceInternal (face, file, id, NULL, NULL);
+    return FcFreeTypeQueryFaceInternal (face, file, id, NULL, NULL, NULL);
 }
 
 FcPattern *
@@ -2134,7 +2141,7 @@ FcFreeTypeQuery(const FcChar8	*file,
     if (count)
       *count = face->num_faces;
 
-    pat = FcFreeTypeQueryFaceInternal (face, file, id, NULL, NULL);
+    pat = FcFreeTypeQueryFaceInternal (face, file, id, NULL, NULL, NULL);
 
     FT_Done_Face (face);
 bail:
@@ -2153,6 +2160,7 @@ FcFreeTypeQueryAll(const FcChar8	*file,
     FT_Library ftLibrary = NULL;
     FcCharSet *cs = NULL;
     FcLangSet *ls = NULL;
+    FcNameMapping  *nm = NULL;
     FT_MM_Var *mm_var = NULL;
     FcBool index_set = id != (unsigned int) -1;
     unsigned int set_face_num = index_set ? id & 0xFFFF : 0;
@@ -2212,7 +2220,7 @@ FcFreeTypeQueryAll(const FcChar8	*file,
 	}
 
 	id = ((instance_num << 16) + face_num);
-	pat = FcFreeTypeQueryFaceInternal (face, (const FcChar8 *) file, id, &cs, &ls);
+	pat = FcFreeTypeQueryFaceInternal (face, (const FcChar8 *) file, id, &cs, &ls, &nm);
 
 	if (pat)
 	{
@@ -2231,6 +2239,8 @@ skip:
 	    instance_num = 0x8000; /* variable font */
 	else
 	{
+	    free (nm);
+	    nm = NULL;
 	    FcLangSetDestroy (ls);
 	    ls = NULL;
 	    FcCharSetDestroy (cs);
