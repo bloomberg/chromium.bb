@@ -610,11 +610,6 @@
     "args": ["--enable-features=NavigationMojoResponse"]
   },
   {
-    "prefix": "enable-webauthn",
-    "base": "http/tests/credentialmanager/",
-    "args": ["--enable-features=WebAuthentication"]
-  },
-  {
     "prefix": "picture-in-picture",
     "base": "external/wpt/picture-in-picture",
     "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]
