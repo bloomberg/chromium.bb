@@ -158,16 +158,16 @@ struct EnumSizeTraits<
 // arguments.
 #define INTERNAL_UMA_HISTOGRAM_ENUMERATION_GET_MACRO(_1, _2, NAME, ...) NAME
 
-#define INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY(name, sample)       \
+#define INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY(name, sample,       \
+                                                           flags)              \
   INTERNAL_HISTOGRAM_ENUMERATION_WITH_FLAG(                                    \
       name, sample, base::internal::EnumSizeTraits<decltype(sample)>::Count(), \
-      base::HistogramBase::kUmaTargetedHistogramFlag)
+      flags)
 
 // Note: The value in |sample| must be strictly less than |enum_size|.
-#define INTERNAL_UMA_HISTOGRAM_ENUMERATION_SPECIFY_BOUNDARY(name, sample, \
-                                                            enum_size)    \
-  INTERNAL_HISTOGRAM_ENUMERATION_WITH_FLAG(                               \
-      name, sample, enum_size, base::HistogramBase::kUmaTargetedHistogramFlag)
+#define INTERNAL_UMA_HISTOGRAM_ENUMERATION_SPECIFY_BOUNDARY(name, sample,     \
+                                                            enum_size, flags) \
+  INTERNAL_HISTOGRAM_ENUMERATION_WITH_FLAG(name, sample, enum_size, flags)
 
 // Similar to the previous macro but intended for enumerations. This delegates
 // the work to the previous macro, but supports scoped enumerations as well by
