@@ -30,6 +30,10 @@ class ArcClient : public mojom::Arc {
 
   void CreateVideoEncodeAccelerator(
       arc::mojom::VideoEncodeAcceleratorRequest vea_request) override;
+
+  void CreateVideoProtectedBufferAllocator(
+      arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) override;
+
   void CreateProtectedBufferManager(
       arc::mojom::ProtectedBufferManagerRequest pbm_request) override;
 

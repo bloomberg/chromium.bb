@@ -62,6 +62,7 @@
 #if defined(OS_CHROMEOS)
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 #include "components/arc/video_accelerator/gpu_arc_video_encode_accelerator.h"
+#include "components/arc/video_accelerator/gpu_arc_video_protected_buffer_allocator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "components/arc/video_accelerator/protected_buffer_manager_proxy.h"
 #endif  // defined(OS_CHROMEOS)
@@ -293,49 +294,47 @@ void GpuServiceImpl::RecordLogMessage(int severity,
   (*gpu_host_)->RecordLogMessage(severity, header, message);
 }
 
+#if defined(OS_CHROMEOS)
 void GpuServiceImpl::CreateArcVideoDecodeAccelerator(
     arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
-#if defined(OS_CHROMEOS)
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread,
           weak_ptr_, std::move(vda_request)));
-#else
-  NOTREACHED();
-#endif  // defined(OS_CHROMEOS)
 }
 
 void GpuServiceImpl::CreateArcVideoEncodeAccelerator(
     arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
-#if defined(OS_CHROMEOS)
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread,
           weak_ptr_, std::move(vea_request)));
-#else
-  NOTREACHED();
-#endif  // defined(OS_CHROMEOS)
+}
+
+void GpuServiceImpl::CreateArcVideoProtectedBufferAllocator(
+    arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &GpuServiceImpl::CreateArcVideoProtectedBufferAllocatorOnMainThread,
+          weak_ptr_, std::move(pba_request)));
 }
 
 void GpuServiceImpl::CreateArcProtectedBufferManager(
     arc::mojom::ProtectedBufferManagerRequest pbm_request) {
-#if defined(OS_CHROMEOS)
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread,
           weak_ptr_, std::move(pbm_request)));
-#else
-  NOTREACHED();
-#endif  // defined(OS)CHROMEOS)
 }
 
-#if defined(OS_CHROMEOS)
 void GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread(
     arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
   DCHECK(main_runner_->BelongsToCurrentThread());
@@ -350,6 +349,18 @@ void GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread(
   mojo::MakeStrongBinding(
       std::make_unique<arc::GpuArcVideoEncodeAccelerator>(gpu_preferences_),
       std::move(vea_request));
+}
+
+void GpuServiceImpl::CreateArcVideoProtectedBufferAllocatorOnMainThread(
+    arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  auto gpu_arc_video_protected_buffer_allocator =
+      arc::GpuArcVideoProtectedBufferAllocator::Create(
+          protected_buffer_manager_);
+  if (!gpu_arc_video_protected_buffer_allocator)
+    return;
+  mojo::MakeStrongBinding(std::move(gpu_arc_video_protected_buffer_allocator),
+                          std::move(pba_request));
 }
 
 void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(

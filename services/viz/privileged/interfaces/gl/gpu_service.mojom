@@ -7,6 +7,7 @@ module viz.mojom;
 import "components/arc/common/protected_buffer_manager.mojom";
 import "components/arc/common/video_decode_accelerator.mojom";
 import "components/arc/common/video_encode_accelerator.mojom";
+import "components/arc/common/video_protected_buffer_allocator.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
@@ -30,12 +31,20 @@ interface GpuService {
   CloseChannel(int32 client_id);
 
   // Create a new ARC VideoDecodeAccelerator and binds it to |vda|.
+  [EnableIf=is_chromeos]
   CreateArcVideoDecodeAccelerator(arc.mojom.VideoDecodeAccelerator& vda);
 
   // Create a new ARC VideoEncodeAccelerator and binds it to |vea|.
+  [EnableIf=is_chromeos]
   CreateArcVideoEncodeAccelerator(arc.mojom.VideoEncodeAccelerator& vea);
 
+  // Create a new ARC VideoProtectedBufferAllocator and binds it to |pba|.
+  [EnableIf=is_chromeos]
+  CreateArcVideoProtectedBufferAllocator(
+      arc.mojom.VideoProtectedBufferAllocator& pba);
+
   // Create a new ARC ProtectedBufferManager and binds it to |pbm|.
+  [EnableIf=is_chromeos]
   CreateArcProtectedBufferManager(arc.mojom.ProtectedBufferManager& pbm);
 
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
