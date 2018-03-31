@@ -179,14 +179,6 @@ SourceEventType EventTypeToLatencySourceEventType(EventType type) {
   return SourceEventType::UNKNOWN;
 }
 
-bool IsX11SendEventTrue(const PlatformEvent& event) {
-#if defined(USE_X11)
-  return event && event->xany.send_event;
-#else
-  return false;
-#endif
-}
-
 #if defined(USE_X11)
 bool X11EventHasNonStandardState(const PlatformEvent& event) {
   const unsigned int kAllStateMask =
@@ -689,11 +681,9 @@ int MouseEvent::GetRepeatCount(const MouseEvent& event) {
       }
     }
     // Return the prior click count and do not update |last_click_event_| when
-    // re-processing the same native event, or processing a non-user event.
-    if (event.time_stamp() == last_click_event_->time_stamp() ||
-        IsX11SendEventTrue(event.native_event())) {
+    // re-processing a native event, or when proccesing a reposted event.
+    if (event.time_stamp() == last_click_event_->time_stamp())
       return last_click_event_->GetClickCount();
-    }
     if (IsRepeatedClickEvent(*last_click_event_, event))
       click_count = last_click_event_->GetClickCount() + 1;
     delete last_click_event_;
