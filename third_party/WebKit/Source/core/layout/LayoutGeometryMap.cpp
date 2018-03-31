@@ -178,7 +178,7 @@ FloatQuad LayoutGeometryMap::MapToAncestor(
             .BoundingBox();
 
     DCHECK(layout_object_mapped_result.EqualWithinEpsilon(result.BoundingBox(),
-                                                          0.1f) ||
+                                                          1.1f) ||
            layout_object_mapped_result.MayNotHaveExactIntRectRepresentation() ||
            result.BoundingBox().MayNotHaveExactIntRectRepresentation())
         << "Rounded: " << RoundedIntRect(layout_object_mapped_result) << " vs "
