@@ -36,7 +36,7 @@ class AppInfoDialog : public views::View,
   views::View* arc_app_info_links_for_test() { return arc_app_info_links_; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogAshTest,
+  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogViewsTest,
                            PinButtonsAreFocusedAfterPinUnpin);
   // Closes the dialog.
   void Close();
