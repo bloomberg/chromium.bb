@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/device/bluetooth/le/remote_device.h"
+#include "chromecast/device/bluetooth/le/remote_device_impl.h"
 
 #include "base/bind.h"
 #include "chromecast/base/bind_to_task_runner.h"
-#include "chromecast/device/bluetooth/le/gatt_client_manager.h"
-#include "chromecast/device/bluetooth/le/remote_characteristic.h"
-#include "chromecast/device/bluetooth/le/remote_descriptor.h"
-#include "chromecast/device/bluetooth/le/remote_service.h"
+#include "chromecast/device/bluetooth/le/gatt_client_manager_impl.h"
+#include "chromecast/device/bluetooth/le/remote_characteristic_impl.h"
+#include "chromecast/device/bluetooth/le/remote_descriptor_impl.h"
+#include "chromecast/device/bluetooth/le/remote_service_impl.h"
 
 namespace chromecast {
 namespace bluetooth {
 
 #define RUN_ON_IO_THREAD(method, ...) \
   io_task_runner_->PostTask(          \
-      FROM_HERE, base::BindOnce(&RemoteDevice::method, this, ##__VA_ARGS__));
+      FROM_HERE,                      \
+      base::BindOnce(&RemoteDeviceImpl::method, this, ##__VA_ARGS__));
 
 #define MAKE_SURE_IO_THREAD(method, ...)            \
   DCHECK(io_task_runner_);                          \
@@ -49,12 +50,9 @@ namespace bluetooth {
     EXEC_CB_AND_RET(cb, ret);             \
   } while (0)
 
-// static
-constexpr int RemoteDevice::kDefaultMtu;
-
-RemoteDevice::RemoteDevice(
+RemoteDeviceImpl::RemoteDeviceImpl(
     const bluetooth_v2_shlib::Addr& addr,
-    base::WeakPtr<GattClientManager> gatt_client_manager,
+    base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : gatt_client_manager_(gatt_client_manager),
       addr_(addr),
@@ -63,9 +61,9 @@ RemoteDevice::RemoteDevice(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 }
 
-RemoteDevice::~RemoteDevice() = default;
+RemoteDeviceImpl::~RemoteDeviceImpl() = default;
 
-void RemoteDevice::Connect(StatusCallback cb) {
+void RemoteDeviceImpl::Connect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Connect, BindToCurrentSequence(std::move(cb)));
   if (!ConnectSync()) {
     // Error logged.
@@ -75,7 +73,7 @@ void RemoteDevice::Connect(StatusCallback cb) {
   connect_cb_ = std::move(cb);
 }
 
-bool RemoteDevice::ConnectSync() {
+bool RemoteDeviceImpl::ConnectSync() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
@@ -95,7 +93,7 @@ bool RemoteDevice::ConnectSync() {
   return true;
 }
 
-void RemoteDevice::Disconnect(StatusCallback cb) {
+void RemoteDeviceImpl::Disconnect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Disconnect, BindToCurrentSequence(std::move(cb)));
   if (!DisconnectSync()) {
     // Error logged.
@@ -105,7 +103,7 @@ void RemoteDevice::Disconnect(StatusCallback cb) {
   disconnect_cb_ = std::move(cb);
 }
 
-bool RemoteDevice::DisconnectSync() {
+bool RemoteDeviceImpl::DisconnectSync() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
@@ -126,7 +124,7 @@ bool RemoteDevice::DisconnectSync() {
   return true;
 }
 
-void RemoteDevice::ReadRemoteRssi(RssiCallback cb) {
+void RemoteDeviceImpl::ReadRemoteRssi(RssiCallback cb) {
   MAKE_SURE_IO_THREAD(ReadRemoteRssi, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
@@ -145,7 +143,7 @@ void RemoteDevice::ReadRemoteRssi(RssiCallback cb) {
   rssi_cb_ = std::move(cb);
 }
 
-void RemoteDevice::RequestMtu(int mtu, StatusCallback cb) {
+void RemoteDeviceImpl::RequestMtu(int mtu, StatusCallback cb) {
   MAKE_SURE_IO_THREAD(RequestMtu, mtu, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
@@ -166,11 +164,11 @@ void RemoteDevice::RequestMtu(int mtu, StatusCallback cb) {
   mtu_cb_ = std::move(cb);
 }
 
-void RemoteDevice::ConnectionParameterUpdate(int min_interval,
-                                             int max_interval,
-                                             int latency,
-                                             int timeout,
-                                             StatusCallback cb) {
+void RemoteDeviceImpl::ConnectionParameterUpdate(int min_interval,
+                                                 int max_interval,
+                                                 int latency,
+                                                 int timeout,
+                                                 StatusCallback cb) {
   MAKE_SURE_IO_THREAD(ConnectionParameterUpdate, min_interval, max_interval,
                       latency, timeout, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
@@ -183,7 +181,7 @@ void RemoteDevice::ConnectionParameterUpdate(int min_interval,
   LOG_EXEC_CB_AND_RET(cb, ret);
 }
 
-void RemoteDevice::DiscoverServices(DiscoverServicesCb cb) {
+void RemoteDeviceImpl::DiscoverServices(DiscoverServicesCb cb) {
   MAKE_SURE_IO_THREAD(DiscoverServices, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
@@ -209,22 +207,22 @@ void RemoteDevice::DiscoverServices(DiscoverServicesCb cb) {
   discover_services_cb_ = std::move(cb);
 }
 
-bool RemoteDevice::IsConnected() {
+bool RemoteDeviceImpl::IsConnected() {
   return connected_;
 }
 
-int RemoteDevice::GetMtu() {
+int RemoteDeviceImpl::GetMtu() {
   return mtu_;
 }
 
-void RemoteDevice::GetServices(
+void RemoteDeviceImpl::GetServices(
     base::OnceCallback<void(std::vector<scoped_refptr<RemoteService>>)> cb) {
   MAKE_SURE_IO_THREAD(GetServices, BindToCurrentSequence(std::move(cb)));
   auto ret = GetServicesSync();
   EXEC_CB_AND_RET(cb, std::move(ret));
 }
 
-std::vector<scoped_refptr<RemoteService>> RemoteDevice::GetServicesSync() {
+std::vector<scoped_refptr<RemoteService>> RemoteDeviceImpl::GetServicesSync() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   std::vector<scoped_refptr<RemoteService>> services;
   services.reserve(uuid_to_service_.size());
@@ -234,7 +232,7 @@ std::vector<scoped_refptr<RemoteService>> RemoteDevice::GetServicesSync() {
   return services;
 }
 
-void RemoteDevice::GetServiceByUuid(
+void RemoteDeviceImpl::GetServiceByUuid(
     const bluetooth_v2_shlib::Uuid& uuid,
     base::OnceCallback<void(scoped_refptr<RemoteService>)> cb) {
   MAKE_SURE_IO_THREAD(GetServiceByUuid, uuid,
@@ -243,7 +241,11 @@ void RemoteDevice::GetServiceByUuid(
   EXEC_CB_AND_RET(cb, std::move(ret));
 }
 
-scoped_refptr<RemoteService> RemoteDevice::GetServiceByUuidSync(
+const bluetooth_v2_shlib::Addr& RemoteDeviceImpl::addr() const {
+  return addr_;
+}
+
+scoped_refptr<RemoteService> RemoteDeviceImpl::GetServiceByUuidSync(
     const bluetooth_v2_shlib::Uuid& uuid) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   auto it = uuid_to_service_.find(uuid);
@@ -253,7 +255,7 @@ scoped_refptr<RemoteService> RemoteDevice::GetServiceByUuidSync(
   return it->second;
 }
 
-void RemoteDevice::SetConnected(bool connected) {
+void RemoteDeviceImpl::SetConnected(bool connected) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (connect_pending_) {
     connect_pending_ = false;
@@ -296,15 +298,19 @@ void RemoteDevice::SetConnected(bool connected) {
   }
 
   for (const auto& characteristic : handle_to_characteristic_) {
-    characteristic.second->OnConnectChanged(connected);
+    auto* char_impl =
+        static_cast<RemoteCharacteristicImpl*>(characteristic.second.get());
+    char_impl->OnConnectChanged(connected);
   }
 
   for (const auto& descriptor : handle_to_descriptor_) {
-    descriptor.second->OnConnectChanged(connected);
+    auto* desc_impl =
+        static_cast<RemoteDescriptorImpl*>(descriptor.second.get());
+    desc_impl->OnConnectChanged(connected);
   }
 }
 
-void RemoteDevice::SetMtu(int mtu) {
+void RemoteDeviceImpl::SetMtu(int mtu) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   mtu_pending_ = false;
   mtu_ = mtu;
@@ -314,7 +320,7 @@ void RemoteDevice::SetMtu(int mtu) {
   }
 }
 
-scoped_refptr<RemoteCharacteristic> RemoteDevice::CharacteristicFromHandle(
+scoped_refptr<RemoteCharacteristic> RemoteDeviceImpl::CharacteristicFromHandle(
     uint16_t handle) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   auto it = handle_to_characteristic_.find(handle);
@@ -324,7 +330,7 @@ scoped_refptr<RemoteCharacteristic> RemoteDevice::CharacteristicFromHandle(
   return it->second;
 }
 
-scoped_refptr<RemoteDescriptor> RemoteDevice::DescriptorFromHandle(
+scoped_refptr<RemoteDescriptor> RemoteDeviceImpl::DescriptorFromHandle(
     uint16_t handle) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   auto it = handle_to_descriptor_.find(handle);
@@ -334,7 +340,7 @@ scoped_refptr<RemoteDescriptor> RemoteDevice::DescriptorFromHandle(
   return it->second;
 }
 
-void RemoteDevice::OnGetServices(
+void RemoteDeviceImpl::OnGetServices(
     const std::vector<bluetooth_v2_shlib::Gatt::Service>& services) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   uuid_to_service_.clear();
@@ -348,8 +354,8 @@ void RemoteDevice::OnGetServices(
   }
 }
 
-void RemoteDevice::OnServicesRemoved(uint16_t start_handle,
-                                     uint16_t end_handle) {
+void RemoteDeviceImpl::OnServicesRemoved(uint16_t start_handle,
+                                         uint16_t end_handle) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   for (auto it = uuid_to_service_.begin(); it != uuid_to_service_.end();) {
     if (it->second->handle() >= start_handle &&
@@ -372,12 +378,12 @@ void RemoteDevice::OnServicesRemoved(uint16_t start_handle,
   }
 }
 
-void RemoteDevice::OnServicesAdded(
+void RemoteDeviceImpl::OnServicesAdded(
     const std::vector<bluetooth_v2_shlib::Gatt::Service>& services) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   for (const auto& service : services) {
-    uuid_to_service_[service.uuid] =
-        new RemoteService(this, gatt_client_manager_, service, io_task_runner_);
+    uuid_to_service_[service.uuid] = new RemoteServiceImpl(
+        this, gatt_client_manager_, service, io_task_runner_);
   }
 
   for (const auto& pair : uuid_to_service_) {
@@ -396,7 +402,7 @@ void RemoteDevice::OnServicesAdded(
   }
 }
 
-void RemoteDevice::OnReadRemoteRssiComplete(bool status, int rssi) {
+void RemoteDeviceImpl::OnReadRemoteRssiComplete(bool status, int rssi) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   rssi_pending_ = false;
   if (rssi_cb_) {

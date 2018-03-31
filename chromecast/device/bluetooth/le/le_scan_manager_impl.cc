@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/device/bluetooth/le/le_scan_manager.h"
+#include "chromecast/device/bluetooth/le/le_scan_manager_impl.h"
 
 #include <algorithm>
 
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/public/cast_media_shlib.h"
 
-#define RUN_ON_IO_THREAD(method, ...)                   \
-  io_task_runner_->PostTask(                            \
-      FROM_HERE, base::BindOnce(&LeScanManager::method, \
+#define RUN_ON_IO_THREAD(method, ...)                       \
+  io_task_runner_->PostTask(                                \
+      FROM_HERE, base::BindOnce(&LeScanManagerImpl::method, \
                                 weak_factory_.GetWeakPtr(), ##__VA_ARGS__));
 
 #define MAKE_SURE_IO_THREAD(method, ...)            \
@@ -61,7 +61,7 @@ bool DataContainsUuid(const std::vector<uint8_t>& data, uint16_t uuid) {
   return false;
 }
 
-bool ScanResultHasServiceUuid(const LeScanManager::ScanResult& scan_result,
+bool ScanResultHasServiceUuid(const LeScanManagerImpl::ScanResult& scan_result,
                               uint16_t service_uuid) {
   auto it = scan_result.type_to_data.find(kGapIncomplete16BitServiceUuids);
   if (it != scan_result.type_to_data.end() &&
@@ -80,34 +80,35 @@ bool ScanResultHasServiceUuid(const LeScanManager::ScanResult& scan_result,
 
 }  // namespace
 
-LeScanManager::ScanResult::ScanResult() = default;
-LeScanManager::ScanResult::ScanResult(const LeScanManager::ScanResult& other) =
-    default;
-LeScanManager::ScanResult::~ScanResult() = default;
+LeScanManagerImpl::ScanResult::ScanResult() = default;
+LeScanManagerImpl::ScanResult::ScanResult(
+    const LeScanManagerImpl::ScanResult& other) = default;
+LeScanManagerImpl::ScanResult::~ScanResult() = default;
 
-LeScanManager::LeScanManager(bluetooth_v2_shlib::LeScannerImpl* le_scanner)
+LeScanManagerImpl::LeScanManagerImpl(
+    bluetooth_v2_shlib::LeScannerImpl* le_scanner)
     : le_scanner_(le_scanner),
       observers_(new base::ObserverListThreadSafe<Observer>()),
       weak_factory_(this) {}
 
-LeScanManager::~LeScanManager() = default;
+LeScanManagerImpl::~LeScanManagerImpl() = default;
 
-void LeScanManager::Initialize(
+void LeScanManagerImpl::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   io_task_runner_ = std::move(io_task_runner);
 }
 
-void LeScanManager::Finalize() {}
+void LeScanManagerImpl::Finalize() {}
 
-void LeScanManager::AddObserver(Observer* observer) {
+void LeScanManagerImpl::AddObserver(Observer* observer) {
   observers_->AddObserver(observer);
 }
 
-void LeScanManager::RemoveObserver(Observer* observer) {
+void LeScanManagerImpl::RemoveObserver(Observer* observer) {
   observers_->RemoveObserver(observer);
 }
 
-void LeScanManager::SetScanEnable(bool enable, SetScanEnableCallback cb) {
+void LeScanManagerImpl::SetScanEnable(bool enable, SetScanEnableCallback cb) {
   MAKE_SURE_IO_THREAD(SetScanEnable, enable,
                       BindToCurrentSequence(std::move(cb)));
   bool success;
@@ -127,15 +128,16 @@ void LeScanManager::SetScanEnable(bool enable, SetScanEnableCallback cb) {
   EXEC_CB_AND_RET(cb, true);
 }
 
-void LeScanManager::GetScanResults(GetScanResultsCallback cb,
-                                   base::Optional<uint16_t> service_uuid) {
+void LeScanManagerImpl::GetScanResults(GetScanResultsCallback cb,
+                                       base::Optional<uint16_t> service_uuid) {
   MAKE_SURE_IO_THREAD(GetScanResults, BindToCurrentSequence(std::move(cb)),
                       service_uuid);
   std::move(cb).Run(GetScanResultsInternal(service_uuid));
 }
 
 // Returns a list of all scan results. The results are sorted by RSSI.
-std::vector<LeScanManager::ScanResult> LeScanManager::GetScanResultsInternal(
+std::vector<LeScanManagerImpl::ScanResult>
+LeScanManagerImpl::GetScanResultsInternal(
     base::Optional<uint16_t> service_uuid) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   std::vector<ScanResult> results;
@@ -156,12 +158,12 @@ std::vector<LeScanManager::ScanResult> LeScanManager::GetScanResultsInternal(
   return results;
 }
 
-void LeScanManager::ClearScanResults() {
+void LeScanManagerImpl::ClearScanResults() {
   MAKE_SURE_IO_THREAD(ClearScanResults);
   addr_to_scan_results_.clear();
 }
 
-void LeScanManager::OnScanResult(
+void LeScanManagerImpl::OnScanResult(
     const bluetooth_v2_shlib::LeScanner::ScanResult& scan_result_shlib) {
   ScanResult scan_result;
   scan_result.addr = scan_result_shlib.addr;

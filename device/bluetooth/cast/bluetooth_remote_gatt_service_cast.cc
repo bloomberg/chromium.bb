@@ -19,12 +19,16 @@ namespace device {
 BluetoothRemoteGattServiceCast::BluetoothRemoteGattServiceCast(
     BluetoothDeviceCast* device,
     scoped_refptr<chromecast::bluetooth::RemoteService> remote_service)
-    : device_(device),
-      remote_service_(std::move(remote_service)),
-      weak_factory_(this) {
-  remote_service_->GetCharacteristics(
-      base::BindOnce(&BluetoothRemoteGattServiceCast::OnGetCharacteristics,
-                     weak_factory_.GetWeakPtr()));
+    : device_(device), remote_service_(std::move(remote_service)) {
+  std::vector<scoped_refptr<chromecast::bluetooth::RemoteCharacteristic>>
+      characteristics = remote_service_->GetCharacteristics();
+  characteristics_.reserve(characteristics.size());
+  for (auto& characteristic : characteristics) {
+    characteristics_.push_back(
+        std::make_unique<BluetoothRemoteGattCharacteristicCast>(
+            this, characteristic));
+  }
+  SetDiscoveryComplete(true);
 }
 
 BluetoothRemoteGattServiceCast::~BluetoothRemoteGattServiceCast() {}
@@ -69,18 +73,6 @@ BluetoothRemoteGattServiceCast::GetCharacteristic(
       return characteristic.get();
   }
   return nullptr;
-}
-
-void BluetoothRemoteGattServiceCast::OnGetCharacteristics(
-    std::vector<scoped_refptr<chromecast::bluetooth::RemoteCharacteristic>>
-        characteristics) {
-  characteristics_.reserve(characteristics.size());
-  for (auto& characteristic : characteristics) {
-    characteristics_.push_back(
-        std::make_unique<BluetoothRemoteGattCharacteristicCast>(
-            this, characteristic));
-  }
-  SetDiscoveryComplete(true);
 }
 
 }  // namespace device

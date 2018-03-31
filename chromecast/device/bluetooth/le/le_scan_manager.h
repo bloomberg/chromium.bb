@@ -11,14 +11,13 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/observer_list_threadsafe.h"
-#include "chromecast/device/bluetooth/shlib/le_scanner.h"
+#include "base/optional.h"
+#include "chromecast/public/bluetooth/bluetooth_types.h"
 
 namespace chromecast {
 namespace bluetooth {
 
-class LeScanManager : public bluetooth_v2_shlib::LeScanner::Delegate {
+class LeScanManager {
  public:
   struct ScanResult {
     ScanResult();
@@ -45,20 +44,14 @@ class LeScanManager : public bluetooth_v2_shlib::LeScanner::Delegate {
     virtual ~Observer() = default;
   };
 
-  explicit LeScanManager(bluetooth_v2_shlib::LeScannerImpl* le_scanner);
-  ~LeScanManager() override;
-
-  void Initialize(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-  void Finalize();
-
-  void AddObserver(Observer* o);
-  void RemoveObserver(Observer* o);
+  virtual void AddObserver(Observer* o) = 0;
+  virtual void RemoveObserver(Observer* o) = 0;
 
   // Enable or disable BLE scnaning. Can be called on any thread. |cb| is
   // called on the thread that calls this method. |success| is false iff the
   // operation failed.
   using SetScanEnableCallback = base::OnceCallback<void(bool success)>;
-  void SetScanEnable(bool enable, SetScanEnableCallback cb);
+  virtual void SetScanEnable(bool enable, SetScanEnableCallback cb) = 0;
 
   // Asynchronously get the most recent scan results. Can be called on any
   // thread. |cb| is called on the calling thread with the results. If
@@ -66,31 +59,14 @@ class LeScanManager : public bluetooth_v2_shlib::LeScanner::Delegate {
   // |service_uuid| will be returned.
   using GetScanResultsCallback =
       base::OnceCallback<void(std::vector<ScanResult>)>;
-  void GetScanResults(GetScanResultsCallback cb,
-                      base::Optional<uint16_t> service_uuid = base::nullopt);
+  virtual void GetScanResults(
+      GetScanResultsCallback cb,
+      base::Optional<uint16_t> service_uuid = base::nullopt) = 0;
 
-  void ClearScanResults();
+  virtual void ClearScanResults() = 0;
 
- private:
-  // Returns a list of all BLE scan results. The results are sorted by RSSI.
-  // Must be called on |io_task_runner|.
-  std::vector<ScanResult> GetScanResultsInternal(
-      base::Optional<uint16_t> service_uuid);
-
-  // bluetooth_v2_shlib::LeScanner::Delegate implementation:
-  void OnScanResult(const bluetooth_v2_shlib::LeScanner::ScanResult&
-                        scan_result_shlib) override;
-
-  bluetooth_v2_shlib::LeScannerImpl* const le_scanner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
-  std::map<bluetooth_v2_shlib::Addr, std::list<ScanResult>>
-      addr_to_scan_results_;
-
-  base::WeakPtrFactory<LeScanManager> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(LeScanManager);
+ protected:
+  virtual ~LeScanManager() = default;
 };
 
 }  // namespace bluetooth
