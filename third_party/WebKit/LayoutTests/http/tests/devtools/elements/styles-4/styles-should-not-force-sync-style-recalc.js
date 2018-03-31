@@ -33,7 +33,7 @@
   UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
   await PerformanceTestRunner.evaluateWithTimeline('performActions()');
 
-  PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+  PerformanceTestRunner.mainTrackEvents().forEach(event => {
     if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
       TestRunner.addResult(event.name);
   });

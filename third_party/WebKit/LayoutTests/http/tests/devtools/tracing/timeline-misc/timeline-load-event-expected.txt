@@ -51,12 +51,4 @@ MarkLoad Properties:
     startTime : <number>
     type : "MarkLoad"
 }
-MarkFirstPaint Properties:
-{
-    data : {
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "MarkFirstPaint"
-}
 

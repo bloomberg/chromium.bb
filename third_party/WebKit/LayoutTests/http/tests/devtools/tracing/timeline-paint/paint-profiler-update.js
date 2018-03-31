@@ -38,7 +38,7 @@
 
   var paintEvents = [];
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
-  var events = PerformanceTestRunner.timelineModel()._mainThreadEvents;
+  var events = PerformanceTestRunner.mainTrackEvents();
   for (var event of events) {
     if (event.name === TimelineModel.TimelineModel.RecordType.Paint) {
       paintEvents.push(event);

@@ -26,8 +26,7 @@
   Runtime.experiments.enableForTest('timelineShowAllEvents');
   await PerformanceTestRunner.evaluateWithTimeline('performActions()');
 
-  var frame = PerformanceTestRunner.timelineModel()
-                  .mainThreadEvents()
+  var frame = PerformanceTestRunner.mainTrackEvents()
                   .filter(e => e.name === TimelineModel.TimelineModel.RecordType.JSFrame)
                   .map(e => e.args['data']['callFrame'])
                   .find(frame => frame.functionName === 'FunctionCallback' && frame.url === 'native V8Runtime');

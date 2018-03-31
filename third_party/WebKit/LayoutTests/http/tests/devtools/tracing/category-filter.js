@@ -97,7 +97,7 @@
 
   var model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
   var view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
-  view.setModel(model, model.timelineModel().mainThreadEvents());
+  view.setModel(model, PerformanceTestRunner.mainTrack());
   view.updateContents(Timeline.TimelineSelection.fromRange(
       model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
   var filtersControl = view._filtersControl;

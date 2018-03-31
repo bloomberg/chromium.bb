@@ -60,7 +60,7 @@
   ];
 
   var model = PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
-  var event = model.timelineModel().mainThreadEvents().find(
+  var event = PerformanceTestRunner.mainTrackEvents().find(
       e => e.name === TimelineModel.TimelineModel.RecordType.FunctionCall);
   TestRunner.addResult(`${event.startTime} ${event.endTime}`);
   TestRunner.completeTest();

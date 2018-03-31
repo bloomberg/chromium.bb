@@ -57,19 +57,18 @@
       'startSecondWorker', processTracingEvents, 'disabled-by-default-devtools.timeline.stack', true);
 
   function processTracingEvents() {
-    var mainThread = {name: 'Main Thread', events: PerformanceTestRunner.timelineModel()._mainThreadEvents};
-    processThread(new Set(['startSecondWorker', 'worker2.onmessage']), mainThread);
-    for (var thread of PerformanceTestRunner.timelineModel()._virtualThreads) {
-      if (!thread.isWorker())
+    processTrack(new Set(['startSecondWorker', 'worker2.onmessage']), PerformanceTestRunner.mainTrack());
+    for (var track of PerformanceTestRunner.timelineModel().tracks()) {
+      if (track.type !== TimelineModel.TimelineModel.TrackType.Worker)
         continue;
-      processThread(new Set(['Function Call']), thread);
+      processTrack(new Set(['Function Call']), track);
     }
     TestRunner.completeTest();
   }
 
-  function processThread(expectedEvents, thread) {
-    TestRunner.addResult(thread.name);
-    var missingEvents = thread.events.reduce(processEvent, expectedEvents);
+  function processTrack(expectedEvents, track) {
+    TestRunner.addResult(track.name);
+    var missingEvents = track.events.reduce(processEvent, expectedEvents);
     if (missingEvents.size) {
       TestRunner.addResult('FAIL: missing events:');
       missingEvents.forEach(TestRunner.addResult);

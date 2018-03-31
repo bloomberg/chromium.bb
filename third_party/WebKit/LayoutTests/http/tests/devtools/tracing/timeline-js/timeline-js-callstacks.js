@@ -499,9 +499,9 @@
   ];
 
   var model = PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
-  var events = TimelineModel.TimelineJSProfileProcessor.generateJSFrameEvents(model.timelineModel().mainThreadEvents());
+  var events = TimelineModel.TimelineJSProfileProcessor.generateJSFrameEvents(PerformanceTestRunner.mainTrackEvents());
   events =
-      events.mergeOrdered(model.timelineModel().mainThreadEvents(), SDK.TracingModel.Event.orderedCompareStartTime);
+      events.mergeOrdered(PerformanceTestRunner.mainTrackEvents(), SDK.TracingModel.Event.orderedCompareStartTime);
   events
       .filter(function(e) {
         return e.duration;
