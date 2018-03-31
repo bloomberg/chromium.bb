@@ -76,6 +76,10 @@ extern const base::Feature kDialogTouchBar;
 extern const base::Feature kTabStripKeyboardFocus;
 #endif  // defined(OS_MACOSX)
 
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+extern const base::Feature kCertDualVerificationTrialFeature;
+#endif
+
 extern const base::Feature kChangePictureVideoMode;
 
 #if defined(OS_ANDROID)

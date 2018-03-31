@@ -130,7 +130,8 @@
 #include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #endif
@@ -581,7 +582,8 @@ void IOThread::CleanUp() {
   net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
   net::ShutdownGlobalCertNetFetcher();
 #endif
 
@@ -857,7 +859,8 @@ void IOThread::ConstructSystemRequestContext() {
 #if defined(USE_NSS_CERTS)
   net::SetURLRequestContextForNSSHttpIO(globals_->system_request_context);
 #endif
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
   net::SetGlobalCertNetFetcher(
       net::CreateCertNetFetcher(globals_->system_request_context));
 #endif

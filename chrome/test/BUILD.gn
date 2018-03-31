@@ -4290,6 +4290,9 @@ test("unit_tests") {
   if (!is_android && use_nss_certs) {
     sources += [ "../common/net/x509_certificate_model_nss_unittest.cc" ]
   }
+  if (is_desktop_linux || is_mac) {
+    sources += [ "../browser/net/trial_comparison_cert_verifier_unittest.cc" ]
+  }
   if (enable_supervised_users) {
     sources += [
       "../browser/content_settings/content_settings_supervised_provider_unittest.cc",

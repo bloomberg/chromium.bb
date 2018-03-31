@@ -2577,6 +2577,25 @@ EVENT_TYPE(CERT_VERIFIER_JOB)
 //   }
 EVENT_TYPE(CERT_VERIFIER_REQUEST_BOUND_TO_JOB)
 
+// This event is created when a TrialComparisonCertVerifier starts a
+// verification using the trial verifier.
+//
+// The event parameters are:
+//   {
+//      "trial_success": <True if the trial verification had the same result>,
+//   }
+EVENT_TYPE(TRIAL_CERT_VERIFIER_JOB)
+
+// This event is created when a TrialComparisonCertVerifier begins a trial
+// comparison job for a regular CertVerifier job.
+//
+// The event parameters are:
+//   {
+//      "source_dependency": <Source identifier for the trial comparison job
+//                            that was started>,
+//   }
+EVENT_TYPE(TRIAL_CERT_VERIFIER_JOB_COMPARISON_STARTED)
+
 // ------------------------------------------------------------------------
 // Download start events.
 // ------------------------------------------------------------------------

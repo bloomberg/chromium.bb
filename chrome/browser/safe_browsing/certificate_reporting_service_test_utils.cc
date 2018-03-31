@@ -65,11 +65,14 @@ std::string GetReportContents(net::URLRequest* request,
 
 void WaitReports(
     certificate_reporting_test_utils::RequestObserver* observer,
-    const certificate_reporting_test_utils::ReportExpectation& expectation) {
+    const certificate_reporting_test_utils::ReportExpectation& expectation,
+    std::vector<std::string>* full_reports) {
   observer->Wait(expectation.num_reports());
   EXPECT_EQ(expectation.successful_reports, observer->successful_reports());
   EXPECT_EQ(expectation.failed_reports, observer->failed_reports());
   EXPECT_EQ(expectation.delayed_reports, observer->delayed_reports());
+  if (full_reports)
+    *full_reports = observer->full_reports();
   observer->ClearObservedReports();
 }
 
@@ -106,6 +109,8 @@ void RequestObserver::OnRequest(const std::string& serialized_report,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CertificateErrorReport report;
   EXPECT_TRUE(report.InitializeFromString(serialized_report));
+
+  full_reports_.push_back(serialized_report);
 
   switch (report_type) {
     case REPORTS_SUCCESSFUL:
@@ -150,12 +155,17 @@ const ObservedReportMap& RequestObserver::delayed_reports() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return delayed_reports_;
 }
+const std::vector<std::string>& RequestObserver::full_reports() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return full_reports_;
+}
 
 void RequestObserver::ClearObservedReports() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   successful_reports_.clear();
   failed_reports_.clear();
   delayed_reports_.clear();
+  full_reports_.clear();
 }
 
 DelayableCertReportURLRequestJob::DelayableCertReportURLRequestJob(
@@ -424,12 +434,27 @@ uint32_t CertificateReportingServiceTestHelper::server_public_key_version()
 
 void CertificateReportingServiceTestHelper::WaitForRequestsCreated(
     const ReportExpectation& expectation) {
-  WaitReports(interceptor()->request_created_observer(), expectation);
+  WaitReports(interceptor()->request_created_observer(), expectation, nullptr);
+}
+
+void CertificateReportingServiceTestHelper::WaitForRequestsCreated(
+    const ReportExpectation& expectation,
+    std::vector<std::string>* full_reports) {
+  WaitReports(interceptor()->request_created_observer(), expectation,
+              full_reports);
 }
 
 void CertificateReportingServiceTestHelper::WaitForRequestsDestroyed(
     const ReportExpectation& expectation) {
-  WaitReports(interceptor()->request_destroyed_observer(), expectation);
+  WaitReports(interceptor()->request_destroyed_observer(), expectation,
+              nullptr);
+}
+
+void CertificateReportingServiceTestHelper::WaitForRequestsDestroyed(
+    const ReportExpectation& expectation,
+    std::vector<std::string>* full_reports) {
+  WaitReports(interceptor()->request_destroyed_observer(), expectation,
+              full_reports);
 }
 
 void CertificateReportingServiceTestHelper::ExpectNoRequests(

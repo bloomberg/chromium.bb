@@ -10,6 +10,7 @@
 
 #include "chrome/browser/ssl/cert_logger.pb.h"
 #include "components/version_info/version_info.h"
+#include "net/cert/cert_status_flags.h"
 
 namespace base {
 class Time;
@@ -20,7 +21,9 @@ class NetworkTimeTracker;
 }  // namespace network_time
 
 namespace net {
+class CertVerifyResult;
 class SSLInfo;
+class X509Certificate;
 }  // namespace net
 
 // This class builds and serializes reports for invalid SSL certificate
@@ -52,6 +55,16 @@ class CertificateErrorReport {
   // properties in |ssl_info|.
   CertificateErrorReport(const std::string& hostname,
                          const net::SSLInfo& ssl_info);
+
+  // Constructs a dual verification trial report for the given |hostname|, the
+  // cert and chain sent by the server, the result from the primary verifier,
+  // and the result from the trial verifier.
+  // TODO(mattm): remove this when the trial is done. (https://crbug.com/649026)
+  CertificateErrorReport(const std::string& hostname,
+                         const net::X509Certificate& unverified_cert,
+                         int verify_flags,
+                         const net::CertVerifyResult& primary_result,
+                         const net::CertVerifyResult& trial_result);
 
   ~CertificateErrorReport();
 
@@ -94,6 +107,12 @@ class CertificateErrorReport {
   bool is_retry_upload() const;
 
  private:
+  CertificateErrorReport(const std::string& hostname,
+                         const net::X509Certificate& cert,
+                         const net::X509Certificate* unverified_cert,
+                         bool is_issued_by_known_root,
+                         net::CertStatus cert_status);
+
   std::unique_ptr<chrome_browser_ssl::CertLoggerRequest> cert_report_;
 };
 
