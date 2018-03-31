@@ -726,7 +726,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                 deps_file, should_process, use_relative_paths, condition,
                 condition_value))
       else:
-        url = raw_url.format(**self.get_vars())
+        url = raw_url.format(**self.get_vars()) if raw_url else None
         deps_to_add.append(
             Dependency(
                 self, name, raw_url, url, None, None, self.custom_vars, None,
@@ -1883,8 +1883,8 @@ it or fix the checkout.
       if self._options.output_json:
         json_output = {
             name: {
-                'url': rev.split('@')[0],
-                'rev': rev.split('@')[1] if '@' in rev else None,
+                'url': rev.split('@')[0] if rev else None,
+                'rev': rev.split('@')[1] if rev and '@' in rev else None,
             }
             for name, rev in entries.iteritems()
         }

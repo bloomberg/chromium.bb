@@ -57,7 +57,7 @@ _GCLIENT_DEPS_SCHEMA = _NodeDictSchema({
         _NodeDictSchema({
             # Repo and revision to check out under the path
             # (same as if no dict was used).
-            'url': basestring,
+            'url': schema.Or(None, basestring),
 
             # Optional condition string. The dep will only be processed
             # if the condition evaluates to True.

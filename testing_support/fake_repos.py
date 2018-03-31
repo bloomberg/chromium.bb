@@ -518,6 +518,15 @@ deps = {
     'url': '/repo_4',
     'condition': 'False',
   },
+  # Entries can have a None repository, which has the effect of either:
+  # - disabling a dep checkout (e.g. in a .gclient solution to prevent checking
+  # out optional large repos, or in deps_os where some repos aren't used on some
+  # platforms)
+  # - allowing a completely local directory to be processed by gclient (handy
+  # for dealing with "custom" DEPS, like buildspecs).
+  '/repoLocal': {
+    'url': None,
+  },
   'src/repo8': '/repo_8',
 }
 deps_os ={
