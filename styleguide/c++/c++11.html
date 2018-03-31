@@ -393,11 +393,11 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
-<td>Number literal separators</td>
-<td><code>float f = 1'000'000.000'1;</code></td>
-<td><code>'</code>s anywhere in int or float literals are ignored</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a>, <a href="http://en.cppreference.com/w/cpp/language/floating_literal">Floating point literals</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/exS1aGs1wes/discussion">Discussion thread</a></td>
+<td>Function return type deduction</td>
+<td><code>auto f() { return 42; }<br>decltype(auto) g() { return 42; }</code></td>
+<td>Allows the return type of a function to be automatically deduced from its return statements, according to either template or <code>decltype</code> rules.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/function#Return_type_deduction">Return type deduction</a></td>
+<td>Usage should be rare, primarily for abstract template code. If you're not sure of the difference, prefer decltype(auto) for templated forwarding/wrapper functions and auto for other cases; see Effective Modern C++ item 3 for more detail. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/-Ox7YgRS_no/discussion">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -406,6 +406,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td>Allows lambda argument types to be deduced using <code>auto</code> (according to the rules that apply to templates).</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/lambda">lambda expressions</a></td>
 <td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/LasGKwE3SFM/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Number literal separators</td>
+<td><code>float f = 1'000'000.000'1;</code></td>
+<td><code>'</code>s anywhere in int or float literals are ignored</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a>, <a href="http://en.cppreference.com/w/cpp/language/floating_literal">Floating point literals</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/exS1aGs1wes/discussion">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -783,13 +791,6 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 </tr>
 
 <tr>
-<td>Function return type deduction</td>
-<td><code>auto f() { return 42; }<br>decltype(auto) g() { return 42; }</code></td>
-<td>Allows the return type of a function to be automatically deduced from its return statements, according to either template or <code>decltype</code> rules.</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/function#Return_type_deduction">Return type deduction</a></td>
-<td>Temporarily banned since it <a href="https://bugs.llvm.org/show_bug.cgi?id=34185">can cause infinite loops in clang</a>. We expect to allow this once that bug is fixed. Usage should be rare, primarily for abstract template code. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/-Ox7YgRS_no/discussion">Discussion thread</a></td>
-</tr>
-
 </tbody>
 </table>
 
@@ -1067,7 +1068,7 @@ something, remove all callers and remove the function instead.</td>
 </tr>
 
 <tr>
-<td>Function Return Type Deduction</td>
+<td>Function Return Type Extraction</td>
 <td><code>std::result_of&lt;<i>Functor(ArgTypes...)</i>&gt;</code></td>
 <td>Extracts the return type from the type signature of a function call invocation at compile-time.</td>
 <td><a href="http://en.cppreference.com/w/cpp/types/result_of">std::result_of</a></td>
