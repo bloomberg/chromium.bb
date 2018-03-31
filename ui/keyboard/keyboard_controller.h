@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/keyboard/container_behavior.h"
 #include "ui/keyboard/container_type.h"
+#include "ui/keyboard/display_util.h"
 #include "ui/keyboard/keyboard_event_filter.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
@@ -287,6 +288,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   NotificationManager notification_manager_;
 
   base::Time time_of_last_blur_ = base::Time::UnixEpoch();
+
+  DisplayUtil display_util_;
 
   static KeyboardController* instance_;
 

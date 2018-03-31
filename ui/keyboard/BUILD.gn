@@ -16,6 +16,8 @@ jumbo_component("keyboard") {
     "container_floating_behavior.h",
     "container_full_width_behavior.cc",
     "container_full_width_behavior.h",
+    "display_util.cc",
+    "display_util.h",
     "drag_descriptor.cc",
     "drag_descriptor.h",
     "keyboard_controller.cc",

@@ -23,8 +23,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,6 +31,7 @@
 #include "ui/keyboard/container_floating_behavior.h"
 #include "ui/keyboard/container_full_width_behavior.h"
 #include "ui/keyboard/container_type.h"
+#include "ui/keyboard/display_util.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_layout_manager.h"
 #include "ui/keyboard/keyboard_ui.h"
@@ -309,11 +308,8 @@ void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds,
       if (keyboard_locked()) {
         // Do not move the keyboard to another display after switch to an IME in
         // a different extension.
-        const int64_t display_id =
-            display::Screen::GetScreen()
-                ->GetDisplayNearestWindow(GetContainerWindow())
-                .id();
-        ShowKeyboardInDisplay(display_id);
+        ShowKeyboardInDisplay(
+            display_util_.GetNearestDisplayIdToWindow(GetContainerWindow()));
       } else {
         ShowKeyboard(false /* lock */);
       }
