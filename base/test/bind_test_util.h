@@ -25,8 +25,7 @@ struct BindLambdaHelper<F, R(Args...)> {
 // A variant of Bind() that can bind capturing lambdas for testing.
 // This doesn't support extra arguments binding as the lambda itself can do.
 template <typename F>
-RepeatingCallback<internal::ExtractCallableRunType<std::decay_t<F>>>
-BindLambdaForTesting(F&& f) {
+decltype(auto) BindLambdaForTesting(F&& f) {
   using Signature = internal::ExtractCallableRunType<std::decay_t<F>>;
   return BindRepeating(&internal::BindLambdaHelper<F, Signature>::Run,
                        std::forward<F>(f));

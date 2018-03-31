@@ -163,7 +163,7 @@ template <typename T>
 using Unwrapper = BindUnwrapTraits<std::decay_t<T>>;
 
 template <typename T>
-auto Unwrap(T&& o) -> decltype(Unwrapper<T>::Unwrap(std::forward<T>(o))) {
+decltype(auto) Unwrap(T&& o) {
   return Unwrapper<T>::Unwrap(std::forward<T>(o));
 }
 
