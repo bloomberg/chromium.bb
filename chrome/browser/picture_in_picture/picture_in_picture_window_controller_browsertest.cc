@@ -46,6 +46,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   ASSERT_TRUE(window_controller()->GetWindowForTesting() != nullptr);
   ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  viz::FrameSinkId test_frame_sink(1, 1);
+  viz::LocalSurfaceId test_local_surface_id(1,
+                                            base::UnguessableToken::Create());
+  viz::SurfaceId test_surface_id(test_frame_sink, test_local_surface_id);
+  window_controller()->EmbedSurface(test_surface_id);
+
+  // Window still should not be shown even when the viz::SurfaceId is set.
+  ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+
   window_controller()->Show();
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }

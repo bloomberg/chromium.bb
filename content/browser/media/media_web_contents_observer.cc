@@ -131,6 +131,8 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(
         MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged,
         OnPictureInPictureSourceChanged)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
+                        OnPictureInPictureModeEnded)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -285,6 +287,12 @@ void MediaWebContentsObserver::OnPictureInPictureSourceChanged(
     RenderFrameHost* render_frame_host,
     int delegate_id) {
   pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
+}
+
+void MediaWebContentsObserver::OnPictureInPictureModeEnded(
+    RenderFrameHost* render_frame_host,
+    int delegate_id) {
+  pip_player_.reset();
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(

@@ -128,6 +128,7 @@ class WebMediaPlayer {
   virtual void SetRate(double) = 0;
   virtual void SetVolume(double) = 0;
   virtual void EnterPictureInPicture() = 0;
+  virtual void ExitPictureInPicture() = 0;
 
   virtual void RequestRemotePlayback() {}
   virtual void RequestRemotePlaybackControl() {}

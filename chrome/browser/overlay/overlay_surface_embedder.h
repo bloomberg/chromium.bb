@@ -24,8 +24,9 @@ class OverlaySurfaceEmbedder {
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
 
  private:
-  // The window which embeds the client.
-  std::unique_ptr<OverlayWindow> window_;
+  // The window which embeds the client. Weak pointer since the
+  // PictureInPictureWindowController owns the window.
+  OverlayWindow* window_;
 
   // Contains the client's content.
   std::unique_ptr<ui::Layer> surface_layer_;

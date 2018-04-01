@@ -103,6 +103,9 @@ class WebMediaPlayerDelegate {
   // Notify that the source media player of Picture-in-Picture has changed.
   virtual void DidPictureInPictureSourceChange(int delegate_id) = 0;
 
+  // Notify that the source media player has exited Picture-in-Picture mode.
+  virtual void DidPictureInPictureModeEnd(int delegate_id) = 0;
+
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.
   //

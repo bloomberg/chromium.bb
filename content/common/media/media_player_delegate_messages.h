@@ -8,6 +8,9 @@
 // IPC messages for interactions between the WebMediaPlayerDelegate in the
 // renderer process and MediaWebContentsObserver in the browser process.
 
+// TODO(apacible): Mojoify MediaPlayerDelegateMsg, then remove this file.
+// https://crbug.com/824965
+
 #include <stdint.h>
 
 #include "content/common/content_export.h"
@@ -84,6 +87,9 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                     gfx::Size /* new size of video */)
 
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged,
+                    int /* delegate id */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
                     int /* delegate id */)
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_
