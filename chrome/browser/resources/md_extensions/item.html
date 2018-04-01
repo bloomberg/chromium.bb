@@ -251,7 +251,8 @@
               doesn't shrink (because it's not display: flex).-->
           <div>
             <div id="name-and-version" class="layout horizontal center">
-              <div id="name" class="clippable-flex-text">[[data.name]]</div>
+              <div id="name" role="heading" aria-level="3"
+                  class="clippable-flex-text">[[data.name]]</div>
               <span id="version" hidden$="[[!inDevMode]]">
                 [[data.version]]
               </span>
