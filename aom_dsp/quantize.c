@@ -66,7 +66,8 @@ void quantize_b_helper_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
         const int dequant =
             (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
             AOM_QM_BITS;
-        dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant / (1 << log_scale);
+        const tran_low_t abs_dqcoeff = (tmp32 * dequant) >> log_scale;
+        dqcoeff_ptr[rc] = (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
 
         if (tmp32) eob = i;
       }
@@ -126,7 +127,8 @@ void highbd_quantize_b_helper_c(
       qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
       dequant = (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
                 AOM_QM_BITS;
-      dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant) / (1 << log_scale);
+      const tran_low_t abs_dqcoeff = (abs_qcoeff * dequant) >> log_scale;
+      dqcoeff_ptr[rc] = (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
       if (abs_qcoeff) eob = idx_arr[i];
     }
   }

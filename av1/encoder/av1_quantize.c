@@ -104,7 +104,8 @@ static void quantize_fp_helper_c(
         tmp32 = (int)((abs_coeff * wt * quant_ptr[rc != 0]) >>
                       (16 - log_scale + AOM_QM_BITS));
         qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
-        dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant / (1 << log_scale);
+        const tran_low_t abs_dqcoeff = (tmp32 * dequant) >> log_scale;
+        dqcoeff_ptr[rc] = (abs_dqcoeff ^ coeff_sign) - coeff_sign;
       }
 
       if (tmp32) eob = i;
@@ -122,7 +123,6 @@ static void highbd_quantize_fp_helper_c(
     const qm_val_t *iqm_ptr, int log_scale) {
   int i;
   int eob = -1;
-  const int scale = 1 << log_scale;
   const int shift = 16 - log_scale;
   // TODO(jingning) Decide the need of these arguments after the
   // quantization process is completed.
@@ -154,7 +154,8 @@ static void highbd_quantize_fp_helper_c(
         abs_qcoeff =
             (int)((tmp * quant_ptr[rc != 0] * wt) >> (shift + AOM_QM_BITS));
         qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
-        dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant / scale;
+        const tran_low_t abs_dqcoeff = (abs_qcoeff * dequant) >> log_scale;
+        dqcoeff_ptr[rc] = (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
       }
       if (abs_qcoeff) eob = i;
     }
@@ -325,7 +326,8 @@ static void quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs,
     tmp32 = (int32_t)((tmp * wt * quant) >> (16 - log_scale + AOM_QM_BITS));
     qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
     dequant = (dequant_ptr * iwt + (1 << (AOM_QM_BITS - 1))) >> AOM_QM_BITS;
-    dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant) / (1 << log_scale);
+    const tran_low_t abs_dqcoeff = (tmp32 * dequant) >> log_scale;
+    dqcoeff_ptr[rc] = (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
     if (tmp32) eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -456,7 +458,8 @@ static INLINE void highbd_quantize_dc(
     const int dequant =
         (dequant_ptr * iwt + (1 << (AOM_QM_BITS - 1))) >> AOM_QM_BITS;
 
-    dqcoeff_ptr[0] = (qcoeff_ptr[0] * dequant) / (1 << log_scale);
+    const tran_low_t abs_dqcoeff = (abs_qcoeff * dequant) >> log_scale;
+    dqcoeff_ptr[0] = (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
     if (abs_qcoeff) eob = 0;
   }
   *eob_ptr = eob + 1;
