@@ -115,6 +115,8 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
                                  bool muted);
   void OnPictureInPictureSourceChanged(RenderFrameHost* render_frame_host,
                                        int delegate_id);
+  void OnPictureInPictureModeEnded(RenderFrameHost* render_frame_host,
+                                   int delegate_id);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);

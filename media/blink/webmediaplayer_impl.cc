@@ -789,6 +789,29 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
     client_->PictureInPictureStarted();
 }
 
+void WebMediaPlayerImpl::ExitPictureInPicture() {
+  // TODO(apacible): Handle ending PiP from a user gesture. This currently
+  // handles ending Picture-in-Picture mode from the source.
+  // https://crbug.com/823172.
+
+  // Do not clear |pip_surface_id_| in case we enter Picture-in-Picture mode
+  // again.
+  if (!pip_surface_id_.is_valid())
+    return;
+
+  // Clears the Picture-in-Picture viz::SurfaceId. The default SurfaceId is not
+  // considered valid as both its FrameSinkId and LocalSurfaceId do not have
+  // have valid values.
+  pip_surface_info_cb_.Run(viz::SurfaceId());
+
+  // Updates the MediaWebContentsObserver with |delegate_id_| to clear the
+  // tracked media player that is in Picture-in-Picture mode.
+  delegate_->DidPictureInPictureModeEnd(delegate_id_);
+
+  if (client_)
+    client_->PictureInPictureStopped();
+}
+
 void WebMediaPlayerImpl::SetSinkId(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,

@@ -179,6 +179,7 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   }
 
   MOCK_METHOD1(DidPictureInPictureSourceChange, void(int));
+  MOCK_METHOD1(DidPictureInPictureModeEnd, void(int));
 
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);
@@ -529,7 +530,6 @@ class WebMediaPlayerImplTest : public testing::Test {
   NiceMock<MockWebMediaPlayerClient> client_;
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
-
   viz::LocalSurfaceId local_surface_id_ =
       viz::LocalSurfaceId(11, base::UnguessableToken::Deserialize(0x111111, 0));
   viz::SurfaceId surface_id_ =
@@ -1127,8 +1127,10 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
-  // This call should do nothing because there is no SurfaceId set.
+  // These calls should do nothing since there is no SurfaceId set.
   wmpi_->EnterPictureInPicture();
+  wmpi_->ExitPictureInPicture();
+
   EXPECT_CALL(client_, IsInPictureInPictureMode());
   wmpi_->OnSurfaceIdUpdated(surface_id_);
   testing::Mock::VerifyAndClearExpectations(&client_);
@@ -1138,6 +1140,13 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_));
   // This call should trigger the callback since the SurfaceId is set.
   wmpi_->EnterPictureInPicture();
+  testing::Mock::VerifyAndClearExpectations(&client_);
+
+  // Upon exiting Picture-in-Picture mode, functions to cleanup are expected to
+  // be called.
+  EXPECT_CALL(pip_surface_info_cb_, Run(viz::SurfaceId()));
+  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id()));
+  wmpi_->ExitPictureInPicture();
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

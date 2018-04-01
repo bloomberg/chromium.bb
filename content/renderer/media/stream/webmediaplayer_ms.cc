@@ -584,6 +584,12 @@ void WebMediaPlayerMS::EnterPictureInPicture() {
   // WebMediaPlayerMS. See http://crbug/746182.
 }
 
+void WebMediaPlayerMS::ExitPictureInPicture() {
+  NOTIMPLEMENTED();
+  // TODO(apacible): Implement after video in surfaces is supported for
+  // WebMediaPlayerMS. See http://crbug/746182.
+}
+
 void WebMediaPlayerMS::SetSinkId(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,

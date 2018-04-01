@@ -1404,8 +1404,11 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
 }
 
 void Browser::UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) {
-  if (!surface_id.is_valid())
+  if (!surface_id.is_valid()) {
+    if (pip_window_controller_)
+      pip_window_controller_->Close();
     return;
+  }
 
   if (!pip_window_controller_)
     pip_window_controller_.reset(

@@ -123,6 +123,12 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureSourceChange(
       routing_id(), delegate_id));
 }
 
+void RendererWebMediaPlayerDelegate::DidPictureInPictureModeEnd(
+    int delegate_id) {
+  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(routing_id(),
+                                                                  delegate_id));
+}
+
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
   DVLOG(2) << __func__ << "(" << player_id << ")";
   DCHECK(id_map_.Lookup(player_id));

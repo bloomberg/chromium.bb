@@ -36,12 +36,15 @@ PictureInPictureWindowController::PictureInPictureWindowController(
 
 void PictureInPictureWindowController::Show() {
   DCHECK(window_);
+  DCHECK(surface_id_.is_valid());
   window_->Show();
 }
 
 void PictureInPictureWindowController::Close() {
   if (window_->IsActive())
     window_->Close();
+
+  surface_id_ = viz::SurfaceId();
 }
 
 void PictureInPictureWindowController::EmbedSurface(viz::SurfaceId surface_id) {

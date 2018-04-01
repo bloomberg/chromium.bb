@@ -23,6 +23,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   void SetRate(double) override {}
   void SetVolume(double) override {}
   void EnterPictureInPicture() override {}
+  void ExitPictureInPicture() override {}
   WebTimeRanges Buffered() const override;
   WebTimeRanges Seekable() const override;
   void SetSinkId(const WebString& sink_id,
