@@ -98,7 +98,7 @@ void av1_add_film_grain_run(aom_film_grain_t *grain_params, uint8_t *luma,
                             uint8_t *cb, uint8_t *cr, int height, int width,
                             int luma_stride, int chroma_stride,
                             int use_high_bit_depth, int chroma_subsamp_y,
-                            int chroma_subsamp_x);
+                            int chroma_subsamp_x, int mc_identity);
 
 /*!\brief Add film grain
  *
