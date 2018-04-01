@@ -116,7 +116,7 @@ constexpr base::TimeDelta kWebVrSlowAcquireThreshold =
 
 // If running too fast, allow dropping frames occasionally to let GVR catch up.
 // Drop at most one frame in MaxDropRate.
-constexpr int kWebVrUnstuffMaxDropRate = 11;
+constexpr int kWebVrUnstuffMaxDropRate = 7;
 
 constexpr int kNumSamplesPerPixelBrowserUi = 2;
 constexpr int kNumSamplesPerPixelWebVr = 1;
@@ -1286,11 +1286,14 @@ void VrShellGl::AddWebVrRenderTimeEstimate(int16_t frame_index, bool did_wait) {
       // between the saved webvr_time_copied_ and now. Use the midpoint of
       // that as an estimate.
       base::TimeDelta lower_limit =
-          webvr_time_copied_[frame_index % kPoseRingBufferSize] -
-          prev_js_submit;
+          webvr_time_copied_[prev_idx % kPoseRingBufferSize] - prev_js_submit;
       base::TimeDelta midpoint = (lower_limit + prev_render) / 2;
       webvr_render_time_.AddSample(midpoint);
     }
+    // Zero the submit time so that the SkipVSync heuristic doesn't try to wait
+    // for render completion for this frame. This avoids excessive delays in
+    // case the render time heuristic is an overestimate.
+    webvr_time_js_submit_[prev_idx] = base::TimeTicks();
   }
 }
 
@@ -1608,38 +1611,52 @@ bool VrShellGl::ShouldSkipVSync() {
   if (!webvr_use_gpu_fence_)
     return false;
 
-  int16_t prev_idx =
-      (next_frame_index_ + kPoseRingBufferSize - 1) % kPoseRingBufferSize;
-  base::TimeTicks prev_js_submit = webvr_time_js_submit_[prev_idx];
-  if (prev_js_submit.is_null())
-    return false;
-
   base::TimeDelta frame_interval = vsync_helper_.DisplayVSyncInterval();
   base::TimeDelta mean_render_time =
       webvr_render_time_.GetAverageOrDefault(frame_interval);
-  base::TimeDelta prev_render_time_left =
-      mean_render_time - (base::TimeTicks::Now() - prev_js_submit);
-  base::TimeDelta mean_js_time = webvr_js_time_.GetAverage();
-  base::TimeDelta mean_js_wait = webvr_js_wait_time_.GetAverage();
-  // We don't want the next frame to arrive too early. Estimated
-  // time-to-new-frame is the net JavaScript time (not counting time spent
-  // waiting) plus the net render time.
-  //
-  // Ideally we'd want the new frame to be ready one vsync interval after the
-  // current frame finishes rendering, but allow being a half vsync early.
-  if (mean_js_time - mean_js_wait + mean_render_time <
-      prev_render_time_left + frame_interval / 2) {
-    return true;
+
+  // Check estimated completion of the rendering frame, that's two frames back.
+  // It might not exist, i.e. for the first couple of frames when starting
+  // presentation, or if the app failed to submit a frame in its rAF loop.
+  // Also, AddWebVrRenderTimeEstimate zeroes the submit time once the rendered
+  // frame is complete. In all of those cases, we don't need to wait for render
+  // completion.
+  bool still_rendering = false;
+  int16_t prev_idx =
+      (next_frame_index_ + kPoseRingBufferSize - 2) % kPoseRingBufferSize;
+  base::TimeTicks prev_js_submit = webvr_time_js_submit_[prev_idx];
+  if (!prev_js_submit.is_null()) {
+    base::TimeDelta mean_js_time = webvr_js_time_.GetAverage();
+    base::TimeDelta mean_js_wait = webvr_js_wait_time_.GetAverage();
+    base::TimeDelta prev_render_time_left =
+        mean_render_time - (base::TimeTicks::Now() - prev_js_submit);
+    // We don't want the next animating frame to arrive too early. Estimated
+    // time-to-submit is the net JavaScript time, not counting time spent
+    // waiting. JS is blocked from submitting if the rendering frame (two
+    // frames back) is not complete yet, so there's no point submitting earlier
+    // than that. There's also a processing frame (one frame back), so we have
+    // at least a VSync interval spare time after that. Aim for submitting 3/4
+    // of a VSync interval after the rendering frame completes to keep a bit of
+    // safety margin. We're currently scheduling at VSync granularity, so skip
+    // this VSync if we'd arrive a full VSync interval early.
+    if (mean_js_time - mean_js_wait + frame_interval <
+        prev_render_time_left + frame_interval * 3 / 4) {
+      still_rendering = true;
+    }
   }
 
+  bool overstuffed = false;
   if (webvr_unstuff_ratelimit_frames_ > 0) {
     --webvr_unstuff_ratelimit_frames_;
   } else if (webvr_acquire_time_.GetAverage() >= kWebVrSlowAcquireThreshold &&
              mean_render_time < frame_interval) {
+    overstuffed = true;
     webvr_unstuff_ratelimit_frames_ = kWebVrUnstuffMaxDropRate;
-    return true;
   }
-  return false;
+  TRACE_COUNTER2("gpu", "WebVR frame skip", "still rendering", still_rendering,
+                 "overstuffed", overstuffed);
+
+  return still_rendering | overstuffed;
 }
 
 void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
@@ -1682,6 +1699,12 @@ void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
   webvr_frame_oustanding_[frame_index % kPoseRingBufferSize] = true;
   webvr_time_pose_[frame_index % kPoseRingBufferSize] = base::TimeTicks::Now();
+
+  // Zero the tracked submit time so that the heuristics don't get confused if
+  // the JS app fails to submit a frame. In that case the frame index numbers
+  // won't be sequential, and "previous frame" based on index could be a stale
+  // frame.
+  webvr_time_js_submit_[frame_index % kPoseRingBufferSize] = base::TimeTicks();
 
   std::move(callback).Run(
       std::move(pose), time - base::TimeTicks(), frame_index,
