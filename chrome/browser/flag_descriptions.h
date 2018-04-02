@@ -267,6 +267,9 @@ extern const char kEnableDesktopPWAsLinkCapturingDescription[];
 extern const char kEnableDockedMagnifierName[];
 extern const char kEnableDockedMagnifierDescription[];
 
+extern const char kEnableEmojiContextMenuName[];
+extern const char kEnableEmojiContextMenuDescription[];
+
 extern const char kEnableEnumeratingAudioDevicesName[];
 extern const char kEnableEnumeratingAudioDevicesDescription[];
 

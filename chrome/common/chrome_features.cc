@@ -215,6 +215,11 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// If enabled, the emoji picker context menu item may be shown for editable
+// text areas.
+const base::Feature kEnableEmojiContextMenu{"EnableEmojiContextMenu",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // If enabled, the Chrome OS Settings UI will include a menu for the unified
 // MultiDevice settings.

@@ -379,6 +379,10 @@ const char kEnableDockedMagnifierName[] = "Docked Magnifier";
 const char kEnableDockedMagnifierDescription[] =
     "Enables the Docked Magnifier (a.k.a. picture-in-picture magnifier).";
 
+const char kEnableEmojiContextMenuName[] = "Emoji Context Menu";
+const char kEnableEmojiContextMenuDescription[] =
+    "Enables the Emoji picker item in context menus for editable text areas.";
+
 const char kEnableEnumeratingAudioDevicesName[] =
     "Experimentally enable enumerating audio devices.";
 const char kEnableEnumeratingAudioDevicesDescription[] =
