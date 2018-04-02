@@ -78,7 +78,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
   if (details.is_add && details.child == this && (label_ == nullptr)) {
     ConfirmInfoBarDelegate* delegate = GetDelegate();
     label_ = CreateLabel(delegate->GetMessageText());
-    AddViewToContentArea(label_);
+    AddChildView(label_);
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
       ok_button_ = CreateButton(ConfirmInfoBarDelegate::BUTTON_OK);
@@ -98,7 +98,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
 
     base::string16 link_text(delegate->GetLinkText());
     link_ = CreateLink(link_text, this);
-    AddViewToContentArea(link_);
+    AddChildView(link_);
   }
 
   // This must happen after adding all other children so InfoBarView can ensure
@@ -148,7 +148,7 @@ views::MdTextButton* ConfirmInfoBar::CreateButton(
       new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
                           DISTANCE_TOAST_CONTROL_VERTICAL),
                       0));
-  AddViewToContentArea(button);
+  AddChildView(button);
   button->SizeToPreferredSize();
   return button;
 }

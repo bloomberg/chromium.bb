@@ -80,11 +80,6 @@ class InfoBarView : public infobars::InfoBar,
   // animate open and closed.
   int OffsetY(views::View* view) const;
 
- protected:
-  // Adds |view| to the content area, i.e. |child_container_|. The |view| won't
-  // automatically get any layout, so should still be laid out manually.
-  void AddViewToContentArea(views::View* view);
-
  private:
   // Does the actual work for AssignWidths().  Assumes |labels| is sorted by
   // decreasing preferred width.
@@ -113,10 +108,6 @@ class InfoBarView : public infobars::InfoBar,
   // Sets various attributes on |label| that are common to all child links and
   // labels.
   void SetLabelDetails(views::Label* label) const;
-
-  // This container holds the children and clips their painting during
-  // animation.
-  views::View* child_container_;
 
   // The optional icon at the left edge of the InfoBar.
   views::ImageView* icon_ = nullptr;
