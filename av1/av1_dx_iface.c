@@ -477,6 +477,17 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     if (res != AOM_CODEC_OK) return res;
   }
 
+  if (ctx->is_annexb) {
+    // read the size of this temporal unit
+    size_t length_of_size;
+    uint64_t size_of_unit;
+    if (aom_uleb_decode(data_start, data_sz, &size_of_unit, &length_of_size) !=
+        0) {
+      return AOM_CODEC_CORRUPT_FRAME;
+    }
+    data_start += length_of_size;
+  }
+
   // Decode in serial mode.
   if (frame_count > 0) {
     int i;
@@ -496,6 +507,17 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     }
   } else {
     while (data_start < data_end) {
+      if (ctx->is_annexb) {
+        // read the size of this frame unit
+        size_t length_of_size;
+        uint64_t size_of_frame_unit;
+        if (aom_uleb_decode(data_start, (uint32_t)(data_end - data_start),
+                            &size_of_frame_unit, &length_of_size) != 0) {
+          return AOM_CODEC_CORRUPT_FRAME;
+        }
+        data_start += length_of_size;
+      }
+
       const uint32_t frame_size = (uint32_t)(data_end - data_start);
       res = decode_one(ctx, &data_start, frame_size, user_priv);
       if (res != AOM_CODEC_OK) return res;

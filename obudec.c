@@ -25,7 +25,7 @@
 #define OBU_EXTENSION_SIZE 1
 #define OBU_MAX_LENGTH_FIELD_SIZE 8
 #define OBU_DETECTION_SIZE \
-  (OBU_HEADER_SIZE + OBU_EXTENSION_SIZE + OBU_MAX_LENGTH_FIELD_SIZE)
+  (OBU_HEADER_SIZE + OBU_EXTENSION_SIZE + 2 * OBU_MAX_LENGTH_FIELD_SIZE)
 
 // Reads unsigned LEB128 integer and returns 0 upon successful read and decode.
 // Stores raw bytes in 'value_buffer', length of the number in 'value_length',
@@ -209,9 +209,30 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx) {
   uint64_t obu_length = 0;
   ObuHeader obu_header;
   memset(&obu_header, 0, sizeof(obu_header));
+  size_t length_of_unit_size = 0;
+  uint64_t unit_size;
+  size_t annexb_header_length = 0;
 
-  if (obudec_read_one_obu(f, OBU_DETECTION_SIZE, is_annexb, &detect_buf[0],
-                          &obu_length, &obu_header) != 0) {
+  if (is_annexb) {
+    // read the size of first temporal unit
+    if (obudec_read_leb128(f, &detect_buf[0], &length_of_unit_size,
+                           &unit_size) != 0) {
+      fprintf(stderr, "obudec: Failure reading temporal unit header\n");
+      return 0;
+    }
+
+    // read the size of first frame unit
+    if (obudec_read_leb128(f, &detect_buf[length_of_unit_size],
+                           &annexb_header_length, &unit_size) != 0) {
+      fprintf(stderr, "obudec: Failure reading frame unit header\n");
+      return 0;
+    }
+    annexb_header_length += length_of_unit_size;
+  }
+
+  if (obudec_read_one_obu(f, OBU_DETECTION_SIZE, is_annexb,
+                          &detect_buf[annexb_header_length], &obu_length,
+                          &obu_header) != 0) {
     fprintf(stderr, "obudec: Failure reading first OBU.\n");
     rewind(f);
     return 0;
@@ -250,6 +271,10 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx) {
     return 0;
   }
   obu_ctx->buffer_capacity = OBU_BUFFER_SIZE;
+
+  if (is_annexb) {
+    obu_length += annexb_header_length;
+  }
   memcpy(obu_ctx->buffer, &detect_buf[0], (size_t)obu_length);
   obu_ctx->bytes_buffered = (size_t)obu_length;
 
@@ -269,51 +294,102 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
     return 1;
   }
 
-  const int is_annexb = obu_ctx->is_annexb;
-  while (1) {
-    ObuHeader obu_header;
-    memset(&obu_header, 0, sizeof(obu_header));
+  size_t tu_size;
+  uint64_t obu_size = 0;
+  uint8_t *data = obu_ctx->buffer;
+  size_t length_of_temporal_unit_size = 0;
+  uint8_t tuheader[OBU_MAX_LENGTH_FIELD_SIZE] = { 0 };
 
-    uint64_t obu_size = 0;
-    uint8_t *data = obu_ctx->buffer + obu_ctx->bytes_buffered;
-    const size_t capacity = obu_ctx->buffer_capacity - obu_ctx->bytes_buffered;
+  if (obu_ctx->is_annexb) {
+    uint64_t size = 0;
 
-    if (obudec_read_one_obu(f, capacity, is_annexb, data, &obu_size,
-                            &obu_header) != 0) {
-      fprintf(stderr, "obudec: read_one_obu failed in TU loop\n");
-      return -1;
+    if (obu_ctx->bytes_buffered == 0) {
+      if (obudec_read_leb128(f, &tuheader[0], &length_of_temporal_unit_size,
+                             &size) != 0) {
+        fprintf(stderr, "obudec: Failure reading temporal unit header\n");
+        return -1;
+      }
+      if (size == 0 && feof(f)) {
+        return 1;
+      }
+    } else {
+      // temporal unit size was already stored in buffer
+      if (aom_uleb_decode(obu_ctx->buffer, obu_ctx->bytes_buffered, &size,
+                          &length_of_temporal_unit_size) != 0) {
+        fprintf(stderr, "obudec: Failure reading temporal unit header\n");
+        return -1;
+      }
     }
 
-    if (obu_header.type == OBU_TEMPORAL_DELIMITER || obu_size == 0 ||
-        (obu_header.has_extension &&
-         obu_header.enhancement_layer_id > obu_ctx->last_layer_id)) {
-      const size_t tu_size = obu_ctx->bytes_buffered;
+    size += length_of_temporal_unit_size;
+    tu_size = (size_t)size;
+  } else {
+    while (1) {
+      ObuHeader obu_header;
+      memset(&obu_header, 0, sizeof(obu_header));
 
-#if defined AOM_MAX_ALLOCABLE_MEMORY
-      if (tu_size > AOM_MAX_ALLOCABLE_MEMORY) {
-        fprintf(stderr, "obudec: Temporal Unit size exceeds max alloc size.\n");
+      data = obu_ctx->buffer + obu_ctx->bytes_buffered;
+      const size_t capacity =
+          obu_ctx->buffer_capacity - obu_ctx->bytes_buffered;
+
+      if (obudec_read_one_obu(f, capacity, 0, data, &obu_size, &obu_header) !=
+          0) {
+        fprintf(stderr, "obudec: read_one_obu failed in TU loop\n");
         return -1;
       }
-#endif
-      uint8_t *new_buffer = (uint8_t *)realloc(*buffer, tu_size);
-      if (!new_buffer) {
-        free(*buffer);
-        fprintf(stderr, "obudec: Out of memory.\n");
-        return -1;
-      }
-      *buffer = new_buffer;
-      *bytes_read = tu_size;
-      *buffer_size = tu_size;
-      memcpy(*buffer, obu_ctx->buffer, tu_size);
 
-      memmove(obu_ctx->buffer, data, (size_t)obu_size);
-      obu_ctx->bytes_buffered = (size_t)obu_size;
-      break;
-    } else {
-      obu_ctx->bytes_buffered += (size_t)obu_size;
+      if (obu_header.type == OBU_TEMPORAL_DELIMITER || obu_size == 0 ||
+          (obu_header.has_extension &&
+           obu_header.enhancement_layer_id > obu_ctx->last_layer_id)) {
+        tu_size = obu_ctx->bytes_buffered;
+        break;
+      } else {
+        obu_ctx->bytes_buffered += (size_t)obu_size;
+      }
     }
   }
 
+#if defined AOM_MAX_ALLOCABLE_MEMORY
+  if (tu_size > AOM_MAX_ALLOCABLE_MEMORY) {
+    fprintf(stderr, "obudec: Temporal Unit size exceeds max alloc size.\n");
+    return -1;
+  }
+#endif
+  uint8_t *new_buffer = (uint8_t *)realloc(*buffer, tu_size);
+  if (!new_buffer) {
+    free(*buffer);
+    fprintf(stderr, "obudec: Out of memory.\n");
+    return -1;
+  }
+  *buffer = new_buffer;
+  *bytes_read = tu_size;
+  *buffer_size = tu_size;
+
+  if (!obu_ctx->is_annexb) {
+    memcpy(*buffer, obu_ctx->buffer, tu_size);
+    memmove(obu_ctx->buffer, data, (size_t)obu_size);
+    obu_ctx->bytes_buffered = (size_t)obu_size;
+  } else {
+    if (!feof(f)) {
+      size_t data_size;
+      size_t offset;
+      if (!obu_ctx->bytes_buffered) {
+        data_size = (uint32_t)(tu_size - length_of_temporal_unit_size);
+        memcpy(*buffer, &tuheader[0], length_of_temporal_unit_size);
+        offset = length_of_temporal_unit_size;
+      } else {
+        memcpy(*buffer, obu_ctx->buffer, obu_ctx->bytes_buffered);
+        offset = obu_ctx->bytes_buffered;
+        data_size = tu_size - obu_ctx->bytes_buffered;
+        obu_ctx->bytes_buffered = 0;
+      }
+
+      if (fread(new_buffer + offset, 1, data_size, f) != data_size) {
+        fprintf(stderr, "obudec: Failed to read full temporal unit\n");
+        return -1;
+      }
+    }
+  }
   return 0;
 }
 

@@ -1270,6 +1270,55 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       if (frame_size) {
         if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
 
+        const int write_temporal_delimiter =
+            !cpi->common.enhancement_layer_id && !ctx->pending_frame_count;
+
+        if (write_temporal_delimiter) {
+          uint32_t obu_header_size = 1;
+          const uint32_t obu_payload_size = 0;
+          const size_t length_field_size =
+              aom_uleb_size_in_bytes(obu_payload_size);
+
+          if (ctx->pending_cx_data) {
+            const size_t move_offset = length_field_size + 1;
+            memmove(ctx->pending_cx_data + move_offset, ctx->pending_cx_data,
+                    frame_size);
+          }
+          const uint32_t obu_header_offset = 0;
+          obu_header_size = write_obu_header(
+              OBU_TEMPORAL_DELIMITER, 0,
+              (uint8_t *)(ctx->pending_cx_data + obu_header_offset));
+
+          // OBUs are preceded/succeeded by an unsigned leb128 coded integer.
+          if (write_uleb_obu_size(obu_header_size, obu_payload_size,
+                                  ctx->pending_cx_data) != AOM_CODEC_OK) {
+            return AOM_CODEC_ERROR;
+          }
+
+          frame_size += obu_header_size + obu_payload_size + length_field_size;
+        }
+
+        if (ctx->oxcf.save_as_annexb) {
+          size_t curr_frame_size = frame_size;
+          if (av1_convert_sect5obus_to_annexb(cx_data, &curr_frame_size) !=
+              AOM_CODEC_OK) {
+            return AOM_CODEC_ERROR;
+          }
+          frame_size = curr_frame_size;
+
+          // B_PRIME (add frame size)
+          const size_t length_field_size = aom_uleb_size_in_bytes(frame_size);
+          if (ctx->pending_cx_data) {
+            const size_t move_offset = length_field_size;
+            memmove(cx_data + move_offset, cx_data, frame_size);
+          }
+          if (write_uleb_obu_size(0, (uint32_t)frame_size, cx_data) !=
+              AOM_CODEC_OK) {
+            return AOM_CODEC_ERROR;
+          }
+          frame_size += length_field_size;
+        }
+
         ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
         ctx->pending_cx_data_sz += frame_size;
 
@@ -1285,50 +1334,27 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       // Add the frame packet to the list of returned packets.
       aom_codec_cx_pkt_t pkt;
 
+      if (ctx->oxcf.save_as_annexb) {
+        //  B_PRIME (add TU size)
+        size_t tu_size = ctx->pending_cx_data_sz;
+        const size_t length_field_size = aom_uleb_size_in_bytes(tu_size);
+        if (ctx->pending_cx_data) {
+          const size_t move_offset = length_field_size;
+          memmove(ctx->pending_cx_data + move_offset, ctx->pending_cx_data,
+                  tu_size);
+        }
+        if (write_uleb_obu_size(0, (uint32_t)tu_size, ctx->pending_cx_data) !=
+            AOM_CODEC_OK) {
+          return AOM_CODEC_ERROR;
+        }
+        ctx->pending_cx_data_sz += length_field_size;
+      }
+
       pkt.kind = AOM_CODEC_CX_FRAME_PKT;
 
       pkt.data.frame.buf = ctx->pending_cx_data;
       pkt.data.frame.sz = ctx->pending_cx_data_sz;
       pkt.data.frame.partition_id = -1;
-
-      int write_temporal_delimiter = 1;
-      // only write OBU_TD if base layer
-      write_temporal_delimiter = !cpi->common.enhancement_layer_id;
-      if (write_temporal_delimiter) {
-        // move data and insert OBU_TD preceded by optional 4 byte size
-        uint32_t obu_header_size = 1;
-        const uint32_t obu_payload_size = 0;
-        const size_t length_field_size =
-            aom_uleb_size_in_bytes(obu_payload_size);
-
-        if (ctx->pending_cx_data) {
-          const size_t move_offset = length_field_size + 1;
-          memmove(ctx->pending_cx_data + move_offset, ctx->pending_cx_data,
-                  ctx->pending_cx_data_sz);
-        }
-        const uint32_t obu_header_offset = 0;
-        obu_header_size = write_obu_header(
-            OBU_TEMPORAL_DELIMITER, 0,
-            (uint8_t *)(ctx->pending_cx_data + obu_header_offset));
-
-        // OBUs are preceded/succeeded by an unsigned leb128 coded integer.
-        if (write_uleb_obu_size(obu_header_size, obu_payload_size,
-                                ctx->pending_cx_data) != AOM_CODEC_OK) {
-          return AOM_CODEC_ERROR;
-        }
-
-        pkt.data.frame.sz +=
-            obu_header_size + obu_payload_size + length_field_size;
-      }
-
-      if (ctx->oxcf.save_as_annexb) {
-        size_t curr_frame_size = pkt.data.frame.sz;
-        if (av1_convert_sect5obus_to_annexb(ctx->pending_cx_data,
-                                            &curr_frame_size) != AOM_CODEC_OK) {
-          return AOM_CODEC_ERROR;
-        }
-        pkt.data.frame.sz = curr_frame_size;
-      }
 
       pkt.data.frame.pts = ticks_to_timebase_units(timebase, dst_time_stamp);
       pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);
