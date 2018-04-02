@@ -405,10 +405,20 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   const QuicString serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
+  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
+      GetQuicReloadableFlag(quic_register_static_streams)) {
+    session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
+  }
+  QuicServerSessionBasePeer::SetCryptoStream(session_.get(), nullptr);
   MockQuicCryptoServerStream* crypto_stream =
       new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
                                      session_.get(), &stream_helper_);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), crypto_stream);
+  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
+      GetQuicReloadableFlag(quic_register_static_streams)) {
+    session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
+                                     QuicStream::kDefaultPriority);
+  }
 
   // Set some initial bandwidth values.
   QuicSentPacketManager* sent_packet_manager =
@@ -455,7 +465,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   // Bandwidth estimate has now changed sufficiently, enough time has passed,
   // and enough packets have been sent.
   SerializedPacket packet(1 + kMinPacketsBetweenServerConfigUpdates,
-                          PACKET_6BYTE_PACKET_NUMBER, nullptr, 1000, false,
+                          PACKET_4BYTE_PACKET_NUMBER, nullptr, 1000, false,
                           false);
   sent_packet_manager->OnPacketSent(&packet, 0, now, NOT_RETRANSMISSION,
                                     HAS_RETRANSMITTABLE_DATA);
@@ -596,7 +606,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
       QuicString(chlo.GetSerialized(Perspective::IS_CLIENT)
                      .AsStringPiece()
                      .as_string()),
-      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER,
       &packet_version_list));
 
   EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _))

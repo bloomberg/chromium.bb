@@ -124,7 +124,9 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
     write_blocked_list_ =
         QuicSessionPeer::GetWriteBlockedStreams(session_.get());
     if (!session_->register_streams_early()) {
-      write_blocked_list_->RegisterStream(kTestStreamId, kV3HighestPriority);
+      write_blocked_list_->RegisterStream(kTestStreamId,
+                                          /*is_static_stream=*/false,
+                                          kV3HighestPriority);
     }
   }
 
@@ -175,7 +177,7 @@ TEST_F(QuicStreamTest, WriteAllData) {
       1 + QuicPacketCreator::StreamFramePacketOverhead(
               connection_->transport_version(), PACKET_8BYTE_CONNECTION_ID,
               !kIncludeVersion, !kIncludeDiversificationNonce,
-              PACKET_6BYTE_PACKET_NUMBER, 0u);
+              PACKET_4BYTE_PACKET_NUMBER, 0u);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _))
@@ -256,7 +258,7 @@ TEST_F(QuicStreamTest, WriteOrBufferData) {
       1 + QuicPacketCreator::StreamFramePacketOverhead(
               connection_->transport_version(), PACKET_8BYTE_CONNECTION_ID,
               !kIncludeVersion, !kIncludeDiversificationNonce,
-              PACKET_6BYTE_PACKET_NUMBER, 0u);
+              PACKET_4BYTE_PACKET_NUMBER, 0u);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))

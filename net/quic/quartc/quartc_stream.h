@@ -25,12 +25,18 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream,
 
   void OnClose() override;
 
-  void OnCanWrite() override;
+  void OnStreamDataConsumed(size_t bytes_consumed) override;
+
+  void OnDataBuffered(
+      QuicStreamOffset offset,
+      QuicByteCount data_length,
+      const QuicReferenceCountedPointer<QuicAckListenerInterface>& ack_listener)
+      override;
 
   // QuartcStreamInterface overrides.
   uint32_t stream_id() override;
 
-  uint64_t bytes_written() override;
+  uint64_t bytes_buffered() override;
 
   bool fin_sent() override;
 

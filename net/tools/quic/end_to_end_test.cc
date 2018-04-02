@@ -2194,7 +2194,7 @@ TEST_P(EndToEndTestWithTls, BadEncryptedData) {
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       client_->client()->client_session()->connection()->connection_id(), false,
       false, 1, "At least 20 characters.", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_6BYTE_PACKET_NUMBER));
+      PACKET_4BYTE_PACKET_NUMBER));
   // Damage the encrypted data.
   QuicString damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;

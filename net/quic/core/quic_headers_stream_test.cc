@@ -168,10 +168,11 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
                                                        perspective(),
                                                        GetVersion())),
         session_(connection_),
-        headers_stream_(QuicSpdySessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
         stream_frame_(kHeadersStreamId, /*fin=*/false, /*offset=*/0, ""),
         next_promised_stream_id_(2) {
+    session_.Initialize();
+    headers_stream_ = QuicSpdySessionPeer::GetHeadersStream(&session_);
     headers_[":version"] = "HTTP/1.1";
     headers_[":status"] = "200 Ok";
     headers_["content-length"] = "11";

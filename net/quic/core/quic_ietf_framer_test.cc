@@ -159,8 +159,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
         QuicTime::Delta::FromMicroseconds(frame->delay_time);
 
     // Write the frame to the packet buffer.
-    EXPECT_TRUE(QuicFramerPeer::AppendIetfAckFrameAndTypeByte(
-        &framer_, transmit_frame, &writer));
+    EXPECT_TRUE(
+        QuicFramerPeer::AppendIetfAckFrame(&framer_, transmit_frame, &writer));
     // Better have something in the packet buffer.
     EXPECT_NE(0u, writer.length());
 
@@ -216,7 +216,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     QuicPathChallengeFrame transmit_frame(0, data);
 
     // write the frame to the packet buffer.
-    EXPECT_TRUE(QuicFramerPeer::AppendIetfPathChallengeFrameAndTypeByte(
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfPathChallengeFrame(
         &framer_, transmit_frame, &writer));
 
     // Check for correct length in the packet buffer.
@@ -254,7 +254,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     QuicPathResponseFrame transmit_frame(0, data);
 
     // Write the frame to the packet buffer.
-    EXPECT_TRUE(QuicFramerPeer::AppendIetfPathResponseFrameAndTypeByte(
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfPathResponseFrame(
         &framer_, transmit_frame, &writer));
 
     // Check for correct length in the packet buffer.
@@ -924,7 +924,7 @@ TEST_F(QuicIetfFramerTest, StopSendingFrame) {
   transmit_frame.application_error_code = 543;
 
   // Write the frame to the packet buffer.
-  EXPECT_TRUE(QuicFramerPeer::AppendIetfStopSendingFrameAndTypeByte(
+  EXPECT_TRUE(QuicFramerPeer::AppendIetfStopSendingFrame(
       &framer_, transmit_frame, &writer));
   // Check that the number of bytes in the buffer is in the
   // allowed range.
@@ -950,6 +950,261 @@ TEST_F(QuicIetfFramerTest, StopSendingFrame) {
   EXPECT_EQ(receive_frame.stream_id, transmit_frame.stream_id);
   EXPECT_EQ(receive_frame.application_error_code,
             transmit_frame.application_error_code);
+}
+
+TEST_F(QuicIetfFramerTest, MaxDataFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+  QuicStreamOffset window_sizes[] = {0,       1,        2,        5,       10,
+                                     20,      50,       100,      200,     500,
+                                     1000000, kOffset8, kOffset4, kOffset2};
+  for (QuicStreamOffset window_size : window_sizes) {
+    memset(packet_buffer, 0, sizeof(packet_buffer));
+
+    // Set up the writer and transmit QuicWindowUpdateFrame
+    QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                          NETWORK_BYTE_ORDER);
+    QuicWindowUpdateFrame transmit_frame(0, 99, window_size);
+
+    // Add the frame.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfMaxDataFrame(&framer_, transmit_frame,
+                                                       &writer));
+
+    // Check that the number of bytes in the buffer is in the expected range.
+    EXPECT_LE(2u, writer.length());
+    EXPECT_GE(9u, writer.length());
+
+    // Set up reader and an empty QuicWindowUpdateFrame
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicWindowUpdateFrame receive_frame;
+
+    // Read in the frame type
+    uint8_t received_frame_type;
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_MAX_DATA);
+
+    // Deframe it
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfMaxDataFrame(&framer_, &reader,
+                                                        &receive_frame));
+
+    // Now check that the received data equals the sent data.
+    EXPECT_EQ(transmit_frame.byte_offset, window_size);
+    EXPECT_EQ(transmit_frame.byte_offset, receive_frame.byte_offset);
+    EXPECT_EQ(0u, receive_frame.stream_id);
+  }
+}
+
+TEST_F(QuicIetfFramerTest, MaxStreamDataFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+  QuicStreamOffset window_sizes[] = {0,       1,        2,        5,       10,
+                                     20,      50,       100,      200,     500,
+                                     1000000, kOffset8, kOffset4, kOffset2};
+  QuicIetfStreamId stream_ids[] = {kStreamId4, kStreamId2, kStreamId1,
+                                   kStreamId0};
+
+  for (QuicIetfStreamId stream_id : stream_ids) {
+    for (QuicStreamOffset window_size : window_sizes) {
+      memset(packet_buffer, 0, sizeof(packet_buffer));
+
+      // Set up the writer and transmit QuicWindowUpdateFrame
+      QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                            NETWORK_BYTE_ORDER);
+      QuicWindowUpdateFrame transmit_frame(0, stream_id, window_size);
+
+      // Add the frame.
+      EXPECT_TRUE(QuicFramerPeer::AppendIetfMaxStreamDataFrame(
+          &framer_, transmit_frame, &writer));
+
+      // Check that number of bytes in the buffer is in the expected range.
+      EXPECT_LE(3u, writer.length());
+      EXPECT_GE(17u, writer.length());
+
+      // Set up reader and empty receive QuicPaddingFrame.
+      QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+      QuicWindowUpdateFrame receive_frame;
+
+      // Read in the frame type
+      uint8_t received_frame_type;
+      EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+      EXPECT_EQ(received_frame_type, IETF_MAX_STREAM_DATA);
+
+      // Deframe it
+      EXPECT_TRUE(QuicFramerPeer::ProcessIetfMaxStreamDataFrame(
+          &framer_, &reader, &receive_frame));
+
+      // Now check that received data and sent data are equal.
+      EXPECT_EQ(transmit_frame.byte_offset, window_size);
+      EXPECT_EQ(transmit_frame.byte_offset, receive_frame.byte_offset);
+      EXPECT_EQ(stream_id, receive_frame.stream_id);
+      EXPECT_EQ(transmit_frame.stream_id, receive_frame.stream_id);
+    }
+  }
+}
+
+TEST_F(QuicIetfFramerTest, MaxStreamIdFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+  QuicIetfStreamId stream_ids[] = {kStreamId4, kStreamId2, kStreamId1,
+                                   kStreamId0};
+
+  for (QuicIetfStreamId stream_id : stream_ids) {
+    memset(packet_buffer, 0, sizeof(packet_buffer));
+
+    // Set up the writer and transmit QuicIetfMaxStreamIdFrame
+    QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                          NETWORK_BYTE_ORDER);
+    QuicIetfMaxStreamIdFrame transmit_frame(0, stream_id);
+
+    // Add the frame.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfMaxStreamIdFrame(
+        &framer_, transmit_frame, &writer));
+
+    // Check that buffer length is in the expected range
+    EXPECT_LE(2u, writer.length());
+    EXPECT_GE(9u, writer.length());
+
+    // Set up reader and empty receive QuicPaddingFrame.
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicIetfMaxStreamIdFrame receive_frame;
+
+    // Read in the frame type
+    uint8_t received_frame_type;
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_MAX_STREAM_ID);
+
+    // Deframe it
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfMaxStreamIdFrame(&framer_, &reader,
+                                                            &receive_frame));
+
+    // Now check that received and sent data are equivalent
+    EXPECT_EQ(stream_id, receive_frame.max_stream_id);
+    EXPECT_EQ(transmit_frame.max_stream_id, receive_frame.max_stream_id);
+  }
+}
+
+TEST_F(QuicIetfFramerTest, BlockedFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+  QuicStreamOffset offsets[] = {kOffset8, kOffset4, kOffset2, kOffset1,
+                                kOffset0};
+
+  for (QuicStreamOffset offset : offsets) {
+    memset(packet_buffer, 0, sizeof(packet_buffer));
+
+    // Set up the writer and transmit QuicIetfBlockedFrame
+    QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                          NETWORK_BYTE_ORDER);
+    QuicIetfBlockedFrame transmit_frame(0, offset);
+
+    // Add the frame.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfBlockedFrame(&framer_, transmit_frame,
+                                                       &writer));
+
+    // Check that buffer length is in the expected range
+    EXPECT_LE(2u, writer.length());
+    EXPECT_GE(9u, writer.length());
+
+    // Set up reader and empty receive QuicFrame.
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicIetfBlockedFrame receive_frame;
+
+    // Read in the frame type
+    uint8_t received_frame_type;
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_BLOCKED);
+
+    // Deframe it
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfBlockedFrame(&framer_, &reader,
+                                                        &receive_frame));
+
+    // Check that received and sent data are equivalent
+    EXPECT_EQ(offset, receive_frame.offset);
+    EXPECT_EQ(transmit_frame.offset, receive_frame.offset);
+  }
+}
+
+TEST_F(QuicIetfFramerTest, StreamBlockedFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+  QuicStreamOffset offsets[] = {0,       1,        2,        5,       10,
+                                20,      50,       100,      200,     500,
+                                1000000, kOffset8, kOffset4, kOffset2};
+  QuicIetfStreamId stream_ids[] = {kStreamId4, kStreamId2, kStreamId1,
+                                   kStreamId0};
+
+  for (QuicIetfStreamId stream_id : stream_ids) {
+    for (QuicStreamOffset offset : offsets) {
+      memset(packet_buffer, 0, sizeof(packet_buffer));
+
+      // Set up the writer and transmit QuicWindowUpdateFrame
+      QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                            NETWORK_BYTE_ORDER);
+      QuicWindowUpdateFrame transmit_frame(0, stream_id, offset);
+
+      // Add the frame.
+      EXPECT_TRUE(QuicFramerPeer::AppendIetfStreamBlockedFrame(
+          &framer_, transmit_frame, &writer));
+
+      // Check that number of bytes in the buffer is in the expected range.
+      EXPECT_LE(3u, writer.length());
+      EXPECT_GE(17u, writer.length());
+
+      // Set up reader and empty receive QuicPaddingFrame.
+      QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+      QuicWindowUpdateFrame receive_frame;
+
+      // Read in the frame type
+      uint8_t received_frame_type;
+      EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+      EXPECT_EQ(received_frame_type, IETF_STREAM_BLOCKED);
+
+      // Deframe it
+      EXPECT_TRUE(QuicFramerPeer::ProcessIetfStreamBlockedFrame(
+          &framer_, &reader, &receive_frame));
+
+      // Now check that received == sent
+      EXPECT_EQ(transmit_frame.byte_offset, offset);
+      EXPECT_EQ(transmit_frame.byte_offset, receive_frame.byte_offset);
+      EXPECT_EQ(stream_id, receive_frame.stream_id);
+      EXPECT_EQ(transmit_frame.stream_id, receive_frame.stream_id);
+    }
+  }
+}
+
+TEST_F(QuicIetfFramerTest, StreamIdBlockedFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+  QuicIetfStreamId stream_ids[] = {kStreamId4, kStreamId2, kStreamId1,
+                                   kStreamId0};
+
+  for (QuicIetfStreamId stream_id : stream_ids) {
+    memset(packet_buffer, 0, sizeof(packet_buffer));
+
+    // Set up the writer and transmit QuicIetfStreamIdBlockedFrame
+    QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                          NETWORK_BYTE_ORDER);
+    QuicIetfStreamIdBlockedFrame transmit_frame(0, stream_id);
+
+    // Add the frame.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfStreamIdBlockedFrame(
+        &framer_, transmit_frame, &writer));
+
+    // Check that buffer length is in the expected range
+    EXPECT_LE(2u, writer.length());
+    EXPECT_GE(9u, writer.length());
+
+    // Set up reader and empty receive QuicPaddingFrame.
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicIetfStreamIdBlockedFrame receive_frame;
+
+    // Read in the frame type
+    uint8_t received_frame_type;
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_STREAM_ID_BLOCKED);
+
+    // Deframe it
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfStreamIdBlockedFrame(
+        &framer_, &reader, &receive_frame));
+
+    // Now check that received == sent
+    EXPECT_EQ(stream_id, receive_frame.stream_id);
+    EXPECT_EQ(transmit_frame.stream_id, receive_frame.stream_id);
+  }
 }
 
 }  // namespace

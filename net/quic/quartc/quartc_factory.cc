@@ -106,6 +106,7 @@ QuartcFactory::~QuartcFactory() {}
 std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
     const QuartcSessionConfig& quartc_session_config) {
   DCHECK(quartc_session_config.packet_transport);
+  SetQuicReloadableFlag(quic_better_crypto_retransmission, true);
 
   Perspective perspective = quartc_session_config.is_server
                                 ? Perspective::IS_SERVER

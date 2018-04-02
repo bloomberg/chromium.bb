@@ -384,12 +384,22 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
   EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
   EXPECT_EQ(0u, session_->GetNumOpenOutgoingStreams());
 
+  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
+      GetQuicReloadableFlag(quic_register_static_streams)) {
+    session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
+  }
   // Assume encryption already established.
+  QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), nullptr);
   MockQuicCryptoServerStream* crypto_stream =
       new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
                                      session_.get(), &stream_helper_);
   crypto_stream->set_encryption_established(true);
   QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
+  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
+      GetQuicReloadableFlag(quic_register_static_streams)) {
+    session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
+                                     QuicStream::kDefaultPriority);
+  }
 
   // Create push streams till reaching the upper limit of allowed open streams.
   for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
@@ -472,6 +482,11 @@ class QuicSimpleServerSessionServerPushTest
 
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
 
+    if (GetQuicReloadableFlag(quic_register_streams_early2) &&
+        GetQuicReloadableFlag(quic_register_static_streams)) {
+      session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
+    }
+    QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), nullptr);
     // Assume encryption already established.
     MockQuicCryptoServerStream* crypto_stream = new MockQuicCryptoServerStream(
         &crypto_config_, &compressed_certs_cache_, session_.get(),
@@ -479,6 +494,11 @@ class QuicSimpleServerSessionServerPushTest
 
     crypto_stream->set_encryption_established(true);
     QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
+    if (GetQuicReloadableFlag(quic_register_streams_early2) &&
+        GetQuicReloadableFlag(quic_register_static_streams)) {
+      session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
+                                       QuicStream::kDefaultPriority);
+    }
   }
 
   // Given |num_resources|, create this number of fake push resources and push

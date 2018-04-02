@@ -52,7 +52,7 @@ class ChloExtractorTest : public QuicTest {
     header_.version_flag = true;
     header_.version = AllSupportedVersions().front();
     header_.reset_flag = false;
-    header_.packet_number_length = PACKET_6BYTE_PACKET_NUMBER;
+    header_.packet_number_length = PACKET_4BYTE_PACKET_NUMBER;
     header_.packet_number = 1;
   }
 

@@ -529,7 +529,7 @@ class TestConnection : public QuicConnection {
             ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
     delete packet;
     SerializedPacket serialized_packet(
-        packet_number, PACKET_6BYTE_PACKET_NUMBER, buffer, encrypted_length,
+        packet_number, PACKET_4BYTE_PACKET_NUMBER, buffer, encrypted_length,
         has_ack, has_pending_frames);
     if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
       serialized_packet.retransmittable_frames.push_back(
@@ -766,7 +766,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
         manager_(QuicConnectionPeer::GetSentPacketManager(&connection_)),
         frame1_(1, false, 0, QuicStringPiece(data1)),
         frame2_(1, false, 3, QuicStringPiece(data2)),
-        packet_number_length_(PACKET_6BYTE_PACKET_NUMBER),
+        packet_number_length_(PACKET_4BYTE_PACKET_NUMBER),
         connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
         notifier_(&connection_),
         use_path_degrading_alarm_(
@@ -2013,8 +2013,6 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 }
 
 TEST_P(QuicConnectionTest, TooManySentPackets) {
-  SetQuicReloadableFlag(quic_close_session_on_too_many_outstanding_sent_packets,
-                        true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   QuicPacketCount max_tracked_packets = 50;
