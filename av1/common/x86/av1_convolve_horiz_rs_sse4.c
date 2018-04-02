@@ -23,8 +23,8 @@
 // affect the running of the decoder.
 void av1_convolve_horiz_rs_sse4_1(const uint8_t *src, int src_stride,
                                   uint8_t *dst, int dst_stride, int w, int h,
-                                  const int16_t *x_filters, const int x0_qn,
-                                  const int x_step_qn) {
+                                  const int16_t *x_filters, int x0_qn,
+                                  int x_step_qn) {
   assert(UPSCALE_NORMATIVE_TAPS == 8);
 
   src -= UPSCALE_NORMATIVE_TAPS / 2 - 1;
@@ -132,8 +132,7 @@ void av1_convolve_horiz_rs_sse4_1(const uint8_t *src, int src_stride,
 void av1_highbd_convolve_horiz_rs_sse4_1(const uint16_t *src, int src_stride,
                                          uint16_t *dst, int dst_stride, int w,
                                          int h, const int16_t *x_filters,
-                                         const int x0_qn, const int x_step_qn,
-                                         int bd) {
+                                         int x0_qn, int x_step_qn, int bd) {
   assert(UPSCALE_NORMATIVE_TAPS == 8);
   assert(bd == 8 || bd == 10 || bd == 12);
 
