@@ -175,7 +175,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'AffectedFile', 'Change', 'DoPostUploadExecuter', 'DoPresubmitChecks',
       'GetPostUploadExecuter', 'GitAffectedFile', 'CallCommand', 'CommandData',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'main',
-      'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
+      'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
       'ast', 'auth', 'cPickle', 'cpplint', 'cStringIO', 'contextlib',
       'canned_check_filter', 'fix_encoding', 'fnmatch', 'gclient_utils',
@@ -196,15 +196,6 @@ class PresubmitUnittest(PresubmitTestsBase):
     with presubmit.canned_check_filter(['CheckOwners']):
       self.assertNotEqual(canned.CheckOwners, orig)
       self.assertEqual(canned.CheckOwners(None, None), [])
-    self.assertEqual(canned.CheckOwners, orig)
-
-  def testCannedCheckFilterFail(self):
-    canned = presubmit.presubmit_canned_checks
-    orig = canned.CheckOwners
-    def failAttempt():
-      with presubmit.canned_check_filter(['CheckOwners', 'Spazfleem']):
-        pass
-    self.assertRaises(presubmit.NonexistantCannedCheckFilter, failAttempt)
     self.assertEqual(canned.CheckOwners, orig)
 
   def testListRelevantPresubmitFiles(self):

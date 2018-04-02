@@ -1513,17 +1513,14 @@ def load_files(options, args):
   return change_class, files
 
 
-class NonexistantCannedCheckFilter(Exception):
-  pass
-
-
 @contextlib.contextmanager
 def canned_check_filter(method_names):
   filtered = {}
   try:
     for method_name in method_names:
       if not hasattr(presubmit_canned_checks, method_name):
-        raise NonexistantCannedCheckFilter(method_name)
+        logging.warn('Skipping unknown "canned" check %s' % method_name)
+        continue
       filtered[method_name] = getattr(presubmit_canned_checks, method_name)
       setattr(presubmit_canned_checks, method_name, lambda *_a, **_kw: [])
     yield
@@ -1692,10 +1689,6 @@ def main(argv=None):
           gerrit_obj,
           options.dry_run)
     return not results.should_continue()
-  except NonexistantCannedCheckFilter, e:
-    print >> sys.stderr, (
-      'Attempted to skip nonexistent canned presubmit check: %s' % e.message)
-    return 2
   except PresubmitFailure, e:
     print >> sys.stderr, e
     print >> sys.stderr, 'Maybe your depot_tools is out of date?'
