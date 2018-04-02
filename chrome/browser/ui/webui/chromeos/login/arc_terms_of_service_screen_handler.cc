@@ -6,6 +6,7 @@
 
 #include "base/i18n/timezone.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -116,6 +117,11 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcOverlayClose", IDS_ARC_OOBE_TERMS_POPUP_HELP_CLOSE_BUTTON);
 }
 
+void ArcTermsOfServiceScreenHandler::SendArcManagedStatus(Profile* profile) {
+  CallJS("setArcManaged",
+         arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile));
+}
+
 void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
                                                           bool managed) {
   const Profile* const profile = ProfileManager::GetActiveUserProfile();
@@ -219,6 +225,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 
   ShowScreen(kScreenId);
 
+  SendArcManagedStatus(profile);
   MaybeLoadPlayStoreToS(true);
   StartNetworkAndTimeZoneObserving();
 

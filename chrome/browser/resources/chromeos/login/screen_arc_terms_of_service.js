@@ -10,7 +10,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
   return {
     EXTERNAL_API: [
       'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
-      'loadPlayStoreToS'
+      'loadPlayStoreToS', 'setArcManaged'
     ],
 
     /** @override */
@@ -225,7 +225,16 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       } else {
         this.reloadPlayStoreToS();
       }
+    },
 
+    /**
+     * Sets if Arc is managed. ToS webview should not be visible if Arc is
+     * manged.
+     * @param {boolean} managed Defines whether this setting is set by policy.
+     */
+    setArcManaged: function(managed) {
+      var visibility = managed ? 'hidden' : 'visible';
+      this.getElement_('arc-tos-view-container').style.visibility = visibility;
     },
 
     /**
