@@ -40,7 +40,6 @@
 #include "ash/display/screen_position_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/first_run/first_run_helper_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -498,10 +497,6 @@ bool Shell::HasPrimaryStatusArea() {
 
 SystemTray* Shell::GetPrimarySystemTray() {
   return GetPrimaryRootWindowController()->GetSystemTray();
-}
-
-FirstRunHelper* Shell::CreateFirstRunHelper() {
-  return new FirstRunHelperImpl;
 }
 
 void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {

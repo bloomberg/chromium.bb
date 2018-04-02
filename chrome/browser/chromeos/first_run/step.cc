@@ -9,11 +9,8 @@
 #include <cctype>
 #include <memory>
 
-#include "ash/first_run/first_run_helper.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -40,11 +37,10 @@ namespace chromeos {
 namespace first_run {
 
 Step::Step(const std::string& name,
-           ash::FirstRunHelper* shell_helper,
+           FirstRunController* controller,
            FirstRunActor* actor)
-    : name_(name),
-      shell_helper_(shell_helper),
-      actor_(actor) {
+    : name_(name), first_run_controller_(controller), actor_(actor) {
+  DCHECK(first_run_controller_);
 }
 
 Step::~Step() { RecordCompletion(); }
@@ -62,10 +58,6 @@ void Step::OnBeforeHide() {
 void Step::OnAfterHide() {
   RecordCompletion();
   DoOnAfterHide();
-}
-
-gfx::Size Step::GetOverlaySize() const {
-  return shell_helper()->GetOverlayWidget()->GetWindowBoundsInScreen().size();
 }
 
 void Step::RecordCompletion() {

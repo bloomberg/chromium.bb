@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/first_run/steps/help_step.h"
 
-#include "ash/first_run/first_run_helper.h"
+#include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/step_names.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -18,21 +18,20 @@ const int kCircleRadius = 19;
 namespace chromeos {
 namespace first_run {
 
-HelpStep::HelpStep(ash::FirstRunHelper* shell_helper, FirstRunActor* actor)
-    : Step(kHelpStep, shell_helper, actor) {
-}
+HelpStep::HelpStep(FirstRunController* controller, FirstRunActor* actor)
+    : Step(kHelpStep, controller, actor) {}
 
 void HelpStep::DoShow() {
-  if (!shell_helper()->IsTrayBubbleOpened())
-    shell_helper()->OpenTrayBubble();
-  gfx::Rect button_bounds = shell_helper()->GetHelpButtonBounds();
+  if (!first_run_controller()->IsTrayBubbleOpened())
+    first_run_controller()->OpenTrayBubble();
+  gfx::Rect button_bounds = first_run_controller()->GetHelpButtonBounds();
   gfx::Point center = button_bounds.CenterPoint();
   actor()->AddRoundHole(center.x(), center.y(), kCircleRadius);
   actor()->ShowStepPointingTo(name(), center.x(), center.y(), kCircleRadius);
 }
 
 void HelpStep::DoOnAfterHide() {
-  shell_helper()->CloseTrayBubble();
+  first_run_controller()->CloseTrayBubble();
 }
 
 }  // namespace first_run

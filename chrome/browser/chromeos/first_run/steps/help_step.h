@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FIRST_RUN_STEPS_HELP_STEP_H_
 #define CHROME_BROWSER_CHROMEOS_FIRST_RUN_STEPS_HELP_STEP_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/first_run/step.h"
 
@@ -14,7 +13,7 @@ namespace first_run {
 
 class HelpStep : public Step {
  public:
-  HelpStep(ash::FirstRunHelper* shell_helper, FirstRunActor* actor);
+  HelpStep(FirstRunController* controller, FirstRunActor* actor);
 
  private:
   // Overriden from Step.

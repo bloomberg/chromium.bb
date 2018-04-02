@@ -100,7 +100,6 @@ class DockedMagnifierController;
 class DragDropController;
 class EventClientImpl;
 class EventTransformationHandler;
-class FirstRunHelper;
 class FocusCycler;
 class HighContrastController;
 class HighlighterController;
@@ -525,10 +524,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void set_root_window_for_new_windows(aura::Window* root) {
     root_window_for_new_windows_ = root;
   }
-
-  // Creates instance of FirstRunHelper. Caller is responsible for deleting
-  // returned object.
-  ash::FirstRunHelper* CreateFirstRunHelper();
 
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
 

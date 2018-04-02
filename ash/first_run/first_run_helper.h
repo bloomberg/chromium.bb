@@ -6,6 +6,8 @@
 #define ASH_FIRST_RUN_FIRST_RUN_HELPER_H_
 
 #include "ash/ash_export.h"
+#include "ash/first_run/desktop_cleaner.h"
+#include "ash/wm/overlay_event_filter.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -22,7 +24,7 @@ namespace ash {
 // Interface used by first-run tutorial to manipulate and retrieve information
 // about shell elements.
 // All returned coordinates are in screen coordinate system.
-class ASH_EXPORT FirstRunHelper {
+class ASH_EXPORT FirstRunHelper : public OverlayEventFilter::Delegate {
  public:
   class Observer {
    public:
@@ -39,31 +41,38 @@ class ASH_EXPORT FirstRunHelper {
   void RemoveObserver(Observer* observer);
 
   // Returns widget to place tutorial UI into it.
-  virtual views::Widget* GetOverlayWidget() = 0;
+  views::Widget* GetOverlayWidget();
 
   // Returns bounds of application list button.
-  virtual gfx::Rect GetAppListButtonBounds() = 0;
+  gfx::Rect GetAppListButtonBounds();
 
   // Opens and closes system tray bubble.
-  virtual void OpenTrayBubble() = 0;
-  virtual void CloseTrayBubble() = 0;
+  void OpenTrayBubble();
+  void CloseTrayBubble();
 
   // Returns |true| iff system tray bubble is opened now.
-  virtual bool IsTrayBubbleOpened() = 0;
+  bool IsTrayBubbleOpened();
 
   // Returns bounds of system tray bubble. You must open bubble before calling
   // this method.
-  virtual gfx::Rect GetTrayBubbleBounds() = 0;
+  gfx::Rect GetTrayBubbleBounds();
 
   // Returns bounds of help app button from system tray buble. You must open
   // bubble before calling this method.
-  virtual gfx::Rect GetHelpButtonBounds() = 0;
+  gfx::Rect GetHelpButtonBounds();
 
- protected:
-  base::ObserverList<Observer>& observers() { return observers_; }
+  // OverlayEventFilter::Delegate:
+  void Cancel() override;
+  bool IsCancelingKeyEvent(ui::KeyEvent* event) override;
+  aura::Window* GetWindow() override;
 
  private:
   base::ObserverList<Observer> observers_;
+
+  // The first run dialog window.
+  views::Widget* widget_;
+
+  DesktopCleaner cleaner_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelper);
 };

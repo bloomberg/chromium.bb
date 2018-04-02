@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 
-#include "ash/shell.h"
+#include "ash/first_run/first_run_helper.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -18,6 +19,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -62,6 +65,41 @@ void FirstRunController::Stop() {
   g_first_run_controller_instance = NULL;
 }
 
+gfx::Rect FirstRunController::GetAppListButtonBounds() const {
+  return shell_helper_->GetAppListButtonBounds();
+}
+
+void FirstRunController::OpenTrayBubble() {
+  shell_helper_->OpenTrayBubble();
+}
+
+void FirstRunController::CloseTrayBubble() {
+  shell_helper_->CloseTrayBubble();
+}
+
+bool FirstRunController::IsTrayBubbleOpened() const {
+  return shell_helper_->IsTrayBubbleOpened();
+}
+
+gfx::Rect FirstRunController::GetTrayBubbleBounds() const {
+  return shell_helper_->GetTrayBubbleBounds();
+}
+
+gfx::Rect FirstRunController::GetHelpButtonBounds() const {
+  return shell_helper_->GetHelpButtonBounds();
+}
+
+gfx::Size FirstRunController::GetOverlaySize() const {
+  return shell_helper_->GetOverlayWidget()->GetWindowBoundsInScreen().size();
+}
+
+ash::ShelfAlignment FirstRunController::GetShelfAlignment() const {
+  DCHECK(user_profile_);
+  return ash::GetShelfAlignmentPref(
+      user_profile_->GetPrefs(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+}
+
 FirstRunController* FirstRunController::GetInstanceForTest() {
   return g_first_run_controller_instance;
 }
@@ -78,7 +116,7 @@ void FirstRunController::Init() {
   user_profile_ = ProfileHelper::Get()->GetProfileByUserUnsafe(
       user_manager->GetActiveUser());
 
-  shell_helper_.reset(ash::Shell::Get()->CreateFirstRunHelper());
+  shell_helper_ = std::make_unique<ash::FirstRunHelper>();
   shell_helper_->AddObserver(this);
 
   FirstRunView* view = new FirstRunView();
@@ -160,12 +198,9 @@ void FirstRunController::OnCancelled() {
 }
 
 void FirstRunController::RegisterSteps() {
-  steps_.push_back(make_linked_ptr(
-      new first_run::AppListStep(shell_helper_.get(), actor_)));
-  steps_.push_back(make_linked_ptr(
-      new first_run::TrayStep(shell_helper_.get(), actor_)));
-  steps_.push_back(make_linked_ptr(
-      new first_run::HelpStep(shell_helper_.get(), actor_)));
+  steps_.push_back(make_linked_ptr(new first_run::AppListStep(this, actor_)));
+  steps_.push_back(make_linked_ptr(new first_run::TrayStep(this, actor_)));
+  steps_.push_back(make_linked_ptr(new first_run::HelpStep(this, actor_)));
 }
 
 void FirstRunController::ShowNextStep() {

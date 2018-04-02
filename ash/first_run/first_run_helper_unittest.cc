@@ -62,7 +62,7 @@ class FirstRunHelperTest : public AshTestBase, public FirstRunHelper::Observer {
   void SetUp() override {
     AshTestBase::SetUp();
     CheckContainersAreVisible();
-    helper_.reset(ash::Shell::Get()->CreateFirstRunHelper());
+    helper_ = std::make_unique<FirstRunHelper>();
     helper_->AddObserver(this);
     helper_->GetOverlayWidget()->Show();
   }

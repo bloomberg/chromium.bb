@@ -10,24 +10,17 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace ash {
-class FirstRunHelper;
-}
-
-namespace gfx {
-class Size;
-}
-
 namespace chromeos {
 
 class FirstRunActor;
+class FirstRunController;
 
 namespace first_run {
 
 class Step {
  public:
   Step(const std::string& name,
-       ash::FirstRunHelper* shell_helper,
+       FirstRunController* controller,
        FirstRunActor* actor);
   virtual ~Step();
 
@@ -43,9 +36,8 @@ class Step {
   const std::string& name() const { return name_; }
 
  protected:
-  ash::FirstRunHelper* shell_helper() const { return shell_helper_; }
+  FirstRunController* first_run_controller() { return first_run_controller_; }
   FirstRunActor* actor() const { return actor_; }
-  gfx::Size GetOverlaySize() const;
 
   // Called from Show method.
   virtual void DoShow() = 0;
@@ -63,7 +55,7 @@ class Step {
   void RecordCompletion();
 
   std::string name_;
-  ash::FirstRunHelper* shell_helper_;
+  FirstRunController* first_run_controller_;
   FirstRunActor* actor_;
   base::Time show_time_;
 
@@ -74,4 +66,3 @@ class Step {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_FIRST_RUN_STEP_H_
-
