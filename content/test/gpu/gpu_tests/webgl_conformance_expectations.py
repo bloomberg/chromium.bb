@@ -89,6 +89,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
+    self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
+        bug=806557)
+
     # Need to forbid mipmap generation with this extension.
     # Uncomment suppressions below when re-enabling. (Or remove them?
     # Were the failures caused by this gray area in the spec, now
