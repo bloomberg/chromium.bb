@@ -86,15 +86,15 @@ void AlternateNavInfoBarView::ViewHierarchyChanged(
     DCHECK_NE(base::string16::npos, offset);
     label_1_text_ = message_text.substr(0, offset);
     label_1_ = CreateLabel(label_1_text_);
-    AddViewToContentArea(label_1_);
+    AddChildView(label_1_);
 
     link_text_ = delegate->GetLinkText();
     link_ = CreateLink(link_text_, this);
-    AddViewToContentArea(link_);
+    AddChildView(link_);
 
     label_2_text_ = message_text.substr(offset);
     label_2_ = CreateLabel(label_2_text_);
-    AddViewToContentArea(label_2_);
+    AddChildView(label_2_);
   }
 
   // This must happen after adding all other children so InfoBarView can ensure

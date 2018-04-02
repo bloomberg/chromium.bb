@@ -89,19 +89,15 @@ gfx::Insets GetCloseButtonSpacing() {
 
 InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
-      views::ExternalFocusTracker(this, nullptr),
-      child_container_(new views::View()) {
+      views::ExternalFocusTracker(this, nullptr) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
   SetBackground(std::make_unique<InfoBarBackground>());
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
-  AddChildView(child_container_);
-
+  // Clip child layers; without this, buttons won't look correct during
+  // animation.
   SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-
-  child_container_->SetPaintToLayer();
-  child_container_->layer()->SetMasksToBounds(true);
+  layer()->SetMasksToBounds(true);
 }
 
 const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
@@ -141,14 +137,6 @@ void InfoBarView::AssignWidths(Labels* labels, int available_width) {
 }
 
 void InfoBarView::Layout() {
-  child_container_->SetBounds(
-      0, arrow_height(), width(),
-      bar_height() - InfoBarContainerDelegate::kSeparatorLineHeight);
-  // |child_container_| should be the only child.
-  DCHECK_EQ(1, child_count());
-
-  // Even though other views are technically grandchildren, we'll lay them out
-  // here on behalf of |child_container_|.
   const int spacing = GetElementSpacing();
   int start_x = 0;
   if (icon_) {
@@ -187,7 +175,7 @@ void InfoBarView::ViewHierarchyChanged(
           new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
                               DISTANCE_TOAST_LABEL_VERTICAL),
                           0));
-      child_container_->AddChildView(icon_);
+      AddChildView(icon_);
     }
 
     close_button_ = views::CreateVectorImageButton(this);
@@ -202,13 +190,13 @@ void InfoBarView::ViewHierarchyChanged(
                                             close_button_spacing.bottom(), 0));
     // Subclasses should already be done adding child views by this point (see
     // related DCHECK in Layout()).
-    child_container_->AddChildView(close_button_);
+    AddChildView(close_button_);
   }
 
   // Ensure the infobar is tall enough to display its contents.
   int height = 0;
-  for (int i = 0; i < child_container_->child_count(); ++i) {
-    View* child = child_container_->child_at(i);
+  for (int i = 0; i < child_count(); ++i) {
+    View* child = child_at(i);
     const gfx::Insets* const margins = child->GetProperty(views::kMarginsKey);
     const int margin_height = margins ? margins->height() : 0;
     height = std::max(height, child->height() + margin_height);
@@ -218,8 +206,7 @@ void InfoBarView::ViewHierarchyChanged(
 
 void InfoBarView::OnThemeChanged() {
   const SkColor background_color = GetColor(kBackgroundColor);
-  child_container_->SetBackground(
-      views::CreateSolidBackground(background_color));
+  background()->SetNativeControlColor(background_color);
 
   const SkColor text_color = GetColor(kTextColor);
   if (close_button_) {
@@ -227,8 +214,8 @@ void InfoBarView::OnThemeChanged() {
                                   text_color);
   }
 
-  for (int i = 0; i < child_container_->child_count(); ++i) {
-    View* child = child_container_->child_at(i);
+  for (int i = 0; i < child_count(); ++i) {
+    View* child = child_at(i);
     LabelType label_type = child->GetProperty(kLabelType);
     if (label_type != LabelType::kNone) {
       auto* label = static_cast<views::Label*>(child);
@@ -272,10 +259,6 @@ int InfoBarView::EndX() const {
 int InfoBarView::OffsetY(views::View* view) const {
   return std::max((bar_target_height() - view->height()) / 2, 0) -
          (bar_target_height() - bar_height());
-}
-
-void InfoBarView::AddViewToContentArea(views::View* view) {
-  child_container_->AddChildView(view);
 }
 
 // static
