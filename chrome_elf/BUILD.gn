@@ -119,6 +119,13 @@ source_set("dll_hash") {
   ]
 }
 
+source_set("pe_image_safe") {
+  sources = [
+    "pe_image_safe/pe_image_safe.cc",
+    "pe_image_safe/pe_image_safe.h",
+  ]
+}
+
 source_set("security") {
   sources = [
     "chrome_elf_security.cc",
@@ -142,8 +149,10 @@ source_set("sha1") {
 # outside chrome_elf.dll.  The APIs are exported from chrome_elf (add a
 # data_dep on //chrome_elf:chrome_elf), which will always be loaded before
 # chrome.dll.
-source_set("third_party_packed_list_format") {
+source_set("third_party_shared_defines") {
   sources = [
+    "third_party_dlls/logging_api.cc",
+    "third_party_dlls/logging_api.h",
     "third_party_dlls/packed_list_format.cc",
     "third_party_dlls/packed_list_format.h",
   ]
@@ -251,8 +260,9 @@ static_library("third_party_dlls") {
   ]
   deps = [
     ":nt_registry",
+    ":pe_image_safe",
     ":sha1",
-    ":third_party_packed_list_format",
+    ":third_party_shared_defines",
     "//chrome/install_static:install_static_util",
   ]
 }
@@ -268,6 +278,7 @@ test("chrome_elf_unittests") {
     "chrome_elf_util_unittest.cc",
     "hook_util/test/hook_util_test.cc",
     "nt_registry/nt_registry_unittest.cc",
+    "pe_image_safe/pe_image_safe_unittest.cc",
     "run_all_unittests.cc",
     "sha1/sha1_unittest.cc",
     "third_party_dlls/imes_unittest.cc",
@@ -283,10 +294,11 @@ test("chrome_elf_unittests") {
     ":hook_util",
     ":hook_util_test_dll",
     ":nt_registry",
+    ":pe_image_safe",
     ":security",
     ":sha1",
     ":third_party_dlls",
-    ":third_party_packed_list_format",
+    ":third_party_shared_defines",
     "//base",
     "//base/test:test_support",
     "//chrome/common:version_header",

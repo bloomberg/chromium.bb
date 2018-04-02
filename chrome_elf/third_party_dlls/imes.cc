@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "chrome_elf/nt_registry/nt_registry.h"
+#include "chrome_elf/pe_image_safe/pe_image_safe.h"
 
 namespace third_party_dlls {
 namespace {
@@ -137,51 +138,29 @@ bool GetModuleData(const wchar_t* path,
   if (read != kPageSize)
     return false;
 
-  // Sanity check.
-  static_assert(
-      sizeof(IMAGE_DOS_HEADER) + sizeof(IMAGE_NT_HEADERS) <= kPageSize,
-      "PE Headers bigger than expected.  Very unexpected.");
-
-  // TODO(pennymac): crbug/772168
-  PIMAGE_DOS_HEADER dos_header = reinterpret_cast<PIMAGE_DOS_HEADER>(&buffer);
-  if (dos_header->e_magic != IMAGE_DOS_SIGNATURE)
+  pe_image_safe::PEImageSafe wrapper(buffer, kPageSize);
+  PIMAGE_FILE_HEADER file_header = wrapper.GetFileHeader();
+  BYTE* optional_header = wrapper.GetOptionalHeader();
+  if (!file_header || !optional_header)
     return false;
 
-  // Sanity check e_lfanew.
-  if ((dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS)) > kPageSize)
-    return false;
-
-  // Right up until the IMAGE_OPTIONAL_HEADER Magic value, 32 and 64 are the
-  // same.
-  PIMAGE_NT_HEADERS nt_headers = reinterpret_cast<PIMAGE_NT_HEADERS>(
-      reinterpret_cast<char*>(dos_header) + dos_header->e_lfanew);
-  if (nt_headers->Signature != IMAGE_NT_SIGNATURE)
-    return false;
-
+// Make sure bitness of the PE matches bitness of self.  If somehow the PE
+// read in does not match THIS architecture, eject.
 #if defined(_WIN64)
-  constexpr bool kSelf32 = false;
+  constexpr pe_image_safe::ImageBitness kSelfBitness =
+      pe_image_safe::ImageBitness::k64;
 #else
-  constexpr bool kSelf32 = true;
+  constexpr pe_image_safe::ImageBitness kSelfBitness =
+      pe_image_safe::ImageBitness::k32;
 #endif
 
-  // Make sure bitness of the PE matches bitness of self.
-  if (nt_headers->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC &&
-      !kSelf32) {
-    PIMAGE_OPTIONAL_HEADER64 opt_hdr =
-        reinterpret_cast<PIMAGE_OPTIONAL_HEADER64>(&nt_headers->OptionalHeader);
-    *size_of_image = opt_hdr->SizeOfImage;
-  } else if (nt_headers->OptionalHeader.Magic ==
-                 IMAGE_NT_OPTIONAL_HDR32_MAGIC &&
-             kSelf32) {
-    PIMAGE_OPTIONAL_HEADER32 opt_hdr =
-        reinterpret_cast<PIMAGE_OPTIONAL_HEADER32>(&nt_headers->OptionalHeader);
-    *size_of_image = opt_hdr->SizeOfImage;
-  } else {
+  pe_image_safe::ImageBitness bitness = wrapper.GetImageBitness();
+  if (bitness != kSelfBitness)
     return false;
-  }
 
-  // Left until end so as to not touch |time_date_stamp| if any failure.
-  *time_date_stamp = nt_headers->FileHeader.TimeDateStamp;
+  *time_date_stamp = file_header->TimeDateStamp;
+  *size_of_image =
+      reinterpret_cast<PIMAGE_OPTIONAL_HEADER>(optional_header)->SizeOfImage;
 
   return true;
 }

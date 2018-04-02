@@ -208,7 +208,7 @@ void DeinitLogsForTesting() {
 
 //------------------------------------------------------------------------------
 // Exports
-// - Function definition in third_party_packed_list_format.h
+// - Function definition in logging_api.h
 // - Export declared in chrome_elf_[x64|x86].def
 //------------------------------------------------------------------------------
 using namespace third_party_dlls;

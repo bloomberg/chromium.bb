@@ -11,6 +11,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 namespace blacklist {
 
 // Max size of the DLL blacklist.
@@ -64,6 +66,15 @@ extern "C" void SuccessfullyBlocked(const wchar_t** blocked_dlls, int* size);
 
 // Record that the dll at the given index was blocked.
 extern "C" void BlockedDll(size_t blocked_index);
+
+// Legacy match function.
+// Returns the index of the blacklist found in |g_troublesome_dlls|, or -1.
+int DllMatch(const std::wstring& module_name);
+
+// New wrapper for above match function.
+// Returns true if a matching name is found in the legacy blacklist.
+// Note: |module_name| must be an ASCII encoded string.
+bool DllMatch(const std::string& module_name);
 
 // Initializes the DLL blacklist in the current process. This should be called
 // before any undesirable DLLs might be loaded. If |force| is set to true, then
