@@ -12,8 +12,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
-import org.chromium.chromecast.base.TestUtils.Base;
-import org.chromium.chromecast.base.TestUtils.Derived;
+import org.chromium.chromecast.base.Inheritance.Base;
+import org.chromium.chromecast.base.Inheritance.Derived;
 
 import java.util.ArrayList;
 import java.util.List;

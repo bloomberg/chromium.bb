@@ -811,6 +811,67 @@ inside `ScopeFactory` event handlers altogether, but there are many safe ways
 that are useful. `and()`-composed `Observable`s, for example, use `Controller`s
 under the hood to know when to notify.
 
+### Testing
+
+One of the most important aspects of using `Observable`s is that they are very
+testable. The `Observable` cleanly separates the concerns of *mutating* program
+state and *responding to* program state. Reactors, or observers, registered in
+`watch()` methods tend to be **functional**, i.e. with no side effects, though
+this isn't a strict requirement (see the above section).
+
+If you write a class that implements `Observable` or returns an `Observable` in
+one of its methods, it's easy to test the events it emits by using the
+`ReactiveRecorder` test utility function. This class, which is only allowed in
+tests, provides a fluent interface for describing the expected output of an
+`Observable`.
+
+To use this in your tests, add `//chromecast/base:cast_base_test_utils_java` to
+your JUnit test target's GN `deps`.
+
+As an example, imagine we want to test a class called `FlipFlop`, which
+implements `Observable` and changes from deactivated to activated every time its
+`flip` method is called. The tests might look like this:
+
+```java
+import org.chromium.chromecast.base.ReactiveRecorder;
+... // other imports
+public class FlipFlopTest {
+    @Test
+    public void testStartsDeactivated() {
+        FlipFlop f = new FlipFlop();
+        ReactiveRecorder recorder = ReactiveRecorder.record(f);
+        // No events should be emitted.
+        recorder.verify().end();
+    }
+
+    @Test
+    public void testFlipOnceActivatesObserver() {
+        FlipFlop f = new FlipFlop();
+        ReactiveRecorder recorder = ReactiveRecorder.record(f);
+        f.flip();
+        // A single activation should have been emitted.
+        recorder.verify().entered().end();
+    }
+
+    @Test
+    public void testFlipTwiceActivatesThenDeactivates() {
+        FlipFlop f = new FlipFlop();
+        ReactiveRecorder recorder = ReactiveRecorder.record(f);
+        f.flip();
+        f.flip();
+        // Expect an activation followed by a deactivation.
+        recorder.verify().entered().exited().end();
+    }
+}
+```
+
+`ReactiveRecorder`'s `entered()` and `exited()` methods can also take arguments
+to perform assertions on the activation data. `ReactiveRecorder.record()` can
+also take arbitrarily many `Observable` arguments and receive the events of all
+of the given `Observable`s. In this case, the `entered()` and `exited()` methods
+have overloads that take an `Observable` as an argument, which can be used to
+assert *which* `Observable` emitted an event.
+
 ## When to use Observables
 
 `Observable`s and `Controller`s are intended to succinctly adapt common Android
