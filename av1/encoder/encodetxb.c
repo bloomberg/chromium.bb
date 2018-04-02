@@ -1662,6 +1662,7 @@ int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
   if (eob == 0) return 0;
   for (c = 0; c < eob; ++c) {
     cul_level += abs(qcoeff[scan[c]]);
+    if (cul_level > COEFF_CONTEXT_MASK) break;
   }
 
   cul_level = AOMMIN(COEFF_CONTEXT_MASK, cul_level);
