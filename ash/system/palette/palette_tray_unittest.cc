@@ -83,7 +83,7 @@ class PaletteTrayTest : public AshTestBase {
   }
 
   PrefService* local_state_pref_service() {
-    return Shell::Get()->GetLocalStatePrefService();
+    return ash_test_helper()->GetLocalStatePrefService();
   }
 
   PaletteTray* palette_tray_ = nullptr;  // not owned

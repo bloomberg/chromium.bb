@@ -486,10 +486,6 @@ void Shell::UpdateShelfVisibility() {
     Shelf::ForWindow(root)->UpdateVisibilityState();
 }
 
-PrefService* Shell::GetLocalStatePrefService() const {
-  return local_state_.get();
-}
-
 WebNotificationTray* Shell::GetWebNotificationTray() {
   return GetPrimaryRootWindowController()
       ->GetStatusAreaWidget()

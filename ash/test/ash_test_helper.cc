@@ -269,6 +269,10 @@ void AshTestHelper::NotifyClientAboutAcceleratedWidgets() {
       shell->display_manager());
 }
 
+PrefService* AshTestHelper::GetLocalStatePrefService() {
+  return Shell::Get()->local_state_.get();
+}
+
 aura::Window* AshTestHelper::CurrentContext() {
   aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   if (!root_window)
