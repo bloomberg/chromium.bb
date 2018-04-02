@@ -47,6 +47,7 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         mMakeCredentialCallback = callback;
         if (mIsOperationPending) {
             onError(AuthenticatorStatus.PENDING_REQUEST);
+            return;
         }
 
         mIsOperationPending = true;
@@ -59,6 +60,7 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         mGetAssertionCallback = callback;
         if (mIsOperationPending) {
             onError(AuthenticatorStatus.PENDING_REQUEST);
+            return;
         }
 
         mIsOperationPending = true;
