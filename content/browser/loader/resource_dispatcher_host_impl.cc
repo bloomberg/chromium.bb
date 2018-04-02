@@ -1242,14 +1242,11 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
         std::move(url_loader_client),
         static_cast<ResourceType>(request_data.resource_type));
   } else {
-    // Initialize the service worker handler for the request. We don't use
-    // ServiceWorker for synchronous loads to avoid renderer deadlocks.
-    const bool skip_service_worker =
-        is_sync_load || request_data.skip_service_worker;
+    // Initialize the service worker handler for the request.
     ServiceWorkerRequestHandler::InitializeHandler(
         new_request.get(), requester_info->service_worker_context(),
         blob_context, child_id, request_data.service_worker_provider_id,
-        skip_service_worker, request_data.fetch_request_mode,
+        request_data.skip_service_worker, request_data.fetch_request_mode,
         request_data.fetch_credentials_mode, request_data.fetch_redirect_mode,
         request_data.fetch_integrity, request_data.keepalive,
         static_cast<ResourceType>(request_data.resource_type),

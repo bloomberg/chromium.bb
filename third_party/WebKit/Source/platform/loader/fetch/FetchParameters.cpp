@@ -125,6 +125,10 @@ void FetchParameters::MakeSynchronous() {
   if (resource_request_.TimeoutInterval() == INT_MAX) {
     resource_request_.SetTimeoutInterval(10);
   }
+  // Skip ServiceWorker for synchronous loads from the main thread to avoid
+  // deadlocks.
+  if (IsMainThread())
+    resource_request_.SetSkipServiceWorker(true);
   options_.synchronous_policy = kRequestSynchronously;
 }
 
