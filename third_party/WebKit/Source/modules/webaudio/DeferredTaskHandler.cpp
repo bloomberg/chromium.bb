@@ -341,8 +341,16 @@ void DeferredTaskHandler::FinishTailProcessing() {
   // DisableOutputs must run with the graph lock.
   GraphAutoLocker locker(*this);
 
-  for (auto& handler : tail_processing_handlers_)
-    handler->DisableOutputs();
+  while (tail_processing_handlers_.size() > 0) {
+    // |DisableOutputs()| can modify |tail_processing_handlers_|, so
+    // swap it out before processing it.  And keep running this until
+    // nothing gets added to |tail_processing_handlers_|.
+    Vector<scoped_refptr<AudioHandler>> handlers;
+
+    handlers.swap(tail_processing_handlers_);
+    for (auto& handler : handlers)
+      handler->DisableOutputs();
+  }
 }
 
 }  // namespace blink
