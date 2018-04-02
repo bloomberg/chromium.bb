@@ -15,7 +15,6 @@ function SelectToSpeakKeystrokeSelectionTest() {
   SelectToSpeakE2ETest.call(this);
   this.mockTts = new MockTts();
   chrome.tts = this.mockTts;
-  selectToSpeak.enableReadSelectedTextForTesting();
 }
 
 SelectToSpeakKeystrokeSelectionTest.prototype = {

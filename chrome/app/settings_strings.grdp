@@ -327,10 +327,7 @@
       Enable select-to-speak
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION" desc="In the settings tab, the description of an option to hold a key and click or drag a box with the mouse to speak any on-screen text out loud.">
-      Press and hold Search, then click or drag to select content to be read aloud
-    </message>
-    <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION_FLAGS" desc="In the settings tab, the description of an option to hold a key and click or drag a box with the mouse, or highlight a region and press a keystroke, to speak any on-screen text out loud.">
-      To read content aloud, press and hold Search, then click or drag to select content. Or highlight a region and use Search + S.
+      Highlight what you want to hear, then press Search + S. Or, press and hold Search, then click or drag to select content.
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_OPTIONS_LABEL" desc="In the settings tab, the label for the button that opens the Options page for the Select-to-Speak feature.">
       Open select-to-speak settings
