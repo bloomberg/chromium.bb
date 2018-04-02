@@ -34,7 +34,7 @@
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
-#include "content/browser/android/selection_popup_controller.h"
+#include "content/browser/android/selection/selection_popup_controller.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/android/tap_disambiguator.h"
 #include "content/browser/android/text_suggestion_host_android.h"
