@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/accessibility/select_to_speak_event_rewriter.h"
+#include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/event_handler_common.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -21,6 +19,7 @@
 #include "extensions/browser/extension_host.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/content_accelerators/accelerator_util.h"
@@ -28,6 +27,8 @@
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -47,26 +48,36 @@ gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
 
 const ui::KeyboardCode kSpeakSelectionKey = ui::VKEY_S;
 
-SelectToSpeakEventRewriter::SelectToSpeakEventRewriter(
-    aura::Window* root_window)
-    : root_window_(root_window) {
-  DCHECK(root_window_);
+SelectToSpeakEventHandler::SelectToSpeakEventHandler() {
+  // Add this to the root level EventTarget so that it is called first.
+  // TODO(katie): instead of using the root level EventTarget, just add this
+  // handler to ash::Shell::Get()->GetPrimaryRootWindow().
+  if (aura::Env::GetInstanceDontCreate())
+    aura::Env::GetInstanceDontCreate()->AddPreTargetHandler(
+        this, ui::EventTarget::Priority::kAccessibility);
 }
 
-SelectToSpeakEventRewriter::~SelectToSpeakEventRewriter() = default;
+SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
+  if (aura::Env::GetInstanceDontCreate())
+    aura::Env::GetInstanceDontCreate()->AddPreTargetHandler(
+        this, ui::EventTarget::Priority::kAccessibility);
+}
 
-void SelectToSpeakEventRewriter::CaptureForwardedEventsForTesting(
+void SelectToSpeakEventHandler::CaptureForwardedEventsForTesting(
     SelectToSpeakEventDelegateForTesting* delegate) {
   event_delegate_for_testing_ = delegate;
 }
 
-bool SelectToSpeakEventRewriter::IsSelectToSpeakEnabled() {
+bool SelectToSpeakEventHandler::IsSelectToSpeakEnabled() {
   if (event_delegate_for_testing_)
     return true;
   return chromeos::AccessibilityManager::Get()->IsSelectToSpeakEnabled();
 }
 
-bool SelectToSpeakEventRewriter::OnKeyEvent(const ui::KeyEvent* event) {
+void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
+  if (!IsSelectToSpeakEnabled())
+    return;
+
   DCHECK(event);
 
   // We can only call TtsController on the UI thread, make sure we
@@ -130,13 +141,17 @@ bool SelectToSpeakEventRewriter::OnKeyEvent(const ui::KeyEvent* event) {
   if (host)
     chromeos::ForwardKeyToExtension(*event, host);
 
-  return cancel_event;
+  if (cancel_event)
+    CancelEvent(event);
 }
 
-bool SelectToSpeakEventRewriter::OnMouseEvent(const ui::MouseEvent* event) {
+void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+  if (!IsSelectToSpeakEnabled())
+    return;
+
   DCHECK(event);
   if (state_ == INACTIVE)
-    return false;
+    return;
 
   if ((state_ == SEARCH_DOWN || state_ == MOUSE_RELEASED) &&
       event->type() == ui::ET_MOUSE_PRESSED) {
@@ -146,17 +161,16 @@ bool SelectToSpeakEventRewriter::OnMouseEvent(const ui::MouseEvent* event) {
   if (state_ == WAIT_FOR_MOUSE_RELEASE &&
       event->type() == ui::ET_MOUSE_RELEASED) {
     state_ = INACTIVE;
-    return false;
+    return;
   }
 
   if (state_ != CAPTURING_MOUSE)
-    return false;
+    return;
 
   if (event->type() == ui::ET_MOUSE_RELEASED)
     state_ = MOUSE_RELEASED;
 
   ui::MouseEvent mutable_event(*event);
-  ConvertMouseEventToDIPs(&mutable_event);
 
   // If we're in the capturing mouse state, forward the mouse event to
   // select-to-speak.
@@ -167,64 +181,28 @@ bool SelectToSpeakEventRewriter::OnMouseEvent(const ui::MouseEvent* event) {
     extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
         extension_misc::kSelectToSpeakExtensionId);
     if (!host)
-      return false;
+      return;
 
     content::RenderViewHost* rvh = host->render_view_host();
     if (!rvh)
-      return false;
+      return;
 
     const blink::WebMouseEvent web_event = ui::MakeWebMouseEvent(
         mutable_event, base::Bind(&GetScreenLocationFromEvent));
     rvh->GetWidget()->ForwardMouseEvent(web_event);
   }
 
-  return true;
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSE_RELEASED)
+    CancelEvent(event);
 }
 
-void SelectToSpeakEventRewriter::ConvertMouseEventToDIPs(
-    ui::MouseEvent* mouse_event) {
-  // The event is in Pixels, and needs to be scaled to DIPs.
-  gfx::Point location = mouse_event->location();
-  gfx::Point root_location = mouse_event->root_location();
-  root_window_->GetHost()->ConvertPixelsToDIP(&location);
-  root_window_->GetHost()->ConvertPixelsToDIP(&root_location);
-  mouse_event->set_location(location);
-  mouse_event->set_root_location(root_location);
-}
-
-ui::EventRewriteStatus SelectToSpeakEventRewriter::RewriteEvent(
-    const ui::Event& event,
-    std::unique_ptr<ui::Event>* new_event) {
-  if (!IsSelectToSpeakEnabled())
-    return ui::EVENT_REWRITE_CONTINUE;
-
-  if (event.type() == ui::ET_KEY_PRESSED ||
-      event.type() == ui::ET_KEY_RELEASED) {
-    const ui::KeyEvent key_event = static_cast<const ui::KeyEvent&>(event);
-    if (OnKeyEvent(&key_event))
-      return ui::EVENT_REWRITE_DISCARD;
+void SelectToSpeakEventHandler::CancelEvent(ui::Event* event) {
+  DCHECK(event);
+  if (event->cancelable()) {
+    event->SetHandled();
+    event->StopPropagation();
   }
-
-  if (event.type() == ui::ET_MOUSE_PRESSED ||
-      event.type() == ui::ET_MOUSE_DRAGGED ||
-      event.type() == ui::ET_MOUSE_RELEASED ||
-      event.type() == ui::ET_MOUSE_MOVED) {
-    const ui::MouseEvent mouse_event =
-        static_cast<const ui::MouseEvent&>(event);
-    if (OnMouseEvent(&mouse_event) && (event.type() == ui::ET_MOUSE_PRESSED ||
-                                       event.type() == ui::ET_MOUSE_RELEASED)) {
-      // Cancel only click events if they were consumed by Select-to-Speak.
-      // Mouse move and drag should still happen or the mouse cursor may
-      // not be drawn in the right place.
-      return ui::EVENT_REWRITE_DISCARD;
-    }
-  }
-
-  return ui::EVENT_REWRITE_CONTINUE;
 }
 
-ui::EventRewriteStatus SelectToSpeakEventRewriter::NextDispatchEvent(
-    const ui::Event& last_event,
-    std::unique_ptr<ui::Event>* new_event) {
-  return ui::EVENT_REWRITE_CONTINUE;
-}
+}  // namespace chromeos
