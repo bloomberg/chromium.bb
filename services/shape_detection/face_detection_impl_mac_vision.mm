@@ -131,12 +131,14 @@ void FaceDetectionImplMacVision::Detect(const SkBitmap& bitmap,
   detected_callback_ = std::move(callback);
   // This prevents the Detect function from being called before the
   // VisionAPIAsyncRequestMac completes.
-  binding_->PauseIncomingMethodCallProcessing();
+  if (binding_)  // Can be unbound in unit testing.
+    binding_->PauseIncomingMethodCallProcessing();
 }
 
 void FaceDetectionImplMacVision::OnFacesDetected(VNRequest* request,
                                                  NSError* error) {
-  binding_->ResumeIncomingMethodCallProcessing();
+  if (binding_)  // Can be unbound in unit testing.
+    binding_->ResumeIncomingMethodCallProcessing();
 
   if (![request.results count] || error) {
     std::move(detected_callback_).Run({});
