@@ -2012,9 +2012,10 @@ LayoutRect LayoutText::LocalSelectionRect() const {
     }
   }
 
+  // TODO(yoichio): The following DCHECK should pass, but fails 14 tests.
+  // DCHECK_LE(start_pos, end_pos);
   LayoutRect rect;
-
-  if (start_pos == end_pos)
+  if (start_pos >= end_pos)
     return rect;
 
   for (InlineTextBox* box : TextBoxes()) {
