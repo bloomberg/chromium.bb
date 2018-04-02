@@ -87,14 +87,7 @@ private
 
     SMALLEST_EQUAL_OPERATION = 3
 
-    OPENSOURCE_URL = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/"
-
-    OPENSOURCE_DIRS = Set.new %w[
-        LayoutTests
-        PerformanceTests
-        Source
-        Tools
-    ]
+    OPENSOURCE_URL = "https://chromium.googlesource.com/chromium/src/+/master/"
 
     IMAGE_CHECKSUM_ERROR = "INVALID: Image lacks a checksum. This will fail with a MISSING error in run-webkit-tests. Always generate new png files using run-webkit-tests."
 
@@ -131,26 +124,8 @@ private
         end
     end
 
-    def self.find_url_and_path(file_path)
-        # Search file_path from the bottom up, at each level checking whether
-        # we've found a directory we know exists in the source tree.
-
-        dirname, basename = File.split(file_path)
-        dirname.split(/\//).reverse.inject(basename) do |path, directory|
-            path = directory + "/" + path
-
-            return [OPENSOURCE_URL, path] if OPENSOURCE_DIRS.include?(directory)
-
-            path
-        end
-
-        [nil, file_path]
-    end
-
     def self.linkifyFilename(filename)
-        url, pathBeneathTrunk = find_url_and_path(filename)
-
-        url.nil? ? filename : "<a href='#{url}trunk/#{pathBeneathTrunk}'>#{filename}</a>"
+        "<a href='#{OPENSOURCE_URL}#{filename}'>#{filename}</a>"
     end
 
 
