@@ -110,7 +110,21 @@ BASE_EXPORT TerminationStatus GetTerminationStatus(ProcessHandle handle,
 //
 BASE_EXPORT TerminationStatus GetKnownDeadTerminationStatus(
     ProcessHandle handle, int* exit_code);
+
+#if defined(OS_LINUX)
+// Spawns a thread to wait asynchronously for the child |process| to exit
+// and then reaps it.
+BASE_EXPORT void EnsureProcessGetsReaped(Process process);
+#endif  // defined(OS_LINUX)
 #endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+
+// Registers |process| to be asynchronously monitored for termination, forcibly
+// terminated if necessary, and reaped on exit. The caller should have signalled
+// |process| to exit before calling this API. The API will allow a couple of
+// seconds grace period before forcibly terminating |process|.
+// TODO(https://crbug.com/806451): The Mac implementation currently blocks the
+// calling thread for up to two seconds.
+BASE_EXPORT void EnsureProcessTerminated(Process process);
 
 // These are only sparingly used, and not needed on Fuchsia. They could be
 // implemented if necessary.
@@ -135,28 +149,6 @@ BASE_EXPORT bool CleanupProcesses(const FilePath::StringType& executable_name,
                                   int exit_code,
                                   const ProcessFilter* filter);
 #endif  // !defined(OS_FUCHSIA)
-
-// This method ensures that the specified process eventually terminates, and
-// then it closes the given process handle.
-//
-// It assumes that the process has already been signalled to exit, and it
-// begins by waiting a small amount of time for it to exit.  If the process
-// does not appear to have exited, then this function starts to become
-// aggressive about ensuring that the process terminates.
-//
-// On Linux this method does not block the calling thread.
-// On OS X and Fuchsia, this method may block for up to 2 seconds.
-//
-// NOTE: The process must have been opened with the PROCESS_TERMINATE and
-// SYNCHRONIZE permissions.
-//
-BASE_EXPORT void EnsureProcessTerminated(Process process);
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
-// The nicer version of EnsureProcessTerminated() that is patient and will
-// wait for |pid| to finish and then reap it.
-BASE_EXPORT void EnsureProcessGetsReaped(ProcessId pid);
-#endif
 
 }  // namespace base
 

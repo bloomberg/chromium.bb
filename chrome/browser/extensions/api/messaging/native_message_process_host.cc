@@ -66,10 +66,10 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (process_.IsValid()) {
-    // Kill the host process if necessary to make sure we don't leave zombies.
-    // On OSX and Fuchsia base::EnsureProcessTerminated() may block, so we have
-    // to post a task on the blocking pool.
-#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
+// Kill the host process if necessary to make sure we don't leave zombies.
+// TODO(https://crbug.com/806451): On OSX EnsureProcessTerminated() may
+// block, so we have to post a task on the blocking pool.
+#if defined(OS_MACOSX)
     base::PostTaskWithTraits(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(&base::EnsureProcessTerminated, Passed(&process_)));

@@ -4,39 +4,18 @@
 
 #include "base/process/kill.h"
 
+#include <algorithm>
+
 #include <windows.h>
 #include <io.h>
 #include <stdint.h>
 
-#include <algorithm>
-#include <utility>
-
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/memory.h"
 #include "base/process/process_iterator.h"
-#include "base/task_scheduler/post_task.h"
 
 namespace base {
-
-namespace {
-
-bool CheckForProcessExitAndReport(const Process& process) {
-  if (WaitForSingleObject(process.Handle(), 0) == WAIT_OBJECT_0) {
-    int exit_code;
-    TerminationStatus status =
-        GetTerminationStatus(process.Handle(), &exit_code);
-    DCHECK_NE(TERMINATION_STATUS_STILL_RUNNING, status);
-    process.Exited(exit_code);
-    return true;
-  }
-  return false;
-}
-
-}  // namespace
 
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   DCHECK(exit_code);
@@ -132,26 +111,6 @@ bool CleanupProcesses(const FilePath::StringType& executable_name,
     return true;
   KillProcesses(executable_name, exit_code, filter);
   return false;
-}
-
-void EnsureProcessTerminated(Process process) {
-  DCHECK(!process.is_current());
-
-  // If already signaled, then we are done!
-  if (CheckForProcessExitAndReport(process))
-    return;
-
-  PostDelayedTaskWithTraits(
-      FROM_HERE,
-      {TaskPriority::BACKGROUND, TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      BindOnce(
-          [](Process process) {
-            if (CheckForProcessExitAndReport(process))
-              return;
-            process.Terminate(win::kProcessKilledExitCode, false);
-          },
-          std::move(process)),
-      TimeDelta::FromSeconds(2));
 }
 
 }  // namespace base
