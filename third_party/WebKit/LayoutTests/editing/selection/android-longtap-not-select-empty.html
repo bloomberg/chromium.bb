@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<div id="log"></div>
-<p id="p1"><span id="span1">paragraph A</span></p>
-<p>paragraph B</p>
+<script src="../assert_selection.js"></script>
 <script>
-test(function () {
-    var boundsP1 = p1.getBoundingClientRect();
-    var boundsSpan1 = span1.getBoundingClientRect();
+selection_test(
+  [
+    '<p><span id="span1">paragraph A</span></p>',
+    '<p>paragraph B</p>',
+  ],
+  selection => {
+    if (!window.eventSender)
+      throw 'This test requires eventSender.';
 
-    window.eventSender.gestureLongPress((boundsSpan1.right + boundsP1.right) / 2, (boundsSpan1.top + boundsSpan1.bottom) / 2);
-    assert_equals(window.getSelection().toString(), "", "long tap on empty area between span and p");
-
-});
+    const span1 = selection.document.getElementById('span1');
+    eventSender.gestureLongPress(
+        selection.computeLeft(span1) + span1.offsetWidth + 20,
+        selection.computeTop(span1) + span1.offsetHeight / 2);
+  },
+  [
+    '<p><span id="span1">paragraph A|</span></p>',
+    '<p>paragraph B</p>',
+  ],
+  'Long tap on empty area between span and p');
 </script>
