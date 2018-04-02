@@ -54,13 +54,16 @@ void RunCallbackWhenDataPipeReady(
 // Deletes itself when done.
 class DataPipeConsumerHelper {
  protected:
-  DataPipeConsumerHelper(mojo::ScopedDataPipeConsumerHandle pipe,
-                         uint64_t max_bytes_to_read)
+  DataPipeConsumerHelper(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      uint64_t max_bytes_to_read)
       : pipe_(std::move(pipe)),
         watcher_(FROM_HERE,
                  mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                  base::SequencedTaskRunnerHandle::Get()),
         max_bytes_to_read_(max_bytes_to_read) {
+    progress_client_.Bind(std::move(progress_client));
     watcher_.Watch(pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
                    MOJO_WATCH_CONDITION_SATISFIED,
                    base::BindRepeating(&DataPipeConsumerHelper::DataPipeReady,
@@ -72,9 +75,11 @@ class DataPipeConsumerHelper {
   // Return false if population fails.
   virtual bool Populate(base::span<const char> data,
                         uint64_t bytes_previously_written) = 0;
-  virtual void InvokeDone(mojo::ScopedDataPipeConsumerHandle pipe,
-                          bool success,
-                          uint64_t bytes_written) = 0;
+  virtual void InvokeDone(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      bool success,
+      uint64_t bytes_written) = 0;
 
  private:
   void DataPipeReady(MojoResult result, const mojo::HandleSignalsState& state) {
@@ -97,21 +102,31 @@ class DataPipeConsumerHelper {
       size = std::min<uint64_t>(size, max_bytes_to_read_ - current_offset_);
       if (!Populate(base::make_span(static_cast<const char*>(data), size),
                     current_offset_)) {
-        InvokeDone(mojo::ScopedDataPipeConsumerHandle(), false,
-                   current_offset_);
+        InvokeDone(mojo::ScopedDataPipeConsumerHandle(), PassProgressClient(),
+                   false, current_offset_);
         delete this;
+        return;
       }
+      if (progress_client_)
+        progress_client_->OnProgress(size);
       current_offset_ += size;
       result = pipe_->EndReadData(size);
       DCHECK_EQ(MOJO_RESULT_OK, result);
     }
 
     // Either the pipe closed, or we filled the entire item.
-    InvokeDone(std::move(pipe_), true, current_offset_);
+    InvokeDone(std::move(pipe_), PassProgressClient(), true, current_offset_);
     delete this;
   }
 
+  blink::mojom::ProgressClientAssociatedPtrInfo PassProgressClient() {
+    if (!progress_client_)
+      return blink::mojom::ProgressClientAssociatedPtrInfo();
+    return progress_client_.PassInterface();
+  }
+
   mojo::ScopedDataPipeConsumerHandle pipe_;
+  blink::mojom::ProgressClientAssociatedPtr progress_client_;
   mojo::SimpleWatcher watcher_;
   const uint64_t max_bytes_to_read_;
   uint64_t current_offset_ = 0;
@@ -125,34 +140,41 @@ class DataPipeConsumerHelper {
 class BlobBuilderFromStream::WritePipeToFileHelper
     : public DataPipeConsumerHelper {
  public:
-  using DoneCallback =
-      base::OnceCallback<void(bool success,
-                              uint64_t bytes_written,
-                              mojo::ScopedDataPipeConsumerHandle pipe,
-                              const base::Time& modification_time)>;
+  using DoneCallback = base::OnceCallback<void(
+      bool success,
+      uint64_t bytes_written,
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      const base::Time& modification_time)>;
 
-  static void CreateAndAppend(mojo::ScopedDataPipeConsumerHandle pipe,
-                              base::FilePath file_path,
-                              uint64_t max_file_size,
-                              DoneCallback callback) {
+  static void CreateAndAppend(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      base::FilePath file_path,
+      uint64_t max_file_size,
+      DoneCallback callback) {
     base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
         ->PostTask(
             FROM_HERE,
             base::BindOnce(
                 &WritePipeToFileHelper::CreateAndAppendOnFileSequence,
-                std::move(pipe), std::move(file_path), max_file_size,
+                std::move(pipe), std::move(progress_client),
+                std::move(file_path), max_file_size,
                 base::SequencedTaskRunnerHandle::Get(), std::move(callback)));
   }
 
-  static void CreateAndStart(mojo::ScopedDataPipeConsumerHandle pipe,
-                             base::File file,
-                             uint64_t max_file_size,
-                             DoneCallback callback) {
+  static void CreateAndStart(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      base::File file,
+      uint64_t max_file_size,
+      DoneCallback callback) {
     base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
         ->PostTask(
             FROM_HERE,
             base::BindOnce(&WritePipeToFileHelper::CreateAndStartOnFileSequence,
-                           std::move(pipe), std::move(file), max_file_size,
+                           std::move(pipe), std::move(progress_client),
+                           std::move(file), max_file_size,
                            base::SequencedTaskRunnerHandle::Get(),
                            std::move(callback)));
   }
@@ -160,31 +182,39 @@ class BlobBuilderFromStream::WritePipeToFileHelper
  private:
   static void CreateAndAppendOnFileSequence(
       mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       base::FilePath file_path,
       uint64_t max_file_size,
       scoped_refptr<base::TaskRunner> reply_runner,
       DoneCallback callback) {
     base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_APPEND);
-    new WritePipeToFileHelper(std::move(pipe), std::move(file), max_file_size,
+    new WritePipeToFileHelper(std::move(pipe), std::move(progress_client),
+                              std::move(file), max_file_size,
                               std::move(reply_runner), std::move(callback));
   }
 
   static void CreateAndStartOnFileSequence(
       mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       base::File file,
       uint64_t max_file_size,
       scoped_refptr<base::TaskRunner> reply_runner,
       DoneCallback callback) {
-    new WritePipeToFileHelper(std::move(pipe), std::move(file), max_file_size,
+    new WritePipeToFileHelper(std::move(pipe), std::move(progress_client),
+                              std::move(file), max_file_size,
                               std::move(reply_runner), std::move(callback));
   }
 
-  WritePipeToFileHelper(mojo::ScopedDataPipeConsumerHandle pipe,
-                        base::File file,
-                        uint64_t max_file_size,
-                        scoped_refptr<base::TaskRunner> reply_runner,
-                        DoneCallback callback)
-      : DataPipeConsumerHelper(std::move(pipe), max_file_size),
+  WritePipeToFileHelper(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      base::File file,
+      uint64_t max_file_size,
+      scoped_refptr<base::TaskRunner> reply_runner,
+      DoneCallback callback)
+      : DataPipeConsumerHelper(std::move(pipe),
+                               std::move(progress_client),
+                               max_file_size),
         file_(std::move(file)),
         reply_runner_(std::move(reply_runner)),
         callback_(std::move(callback)) {}
@@ -195,6 +225,7 @@ class BlobBuilderFromStream::WritePipeToFileHelper
   }
 
   void InvokeDone(mojo::ScopedDataPipeConsumerHandle pipe,
+                  blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
                   bool success,
                   uint64_t bytes_written) override {
     base::Time last_modified;
@@ -205,7 +236,8 @@ class BlobBuilderFromStream::WritePipeToFileHelper
     }
     reply_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_), success, bytes_written,
-                                  std::move(pipe), last_modified));
+                                  std::move(pipe), std::move(progress_client),
+                                  last_modified));
   }
 
   base::File file_;
@@ -218,22 +250,29 @@ class BlobBuilderFromStream::WritePipeToFileHelper
 class BlobBuilderFromStream::WritePipeToFutureDataHelper
     : public DataPipeConsumerHelper {
  public:
-  using DoneCallback =
-      base::OnceCallback<void(uint64_t bytes_written,
-                              mojo::ScopedDataPipeConsumerHandle pipe)>;
+  using DoneCallback = base::OnceCallback<void(
+      uint64_t bytes_written,
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client)>;
 
-  static void CreateAndStart(mojo::ScopedDataPipeConsumerHandle pipe,
-                             scoped_refptr<BlobDataItem> item,
-                             DoneCallback callback) {
-    new WritePipeToFutureDataHelper(std::move(pipe), std::move(item),
-                                    std::move(callback));
+  static void CreateAndStart(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      scoped_refptr<BlobDataItem> item,
+      DoneCallback callback) {
+    new WritePipeToFutureDataHelper(std::move(pipe), std::move(progress_client),
+                                    std::move(item), std::move(callback));
   }
 
  private:
-  WritePipeToFutureDataHelper(mojo::ScopedDataPipeConsumerHandle pipe,
-                              scoped_refptr<BlobDataItem> item,
-                              DoneCallback callback)
-      : DataPipeConsumerHelper(std::move(pipe), item->length()),
+  WritePipeToFutureDataHelper(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      scoped_refptr<BlobDataItem> item,
+      DoneCallback callback)
+      : DataPipeConsumerHelper(std::move(pipe),
+                               std::move(progress_client),
+                               item->length()),
         item_(std::move(item)),
         callback_(std::move(callback)) {}
 
@@ -249,10 +288,12 @@ class BlobBuilderFromStream::WritePipeToFutureDataHelper
   }
 
   void InvokeDone(mojo::ScopedDataPipeConsumerHandle pipe,
+                  blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
                   bool success,
                   uint64_t bytes_written) override {
     DCHECK(success);
-    std::move(callback_).Run(bytes_written, std::move(pipe));
+    std::move(callback_).Run(bytes_written, std::move(pipe),
+                             std::move(progress_client));
   }
 
   scoped_refptr<BlobDataItem> item_;
@@ -265,6 +306,7 @@ BlobBuilderFromStream::BlobBuilderFromStream(
     std::string content_disposition,
     uint64_t length_hint,
     mojo::ScopedDataPipeConsumerHandle data,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
     ResultCallback callback)
     : kMemoryBlockSize(std::min(
           kMaxMemoryChunkSize,
@@ -280,7 +322,8 @@ BlobBuilderFromStream::BlobBuilderFromStream(
       weak_factory_(this) {
   DCHECK(context_);
 
-  AllocateMoreMemorySpace(length_hint, std::move(data));
+  AllocateMoreMemorySpace(length_hint, std::move(progress_client),
+                          std::move(data));
 }
 
 BlobBuilderFromStream::~BlobBuilderFromStream() {
@@ -289,6 +332,7 @@ BlobBuilderFromStream::~BlobBuilderFromStream() {
 
 void BlobBuilderFromStream::AllocateMoreMemorySpace(
     uint64_t length_hint,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
     OnError(Result::kAborted);
@@ -302,7 +346,8 @@ void BlobBuilderFromStream::AllocateMoreMemorySpace(
   // If too much data has already been saved in memory, switch to using disk
   // backed data.
   if (ShouldStoreNextBlockOnDisk(length_hint)) {
-    AllocateMoreFileSpace(length_hint, std::move(pipe));
+    AllocateMoreFileSpace(length_hint, std::move(progress_client),
+                          std::move(pipe));
     return;
   }
 
@@ -329,11 +374,12 @@ void BlobBuilderFromStream::AllocateMoreMemorySpace(
           std::move(chunk_items),
           base::BindOnce(&BlobBuilderFromStream::MemoryQuotaAllocated,
                          base::Unretained(this), std::move(pipe),
-                         std::move(items_copy), 0));
+                         std::move(progress_client), std::move(items_copy), 0));
 }
 
 void BlobBuilderFromStream::MemoryQuotaAllocated(
     mojo::ScopedDataPipeConsumerHandle pipe,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
     std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
     size_t item_to_populate,
     bool success) {
@@ -344,7 +390,7 @@ void BlobBuilderFromStream::MemoryQuotaAllocated(
   DCHECK_LT(item_to_populate, chunk_items.size());
   auto item = chunk_items[item_to_populate];
   WritePipeToFutureDataHelper::CreateAndStart(
-      std::move(pipe), item->item(),
+      std::move(pipe), std::move(progress_client), item->item(),
       base::BindOnce(&BlobBuilderFromStream::DidWriteToMemory,
                      weak_factory_.GetWeakPtr(), std::move(chunk_items),
                      item_to_populate));
@@ -354,7 +400,8 @@ void BlobBuilderFromStream::DidWriteToMemory(
     std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
     size_t populated_item_index,
     uint64_t bytes_written,
-    mojo::ScopedDataPipeConsumerHandle pipe) {
+    mojo::ScopedDataPipeConsumerHandle pipe,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client) {
   if (!context_ || !callback_) {
     OnError(Result::kAborted);
     return;
@@ -369,13 +416,15 @@ void BlobBuilderFromStream::DidWriteToMemory(
     // If we still have allocated items for this chunk, just keep going with
     // those items.
     if (populated_item_index + 1 < chunk_items.size()) {
-      MemoryQuotaAllocated(std::move(pipe), std::move(chunk_items),
-                           populated_item_index + 1, true);
+      MemoryQuotaAllocated(std::move(pipe), std::move(progress_client),
+                           std::move(chunk_items), populated_item_index + 1,
+                           true);
     } else {
       RunCallbackWhenDataPipeReady(
           std::move(pipe),
           base::BindOnce(&BlobBuilderFromStream::AllocateMoreMemorySpace,
-                         weak_factory_.GetWeakPtr(), 0));
+                         weak_factory_.GetWeakPtr(), 0,
+                         std::move(progress_client)));
     }
   } else {
     // Pipe has closed, so we must be done. If we allocated more items than we
@@ -394,6 +443,7 @@ void BlobBuilderFromStream::DidWriteToMemory(
 
 void BlobBuilderFromStream::AllocateMoreFileSpace(
     uint64_t length_hint,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
     OnError(Result::kAborted);
@@ -429,7 +479,7 @@ void BlobBuilderFromStream::AllocateMoreFileSpace(
     item->GrowFile(old_file_size + file_size_delta);
     base::FilePath path = file_reference->path();
     WritePipeToFileHelper::CreateAndAppend(
-        std::move(pipe), path, file_size_delta,
+        std::move(pipe), std::move(progress_client), path, file_size_delta,
         base::BindOnce(&BlobBuilderFromStream::DidWriteToExtendedFile,
                        weak_factory_.GetWeakPtr(), std::move(file_reference),
                        old_file_size));
@@ -449,11 +499,12 @@ void BlobBuilderFromStream::AllocateMoreFileSpace(
       std::move(chunk_items),
       base::BindOnce(&BlobBuilderFromStream::FileQuotaAllocated,
                      base::Unretained(this), std::move(pipe),
-                     std::move(items_copy), 0));
+                     std::move(progress_client), std::move(items_copy), 0));
 }
 
 void BlobBuilderFromStream::FileQuotaAllocated(
     mojo::ScopedDataPipeConsumerHandle pipe,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
     std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
     size_t item_to_populate,
     std::vector<BlobMemoryController::FileCreationInfo> info,
@@ -467,7 +518,8 @@ void BlobBuilderFromStream::FileQuotaAllocated(
   auto item = chunk_items[item_to_populate];
   base::File file = std::move(info[item_to_populate].file);
   WritePipeToFileHelper::CreateAndStart(
-      std::move(pipe), std::move(file), item->item()->length(),
+      std::move(pipe), std::move(progress_client), std::move(file),
+      item->item()->length(),
       base::BindOnce(&BlobBuilderFromStream::DidWriteToFile,
                      weak_factory_.GetWeakPtr(), std::move(chunk_items),
                      std::move(info), item_to_populate));
@@ -480,6 +532,7 @@ void BlobBuilderFromStream::DidWriteToFile(
     bool success,
     uint64_t bytes_written,
     mojo::ScopedDataPipeConsumerHandle pipe,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
     const base::Time& modification_time) {
   if (!success || !context_ || !callback_) {
     OnError(success ? Result::kAborted : Result::kFileWriteFailed);
@@ -498,14 +551,16 @@ void BlobBuilderFromStream::DidWriteToFile(
     // If we still have allocated items for this chunk, just keep going with
     // those items.
     if (populated_item_index + 1 < chunk_items.size()) {
-      FileQuotaAllocated(std::move(pipe), std::move(chunk_items),
-                         populated_item_index + 1, std::move(info), true);
+      FileQuotaAllocated(std::move(pipe), std::move(progress_client),
+                         std::move(chunk_items), populated_item_index + 1,
+                         std::move(info), true);
     } else {
       // Once we start writing to file, we keep writing to file.
       RunCallbackWhenDataPipeReady(
           std::move(pipe),
           base::BindOnce(&BlobBuilderFromStream::AllocateMoreFileSpace,
-                         weak_factory_.GetWeakPtr(), 0));
+                         weak_factory_.GetWeakPtr(), 0,
+                         std::move(progress_client)));
     }
   } else {
     // Pipe has closed, so we must be done. If we allocated more items than we
@@ -529,6 +584,7 @@ void BlobBuilderFromStream::DidWriteToExtendedFile(
     bool success,
     uint64_t bytes_written,
     mojo::ScopedDataPipeConsumerHandle pipe,
+    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
     const base::Time& modification_time) {
   if (!success || !context_ || !callback_) {
     OnError(success ? Result::kAborted : Result::kFileWriteFailed);
@@ -548,7 +604,8 @@ void BlobBuilderFromStream::DidWriteToExtendedFile(
     RunCallbackWhenDataPipeReady(
         std::move(pipe),
         base::BindOnce(&BlobBuilderFromStream::AllocateMoreFileSpace,
-                       weak_factory_.GetWeakPtr(), 0));
+                       weak_factory_.GetWeakPtr(), 0,
+                       std::move(progress_client)));
   } else {
     // Pipe has closed, so we must be done.
     DCHECK_LE(old_file_size + bytes_written, item->length());

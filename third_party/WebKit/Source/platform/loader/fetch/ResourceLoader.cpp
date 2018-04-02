@@ -73,6 +73,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       resource_(resource),
       inflight_keepalive_bytes_(inflight_keepalive_bytes),
       is_cache_aware_loading_activated_(false),
+      progress_binding_(this),
       cancel_timer_(Context().GetLoadingTaskRunner(),
                     this,
                     &ResourceLoader::CancelTimerFired) {
@@ -619,10 +620,14 @@ void ResourceLoader::DidStartLoadingResponseBody(
   const ResourceResponse& response = resource_->GetResponse();
   AtomicString mime_type = response.MimeType();
 
+  mojom::blink::ProgressClientAssociatedPtrInfo progress_client_ptr;
+  progress_binding_.Bind(MakeRequest(&progress_client_ptr));
+
   mojom::blink::BlobRegistry* blob_registry = BlobDataHandle::GetBlobRegistry();
   blob_registry->RegisterFromStream(
       mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
       std::max(0ll, response.ExpectedContentLength()), std::move(body),
+      std::move(progress_client_ptr),
       WTF::Bind(&ResourceLoader::FinishedCreatingBlob, WrapPersistent(this)));
 }
 
@@ -827,6 +832,16 @@ ResourceLoader::GetLoadingTaskRunner() {
   return Context().GetLoadingTaskRunner();
 }
 
+void ResourceLoader::OnProgress(uint64_t delta) {
+  DCHECK(!blob_finished_);
+
+  if (scheduler_client_id_ == ResourceLoadScheduler::kInvalidClientId)
+    return;
+
+  Context().DispatchDidReceiveData(resource_->Identifier(), nullptr, delta);
+  resource_->DidDownloadData(delta);
+}
+
 void ResourceLoader::FinishedCreatingBlob(
     const scoped_refptr<BlobDataHandle>& blob) {
   DCHECK(!blob_finished_);
@@ -834,13 +849,6 @@ void ResourceLoader::FinishedCreatingBlob(
   if (scheduler_client_id_ == ResourceLoadScheduler::kInvalidClientId)
     return;
 
-  // TODO(mek): Implement proper progress events once streaming data to a blob
-  // supports reporting progress.
-  if (blob) {
-    Context().DispatchDidReceiveData(resource_->Identifier(), nullptr,
-                                     blob->size());
-    resource_->DidDownloadData(blob->size());
-  }
   Context().DispatchDidDownloadToBlob(resource_->Identifier(), blob.get());
   resource_->DidDownloadToBlob(blob);
 

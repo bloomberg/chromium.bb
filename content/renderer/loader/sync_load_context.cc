@@ -117,6 +117,7 @@ void SyncLoadContext::OnStartLoadingResponseBody(
   download_to_blob_registry_->RegisterFromStream(
       response_->info.mime_type, "",
       std::max<int64_t>(0, response_->info.content_length), std::move(body),
+      nullptr,
       base::BindOnce(&SyncLoadContext::OnFinishCreatingBlob,
                      base::Unretained(this)));
 }

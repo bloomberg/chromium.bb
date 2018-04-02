@@ -11,6 +11,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
 #include "storage/browser/storage_browser_export.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
 
@@ -49,22 +50,27 @@ class STORAGE_EXPORT BlobBuilderFromStream {
       base::OnceCallback<void(BlobBuilderFromStream*,
                               std::unique_ptr<BlobDataHandle>)>;
 
-  BlobBuilderFromStream(base::WeakPtr<BlobStorageContext> context,
-                        std::string content_type,
-                        std::string content_disposition,
-                        uint64_t length_hint,
-                        mojo::ScopedDataPipeConsumerHandle data,
-                        ResultCallback callback);
+  BlobBuilderFromStream(
+      base::WeakPtr<BlobStorageContext> context,
+      std::string content_type,
+      std::string content_disposition,
+      uint64_t length_hint,
+      mojo::ScopedDataPipeConsumerHandle data,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      ResultCallback callback);
   ~BlobBuilderFromStream();
 
  private:
   class WritePipeToFileHelper;
   class WritePipeToFutureDataHelper;
 
-  void AllocateMoreMemorySpace(uint64_t length_hint,
-                               mojo::ScopedDataPipeConsumerHandle pipe);
+  void AllocateMoreMemorySpace(
+      uint64_t length_hint,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      mojo::ScopedDataPipeConsumerHandle pipe);
   void MemoryQuotaAllocated(
       mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
       size_t item_to_populate,
       bool success);
@@ -72,12 +78,16 @@ class STORAGE_EXPORT BlobBuilderFromStream {
       std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
       size_t populated_item_index,
       uint64_t bytes_written,
-      mojo::ScopedDataPipeConsumerHandle pipe);
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client);
 
-  void AllocateMoreFileSpace(uint64_t length_hint,
-                             mojo::ScopedDataPipeConsumerHandle pipe);
+  void AllocateMoreFileSpace(
+      uint64_t length_hint,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      mojo::ScopedDataPipeConsumerHandle pipe);
   void FileQuotaAllocated(
       mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
       size_t item_to_populate,
       std::vector<BlobMemoryController::FileCreationInfo> info,
@@ -89,6 +99,7 @@ class STORAGE_EXPORT BlobBuilderFromStream {
       bool success,
       uint64_t bytes_written,
       mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       const base::Time& modification_time);
   void DidWriteToExtendedFile(
       scoped_refptr<ShareableFileReference> file_reference,
@@ -96,6 +107,7 @@ class STORAGE_EXPORT BlobBuilderFromStream {
       bool success,
       uint64_t bytes_written,
       mojo::ScopedDataPipeConsumerHandle pipe,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       const base::Time& modification_time);
 
   // These values are persisted to logs. Entries should not be renumbered and

@@ -46,11 +46,13 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
                 const std::string& content_disposition,
                 std::vector<blink::mojom::DataElementPtr> elements,
                 RegisterCallback callback) override;
-  void RegisterFromStream(const std::string& content_type,
-                          const std::string& content_disposition,
-                          uint64_t expected_length,
-                          mojo::ScopedDataPipeConsumerHandle data,
-                          RegisterFromStreamCallback callback) override;
+  void RegisterFromStream(
+      const std::string& content_type,
+      const std::string& content_disposition,
+      uint64_t expected_length,
+      mojo::ScopedDataPipeConsumerHandle data,
+      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      RegisterFromStreamCallback callback) override;
   void GetBlobFromUUID(blink::mojom::BlobRequest blob,
                        const std::string& uuid,
                        GetBlobFromUUIDCallback callback) override;
