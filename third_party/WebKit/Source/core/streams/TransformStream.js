@@ -56,9 +56,16 @@
   const streamErrors = binding.streamErrors;
   const errStreamTerminated = 'The transform stream has been terminated';
 
+  let useCounted = false;
+
   class TransformStream {
     constructor(transformer = {},
                 writableStrategy = {}, readableStrategy = {}) {
+      if (!useCounted) {
+        binding.countUse('TransformStreamConstructor');
+        useCounted = true;
+      }
+
       // readable and writableType are extension points for future byte streams.
       const readableType = transformer.readableType;
       if (readableType !== undefined) {

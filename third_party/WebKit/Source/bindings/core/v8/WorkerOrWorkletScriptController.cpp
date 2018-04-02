@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "bindings/core/v8/InitializeV8ExtrasBinding.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -180,6 +181,8 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
   script_state_ = ScriptState::Create(context, world_);
 
   ScriptState::Scope scope(script_state_.get());
+
+  InitializeV8ExtrasBinding(script_state_.get());
 
   // Associate the global proxy object, the global object and the worker
   // instance (C++ object) as follows.

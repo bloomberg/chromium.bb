@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/V8ExtrasTestUtils.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/Document.h"
 #include "core/streams/ReadableStreamDefaultControllerWrapper.h"
@@ -114,52 +115,6 @@ class TestUnderlyingSource final : public UnderlyingSourceBase {
   void GetError(ScriptValue value) { Controller()->GetError(value); }
   double DesiredSize() { return Controller()->DesiredSize(); }
 };
-
-class TryCatchScope {
- public:
-  explicit TryCatchScope(v8::Isolate* isolate)
-      : isolate_(isolate), trycatch_(isolate) {}
-
-  ~TryCatchScope() {
-    v8::MicrotasksScope::PerformCheckpoint(isolate_);
-    EXPECT_FALSE(trycatch_.HasCaught());
-  }
-
- private:
-  v8::Isolate* isolate_;
-  v8::TryCatch trycatch_;
-};
-
-ScriptValue Eval(V8TestingScope* scope, const char* s) {
-  v8::Local<v8::String> source;
-  v8::Local<v8::Script> script;
-  v8::MicrotasksScope microtasks(scope->GetIsolate(),
-                                 v8::MicrotasksScope::kDoNotRunMicrotasks);
-  if (!v8::String::NewFromUtf8(scope->GetIsolate(), s,
-                               v8::NewStringType::kNormal)
-           .ToLocal(&source)) {
-    ADD_FAILURE();
-    return ScriptValue();
-  }
-  if (!v8::Script::Compile(scope->GetContext(), source).ToLocal(&script)) {
-    ADD_FAILURE() << "Compilation fails";
-    return ScriptValue();
-  }
-  return ScriptValue(scope->GetScriptState(), script->Run(scope->GetContext()));
-}
-
-ScriptValue EvalWithPrintingError(V8TestingScope* scope, const char* s) {
-  v8::TryCatch block(scope->GetIsolate());
-  ScriptValue r = Eval(scope, s);
-  if (block.HasCaught()) {
-    ADD_FAILURE() << ToCoreString(
-                         block.Exception()->ToString(scope->GetIsolate()))
-                         .Utf8()
-                         .data();
-    block.ReThrow();
-  }
-  return r;
-}
 
 TEST(ReadableStreamOperationsTest, IsReadableStream) {
   V8TestingScope scope;
