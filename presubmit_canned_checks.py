@@ -793,6 +793,15 @@ def RunPylint(input_api, *args, **kwargs):
   return input_api.RunTests(GetPylint(input_api, *args, **kwargs), False)
 
 
+def CheckRietveldTryJobExecution(dummy_input_api, output_api,
+                                 dummy_host_url, dummy_platforms,
+                                 dummy_owner):
+  return [
+    output_api.PresubmitNotifyResult(
+        'CheckRietveldTryJobExecution is deprecated, please remove it.')
+  ]
+
+
 def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
     ignored):
   try:
@@ -886,8 +895,65 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     return [output_fn('Missing LGTM from someone other than %s' % owner_email)]
   return []
 
-
 def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):
+  """Return the owner and reviewers of a change, if any.
+
+  If approval_needed is True, only reviewers who have approved the change
+  will be returned.
+  """
+  # Rietveld is default.
+  func = _RietveldOwnerAndReviewers
+  if input_api.gerrit:
+    func = _GerritOwnerAndReviewers
+  return func(input_api, email_regexp, approval_needed)
+
+
+def _GetRietveldIssueProps(input_api, messages):
+  """Gets the issue properties from rietveld."""
+  issue = input_api.change.issue
+  if issue and input_api.rietveld:
+    return input_api.rietveld.get_issue_properties(
+        issue=int(issue), messages=messages)
+
+
+def _ReviewersFromChange(change):
+  """Return the reviewers specified in the |change|, if any."""
+  reviewers = set()
+  reviewers.update(change.ReviewersFromDescription())
+  reviewers.update(change.TBRsFromDescription())
+
+  # Drop reviewers that aren't specified in email address format.
+  return set(reviewer for reviewer in reviewers if '@' in reviewer)
+
+
+def _match_reviewer_email(r, owner_email, email_regexp):
+  return email_regexp.match(r) and r != owner_email
+
+def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
+  """Return the owner and reviewers of a change, if any.
+
+  If approval_needed is True, only reviewers who have approved the change
+  will be returned.
+  """
+  issue_props = _GetRietveldIssueProps(input_api, True)
+  if not issue_props:
+    return None, (set() if approval_needed else
+                  _ReviewersFromChange(input_api.change))
+
+  if not approval_needed:
+    return issue_props['owner_email'], set(issue_props['reviewers'])
+
+  owner_email = issue_props['owner_email']
+
+  messages = issue_props.get('messages', [])
+  approvers = set(
+      m['sender'] for m in messages
+      if m.get('approval') and _match_reviewer_email(m['sender'], owner_email,
+                                                     email_regexp))
+  return owner_email, approvers
+
+
+def _GerritOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
   """Return the owner and reviewers of a change, if any.
 
   If approval_needed is True, only reviewers who have approved the change
@@ -905,20 +971,6 @@ def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):
   input_api.logging.debug('owner: %s; approvals given by: %s',
                           owner_email, ', '.join(sorted(reviewers)))
   return owner_email, reviewers
-
-
-def _ReviewersFromChange(change):
-  """Return the reviewers specified in the |change|, if any."""
-  reviewers = set()
-  reviewers.update(change.ReviewersFromDescription())
-  reviewers.update(change.TBRsFromDescription())
-
-  # Drop reviewers that aren't specified in email address format.
-  return set(reviewer for reviewer in reviewers if '@' in reviewer)
-
-
-def _match_reviewer_email(r, owner_email, email_regexp):
-  return email_regexp.match(r) and r != owner_email
 
 
 def CheckSingletonInHeaders(input_api, output_api, source_file_filter=None):
