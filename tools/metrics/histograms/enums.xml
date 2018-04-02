@@ -18042,6 +18042,9 @@ Called by update_net_error_codes.py.-->
   <int value="2396" label="PPAPIURLRequestStreamToFile"/>
   <int value="2397" label="PaymentHandler"/>
   <int value="2398" label="PaymentRequestShowWithoutGesture"/>
+  <int value="2399" label="ReadableStreamConstructor"/>
+  <int value="2400" label="WritableStreamConstructor"/>
+  <int value="2401" label="TransformStreamConstructor"/>
 </enum>
 
 <enum name="FeedbackSource">

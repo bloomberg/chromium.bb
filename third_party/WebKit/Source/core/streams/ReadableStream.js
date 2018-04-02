@@ -123,9 +123,19 @@
         'Failed to execute \'pipeThrough\' on \'ReadableStream\': parameter ' +
         '1\'s \'readable\' property is undefined.';
 
+  let useCounted = false;
+
   class ReadableStream {
     constructor(underlyingSource = {}, { size, highWaterMark = 1 } = {},
                 internalArgument = undefined) {
+      const internal =
+            internalArgument === createWithExternalControllerSentinel;
+
+      if (!useCounted && !internal) {
+        binding.countUse('ReadableStreamConstructor');
+        useCounted = true;
+      }
+
       this[_readableStreamBits] = 0b0;
       ReadableStreamSetState(this, STATE_READABLE);
       this[_reader] = undefined;
@@ -147,8 +157,7 @@
       }
 
       this[_controller] = new ReadableStreamDefaultController(
-          this, underlyingSource, size, highWaterMark,
-          internalArgument === createWithExternalControllerSentinel);
+          this, underlyingSource, size, highWaterMark, internal);
     }
 
     get locked() {

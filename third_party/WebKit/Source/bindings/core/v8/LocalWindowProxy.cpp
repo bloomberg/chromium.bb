@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/LocalWindowProxy.h"
 
+#include "bindings/core/v8/InitializeV8ExtrasBinding.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -236,6 +237,8 @@ void LocalWindowProxy::CreateContext() {
 #endif
 
   script_state_ = ScriptState::Create(context, world_);
+
+  InitializeV8ExtrasBinding(script_state_.get());
 
   DCHECK(lifecycle_ == Lifecycle::kContextIsUninitialized ||
          lifecycle_ == Lifecycle::kGlobalObjectIsDetached);
