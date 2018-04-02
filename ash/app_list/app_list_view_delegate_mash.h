@@ -52,6 +52,7 @@ class ASH_EXPORT AppListViewDelegateMash
 
  private:
   ash::AppListControllerImpl* owner_;
+  base::string16 last_raw_query_;
   base::ObserverList<app_list::AppListViewDelegateObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegateMash);

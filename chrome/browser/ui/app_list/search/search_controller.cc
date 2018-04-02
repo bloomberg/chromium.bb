@@ -11,8 +11,6 @@
 
 #include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
@@ -50,28 +48,10 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
   if (!result)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(kSearchResultOpenDisplayTypeHistogram,
-                            result->display_type(),
-                            ash::SearchResultDisplayType::kLast);
-
-  // Record the search metric if the SearchResult is not a suggested app.
-  if (result->display_type() != ash::SearchResultDisplayType::kRecommendation) {
-    // Count AppList.Search here because it is composed of search + action.
-    base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
-
-    UMA_HISTOGRAM_COUNTS_100(kSearchQueryLength, last_raw_query_.size());
-
-    if (result->distance_from_origin() >= 0) {
-      UMA_HISTOGRAM_COUNTS_100(kSearchResultDistanceFromOrigin,
-                               result->distance_from_origin());
-    }
-  }
-
   result->Open(event_flags);
 
-  if (history_ && history_->IsReady()) {
+  if (history_ && history_->IsReady())
     history_->AddLaunchEvent(base::UTF16ToUTF8(last_raw_query_), result->id());
-  }
 }
 
 void SearchController::InvokeResultAction(SearchResult* result,
