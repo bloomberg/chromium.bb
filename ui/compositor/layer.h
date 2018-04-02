@@ -293,8 +293,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
-  // Set new TransferableResource for this layer. Note that |resource| may hold
-  // a handle for a shared memory resource or a gpu texture.
+  // Set new TransferableResource for this layer. This method only supports
+  // a gpu-backed |resource|.
   void SetTransferableResource(
       const viz::TransferableResource& resource,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback,
