@@ -1,0 +1,41 @@
+Tests list of performance metrics and that memory is not double counted.
+
+
+Metrics reported:
+AudioHandlers
+Documents
+DomContentLoaded
+FirstMeaningfulPaint
+Frames
+JSEventListeners
+JSHeapTotalSize
+JSHeapUsedSize
+LayoutCount
+LayoutDuration
+LayoutObjects
+MediaKeySessions
+MediaKeys
+NavigationStart
+Nodes
+PausableObjects
+RTCPeerConnections
+RecalcStyleCount
+RecalcStyleDuration
+ResourceFetchers
+Resources
+ScriptDuration
+ScriptPromises
+TaskDuration
+Timestamp
+UACSSResources
+V8PerContextDatas
+WorkerGlobalScopes
+
+Targets after navigate
+Main
+iframe.html
+inner-iframe.html
+inner-iframe.html
+
+metrics size is twice smaller than simple sum: true
+
