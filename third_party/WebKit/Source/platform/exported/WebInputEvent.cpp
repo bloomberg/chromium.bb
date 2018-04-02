@@ -34,7 +34,6 @@
 #include "platform/KeyboardCodes.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/StringExtras.h"
 #include "public/platform/WebGestureEvent.h"
 #include "public/platform/WebKeyboardEvent.h"
 #include "public/platform/WebMouseWheelEvent.h"

@@ -60,7 +60,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/StringExtras.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"

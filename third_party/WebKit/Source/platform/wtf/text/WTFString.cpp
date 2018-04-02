@@ -25,7 +25,6 @@
 #include "base/strings/string_util.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/StringExtras.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa.h"
 #include "platform/wtf/text/CString.h"

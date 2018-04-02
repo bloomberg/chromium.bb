@@ -38,7 +38,6 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/text/ICUError.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 

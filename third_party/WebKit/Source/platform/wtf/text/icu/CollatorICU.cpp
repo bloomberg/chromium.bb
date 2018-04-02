@@ -35,7 +35,6 @@
 #include "base/memory/ptr_util.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/StringExtras.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 

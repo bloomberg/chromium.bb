@@ -72,7 +72,6 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"

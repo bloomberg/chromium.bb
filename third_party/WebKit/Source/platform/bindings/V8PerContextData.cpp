@@ -40,7 +40,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/wtf/StringExtras.h"
 
 namespace blink {
 

@@ -72,7 +72,6 @@
 #include "platform/Histogram.h"
 #include "platform/KillRing.h"
 #include "platform/scroll/Scrollbar.h"
-#include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebEditingCommandType.h"

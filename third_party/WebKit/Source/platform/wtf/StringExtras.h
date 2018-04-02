@@ -26,8 +26,6 @@
 #ifndef WTF_StringExtras_h
 #define WTF_StringExtras_h
 
-#include <stdarg.h>
-#include <stdio.h>
 #include <string.h>
 #include "build/build_config.h"
 
@@ -38,44 +36,6 @@
 #if defined(COMPILER_MSVC)
 // FIXME: why a compiler check instead of OS? also, these should be HAVE checks
 
-#if _MSC_VER < 1900
-// snprintf is implemented in VS 2015
-inline int snprintf(char* buffer, size_t count, const char* format, ...) {
-  int result;
-  va_list args;
-  va_start(args, format);
-  result = _vsnprintf(buffer, count, format, args);
-  va_end(args);
-
-  // In the case where the string entirely filled the buffer, _vsnprintf will
-  // not null-terminate it, but snprintf must.
-  if (count > 0)
-    buffer[count - 1] = '\0';
-
-  return result;
-}
-
-inline double wtf_vsnprintf(char* buffer,  // NOLINT
-                            size_t count,
-                            const char* format,
-                            va_list args) {
-  int result = _vsnprintf(buffer, count, format, args);
-
-  // In the case where the string entirely filled the buffer, _vsnprintf will
-  // not null-terminate it, but vsnprintf must.
-  if (count > 0)
-    buffer[count - 1] = '\0';
-
-  return result;
-}
-
-// Work around a difference in Microsoft's implementation of vsnprintf, where
-// vsnprintf does not null terminate the buffer. WebKit can rely on the null
-// termination. Microsoft's implementation is fixed in VS 2015.
-#define vsnprintf(buffer, count, format, args) \
-  wtf_vsnprintf(buffer, count, format, args)
-#endif
-
 inline int strncasecmp(const char* s1, const char* s2, size_t len) {
   return _strnicmp(s1, s2, len);
 }
@@ -84,6 +44,6 @@ inline int strcasecmp(const char* s1, const char* s2) {
   return _stricmp(s1, s2);
 }
 
-#endif
+#endif  // defined(COMPILER_MSVC)
 
 #endif  // WTF_StringExtras_h
