@@ -66,6 +66,10 @@ class VIEWS_EXPORT PlatformStyle {
   // dragging but available to do so.
   static const bool kTextfieldUsesDragCursorWhenDraggable;
 
+  // Whether bookmarks in the bookmarks bar are elided [and show elipses at the
+  // tail] or fade out.
+  static const bool kShouldElideBookmarksInBookmarksBar;
+
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 
