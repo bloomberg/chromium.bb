@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/infobars/infobar_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,7 +29,6 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_script.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -133,15 +132,14 @@ class TranslateBrowserTest : public TranslateBaseBrowserTest {
 
   void LoadPageWithInfobar(const std::string& path) {
     // Setup infobar observer.
-    content::WindowedNotificationObserver infobar(
-        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-        content::NotificationService::AllSources());
+    InfoBarObserver observer(infobar_service_,
+                             InfoBarObserver::Type::kInfoBarAdded);
 
     // Visit non-secure page which is going to be translated.
     ui_test_utils::NavigateToURL(browser(), GetNonSecureURL(path));
 
     // Wait for Chrome Translate infobar.
-    infobar.Wait();
+    observer.Wait();
   }
 
   void LoadPageWithoutInfobar(const std::string& path) {

@@ -2509,11 +2509,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::WrapUnique(new base::Value(true)), nullptr);
   UpdateProviderPolicy(policies);
-  // Instead of waiting for NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, this test
-  // waits for NOTIFICATION_TAB_LANGUAGE_DETERMINED because that's what the
+  // Instead of waiting for an infobar, this test waits for
+  // NOTIFICATION_TAB_LANGUAGE_DETERMINED because that's what the
   // TranslateManager observes. This allows checking that an infobar is NOT
-  // shown below, without polling for infobars for some indeterminate amount
-  // of time.
+  // shown below, without polling for infobars for some indeterminate amount of
+  // time.
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(),
       base::FilePath(FILE_PATH_LITERAL("translate/fr_test.html")));

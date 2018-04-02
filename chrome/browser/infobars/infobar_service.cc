@@ -5,17 +5,14 @@
 #include "chrome/browser/infobars/infobar_service.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/page_transition_types.h"
-
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);
 
@@ -64,28 +61,6 @@ int InfoBarService::GetActiveEntryID() {
   content::NavigationEntry* active_entry =
       web_contents()->GetController().GetActiveEntry();
   return active_entry ? active_entry->GetUniqueID() : 0;
-}
-
-void InfoBarService::NotifyInfoBarAdded(infobars::InfoBar* infobar) {
-  infobars::InfoBarManager::NotifyInfoBarAdded(infobar);
-  // TODO(droger): Remove the notifications and have listeners change to be
-  // InfoBarManager::Observers instead. See http://crbug.com/354380
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      content::Source<InfoBarService>(this),
-      content::Details<infobars::InfoBar::AddedDetails>(infobar));
-}
-
-void InfoBarService::NotifyInfoBarRemoved(infobars::InfoBar* infobar,
-                                          bool animate) {
-  infobars::InfoBarManager::NotifyInfoBarRemoved(infobar, animate);
-  // TODO(droger): Remove the notifications and have listeners change to be
-  // InfoBarManager::Observers instead. See http://crbug.com/354380
-  infobars::InfoBar::RemovedDetails removed_details(infobar, animate);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-      content::Source<InfoBarService>(this),
-      content::Details<infobars::InfoBar::RemovedDetails>(&removed_details));
 }
 
 // InfoBarService::CreateConfirmInfoBar() is implemented in platform-specific

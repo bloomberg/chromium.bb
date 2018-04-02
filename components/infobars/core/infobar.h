@@ -37,10 +37,6 @@ class InfoBarManager;
 // the owning InfoBarManager, it must check whether that's still possible.
 class InfoBar : public gfx::AnimationDelegate {
  public:
-  // These are the types passed as Details for infobar-related notifications.
-  typedef InfoBar AddedDetails;
-  typedef std::pair<InfoBar*, bool> RemovedDetails;
-
   explicit InfoBar(std::unique_ptr<InfoBarDelegate> delegate);
   ~InfoBar() override;
 

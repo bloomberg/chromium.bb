@@ -71,10 +71,6 @@ class InfoBarService : public infobars::InfoBarManager,
 
   // InfoBarManager:
   int GetActiveEntryID() override;
-  // TODO(droger): Remove these functions once infobar notifications are
-  // removed. See http://crbug.com/354380
-  void NotifyInfoBarAdded(infobars::InfoBar* infobar) override;
-  void NotifyInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
 
   // content::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;

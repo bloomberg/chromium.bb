@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
 #include "chrome/common/channel_info.h"
@@ -19,8 +18,6 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
@@ -117,10 +114,7 @@ HungPluginTabHelper::PluginState::~PluginState() {
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(HungPluginTabHelper);
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
-    : content::WebContentsObserver(contents) {
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                 content::NotificationService::AllSources());
-}
+    : content::WebContentsObserver(contents), infobar_observer_(this) {}
 
 HungPluginTabHelper::~HungPluginTabHelper() {
 }
@@ -156,6 +150,8 @@ void HungPluginTabHelper::PluginHungStatusChanged(
       InfoBarService::FromWebContents(web_contents());
   if (!infobar_service)
     return;
+  if (!infobar_observer_.IsObserving(infobar_service))
+    infobar_observer_.Add(infobar_service);
 
   PluginStateMap::iterator found = hung_plugins_.find(plugin_child_id);
   if (found != hung_plugins_.end()) {
@@ -177,18 +173,12 @@ void HungPluginTabHelper::PluginHungStatusChanged(
   ShowBar(plugin_child_id, state.get());
 }
 
-void HungPluginTabHelper::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-  infobars::InfoBar* infobar =
-      content::Details<infobars::InfoBar::RemovedDetails>(details)->first;
-  for (PluginStateMap::iterator i = hung_plugins_.begin();
-       i != hung_plugins_.end(); ++i) {
+void HungPluginTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
+                                           bool animate) {
+  for (auto i = hung_plugins_.begin(); i != hung_plugins_.end(); ++i) {
     PluginState* state = i->second.get();
     if (state->infobar == infobar) {
-      state->infobar = NULL;
+      state->infobar = nullptr;
 
       // Schedule the timer to re-show the infobar if the plugin continues to be
       // hung.

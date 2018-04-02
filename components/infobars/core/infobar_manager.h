@@ -113,12 +113,6 @@ class InfoBarManager {
     animations_enabled_ = animations_enabled;
   }
 
-  // Notifies the observer in |observer_list_|.
-  // TODO(droger): Absorb these methods back into their callers once virtual
-  // overrides are removed (see http://crbug.com/354380).
-  virtual void NotifyInfoBarAdded(InfoBar* infobar);
-  virtual void NotifyInfoBarRemoved(InfoBar* infobar, bool animate);
-
  private:
   friend class ::InfoBarUiTest;
 
