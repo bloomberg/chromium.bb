@@ -46,9 +46,9 @@ default_args = {
     "//third_party/WebKit/Source/core/streams/CountQueuingStrategy.js",
     "//third_party/WebKit/Source/core/streams/ReadableStream.js",
     "//third_party/WebKit/Source/core/streams/WritableStream.js",
+    "//third_party/WebKit/Source/core/streams/TransformStream.js",
   ]
-  v8_experimental_extra_library_files =
-      [ "//third_party/WebKit/Source/core/streams/TransformStream.js" ]
+  v8_experimental_extra_library_files = []
   v8_enable_gdbjit = false
   v8_imminent_deprecation_warnings = false
 
