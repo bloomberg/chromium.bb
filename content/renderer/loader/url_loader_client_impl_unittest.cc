@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/common/weak_wrapper_shared_url_loader_factory.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
 #include "mojo/public/cpp/bindings/binding.h"
