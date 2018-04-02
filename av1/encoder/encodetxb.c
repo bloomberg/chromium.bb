@@ -1688,10 +1688,9 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
-  (void)plane_bsize;
-
-  int cul_level = av1_get_txb_entropy_context(qcoeff, scan_order, eob);
-  av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
+  const int cul_level = av1_get_txb_entropy_context(qcoeff, scan_order, eob);
+  av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level, blk_col,
+                   blk_row);
 }
 
 void av1_update_and_record_txb_context(int plane, int block, int blk_row,
@@ -1732,7 +1731,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   x->mbmi_ext->eobs[plane][block] = eob;
 
   if (eob == 0) {
-    av1_set_contexts(xd, pd, plane, tx_size, 0, blk_col, blk_row);
+    av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, 0, blk_col, blk_row);
     return;
   }
 
@@ -1832,7 +1831,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   }
 
   const int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
-  av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
+  av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level, blk_col,
+                   blk_row);
 }
 
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,

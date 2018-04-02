@@ -319,8 +319,8 @@ uint8_t av1_read_coeffs_txb_facade(const AV1_COMMON *const cm,
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + col,
               pd->left_context + row, &txb_ctx);
-  uint8_t cul_level = av1_read_coeffs_txb(cm, xd, r, row, col, plane, &txb_ctx,
-                                          tx_size, max_scan_line, eob);
-  av1_set_contexts(xd, pd, plane, tx_size, cul_level, col, row);
+  const uint8_t cul_level = av1_read_coeffs_txb(
+      cm, xd, r, row, col, plane, &txb_ctx, tx_size, max_scan_line, eob);
+  av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level, col, row);
   return cul_level;
 }

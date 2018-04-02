@@ -943,8 +943,8 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    void *arg, const int num_planes);
 
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
-                      int plane, TX_SIZE tx_size, int has_eob, int aoff,
-                      int loff);
+                      int plane, BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                      int has_eob, int aoff, int loff);
 
 #define MAX_INTERINTRA_SB_SQUARE 32 * 32
 static INLINE int is_interintra_mode(const MB_MODE_INFO *mbmi) {
