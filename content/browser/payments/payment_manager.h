@@ -62,7 +62,6 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
   bool should_set_payment_app_info_;
   GURL context_url_;
   GURL scope_;
-  std::string user_hint_;
   mojo::Binding<payments::mojom::PaymentManager> binding_;
   base::WeakPtrFactory<PaymentManager> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PaymentManager);
