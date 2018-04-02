@@ -41,7 +41,6 @@ import urlparse
 from warnings import warn
 
 # Local imports.
-import auth
 import fix_encoding
 import gclient_utils
 import git_footers
@@ -49,7 +48,6 @@ import gerrit_util
 import owners
 import owners_finder
 import presubmit_canned_checks
-import rietveld
 import scm
 import subprocess2 as subprocess  # Exposed through the API.
 
@@ -390,14 +388,13 @@ class InputApi(object):
   )
 
   def __init__(self, change, presubmit_path, is_committing,
-      rietveld_obj, verbose, gerrit_obj=None, dry_run=None):
+      verbose, gerrit_obj, dry_run=None):
     """Builds an InputApi object.
 
     Args:
       change: A presubmit.Change object.
       presubmit_path: The path to the presubmit script being processed.
       is_committing: True if the change is about to be committed.
-      rietveld_obj: rietveld.Rietveld client object
       gerrit_obj: provides basic Gerrit codereview functionality.
       dry_run: if true, some Checks will be skipped.
     """
@@ -405,13 +402,8 @@ class InputApi(object):
     self.version = [int(x) for x in __version__.split('.')]
     self.change = change
     self.is_committing = is_committing
-    self.rietveld = rietveld_obj
     self.gerrit = gerrit_obj
     self.dry_run = dry_run
-    # TBD
-    self.host_url = 'http://codereview.chromium.org'
-    if self.rietveld:
-      self.host_url = self.rietveld.url
 
     # We expose various modules and functions as attributes of the input_api
     # so that presubmit scripts don't have to import them.
@@ -1272,19 +1264,17 @@ def DoPostUploadExecuter(change,
 
 
 class PresubmitExecuter(object):
-  def __init__(self, change, committing, rietveld_obj, verbose,
-               gerrit_obj=None, dry_run=None):
+  def __init__(self, change, committing, verbose,
+               gerrit_obj, dry_run=None):
     """
     Args:
       change: The Change object.
       committing: True if 'git cl land' is running, False if 'git cl upload' is.
-      rietveld_obj: rietveld.Rietveld client object.
       gerrit_obj: provides basic Gerrit codereview functionality.
       dry_run: if true, some Checks will be skipped.
     """
     self.change = change
     self.committing = committing
-    self.rietveld = rietveld_obj
     self.gerrit = gerrit_obj
     self.verbose = verbose
     self.dry_run = dry_run
@@ -1308,7 +1298,7 @@ class PresubmitExecuter(object):
 
     # Load the presubmit script into context.
     input_api = InputApi(self.change, presubmit_path, self.committing,
-                         self.rietveld, self.verbose,
+                         self.verbose,
                          gerrit_obj=self.gerrit, dry_run=self.dry_run)
     output_api = OutputApi(self.committing)
     context = {}
@@ -1357,8 +1347,7 @@ def DoPresubmitChecks(change,
                       input_stream,
                       default_presubmit,
                       may_prompt,
-                      rietveld_obj,
-                      gerrit_obj=None,
+                      gerrit_obj,
                       dry_run=None):
   """Runs all presubmit checks that apply to the files in the change.
 
@@ -1378,7 +1367,6 @@ def DoPresubmitChecks(change,
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error. If False,
                 any questions are answered with yes by default.
-    rietveld_obj: rietveld.Rietveld object.
     gerrit_obj: provides basic Gerrit codereview functionality.
     dry_run: if true, some Checks will be skipped.
 
@@ -1407,7 +1395,7 @@ def DoPresubmitChecks(change,
     if not presubmit_files and verbose:
       output.write("Warning, no PRESUBMIT.py found.\n")
     results = []
-    executer = PresubmitExecuter(change, committing, rietveld_obj, verbose,
+    executer = PresubmitExecuter(change, committing, verbose,
                                  gerrit_obj, dry_run)
     if default_presubmit:
       if verbose:
@@ -1602,17 +1590,8 @@ def main(argv=None):
   parser.add_option("--gerrit_url", help=optparse.SUPPRESS_HELP)
   parser.add_option("--gerrit_fetch", action='store_true',
                     help=optparse.SUPPRESS_HELP)
-  parser.add_option("--rietveld_url", help=optparse.SUPPRESS_HELP)
-  parser.add_option("--rietveld_email", help=optparse.SUPPRESS_HELP)
-  parser.add_option("--rietveld_fetch", action='store_true', default=False,
-                    help=optparse.SUPPRESS_HELP)
-  # These are for OAuth2 authentication for bots. See also apply_issue.py
-  parser.add_option("--rietveld_email_file", help=optparse.SUPPRESS_HELP)
-  parser.add_option("--rietveld_private_key_file", help=optparse.SUPPRESS_HELP)
 
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(argv)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
@@ -1621,49 +1600,14 @@ def main(argv=None):
   else:
     logging.basicConfig(level=logging.ERROR)
 
-  if (any((options.rietveld_url, options.rietveld_email_file,
-           options.rietveld_fetch, options.rietveld_private_key_file))
-      and any((options.gerrit_url, options.gerrit_fetch))):
-    parser.error('Options for only codereview --rietveld_* or --gerrit_* '
-                 'allowed')
-
-  if options.rietveld_email and options.rietveld_email_file:
-    parser.error("Only one of --rietveld_email or --rietveld_email_file "
-                 "can be passed to this program.")
-  if options.rietveld_email_file:
-    with open(options.rietveld_email_file, "rb") as f:
-      options.rietveld_email = f.read().strip()
-
   change_class, files = load_files(options, args)
   if not change_class:
     parser.error('For unversioned directory, <files> is not optional.')
   logging.info('Found %d file(s).', len(files))
 
-  rietveld_obj, gerrit_obj = None, None
-
-  if options.rietveld_url:
-    # The empty password is permitted: '' is not None.
-    if options.rietveld_private_key_file:
-      rietveld_obj = rietveld.JwtOAuth2Rietveld(
-        options.rietveld_url,
-        options.rietveld_email,
-        options.rietveld_private_key_file)
-    else:
-      rietveld_obj = rietveld.CachingRietveld(
-        options.rietveld_url,
-        auth_config,
-        options.rietveld_email)
-    if options.rietveld_fetch:
-      assert options.issue
-      props = rietveld_obj.get_issue_properties(options.issue, False)
-      options.author = props['owner_email']
-      options.description = props['description']
-      logging.info('Got author: "%s"', options.author)
-      logging.info('Got description: """\n%s\n"""', options.description)
-
+  gerrit_obj = None
   if options.gerrit_url and options.gerrit_fetch:
     assert options.issue and options.patchset
-    rietveld_obj = None
     gerrit_obj = GerritAccessor(urlparse.urlparse(options.gerrit_url).netloc)
     options.author = gerrit_obj.GetChangeOwner(options.issue)
     options.description = gerrit_obj.GetChangeDescription(options.issue,
@@ -1688,7 +1632,6 @@ def main(argv=None):
           sys.stdin,
           options.default_presubmit,
           options.may_prompt,
-          rietveld_obj,
           gerrit_obj,
           options.dry_run)
     return not results.should_continue()
