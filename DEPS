@@ -870,7 +870,7 @@ deps = {
     Var('chromium_git') + '/external/selenium/py.git' + '@' + '5fd78261a75fe08d27ca4835fb6c5ce4b42275bd',
 
   'src/third_party/webgl/src':
-    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '3c1cb0203b6cfc10389e85a350b2ea6ca29d01ce',
+    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'da5abe6e9bae583e4ae73aa553547fcaa637d099',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + 'a859c1ac3e12e460f47b86ec7068f4c195ecea08', # commit position 21742

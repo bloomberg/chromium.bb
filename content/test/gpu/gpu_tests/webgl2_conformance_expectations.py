@@ -38,6 +38,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Conformance expectations
     # ========================
 
+    self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
+        bug=806557)
+
     # Need to fix test, which uses a bad interpretation of the spec
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
         bug=754733)
@@ -105,6 +108,30 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/glsl/bugs/' +
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
+
+    # transform_feedback/switching-objects.html
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['win', 'no_passthrough'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['linux', 'nvidia', 'opengl'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['linux', 'intel', 'opengl'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['linux', 'nvidia', 'no_angle'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['linux', 'intel', 'no_angle'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['mac', 'intel', 'no_angle'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['mac', 'amd', 'no_angle'], bug=696345)
+
+    # transform_feedback/too-small-buffers.html
+    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
+        ['win', 'nvidia'], bug=818383)
+    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
+        ['linux', 'nvidia', 'passthrough'], bug=818383)
+    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
+        ['mac', 'amd'], bug=818383)
 
     # Windows only.
     self.Fail('conformance2/buffers/uniform-buffers.html',
