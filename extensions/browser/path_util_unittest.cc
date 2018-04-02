@@ -6,6 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::FilePath;
@@ -42,6 +44,38 @@ TEST(ExtensionPathUtilTest, BasicPrettifyPathTest) {
   EXPECT_EQ(
       FilePath(kHomeShortcut).AppendASCII("foo").AppendASCII("bar"),
       prettified);
+}
+
+TEST(ExtensionPathUtilTest, ResolveHomeDirTest) {
+  FilePath home_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_HOME, &home_dir));
+  const FilePath abs_path(FILE_PATH_LITERAL("/foo/bar/baz"));
+  const FilePath rel_path(FILE_PATH_LITERAL("foo/bar/baz"));
+  const FilePath rel_path_with_tilde(FILE_PATH_LITERAL("~/foo/bar"));
+  const FilePath rel_path_with_tilde_no_separator(FILE_PATH_LITERAL("~foobar"));
+
+// This function is a no-op on Windows.
+#if defined(OS_WIN)
+  EXPECT_EQ(rel_path_with_tilde,
+            path_util::ResolveHomeDirectory(rel_path_with_tilde));
+#else
+  EXPECT_EQ(home_dir.Append("foo/bar"),
+            path_util::ResolveHomeDirectory(rel_path_with_tilde));
+  // Make sure tilde without any relative path works as expected.
+  EXPECT_EQ(home_dir,
+            path_util::ResolveHomeDirectory(FilePath(FILE_PATH_LITERAL("~"))));
+  EXPECT_EQ(home_dir,
+            path_util::ResolveHomeDirectory(FilePath(FILE_PATH_LITERAL("~/"))));
+#endif
+
+  // An absolute path without a ~ should be untouched.
+  EXPECT_EQ(abs_path, path_util::ResolveHomeDirectory(abs_path));
+  // A relative path without a ~ should be untouched.
+  EXPECT_EQ(rel_path, path_util::ResolveHomeDirectory(rel_path));
+  // A tilde, followed by a non-separator character should not
+  // expand.
+  EXPECT_EQ(rel_path_with_tilde_no_separator,
+            path_util::ResolveHomeDirectory(rel_path_with_tilde_no_separator));
 }
 
 }  // namespace extensions
