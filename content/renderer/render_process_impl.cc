@@ -154,10 +154,7 @@ RenderProcessImpl::RenderProcessImpl(
                      "--harmony-array-prototype-values");
   SetV8FlagIfNotFeature(features::kArrayPrototypeValues,
                         "--no-harmony-array-prototype-values");
-// Memory sanitizer compiles V8 to generate ARM code and run it in a simulator,
-// meaning we cannot support trap handlers there.
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID) && \
-    !defined(MEMORY_SANITIZER)
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
     bool use_v8_signal_handler = false;
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -173,7 +170,8 @@ RenderProcessImpl::RenderProcessImpl(
       // (https://crbug.com/798150).
       use_v8_signal_handler = true;
     }
-    CHECK(v8::V8::EnableWebAssemblyTrapHandler(use_v8_signal_handler));
+    // TODO(eholk): report UMA stat for how often this succeeds
+    v8::V8::EnableWebAssemblyTrapHandler(use_v8_signal_handler);
   }
 #endif
 
