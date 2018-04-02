@@ -594,6 +594,7 @@ jumbo_component("views") {
       "widget/desktop_aura/desktop_screen.h",
       "widget/desktop_aura/desktop_screen_position_client.h",
       "widget/desktop_aura/desktop_window_tree_host.h",
+      "widget/desktop_aura/desktop_window_tree_host_platform.h",
       "widget/focus_manager_event_handler.h",
       "widget/native_widget_aura.h",
       "widget/tooltip_manager_aura.h",
@@ -628,6 +629,7 @@ jumbo_component("views") {
       "widget/desktop_aura/desktop_native_cursor_manager.cc",
       "widget/desktop_aura/desktop_native_widget_aura.cc",
       "widget/desktop_aura/desktop_screen_position_client.cc",
+      "widget/desktop_aura/desktop_window_tree_host_platform.cc",
       "widget/focus_manager_event_handler.cc",
       "widget/native_widget_aura.cc",
       "widget/tooltip_manager_aura.cc",
@@ -636,6 +638,7 @@ jumbo_component("views") {
     deps += [
       "//services/ui/public/interfaces",
       "//ui/aura",
+      "//ui/platform_window",
       "//ui/touch_selection",
       "//ui/wm",
       "//ui/wm/public",
