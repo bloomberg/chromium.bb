@@ -1487,6 +1487,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   if (mbmi->motion_mode == WARPED_CAUSAL) {
     mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
+    mbmi->wm_params[0].invalid = 0;
 
     if (mbmi->num_proj_ref[0] > 1)
       mbmi->num_proj_ref[0] = selectSamples(&mbmi->mv[0].as_mv, pts, pts_inref,
