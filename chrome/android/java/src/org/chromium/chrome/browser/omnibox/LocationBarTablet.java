@@ -585,8 +585,8 @@ public class LocationBarTablet extends LocationBarLayout {
     private boolean shouldShowMicButton() {
         // If the download UI is enabled, the mic button should be only be shown when the url bar
         // is focused.
-        return isVoiceSearchEnabled() && mNativeInitialized
-                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
+        return mVoiceRecognitionHandler != null && mVoiceRecognitionHandler.isVoiceSearchEnabled()
+                && mNativeInitialized && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
     }
 
     @Override
