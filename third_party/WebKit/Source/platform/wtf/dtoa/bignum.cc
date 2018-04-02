@@ -25,9 +25,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "bignum.h"
+#include "platform/wtf/dtoa/bignum.h"
 
-#include "utils.h"
+#include "platform/wtf/dtoa/utils.h"
 
 namespace WTF {
 

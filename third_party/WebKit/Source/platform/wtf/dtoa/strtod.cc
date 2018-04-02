@@ -25,13 +25,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "strtod.h"
+#include "platform/wtf/dtoa/strtod.h"
 
 #include <limits.h>
 #include <stdarg.h>
-#include "bignum.h"
-#include "cached-powers.h"
-#include "double.h"
+
+#include "platform/wtf/dtoa/bignum.h"
+#include "platform/wtf/dtoa/cached-powers.h"
+#include "platform/wtf/dtoa/double.h"
 
 namespace WTF {
 

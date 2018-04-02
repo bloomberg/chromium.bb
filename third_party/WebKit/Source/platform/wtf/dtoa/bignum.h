@@ -28,7 +28,7 @@
 #ifndef DOUBLE_CONVERSION_BIGNUM_H_
 #define DOUBLE_CONVERSION_BIGNUM_H_
 
-#include "utils.h"
+#include "platform/wtf/dtoa/utils.h"
 
 namespace WTF {
 
