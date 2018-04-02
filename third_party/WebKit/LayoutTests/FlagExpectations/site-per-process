@@ -3,6 +3,7 @@
 
 # TODO(lukasza): Remove these once CORB is enabled by default.
 crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Pass ]
+crbug.com/802835 external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.html [ Pass ]
 crbug.com/802835 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Pass ]
 crbug.com/802835 external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Pass ]
 
