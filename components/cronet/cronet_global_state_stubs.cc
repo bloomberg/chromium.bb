@@ -57,17 +57,15 @@ void PostTaskToInitThread(const base::Location& posted_from,
 
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
-  // TODO(https://crbug.com/813226): Add ProxyConfigService support.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return net::ProxyResolutionService::CreateSystemProxyConfigService(
+      io_task_runner);
 }
 
 std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log) {
-  // TODO(https://crbug.com/813226): Add ProxyResolutionService support.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return net::ProxyResolutionService::CreateUsingSystemProxyResolver(
+      std::move(proxy_config_service), net_log);
 }
 
 std::string CreateDefaultUserAgent(const std::string& partial_user_agent) {
