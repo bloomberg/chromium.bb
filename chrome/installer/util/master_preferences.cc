@@ -19,7 +19,7 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/variations/pref_names.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 
 namespace {
 

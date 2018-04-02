@@ -15,7 +15,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 
 namespace prefs {
 

@@ -17,7 +17,7 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/escape.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_RLZ)

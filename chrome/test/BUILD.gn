@@ -20,7 +20,7 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//remoting/remoting_enable.gni")
-import("//rlz/features/features.gni")
+import("//rlz/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//testing/test.gni")
@@ -367,7 +367,7 @@ test("browser_tests") {
     "//net:test_support",
     "//ppapi/buildflags",
     "//printing/buildflags",
-    "//rlz/features",
+    "//rlz/buildflags",
     "//third_party/WebKit/public:features",
   ]
 

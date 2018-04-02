@@ -9,7 +9,7 @@ import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//rlz/features/features.gni")
+import("//rlz/buildflags/buildflags.gni")
 
 assert(enable_extensions)
 
@@ -869,7 +869,7 @@ static_library("extensions") {
     "//net",
     "//ppapi/buildflags",
     "//printing/buildflags",
-    "//rlz/features",
+    "//rlz/buildflags",
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/mojom",

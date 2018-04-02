@@ -15,7 +15,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//rlz/features/features.gni")
+import("//rlz/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
 
@@ -1055,7 +1055,7 @@ split_static_library("ui") {
     "//net:net",
     "//ppapi/buildflags",
     "//printing/buildflags",
-    "//rlz/features",
+    "//rlz/buildflags",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/service_manager/runner/common",
     "//skia",

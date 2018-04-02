@@ -87,7 +87,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
