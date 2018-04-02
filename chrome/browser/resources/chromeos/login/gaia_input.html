@@ -47,7 +47,7 @@
           required$="[[required]]" disabled$="[[disabled]]" class="flex">
       <span id="domainLabel" slot="suffix">[[domain]]</span>
       <template is="dom-if" if="[[error]]">
-        <paper-input-error>[[error]]</paper-input-error>
+        <paper-input-error slot="add-on">[[error]]</paper-input-error>
       </template>
     </paper-input-container>
   </template>
