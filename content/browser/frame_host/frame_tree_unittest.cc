@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors.All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -310,8 +310,7 @@ TEST_F(FrameTreeTest, Shape) {
 }
 
 // Ensure frames can be found by frame_tree_node_id, routing ID, or name.
-// Disabled due to flakiness: http://crbug.com/826599
-TEST_F(FrameTreeTest, DISABLED_FindFrames) {
+TEST_F(FrameTreeTest, FindFrames) {
   main_test_rfh()->InitializeRenderFrameIfNeeded();
 
   // Add a few child frames to the main frame.
