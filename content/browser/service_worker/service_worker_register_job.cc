@@ -75,15 +75,14 @@ ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
       << "Jobs should only be interrupted during shutdown.";
 }
 
-void ServiceWorkerRegisterJob::AddCallback(
-    const RegistrationCallback& callback) {
+void ServiceWorkerRegisterJob::AddCallback(RegistrationCallback callback) {
   if (!is_promise_resolved_) {
-    callbacks_.push_back(callback);
+    callbacks_.emplace_back(std::move(callback));
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback, promise_resolved_status_,
+      base::BindOnce(std::move(callback), promise_resolved_status_,
                      promise_resolved_status_message_,
                      base::RetainedRef(promise_resolved_registration_)));
 }
@@ -579,11 +578,8 @@ void ServiceWorkerRegisterJob::ResolvePromise(
   promise_resolved_status_ = status;
   promise_resolved_status_message_ = status_message,
   promise_resolved_registration_ = registration;
-  for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
-       it != callbacks_.end();
-       ++it) {
-    it->Run(status, status_message, registration);
-  }
+  for (RegistrationCallback& callback : callbacks_)
+    std::move(callback).Run(status, status_message, registration);
   callbacks_.clear();
 }
 

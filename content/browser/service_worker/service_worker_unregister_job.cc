@@ -28,9 +28,8 @@ ServiceWorkerUnregisterJob::ServiceWorkerUnregisterJob(
 
 ServiceWorkerUnregisterJob::~ServiceWorkerUnregisterJob() {}
 
-void ServiceWorkerUnregisterJob::AddCallback(
-    const UnregistrationCallback& callback) {
-  callbacks_.push_back(callback);
+void ServiceWorkerUnregisterJob::AddCallback(UnregistrationCallback callback) {
+  callbacks_.emplace_back(std::move(callback));
 }
 
 void ServiceWorkerUnregisterJob::Start() {
@@ -98,11 +97,8 @@ void ServiceWorkerUnregisterJob::ResolvePromise(
     ServiceWorkerStatusCode status) {
   DCHECK(!is_promise_resolved_);
   is_promise_resolved_ = true;
-  for (std::vector<UnregistrationCallback>::iterator it = callbacks_.begin();
-       it != callbacks_.end();
-       ++it) {
-    it->Run(registration_id, status);
-  }
+  for (UnregistrationCallback& callback : callbacks_)
+    std::move(callback).Run(registration_id, status);
 }
 
 }  // namespace content

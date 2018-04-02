@@ -59,17 +59,19 @@ class URLLoaderFactoryGetter;
 class CONTENT_EXPORT ServiceWorkerContextCore
     : public ServiceWorkerVersion::Listener {
  public:
-  using BoolCallback = base::Callback<void(bool)>;
-  using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
+  using BoolCallback = base::OnceCallback<void(bool)>;
+  using StatusCallback =
+      base::OnceCallback<void(ServiceWorkerStatusCode status)>;
   using RegistrationCallback =
-      base::Callback<void(ServiceWorkerStatusCode status,
-                          const std::string& status_message,
-                          int64_t registration_id)>;
-  using UpdateCallback = base::Callback<void(ServiceWorkerStatusCode status,
-                                             const std::string& status_message,
-                                             int64_t registration_id)>;
+      base::OnceCallback<void(ServiceWorkerStatusCode status,
+                              const std::string& status_message,
+                              int64_t registration_id)>;
+  using UpdateCallback =
+      base::OnceCallback<void(ServiceWorkerStatusCode status,
+                              const std::string& status_message,
+                              int64_t registration_id)>;
   using UnregistrationCallback =
-      base::Callback<void(ServiceWorkerStatusCode status)>;
+      base::OnceCallback<void(ServiceWorkerStatusCode status)>;
   using ProviderMap = base::IDMap<std::unique_ptr<ServiceWorkerProviderHost>>;
   using ProcessToProviderMap = base::IDMap<std::unique_ptr<ProviderMap>>;
 
@@ -184,7 +186,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
   // (top-level) frame.
   void HasMainFrameProviderHost(const GURL& origin,
-                                const BoolCallback& callback) const;
+                                BoolCallback callback) const;
 
   // Maintains a map from Client UUID to ProviderHost.
   // (Note: instead of maintaining 2 maps we might be able to uniformly use
@@ -199,16 +201,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RegisterServiceWorker(
       const GURL& script_url,
       const blink::mojom::ServiceWorkerRegistrationOptions& options,
-      const RegistrationCallback& callback);
+      RegistrationCallback callback);
   void UnregisterServiceWorker(const GURL& pattern,
-                               const UnregistrationCallback& callback);
+                               UnregistrationCallback callback);
 
   // Callback is called after all deletions occured. The status code is
   // SERVICE_WORKER_OK if all succeed, or SERVICE_WORKER_FAILED
   // if any did not succeed.
-  void DeleteForOrigin(
-      const GURL& origin,
-      base::OnceCallback<void(ServiceWorkerStatusCode)> callback);
+  void DeleteForOrigin(const GURL& origin, StatusCallback callback);
 
   // Updates the service worker. If |force_bypass_cache| is true or 24 hours
   // have passed since the last update, bypasses the browser cache.
@@ -217,7 +217,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,
                            bool force_bypass_cache,
                            bool skip_script_comparison,
-                           const UpdateCallback& callback);
+                           UpdateCallback callback);
 
   // Used in DevTools to update the service worker registrations without
   // consulting the browser cache while loading the controlled page. The
@@ -269,7 +269,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // Deletes all files on disk and restarts the system. This leaves the system
   // in a disabled state until it's done.
-  void DeleteAndStartOver(const StatusCallback& callback);
+  void DeleteAndStartOver(StatusCallback callback);
 
   void ClearAllServiceWorkersForTest(base::OnceClosure callback);
 
@@ -310,18 +310,18 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ProviderMap* GetProviderMapForProcess(int process_id);
 
   void RegistrationComplete(const GURL& pattern,
-                            const RegistrationCallback& callback,
+                            RegistrationCallback callback,
                             ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             ServiceWorkerRegistration* registration);
 
-  void UpdateComplete(const UpdateCallback& callback,
+  void UpdateComplete(UpdateCallback callback,
                       ServiceWorkerStatusCode status,
                       const std::string& status_message,
                       ServiceWorkerRegistration* registration);
 
   void UnregistrationComplete(const GURL& pattern,
-                              const UnregistrationCallback& callback,
+                              UnregistrationCallback callback,
                               int64_t registration_id,
                               ServiceWorkerStatusCode status);
 
@@ -333,11 +333,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void DidFindRegistrationForCheckHasServiceWorker(
       const GURL& other_url,
-      const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
+      ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void OnRegistrationFinishedForCheckHasServiceWorker(
-      const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
+      ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   // It's safe to store a raw pointer instead of a scoped_refptr to |wrapper_|

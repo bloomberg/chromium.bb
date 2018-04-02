@@ -403,14 +403,14 @@ ServiceWorkerContextCore::GetClientProviderHostIterator(const GURL& origin) {
 
 void ServiceWorkerContextCore::HasMainFrameProviderHost(
     const GURL& origin,
-    const BoolCallback& callback) const {
+    BoolCallback callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProviderHostIterator provider_host_iterator(
       providers_.get(), base::Bind(IsSameOriginWindowProviderHost, origin));
 
   if (provider_host_iterator.IsAtEnd()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -427,9 +427,8 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&FrameListContainsMainFrameOnUI,
-                 base::Passed(std::move(render_frames))),
-      callback);
+      base::BindOnce(&FrameListContainsMainFrameOnUI, std::move(render_frames)),
+      std::move(callback));
 }
 
 void ServiceWorkerContextCore::RegisterProviderHostByClientID(
@@ -456,13 +455,13 @@ ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHostByClientID(
 void ServiceWorkerContextCore::RegisterServiceWorker(
     const GURL& script_url,
     const blink::mojom::ServiceWorkerRegistrationOptions& options,
-    const RegistrationCallback& callback) {
+    RegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   was_service_worker_registered_ = true;
   job_coordinator_->Register(
       script_url, options,
-      base::Bind(&ServiceWorkerContextCore::RegistrationComplete, AsWeakPtr(),
-                 options.scope, callback));
+      base::BindOnce(&ServiceWorkerContextCore::RegistrationComplete,
+                     AsWeakPtr(), options.scope, std::move(callback)));
 }
 
 void ServiceWorkerContextCore::UpdateServiceWorker(
@@ -476,29 +475,25 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
     bool skip_script_comparison,
-    const UpdateCallback& callback) {
+    UpdateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  job_coordinator_->Update(registration, force_bypass_cache,
-                           skip_script_comparison,
-                           base::Bind(&ServiceWorkerContextCore::UpdateComplete,
-                                      AsWeakPtr(), callback));
+  job_coordinator_->Update(
+      registration, force_bypass_cache, skip_script_comparison,
+      base::BindOnce(&ServiceWorkerContextCore::UpdateComplete, AsWeakPtr(),
+                     std::move(callback)));
 }
 
 void ServiceWorkerContextCore::UnregisterServiceWorker(
     const GURL& pattern,
-    const UnregistrationCallback& callback) {
+    UnregistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   job_coordinator_->Unregister(
-      pattern,
-      base::Bind(&ServiceWorkerContextCore::UnregistrationComplete,
-                 AsWeakPtr(),
-                 pattern,
-                 callback));
+      pattern, base::BindOnce(&ServiceWorkerContextCore::UnregistrationComplete,
+                              AsWeakPtr(), pattern, std::move(callback)));
 }
 
-void ServiceWorkerContextCore::DeleteForOrigin(
-    const GURL& origin,
-    base::OnceCallback<void(ServiceWorkerStatusCode)> callback) {
+void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
+                                               StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   storage()->GetRegistrationsForOrigin(
       origin,
@@ -545,19 +540,19 @@ ServiceWorkerContextCore::GetProviderMapForProcess(int process_id) {
 
 void ServiceWorkerContextCore::RegistrationComplete(
     const GURL& pattern,
-    const ServiceWorkerContextCore::RegistrationCallback& callback,
+    ServiceWorkerContextCore::RegistrationCallback callback,
     ServiceWorkerStatusCode status,
     const std::string& status_message,
     ServiceWorkerRegistration* registration) {
   if (status != SERVICE_WORKER_OK) {
     DCHECK(!registration);
-    callback.Run(status, status_message,
-                 blink::mojom::kInvalidServiceWorkerRegistrationId);
+    std::move(callback).Run(status, status_message,
+                            blink::mojom::kInvalidServiceWorkerRegistrationId);
     return;
   }
 
   DCHECK(registration);
-  callback.Run(status, status_message, registration->id());
+  std::move(callback).Run(status, status_message, registration->id());
   // TODO(falken): At this point the registration promise is resolved, but we
   // haven't persisted anything to storage yet. So we should either call
   // OnRegistrationStored somewhere else or change its name.
@@ -569,27 +564,27 @@ void ServiceWorkerContextCore::RegistrationComplete(
 }
 
 void ServiceWorkerContextCore::UpdateComplete(
-    const ServiceWorkerContextCore::UpdateCallback& callback,
+    ServiceWorkerContextCore::UpdateCallback callback,
     ServiceWorkerStatusCode status,
     const std::string& status_message,
     ServiceWorkerRegistration* registration) {
   if (status != SERVICE_WORKER_OK) {
     DCHECK(!registration);
-    callback.Run(status, status_message,
-                 blink::mojom::kInvalidServiceWorkerRegistrationId);
+    std::move(callback).Run(status, status_message,
+                            blink::mojom::kInvalidServiceWorkerRegistrationId);
     return;
   }
 
   DCHECK(registration);
-  callback.Run(status, status_message, registration->id());
+  std::move(callback).Run(status, status_message, registration->id());
 }
 
 void ServiceWorkerContextCore::UnregistrationComplete(
     const GURL& pattern,
-    const ServiceWorkerContextCore::UnregistrationCallback& callback,
+    ServiceWorkerContextCore::UnregistrationCallback callback,
     int64_t registration_id,
     ServiceWorkerStatusCode status) {
-  callback.Run(status);
+  std::move(callback).Run(status);
   if (status == SERVICE_WORKER_OK && observer_list_.get()) {
     observer_list_->Notify(
         FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationDeleted,
@@ -714,10 +709,9 @@ void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {
                      wrapper_));
 }
 
-void ServiceWorkerContextCore::DeleteAndStartOver(
-    const StatusCallback& callback) {
+void ServiceWorkerContextCore::DeleteAndStartOver(StatusCallback callback) {
   job_coordinator_->AbortAll();
-  storage_->DeleteAndStartOver(callback);
+  storage_->DeleteAndStartOver(std::move(callback));
 }
 
 void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
