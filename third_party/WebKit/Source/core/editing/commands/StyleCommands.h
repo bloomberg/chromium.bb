@@ -192,7 +192,10 @@ class StyleCommands {
                                        EditorCommandSource,
                                        InputEvent::InputType,
                                        CSSPropertyID,
-                                       CSSValue*);
+                                       const CSSValue&);
+  static String ComputeToggleStyleInList(EditingStyle&,
+                                         CSSPropertyID,
+                                         const CSSValue&);
   static bool SelectionStartHasStyle(LocalFrame&, CSSPropertyID, const String&);
   static String SelectionStartCSSPropertyValue(LocalFrame&, CSSPropertyID);
   static String ValueStyle(LocalFrame&, CSSPropertyID);
