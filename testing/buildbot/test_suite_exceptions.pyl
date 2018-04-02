@@ -3694,7 +3694,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Windows-10-14393',
+              'os': 'Windows-10-15063',
             },
           ],
         },
