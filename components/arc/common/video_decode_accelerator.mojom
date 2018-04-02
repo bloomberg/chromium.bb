@@ -88,7 +88,6 @@ interface VideoDecodeAccelerator {
     PLATFORM_FAILURE = 4,
     INSUFFICIENT_RESOURCES = 5,
     CANCELLED = 6,
-    RESULT_MAX = 7,
   };
 
   // Initializes video decoder accelerator with specific video codec profile.
