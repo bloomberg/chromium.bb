@@ -715,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // This test technically performs a tab-under navigation. This will be blocked
   // if the tab-under blocking feature is enabled. Simulate clicking the opener
   // here to avoid that behavior.
-  opener_contents->UserGestureDone();
+  opener_contents->NavigatedByUser();
 
   // From the popup, start a navigation in the opener to b.com, but don't
   // commit.
