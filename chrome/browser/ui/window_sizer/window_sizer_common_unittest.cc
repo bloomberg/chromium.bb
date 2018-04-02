@@ -121,22 +121,6 @@ class TestScreen : public display::Screen {
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
 
-class TestTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
-public:
-  TestTargetDisplayProvider() {}
-  ~TestTargetDisplayProvider() override {}
-
-  display::Display GetTargetDisplay(const display::Screen* screen,
-                                    const gfx::Rect& bounds) const override {
-    // On ash, the bounds is used as a indicator to specify
-    // the target display.
-    return screen->GetDisplayMatching(bounds);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTargetDisplayProvider);
-};
-
 }  // namespace
 
 TestStateProvider::TestStateProvider()
@@ -214,7 +198,7 @@ void WindowSizerTestUtil::GetWindowBoundsAndShowState(
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
   std::unique_ptr<WindowSizer::TargetDisplayProvider> tdp(
-      new TestTargetDisplayProvider);
+      new WindowSizer::DefaultTargetDisplayProvider);
 
   WindowSizer sizer(std::move(sp), std::move(tdp), &test_screen, browser);
   sizer.DetermineWindowBoundsAndShowState(passed_in,
@@ -238,7 +222,7 @@ ui::WindowShowState WindowSizerTestUtil::GetWindowShowState(
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
   std::unique_ptr<WindowSizer::TargetDisplayProvider> tdp(
-      new TestTargetDisplayProvider);
+      new WindowSizer::DefaultTargetDisplayProvider);
 
   WindowSizer sizer(std::move(sp), std::move(tdp), &test_screen, browser);
 
@@ -269,6 +253,10 @@ void WindowSizerTestUtil::GetWindowBounds(const gfx::Rect& monitor1_bounds,
 }
 
 #if !defined(OS_MACOSX)
+
+#if !defined(OS_CHROMEOS)
+// Passing null for the browser parameter of GetWindowBounds makes the test skip
+// all Ash-specific logic, so there's no point running this on Chrome OS.
 TEST(WindowSizerTestCommon,
      PersistedWindowOffscreenWithNonAggressiveRepositioning) {
   { // off the left but the minimum visibility condition is barely satisfied
@@ -454,6 +442,7 @@ TEST(WindowSizerTestCommon,
     EXPECT_EQ("50,368 500x400", window_bounds.ToString());
   }
 }
+#endif  // !defined(OS_CHROMEOS)
 
 // Test that the window is sized appropriately for the first run experience
 // where the default window bounds calculation is invoked.

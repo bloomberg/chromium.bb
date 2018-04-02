@@ -21,7 +21,6 @@ class TestShellDelegate : public ShellDelegate {
   ::service_manager::Connector* GetShellConnector() const override;
   bool IsRunningInForcedAppMode() const override;
   bool CanShowWindowForUser(aura::Window* window) const override;
-  bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
   void PreShutdown() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
@@ -31,13 +30,7 @@ class TestShellDelegate : public ShellDelegate {
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
-  void SetForceMaximizeOnFirstRun(bool maximize) {
-    force_maximize_on_first_run_ = maximize;
-  }
-
  private:
-  bool force_maximize_on_first_run_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };
 

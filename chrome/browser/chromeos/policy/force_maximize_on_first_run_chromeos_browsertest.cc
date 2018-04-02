@@ -5,7 +5,6 @@
 #include <string>
 
 #include "ash/shell.h"
-#include "ash/wm/window_positioner.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -36,11 +35,8 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
 
   void SetUpResolution() {
     // Set a screen resolution for which the first browser window will not be
-    // maximized by default.
-    const int width =
-        ash::WindowPositioner::GetForceMaximizedWidthLimit() + 100;
-    // Set resolution to 1466x300.
-    const std::string resolution = base::IntToString(width) + "x300";
+    // maximized by default. 1466 is greater than kForceMaximizeWidthLimit.
+    const std::string resolution("1466x300");
     display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
         .UpdateDisplay(resolution);
   }

@@ -25,7 +25,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"  // nogncheck
 #include "ash/shell.h"
-#include "ash/wm/window_positioner.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
@@ -104,11 +103,6 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     if (browser_ && browser_->window()) {
       window = browser_->window();
     } else {
-      // This code is only run on the native desktop (on the ash
-      // desktop, GetTabbedBrowserBoundsAsh should take over below
-      // before this is reached).  TODO(gab): This code should go in a
-      // native desktop specific window sizer as part of fixing
-      // crbug.com/175812.
       const BrowserList* browser_list = BrowserList::GetInstance();
       for (BrowserList::const_reverse_iterator it =
                browser_list->begin_last_active();
@@ -123,7 +117,12 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     }
 
     if (window) {
+#if defined(OS_CHROMEOS)
+      if (window->IsVisible())
+        *bounds = window->GetRestoredBounds();
+#else
       *bounds = window->GetRestoredBounds();
+#endif
       if (*show_state == ui::SHOW_STATE_DEFAULT && window->IsMaximized())
         *show_state = ui::SHOW_STATE_MAXIMIZED;
       return true;
@@ -140,30 +139,27 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   DISALLOW_COPY_AND_ASSIGN(DefaultStateProvider);
 };
 
-class DefaultTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
- public:
-  DefaultTargetDisplayProvider() {}
-  ~DefaultTargetDisplayProvider() override {}
-
-  display::Display GetTargetDisplay(const display::Screen* screen,
-                                    const gfx::Rect& bounds) const override {
-#if defined(OS_CHROMEOS)
-    // Use the target display on ash.
-    if (ash_util::ShouldOpenAshOnStartup()) {
-      aura::Window* target = ash::Shell::GetRootWindowForNewWindows();
-      return screen->GetDisplayNearestWindow(target);
-    }
-#endif
-    // Find the size of the work area of the monitor that intersects the bounds
-    // of the anchor window.
-    return screen->GetDisplayMatching(bounds);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultTargetDisplayProvider);
-};
-
 }  // namespace
+
+WindowSizer::DefaultTargetDisplayProvider::DefaultTargetDisplayProvider() =
+    default;
+WindowSizer::DefaultTargetDisplayProvider::~DefaultTargetDisplayProvider() =
+    default;
+
+display::Display WindowSizer::DefaultTargetDisplayProvider::GetTargetDisplay(
+    const display::Screen* screen,
+    const gfx::Rect& bounds) const {
+#if defined(OS_CHROMEOS)
+  // Use the target display on ash.
+  if (ash_util::ShouldOpenAshOnStartup()) {
+    aura::Window* target = ash::Shell::GetRootWindowForNewWindows();
+    return screen->GetDisplayNearestWindow(target);
+  }
+#endif
+  // Find the size of the work area of the monitor that intersects the bounds
+  // of the anchor window.
+  return screen->GetDisplayMatching(bounds);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:

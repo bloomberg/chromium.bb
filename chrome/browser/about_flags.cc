@@ -1561,10 +1561,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
-    {"skip-extra-ash-window-positioning",
-     flag_descriptions::kSkipExtraAshWindowPositioningName,
-     flag_descriptions::kSkipExtraAshWindowPositioningDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kSkipExtraAshWindowPositioning)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

@@ -41,10 +41,6 @@ bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
-bool ShellDelegateImpl::IsForceMaximizeOnFirstRun() const {
-  return false;
-}
-
 void ShellDelegateImpl::PreInit() {}
 
 void ShellDelegateImpl::PreShutdown() {}

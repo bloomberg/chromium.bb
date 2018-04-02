@@ -804,10 +804,6 @@ const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
 // NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
 // change or remove the flag please update platform2/crash_reporter.
 const char kMashServiceName[] = "mash-service-name";
-
-// Disables extra Ash-specific rules for positioning new browser windows.
-const char kSkipExtraAshWindowPositioning[] =
-    "skip-extra-ash-window-positioning";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

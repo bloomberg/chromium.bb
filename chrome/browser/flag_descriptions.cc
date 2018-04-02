@@ -2841,11 +2841,6 @@ const char kSysInternalsDescription[] =
     "If enabled, user can monitor system information at "
     "chrome://sys-internals.";
 
-const char kSkipExtraAshWindowPositioningName[] =
-    "Simplified browser window positioning";
-const char kSkipExtraAshWindowPositioningDescription[] =
-    "Skips over Ash-specific positioning logic for new browser windows.";
-
 const char kTeamDrivesName[] = "Enable Team Drives Integration";
 const char kTeamDrivesDescription[] =
     "If enabled, files under Team Drives will appear in the Files app.";

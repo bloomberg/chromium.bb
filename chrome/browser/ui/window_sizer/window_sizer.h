@@ -69,6 +69,18 @@ class WindowSizer {
         const gfx::Rect& bounds) const = 0;
   };
 
+  class DefaultTargetDisplayProvider : public TargetDisplayProvider {
+   public:
+    DefaultTargetDisplayProvider();
+    ~DefaultTargetDisplayProvider() override;
+
+    display::Display GetTargetDisplay(const display::Screen* screen,
+                                      const gfx::Rect& bounds) const override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DefaultTargetDisplayProvider);
+  };
+
   // Determines the position and size for a window as it is created as well
   // as the initial state. This function uses several strategies to figure out
   // optimal size and placement, first looking for an existing active window,
@@ -112,6 +124,9 @@ class WindowSizer {
   // Maximum width of a window even if there is more room on the desktop.
   static const int kMaximumWindowWidth = 1100;
 #endif
+
+ protected:
+  const StateProvider* state_provider() const { return state_provider_.get(); }
 
  private:
   friend class WindowSizerTestUtil;
