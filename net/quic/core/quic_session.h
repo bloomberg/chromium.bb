@@ -480,6 +480,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // May be null.
   Visitor* visitor_;
 
+  // Latched value of quic_reloadable_flag_quic_register_streams_early2.
+  const bool register_streams_early_;
+
   // A list of streams which need to write more data.  Stream register
   // themselves in their constructor, and unregisterm themselves in their
   // destructors, so the write blocked list must outlive all streams.
@@ -554,9 +557,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Latched value of quic_reloadable_flag_quic_streams_unblocked_by_session2.
   const bool session_unblocks_stream_;
-
-  // Latched value of quic_reloadable_flag_quic_register_streams_early2.
-  const bool register_streams_early_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

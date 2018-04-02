@@ -37,6 +37,11 @@ QuicSession::QuicSession(QuicConnection* connection,
                          const QuicConfig& config)
     : connection_(connection),
       visitor_(owner),
+      register_streams_early_(
+          GetQuicReloadableFlag(quic_register_streams_early2)),
+      write_blocked_streams_(
+          GetQuicReloadableFlag(quic_register_static_streams) &&
+          register_streams_early_),
       config_(config),
       max_open_outgoing_streams_(kDefaultMaxStreamsPerConnection),
       max_open_incoming_streams_(config_.GetMaxIncomingDynamicStreamsToSend()),
@@ -60,9 +65,7 @@ QuicSession::QuicSession(QuicConnection* connection,
       goaway_received_(false),
       control_frame_manager_(this),
       session_unblocks_stream_(
-          GetQuicReloadableFlag(quic_streams_unblocked_by_session2)),
-      register_streams_early_(
-          GetQuicReloadableFlag(quic_register_streams_early2)) {
+          GetQuicReloadableFlag(quic_streams_unblocked_by_session2)) {
   if (register_streams_early()) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_register_streams_early2);
   }
@@ -739,21 +742,30 @@ void QuicSession::OnCryptoHandshakeMessageReceived(
 void QuicSession::RegisterStreamPriority(QuicStreamId id,
                                          bool is_static,
                                          SpdyPriority priority) {
+  // Static streams should not be registered unless register_streams_early
+  // is true.
+  DCHECK(register_streams_early() || !is_static);
   // Static streams do not need to be registered with the write blocked list,
   // since it has special handling for them.
-  if (register_streams_early() && is_static) {
+  if (!write_blocked_streams()->register_static_streams() &&
+      register_streams_early() && is_static) {
     return;
   }
-  write_blocked_streams()->RegisterStream(id, priority);
+
+  write_blocked_streams()->RegisterStream(id, is_static, priority);
 }
 
 void QuicSession::UnregisterStreamPriority(QuicStreamId id, bool is_static) {
+  // Static streams should not be registered unless register_streams_early
+  // is true.
+  DCHECK(register_streams_early() || !is_static);
   // Static streams do not need to be registered with the write blocked list,
   // since it has special handling for them.
-  if (register_streams_early() && is_static) {
+  if (!write_blocked_streams()->register_static_streams() &&
+      register_streams_early() && is_static) {
     return;
   }
-  write_blocked_streams()->UnregisterStream(id);
+  write_blocked_streams()->UnregisterStream(id, is_static);
 }
 
 void QuicSession::UpdateStreamPriority(QuicStreamId id,

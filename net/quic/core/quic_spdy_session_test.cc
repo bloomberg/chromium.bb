@@ -746,7 +746,6 @@ TEST_P(QuicSpdySessionTestServer,
   // Mark the crypto and headers streams as write blocked, we expect them to be
   // allowed to write later.
   session_.MarkConnectionLevelWriteBlocked(kCryptoStreamId);
-  session_.MarkConnectionLevelWriteBlocked(kHeadersStreamId);
 
   // Create a data stream, and although it is write blocked we never expect it
   // to be allowed to write as we are connection level flow control blocked.
@@ -758,8 +757,10 @@ TEST_P(QuicSpdySessionTestServer,
   // connection flow control blocked.
   TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
   EXPECT_CALL(*crypto_stream, OnCanWrite());
+  QuicSpdySessionPeer::SetHeadersStream(&session_, nullptr);
   TestHeadersStream* headers_stream = new TestHeadersStream(&session_);
   QuicSpdySessionPeer::SetHeadersStream(&session_, headers_stream);
+  session_.MarkConnectionLevelWriteBlocked(kHeadersStreamId);
   EXPECT_CALL(*headers_stream, OnCanWrite());
 
   // After the crypto and header streams perform a write, the connection will be
@@ -1418,6 +1419,7 @@ TEST_P(QuicSpdySessionTestClient, EnableDHDTThroughConnectionOption) {
 }
 
 TEST_P(QuicSpdySessionTestClient, WritePriority) {
+  QuicSpdySessionPeer::SetHeadersStream(&session_, nullptr);
   TestHeadersStream* headers_stream = new TestHeadersStream(&session_);
   QuicSpdySessionPeer::SetHeadersStream(&session_, headers_stream);
 

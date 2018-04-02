@@ -128,6 +128,9 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns the time that the last unacked packet was sent.
   QuicTime GetLastPacketSentTime() const;
 
+  // Returns the time that the last unacked crypto packet was sent.
+  QuicTime GetLastCryptoPacketSentTime() const;
+
   // Returns the number of unacked packets.
   size_t GetNumUnackedPacketsDebugOnly() const;
 
@@ -212,6 +215,9 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicByteCount bytes_in_flight_;
   // Number of retransmittable crypto handshake packets.
   size_t pending_crypto_packet_count_;
+
+  // Time that the last unacked crypto packet was sent.
+  QuicTime last_crypto_packet_sent_time_;
 
   // Receives notifications of frames being retransmitted or acknowledged.
   SessionNotifierInterface* session_notifier_;

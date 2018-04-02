@@ -126,6 +126,7 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         SupportedVersions(GetParam()));
     session_ =
         QuicMakeUnique<testing::StrictMock<MockQuicSpdySession>>(connection_);
+    session_->Initialize();
     stream_ = new TestStream(GetNthClientInitiatedId(0), session_.get(),
                              stream_should_process_data);
     session_->ActivateStream(QuicWrapUnique(stream_));

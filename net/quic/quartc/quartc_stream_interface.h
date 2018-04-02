@@ -23,8 +23,8 @@ class QUIC_EXPORT_PRIVATE QuartcStreamInterface {
   // The QUIC stream ID.
   virtual uint32_t stream_id() = 0;
 
-  // The amount of data sent on this stream.
-  virtual uint64_t bytes_written() = 0;
+  // The amount of data buffered on this stream.
+  virtual uint64_t bytes_buffered() = 0;
 
   // Return true if the FIN has been sent. Used by the outgoing streams to
   // determine if all the data has been sent
@@ -33,11 +33,10 @@ class QUIC_EXPORT_PRIVATE QuartcStreamInterface {
   virtual int stream_error() = 0;
 
   struct WriteParameters {
-    WriteParameters() : fin(false) {}
     // |fin| is set to be true when there is no more data need to be send
     // through a particular stream. The receiving side will used it to determine
     // if the sender finish sending data.
-    bool fin;
+    bool fin = false;
   };
 
   // Sends data reliably and in-order.  Returns the amount sent.
@@ -81,8 +80,8 @@ class QUIC_EXPORT_PRIVATE QuartcStreamInterface {
     // error code.
     virtual void OnClose(QuartcStreamInterface* stream) = 0;
 
-    // Called when more data may be written to a stream.
-    virtual void OnCanWrite(QuartcStreamInterface* stream) = 0;
+    // Called when the contents of the stream's buffer changes.
+    virtual void OnBufferChanged(QuartcStreamInterface* stream) = 0;
   };
 
   // The |delegate| is not owned by QuartcStream.

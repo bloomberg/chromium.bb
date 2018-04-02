@@ -32,6 +32,10 @@ struct QUIC_EXPORT_PRIVATE QuicWindowUpdateFrame : public QuicControlFrame {
 
   // Byte offset in the stream or connection. The receiver of this frame must
   // not send data which would result in this offset being exceeded.
+  //
+  // TODO(fkastenholz): Rename this to max_data and change the type to
+  // QuicByteCount because the IETF defines this as the "maximum
+  // amount of data that can be sent".
   QuicStreamOffset byte_offset;
 };
 

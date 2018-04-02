@@ -17,6 +17,7 @@ QuicUnackedPacketMap::QuicUnackedPacketMap()
       least_unacked_(1),
       bytes_in_flight_(0),
       pending_crypto_packet_count_(0),
+      last_crypto_packet_sent_time_(QuicTime::Zero()),
       session_notifier_(nullptr),
       session_decides_what_to_write_(false) {}
 
@@ -63,6 +64,7 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
   if (old_packet_number == 0) {
     if (has_crypto_handshake) {
       ++pending_crypto_packet_count_;
+      last_crypto_packet_sent_time_ = sent_time;
     }
 
     packet->retransmittable_frames.swap(
@@ -300,6 +302,10 @@ QuicTime QuicUnackedPacketMap::GetLastPacketSentTime() const {
   }
   QUIC_BUG << "GetLastPacketSentTime requires in flight packets.";
   return QuicTime::Zero();
+}
+
+QuicTime QuicUnackedPacketMap::GetLastCryptoPacketSentTime() const {
+  return last_crypto_packet_sent_time_;
 }
 
 size_t QuicUnackedPacketMap::GetNumUnackedPacketsDebugOnly() const {

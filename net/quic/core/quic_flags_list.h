@@ -124,13 +124,6 @@ QUIC_FLAG(bool,
 // ack delay as described in QUIC IETF.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay, false)
 
-// If ture, sender will close connection when there are too many outstanding
-// sent packets
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_close_session_on_too_many_outstanding_sent_packets,
-    true)
-
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
@@ -230,3 +223,12 @@ QUIC_FLAG(
 // If true, a separate QuicAlarm in QuicConnection is used to trigger
 // OnPathDegrading() instead of using retransmission_alarm_.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm, true)
+
+// Remove special logic for headers stream from QuicWriteBlockedList and
+// replace it with a static streams map.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_static_streams, false)
+
+// Base the QUIC crypto retransmission timer on the last sent crypto packet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_better_crypto_retransmission,
+          false)

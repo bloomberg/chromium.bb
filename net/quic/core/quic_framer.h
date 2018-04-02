@@ -514,16 +514,36 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendPaddingFrame(const QuicPaddingFrame& frame,
                           QuicDataWriter* writer);
 
-  // IETF defined frame append/process methods.
+  // IETF frame processing methods.
   bool ProcessIetfStreamFrame(QuicDataReader* reader,
                               uint8_t frame_type,
                               QuicStreamFrame* frame);
-  // Append a stream frame and data to the packet.
+  bool ProcessIetfConnectionCloseFrame(QuicDataReader* reader,
+                                       const uint8_t frame_type,
+                                       QuicConnectionCloseFrame* frame);
+  bool ProcessIetfApplicationCloseFrame(QuicDataReader* reader,
+                                        const uint8_t frame_type,
+                                        QuicConnectionCloseFrame* frame);
+  bool ProcessIetfCloseFrame(QuicDataReader* reader,
+                             const uint8_t frame_type,
+                             QuicConnectionCloseFrame* frame);
+  bool ProcessIetfAckFrame(QuicDataReader* reader,
+                           uint8_t frame_type,
+                           QuicAckFrame* ack_frame);
+  void ProcessIetfPaddingFrame(QuicDataReader* reader, QuicPaddingFrame* frame);
+  bool ProcessIetfPathChallengeFrame(QuicDataReader* reader,
+                                     QuicPathChallengeFrame* frame);
+  bool ProcessIetfPathResponseFrame(QuicDataReader* reader,
+                                    QuicPathResponseFrame* frame);
+  bool ProcessIetfResetStreamFrame(QuicDataReader* reader,
+                                   QuicRstStreamFrame* frame);
+  bool ProcessIetfStopSendingFrame(QuicDataReader* reader,
+                                   QuicStopSendingFrame* stop_sending_frame);
+
+  // IETF frame appending methods.  All methods append the type byte as well.
   bool AppendIetfStreamFrame(const QuicStreamFrame& frame,
                              bool last_frame_in_packet,
                              QuicDataWriter* writer);
-
-  // Add/process an IETF-Formatted Connection and Application close frames.
   bool AppendIetfConnectionCloseFrame(const QuicConnectionCloseFrame& frame,
                                       QuicDataWriter* writer);
   bool AppendIetfConnectionCloseFrame(const QuicIetfTransportErrorCodes code,
@@ -538,55 +558,48 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                             const uint16_t code,
                             const QuicString& phrase,
                             QuicDataWriter* writer);
-  bool ProcessIetfConnectionCloseFrame(QuicDataReader* reader,
-                                       const uint8_t frame_type,
-                                       QuicConnectionCloseFrame* frame);
-  bool ProcessIetfApplicationCloseFrame(QuicDataReader* reader,
-                                        const uint8_t frame_type,
-                                        QuicConnectionCloseFrame* frame);
-  bool ProcessIetfCloseFrame(QuicDataReader* reader,
-                             const uint8_t frame_type,
-                             QuicConnectionCloseFrame* frame);
-
-  // Parse an IETF-format Ack frame from the packet
-  bool ProcessIetfAckFrame(QuicDataReader* reader,
-                           uint8_t frame_type,
-                           QuicAckFrame* ack_frame);
-  // Append an IETF-format Ack frame to the packet
-  bool AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
-                                     QuicDataWriter* writer);
-
-  // Add/remove IETF-Format padding.
+  bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
   bool AppendIetfPaddingFrame(const QuicPaddingFrame& frame,
                               QuicDataWriter* writer);
-  void ProcessIetfPaddingFrame(QuicDataReader* reader, QuicPaddingFrame* frame);
-
-  // Quic IETF PATH Challenge/Response frames.
-  bool ProcessIetfPathChallengeFrame(QuicDataReader* reader,
-                                     QuicPathChallengeFrame* frame);
-  bool ProcessIetfPathResponseFrame(QuicDataReader* reader,
-                                    QuicPathResponseFrame* frame);
-
-  bool AppendIetfPathChallengeFrameAndTypeByte(
-      const QuicPathChallengeFrame& frame,
-      QuicDataWriter* writer);
-  bool AppendIetfPathResponseFrameAndTypeByte(
-      const QuicPathResponseFrame& frame,
-      QuicDataWriter* writer);
-
-  // Add/process the IETF-format Stream Reset frame.
+  bool AppendIetfPathChallengeFrame(const QuicPathChallengeFrame& frame,
+                                    QuicDataWriter* writer);
+  bool AppendIetfPathResponseFrame(const QuicPathResponseFrame& frame,
+                                   QuicDataWriter* writer);
   bool AppendIetfResetStreamFrame(const QuicRstStreamFrame& frame,
                                   QuicDataWriter* writer);
-  bool ProcessIetfResetStreamFrame(QuicDataReader* reader,
-                                   QuicRstStreamFrame* frame);
-
-  // IETF Stop Sending frames.
-  bool ProcessIetfStopSendingFrame(QuicDataReader* reader,
-                                   QuicStopSendingFrame* stop_sending_frame);
-  // Append an IETf-format Ack frame to the packet
-  bool AppendIetfStopSendingFrameAndTypeByte(
+  bool AppendIetfStopSendingFrame(
       const QuicStopSendingFrame& stop_sending_frame,
       QuicDataWriter* writer);
+
+  // Append/consume IETF-Format MAX_DATA and MAX_STREAM_DATA frames
+  bool AppendIetfMaxDataFrame(const QuicWindowUpdateFrame& frame,
+                              QuicDataWriter* writer);
+  bool AppendIetfMaxStreamDataFrame(const QuicWindowUpdateFrame& frame,
+                                    QuicDataWriter* writer);
+  bool ProcessIetfMaxDataFrame(QuicDataReader* reader,
+                               QuicWindowUpdateFrame* frame);
+  bool ProcessIetfMaxStreamDataFrame(QuicDataReader* reader,
+                                     QuicWindowUpdateFrame* frame);
+
+  bool AppendIetfMaxStreamIdFrame(const QuicIetfMaxStreamIdFrame& frame,
+                                  QuicDataWriter* writer);
+  bool ProcessIetfMaxStreamIdFrame(QuicDataReader* reader,
+                                   QuicIetfMaxStreamIdFrame* frame);
+
+  bool AppendIetfBlockedFrame(const QuicIetfBlockedFrame& frame,
+                              QuicDataWriter* writer);
+  bool ProcessIetfBlockedFrame(QuicDataReader* reader,
+                               QuicIetfBlockedFrame* frame);
+
+  bool AppendIetfStreamBlockedFrame(const QuicWindowUpdateFrame& frame,
+                                    QuicDataWriter* writer);
+  bool ProcessIetfStreamBlockedFrame(QuicDataReader* reader,
+                                     QuicWindowUpdateFrame* frame);
+
+  bool AppendIetfStreamIdBlockedFrame(const QuicIetfStreamIdBlockedFrame& frame,
+                                      QuicDataWriter* writer);
+  bool ProcessIetfStreamIdBlockedFrame(QuicDataReader* reader,
+                                       QuicIetfStreamIdBlockedFrame* frame);
 
   bool RaiseError(QuicErrorCode error);
 

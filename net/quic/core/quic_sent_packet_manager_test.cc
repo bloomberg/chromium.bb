@@ -257,7 +257,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
 
   SerializedPacket CreatePacket(QuicPacketNumber packet_number,
                                 bool retransmittable) {
-    SerializedPacket packet(packet_number, PACKET_6BYTE_PACKET_NUMBER, nullptr,
+    SerializedPacket packet(packet_number, PACKET_4BYTE_PACKET_NUMBER, nullptr,
                             kDefaultLength, false, false);
     if (retransmittable) {
       packet.retransmittable_frames.push_back(QuicFrame(
@@ -1718,6 +1718,7 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTime) {
 }
 
 TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
+  QuicTime crypto_packet_send_time = clock_.Now();
   SendCryptoPacket(1);
 
   // Check the min.
@@ -1738,6 +1739,7 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
+    crypto_packet_send_time = clock_.Now();
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1745,7 +1747,11 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
   }
 
   // The retransmission time should now be twice as far in the future.
-  expected_time = clock_.Now() + srtt * 2 * 1.5;
+  if (GetQuicReloadableFlag(quic_better_crypto_retransmission)) {
+    expected_time = crypto_packet_send_time + srtt * 2 * 1.5;
+  } else {
+    expected_time = clock_.Now() + srtt * 2 * 1.5;
+  }
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 
@@ -1764,6 +1770,7 @@ TEST_P(QuicSentPacketManagerTest,
   EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
       .WillRepeatedly(Return(10 * kDefaultTCPMSS));
 
+  QuicTime crypto_packet_send_time = clock_.Now();
   SendCryptoPacket(1);
 
   // Check the min.
@@ -1784,6 +1791,7 @@ TEST_P(QuicSentPacketManagerTest,
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
+    crypto_packet_send_time = clock_.Now();
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1791,7 +1799,11 @@ TEST_P(QuicSentPacketManagerTest,
   }
 
   // The retransmission time should now be twice as far in the future.
-  expected_time = clock_.Now() + srtt * 2 * 2;
+  if (GetQuicReloadableFlag(quic_better_crypto_retransmission)) {
+    expected_time = crypto_packet_send_time + srtt * 2 * 2;
+  } else {
+    expected_time = clock_.Now() + srtt * 2 * 2;
+  }
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 
@@ -2554,7 +2566,7 @@ TEST_P(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
 
 TEST_P(QuicSentPacketManagerTest, PathMtuIncreased) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), 1, _, _));
-  SerializedPacket packet(1, PACKET_6BYTE_PACKET_NUMBER, nullptr,
+  SerializedPacket packet(1, PACKET_4BYTE_PACKET_NUMBER, nullptr,
                           kDefaultLength + 100, false, false);
   manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                         HAS_RETRANSMITTABLE_DATA);

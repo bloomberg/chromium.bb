@@ -510,6 +510,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // quic_reloadable_flag_quic_path_degrading_alarm
   const bool use_path_degrading_alarm_;
 
+  // Latched value of
+  // quic_reloadable_flag_quic_better_crypto_retransmission
+  const bool use_better_crypto_retransmission_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };
 

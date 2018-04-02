@@ -93,7 +93,10 @@ QuicSentPacketManager::QuicSentPacketManager(
           QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)),
       rtt_updated_(false),
       use_path_degrading_alarm_(
-          GetQuicReloadableFlag(quic_path_degrading_alarm)) {
+          GetQuicReloadableFlag(quic_path_degrading_alarm)),
+      use_better_crypto_retransmission_(
+          GetQuicReloadableFlag(quic_better_crypto_retransmission)) {
+  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_better_crypto_retransmission);
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -883,6 +886,10 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
   }
   switch (GetRetransmissionMode()) {
     case HANDSHAKE_MODE:
+      if (use_better_crypto_retransmission_) {
+        return unacked_packets_.GetLastCryptoPacketSentTime() +
+               GetCryptoRetransmissionDelay();
+      }
       return clock_->ApproximateNow() + GetCryptoRetransmissionDelay();
     case LOSS_MODE:
       return loss_algorithm_->GetLossTimeout();

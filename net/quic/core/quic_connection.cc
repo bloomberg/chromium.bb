@@ -1276,11 +1276,6 @@ void QuicConnection::ClearLastFrames() {
 }
 
 void QuicConnection::CloseIfTooManyOutstandingSentPackets() {
-  if (!GetQuicReloadableFlag(
-          quic_close_session_on_too_many_outstanding_sent_packets)) {
-    return;
-  }
-
   // This occurs if we don't discard old packets we've seen fast enough. It's
   // possible largest observed is less than leaset unacked.
   if (sent_packet_manager_.GetLargestObserved() >

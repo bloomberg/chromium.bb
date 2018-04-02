@@ -53,7 +53,7 @@ QuicPacketHeader::QuicPacketHeader()
       connection_id_length(PACKET_8BYTE_CONNECTION_ID),
       reset_flag(false),
       version_flag(false),
-      packet_number_length(PACKET_6BYTE_PACKET_NUMBER),
+      packet_number_length(PACKET_4BYTE_PACKET_NUMBER),
       version(
           ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED)),
       nonce(nullptr),

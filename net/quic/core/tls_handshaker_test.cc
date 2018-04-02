@@ -251,13 +251,15 @@ class TlsHandshakerTest : public QuicTest {
         server_conn_(new MockQuicConnection(&conn_helper_,
                                             &alarm_factory_,
                                             Perspective::IS_SERVER)),
-        client_session_(client_conn_),
-        server_session_(server_conn_),
-        client_stream_(&client_session_),
-        server_stream_(
-            new TestQuicCryptoServerStream(&server_session_, &proof_source_)) {
-    EXPECT_FALSE(client_stream_.encryption_established());
-    EXPECT_FALSE(client_stream_.handshake_confirmed());
+        client_session_(client_conn_, /*create_mock_crypto_stream=*/false),
+        server_session_(server_conn_, /*create_mock_crypto_stream=*/false) {
+    client_stream_ = new TestQuicCryptoClientStream(&client_session_);
+    client_session_.SetCryptoStream(client_stream_);
+    server_stream_ =
+        new TestQuicCryptoServerStream(&server_session_, &proof_source_);
+    server_session_.SetCryptoStream(server_stream_);
+    EXPECT_FALSE(client_stream_->encryption_established());
+    EXPECT_FALSE(client_stream_->handshake_confirmed());
     EXPECT_FALSE(server_stream_->encryption_established());
     EXPECT_FALSE(server_stream_->handshake_confirmed());
   }
@@ -269,19 +271,19 @@ class TlsHandshakerTest : public QuicTest {
   MockQuicSession client_session_;
   MockQuicSession server_session_;
 
-  TestQuicCryptoClientStream client_stream_;
   FakeProofSource proof_source_;
-  std::unique_ptr<TestQuicCryptoServerStream> server_stream_;
+  TestQuicCryptoClientStream* client_stream_;
+  TestQuicCryptoServerStream* server_stream_;
 };
 
 TEST_F(TlsHandshakerTest, CryptoHandshake) {
   EXPECT_CALL(*client_conn_, CloseConnection(_, _, _)).Times(0);
   EXPECT_CALL(*server_conn_, CloseConnection(_, _, _)).Times(0);
-  client_stream_.CryptoConnect();
-  MoveStreamFrames(&client_stream_, server_stream_.get());
+  client_stream_->CryptoConnect();
+  MoveStreamFrames(client_stream_, server_stream_);
 
-  EXPECT_TRUE(client_stream_.handshake_confirmed());
-  EXPECT_TRUE(client_stream_.encryption_established());
+  EXPECT_TRUE(client_stream_->handshake_confirmed());
+  EXPECT_TRUE(client_stream_->encryption_established());
   EXPECT_TRUE(server_stream_->handshake_confirmed());
   EXPECT_TRUE(server_stream_->encryption_established());
 }
@@ -295,16 +297,16 @@ TEST_F(TlsHandshakerTest, HandshakeWithAsyncProofSource) {
   proof_source->Activate();
 
   // Start handshake.
-  client_stream_.CryptoConnect();
-  MoveStreamFrames(&client_stream_, server_stream_.get());
+  client_stream_->CryptoConnect();
+  MoveStreamFrames(client_stream_, server_stream_);
 
   ASSERT_EQ(proof_source->NumPendingCallbacks(), 1);
   proof_source->InvokePendingCallback(0);
 
-  MoveStreamFrames(&client_stream_, server_stream_.get());
+  MoveStreamFrames(client_stream_, server_stream_);
 
-  EXPECT_TRUE(client_stream_.handshake_confirmed());
-  EXPECT_TRUE(client_stream_.encryption_established());
+  EXPECT_TRUE(client_stream_->handshake_confirmed());
+  EXPECT_TRUE(client_stream_->encryption_established());
   EXPECT_TRUE(server_stream_->handshake_confirmed());
   EXPECT_TRUE(server_stream_->encryption_established());
 }
@@ -318,11 +320,11 @@ TEST_F(TlsHandshakerTest, CancelPendingProofSource) {
   proof_source->Activate();
 
   // Start handshake.
-  client_stream_.CryptoConnect();
-  MoveStreamFrames(&client_stream_, server_stream_.get());
+  client_stream_->CryptoConnect();
+  MoveStreamFrames(client_stream_, server_stream_);
 
   ASSERT_EQ(proof_source->NumPendingCallbacks(), 1);
-  server_stream_.reset();
+  server_stream_ = nullptr;
 
   proof_source->InvokePendingCallback(0);
 }
@@ -332,27 +334,27 @@ TEST_F(TlsHandshakerTest, HandshakeWithAsyncProofVerifier) {
   EXPECT_CALL(*server_conn_, CloseConnection(_, _, _)).Times(0);
   // Enable FakeProofVerifier to capture call to VerifyCertChain and run it
   // asynchronously.
-  FakeProofVerifier* proof_verifier = client_stream_.GetFakeProofVerifier();
+  FakeProofVerifier* proof_verifier = client_stream_->GetFakeProofVerifier();
   proof_verifier->Activate();
 
   // Start handshake.
-  client_stream_.CryptoConnect();
-  MoveStreamFrames(&client_stream_, server_stream_.get());
+  client_stream_->CryptoConnect();
+  MoveStreamFrames(client_stream_, server_stream_);
 
   ASSERT_EQ(proof_verifier->NumPendingCallbacks(), 1u);
   proof_verifier->InvokePendingCallback(0);
 
-  MoveStreamFrames(&client_stream_, server_stream_.get());
+  MoveStreamFrames(client_stream_, server_stream_);
 
-  EXPECT_TRUE(client_stream_.handshake_confirmed());
-  EXPECT_TRUE(client_stream_.encryption_established());
+  EXPECT_TRUE(client_stream_->handshake_confirmed());
+  EXPECT_TRUE(client_stream_->encryption_established());
   EXPECT_TRUE(server_stream_->handshake_confirmed());
   EXPECT_TRUE(server_stream_->encryption_established());
 }
 
 TEST_F(TlsHandshakerTest, ClientConnectionClosedOnTlsAlert) {
   // Have client send ClientHello.
-  client_stream_.CryptoConnect();
+  client_stream_->CryptoConnect();
   EXPECT_CALL(*client_conn_, CloseConnection(QUIC_HANDSHAKE_FAILED, _, _));
 
   // Send fake "internal_error" fatal TLS alert from server to client.
@@ -366,11 +368,11 @@ TEST_F(TlsHandshakerTest, ClientConnectionClosedOnTlsAlert) {
       80,  // AlertDescription internal_error
   };
   QuicStreamFrame alert(kCryptoStreamId, false,
-                        client_stream_.stream_bytes_read(),
+                        client_stream_->stream_bytes_read(),
                         QuicStringPiece(alert_msg, QUIC_ARRAYSIZE(alert_msg)));
-  client_stream_.OnStreamFrame(alert);
+  client_stream_->OnStreamFrame(alert);
 
-  EXPECT_FALSE(client_stream_.handshake_confirmed());
+  EXPECT_FALSE(client_stream_->handshake_confirmed());
 }
 
 TEST_F(TlsHandshakerTest, ServerConnectionClosedOnTlsAlert) {
