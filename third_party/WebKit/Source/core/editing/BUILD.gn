@@ -177,6 +177,7 @@ blink_core_sources("editing") {
     "commands/SplitTextNodeCommand.h",
     "commands/SplitTextNodeContainingElementCommand.cpp",
     "commands/SplitTextNodeContainingElementCommand.h",
+    "commands/StyleCommands.cpp",
     "commands/StyleCommands.h",
     "commands/TypingCommand.cpp",
     "commands/TypingCommand.h",
