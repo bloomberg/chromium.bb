@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/accessibility/select_to_speak_event_rewriter.h"
+#include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
 
 #include <set>
 
@@ -21,6 +21,8 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
+
+using chromeos::SelectToSpeakEventHandler;
 
 namespace {
 
@@ -53,7 +55,7 @@ class EventCapturer : public ui::EventHandler {
 };
 
 class SelectToSpeakMouseEventDelegate final
-    : public SelectToSpeakEventDelegateForTesting {
+    : public chromeos::SelectToSpeakEventDelegateForTesting {
  public:
   SelectToSpeakMouseEventDelegate() {}
 
@@ -82,9 +84,9 @@ class SelectToSpeakMouseEventDelegate final
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakMouseEventDelegate);
 };
 
-class SelectToSpeakEventRewriterTest : public ash::AshTestBase {
+class SelectToSpeakEventHandlerTest : public ash::AshTestBase {
  public:
-  SelectToSpeakEventRewriterTest() : generator_(nullptr) {}
+  SelectToSpeakEventHandlerTest() : generator_(nullptr) {}
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
@@ -92,21 +94,16 @@ class SelectToSpeakEventRewriterTest : public ash::AshTestBase {
     // throttling events. set_throttle_input_on_resize_for_testing() disables
     // this.
     aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
-    select_to_speak_event_rewriter_.reset(
-        new SelectToSpeakEventRewriter(CurrentContext()));
+    select_to_speak_event_handler_.reset(new SelectToSpeakEventHandler());
     mouse_event_delegate_.reset(new SelectToSpeakMouseEventDelegate());
-    select_to_speak_event_rewriter_->CaptureForwardedEventsForTesting(
+    select_to_speak_event_handler_->CaptureForwardedEventsForTesting(
         mouse_event_delegate_.get());
     generator_ = &AshTestBase::GetEventGenerator();
-    CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
-        select_to_speak_event_rewriter_.get());
     CurrentContext()->AddPreTargetHandler(&event_capturer_);
     AutomationManagerAura::GetInstance()->Enable(&profile_);
   }
 
   void TearDown() override {
-    CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
-        select_to_speak_event_rewriter_.get());
     CurrentContext()->RemovePreTargetHandler(&event_capturer_);
     generator_ = nullptr;
     ash::AshTestBase::TearDown();
@@ -119,16 +116,18 @@ class SelectToSpeakEventRewriterTest : public ash::AshTestBase {
   std::unique_ptr<SelectToSpeakMouseEventDelegate> mouse_event_delegate_;
 
  private:
-  std::unique_ptr<SelectToSpeakEventRewriter> select_to_speak_event_rewriter_;
+  std::unique_ptr<SelectToSpeakEventHandler> select_to_speak_event_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventRewriterTest);
+  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventHandlerTest);
 };
 
 }  // namespace
 
-TEST_F(SelectToSpeakEventRewriterTest, PressAndReleaseSearchNotHandled) {
+namespace chromeos {
+
+TEST_F(SelectToSpeakEventHandlerTest, PressAndReleaseSearchNotHandled) {
   // If the user presses and releases the Search key, with no mouse
-  // presses, the key events won't be handled by the SelectToSpeakEventRewriter
+  // presses, the key events won't be handled by the SelectToSpeakEventHandler
   // and the normal behavior will occur.
 
   EXPECT_FALSE(event_capturer_.last_key_event());
@@ -145,7 +144,7 @@ TEST_F(SelectToSpeakEventRewriterTest, PressAndReleaseSearchNotHandled) {
 
 // Note: when running these tests locally on desktop Linux, you may need
 // to use xvfb-run, otherwise simulating the Search key press may not work.
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusClick) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClick) {
   // If the user holds the Search key and then clicks the mouse button,
   // the mouse events and the key release event get handled by the
   // SelectToSpeakEventRewriter, and mouse events are forwarded to the
@@ -174,7 +173,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusClick) {
   EXPECT_FALSE(event_capturer_.last_key_event());
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusDrag) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusDrag) {
   // Mouse move events should also be captured.
 
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
@@ -198,7 +197,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusDrag) {
   generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusDragOnLargeDisplay) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusDragOnLargeDisplay) {
   // This display has twice the number of pixels per DIP. This means that
   // each event coming in in px needs to be divided by two to be converted
   // to DIPs.
@@ -227,7 +226,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusDragOnLargeDisplay) {
   generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, RepeatSearchKey) {
+TEST_F(SelectToSpeakEventHandlerTest, RepeatSearchKey) {
   // Holding the Search key may generate key repeat events. Make sure it's
   // still treated as if the search key is down.
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
@@ -252,7 +251,7 @@ TEST_F(SelectToSpeakEventRewriterTest, RepeatSearchKey) {
   EXPECT_FALSE(event_capturer_.last_key_event());
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, TapSearchKey) {
+TEST_F(SelectToSpeakEventHandlerTest, TapSearchKey) {
   // Tapping the search key should not steal future events.
 
   event_capturer_.Reset();
@@ -264,7 +263,7 @@ TEST_F(SelectToSpeakEventRewriterTest, TapSearchKey) {
   EXPECT_FALSE(event_capturer_.last_mouse_event()->handled());
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusClickTwice) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClickTwice) {
   // Same as SearchPlusClick, above, but test that the user can keep
   // holding down Search and click again.
 
@@ -299,7 +298,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusClickTwice) {
   EXPECT_FALSE(event_capturer_.last_key_event());
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusKeyIgnoresClicks) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusKeyIgnoresClicks) {
   // If the user presses the Search key and then some other key,
   // we should assume the user does not want select-to-speak, and
   // click events should be ignored.
@@ -337,7 +336,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusKeyIgnoresClicks) {
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusSIsCaptured) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusSIsCaptured) {
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
 
   // Press and release S, key presses should be captured.
@@ -365,7 +364,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusSIsCaptured) {
   ASSERT_FALSE(event_capturer_.last_key_event()->handled());
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusSIgnoresMouse) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusSIgnoresMouse) {
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
 
   // Press S
@@ -387,7 +386,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusSIgnoresMouse) {
   ASSERT_FALSE(event_capturer_.last_key_event());
 }
 
-TEST_F(SelectToSpeakEventRewriterTest, SearchPlusMouseIgnoresS) {
+TEST_F(SelectToSpeakEventHandlerTest, SearchPlusMouseIgnoresS) {
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
 
   // Press the mouse
@@ -397,15 +396,17 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusMouseIgnoresS) {
 
   // S key events are passed through like normal.
   generator_->PressKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
-  ASSERT_TRUE(event_capturer_.last_key_event());
+  EXPECT_TRUE(event_capturer_.last_key_event());
   event_capturer_.Reset();
   generator_->ReleaseKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
-  ASSERT_TRUE(event_capturer_.last_key_event());
+  EXPECT_TRUE(event_capturer_.last_key_event());
 
   generator_->ReleaseLeftButton();
   EXPECT_FALSE(event_capturer_.last_mouse_event());
 
   event_capturer_.Reset();
   generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
-  ASSERT_FALSE(event_capturer_.last_key_event());
+  EXPECT_FALSE(event_capturer_.last_key_event());
 }
+
+}  // namespace chromeos

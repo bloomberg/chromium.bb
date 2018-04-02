@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_REWRITER_H_
-#define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_REWRITER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/aura/window.h"
-#include "ui/events/event_rewriter.h"
+#include "ui/events/event_handler.h"
 
-namespace ui {
-class KeyEvent;
-class MouseEvent;
-}  // namespace ui
+namespace chromeos {
 
 class SelectToSpeakEventDelegateForTesting {
  public:
@@ -24,34 +20,26 @@ class SelectToSpeakEventDelegateForTesting {
       const ui::MouseEvent& event) = 0;
 };
 
-class SelectToSpeakEventRewriter : public ui::EventRewriter {
+class SelectToSpeakEventHandler : public ui::EventHandler {
  public:
-  explicit SelectToSpeakEventRewriter(aura::Window* root_window);
-  ~SelectToSpeakEventRewriter() override;
+  SelectToSpeakEventHandler();
+  ~SelectToSpeakEventHandler() override;
 
   void CaptureForwardedEventsForTesting(
       SelectToSpeakEventDelegateForTesting* delegate);
 
  private:
+  // EventHandler
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+
   // Returns true if Select to Speak is enabled.
   bool IsSelectToSpeakEnabled();
 
-  // Returns true if the event was consumed and should be canceled.
-  bool OnKeyEvent(const ui::KeyEvent* event);
-
-  // Returns true if the event was consumed and should be canceled.
-  bool OnMouseEvent(const ui::MouseEvent* event);
+  void CancelEvent(ui::Event* event);
 
   // Converts an event in pixels to the same event in DIPs.
   void ConvertMouseEventToDIPs(ui::MouseEvent* mouse_event);
-
-  // EventRewriter:
-  ui::EventRewriteStatus RewriteEvent(
-      const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override;
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override;
 
   enum State {
     // The search key is not down. No other keys or mouse events are captured.
@@ -95,11 +83,12 @@ class SelectToSpeakEventRewriter : public ui::EventRewriter {
   };
 
   State state_ = INACTIVE;
-  aura::Window* root_window_;
 
   SelectToSpeakEventDelegateForTesting* event_delegate_for_testing_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventRewriter);
+  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventHandler);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_REWRITER_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
