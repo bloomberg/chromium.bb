@@ -236,6 +236,79 @@ class EvaluateConditionTest(unittest.TestCase):
         str(cm.exception))
 
 
+class AddVarTest(unittest.TestCase):
+  def test_adds_var(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '  "foo": "bar",',
+        '}',
+    ]))
+
+    gclient_eval.AddVar(local_scope, 'baz', 'lemur')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, '\n'.join([
+        'vars = {',
+        '  "baz": "lemur",',
+        '  "foo": "bar",',
+        '}',
+    ]))
+
+  def test_adds_var_twice(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '  "foo": "bar",',
+        '}',
+    ]))
+
+    gclient_eval.AddVar(local_scope, 'baz', 'lemur')
+    gclient_eval.AddVar(local_scope, 'v8_revision', 'deadbeef')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, '\n'.join([
+        'vars = {',
+        '  "v8_revision": "deadbeef",',
+        '  "baz": "lemur",',
+        '  "foo": "bar",',
+        '}',
+    ]))
+
+  def test_preserves_formatting(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        '# Copyright stuff',
+        '# some initial comments',
+        '',
+        'vars = { ',
+        '  "foo": "bar",',
+        '  # Some commets.',
+        '  # More comments.',
+        '  # Even more comments.',
+        '  "v8_revision":   ',
+        '       "deadbeef",',
+        ' # Someone formatted this wrong',
+        '}',
+    ]))
+
+    gclient_eval.AddVar(local_scope, 'baz', 'lemur')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, '\n'.join([
+        '# Copyright stuff',
+        '# some initial comments',
+        '',
+        'vars = { ',
+        '  "baz": "lemur",',
+        '  "foo": "bar",',
+        '  # Some commets.',
+        '  # More comments.',
+        '  # Even more comments.',
+        '  "v8_revision":   ',
+        '       "deadbeef",',
+        ' # Someone formatted this wrong',
+        '}',
+    ]))
+
+
 class SetVarTest(unittest.TestCase):
   def test_sets_var(self):
     local_scope = gclient_eval.Exec('\n'.join([
@@ -270,7 +343,6 @@ class SetVarTest(unittest.TestCase):
         ' "foo": \'baz\',',
         '}',
     ]))
-
 
 
 class SetCipdTest(unittest.TestCase):

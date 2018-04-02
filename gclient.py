@@ -2971,7 +2971,10 @@ def CMDsetdep(parser, args):
     if not name or not value:
       raise gclient_utils.Error(
           'Wrong var format: %s should be of the form name=value.' % var)
-    gclient_eval.SetVar(local_scope, name, value)
+    if name in local_scope['vars']:
+      gclient_eval.SetVar(local_scope, name, value)
+    else:
+      gclient_eval.AddVar(local_scope, name, value)
 
   for revision in options.revisions:
     name, _, value = revision.partition('@')
