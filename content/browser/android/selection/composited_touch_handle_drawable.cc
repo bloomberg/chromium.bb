@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/composited_touch_handle_drawable.h"
+#include "content/browser/android/selection/composited_touch_handle_drawable.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"

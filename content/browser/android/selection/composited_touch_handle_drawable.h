@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
-#define CONTENT_BROWSER_ANDROID_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
+#ifndef CONTENT_BROWSER_ANDROID_SELECTION_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
+#define CONTENT_BROWSER_ANDROID_SELECTION_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
 
 #include "ui/touch_selection/touch_handle.h"
 
@@ -47,4 +47,4 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
+#endif  // CONTENT_BROWSER_ANDROID_SELECTION_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_

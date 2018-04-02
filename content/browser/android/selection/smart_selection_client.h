@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_SMART_SELECTION_CLIENT_H_
-#define CONTENT_BROWSER_ANDROID_SMART_SELECTION_CLIENT_H_
+#ifndef CONTENT_BROWSER_ANDROID_SELECTION_SMART_SELECTION_CLIENT_H_
+#define CONTENT_BROWSER_ANDROID_SELECTION_SMART_SELECTION_CLIENT_H_
 
 #include <jni.h>
 
@@ -57,4 +57,4 @@ class SmartSelectionClient {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_SMART_SELECTION_CLIENT_H_
+#endif  // CONTENT_BROWSER_ANDROID_SELECTION_SMART_SELECTION_CLIENT_H_

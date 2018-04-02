@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_SELECTION_POPUP_CONTROLLER_H_
-#define CONTENT_BROWSER_ANDROID_SELECTION_POPUP_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_ANDROID_SELECTION_SELECTION_POPUP_CONTROLLER_H_
+#define CONTENT_BROWSER_ANDROID_SELECTION_SELECTION_POPUP_CONTROLLER_H_
 
 #include <jni.h>
 
@@ -63,4 +63,4 @@ class SelectionPopupController : public RenderWidgetHostConnector {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_SELECTION_POPUP_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_ANDROID_SELECTION_SELECTION_POPUP_CONTROLLER_H_
