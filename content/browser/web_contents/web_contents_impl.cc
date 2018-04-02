@@ -3311,6 +3311,11 @@ InterstitialPageImpl* WebContentsImpl::GetInterstitialPage() const {
   return interstitial_page_;
 }
 
+void WebContentsImpl::PausePageScheduledTasks(bool paused) {
+  SendPageMessage(
+      new PageMsg_PausePageScheduledTasks(MSG_ROUTING_NONE, paused));
+}
+
 bool WebContentsImpl::IsSavable() {
   // WebKit creates Document object when MIME type is application/xhtml+xml,
   // so we also support this MIME type.

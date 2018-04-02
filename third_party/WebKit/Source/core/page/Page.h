@@ -240,6 +240,10 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // are allowed to start/continue in this state, and all background processing
   // is also paused.
   bool Paused() const { return paused_; }
+  // This function is public to be used for suspending/resuming Page's tasks.
+  // Refer to |WebContentImpl::PausePageScheduledTasks| and
+  // http://crbug.com/822564 for more details.
+  void SetPaused(bool);
 
   void SetPageScaleFactor(float);
   float PageScaleFactor() const;
@@ -326,9 +330,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // SettingsDelegate overrides.
   void SettingsChanged(SettingsDelegate::ChangeType) override;
-
-  // ScopedPagePauser helpers.
-  void SetPaused(bool);
 
   // Notify |plugins_changed_observers_| that plugins have changed.
   void NotifyPluginsChanged() const;

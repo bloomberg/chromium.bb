@@ -2068,4 +2068,58 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
             web_contents->GetLoadStateHost());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  GURL test_url = embedded_test_server()->GetURL("/pause_schedule_task.html");
+  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  int text_length;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      shell(),
+      "domAutomationController.send(document.getElementById('textfield')."
+      "value.length)",
+      &text_length));
+  EXPECT_GT(text_length, 0);
+
+  // Suspend blink schedule tasks.
+  shell()->web_contents()->PausePageScheduledTasks(true);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      shell(),
+      "domAutomationController.send(document.getElementById('textfield')."
+      "value.length)",
+      &text_length));
+  EXPECT_GT(text_length, 0);
+
+  int next_text_length;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      shell(),
+      "domAutomationController.send(document.getElementById('textfield')."
+      "value.length)",
+      &next_text_length));
+  EXPECT_EQ(text_length, next_text_length);
+
+  // Resume the paused blink schedule tasks.
+  shell()->web_contents()->PausePageScheduledTasks(false);
+
+  // We call a document.getElementById five times in order to give the
+  // javascript time to run with DOM again.
+  for (int i = 0; i < 5; i++) {
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+        shell(),
+        "domAutomationController.send(document.getElementById('textfield')."
+        "value.length)",
+        &next_text_length));
+  }
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      shell(),
+      "domAutomationController.send(document.getElementById('textfield')."
+      "value.length)",
+      &next_text_length));
+  EXPECT_GT(next_text_length, text_length);
+}
+
 }  // namespace content

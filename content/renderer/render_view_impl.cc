@@ -1095,6 +1095,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
+    IPC_MESSAGE_HANDLER(PageMsg_PausePageScheduledTasks,
+                        OnPausePageScheduledTasks)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
     IPC_MESSAGE_HANDLER(PageMsg_FreezePage, OnFreezePage)
 
@@ -1168,6 +1170,10 @@ void RenderViewImpl::OnUpdateWindowScreenRect(gfx::Rect window_screen_rect) {
 
 void RenderViewImpl::OnAudioStateChanged(bool is_audio_playing) {
   webview()->AudioStateChanged(is_audio_playing);
+}
+
+void RenderViewImpl::OnPausePageScheduledTasks(bool paused) {
+  webview()->PausePageScheduledTasks(paused);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

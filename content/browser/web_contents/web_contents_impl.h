@@ -456,6 +456,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ClearFocusedElement() override;
   bool IsShowingContextMenu() const override;
   void SetShowingContextMenu(bool showing) override;
+  void PausePageScheduledTasks(bool paused) override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
