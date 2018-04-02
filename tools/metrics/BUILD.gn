@@ -36,11 +36,21 @@ copy("rappor_xml") {
   ]
 }
 
+copy("ukm_xml") {
+  sources = [
+    "ukm/ukm.xml",
+  ]
+  outputs = [
+    "$root_out_dir/ukm.xml",
+  ]
+}
+
 group("metrics_metadata") {
   deps = [
     ":actions_xml",
     ":histograms_xml",
     ":rappor_xml",
+    ":ukm_xml",
   ]
 }
 
