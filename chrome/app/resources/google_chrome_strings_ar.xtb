@@ -40,12 +40,12 @@
 <translation id="1873233029667955273">‏Google Chrome ليس متصفحك التلقائي.</translation>
 <translation id="1874309113135274312">‏الإصدار التجريبي من Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
-<translation id="2007150628464581396">{0,plural, =1{‏ستتم إعادة تشغيل Chrome في خلال دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chrome في خلال # دقيقة}two{‏ستتم إعادة تشغيل Chrome في خلال دقيقتين (#)}few{‏ستتم إعادة تشغيل Chrome في خلال # دقائق}many{‏ستتم إعادة تشغيل Chrome في خلال # دقيقةً}other{‏ستتم إعادة تشغيل Chrome في خلال # دقيقة}}</translation>
+<translation id="2007150628464581396">{0,plural, =1{‏ستتم إعادة تشغيل Chrome خلال دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chrome خلال # دقيقة}two{‏ستتم إعادة تشغيل Chrome خلال دقيقتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # دقائق}many{‏ستتم إعادة تشغيل Chrome خلال # دقيقةً}other{‏ستتم إعادة تشغيل Chrome خلال # دقيقة}}</translation>
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
 <translation id="2084710999043359739">‏إضافة إلى Chrome</translation>
 <translation id="2094919256425865063">‏هل تريد الخروج من Chrome على أي حال؟</translation>
-<translation id="210890598424854131">{0,plural, =0{‏ستتم إعادة تشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل Chrome في خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chrome في خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chrome في خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chrome في خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chrome في خلال # ثانية}}</translation>
+<translation id="210890598424854131">{0,plural, =0{‏ستتم إعادة تشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل Chrome خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chrome خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chrome خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chrome خلال # ثانية}}</translation>
 <translation id="2120620239521071941">‏سيعمل هذا على حذف <ph name="ITEMS_COUNT" /> من العناصر من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">‏ساعد في تحسين Chrome بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك.</translation>
@@ -66,7 +66,7 @@
 <translation id="2467438592969358367">‏يرغب Google Chrome في تصدير كلمات مرورك، لذا يُرجى كتابة كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2534507159460261402">‏Google Pay (تم النسخ إلى Chrome)</translation>
-<translation id="2535429035253759792">‏يطالبك مشرفك بإعادة تشغيل Chrome لتطبيق هذا التحديث.</translation>
+<translation id="2535429035253759792">‏يطلب المُشرِف إعادة تشغيل Chrome لتطبيق هذا التحديث.</translation>
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. يُرجى إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="2586406160782125153">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">‏شعار Chrome</translation>
@@ -268,7 +268,7 @@
 <translation id="8547799825197623713">‏مشغل تطبيقات Chrome في Canary</translation>
 <translation id="8556340503434111824">‏يتوفر إصدار جديد من Google Chrome، وهو أسرع بكثير من ذي قبل.</translation>
 <translation id="8568392309447938879">‏يلزمك تسجيل الدخول إلى Chrome لتتمكن من استخدام التطبيقات. سيتيح هذا للمتصفح Chrome مزامنة تطبيقاتك والإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات عبر الأجهزة.</translation>
-<translation id="859960207076826247">{0,plural, =0{‏هناك تحديث متاح في Chrome}=1{‏هناك تحديث واحد متاح في Chrome}two{‏تحديث Chrome كان متاحًا لمدة يومين (#)}few{‏تحديث Chrome كان متاحًا لمدة # أيام}many{‏تحديث Chrome كان متاحًا لمدة # يومًا}other{‏تحديث Chrome كان متاحًا لمدة # يوم}}</translation>
+<translation id="859960207076826247">{0,plural, =0{‏هناك تحديث متاح لـ Chrome}=1{‏هناك تحديث واحد متاح لـ Chrome}two{‏هناك تحديث متاح لـ Chrome منذ يومين (#)}few{‏هناك تحديث متاح لـ Chrome منذ # أيام}many{‏هناك تحديث متاح لـ Chrome منذ # يومًا}other{‏هناك تحديث متاح لـ Chrome منذ # يوم}}</translation>
 <translation id="8606668294522778825">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح. ويمكنك بشكل اختياري تعطيل هذه الخدمات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">‏لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>
@@ -276,7 +276,7 @@
 <translation id="8679801911857917785">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome.</translation>
 <translation id="870251953148363156">‏&amp;تحديث Google Chrome</translation>
 <translation id="873133009373065397">‏يتعذَّر على Google Chrome تحديد المتصفح الافتراضي أو تعيينه</translation>
-<translation id="8736674169840206667">‏يطالبك مشرفك بإعادة تشغيل Chrome لتطبيق أحد التحديثات.</translation>
+<translation id="8736674169840206667">‏يطلب المُشرِف إعادة تشغيل Chrome لتطبيق تحديث.</translation>
 <translation id="8796108026289707191">‏يجب عليك إعادة تشغيل Google Chrome الآن.</translation>
 <translation id="8823341990149967727">‏إصدار Chrome قديم</translation>
 <translation id="884296878221830158">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو النقر على زر الصفحة الرئيسية.</translation>

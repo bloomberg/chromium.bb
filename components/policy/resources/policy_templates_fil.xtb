@@ -529,6 +529,7 @@
 <translation id="2529700525201305165">Limitahan ang mga user na pinapayagang mag-sign in sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2529880111512635313">I-configure ang listahan ng mga puwersahang na-install na app at extension</translation>
 <translation id="253135976343875019">Delay ng babala bago mag-idle kapag gumagamit ng AC power</translation>
+<translation id="2536283449105918306">Ine-enable ang tab-under na proteksyon</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga instant na resulta. Ang URL ay dapat na maglaman ng string na <ph name="SEARCH_TERM_MARKER" />, na papalitan sa panahon ng query ng text na inilagay ng user sa panahong iyon.
 
@@ -2676,6 +2677,12 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>
 <translation id="9098553063150791878">Mga patakaran para sa pagpapatotoo ng HTTP</translation>
 <translation id="9105265795073104888">Mayroon lang subset ng opsyon sa configuration ng proxy sa mga Android app. Maaaring boluntaryong piliin ng mga Android app na gamitin ang proxy. Hindi mo maaaring puwersahin ang mga ito na gumamit ng proxy.</translation>
+<translation id="9110615239151047025">Ine-enable ang tab-under na proteksyon, na nagba-block ng mga navigation na natukoy bilang mga tab-under.
+
+      Para sa paliwanag tungkol sa mga tab-under, pumunta sa https://www.chromestatus.com/features/5675755719622656.
+      Kung itatakda sa True ang patakarang ito, iba-block ang mga navigation na matutukoy ng <ph name="PRODUCT_NAME" /> bilang mga tab-under.
+      Kung itatakda sa False ang patakarang ito, papahintulutan ng <ph name="PRODUCT_NAME" /> na magsagawa ng mga tab-under na navigation ang mga site.
+      Bilang default, nakatakda sa True ang patakarang ito.</translation>
 <translation id="9112727953998243860">File ng configuration ng printer ng enterprise</translation>
 <translation id="9112897538922695510">Nagbibigay-daan sa iyong magrehistro ng isang listahan ng mga tagapangasiwa ng protocol. Dapat ay isa itong inirerekomendang patakaran. Dapat itakda ang property na |protocol| sa scheme gaya ng 'mailto' at dapat itakda ang property na |url| sa pattern ng URL ng application na nangangasiwa sa scheme. Maaaring maglaman ng '%s' ang pattern, at kung mayroon nito, papalitan ito ng pinapangasiwaang URL.
 

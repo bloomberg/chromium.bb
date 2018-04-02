@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="104962181688258143">Otevřít aplikaci Soubory</translation>
-<translation id="1126871238933253947">Přepnout na předchozí jazyk klávesnice.</translation>
+<translation id="1122869341872663659">Zobrazují se výsledky vyhledávání (<ph name="N" />) na téma <ph name="QUERY" /></translation>
 <translation id="1134347825771908369">Vypnout zvuk</translation>
 <translation id="1195667586424773550">Přetáhněte odkaz na adresní řádek na kartě</translation>
 <translation id="1204450209689312104">Otevřít nové okno v anonymním režimu</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">Znovu otevřít naposledy zavřenou kartu</translation>
 <translation id="4090342722461256974">Stiskněte a podržte <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> a opakovaně stiskněte klávesu <ph name="TAB" />, dokud nepřejdete na okno, které chcete otevřít. Poté klávesy uvolněte.</translation>
 <translation id="4092538597492297615">Zkopírovat vybraný obsah do schránky</translation>
+<translation id="4101772068965291327">Otevřít domovskou stránku</translation>
 <translation id="4123108089450197101">Uložit odkaz jako záložku</translation>
 <translation id="4141203561740478845">Zvýraznit adresní řádek</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> nebo <ph name="ENTER" /></translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">Klávesa režimu přehledu</translation>
 <translation id="5104462712192763270">Uložit aktuální stránku</translation>
 <translation id="5121628974188116412">Přejít na konec stránky</translation>
+<translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="5236674127086649162">Znovu načíst aktuální stránku bez použití obsahu z mezipaměti</translation>
 <translation id="526651782186312376">Vybrat text k začátku řádku</translation>
 <translation id="5316716239522500219">Zrcadlit monitory</translation>
-<translation id="5335199890994453201">Zobrazit nebo skrýt nástroj DOM Inspector</translation>
 <translation id="5541719484267030947">Při přetahování karty stiskněte <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Vyhledávat na aktuální stránce</translation>
 <translation id="5563050856984839829">Stiskněte <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> a klikněte na odkaz</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">Otevřít odkaz na dané kartě</translation>
 <translation id="5757474750054631686">Snížit jas klávesnice (pouze u podsvícených klávesnic)</translation>
 <translation id="587531134027443617">Vymazat předchozí slovo</translation>
-<translation id="5928303187149237472">Změna rozlišení obrazovky</translation>
+<translation id="5921745308587794300">Otočit okno</translation>
 <translation id="5975083100439434680">Oddálit</translation>
 <translation id="6022924867608035986">Vymazat text z vyhledávacího pole</translation>
 <translation id="6045998054441862242">Zapnout režim vysokého kontrastu</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">Zvýraznit předchozí položku na poličce</translation>
 <translation id="6445033640292336367">Vrátit kartu na původní pozici</translation>
 <translation id="649811797655257835">Vyberte soubor a stiskněte <ph name="SPACE" /></translation>
-<translation id="6572206071785323178">Přepnout mezi nastavenými jazyky klávesnice. Přečtěte si, jak vybrat jazyk klávesnice.</translation>
-<translation id="6634456834225946400">Zvýraznit lištu záložek (pokud je zobrazena)</translation>
 <translation id="666343722268997814">Otevřít pro zvýrazněnou položku kontextovou nabídku</translation>
 <translation id="6671538777808758331">Přejít na další výskyt hledaného výrazu</translation>
 <translation id="6690765639083431875">Ukotvit okno vlevo</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">Otevřít soubor v prohlížeči</translation>
 <translation id="7917881398263220094">Zastavit načítání aktuální stránky.</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> nebo <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">Vymazat údaje o prohlížení</translation>
 <translation id="8130528849632411619">Přejít na začátek dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> nebo <ph name="E" /></translation>
 <translation id="8234414138295101081">Otočit obrazovku o 90 stupňů</translation>
-<translation id="826184564253127735">Prohlížeč klávesových zkratek</translation>
 <translation id="836869401750819675">Otevřít stránku Stažené soubory</translation>
 <translation id="8388247778047144397">Přetáhněte odkaz na prázdné místo na liště karet</translation>
 <translation id="8389638407792712197">Otevřít nové okno</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 až 8</translation>
 <translation id="9041599225465145264">Vložit obsah ze schránky</translation>
 <translation id="9052808072970550123">Přepnout na dalšího uživatele</translation>
+<translation id="906458777597946297">Maximalizovat okno</translation>
 <translation id="9106898733795143799">Stránka a webový prohlížeč</translation>
+<translation id="9162942292291287644">Žádné výsledky vyhledávání na téma <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Oblíbené klávesové zkratky</translation>
 <translation id="93603345341560814">Stiskněte <ph name="SHIFT" /> a klikněte na odkaz</translation>
 <translation id="945383118875625837">Přetáhněte odkaz na lištu záložek</translation>

@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Täpsemad</translation>
 <translation id="1978555033938440688">Püsivara versioon</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ja veel 1}other{ja veel #}}</translation>
+<translation id="2003709556000175978">Lähtestage oma parool kohe</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
 <translation id="2030481566774242610">Kas mõtlesite aadressi <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollige puhverserverit ja tulemüüri<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 soovitus}other{# soovitust}}</translation>
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="20817612488360358">Kasutamiseks on määratud süsteemi puhverserveri seaded, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
+<translation id="2084558088529668945">Sisestasite oma parooli saidile, mida ei halda <ph name="ORG_NAME" />. Oma konto kaitsmiseks ärge kasutage oma parooli muudes rakendustes ega saitidel.</translation>
 <translation id="2091887806945687916">Heli</translation>
 <translation id="2094505752054353250">Domeeni vastuolu</translation>
 <translation id="2096368010154057602">Osakond</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">Sobimatu kinnitusallkiri</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Veel <ph name="ITEM_COUNT" /> üksus}other{Veel <ph name="ITEM_COUNT" /> üksust}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome soovitab teil teenuse <ph name="ORG_NAME" /> parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollige tulemüüri ja viirusetõrje seadistusi<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Krahhid</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">Lubas administraator</translation>
 <translation id="4269787794583293679">(Kasutajanimi puudub)</translation>
 <translation id="4275830172053184480">Taaskäivitage seade</translation>
+<translation id="4277028893293644418">Lähtesta parool</translation>
 <translation id="4280429058323657511">, aegub <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Blokeeri (vaikimisi)</translation>
 <translation id="4325863107915753736">Artiklit ei leitud</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">Selle saidiga ei saa ühendust</translation>
 <translation id="5869522115854928033">Salvestatud paroolid</translation>
 <translation id="5893752035575986141">Kaupmees aktsepteerib krediitkaarte.</translation>
+<translation id="5898382028489516745">Chromium soovitab teil teenuse <ph name="ORG_NAME" /> parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sünkroonitud)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 on kasutusel}other{# on kasutusel}}</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">Seadme reeglid</translation>
 <translation id="6477321094435799029">Chrome tuvastas sellel lehel ebatavalise koodi ja blokeeris selle, et teie isiklikke andmeid (nt paroolid, telefoninumbrid ja krediitkaardiandmed) kaitsta.</translation>
 <translation id="6489534406876378309">Krahhide üleslaadimise alustamine</translation>
+<translation id="6499038740797743453">Kas lähtestada parool?</translation>
 <translation id="6507833130742554667">Kaupmees aktsepteerib krediit- ja deebetkaarte.</translation>
 <translation id="6508722015517270189">Taaskäivitage Chrome</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">See veebileht vajab korralikult kuvamiseks varem sisestatud andmeid. Võite need andmed uuesti saata, kuid seda tehes kordate lehe iga eelnevat toimingut.</translation>
 <translation id="7552846755917812628">Proovige järgmiseid nõuandeid.</translation>
 <translation id="7554791636758816595">Uus vaheleht</translation>
+<translation id="7564049878696755256">Võite kaotada juurdepääsu oma teenuse <ph name="ORG_NAME" /> kontole või teie identiteet võidakse varastada. Chrome soovitab teil kohe oma parooli muuta.</translation>
 <translation id="7567204685887185387">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat võib olla väljastatud pettuse teel. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="7568593326407688803">See leht on keeles<ph name="ORIGINAL_LANGUAGE" />Kas soovite seda tõlkida?</translation>
 <translation id="7569952961197462199">Kas eemaldada Chrome'ist krediitkaart?</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">Google'i ohutu sirvimine <ph name="BEGIN_LINK" />tuvastas hiljuti kahjulikud programmid<ph name="END_LINK" /> saidil <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-seade</translation>
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>
+<translation id="8792621596287649091">Võite kaotada juurdepääsu oma teenuse <ph name="ORG_NAME" /> kontole või teie identiteet võidakse varastada. Chromium soovitab teil kohe oma parooli muuta.</translation>
 <translation id="8800988563907321413">Teie lähedalasuvad soovitused kuvatakse siin</translation>
 <translation id="8820817407110198400">Järjehoidjad</translation>
 <translation id="883848425547221593">Muud järjehoidjad</translation>

@@ -64,10 +64,10 @@
       danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cách ly
       các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
       khiến cho https://foo.example.com/ bị cách ly vì là một phần của
-      trang web https://example.com/.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly trước khi khởi chạy trang web sẽ có hiệu lực.
+      trang https://example.com/.
+      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly mỗi trang web sẽ có hiệu lực.
       Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị mà hai chính sách chỉ định không khớp nhau, thì có thể sẽ xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
+      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị do hai chính sách chỉ định không khớp nhau, thì có thể sẽ xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
       </translation>
 <translation id="1198465924256827162">Tần suất tải lên trạng thái thiết bị, bằng mili giây.
 
@@ -531,6 +531,7 @@
 <translation id="2529700525201305165">Hạn chế người dùng được phép đăng nhập vào <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Định cấu hình danh sách các ứng dụng và tiện ích buộc phải cài đặt</translation>
 <translation id="253135976343875019">Thời gian chờ cảnh báo trạng thái không sử dụng khi chạy trên nguồn AC</translation>
+<translation id="2536283449105918306">Bật bảo vệ tab-under</translation>
 <translation id="2552966063069741410">Múi giờ</translation>
 <translation id="2562339630163277285">Chỉ định URL của công cụ tìm kiếm được sử dụng để cung cấp kết quả tức thì. URL phải chứa chuỗi <ph name="SEARCH_TERM_MARKER" />. Chuỗi này sẽ được thay thế tại thời điểm truy vấn bằng văn bản mà người dùng đã nhập từ trước tới nay.
 
@@ -685,8 +686,8 @@ Khi chính sách này được đặt thành false hoặc không được địn
       danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cách ly
       các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
       khiến cho https://foo.example.com/ bị cách ly vì là một phần của
-      trang web https://example.com/.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly trước khi khởi chạy trang web sẽ có hiệu lực.
+      trang https://example.com/.
+      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly mỗi trang web sẽ có hiệu lực.
       Nếu bạn không định cấu hình chính sách này, cài đặt cách ly trang web mặc định của nền tảng sẽ được sử dụng cho màn hình đăng nhập.
       </translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
@@ -805,7 +806,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       IsolateOrigins cùng với danh sách các trang web mà bạn muốn cách ly. Cài đặt này,
       SitePerProcess, sẽ cách ly mọi trang web.
       Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly trước khi khởi chạy trang web sẽ có hiệu lực.
+      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly mỗi trang web sẽ có hiệu lực.
       Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
       </translation>
 <translation id="3395348522300156660">Chỉ định các máy in mà người dùng có thể sử dụng.
@@ -2042,7 +2043,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="706669471845501145">Cho phép các trang web hiển thị thông báo trên màn hình</translation>
 <translation id="7072208053150563108">Tần suất thay đổi mật khẩu máy</translation>
 <translation id="7072406291414141328">Bật điều chỉnh băng thông mạng</translation>
-<translation id="7074513465313721551">Định cấu hình danh sách bao gồm các miền mà Duyệt web an toàn sẽ tin tưởng. Điều này có nghĩa là:
+<translation id="7074513465313721551">Định cấu hình danh sách các miền mà tính năng Duyệt web an toàn sẽ tin tưởng. Điều này có nghĩa là:
       Duyệt web an toàn sẽ không kiểm tra để tìm các tài nguyên nguy hiểm (ví dụ: lừa đảo, phần mềm độc hại hoặc phần mềm không mong muốn) nếu URL của họ khớp với những miền này.
       Dịch vụ bảo vệ tài nguyên đã tải xuống của Duyệt web an toàn sẽ không kiểm tra các nội dung tải xuống được lưu trữ trên những miền này.
       Dịch vụ bảo vệ mật khẩu của Duyệt web an toàn sẽ không kiểm tra để phát hiện hành vi sử dụng lại mật khẩu nếu URL trang khớp với những miền này.
@@ -2680,6 +2681,12 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
 <translation id="9098553063150791878">Chính sách xác thực HTTP</translation>
 <translation id="9105265795073104888">Chỉ một tập hợp con các tùy chọn cấu hình proxy được cung cấp cho các ứng dụng Android. Các ứng dụng Android có thể chọn sử dụng proxy một cách tự nguyện. Bạn không thể buộc các ứng dụng này sử dụng proxy.</translation>
+<translation id="9110615239151047025">Thao tác bật bảo vệ tab-under sẽ chặn những điều hướng bị phát hiện là tab-under.
+
+      Để biết thêm giải thích về tab-under, hãy xem https://www.chromestatus.com/features/5675755719622656.
+      Nếu chính sách này được đặt thành True, thì những điều hướng mà <ph name="PRODUCT_NAME" /> phát hiện là tab-under sẽ bị chặn.
+      Nếu chính sách này được đặt thành False, <ph name="PRODUCT_NAME" /> sẽ cho phép các trang web thực hiện điều hướng tab-under.
+      Theo mặc định, chính sách này được đặt là True.</translation>
 <translation id="9112727953998243860">Tệp cấu hình máy in dành cho doanh nghiệp</translation>
 <translation id="9112897538922695510">Cho phép bạn đăng ký danh sách trình xử lý giao thức. Đây có thể chỉ là một chính sách được đề xuất. Thuộc tính |protocol| của sản phẩm nên được đặt thành lược đồ chẳng hạn như 'mailto' và thuộc tính |url| nên được đặt thành mẫu URL của ứng dụng xử lý lược đồ. Mẫu có thể bao gồm '%s' mà nếu có mặt sẽ được thay thế bằng URL đã xử lý.
 

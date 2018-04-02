@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">प्रगत</translation>
 <translation id="1978555033938440688">फर्मवेयर आवृत्ती</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{आणि 1 अधिक}one{आणि # अधिक}other{आणि # अधिक}}</translation>
+<translation id="2003709556000175978">आता आपला पासवर्ड रिसेट करा</translation>
 <translation id="2025186561304664664">प्रॉक्सी स्वयंचलित ‍कॉन्फिगरेशनवर सेट करण्‍यात आली.</translation>
 <translation id="2030481566774242610">आपल्याला असे म्हणायचे होते <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी आणि फायरवॉल तपासणे<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 सूचना}one{# सूचना}other{# सूचना}}</translation>
 <translation id="2079545284768500474">पूर्ववत करा</translation>
 <translation id="20817612488360358">सिस्टम प्रॉक्सी सेटिंग्ज वापरण्‍यास सेट करण्‍यात आल्या परंतु एक सुस्पष्‍ट प्रॉक्सी कॉन्फिगरेशन देखील निर्दिष्‍ट करण्‍यात आले.</translation>
+<translation id="2084558088529668945">तुम्ही साइटवर एंटर केलेला पासवर्ड <ph name="ORG_NAME" /> ने व्यवस्थापित केलेला नाही. तुमचा पासवर्ड संरक्षित करण्यासाठी, अन्य अ‍ॅप्स आणि साइट तुमचा पासवर्ड पुन्हा वापरू नका.</translation>
 <translation id="2091887806945687916">ध्वनी</translation>
 <translation id="2094505752054353250">डोमेन जुळत नाही</translation>
 <translation id="2096368010154057602">विभाग</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">खराब पडताळणी स्वाक्षरी</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{आणखी <ph name="ITEM_COUNT" /> आयटम}one{आणखी <ph name="ITEM_COUNT" /> आयटम}other{आणखी <ph name="ITEM_COUNT" /> आयटम}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">अन्य साइटवर तुमचा <ph name="ORG_NAME" /> पासवर्ड पुन्हा वापरल्यास Chrome तो रीसेट करण्याची शिफारस करतो.</translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल आणि अँटीव्हायरस कॉन्फिगरेशन तपासणे<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">क्रॅश होते</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">तुमच्या प्रशासकाकडून अनुमती असलेले</translation>
 <translation id="4269787794583293679">(वापरकर्तानाव नाही)</translation>
 <translation id="4275830172053184480">आपला डिव्हाइस रीस्टार्ट करा</translation>
+<translation id="4277028893293644418">पासवर्ड रीसेट करा</translation>
 <translation id="4280429058323657511">, कालबाह्यता <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">अवरोधित करा (डीफॉल्ट)</translation>
 <translation id="4325863107915753736">लेख शोधण्यात अयशस्वी</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
 <translation id="5869522115854928033">सेव्ह केलेले पासवर्ड</translation>
 <translation id="5893752035575986141">क्रेडिट कार्डे स्वीकारली जातात.</translation>
+<translation id="5898382028489516745">अन्य साइटवर तुमचा <ph name="ORG_NAME" /> पासवर्ड पुन्हा वापरल्यास Chromium तो रीसेट करण्याची शिफारस करतो.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक केलेले)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 वापरात आहे}one{# वापरात आहे}other{# वापरात आहेत}}</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
@@ -724,6 +729,7 @@
 <translation id="647261751007945333">डीव्हाइस धोरणे</translation>
 <translation id="6477321094435799029">Chrome ला या पृष्‍ठावर असमान्य कोड सापडला आहे आणि आपली वैयक्तिक माहिती (उदा, पासवर्ड, फोन नंबर आणि क्रेडिट कार्ड) संरक्षित करण्‍यासाठी अवरोधित केला आहे.</translation>
 <translation id="6489534406876378309">क्रॅश अपलोड करणे प्रारंभ करा</translation>
+<translation id="6499038740797743453">पासवर्ड रीसेट करायचा?</translation>
 <translation id="6507833130742554667">क्रेडिट आणि डेबिट कार्डे स्वीकरली जातात.</translation>
 <translation id="6508722015517270189">Chrome रीस्टार्ट करा</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
@@ -839,6 +845,7 @@
 <translation id="7549584377607005141">हे वेबपृष्ठ योग्यरितीने प्रदर्शित केले जाण्यासाठी आपण पूर्वी एंटर केलेला डेटा आवश्यक आहे. आपण हा डेटा पुन्हा पाठवू शकता, परंतु असे केल्याने या पृष्ठाने मागे केलेली कोणत्याही क्रियेची पुनरावृत्ती आपण कराल.</translation>
 <translation id="7552846755917812628">खालील टिपा वापरून पहा:</translation>
 <translation id="7554791636758816595">नवीन टॅब</translation>
+<translation id="7564049878696755256">तुम्ही तुमच्या Google <ph name="ORG_NAME" /> चा अॅक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chrome लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>
 <translation id="7567204685887185387">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र कदाचित लबाडीने जारी केले असावे. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="7568593326407688803">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE" />मध्ये आहे आपण याचा भाषांतर करु इच्छिता?</translation>
 <translation id="7569952961197462199">Chrome मधून क्रेडिट कार्ड काढायचे?</translation>
@@ -994,6 +1001,7 @@
 <translation id="8761567432415473239">Google सुरक्षित ब्राउझिंग ला <ph name="SITE" /> वर अलीकडे <ph name="BEGIN_LINK" />हानिकारक प्रोग्राम आढळले आहेत<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB डिव्हाइस</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
+<translation id="8792621596287649091">तुम्ही तुमच्या Google <ph name="ORG_NAME" /> चा अॅक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chromium लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>
 <translation id="8800988563907321413">आपल्या जवळपासच्या सूचना येथे दिसतात</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883848425547221593">अन्य बुकमार्क</translation>

@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1978555033938440688">Firmwareversion</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{und 1 weitere}other{und # weitere}}</translation>
+<translation id="2003709556000175978">Jetzt Passwort zurücksetzen</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
 <translation id="2030481566774242610">Meinten Sie <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proxy und Firewall prüfen<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 Vorschlag}other{# Vorschläge}}</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
+<translation id="2084558088529668945">Sie haben Ihr Passwort auf einer Website eingegeben, die nicht von <ph name="ORG_NAME" /> verwaltet wird. Um Ihr Konto zu schützen, verwenden Sie nicht dasselbe Passwort für andere Apps und Websites.</translation>
 <translation id="2091887806945687916">Ton</translation>
 <translation id="2094505752054353250">Domains stimmen nicht überein.</translation>
 <translation id="2096368010154057602">Verwaltungsbezirk</translation>
@@ -442,6 +444,7 @@
 <translation id="4171400957073367226">Ungültige Bestätigungssignatur</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> weiteres Element}other{<ph name="ITEM_COUNT" /> weitere Elemente}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome empfiehlt, Ihr Passwort für <ph name="ORG_NAME" /> zurückzusetzen, wenn Sie es auf anderen Websites verwendet haben.</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Firewall und Antivirenkonfiguration prüfen<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Abstürze</translation>
@@ -455,6 +458,7 @@
 <translation id="4265872034478892965">Von Ihrem Administrator zugelassen</translation>
 <translation id="4269787794583293679">(Kein Nutzername)</translation>
 <translation id="4275830172053184480">Gerät neu starten</translation>
+<translation id="4277028893293644418">Passwort zurücksetzen</translation>
 <translation id="4280429058323657511">Gültig bis: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Blockieren (Standardeinstellung)</translation>
 <translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
@@ -651,6 +655,7 @@
 <translation id="5869405914158311789">Diese Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5893752035575986141">Kreditkarten werden akzeptiert.</translation>
+<translation id="5898382028489516745">Chromium empfiehlt, Ihr Passwort für <ph name="ORG_NAME" /> zurückzusetzen, wenn Sie es auf anderen Websites verwendet haben.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronisiert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 wird verwendet}other{# werden verwendet}}</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
@@ -722,6 +727,7 @@
 <translation id="647261751007945333">Geräterichtlinien</translation>
 <translation id="6477321094435799029">Chrome hat auf dieser Seite ungewöhnlichen Code erfasst und diese Seite daher blockiert, um Ihre personenbezogenen Daten wie Passwörter, Telefonnummern oder Kreditkarteninformationen zu schützen.</translation>
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
+<translation id="6499038740797743453">Passwort zurücksetzen?</translation>
 <translation id="6507833130742554667">Kredit- und Debitkarten werden akzeptiert.</translation>
 <translation id="6508722015517270189">Chrome neu starten</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
@@ -837,6 +843,7 @@
 <translation id="7549584377607005141">Damit diese Webseite richtig angezeigt wird, werden die Daten benötigt, die Sie zuvor eingegeben haben. Sie können diese Daten erneut senden, dabei werden jedoch sämtliche Aktionen wiederholt, die zuvor durch diese Seite ausgeführt wurden.</translation>
 <translation id="7552846755917812628">Probieren Sie folgende Tipps aus:</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
+<translation id="7564049878696755256">Sie könnten den Zugriff auf Ihr <ph name="ORG_NAME" />-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="7568593326407688803">Diese Seite ist auf<ph name="ORIGINAL_LANGUAGE" />Soll sie übersetzt werden?</translation>
 <translation id="7569952961197462199">Kreditkarte aus Chrome entfernen?</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">Google Safe Browsing hat vor Kurzem <ph name="BEGIN_LINK" />schädliche Programme<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden.</translation>
 <translation id="8763927697961133303">USB-Gerät</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
+<translation id="8792621596287649091">Sie könnten den Zugriff auf Ihr <ph name="ORG_NAME" />-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chromium empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="8800988563907321413">Hier werden Ihre Vorschläge in der Nähe angezeigt</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="883848425547221593">Andere Lesezeichen</translation>

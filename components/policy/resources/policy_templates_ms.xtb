@@ -443,7 +443,7 @@
       Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOff', pembenderaan akaun berisiko perlindungan kata laluan tidak akan dicetuskan.
       Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPasswordReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada mana-mana tapak yang tidak disenaraiputihkan.
       Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPhishingReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data.
-      Jika dasar ini dibiarkan tidak ditetapkan, pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data tetapi pengguna boleh menukarnya.</translation>
+      Jika dasar ini dibiarkan tidak ditetapkan, pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google mereka pada tapak pancingan data tetapi pengguna boleh menukar tetapan ini.</translation>
 <translation id="2418507228189425036">Melumpuhkan penyimpanan sejarah penyemakan imbas dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
       Jika tetapan ini didayakan, sejarah penyemakan imbas tidak disimpan. Tetapan ini turut melumpuhkan penyegerakan tab.
@@ -533,6 +533,7 @@
 <translation id="2529700525201305165">Hadkan pengguna yang dibenarkan untuk log masuk ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurasikan senarai apl dan sambungan pemasangan paksa</translation>
 <translation id="253135976343875019">Kelewatan amaran melahu apabila dijalankan dengan kuasa AC</translation>
+<translation id="2536283449105918306">Mendayakan perlindungan tab-under</translation>
 <translation id="2552966063069741410">Zon waktu</translation>
 <translation id="2562339630163277285">Menentukan URL enjin carian yang digunakan untuk memberikan hasil carian segera. URL tersebut harus mengandungi rentetan <ph name="SEARCH_TERM_MARKER" />, yang akan digantikan oleh teks yang telah dimasukkan oleh pengguna setakat ini pada masa pertanyaan dibuat.
 
@@ -642,7 +643,7 @@
       Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOff', tiada amaran perlindungan kata laluan akan ditunjukkan.
       Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPasswordReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan Google pada mana-mana tapak yang tidak disenaraiputihkan.
       Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPhishingReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data.
-      Jika dasar ini dibiarkan tidak ditetapkan, amaran perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data tetapi pengguna boleh menukarnya.</translation>
+      Jika dasar ini dibiarkan tidak ditetapkan, amaran perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google mereka pada tapak pancingan data tetapi pengguna boleh menukar tetapan ini.</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="2874209944580848064">Nota untuk peranti <ph name="PRODUCT_OS_NAME" /> yang menyokong apl Android:</translation>
 <translation id="2877225735001246144">Lumpuhkan carian CNAME apabila berunding pengesahan Kerberos</translation>
@@ -2687,6 +2688,12 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>
 <translation id="9098553063150791878">Dasar untuk pengesahan HTTP</translation>
 <translation id="9105265795073104888">Hanya subset pilihan konfigurasi proksi disediakan kepada apl Android. Apl Android boleh memilih untuk menggunakan proksi secara sukarela. Anda tidak boleh memaksanya untuk menggunakan proksi.</translation>
+<translation id="9110615239151047025">Mendayakan perlindungan tab-under, yang menyekat navigasi yang dikesan sebagai tab-under.
+
+      Untuk mendapatkan penerangan berkenaan tab-under, lihat https://www.chromestatus.com/features/5675755719622656.
+      Jika dasar ini ditetapkan kepada Benar, navigasi yang dikesan oleh <ph name="PRODUCT_NAME" /> sebagai tab-under akan disekat.
+      Jika dasar ini ditetapkan kepada Palsu, <ph name="PRODUCT_NAME" /> akan membenarkan tapak melakukan navigasi tab-under.
+      Secara lalainya, dasar ini ditetapkan kepada Benar.</translation>
 <translation id="9112727953998243860">Fail konfigurasi pencetak perusahaan</translation>
 <translation id="9112897538922695510">Membolehkan anda mendaftar senarai pengendali protokol. Langkah ini hanya boleh menjadi dasar yang disyorkan. Sifat |protocol| hendaklah ditetapkan kepada skema seperti 'mailto' dan sifat |url| hendaklah ditetapkan kepada corak URL aplikasi yang mengendalikan skema. Corak boleh mengandungi '%s', di mana apabila disertakan akan digantikan oleh URL yang dikendalikan.
 

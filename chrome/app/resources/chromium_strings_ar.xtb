@@ -18,8 +18,8 @@
 <translation id="1668054258064581266">‏بعد إزالة حسابك من Chromium، قد تحتاج إلى إعادة تحميل علامات التبويب المفتوحة لتفعيلها.</translation>
 <translation id="1688750314291223739">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Chromium على أي كمبيوتر.</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
-<translation id="1716051742506968">{0,plural, =0{‏هناك تحديث متاح في Chromium}=1{‏هناك تحديث واحد متاح في Chromium}two{‏تحديث Chromium كان متاحًا لمدة يومين (#)}few{‏تحديث Chromium كان متاحًا لمدة # أيام}many{‏تحديث Chromium كان متاحًا لمدة # يومًا}other{‏تحديث Chromium كان متاحًا لمدة # يوم}}</translation>
-<translation id="1766096484055239003">‏يطالبك مشرفك بإعادة تشغيل Chromium لتطبيق أحد التحديثات.</translation>
+<translation id="1716051742506968">{0,plural, =0{‏هناك تحديث متاح لـ Chromium}=1{‏هناك تحديث واحد متاح لـ Chromium}two{‏هناك تحديث متاح لـ Chromium منذ يومين (#)}few{‏هناك تحديث متاح لـ Chromium منذ # أيام}many{‏هناك تحديث متاح لـ Chromium منذ # يومًا}other{‏هناك تحديث متاح لـ Chromium منذ # يوم}}</translation>
+<translation id="1766096484055239003">‏يتطلّب المُشرف إعادة تشغيل Chromium لتطبيق تحديث.</translation>
 <translation id="1774152462503052664">‏دع Chromium يعمل في الخلفية</translation>
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
 <translation id="1808667845054772817">‏إعادة تثبيت Chromium</translation>
@@ -30,7 +30,7 @@
 <translation id="1967743265616885482">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Chromium.</translation>
 <translation id="2008474315282236005">‏سيعمل هذا على حذف عنصر واحد من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
-<translation id="2117378023188580026">‏يطالبك مشرفك بإعادة تشغيل Chromium لتطبيق هذا التحديث.</translation>
+<translation id="2117378023188580026">‏يطلب المشرف إعادة تشغيل Chromium لتطبيق هذا التحديث.</translation>
 <translation id="2119636228670142020">‏حول ن&amp;ظام التشغيل Chromium</translation>
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
 <translation id="2241627712206172106">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chromium على النحو الذي يريدونه.</translation>
@@ -170,7 +170,7 @@
 <translation id="6485906693002546646">‏أنت تستخدم <ph name="PROFILE_EMAIL" /> لمزامنة عناصرك في Chromium. لتحديث تفضيل المزامنة أو استخدام Chromium بدون حساب Google، يُرجى الانتقال إلى <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
 <translation id="6598877126913850652">‏الانتقال إلى إعدادات الإشعارات في Chromium</translation>
-<translation id="6664239887951090350">{0,plural, =0{‏ستتم إعادة تشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل Chromium في خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chromium في خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chromium في خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chromium في خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chromium في خلال # ثانية}}</translation>
+<translation id="6664239887951090350">{0,plural, =0{‏ستتم إعادة تشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل Chromium خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chromium خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chromium خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chromium خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chromium خلال # ثانية}}</translation>
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
 <translation id="6717134281241384636">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Chromium.
 

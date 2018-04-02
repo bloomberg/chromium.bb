@@ -47,7 +47,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="138361230106469022">Kamusta, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1384959399684842514">Na-pause ang pag-download</translation>
-<translation id="1389236224998445076">Natipid na data:</translation>
 <translation id="1389974829397082527">Walang mga bookmark dito</translation>
 <translation id="1397811292916898096">Maghanap gamit ang <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Naka-embed sa <ph name="WEBSITE_URL" /></translation>
@@ -83,7 +82,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1670399744444387456">Pangunahin</translation>
 <translation id="1671236975893690980">Nakabinbin ang pag-download...</translation>
 <translation id="1672586136351118594">Huwag ipakitang muli</translation>
-<translation id="169033420419426091">Hindi na-download ang <ph name="FILE_NAME" /> dahil walang SD Card.</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1718835860248848330">Huling oras</translation>
 <translation id="1729516292547892356">Upang tingnan ang virtual reality na content, i-update ang Mga Serbisyo ng Google VR</translation>
@@ -142,7 +140,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Magpatuloy bilang si <ph name="USER_FULL_NAME" /></translation>
 <translation id="2259659629660284697">I-export ang mga password…</translation>
-<translation id="2266890032547182881">Mga detalye ng paggamit ng data</translation>
 <translation id="2268044343513325586">Pinuhin</translation>
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="230115972905494466">Walang nahanap na tugmang device</translation>
@@ -368,7 +365,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4521489764227272523">Inalis ang napiling data sa Chrome at sa iyong mga naka-sync na device.
 
 Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad ng mga paghahanap at aktibidad mula sa iba pang serbisyo ng Google sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="4522570452068850558">Mga Detalye</translation>
 <translation id="4526249700380860531">Tingnan at pamahalaan ang mga naka-save na password sa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pumili ng folder</translation>
 <translation id="4544481164434183075">Ang page na ito ay mula noong <ph name="CREATION_TIME" /> at maaaring iba ito sa online na bersyon.</translation>
@@ -690,9 +686,9 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Ibahagi ang 1 piniling item}one{Ibahagi ang # piniling item}other{Ibahagi ang # na piniling item}}</translation>
 <translation id="7366340029385295517">Nagka-cast sa <ph name="SCREEN_NAME" /></translation>
-<translation id="7374228672268453233">Nagamit na data:</translation>
 <translation id="7375125077091615385">Uri:</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7400730245189251663">Higit pa tungkol sa <ph name="TOPIC" /></translation>
 <translation id="7403691278183511381">Unang Karanasan sa Pagtakbo ng Chrome</translation>
 <translation id="7423098979219808738">Magtanong muna</translation>
 <translation id="7423538860840206698">Na-block sa pag-read ng clipboard</translation>

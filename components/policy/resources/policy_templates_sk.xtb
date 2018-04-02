@@ -58,7 +58,7 @@
       Ak toto pravidlo použijete, používateľ má k dispozícii všetky tlačiarne okrem tých, ktorých identifikátory sú uvedené v tomto pravidle.
       </translation>
 <translation id="1181881366217399113">
-      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť.
       Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
       Ak toto pravidlo zakážete, uplatní sa logika správy procesov izolácie webov.
       Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie zmeniť.
@@ -254,7 +254,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Formát hodnoty zodpovedá názvom časových pásiem v databáze časových pásiem IANA (nájdete ju na adrese https://en.wikipedia.org/wiki/Tz_database). Konkrétne je väčšina časových pásiem vyjadrená vo formáte „kontinent/veľkomesto“ alebo „oceán/veľkomesto“.
 
       Nastavenie tohto pravidla zakáže automatické rozlíšenie časového pásma na základe polohy zariadenia. Prepíše tiež pravidlo SystemTimezoneAutomaticDetection.</translation>
-<translation id="1888871729456797026">Token pre registráciu pravidiel používania cloudu v počítači</translation>
+<translation id="1888871729456797026">Token na registráciu pravidiel používania cloudu v počítači</translation>
 <translation id="1897365952389968758">Povoliť všetkým webom spúšťať JavaScript</translation>
 <translation id="1906888171268104594">Určuje, či sa budú Googlu spätne nahlasovať metriky používania a diagnostické údaje vrátane správ o zlyhaní.
 
@@ -521,6 +521,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2529700525201305165">Obmedzenie používateľov, ktorí sa môžu prihlásiť do prehliadača <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurácia zoznamu vynútene nainštalovaných aplikácií a rozšírení</translation>
 <translation id="253135976343875019">Oneskorenie upozornenia na nečinnosť pri napájaní zo siete</translation>
+<translation id="2536283449105918306">Aktivuje ochranu tab-under</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
 <translation id="2562339630163277285">Určuje webovú adresu vyhľadávača, ktorý poskytuje výsledky dynamického vyhľadávania. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
 
@@ -668,7 +669,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2987155890997901449">Povoliť funkciu ARC</translation>
 <translation id="2987227569419001736">Ovládať používanie rozhrania Web Bluetooth API</translation>
 <translation id="2998886474614739865">
-      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť.
       Platí pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
       Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
       Ak toto pravidlo zakážete, bude platiť logika správy procesov izolácie webov.
@@ -783,7 +784,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak v tomto pravidle nastavíte reťazec, ktorý nie je prázdny, daný reťazec sa použije ako názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />. Inak sa ako názov cieľového priečinka použije názov zariadenia. Ak toto pravidlo nenastavíte, názov cieľového priečinka bude názov zariadenia, ktorý bude môcť zmeniť jeho vlastník (alebo používateľ z domény, ktorá ho spravuje). Názov môže mať maximálne 24 znakov.</translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3386001018488754001">
-      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť.
       Platí pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
       Ak chcete vyťažiť z oboch možností to najlepšie, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Nastavenie SitePerProcess izoluje všetky weby.
       Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
@@ -1419,7 +1420,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak toto pravidlo nenastavíte, použijete prázdny reťazec alebo neplatný rozsah portov, rozhranie WebRTC bude môcť použiť ľubovoľný dostupný miestny port UDP.</translation>
 <translation id="5290940294294002042">Určiť zoznam doplnkov, ktoré môže používateľ povoliť alebo zakázať</translation>
 <translation id="5301787427319106606">
-      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť.
       Ak chcete vyťažiť z oboch možností to najlepšie, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Nastavenie SitePerProcess izoluje všetky weby.
       Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
       Ak toto pravidlo zakážete, uplatní sa logika správy procesov izolácie webov.
@@ -2025,7 +2026,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7072208053150563108">Frekvencia zmeny hesla zariadenia</translation>
 <translation id="7072406291414141328">Aktivuje obmedzenie rýchlosti pripojenia</translation>
 <translation id="7074513465313721551">Konfiguruje zoznam domén, ktorým bude Bezpečné prehliadanie dôverovať. Znamená to:
-      Bezpečné prehliadanie nebude v týchto doménach kontrolovať výskyt nebezpečných zdrojov (napr. phishing, malvér alebo nežiadúci softvér).
+      Bezpečné prehliadanie nebude v týchto doménach kontrolovať výskyt nebezpečných zdrojov (napr. phishing, malvér alebo nežiaduci softvér).
       Služba Bezpečného prehliadania na ochranu pred sťahovanými súbormi nebude kontrolovať sťahované súbory hostené v týchto doménach.
       Služba Bezpečného prehliadania na ochranu hesiel na stránkach, ktorých webové adresy sa zhodujú s týmito doménami, nebude kontrolovať opätovné použitie hesiel.
 
@@ -2654,6 +2655,12 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="9096086085182305205">Zoznam povolených overovacích serverov</translation>
 <translation id="9098553063150791878">Pravidlá pre overenie HTTP</translation>
 <translation id="9105265795073104888">Aplikácie pre Android majú k dispozícii iba podmnožinu možností konfigurácie proxy servera. Aplikácie pre Android sa môžu samostatne rozhodnúť, či budú proxy server používať. Nie je možné to vynútiť.</translation>
+<translation id="9110615239151047025">Aktivuje ochranu tab-under, ktorá blokuje navigáciu typu tab-under.
+
+      Definíciu navigácie typu tab-under nájdete tu https://www.chromestatus.com/features/5675755719622656.
+      Ak je toto pravidlo nastavené na hodnotu True, navigácia, ktorú <ph name="PRODUCT_NAME" /> určí ako tab-under, bude zablokovaná.
+      Ak je toto pravidlo nastavené na hodnotu False, <ph name="PRODUCT_NAME" /> povolí webom vykonávať navigáciu typu tab-under.
+      Predvolene je toto pravidlo nastavené na hodnotu True.</translation>
 <translation id="9112727953998243860">Konfiguračný súbor podnikovej tlačiarne</translation>
 <translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor webovej adresy aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou webovou adresou (ak bude použitý).
 

@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Geavanceerd</translation>
 <translation id="1978555033938440688">Firmwareversie</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{en 1 andere}other{en # andere}}</translation>
+<translation id="2003709556000175978">Stel je wachtwoord nu opnieuw in</translation>
 <translation id="2025186561304664664">Proxy is ingesteld op automatische configuratie.</translation>
 <translation id="2030481566774242610">Bedoelde je <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Controleer de proxy en firewall<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggestie}other{# suggesties}}</translation>
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="20817612488360358">De proxyinstellingen van het systeem moeten worden gebruikt, maar er is ook een expliciete proxyconfiguratie opgegeven.</translation>
+<translation id="2084558088529668945">Je hebt je wachtwoord ingevoerd op een site die niet wordt beheerd door <ph name="ORG_NAME" />. Hergebruik je wachtwoord niet voor andere apps en sites om je account te beschermen.</translation>
 <translation id="2091887806945687916">Geluid</translation>
 <translation id="2094505752054353250">Domeinen komen niet overeen</translation>
 <translation id="2096368010154057602">Departement</translation>
@@ -439,6 +441,7 @@
 <translation id="4171400957073367226">Onjuiste verificatiehandtekening</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Nog <ph name="ITEM_COUNT" /> item}other{Nog <ph name="ITEM_COUNT" /> items}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome raadt je aan het wachtwoord voor je account <ph name="ORG_NAME" /> opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controleer firewall- en antivirusconfiguraties<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Crashes</translation>
@@ -452,6 +455,7 @@
 <translation id="4265872034478892965">Toegestaan door je beheerder</translation>
 <translation id="4269787794583293679">(Geen gebruikersnaam)</translation>
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
+<translation id="4277028893293644418">Wachtwoord opnieuw instellen</translation>
 <translation id="4280429058323657511">, vervalt <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Blokkeren (standaard)</translation>
 <translation id="4325863107915753736">Kan artikel niet vinden</translation>
@@ -648,6 +652,7 @@
 <translation id="5869405914158311789">Deze site is niet bereikbaar</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
 <translation id="5893752035575986141">Creditcards worden geaccepteerd.</translation>
+<translation id="5898382028489516745">Chromium raadt je aan het wachtwoord voor <ph name="ORG_NAME" /> te resetten als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (gesynchroniseerd)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in gebruik}other{# in gebruik}}</translation>
 <translation id="5939518447894949180">Resetten</translation>
@@ -718,6 +723,7 @@
 <translation id="647261751007945333">Apparaatbeleid</translation>
 <translation id="6477321094435799029">Chrome heeft ongebruikelijke code op deze pagina gedetecteerd en heeft de code geblokkeerd om je persoonlijke gegevens (zoals wachtwoorden, telefoonnummers en creditcards) te beschermen.</translation>
 <translation id="6489534406876378309">Uploaden van crashes starten</translation>
+<translation id="6499038740797743453">Wachtwoord opnieuw instellen?</translation>
 <translation id="6507833130742554667">Creditcards en betaalpassen worden geaccepteerd.</translation>
 <translation id="6508722015517270189">Chrome opnieuw starten</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
@@ -833,6 +839,7 @@
 <translation id="7549584377607005141">Deze webpagina kan alleen correct worden weergegeven op basis van gegevens die je eerder hebt opgegeven. Je kunt deze gegevens opnieuw verzenden, maar hierdoor worden de acties herhaald die eerder op deze pagina zijn uitgevoerd.</translation>
 <translation id="7552846755917812628">Probeer de volgende tips:</translation>
 <translation id="7554791636758816595">Nieuw tabblad</translation>
+<translation id="7564049878696755256">Je kunt de toegang tot je account van <ph name="ORG_NAME" /> kwijtraken of slachtoffer worden van identiteitsdiefstal. Chrome raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="7567204685887185387">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk frauduleus verstrekt. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="7568593326407688803">Deze pagina is geschreven in het<ph name="ORIGINAL_LANGUAGE" />Wil je deze laten vertalen?</translation>
 <translation id="7569952961197462199">Creditcard verwijderen uit Chrome?</translation>
@@ -988,6 +995,7 @@
 <translation id="8761567432415473239">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />schadelijke programma's gevonden<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-apparaat</translation>
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
+<translation id="8792621596287649091">Je kunt de toegang tot je account van <ph name="ORG_NAME" /> kwijtraken of slachtoffer worden van identiteitsdiefstal. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="8800988563907321413">Je suggesties voor in de buurt worden hier weergegeven</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
 <translation id="883848425547221593">Andere bladwijzers</translation>

@@ -38,7 +38,7 @@
 <translation id="1873233029667955273">Google Chrome nie jest domyślną przeglądarką</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome uruchomi się ponownie za minutę}few{Chrome uruchomi się ponownie # minuty}many{Chrome uruchomi się ponownie # minut}other{Chrome uruchomi się ponownie # minuty}}</translation>
+<translation id="2007150628464581396">{0,plural, =1{Chrome uruchomi się ponownie za minutę}few{Chrome uruchomi się ponownie za # minuty}many{Chrome uruchomi się ponownie za # minut}other{Chrome uruchomi się ponownie za # minuty}}</translation>
 <translation id="2063848847527508675">Żeby system operacyjny Chrome mógł zastosować aktualizacje, musisz go ponownie uruchomić.</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2084710999043359739">Dodaj do Chrome</translation>
@@ -64,7 +64,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2467438592969358367">Google Chrome chce wyeksportować Twoje hasła. Wpisz swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
 <translation id="2534507159460261402">Google Pay (skopiowana do Chrome)</translation>
-<translation id="2535429035253759792">Administrator prosi Cię o ponowne uruchomienie Chrome, by przeglądarka zainstalowała tę aktualizację</translation>
+<translation id="2535429035253759792">Administrator prosi Cię o ponowne uruchomienie Chrome, by przeglądarka mogła zainstalować tę aktualizację</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="2586406160782125153">Spowoduje to usunięcie danych przeglądania z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chrome jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
@@ -273,7 +273,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8679801911857917785">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome.</translation>
 <translation id="870251953148363156">Aktualizuj &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome nie może określić ani ustawić domyślnej przeglądarki</translation>
-<translation id="8736674169840206667">Administrator wymaga od Ciebie ponownego uruchomienia Chrome, by przeglądarka zainstalowała aktualizację</translation>
+<translation id="8736674169840206667">Administrator wymaga od Ciebie ponownego uruchomienia Chrome, by przeglądarka mogła zainstalować aktualizację</translation>
 <translation id="8796108026289707191">Należy teraz ponownie uruchomić Google Chrome.</translation>
 <translation id="8823341990149967727">Chrome jest nieaktualny</translation>
 <translation id="884296878221830158">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub kliknięciu przycisku strony startowej.</translation>

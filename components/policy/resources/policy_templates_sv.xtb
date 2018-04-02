@@ -534,6 +534,7 @@
 <translation id="2529700525201305165">Begränsa vilka användare som får logga in på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2529880111512635313">Konfigurera listan med appar och tillägg som måste installeras</translation>
 <translation id="253135976343875019">Inaktivitetstid när enheten är ansluten till elnätet</translation>
+<translation id="2536283449105918306">Aktiverar skydd för omdirigeringar av befintliga flikar vid klick på länkar (tab-under)</translation>
 <translation id="2552966063069741410">Tidszon</translation>
 <translation id="2562339630163277285">Principen anger webbadressen till sökmotorn som används för att visa direktresultat. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som ersätts av den text användaren skrivit hittills när sökningen körs.
 
@@ -2691,6 +2692,12 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
 <translation id="9105265795073104888">Bara ett urval av konfigurationsalternativen för proxyserver är tillgängliga för Android-appar. De kan men måste inte använda proxyn. Det går inte att göra inställningen obligatorisk för dem.</translation>
+<translation id="9110615239151047025">Aktiverar skydd mot omdirigeringar av befintliga flikar vid klick på länkar (tab-under) och blockerar navigering som omdirigerar flikar vid klick.
+
+      Läs mer om detta på https://www.chromestatus.com/features/5675755719622656.
+      Om den här principen är inställd på sant blockeras navigering på befintliga flikar som upptäcks i <ph name="PRODUCT_NAME" />.
+      Om principen är inställd på falskt tillåts webbplatser att omdirigera befintliga flikar i <ph name="PRODUCT_NAME" />.
+      Principen är inställd på sant som standard.</translation>
 <translation id="9112727953998243860">Konfigurationsfil för företagsskrivare</translation>
 <translation id="9112897538922695510">Gör att du kan registrera en lista över protokollhanterare. Detta kan bara vara en rekommenderad policy. Egendomen |protokoll| ska anges till systemet som "mailto" och egendomen |webbadress| ska anges till webbadressmönstret i appen som hanterar systemet. Mönstret kan innehålla "%s", som ersätts av den hanterade webbadressen vid förekomst.
 

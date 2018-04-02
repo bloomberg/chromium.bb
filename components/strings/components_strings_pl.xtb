@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Zaawansowane</translation>
 <translation id="1978555033938440688">Wersja oprogramowania</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{i jeszcze 1}few{i jeszcze #}many{i jeszcze #}other{i jeszcze #}}</translation>
+<translation id="2003709556000175978">Zresetuj teraz swoje hasło</translation>
 <translation id="2025186561304664664">Ustawiono automatyczne konfigurowanie proxy.</translation>
 <translation id="2030481566774242610">Czy chodziło Ci o <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Sprawdź serwer proxy i zaporę sieciową<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 podpowiedź}few{# podpowiedzi}many{# podpowiedzi}other{# podpowiedzi}}</translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="20817612488360358">Skonfigurowano używanie systemowych ustawień proxy, ale podano też jawną konfigurację proxy.</translation>
+<translation id="2084558088529668945">Wpisałeś swoje hasło na stronie, którą nie zarządza <ph name="ORG_NAME" />. Aby chronić konto, nie używaj swojego hasła w innych aplikacjach ani na innych stronach.</translation>
 <translation id="2091887806945687916">Dźwięk</translation>
 <translation id="2094505752054353250">Niewłaściwa domena</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Jeszcze <ph name="ITEM_COUNT" /> element}few{Jeszcze <ph name="ITEM_COUNT" /> elementy}many{Jeszcze <ph name="ITEM_COUNT" /> elementów}other{Jeszcze <ph name="ITEM_COUNT" /> elementu}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome zaleca zresetowanie hasła, którego używasz w: <ph name="ORG_NAME" />, jeśli zostało użyte na innej stronie.</translation>
 <translation id="4196861286325780578">&amp;Ponów przeniesienie</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sprawdź konfigurację zapory sieciowej i oprogramowania antywirusowego<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Awarie</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">Dozwolone przez administratora</translation>
 <translation id="4269787794583293679">(Brak nazwy użytkownika)</translation>
 <translation id="4275830172053184480">Zrestartuj urządzenie</translation>
+<translation id="4277028893293644418">Resetuj hasło</translation>
 <translation id="4280429058323657511">, ważna do: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Blokuj (domyślnie)</translation>
 <translation id="4325863107915753736">Nie udało się znaleźć artykułu</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">Ta witryna jest nieosiągalna</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
 <translation id="5893752035575986141">Karty kredytowe są akceptowane.</translation>
+<translation id="5898382028489516745">Chromium zaleca zresetowanie hasła, którego używasz w: <ph name="ORG_NAME" />, jeśli zostało użyte na innej stronie.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (zsynchronizowane)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{W użyciu: 1}few{W użyciu: #}many{W użyciu: #}other{W użyciu: #}}</translation>
 <translation id="5939518447894949180">Resetuj</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">Zasady dotyczące urządzeń</translation>
 <translation id="6477321094435799029">Chrome wykrył nietypowy kod na tej stronie i zablokował ją, by chronić Twoje dane osobowe (np. hasła, numery telefonu czy dane kart kredytowych).</translation>
 <translation id="6489534406876378309">Rozpocznij przesyłanie informacji o awariach</translation>
+<translation id="6499038740797743453">Zresetować hasło?</translation>
 <translation id="6507833130742554667">Karty kredytowe i debetowe są akceptowane.</translation>
 <translation id="6508722015517270189">Uruchom ponownie Chrome</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">Do poprawnego wyświetlenia tej strony internetowej wymagane są dane wpisane przez Ciebie wcześniej. Możesz wysłać je ponownie, ale spowoduje to powtórzenie wszystkich działań wykonanych poprzednio przez stronę.</translation>
 <translation id="7552846755917812628">Skorzystaj z tych wskazówek:</translation>
 <translation id="7554791636758816595">Nowa karta</translation>
+<translation id="7564049878696755256">Możesz stracić dostęp do swojego konta <ph name="ORG_NAME" /> lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="7568593326407688803">Język strony:<ph name="ORIGINAL_LANGUAGE" />Chcesz ją przetłumaczyć?</translation>
 <translation id="7569952961197462199">Usunąć tę kartę kredytową z Chrome?</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">Funkcja Bezpieczne przeglądanie Google ostatnio <ph name="BEGIN_LINK" />znalazła szkodliwe<ph name="END_LINK" /> programy na <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Urządzenie USB</translation>
 <translation id="8790007591277257123">&amp;Ponów usunięcie</translation>
+<translation id="8792621596287649091">Możesz stracić dostęp do swojego konta <ph name="ORG_NAME" /> lub paść ofiarą kradzieży tożsamości. Chromium zaleca natychmiastową zmianę hasła.</translation>
 <translation id="8800988563907321413">Tutaj wyświetlają się sugestie witryn w pobliżu</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="883848425547221593">Inne zakładki</translation>

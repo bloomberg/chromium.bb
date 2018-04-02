@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1978555033938440688">Версия на фърмуера</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
+<translation id="2003709556000175978">Задайте повторно паролата си сега</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
 <translation id="2030481566774242610">Може би имахте предвид <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверете прокси сървъра и защитната стена<ph name="END_LINK" />.</translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 предложение}other{# предложения}}</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="20817612488360358">За използване са зададени системни настройки за прокси сървъра, но е посочена и изрична конфигурация.</translation>
+<translation id="2084558088529668945">Въведохте паролата си на сайт, който не се управлява от <ph name="ORG_NAME" />. За да защитите профила си, не използвайте паролата си повторно в други приложения или сайтове.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Несъответствие в домейна</translation>
 <translation id="2096368010154057602">Департамент</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">Невалиден подпис за потвърждаване</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{още <ph name="ITEM_COUNT" /> елемент}other{още <ph name="ITEM_COUNT" /> елемента}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> – <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome препоръчва да зададете повторно паролата си за <ph name="ORG_NAME" />, ако сте я използвали и на други сайтове.</translation>
 <translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверете конфигурацията на защитната стена и антивирусния софтуер<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Сривове</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">Разрешено от администратора ви</translation>
 <translation id="4269787794583293679">(Няма потребителско име)</translation>
 <translation id="4275830172053184480">Рестартиране на устройството ви</translation>
+<translation id="4277028893293644418">Повторно задаване на паролата</translation>
 <translation id="4280429058323657511">, изтича: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Блокиране (по подразбиране)</translation>
 <translation id="4325863107915753736">Намирането на статията не бе успешно</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">Няма достъп до този сайт</translation>
 <translation id="5869522115854928033">Запазени пароли</translation>
 <translation id="5893752035575986141">Приемат се кредитни карти.</translation>
+<translation id="5898382028489516745">Chromium препоръчва да зададете повторно паролата си за <ph name="ORG_NAME" />, ако сте я използвали и на други сайтове.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронизирано)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Използва се 1}other{Използват се #}}</translation>
 <translation id="5939518447894949180">Нулиране</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">Правила за устройството</translation>
 <translation id="6477321094435799029">Chrome откри необичаен код на тази страница и я блокира, за да защити личната ви информация (например пароли, телефонни номера и номера на кредитни карти).</translation>
 <translation id="6489534406876378309">Стартиране на качването на сривове</translation>
+<translation id="6499038740797743453">Да се зададе ли повторно паролата?</translation>
 <translation id="6507833130742554667">Приемат се кредитни и дебитни карти.</translation>
 <translation id="6508722015517270189">Рестартирайте Chrome.</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">За да се покаже правилно тази уеб страница, са необходими по-рано въведените от вас данни. Можете да ги изпратите отново, но така ще повторите всяко изпълнено от нея действие.</translation>
 <translation id="7552846755917812628">Изпробвайте следните съвети:</translation>
 <translation id="7554791636758816595">Нов раздел</translation>
+<translation id="7564049878696755256">Възможно е да загубите достъп до профила си в/ъв <ph name="ORG_NAME" /> или самоличността ви да бъде открадната. Chrome препоръчва да промените паролата си сега.</translation>
 <translation id="7567204685887185387">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; възможно е сертификатът му за сигурност да е издаден измамнически. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="7568593326407688803">Тази страница е на<ph name="ORIGINAL_LANGUAGE" />Искате ли да я преведете?</translation>
 <translation id="7569952961197462199">Кредитната карта да се премахне ли от Chrome?</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри опасни програми<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB устройство</translation>
 <translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
+<translation id="8792621596287649091">Възможно е да загубите достъп до профила си в/ъв <ph name="ORG_NAME" /> или самоличността ви да бъде открадната. Chromium препоръчва да промените паролата си сега.</translation>
 <translation id="8800988563907321413">Тук ще се показват предложения за неща в близост</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="883848425547221593">Други отметки</translation>

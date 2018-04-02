@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">고급</translation>
 <translation id="1978555033938440688">펌웨어 버전</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{외 1개}other{외 #개}}</translation>
+<translation id="2003709556000175978">지금 비밀번호 재설정</translation>
 <translation id="2025186561304664664">프록시가 자동 설정되도록 지정됩니다.</translation>
 <translation id="2030481566774242610"><ph name="LINK" />을(를) 찾으셨나요?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />프록시 및 방화벽 확인<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{제안 1개}other{제안 #개}}</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="20817612488360358">시스템 프록시 설정이 사용하도록 설정되었지만 명시적 프록시 설정도 지정되어 있습니다.</translation>
+<translation id="2084558088529668945"><ph name="ORG_NAME" />에서 관리하지 않는 사이트에 내 비밀번호를 입력했습니다. 다른 앱과 사이트에서 비밀번호를 재사용하면 계정을 안전하게 보호할 수 없습니다.</translation>
 <translation id="2091887806945687916">소리</translation>
 <translation id="2094505752054353250">도메인이 일치하지 않음</translation>
 <translation id="2096368010154057602">자치구</translation>
@@ -233,7 +235,7 @@
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="2704951214193499422">현재 Chromium에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="2705137772291741111">사이트의 저장된(캐시된) 사본을 읽을 수 없습니다.</translation>
-<translation id="2709516037105925701">자동완성</translation>
+<translation id="2709516037105925701">자동 완성</translation>
 <translation id="2710942282213947212">컴퓨터에 설치된 소프트웨어로 인해 Chromium이 안전하게 웹에 접속할 수 없음</translation>
 <translation id="2712173769900027643">권한 요청</translation>
 <translation id="2720342946869265578">근처</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">잘못된 인증 서명입니다.</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{그 외 <ph name="ITEM_COUNT" />개 항목}other{그 외 <ph name="ITEM_COUNT" />개 항목}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">다른 사이트에서 비밀번호를 재사용했다면 <ph name="ORG_NAME" /> 비밀번호를 재설정하는 것이 좋습니다.</translation>
 <translation id="4196861286325780578">이동 다시 실행(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />방화벽 및 바이러스 백신 소프트웨어 설정 확인<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">비정상 종료</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">관리자가 허용함</translation>
 <translation id="4269787794583293679">(사용자 이름 없음)</translation>
 <translation id="4275830172053184480">기기 다시 시작</translation>
+<translation id="4277028893293644418">비밀번호 재설정</translation>
 <translation id="4280429058323657511">, 만료일 <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">차단(기본값)</translation>
 <translation id="4325863107915753736">도움말을 찾지 못했습니다.</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
 <translation id="5893752035575986141">신용카드를 사용할 수 있습니다.</translation>
+<translation id="5898382028489516745">다른 사이트에서 비밀번호를 재사용했다면 <ph name="ORG_NAME" /> 비밀번호를 재설정하는 것이 좋습니다.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />(동기화됨)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1개 사용 중}other{#개 사용 중}}</translation>
 <translation id="5939518447894949180">초기화</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">기기 정책</translation>
 <translation id="6477321094435799029">Chrome이 이 페이지에서 비정상적인 코드를 감지했으며 개인정보(예: 비밀번호, 전화번호, 신용카드) 보호를 위해 차단했습니다.</translation>
 <translation id="6489534406876378309">비정상 종료 업로드 시작하기</translation>
+<translation id="6499038740797743453">비밀번호를 재설정하시겠습니까?</translation>
 <translation id="6507833130742554667">신용카드 및 직불카드를 사용할 수 있습니다.</translation>
 <translation id="6508722015517270189">Chrome 다시 시작하기</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">이 웹페이지를 제대로 표시하려면 이전에 입력한 데이터가 필요합니다. 이 데이터를 다시 보낼 수 있지만 이 경우 해당 페이지에서 이전에 수행한 작업이 반복됩니다.</translation>
 <translation id="7552846755917812628">다음 도움말을 확인해 보세요.</translation>
 <translation id="7554791636758816595">새 탭</translation>
+<translation id="7564049878696755256"><ph name="ORG_NAME" /> 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="7567204685887185387">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 부정한 방식으로 발행되었을 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="7568593326407688803">이 페이지는<ph name="ORIGINAL_LANGUAGE" />로 되어 있습니다. 번역하시겠습니까?</translation>
 <translation id="7569952961197462199">Chrome에서 신용카드를 삭제하시겠습니까?</translation>
@@ -979,7 +986,7 @@
 <translation id="859285277496340001">인증서는 취소 여부를 확인하는 매커니즘을 지정하지 않습니다.</translation>
 <translation id="8620436878122366504">부모님이 아직 승인하지 않았습니다.</translation>
 <translation id="8625384913736129811">이 기기에 카드 저장</translation>
-<translation id="8639963783467694461">자동완성 설정</translation>
+<translation id="8639963783467694461">자동 완성 설정</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, 답변, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />로의 연결은 암호화되지 않습니다.</translation>
 <translation id="8718314106902482036">결제가 완료되지 않음</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">Google 세이프 브라우징 결과 <ph name="SITE" />에서 최근 <ph name="BEGIN_LINK" />악성 프로그램이 발견<ph name="END_LINK" />되었습니다.</translation>
 <translation id="8763927697961133303">USB 기기</translation>
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>
+<translation id="8792621596287649091"><ph name="ORG_NAME" /> 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="8800988563907321413">근처 추천 항목이 여기에 표시됩니다.</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="883848425547221593">기타 북마크</translation>

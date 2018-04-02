@@ -513,6 +513,7 @@
 <translation id="2529700525201305165">限制可登入 <ph name="PRODUCT_NAME" /> 的使用者</translation>
 <translation id="2529880111512635313">設定強制安裝的應用程式和擴充功能清單</translation>
 <translation id="253135976343875019">在 AC 供電環境下執行時的閒置警告延遲時間</translation>
+<translation id="2536283449105918306">啟用 tab-under 保護功能</translation>
 <translation id="2552966063069741410">時區</translation>
 <translation id="2562339630163277285">指定用於提供互動智慧搜尋結果的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者輸入的查詢文字會取代這個字串。
 
@@ -2542,6 +2543,12 @@
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
 <translation id="9098553063150791878">HTTP 驗證政策</translation>
 <translation id="9105265795073104888">只有一部分 Proxy 設定可供 Android 應用程式使用，Android 應用程式可以選擇是否使用。你無法強制 Android 應用程式使用 Proxy。</translation>
+<translation id="9110615239151047025">啟用 tab-under 保護功能，封鎖系統偵測到的 tab-under 瀏覽行為。
+
+      如要進一步瞭解 tab-under，請參閱 https://www.chromestatus.com/features/5675755719622656。
+      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 偵測到的 tab-under 瀏覽行為將遭到封鎖。
+      如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 則會允許網站執行 tab-under 瀏覽行為。
+      這項政策預設為 True。</translation>
 <translation id="9112727953998243860">企業印表機設定檔</translation>
 <translation id="9112897538922695510">允許你註冊通訊協定處理常式清單 (這是一律建議使用的政策)。屬性 |protocol| 應設定為配置 (例如「mailto」)，而屬性 |url| 則應設定為處理該配置的應用程式的網址模式。模式可包含「%s」(如果有的話，會由受處理的網址取代)。
 

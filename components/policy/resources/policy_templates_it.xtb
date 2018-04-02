@@ -57,14 +57,14 @@
       Se viene usata questa norma, gli utenti avranno a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questa norma.
       </translation>
 <translation id="1181881366217399113">
-      NOTA: Questa norma è sperimentale ed è possibile che interrompa la funzionalità!
-      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole eseguirà il proprio processo. Ciò isolerà inoltre
-      le origini denominate da sottodomini, ad es. specificando https://example.com/ si isolerà anche
+      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
+      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche 
+      le origini dei sottodomini corrispondenti, ad es. specificando https://example.com/ si isolerà anche
       https://foo.example.com/, perché fa parte del sito
       https://example.com/.
       Se la norma non è attivata, si attiverà la logica di gestione del processo di isolamento in base al sito.
       Se la norma non è configurata, l'utente sarà in grado di modificare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare sullo stesso valore anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa all'utente.
+      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare sullo stesso valore anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
       </translation>
 <translation id="1198465924256827162">Consente di stabilire la frequenza di invio, in millisecondi, dei caricamenti dello stato del dispositivo.
 
@@ -247,7 +247,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Il formato del valore segue quello dei nomi dei fusi orari dello "IANA Time Zone Database" (visita il sito "https://en.wikipedia.org/wiki/Tz_database"). In particolare, gran parte dei fusi orari può essere indicata come "continent/large_city" o "ocean/large_city".
 
       Se questa norma viene impostata la scelta automatica del fuso orario in base alla posizione del dispositivo viene completamente disattivata. Sostituisce anche la norma SystemTimezoneAutomaticDetection.</translation>
-<translation id="1888871729456797026">Il token di registrazione della norma relativa al cloud su desktop</translation>
+<translation id="1888871729456797026">Il token di registrazione della norma relativa alla cloud su desktop</translation>
 <translation id="1897365952389968758">Consenti l'esecuzione di JavaScript in tutti i siti</translation>
 <translation id="1906888171268104594">Consente di stabilire se riferire o meno le metriche sull'utilizzo e i dati diagnostici, inclusi i rapporti sugli arresti anomali, a Google.
 
@@ -404,12 +404,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
 <translation id="2411817661175306360">L'avviso di protezione tramite password non è attivo</translation>
 <translation id="2411919772666155530">Blocca le notifiche su questi siti</translation>
-<translation id="2415979855753196119">Ti consente di controllare l'attivazione del contrassegno degli account a rischio con protezione della password. Contrassegnare gli account a rischio con protezione della password significa informare Google che questo account è a rischio di violazione.
+<translation id="2415979855753196119">Ti consente di controllare l'attivazione della segnalazione di account a rischio da parte del servizio di protezione tramite password. Questo tipo di segnalazione consente di informare Google che questo account è a rischio di violazione.
 
-      Se questa norma è impostata su 'PasswordProtectionRiskOff', non verrà attivato nessun contrassegno degli account a rischio con protezione della password.
-      Se questa norma è impostata su 'PasswordProtectionRiskOnPasswordReuse', il contrassegno degli account a rischio con protezione della password verrà attivato quando l'utente riutilizza la password di Google su un sito non autorizzato.
-      Se questa norma è impostata su 'PasswordProtectionRiskOnPhishingReuse', il contrassegno degli account a rischio con protezione della password verrà attivato quando l'utente riutilizza la password di Google su un sito di phishing.
-      Se questa norma viene lasciata non impostata, il contrassegno degli account a rischio con protezione della password verrà attivato quando l'utente riutilizza la propria password di Google su un sito di phishing, ma riuscirà a modificare questa impostazione.</translation>
+      Se questa norma è impostata su 'PasswordProtectionRiskOff', non verrà attivata alcuna segnalazione di account a rischio da parte del servizio di protezione tramite password.
+      Se questa norma è impostata su 'PasswordProtectionRiskOnPasswordReuse', la segnalazione di account a rischio da parte del servizio di protezione tramite password verrà attivata quando l'utente riutilizza la password di Google su un sito non autorizzato.
+      Se questa norma è impostata su 'PasswordProtectionRiskOnPhishingReuse', la segnalazione di account a rischio da parte del servizio di protezione tramite password verrà attivata quando l'utente riutilizza la password di Google su un sito di phishing.
+      Se questa norma viene lasciata non impostata, la segnalazione di account a rischio da parte del servizio di protezione tramite password verrà attivata quando l'utente riutilizza la propria password Google su un sito di phishing, ma l'utente riuscirà a modificare questa impostazione.</translation>
 <translation id="2418507228189425036">Consente di disattivare il salvataggio della cronologia del browser in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
 
       Se questa impostazione è attivata, la cronologia di navigazione non viene salvata. Con questa impostazione viene disattivata anche la sincronizzazione delle schede.
@@ -495,6 +495,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2529700525201305165">Limita gli utenti autorizzati ad accedere a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configura l'elenco di estensioni e app con installazione imposta</translation>
 <translation id="253135976343875019">Ritardo avviso inattività in caso di utilizzo di CA</translation>
+<translation id="2536283449105918306">Attiva la protezione tab-under</translation>
 <translation id="2552966063069741410">Fuso orario</translation>
 <translation id="2562339630163277285">Consente di specificare l'URL del motore di ricerca utilizzato per fornire risultati immediati. L'URL deve contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che verrà sostituita in fase di query dal testo inserito dall'utente fino a quel momento.
 
@@ -595,12 +596,12 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Se attivi questa impostazione, in Anteprima di stampa viene usata la stampante predefinita del sistema operativo come destinazione predefinita.</translation>
 <translation id="2867699958489427143">Esegui il rollback alla versione target se la versione del sistema operativo è più nuova del target. Esegui un powerwash completo durante la procedura.</translation>
-<translation id="286802604195763750">Ti consente di controllare l'attivazione dell'avviso di protezione password. La protezione password avvisa gli utenti quando riutilizzano le proprie password protette su siti potenzialmente sospetti.
+<translation id="286802604195763750">Ti consente di controllare l'attivazione dell'avviso di protezione tramite password. La protezione tramite password avvisa gli utenti quando riutilizzano le proprie password protette su siti potenzialmente sospetti.
 
-      Se questa norma è impostata su 'PasswordProtectionWarningOff', non apparirà alcun avviso di protezione password.
-      Se questa norma è impostata su 'PasswordProtectionWarningOnPasswordReuse', l'avviso di protezione password apparirà quando l'utente riutilizza la propria password di Google su un sito non autorizzato.
-      Se questa norma è impostata su 'PasswordProtectionWarningOnPhishingReuse', l'avviso di protezione password apparirà quando l'utente riutilizza la propria password di Google su un sito di phishing.
-      Se questa norma viene lasciata non impostata, l'avviso di protezione password verrà attivato quando l'utente riutilizza la propria password di Google su un sito di phishing, ma riuscirà a modificare questa impostazione.</translation>
+      Se questa norma è impostata su 'PasswordProtectionWarningOff', non apparirà alcun avviso di protezione tramite password.
+      Se questa norma è impostata su 'PasswordProtectionWarningOnPasswordReuse', l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password Google su un sito non autorizzato.
+      Se questa norma è impostata su 'PasswordProtectionWarningOnPhishingReuse', l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password Google su un sito di phishing.
+      Se questa norma viene lasciata non impostata, l'avviso di protezione tramite password verrà attivato quando l'utente riutilizza la propria password Google su un sito di phishing, ma l'utente riuscirà a modificare questa impostazione.</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
 <translation id="2877225735001246144">Disabilita ricerca CNAME durante la negoziazione con Kerberos</translation>
@@ -636,12 +637,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
 <translation id="2998886474614739865">
-      NOTA: Questa norma è sperimentale ed è possibile che interrompa la funzionalità!
-      Questa norma è valida per la schermata di registrazione. Consultare anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che vige per la sessione utente. Si consiglia di impostare entrambe le norme sullo stesso valore. Se i valori non corrispondono, può verificarsi un ritardo al momento di accedere a una sessione utente mentre viene applicato il valore specificato dalla norma relativa all'utente.
-      Se la norma è attivata, ciascuna delle origini denominate in un elenco separato da virgole eseguirà il proprio processo. Si isoleranno inoltre le origini denominate da sottodomini, ad es. specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito
+      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
+      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
+      Se la norma è attivata, ciascuna delle origini denominate in un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini dei sottodomini corrispondenti, ad es. specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito
       https://example.com/ site.
       Se la norma non è attivata, si attiverà la logica di gestione del processo di isolamento in base al sito.
-      Se la norma non è configurata, si utilizzeranno le impostazioni predefinite di isolamento del sito della piattaforma per la schermata di registrazione.
+      Se la norma non è configurata, si utilizzeranno le impostazioni predefinite di isolamento del sito della piattaforma per la schermata di accesso.
       </translation>
 <translation id="3016255526521614822">Autorizza l'uso di app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Numero di obiettivi consentiti per il rollback</translation>
@@ -744,12 +745,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se questa norma viene impostata su una stringa non vuota, tale stringa verrà usata come nome della destinazione di <ph name="PRODUCT_NAME" />. In caso contrario, il nome della destinazione sarà quello del dispositivo. Se questa norma non viene impostata, il nome della destinazione sarà il nome del dispositivo, che il proprietario (o un utente del dominio che gestisce il dispositivo) potrà cambiare. Il nome può essere formato da massimo 24 caratteri.</translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
 <translation id="3386001018488754001">
-      NOTA: Questa norma è sperimentale ed è possibile che interrompa la funzionalità!
-      Questa norma vale per la schermata di registrazione. Consultare anche la norma <ph name="SITE_PER_PROCESS_POLICY_NAME" /> valida per la sessione utente. Si consiglia di impostare entrambe le norme sullo stesso valore. Se i valori non corrispondono, può verificarsi un ritardo al momento di accedere a una sessione utente mentre viene applicato il valore specificato dalla norma relativa all'utente.
-      Consulta l'impostazione della norma IsolateOrigins per ottenere il meglio da entrambi i metodi, isolamento e impatto contenuto per gli utenti, utilizzando IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
-      Se la norma è attivata, ciascuna delle origini denominate in un elenco separato da virgole eseguirà il proprio processo.
-      Se la norma non è attivata, si attiverà la logica di gestione del processo di isolamento in base al sito.
-      Se la norma non è configurata, l'utente potrà modificare quest'impostazione.
+      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
+      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="SITE_PER_PROCESS_POLICY_NAME" />, che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
+      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
+      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
+      Se la norma è disattivata, verrà applicata la logica di gestione del processo di isolamento in base al sito.
+      Se la norma non è configurata, l'utente potrà modificare questa impostazione.
       </translation>
 <translation id="3395348522300156660">Consente di specificare le stampanti utilizzabili dagli utenti.
 
@@ -788,7 +789,7 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="3478024346823118645">Cancella dati utente all'uscita</translation>
 <translation id="348495353354674884">Attiva tastiera virtuale</translation>
 <translation id="3487623755010328395">
-        Se è impostata questa norma, <ph name="PRODUCT_NAME" /> proverà a registrarsi e ad applicare a tutti i profili la norma relativa al cloud associata.
+        Se è impostata questa norma, <ph name="PRODUCT_NAME" /> proverà a registrarsi e ad applicare a tutti i profili la norma relativa alla cloud associata.
 
         Il valore di questa norma è un token di registrazione che è possibile recuperare dalla Console amministrazione Google.</translation>
 <translation id="3496296378755072552">Gestione password</translation>
@@ -1339,13 +1340,12 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
       Se la norma non viene impostata oppure è impostata sulla stringa vuota o su un intervallo di porte non valido, WebRTC è autorizzato a utilizzare qualsiasi porta UDP locale disponibile.</translation>
 <translation id="5290940294294002042">Specifica un elenco di plug-in che l'utente può attivare o disattivare</translation>
 <translation id="5301787427319106606">
-      NOTA: Questa norma è sperimentale ed è possibile che interrompa la funzionalità!
-      Consulta l'impostazione della norma IsolateOrigins per ottenere il meglio da entrambi i metodi, isolamento e impatto contenuto per gli utenti, utilizzando
-      IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
-      Se la norma è attivata, ciascun sito eseguirà il proprio processo.
-      Se la norma non è attivata, si attiverà la logica di gestione del processo di isolamento in base al sito.
-      Se la norma non è configurata, l'utente potrà modificare quest'impostazione.
-      In <ph name="PRODUCT_OS_NAME" /> si consiglia di impostare anche le norme relative ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo al momento di accedere a una sessione utente mentre viene applicato il valore specificato dalla norma relativa all'utente.
+      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
+      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
+      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
+      Se la norma non è attivata, verrà applicata la logica di gestione del processo di isolamento in base al sito.
+      Se la norma non è configurata, l'utente potrà modificare questa impostazione.
+      In <ph name="PRODUCT_OS_NAME" /> si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
       </translation>
 <translation id="5302612588919538756">Questa norma è stata ritirata; utilizzare la norma SyncDisabled.
 
@@ -1891,13 +1891,13 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7072208053150563108">Frequenza di modifica della password del computer</translation>
 <translation id="7072406291414141328">Attiva la limitazione della larghezza di banda</translation>
-<translation id="7074513465313721551">Configura l'elenco dei domini che Safe Browsing può ritenere affidabili. Ciò significa che Safe Browsing non cercherà risorse pericolose (ad es. phishing, malware o software indesiderati) se i loro URL corrispondono a questi domini.
-      Il servizio di protezione dai download di Safe Browsing non controllerà i download ospitati su questi domini.
-      Il servizio di protezione dai download di Safe Browsing non controllerà la password riutilizzata se l'URL della pagina corrisponde a questi domini.
+<translation id="7074513465313721551">Configura l'elenco dei domini che Navigazione sicura ritiene affidabili. Ciò significa che Navigazione sicura non controllerà la presenza di risorse pericolose (ad es. phishing, malware o software indesiderato) se i rispettivi URL corrispondono a questi domini.
+      Il servizio di protezione dei download di Navigazione sicura non controllerà i download ospitati su questi domini.
+      Il servizio di protezione tramite password di Navigazione sicura non controllerà il riutilizzo della password se l'URL della pagina corrisponde a questi domini.
 
-      Se questa impostazione è attivata, allora Safe Browsing considerà questi domini affidabili.
-      Se questa impostazione è disattivata o non impostata, allora la protezione predefinita di Safe Browsing è applicata a tutte le risorse.
-      Questa norma non è disponibile su istanze Windows non aggiunte a un dominio <ph name="MS_AD_NAME" />.</translation>
+      Se questa impostazione è attivata, Navigazione sicura considererà questi domini affidabili.
+      Se questa impostazione è disattivata o non impostata, a tutte le risorse verrà applicata la protezione predefinita di Navigazione sicura.
+      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blocca popup su questi siti</translation>
 <translation id="7106631983877564505">Consente di attivare il blocco quando lo stato dei dispositivi <ph name="PRODUCT_OS_NAME" /> diventa inattivo o sospeso.
 
@@ -2485,6 +2485,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9096086085182305205">Whitelist server di autenticazione</translation>
 <translation id="9098553063150791878">Norme relative all'autenticazione HTTP</translation>
 <translation id="9105265795073104888">Solo un sottoinsieme di opzioni di configurazione del proxy viene reso disponibile alle app Android, che decidono volontariamente se rispettarlo o meno. Non puoi forzarle a utilizzare un proxy.</translation>
+<translation id="9110615239151047025">Consente di attivare la protezione tab-under, che blocca le navigazioni rilevate come tab-under.
+
+      Visita la pagina https://www.chromestatus.com/features/5675755719622656 per sapere cosa sono i tab-under.
+      Se questa norma viene impostata su True, le navigazioni rilevate come tab-under in <ph name="PRODUCT_NAME" /> verranno bloccate.
+      Se la norma viene impostata su False, <ph name="PRODUCT_NAME" /> consentirà ai siti di eseguire navigazioni tab-under.
+      Per impostazione predefinita, questa norma è impostata su True.</translation>
 <translation id="9112727953998243860">File di configurazione delle stampanti aziendali</translation>
 <translation id="9112897538922695510">Ti consente di registrare un elenco di gestori di protocolli. Questa può essere soltanto una norma consigliata. Per la proprietà |protocol| dovrebbe essere impostato lo schema, ad esempio "mailto", e per la proprietà |url| dovrebbe essere impostato il pattern URL dell'applicazione che gestisce lo schema. Il pattern può includere "%s" che, se presente, verrà sostituito dall'URL gestito.
 

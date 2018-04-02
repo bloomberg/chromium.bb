@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="104962181688258143">Åpne Filer-appen</translation>
-<translation id="1126871238933253947">Bytt til det forrige tastaturspråket du brukte.</translation>
 <translation id="1134347825771908369">Kutt lyden</translation>
 <translation id="1195667586424773550">Dra linken til adressefeltet i fanen</translation>
 <translation id="1204450209689312104">Åpne et nytt vindu i inkognitomodus</translation>
@@ -28,7 +27,7 @@
 <translation id="2181097965834437145">Vis eller skjul bokmerkeraden</translation>
 <translation id="2185166372312820725">Gå til forrige fane</translation>
 <translation id="2194790690264064655">Trykk på <ph name="CTRL" /> og klikk på en link</translation>
-<translation id="2382644247745281995">Støttes ikke med gjeldende tastaturoppsett</translation>
+<translation id="2382644247745281995">Støttes ikke med det gjeldende tastaturoppsettet</translation>
 <translation id="2424073332829844142">Slå Caps Lock av og på</translation>
 <translation id="2441202986792279177">Bytt raskt mellom vinduer</translation>
 <translation id="2478303094958140141">Slå ChromeVox (taletilbakemelding) på eller av</translation>
@@ -70,6 +69,7 @@
 <translation id="4060703249685950734">Åpne den siste fanen eller det siste vinduet du lukket, på nytt</translation>
 <translation id="4090342722461256974">Trykk og hold på <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, trykk på <ph name="TAB" /> til du kommer til vinduet du vil åpne, og slipp tastene.</translation>
 <translation id="4092538597492297615">Kopiér det merkede innholdet til utklippstavlen</translation>
+<translation id="4101772068965291327">Åpne startsiden</translation>
 <translation id="4123108089450197101">Lagre linken som et bokmerke</translation>
 <translation id="4141203561740478845">Fremhev raden med adressefeltet</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> eller <ph name="ENTER" /></translation>
@@ -84,10 +84,10 @@
 <translation id="5042305953558921026">Tast for oversiktsmodus</translation>
 <translation id="5104462712192763270">Lagre den aktive siden</translation>
 <translation id="5121628974188116412">Gå til bunnen av siden</translation>
+<translation id="5222676887888702881">Logg av</translation>
 <translation id="5236674127086649162">Last inn den aktive siden uten å bruke bufret innhold</translation>
 <translation id="526651782186312376">Merk teksten til begynnelsen av linjen</translation>
 <translation id="5316716239522500219">Speil skjermer</translation>
-<translation id="5335199890994453201">Vis eller skjul DOM-inspektøren</translation>
 <translation id="5541719484267030947">Trykk på <ph name="ESC" /> mens du drar fanen</translation>
 <translation id="5554139136362089836">Søk på den aktive siden</translation>
 <translation id="5563050856984839829">Trykk på <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> og klikk på en link</translation>
@@ -96,7 +96,7 @@
 <translation id="5757111373163288447">Åpne linken i fanen</translation>
 <translation id="5757474750054631686">Reduser lysstyrken på tastaturlyset (bare for tastaturer med bakgrunnslys)</translation>
 <translation id="587531134027443617">Slett forrige ord</translation>
-<translation id="5928303187149237472">Endre skjermoppløsningen</translation>
+<translation id="5921745308587794300">Rotér vinduet</translation>
 <translation id="5975083100439434680">Zoom ut</translation>
 <translation id="6022924867608035986">Fjern teksten i søkefeltet</translation>
 <translation id="6045998054441862242">Slå på høykontrastmodus</translation>
@@ -114,8 +114,6 @@
 <translation id="6435207348963613811">Fremhev det forrige elementet på hyllen</translation>
 <translation id="6445033640292336367">Flytt fanen tilbake til den opprinnelige plasseringen</translation>
 <translation id="649811797655257835">Velg en fil og trykk på <ph name="SPACE" /></translation>
-<translation id="6572206071785323178">Bytt mellom tastaturspråkene du har konfigurert. Finn ut hvordan du velger tastaturspråk.</translation>
-<translation id="6634456834225946400">Fremhev bokmerkeraden (hvis den er synlig)</translation>
 <translation id="666343722268997814">Åpne høyreklikkmenyen for elementet som er fremhevet</translation>
 <translation id="6671538777808758331">Gå til det neste treffet for søket</translation>
 <translation id="6690765639083431875">Dokk et vindu til venstre</translation>
@@ -136,10 +134,10 @@
 <translation id="7787242579016742662">Åpne en fil i nettleseren</translation>
 <translation id="7917881398263220094">Stopp innlastingen av den aktive siden</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> eller <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">Slett nettlesingsdata</translation>
 <translation id="8130528849632411619">Gå til begynnelsen av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotér skjermen 90 grader</translation>
-<translation id="826184564253127735">Hurtigtastvisning</translation>
 <translation id="836869401750819675">Åpne nedlastingssiden</translation>
 <translation id="8388247778047144397">Dra linken til et tomt område på faneraden.</translation>
 <translation id="8389638407792712197">Åpne et nytt vindu</translation>
@@ -158,6 +156,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1–8</translation>
 <translation id="9041599225465145264">Lim inn innholdet fra utklippstavlen</translation>
 <translation id="9052808072970550123">Bytt til den neste brukeren</translation>
+<translation id="906458777597946297">Maksimerer vinduet</translation>
 <translation id="9106898733795143799">Side og nettleser</translation>
 <translation id="9179672198516322668">Populære hurtigtaster</translation>
 <translation id="93603345341560814">Trykk på <ph name="SHIFT" /> og klikk på en link</translation>

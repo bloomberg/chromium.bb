@@ -512,6 +512,7 @@
 <translation id="2529700525201305165">Korlátozza, hogy mely felhasználók jelentkezhetnek be a(z) <ph name="PRODUCT_NAME" /> szolgáltatásba.</translation>
 <translation id="2529880111512635313">Állítsa be a kényszerített telepítésű alkalmazások és bővítmények listáját</translation>
 <translation id="253135976343875019">Tétlenségi figyelmeztetés késleltetése hálózati áramról való működés során</translation>
+<translation id="2536283449105918306">Bekapcsolja a lap alatti védelmet</translation>
 <translation id="2552966063069741410">Időzóna</translation>
 <translation id="2562339630163277285">Megadja az azonnali eredményekhez használt keresőmotor URL-jét. Az URL-nek tartalmaznia kell a <ph name="SEARCH_TERM_MARKER" /> karakterláncot, amelynek helyébe a lekérdezés időpontjában a felhasználó által addig megadott szöveg lép.
 
@@ -2550,6 +2551,12 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="9096086085182305205">Azonosítási szerverek engedélyezési listája</translation>
 <translation id="9098553063150791878">HTTP-hitelesítési szabályok</translation>
 <translation id="9105265795073104888">A proxykonfigurációs beállításoknak csak egy része áll rendelkezésre az Android-alkalmazások számára. Az Android-alkalmazások saját belátásuk szerint használhatják a proxyt. Az Android-alkalmazások nem kényszeríthetők proxy használatára.</translation>
+<translation id="9110615239151047025">Bekapcsolja a lap alatti védelmet, amely blokkolja azokat a navigációkat, amelyeket rendszerünk „lap alatti”-ként észlel.
+
+      A lap alatti navigációról a https://www.chromestatus.com/features/5675755719622656 címen találhat tájékoztatást.
+      Ha a házirend beállítása igaz, akkor a <ph name="PRODUCT_NAME" /> blokkolja a lap alattiként észlelt navigációkat.
+      Ha a házirend beállítása hamis, akkor a <ph name="PRODUCT_NAME" /> engedélyezi a lap alatti navigáció végrehajtását a webhelyek számára.
+      A házirend alapértelmezett értéke az igaz.</translation>
 <translation id="9112727953998243860">Vállalati nyomtató konfigurációs fájlja</translation>
 <translation id="9112897538922695510">Lehetővé teszi a protokollkezelők listájának regisztrálását. Csak ajánlott házirend lehet. A |protocol| tulajdonságot a sémához – például „mailto” – kell beállítani, az |url| tulajdonságot pedig a sémát kezelő alkalmazás URL-mintájához. A minta tartalmazhat „%s” karakterláncot, amelynek – ha van – helyére majd a kezelt URL kerül.
 

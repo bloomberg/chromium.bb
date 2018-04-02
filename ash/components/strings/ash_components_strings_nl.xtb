@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="104962181688258143">De app Bestanden openen</translation>
-<translation id="1126871238933253947">Schakelen tussen de eerdere toetsenbordtalen die je hebt gebruikt.</translation>
+<translation id="1122869341872663659">Weergave van <ph name="N" /> zoekresultaten voor <ph name="QUERY" /></translation>
 <translation id="1134347825771908369">Volume dempen</translation>
 <translation id="1195667586424773550">Sleep de link naar de adresbalk van het tabblad</translation>
 <translation id="1204450209689312104">Een nieuw venster openen in de incognitomodus</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">Het laatste tabblad of venster dat je hebt gesloten, opnieuw openen</translation>
 <translation id="4090342722461256974">Houd <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ingedrukt en tik op <ph name="TAB" /> totdat het venster verschijnt dat je wilt openen. Laat de toetsen vervolgens los.</translation>
 <translation id="4092538597492297615">Geselecteerde content kopiëren naar het klembord</translation>
+<translation id="4101772068965291327">Homepage openen</translation>
 <translation id="4123108089450197101">De link opslaan als bladwijzer</translation>
 <translation id="4141203561740478845">De rij met de adresbalk markeren</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> of <ph name="ENTER" /></translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">Toets voor de overzichtsmodus</translation>
 <translation id="5104462712192763270">De huidige pagina opslaan</translation>
 <translation id="5121628974188116412">Naar onderkant van pagina gaan</translation>
+<translation id="5222676887888702881">Uitloggen</translation>
 <translation id="5236674127086649162">De huidige pagina opnieuw laden en content in het cachegeheugen negeren</translation>
 <translation id="526651782186312376">Tekst tot het begin van de regel selecteren</translation>
 <translation id="5316716239522500219">Monitoren spiegelen</translation>
-<translation id="5335199890994453201">De DOM Inspector weergeven of verbergen</translation>
 <translation id="5541719484267030947">Druk op <ph name="ESC" /> tijdens het slepen van het tabblad</translation>
 <translation id="5554139136362089836">Zoeken op de huidige pagina</translation>
 <translation id="5563050856984839829">Druk op <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> en klik op een link</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">De link openen op het tabblad</translation>
 <translation id="5757474750054631686">Toetsenbord dimmen (alleen voor toetsenborden met achtergrondverlichting)</translation>
 <translation id="587531134027443617">Het vorige woord verwijderen</translation>
-<translation id="5928303187149237472">Schermresolutie wijzigen</translation>
+<translation id="5921745308587794300">Venster draaien</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>
 <translation id="6022924867608035986">Tekst in zoekvak wissen</translation>
 <translation id="6045998054441862242">Modus voor hoog contrast inschakelen</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">Het vorige item op de plank markeren</translation>
 <translation id="6445033640292336367">Het tabblad terugzetten op zijn oorspronkelijke positie</translation>
 <translation id="649811797655257835">Selecteer het bestand en druk op <ph name="SPACE" /></translation>
-<translation id="6572206071785323178">Schakelen tussen de toetsenbordtalen die je hebt ingesteld. Meer informatie over hoe je de toetsenbordtaal selecteert.</translation>
-<translation id="6634456834225946400">De bladwijzerbalk markeren (indien weergegeven)</translation>
 <translation id="666343722268997814">Het menu dat met de rechtermuisknop worden geopend, openen voor het gemarkeerde item</translation>
 <translation id="6671538777808758331">Naar de volgende term gaan die overeenkomt met je zoekopdracht</translation>
 <translation id="6690765639083431875">Een venster aan de linkerkant docken</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">Een bestand openen in de browser</translation>
 <translation id="7917881398263220094">Het laden van de huidige pagina stoppen</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> of <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">Browsegegevens wissen</translation>
 <translation id="8130528849632411619">Naar het begin van het document gaan</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> of <ph name="E" /></translation>
 <translation id="8234414138295101081">Scherm 90 graden draaien</translation>
-<translation id="826184564253127735">Sneltoetsenviewer</translation>
 <translation id="836869401750819675">De pagina Downloads openen</translation>
 <translation id="8388247778047144397">Sleep de link naar een blanco gedeelte van de tabbladstrook</translation>
 <translation id="8389638407792712197">Nieuw venster openen</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 tot en met 8</translation>
 <translation id="9041599225465145264">Content vanaf het klembord plakken</translation>
 <translation id="9052808072970550123">Overschakelen naar de volgende gebruiker</translation>
+<translation id="906458777597946297">Venster maximaliseren</translation>
 <translation id="9106898733795143799">Pagina- en webbrowser</translation>
+<translation id="9162942292291287644">Geen zoekresultaat voor <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Populaire sneltoetsen</translation>
 <translation id="93603345341560814">Druk op <ph name="SHIFT" /> en klik op een link</translation>
 <translation id="945383118875625837">Link slepen naar bladwijzerbalk</translation>

@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1978555033938440688">نسخه میان‌افزار</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{و ۱ برنامه دیگر}one{و # برنامه دیگر}other{و # برنامه دیگر}}</translation>
+<translation id="2003709556000175978">هم‌اکنون گذرواژه‌تان را بازنشانی کنید</translation>
 <translation id="2025186561304664664">پروکسی بر روی پیکربندی خودکار تنظیم شده است.</translation>
 <translation id="2030481566774242610">منظورتان <ph name="LINK" /> بود؟</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />بررسی پروکسی و دیوار آتش<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{۱ پیشنهاد}one{# پیشنهاد}other{# پیشنهاد}}</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
+<translation id="2084558088529668945">گذرواژه‌تان را در سایتی که توسط <ph name="ORG_NAME" /> مدیریت نمی‌شود وارد کردید. برای محافظت از حسابتان، از گذرواژه‌تان در سایر برنامه‌ها و سایت‌ها مجدداً استفاده نکنید.</translation>
 <translation id="2091887806945687916">صدا</translation>
 <translation id="2094505752054353250">عدم تطابق دامنه</translation>
 <translation id="2096368010154057602">حوزه</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> مورد دیگر}one{<ph name="ITEM_COUNT" /> مورد دیگر}other{<ph name="ITEM_COUNT" /> مورد دیگر}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">‏Chrome توصیه می‌کند گذرواژه <ph name="ORG_NAME" /> خود را درصورت استفاده مجدد از آن در سایر سایت‌ها بازنشانی کنید.</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />بررسی پیکربندی آنتی‌ویروس و دیوار آتش<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">خرابی ها</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">توسط سرپرست مجاز شده است</translation>
 <translation id="4269787794583293679">(بدون نام کاربری)</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
+<translation id="4277028893293644418">بازنشانی گذرواژه</translation>
 <translation id="4280429058323657511">، انقضا <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">مسدود کردن (پیش‌فرض)</translation>
 <translation id="4325863107915753736">مقاله یافت نشد.</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5893752035575986141">کارت‌های اعتباری پذیرفته می‌شوند.</translation>
+<translation id="5898382028489516745">‏Chromium توصیه می‌کند گذرواژه <ph name="ORG_NAME" /> خود را درصورت استفاده مجدد از آن در سایر سایت‌ها بازنشانی کنید.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (همگام‌سازی‌شده)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{۱ کوکی درحال استفاده}one{# کوکی درحال استفاده}other{# کوکی درحال استفاده}}</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
 <translation id="6477321094435799029">‏Chrome کد نامعمول در این این صفحه شناسایی کرده و برای محافظت از اطلاعات شخصی‌تان (مثلاً گذرواژه‌ها، شماره تلفن‌‌ها و کارت‌های اعتباری) آن را مسدود کرده است.</translation>
 <translation id="6489534406876378309">شروع بارگذاری کردن خرابی‌ها</translation>
+<translation id="6499038740797743453">گذرواژه بازنشانی شود؟</translation>
 <translation id="6507833130742554667">کارت‌های اعتباری و نقدی پذیرفته می‌شوند.</translation>
 <translation id="6508722015517270189">‏Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">این صفحه وب برای نمایش صحیح به داده‌هایی نیاز دارد که قبلاً وارد کرده‌اید. می‌توانید این داده‌ها را دوباره ارسال کنید، اما با انجام این کار، هر اقدامی که این صفحه قبلاً انجام داده است تکرار می‌شود.</translation>
 <translation id="7552846755917812628">نکته‌های زیر را امتحان کنید:</translation>
 <translation id="7554791636758816595">برگهٔ جدید</translation>
+<translation id="7564049878696755256">‏ممکن است دسترسی به حساب <ph name="ORG_NAME" /> را از دست بدهید یا به سرقت هویت دچار شوید. Chrome توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="7567204685887185387">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن به صورت تقلبی صادر شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="7568593326407688803">این صفحه به <ph name="ORIGINAL_LANGUAGE" /> است، آیا مایلید ترجمه شود؟</translation>
 <translation id="7569952961197462199">‏کارت اعتباری از Chrome پاک شود؟</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">‏مرور ایمن Google اخیراً <ph name="BEGIN_LINK" />برنامه‌های خطرناک<ph name="END_LINK" /> را در <ph name="SITE" /> پیدا کرده است.</translation>
 <translation id="8763927697961133303">‏دستگاه USB</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
+<translation id="8792621596287649091">‏ممکن است دسترسی به حساب <ph name="ORG_NAME" /> را از دست بدهید یا به سرقت هویت دچار شوید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="8800988563907321413">پیشنهادات اطراف شما در اینجا نشان داده می‌شوند</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="883848425547221593">نشانک‌های دیگر</translation>

@@ -47,7 +47,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1384959399684842514">Download er midlertidigt standset</translation>
-<translation id="1389236224998445076">Sparet data:</translation>
 <translation id="1389974829397082527">Der er ingen bogmærker her</translation>
 <translation id="1397811292916898096">Søg med <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Integreret i <ph name="WEBSITE_URL" /></translation>
@@ -83,7 +82,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1670399744444387456">Grundlæggende oplysninger</translation>
 <translation id="1671236975893690980">Download afventer…</translation>
 <translation id="1672586136351118594">Vis ikke igen</translation>
-<translation id="169033420419426091">Download af <ph name="FILE_NAME" /> mislykkedes, fordi der ikke er et SD-kort.</translation>
 <translation id="1709438864123551175">Datasparefunktion</translation>
 <translation id="1718835860248848330">Den seneste time</translation>
 <translation id="1729516292547892356">Opdater Google VR-tjenester for at se virtual reality-indhold</translation>
@@ -142,7 +140,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2259659629660284697">Eksportér adgangskoder…</translation>
-<translation id="2266890032547182881">Fordeling af dataforbrug</translation>
 <translation id="2268044343513325586">Juster</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="230115972905494466">Der blev ikke fundet nogen kompatible enheder</translation>
@@ -368,7 +365,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4521489764227272523">De valgte data er fjernet fra Chrome og synkroniserede enheder.
 
 Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og aktivitet fra andre Google-tjenester, på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="4522570452068850558">Detaljer</translation>
 <translation id="4526249700380860531">Se og administrer gemte adgangskoder på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Vælg mappe</translation>
 <translation id="4544481164434183075">Denne side er fra <ph name="CREATION_TIME" /> og kan afvige fra onlineversionen.</translation>
@@ -690,9 +686,9 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}one{Del # valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
-<translation id="7374228672268453233">Brugt data:</translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7400418766976504921">Webadresse</translation>
+<translation id="7400730245189251663">Mere om <ph name="TOPIC" /></translation>
 <translation id="7403691278183511381">Førstegangsoplevelse af Chrome</translation>
 <translation id="7423098979219808738">Spørg først</translation>
 <translation id="7423538860840206698">Blokeret fra at læse udklipsholderen</translation>

@@ -531,6 +531,7 @@
 <translation id="2529700525201305165"><ph name="PRODUCT_NAME" />에 로그인할 수 있는 사용자를 제한합니다.</translation>
 <translation id="2529880111512635313">강제로 설치된 앱과 확장 프로그램 목록 구성</translation>
 <translation id="253135976343875019">AC 전원으로 실행할 때 유휴 경고 지연</translation>
+<translation id="2536283449105918306">탭언더 보호 사용</translation>
 <translation id="2552966063069741410">시간대</translation>
 <translation id="2562339630163277285">순간 검색결과를 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
 
@@ -1226,7 +1227,7 @@
 
           예제 패턴은 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started 페이지를 참조하세요.</translation>
 <translation id="467449052039111439">URL 목록 열기</translation>
-<translation id="4680961954980851756">자동완성 사용</translation>
+<translation id="4680961954980851756">자동 완성 사용</translation>
 <translation id="4722122254122249791">지정된 출처의 사이트 격리 사용 설정</translation>
 <translation id="4722399051042571387">false인 경우 사용자는 보안 강도가 약하고 추측하기 쉬운 PIN을 설정할 수 없습니다.
 
@@ -1576,7 +1577,7 @@
       이 정책이 설정되지 않았거나 false로 설정된 경우 <ph name="PRODUCT_NAME" />은(는) 기존 온라인 폐기 검사 설정을 적용합니다.</translation>
 <translation id="572720239788271400"><ph name="PRODUCT_NAME" />에서 구성요소 업데이트를 사용 설정합니다.</translation>
 <translation id="5728154254076636808"><ph name="PRODUCT_NAME" /> 프로필 데이터 로밍 사본 생성을 사용 설정합니다.</translation>
-<translation id="5732972008943405952">처음 실행할 때 기본 브라우저에서 양식 자동완성 데이터 가져오기</translation>
+<translation id="5732972008943405952">처음 실행할 때 기본 브라우저에서 양식 자동 완성 데이터 가져오기</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5770738360657678870">개발자 채널(불안정할 수 있음)</translation>
 <translation id="5774856474228476867">기본 검색 공급자 검색 URL</translation>
@@ -1789,11 +1790,11 @@
 
       이 정책을 설정하지 않거나 True로 설정하면 등록된 기기에서 사용자가 기기를 사용한 기간을 보고합니다. 정책을 False로 설정하면 기기 활동 시간이 기록되거나 보고되지 않습니다.</translation>
 <translation id="6212868225782276239">차단 목록에 있는 프린터를 제외한 모든 프린터가 표시됨</translation>
-<translation id="6219965209794245435">이 정책을 사용하도록 설정하면 이전 기본 브라우저에서 양식 자동완성 데이터를 강제로 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
+<translation id="6219965209794245435">이 정책을 사용하도록 설정하면 이전 기본 브라우저에서 양식 자동 완성 데이터를 강제로 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
 
-      사용 중지하면 양식 자동완성 데이터를 가져오지 않습니다.
+      사용 중지하면 양식 자동 완성 데이터를 가져오지 않습니다.
 
-      설정하지 않은 경우 양식 자동완성 데이터를 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
+      설정하지 않은 경우 양식 자동 완성 데이터를 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="6224304369267200483">자동으로 직접 보안 키 인증을 허용하는 URL/도메인</translation>
 <translation id="6233173491898450179">다운로드 디렉토리 설정</translation>
 <translation id="6244210204546589761">시작 시 열리는 URL</translation>
@@ -1826,11 +1827,11 @@
 <translation id="637934607141010488">최근 로그인한 기기 사용자 목록을 보고합니다.
 
       이 정책이 false로 설정된 경우 사용자 목록이 보고되지 않습니다.</translation>
-<translation id="6392973646875039351"><ph name="PRODUCT_NAME" />의 자동완성 기능을 사용하도록 설정하면 사용자가 주소나 신용카드 정보와 같이 이전에 저장한 정보를 사용하여 웹 양식을 자동으로 완성할 수 있습니다.
+<translation id="6392973646875039351"><ph name="PRODUCT_NAME" />의 자동 완성 기능을 사용하도록 설정하면 사용자가 주소나 신용카드 정보와 같이 이전에 저장한 정보를 사용하여 웹 양식을 자동으로 완성할 수 있습니다.
 
-      이 설정을 사용 중지하면 사용자가 자동완성을 사용할 수 없습니다.
+      이 설정을 사용 중지하면 사용자가 자동 완성을 사용할 수 없습니다.
 
-      이 설정을 사용하거나 값을 설정하지 않으면 자동완성을 사용자가 관리할 수 있게 됩니다. 사용자가 자동완성 프로필을 설정하고 원하는 대로 자동완성을 설정하거나 해제할 수 있습니다.</translation>
+      이 설정을 사용하거나 값을 설정하지 않으면 자동 완성을 사용자가 관리할 수 있게 됩니다. 사용자가 자동 완성 프로필을 설정하고 원하는 대로 자동 완성을 설정하거나 해제할 수 있습니다.</translation>
 <translation id="6394350458541421998">이 정책은 <ph name="PRODUCT_OS_NAME" /> 버전 29를 기준으로 지원 중단되었습니다. 대신 PresentationScreenDimDelayScale 정책을 사용해 주시기 바랍니다.</translation>
 <translation id="6401669939808766804">사용자 로그아웃</translation>
 <translation id="6417861582779909667">쿠키 설정이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
@@ -1912,7 +1913,7 @@
 <translation id="6689792153960219308">하드웨어 상태 보고</translation>
 <translation id="6698071416141001300">비밀번호가 재사용되어 위험 계정에 관한 비밀번호 보호 경고가 실행됨</translation>
 <translation id="6699880231565102694">원격 액세스 호스트를 위한 2단계 인증 사용</translation>
-<translation id="6724842112053619797">이 설정을 사용하면 북마크, 데이터 자동완성, 비밀번호 등 <ph name="PRODUCT_NAME" /> 프로필에 저장된 설정이 로밍 사용자 프로필 폴더나 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 정책을 통해 관리자가 지정한 위치에 저장된 파일에도 작성됩니다. 이 정책을 사용하면 클라우드 동기화는 사용 중지됩니다.
+<translation id="6724842112053619797">이 설정을 사용하면 북마크, 데이터 자동 완성, 비밀번호 등 <ph name="PRODUCT_NAME" /> 프로필에 저장된 설정이 로밍 사용자 프로필 폴더나 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 정책을 통해 관리자가 지정한 위치에 저장된 파일에도 작성됩니다. 이 정책을 사용하면 클라우드 동기화는 사용 중지됩니다.
 
       이 정책을 사용 중지하거나 설정하지 않으면 일반 로컬 프로필만 사용됩니다.
 
@@ -2677,6 +2678,12 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="9096086085182305205">인증 서버 허용목록</translation>
 <translation id="9098553063150791878">HTTP 인증 정책</translation>
 <translation id="9105265795073104888">프록시 설정 옵션 중 일부만 Android 앱에서 사용할 수 있습니다. Android 앱에서는 자발적으로 프록시를 사용하도록 선택할 수 있습니다. 강제로 Android 앱에서 프록시를 사용하도록 할 수 없습니다.</translation>
+<translation id="9110615239151047025">탭언더로 감지된 탐색을 차단하는 탭언더 차단을 사용하도록 설정합니다.
+
+      탭언더에 관한 설명은 https://www.chromestatus.com/features/5675755719622656 페이지를 참조하세요.
+      이 정책을 True로 설정하면 <ph name="PRODUCT_NAME" />에서 탭언더로 감지된 탐색이 차단됩니다.
+      이 정책을 False로 설정하면 <ph name="PRODUCT_NAME" />에서 사이트의 탭언더 탐색이 실행될 수 있습니다.
+      기본적으로 이 설정은 True로 설정되어 있습니다.</translation>
 <translation id="9112727953998243860">엔터프라이즈 프린터 설정 파일</translation>
 <translation id="9112897538922695510">프로토콜 핸들러 목록을 등록할 수 있도록 허용합니다. 추천 정책만 될 수 있습니다. |protocol| 속성은 'mailto'와 같은 스키마로 설정해야 하며 |url| 속성은 스키마를 처리하는 애플리케이션의 URL 패턴으로 설정해야 합니다. 패턴에 '%s'를 포함할 수 있으며, 포함할 경우 이 기호는 처리된 URL로 교체됩니다.
 

@@ -47,7 +47,6 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好：</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1384959399684842514">已暫停下載</translation>
-<translation id="1389236224998445076">節省的流量：</translation>
 <translation id="1389974829397082527">這裡沒有任何書籤</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 搜尋</translation>
 <translation id="1404122904123200417">內嵌位置：<ph name="WEBSITE_URL" /></translation>
@@ -83,7 +82,6 @@
 <translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">正在等候下載…</translation>
 <translation id="1672586136351118594">不要再顯示</translation>
-<translation id="169033420419426091">找不到 SD 卡，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1729516292547892356">如要查看虛擬實境內容，請更新 Google VR 服務</translation>
@@ -142,7 +140,6 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
 <translation id="2259659629660284697">匯出密碼…</translation>
-<translation id="2266890032547182881">數據用量解析</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2286841657746966508">帳單地址</translation>
 <translation id="230115972905494466">找不到相容的裝置</translation>
@@ -368,7 +365,6 @@
 <translation id="4521489764227272523">系統已將你所選取的資料從 Chrome 和其他同步的裝置中移除。
 
 你的 Google 帳戶仍可能保留了其他類型的瀏覽紀錄，例如其他 Google 服務中的搜尋和活動紀錄 (可前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查詢)。</translation>
-<translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4532845899244822526">選擇資料夾</translation>
 <translation id="4544481164434183075">這個網頁是於 <ph name="CREATION_TIME" />建立，可能會和線上版本有所不同。</translation>
@@ -690,9 +686,9 @@
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7366340029385295517">正在投放到 <ph name="SCREEN_NAME" /></translation>
-<translation id="7374228672268453233">數據用量：</translation>
 <translation id="7375125077091615385">類型：</translation>
 <translation id="7400418766976504921">網址</translation>
+<translation id="7400730245189251663">更多「<ph name="TOPIC" />」相關內容</translation>
 <translation id="7403691278183511381">Chrome 初次使用體驗</translation>
 <translation id="7423098979219808738">先詢問我</translation>
 <translation id="7423538860840206698">禁止讀取剪貼簿</translation>

@@ -534,6 +534,7 @@
 <translation id="2529700525201305165">To lietotāju ierobežošana, kuriem ir atļauts pierakstīties pārlūkā <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurēt piespiedu kārtā instalēto lietotņu un paplašinājumu sarakstu</translation>
 <translation id="253135976343875019">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar maiņstrāvu</translation>
+<translation id="2536283449105918306">Iespējo aizsardzību pret tab-under novirzīšanu</translation>
 <translation id="2552966063069741410">Laika josla</translation>
 <translation id="2562339630163277285">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota dinamiskās meklēšanas rezultātu iegūšanai. Vietrādī URL ir jābūt virknei <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja ievadīto tekstu.
 
@@ -2684,6 +2685,12 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
 <translation id="9098553063150791878">HTTP autentifikācijas politikas</translation>
 <translation id="9105265795073104888">Android lietotnēm ir pieejama tikai starpniekservera konfigurācijas opciju apakškopa. Android lietotnes šo starpniekserveri var izmantot, ja tas ir nepieciešams. Jūs nevarat likt lietotnēm izmantot starpniekserveri.</translation>
+<translation id="9110615239151047025">Iespējo aizsardzību pret tab-under novirzīšanu, kas bloķē navigāciju, kura noteikta kā tab-under novirzīšana.
+
+      Skaidrojumu par tab-under novirzīšanu skatiet vietnē https://www.chromestatus.com/features/5675755719622656.
+      Ja šai politikai ir iestatīta vērtība “True”, tiek bloķēta navigācija, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek noteikta kā tab-under novirzīšana.
+      Ja šai politikai ir iestatīta vērtība “False”, pārlūkā <ph name="PRODUCT_NAME" /> vietnēm tiek atļauts veikt tab-under navigāciju.
+      Pēc noklusējuma šai politikai ir iestatīta vērtība “True”.</translation>
 <translation id="9112727953998243860">Uzņēmuma printeru konfigurācijas fails</translation>
 <translation id="9112897538922695510">Ļauj reģistrēt protokolu apdarinātāju sarakstu. Šī var būt tikai ieteicama politika. Rekvizītā |protocol| ir jāiestata shēma, piemēram “mailto”, un rekvizītā |url| ir jāiestata tās lietojumprogrammas URL raksts, kura apstrādā shēmu. Parametrā var iekļaut “%s”, kas tiks aizstāts ar apstrādāto URL.
 

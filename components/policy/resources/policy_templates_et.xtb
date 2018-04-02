@@ -436,12 +436,12 @@
 <translation id="2386362615870139244">Ekraani aktiveerimise lukustamise lubamine</translation>
 <translation id="2411817661175306360">Paroolikaitse hoiatus on välja lülitatud</translation>
 <translation id="2411919772666155530">Blokeerige märguanded nendel saitidel</translation>
-<translation id="2415979855753196119">Võimaldab teil juhtida ohus olevate paroolikaitse kontode märgistamise käivitamist. Ohus olevate paroolikaitse kontode märgistamine tähendab, et Google'it teavitatakse, kui kontot ähvardab kaaperdamise oht.
+<translation id="2415979855753196119">Võimaldab teil juhtida paroolikaitse teavituse käivitamist riskantsetel kontodel. Paroolikaitse teavitus riskantsel kontol tähendab, et Google'it teavitatakse, et kontot ähvardab kaaperdamise oht.
 
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOff”, ei käivitata ohus olevate paroolikaitse kontode märgistamist.
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPasswordReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutaja kasutab oma Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPhishingReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil.
-      Kui see reegel jäetakse määramata, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil, kuid kasutaja saab seda muuta.</translation>
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOff”, ei käivitata riskantsetel kontodel paroolikaitse teavitust.
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPasswordReuse”, käivitatakse riskantsetel kontodel paroolikaitse teavitus siis, kui kasutaja kasutab Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPhishingReuse”, käivitatakse riskantsetel kontodel paroolikaitse teavitus siis, kui kasutaja kasutab Google'i parooli andmepüügisaidil.
+      Kui see reegel jäetakse määramata, käivitatakse paroolikaitse teavitus riskantsetel kontodel siis, kui kasutaja kasutab Google'i parooli andmepüügisaidil, kuid kasutaja saab seda muuta.</translation>
 <translation id="2418507228189425036">Keelab brauseris <ph name="PRODUCT_NAME" /> sirvimisajaloo salvestamise ja takistab kasutajaid seadet muutmast.
 
       Kui seade on lubatud, ei salvestata sirvimisajalugu. Seade keelab ka vahelehtede sünkroonimise.
@@ -531,6 +531,7 @@
 <translation id="2529700525201305165">Piira kasutajaid, kes saavad logida sisse rakendusse <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Sunniviisiliselt installitud rakenduste ja laienduste loendi seadistamine</translation>
 <translation id="253135976343875019">Tegevusetuse hoiatuse viivitus vahelduvvoolutoite kasutamisel</translation>
+<translation id="2536283449105918306">Lubab kaitse vahekaardi all tehtavate toimingute eest</translation>
 <translation id="2552966063069741410">Ajavöönd</translation>
 <translation id="2562339630163277285">Määrab otsingumootori URL-i, mida kasutatakse vahetute otsingutulemuste esitamiseks. URL peab sisaldama stringi <ph name="SEARCH_TERM_MARKER" />, mis asendatakse päringu tegemisel kasutaja sisestatud tekstiga.
 
@@ -638,10 +639,10 @@
 
       Kui lubate selle seade, kasutab printimise eelvaade vaikesihtkohana operatsioonisüsteemi vaikeprinterit.</translation>
 <translation id="2867699958489427143">Mine tagasi ja jää sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Protsessi käigus tehakse täielik Powerwash.</translation>
-<translation id="286802604195763750">Võimaldab teil juhtida paroolikaitse kontode hoiatuse käivitamist. Paroolikaitse hoiatab kasutajaid, kui nad kasutavad oma kaitstud parooli potentsiaalselt ohtlikel saitidel.
+<translation id="286802604195763750">Võimaldab teil juhtida paroolikaitse hoiatuse käivitamist. Paroolikaitse hoiatab kasutajaid, kui nad kasutavad oma kaitstud parooli potentsiaalselt ohtlikel saitidel.
 
-      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOff”, siis paroolikaitse hoiatusi ei kuvata.
-      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOnPasswordReuse”, kuvatakse paroolikaitse hoiatused siis, kui kasutaja kasutab oma Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
+      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOff”, siis paroolikaitse hoiatust ei kuvata.
+      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOnPasswordReuse”, kuvatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
       Kui reegli väärtuseks määratakse „PasswordProtectionWarningOnPhishingReuse”, kuvatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil.
       Kui see reegel jäetakse määramata, käivitatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil, kuid kasutaja saab seda muuta.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
@@ -2676,6 +2677,12 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
 <translation id="9098553063150791878">HTTP autentimise reeglid</translation>
 <translation id="9105265795073104888">Androidi rakendustele muudetakse kättesaadavaks ainult puhverserveri seadistuse valikute alamkomplekt. Androidi rakenduste jaoks on puhverserveri kasutamine vabatahtlik. Te ei saa puhverserveri kasutamist sundida.</translation>
+<translation id="9110615239151047025">Lubab kaitse vahekaardi all tehtavate toimingute eest, mis blokeerib vahekaardi all tehtavate toimingutena tuvastatud navigeerimised.
+
+      Vahekaardi all tehtavate toimingute selgituse leiate saidilt https://www.chromestatus.com/features/5675755719622656.
+      Kui selle reegli väärtuseks on määratud Tõene, blokeeritakse navigeerimised, mille teenus <ph name="PRODUCT_NAME" /> tuvastab vahekaardi all tehtavate toimingutena.
+      Kui selle reegli väärtuseks on määratud Väär, lubab teenus <ph name="PRODUCT_NAME" /> saitidele vahekaardi all tehtavate toimingutena tuvastatud navigeerimised.
+      Vaikimisi on selle reegli väärtuseks määratud Tõene.</translation>
 <translation id="9112727953998243860">Ettevõtte printerite konfiguratsioonifail</translation>
 <translation id="9112897538922695510">Lubab teil registreerida protokollitöötlejate loendi. See saab olla ainult soovitatud reegel. Atribuut |protocol| tuleb määrata skeemile (nagu „mailto”) ja atribuut |url| tuleb määrata skeemi käsitleva rakenduse URL-i mustrile. Muster võib sisaldada märgendit „%s”, mis asendatakse sellisel juhul käsitletava URL-iga.
 

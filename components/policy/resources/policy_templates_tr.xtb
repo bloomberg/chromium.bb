@@ -531,6 +531,7 @@
 <translation id="2529700525201305165"><ph name="PRODUCT_NAME" /> uygulamasında oturum açmasına izin verilen kullanıcıları kısıtla</translation>
 <translation id="2529880111512635313">Yüklenmeye zorlanan uygulama ve uzantıların listesini yapılandır</translation>
 <translation id="253135976343875019">AC güçle çalışırken boşta kalma uyarısı gecikmesi</translation>
+<translation id="2536283449105918306">Sekme altı korumasını etkinleştirir</translation>
 <translation id="2552966063069741410">Saat dilimi</translation>
 <translation id="2562339630163277285">Anında arama sonuçları sağlamak için kullanılan arama motorunun URL'sini belirtir. URL, <ph name="SEARCH_TERM_MARKER" /> dizesini içermelidir. Sorgu sırasında, kullanıcının girdiği metin bu dizenin yerini alır.
 
@@ -679,7 +680,7 @@
 <translation id="2987227569419001736">Web Bluetooth API'sının kullanımını kontrol et</translation>
 <translation id="2998886474614739865">
       NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturuma girmesi gecikebilir.
+      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturumuna girişte bir gecikme olabilir.
       Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede ad verilmiş her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
       Bu politikanın devre dışı bırakılması halinde Site Bazlı İzolasyon işlem yönetimi mantığı etkin olur.
       Bu politikanın yapılandırılmaması halinde oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
@@ -794,7 +795,7 @@
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
 <translation id="3386001018488754001">
       NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturuma girmesi gecikebilir.
+      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturumuna girişte bir gecikme olabilir.
       Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
       Bu politikanın etkinleştirilmesi halinde her site kendi işleminde çalışır.
       Bu politikanın devre dışı bırakılması halinde Site Bazlı İzolasyon işlem yönetimi mantığı etkin olur.
@@ -2680,6 +2681,12 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="9096086085182305205">Kimlik doğrulama sunucusu beyaz listesi</translation>
 <translation id="9098553063150791878">HTTP kimlik doğrulaması için politikalar</translation>
 <translation id="9105265795073104888">Sadece proxy yapılandırma seçeneklerinin bir alt kümesi Android uygulamalarında kullanılabilir. Android uygulamaları proxy kullamayı kendi tercihleriyle seçebilir. Uygulamaları proxy kullanmaya zorlayamazsınız.</translation>
+<translation id="9110615239151047025">Sekme altı olduğu belirlenen gezinmeleri engelleyen sekme altı korumasını etkinleştirir.
+
+      Sekme altı ile ilgili açıklama için https://www.chromestatus.com/features/5675755719622656 adresine bakın.
+      Bu politika Doğru (True) değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> tarafından sekme altı olduğu anlaşılan gezinmeler engellenir.
+      Bu politika Yanlış (False) değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> sitelerin sekme altı gezinmelerine izin verir.
+      Varsayılan olarak bu politika Doğru (True) değerine ayarlanmıştır.</translation>
 <translation id="9112727953998243860">Kurumsal yazıcı yapılandırma dosyası</translation>
 <translation id="9112897538922695510">Bir protokol işleyicileri listesini kaydetmenize olanak tanır. Bu, yalnızca önerilen bir politika olabilir. |protocol| özelliğinin "mailto" gibi şemaya ayarlanması ve |url| özelliğinin de şemayı işleyen uygulamanın URL kalıbına ayarlanması gerekir. Kalıp bir "%s" makrosu içerebilir; bu durumda, makro işlenen URL tarafından değiştirilir.
 

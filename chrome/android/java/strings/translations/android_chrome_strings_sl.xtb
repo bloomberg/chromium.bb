@@ -47,7 +47,6 @@
 <translation id="138361230106469022">Pozdravljeni, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1384959399684842514">Prenos je zaustavljen</translation>
-<translation id="1389236224998445076">Količina prihranjenega prenosa podatkov:</translation>
 <translation id="1389974829397082527">Tu ni nobenega zaznamka</translation>
 <translation id="1397811292916898096">Iskanje z iskalnikom <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Vdelano v URL <ph name="WEBSITE_URL" /></translation>
@@ -83,7 +82,6 @@
 <translation id="1670399744444387456">Osnovno</translation>
 <translation id="1671236975893690980">Prenos na čakanju …</translation>
 <translation id="1672586136351118594">Tega ne prikaži več</translation>
-<translation id="169033420419426091">Prenos datoteke <ph name="FILE_NAME" /> ni uspel, ker ni kartice SD.</translation>
 <translation id="1709438864123551175">Varčevanje s podatki</translation>
 <translation id="1718835860248848330">Zadnja ura</translation>
 <translation id="1729516292547892356">Če si želite ogledati vsebino v navidezni resničnosti, posodobite Googlove storitve za navidezno resničnost</translation>
@@ -142,7 +140,6 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />, spletna aplikacija. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Nadaljujte kot <ph name="USER_FULL_NAME" /></translation>
 <translation id="2259659629660284697">Izvozi gesla …</translation>
-<translation id="2266890032547182881">Razčlenitev prenesene količine podatkov</translation>
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
 <translation id="2286841657746966508">Naslov za obračun storitev</translation>
 <translation id="230115972905494466">Ni združljivih naprav</translation>
@@ -368,7 +365,6 @@
 <translation id="4521489764227272523">Izbrani podatki so bili odstranjeni iz Chroma in sinhroniziranih naprav.
 
 V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in dejavnosti iz drugih Googlovih storitev, na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
-<translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4526249700380860531">Ogled in upravljanje shranjenih gesel na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Izbira mape</translation>
 <translation id="4544481164434183075">Ta stran je bila ustvarjena <ph name="CREATION_TIME" /> in se morda razlikuje od spletne različice.</translation>
@@ -690,9 +686,9 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7352939065658542140">VIDEOPOSNETEK</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Delitev 1 izbranega elementa z drugimi}one{Delitev # izbranega elementa z drugimi}two{Delitev # izbranih elementov z drugimi}few{Delitev # izbranih elementov z drugimi}other{Delitev # izbranih elementov z drugimi}}</translation>
 <translation id="7366340029385295517">Predvajanje na zaslonu <ph name="SCREEN_NAME" /></translation>
-<translation id="7374228672268453233">Količina prenesenih podatkov:</translation>
 <translation id="7375125077091615385">Vrsta:</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7400730245189251663">Več o tem: <ph name="TOPIC" /></translation>
 <translation id="7403691278183511381">Izkušnje ob prvem izvajanju Chroma</translation>
 <translation id="7423098979219808738">Najprej vprašaj</translation>
 <translation id="7423538860840206698">Blokirano branje vsebine odložišča</translation>

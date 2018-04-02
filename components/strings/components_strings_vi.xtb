@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1978555033938440688">Phiên bản chương trình cơ sở</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{và 1 ứng dụng khác}other{và # ứng dụng khác}}</translation>
+<translation id="2003709556000175978">Đặt lại mật khẩu của bạn ngay bây giờ</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
 <translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kiểm tra proxy và tường lửa<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 đề xuất}other{# đề xuất}}</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="20817612488360358">Cài đặt proxy hệ thống được đặt để sử dụng nhưng cấu hình proxy rõ ràng cũng được chỉ định.</translation>
+<translation id="2084558088529668945">Bạn đã nhập mật khẩu của mình trên một trang web không phải do <ph name="ORG_NAME" /> quản lý. Để bảo vệ tài khoản, không sử dụng lại mật khẩu của bạn trên các ứng dụng và trang web khác.</translation>
 <translation id="2091887806945687916">Âm thanh</translation>
 <translation id="2094505752054353250">Miền không khớp</translation>
 <translation id="2096368010154057602">Khu hành chính</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> mục khác}other{<ph name="ITEM_COUNT" /> mục khác}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome khuyên bạn nên đặt lại mật khẩu <ph name="ORG_NAME" /> của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kiểm tra tường lửa và cấu hình diệt vi-rút<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Sự cố</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">Được quản trị viên cho phép</translation>
 <translation id="4269787794583293679">(Không có tên người dùng)</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
+<translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4280429058323657511">, hết hạn <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Chặn (mặc định)</translation>
 <translation id="4325863107915753736">Không tìm được bài viết</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
 <translation id="5893752035575986141">Thẻ tín dụng được chấp nhận.</translation>
+<translation id="5898382028489516745">Chromium khuyên bạn nên đặt lại mật khẩu <ph name="ORG_NAME" /> của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (được đồng bộ hóa)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}}</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">Chính sách thiết bị</translation>
 <translation id="6477321094435799029">Chrome đã phát hiện mã bất thường trên trang này và đã chặn mã này để bảo vệ thông tin cá nhân của bạn (ví dụ như mật khẩu, số điện thoại và thẻ tín dụng).</translation>
 <translation id="6489534406876378309">Bắt đầu tải lên sự cố</translation>
+<translation id="6499038740797743453">Đặt lại mật khẩu?</translation>
 <translation id="6507833130742554667">Thẻ tín dụng và thẻ ghi nợ được chấp nhận.</translation>
 <translation id="6508722015517270189">Khởi động lại Chrome</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">Trang web này yêu cầu dữ liệu mà bạn đã nhập trước đó để được hiển thị đúng cách. Bạn có thể gửi lại dữ liệu này nhưng làm như vậy bạn sẽ lặp lại mọi hoạt động mà trang này đã thực hiện trước đó.</translation>
 <translation id="7552846755917812628">Thử các mẹo sau:</translation>
 <translation id="7554791636758816595">Tab mới</translation>
+<translation id="7564049878696755256">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="7567204685887185387">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị gian lận khi phát hành. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="7568593326407688803">Trang này bằng<ph name="ORIGINAL_LANGUAGE" />Bạn có muốn dịch trang này không?</translation>
 <translation id="7569952961197462199">Xóa thẻ tín dụng khỏi Chrome?</translation>
@@ -994,6 +1001,7 @@
 <translation id="8761567432415473239">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />tìm thấy chương trình độc hại<ph name="END_LINK" /> trên trang <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Thiết bị USB</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
+<translation id="8792621596287649091">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="8800988563907321413">Đề xuất ở gần bạn xuất hiện ở đây</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883848425547221593">Dấu trang Khác</translation>

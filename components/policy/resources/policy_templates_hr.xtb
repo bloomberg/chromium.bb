@@ -263,9 +263,9 @@
 <translation id="1897365952389968758">Dopusti svim web-lokacijama izvođenje JavaScripta</translation>
 <translation id="1906888171268104594">Kontrolira šalju li se Googleu izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima, uključujući izvješća o rušenju.
 
-      Ako se postavi na "točno", <ph name="PRODUCT_OS_NAME" /> slat će izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima.
+      Ako se postavi na True, <ph name="PRODUCT_OS_NAME" /> slat će izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima.
 
-      Ako se postavi na "netočno", izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima bit će onemogućena.
+      Ako se postavi na False, izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima bit će onemogućena.
 
       Ako se ne konfigurira, izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima na neupravljanim će uređajima biti onemogućena, a na upravljanim omogućena.</translation>
 <translation id="193259052151668190">Popis dopuštenih odvojivih USB uređaja</translation>
@@ -513,6 +513,7 @@
 <translation id="2529700525201305165">Ograničavanje korisnika koji se mogu prijaviti na uslugu <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfiguriranje popisa prisilno instaliranih aplikacija i proširenja</translation>
 <translation id="253135976343875019">Odgoda upozorenja o neaktivnosti dok je uređaj priključen na struju</translation>
+<translation id="2536283449105918306">Omogućuje zaštitu od skočnih kartica</translation>
 <translation id="2552966063069741410">Vremenska zona</translation>
 <translation id="2562339630163277285">Određuje URL tražilice koja se upotrebljava za davanje instant rezultata. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER" /> koji će se u trenutku postavljanja upita zamijeniti tekstom koji je korisnik dotad unio.
 
@@ -2552,6 +2553,12 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
 <translation id="9105265795073104888">Android aplikacijama dostupan je samo podskup opcija za konfiguraciju proxyja. Android aplikacije taj proxy mogu upotrebljavati dobrovoljno. Upotrebu proxyja ne možete im nametnuti.</translation>
+<translation id="9110615239151047025">Omogućuje zaštitu od skočnih kartica, što blokira kretanje uočeno kao skočne kartice.
+
+      Više o skočnim karticama potražite na stranici https://www.chromestatus.com/features/5675755719622656.
+      Ako je ovo pravilo postavljeno na True, kretanja koja <ph name="PRODUCT_NAME" /> uočava kao skočne kartice bit će blokirana.
+      Ako je ovo pravilo postavljeno na False, <ph name="PRODUCT_NAME" /> omogućit će web-lokacijama kretanje skočnih kartica.
+      Prema zadanim postavkama ovo pravilo je postavljeno na True.</translation>
 <translation id="9112727953998243860">Datoteka za konfiguraciju pisača tvrtke</translation>
 <translation id="9112897538922695510">Omogućuje vam registriranje popisa rukovatelja protokola. To pravilo može biti samo preporučeno. Entitet |protocol| treba se postaviti u shemu kao "mailto", a entitet |url| treba se postaviti u uzorak URL-a aplikacije koja rukuje shemom. Uzorak može uključivati "%s" koji će se, ako postoji, zamijeniti rukovanim URL-om.
 

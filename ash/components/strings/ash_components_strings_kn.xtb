@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="104962181688258143">ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ</translation>
-<translation id="1126871238933253947">ನೀವು ಹಿಂದೆ ಬಳಸುತ್ತಿದ್ದ ಕೀಬೋರ್ಡ್ ಭಾಷೆಗೆ ಬದಲಾಯಿಸಿ.</translation>
+<translation id="1122869341872663659"><ph name="QUERY" /> ಗಾಗಿ <ph name="N" /> ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳನ್ನು ಪ್ರದರ್ಶಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1134347825771908369">ವಾಲ್ಯೂಮ್ ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
 <translation id="1195667586424773550">ಟ್ಯಾಬ್‌ನ ವಿಳಾಸ ಪಟ್ಟಿಗೆ ಲಿಂಕ್‌ ಅನ್ನು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="1204450209689312104">ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಹೊಸ ವಿಂಡೋ ತೆರೆಯಿರಿ</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">ನೀವು ಮುಚ್ಚಿದ ಕೊನೆಯ ಟ್ಯಾಬ್‌ ಅಥವಾ ವಿಂಡೋವನ್ನು ಮರುತೆರೆಯಿರಿ</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ಅನ್ನು ಒತ್ತಿ ಹಿಡಿದುಕೊಳ್ಳಿ, ನೀವು ತೆರೆಯಲು ಬಯಸುವ ವಿಂಡೋವನ್ನು ಪಡೆಯುವವರೆಗೂ <ph name="TAB" /> ಅನ್ನು ಟ್ಯಾಪ್‌ ಮಾಡುತ್ತ ಇರಿ ನಂತರ ಬಿಡುಗಡೆಗೊಳಿಸಿ.</translation>
 <translation id="4092538597492297615">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌‌ಗೆ ಆಯ್ಕೆ ಮಾಡಲಾದ ವಿಷಯವನ್ನು ನಕಲಿಸಿ</translation>
+<translation id="4101772068965291327">ಮುಖ ಪುಟವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4123108089450197101">ಬುಕ್‌ಮಾರ್ಕ್‌ನಂತೆ ಲಿಂಕ್ ಉಳಿಸಿ</translation>
 <translation id="4141203561740478845">ವಿಳಾಸ ಪಟ್ಟಿ ಹೊಂದಿರುವ ಸಾಲನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ಅಥವಾ <ph name="ENTER" /></translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">ಅವಲೋಕನ ಮೋಡ್‌ ಕೀ</translation>
 <translation id="5104462712192763270">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಪುಟವನ್ನು ಉಳಿಸಿ</translation>
 <translation id="5121628974188116412">ಪುಟದ ಕೆಳಭಾಗಕ್ಕೆ ಹೋಗಿ</translation>
+<translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
 <translation id="5236674127086649162">ಸಂಗ್ರಹಿಸಿದ ವಿಷಯವನ್ನು ಬಳಸದೇ ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಪುಟವನ್ನು ಮರುಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="526651782186312376">ಸಾಲಿನ ಪ್ರಾರಂಭದವರೆಗಿನ ಪಠ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="5316716239522500219">ಪ್ರತಿಬಿಂಬಿಸುವ ಮಾನೀಟರ್‌ಗಳು</translation>
-<translation id="5335199890994453201">DOM ಪರೀಕ್ಷಕ ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ</translation>
 <translation id="5541719484267030947">ಟ್ಯಾಬ್‌ ಅನ್ನು ಡ್ರ್ಯಾಗ್‌ ಮಾಡುವಾಗ, <ph name="ESC" /> ಅನ್ನು ಒತ್ತಿರಿ</translation>
 <translation id="5554139136362089836">ಪ್ರಸ್ತುತ ಪುಟವನ್ನು ಹುಡುಕಿ</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ಒತ್ತಿರಿ ಮತ್ತು ಲಿಂಕ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="5757474750054631686">ಮಂದ ಕೀಬೋರ್ಡ್(ಬ್ಯಾಕ್‌‌ಲಿಟ್‌‌ ಕೀಬೋರ್ಡ್‌ಗಳಿಗಾಗಿ ಮಾತ್ರ)</translation>
 <translation id="587531134027443617">ಹಿಂದಿನ ಪದವನ್ನು ಅಳಿಸಿ</translation>
-<translation id="5928303187149237472">ಪರದೆಯ ರೆಸಲ್ಯೂಷನ್ ಬದಲಿಸಿ</translation>
+<translation id="5921745308587794300">ವಿಂಡೋ ತಿರುಗಿಸಿ</translation>
 <translation id="5975083100439434680">ಝೂಮ್ ಔಟ್</translation>
 <translation id="6022924867608035986">ಹುಡುಕಾಟ ಬಾಕ್ಸ್ ಪಠ್ಯವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="6045998054441862242">ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಆನ್‌ ಮಾಡಿ</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">ನಿಮ್ಮ ಶೆಲ್ಫ್‌ನಲ್ಲಿರುವ ಹಿಂದಿನ ಐಟಂ ಅನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ</translation>
 <translation id="6445033640292336367">ಟ್ಯಾಬ್ ಅನ್ನು ಅದರ ಮೂಲ ಸ್ಥಿತಿಗೆ ಹಿಂತಿರುಗಿಸಿ</translation>
 <translation id="649811797655257835">ಫೈಲ್‌ ಆಯ್ಕೆ ಮಾಡಿ, ನಂತರ <ph name="SPACE" /> ಅನ್ನು ಒತ್ತಿರಿ</translation>
-<translation id="6572206071785323178">ನೀವು ಹೊಂದಿಸಿದ ಕೀಬೋರ್ಡ್ ಭಾಷೆಗಳ ನಡುವೆ ಬದಲಿಸಿ. ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಭಾಷೆಯನ್ನು ಹೇಗೆ ಆಯ್ಕೆ ಮಾಡಬೇಕೆಂದು ತಿಳಿಯಿರಿ.</translation>
-<translation id="6634456834225946400">ಬುಕ್‌ಮಾರ್ಕ್ ಪಟ್ಟಿಯನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ (ತೋರಿಸಲಾಗಿದ್ದರೆ)</translation>
 <translation id="666343722268997814">ಹೈಲೈಟ್ ಮಾಡಿದ ಐಟಂಗಾಗಿ ಬಲ-ಕ್ಲಿಕ್ ಮೆನು ತೆರೆಯಿರಿ</translation>
 <translation id="6671538777808758331">ನಿಮ್ಮ ಹುಡುಕಾಟಕ್ಕಾಗಿ ಮುಂದಿನ ಹೊಂದಾಣಿಕೆಗೆ ಹೋಗಿ</translation>
 <translation id="6690765639083431875">ಎಡಭಾಗದಲ್ಲಿ ವಿಂಡೋವನ್ನು ಡಾಕ್‌ ಮಾಡಿ</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7917881398263220094">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಪುಟದ ಲೋಡ್ ಮಾಡುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ಅಥವಾ <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8130528849632411619">ಡಾಕ್ಯುಮೆಂಟ್‌ನ ಪ್ರಾರಂಭಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ಅಥವಾ <ph name="E" /></translation>
 <translation id="8234414138295101081">ಪರದೆಯನ್ನು 90 ಡಿಗ್ರಿಗಳಲ್ಲಿ ತಿರುಗಿಸಿ</translation>
-<translation id="826184564253127735">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ವೀಕ್ಷಕ</translation>
 <translation id="836869401750819675">ಡೌನ್‌ಲೋಡ್‌ಗಳ ಪುಟ ತೆರೆಯಿರಿ</translation>
 <translation id="8388247778047144397">ಟ್ಯಾಬ್ ಪಟ್ಟಿಯಲ್ಲಿನ ಖಾಲಿ ವಲಯಕ್ಕೆ ಲಿಂಕ್ ಎಳೆಯಿರಿ</translation>
 <translation id="8389638407792712197">ಹೊಸ ವಿಂಡೋವನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 ರಿಂದ 8 ರವರೆಗೆ</translation>
 <translation id="9041599225465145264">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ವಿಷಯವನ್ನು ಅಂಟಿಸಿ</translation>
 <translation id="9052808072970550123">ಮುಂದಿನ ಬಳಕೆದಾರರಿಗೆ ಬದಲಿಸಿ</translation>
+<translation id="906458777597946297">ವಿಂಡೋ ಹಿರಿದಾಗಿಸಿ</translation>
 <translation id="9106898733795143799">ಪುಟ ಮತ್ತು ವೆಬ್ ಬ್ರೌಸರ್</translation>
+<translation id="9162942292291287644"><ph name="QUERY" /> ಗಾಗಿ ಯಾವುದೇ ಫಲಿತಾಂಶಗಳಿಲ್ಲ</translation>
 <translation id="9179672198516322668">ಜನಪ್ರಿಯ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> ಅನ್ನು ಒತ್ತಿರಿ ಮತ್ತು ಲಿಂಕ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="945383118875625837">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಪಟ್ಟಿಗೆ ಲಿಂಕ್‌ ಅನ್ನು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>

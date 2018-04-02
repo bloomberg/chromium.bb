@@ -47,7 +47,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="138361230106469022">Dobrý deň, <ph name="FULL_NAME" />,</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1384959399684842514">Sťahovanie bolo pozastavené</translation>
-<translation id="1389236224998445076">Uložené dáta:</translation>
 <translation id="1389974829397082527">Žiadne záložky</translation>
 <translation id="1397811292916898096">Hľadať pomocou vyhľadávača <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Vložené na webe <ph name="WEBSITE_URL" /></translation>
@@ -83,7 +82,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1670399744444387456">Základné</translation>
 <translation id="1671236975893690980">Čaká sa na stiahnutie…</translation>
 <translation id="1672586136351118594">Nabudúce nezobrazovať</translation>
-<translation id="169033420419426091">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu chýbajúcej SD karty.</translation>
 <translation id="1709438864123551175">Šetrič dát</translation>
 <translation id="1718835860248848330">Posledná hodina</translation>
 <translation id="1729516292547892356">Na zobrazenie obsahu virtuálnej reality je potrebné aktualizovať služby Google VR</translation>
@@ -142,7 +140,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Pokračovať ako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2259659629660284697">Exportovať heslá…</translation>
-<translation id="2266890032547182881">Rozpis spotreby dát</translation>
 <translation id="2268044343513325586">Upraviť</translation>
 <translation id="2286841657746966508">Fakturačná adresa</translation>
 <translation id="230115972905494466">Nenašli sa žiadne kompatibilné zariadenia</translation>
@@ -368,7 +365,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4521489764227272523">Vybrané údaje boli odstránené z Chromu a vašich synchronizovaných zariadení.
 
 Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ďalšie formy histórie prehliadania, ako napríklad vyhľadávania a aktivity v iných službách Googlu.</translation>
-<translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Výber priečinka</translation>
 <translation id="4544481164434183075">Táto stránka je z <ph name="CREATION_TIME" /> a líši sa od online verzie.</translation>
@@ -690,9 +686,9 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Zdieľať 1 vybranú položku}few{Zdieľať # vybrané položky}many{Zdieľať # vybranej položky}other{Zdieľať # vybraných položiek}}</translation>
 <translation id="7366340029385295517">Prenáša sa na obrazovku <ph name="SCREEN_NAME" /></translation>
-<translation id="7374228672268453233">Využité dáta:</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
+<translation id="7400730245189251663">Viac o téme <ph name="TOPIC" /></translation>
 <translation id="7403691278183511381">Skúsenosť pri prvom spustení Chromu</translation>
 <translation id="7423098979219808738">Najprv sa spýtať</translation>
 <translation id="7423538860840206698">Blokovať čítanie schránky</translation>

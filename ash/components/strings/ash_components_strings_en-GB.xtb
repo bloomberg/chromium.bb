@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="104962181688258143">Open the Files app</translation>
-<translation id="1126871238933253947">Switch to the previous keyboard language that you were using.</translation>
+<translation id="1122869341872663659">Displaying <ph name="N" /> search results for <ph name="QUERY" /></translation>
 <translation id="1134347825771908369">Mute volume</translation>
 <translation id="1195667586424773550">Drag the link to the tab's address bar</translation>
 <translation id="1204450209689312104">Open a new window in incognito mode</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">Reopen the last tab or window that you closed</translation>
 <translation id="4090342722461256974">Press and hold <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, tap <ph name="TAB" /> until you get to the window that you want to open, then release.</translation>
 <translation id="4092538597492297615">Copy selected content to the clipboard</translation>
+<translation id="4101772068965291327">Open home page</translation>
 <translation id="4123108089450197101">Save the link as a bookmark</translation>
 <translation id="4141203561740478845">Highlight the row with the address bar</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> or <ph name="ENTER" /></translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">Overview mode key</translation>
 <translation id="5104462712192763270">Save your current page</translation>
 <translation id="5121628974188116412">Go to bottom of page</translation>
+<translation id="5222676887888702881">Sign out</translation>
 <translation id="5236674127086649162">Reload your current page without using cached content</translation>
 <translation id="526651782186312376">Select text to the beginning of the line</translation>
 <translation id="5316716239522500219">Mirror monitors</translation>
-<translation id="5335199890994453201">Show or hide the DOM Inspector</translation>
 <translation id="5541719484267030947">While dragging the tab, press <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Search the current page</translation>
 <translation id="5563050856984839829">Press <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> and click a link</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">Open the link in the tab</translation>
 <translation id="5757474750054631686">Dim keyboard (for backlit keyboards only)</translation>
 <translation id="587531134027443617">Delete the previous word</translation>
-<translation id="5928303187149237472">Change screen resolution</translation>
+<translation id="5921745308587794300">Rotate window</translation>
 <translation id="5975083100439434680">Zoom out</translation>
 <translation id="6022924867608035986">Clear search box text</translation>
 <translation id="6045998054441862242">Turn on high contrast mode</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">Highlight the previous item on your shelf</translation>
 <translation id="6445033640292336367">Return the tab to its original position</translation>
 <translation id="649811797655257835">Select the file, then press <ph name="SPACE" /></translation>
-<translation id="6572206071785323178">Switch between the keyboard languages that you've set. Learn how to choose your keyboard language.</translation>
-<translation id="6634456834225946400">Highlight the bookmarks bar (if shown)</translation>
 <translation id="666343722268997814">Open right-click menu for highlighted item</translation>
 <translation id="6671538777808758331">Go to the next match for your search</translation>
 <translation id="6690765639083431875">Dock a window on the left</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">Open a file in the browser</translation>
 <translation id="7917881398263220094">Stop the loading of your current page</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> or <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8130528849632411619">Go to beginning of document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> or <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotate screen 90 degrees</translation>
-<translation id="826184564253127735">Keyboard Shortcut Viewer</translation>
 <translation id="836869401750819675">Open the Downloads page</translation>
 <translation id="8388247778047144397">Drag the link to a blank area on the tab strip</translation>
 <translation id="8389638407792712197">Open new window</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 to 8</translation>
 <translation id="9041599225465145264">Paste content from the clipboard</translation>
 <translation id="9052808072970550123">Switch to the next user</translation>
+<translation id="906458777597946297">Maximise window</translation>
 <translation id="9106898733795143799">Page &amp; Web Browser</translation>
+<translation id="9162942292291287644">No search result for <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Popular Shortcuts</translation>
 <translation id="93603345341560814">Press <ph name="SHIFT" /> and click a link</translation>
 <translation id="945383118875625837">Drag link to bookmarks bar</translation>

@@ -508,6 +508,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="2529700525201305165">Omezit uživatele, kteří se mohou přihlásit do prohlížeče <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurace seznamu aplikací a rozšíření, jejichž instalace je vynucena</translation>
 <translation id="253135976343875019">Prodleva upozornění na nečinnost při napájení ze sítě</translation>
+<translation id="2536283449105918306">Aktivuje ochranu tab-under</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
 <translation id="2562339630163277285">Určuje adresu URL vyhledávače, který bude použit k získání výsledků dynamického vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />. Tento řetězec bude během dotazování nahrazen textem, který do daného okamžiku zadal uživatel.
 
@@ -2606,6 +2607,12 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="9096086085182305205">Seznam povolených serverů pro ověřování</translation>
 <translation id="9098553063150791878">Zásady pro ověření v protokolu HTTP</translation>
 <translation id="9105265795073104888">Aplikace Android obdrží pouze část možností konfigurace proxy serveru. Aplikace Android se mohou samy rozhodnout, zda proxy server použijí. Použití proxy serveru u nich nelze vynutit.</translation>
+<translation id="9110615239151047025">Aktivuje ochranu tab-under, která blokuje navigaci typu tab-under (zobrazení vyskakovacího okna a přesměrování původní karty na nový obsah).
+
+      Definici navigace typu tab-under naleznete zde: https://www.chromestatus.com/features/5675755719622656.
+      Pokud je tato zásada nastavena na hodnotu True, navigace, kterou <ph name="PRODUCT_NAME" /> určí jako tab-under, bude zablokována.
+      Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> povolí webům provádět navigaci typu tab-under.
+      Ve výchozím nastavení je zásada nastavena na hodnotu True.</translation>
 <translation id="9112727953998243860">Konfigurační soubor podnikových tiskáren</translation>
 <translation id="9112897538922695510">Umožňuje zaregistrovat seznam obslužných nástrojů protokolů. Tato zásada může být pouze doporučena. Vlastnost |protocol| musí být nastavena na schéma jako „mailto“ a vlastnost |url| musí být nastavena na vzorec adresy URL aplikace, která schéma zpracovává. Vzorec může obsahovat specifikátor „%s“, který (bude-li zadán) bude nahrazen zpracovanou adresou URL.
 

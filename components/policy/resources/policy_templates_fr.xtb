@@ -267,7 +267,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Le format de la valeur correspond aux noms des fuseaux horaires de la "IANA Time Zone Database" (voir la page https://en.wikipedia.org/wiki/Tz_database). La plupart des fuseaux horaires se présentent sous la forme "continent/grande_ville" ou "océan/grande_ville".
 
       Si cette règle est définie, la mise à jour automatique du fuseau horaire selon la position de l'appareil est désactivée et la règle SystemTimezoneAutomaticDetection est également ignorée.</translation>
-<translation id="1888871729456797026">Le jeton d'enregistrement des règles relatives au cloud sur ordinateur</translation>
+<translation id="1888871729456797026">Jeton d'enregistrement des règles relatives au cloud sur ordinateur</translation>
 <translation id="1897365952389968758">Autoriser tous les sites à exécuter JavaScript</translation>
 <translation id="1906888171268104594">Détermine si les statistiques d'utilisation et les données de diagnostic, telles que des rapports d'erreurs, doivent être envoyées à Google.
 
@@ -444,12 +444,12 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2386362615870139244">Autoriser les WakeLock forçant l'activation de l'écran</translation>
 <translation id="2411817661175306360">L'avertissement relatif à la protection par mot de passe est désactivé</translation>
 <translation id="2411919772666155530">Bloquer les notifications sur ces sites</translation>
-<translation id="2415979855753196119">Vous permet de contrôler le déclenchement du signalement de compte à risque au niveau de la protection par mot de passe. Ce type de signalement permet d'informer Google que le compte concerné risque d'être piraté.
+<translation id="2415979855753196119">Vous permet de définir les conditions de signalement d'un compte dont la protection par mot de passe est en danger. Ce type de signalement permet d'informer Google que le compte concerné risque d'être piraté.
 
-      Si cette règle est définie sur "PasswordProtectionRiskOff", aucun signalement de compte à risque au niveau de la protection par mot de passe n'est déclenché.
-      Si elle est définie sur "PasswordProtectionRiskOnPasswordReuse", les comptes à risque au niveau de la protection par mot de passe sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites qui ne figurent pas dans la liste blanche.
-      Si cette règle est définie sur "PasswordProtectionRiskOnPhishingReuse", les comptes à risque au niveau de la protection par mot de passe sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites d'hameçonnage.
-      Si cette règle n'est pas configurée, les comptes à risque au niveau de la protection par mot de passe sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites d'hameçonnage, mais les utilisateurs peuvent modifier ce paramètre.</translation>
+      Si cette règle est définie sur "PasswordProtectionRiskOff", aucun signalement n'est déclenché.
+      Si elle est définie sur "PasswordProtectionRiskOnPasswordReuse", les comptes dont la protection par mot de passe est en péril sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites qui ne figurent pas sur la liste blanche.
+      Si elle est définie sur "PasswordProtectionRiskOnPhishingReuse", les comptes à risque sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites d'hameçonnage.
+      Il en va de même lorsque la règle n'est pas configurée, excepté que les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="2418507228189425036">Désactive l'enregistrement de l'historique du navigateur dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
 
       Si ce paramètre est activé, l'historique de navigation n'est pas enregistré. Il désactive également la synchronisation des onglets.
@@ -539,6 +539,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2529700525201305165">Ne pas autoriser certains utilisateurs à se connecter à <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configurer la liste des applications et des extensions dont l'installation est forcée</translation>
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
+<translation id="2536283449105918306">Active la protection contre le tab-under</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
 <translation id="2562339630163277285">Spécifie l'URL du moteur de recherche utilisé pour fournir des résultats instantanés. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur.
 
@@ -647,10 +648,10 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="2867699958489427143">Rétablissez et conservez la version cible si elle est antérieure à la version de l'OS. Effectuez un Powerwash complet pendant le processus.</translation>
 <translation id="286802604195763750">Vous permet de contrôler le déclenchement de l'avertissement relatif à la protection par mot de passe. La protection par mot de passe affiche une alerte lorsque les utilisateurs réutilisent leur mot de passe protégé sur des sites potentiellement suspects.
 
-      Si cette règle est définie sur "PasswordProtectionWarningOff", aucun avertissement relatif à la protection par mot de passe ne s'affiche.
-      Si elle est définie sur "PasswordProtectionWarningOnPasswordReuse", l'avertissement relatif à la protection par mot de passe s'affiche lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites qui ne figurent pas dans la liste blanche.
-      Si cette règle est définie sur "PasswordProtectionWarningOnPhishingReuse", l'avertissement relatif à la protection par mot de passe s'affiche lorsqu'ils les réutilisent sur des sites d'hameçonnage.
-      Si cette règle n'est pas configurée, l'avertissement relatif à la protection par mot de passe s'affiche lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites d'hameçonnage, mais les utilisateurs peuvent modifier ce paramètre.</translation>
+      Si cette règle est définie sur "PasswordProtectionWarningOff", aucun avertissement ne s'affiche.
+      Si elle est définie sur "PasswordProtectionWarningOnPasswordReuse", l'avertissement s'affiche lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites qui ne figurent pas sur la liste blanche.
+      Si elle est définie sur "PasswordProtectionWarningOnPhishingReuse", il s'affiche lorsqu'ils les réutilisent sur des sites d'hameçonnage.
+      Il en va de même lorsque la règle n'est pas configurée, excepté que les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="2874209944580848064">Remarque concernant les appareils <ph name="PRODUCT_OS_NAME" /> compatibles avec les applications Android :</translation>
 <translation id="2877225735001246144">Désactiver la consultation CNAME lors de la négociation de l'authentification Kerberos</translation>
@@ -2703,6 +2704,12 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9098553063150791878">Règles pour l'authentification HTTP</translation>
 <translation id="9105265795073104888">Les applications Android n'ont accès qu'à un sous-ensemble d'options de configuration du proxy. Elles peuvent avoir été volontairement conçues pour utiliser le proxy, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
+<translation id="9110615239151047025">Active la protection contre le tab-under, ce qui bloque la navigation si cette pratique est détectée.
+
+      Pour en savoir plus sur le tab-under, consultez la page https://www.chromestatus.com/features/5675755719622656.
+      Si cette règle est définie sur "True", la navigation est bloquée si <ph name="PRODUCT_NAME" /> détecte un cas de tab-under.
+      Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> autorise le tab-under sur les sites.
+      Par défaut, cette règle est définie sur "True".</translation>
 <translation id="9112727953998243860">Fichier de configuration des imprimantes d'entreprise</translation>
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
