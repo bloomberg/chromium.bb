@@ -169,8 +169,8 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
   base::RunLoop().RunUntilIdle();
 
    // Two fetchers should be created.
-  EXPECT_TRUE(fetcher_tester.HandleFetcher(0));
-  EXPECT_TRUE(fetcher_tester.HandleFetcher(1));
+  EXPECT_TRUE(fetcher_tester.HandleFetcher(a));
+  EXPECT_TRUE(fetcher_tester.HandleFetcher(b));
 
   EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states[a]);
   EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states[b]);
@@ -184,7 +184,7 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
   base::RunLoop().RunUntilIdle();
 
   // No new fetchers.
-  EXPECT_FALSE(fetcher_tester.HandleFetcher(2));
+  EXPECT_FALSE(fetcher_tester.HandleFetcher(c));
   EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, cached_states[a]);
   EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, cached_states[b]);
   EXPECT_EQ(0U, cached_states.count(c));

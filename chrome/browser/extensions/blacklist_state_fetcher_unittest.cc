@@ -34,7 +34,7 @@ TEST_F(BlacklistStateFetcherTest, RequestBlacklistState) {
   BlacklistState result;
   fetcher.Request("a", base::Bind(&Assign, &result));
 
-  EXPECT_TRUE(tester.HandleFetcher(0));
+  EXPECT_TRUE(tester.HandleFetcher("a"));
   EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, result);
 }
 
@@ -65,12 +65,12 @@ TEST_F(BlacklistStateFetcherTest, RequestMultipleBlacklistStates) {
   fetcher.Request("f", base::Bind(&Assign, &result[8]));
 
   // 6 fetchers should be created. Sending responses in shuffled order.
-  EXPECT_TRUE(tester.HandleFetcher(4));
-  EXPECT_TRUE(tester.HandleFetcher(2));
-  EXPECT_TRUE(tester.HandleFetcher(5));
-  EXPECT_TRUE(tester.HandleFetcher(1));
-  EXPECT_TRUE(tester.HandleFetcher(0));
-  EXPECT_TRUE(tester.HandleFetcher(3));
+  EXPECT_TRUE(tester.HandleFetcher("e"));
+  EXPECT_TRUE(tester.HandleFetcher("c"));
+  EXPECT_TRUE(tester.HandleFetcher("f"));
+  EXPECT_TRUE(tester.HandleFetcher("b"));
+  EXPECT_TRUE(tester.HandleFetcher("a"));
+  EXPECT_TRUE(tester.HandleFetcher("d"));
 
   EXPECT_EQ(NOT_BLACKLISTED, result[0]);
   EXPECT_EQ(NOT_BLACKLISTED, result[1]);

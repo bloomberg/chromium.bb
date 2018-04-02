@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/common/safe_browsing/crx_info.pb.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 
 namespace extensions {
 
@@ -24,17 +23,18 @@ class TestBlacklistStateFetcher {
   void SetBlacklistVerdict(const std::string& id,
                            ClientCRXListInfoResponse_Verdict state);
 
-  // Get URLFetcher by its id from factory, send the appropriate response.
+  // Send the appropriate response for the request for extension with id |id|.
   // Return false, if fetcher with fiven id doesn't exist or in case of
   // incorrect request. Otherwise return true.
-  bool HandleFetcher(int id);
+  bool HandleFetcher(const std::string& id);
 
  private:
   BlacklistStateFetcher* fetcher_;
 
   std::map<std::string, ClientCRXListInfoResponse_Verdict> verdicts_;
 
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  // Dummy URLLoaderFactory not used for responses but avoids crashes.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBlacklistStateFetcher);
 };

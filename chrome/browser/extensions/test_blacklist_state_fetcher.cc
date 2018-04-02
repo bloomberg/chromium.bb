@@ -6,7 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace extensions {
 namespace {
@@ -29,15 +29,44 @@ safe_browsing::SafeBrowsingProtocolConfig CreateSafeBrowsingProtocolConfig() {
   return config;
 }
 
+class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
+ public:
+  DummySharedURLLoaderFactory() {}
+
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // network::URLLoaderFactory implementation:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    // Ensure the client pipe doesn't get closed to avoid SimpleURLLoader seeing
+    // a connection error.
+    clients_.push_back(std::move(client));
+  }
+
+ private:
+  friend class base::RefCounted<DummySharedURLLoaderFactory>;
+  ~DummySharedURLLoaderFactory() override = default;
+
+  std::vector<network::mojom::URLLoaderClientPtr> clients_;
+};
+
 }  // namespace
 
 TestBlacklistStateFetcher::TestBlacklistStateFetcher(
     BlacklistStateFetcher* fetcher) : fetcher_(fetcher) {
   fetcher_->SetSafeBrowsingConfig(CreateSafeBrowsingProtocolConfig());
-  scoped_refptr<net::TestURLRequestContextGetter> context =
-        new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get());
-  fetcher_->SetURLRequestContextForTest(context.get());
+
+  url_loader_factory_ = base::MakeRefCounted<DummySharedURLLoaderFactory>();
+  fetcher_->url_loader_factory_ = url_loader_factory_.get();
 }
 
 TestBlacklistStateFetcher::~TestBlacklistStateFetcher() {
@@ -48,18 +77,17 @@ void TestBlacklistStateFetcher::SetBlacklistVerdict(
   verdicts_[id] = state;
 }
 
-bool TestBlacklistStateFetcher::HandleFetcher(int fetcher_id) {
-  net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(
-      fetcher_id);
-  if (!url_fetcher)
-    return false;
+bool TestBlacklistStateFetcher::HandleFetcher(const std::string& id) {
+  network::SimpleURLLoader* url_loader = nullptr;
+  for (auto& it : fetcher_->requests_) {
+    if (it.second.second == id) {
+      url_loader = it.second.first.get();
+      break;
+    }
+  }
 
-  const std::string& request_str = url_fetcher->upload_data();
-  ClientCRXListInfoRequest request;
-  if (!request.ParseFromString(request_str))
+  if (!url_loader)
     return false;
-
-  std::string id = request.id();
 
   ClientCRXListInfoResponse response;
   if (base::ContainsKey(verdicts_, id))
@@ -70,10 +98,7 @@ bool TestBlacklistStateFetcher::HandleFetcher(int fetcher_id) {
   std::string response_str;
   response.SerializeToString(&response_str);
 
-  url_fetcher->set_status(net::URLRequestStatus());
-  url_fetcher->set_response_code(200);
-  url_fetcher->SetResponseString(response_str);
-  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  fetcher_->OnURLLoaderCompleteInternal(url_loader, response_str, 200, net::OK);
 
   return true;
 }
