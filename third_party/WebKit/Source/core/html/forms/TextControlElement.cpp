@@ -912,9 +912,9 @@ TextControlElement* EnclosingTextControl(const Node* container) {
   if (!container)
     return nullptr;
   Element* ancestor = container->OwnerShadowHost();
-  return ancestor && IsTextControlElement(*ancestor) &&
+  return ancestor && IsTextControl(*ancestor) &&
                  container->ContainingShadowRoot()->IsUserAgent()
-             ? ToTextControlElement(ancestor)
+             ? ToTextControl(ancestor)
              : nullptr;
 }
 

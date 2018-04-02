@@ -405,8 +405,7 @@ void SpellChecker::DidEndEditingOnTextField(Element* e) {
 
   // Remove markers when deactivating a selection in an <input type="text"/>.
   // Prevent new ones from appearing too.
-  TextControlElement* text_control_element = ToTextControlElement(e);
-  HTMLElement* inner_editor = text_control_element->InnerEditorElement();
+  HTMLElement* inner_editor = ToTextControl(e)->InnerEditorElement();
   RemoveSpellingAndGrammarMarkers(*inner_editor);
 }
 

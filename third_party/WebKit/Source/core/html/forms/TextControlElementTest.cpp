@@ -45,7 +45,7 @@ void TextControlElementTest::SetUp() {
   document_->documentElement()->SetInnerHTMLFromString(
       "<body><textarea id=textarea></textarea><input id=input /></body>");
   document_->View()->UpdateAllLifecyclePhases();
-  text_control_ = ToTextControlElement(document_->getElementById("textarea"));
+  text_control_ = ToTextControl(document_->getElementById("textarea"));
   text_control_->focus();
   input_ = ToHTMLInputElement(document_->getElementById("input"));
 }

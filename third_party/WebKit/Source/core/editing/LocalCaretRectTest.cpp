@@ -763,8 +763,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPre2) {
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakTextArea) {
   LoadAhem();
   SetBodyContent("<textarea style='font: 10px/10px Ahem; '>foo\n\n</textarea>");
-  const TextControlElement* textarea =
-      ToTextControlElement(GetDocument().body()->firstChild());
+  const auto* textarea = ToTextControl(GetDocument().body()->firstChild());
   const Node* inner_text = textarea->InnerEditorElement()->firstChild();
   EXPECT_EQ(
       LocalCaretRect(inner_text->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),

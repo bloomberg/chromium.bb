@@ -735,6 +735,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   virtual bool IsFormControlElement() const { return false; }
   virtual bool IsSpinButtonElement() const { return false; }
+  // This returns true for <textarea> and some types of <input>.
   virtual bool IsTextControl() const { return false; }
   virtual bool IsOptionalFormControl() const { return false; }
   virtual bool IsRequiredFormControl() const { return false; }

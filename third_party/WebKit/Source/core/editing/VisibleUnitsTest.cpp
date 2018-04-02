@@ -250,7 +250,7 @@ TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContentWithInput) {
   const char* body_content = "<input id=sample value=ab>cde";
   SetBodyContent(body_content);
 
-  Node* text = ToTextControlElement(GetDocument().getElementById("sample"))
+  Node* text = ToTextControl(GetDocument().getElementById("sample"))
                    ->InnerEditorElement()
                    ->firstChild();
 

@@ -1333,7 +1333,7 @@ String AXNodeObject::GetText() const {
 
   if (IsNativeTextControl() &&
       (IsHTMLTextAreaElement(*node) || IsHTMLInputElement(*node))) {
-    return ToTextControlElement(*node).value();
+    return ToTextControl(*node).value();
   }
 
   if (!node->IsElementNode())
@@ -3199,9 +3199,9 @@ String AXNodeObject::Placeholder(AXNameFrom name_from) const {
 
 String AXNodeObject::PlaceholderFromNativeAttribute() const {
   Node* node = GetNode();
-  if (!node || !IsTextControlElement(node))
+  if (!node || !blink::IsTextControl(*node))
     return String();
-  return ToTextControlElement(node)->StrippedPlaceholder();
+  return ToTextControl(node)->StrippedPlaceholder();
 }
 
 void AXNodeObject::Trace(blink::Visitor* visitor) {

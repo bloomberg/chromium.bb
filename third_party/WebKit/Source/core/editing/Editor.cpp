@@ -118,12 +118,11 @@ SelectionInDOMTree Editor::SelectionForCommand(Event* event) {
     return selection;
   // If the target is a text control, and the current selection is outside of
   // its shadow tree, then use the saved selection for that text control.
-  if (!IsTextControlElement(*event->target()->ToNode()))
+  if (!IsTextControl(*event->target()->ToNode()))
     return selection;
-  TextControlElement* text_control_of_selection_start =
+  auto* text_control_of_selection_start =
       EnclosingTextControl(selection.Base());
-  TextControlElement* text_control_of_target =
-      ToTextControlElement(event->target()->ToNode());
+  auto* text_control_of_target = ToTextControl(event->target()->ToNode());
   if (!selection.IsNone() &&
       text_control_of_target == text_control_of_selection_start)
     return selection;
@@ -648,7 +647,7 @@ void Editor::Redo() {
 
 void Editor::SetBaseWritingDirection(WritingDirection direction) {
   Element* focused_element = GetFrame().GetDocument()->FocusedElement();
-  if (IsTextControlElement(focused_element)) {
+  if (IsTextControl(focused_element)) {
     if (direction == WritingDirection::kNatural)
       return;
     focused_element->setAttribute(
