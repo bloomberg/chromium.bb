@@ -354,7 +354,7 @@ def gclient_sync(
       revision = 'origin/master'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
-  if apply_patch_on_gclient:
+  if apply_patch_on_gclient and gerrit_repo and gerrit_ref:
     # TODO(ehmaldonado): Merge gerrit_repo and gerrit_ref into a patch-ref flag
     # and add support for passing multiple patch refs.
     args.extend(['--patch-ref', gerrit_repo + '@' + gerrit_ref])
