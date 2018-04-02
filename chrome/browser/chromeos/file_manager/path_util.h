@@ -43,20 +43,22 @@ bool MigratePathFromOldFormat(Profile* profile,
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
 
-// DEPRECATED. Use |ConvertToContentUrl| instead.
+// DEPRECATED. Use |ConvertToContentUrls| instead.
 // While this function can convert paths under Downloads, /media/removable
 // and /special/drive, this CANNOT convert paths under ARC media directories
 // (/special/arc-documents-provider).
 // TODO(crbug.com/811679): Migrate all callers and remove this.
 bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out);
 
-using ConvertToContentUrlCallback =
-    base::OnceCallback<void(const GURL& content_url)>;
+using ConvertToContentUrlsCallback =
+    base::OnceCallback<void(const std::vector<GURL>& content_urls)>;
 
-// Asynchronously converts a Chrome OS file system URL to a content:// URL.
-// Returns an empty GURL if |file_system_url| is not convertible.
-void ConvertToContentUrl(const storage::FileSystemURL& file_system_url,
-                         ConvertToContentUrlCallback callback);
+// Asynchronously converts Chrome OS file system URLs to content:// URLs.
+// Always returns a vector of the same size as |file_system_urls|.
+// Empty GURLs are filled in the vector if conversion fails.
+void ConvertToContentUrls(
+    const std::vector<storage::FileSystemURL>& file_system_urls,
+    ConvertToContentUrlsCallback callback);
 
 }  // namespace util
 }  // namespace file_manager
