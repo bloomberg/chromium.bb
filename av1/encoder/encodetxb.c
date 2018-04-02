@@ -1706,35 +1706,20 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   MB_MODE_INFO *mbmi = xd->mi[0];
-  int eob = p->eobs[block];
-  const PLANE_TYPE plane_type = pd->plane_type;
-  const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-  tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
-  const int segment_id = mbmi->segment_id;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
-                                          tx_size, cm->reduced_tx_set_used);
-  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
-  const int16_t *const scan = scan_order->scan;
-  const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
-  int c;
+  const int eob = p->eobs[block];
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + blk_col,
               pd->left_context + blk_row, &txb_ctx);
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
-  uint8_t levels_buf[TX_PAD_2D];
-  uint8_t *const levels = set_levels(levels_buf, width);
   const uint8_t allow_update_cdf = args->allow_update_cdf;
-
-  TX_SIZE txsize_ctx = get_txsize_entropy_ctx(tx_size);
+  const TX_SIZE txsize_ctx = get_txsize_entropy_ctx(tx_size);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
 #if CONFIG_ENTROPY_STATS
   int cdf_idx = cm->coef_cdf_category;
 #endif  // CONFIG_ENTROPY_STATS
 
-  memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
 #if CONFIG_ENTROPY_STATS
   ++td->counts->txb_skip[cdf_idx][txsize_ctx][txb_ctx.txb_skip_ctx][eob == 0];
 #endif  // CONFIG_ENTROPY_STATS
@@ -1742,8 +1727,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     update_cdf(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
                2);
   }
-  x->mbmi_ext->txb_skip_ctx[plane][block] = txb_ctx.txb_skip_ctx;
 
+  x->mbmi_ext->txb_skip_ctx[plane][block] = txb_ctx.txb_skip_ctx;
   x->mbmi_ext->eobs[plane][block] = eob;
 
   if (eob == 0) {
@@ -1751,9 +1736,23 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     return;
   }
 
+  tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
+  const int segment_id = mbmi->segment_id;
+  const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
+  const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
+  memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
+
+  uint8_t levels_buf[TX_PAD_2D];
+  uint8_t *const levels = set_levels(levels_buf, width);
   av1_txb_init_levels(tcoeff, width, height, levels);
   av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, tx_size, td->counts,
                            allow_update_cdf);
+
+  const PLANE_TYPE plane_type = pd->plane_type;
+  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+                                          tx_size, cm->reduced_tx_set_used);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
+  const int16_t *const scan = scan_order->scan;
 #if CONFIG_ENTROPY_STATS
   av1_update_eob_context(cdf_idx, eob, tx_size, tx_type, plane_type, ec_ctx,
                          td->counts, allow_update_cdf);
@@ -1761,16 +1760,16 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   av1_update_eob_context(eob, tx_size, tx_type, plane_type, ec_ctx,
                          allow_update_cdf);
 #endif
+
+  DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
   av1_get_nz_map_contexts(levels, scan, eob, tx_size, tx_type, coeff_contexts);
 
-  for (c = eob - 1; c >= 0; --c) {
+  for (int c = eob - 1; c >= 0; --c) {
     const int pos = scan[c];
     const int coeff_ctx = coeff_contexts[pos];
     const tran_low_t v = qcoeff[pos];
     const tran_low_t level = abs(v);
-    const int is_nz = (v != 0);
 
-    (void)is_nz;
     if (allow_update_cdf) {
       if (c == eob - 1) {
         assert(coeff_ctx < 4);
@@ -1821,18 +1820,18 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   }
 
   // Update the context needed to code the DC sign (if applicable)
-  const int sign = (tcoeff[0] < 0) ? 1 : 0;
   if (tcoeff[0] != 0) {
-    int dc_sign_ctx = txb_ctx.dc_sign_ctx;
+    const int dc_sign = (tcoeff[0] < 0) ? 1 : 0;
+    const int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 #if CONFIG_ENTROPY_STATS
-    ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
+    ++td->counts->dc_sign[plane_type][dc_sign_ctx][dc_sign];
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
-      update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
+      update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], dc_sign, 2);
     x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
   }
 
-  int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
+  const int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
 }
 
