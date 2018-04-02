@@ -212,6 +212,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                 const WebPoint& location) override;
   void PerformPluginAction(const WebPluginAction&, const WebPoint&) override;
   void AudioStateChanged(bool is_audio_playing) override;
+  void PausePageScheduledTasks(bool paused) override;
   WebHitTestResult HitTestResultAt(const WebPoint&) override;
   WebHitTestResult HitTestResultForTap(const WebPoint&,
                                        const WebSize&) override;

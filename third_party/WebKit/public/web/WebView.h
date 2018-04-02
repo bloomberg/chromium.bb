@@ -448,6 +448,11 @@ class WebView : protected WebWidget {
   // Sets the high media engagement bit for this webview's page.
   virtual void SetHasHighMediaEngagement(bool has_high_media_engagement) = 0;
 
+  // Suspend and resume ---------------------------------------------------
+
+  // Pausing and unpausing current scheduled tasks.
+  virtual void PausePageScheduledTasks(bool paused) = 0;
+
   // TODO(lfg): Remove this once the refactor of WebView/WebWidget is
   // completed.
   WebWidget* GetWidget() { return this; }

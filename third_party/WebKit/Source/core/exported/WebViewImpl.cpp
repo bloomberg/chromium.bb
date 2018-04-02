@@ -931,6 +931,10 @@ void WebViewImpl::AcceptLanguagesChanged() {
   GetPage()->AcceptLanguagesChanged();
 }
 
+void WebViewImpl::PausePageScheduledTasks(bool paused) {
+  GetPage()->SetPaused(paused);
+}
+
 WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
   DCHECK((event.GetType() == WebInputEvent::kRawKeyDown) ||
          (event.GetType() == WebInputEvent::kKeyDown) ||

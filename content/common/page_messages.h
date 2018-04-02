@@ -46,6 +46,10 @@ IPC_MESSAGE_ROUTED2(PageMsg_SetHistoryOffsetAndLength,
 
 IPC_MESSAGE_ROUTED1(PageMsg_AudioStateChanged, bool /* is_audio_playing */)
 
+// Pause and unpause active tasks regarding deferLoading, active javascripts,
+// timer, scheduled task through |blink::WebFrameScheduler|.
+IPC_MESSAGE_ROUTED1(PageMsg_PausePageScheduledTasks, bool /* paused */)
+
 // Sent to OOPIF renderers when the main frame's ScreenInfo changes.
 IPC_MESSAGE_ROUTED1(PageMsg_UpdateScreenInfo,
                     content::ScreenInfo /* screen_info */)
