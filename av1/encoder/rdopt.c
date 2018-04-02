@@ -7569,6 +7569,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       uint8_t *preds1[1] = { pred1 };
       int strides[1] = { bw };
       int tmp_rate_mv;
+      const int num_pix = 1 << num_pels_log2_lookup[bsize];
       COMPOUND_TYPE cur_type;
       int best_compmode_interinter_cost = 0;
       int can_use_previous = cm->allow_warped_motion;
@@ -7661,7 +7662,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           best_compound_data.wedge_sign = mbmi->wedge_sign;
           best_compound_data.mask_type = mbmi->mask_type;
           memcpy(best_compound_data.seg_mask, xd->seg_mask,
-                 2 * MAX_SB_SQUARE * sizeof(uint8_t));
+                 2 * num_pix * sizeof(uint8_t));
           best_compound_data.interinter_compound_type =
               mbmi->interinter_compound_type;
           best_compmode_interinter_cost = rs2;
@@ -7684,7 +7685,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       mbmi->wedge_sign = best_compound_data.wedge_sign;
       mbmi->mask_type = best_compound_data.mask_type;
       memcpy(xd->seg_mask, best_compound_data.seg_mask,
-             2 * MAX_SB_SQUARE * sizeof(uint8_t));
+             2 * num_pix * sizeof(uint8_t));
       mbmi->interinter_compound_type =
           best_compound_data.interinter_compound_type;
       if (have_newmv_in_inter_mode(this_mode)) {
