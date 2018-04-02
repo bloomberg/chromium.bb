@@ -3,6 +3,8 @@
 1a69a608521e3542f6fb060855f5ba14
 # Intel - VA_FILTER_SCALING_DEFAULT
 d924f9464d01847f3c3d2dee739603cc
+# Intel - VA decode to NV12, EGLImage CSC
+82a05426b6ef227e5147eb7b710423fb
 # TODO(hiroh): Update X11 value
 # Intel - Haswell - X11
 # Intel - Ivy Bridge - X11
