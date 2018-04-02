@@ -6319,6 +6319,10 @@ interface TrackEvent : Event
     attribute @@toStringTag
     getter track
     method constructor
+interface TransformStream
+    getter readable
+    getter writable
+    method constructor
 interface TransitionEvent : Event
     attribute @@toStringTag
     getter elapsedTime
