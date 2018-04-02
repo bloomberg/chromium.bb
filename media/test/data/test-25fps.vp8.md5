@@ -8,3 +8,5 @@ cd355b553ce7660283c52675232e9227
 66f40a833b8b23dc52bbdfc0ef0e268f
 # Intel - go2001
 f9c98d3808b3ca06d3375d005ab31537
+# Intel - VA decode to NV12, EGLImage CSC
+919bee0d8a8278eeebb2c198a6b51455
