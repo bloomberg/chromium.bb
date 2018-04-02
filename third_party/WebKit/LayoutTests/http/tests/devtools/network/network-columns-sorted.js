@@ -33,7 +33,7 @@
     var logView = UI.panels.network._networkLogView;
     var dataGrid = logView._dataGrid;
     var columnsView = logView._columns;
-    TestRunner.addSniffer(logView, 'dataGridSorted', dataGridSorted.bind(null, logView), true);
+    TestRunner.addSniffer(columnsView, '_dataGridSortedForTest', dataGridSorted.bind(null, logView), true);
 
     dataGrid.markColumnAsSortedBy('name', DataGrid.DataGrid.Order.Ascending);
     columnsView.sortByCurrentColumn();
