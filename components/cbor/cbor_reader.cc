@@ -66,17 +66,16 @@ CBORReader::~CBORReader() {}
 base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
                                            DecoderError* error_code_out,
                                            int max_nesting_level) {
-  CBORReader reader(data.cbegin(), data.cend());
-  base::Optional<CBORValue> decoded_cbor =
-      reader.DecodeCompleteDataItem(max_nesting_level);
+  size_t num_bytes_consumed;
+  auto decoded_cbor =
+      Read(data, &num_bytes_consumed, error_code_out, max_nesting_level);
 
-  if (decoded_cbor)
-    reader.CheckExtraneousData();
-  if (error_code_out)
-    *error_code_out = reader.GetErrorCode();
-
-  if (reader.GetErrorCode() != DecoderError::CBOR_NO_ERROR)
+  if (decoded_cbor && num_bytes_consumed != data.size()) {
+    if (error_code_out)
+      *error_code_out = DecoderError::EXTRANEOUS_DATA;
     return base::nullopt;
+  }
+
   return decoded_cbor;
 }
 
@@ -338,11 +337,6 @@ bool CBORReader::CheckMinimalEncoding(uint8_t additional_bytes,
     return false;
   }
   return true;
-}
-
-void CBORReader::CheckExtraneousData() {
-  if (it_ != end_)
-    error_code_ = DecoderError::EXTRANEOUS_DATA;
 }
 
 bool CBORReader::HasValidUTF8Format(const std::string& string_data) {
