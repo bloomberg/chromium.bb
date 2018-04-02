@@ -60,8 +60,13 @@ void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
 
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 
-void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
-                         ENTROPY_CONTEXT *a, ENTROPY_CONTEXT *l);
+static INLINE void av1_set_txb_context(MACROBLOCK *x, int plane, int block,
+                                       TX_SIZE tx_size, ENTROPY_CONTEXT *a,
+                                       ENTROPY_CONTEXT *l) {
+  const uint8_t ctx = x->plane[plane].txb_entropy_ctx[block];
+  memset(a, ctx, tx_size_wide_unit[tx_size] * sizeof(*a));
+  memset(l, ctx, tx_size_high_unit[tx_size] * sizeof(*l));
+}
 
 void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                             BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg);

@@ -463,19 +463,6 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   }
 }
 
-void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
-                         ENTROPY_CONTEXT *a, ENTROPY_CONTEXT *l) {
-  (void)tx_size;
-  struct macroblock_plane *p = &x->plane[plane];
-
-  *a = *l = p->txb_entropy_ctx[block];
-
-  int i;
-  for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) a[i] = a[0];
-
-  for (i = 0; i < tx_size_high_unit[tx_size]; ++i) l[i] = l[0];
-}
-
 static void encode_block_intra_and_set_context(int plane, int block,
                                                int blk_row, int blk_col,
                                                BLOCK_SIZE plane_bsize,
