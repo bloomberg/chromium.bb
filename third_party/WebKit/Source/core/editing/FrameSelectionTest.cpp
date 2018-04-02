@@ -963,7 +963,7 @@ TEST_F(FrameSelectionTest, RangeContainsFocus) {
   Element* const end = GetDocument().getElementById("end");
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
-          .SetBaseAndExtent(Position(start, 0), Position(end, 3))
+          .SetBaseAndExtent(Position(start, 0), Position(end, 1))
           .Build());
   EXPECT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
   EXPECT_TRUE(Selection().SelectionHasFocus());
@@ -1004,7 +1004,7 @@ TEST_F(FrameSelectionTest, RangeOutsideFocus) {
   Element* const end = GetDocument().getElementById("end");
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
-          .SetBaseAndExtent(Position(start, 0), Position(end, 3))
+          .SetBaseAndExtent(Position(start, 0), Position(end, 1))
           .Build());
   EXPECT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
   EXPECT_TRUE(Selection().SelectionHasFocus());

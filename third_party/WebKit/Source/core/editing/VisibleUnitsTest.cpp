@@ -478,9 +478,9 @@ TEST_F(VisibleUnitsTest, nextPositionOf) {
 
   EXPECT_EQ(
       Position(three->firstChild(), 0),
-      NextPositionOf(CreateVisiblePosition(Position(two, 2))).DeepEquivalent());
+      NextPositionOf(CreateVisiblePosition(Position(two, 1))).DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree(one->firstChild(), 1),
-            NextPositionOf(CreateVisiblePosition(PositionInFlatTree(two, 2)))
+            NextPositionOf(CreateVisiblePosition(PositionInFlatTree(two, 1)))
                 .DeepEquivalent());
 }
 
