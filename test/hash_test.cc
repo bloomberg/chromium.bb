@@ -37,6 +37,9 @@ class AV1Crc32cHashTest : public ::testing::TestWithParam<HashParam> {
  protected:
   void RunCheckOutput(get_crc32c_value_func test_impl);
   void RunSpeedTest(get_crc32c_value_func test_impl);
+
+  void RunZeroTest(get_crc32c_value_func test_impl);
+
   libaom_test::ACMRandom rnd_;
   CRC32C calc_;
   uint8_t *buffer_;
@@ -95,7 +98,20 @@ void AV1Crc32cHashTest::RunSpeedTest(get_crc32c_value_func test_impl) {
   printf("(%3.2f)\n", time[0] / time[1]);
 }
 
+void AV1Crc32cHashTest::RunZeroTest(get_crc32c_value_func test_impl) {
+  uint8_t buffer0[1024] = { 0 };
+  // for buffer with different size the crc should not be the same
+  const uint32_t crc0 = test_impl(&calc_, buffer0, 32);
+  const uint32_t crc1 = test_impl(&calc_, buffer0, 128);
+  const uint32_t crc2 = test_impl(&calc_, buffer0, 1024);
+  ASSERT_NE(crc0, crc1);
+  ASSERT_NE(crc0, crc2);
+  ASSERT_NE(crc1, crc2);
+}
+
 TEST_P(AV1Crc32cHashTest, CheckOutput) { RunCheckOutput(GET_PARAM(0)); }
+
+TEST_P(AV1Crc32cHashTest, CheckZero) { RunZeroTest(GET_PARAM(0)); }
 
 TEST_P(AV1Crc32cHashTest, DISABLED_Speed) { RunSpeedTest(GET_PARAM(0)); }
 
