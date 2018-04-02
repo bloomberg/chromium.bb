@@ -60,13 +60,14 @@
       </translation>
 <translation id="1181881366217399113">
       NOTĂ: această politică este experimentală și poate întrerupe funcționarea!
-      
-Dacă politica este activată, fiecare dintre originile indicate într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va
-      cauza și izolarea https://foo.example.com/ ca parte a site-ului
-      https://example.com/ site.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Dacă politica este activată, fiecare dintre originile indicate într-o listă
+      de valori separate prin virgulă va rula propriul proces. Astfel, originile indicate
+      vor fi izolate după subdomenii; de exemplu, specificarea https://example.com/
+      va cauza și izolarea https://foo.example.com/ ca parte a site-ului
+      https://example.com/.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă izolării site-ului.
       Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
       </translation>
 <translation id="1198465924256827162">Frecvența de trimitere a informațiilor privind starea dispozitivului, în milisecunde.
 
@@ -515,6 +516,7 @@ Dacă politica este activată, fiecare dintre originile indicate într-o listă 
 <translation id="2529700525201305165">Restricționați utilizatorii care au permisiunea de a se conecta la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2529880111512635313">Configurează lista aplicațiilor și a extensiilor cu instalare forțată</translation>
 <translation id="253135976343875019">Interval de inactivitate la funcționarea pe c.a.</translation>
+<translation id="2536283449105918306">Activează protecția împotriva ferestrelor secundare</translation>
 <translation id="2552966063069741410">Fus orar</translation>
 <translation id="2562339630163277285">Specifică adresa URL a motorului de căutare folosit pentru a oferi rezultate instantanee. Adresa URL trebuie să conțină șirul <ph name="SEARCH_TERM_MARKER" />, care va fi înlocuit în momentul interogării cu textul pe care utilizatorul l-a introdus până atunci.
 
@@ -657,11 +659,9 @@ Dacă politica este activată, fiecare dintre originile indicate într-o listă 
 <translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
 <translation id="2998886474614739865">
       NOTĂ: această politică este experimentală și poate întrerupe funcționarea!
-      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
-      
-Dacă politica este activată, fiecare dintre originile indicate într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola, de asemenea, originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va cauza și izolarea
- https://foo.example.com/ ca parte a site-ului https://example.com/.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
+      Dacă politica este activată, fiecare dintre originile indicate într-o listă de valori separate prin virgulă va rula propriul proces. Astfel, originile indicate vor fi izolate după subdomenii; de exemplu, specificarea https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a site-ului https://example.com/.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă izolării site-ului.
       Dacă politica nu este configurată, pentru ecranul de conectare vor fi folosite setările de izolare a site-ului prestabilite pentru platforma respectivă.
       </translation>
 <translation id="3016255526521614822">Trece în lista albă aplicațiile pentru creat note permise pe ecranul de blocare din <ph name="PRODUCT_OS_NAME" /></translation>
@@ -769,13 +769,13 @@ Dacă politica este activată, fiecare dintre originile indicate într-o listă 
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3386001018488754001">
       NOTĂ: această politică este experimentală și poate întrerupe funcționarea!
-      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
+      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
       Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a
       beneficia la maximum de fiecare, de izolare și de impact limitat asupra utilizatorilor, folosind
       IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare,
       SitePerProcess, izolează toate site-urile.
       Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă izolării site-ului.
       Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
       </translation>
 <translation id="3395348522300156660">Specifică imprimantele pe care le poate folosi un utilizator.
@@ -1395,9 +1395,9 @@ Dacă politica este activată, fiecare dintre originile indicate într-o listă 
       IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare,
       SitePerProcess, izolează toate site-urile.
       Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă izolării site-ului.
       Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii pentru dispozitive <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii pentru dispozitive <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
       </translation>
 <translation id="5302612588919538756">Această politică este învechită. Îți recomandăm să folosești SyncDisabled.
 
@@ -1956,7 +1956,7 @@ Dacă politica este activată, fiecare dintre originile indicate într-o listă 
 <translation id="7072208053150563108">Frecvența de schimbare a parolelor de computer</translation>
 <translation id="7072406291414141328">Activează limitarea lățimii de bandă a rețelei</translation>
 <translation id="7074513465313721551">Configurează lista de domenii în care Navigarea sigură va avea încredere. Aceasta înseamnă că:
-      navigarea sigură nu va verifica dacă există resurse periculoase (de exemplu, software de phishing, programe malware sau software nedorit) dacă adresele URL respective corespund acestor domenii;
+      Navigarea sigură nu va verifica dacă există resurse periculoase (de exemplu, phishing, programe malware sau software nedorit) dacă adresele URL corespund acestor domenii;
       serviciul de protecție a descărcării pentru Navigarea sigură nu va verifica descărcările găzduite pe aceste domenii;
       serviciul de protecție prin parolă pentru Navigarea sigură nu va verifica refolosirea parolei dacă adresa URL a paginii corespunde acestor domenii.
 
@@ -2566,6 +2566,12 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>
 <translation id="9098553063150791878">Politici pentru autentificarea HTTP</translation>
 <translation id="9105265795073104888">Un singur subset de opțiuni pentru configurarea proxy-ului este pus la dispoziția aplicațiilor Android. Acestea pot alege în mod voluntar să folosească proxy-ul. Nu le poți forța să folosească un proxy.</translation>
+<translation id="9110615239151047025">Activează protecția împotriva ferestrelor secundare, care blochează navigările detectate ca ferestre secundare.
+
+      Pentru o explicație a ferestrelor secundare, accesează https://www.chromestatus.com/features/5675755719622656.
+      Dacă această politică este activată, navigările detectate de <ph name="PRODUCT_NAME" /> ca ferestre secundare vor fi blocate.
+      Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> va permite site-urilor să efectueze navigări în ferestre secundare.
+      În mod prestabilit, această politică este activată.</translation>
 <translation id="9112727953998243860">Fișier de configurare a imprimantelor companiei</translation>
 <translation id="9112897538922695510">Vă permite să înregistrați o listă de handlere de protocol. Aceasta poate fi doar o politică recomandată. Valoarea proprietății |protocol| trebuie setată la o schemă ca „mailto”, iar valoarea proprietății |url| trebuie setată la șablonul adresei URL al aplicației care gestionează schema. Șablonul poate include „%s”, care, dacă este prezent, va fi înlocuit cu adresa URL gestionată.
 

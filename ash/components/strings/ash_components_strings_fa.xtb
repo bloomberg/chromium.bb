@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="104962181688258143">‏باز کردن برنامه Files</translation>
-<translation id="1126871238933253947">جا‌به‌جایی به زبان قبلی صفحه‌کلید که استفاده می‌کردید.</translation>
+<translation id="1122869341872663659">درحال نمایش <ph name="N" /> نتیجه جستجو برای <ph name="QUERY" /></translation>
 <translation id="1134347825771908369">بی‌صدا کردن</translation>
 <translation id="1195667586424773550">کشیدن پیوند به نوار نشانی برگه</translation>
 <translation id="1204450209689312104">باز کردن پنجره جدید در حالت ناشناس</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">دوباره باز کردن آخرین برگه یا پنجره‌ای که بسته بودید</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> را فشار دهید و نگه‌دارید، روی <ph name="TAB" /> ضربه بزنید تا به پنجره‌ای که می‌خواهید باز شود برسید، سپس آن را رها کنید.</translation>
 <translation id="4092538597492297615">کپی کردن محتوای انتخاب‌شده در کلیپ‌بورد</translation>
+<translation id="4101772068965291327">باز کردن صفحهٔ اصلی</translation>
 <translation id="4123108089450197101">ذخیره پیوند به‌عنوان نشانک</translation>
 <translation id="4141203561740478845">برجسته‌سازی ردیف با نوار نشانی</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> یا <ph name="ENTER" /></translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">کلید حالت نمای کلی</translation>
 <translation id="5104462712192763270">ذخیره صفحه کنونی شما</translation>
 <translation id="5121628974188116412">رفتن به پایین صفحه</translation>
+<translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="5236674127086649162">بارگیری مجدد صفحه کنونی بدون استفاده از محتوای حافظه پنهان</translation>
 <translation id="526651782186312376">انتخاب نوشتار تا ابتدای خط</translation>
 <translation id="5316716239522500219">بازتاب مانیتورها</translation>
-<translation id="5335199890994453201">‏نمایش یا پنهان کردن DOM Inspector</translation>
 <translation id="5541719484267030947">همان‌طور که برگه را می‌کشید، روی <ph name="ESC" /> فشار دهید</translation>
 <translation id="5554139136362089836">جستجوی صفحه کنونی</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> را فشار دهید و روی پیوندی کلیک کنید</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">بازکردن پیوند در برگه</translation>
 <translation id="5757474750054631686">کم کردن نور صفحه‌کلید (فقط برای صفحه‌کلیدهایی که نور پس‌زمینه دارند)</translation>
 <translation id="587531134027443617">حذف کلمه قبلی</translation>
-<translation id="5928303187149237472">تغییر وضوح صفحه نمایش</translation>
+<translation id="5921745308587794300">چرخاندن پنجره</translation>
 <translation id="5975083100439434680">کوچک نمایی</translation>
 <translation id="6022924867608035986">پاک کردن نوشتار کادر جستجو</translation>
 <translation id="6045998054441862242">روشن کردن حالت کنتراست بالا</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">برجسته‌سازی مورد قبلی روی قفسه شما</translation>
 <translation id="6445033640292336367">برگرداندن برگه به جای اول</translation>
 <translation id="649811797655257835">فایلی را انتخاب کنید و سپس <ph name="SPACE" /> را فشار دهید</translation>
-<translation id="6572206071785323178">جابه‌جا شدن بین زبان‌های صفحه‌کلیدی که تنظیم کرده‌اید. با نحوه انتخاب زبان صفحه‌کلید آشنا شوید.</translation>
-<translation id="6634456834225946400">برجسته‌سازی نوار نشانک‌ها (اگر نشان داده شده باشد)</translation>
 <translation id="666343722268997814">باز کردن منوی کلیک راست برای مورد برجسته‌شده</translation>
 <translation id="6671538777808758331">رفتن به مورد منطبق بعدی با جستجویتان</translation>
 <translation id="6690765639083431875">ثابت کردن یک پنجره در سمت چپ</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">باز کردن فایل در مرورگر</translation>
 <translation id="7917881398263220094">توقف بارگیری صفحه کنونی</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> یا <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8130528849632411619">رفتن به ابتدای سند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> یا <ph name="E" /></translation>
 <translation id="8234414138295101081">چرخاندن ۹۰ درجه‌ای صفحه</translation>
-<translation id="826184564253127735">نمایشگر میان‌بر صفحه‌کلید</translation>
 <translation id="836869401750819675">باز کردن صفحه بارگیری</translation>
 <translation id="8388247778047144397">کشیدن پیوند به قسمتی خالی در نوار برگه</translation>
 <translation id="8389638407792712197">باز کردن پنجره جدید</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> ۱‏ تا ۸</translation>
 <translation id="9041599225465145264">جای‌گذاری محتوا از کلیپ‌بورد</translation>
 <translation id="9052808072970550123">جابه‌جا شدن به کاربر بعدی</translation>
+<translation id="906458777597946297">بازکردن پنجره در حداکثر اندازه</translation>
 <translation id="9106898733795143799">صفحه و مرورگر وب</translation>
+<translation id="9162942292291287644">هیچ نتیجه جستجویی برای <ph name="QUERY" /> وجود ندارد</translation>
 <translation id="9179672198516322668">میان‌برهای پرطرفدار</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> را فشار دهید و روی پیوندی کلیک کنید</translation>
 <translation id="945383118875625837">پیوندها را به نوار نشانک‌ها بکشید</translation>

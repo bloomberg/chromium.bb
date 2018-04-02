@@ -533,6 +533,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529700525201305165">Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
+<translation id="2536283449105918306">Enables tab-under protection</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
 
@@ -2687,6 +2688,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
+<translation id="9110615239151047025">Enables tab-under protection, which blocks navigations detected as tab-unders.
+
+      For an explanation on tab-unders, see https://www.chromestatus.com/features/5675755719622656.
+      If this policy is set to True, navigations which <ph name="PRODUCT_NAME" /> detects are tab-unders will be blocked.
+      If this policy is set to False, <ph name="PRODUCT_NAME" /> will allow sites to perform tab-under navigations.
+      By default, this policy is set to True.</translation>
 <translation id="9112727953998243860">Enterprise printer configuration file</translation>
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 

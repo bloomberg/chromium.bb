@@ -47,7 +47,6 @@
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1384959399684842514">Скачивание приостановлено</translation>
-<translation id="1389236224998445076">Сэкономлено:</translation>
 <translation id="1389974829397082527">Закладок пока нет</translation>
 <translation id="1397811292916898096">Поиск в <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
@@ -83,7 +82,6 @@
 <translation id="1670399744444387456">Основные настройки</translation>
 <translation id="1671236975893690980">Ожидание скачивания…</translation>
 <translation id="1672586136351118594">Больше не показывать</translation>
-<translation id="169033420419426091">Не удалось скачать файл <ph name="FILE_NAME" />, так как отсутствует SD-карта.</translation>
 <translation id="1709438864123551175">Экономия трафика</translation>
 <translation id="1718835860248848330">Последний час</translation>
 <translation id="1729516292547892356">Чтобы просматривать контент в режиме виртуальной реальности, обновите Google VR-сервисы</translation>
@@ -142,7 +140,6 @@
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
 <translation id="2259659629660284697">Экспорт паролей…</translation>
-<translation id="2266890032547182881">Статистика по расходу трафика</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2286841657746966508">Платежный адрес</translation>
 <translation id="230115972905494466">Совместимые устройства не найдены.</translation>
@@ -368,7 +365,6 @@
 <translation id="4521489764227272523">Выбранные данные удалены из Chrome и с синхронизированных устройств.
 
 Остальная история ваших действий в Интернете может храниться в аккаунте Google, например в виде поисковых запросов и сведений из наших сервисов. Она доступна на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="4522570452068850558">Подробнее</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Выбор папки</translation>
 <translation id="4544481164434183075">Страница сохранена <ph name="CREATION_TIME" /> и может отличаться от онлайн-версии.</translation>
@@ -690,9 +686,9 @@
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
-<translation id="7374228672268453233">Использовано:</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7400730245189251663"><ph name="TOPIC" />: подробная информация</translation>
 <translation id="7403691278183511381">Первый запуск Chrome</translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7423538860840206698">Доступ к данным в буфере обмена заблокирован</translation>

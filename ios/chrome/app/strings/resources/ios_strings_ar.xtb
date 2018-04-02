@@ -38,7 +38,7 @@
 <translation id="1540800554400757039">العنوان 1</translation>
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
 <translation id="1580783302095112590">تم إرسال البريد.</translation>
-<translation id="1582732959743469162">سيؤدي ذلك إلى إيقاف جميع عمليات التقدم للتنزيل الحالي.</translation>
+<translation id="1582732959743469162">سيؤدي ذلك إلى إيقاف تقدّم جميع عمليات التنزيل الحالية.</translation>
 <translation id="1612730193129642006">عرض شبكة علامة التبويب</translation>
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1646446875146297738">إن تمكين "عدم التتبع" يعني تضمين طلب في حركة بيانات التصفح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وكيفية تفسيره للطلب.
@@ -327,7 +327,7 @@
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7053983685419859001">منع</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
-<translation id="7102005569666697658">جارِ تنزيل… <ph name="FILE_SIZE" /></translation>
+<translation id="7102005569666697658">جارٍ تنزيل… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">إخفاء</translation>
 <translation id="7133798577887235672">الاسم بالكامل</translation>
 <translation id="7136892417564438900">الكاميرا غير متاحة</translation>
@@ -363,7 +363,7 @@
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
-<translation id="7856733331829174190">فشلت عملية التنزيل.</translation>
+<translation id="7856733331829174190">تعذّر التنزيل.</translation>
 <translation id="7859704718976024901">سجل التصفح</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">جارٍ تصدير كلمات المرور...</translation>

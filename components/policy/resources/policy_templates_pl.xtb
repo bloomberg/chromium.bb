@@ -67,7 +67,7 @@
       sprzed izolacji witryny.
       Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić
       to ustawienie.
-      W systemie <ph name="PRODUCT_OS_NAME" /> zaleca się również ustawienie tej samej wartości zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
+      W systemie <ph name="PRODUCT_OS_NAME" /> zaleca się również ustawienie tej samej wartości zasady <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> dotyczącej urządzeń. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
       </translation>
 <translation id="1198465924256827162">Częstotliwość wysyłania raportów o stanie urządzenia (w milisekundach).
 
@@ -263,7 +263,7 @@
 <translation id="1897365952389968758">Zezwalaj na wykonywanie kodu JavaScript we wszystkich witrynach</translation>
 <translation id="1906888171268104594">Określa, czy statystyki użytkowania i dane diagnostyczne (w tym raporty o awariach) mają być przesyłane do Google.
 
-      Jeśli włączysz tę opcję, <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania i dane diagnostyczne.
+      Jeśli włączysz tę zasadę, <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania i dane diagnostyczne.
 
       Jeśli jej nie włączysz, przesyłanie statystyk i danych diagnostycznych będzie wyłączone.
       Jeśli jej nie skonfigurujesz, przesyłanie statystyk użytkowania i danych diagnostycznych będzie wyłączone na urządzeniach niezarządzanych, ale włączone na zarządzanych.</translation>
@@ -425,9 +425,9 @@
 <translation id="2415979855753196119">Umożliwia sterowanie wyzwalaniem oznaczania kont jako zagrożonych w zakresie ochrony hasłem. 
 Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowanie Google, że dane konto jest narażone na włamanie.
 
-      Jeśli ta zasada ma ustawioną opcję „PasswordProtectionRiskOff”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem nie będzie nigdy wyzwalane.
-      Jeśli ma ustawioną opcję „PasswordProtectionRiskOnPasswordReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w innych witrynach spoza białej listy.
-      Jeśli ma ustawioną opcję „PasswordProtectionRiskOnPhishingReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje.
+      Jeśli ta zasada ma ustawioną wartość „PasswordProtectionRiskOff”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem nie będzie nigdy wyzwalane.
+      Jeśli ma ustawioną wartość „PasswordProtectionRiskOnPasswordReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w innych witrynach spoza białej listy.
+      Przy ustawieniu „PasswordProtectionRiskOnPhishingReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje.
       Jeśli zasada nie jest skonfigurowana, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje, ale użytkownik może zmienić to ustawienie.</translation>
 <translation id="2418507228189425036">Wyłącza zapisywanie historii przeglądarki <ph name="PRODUCT_NAME" /> i blokuje możliwość zmiany tego ustawienia przez użytkowników.
 
@@ -514,6 +514,7 @@ Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowani
 <translation id="2529700525201305165">Określ użytkowników, którzy mogą logować się do <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
+<translation id="2536283449105918306">Włącza ochronę przed ukrywaniem karty pod nowym oknem</translation>
 <translation id="2552966063069741410">Strefa czasowa</translation>
 <translation id="2562339630163277285">Określa URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wpisanym przez użytkownika
 
@@ -615,7 +616,7 @@ Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowani
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
 <translation id="2867699958489427143">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana pełna procedura Powerwash.</translation>
 <translation id="286802604195763750">Umożliwia sterowanie wyzwalaniem ostrzeżenia dotyczącego ochrony hasłem. 
-Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą stosować chronione hasła w potencjalnie niebezpiecznych witrynach.
+Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stosować chronione hasła w potencjalnie niebezpiecznych witrynach.
 
       Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOff”, nie wyświetli się żadne ostrzeżenie dotyczące ochrony hasłem.
       Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOnPasswordReuse”, ostrzeżenie dotyczące ochrony hasłem wyświetli się, gdy użytkownicy będą stosować hasła do kont Google w witrynach, które nie znajdują się na białej liście.
@@ -1932,8 +1933,8 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7072406291414141328">Włącza ograniczanie przepustowości sieci</translation>
 <translation id="7074513465313721551">Pozwala skonfigurować listę domen, którym będzie ufać Bezpieczne przeglądanie. Działanie zasady:
       Bezpieczne przeglądanie nie będzie sprawdzać, czy witryny zawierają niebezpieczne zasoby (np. wyłudzające informacje, złośliwe lub niechciane oprogramowanie), jeśli ich adresy URL pasują do tych domen.
-      Usługa ochrony przy pobieraniu Bezpiecznego przeglądania nie będzie sprawdzać plików pobieranych z tych domen.
-      Usługa ochrony haseł Bezpiecznego przeglądania nie będzie sprawdzać użycia haseł, jeśli adresy URL stron będą pasować do tych domen.
+      Funkcja Bezpiecznego przeglądania polegająca na ochronie przy pobieraniu nie będzie sprawdzać plików pobieranych z tych domen.
+      Funkcja Bezpiecznego przeglądania polegająca na ochronie haseł nie będzie sprawdzać użycia haseł, jeśli adresy URL stron będą pasować do tych domen.
 
       Jeśli ta zasada jest włączona, Bezpieczne przeglądanie będzie ufać tym domenom.
       Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, funkcje Bezpiecznego przeglądania są stosowane do wszystkich zasobów.
@@ -2544,6 +2545,12 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
 <translation id="9105265795073104888">Aplikacje na Androida mają dostęp tylko do niektórych opcji konfiguracji serwera proxy. Nie można wymusić, by używały serwera proxy. Mogą go używać dobrowolnie.</translation>
+<translation id="9110615239151047025">Włącza ochronę przed ukrywaniem karty pod nowym oknem, czyli blokowanie wykrytych elementów nawigacyjnych stosujących ten mechanizm.
+
+      Aby dowiedzieć się, czym jest ukrywanie karty pod nowym oknem, zobacz https://www.chromestatus.com/features/5675755719622656.
+      Jeśli ta zasada jest włączona, wykryte przez <ph name="PRODUCT_NAME" /> elementy nawigacyjne stosujące ukrywanie karty pod nowym oknem są blokowane.
+      Jeśli ta zasada jest wyłączona, <ph name="PRODUCT_NAME" /> pozwoli używać takich elementów nawigacyjnych na stronach.
+      Domyślnie ta zasada jest włączona.</translation>
 <translation id="9112727953998243860">Plik konfiguracji drukarki firmowej</translation>
 <translation id="9112897538922695510">Umożliwia zarejestrowanie listy modułów obsługi protokołów. Ta zasada może być tylko zalecana. We właściwości |protocol| należy wskazać schemat taki jak „mailto”, a we właściwości |url| należy wskazać wzorzec adresu URL aplikacji obsługującej ten schemat. Wzorzec może obejmować „%s”, który – jeśli występuje – zostanie zastąpiony przez obsługiwany adres URL.
 

@@ -530,6 +530,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 <translation id="2529700525201305165">Beperken welke gebruikers mogen inloggen bij <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">De lijst met automatisch geïnstalleerde apps en extensies configureren</translation>
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
+<translation id="2536283449105918306">Hiermee wordt bescherming tegen tab-unders ingeschakeld</translation>
 <translation id="2552966063069741410">Tijdzone</translation>
 <translation id="2562339630163277285">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instantresultaten te leveren. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
 
@@ -2034,7 +2035,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7074513465313721551">Stel de lijst met domeinen in die door Safe Browsing worden vertrouwd. Dit betekent het volgende:
       Safe Browsing controleert niet op gevaarlijke bronnen (bijvoorbeeld phishing, malware of ongewenste software) als de URL's overeenkomen met deze domeinen.
       De downloadbeveiligingsservice van Safe Browsing controleert geen downloads die worden gehost op deze domeinen.
-      De wachtwoordbeveiligingsservice van Safe Browsing controleert niet of een wachtwoord opnieuw wordt gebruikt als pagina-URL overeenkomt met deze domeinen.
+      De wachtwoordbeveiligingsservice van Safe Browsing controleert niet of een wachtwoord opnieuw wordt gebruikt als de pagina-URL overeenkomt met deze domeinen.
 
       Als deze instelling is ingeschakeld, worden deze domeinen door Safe Browsing vertrouwd.
       Als deze instelling is uitgeschakeld of niet is ingesteld, wordt standaard de Safe Browsing-beveiliging toegepast op alle bronnen.
@@ -2664,6 +2665,12 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>
 <translation id="9098553063150791878">Beleid voor HTTP-verificatie</translation>
 <translation id="9105265795073104888">Er is slechts een subset van de configuratieopties voor de proxy beschikbaar voor Android-apps. Android-apps kunnen op vrijwillige basis gebruikmaken van de proxy. Je kunt Android-apps niet dwingen een proxy te gebruiken.</translation>
+<translation id="9110615239151047025">Hiermee wordt bescherming tegen tab-unders ingeschakeld, waardoor navigaties worden geblokkeerd wanneer deze als onderliggende tabbladen worden gedetecteerd.
+
+      Voor een uitleg van tab-unders, ga je naar https://www.chromestatus.com/features/5675755719622656.
+      Als dit beleid is ingesteld op Waar, worden navigaties geblokkeerd waarvan <ph name="PRODUCT_NAME" /> detecteert dat het tab-unders betreft.
+      Als dit beleid is ingesteld op Onwaar, <ph name="PRODUCT_NAME" /> kunnen sites tab-under-navigaties uitvoeren.
+      Dit beleid is standaard ingesteld op Waar.</translation>
 <translation id="9112727953998243860">Configuratiebestand voor bedrijfsprinters</translation>
 <translation id="9112897538922695510">Hiermee kun je een lijst met protocolhandlers registreren. Dit kan alleen een aanbevolen beleid zijn. De eigenschap |protocol| moet worden ingesteld op het schema, zoals 'mailto', en de eigenschap |url| moet worden ingesteld op het URL-patroon van de app die het schema verwerkt. Het patroon kan een '%s' bevatten, die indien aanwezig wordt vervangen door de verwerkte URL.
 

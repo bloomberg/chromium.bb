@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="104962181688258143">फ़ाइल ऐप्लिकेशन खोलें</translation>
-<translation id="1126871238933253947">उस पिछली कीबोर्ड भाषा पर स्विच करें जिसे आप इस्तेमाल कर रहे थे.</translation>
+<translation id="1122869341872663659"><ph name="QUERY" /> के लिए <ph name="N" /> सर्च नतीजे दिखाए जा रहे हैं</translation>
 <translation id="1134347825771908369">आवाज़ म्यूट करें</translation>
 <translation id="1195667586424773550">लिंक को टैब के पता बार में खींचें और छोड़ें</translation>
 <translation id="1204450209689312104">गुप्त मोड में नई विंडो खोलें</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">अपना बंद किया गया आखिरी टैब या विंडो फिर से खोलें</translation>
 <translation id="4090342722461256974">जब तक आप उस विंडो पर नहीं पहुंच जाते जिसे आप खोलना चाहते हैं, तब तक <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> को दबाकर रखें और <ph name="TAB" /> पर टैप करें, फिर छोड़ दें.</translation>
 <translation id="4092538597492297615">चुनी गई सामग्री को क्लिपबोर्ड पर कॉपी करें</translation>
+<translation id="4101772068965291327">मुख्यपृष्ठ खोलें</translation>
 <translation id="4123108089450197101">लिंक को बुकमार्क के रूप में सेव करें</translation>
 <translation id="4141203561740478845">पता बार वाली पंक्‍ति हाइलाइट करें</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> या <ph name="ENTER" /></translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">खास जानकारी मोड कुंजी</translation>
 <translation id="5104462712192763270">अपना अभी वाला पेज सेव करें</translation>
 <translation id="5121628974188116412">पेज में सबसे नीचे जाएं</translation>
+<translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="5236674127086649162">कैश की गई सामग्री का इस्तेमाल किए बिना अपना अभी वाला पेज फिर लोड करें</translation>
 <translation id="526651782186312376">पंक्‍ति की शुरुआत तक का लेख चुनें</translation>
 <translation id="5316716239522500219">मॉनीटर मिरर करें</translation>
-<translation id="5335199890994453201">DOM Inspector दिखाएं या छिपाएं</translation>
 <translation id="5541719484267030947">टैब को खींचकर रखते समय, <ph name="ESC" /> दबाएं</translation>
 <translation id="5554139136362089836">अभी वाले पेज में खोजें</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> दबाएं फिर किसी लिंक पर क्लिक करें</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">लिंक को टैब में खोलें</translation>
 <translation id="5757474750054631686">कीबोर्ड की रोशनी कम करें (केवल बैकलिट कीबोर्ड के लिए)</translation>
 <translation id="587531134027443617">पिछला शब्द मिटाएं</translation>
-<translation id="5928303187149237472">स्‍क्रीन का रिज़ॉल्यूशन बदलना</translation>
+<translation id="5921745308587794300">विंडो घुमाएं</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
 <translation id="6022924867608035986">खोज बॉक्स का लेख मिटाएं</translation>
 <translation id="6045998054441862242">उच्च कंट्रास्ट मोड चालू करें</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">अपनी अलमारी पर पिछला आइटम हाइलाइट करें</translation>
 <translation id="6445033640292336367">टैब को उसकी मूल जगह पर वापस ले जाएं</translation>
 <translation id="649811797655257835">फ़ाइल चुनें, फिर <ph name="SPACE" /> दबाएं</translation>
-<translation id="6572206071785323178">अपनी सेट की हुई कीबोर्ड भाषाओं के बीच स्विच करें. अपने कीबोर्ड की भाषा सेट करने का तरीका जानें.</translation>
-<translation id="6634456834225946400">बुकमार्क बार हाइलाइट करें (अगर दिखाया गया हो)</translation>
 <translation id="666343722268997814">हाइलाइट किए गए आइटम के लिए राइट-क्लिक मेन्यू खोलें</translation>
 <translation id="6671538777808758331">अपनी खोज के लिए अगले मिलान पर जाएं</translation>
 <translation id="6690765639083431875">विंडो बाईं ओर डॉक करें</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">ब्राउज़र में फ़ाइल खोलें</translation>
 <translation id="7917881398263220094">अपने अभी वाले पेज को लोड होने से रोकें</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> या <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8130528849632411619">दस्‍तावेज़ की शुरुआत में जाएं</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> या <ph name="E" /></translation>
 <translation id="8234414138295101081">स्‍क्रीन को 90 डिग्री पर घुमाएं</translation>
-<translation id="826184564253127735">कीबोर्ड शॉर्टकट व्यूअर</translation>
 <translation id="836869401750819675">डाउनलोड पेज खोलें</translation>
 <translation id="8388247778047144397">लिंक को टैब स्‍ट्रिप पर खाली जगह में खींचें और छोड़ें</translation>
 <translation id="8389638407792712197">नई विंडो खोलें</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
 <translation id="9041599225465145264">क्लिपबोर्ड से सामग्री चिपकाएं</translation>
 <translation id="9052808072970550123">अगले उपयोगकर्ता पर स्विच करें</translation>
+<translation id="906458777597946297">विंडो को बड़ा करें</translation>
 <translation id="9106898733795143799">पेज और वेब ब्राउज़र</translation>
+<translation id="9162942292291287644"><ph name="QUERY" /> के लिए कोई सर्च नतीजा नहीं</translation>
 <translation id="9179672198516322668">लोकप्रिय शॉर्टकट</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
 <translation id="945383118875625837">लिंक को बुकमार्क बार में खीचें और छोड़ें</translation>

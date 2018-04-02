@@ -55,7 +55,7 @@
 <translation id="2081529251031312395">$1 aún podrá iniciar sesión.</translation>
 <translation id="2122028596993374965">Dejar de enviar el contenido de la pestaña <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carga lenta</translation>
-<translation id="2135456203358955318">Lupa de vista fijada</translation>
+<translation id="2135456203358955318">Lupa fijada</translation>
 <translation id="2144487987174258011">Reinicia para actualizar Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>
@@ -249,6 +249,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6691659475504239918">Tecla de búsqueda + Mayús + H</translation>
+<translation id="6696025732084565524">Tu teclado independiente necesita una actualización crítica</translation>
 <translation id="6700713906295497288">Botón de menú de IME</translation>
 <translation id="6713285437468012787">Se ha vinculado el dispositivo Bluetooth "<ph name="DEVICE_NAME" />" y ya está disponible para todos los usuarios. Para eliminar esta vinculación, accede a Configuración.</translation>
 <translation id="6715542151869432661">No se han encontrado dispositivos móviles.</translation>

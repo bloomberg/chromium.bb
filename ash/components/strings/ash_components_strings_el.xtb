@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="104962181688258143">Άνοιγμα εφαρμογής Αρχεία</translation>
-<translation id="1126871238933253947">Εναλλαγή στην προηγούμενη γλώσσα πληκτρολογίου που χρησιμοποιούσατε.</translation>
+<translation id="1122869341872663659">Εμφάνιση <ph name="N" /> αποτελεσμάτων αναζήτησης για <ph name="QUERY" /></translation>
 <translation id="1134347825771908369">Σίγαση ήχου</translation>
 <translation id="1195667586424773550">Σύρετε τον σύνδεσμο στη γραμμή διευθύνσεων της καρτέλας</translation>
 <translation id="1204450209689312104">Άνοιγμα νέου παραθύρου σε κατάσταση ανώνυμης περιήγησης</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">Εκ νέου άνοιγμα της τελευταίας καρτέλας ή του παραθύρου που κλείσατε</translation>
 <translation id="4090342722461256974">Πατώντας παρατεταμένα το <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, πατήστε το <ph name="TAB" /> μέχρι να φτάσετε στο παράθυρο που θέλετε να ανοίξετε και έπειτα αφήστε τα πλήκτρα.</translation>
 <translation id="4092538597492297615">Αντιγραφή επιλεγμένου περιεχομένου στο πρόχειρο</translation>
+<translation id="4101772068965291327">Άνοιγμα αρχικής σελίδας</translation>
 <translation id="4123108089450197101">Αποθήκευση του συνδέσμου ως σελιδοδείκτη</translation>
 <translation id="4141203561740478845">Επισήμανση της σειράς με τη γραμμή διευθύνσεων</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ή <ph name="ENTER" /></translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">Πλήκτρο λειτουργίας επισκόπησης</translation>
 <translation id="5104462712192763270">Αποθήκευση της τρέχουσας σελίδας</translation>
 <translation id="5121628974188116412">Μετάβαση στο κάτω μέρος της σελίδας</translation>
+<translation id="5222676887888702881">Έξοδος</translation>
 <translation id="5236674127086649162">Επανάληψη φόρτωσης της τρέχουσας σελίδας χωρίς τη χρήση περιεχομένου που έχει αποθηκευτεί στην κρυφή μνήμη</translation>
 <translation id="526651782186312376">Επιλογή κειμένου έως την αρχή της γραμμής</translation>
 <translation id="5316716239522500219">Κατοπτρισμός οθονών</translation>
-<translation id="5335199890994453201">Εμφάνιση ή απόκρυψη της Επιθεώρησης DOM</translation>
 <translation id="5541719484267030947">Καθώς σέρνετε την καρτέλα, πατήστε <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Αναζήτηση στην τρέχουσα σελίδα</translation>
 <translation id="5563050856984839829">Πατήστε <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> και κάντε κλικ σε έναν σύνδεσμο</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">Άνοιγμα του συνδέσμου στην καρτέλα</translation>
 <translation id="5757474750054631686">Μείωση φωτεινότητας πληκτρολογίου (μόνο για πληκτρολόγια με οπίσθιο φωτισμό)</translation>
 <translation id="587531134027443617">Διαγραφή προηγούμενης λέξης</translation>
-<translation id="5928303187149237472">Αλλαγή ανάλυσης οθόνης</translation>
+<translation id="5921745308587794300">Περιστροφή παραθύρου</translation>
 <translation id="5975083100439434680">Σμίκρυνση</translation>
 <translation id="6022924867608035986">Διαγραφή κειμένου πλαισίου αναζήτησης</translation>
 <translation id="6045998054441862242">Ενεργοποίηση λειτουργίας υψηλής αντίθεσης</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">Επισήμανση του προηγούμενου στοιχείου στο ράφι σας</translation>
 <translation id="6445033640292336367">Επαναφορά της καρτέλας στην αρχική της θέση</translation>
 <translation id="649811797655257835">Επιλέξτε το αρχείο και έπειτα πατήστε <ph name="SPACE" /></translation>
-<translation id="6572206071785323178">Εναλλαγή μεταξύ των γλωσσών πληκτρολογίου που έχετε ορίσει. Μάθετε πώς μπορείτε να επιλέξετε τη γλώσσα πληκτρολογίου σας.</translation>
-<translation id="6634456834225946400">Επισήμανση της γραμμής σελιδοδεικτών (εάν εμφανίζεται)</translation>
 <translation id="666343722268997814">Άνοιγμα του μενού δεξιού κλικ για το στοιχείο που έχετε επισημάνει</translation>
 <translation id="6671538777808758331">Μετάβαση στο επόμενο αποτέλεσμα της αναζήτησής σας</translation>
 <translation id="6690765639083431875">Αγκύρωση παραθύρου στα αριστερά</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">Άνοιγμα αρχείου στο πρόγραμμα περιήγησης</translation>
 <translation id="7917881398263220094">Διακοπή φόρτωσης της τρέχουσας σελίδας</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ή <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">Διαγραφή δεδομένων περιήγησης</translation>
 <translation id="8130528849632411619">Μετάβαση στην αρχή του εγγράφου</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ή <ph name="E" /></translation>
 <translation id="8234414138295101081">Περιστροφή οθόνης κατά 90 μοίρες</translation>
-<translation id="826184564253127735">Σύστημα προβολής συντομεύσεων πληκτρολογίου</translation>
 <translation id="836869401750819675">Άνοιγμα σελίδας "Λήψεις"</translation>
 <translation id="8388247778047144397">Σύρετε τον σύνδεσμο σε μια κενή περιοχή της γραμμής καρτελών</translation>
 <translation id="8389638407792712197">Άνοιγμα νέου παραθύρου</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 έως 8</translation>
 <translation id="9041599225465145264">Επικόλληση περιεχομένου από το πρόχειρο</translation>
 <translation id="9052808072970550123">Εναλλαγή στον επόμενο χρήστη</translation>
+<translation id="906458777597946297">Μεγιστοποίηση παραθύρου</translation>
 <translation id="9106898733795143799">Πρόγραμμα περιήγησης στον ιστό και σε σελίδες</translation>
+<translation id="9162942292291287644">Κανένα αποτέλεσμα αναζήτησης για <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Δημοφιλείς συντομεύσεις</translation>
 <translation id="93603345341560814">Πατήστε <ph name="SHIFT" /> και έναν σύνδεσμο</translation>
 <translation id="945383118875625837">Σύρετε τον σύνδεσμο στη γραμμή σελιδοδεικτών</translation>

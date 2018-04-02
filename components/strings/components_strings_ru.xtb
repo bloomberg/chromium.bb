@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1978555033938440688">Версия ПО</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
+<translation id="2003709556000175978">Сброс пароля</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
 <translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверьте настройки прокси-сервера и брандмауэра<ph name="END_LINK" />.</translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 вариант}one{# вариант}few{# варианта}many{# вариантов}other{# варианта}}</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="20817612488360358">Включены системные настройки прокси-сервера, но при этом его конфигурация задана явным образом.</translation>
+<translation id="2084558088529668945">Вы ввели пароль на сайте, которым не управляет <ph name="ORG_NAME" />. Чтобы защитить свой аккаунт, не используйте этот пароль для других приложений и сайтов.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Несоответствие домена</translation>
 <translation id="2096368010154057602">Округ</translation>
@@ -442,6 +444,7 @@
 <translation id="4171400957073367226">Подтверждающая подпись недействительна</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Ещё <ph name="ITEM_COUNT" /> товар}one{Ещё <ph name="ITEM_COUNT" /> товар}few{Ещё <ph name="ITEM_COUNT" /> товара}many{Ещё <ph name="ITEM_COUNT" /> товаров}other{Ещё <ph name="ITEM_COUNT" /> товара}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Рекомендуем сбросить пароль в домене <ph name="ORG_NAME" />, если вы используете его на других сайтах.</translation>
 <translation id="4196861286325780578">&amp;Повторить перемещение</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверьте настройки брандмауэра и антивирусного ПО<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Завершение работы программы</translation>
@@ -455,6 +458,7 @@
 <translation id="4265872034478892965">Разрешено администратором</translation>
 <translation id="4269787794583293679">(Не указано)</translation>
 <translation id="4275830172053184480">Перезапуск устройства</translation>
+<translation id="4277028893293644418">Сбросить пароль</translation>
 <translation id="4280429058323657511">, действует до <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Блокировать (по умолчанию)</translation>
 <translation id="4325863107915753736">Не удалось найти статью</translation>
@@ -651,6 +655,7 @@
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5893752035575986141">Принимаются кредитные карты.</translation>
+<translation id="5898382028489516745">Рекомендуем сбросить пароль в домене <ph name="ORG_NAME" />, если вы используете его на других сайтах.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используется # файла cookie}many{Используется # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="5939518447894949180">Сбросить</translation>
@@ -722,6 +727,7 @@
 <translation id="647261751007945333">Правила устройства</translation>
 <translation id="6477321094435799029">Браузер Chrome обнаружил на этой странице необычный код и заблокировал его, чтобы защитить ваши данные (например, пароли, а также номера телефонов и банковских карт).</translation>
 <translation id="6489534406876378309">Начать загрузку сведений об ошибках</translation>
+<translation id="6499038740797743453">Сбросить пароль?</translation>
 <translation id="6507833130742554667">Принимаются кредитные и дебетовые карты.</translation>
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
@@ -837,6 +843,7 @@
 <translation id="7549584377607005141">Для корректного отображения веб-страницы требуются введенные ранее данные. Их можно отправить повторно, но в этом случае все действия на странице будут выполнены снова.</translation>
 <translation id="7552846755917812628">Попробуйте сделать следующее:</translation>
 <translation id="7554791636758816595">Новая вкладка</translation>
+<translation id="7564049878696755256">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту в домене <ph name="ORG_NAME" />. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="7567204685887185387">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности мог быть выдан обманным путем. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="7568593326407688803">Язык этой страницы<ph name="ORIGINAL_LANGUAGE" />Хотите перевести ее?</translation>
 <translation id="7569952961197462199">Удалить кредитную карту из Chrome?</translation>
@@ -992,6 +999,7 @@
 <translation id="8761567432415473239">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB-устройство</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
+<translation id="8792621596287649091">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту в домене <ph name="ORG_NAME" />. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="8800988563907321413">Здесь появятся рекомендации.</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="883848425547221593">Другие закладки</translation>
@@ -1036,7 +1044,7 @@
 <translation id="9103872766612412690">На сайте <ph name="SITE" /> для защиты ваших данных обычно используется шифрование. Однако учетные данные, которые мы получили от сайта <ph name="SITE" /> сейчас, отличаются от тех, которые он отправляет обычно. Вероятно, вредоносный сайт пытается выдать себя за <ph name="SITE" />, либо страница подключения к сети Wi-Fi прервала соединение. Ваша информация по-прежнему в безопасности, так как браузер Chromium разорвал соединение до того, как произошел обмен данными.</translation>
 <translation id="9106062320799175032">Добавьте платежный адрес</translation>
 <translation id="910908805481542201">Получить помощь</translation>
-<translation id="9128870381267983090">Подключиться к сети</translation>
+<translation id="9128870381267983090">Подключитесь к сети</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="9137248913990643158">Войдите в Chrome, прежде чем использовать это приложение.</translation>
 <translation id="9148088599418889305">Выбрать способ доставки посылок</translation>

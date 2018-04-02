@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Avansate</translation>
 <translation id="1978555033938440688">Versiune de firmware</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{și încă una}few{și încă #}other{și încă #}}</translation>
+<translation id="2003709556000175978">Resetează parola acum</translation>
 <translation id="2025186561304664664">Proxy-ul este setat la Configurat automat.</translation>
 <translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />să verifici proxy-ul și firewallul;<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugestie}few{# sugestii}other{# de sugestii}}</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="20817612488360358">Setările proxy de sistem sunt setate pentru a fi utilizate, dar o configurație explicită pentru proxy este, de asemenea, specificată.</translation>
+<translation id="2084558088529668945">Ai introdus parola pe un site care nu este gestionat de <ph name="ORG_NAME" />. Pentru a proteja contul, nu folosi aceeași parolă pentru alte aplicații și site-uri.</translation>
 <translation id="2091887806945687916">Sunet</translation>
 <translation id="2094505752054353250">Nepotrivire domeniu</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Încă <ph name="ITEM_COUNT" /> articol}few{Încă <ph name="ITEM_COUNT" /> articole}other{Încă <ph name="ITEM_COUNT" /> de articole}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome îți recomandă să resetezi parola pentru <ph name="ORG_NAME" /> dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Blocări</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">Permisă de administrator</translation>
 <translation id="4269787794583293679">(Niciun nume de utilizator)</translation>
 <translation id="4275830172053184480">Reporniți gadgetul</translation>
+<translation id="4277028893293644418">Resetează parola</translation>
 <translation id="4280429058323657511">data expirării: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Blochează (în mod prestabilit)</translation>
 <translation id="4325863107915753736">Articolul nu a fost găsit</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
 <translation id="5893752035575986141">Se acceptă carduri de credit.</translation>
+<translation id="5898382028489516745">Chromium îți recomandă să resetezi parola pentru <ph name="ORG_NAME" /> dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizat)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 în uz}few{# în uz}other{# în uz}}</translation>
 <translation id="5939518447894949180">Resetează</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">Politici privind dispozitivele</translation>
 <translation id="6477321094435799029">Chrome a detectat un cod neobișnuit pe această pagină și l-a blocat pentru a-ți proteja informațiile cu caracter personal (de exemplu, parole, numere de telefon sau carduri de credit).</translation>
 <translation id="6489534406876378309">Începeți încărcarea rapoartelor de blocare</translation>
+<translation id="6499038740797743453">Resetezi parola?</translation>
 <translation id="6507833130742554667">Se acceptă carduri de credit și de debit.</translation>
 <translation id="6508722015517270189">repornește Chrome;</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">Pentru a fi afișată corespunzător, această pagină web necesită date pe care le-ați introdus anterior. Puteți trimite aceste date din nou, dar astfel veți repeta orice acțiuni realizate anterior de această pagină.</translation>
 <translation id="7552846755917812628">Încearcă următoarele sfaturi:</translation>
 <translation id="7554791636758816595">Filă nouă</translation>
+<translation id="7564049878696755256">Este posibil să pierzi accesul la contul <ph name="ORG_NAME" /> sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
 <translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7568593326407688803">Această pagină este în <ph name="ORIGINAL_LANGUAGE" /> Vrei să fie tradusă?</translation>
 <translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
@@ -994,6 +1001,7 @@
 <translation id="8761567432415473239">Recent, Navigarea sigură Google a <ph name="BEGIN_LINK" />descoperit programe dăunătoare<ph name="END_LINK" /> pe <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispozitiv USB</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
+<translation id="8792621596287649091">Este posibil să pierzi accesul la contul <ph name="ORG_NAME" /> sau să fii victima unui furt de identitate. Chromium îți recomandă să îți schimbi acum parola.</translation>
 <translation id="8800988563907321413">Sugestiile pentru În apropiere sunt afișate aici</translation>
 <translation id="8820817407110198400">Marcaje</translation>
 <translation id="883848425547221593">Alte marcaje</translation>

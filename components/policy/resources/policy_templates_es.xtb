@@ -64,8 +64,8 @@ Si esta política se establece en False, no se informará sobre el estado del co
       lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
       los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/ también
       se aislará https://foo.example.com/ como parte
-      del sitio web https://example.com/.
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
+      del sitio web https://example.com/).
+      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
       Si no se configura la política, el usuario podrá cambiar esta opción.
       En <ph name="PRODUCT_OS_NAME" />, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al introducir una sesión de usuario mientras se aplica el valor de especificado por la política del usuario.
       </translation>
@@ -528,6 +528,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2529700525201305165">Restringir los usuarios que pueden iniciar sesión en <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configura la lista de aplicaciones y extensiones de instalación forzada</translation>
 <translation id="253135976343875019">Tiempo de espera de inactividad cuando el dispositivo está conectado a la red</translation>
+<translation id="2536283449105918306">Habilita la protección contra el redireccionamiento de pestañas</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
 <translation id="2562339630163277285">Especifica la URL del motor de búsqueda utilizada para proporcionar resultados instantáneos. La URL debe contener la cadena <ph name="SEARCH_TERM_MARKER" />, que se sustituirá en el momento de la consulta por el texto que el usuario haya introducido hasta el momento.
 
@@ -676,13 +677,13 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
 <translation id="2998886474614739865">
       NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al introducir una sesión de usuario mientras se aplica el valor de especificado por la política del usuario.
+      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
       Si se habilita la política, cada uno de los orígenes especificados en una
       lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
       los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/ también
       se aislará https://foo.example.com/ como parte
       del sitio web https://example.com/).
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
+      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
       Si no se configura, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
       </translation>
 <translation id="3016255526521614822">Aplicaciones para tomar notas incluidas en la lista blanca que están permitidas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" /></translation>
@@ -793,13 +794,13 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3386001018488754001">
       NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al introducir una sesión de usuario mientras se aplica el valor de especificado por la política del usuario.
+      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
       Para conseguir tanto aislamiento
       como un impacto limitado para los usuarios, utiliza la política
       IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
       SitePerProcess aísla todos los sitios web.
       Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
+      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
       Si no se configura la política, el usuario podrá cambiar esta opción.
       </translation>
 <translation id="3395348522300156660">Especifica las impresoras que puede utilizar un usuario.
@@ -1446,9 +1447,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
       SitePerProcess aísla todos los sitios web.
       Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
+      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
       Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" /> también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al introducir una sesión de usuario mientras se aplica el valor de especificado por la política del usuario.
+      En <ph name="PRODUCT_OS_NAME" /> también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
       </translation>
 <translation id="5302612588919538756">Esta política está obsoleta, pero puedes utilizar SyncDisabled en su lugar.
 
@@ -2678,6 +2679,12 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="9096086085182305205">Lista de admisión de servidores de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
 <translation id="9105265795073104888">Solo se habilita la disponibilidad de un subconjunto de opciones de proxy para las aplicaciones de Android. Estas pueden elegir voluntariamente el uso del proxy. No puedes forzarlas a que utilicen un proxy.</translation>
+<translation id="9110615239151047025">Habilita la protección contra el redireccionamiento de pestañas y bloquea este tipo de navegaciones.
+
+      Para saber qué son los redireccionamientos de pestañas, consulta la página https://www.chromestatus.com/features/5675755719622656.
+      Si se asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> bloqueará las navegaciones que considere redireccionamientos de pestañas.
+      Si se asigna el valor "False" a esta política, <ph name="PRODUCT_NAME" /> permitirá que los sitios web realicen redireccionamientos de pestañas.
+      De forma predeterminada, se asigna el valor "True" a esta política.</translation>
 <translation id="9112727953998243860">Archivo de configuración de las impresoras de empresa</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolos. Solo puede tratarse de una política recomendada. La propiedad |protocol| se debe establecer según el esquema (por ejemplo, mailto), y la propiedad |url| se debe establecer según el patrón de URL de la aplicación que procesa el esquema. El patrón puede incluir un %s, que si está presente se sustituirá por la URL procesada.
 

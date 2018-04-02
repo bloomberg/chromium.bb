@@ -533,6 +533,7 @@
 <translation id="2529700525201305165">Riboti, kuriems naudotojams leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="2529880111512635313">Konfigūruoti programų ir plėtinių, kuriuos įdiegti privaloma, sąrašą</translation>
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
+<translation id="2536283449105918306">Įgalinama fone paleidžiamu skirtukų apsauga</translation>
 <translation id="2552966063069741410">Laiko juosta</translation>
 <translation id="2562339630163277285">Nurodomas paieškos variklio, naudoto tiesioginiams rezultatams teikti, URL. URL turi būti eilutė <ph name="SEARCH_TERM_MARKER" />, kuri pateikiant užklausą bus pakeista naudotojo jau įvestu tekstu.
 
@@ -2689,6 +2690,12 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
 <translation id="9098553063150791878">HTTP autentifikavimo politika</translation>
 <translation id="9105265795073104888">„Android“ programos gali pasiekti tik dalį tarpinio serverio konfigūravimo parinkčių. „Android“ programos gali pasirinkti naudoti tarpinį serverį. Negalite jų priversti naudoti tarpinio serverio.</translation>
+<translation id="9110615239151047025">Įgalinama fone paleidžiamu skirtukų apsauga. Taip užblokuojami naršymo veiksmai, kurie nustatomi kaip fone paleidžiami skirtukai.
+
+      Fone paleidžiami skirtukai aprašyti adresu https://www.chromestatus.com/features/5675755719622656.
+      Jei politika nustatyta į „True“, naršymo veiksmai, kuriuos „<ph name="PRODUCT_NAME" />“ laiko fone paleidžiamais skirtukais, bus užblokuoti.
+      Jei ši politika nustatyta į „False“, „<ph name="PRODUCT_NAME" />“ leis svetainėms atlikti fone paleidžiamu skirtukų naršymo veiksmus.
+      Pagal numatytuosius nustatymus ši politika nustatyta į „True“.</translation>
 <translation id="9112727953998243860">Įmonės spausdintuvo konfigūracijos failas</translation>
 <translation id="9112897538922695510">Leidžiama registruoti protokolo doroklių sąrašą. Tai gali būti tik rekomenduojama politika. Ypatybė |protocol| turėtų būti nustatyta į schemą, pvz., „mailto“, o ypatybė |url| turėtų būti nustatyta į schemą apdorojančios programos URL šabloną. Šablone gali būti įtrauktas „%s“, kurį pakeis apdorotas URL.
 

@@ -513,6 +513,7 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2529700525201305165">Rajoita tuotteeseen <ph name="PRODUCT_NAME" /> kirjautumista</translation>
 <translation id="2529880111512635313">Määritä sovellukset ja laajennukset, joiden asennus pakotetaan.</translation>
 <translation id="253135976343875019">Käyttämättömyysvaroituksen viive käytettäessä laitetta verkkovirralla</translation>
+<translation id="2536283449105918306">Ottaa käyttöön suojauksen ylimääräisen välilehden (tab-under) avaamista vastaan</translation>
 <translation id="2552966063069741410">Aikavyöhyke</translation>
 <translation id="2562339630163277285">Määrittää Instant-hakuihin käytettävän hakukoneen URL-osoitteen. Osoitteen on sisällettävä merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän kirjoittamalla tekstillä.
 
@@ -2551,6 +2552,12 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="9096086085182305205">Sallittujen todennuspalvelimien luettelo</translation>
 <translation id="9098553063150791878">HTTP-todennuksen käytännöt</translation>
 <translation id="9105265795073104888">Vain osa välityspalvelinasetuksista on Android-sovellusten käytettävissä. Android-sovellukset voivat käyttää välityspalvelinta halutessaan. Et voi pakottaa niitä käyttämään välityspalvelinta.</translation>
+<translation id="9110615239151047025">Ottaa käyttöön suojauksen ylimääräisiä välilehtiä vastaan. Suojaus estää ylimääräiselle välilehdelle siirtymisen.
+
+      Lue selitys ylimääräisen välilehden avaamisesta (tab-under) osoitteesta https://www.chromestatus.com/features/5675755719622656.
+      Jos käytännön arvo on tosi, siirtymiset jotka <ph name="PRODUCT_NAME" /> havaitsee johtavan ylimääräiselle välilehdelle, estetään.
+      Jos käytännön arvo on epätosi, <ph name="PRODUCT_NAME" /> sallii ylimääräiselle välilehdelle siirtymisen.
+      Käytännön oletusarvo on tosi.</translation>
 <translation id="9112727953998243860">Yritystulostimen määritystiedosto</translation>
 <translation id="9112897538922695510">Tämän käytännön avulla voit rekisteröidä luettelon protokollan käsittelijöitä. Tämä voi olla vain suositeltu käytäntö. |protocol|-ominaisuudeksi tulee asettaa malli, kuten "mailto", ja |url|-ominaisuudeksi tulee asettaa kyseistä mallia käsittelevän sovelluksen URL-osoitemalli. Osoitemalli voi sisältää merkin %s, joka korvataan käsiteltävällä URL-osoitteella.
 

@@ -508,6 +508,7 @@
 <translation id="2529700525201305165"><ph name="PRODUCT_NAME" /> へのログインが許可されるユーザーを制限する</translation>
 <translation id="2529880111512635313">強制インストールするアプリと拡張機能のリストを設定します</translation>
 <translation id="253135976343875019">アイドル警告が表示されるまでの時間（AC 電源での実行時）</translation>
+<translation id="2536283449105918306">タブアンダーの保護を有効にする</translation>
 <translation id="2552966063069741410">タイムゾーン</translation>
 <translation id="2562339630163277285">インスタント検索の結果表示に使用する検索エンジンの URL を指定します。この URL には <ph name="SEARCH_TERM_MARKER" /> という文字列を含めます。この文字列は、検索時にユーザーが入力したテキストに置き換えられます。
 
@@ -2549,6 +2550,12 @@
 <translation id="9096086085182305205">認証サーバーのホワイトリスト</translation>
 <translation id="9098553063150791878">HTTP 認証のポリシー</translation>
 <translation id="9105265795073104888">Android アプリではプロキシ設定オプションの一部のみを使用できます。プロキシを使用するかどうかは Android アプリ側の選択となります。Android アプリにプロキシの使用を強制することはできません。</translation>
+<translation id="9110615239151047025">タブアンダーの保護を有効にします。この場合、タブアンダーとして検出された操作がブロックされます。
+
+      タブアンダーについては、https://www.chromestatus.com/features/5675755719622656 をご覧ください。
+      このポリシーが true に設定されている場合は、<ph name="PRODUCT_NAME" /> によりタブアンダーとして検出された操作がブロックされます。
+      このポリシーが false に設定されている場合、<ph name="PRODUCT_NAME" /> ではサイトによるタブアンダー操作の実行が許可されます。
+      デフォルトでは、このポリシーは true に設定されます。</translation>
 <translation id="9112727953998243860">企業プリンタの設定ファイル</translation>
 <translation id="9112897538922695510">プロトコル ハンドラのリストを登録できます。これはあくまでも推奨のポリシーです。プロパティ |protocol| には「mailto」などのスキームを設定し、プロパティ |url| にはこのスキームを処理するアプリケーションの URL パターンを設定します。このパターンに「%s」を含めて、処理された URL に置き換えることもできます。
 

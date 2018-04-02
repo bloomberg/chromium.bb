@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="104962181688258143">開啟「檔案」應用程式</translation>
-<translation id="1126871238933253947">切換至你使用的上一個鍵盤語言。</translation>
+<translation id="1122869341872663659">目前顯示 <ph name="N" /> 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
 <translation id="1134347825771908369">設為靜音</translation>
 <translation id="1195667586424773550">將連結拖曳至該分頁的網址列</translation>
 <translation id="1204450209689312104">以無痕模式開啟新視窗</translation>
@@ -70,6 +70,7 @@
 <translation id="4060703249685950734">重新開啟最後關閉的分頁或視窗</translation>
 <translation id="4090342722461256974">按住 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 鍵並輕觸 <ph name="TAB" /> 鍵，切換至你要開啟的視窗後放開按鍵。</translation>
 <translation id="4092538597492297615">將所選內容複製到剪貼簿</translation>
+<translation id="4101772068965291327">開啟首頁</translation>
 <translation id="4123108089450197101">將連結儲存為書籤</translation>
 <translation id="4141203561740478845">醒目顯示網址列所在的行</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 鍵或 <ph name="ENTER" /> 鍵</translation>
@@ -84,10 +85,10 @@
 <translation id="5042305953558921026">總覽模式按鍵</translation>
 <translation id="5104462712192763270">儲存目前網頁</translation>
 <translation id="5121628974188116412">前往頁面底部</translation>
+<translation id="5222676887888702881">登出</translation>
 <translation id="5236674127086649162">重新載入目前網頁，而不使用快取內容</translation>
 <translation id="526651782186312376">選取文字至本行開頭</translation>
 <translation id="5316716239522500219">顯示器鏡像</translation>
-<translation id="5335199890994453201">顯示或隱藏 DOM 檢查器</translation>
 <translation id="5541719484267030947">在拖曳分頁時按下 <ph name="ESC" /> 鍵</translation>
 <translation id="5554139136362089836">搜尋目前網頁</translation>
 <translation id="5563050856984839829">按住 <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 鍵，然後按一下連結</translation>
@@ -96,7 +97,7 @@
 <translation id="5757111373163288447">在該分頁開啟連結</translation>
 <translation id="5757474750054631686">鍵盤變暗 (僅適用於背光鍵盤)</translation>
 <translation id="587531134027443617">刪除上一個字詞</translation>
-<translation id="5928303187149237472">變更螢幕解析度</translation>
+<translation id="5921745308587794300">旋轉視窗</translation>
 <translation id="5975083100439434680">縮小</translation>
 <translation id="6022924867608035986">清除搜尋框文字</translation>
 <translation id="6045998054441862242">開啟高對比模式</translation>
@@ -114,8 +115,6 @@
 <translation id="6435207348963613811">醒目顯示檔案櫃中的上一個項目</translation>
 <translation id="6445033640292336367">讓分頁回到原始位置</translation>
 <translation id="649811797655257835">選取檔案，然後按下 <ph name="SPACE" /> 鍵</translation>
-<translation id="6572206071785323178">在你設定的鍵盤語言之間切換。進一步瞭解如何選擇鍵盤語言。</translation>
-<translation id="6634456834225946400">醒目顯示書籤列 (假設不是隱藏狀態)</translation>
 <translation id="666343722268997814">針對醒目顯示的項目開啟滑鼠右鍵選單</translation>
 <translation id="6671538777808758331">前往下一個相符的搜尋結果</translation>
 <translation id="6690765639083431875">將視窗固定在左側</translation>
@@ -136,10 +135,10 @@
 <translation id="7787242579016742662">在瀏覽器中開啟檔案</translation>
 <translation id="7917881398263220094">停止載入目前網頁</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> 鍵或 <ph name="MINUS" /> 鍵</translation>
+<translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8130528849632411619">前往文件開頭</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 鍵或 <ph name="E" /> 鍵</translation>
 <translation id="8234414138295101081">將畫面旋轉 90 度</translation>
-<translation id="826184564253127735">鍵盤快速鍵檢視器</translation>
 <translation id="836869401750819675">開啟下載內容頁面</translation>
 <translation id="8388247778047144397">將連結拖曳至分頁列中的空白區域</translation>
 <translation id="8389638407792712197">開啟新視窗</translation>
@@ -158,7 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /> <ph name="SEPARATOR" /> 1 到 8 鍵</translation>
 <translation id="9041599225465145264">貼上剪貼簿中的內容</translation>
 <translation id="9052808072970550123">切換至下一個使用者</translation>
+<translation id="906458777597946297">將視窗放到最大</translation>
 <translation id="9106898733795143799">網頁與網路瀏覽器</translation>
+<translation id="9162942292291287644">找不到與「<ph name="QUERY" />」相符的搜尋結果</translation>
 <translation id="9179672198516322668">常用快速鍵</translation>
 <translation id="93603345341560814">按住 <ph name="SHIFT" /> 鍵，然後按一下連結</translation>
 <translation id="945383118875625837">將連結拖曳到書籤列</translation>

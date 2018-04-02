@@ -535,6 +535,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2529700525201305165">Določa, kateri uporabniki se lahko prijavijo v storitev <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2529880111512635313">Konfiguriranje seznama vsiljenih namestitev aplikacij in razširitev</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
+<translation id="2536283449105918306">Omogoča zaščito pred odpiranjem neželenih zavihkov (»tab-under«)</translation>
 <translation id="2552966063069741410">Časovni pas</translation>
 <translation id="2562339630163277285">Določa URL iskalnika, ki se uporablja za prikaz rezultatov dinamičnega iskanja. URL mora vsebovati niz »<ph name="SEARCH_TERM_MARKER" />«, ki ga bo ob času poizvedbe nadomestilo besedilo, ki ga je uporabnik vnesel do takrat.
 
@@ -2688,6 +2689,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="9098553063150791878">Pravilniki za preverjanje pristnosti HTTP</translation>
 <translation id="9105265795073104888">Aplikacijam za Android je dan na voljo samo podnabor nastavitev strežnika proxy. Aplikacije za Android se lahko prostovoljno odločijo, da bodo uporabljale strežnik proxy. V to jih ni mogoče prisiliti.</translation>
+<translation id="9110615239151047025">Omogoča zaščito pred odpiranjem neželenih zavihkov (»tab-under«), ki blokira krmarjenja, zaznana kot odpiranja neželenih zavihkov (»tab-under«).
+
+      Če želite prebrati, kaj pomeni odpiranje neželenih zavihkov ali »tab-under«, obiščite https://www.chromestatus.com/features/5675755719622656.
+      Če je ta pravilnik omogočen, so krmarjenja, ki jih <ph name="PRODUCT_NAME" /> prepozna kot odpiranja neželenih zavihkov (»tab-under«), blokirana.
+      Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> spletnim mestom dovoli krmarjenja z odpiranjem neželenih zavihkov (»tab-under«).
+      Ta pravilnik je privzeto omogočen.</translation>
 <translation id="9112727953998243860">Datoteka s konfiguracijami tiskalnikov v podjetjih</translation>
 <translation id="9112897538922695510">Omogoča registracijo seznama rutin za obravnavo protokolov. Ta pravilnik je lahko samo priporočen. Lastnost |protocol| mora biti nastavljena na shemo, kot je »mailto«, in lastnost |url| mora biti nastavljena na vzorec URL aplikacije, ki obravnava shemo. Vzorec lahko vsebuje »%s«. Če ga, ta nadomesti obravnavani URL.
 

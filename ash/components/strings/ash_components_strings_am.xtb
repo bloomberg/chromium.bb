@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="104962181688258143">የፋይሎች መተግበሪያን ይክፈቱ</translation>
-<translation id="1126871238933253947">እየተጠቀሙ ወደነበሩት የቀዳሚው ቁልፍ ሰሌዳ ቋንቋ ይቀይሩ።</translation>
+<translation id="1122869341872663659"><ph name="N" /> ፍለጋ ውጤቶችን ለ<ph name="QUERY" /> በማሳየት ላይ</translation>
 <translation id="1134347825771908369">ድምጹን ይዝጉት</translation>
 <translation id="1195667586424773550">አገናኙን ወደ የትሩ አድራሻ አሞሌ ይጎትቱት</translation>
 <translation id="1204450209689312104">አዲስ ትር ማንነት በማያሳውቅ ሁነታ ውስጥ ይክፈቱ</translation>
@@ -84,10 +84,10 @@
 <translation id="5042305953558921026">የአጠቃላይ ዕይታ ሁነታ ቁልፍ</translation>
 <translation id="5104462712192763270">አሁን ያለውን የእርስዎን ገጽ ያስቀምጡ</translation>
 <translation id="5121628974188116412">ወደ ገጹ ግርጌ ይሂዱ</translation>
+<translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="5236674127086649162">የተሸጎጠ ይዘትን ሳይጠቀሙ አሁን ያለውን ገጽዎ ዳግም ይጫኑ</translation>
 <translation id="526651782186312376">ጽሑፍን እስከ የመስመሩ መጀመሪያ ይምረጡ</translation>
 <translation id="5316716239522500219">ማሳያዎችን አንጸባርቅ</translation>
-<translation id="5335199890994453201">የDOM መርማሪውን ያሳዩ ወይም ይደብቁ</translation>
 <translation id="5541719484267030947">ትሩን እየጎተቱ እያሉ <ph name="ESC" />ን ይጫኑ</translation>
 <translation id="5554139136362089836">የአሁኑን ገጽ ይፈልጉ</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ይጫኑ እና አገናኝ ጠቅ ያድርጉ</translation>
@@ -96,7 +96,7 @@
 <translation id="5757111373163288447">አገናኙን በአዲስ ትር ውስጥ ይክፈቱ</translation>
 <translation id="5757474750054631686">ቁልፍ ሰሌዳን ያጨልሙ (የጀርባ ብርሃን ላላቸው ቁልፍ ሰሌዳዎች ብቻ)</translation>
 <translation id="587531134027443617">ቀዳሚውን ቃል ይሰርዙ</translation>
-<translation id="5928303187149237472">የማያ ገጽ ጥራት ይለውጡ</translation>
+<translation id="5921745308587794300">መስኮትን አሽከርክር</translation>
 <translation id="5975083100439434680">አሳንስ</translation>
 <translation id="6022924867608035986">የፍለጋ ሳጥን ጽሑፍን አጽዳ</translation>
 <translation id="6045998054441862242">ባለከፍተኛ ንጽጽር ሁነታን አብራ</translation>
@@ -114,8 +114,6 @@
 <translation id="6435207348963613811">በእርስዎ መደርደሪያ ላይ ቀዳሚውን ንጥል ያድምቁ</translation>
 <translation id="6445033640292336367">ትሩን ወደ የመጀመሪያው አቀማመጡ ይመልሱ</translation>
 <translation id="649811797655257835">ፋይሉን ይምረጡ፣ ከዚያ <ph name="SPACE" /> ይጫኑ</translation>
-<translation id="6572206071785323178">እርስዎ ባቀናበሯቸው የቁልፍ ሰሌዳ ቋንቋዎች መካከል ይቀያይሩ። የቁልፍ ሰሌዳ ቋንቋዎን እንዴት እንደሚመርጡ ይረዱ።</translation>
-<translation id="6634456834225946400">የእልባት አሞሌውን ያድምቁ (የሚታይ ከሆነ)</translation>
 <translation id="666343722268997814">ለደመቀው ንጥል በቀኝ ጠቅ ምናሌን ይክፈቱ</translation>
 <translation id="6671538777808758331">ለፍለጋዎ ወደ ቀጣዩ ተዛማጅ ይሂዱ</translation>
 <translation id="6690765639083431875">መስኮት በስተግራ በኩል ይሰኩ</translation>
@@ -136,10 +134,10 @@
 <translation id="7787242579016742662">አንድ ፋይል በአሳሹ ውስጥ ይክፈቱ</translation>
 <translation id="7917881398263220094">የአሁኑን ገጽዎ መጫን ያስቁሙ</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ወይም <ph name="MINUS" /></translation>
+<translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
 <translation id="8130528849632411619">ወደ የሰነድ መጀመሪያ ይሂዱ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ወይም <ph name="E" /></translation>
 <translation id="8234414138295101081">ማያ ገጽን 90 ዲግሪ አሽከርክር</translation>
-<translation id="826184564253127735">የቁልፍ ሰሌዳ አቋራጭ መመልከቻ</translation>
 <translation id="836869401750819675">የውርዶች ገጽን ይክፈቱ</translation>
 <translation id="8388247778047144397">አገናኙን በትሩ ድርድር ላይ ወዳለ ባዶ ቦታ ይጎትቱት</translation>
 <translation id="8389638407792712197">አዲስ መስኮት ይክፈቱ</translation>
@@ -158,7 +156,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> ከ1 እስከ 8</translation>
 <translation id="9041599225465145264">ይዘትን ከቅንጥብ ሰሌዳው ይለጥፉ</translation>
 <translation id="9052808072970550123">ወደ ቀጣዩ ተጠቃሚ ቀይር</translation>
+<translation id="906458777597946297">መስኮቱን ያስፉት</translation>
 <translation id="9106898733795143799">ገጽ እና ድር አሳሽ</translation>
+<translation id="9162942292291287644">ለ<ph name="QUERY" /> ምንም የፍለጋ ውጤቶች የሉም</translation>
 <translation id="9179672198516322668">ታዋቂ አቋራጮች</translation>
 <translation id="93603345341560814"><ph name="SHIFT" />ን ይጫኑ እና አገናኝ ላይ ጠቅ ያድርጉ</translation>
 <translation id="945383118875625837">አገናኝን ወደ የዕልባቶች አሞሌ ይጎትቱ</translation>

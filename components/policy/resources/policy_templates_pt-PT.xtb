@@ -430,7 +430,7 @@
 <translation id="2386362615870139244">Permitir bloqueios de ativação do ecrã</translation>
 <translation id="2411817661175306360">O aviso de proteção por palavra-passe está desativado.</translation>
 <translation id="2411919772666155530">Bloquear notificações nestes Web sites</translation>
-<translation id="2415979855753196119">Permite-lhe controlar o acionamento da sinalização de conta protegidas por palavra-passe em risco. A sinalização de conta protegida por palavra-passe em risco consiste em informar a Google de que esta conta está em risco de ser acedida indevidamente.
+<translation id="2415979855753196119">Permite-lhe controlar o acionamento da sinalização de contas protegidas por palavra-passe em risco. A sinalização de conta protegida por palavra-passe em risco consiste em informar a Google de que esta conta está em risco de ser acedida indevidamente.
 
       Se esta política estiver definida como "PasswordProtectionRiskOff", não é acionada qualquer sinalização de conta protegida por palavra-passe em risco.
       Se esta política estiver definida como "PasswordProtectionRiskOnPasswordReuse", a sinalização de conta protegida por palavra-passe em risco é acionada quando os utilizadores reutilizarem as palavras-passe Google em sites que não tenham sido adicionados à lista de autorizações.
@@ -522,6 +522,7 @@
 <translation id="2529700525201305165">Restringir os utilizadores que têm permissão para iniciar sessão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2529880111512635313">Configurar a lista de aplicações e extensões de instalação forçada</translation>
 <translation id="253135976343875019">Atraso do aviso de inatividade quando o dispositivo está ligado à eletricidade</translation>
+<translation id="2536283449105918306">Ativa a proteção tab-under</translation>
 <translation id="2552966063069741410">Fuso Horário</translation>
 <translation id="2562339630163277285">Especifica o URL do motor de pesquisa utilizado para apresentar resultados instantâneos. O URL deve incluir a string <ph name="SEARCH_TERM_MARKER" />, que, no momento da consulta, será substituída pelo texto que o utilizador tenha introduzido.
 
@@ -2585,6 +2586,12 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9105265795073104888">Apenas é disponibilizado um subconjunto de opções de configuração de proxy para aplicações Android. As aplicações Android podem optar voluntariamente por utilizar o proxy. Não as pode forçar a utilizar um proxy.</translation>
+<translation id="9110615239151047025">Ativa a proteção tab-under, que bloqueia as navegações detetadas como tab-unders.
+
+      Para obter uma explicação sobre tab-unders, consulte https://www.chromestatus.com/features/5675755719622656.
+      Se esta política estiver definida como Verdadeira, as navegações que o produto <ph name="PRODUCT_NAME" /> identificar como sendo tab-unders são bloqueadas.
+      Se esta política estiver definida como Falsa, o produto <ph name="PRODUCT_NAME" /> permite que os sites efetuem navegações tab-under.
+      Por predefinição, esta política está definida como Verdadeira.</translation>
 <translation id="9112727953998243860">Ficheiro de configuração de impressoras empresariais</translation>
 <translation id="9112897538922695510">Permite-lhe registar uma lista de controladores de protocolos. Esta apenas pode ser uma política recomendada. A propriedade |protocol| deve ser definida para um esquema como "mailto" e a propriedade |url| deve ser definida para o padrão do URL da aplicação que controla o esquema. O padrão pode incluir um "%s" que, caso esteja presente, é substituído pelo URL controlado.
 

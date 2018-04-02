@@ -508,6 +508,7 @@
 <translation id="2529700525201305165">Limita os usuários que têm permissão para fazer login no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configurar a lista de extensões e aplicativos instalados forçadamente</translation>
 <translation id="253135976343875019">Intervalo da advertência de inatividade no funcionamento com alimentação CA</translation>
+<translation id="2536283449105918306">Ativa a proteção contra tab-under</translation>
 <translation id="2552966063069741410">Fuso horário</translation>
 <translation id="2562339630163277285">Especifica o URL do mecanismo de pesquisa usado para fornecer resultados instantâneos. O URL deve conter a string <ph name="SEARCH_TERM_MARKER" />, que será substituída no instante da consulta pelo texto que o usuário digitou até o momento.
 
@@ -1934,7 +1935,7 @@
 <translation id="7072208053150563108">Taxa de alteração da senha da máquina</translation>
 <translation id="7072406291414141328">Ativa o acelerador de largura de banda da rede</translation>
 <translation id="7074513465313721551">Configure a lista de domínios em que o recurso Navegação segura confiará. Isso significa que:
-      o Navegação segura não verificará a existência de recursos perigosos (por exemplo, phishing, malware ou softwares indesejados) se os URLs deles corresponderem a esses domínios;
+      o Navegação segura não verificará a existência de recursos perigosos (por exemplo, phishing, malware ou softwares indesejados) se os URLs desses recursos corresponderem a esses domínios;
       o serviço de proteção de downloads do Navegação segura não verificará os downloads hospedados nesses domínios;
       o serviço de proteção de senhas do Navegação segura não verificará a reutilização de senhas se o URL da página corresponder a esses domínios.
 
@@ -2538,6 +2539,12 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9105265795073104888">Somente um subconjunto de opções de configuração de proxy é disponibilizado para apps Android. Esses apps podem optar voluntariamente por usar o proxy. Não é possível forçá-los a usar um proxy.</translation>
+<translation id="9110615239151047025">Ativa a proteção contra tab-under, que bloqueia navegações detectadas como tab-unders.
+
+      Para ver uma explicação sobre o que são tab-unders, consulte https://www.chromestatus.com/features/5675755719622656 (link em inglês).
+      Se esta política for definida como verdadeira, as navegações que o <ph name="PRODUCT_NAME" /> detectar como tab-unders serão bloqueadas.
+      Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> permitirá que os sites realizem navegações como tab-under.
+      Por padrão, esta política está definida como verdadeira.</translation>
 <translation id="9112727953998243860">Arquivo de configuração de impressora corporativa</translation>
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
