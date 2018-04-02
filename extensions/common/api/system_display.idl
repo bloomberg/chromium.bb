@@ -221,7 +221,7 @@ namespace system.display {
     // other properties may not apply. This is has no effect if not provided.
     boolean? isUnified;
 
-    // Deprecated. Please use setMirrorMode() instead.
+    // Deprecated. Please use $(ref:setMirrorMode) instead.
     // Chrome OS only. If set and not empty, enables mirroring for this display.
     // Otherwise disables mirroring for this display. This value should indicate
     // the id of the source display to mirror, which must not be the same as the
@@ -229,36 +229,37 @@ namespace system.display {
     DOMString? mirroringSourceId;
 
     // If set to true, makes the display primary. No-op if set to false.
+    // Note: If set, the display is considered primary for all other properties
+    // (i.e. $(ref:isUnified) may be set and bounds origin may not).
     boolean? isPrimary;
 
     // If set, sets the display's overscan insets to the provided values. Note
     // that overscan values may not be negative or larger than a half of the
     // screen's size. Overscan cannot be changed on the internal monitor.
-    // It's applied after <code>isPrimary</code> parameter.
     Insets? overscan;
 
     // If set, updates the display's rotation.
     // Legal values are [0, 90, 180, 270]. The rotation is set clockwise,
     // relative to the display's vertical position.
-    // It's applied after <code>overscan</code> paramter.
     long? rotation;
 
-    // If set, updates the display's logical bounds origin along x-axis. Applied
-    // together with <code>boundsOriginY</code>, if <code>boundsOriginY</code>
-    // is set. Note that, when updating the display origin, some constraints
-    // will be applied, so the final bounds origin may be different than the one
-    // set. The final bounds can be retrieved using $(ref:getInfo).
-    // The bounds origin is applied after <code>rotation</code>.
-    // The bounds origin cannot be changed on the primary display. Note that is
-    // also invalid to set bounds origin values if <code>isPrimary</code> is
-    // also set (as <code>isPrimary</code> parameter is applied first).
+    // If set, updates the display's logical bounds origin along the x-axis.
+    // Applied together with $(ref:boundsOriginY). Defaults to the current value
+    // if not set and $(ref:boundsOriginY) is set. Note that when updating the
+    // display origin, some constraints will be applied, so the final bounds
+    // origin may be different than the one set. The final bounds can be
+    // retrieved using $(ref:getInfo). The bounds origin cannot be changed on
+    // the primary display.
     long? boundsOriginX;
 
-    // If set, updates the display's logical bounds origin along y-axis.
-    // See documentation for <code>boundsOriginX</code> parameter.
+    // If set, updates the display's logical bounds origin along the y-axis.
+    // See documentation for $(ref:boundsOriginX) parameter.
     long? boundsOriginY;
 
     // If set, updates the display mode to the mode matching this value.
+    // If other parameters are invalid, this will not be applied. If the
+    // display mode is invalid, it will not be applied and an error will be
+    // set, but other properties will still be applied.
     DisplayMode? displayMode;
 
     // If set, updates the zoom associated with the display. This zoom performs

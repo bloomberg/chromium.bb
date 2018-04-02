@@ -34,7 +34,9 @@ int RotationToDegrees(display::Display::Rotation rotation) {
 
 }  // namespace
 
-DisplayInfoProvider::~DisplayInfoProvider() {}
+DisplayInfoProvider::DisplayInfoProvider() = default;
+
+DisplayInfoProvider::~DisplayInfoProvider() = default;
 
 // static
 DisplayInfoProvider* DisplayInfoProvider::Get() {
@@ -91,12 +93,12 @@ void DisplayInfoProvider::SetDisplayProperties(
     const std::string& display_id,
     const api::system_display::DisplayProperties& properties,
     ErrorCallback callback) {
-  LOG(ERROR) << "SetDisplayProperties not implemented";
+  NOTREACHED() << "SetDisplayProperties not implemented";
 }
 
 void DisplayInfoProvider::SetDisplayLayout(const DisplayLayoutList& layouts,
                                            ErrorCallback callback) {
-  LOG(ERROR) << "SetDisplayLayout not implemented";
+  NOTREACHED() << "SetDisplayLayout not implemented";
 }
 
 void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}

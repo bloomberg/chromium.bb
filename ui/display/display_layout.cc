@@ -16,6 +16,8 @@
 #include "base/values.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace display {
 namespace {
@@ -329,6 +331,23 @@ void DeIntersectDisplays(int64_t primary_id,
   UpdatePlacementList(display_list, placement_list);
 }
 
+// Checks if the given point is over the radius vector described by its end
+// point |vector|. The point is over a vector if it's on its positive (left)
+// side. The method sees a point on the same line as the vector as being over
+// the vector.
+bool IsPointOverRadiusVector(const gfx::Point& point,
+                             const gfx::Point& vector) {
+  // |point| is left of |vector| if its radius vector's scalar product with a
+  // vector orthogonal (and facing the positive side) to |vector| is positive.
+  //
+  // An orthogonal vector of (a, b) is (b, -a), as the scalar product of these
+  // two is 0.
+  // So, (x, y) is over (a, b) if x * b + y * (-a) >= 0, which is equivalent to
+  // x * b >= y * a.
+  return static_cast<int64_t>(point.x()) * static_cast<int64_t>(vector.y()) >=
+         static_cast<int64_t>(point.y()) * static_cast<int64_t>(vector.x());
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -632,6 +651,97 @@ DisplayPlacement DisplayLayout::FindPlacementById(int64_t display_id) const {
                    });
   return (iter == placement_list.end()) ? DisplayPlacement()
                                         : DisplayPlacement(*iter);
+}
+
+// Creates a display::DisplayPlacement value for |rectangle| relative to the
+// |reference| rectangle.
+// The layout consists of two values:
+//   - position: Whether the rectangle is positioned left, right, over or under
+//     the reference.
+//   - offset: The rectangle's offset from the reference origin along the axis
+//     opposite the position direction (if the rectangle is left or right along
+//     y-axis, otherwise along x-axis).
+// The rectangle's position is calculated by dividing the space in areas defined
+// by the |reference|'s diagonals and finding the area |rectangle|'s center
+// point belongs. If the |rectangle| in the calculated layout does not share a
+// part of the bounds with the |reference|, the |rectangle| position in set to
+// the more suitable neighboring position (e.g. if |rectangle| is completely
+// over the |reference| top bound, it will be set to TOP) and the layout is
+// recalculated with the new position. This is to handle the case where the
+// rectangle shares an edge with the reference, but it's center is not in the
+// same area as the reference's edge, e.g.
+//
+// +---------------------+
+// |                     |
+// | REFERENCE           |
+// |                     |
+// |                     |
+// +---------------------+
+//                 +-------------------------------------------------+
+//                 | RECTANGLE               x                       |
+//                 +-------------------------------------------------+
+//
+// The rectangle shares an egde with the reference's bottom edge, but it's
+// center point is in the left area.
+
+// static
+DisplayPlacement DisplayLayout::CreatePlacementForRectangles(
+    const gfx::Rect& reference,
+    const gfx::Rect& rectangle) {
+  // Translate coordinate system so origin is in the reference's top left point
+  // (so the reference's down-diagonal vector starts in the (0, 0)) and scale it
+  // up by two (to avoid division when calculating the rectangle's center
+  // point).
+  gfx::Point center(2 * (rectangle.x() - reference.x()) + rectangle.width(),
+                    2 * (rectangle.y() - reference.y()) + rectangle.height());
+  gfx::Point down_diag(2 * reference.width(), 2 * reference.height());
+
+  bool is_top_right = IsPointOverRadiusVector(center, down_diag);
+
+  // Translate the coordinate system again, so the bottom right point of the
+  // reference is origin (so the reference's up-diagonal starts at (0, 0)).
+  // Note that the coordinate system is scaled by 2.
+  center.Offset(0, -2 * reference.height());
+  // Choose the vector orientation so the points on the diagonal are considered
+  // to be left.
+  gfx::Point up_diag(-2 * reference.width(), 2 * reference.height());
+
+  bool is_bottom_right = IsPointOverRadiusVector(center, up_diag);
+
+  DisplayPlacement::Position position;
+  if (is_top_right) {
+    position =
+        is_bottom_right ? DisplayPlacement::RIGHT : DisplayPlacement::TOP;
+  } else {
+    position =
+        is_bottom_right ? DisplayPlacement::BOTTOM : DisplayPlacement::LEFT;
+  }
+
+  // If the rectangle with the calculated position would not have common side
+  // with the reference, try to position it so it shares another edge with the
+  // reference.
+  if (is_top_right == is_bottom_right) {
+    if (rectangle.y() > reference.bottom()) {
+      // The rectangle is left or right, but completely under the reference.
+      position = DisplayPlacement::BOTTOM;
+    } else if (rectangle.bottom() < reference.y()) {
+      // The rectangle is left or right, but completely over the reference.
+      position = DisplayPlacement::TOP;
+    }
+  } else {
+    if (rectangle.x() > reference.right()) {
+      // The rectangle is over or under, but completely right of the reference.
+      position = DisplayPlacement::RIGHT;
+    } else if (rectangle.right() < reference.x()) {
+      // The rectangle is over or under, but completely left of the reference.
+      position = DisplayPlacement::LEFT;
+    }
+  }
+  int offset = (position == DisplayPlacement::LEFT ||
+                position == DisplayPlacement::RIGHT)
+                   ? rectangle.y()
+                   : rectangle.x();
+  return DisplayPlacement(position, offset);
 }
 
 // static
