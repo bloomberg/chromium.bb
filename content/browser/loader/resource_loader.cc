@@ -64,6 +64,7 @@ void PopulateResourceResponse(
   request->GetCharset(&response->head.charset);
   response->head.content_length = request->GetExpectedContentSize();
   request->GetMimeType(&response->head.mime_type);
+  response->head.priority = request->priority();
   net::HttpResponseInfo response_info = request->response_info();
   response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;
   response->head.was_alpn_negotiated = response_info.was_alpn_negotiated;

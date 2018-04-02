@@ -712,6 +712,23 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ResourceLoadComplete) {
       /*was_cached=*/false, /*first_network_request=*/false));
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ResourceLoadCompleteWithScriptSubresource) {
+  ResourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL page_url(embedded_test_server()->GetURL("/web_ui_mojo.html"));
+  NavigateToURL(shell(), page_url);
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  EXPECT_EQ(page_url, observer.resource_load_infos()[0]->url);
+  // TODO(crbug.com/826082): This should be net::RequestPriority::HIGHEST.
+  EXPECT_EQ(net::RequestPriority::DEFAULT_PRIORITY,
+            observer.resource_load_infos()[0]->priority);
+  EXPECT_EQ(embedded_test_server()->GetURL("/web_ui_mojo.js"),
+            observer.resource_load_infos()[1]->url);
+  EXPECT_EQ(net::RequestPriority::MEDIUM,
+            observer.resource_load_infos()[1]->priority);
+}
+
 // Same as WebContentsImplBrowserTest.ResourceLoadComplete but with resources
 // retrieved from the network cache.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
