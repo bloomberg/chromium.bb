@@ -6,10 +6,10 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/ui_devtools/views/css_agent.h"
-#include "components/ui_devtools/views/dom_agent.h"
-#include "components/ui_devtools/views/overlay_agent.h"
-#include "components/ui_devtools/views/ui_element.h"
+#include "components/ui_devtools/css_agent.h"
+#include "components/ui_devtools/ui_element.h"
+#include "components/ui_devtools/views/dom_agent_aura.h"
+#include "components/ui_devtools/views/overlay_agent_aura.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
 #include "components/ui_devtools/views/window_element.h"
@@ -225,12 +225,12 @@ class UIDevToolsTest : public views::ViewsTestBase {
     fake_frontend_channel_ = std::make_unique<FakeFrontendChannel>();
     uber_dispatcher_ =
         std::make_unique<UberDispatcher>(fake_frontend_channel_.get());
-    dom_agent_ = std::make_unique<DOMAgent>();
+    dom_agent_ = std::make_unique<DOMAgentAura>();
     dom_agent_->Init(uber_dispatcher_.get());
     css_agent_ = std::make_unique<CSSAgent>(dom_agent_.get());
     css_agent_->Init(uber_dispatcher_.get());
     css_agent_->enable();
-    overlay_agent_ = std::make_unique<OverlayAgent>(dom_agent_.get());
+    overlay_agent_ = std::make_unique<OverlayAgentAura>(dom_agent_.get());
     overlay_agent_->Init(uber_dispatcher_.get());
     overlay_agent_->enable();
 
@@ -363,8 +363,8 @@ class UIDevToolsTest : public views::ViewsTestBase {
   }
 
   CSSAgent* css_agent() { return css_agent_.get(); }
-  DOMAgent* dom_agent() { return dom_agent_.get(); }
-  OverlayAgent* overlay_agent() { return overlay_agent_.get(); }
+  DOMAgentAura* dom_agent() { return dom_agent_.get(); }
+  OverlayAgentAura* overlay_agent() { return overlay_agent_.get(); }
 
   std::unique_ptr<aura::Window> top_overlay_window;
   std::unique_ptr<aura::Window> top_window;
@@ -373,9 +373,9 @@ class UIDevToolsTest : public views::ViewsTestBase {
  private:
   std::unique_ptr<UberDispatcher> uber_dispatcher_;
   std::unique_ptr<FakeFrontendChannel> fake_frontend_channel_;
-  std::unique_ptr<DOMAgent> dom_agent_;
+  std::unique_ptr<DOMAgentAura> dom_agent_;
   std::unique_ptr<CSSAgent> css_agent_;
-  std::unique_ptr<OverlayAgent> overlay_agent_;
+  std::unique_ptr<OverlayAgentAura> overlay_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(UIDevToolsTest);
 };

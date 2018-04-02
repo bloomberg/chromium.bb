@@ -6,7 +6,7 @@
 #define COMPONENTS_UI_DEVTOOLS_VIEWS_VIEW_ELEMENT_H_
 
 #include "base/macros.h"
-#include "components/ui_devtools/views/ui_element.h"
+#include "components/ui_devtools/ui_element.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/view.h"

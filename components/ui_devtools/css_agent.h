@@ -2,19 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_CSS_AGENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_CSS_AGENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_CSS_AGENT_H_
+#define COMPONENTS_UI_DEVTOOLS_CSS_AGENT_H_
 
 #include "base/macros.h"
 #include "components/ui_devtools/CSS.h"
-#include "components/ui_devtools/views/dom_agent.h"
+#include "components/ui_devtools/dom_agent.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace ui_devtools {
 
 class UIElement;
 
-class CSSAgent : public UiDevToolsBaseAgent<protocol::CSS::Metainfo>,
-                 public DOMAgentObserver {
+class UI_DEVTOOLS_EXPORT CSSAgent
+    : public UiDevToolsBaseAgent<protocol::CSS::Metainfo>,
+      public DOMAgentObserver {
  public:
   explicit CSSAgent(DOMAgent* dom_agent);
   ~CSSAgent() override;
@@ -51,4 +56,4 @@ class CSSAgent : public UiDevToolsBaseAgent<protocol::CSS::Metainfo>,
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_CSS_AGENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_CSS_AGENT_H_

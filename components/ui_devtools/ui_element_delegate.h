@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_DELEGATE_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_DELEGATE_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_UI_ELEMENT_DELEGATE_H_
+#define COMPONENTS_UI_DEVTOOLS_UI_ELEMENT_DELEGATE_H_
 
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/aura/window.h"
 
 namespace ui_devtools {
 
@@ -35,4 +34,4 @@ class UIElementDelegate {
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_DELEGATE_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_UI_ELEMENT_DELEGATE_H_

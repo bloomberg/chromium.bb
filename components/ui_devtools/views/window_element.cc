@@ -5,7 +5,7 @@
 #include "components/ui_devtools/views/window_element.h"
 
 #include "components/ui_devtools/Protocol.h"
-#include "components/ui_devtools/views/ui_element_delegate.h"
+#include "components/ui_devtools/ui_element_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 

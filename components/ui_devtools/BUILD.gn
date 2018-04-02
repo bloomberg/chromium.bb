@@ -57,14 +57,25 @@ inspector_protocol_generate("protocol_generated_sources") {
 component("ui_devtools") {
   sources = rebase_path(_protocol_generated, ".", target_gen_dir)
   sources += [
+    "css_agent.cc",
+    "css_agent.h",
     "devtools_base_agent.h",
     "devtools_client.cc",
     "devtools_client.h",
     "devtools_export.h",
     "devtools_server.cc",
     "devtools_server.h",
+    "dom_agent.cc",
+    "dom_agent.h",
+    "overlay_agent.cc",
+    "overlay_agent.h",
+    "root_element.cc",
+    "root_element.h",
     "string_util.cc",
     "string_util.h",
+    "ui_element.cc",
+    "ui_element.h",
+    "ui_element_delegate.h",
   ]
 
   defines = [ "UI_DEVTOOLS_IMPLEMENTATION" ]
@@ -79,5 +90,6 @@ component("ui_devtools") {
     "//base",
     "//net",
     "//net:http_server",
+    "//ui/gfx",
   ]
 }

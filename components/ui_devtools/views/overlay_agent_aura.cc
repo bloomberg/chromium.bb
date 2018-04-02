@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/views/overlay_agent.h"
+#include "components/ui_devtools/views/overlay_agent_aura.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/ui_devtools/views/ui_element.h"
+#include "components/ui_devtools/ui_element.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
 #include "components/ui_devtools/views/window_element.h"
@@ -369,22 +369,20 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
 
 }  // namespace
 
-OverlayAgent::OverlayAgent(DOMAgent* dom_agent)
-    : dom_agent_(dom_agent),
+OverlayAgentAura::OverlayAgentAura(DOMAgentAura* dom_agent)
+    : OverlayAgent(dom_agent),
       show_size_on_canvas_(false),
-      highlight_rect_config_(HighlightRectsConfiguration::NO_DRAW) {
-  DCHECK(dom_agent_);
-}
+      highlight_rect_config_(HighlightRectsConfiguration::NO_DRAW) {}
 
-OverlayAgent::~OverlayAgent() {}
+OverlayAgentAura::~OverlayAgentAura() {}
 
-void OverlayAgent::SetPinnedNodeId(int node_id) {
+void OverlayAgentAura::SetPinnedNodeId(int node_id) {
   pinned_id_ = node_id;
   frontend()->nodeHighlightRequested(pinned_id_);
-  this->HighlightNode(pinned_id_, true /* show_size */);
+  HighlightNode(pinned_id_, true /* show_size */);
 }
 
-protocol::Response OverlayAgent::setInspectMode(
+protocol::Response OverlayAgentAura::setInspectMode(
     const String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
@@ -396,73 +394,59 @@ protocol::Response OverlayAgent::setInspectMode(
   return protocol::Response::OK();
 }
 
-protocol::Response OverlayAgent::highlightNode(
+protocol::Response OverlayAgentAura::highlightNode(
     std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config,
     protocol::Maybe<int> node_id) {
-  return this->HighlightNode(node_id.fromJust());
+  return HighlightNode(node_id.fromJust());
 }
 
-Response OverlayAgent::HighlightNode(int node_id, bool show_size) {
-  if (!layer_for_highlighting_) {
-    layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
-    layer_for_highlighting_->set_name("HighlightingLayer");
-    layer_for_highlighting_->set_delegate(this);
-    layer_for_highlighting_->SetFillsBoundsOpaquely(false);
-  }
-
-  UIElement* element = dom_agent_->GetElementFromNodeId(node_id);
-  std::pair<gfx::NativeWindow, gfx::Rect> window_and_bounds =
-      element
-          ? element->GetNodeWindowAndBounds()
-          : std::make_pair<gfx::NativeWindow, gfx::Rect>(nullptr, gfx::Rect());
-
-  if (!window_and_bounds.first)
-    return Response::Error("No node found with that id");
-
-  highlight_rect_config_ = HighlightRectsConfiguration::NO_DRAW;
-  show_size_on_canvas_ = show_size;
-  UpdateHighlight(window_and_bounds);
-
-  if (!layer_for_highlighting_->visible())
-    layer_for_highlighting_->SetVisible(true);
-
-  return Response::OK();
-}
-
-protocol::Response OverlayAgent::hideHighlight() {
+protocol::Response OverlayAgentAura::hideHighlight() {
   if (layer_for_highlighting_ && layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(false);
   return Response::OK();
 }
 
-void OverlayAgent::UpdateHighlight(
-    const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          window_and_bounds.first);
-  gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
-  layer_for_highlighting_->SetBounds(root->bounds());
-  layer_for_highlighting_->SchedulePaint(root->bounds());
+int OverlayAgentAura::FindElementIdTargetedByPoint(
+    const gfx::Point& p,
+    gfx::NativeWindow root_window) const {
+  gfx::NativeWindow targeted_window = root_window->GetEventHandlerForPoint(p);
+  if (!targeted_window)
+    return 0;
 
-  if (root->layer() != layer_for_highlighting_->parent())
-    root->layer()->Add(layer_for_highlighting_.get());
-  else
-    root->layer()->StackAtTop(layer_for_highlighting_.get());
+  views::Widget* targeted_widget =
+      views::Widget::GetWidgetForNativeWindow(targeted_window);
+  if (!targeted_widget) {
+#if defined(USE_AURA)
+    return dom_agent()
+        ->element_root()
+        ->FindUIElementIdForBackendElement<aura::Window>(targeted_window);
+#else
+    return 0;
+#endif  // defined(USE_AURA)
+  }
 
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(root);
-  hovered_rect_ = window_and_bounds.second;
-  gfx::Point origin = hovered_rect_.origin();
-  screen_position_client->ConvertPointFromScreen(root, &origin);
-  hovered_rect_.set_origin(origin);
+  views::View* root_view = targeted_widget->GetRootView();
+  DCHECK(root_view);
+
+  gfx::Point point_in_targeted_window(p);
+#if defined(USE_AURA)
+  aura::Window::ConvertPointToTarget(root_window, targeted_window,
+                                     &point_in_targeted_window);
+#endif  // defined(USE_AURA)
+  views::View* targeted_view =
+      root_view->GetEventHandlerForPoint(point_in_targeted_window);
+  DCHECK(targeted_view);
+  return dom_agent()
+      ->element_root()
+      ->FindUIElementIdForBackendElement<views::View>(targeted_view);
 }
 
-void OverlayAgent::ShowDistancesInHighlightOverlay(int pinned_id,
-                                                   int element_id) {
+void OverlayAgentAura::ShowDistancesInHighlightOverlay(int pinned_id,
+                                                       int element_id) {
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r2(
-      dom_agent_->GetElementFromNodeId(element_id)->GetNodeWindowAndBounds());
+      dom_agent()->GetElementFromNodeId(element_id)->GetNodeWindowAndBounds());
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r1(
-      dom_agent_->GetElementFromNodeId(pinned_id)->GetNodeWindowAndBounds());
+      dom_agent()->GetElementFromNodeId(pinned_id)->GetNodeWindowAndBounds());
   gfx::Rect r2(pair_r2.second);
   gfx::Rect r1(pair_r1.second);
   pinned_rect_ = r1;
@@ -504,40 +488,121 @@ void OverlayAgent::ShowDistancesInHighlightOverlay(int pinned_id,
   }
 }
 
-int OverlayAgent::FindElementIdTargetedByPoint(
-    const gfx::Point& p,
-    gfx::NativeWindow root_window) const {
-  gfx::NativeWindow targeted_window = root_window->GetEventHandlerForPoint(p);
-  if (!targeted_window)
-    return 0;
-
-  views::Widget* targeted_widget =
-      views::Widget::GetWidgetForNativeWindow(targeted_window);
-  if (!targeted_widget) {
-#if defined(USE_AURA)
-    return dom_agent_->element_root()
-        ->FindUIElementIdForBackendElement<aura::Window>(targeted_window);
-#else
-    return 0;
-#endif  // defined(USE_AURA)
+Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
+  if (!layer_for_highlighting_) {
+    layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
+    layer_for_highlighting_->set_name("HighlightingLayer");
+    layer_for_highlighting_->set_delegate(this);
+    layer_for_highlighting_->SetFillsBoundsOpaquely(false);
   }
 
-  views::View* root_view = targeted_widget->GetRootView();
-  DCHECK(root_view);
+  UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
+  std::pair<gfx::NativeWindow, gfx::Rect> window_and_bounds =
+      element
+          ? element->GetNodeWindowAndBounds()
+          : std::make_pair<gfx::NativeWindow, gfx::Rect>(nullptr, gfx::Rect());
 
-  gfx::Point point_in_targeted_window(p);
-#if defined(USE_AURA)
-  aura::Window::ConvertPointToTarget(root_window, targeted_window,
-                                     &point_in_targeted_window);
-#endif  // defined(USE_AURA)
-  views::View* targeted_view =
-      root_view->GetEventHandlerForPoint(point_in_targeted_window);
-  DCHECK(targeted_view);
-  return dom_agent_->element_root()
-      ->FindUIElementIdForBackendElement<views::View>(targeted_view);
+  if (!window_and_bounds.first)
+    return Response::Error("No node found with that id");
+
+  highlight_rect_config_ = HighlightRectsConfiguration::NO_DRAW;
+  show_size_on_canvas_ = show_size;
+  UpdateHighlight(window_and_bounds);
+
+  if (!layer_for_highlighting_->visible())
+    layer_for_highlighting_->SetVisible(true);
+
+  return Response::OK();
 }
 
-void OverlayAgent::OnPaintLayer(const ui::PaintContext& context) {
+void OverlayAgentAura::UpdateHighlight(
+    const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds) {
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          window_and_bounds.first);
+  gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
+  layer_for_highlighting_->SetBounds(root->bounds());
+  layer_for_highlighting_->SchedulePaint(root->bounds());
+
+  if (root->layer() != layer_for_highlighting_->parent())
+    root->layer()->Add(layer_for_highlighting_.get());
+  else
+    root->layer()->StackAtTop(layer_for_highlighting_.get());
+
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root);
+  hovered_rect_ = window_and_bounds.second;
+  gfx::Point origin = hovered_rect_.origin();
+  screen_position_client->ConvertPointFromScreen(root, &origin);
+  hovered_rect_.set_origin(origin);
+}
+
+void OverlayAgentAura::OnMouseEvent(ui::MouseEvent* event) {
+  // Make sure the element tree has been populated before processing
+  // mouse events.
+  if (!dom_agent()->element_root())
+    return;
+
+  // Show parent of the pinned element with id |pinned_id_| when mouse scrolls
+  // up. If parent exists, hightlight and re-pin parent element.
+  if (event->type() == ui::ET_MOUSEWHEEL && pinned_id_) {
+    const ui::MouseWheelEvent* mouse_event =
+        static_cast<ui::MouseWheelEvent*>(event);
+    DCHECK(mouse_event);
+    if (mouse_event->y_offset() > 0) {
+      const int parent_node_id = dom_agent()->GetParentIdOfNodeId(pinned_id_);
+      if (parent_node_id)
+        SetPinnedNodeId(parent_node_id);
+    } else if (mouse_event->y_offset() < 0) {
+      // TODO(thanhph): discuss behaviours when mouse scrolls down.
+    }
+    return;
+  }
+
+  // Find node id of element whose bounds contain the mouse pointer location.
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  int element_id = FindElementIdTargetedByPoint(event->root_location(),
+                                                target->GetRootWindow());
+
+  if (pinned_id_ == element_id) {
+    event->SetHandled();
+    return;
+  }
+
+  // Pin the hover element on click.
+  if (event->type() == ui::ET_MOUSE_PRESSED) {
+    event->SetHandled();
+    if (element_id)
+      SetPinnedNodeId(element_id);
+  } else if (element_id && !pinned_id_) {
+    // Display only guidelines if hovering without a pinned element.
+    frontend()->nodeHighlightRequested(element_id);
+    HighlightNode(element_id, false /* show_size */);
+  } else if (element_id && pinned_id_) {
+    // If hovering with a pinned element, then show distances between the pinned
+    // element and the hover element.
+    HighlightNode(element_id, false /* show_size */);
+    ShowDistancesInHighlightOverlay(pinned_id_, element_id);
+  }
+}
+
+void OverlayAgentAura::OnKeyEvent(ui::KeyEvent* event) {
+  if (!dom_agent()->element_root())
+    return;
+
+  // Exit inspect mode by pressing ESC key.
+  if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+    if (pinned_id_) {
+      frontend()->inspectNodeRequested(pinned_id_);
+      HighlightNode(pinned_id_, true /* show_size */);
+    }
+    // Unpin element.
+    pinned_id_ = 0;
+  }
+}
+
+void OverlayAgentAura::OnPaintLayer(const ui::PaintContext& context) {
   const gfx::Rect& screen_bounds(layer_for_highlighting_->bounds());
   ui::PaintRecorder recorder(context, screen_bounds.size());
   gfx::Canvas* canvas = recorder.canvas();
@@ -673,71 +738,6 @@ void OverlayAgent::OnPaintLayer(const ui::PaintContext& context) {
     default:
       NOTREACHED();
       return;
-  }
-}
-
-void OverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
-  // Make sure the element tree has been populated before processing
-  // mouse events.
-  if (!dom_agent_->element_root())
-    return;
-
-  // Show parent of the pinned element with id |pinned_id_| when mouse scrolls
-  // up. If parent exists, hightlight and re-pin parent element.
-  if (event->type() == ui::ET_MOUSEWHEEL && pinned_id_) {
-    const ui::MouseWheelEvent* mouse_event =
-        static_cast<ui::MouseWheelEvent*>(event);
-    DCHECK(mouse_event);
-    if (mouse_event->y_offset() > 0) {
-      const int parent_node_id = dom_agent_->GetParentIdOfNodeId(pinned_id_);
-      if (parent_node_id)
-        SetPinnedNodeId(parent_node_id);
-    } else if (mouse_event->y_offset() < 0) {
-      // TODO(thanhph): discuss behaviours when mouse scrolls down.
-    }
-    return;
-  }
-
-  // Find node id of element whose bounds contain the mouse pointer location.
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  int element_id = this->FindElementIdTargetedByPoint(event->root_location(),
-                                                      target->GetRootWindow());
-
-  if (pinned_id_ == element_id) {
-    event->SetHandled();
-    return;
-  }
-
-  // Pin the hover element on click.
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
-    event->SetHandled();
-    if (element_id)
-      SetPinnedNodeId(element_id);
-  } else if (element_id && !pinned_id_) {
-    // Display only guidelines if hovering without a pinned element.
-    frontend()->nodeHighlightRequested(element_id);
-    this->HighlightNode(element_id, false /* show_size */);
-  } else if (element_id && pinned_id_) {
-    // If hovering with a pinned element, then show distances between the pinned
-    // element and the hover element.
-    this->HighlightNode(element_id, false /* show_size */);
-    this->ShowDistancesInHighlightOverlay(pinned_id_, element_id);
-  }
-}
-
-void OverlayAgent::OnKeyEvent(ui::KeyEvent* event) {
-  if (!dom_agent_->element_root())
-    return;
-
-  // Exit inspect mode by pressing ESC key.
-  if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
-    if (pinned_id_) {
-      frontend()->inspectNodeRequested(pinned_id_);
-      this->HighlightNode(pinned_id_, true /* show_size */);
-    }
-    // Unpin element.
-    pinned_id_ = 0;
   }
 }
 

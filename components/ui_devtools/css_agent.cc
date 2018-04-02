@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/views/css_agent.h"
+#include "components/ui_devtools/css_agent.h"
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "components/ui_devtools/views/ui_element.h"
+#include "components/ui_devtools/ui_element.h"
 
 namespace ui_devtools {
 namespace {

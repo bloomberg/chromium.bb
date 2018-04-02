@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/Protocol.h"
-#include "components/ui_devtools/views/ui_element_delegate.h"
+#include "components/ui_devtools/ui_element_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui_devtools {

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_ROOT_ELEMENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_ROOT_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_ROOT_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_ROOT_ELEMENT_H_
 
 #include "base/macros.h"
-#include "components/ui_devtools/views/ui_element.h"
+#include "components/ui_devtools/ui_element.h"
 
 namespace ui_devtools {
 
-class RootElement : public UIElement {
+class UI_DEVTOOLS_EXPORT RootElement : public UIElement {
  public:
   explicit RootElement(UIElementDelegate* ui_element_delegate);
   ~RootElement() override;
@@ -31,4 +31,4 @@ class RootElement : public UIElement {
 };
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_ROOT_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_ROOT_ELEMENT_H_
