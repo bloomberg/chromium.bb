@@ -121,8 +121,8 @@ EphemeralRange PlainTextRange::CreateRangeFor(
       // FIXME: This is a workaround for the fact that the end of a run
       // is often at the wrong position for emitted '\n's or if the
       // layoutObject of the current node is a replaced element.
-      if (len == 1 &&
-          (it.CharacterAt(0) == '\n' || it.IsInsideAtomicInlineElement())) {
+      if (len == 1 && (it.CharacterAt(0) == '\n' || it.CharacterAt(0) == '\t' ||
+                       it.IsInsideAtomicInlineElement())) {
         it.Advance();
         if (!it.AtEnd()) {
           text_run_end_position = it.StartPositionInCurrentContainer();

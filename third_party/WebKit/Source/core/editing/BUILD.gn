@@ -339,6 +339,7 @@ jumbo_source_set("unit_tests") {
     "LayoutSelectionTest.cpp",
     "LocalCaretRectBiDiTest.cpp",
     "LocalCaretRectTest.cpp",
+    "PlainTextRangeTest.cpp",
     "PositionIteratorTest.cpp",
     "PositionTest.cpp",
     "PositionWithAffinityTest.cpp",
