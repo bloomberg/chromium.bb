@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
-#define CONTENT_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
+#ifndef CONTENT_PUBLIC_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
+#define CONTENT_PUBLIC_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -44,4 +44,4 @@ class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_WEAK_WRAPPER_URL_LOADER_FACTORY_H_
+#endif  // CONTENT_PUBLIC_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_

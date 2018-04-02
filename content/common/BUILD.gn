@@ -297,8 +297,6 @@ source_set("common") {
     "user_agent.cc",
     "view_message_enums.h",
     "view_messages.h",
-    "weak_wrapper_shared_url_loader_factory.cc",
-    "weak_wrapper_shared_url_loader_factory.h",
     "wrapper_shared_url_loader_factory.cc",
     "wrapper_shared_url_loader_factory.h",
     "zygote_commands_linux.h",

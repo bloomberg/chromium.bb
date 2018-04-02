@@ -237,6 +237,8 @@ jumbo_source_set("common_sources") {
     "use_zoom_for_dsf_policy.cc",
     "use_zoom_for_dsf_policy.h",
     "user_agent.h",
+    "weak_wrapper_shared_url_loader_factory.cc",
+    "weak_wrapper_shared_url_loader_factory.h",
     "web_preferences.cc",
     "web_preferences.h",
     "webplugininfo.cc",
