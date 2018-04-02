@@ -1266,6 +1266,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
             mBottomSheet.init(coordinator, this);
 
+            ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
+
             mFadingBackgroundView = (FadingBackgroundView) findViewById(R.id.fading_focus_target);
             mBottomSheetController = new BottomSheetController(getTabModelSelector(),
                     getCompositorViewHolder().getLayoutManager(), mFadingBackgroundView,
