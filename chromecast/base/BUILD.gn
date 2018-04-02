@@ -309,6 +309,20 @@ if (is_android) {
     ]
   }
 
+  android_library("cast_base_test_utils_java") {
+    java_test_dir = "//chromecast/base/java/test"
+    testonly = true
+    java_files = [
+      "$java_test_dir/org/chromium/chromecast/base/Inheritance.java",
+      "$java_test_dir/org/chromium/chromecast/base/ReactiveRecorder.java",
+    ]
+    deps = [
+      ":base_java",
+      "//third_party/hamcrest:hamcrest_java",
+      "//third_party/junit",
+    ]
+  }
+
   junit_binary("cast_base_junit_tests") {
     java_test_dir = "//chromecast/base/java/test"
     java_files = [
@@ -316,12 +330,13 @@ if (is_android) {
       "$java_test_dir/org/chromium/chromecast/base/CircularBufferTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ItertoolsTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ObservableAndControllerTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ReactiveRecorderTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ScopeFactoriesTest.java",
-      "$java_test_dir/org/chromium/chromecast/base/TestUtils.java",
       "$java_test_dir/org/chromium/chromecast/base/UnitTest.java",
     ]
     deps = [
       ":base_java",
+      ":cast_base_test_utils_java",
       "//third_party/hamcrest:hamcrest_java",
     ]
   }

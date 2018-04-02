@@ -4,7 +4,7 @@
 
 package org.chromium.chromecast.base;
 
-class TestUtils {
+class Inheritance {
     // Use to test consumption of superclasses of some generic parameter.
     public static class Base {
         @Override
