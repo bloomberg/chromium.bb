@@ -9,7 +9,6 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "ExtensionInstallProtos";
 option java_package = "org.chromium.components.metrics";
 
-
 package metrics;
 
 // Stores information about an extension installed on a user's machine.
