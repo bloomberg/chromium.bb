@@ -373,7 +373,9 @@ class TestWebGraphicsContext3D {
     shared_contexts_.push_back(context3d);
   }
 
-  void set_max_texture_size(int size) { max_texture_size_ = size; }
+  void set_max_texture_size(int size) {
+    test_capabilities_.max_texture_size = size;
+  }
 
   static const GLuint kExternalTextureId;
   virtual GLuint NextTextureId();
@@ -492,7 +494,6 @@ class TestWebGraphicsContext3D {
   std::unordered_set<unsigned> framebuffer_set_;
   unsigned current_framebuffer_;
   std::vector<TestWebGraphicsContext3D*> shared_contexts_;
-  int max_texture_size_;
   bool reshape_called_;
   int width_;
   int height_;

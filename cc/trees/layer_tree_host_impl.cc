@@ -2082,6 +2082,16 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
   if (!*gpu_rasterization_enabled && !settings_.gpu_rasterization_forced)
     return;
 
+  if (use_oop_rasterization_) {
+    *gpu_rasterization_supported = true;
+    *supports_disable_msaa = caps.multisample_compatibility;
+    // For OOP raster, the gpu service side will disable msaa if the
+    // requested samples are not enough.  GPU raster does this same
+    // logic below client side.
+    *max_msaa_samples = RequestedMSAASampleCount();
+    return;
+  }
+
   if (!context_provider->ContextSupport()->HasGrContextSupport())
     return;
 
@@ -2588,12 +2598,15 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   raster_buffer_provider_ = CreateRasterBufferProvider();
 
   if (use_gpu_rasterization_) {
+    int max_texture_size = layer_tree_frame_sink_->context_provider()
+                               ->ContextCapabilities()
+                               .max_texture_size;
     image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
         layer_tree_frame_sink_->worker_context_provider(),
-        settings_.enable_oop_rasterization,
+        use_oop_rasterization_,
         viz::ResourceFormatToClosestSkColorType(
             settings_.preferred_tile_format),
-        settings_.decoded_image_working_set_budget_bytes);
+        settings_.decoded_image_working_set_budget_bytes, max_texture_size);
   } else {
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(
@@ -2634,21 +2647,12 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
     DCHECK(worker_context_provider);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
-    // The worker context must support oop raster to enable oop rasterization.
-    bool oop_raster_enabled = settings_.enable_oop_rasterization;
-    if (oop_raster_enabled) {
-      viz::RasterContextProvider::ScopedRasterContextLock hold(
-          worker_context_provider);
-      oop_raster_enabled &=
-          worker_context_provider->ContextCapabilities().supports_oop_raster;
-    }
-
     return std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(),
         settings_.resource_settings.use_gpu_memory_buffer_resources,
         msaa_sample_count, settings_.preferred_tile_format,
-        settings_.max_gpu_raster_tile_size, oop_raster_enabled);
+        settings_.max_gpu_raster_tile_size, use_oop_rasterization_);
   }
 
   bool use_zero_copy = settings_.use_zero_copy;
@@ -2829,6 +2833,19 @@ bool LayerTreeHostImpl::InitializeRenderer(
   }
   if (features::IsVizHitTestingSurfaceLayerEnabled())
     layer_tree_frame_sink_->UpdateHitTestData(this);
+
+  // TODO(piman): Make oop raster always supported: http://crbug.com/786591
+  use_oop_rasterization_ = settings_.enable_oop_rasterization;
+  if (use_oop_rasterization_) {
+    auto* context = layer_tree_frame_sink_->worker_context_provider();
+    if (context) {
+      viz::RasterContextProvider::ScopedRasterContextLock hold(context);
+      use_oop_rasterization_ &=
+          context->ContextCapabilities().supports_oop_raster;
+    } else {
+      use_oop_rasterization_ = false;
+    }
+  }
 
   // Since the new context may be capable of MSAA, update status here. We don't
   // need to check the return value since we are recreating all resources

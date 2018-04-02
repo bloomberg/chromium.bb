@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 
 namespace cc {
 namespace {
@@ -253,6 +254,8 @@ class GpuImageDecodeCacheTest
       viz::RasterContextProvider::ScopedRasterContextLock context_lock(
           context_provider_.get());
       transfer_cache_helper_.SetGrContext(context_provider_->GrContext());
+      max_texture_size_ =
+          context_provider_->ContextCapabilities().max_texture_size;
     }
     use_transfer_cache_ = GetParam().second;
     color_type_ = GetParam().first;
@@ -261,7 +264,7 @@ class GpuImageDecodeCacheTest
   std::unique_ptr<GpuImageDecodeCache> CreateCache() {
     return std::make_unique<GpuImageDecodeCache>(
         context_provider_.get(), use_transfer_cache_, color_type_,
-        kGpuMemoryLimitBytes);
+        kGpuMemoryLimitBytes, max_texture_size_);
   }
 
   GPUImageDecodeTestMockContextProvider* context_provider() {
@@ -315,6 +318,7 @@ class GpuImageDecodeCacheTest
   TransferCacheTestHelper transfer_cache_helper_;
   bool use_transfer_cache_;
   SkColorType color_type_;
+  int max_texture_size_ = 0;
 };
 
 SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {

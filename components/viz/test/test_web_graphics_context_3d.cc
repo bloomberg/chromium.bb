@@ -60,7 +60,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       next_shader_id_(2000),
       next_framebuffer_id_(1),
       current_framebuffer_(0),
-      max_texture_size_(2048),
       reshape_called_(false),
       width_(0),
       height_(0),
@@ -72,6 +71,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       weak_ptr_factory_(this) {
   CreateNamespace();
   set_have_extension_egl_image(true);  // For stream textures.
+  set_max_texture_size(2048);
 }
 
 TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
@@ -379,7 +379,7 @@ void TestWebGraphicsContext3D::getQueryObjectuivEXT(GLuint query,
 
 void TestWebGraphicsContext3D::getIntegerv(GLenum pname, GLint* value) {
   if (pname == GL_MAX_TEXTURE_SIZE)
-    *value = max_texture_size_;
+    *value = test_capabilities_.max_texture_size;
   else if (pname == GL_ACTIVE_TEXTURE)
     *value = GL_TEXTURE0;
   else if (pname == GL_UNPACK_ALIGNMENT)

@@ -581,22 +581,14 @@ void GpuImageDecodeCache::ImageData::ValidateBudgeted() const {
 GpuImageDecodeCache::GpuImageDecodeCache(viz::RasterContextProvider* context,
                                          bool use_transfer_cache,
                                          SkColorType color_type,
-                                         size_t max_working_set_bytes)
+                                         size_t max_working_set_bytes,
+                                         int max_texture_size)
     : color_type_(color_type),
       use_transfer_cache_(use_transfer_cache),
       context_(context),
+      max_texture_size_(max_texture_size),
       persistent_cache_(PersistentCache::NO_AUTO_EVICT),
       max_working_set_bytes_(max_working_set_bytes) {
-  // Acquire the context_lock so that we can safely retrieve
-  // |max_texture_size_|.
-  {
-    base::Optional<viz::RasterContextProvider::ScopedRasterContextLock>
-        context_lock;
-    if (context_->GetLock())
-      context_lock.emplace(context_);
-    max_texture_size_ = context_->GrContext()->caps()->maxTextureSize();
-  }
-
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -1453,6 +1445,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
   // For kGpu, we upload and color convert (if necessary).
   if (image_data->mode == DecodedDataMode::kGpu) {
+    DCHECK(!use_transfer_cache_);
     base::AutoUnlock unlock(lock_);
     uploaded_image =
         uploaded_image->makeTextureImage(context_->GrContext(), nullptr);

@@ -872,6 +872,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool content_has_non_aa_paint_;
   bool has_gpu_rasterization_trigger_;
   bool use_gpu_rasterization_;
+  bool use_oop_rasterization_;
   bool use_msaa_;
   GpuRasterizationStatus gpu_rasterization_status_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;

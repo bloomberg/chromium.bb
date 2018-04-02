@@ -105,7 +105,8 @@ class CC_EXPORT GpuImageDecodeCache
   explicit GpuImageDecodeCache(viz::RasterContextProvider* context,
                                bool use_transfer_cache,
                                SkColorType color_type,
-                               size_t max_working_set_bytes);
+                               size_t max_working_set_bytes,
+                               int max_texture_size);
   ~GpuImageDecodeCache() override;
 
   // ImageDecodeCache overrides.

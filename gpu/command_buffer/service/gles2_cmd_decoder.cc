@@ -20367,10 +20367,11 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
   }
 
   SkColorType sk_color_type = static_cast<SkColorType>(color_type);
-  // Resolve requested msaa samples with GrGpu capabilities.
-  int final_msaa_count =
-      std::min(static_cast<int>(msaa_sample_count),
-               gr_context_->maxSurfaceSampleCountForColorType(sk_color_type));
+  // If we can't match requested MSAA samples, don't use MSAA.
+  int final_msaa_count = std::max(static_cast<int>(msaa_sample_count), 0);
+  if (final_msaa_count >
+      gr_context_->maxSurfaceSampleCountForColorType(sk_color_type))
+    final_msaa_count = 0;
   sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context_.get(), gr_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
       sk_color_type, nullptr, &surface_props);
