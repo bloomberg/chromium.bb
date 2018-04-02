@@ -150,7 +150,7 @@ public class BuildInfo {
      * @return {@code true} if P APIs are available for use, {@code false} otherwise
      */
     public static boolean isAtLeastP() {
-        return VERSION.CODENAME.equals("P");
+        return VERSION.CODENAME.equals("P") || VERSION.CODENAME.equals("Q");
     }
 
     /**
