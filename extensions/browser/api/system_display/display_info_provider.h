@@ -115,7 +115,7 @@ class DisplayInfoProvider {
                              ErrorCallback callback);
 
  protected:
-  DisplayInfoProvider() = default;
+  DisplayInfoProvider();
 
   // Create a DisplayUnitInfo from a display::Display for implementations of
   // GetAllDisplaysInfo()

@@ -1177,7 +1177,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetNegativeOverscan) {
 
   std::string error =
       CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info);
-  EXPECT_EQ("Negative overscan not allowed.", error);
+  EXPECT_FALSE(error.empty());
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
@@ -1185,8 +1185,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetNegativeOverscan) {
   info.overscan->right = -200;
 
   error = CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info);
-
-  EXPECT_EQ("Negative overscan not allowed.", error);
+  EXPECT_FALSE(error.empty());
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
@@ -1194,8 +1193,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetNegativeOverscan) {
   info.overscan->top = -300;
 
   error = CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info);
-
-  EXPECT_EQ("Negative overscan not allowed.", error);
+  EXPECT_FALSE(error.empty());
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
@@ -1203,8 +1201,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetNegativeOverscan) {
   info.overscan->top = -1000;
 
   error = CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info);
-
-  EXPECT_EQ("Negative overscan not allowed.", error);
+  EXPECT_FALSE(error.empty());
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
@@ -1231,8 +1228,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscanLargerThanHorizontalBounds) {
 
   std::string error =
       CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info);
-  EXPECT_EQ("Horizontal overscan is more than half of the screen width.",
-            error);
+  EXPECT_FALSE(error.empty());
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscanLargerThanVerticalBounds) {
@@ -1249,7 +1245,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscanLargerThanVerticalBounds) {
 
   std::string error =
       CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info);
-  EXPECT_EQ("Vertical overscan is more than half of the screen height.", error);
+  EXPECT_FALSE(error.empty());
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
@@ -1292,7 +1288,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
 
   std::string error =
       CallSetDisplayUnitInfo(base::Int64ToString(internal_display_id), info);
-  EXPECT_EQ("Overscan changes not allowed for the internal monitor.", error);
+  EXPECT_FALSE(error.empty());
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
@@ -1530,7 +1526,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
 
   std::string error =
       CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info);
-  EXPECT_EQ(std::string(), error);
+  EXPECT_TRUE(error.empty());
 
   EXPECT_EQ(GetDisplayZoom(display_id_list[0]), final_zoom_factor_1);
   // Display 2 has not been updated yet, so it will still have the old zoom
@@ -1539,22 +1535,18 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
 
   info.display_zoom_factor = std::make_unique<double>(zoom_factor_2);
   error = CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[1]), info);
-  EXPECT_EQ(std::string(), error);
+  EXPECT_TRUE(error.empty());
 
   // Both displays should now have the correct zoom factor set.
   EXPECT_EQ(GetDisplayZoom(display_id_list[0]), final_zoom_factor_1);
   EXPECT_EQ(GetDisplayZoom(display_id_list[1]), final_zoom_factor_2);
-
-  std::string expected_err =
-      "Zoom value is out of range for display with id: " +
-      base::Int64ToString(display_id_list[0]);
 
   // This zoom factor when applied to the display with width 1200, will result
   // in an effective width greater than 4096, which is out of range.
   float invalid_zoom_factor_1 = 0.285f;
   info.display_zoom_factor = std::make_unique<double>(invalid_zoom_factor_1);
   error = CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info);
-  EXPECT_EQ(expected_err, error);
+  EXPECT_FALSE(error.empty());
 
   // This zoom factor when applied to the display with width 1200, will result
   // in an effective width greater less than 640, which is out of range.
@@ -1575,7 +1567,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
   float valid_zoom_factor_1 = 0.8f;
   info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_1);
   error = CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info);
-  EXPECT_EQ(std::string(), error);
+  EXPECT_TRUE(error.empty());
 
   // Results in a logical width of 4200px. This is above the 4096px threshold
   // but is valid because the initial width was 4500px, so logical width of up
@@ -1583,17 +1575,17 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
   float valid_zoom_factor_2 = 1.07f;
   info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_2);
   error = CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[1]), info);
-  EXPECT_EQ(std::string(), error);
+  EXPECT_TRUE(error.empty());
 
   float valid_zoom_factor_3 = 0.5f;
   info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_3);
   error = CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info);
-  EXPECT_EQ(std::string(), error);
+  EXPECT_TRUE(error.empty());
 
   float valid_zoom_factor_4 = 2.f;
   info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_4);
   error = CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[1]), info);
-  EXPECT_EQ(std::string(), error);
+  EXPECT_TRUE(error.empty());
 }
 
 class DisplayInfoProviderChromeosTouchviewTest

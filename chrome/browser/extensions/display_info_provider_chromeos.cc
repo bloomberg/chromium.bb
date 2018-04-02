@@ -162,121 +162,15 @@ system_display::LayoutPosition GetLayoutPosition(
   return system_display::LayoutPosition::LAYOUT_POSITION_NONE;
 }
 
-// Checks if the given point is over the radius vector described by it's end
-// point |vector|. The point is over a vector if it's on its positive (left)
-// side. The method sees a point on the same line as the vector as being over
-// the vector.
-bool PointIsOverRadiusVector(const gfx::Point& point,
-                             const gfx::Point& vector) {
-  // |point| is left of |vector| if its radius vector's scalar product with a
-  // vector orthogonal (and facing the positive side) to |vector| is positive.
-  //
-  // An orthogonal vector of (a, b) is (b, -a), as the scalar product of these
-  // two is 0.
-  // So, (x, y) is over (a, b) if x * b + y * (-a) >= 0, which is equivalent to
-  // x * b >= y * a.
-  return static_cast<int64_t>(point.x()) * static_cast<int64_t>(vector.y()) >=
-         static_cast<int64_t>(point.y()) * static_cast<int64_t>(vector.x());
-}
-
-// Created display::DisplayPlacement value for |rectangle| compared to the
-// |reference|
-// rectangle.
-// The layout consists of two values:
-//   - position: Whether the rectangle is positioned left, right, over or under
-//     the reference.
-//   - offset: The rectangle's offset from the reference origin along the axis
-//     opposite the position direction (if the rectangle is left or right along
-//     y-axis, otherwise along x-axis).
-// The rectangle's position is calculated by dividing the space in areas defined
-// by the |reference|'s diagonals and finding the area |rectangle|'s center
-// point belongs. If the |rectangle| in the calculated layout does not share a
-// part of the bounds with the |reference|, the |rectangle| position in set to
-// the more suitable neighboring position (e.g. if |rectangle| is completely
-// over the |reference| top bound, it will be set to TOP) and the layout is
-// recalculated with the new position. This is to handle case where the
-// rectangle shares an edge with the reference, but it's center is not in the
-// same area as the reference's edge, e.g.
-//
-// +---------------------+
-// |                     |
-// | REFERENCE           |
-// |                     |
-// |                     |
-// +---------------------+
-//                 +-------------------------------------------------+
-//                 | RECTANGLE               x                       |
-//                 +-------------------------------------------------+
-//
-// The rectangle shares an egde with the reference's bottom edge, but it's
-// center point is in the left area.
-display::DisplayPlacement CreatePlacementForRectangles(
-    const gfx::Rect& reference,
-    const gfx::Rect& rectangle) {
-  // Translate coordinate system so origin is in the reference's top left point
-  // (so the reference's down-diagonal vector starts in the (0, 0)) and scale it
-  // up by two (to avoid division when calculating the rectangle's center
-  // point).
-  gfx::Point center(2 * (rectangle.x() - reference.x()) + rectangle.width(),
-                    2 * (rectangle.y() - reference.y()) + rectangle.height());
-  gfx::Point down_diag(2 * reference.width(), 2 * reference.height());
-
-  bool is_top_right = PointIsOverRadiusVector(center, down_diag);
-
-  // Translate the coordinating system again, so the bottom right point of the
-  // reference is origin (so the references up-diagonal starts at (0, 0)).
-  // Note that the coordinate system is scaled by 2.
-  center.Offset(0, -2 * reference.height());
-  // Choose the vector orientation so the points on the diagonal are considered
-  // to be left.
-  gfx::Point up_diag(-2 * reference.width(), 2 * reference.height());
-
-  bool is_bottom_right = PointIsOverRadiusVector(center, up_diag);
-
-  display::DisplayPlacement::Position position;
-  if (is_top_right) {
-    position = is_bottom_right ? display::DisplayPlacement::RIGHT
-                               : display::DisplayPlacement::TOP;
-  } else {
-    position = is_bottom_right ? display::DisplayPlacement::BOTTOM
-                               : display::DisplayPlacement::LEFT;
-  }
-
-  // If the rectangle with the calculated position would not have common side
-  // with the reference, try to position it so it shares another edge with the
-  // reference.
-  if (is_top_right == is_bottom_right) {
-    if (rectangle.y() > reference.y() + reference.height()) {
-      // The rectangle is left or right, but completely under the reference.
-      position = display::DisplayPlacement::BOTTOM;
-    } else if (rectangle.y() + rectangle.height() < reference.y()) {
-      // The rectangle is left or right, but completely over the reference.
-      position = display::DisplayPlacement::TOP;
-    }
-  } else {
-    if (rectangle.x() > reference.x() + reference.width()) {
-      // The rectangle is over or under, but completely right of the reference.
-      position = display::DisplayPlacement::RIGHT;
-    } else if (rectangle.x() + rectangle.width() < reference.x()) {
-      // The rectangle is over or under, but completely left of the reference.
-      position = display::DisplayPlacement::LEFT;
-    }
-  }
-  int offset = (position == display::DisplayPlacement::LEFT ||
-                position == display::DisplayPlacement::RIGHT)
-                   ? rectangle.y()
-                   : rectangle.x();
-  return display::DisplayPlacement(position, offset);
-}
-
 // Updates the display layout for the target display in reference to the primary
 // display.
 void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int64_t primary_display_id,
                          const gfx::Rect& target_display_bounds,
                          int64_t target_display_id) {
-  display::DisplayPlacement placement(CreatePlacementForRectangles(
-      primary_display_bounds, target_display_bounds));
+  display::DisplayPlacement placement(
+      display::DisplayLayout::CreatePlacementForRectangles(
+          primary_display_bounds, target_display_bounds));
   placement.display_id = target_display_id;
   placement.parent_display_id = primary_display_id;
 
@@ -288,44 +182,25 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
       std::move(layout));
 }
 
-// Validates that parameters passed to the SetInfo function are valid for the
-// desired display and the current display manager state.
-// Returns whether the parameters are valid. On failure |error| is set to the
-// error message.
-bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
-                              const display::Display& display,
-                              display::DisplayManager* display_manager,
-                              int64_t primary_display_id,
-                              std::string* error) {
-  int64_t id = display.id();
-  bool is_primary =
-      id == primary_display_id || (info.is_primary && *info.is_primary);
+// Validates that DisplayProperties input is valid. Does not perform any tests
+// with DisplayManager dependencies. Returns an error string on failure or an
+// empty string on success.
+std::string ValidateDisplayPropertiesInput(
+    const std::string& display_id_str,
+    const system_display::DisplayProperties& info) {
+  int64_t id;
+  if (!base::StringToInt64(display_id_str, &id))
+    return "Invalid display id";
+
+  const display::Display& primary =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  bool is_primary = id == primary.id() || (info.is_primary && *info.is_primary);
 
   if (info.is_unified) {
-    if (!is_primary) {
-      *error = "Unified desktop mode can only be set for the primary display.";
-      return false;
-    }
-    if (info.mirroring_source_id) {
-      *error = "Unified desktop mode can not be set with mirroringSourceId.";
-      return false;
-    }
-    return true;
-  }
-
-  // If mirroring source id is set, a display with the given id should exist,
-  // and if should not be the same as the target display's id.
-  if (info.mirroring_source_id && !info.mirroring_source_id->empty()) {
-    int64_t mirroring_id = GetDisplay(*info.mirroring_source_id).id();
-    if (mirroring_id == display::kInvalidDisplayId) {
-      *error = "Display " + *info.mirroring_source_id + " not found.";
-      return false;
-    }
-
-    if (*info.mirroring_source_id == base::Int64ToString(id)) {
-      *error = "Not allowed to mirror self.";
-      return false;
-    }
+    if (!is_primary)
+      return "Unified desktop mode can only be set for the primary display.";
+    if (info.mirroring_source_id)
+      return "Unified desktop mode can not be set with mirroringSourceId.";
   }
 
   // If mirroring source parameter is specified, no other parameter should be
@@ -333,74 +208,80 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
   if (info.mirroring_source_id &&
       (info.is_primary || info.bounds_origin_x || info.bounds_origin_y ||
        info.rotation || info.overscan)) {
-    *error = "No other parameter should be set alongside mirroringSourceId.";
-    return false;
+    return "No other parameter should be set alongside mirroringSourceId.";
   }
 
   // The bounds cannot be changed for the primary display and should be inside
-  // a reasonable bounds. Note that the display is considered primary if the
-  // info has 'isPrimary' parameter set, as this will be applied before bounds
-  // origin changes.
+  // a reasonable bounds.
   if (info.bounds_origin_x || info.bounds_origin_y) {
-    if (is_primary) {
-      *error = "Bounds origin not allowed for the primary display.";
-      return false;
-    }
+    if (is_primary)
+      return "Bounds origin not allowed for the primary display.";
     if (info.bounds_origin_x && (*info.bounds_origin_x > kMaxBoundsOrigin ||
                                  *info.bounds_origin_x < -kMaxBoundsOrigin)) {
-      *error = "Bounds origin x out of bounds.";
-      return false;
+      return "Bounds origin x out of bounds.";
     }
     if (info.bounds_origin_y && (*info.bounds_origin_y > kMaxBoundsOrigin ||
                                  *info.bounds_origin_y < -kMaxBoundsOrigin)) {
-      *error = "Bounds origin y out of bounds.";
-      return false;
+      return "Bounds origin y out of bounds.";
     }
   }
 
   // Verify the rotation value is valid.
-  if (info.rotation && !IsValidRotationValue(*info.rotation)) {
-    *error = "Invalid rotation.";
-    return false;
+  if (info.rotation && !IsValidRotationValue(*info.rotation))
+    return "Invalid rotation.";
+
+  return "";
+}
+
+// Validates that DisplayProperties are valid with the current DisplayManager
+// configuration. Returns an error string on failure or an empty string on
+// success.
+std::string ValidateDisplayProperties(
+    const system_display::DisplayProperties& info,
+    const display::Display& display,
+    display::DisplayManager* display_manager) {
+  const int64_t id = display.id();
+  if (id == display::kInvalidDisplayId)
+    return "Display not found.";
+
+  if (info.mirroring_source_id && !info.mirroring_source_id->empty()) {
+    // A display with the given id should exist and should not be the same as
+    // the target display's id.
+    const int64_t mirroring_id = GetDisplay(*info.mirroring_source_id).id();
+    if (mirroring_id == display::kInvalidDisplayId)
+      return "Invalid mirroring source id";
+
+    if (mirroring_id == id)
+      return "Not allowed to mirror self";
   }
 
   // Overscan cannot be changed for the internal display, and should be at most
   // half of the screen size.
   if (info.overscan) {
-    if (display.IsInternal()) {
-      *error = "Overscan changes not allowed for the internal monitor.";
-      return false;
-    }
+    if (display.IsInternal())
+      return "Overscan changes not allowed for the internal monitor.";
 
     if (info.overscan->left < 0 || info.overscan->top < 0 ||
         info.overscan->right < 0 || info.overscan->bottom < 0) {
-      *error = "Negative overscan not allowed.";
-      return false;
+      return "Negative overscan not allowed.";
     }
 
     const gfx::Insets overscan = display_manager->GetOverscanInsets(id);
     int screen_width = display.bounds().width() + overscan.width();
     int screen_height = display.bounds().height() + overscan.height();
 
-    if ((info.overscan->left + info.overscan->right) * 2 > screen_width) {
-      *error = "Horizontal overscan is more than half of the screen width.";
-      return false;
-    }
+    if ((info.overscan->left + info.overscan->right) * 2 > screen_width)
+      return "Horizontal overscan is more than half of the screen width.";
 
-    if ((info.overscan->top + info.overscan->bottom) * 2 > screen_height) {
-      *error = "Vertical overscan is more than half of the screen height.";
-      return false;
-    }
+    if ((info.overscan->top + info.overscan->bottom) * 2 > screen_height)
+      return "Vertical overscan is more than half of the screen height.";
   }
 
-  // Update the display zoom.
   if (info.display_zoom_factor) {
     display::ManagedDisplayMode current_mode;
-    if (!display_manager->GetActiveModeForDisplayId(id, &current_mode)) {
-      *error = "Unable to find the active mode for display id " +
-               base::Int64ToString(id);
-      return false;
-    }
+    if (!display_manager->GetActiveModeForDisplayId(id, &current_mode))
+      return "No active mode for display id.";
+
     // This check is added to limit the range of display zoom that can be
     // applied via the system display API. The said range is such that when a
     // display zoom is applied, the final logical width in pixels should lie
@@ -409,59 +290,57 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
         std::max(kDefaultMaxZoomWidth, current_mode.size().width());
     const int kMinAllowedWidth =
         std::min(kDefaultMinZoomWidth, current_mode.size().width());
-
     int current_width = static_cast<float>(current_mode.size().width()) /
                         current_mode.device_scale_factor();
-    if (current_width / (*info.display_zoom_factor) <= kMaxAllowedWidth &&
-        current_width / (*info.display_zoom_factor) >= kMinAllowedWidth) {
-      display_manager->UpdateZoomFactor(id, *info.display_zoom_factor);
-    } else {
-      *error = "Zoom value is out of range for display with id: " +
-               base::Int64ToString(id);
-      return false;
+    if (current_width / (*info.display_zoom_factor) > kMaxAllowedWidth ||
+        current_width / (*info.display_zoom_factor) < kMinAllowedWidth) {
+      return "Zoom value is out of range for display.";
     }
   }
 
-  // Set the display mode.
-  if (info.display_mode) {
-    display::ManagedDisplayMode current_mode;
-    if (!display_manager->GetActiveModeForDisplayId(id, &current_mode)) {
-      *error = "Unable to find the active mode for display id " +
-               base::Int64ToString(id);
-      return false;
-    }
-    // Copy properties not set in the UI from the current mode.
-    gfx::Size size(info.display_mode->width_in_native_pixels,
-                   info.display_mode->height_in_native_pixels);
+  return "";
+}
 
-    // NB: info.display_mode is neither a display::ManagedDisplayMode or a
-    // display::DisplayMode.
-    display::ManagedDisplayMode new_mode(
-        size, current_mode.refresh_rate(), current_mode.is_interlaced(),
-        info.display_mode->is_native, info.display_mode->ui_scale,
-        info.display_mode->device_scale_factor);
+// Attempts to set the display mode for display |id|. Returns an error string on
+// failure or an empty string on success.
+std::string SetDisplayMode(display::DisplayManager* display_manager,
+                           int64_t id,
+                           const system_display::DisplayProperties& info) {
+  if (!info.display_mode)
+    return "";  // Nothing to set.
 
-    if (new_mode.IsEquivalent(current_mode)) {
-      *error = "Display mode matches current mode.";
-      return false;
-    }
+  display::ManagedDisplayMode current_mode;
+  if (!display_manager->GetActiveModeForDisplayId(id, &current_mode))
+    return "No active mode for display id.";
 
-    // If it's the internal display, the display mode will be applied directly,
-    // otherwise a confirm/revert notification will be prepared first, and the
-    // display mode will be applied. If the user accepts the mode change by
-    // dismissing the notification, StoreDisplayPrefs() will be called back to
-    // persist the new preferences.
-    if (!ash::Shell::Get()
-             ->resolution_notification_controller()
-             ->PrepareNotificationAndSetDisplayMode(
-                 id, current_mode, new_mode, base::BindRepeating([]() {
-                   chromeos::DisplayPrefs::Get()->StoreDisplayPrefs();
-                 }))) {
-      *error = "Unable to set the display mode.";
-      return false;
-    }
+  // Copy properties not set in the UI from the current mode.
+  const gfx::Size size(info.display_mode->width_in_native_pixels,
+                       info.display_mode->height_in_native_pixels);
+
+  // NB: info.display_mode is neither a display::ManagedDisplayMode or a
+  // display::DisplayMode.
+  const display::ManagedDisplayMode new_mode(
+      size, current_mode.refresh_rate(), current_mode.is_interlaced(),
+      info.display_mode->is_native, info.display_mode->ui_scale,
+      info.display_mode->device_scale_factor);
+
+  if (new_mode.IsEquivalent(current_mode))
+    return "";  // Do nothing but do not return an error.
+
+  // If it's the internal display, the display mode will be applied directly,
+  // otherwise a confirm/revert notification will be prepared first, and the
+  // display mode will be applied. If the user accepts the mode change by
+  // dismissing the notification, StoreDisplayPrefs() will be called back to
+  // persist the new preferences.
+  if (!ash::Shell::Get()
+           ->resolution_notification_controller()
+           ->PrepareNotificationAndSetDisplayMode(
+               id, current_mode, new_mode, base::BindRepeating([]() {
+                 chromeos::DisplayPrefs::Get()->StoreDisplayPrefs();
+               }))) {
+    return "Failed to set display mode.";
   }
-  return true;
+  return "";
 }
 
 system_display::DisplayMode GetDisplayMode(
@@ -584,21 +463,16 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
   ash::DisplayConfigurationController* display_configuration_controller =
       ash::Shell::Get()->display_configuration_controller();
 
-  const display::Display target = GetDisplay(display_id_str);
-
-  if (target.id() == display::kInvalidDisplayId) {
-    RunResultCallback(std::move(callback),
-                      "Display not found:" + display_id_str);
+  std::string error =
+      ValidateDisplayPropertiesInput(display_id_str, properties);
+  if (!error.empty()) {
+    RunResultCallback(std::move(callback), std::move(error));
     return;
   }
 
-  int64_t display_id = target.id();
-  const display::Display& primary =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
-
-  std::string error;
-  if (!ValidateParamsForDisplay(properties, target, display_manager,
-                                primary.id(), &error)) {
+  const display::Display target = GetDisplay(display_id_str);
+  error = ValidateDisplayProperties(properties, target, display_manager);
+  if (!error.empty()) {
     RunResultCallback(std::move(callback), std::move(error));
     return;
   }
@@ -610,10 +484,13 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
                                : display::DisplayManager::EXTENDED);
   }
 
+  const display::Display& primary =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+
   // Process 'isPrimary' parameter.
   if (properties.is_primary && *properties.is_primary &&
       target.id() != primary.id()) {
-    display_configuration_controller->SetPrimaryDisplayId(display_id);
+    display_configuration_controller->SetPrimaryDisplayId(target.id());
   }
 
   // Process 'mirroringSourceId' parameter.
@@ -625,7 +502,7 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
   // Process 'overscan' parameter.
   if (properties.overscan) {
     display_manager->SetOverscanInsets(
-        display_id,
+        target.id(),
         gfx::Insets(properties.overscan->top, properties.overscan->left,
                     properties.overscan->bottom, properties.overscan->right));
   }
@@ -633,12 +510,12 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
   // Process 'rotation' parameter.
   if (properties.rotation) {
     if (IsTabletModeWindowManagerEnabled() &&
-        display_id == display::Display::InternalDisplayId()) {
+        target.id() == display::Display::InternalDisplayId()) {
       ash::Shell::Get()->screen_orientation_controller()->SetLockToRotation(
           DegreesToRotation(*properties.rotation));
     } else {
       display_configuration_controller->SetDisplayRotation(
-          display_id, DegreesToRotation(*properties.rotation),
+          target.id(), DegreesToRotation(*properties.rotation),
           display::Display::RotationSource::USER);
     }
   }
@@ -658,7 +535,19 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
                         target.id());
   }
 
-  RunResultCallback(std::move(callback), base::nullopt);
+  // Update the display zoom.
+  if (properties.display_zoom_factor) {
+    display_manager->UpdateZoomFactor(target.id(),
+                                      *properties.display_zoom_factor);
+  }
+
+  // Set the display mode. Note: if this returns an error, other properties
+  // will have already been applied.
+  error = SetDisplayMode(display_manager, target.id(), properties);
+  RunResultCallback(std::move(callback),
+                    error.empty()
+                        ? base::nullopt
+                        : base::make_optional<std::string>(std::move(error)));
 }
 
 void DisplayInfoProviderChromeOS::SetDisplayLayout(
@@ -1216,7 +1105,7 @@ void DisplayInfoProviderChromeOS::SetMirrorMode(
     case MirrorParamsErrors::kSuccess:
       display_manager->SetMirrorMode(display::MirrorMode::kMixed, mixed_params);
   }
-  RunResultCallback(std::move(callback), error);
+  RunResultCallback(std::move(callback), std::move(error));
 }
 
 ash::OverscanCalibrator* DisplayInfoProviderChromeOS::GetOverscanCalibrator(

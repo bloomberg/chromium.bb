@@ -15,6 +15,10 @@
 #include "base/strings/string_piece.h"
 #include "ui/display/display_export.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace display {
 class Display;
 
@@ -122,6 +126,12 @@ class DISPLAY_EXPORT DisplayLayout final {
   // Returns the DisplayPlacement entry matching |display_id| if it exists,
   // otherwise returns a DisplayPlacement with an invalid display id.
   DisplayPlacement FindPlacementById(int64_t display_id) const;
+
+  // Creates a display::DisplayPlacement value for |rectangle| relative to the
+  // |reference| rectangle.
+  static DisplayPlacement CreatePlacementForRectangles(
+      const gfx::Rect& reference,
+      const gfx::Rect& rectangle);
 
  private:
   // Apply the display placement to |display_list|.
