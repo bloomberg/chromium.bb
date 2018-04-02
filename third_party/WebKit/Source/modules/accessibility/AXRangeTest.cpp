@@ -42,6 +42,9 @@ TEST_F(AccessibilityTest, CommonAncestorContainerOfRange) {
                     AXPosition::CreateFirstPositionInContainerObject(*button))
                 .CommonAncestorContainer());
   EXPECT_EQ(paragraph, AXRange(AXPosition::CreatePositionBeforeObject(*text1),
+                               AXPosition::CreatePositionBeforeObject(*br))
+                           .CommonAncestorContainer());
+  EXPECT_EQ(paragraph, AXRange(AXPosition::CreatePositionBeforeObject(*text1),
                                AXPosition::CreatePositionAfterObject(*text2))
                            .CommonAncestorContainer());
 }
