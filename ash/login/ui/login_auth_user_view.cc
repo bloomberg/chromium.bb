@@ -196,6 +196,8 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
 LoginAuthUserView::~LoginAuthUserView() = default;
 
 void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
+  bool had_password = HasAuthMethod(AUTH_PASSWORD);
+
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
   bool has_password = HasAuthMethod(AUTH_PASSWORD);
   bool has_pin = HasAuthMethod(AUTH_PIN);
@@ -205,7 +207,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
 
-  if (has_password)
+  if (!had_password && has_password)
     password_view_->RequestFocus();
 
   pin_view_->SetVisible(has_pin);
