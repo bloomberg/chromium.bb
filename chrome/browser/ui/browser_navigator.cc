@@ -621,7 +621,7 @@ void Navigate(NavigateParams* params) {
     }
 
     if (user_initiated)
-      params->target_contents->NavigatedByUser();
+      params->target_contents->UserGestureDone();
 
     if (!swapped_in_prerender) {
       // Try to handle non-navigational URLs that popup dialogs and such, these
