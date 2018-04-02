@@ -148,18 +148,6 @@ bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return ::CanShowWindowForUser(window, base::Bind(&GetActiveBrowserContext));
 }
 
-bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  if (user) {
-    return chromeos::ProfileHelper::Get()
-        ->GetProfileByUser(user)
-        ->GetPrefs()
-        ->GetBoolean(prefs::kForceMaximizeOnFirstRun);
-  }
-  return false;
-}
-
 void ChromeShellDelegate::PreInit() {
   // TODO: port to mash. http://crbug.com/678949.
   if (chromeos::GetAshConfig() == ash::Config::MASH)

@@ -61,11 +61,6 @@ bool ShellDelegateMus::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
-bool ShellDelegateMus::IsForceMaximizeOnFirstRun() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
-}
-
 void ShellDelegateMus::PreInit() {
   NOTIMPLEMENTED_LOG_ONCE();
 }

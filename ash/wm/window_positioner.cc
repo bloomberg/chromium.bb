@@ -22,10 +22,6 @@
 namespace ash {
 namespace {
 
-// When a window gets opened in default mode and the screen is less than or
-// equal to this width, the window opens with show state maximized.
-const int kForceMaximizeWidthLimit = 1366;
-
 // The time in milliseconds which should be used to visually move a window
 // through an automatic "intelligent" window management option.
 const int kWindowAutoMoveDurationMS = 125;
@@ -200,11 +196,6 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
 }  // namespace
 
 // static
-int WindowPositioner::GetForceMaximizedWidthLimit() {
-  return kForceMaximizeWidthLimit;
-}
-
-// static
 void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     bool is_saved_bounds,
     ui::WindowShowState show_state_in,
@@ -213,27 +204,12 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
   aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   aura::Window* top_window = GetReferenceWindow(root_window, nullptr, nullptr);
 
-  // If there is no valid window we take and adjust the passed coordinates
-  // and show state.
+  // If there is no valid window we take and adjust the passed coordinates.
   if (!top_window) {
     gfx::Rect work_area = display::Screen::GetScreen()
                               ->GetDisplayNearestWindow(root_window)
                               .work_area();
     bounds_in_out->AdjustToFit(work_area);
-
-    // If there is no window and no saved bounds, assume first run.
-    if (!is_saved_bounds && show_state_in == ui::SHOW_STATE_DEFAULT) {
-      const bool maximize_first_window_on_first_run =
-          Shell::Get()->shell_delegate()->IsForceMaximizeOnFirstRun();
-      // We want to always open maximized on "small screens" or when policy
-      // tells us to.
-      const bool set_maximized =
-          work_area.width() <= GetForceMaximizedWidthLimit() ||
-          maximize_first_window_on_first_run;
-
-      if (set_maximized)
-        *show_state_out = ui::SHOW_STATE_MAXIMIZED;
-    }
     return;
   }
 
@@ -254,7 +230,7 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
       // instead. Offset the bounds to prevent the windows from
       // overlapping exactly when restored.
       *bounds_in_out = top_window_state->GetRestoreBoundsInScreen() +
-                       gfx::Vector2d(kFirstPopupOffset, kFirstPopupOffset);
+                       gfx::Vector2d(kWindowOffset, kWindowOffset);
     }
     if (is_saved_bounds || has_restore_bounds) {
       gfx::Rect work_area = display::Screen::GetScreen()
@@ -369,150 +345,5 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
 WindowPositioner::WindowPositioner() = default;
 
 WindowPositioner::~WindowPositioner() = default;
-
-gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Size& popup_size) {
-  if (!has_last_popup_position_) {
-    // Start with the initial offset.
-    // NOTE: This should probably move into NormalPopupPosition() but is here to
-    // match historical behavior.
-    last_popup_position_x_ = kFirstPopupOffset;
-    last_popup_position_y_ = kFirstPopupOffset;
-    has_last_popup_position_ = true;
-  }
-  // We handle the Multi monitor support by retrieving the active window's
-  // work area.
-  aura::Window* window = wm::GetActiveWindow();
-  const gfx::Rect work_area =
-      window && window->IsVisible()
-          ? display::Screen::GetScreen()
-                ->GetDisplayNearestWindow(window)
-                .work_area()
-          : display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  // If the popup would span the entire display, position it at top-left.
-  if ((popup_size.width() + kFirstPopupOffset >= work_area.width()) ||
-      (popup_size.height() + kFirstPopupOffset >= work_area.height())) {
-    return AlignPopupPosition(gfx::Rect(popup_size), work_area);
-  }
-  const gfx::Rect result = SmartPopupPosition(popup_size, work_area);
-  if (!result.IsEmpty())
-    return AlignPopupPosition(result, work_area);
-
-  return NormalPopupPosition(popup_size, work_area);
-}
-
-gfx::Rect WindowPositioner::NormalPopupPosition(const gfx::Size& popup_size,
-                                                const gfx::Rect& work_area) {
-  int w = popup_size.width();
-  int h = popup_size.height();
-  // Note: The 'last_popup_position' is checked and kept relative to the
-  // screen size. The offsetting will be done in the last step when the
-  // target rectangle gets returned.
-  bool reset = false;
-  if (last_popup_position_y_ + h > work_area.height() ||
-      last_popup_position_x_ + w > work_area.width()) {
-    // Popup does not fit on screen. Reset to next diagonal row.
-    last_popup_position_x_ -=
-        last_popup_position_y_ - kFirstPopupOffset - kNextPopupOffset;
-    last_popup_position_y_ = kFirstPopupOffset;
-    reset = true;
-  }
-  if (last_popup_position_x_ + w > work_area.width()) {
-    // Start again over.
-    last_popup_position_x_ = kFirstPopupOffset;
-    last_popup_position_y_ = kFirstPopupOffset;
-    reset = true;
-  }
-  int x = last_popup_position_x_;
-  int y = last_popup_position_y_;
-  if (!reset) {
-    last_popup_position_x_ += kNextPopupOffset;
-    last_popup_position_y_ += kNextPopupOffset;
-  }
-  return gfx::Rect(x + work_area.x(), y + work_area.y(), w, h);
-}
-
-// static
-gfx::Rect WindowPositioner::SmartPopupPosition(const gfx::Size& popup_size,
-                                               const gfx::Rect& work_area) {
-  const aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
-
-  std::vector<const gfx::Rect*> regions;
-  // Process the window list and check if we can bail immediately.
-  for (size_t i = 0; i < windows.size(); i++) {
-    // We only include opaque and visible windows.
-    if (windows[i] && windows[i]->IsVisible() && windows[i]->layer() &&
-        (windows[i]->layer()->fills_bounds_opaquely() ||
-         windows[i]->layer()->GetTargetOpacity() == 1.0)) {
-      wm::WindowState* window_state = wm::GetWindowState(windows[i]);
-      // When any window is maximized we cannot find any free space.
-      if (window_state->IsMaximizedOrFullscreenOrPinned())
-        return gfx::Rect(0, 0, 0, 0);
-      if (window_state->IsNormalOrSnapped())
-        regions.push_back(&windows[i]->bounds());
-    }
-  }
-
-  if (regions.empty())
-    return gfx::Rect(0, 0, 0, 0);
-
-  int w = popup_size.width();
-  int h = popup_size.height();
-  int x_end = work_area.width() / 2;
-  int x, x_increment;
-  // We parse for a proper location on the screen. We do this in two runs:
-  // The first run will start from the left, parsing down, skipping any
-  // overlapping windows it will encounter until the popup's height can not
-  // be served anymore. Then the next grid position to the right will be
-  // taken, and the same cycle starts again. This will be repeated until we
-  // hit the middle of the screen (or we find a suitable location).
-  // In the second run we parse beginning from the right corner downwards and
-  // then to the left.
-  // When no location was found, an empty rectangle will be returned.
-  for (int run = 0; run < 2; run++) {
-    if (run == 0) {  // First run: Start left, parse right till mid screen.
-      x = 0;
-      x_increment = kNextPopupOffset;
-    } else {  // Second run: Start right, parse left till mid screen.
-      x = work_area.width() - w;
-      x_increment = -kNextPopupOffset;
-    }
-    // Note: The passing (x,y,w,h) window is always relative to the work area's
-    // origin.
-    for (; x_increment > 0 ? (x < x_end) : (x > x_end); x += x_increment) {
-      int y = 0;
-      while (y + h <= work_area.height()) {
-        size_t i;
-        for (i = 0; i < regions.size(); i++) {
-          if (regions[i]->Intersects(
-                  gfx::Rect(x + work_area.x(), y + work_area.y(), w, h))) {
-            y = regions[i]->bottom() - work_area.y();
-            break;
-          }
-        }
-        if (i >= regions.size())
-          return gfx::Rect(x + work_area.x(), y + work_area.y(), w, h);
-      }
-    }
-  }
-  return gfx::Rect(0, 0, 0, 0);
-}
-
-// static
-gfx::Rect WindowPositioner::AlignPopupPosition(const gfx::Rect& pos,
-                                               const gfx::Rect& work_area) {
-  int x = pos.x() - (pos.x() - work_area.x()) % kPopupGridSize;
-  int y = pos.y() - (pos.y() - work_area.y()) % kPopupGridSize;
-  int w = pos.width();
-  int h = pos.height();
-
-  // If the alignment was pushing the window out of the screen, we ignore the
-  // alignment for that call.
-  if (abs(pos.right() - work_area.right()) < kPopupGridSize)
-    x = work_area.right() - w;
-  if (abs(pos.bottom() - work_area.bottom()) < kPopupGridSize)
-    y = work_area.bottom() - h;
-  return gfx::Rect(x, y, w, h);
-}
 
 }  // namespace ash

@@ -29,10 +29,6 @@ bool TestShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
-bool TestShellDelegate::IsForceMaximizeOnFirstRun() const {
-  return force_maximize_on_first_run_;
-}
-
 void TestShellDelegate::PreInit() {}
 
 void TestShellDelegate::PreShutdown() {}
