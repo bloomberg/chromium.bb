@@ -4119,4 +4119,94 @@ TEST_F(SplitViewWindowSelectorTest, InsertMinimizedWindowBackToOverview) {
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window2.get()));
 }
 
+// Test that when splitview and overview are both active at the same time, if
+// overview is ended due to snapping a window in splitview, the tranform of each
+// window in the overview grid is restored.
+TEST_F(SplitViewWindowSelectorTest, SnappedWindowAnimationObserverTest) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  // There are four ways to exit overview mode. Verify in each case the
+  // tranform of each window in the overview window grid has been restored.
+
+  // 1. Overview is ended by dragging a item in overview to snap to splitview.
+  // Drag |window1| selector item to snap to left. There should be two items on
+  // the overview grid afterwards, |window2| and |window3|.
+  ToggleOverview();
+  EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window3->layer()->GetTargetTransform().IsIdentity());
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(selector_item1, gfx::Point(0, 0));
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+  // Drag |window2| to snap to right.
+  WindowSelectorItem* selector_item2 =
+      GetWindowItemForWindow(grid_index, window2.get());
+  const gfx::Rect work_area_rect =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+  const gfx::Point end_location2(work_area_rect.width(), 0);
+  DragWindowTo(selector_item2, end_location2);
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window3->layer()->GetTargetTransform().IsIdentity());
+
+  // 2. Overview is ended by ToggleOverview() directly.
+  // ToggleOverview() will open overview grid in the non-default side of the
+  // split screen.
+  ToggleOverview();
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window3->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+  // ToggleOverview() directly.
+  ToggleOverview();
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window3->layer()->GetTargetTransform().IsIdentity());
+
+  // 3. Overview is ended by actviating an existing window.
+  ToggleOverview();
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window3->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+  wm::ActivateWindow(window2.get());
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window3->layer()->GetTargetTransform().IsIdentity());
+
+  // 4. Overview is ended by activating a new window.
+  ToggleOverview();
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_FALSE(window3->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+  std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
+  wm::ActivateWindow(window4.get());
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window2->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window3->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(window4->layer()->GetTargetTransform().IsIdentity());
+}
+
 }  // namespace ash

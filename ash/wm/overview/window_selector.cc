@@ -358,16 +358,32 @@ void WindowSelector::Shutdown() {
   // Stop observing split view state changes before restoring window focus.
   // Otherwise the activation of the window triggers OnSplitViewStateChanged()
   // that will call into this function again.
-  Shell::Get()->split_view_controller()->RemoveObserver(this);
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  split_view_controller->RemoveObserver(this);
 
   size_t remaining_items = 0;
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
     if (IsNewOverviewAnimationsEnabled()) {
-      window_grid->SetWindowListAnimationStates(
-          selected_item_ && selected_item_->window_grid() == window_grid.get()
-              ? selected_item_
-              : nullptr,
-          OverviewTransition::kExit);
+      // During shutdown, do not animate all windows in overview if we need to
+      // animate the snapped window.
+      if (split_view_controller->IsSplitViewModeActive() &&
+          split_view_controller->GetDefaultSnappedWindow()->GetRootWindow() ==
+              window_grid->root_window() &&
+          split_view_controller->snapped_window_animation_observer()) {
+        // OverviewWindowAnimationObserver is used to obseve the snapped window
+        // animation. And the windows in |window_grid| will restore their
+        // transform when the snapped window completes its animation.
+        window_grid->set_window_animation_observer(
+            split_view_controller->snapped_window_animation_observer());
+        window_grid->SetWindowListNotAnimatedWhenExiting();
+      } else {
+        window_grid->SetWindowListAnimationStates(
+            selected_item_ && selected_item_->window_grid() == window_grid.get()
+                ? selected_item_
+                : nullptr,
+            OverviewTransition::kExit);
+      }
     }
     for (const auto& window_selector_item : window_grid->window_list())
       window_selector_item->RestoreWindow(/*reset_transform=*/true);

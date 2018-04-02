@@ -765,6 +765,13 @@ void WindowGrid::SetWindowListAnimationStates(
   }
 }
 
+void WindowGrid::SetWindowListNotAnimatedWhenExiting() {
+  for (const auto& item : window_list_) {
+    item->set_should_animate_when_exiting(false);
+    item->set_should_be_observed_when_exiting(false);
+  }
+}
+
 void WindowGrid::ResetWindowListAnimationStates() {
   for (const auto& selector_item : window_list_)
     selector_item->ResetAnimationStates();

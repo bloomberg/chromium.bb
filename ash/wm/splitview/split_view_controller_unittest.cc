@@ -976,6 +976,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   EXPECT_EQ(snapped_window_bounds.width(),
             window1->delegate()->GetMinimumSize().width());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
+  split_view_controller()->EndResize(resize_point);
   EndSplitView();
 
   // Rotate the screen by 270 degree.
@@ -1003,6 +1004,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
+  split_view_controller()->EndResize(resize_point);
   EndSplitView();
 
   // Rotate the screen by 180 degree.
@@ -1032,6 +1034,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   EXPECT_EQ(snapped_window_bounds.width(),
             window1->delegate()->GetMinimumSize().width());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
+  split_view_controller()->EndResize(resize_point);
   EndSplitView();
 
   // Rotate the screen by 90 degree.
@@ -1061,6 +1064,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
+  split_view_controller()->EndResize(resize_point);
   EndSplitView();
 }
 

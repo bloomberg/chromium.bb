@@ -186,6 +186,15 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
       WindowSelectorItem* selected_item,
       WindowSelector::OverviewTransition transition);
 
+  // Do not animate the entire window list during exiting the overview. It's
+  // used when splitview and overview mode are both active, selecting a window
+  // will put the window in splitview mode and also end the overview mode. In
+  // this case the windows in WindowGrid should not animate when exiting the
+  // overivew mode. Instead, OverviewWindowAnimationObserver will observer the
+  // snapped window animation and reset all windows transform in WindowGrid
+  // directly when the animation is completed.
+  void SetWindowListNotAnimatedWhenExiting();
+
   // Reset |selector_item|'s |should_animate_when_entering_|,
   // |should_animate_when_exiting_| and |should_be_observed_when_exiting_|.
   void ResetWindowListAnimationStates();
