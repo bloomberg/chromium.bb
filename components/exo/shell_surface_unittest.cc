@@ -5,6 +5,7 @@
 #include "components/exo/shell_surface.h"
 
 #include "ash/accessibility/accessibility_delegate.h"
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -474,6 +475,30 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
   // Check that shell surface is maximized.
   EXPECT_EQ(CurrentContext()->bounds().width(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
+}
+
+TEST_F(ShellSurfaceTest, FrameColors) {
+  std::unique_ptr<Surface> surface(new Surface);
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  shell_surface->OnSetFrameColors(SK_ColorRED, SK_ColorTRANSPARENT);
+  surface->Commit();
+
+  const ash::CustomFrameViewAsh* frame =
+      static_cast<const ash::CustomFrameViewAsh*>(
+          shell_surface->GetWidget()->non_client_view()->frame_view());
+
+  // Test if colors set before initial commit are set.
+  EXPECT_EQ(SK_ColorRED, frame->GetActiveFrameColorForTest());
+  // Frame should be fully opaque.
+  EXPECT_EQ(SK_ColorBLACK, frame->GetInactiveFrameColorForTest());
+
+  shell_surface->OnSetFrameColors(SK_ColorTRANSPARENT, SK_ColorBLUE);
+  EXPECT_EQ(SK_ColorBLACK, frame->GetActiveFrameColorForTest());
+  EXPECT_EQ(SK_ColorBLUE, frame->GetInactiveFrameColorForTest());
 }
 
 }  // namespace
