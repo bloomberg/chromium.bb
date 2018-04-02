@@ -2702,20 +2702,32 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         // Read order hint from bit stream
         unsigned int frame_offset =
             aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
-
         // Get buffer index
         int buf_idx = cm->ref_frame_map[ref_idx];
         assert(buf_idx < FRAME_BUFFERS);
-
-        if (buf_idx == -1) {
+        if (buf_idx == -1 ||
+            frame_offset != frame_bufs[buf_idx].cur_frame_offset) {
+          if (buf_idx >= 0) {
+            lock_buffer_pool(pool);
+            decrease_ref_count(buf_idx, frame_bufs, pool);
+            unlock_buffer_pool(pool);
+          }
           // If no corresponding buffer exists, allocate a new buffer with all
           // pixels set to neutral grey.
           buf_idx = get_free_fb(cm);
-          aom_alloc_frame_buffer(
-              &frame_bufs[buf_idx].buf, cm->seq_params.max_frame_width,
-              cm->seq_params.max_frame_height, cm->subsampling_x,
-              cm->subsampling_y, cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
-              cm->byte_alignment);
+          lock_buffer_pool(pool);
+          if (aom_realloc_frame_buffer(
+                  &frame_bufs[buf_idx].buf, cm->seq_params.max_frame_width,
+                  cm->seq_params.max_frame_height, cm->subsampling_x,
+                  cm->subsampling_y, cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                  cm->byte_alignment,
+                  &pool->frame_bufs[buf_idx].raw_frame_buffer, pool->get_fb_cb,
+                  pool->cb_priv)) {
+            unlock_buffer_pool(pool);
+            aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                               "Failed to allocate frame buffer");
+          }
+          unlock_buffer_pool(pool);
           set_planes_to_neutral_grey(cm, xd, 0);
 
           cm->ref_frame_map[ref_idx] = buf_idx;
