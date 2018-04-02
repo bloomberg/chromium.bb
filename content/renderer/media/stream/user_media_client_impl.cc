@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/stream/apply_constraints_processor.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
@@ -217,10 +216,12 @@ void UserMediaClientImpl::CurrentRequestCompleted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_processing_request_ = false;
   if (!pending_request_infos_.empty()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
-                       weak_factory_.GetWeakPtr()));
+    render_frame()
+        ->GetTaskRunner(blink::TaskType::kInternalMedia)
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
+                           weak_factory_.GetWeakPtr()));
   }
 }
 
