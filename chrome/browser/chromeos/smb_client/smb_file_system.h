@@ -46,7 +46,6 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
                       public base::SupportsWeakPtr<SmbFileSystem> {
  public:
   using UnmountCallback = base::OnceCallback<base::File::Error(
-      const ProviderId&,
       const std::string&,
       file_system_provider::Service::UnmountReason)>;
 
@@ -204,7 +203,6 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
                             smbprovider::ErrorType error) const;
 
   base::File::Error RunUnmountCallback(
-      const ProviderId& provider_id,
       const std::string& file_system_id,
       file_system_provider::Service::UnmountReason reason);
 
