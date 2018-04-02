@@ -3288,6 +3288,8 @@ crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tent
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/802835 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
+crbug.com/802835 external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
+crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 
 crbug.com/813704 http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
 
