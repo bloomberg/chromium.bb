@@ -419,8 +419,8 @@ void Internals::clearHitTestCache(Document* doc,
 
 Element* Internals::innerEditorElement(Element* container,
                                        ExceptionState& exception_state) const {
-  if (IsTextControlElement(container))
-    return ToTextControlElement(container)->InnerEditorElement();
+  if (auto* control = ToTextControlOrNull(container))
+    return control->InnerEditorElement();
 
   exception_state.ThrowDOMException(kNotSupportedError,
                                     "Not a text control element.");
@@ -760,13 +760,11 @@ const AtomicString& Internals::shadowPseudoId(Element* element) {
 }
 
 String Internals::visiblePlaceholder(Element* element) {
-  if (element && IsTextControlElement(*element)) {
-    const TextControlElement& text_control_element =
-        ToTextControlElement(*element);
-    if (!text_control_element.IsPlaceholderVisible())
+  if (auto* text_control_element = ToTextControlOrNull(element)) {
+    if (!text_control_element->IsPlaceholderVisible())
       return String();
     if (HTMLElement* placeholder_element =
-            text_control_element.PlaceholderElement())
+            text_control_element->PlaceholderElement())
       return placeholder_element->textContent();
   }
 

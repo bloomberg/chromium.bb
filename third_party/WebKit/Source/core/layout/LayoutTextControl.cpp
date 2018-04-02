@@ -38,7 +38,7 @@ LayoutTextControl::LayoutTextControl(TextControlElement* element)
 LayoutTextControl::~LayoutTextControl() = default;
 
 TextControlElement* LayoutTextControl::GetTextControlElement() const {
-  return ToTextControlElement(GetNode());
+  return ToTextControl(GetNode());
 }
 
 HTMLElement* LayoutTextControl::InnerEditorElement() const {
@@ -342,8 +342,7 @@ void LayoutTextControl::AddOutlineRects(Vector<LayoutRect>& rects,
 LayoutObject* LayoutTextControl::LayoutSpecialExcludedChild(
     bool relayout_children,
     SubtreeLayoutScope& layout_scope) {
-  HTMLElement* placeholder =
-      ToTextControlElement(GetNode())->PlaceholderElement();
+  HTMLElement* placeholder = ToTextControl(GetNode())->PlaceholderElement();
   LayoutObject* placeholder_layout_object =
       placeholder ? placeholder->GetLayoutObject() : nullptr;
   if (!placeholder_layout_object)

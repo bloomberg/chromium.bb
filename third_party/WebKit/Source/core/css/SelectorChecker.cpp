@@ -858,8 +858,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
              IsLastOfType(element, element.TagQName());
     }
     case CSSSelector::kPseudoPlaceholderShown:
-      if (IsTextControlElement(element))
-        return ToTextControlElement(element).IsPlaceholderVisible();
+      if (auto* text_control = ToTextControlOrNull(element))
+        return text_control->IsPlaceholderVisible();
       break;
     case CSSSelector::kPseudoNthChild:
       if (mode_ == kResolvingStyle) {

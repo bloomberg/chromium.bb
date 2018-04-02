@@ -224,11 +224,38 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   FRIEND_TEST_ALL_PREFIXES(TextControlElementTest, IndexForPosition);
 };
 
-inline bool IsTextControlElement(const Element& element) {
-  return element.IsTextControl();
+inline bool IsTextControl(const Node& node) {
+  return node.IsElementNode() && ToElement(node).IsTextControl();
+}
+inline bool IsTextControl(const Node* node) {
+  return node && IsTextControl(*node);
 }
 
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(TextControlElement);
+// We can't use DEFINE_TYPE_CASTS for TextControl because macro
+// names and the destination type name are not matched.
+// e.g. ToTextControl() returns TextControlElement.
+#define DEFINE_TEXT_CONTROL_CASTS(Type, ArgType)                              \
+  inline Type* ToTextControl(ArgType* node) {                                 \
+    SECURITY_DCHECK(!node || IsTextControl(*node));                           \
+    return static_cast<Type*>(node);                                          \
+  }                                                                           \
+  inline Type& ToTextControl(ArgType& node) {                                 \
+    SECURITY_DCHECK(IsTextControl(node));                                     \
+    return static_cast<Type&>(node);                                          \
+  }                                                                           \
+  inline Type* ToTextControlOrNull(ArgType* node) {                           \
+    return node && IsTextControl(*node) ? static_cast<Type*>(node) : nullptr; \
+  }                                                                           \
+  inline Type* ToTextControlOrNull(ArgType& node) {                           \
+    return IsTextControl(node) ? static_cast<Type*>(&node) : nullptr;         \
+  }                                                                           \
+  void ToTextControl(Type*);                                                  \
+  void ToTextControl(Type&)
+
+DEFINE_TEXT_CONTROL_CASTS(TextControlElement, Node);
+DEFINE_TEXT_CONTROL_CASTS(const TextControlElement, const Node);
+
+#undef DEFINE_TEXT_CONTROL_CASTS
 
 TextControlElement* EnclosingTextControl(const Position&);
 TextControlElement* EnclosingTextControl(const Node*);

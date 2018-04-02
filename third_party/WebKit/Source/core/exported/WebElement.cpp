@@ -61,8 +61,8 @@ bool WebElement::IsEditable() const {
   if (HasEditableStyle(*element))
     return true;
 
-  if (element->IsTextControl()) {
-    if (!ToTextControlElement(element)->IsDisabledOrReadOnly())
+  if (auto* text_control = ToTextControlOrNull(element)) {
+    if (!text_control->IsDisabledOrReadOnly())
       return true;
   }
 

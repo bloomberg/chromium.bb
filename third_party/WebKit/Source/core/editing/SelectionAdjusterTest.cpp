@@ -23,8 +23,7 @@ TEST_F(SelectionAdjusterTest, AdjustShadowToCollpasedInDOMTree) {
 
 TEST_F(SelectionAdjusterTest, AdjustShadowToCollpasedInFlatTree) {
   SetBodyContent("<input value=abc>");
-  const TextControlElement& input =
-      ToTextControlElement(*GetDocument().QuerySelector("input"));
+  const auto& input = ToTextControl(*GetDocument().QuerySelector("input"));
   const SelectionInFlatTree& selection =
       SelectionInFlatTree::Builder()
           .Collapse(PositionInFlatTree::AfterNode(input))

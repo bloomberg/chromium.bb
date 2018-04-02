@@ -654,7 +654,7 @@ bool IsEndOfEditableOrNonEditableContent(
   // an inner editor is an only leaf node.
   if (!next_position.DeepEquivalent().IsAfterAnchor())
     return false;
-  return IsTextControlElement(next_position.DeepEquivalent().AnchorNode());
+  return IsTextControl(next_position.DeepEquivalent().AnchorNode());
 }
 
 static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
