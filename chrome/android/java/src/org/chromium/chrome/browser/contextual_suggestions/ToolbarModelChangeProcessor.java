@@ -25,7 +25,7 @@ class ToolbarModelChangeProcessor implements PropertyObserver<PropertyKey> {
                 ToolbarView view, ContextualSuggestionsModel model, PropertyKey propertyKey) {
             switch (propertyKey.mKey) {
                 case PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER:
-                    view.setOnClickListener(model.getCloseButtonOnClickListener());
+                    view.setCloseButtonOnClickListener(model.getCloseButtonOnClickListener());
                     break;
                 case PropertyKey.TITLE:
                     view.setTitle(model.getTitle());
