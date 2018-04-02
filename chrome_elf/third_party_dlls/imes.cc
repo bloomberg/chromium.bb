@@ -262,7 +262,7 @@ IMEStatus InitIMEs() {
   return IMEStatus::kSuccess;
 }
 
-void DeinitIMEsForTesting() {
+void DeinitIMEs() {
   GetImeVector()->clear();
 }
 

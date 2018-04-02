@@ -24,6 +24,8 @@ bool IsThirdPartyInitialized();
 // include this file, and call this one function at startup.
 // - This should be called as early as possible, before any undesirable DLLs
 //   might be loaded.
+// - Ensure elf_crash component has been initialized before calling.
+// - This initialization will fail on unsupported versions of Windows.
 bool Init();
 
 }  // namespace third_party_dlls

@@ -151,6 +151,7 @@ source_set("sha1") {
 # chrome.dll.
 source_set("third_party_shared_defines") {
   sources = [
+    "sha1/sha1.h",
     "third_party_dlls/logging_api.cc",
     "third_party_dlls/logging_api.h",
     "third_party_dlls/packed_list_format.cc",
@@ -249,6 +250,8 @@ static_library("nt_registry") {
 static_library("third_party_dlls") {
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
   sources = [
+    "third_party_dlls/hook.cc",
+    "third_party_dlls/hook.h",
     "third_party_dlls/imes.cc",
     "third_party_dlls/imes.h",
     "third_party_dlls/logs.cc",
@@ -259,6 +262,9 @@ static_library("third_party_dlls") {
     "third_party_dlls/packed_list_file.h",
   ]
   deps = [
+    ":blacklist",
+    ":crash",
+    ":hook_util",
     ":nt_registry",
     ":pe_image_safe",
     ":sha1",
