@@ -152,16 +152,6 @@ var SelectToSpeak = function() {
    */
   this.intervalId_;
 
-  // Enable reading selection at keystroke when experimental accessibility
-  // features are enabled.
-  // TODO(katie): When the feature is approved, remove this variable and
-  // callback. The feature will be always enabled.
-  this.readSelectionEnabled_ = false;
-  chrome.commandLinePrivate.hasSwitch(
-      'enable-experimental-accessibility-features', (result) => {
-        this.readSelectionEnabled_ = result;
-      });
-
   /** @private {Audio} */
   this.null_selection_tone_ = new Audio('earcons/null_selection.ogg');
 
@@ -323,7 +313,7 @@ SelectToSpeak.prototype = {
         evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
       this.isSearchKeyDown_ = true;
     } else if (
-        this.readSelectionEnabled_ && this.keysCurrentlyDown_.size == 1 &&
+        this.keysCurrentlyDown_.size == 1 &&
         evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE &&
         !this.trackingMouse_) {
       // Only go into selection mode if we aren't already tracking the mouse.
@@ -1183,13 +1173,4 @@ SelectToSpeak.prototype = {
   fireMockMouseUpEvent: function(event) {
     this.onMouseUp_(event);
   },
-
-  /**
-   * Overrides default setting to read selected text and enables the
-   * ability to read selected text at a keystroke. Should only be used
-   * for testing.
-   */
-  enableReadSelectedTextForTesting: function() {
-    this.readSelectionEnabled_ = true;
-  }
 };
