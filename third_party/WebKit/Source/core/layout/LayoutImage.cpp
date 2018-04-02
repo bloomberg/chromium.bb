@@ -106,6 +106,11 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
     return;
   }
 
+  // If error occurred, image marker should be replaced by a LayoutText.
+  // NotifyOfSubtreeChange to make list item updating its marker content.
+  if (IsLayoutNGListMarkerImage() && image_resource_->ErrorOccurred())
+    NotifyOfSubtreeChange();
+
   // Per the spec, we let the server-sent header override srcset/other sources
   // of dpr.
   // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255

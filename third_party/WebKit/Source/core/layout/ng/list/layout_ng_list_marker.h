@@ -31,6 +31,8 @@ class CORE_EXPORT LayoutNGListMarker final
 
   void WillCollectInlines() override;
 
+  bool IsContentImage() const;
+
   const char* GetName() const override { return "LayoutNGListMarker"; }
 
  private:

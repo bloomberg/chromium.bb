@@ -91,7 +91,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   bool NeedsPreferredWidthsRecalculation() const final;
   LayoutReplaced* EmbeddedReplacedContent() const;
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
-  bool GetNestedIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
+  bool GetNestedIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
 
   void ImageChanged(WrappedImagePtr,
                     CanDeferInvalidation,
