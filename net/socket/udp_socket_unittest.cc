@@ -349,7 +349,14 @@ TEST_F(UDPSocketTest, MAYBE_LocalBroadcast) {
 // random, but they are enough to protect from most common non-random port
 // allocation strategies (e.g. counter, pool of available ports, etc.) False
 // positive result is theoretically possible, but its probability is negligible.
-TEST_F(UDPSocketTest, ConnectRandomBind) {
+//
+// Sometimes times outs on Fuchsia on bots. https://crbug.com/826952
+#if defined(OS_FUCHSIA)
+#define MAYBE_ConnectRandomBind DISABLED_ConnectRandomBind
+#else
+#define MAYBE_ConnectRandomBind ConnectRandomBind
+#endif
+TEST_F(UDPSocketTest, MAYBE_ConnectRandomBind) {
   const int kIterations = 1000;
 
   std::vector<int> used_ports;
