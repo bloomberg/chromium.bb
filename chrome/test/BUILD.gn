@@ -2056,7 +2056,7 @@ test("browser_tests") {
         "remoting/waiter.h",
         "remoting/webapp_javascript_browsertest.cc",
       ]
-      deps += [ "//remoting/webapp" ]
+      data_deps += [ "//remoting/webapp" ]
     }
 
     if (use_aura) {
