@@ -94,7 +94,7 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache() {
 
   image_decode_cache_ = std::make_unique<cc::GpuImageDecodeCache>(
       provider_.get(), use_transfer_cache, kN32_SkColorType,
-      kMaxWorkingSetBytes);
+      kMaxWorkingSetBytes, provider_->ContextCapabilities().max_texture_size);
   return image_decode_cache_.get();
 }
 

@@ -61,12 +61,14 @@ class OopPixelTest : public testing::Test {
 
     context_provider_ =
         base::MakeRefCounted<TestInProcessContextProvider>(nullptr, true);
-    oop_image_cache_.reset(new GpuImageDecodeCache(context_provider_.get(),
-                                                   true, kRGBA_8888_SkColorType,
-                                                   kWorkingSetSize));
-    gpu_image_cache_.reset(
-        new GpuImageDecodeCache(context_provider_.get(), false,
-                                kRGBA_8888_SkColorType, kWorkingSetSize));
+    int max_texture_size =
+        context_provider_->ContextCapabilities().max_texture_size;
+    oop_image_cache_.reset(new GpuImageDecodeCache(
+        context_provider_.get(), true, kRGBA_8888_SkColorType, kWorkingSetSize,
+        max_texture_size));
+    gpu_image_cache_.reset(new GpuImageDecodeCache(
+        context_provider_.get(), false, kRGBA_8888_SkColorType, kWorkingSetSize,
+        max_texture_size));
   }
 
   class RasterOptions {
