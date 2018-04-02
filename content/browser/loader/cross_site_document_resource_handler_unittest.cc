@@ -564,7 +564,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/x-json",                          // response_mime_type
+        "text/json",                            // response_mime_type
         MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response

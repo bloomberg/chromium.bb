@@ -176,15 +176,12 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
       {"application/xml", MimeType::kXml},
       {"application/json", MimeType::kJson},
       {"text/json", MimeType::kJson},
-      {"text/x-json", MimeType::kJson},
       {"text/plain", MimeType::kPlain},
 
       // Other mime types:
       {"application/foobar", MimeType::kOthers},
 
       // Regression tests for https://crbug.com/799155 (prefix/suffix matching):
-      {"application/json+protobuf", MimeType::kJson},
-      {"text/json+protobuf", MimeType::kJson},
       {"application/activity+json", MimeType::kJson},
       {"text/foobar+xml", MimeType::kXml},
       // No match without a '+' character:
@@ -195,7 +192,6 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
 
       // Case-insensitive comparison:
       {"APPLICATION/JSON", MimeType::kJson},
-      {"APPLICATION/JSON+PROTOBUF", MimeType::kJson},
       {"APPLICATION/ACTIVITY+JSON", MimeType::kJson},
 
       // Images are allowed cross-site, and SVG is an image, so we should
@@ -206,6 +202,20 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
       // Javascript should not be blocked.
       {"application/javascript", MimeType::kOthers},
       {"application/jsonp", MimeType::kOthers},
+
+      // TODO(lukasza): Remove in the future, once this MIME type is not used in
+      // practice.  See also https://crbug.com/826756#c3
+      {"application/json+protobuf", MimeType::kJson},
+      {"APPLICATION/JSON+PROTOBUF", MimeType::kJson},
+
+      // According to specs, these types are not XML or JSON.  See also:
+      // - https://mimesniff.spec.whatwg.org/#xml-mime-type
+      // - https://mimesniff.spec.whatwg.org/#json-mime-type
+      {"text/x-json", MimeType::kOthers},
+      {"text/json+blah", MimeType::kOthers},
+      {"application/json+blah", MimeType::kOthers},
+      {"text/xml+blah", MimeType::kOthers},
+      {"application/xml+blah", MimeType::kOthers},
   };
 
   for (const auto& test : tests) {
