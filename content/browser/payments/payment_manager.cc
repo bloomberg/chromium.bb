@@ -121,8 +121,8 @@ void PaymentManager::SetPaymentInstrumentIntermediateCallback(
     return;
   }
 
-  payment_app_context_->payment_app_database()->FetchAndWritePaymentAppInfo(
-      context_url_, scope_, user_hint_, std::move(callback));
+  payment_app_context_->payment_app_database()->FetchAndUpdatePaymentAppInfo(
+      context_url_, scope_, std::move(callback));
   should_set_payment_app_info_ = false;
 }
 
@@ -135,12 +135,8 @@ void PaymentManager::ClearPaymentInstruments(
 }
 
 void PaymentManager::SetUserHint(const std::string& user_hint) {
-  user_hint_ = user_hint;
-  if (should_set_payment_app_info_)
-    return;
-
   payment_app_context_->payment_app_database()->SetPaymentAppUserHint(
-      scope_, user_hint_);
+      scope_, user_hint);
 }
 
 void PaymentManager::OnConnectionError() {
