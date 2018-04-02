@@ -9,6 +9,14 @@
 #include "base/memory/weak_ptr.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 
+namespace gfx {
+class Image;
+}  // namespace gfx
+
+namespace ntp_snippets {
+class ContentSuggestionsService;
+}  // namespace ntp_snippets
+
 namespace contextual_suggestions {
 
 // Class implementing native side of ContextualSuggestionsBrigde.java.
@@ -60,6 +68,12 @@ class ContextualSuggestionsBridge {
       std::vector<ntp_snippets::ContextualContentSuggestionsService::Cluster>
           clusters);
 
+  void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> j_callback,
+                      const gfx::Image& image);
+
+  // Content suggestions service is necessary for the favicon fetching.
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
+  // Contextual content suggestions service used for fetching suggestions.
   ntp_snippets::ContextualContentSuggestionsService*
       contextual_content_suggestions_service_;
 
