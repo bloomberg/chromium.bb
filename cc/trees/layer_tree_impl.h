@@ -300,9 +300,7 @@ class CC_EXPORT LayerTreeImpl {
   void set_content_source_id(uint32_t id) { content_source_id_ = id; }
   uint32_t content_source_id() { return content_source_id_; }
 
-  void set_local_surface_id(const viz::LocalSurfaceId& id) {
-    local_surface_id_ = id;
-  }
+  void SetLocalSurfaceId(const viz::LocalSurfaceId& id);
   const viz::LocalSurfaceId& local_surface_id() const {
     return local_surface_id_;
   }

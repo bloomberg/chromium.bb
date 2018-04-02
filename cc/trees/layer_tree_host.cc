@@ -1380,7 +1380,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->set_content_source_id(content_source_id_);
 
-  tree_impl->set_local_surface_id(local_surface_id_);
+  tree_impl->SetLocalSurfaceId(local_surface_id_);
   has_pushed_local_surface_id_ = true;
 
   if (pending_page_scale_animation_) {
