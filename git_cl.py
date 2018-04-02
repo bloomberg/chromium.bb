@@ -1615,10 +1615,14 @@ class Changelist(object):
     print_stats(git_diff_args)
     ret = self.CMDUploadChange(options, git_diff_args, custom_cl_base, change)
     if not ret:
-      if options.use_commit_queue:
-        self.SetCQState(_CQState.COMMIT)
-      elif options.cq_dry_run:
-        self.SetCQState(_CQState.DRY_RUN)
+      if self.IsGerrit():
+        self.SetLabels(options.enable_auto_submit, options.use_commit_queue,
+                       options.cq_dry_run);
+      else:
+        if options.use_commit_queue:
+          self.SetCQState(_CQState.COMMIT)
+        elif options.cq_dry_run:
+          self.SetCQState(_CQState.DRY_RUN)
 
       _git_set_branch_config_value('last-upload-hash',
                                    RunGit(['rev-parse', 'HEAD']).strip())
@@ -1642,6 +1646,41 @@ class Changelist(object):
         orig_args.remove('--dependencies')
         ret = upload_branch_deps(self, orig_args)
     return ret
+
+  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
+    """Sets labels on the change based on the provided flags.
+
+    Sets labels if issue is already uploaded and known, else returns without
+    doing anything.
+
+    Args:
+      enable_auto_submit: Sets Auto-Submit+1 on the change.
+      use_commit_queue: Sets Commit-Queue+2 on the change.
+      cq_dry_run: Sets Commit-Queue+1 on the change. Overrides Commit-Queue+2 if
+                  both use_commit_queue and cq_dry_run are true.
+    """
+    if not self.GetIssue():
+      return
+    try:
+      self._codereview_impl.SetLabels(enable_auto_submit, use_commit_queue,
+                                      cq_dry_run)
+      return 0
+    except KeyboardInterrupt:
+      raise
+    except:
+      labels = []
+      if enable_auto_submit:
+        labels.append('Auto-Submit')
+      if use_commit_queue or cq_dry_run:
+        labels.append('Commit-Queue')
+      print('WARNING: Failed to set label(s) on your change: %s\n'
+            'Either:\n'
+            ' * Your project does not have the above label(s),\n'
+            ' * You don\'t have permission to set the above label(s),\n'
+            ' * There\'s a bug in this code (see stack trace below).\n' %
+            (', '.join(labels)))
+      # Still raise exception so that stack trace is printed.
+      raise
 
   def SetCQState(self, new_state):
     """Updates the CQ state for the latest patchset.
@@ -1839,6 +1878,13 @@ class _ChangelistCodereviewBase(object):
 
   def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
     """Uploads a change to codereview."""
+    raise NotImplementedError()
+
+  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
+    """Sets labels on the change based on the provided flags.
+
+    Issue must have been already uploaded and known.
+    """
     raise NotImplementedError()
 
   def SetCQState(self, new_state):
@@ -2083,6 +2129,9 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def GetRietveldObjForPresubmit(self):
     return self.RpcServer()
+
+  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
+    raise NotImplementedError()
 
   def SetCQState(self, new_state):
     props = self.GetIssueProperties()
@@ -3180,6 +3229,21 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return new_log_desc
     else:
       DieWithError('ERROR: Gerrit commit-msg hook not installed.')
+
+  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
+    """Sets labels on the change based on the provided flags."""
+    labels = {}
+    notify = None;
+    if enable_auto_submit:
+      labels['Auto-Submit'] = 1
+    if use_commit_queue:
+      labels['Commit-Queue'] = 2
+    elif cq_dry_run:
+      labels['Commit-Queue'] = 1
+      notify = False
+    if labels:
+      gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
+                            labels=labels, notify=notify)
 
   def SetCQState(self, new_state):
     """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""
@@ -4966,6 +5030,10 @@ def CMDupload(parser, args):
   parser.add_option('--dependencies', action='store_true',
                     help='Uploads CLs of all the local branches that depend on '
                          'the current branch')
+  parser.add_option('-a', '--enable-auto-submit', action='store_true',
+                    help='Sends your change to the CQ after an approval. Only '
+                         'works on repos that have the Auto-Submit label '
+                         'enabled')
 
   # TODO: remove Rietveld flags
   parser.add_option('--private', action='store_true',
