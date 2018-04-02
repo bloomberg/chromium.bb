@@ -29,9 +29,6 @@ declare_args() {
   # Turn this on to have the linker output extra timing information.
   win_linker_timing = false
 
-  # Turn this on to have the compiler output extra timing information.
-  win_compiler_timing = false
-
   # possible values for target_winuwp_version:
   #   "10" - Windows UWP 10
   #   "8.1" - Windows RT 8.1
@@ -148,21 +145,6 @@ config("compiler") {
     # the source file is a no-op.
     "/ignore:4221",
   ]
-
-  if (win_compiler_timing) {
-    if (is_clang) {
-      cflags += [
-        "-Xclang",
-        "-ftime-report",
-      ]
-    } else {
-      cflags += [
-        # "Documented" here:
-        # http://aras-p.info/blog/2017/10/23/Best-unknown-MSVC-flag-d2cgsummary/
-        "/d2cgsummary",
-      ]
-    }
-  }
 }
 
 config("vs_code_analysis") {

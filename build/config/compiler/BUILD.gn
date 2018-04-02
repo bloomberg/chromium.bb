@@ -113,6 +113,9 @@ declare_args() {
   # clang_sample_profile_path is empty, we'll fall back to the default.
   clang_use_default_sample_profile =
       is_official_build && defined(clang_default_afdo_profile)
+
+  # Turn this on to have the compiler output extra timing information.
+  compiler_timing = false
 }
 
 declare_args() {
@@ -596,6 +599,21 @@ config("compiler") {
     # -march flag passed at compile time (see llvm.org/pr36291).
     if (current_cpu == "arm") {
       ldflags += [ "-march=$arm_arch" ]
+    }
+  }
+
+  if (compiler_timing) {
+    if (is_clang) {
+      if (is_win) {
+        cflags += [ "-Xclang" ]
+      }
+      cflags += [ "-ftime-report" ]
+    } else if (is_win) {
+      cflags += [
+        # "Documented" here:
+        # http://aras-p.info/blog/2017/10/23/Best-unknown-MSVC-flag-d2cgsummary/
+        "/d2cgsummary",
+      ]
     }
   }
 
