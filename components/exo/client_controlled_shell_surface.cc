@@ -750,15 +750,20 @@ bool ClientControlledShellSurface::OnMouseDragged(const ui::MouseEvent&) {
   return false;
 }
 
-gfx::Point ClientControlledShellSurface::GetWidgetOrigin() const {
-  return GetVisibleBounds().origin() - origin_offset_;
+gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
+  gfx::Rect bounds(GetVisibleBounds());
+  bounds.Offset(-origin_offset_.x(), -origin_offset_.y());
+  return bounds;
 }
 
 gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
   DCHECK(resize_component_ == HTCAPTION);
   if (!geometry_changed_callback_.is_null())
     return gfx::Point();
-  return gfx::Point() - GetWidgetOrigin().OffsetFromOrigin();
+  // TODO(oshima): geometry_changed_callback_ must be always set by now, so
+  // this is not necessary any more. Remove this.
+  return gfx::Point() -
+         (GetVisibleBounds().origin() - origin_offset_).OffsetFromOrigin();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
