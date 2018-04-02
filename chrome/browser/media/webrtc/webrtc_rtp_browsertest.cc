@@ -397,12 +397,33 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
                       left_tab_));
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, TrackSwitchingStream) {
+// This test is disabled to allow WebRTC change to roll in that adds support
+// for multiple/no streams for a given track in Unified Plan mode. Currently the
+// correct behavior is not tested when the stream switches, and since the WebRTC
+// change adds some (more) correct behavior for this in Plan B mode it breaks.
+// This test will be updated after the roll in to test that the original track
+// gets muted and the original stream is empty after the stream switches.
+// bug: https://bugs.chromium.org/p/webrtc/issues/detail?id=7933
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, DISABLED_TrackSwitchingStream) {
   StartServerAndOpenTabs();
   EXPECT_EQ("ok", ExecuteJavascript("trackSwitchingStream()", left_tab_));
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, TrackAddedToSecondStream) {
+// This test is disabled to allow WebRTC change to roll in that adds support
+// for multiple/no streams for a given track in Unified Plan mode. This
+// test breaks with the update because the SDP is parsed differently to support
+// multiple a=msid lines and for Plan B mode only the first media stream ID is
+// used. Currently this doesn't test the desired behavior, because the SDP
+// parsing uses the last a=msid line, which ends up just testing the stream
+// switching (as tested above already). Once the update is rolled in we can
+// either:
+// A: Remove this test because it only can be done with SDP munging, and it is
+//    not supported with Plan B SDP semantics.
+// B: Test this case for Unified Plan, assuming SDP munging. In this case
+//    according to the w3 WebRTC spec we will not add the new stream.
+// bug: https://bugs.chromium.org/p/webrtc/issues/detail?id=7933
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
+                       DISABLED_TrackAddedToSecondStream) {
   StartServerAndOpenTabs();
   EXPECT_EQ("ok", ExecuteJavascript("trackAddedToSecondStream()", left_tab_));
 }
