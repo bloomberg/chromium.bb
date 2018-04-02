@@ -721,6 +721,7 @@ void Layer::SetTransferableResource(
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
   DCHECK(!resource.mailbox_holder.mailbox.IsZero());
   DCHECK(release_callback);
+  DCHECK(!resource.is_software);
   if (!texture_layer_.get()) {
     scoped_refptr<cc::TextureLayer> new_layer =
         cc::TextureLayer::CreateForMailbox(this);
