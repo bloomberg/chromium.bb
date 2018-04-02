@@ -4979,17 +4979,21 @@ bubblePresenterForFeature:(const base::Feature&)feature
   };
 
   self.inNewTabAnimation = YES;
+  CGRect oldContentAreaFrame = _contentArea.frame;
   if (!background) {
-    UIView* animationParentView = _contentArea;
     // Create the new page image, and load with the new tab snapshot except if
     // it is the NTP.
     CGFloat newPageOffset = 0;
-    UIView* newPage;
+    UIView* newPage = nil;
     CGFloat offset = 0;
     if (tab.webState->GetLastCommittedURL() == kChromeUINewTabURL &&
         !_isOffTheRecord && !IsIPadIdiom()) {
       offset = 0;
-      animationParentView = self.view;
+      // Temporary expand content area to take whole view space. Otherwise the
+      // animated NTP will be clipped by content area bound. Previous frame is
+      // stored in |oldContentAreaFrame| and will be reset back on animation
+      // completion.
+      _contentArea.frame = self.view.frame;
       newPage = tab.view;
       newPage.userInteractionEnabled = NO;
       // Compute a frame for the new page by removing the status bar height from
@@ -5010,7 +5014,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     }
     newPageOffset = newPage.frame.origin.y;
 
-    [animationParentView addSubview:newPage];
+    [_contentArea addSubview:newPage];
     CGPoint origin = [self lastTapPoint];
     page_animation_util::AnimateInPaperWithAnimationAndCompletion(
         newPage, -newPageOffset, offset, origin, _isOffTheRecord, NULL, ^{
@@ -5033,6 +5037,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
             self.foregroundTabWasAddedCompletionBlock();
             self.foregroundTabWasAddedCompletionBlock = nil;
           }
+          _contentArea.frame = oldContentAreaFrame;
         });
   } else {
     // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
