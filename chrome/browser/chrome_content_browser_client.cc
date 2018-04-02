@@ -3824,24 +3824,29 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  bool matches_enterprise_whitelist =
-      io_data && safe_browsing::IsURLWhitelistedByPolicy(
-                     request.url, io_data->safe_browsing_whitelist_domains());
-  if (!matches_enterprise_whitelist &&
-      (network_service_enabled ||
-       base::FeatureList::IsEnabled(
-           safe_browsing::kCheckByURLLoaderThrottle))) {
-    auto* delegate = GetSafeBrowsingUrlCheckerDelegate(resource_context);
-    if (delegate && !delegate->ShouldSkipRequestCheck(
-                        resource_context, request.url, frame_tree_node_id,
-                        -1 /* render_process_id */, -1 /* render_frame_id */,
-                        request.originated_from_service_worker)) {
-      auto safe_browsing_throttle =
-          safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(delegate,
-                                                               wc_getter);
-      if (safe_browsing_throttle)
-        result.push_back(std::move(safe_browsing_throttle));
+  // Null-check safe_browsing_service_ as in unit tests |resource_context| is a
+  // MockResourceContext and the cast doesn't work.
+  if (safe_browsing_service_) {
+    ProfileIOData* io_data =
+        ProfileIOData::FromResourceContext(resource_context);
+    bool matches_enterprise_whitelist =
+        io_data && safe_browsing::IsURLWhitelistedByPolicy(
+                       request.url, io_data->safe_browsing_whitelist_domains());
+    if (!matches_enterprise_whitelist &&
+        (network_service_enabled ||
+         base::FeatureList::IsEnabled(
+             safe_browsing::kCheckByURLLoaderThrottle))) {
+      auto* delegate = GetSafeBrowsingUrlCheckerDelegate(resource_context);
+      if (delegate && !delegate->ShouldSkipRequestCheck(
+                          resource_context, request.url, frame_tree_node_id,
+                          -1 /* render_process_id */, -1 /* render_frame_id */,
+                          request.originated_from_service_worker)) {
+        auto safe_browsing_throttle =
+            safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(delegate,
+                                                                 wc_getter);
+        if (safe_browsing_throttle)
+          result.push_back(std::move(safe_browsing_throttle));
+      }
     }
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
