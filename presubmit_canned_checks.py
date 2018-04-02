@@ -827,8 +827,11 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
 
 
 def CheckOwners(input_api, output_api, source_file_filter=None):
+  affected_files = set([f.LocalPath() for f in
+      input_api.change.AffectedFiles(file_filter=source_file_filter)])
+
   if input_api.is_committing:
-    if input_api.tbr:
+    if input_api.tbr and not any(['OWNERS' in name for name in affected_files]):
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
     needed = 'LGTM from an OWNER'
@@ -845,9 +848,6 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
   else:
     needed = 'OWNER reviewers'
     output_fn = output_api.PresubmitNotifyResult
-
-  affected_files = set([f.LocalPath() for f in
-      input_api.change.AffectedFiles(file_filter=source_file_filter)])
 
   owners_db = input_api.owners_db
   owners_db.override_files = input_api.change.OriginalOwnersFiles()

@@ -2398,9 +2398,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
         presubmit.OutputApi.PresubmitNotifyResult)
 
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
-      reviewers=None, is_committing=True,
-      response=None, uncovered_files=None, expected_output='',
-      manually_specified_reviewers=None, dry_run=None):
+      reviewers=None, is_committing=True, response=None, uncovered_files=None,
+      expected_output='', manually_specified_reviewers=None, dry_run=None,
+      modified_file='foo/xyz.cc'):
     if approvers is None:
       # The set of people who lgtm'ed a change.
       approvers = set()
@@ -2438,9 +2438,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.tbr = tbr
     input_api.dry_run = dry_run
 
-    if not is_committing or (not tbr and issue):
-      affected_file.LocalPath().AndReturn('foo/xyz.cc')
-      change.AffectedFiles(file_filter=None).AndReturn([affected_file])
+    affected_file.LocalPath().AndReturn(modified_file)
+    change.AffectedFiles(file_filter=None).AndReturn([affected_file])
+    if not is_committing or (not tbr and issue) or ('OWNERS' in modified_file):
       change.OriginalOwnersFiles().AndReturn({})
       if issue and not response:
         response = {
@@ -2720,6 +2720,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.AssertOwnersWorks(tbr=True,
         expected_output='--tbr was specified, skipping OWNERS check\n')
     self.AssertOwnersWorks(tbr=True, is_committing=False, expected_output='')
+
+  def testCannedCheckOwners_TBROWNERSFile(self):
+    self.AssertOwnersWorks(
+        tbr=True, uncovered_files=set(['foo']),
+        modified_file='foo/OWNERS',
+        expected_output='Missing LGTM from an OWNER for these files:\n'
+                        '    foo\n')
 
   def testCannedCheckOwners_WithoutOwnerLGTM(self):
     self.AssertOwnersWorks(uncovered_files=set(['foo']),
