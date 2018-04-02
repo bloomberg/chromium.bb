@@ -2066,6 +2066,12 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForContent() const {
   if (HasOverrideContainingBlockLogicalWidth())
     return OverrideContainingBlockContentLogicalWidth();
 
+  // TODO(rego): Probably this should be done directly in
+  // HasOverrideContainingBlockLogicalWidth(), but that would imply more changes
+  // in other parts of the code so leaving it for a follow-up patch.
+  if (IsGridItem())
+    return LayoutUnit();
+
   LayoutBlock* cb = ContainingBlock();
   if (IsOutOfFlowPositioned())
     return cb->ClientLogicalWidth();
@@ -2076,6 +2082,12 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForContent(
     AvailableLogicalHeightType height_type) const {
   if (HasOverrideContainingBlockLogicalHeight())
     return OverrideContainingBlockContentLogicalHeight();
+
+  // TODO(rego): Probably this should be done directly in
+  // HasOverrideContainingBlockLogicalHeight(), but that would imply more
+  // changes in other parts of the code so leaving it for a follow-up patch.
+  if (IsGridItem())
+    return LayoutUnit();
 
   LayoutBlock* cb = ContainingBlock();
   return cb->AvailableLogicalHeight(height_type);
