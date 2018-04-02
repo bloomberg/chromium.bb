@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_PUBLIC_NON_MAIN_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_PUBLIC_NON_MAIN_THREAD_SCHEDULER_H_
 
 #include <memory>
 
@@ -14,13 +14,14 @@
 #include "platform/scheduler/child/worker_scheduler_helper.h"
 #include "platform/scheduler/child/worker_task_queue.h"
 #include "public/platform/WebThreadType.h"
-#include "public/platform/scheduler/child/child_scheduler.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/web_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {
 class WorkerSchedulerProxy;
 
+// TODO(yutak): Rename this class to NonMainThreadScheduler.
 class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
  public:
   ~WorkerScheduler() override;
@@ -55,4 +56,4 @@ class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_PUBLIC_NON_MAIN_THREAD_SCHEDULER_H_

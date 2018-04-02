@@ -5,7 +5,7 @@
 #include "public/platform/WebScopedVirtualTimePauser.h"
 
 #include "base/trace_event/trace_event.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 
 namespace blink {
 

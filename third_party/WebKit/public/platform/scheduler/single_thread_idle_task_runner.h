@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
 
 #include <map>
 
@@ -21,7 +21,7 @@ namespace base {
 namespace trace_event {
 class BlameContext;
 }
-}
+}  // namespace base
 
 namespace blink {
 namespace scheduler {
@@ -99,7 +99,7 @@ class SingleThreadIdleTaskRunner
 
   scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner_;
   std::multimap<base::TimeTicks, DelayedIdleTask> delayed_idle_tasks_;
-  Delegate* delegate_;  // NOT OWNED
+  Delegate* delegate_;                              // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // Not owned.
   base::WeakPtr<SingleThreadIdleTaskRunner> weak_scheduler_ptr_;
   base::WeakPtrFactory<SingleThreadIdleTaskRunner> weak_factory_;
@@ -109,4 +109,4 @@ class SingleThreadIdleTaskRunner
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_

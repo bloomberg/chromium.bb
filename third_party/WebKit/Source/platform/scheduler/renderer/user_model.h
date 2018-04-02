@@ -10,7 +10,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/PlatformExport.h"
 #include "public/platform/WebInputEvent.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "public/platform/scheduler/web_main_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

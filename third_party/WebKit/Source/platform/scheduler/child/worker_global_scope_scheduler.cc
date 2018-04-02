@@ -5,7 +5,7 @@
 #include "platform/scheduler/child/worker_global_scope_scheduler.h"
 
 #include "platform/scheduler/child/task_runner_impl.h"
-#include "platform/scheduler/child/worker_scheduler.h"
+#include "platform/scheduler/public/non_main_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

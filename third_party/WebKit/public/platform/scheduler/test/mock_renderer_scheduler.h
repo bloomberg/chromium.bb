@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "public/platform/scheduler/web_main_thread_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blink {

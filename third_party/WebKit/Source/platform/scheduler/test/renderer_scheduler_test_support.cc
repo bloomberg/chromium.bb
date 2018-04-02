@@ -10,7 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "platform/scheduler/base/task_queue_manager_impl.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 #include "platform/scheduler/test/lazy_thread_controller_for_test.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
 

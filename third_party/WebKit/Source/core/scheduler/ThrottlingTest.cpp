@@ -9,7 +9,7 @@
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "public/platform/scheduler/web_main_thread_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::ElementsAre;

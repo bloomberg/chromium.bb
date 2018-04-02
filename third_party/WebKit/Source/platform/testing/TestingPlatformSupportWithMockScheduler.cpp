@@ -8,7 +8,7 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WaitableEvent.h"
 #include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/scheduler/child/webthread_base.h"

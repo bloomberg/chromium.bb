@@ -5,7 +5,7 @@
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 
 #include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

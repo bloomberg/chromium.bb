@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_RENDERER_RENDERER_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_RENDERER_RENDERER_SCHEDULER_H_
+#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_MAIN_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_MAIN_THREAD_SCHEDULER_H_
 
 #include <memory>
 
@@ -17,21 +17,21 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebScopedVirtualTimePauser.h"
-#include "public/platform/scheduler/child/child_scheduler.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
-#include "public/platform/scheduler/renderer/render_widget_scheduling_state.h"
+#include "public/platform/scheduler/render_widget_scheduling_state.h"
+#include "public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/web_thread_scheduler.h"
 #include "v8/include/v8.h"
 
 namespace base {
 namespace trace_event {
 class BlameContext;
 }
-}
+}  // namespace base
 
 namespace blink {
 class WebThread;
 class WebInputEvent;
-}
+}  // namespace blink
 
 namespace viz {
 struct BeginFrameArgs;
@@ -43,6 +43,7 @@ namespace scheduler {
 enum class RendererProcessType;
 class RenderWidgetSchedulingState;
 
+// TODO(yutak): Rename this class to WebMainThreadScheduler.
 class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
  public:
   class BLINK_PLATFORM_EXPORT RAILModeObserver {
@@ -234,4 +235,4 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_RENDERER_RENDERER_SCHEDULER_H_
+#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_MAIN_THREAD_SCHEDULER_H_

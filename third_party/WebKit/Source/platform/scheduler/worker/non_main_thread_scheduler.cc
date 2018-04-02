@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/worker_scheduler.h"
+#include "platform/scheduler/public/non_main_thread_scheduler.h"
 
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "platform/scheduler/child/worker_scheduler_impl.h"
+#include "platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

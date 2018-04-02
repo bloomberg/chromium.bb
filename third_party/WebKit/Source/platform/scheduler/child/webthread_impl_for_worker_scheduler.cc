@@ -12,8 +12,8 @@
 #include "base/time/default_tick_clock.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_scheduler_impl.h"
-#include "platform/scheduler/child/worker_scheduler_impl.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
+#include "platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

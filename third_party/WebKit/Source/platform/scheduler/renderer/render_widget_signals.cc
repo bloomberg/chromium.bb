@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "public/platform/scheduler/renderer/render_widget_scheduling_state.h"
+#include "public/platform/scheduler/render_widget_scheduling_state.h"
 
 namespace blink {
 namespace scheduler {

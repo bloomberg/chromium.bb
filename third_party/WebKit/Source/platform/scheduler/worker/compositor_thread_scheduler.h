@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_WORKER_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_WORKER_SCHEDULER_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_WORKER_COMPOSITOR_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_WORKER_COMPOSITOR_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/child/compositor_metrics_helper.h"
-#include "platform/scheduler/child/worker_scheduler.h"
+#include "platform/scheduler/public/non_main_thread_scheduler.h"
 #include "platform/scheduler/util/task_duration_metric_reporter.h"
 #include "public/platform/WebThreadType.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/single_thread_idle_task_runner.h"
 
 namespace base {
 class Thread;
@@ -22,6 +22,7 @@ class Thread;
 namespace blink {
 namespace scheduler {
 
+// TODO(yutak): Rename this class to CompositorThreadScheduler.
 class PLATFORM_EXPORT CompositorWorkerScheduler
     : public WorkerScheduler,
       public SingleThreadIdleTaskRunner::Delegate {
@@ -70,4 +71,4 @@ class PLATFORM_EXPORT CompositorWorkerScheduler
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_WORKER_SCHEDULER_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_WORKER_COMPOSITOR_THREAD_SCHEDULER_H_

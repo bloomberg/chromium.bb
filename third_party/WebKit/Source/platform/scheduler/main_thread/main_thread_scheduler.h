@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_RENDERER_SCHEDULER_IMPL_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_RENDERER_SCHEDULER_IMPL_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_H_
 
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
@@ -34,7 +34,7 @@
 #include "platform/scheduler/renderer/use_case.h"
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/util/tracing_helper.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "public/platform/scheduler/web_main_thread_scheduler.h"
 
 namespace base {
 namespace trace_event {
@@ -53,6 +53,7 @@ class RenderWidgetSchedulingState;
 class PageSchedulerImpl;
 class TaskQueueThrottler;
 
+// TODO(yutak): Rename this class to MainThreadScheduler.
 class PLATFORM_EXPORT RendererSchedulerImpl
     : public RendererScheduler,
       public IdleHelper::Delegate,
@@ -801,4 +802,4 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_RENDERER_SCHEDULER_IMPL_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_H_

@@ -7,11 +7,11 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WaitableEvent.h"
 #include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
-#include "platform/scheduler/child/worker_scheduler_impl.h"
 #include "platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 #include "platform/scheduler/main_thread/page_scheduler_impl.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
+#include "platform/scheduler/worker/worker_thread_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
