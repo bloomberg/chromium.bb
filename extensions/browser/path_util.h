@@ -26,6 +26,10 @@ void CalculateAndFormatExtensionDirectorySize(
     int message_id,
     base::OnceCallback<void(const base::string16&)> callback);
 
+// Returns a new FilePath with the '~' resolved to the home directory, if
+// appropriate. Otherwise, returns the original path.
+base::FilePath ResolveHomeDirectory(const base::FilePath& path);
+
 }  // namespace path_util
 }  // namespace extensions
 

@@ -115,5 +115,26 @@ void CalculateAndFormatExtensionDirectorySize(
                      std::move(callback)));
 }
 
+base::FilePath ResolveHomeDirectory(const base::FilePath& path) {
+#if defined(OS_WIN)
+  return path;
+#else
+  const auto& value = path.value();
+  // Look for a path starting with the "~" character. It must be alone or
+  // followed by a separator.
+  if (value.empty() || value[0] != FILE_PATH_LITERAL('~') ||
+      (value.length() > 1 && !base::FilePath::IsSeparator(value[1]))) {
+    return path;
+  }
+  base::FilePath result;
+  PathService::Get(base::DIR_HOME, &result);
+  // The user could specify "~" or "~/", so be safe.
+  if (value.length() > 2) {
+    result = result.Append(value.substr(2));
+  }
+  return result;
+#endif
+}
+
 }  // namespace path_util
 }  // namespace extensions
