@@ -7,8 +7,8 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
 
-  var sessionId = '6.23';
-  var rawTraceEvents = [
+  const sessionId = '6.23';
+  const rawTraceEvents = [
     {
       'args': {'name': 'Renderer'},
       'cat': '__metadata',
@@ -206,17 +206,16 @@
 
   function printTimelineData(dataProvider) {
     dataProvider.reset();
-    var timelineData = dataProvider.timelineData();
-    for (var i = 0; i < timelineData.entryStartTimes.length; ++i) {
-      var name = dataProvider.entryTitle(i);
-      var padding = '  '.repeat(timelineData.entryLevels[i] - 1);
-      TestRunner.addResult(
-          padding + name + ': ' + timelineData.entryTotalTimes[i] + ' @ ' + timelineData.entryStartTimes[i]);
+    const timelineData = dataProvider.timelineData();
+    for (let i = 0; i < timelineData.entryStartTimes.length; ++i) {
+      const name = dataProvider.entryTitle(i);
+      const padding = '  '.repeat(timelineData.entryLevels[i]);
+      TestRunner.addResult(`${padding}${name}: ${timelineData.entryTotalTimes[i]} @ ${timelineData.entryStartTimes[i]}`);
     }
   }
 
   Runtime.experiments.enableForTest('blackboxJSFramesOnTimeline');
-  var dataProvider = new Timeline.TimelineFlameChartDataProvider(UI.panels.timeline._filters);
+  const dataProvider = new Timeline.TimelineFlameChartDataProvider(UI.panels.timeline._filters);
   dataProvider.setModel(PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
 
   TestRunner.addResult('\nBlackboxed url: lib_script.js');
