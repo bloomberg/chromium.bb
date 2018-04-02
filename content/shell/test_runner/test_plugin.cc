@@ -16,7 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/texture_layer.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
+#include "cc/resources/cross_thread_shared_bitmap.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -267,9 +268,17 @@ void TestPlugin::UpdateGeometry(
   } else {
     mailbox_ = gpu::Mailbox();
     sync_token_ = gpu::SyncToken();
-    shared_bitmap_ = delegate_->GetSharedBitmapManager()->AllocateSharedBitmap(
-        gfx::Rect(rect_).size(), viz::RGBA_8888);
-    DrawSceneSoftware(shared_bitmap_->pixels());
+
+    viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
+    std::unique_ptr<base::SharedMemory> shm =
+        viz::bitmap_allocation::AllocateMappedBitmap(gfx::Rect(rect_).size(),
+                                                     viz::RGBA_8888);
+    shared_bitmap_ = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
+        id, std::move(shm), gfx::Rect(rect_).size(), viz::RGBA_8888);
+    // The |shared_bitmap_|'s id will be registered when being given to the
+    // compositor.
+
+    DrawSceneSoftware(shared_bitmap_->shared_memory()->memory());
   }
 
   content_changed_ = true;
@@ -283,9 +292,12 @@ bool TestPlugin::IsPlaceholder() {
 static void IgnoreReleaseCallback(const gpu::SyncToken& sync_token, bool lost) {
 }
 
-static void ReleaseSharedMemory(std::unique_ptr<viz::SharedBitmap> bitmap,
-                                const gpu::SyncToken& sync_token,
-                                bool lost) {}
+// static
+void TestPlugin::ReleaseSharedMemory(
+    scoped_refptr<cc::CrossThreadSharedBitmap> shared_bitmap,
+    cc::SharedBitmapIdRegistration registration,
+    const gpu::SyncToken& sync_token,
+    bool lost) {}
 
 bool TestPlugin::PrepareTransferableResource(
     cc::SharedBitmapIdRegistrar* bitmap_registrar,
@@ -299,11 +311,18 @@ bool TestPlugin::PrepareTransferableResource(
     *release_callback = viz::SingleReleaseCallback::Create(
         base::BindOnce(&IgnoreReleaseCallback));
   } else if (shared_bitmap_) {
+    // The |bitmap_data_| is only used for a single compositor frame, so we know
+    // the SharedBitmapId in it was not registered yet.
+    cc::SharedBitmapIdRegistration registration =
+        bitmap_registrar->RegisterSharedBitmapId(shared_bitmap_->id(),
+                                                 shared_bitmap_);
+
     *resource = viz::TransferableResource::MakeSoftware(
-        shared_bitmap_->id(), shared_bitmap_->sequence_number(),
-        gfx::Size(rect_.width, rect_.height), viz::RGBA_8888);
+        shared_bitmap_->id(), /*sequence_number=*/0, shared_bitmap_->size(),
+        viz::RGBA_8888);
     *release_callback = viz::SingleReleaseCallback::Create(
-        base::BindOnce(&ReleaseSharedMemory, base::Passed(&shared_bitmap_)));
+        base::BindOnce(&ReleaseSharedMemory, base::Passed(&shared_bitmap_),
+                       base::Passed(&registration)));
   }
   content_changed_ = false;
   return true;

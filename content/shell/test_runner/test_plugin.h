@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/layers/texture_layer_client.h"
+#include "cc/resources/shared_bitmap_id_registrar.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
@@ -28,7 +29,7 @@ struct WebPluginParams;
 }
 
 namespace cc {
-class SharedBitmap;
+class CrossThreadSharedBitmap;
 }
 
 namespace gpu {
@@ -154,6 +155,11 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   // Functions for drawing scene in Software.
   void DrawSceneSoftware(void* memory);
+  static void ReleaseSharedMemory(
+      scoped_refptr<cc::CrossThreadSharedBitmap> shared_bitmap,
+      cc::SharedBitmapIdRegistration registration,
+      const gpu::SyncToken& sync_token,
+      bool lost);
 
   WebTestDelegate* delegate_;
   blink::WebPluginContainer* container_;
@@ -165,7 +171,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   GLuint color_texture_;
   gpu::Mailbox mailbox_;
   gpu::SyncToken sync_token_;
-  std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
+  scoped_refptr<cc::CrossThreadSharedBitmap> shared_bitmap_;
   bool content_changed_;
   GLuint framebuffer_;
   Scene scene_;
