@@ -14,6 +14,7 @@
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
@@ -105,7 +106,8 @@ id<GREYMatcher> QrScannerViewportCaption() {
 id<GREYMatcher> DialogCancelButton() {
   return grey_allOf(
       grey_text(l10n_util::GetNSString(IDS_IOS_QR_SCANNER_ALERT_CANCEL)),
-      grey_accessibilityTrait(UIAccessibilityTraitStaticText), nil);
+      grey_accessibilityTrait(UIAccessibilityTraitStaticText),
+      grey_sufficientlyVisible(), nil);
 }
 
 // Opens the QR Scanner view.
@@ -410,22 +412,40 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Swizzles the LocationBarCoordinator loadGURLFromLocationBarBlock:transition:
 // method to load |searchURL| instead of the generated search URL.
 - (void)swizzleLocationBarCoordinatorLoadGURLFromLocationBar:
-    (const GURL&)searchURL {
-  void (^loadGURLFromLocationBarBlock)(LocationBarLegacyCoordinator*,
-                                       const GURL&, ui::PageTransition) =
-      ^void(LocationBarLegacyCoordinator* self, const GURL& url,
-            ui::PageTransition transition) {
-        [self.URLLoader loadURL:searchURL
-                       referrer:web::Referrer()
-                     transition:transition
-              rendererInitiated:NO];
-        [self cancelOmniboxEdit];
-      };
-
-  load_GURL_from_location_bar_swizzler_.reset(
-      new ScopedBlockSwizzler([LocationBarLegacyCoordinator class],
-                              @selector(loadGURLFromLocationBar:transition:),
-                              loadGURLFromLocationBarBlock));
+    (const GURL&)replacementURL {
+  // The specific class to swizzle depends on whether the UIRefresh experiment
+  // is enabled.
+  if (IsUIRefreshPhase1Enabled()) {
+    void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*, const GURL&,
+                                         ui::PageTransition) =
+        ^void(LocationBarCoordinator* self, const GURL& url,
+              ui::PageTransition transition) {
+          [self.URLLoader loadURL:replacementURL
+                         referrer:web::Referrer()
+                       transition:transition
+                rendererInitiated:NO];
+          [self cancelOmniboxEdit];
+        };
+    load_GURL_from_location_bar_swizzler_.reset(
+        new ScopedBlockSwizzler([LocationBarCoordinator class],
+                                @selector(loadGURLFromLocationBar:transition:),
+                                loadGURLFromLocationBarBlock));
+  } else {
+    void (^loadGURLFromLocationBarBlock)(LocationBarLegacyCoordinator*,
+                                         const GURL&, ui::PageTransition) =
+        ^void(LocationBarLegacyCoordinator* self, const GURL& url,
+              ui::PageTransition transition) {
+          [self.URLLoader loadURL:replacementURL
+                         referrer:web::Referrer()
+                       transition:transition
+                rendererInitiated:NO];
+          [self cancelOmniboxEdit];
+        };
+    load_GURL_from_location_bar_swizzler_.reset(
+        new ScopedBlockSwizzler([LocationBarLegacyCoordinator class],
+                                @selector(loadGURLFromLocationBar:transition:),
+                                loadGURLFromLocationBarBlock));
+  }
 }
 
 // Creates a new CameraController mock with camera permission granted if
