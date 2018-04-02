@@ -203,9 +203,9 @@ void SmbFileSystem::HandleRequestUnmountCallback(
   task_queue_.TaskFinished();
   base::File::Error result = TranslateError(error);
   if (result == base::File::FILE_OK) {
-    result = RunUnmountCallback(
-        file_system_info_.provider_id(), file_system_info_.file_system_id(),
-        file_system_provider::Service::UNMOUNT_REASON_USER);
+    result =
+        RunUnmountCallback(file_system_info_.file_system_id(),
+                           file_system_provider::Service::UNMOUNT_REASON_USER);
   }
   std::move(callback).Run(result);
 }
@@ -575,11 +575,10 @@ void SmbFileSystem::HandleRequestGetMetadataEntryCallback(
 }
 
 base::File::Error SmbFileSystem::RunUnmountCallback(
-    const ProviderId& provider_id,
     const std::string& file_system_id,
     file_system_provider::Service::UnmountReason reason) {
   base::File::Error error =
-      std::move(unmount_callback_).Run(provider_id, file_system_id, reason);
+      std::move(unmount_callback_).Run(file_system_id, reason);
   return error;
 }
 

@@ -33,7 +33,8 @@ using file_system_provider::ProviderInterface;
 using file_system_provider::Service;
 
 // Creates and manages an smb file system.
-class SmbService : public KeyedService {
+class SmbService : public KeyedService,
+                   public base::SupportsWeakPtr<SmbService> {
  public:
   using MountResponse = base::OnceCallback<void(base::File::Error error)>;
 
@@ -60,15 +61,15 @@ class SmbService : public KeyedService {
  private:
   // Calls file_system_provider::Service::UnmountFileSystem().
   base::File::Error Unmount(
-      const ProviderId& provider_id,
       const std::string& file_system_id,
       file_system_provider::Service::UnmountReason reason) const;
 
   Service* GetProviderService() const;
 
-  Profile* profile_;
+  SmbProviderClient* GetSmbProviderClient() const;
 
-  base::WeakPtrFactory<SmbService> weak_ptr_factory_;
+  const ProviderId provider_id_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

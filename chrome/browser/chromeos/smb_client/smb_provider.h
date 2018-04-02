@@ -29,7 +29,6 @@ using file_system_provider::ProviderInterface;
 class SmbProvider : public ProviderInterface {
  public:
   using UnmountCallback = base::RepeatingCallback<base::File::Error(
-      const ProviderId&,
       const std::string&,
       file_system_provider::Service::UnmountReason)>;
 

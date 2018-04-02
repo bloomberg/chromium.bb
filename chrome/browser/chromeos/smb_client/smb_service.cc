@@ -21,8 +21,7 @@ namespace chromeos {
 namespace smb_client {
 
 SmbService::SmbService(Profile* profile)
-    : profile_(profile),
-      weak_ptr_factory_(this) {
+    : provider_id_(ProviderId::CreateFromNativeId("smb")), profile_(profile) {
   if (base::FeatureList::IsEnabled(features::kNativeSmb))
     GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
         base::BindRepeating(&SmbService::Unmount, base::Unretained(this))));
@@ -38,9 +37,8 @@ SmbService* SmbService::Get(content::BrowserContext* context) {
 void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const base::FilePath& share_path,
                        MountResponse callback) {
-  chromeos::DBusThreadManager::Get()->GetSmbProviderClient()->Mount(
-      share_path, base::BindOnce(&SmbService::OnMountResponse,
-                                 weak_ptr_factory_.GetWeakPtr(),
+  GetSmbProviderClient()->Mount(
+      share_path, base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                                  base::Passed(&callback), options));
 }
 
@@ -59,22 +57,25 @@ void SmbService::OnMountResponse(
   file_system_provider::MountOptions mount_options(options);
   mount_options.file_system_id = base::NumberToString(mount_id);
 
-  base::File::Error result = GetProviderService()->MountFileSystem(
-      ProviderId::CreateFromNativeId("smb"), mount_options);
+  base::File::Error result =
+      GetProviderService()->MountFileSystem(provider_id_, mount_options);
 
   std::move(callback).Run(result);
 }
 
 base::File::Error SmbService::Unmount(
-    const ProviderId& provider_id,
     const std::string& file_system_id,
     file_system_provider::Service::UnmountReason reason) const {
-  return GetProviderService()->UnmountFileSystem(provider_id, file_system_id,
+  return GetProviderService()->UnmountFileSystem(provider_id_, file_system_id,
                                                  reason);
 }
 
 Service* SmbService::GetProviderService() const {
   return file_system_provider::Service::Get(profile_);
+}
+
+SmbProviderClient* SmbService::GetSmbProviderClient() const {
+  return chromeos::DBusThreadManager::Get()->GetSmbProviderClient();
 }
 
 }  // namespace smb_client
