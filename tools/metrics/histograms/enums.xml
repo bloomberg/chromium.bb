@@ -45745,6 +45745,12 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Chrome Tab"/>
 </enum>
 
+<enum name="VoiceInteractionEventSource">
+  <int value="0" label="Omnibox"/>
+  <int value="1" label="NTP"/>
+  <int value="2" label="Search widget"/>
+</enum>
+
 <enum name="VPNDriver">
   <int value="0" label="OpenVPN"/>
   <int value="1" label="L2TP/IPSec"/>

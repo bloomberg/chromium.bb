@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
+import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.UiUtils;
@@ -91,7 +92,10 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     /** Called when the SearchActivity has finished initialization. */
     void onDeferredStartup(boolean isVoiceSearchIntent) {
-        SearchWidgetProvider.updateCachedVoiceSearchAvailability(isVoiceSearchEnabled());
+        if (mVoiceRecognitionHandler != null) {
+            SearchWidgetProvider.updateCachedVoiceSearchAvailability(
+                    mVoiceRecognitionHandler.isVoiceSearchEnabled());
+        }
         if (isVoiceSearchIntent && mUrlBar.isFocused()) onUrlFocusChange(true);
         if (!TextUtils.isEmpty(mUrlBar.getText())) onTextChangedForAutocomplete();
 
@@ -131,8 +135,10 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     private void beginQueryInternal(boolean isVoiceSearchIntent) {
         assert !mPendingSearchPromoDecision;
 
-        if (isVoiceSearchEnabled() && isVoiceSearchIntent) {
-            startVoiceRecognition();
+        if (mVoiceRecognitionHandler != null && mVoiceRecognitionHandler.isVoiceSearchEnabled()
+                && isVoiceSearchIntent) {
+            mVoiceRecognitionHandler.startVoiceRecognition(
+                    LocationBarVoiceRecognitionHandler.VoiceInteractionSource.SEARCH_WIDGET);
         } else {
             focusTextBox();
         }
