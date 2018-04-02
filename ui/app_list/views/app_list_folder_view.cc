@@ -159,12 +159,16 @@ class FolderItemTitleAnimation : public gfx::SlideAnimation,
  private:
   // gfx::AnimationDelegate
   void AnimationProgressed(const gfx::Animation* animation) override {
+    if (!folder_view_->GetActivatedFolderItemView())
+      return;
     folder_view_->GetActivatedFolderItemView()->title()->SetEnabledColor(
         gfx::Tween::ColorValueBetween(animation->GetCurrentValue(), from_color_,
                                       to_color_));
   }
 
   void AnimationEnded(const gfx::Animation* animation) override {
+    if (!folder_view_->GetActivatedFolderItemView())
+      return;
     folder_view_->GetActivatedFolderItemView()->title()->SetEnabledColor(
         to_color_);
     folder_view_->RecordAnimationSmoothness();
