@@ -8,6 +8,7 @@
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "core/layout/ng/list/layout_ng_list_marker.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -19,8 +20,8 @@ namespace {
 
 std::pair<LayoutUnit, LayoutUnit> InlineMarginsForOutside(
     const ComputedStyle& style,
+    bool is_image,
     LayoutUnit list_marker_inline_size) {
-  bool is_image = false;  // TODO(kojii): implement
   return LayoutListMarker::InlineMarginsForOutside(style, is_image,
                                                    list_marker_inline_size);
 }
@@ -66,7 +67,9 @@ bool NGListLayoutAlgorithm::AddListMarkerForBlockContent(
   // Compute the inline offset of the marker from its margins.
   // The marker is relative to the border box of the list item and has nothing
   // to do with the content offset.
-  auto margins = InlineMarginsForOutside(list_marker_fragment.Style(),
+  bool is_image = ToLayoutNGListMarker(list_marker_node.GetLayoutObject())
+                      ->IsContentImage();
+  auto margins = InlineMarginsForOutside(list_marker_fragment.Style(), is_image,
                                          list_marker_fragment.InlineSize());
   offset.inline_offset = margins.first;
 
@@ -102,8 +105,10 @@ LayoutUnit NGListLayoutAlgorithm::AddListMarkerWithoutLineBoxes(
       constraint_space.GetWritingMode());
 
   // Compute the inline offset of the marker from its margins.
+  bool is_image = ToLayoutNGListMarker(list_marker_node.GetLayoutObject())
+                      ->IsContentImage();
   auto margins = InlineMarginsForOutside(list_marker_physical_fragment.Style(),
-                                         size.inline_size);
+                                         is_image, size.inline_size);
 
   // When there are no line boxes, marker is top-aligned to the list item.
   // https://github.com/w3c/csswg-drafts/issues/2417

@@ -56,4 +56,8 @@ void LayoutNGListMarker::WillCollectInlines() {
     list_item->UpdateMarkerTextIfNeeded();
 }
 
+bool LayoutNGListMarker::IsContentImage() const {
+  return ListItem()->IsMarkerImage();
+}
+
 }  // namespace blink

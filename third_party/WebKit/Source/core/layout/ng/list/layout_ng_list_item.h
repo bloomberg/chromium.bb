@@ -22,11 +22,16 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   String MarkerTextWithoutSuffix() const;
 
   LayoutObject* Marker() const { return marker_; }
+  bool IsMarkerImage() const {
+    return StyleRef().ListStyleImage() &&
+           !StyleRef().ListStyleImage()->ErrorOccurred();
+  }
 
   void UpdateMarkerTextIfNeeded() {
-    if (marker_ && !is_marker_text_updated_)
+    if (marker_ && !is_marker_text_updated_ && !IsMarkerImage())
       UpdateMarkerText();
   }
+  void UpdateMarkerContentIfNeeded();
 
   void OrdinalValueChanged();
   void WillCollectInlines() override;
@@ -40,6 +45,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void SubtreeDidChange() final;
 
   bool IsInside() const;
 
