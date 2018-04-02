@@ -46,11 +46,6 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
     public void destroy() {}
 
     @Override
-    public boolean applyDefaultTopPadding() {
-        return false;
-    }
-
-    @Override
     public @ContentPriority int getPriority() {
         return ContentPriority.LOW;
     }

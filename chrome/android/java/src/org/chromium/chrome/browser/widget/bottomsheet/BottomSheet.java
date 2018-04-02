@@ -254,9 +254,6 @@ public class BottomSheet extends FrameLayout
     /** Whether or not scroll events are currently being blocked for the 'velocity' swipe logic. */
     private boolean mVelocityLogicBlockSwipe;
 
-    /** The speed of the swipe the last time the sheet was opened. */
-    private long mLastSheetOpenMicrosPerDp;
-
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -287,11 +284,6 @@ public class BottomSheet extends FrameLayout
          * Called to destroy the {@link BottomSheetContent} when it is no longer in use.
          */
         void destroy();
-
-        /**
-         * @return Whether the default top padding should be applied to the content view.
-         */
-        boolean applyDefaultTopPadding();
 
         /**
          * @return The priority of this content.
@@ -344,8 +336,6 @@ public class BottomSheet extends FrameLayout
                                          currentEvent.getX(), currentEvent.getY())
                 / mDpToPx;
         long timeDeltaMs = currentEvent.getEventTime() - initialEvent.getDownTime();
-        mLastSheetOpenMicrosPerDp =
-                Math.round(scrollDistanceDp > 0f ? timeDeltaMs * 1000 / scrollDistanceDp : 0f);
 
         String logicType = FeatureUtilities.getChromeHomeSwipeLogicType();
 
