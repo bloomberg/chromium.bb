@@ -542,6 +542,8 @@ test("browser_tests") {
       "../browser/importer/ie_importer_browsertest_win.cc",
       "../browser/importer/importer_unittest_utils.cc",
       "../browser/importer/importer_unittest_utils.h",
+      "../browser/infobars/infobar_observer.cc",
+      "../browser/infobars/infobar_observer.h",
       "../browser/infobars/infobars_browsertest.cc",
       "../browser/installable/installable_manager_browsertest.cc",
       "../browser/interstitials/security_interstitial_page_test_utils.cc",

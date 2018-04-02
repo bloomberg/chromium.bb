@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/infobars/infobar_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -75,15 +76,13 @@ IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, DISABLED_ContextLossRaisesInfoBar) {
           gpu_test_dir_.AppendASCII("webgl.html"), "query=kill"));
   observer.Wait();
 
-  content::WindowedNotificationObserver infobar_added(
-        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-        content::NotificationService::AllSources());
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  InfoBarObserver infobar_observer(infobar_service,
+                                   InfoBarObserver::Type::kInfoBarAdded);
   SimulateGPUCrash(browser());
-  infobar_added.Wait();
-  EXPECT_EQ(1u,
-            InfoBarService::FromWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents())->
-                    infobar_count());
+  infobar_observer.Wait();
+  EXPECT_EQ(1u, infobar_service->infobar_count());
 }
 
 // There isn't any point in adding a test which calls Accept() on the

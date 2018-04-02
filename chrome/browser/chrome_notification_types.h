@@ -103,20 +103,6 @@ enum NotificationType {
   // handler.  Use APP_TERMINATING for such needs.
   NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
 
-  // This message is sent when a new InfoBar has been added to an
-  // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
-  // the InfoBarService the InfoBar was added to.  The details is a
-  // Details<InfoBar::AddedDetails>.
-  // DEPRECATED: Use InfoBarManager::Observer::OnInfoBarAdded()
-  NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-
-  // This message is sent when an InfoBar is about to be removed from an
-  // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
-  // the InfoBarService the InfoBar was removed from.  The details is a
-  // Details<InfoBar::RemovedDetails>.
-  // DEPRECATED: Use InfoBarManager::Observer::OnInfoBarRemoved()
-  NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-
   // Tabs --------------------------------------------------------------------
 
   // Sent when a tab is added to a WebContentsDelegate. The source is the
