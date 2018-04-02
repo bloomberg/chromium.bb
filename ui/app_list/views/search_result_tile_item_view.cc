@@ -19,6 +19,7 @@
 #include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -331,8 +332,7 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   if (IsSuggestedAppTile()) {
-    rect.Inset((rect.width() - kGridSelectedSize) / 2,
-               (rect.height() - kGridSelectedSize) / 2);
+    rect.ClampToCenteredSize(gfx::Size(kGridSelectedSize, kGridSelectedSize));
     flags.setColor(kGridSelectedColor);
     canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
   } else {
@@ -406,13 +406,28 @@ void SearchResultTileItemView::ShowContextMenuForView(
   if (!HasFocus())
     result_container_->ClearSelectedIndex();
 
+  int run_types = views::MenuRunner::HAS_MNEMONICS;
+  views::MenuAnchorPosition anchor_type = views::MENU_ANCHOR_TOPLEFT;
+  gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
+
+  if (::features::IsTouchableAppContextMenuEnabled()) {
+    anchor_type = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
+    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+                 views::MenuRunner::CONTEXT_MENU |
+                 views::MenuRunner::FIXED_ANCHOR;
+    if (source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
+      anchor_rect = source->GetBoundsInScreen();
+      // Anchor the menu to the same rect that is used for selection highlight.
+      anchor_rect.ClampToCenteredSize(
+          gfx::Size(kGridSelectedSize, kGridSelectedSize));
+    }
+  }
   context_menu_runner_.reset(new views::MenuRunner(
-      menu_model, views::MenuRunner::HAS_MNEMONICS,
+      menu_model, run_types,
       base::Bind(&SearchResultTileItemView::OnContextMenuClosed,
                  weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now())));
-  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                                  gfx::Rect(point, gfx::Size()),
-                                  views::MENU_ANCHOR_TOPLEFT, source_type);
+  context_menu_runner_->RunMenuAt(GetWidget(), nullptr, anchor_rect,
+                                  anchor_type, source_type);
 
   source->RequestFocus();
 }

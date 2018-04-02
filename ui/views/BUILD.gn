@@ -24,6 +24,8 @@ aggregate_vector_icons("views_vector_icons") {
     "checkbox_normal.icon",
     "close.icon",
     "ic_close.icon",
+    "info.icon",
+    "launch.icon",
     "menu_check.icon",
     "menu_radio_empty.icon",
     "menu_radio_selected.icon",
@@ -31,10 +33,12 @@ aggregate_vector_icons("views_vector_icons") {
     "new_tab.icon",
     "new_window.icon",
     "open.icon",
+    "options.icon",
     "pin.icon",
     "radio_button_active.icon",
     "radio_button_normal.icon",
     "submenu_arrow.icon",
+    "uninstall.icon",
     "unpin.icon",
   ]
 }
