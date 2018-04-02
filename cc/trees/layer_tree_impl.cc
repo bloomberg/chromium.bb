@@ -469,7 +469,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->set_content_source_id(content_source_id());
 
-  target_tree->set_local_surface_id(local_surface_id());
+  target_tree->SetLocalSurfaceId(local_surface_id());
 
   target_tree->pending_page_scale_animation_ =
       std::move(pending_page_scale_animation_);
@@ -961,6 +961,13 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
   if (IsActiveTree())
     host_impl_->SetFullViewportDamage();
   host_impl_->SetNeedUpdateGpuRasterizationStatus();
+}
+
+void LayerTreeImpl::SetLocalSurfaceId(
+    const viz::LocalSurfaceId& local_surface_id) {
+  CHECK(!settings().enable_surface_synchronization || !viewport_size_invalid_ ||
+        local_surface_id_ != local_surface_id);
+  local_surface_id_ = local_surface_id;
 }
 
 void LayerTreeImpl::SetRasterColorSpace(
