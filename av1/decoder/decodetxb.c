@@ -84,18 +84,18 @@ static INLINE void read_coeffs_reverse_2d(aom_reader *r, TX_SIZE tx_size,
 }
 
 static INLINE void read_coeffs_reverse(aom_reader *r, TX_SIZE tx_size,
-                                       TX_TYPE tx_type, int start_si,
+                                       TX_CLASS tx_class, int start_si,
                                        int end_si, const int16_t *scan, int bwl,
                                        uint8_t *levels, base_cdf_arr base_cdf,
                                        br_cdf_arr br_cdf) {
   for (int c = end_si; c >= start_si; --c) {
     const int pos = scan[c];
     const int coeff_ctx =
-        get_lower_levels_ctx(levels, pos, bwl, tx_size, tx_type);
+        get_lower_levels_ctx(levels, pos, bwl, tx_size, tx_class);
     const int nsymbs = 4;
     int level = aom_read_symbol(r, base_cdf[coeff_ctx], nsymbs, ACCT_STR);
     if (level > NUM_BASE_LEVELS) {
-      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_type);
+      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_class);
       aom_cdf_prob *cdf = br_cdf[br_ctx];
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = aom_read_symbol(r, cdf, BR_CDF_SIZE, ACCT_STR);
@@ -222,6 +222,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
   *eob = rec_eob_pos(eob_pt, eob_extra);
 
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
   {
     // Read the non-zero coefficient with scan index eob-1
     // TODO(angiebird): Put this into a function
@@ -233,7 +234,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx];
     int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + 1;
     if (level > NUM_BASE_LEVELS) {
-      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_type);
+      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_class);
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = aom_read_symbol(
             r,
@@ -249,14 +250,13 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     base_cdf_arr base_cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type];
     br_cdf_arr br_cdf =
         ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type];
-    const TX_CLASS tx_class = tx_type_to_class[tx_type];
     if (tx_class == TX_CLASS_2D) {
       read_coeffs_reverse_2d(r, tx_size, 1, *eob - 1 - 1, scan, bwl, levels,
                              base_cdf, br_cdf);
-      read_coeffs_reverse(r, tx_size, tx_type, 0, 0, scan, bwl, levels,
+      read_coeffs_reverse(r, tx_size, tx_class, 0, 0, scan, bwl, levels,
                           base_cdf, br_cdf);
     } else {
-      read_coeffs_reverse(r, tx_size, tx_type, 0, *eob - 1 - 1, scan, bwl,
+      read_coeffs_reverse(r, tx_size, tx_class, 0, *eob - 1 - 1, scan, bwl,
                           levels, base_cdf, br_cdf);
     }
   }

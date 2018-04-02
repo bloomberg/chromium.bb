@@ -364,11 +364,10 @@ static INLINE int get_br_ctx_2d(const uint8_t *const levels,
 
 static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int c,  // raster order
-                             const int bwl, const TX_TYPE tx_type) {
+                             const int bwl, const TX_CLASS tx_class) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = (1 << bwl) + TX_PAD_HOR;
-  const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const int pos = row * stride + col;
   int mag = levels[pos + 1];
   mag += levels[pos + stride];
@@ -572,8 +571,7 @@ static INLINE int get_lower_levels_ctx_2d(const uint8_t *levels, int coeff_idx,
 }
 static INLINE int get_lower_levels_ctx(const uint8_t *levels, int coeff_idx,
                                        int bwl, TX_SIZE tx_size,
-                                       TX_TYPE tx_type) {
-  const TX_CLASS tx_class = tx_type_to_class[tx_type];
+                                       TX_CLASS tx_class) {
   const int stats =
       get_nz_mag(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
   return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, tx_size, tx_class);
@@ -583,14 +581,14 @@ static INLINE int get_lower_levels_ctx_general(int is_last, int scan_idx,
                                                int bwl, int height,
                                                const uint8_t *levels,
                                                int coeff_idx, TX_SIZE tx_size,
-                                               TX_TYPE tx_type) {
+                                               TX_CLASS tx_class) {
   if (is_last) {
     if (scan_idx == 0) return 0;
     if (scan_idx <= (height << bwl) >> 3) return 1;
     if (scan_idx <= (height << bwl) >> 2) return 2;
     return 3;
   }
-  return get_lower_levels_ctx(levels, coeff_idx, bwl, tx_size, tx_type);
+  return get_lower_levels_ctx(levels, coeff_idx, bwl, tx_size, tx_class);
 }
 
 static INLINE void set_dc_sign(int *cul_level, int dc_val) {

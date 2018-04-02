@@ -433,7 +433,8 @@ static INLINE void get_16n_coeff_contexts_ver(const uint8_t *levels,
 // Note: levels[] must be in the range [0, 127], inclusive.
 void av1_get_nz_map_contexts_sse2(const uint8_t *const levels,
                                   const int16_t *const scan, const uint16_t eob,
-                                  const TX_SIZE tx_size, const TX_TYPE tx_type,
+                                  const TX_SIZE tx_size,
+                                  const TX_CLASS tx_class,
                                   int8_t *const coeff_contexts) {
   const int last_idx = eob - 1;
   if (!last_idx) {
@@ -446,7 +447,6 @@ void av1_get_nz_map_contexts_sse2(const uint8_t *const levels,
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
   const int stride = width + TX_PAD_HOR;
-  const TX_CLASS tx_class = tx_type_to_class[tx_type];
   ptrdiff_t offsets[3];
 
   /* coeff_contexts must be 16 byte aligned. */
