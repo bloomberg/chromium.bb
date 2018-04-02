@@ -560,7 +560,7 @@ static_library("constants") {
     "//content/public/common:result_codes",
     "//extensions/buildflags",
     "//printing/buildflags",
-    "//rlz/features",
+    "//rlz/buildflags",
     "//ui/base:ui_features",
   ]
   deps = [

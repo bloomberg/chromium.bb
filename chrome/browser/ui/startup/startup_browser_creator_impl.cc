@@ -71,7 +71,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "google_apis/google_api_keys.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 #include "ui/base/ui_features.h"
 
 #if defined(OS_MACOSX)

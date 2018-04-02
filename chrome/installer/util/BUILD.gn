@@ -106,7 +106,7 @@ static_library("with_no_strings") {
       "//components/metrics",
       "//courgette:courgette_lib",
       "//crypto",
-      "//rlz/features",
+      "//rlz/buildflags",
       "//third_party/bspatch",
       "//third_party/crashpad/crashpad/client",
       "//third_party/icu",
@@ -342,7 +342,7 @@ if (is_win) {
       "//chrome/installer/setup:lib",
       "//chrome/installer/test:alternate_version_generator_lib",
       "//components/variations",
-      "//rlz/features",
+      "//rlz/buildflags",
       "//testing/gmock",
       "//testing/gtest",
     ]

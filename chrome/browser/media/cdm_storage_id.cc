@@ -12,7 +12,7 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "media/media_buildflags.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 #include "url/origin.h"
 
 #if defined(OS_CHROMEOS)

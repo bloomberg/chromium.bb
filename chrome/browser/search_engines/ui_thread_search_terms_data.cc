@@ -17,7 +17,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 

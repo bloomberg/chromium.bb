@@ -186,7 +186,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request.h"
 #include "printing/buildflags/buildflags.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"

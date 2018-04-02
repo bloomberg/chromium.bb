@@ -10,7 +10,7 @@ include_rules = [
   "+extensions",
   "+mash/session/public/interfaces",
   "+mojo",
-  "+rlz/features",
+  "+rlz/buildflags",
   "+services",
   "+storage/browser",
   "+storage/common",

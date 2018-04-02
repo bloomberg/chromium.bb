@@ -32,7 +32,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ppapi/shared_impl/test_utils.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

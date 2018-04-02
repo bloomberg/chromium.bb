@@ -8,7 +8,7 @@ import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//rlz/features/features.gni")
+import("//rlz/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 

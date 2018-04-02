@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//rlz/features/features.gni")
+import("//rlz/buildflags/buildflags.gni")
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "ENABLE_RLZ=$enable_rlz" ]
 }

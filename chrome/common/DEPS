@@ -46,7 +46,7 @@ include_rules = [
   "+ppapi/c",
   "+ppapi/shared_impl",
   "+ppapi/thunk",
-  "+rlz/features/features.h",
+  "+rlz/buildflags/buildflags.h",
   "+sandbox/linux/services/credentials.h",
   "+services/network/public/cpp",
   "+services/service_manager/public",

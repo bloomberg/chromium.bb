@@ -5,7 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
-import("//rlz/features/features.gni")
+import("//rlz/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 source_set("chrome_paths") {
@@ -138,7 +138,7 @@ source_set("browser") {
     "//ios/web",
     "//ios/web/public",
     "//net",
-    "//rlz/features",
+    "//rlz/buildflags",
     "//url",
   ]
   public_deps = [
@@ -203,7 +203,7 @@ source_set("browser_impl") {
     "//ios/web",
     "//ios/web/public/app",
     "//net",
-    "//rlz/features",
+    "//rlz/buildflags",
     "//ui/base",
   ]
 

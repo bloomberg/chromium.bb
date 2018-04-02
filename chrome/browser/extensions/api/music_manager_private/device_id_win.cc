@@ -26,7 +26,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 #include "content/public/browser/browser_thread.h"
-#include "rlz/features/features.h"
+#include "rlz/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
