@@ -10,7 +10,6 @@
 #include <glib.h>
 #endif
 
-#include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -73,20 +72,6 @@ void GetFileSystemUrlsFromPickle(
   }
 }
 
-// Helper function for |GetUrlsFromPickle|.
-void OnSingleUrlResolved(const base::RepeatingClosure& barrier_closure,
-                         std::vector<GURL>* out_urls,
-                         const GURL& url) {
-  out_urls->push_back(url);
-  barrier_closure.Run();
-}
-
-// Helper function for |GetUrlsFromPickle|.
-void OnAllUrlsResolved(exo::FileHelper::UrlsFromPickleCallback callback,
-                       std::unique_ptr<std::vector<GURL>> urls) {
-  std::move(callback).Run(*urls);
-}
-
 class ChromeFileHelper : public exo::FileHelper {
  public:
   ChromeFileHelper() = default;
@@ -118,19 +103,8 @@ class ChromeFileHelper : public exo::FileHelper {
       std::move(callback).Run(std::vector<GURL>());
       return;
     }
-
-    auto out_urls = std::make_unique<std::vector<GURL>>();
-    auto* out_urls_ptr = out_urls.get();
-    auto barrier = base::BarrierClosure(
-        file_system_urls.size(),
-        base::BindOnce(&OnAllUrlsResolved, std::move(callback),
-                       std::move(out_urls)));
-    auto convert_url_callback =
-        base::BindRepeating(&OnSingleUrlResolved, barrier, out_urls_ptr);
-    for (const auto& file_system_url : file_system_urls) {
-      file_manager::util::ConvertToContentUrl(file_system_url,
-                                              convert_url_callback);
-    }
+    file_manager::util::ConvertToContentUrls(file_system_urls,
+                                             std::move(callback));
   }
 };
 
