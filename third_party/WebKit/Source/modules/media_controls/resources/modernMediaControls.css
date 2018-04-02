@@ -74,25 +74,22 @@ video::-webkit-media-controls-panel {
   font-weight: normal;  /* Make sure that we don't inherit non-defaults. */
   font-style: normal;
 
-  background-image:
-    linear-gradient(to top,
-      rgba(0, 0, 0, .8) 0,
-      rgba(0, 0, 0, .2) 60px,
-      rgba(0, 0, 0, 0) 80px);
+  background:
+    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x,
+                      url('default_200_percent/modern/gradient_bg.png') 2x)
+    repeat-x bottom left;
 }
 
 video::-webkit-media-controls-panel.scrubbing-message {
   /* Need dark gradient at the top of the video when the scrubbing message is
    * shown */
-  background-image:
-    linear-gradient(to top,
-      rgba(0, 0, 0, .8) 0,
-      rgba(0, 0, 0, .2) 60px,
-      rgba(0, 0, 0, 0) 80px),
-    linear-gradient(to bottom,
-      rgba(0, 0, 0, .8) 0,
-      rgba(0, 0, 0, .3) 80px,
-      rgba(0, 0, 0, 0) 120px);
+  background:
+    -webkit-image-set(url('default_100_percent/modern/top_gradient_bg.png') 1x,
+                      url('default_200_percent/modern/top_gradient_bg.png') 2x)
+    repeat-x top left,
+    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x,
+                      url('default_200_percent/modern/gradient_bg.png') 2x)
+    repeat-x bottom left;
 }
 
 
