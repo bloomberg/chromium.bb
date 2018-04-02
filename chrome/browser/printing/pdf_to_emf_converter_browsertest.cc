@@ -23,7 +23,10 @@ namespace printing {
 
 namespace {
 
-using PDFToEMFConverterBrowserTest = InProcessBrowserTest;
+constexpr gfx::Rect kLetter200DpiRect = gfx::Rect(0, 0, 1700, 2200);
+constexpr gfx::Size k200DpiSize = gfx::Size(200, 200);
+
+constexpr size_t kHeaderSize = sizeof(ENHMETAHEADER);
 
 void StartCallbackImpl(base::Closure quit_closure,
                        int* page_count_out,
@@ -43,21 +46,28 @@ void GetPageCallbackImpl(base::Closure quit_closure,
   quit_closure.Run();
 }
 
-std::unique_ptr<ENHMETAHEADER> GetEMFHeader(const std::string& emf_data) {
+// |page_number| is 0-based. Returned result has 1-based page number.
+std::string GetFileNameForPageNumber(const std::string& name, int page_number) {
+  std::string ret = name;
+  ret += std::to_string(page_number + 1);
+  ret += ".emf";
+  return ret;
+}
+
+std::unique_ptr<ENHMETAHEADER> GetEmfHeader(const std::string& emf_data) {
   Emf emf;
   if (!emf.InitFromData(emf_data.data(), emf_data.length()))
     return nullptr;
 
   auto meta_header = std::make_unique<ENHMETAHEADER>();
-  size_t header_size = sizeof(ENHMETAHEADER);
-  if (GetEnhMetaFileHeader(emf.emf(), header_size, meta_header.get()) !=
-      header_size) {
+  if (GetEnhMetaFileHeader(emf.emf(), kHeaderSize, meta_header.get()) !=
+      kHeaderSize) {
     return nullptr;
   }
   return meta_header;
 }
 
-void CompareEMFHeaders(const ENHMETAHEADER& expected_header,
+void CompareEmfHeaders(const ENHMETAHEADER& expected_header,
                        const ENHMETAHEADER& actual_header) {
   // TODO(crbug.com/781403): once the EMF generation is fixed, also compare:
   //  rclBounds, rclFrame, szlDevice, szlMillimeters and szlMicrometers.
@@ -77,9 +87,122 @@ void CompareEMFHeaders(const ENHMETAHEADER& expected_header,
   EXPECT_EQ(expected_header.bOpenGL, actual_header.bOpenGL);
 }
 
+class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
+ protected:
+  PdfToEmfConverterBrowserTest() : test_data_dir_(GetTestDataDir()) {}
+  ~PdfToEmfConverterBrowserTest() override = default;
+
+  bool GetTestInput(base::StringPiece filename) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    if (test_data_dir_.empty())
+      return false;
+
+    base::FilePath pdf_file = test_data_dir_.AppendASCII(filename);
+    std::string pdf_data_str;
+    if (!base::ReadFileToString(pdf_file, &pdf_data_str))
+      return false;
+
+    if (pdf_data_str.empty())
+      return false;
+
+    test_input_ = base::RefCountedString::TakeString(&pdf_data_str);
+    return true;
+  }
+
+  bool StartPdfConverter(const PdfRenderSettings& pdf_settings,
+                         int expected_page_count) {
+    base::RunLoop run_loop;
+    int page_count = -1;
+    pdf_converter_ = PdfConverter::StartPdfConverter(
+        test_input_, pdf_settings,
+        base::BindOnce(&StartCallbackImpl, run_loop.QuitClosure(),
+                       &page_count));
+    run_loop.Run();
+    return pdf_converter_ && (expected_page_count == page_count);
+  }
+
+  bool GetPage(int page_number_in) {
+    base::RunLoop run_loop;
+    int page_number = -1;
+    pdf_converter_->GetPage(
+        page_number_in,
+        base::BindRepeating(&GetPageCallbackImpl, run_loop.QuitClosure(),
+                            &page_number, &current_emf_file_));
+    run_loop.Run();
+
+    if (!current_emf_file_ || (page_number_in != page_number))
+      return false;
+
+    return GetEmfData();
+  }
+
+  bool GetPageExpectedEmfData(base::StringPiece filename) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    base::FilePath emf_file = test_data_dir_.AppendASCII(filename);
+    return base::ReadFileToString(emf_file, &expected_current_emf_data_) &&
+           !expected_current_emf_data_.empty();
+  }
+
+  void ComparePageEmfHeader() {
+    // TODO(crbug.com/781403): the generated data can differ visually. Until
+    // this is fixed only checking the output size and parts of the EMF header.
+    ASSERT_EQ(expected_current_emf_data_.length(),
+              actual_current_emf_data_.length());
+
+    std::unique_ptr<ENHMETAHEADER> expected_header =
+        GetEmfHeader(expected_current_emf_data_);
+    ASSERT_TRUE(expected_header);
+    std::unique_ptr<ENHMETAHEADER> actual_header =
+        GetEmfHeader(actual_current_emf_data_);
+    ASSERT_TRUE(actual_header);
+    CompareEmfHeaders(*expected_header, *actual_header);
+  }
+
+ private:
+  base::FilePath GetTestDataDir() const {
+    base::FilePath test_data_dir;
+    if (PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir))
+      test_data_dir = test_data_dir.AppendASCII("printing");
+    else
+      test_data_dir.clear();
+    return test_data_dir;
+  }
+
+  bool GetEmfData() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    // Need to save the EMF to a file as LazyEmf::GetDataAsVector() is not
+    // implemented.
+    base::FilePath emf_file_path;
+    if (!base::CreateTemporaryFile(&emf_file_path))
+      return false;
+
+    base::File emf_file(emf_file_path, base::File::Flags::FLAG_CREATE_ALWAYS |
+                                           base::File::Flags::FLAG_WRITE);
+    bool ret = current_emf_file_->SaveTo(&emf_file);
+    emf_file.Close();
+    if (ret)
+      ret = base::ReadFileToString(emf_file_path, &actual_current_emf_data_);
+    base::DeleteFile(emf_file_path, false);
+    return ret && !actual_current_emf_data_.empty();
+  }
+
+  const base::FilePath test_data_dir_;
+  scoped_refptr<base::RefCountedString> test_input_;
+  std::unique_ptr<PdfConverter> pdf_converter_;
+
+  std::unique_ptr<MetafilePlayer> current_emf_file_;
+  std::string expected_current_emf_data_;
+  std::string actual_current_emf_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(PdfToEmfConverterBrowserTest);
+};
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestFailureNoTempFile) {
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, FailureNoTempFile) {
   ScopedSimulateFailureCreatingTempFileForTests fail_creating_temp_file;
 
   base::RunLoop run_loop;
@@ -91,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestFailureNoTempFile) {
   EXPECT_EQ(0, page_count);
 }
 
-IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestFailureBadPdf) {
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, FailureBadPdf) {
   scoped_refptr<base::RefCountedStaticMemory> bad_pdf_data =
       base::MakeRefCounted<base::RefCountedStaticMemory>("0123456789", 10);
 
@@ -104,78 +227,19 @@ IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestFailureBadPdf) {
   EXPECT_EQ(0, page_count);
 }
 
-IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestSuccess) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  test_data_dir = test_data_dir.AppendASCII("printing");
-  base::FilePath pdf_file = test_data_dir.AppendASCII("pdf_to_emf_test.pdf");
-  std::string pdf_data_str;
-  ASSERT_TRUE(base::ReadFileToString(pdf_file, &pdf_data_str));
-  ASSERT_GT(pdf_data_str.length(), 0U);
-  scoped_refptr<base::RefCountedString> pdf_data(
-      base::RefCountedString::TakeString(&pdf_data_str));
-
-  // A4 page format.
-  PdfRenderSettings pdf_settings(gfx::Rect(0, 0, 1700, 2200), gfx::Point(0, 0),
-                                 /*dpi=*/gfx::Size(200, 200),
-                                 /*autorotate=*/false,
-                                 PdfRenderSettings::Mode::NORMAL);
-
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, EmfSuccess) {
+  const PdfRenderSettings pdf_settings(
+      kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
+      /*autorotate=*/false, PdfRenderSettings::Mode::NORMAL);
   constexpr int kNumberOfPages = 3;
-  std::unique_ptr<PdfConverter> pdf_converter;
-  {
-    base::RunLoop run_loop;
-    int page_count = -1;
-    pdf_converter = PdfConverter::StartPdfConverter(
-        pdf_data, pdf_settings,
-        base::Bind(&StartCallbackImpl, run_loop.QuitClosure(), &page_count));
-    run_loop.Run();
-    ASSERT_EQ(kNumberOfPages, page_count);
-  }
 
-  for (int i = 0; i < kNumberOfPages; i++) {
-    int page_number = -1;
-    std::unique_ptr<MetafilePlayer> emf_file;
-    base::RunLoop run_loop;
-    pdf_converter->GetPage(
-        i, base::Bind(&GetPageCallbackImpl, run_loop.QuitClosure(),
-                      &page_number, &emf_file));
-    run_loop.Run();
-    ASSERT_EQ(i, page_number);
-
-    // We have to save the EMF to a file as LazyEmf::GetDataAsVector() is not
-    // implemented.
-    base::FilePath actual_emf_file_path;
-    ASSERT_TRUE(base::CreateTemporaryFile(&actual_emf_file_path));
-    base::File actual_emf_file(
-        actual_emf_file_path,
-        base::File::Flags::FLAG_CREATE_ALWAYS | base::File::Flags::FLAG_WRITE);
-    ASSERT_TRUE(emf_file->SaveTo(&actual_emf_file));
-    actual_emf_file.Close();
-    std::string actual_emf_data;
-    ASSERT_TRUE(base::ReadFileToString(actual_emf_file_path, &actual_emf_data));
-    ASSERT_GT(actual_emf_data.length(), 0U);
-
-    base::FilePath expected_emf_file = test_data_dir.AppendASCII(
-        "pdf_to_emf_test_page_" +
-        std::to_string(i + 1 /* page numbers start at 1 */) + ".emf");
-    std::string expected_emf_data;
-    ASSERT_TRUE(base::ReadFileToString(expected_emf_file, &expected_emf_data));
-    ASSERT_GT(expected_emf_data.length(), 0U);
-
-    // TODO(crbug.com/781403): the generated data can differ visually. Until
-    // this is fixed only checking the output size and parts of the EMF header.
-    ASSERT_EQ(expected_emf_data.length(), actual_emf_data.length());
-
-    std::unique_ptr<ENHMETAHEADER> expected_header =
-        GetEMFHeader(expected_emf_data);
-    ASSERT_TRUE(expected_header);
-    std::unique_ptr<ENHMETAHEADER> actual_header =
-        GetEMFHeader(actual_emf_data);
-    ASSERT_TRUE(actual_header);
-    CompareEMFHeaders(*expected_header, *actual_header);
+  ASSERT_TRUE(GetTestInput("pdf_to_emf_test.pdf"));
+  ASSERT_TRUE(StartPdfConverter(pdf_settings, kNumberOfPages));
+  for (int i = 0; i < kNumberOfPages; ++i) {
+    ASSERT_TRUE(GetPage(i));
+    ASSERT_TRUE(GetPageExpectedEmfData(
+        GetFileNameForPageNumber("pdf_to_emf_test_page_", i)));
+    ComparePageEmfHeader();
   }
 }
 
