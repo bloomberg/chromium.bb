@@ -4,6 +4,7 @@
 
 #include "webrunner/browser/webrunner_browser_main_parts.h"
 
+#include "webrunner/browser/webrunner_browser_context.h"
 #include "webrunner/browser/webrunner_screen.h"
 
 namespace webrunner {
@@ -15,6 +16,9 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   DCHECK(!screen_);
   screen_ = std::make_unique<WebRunnerScreen>();
   display::Screen::SetScreenInstance(screen_.get());
+
+  DCHECK(!browser_context_);
+  browser_context_ = std::make_unique<WebRunnerBrowserContext>();
 }
 
 }  // namespace webrunner

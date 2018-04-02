@@ -12,6 +12,7 @@
 
 namespace webrunner {
 
+class WebRunnerBrowserContext;
 class WebRunnerScreen;
 
 class WebRunnerBrowserMainParts : public content::BrowserMainParts {
@@ -24,6 +25,7 @@ class WebRunnerBrowserMainParts : public content::BrowserMainParts {
 
  private:
   std::unique_ptr<WebRunnerScreen> screen_;
+  std::unique_ptr<WebRunnerBrowserContext> browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRunnerBrowserMainParts);
 };
