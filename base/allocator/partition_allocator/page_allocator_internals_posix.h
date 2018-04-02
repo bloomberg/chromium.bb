@@ -149,6 +149,12 @@ void DecommitSystemPagesInternal(void* address, size_t length) {
 bool RecommitSystemPagesInternal(void* address,
                                  size_t length,
                                  PageAccessibilityConfiguration accessibility) {
+#if defined(OS_MACOSX)
+  // On macOS, to update accounting, we need to make another syscall. For more
+  // details, see https://crbug.com/823915.
+  madvise(address, length, MADV_FREE_REUSE);
+#endif
+
   // On POSIX systems, the caller need simply read the memory to recommit it.
   // This has the correct behavior because the API requires the permissions to
   // be the same as before decommitting and all configurations can read.
