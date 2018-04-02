@@ -96,6 +96,7 @@ class XRWebGLLayer final : public XRLayer,
   std::unique_ptr<viz::SingleReleaseCallback> mirror_release_callback_;
 
   double framebuffer_scale_ = 1.0;
+  double requested_viewport_scale_ = 1.0;
   double viewport_scale_ = 1.0;
   bool viewports_dirty_ = true;
 };

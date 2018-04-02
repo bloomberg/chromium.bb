@@ -23,9 +23,6 @@ xr_session_promise_test( (session) => {
       let counter = 0;
 
       function onFrame(time, xrFrame) {
-        let leftView = xrFrame.views[0];
-        let rightView = xrFrame.views[1];
-
         if (counter == 0) {
           session.requestAnimationFrame(onFrame);
 
@@ -34,21 +31,21 @@ xr_session_promise_test( (session) => {
           let expectedRightProjection = perspectiveFromFieldOfView(
               displayRightEye.fieldOfView, session.depthNear, session.depthFar);
 
-          assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
-          assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
+          assert_matrices_approx_equal(xrFrame.views[0].projectionMatrix, expectedLeftProjection);
+          assert_matrices_approx_equal(xrFrame.views[1].projectionMatrix, expectedRightProjection);
 
           // Update the near and far depths for the session.
           session.depthNear = 1.0;
-          session.depthFar = 100.0;
+          session.depthFar = 10.0;
 
           // The projection matrices the views report should not take into
           // account the new session depth values this frame.
-          assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
-          assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
+          assert_matrices_approx_equal(xrFrame.views[0].projectionMatrix, expectedLeftProjection);
+          assert_matrices_approx_equal(xrFrame.views[1].projectionMatrix, expectedRightProjection);
         } else {
           // New depth values should be retained between frames.
           assert_equals(session.depthNear, 1.0);
-          assert_equals(session.depthFar, 100.0);
+          assert_equals(session.depthFar, 10.0);
 
           let expectedLeftProjection = perspectiveFromFieldOfView(
               displayLeftEye.fieldOfView, session.depthNear, session.depthFar);
@@ -56,8 +53,8 @@ xr_session_promise_test( (session) => {
               displayRightEye.fieldOfView, session.depthNear, session.depthFar);
 
           // Projection matricies should now reflect the new depth values
-          assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
-          assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
+          assert_matrices_approx_equal(xrFrame.views[0].projectionMatrix, expectedLeftProjection);
+          assert_matrices_approx_equal(xrFrame.views[1].projectionMatrix, expectedRightProjection);
           resolve();
         }
         counter++;

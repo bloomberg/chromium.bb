@@ -145,6 +145,7 @@ class XRSession final : public EventTargetWithInlineData {
   bool ended_ = false;
   bool pending_frame_ = false;
   bool resolving_frame_ = false;
+  bool update_views_next_frame_ = false;
   bool views_dirty_ = true;
 
   // Dimensions of the output canvas.
