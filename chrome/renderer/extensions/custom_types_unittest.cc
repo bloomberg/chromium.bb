@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
@@ -18,17 +19,11 @@ namespace extensions {
 
 class CustomTypesTest : public NativeExtensionBindingsSystemUnittest {
  public:
-  CustomTypesTest() = default;
-  ~CustomTypesTest() override = default;
+  CustomTypesTest()
+      : extension_id_(crx_file::id_util::GenerateId("id")),
+        whitelisted_extension_id_(extension_id_) {}
 
-  void SetUp() override {
-    extension_id_ = crx_file::id_util::GenerateId("id");
-    // Whitelist an extension id so that we have access to privileged APIs (like
-    // preferencesPrivate).
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, extension_id_);
-    NativeExtensionBindingsSystemUnittest::SetUp();
-  }
+  ~CustomTypesTest() override = default;
 
   // Checks behavior of script after the main context is invalidated.
   // Creates an extension with the given |permission|, and then runs
@@ -74,6 +69,7 @@ class CustomTypesTest : public NativeExtensionBindingsSystemUnittest {
 
  private:
   std::string extension_id_;
+  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelisted_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomTypesTest);
 };
