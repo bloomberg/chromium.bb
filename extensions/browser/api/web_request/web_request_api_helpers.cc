@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -50,6 +51,24 @@ namespace extension_web_request_api_helpers {
 namespace {
 
 using ParsedResponseCookies = std::vector<linked_ptr<net::ParsedCookie>>;
+
+// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
+// CHANGE THEIR MEANING.
+enum class WebRequestSpecialHeaderRemoval {
+  kNeither,
+  kAcceptLanguage,
+  kUserAgent,
+  kBoth,
+  kMaxValue = kBoth,
+};
+
+// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
+// CHANGE THEIR MEANING.
+enum class WebRequestResponseHeaderType {
+  kNone,
+  kSetCookie,
+  kMaxValue = kSetCookie,
+};
 
 void ClearCacheOnNavigationOnUI() {
   web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
@@ -794,6 +813,19 @@ void MergeOnBeforeSendHeadersResponses(
     }
   }
 
+  // See https://crbug.com/827582
+  auto removal = WebRequestSpecialHeaderRemoval::kNeither;
+  bool removed_accept_language = removed_headers.count("Accept-Language");
+  bool removed_user_agent = removed_headers.count("User-Agent");
+  if (removed_accept_language && removed_user_agent)
+    removal = WebRequestSpecialHeaderRemoval::kBoth;
+  else if (removed_accept_language)
+    removal = WebRequestSpecialHeaderRemoval::kAcceptLanguage;
+  else if (removed_user_agent)
+    removal = WebRequestSpecialHeaderRemoval::kUserAgent;
+  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.SpecialHeadersRemoved",
+                            removal);
+
   MergeCookiesInOnBeforeSendHeadersResponses(deltas, request_headers,
                                              conflicting_extensions, logger);
 }
@@ -1001,6 +1033,12 @@ void MergeCookiesInOnHeadersReceivedResponses(
     cookie_modifications_exist |=
         !(*delta)->response_cookie_modifications.empty();
   }
+  // See https://crbug.com/827582
+  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.ModifiedResponseHeaders",
+                            cookie_modifications_exist
+                                ? WebRequestResponseHeaderType::kSetCookie
+                                : WebRequestResponseHeaderType::kNone);
+
   if (!cookie_modifications_exist)
     return;
 

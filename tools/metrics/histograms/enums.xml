@@ -46345,6 +46345,23 @@ Full version information for the fingerprint enum values:
   <int value="3" label="TIFF"/>
 </enum>
 
+<enum name="WebRequestEventResponse">
+  <int value="0" label="Ignored"/>
+  <int value="1" label="Observed"/>
+</enum>
+
+<enum name="WebRequestResponseHeaderType">
+  <int value="0" label="None"/>
+  <int value="1" label="SetCookie"/>
+</enum>
+
+<enum name="WebRequestSpecialHeaderRemoval">
+  <int value="0" label="Neither"/>
+  <int value="1" label="AcceptLanguage"/>
+  <int value="2" label="UserAgent"/>
+  <int value="3" label="Both"/>
+</enum>
+
 <enum name="WebRTCAecDelayEstimateReliability">
   <int value="0" label="None."/>
   <int value="1" label="Poor."/>
