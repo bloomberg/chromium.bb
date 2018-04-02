@@ -223,9 +223,10 @@ void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
 }
 
 bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
+  DCHECK(widget);
   const bool tablet_mode = IsTabletModeWindowManagerEnabled();
-  if (!tablet_mode || !widget)
-    return tablet_mode;
+  if (!tablet_mode)
+    return false;
 
   return widget->IsMaximized() ||
          wm::GetWindowState(widget->GetNativeWindow())->IsSnapped();

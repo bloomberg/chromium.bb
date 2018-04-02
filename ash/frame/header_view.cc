@@ -167,7 +167,7 @@ void HeaderView::OnTabletModeStarted() {
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
   parent()->Layout();
   if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
-          nullptr)) {
+          target_widget_)) {
     target_widget_->non_client_view()->Layout();
   }
 }

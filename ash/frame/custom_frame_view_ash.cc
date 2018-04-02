@@ -89,9 +89,10 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   void OnTabletModeStarted() override {
     if (window_state_->IsFullscreen())
       return;
-
+    views::Widget* widget =
+        views::Widget::GetWidgetForNativeWindow(window_state_->window());
     if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
-            nullptr)) {
+            widget)) {
       immersive_fullscreen_controller_->SetEnabled(
           ImmersiveFullscreenController::WINDOW_TYPE_OTHER, true);
     }
@@ -132,9 +133,11 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override {
+    views::Widget* widget =
+        views::Widget::GetWidgetForNativeWindow(window_state->window());
     if (Shell::Get()->tablet_mode_controller() &&
         Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
-            nullptr)) {
+            widget)) {
       DCHECK(immersive_fullscreen_controller_);
       if (window_state->IsMinimized() &&
           immersive_fullscreen_controller_->IsEnabled()) {
