@@ -14,6 +14,7 @@ Bug(none) external/wpt/service-workers/service-worker/claim-shared-worker-fetch.
 Bug(none) external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Failure ]
 crbug.com/807271 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Pass Failure Crash ]
+Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-worker.https.html [ Timeout ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/shared-worker-controlled.https.html [ Timeout ]
