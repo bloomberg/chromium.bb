@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_AURA_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_AURA_H_
 
 #include "components/ui_devtools/Overlay.h"
-#include "components/ui_devtools/views/dom_agent.h"
+#include "components/ui_devtools/overlay_agent.h"
+#include "components/ui_devtools/views/dom_agent_aura.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
@@ -30,12 +31,12 @@ enum HighlightRectsConfiguration {
 
 enum RectSide { TOP_SIDE, LEFT_SIDE, RIGHT_SIDE, BOTTOM_SIDE };
 
-class OverlayAgent : public UiDevToolsBaseAgent<protocol::Overlay::Metainfo>,
-                     public ui::EventHandler,
-                     public ui::LayerDelegate {
+class OverlayAgentAura : public OverlayAgent,
+                         public ui::EventHandler,
+                         public ui::LayerDelegate {
  public:
-  explicit OverlayAgent(DOMAgent* dom_agent);
-  ~OverlayAgent() override;
+  explicit OverlayAgentAura(DOMAgentAura* dom_agent);
+  ~OverlayAgentAura() override;
   int pinned_id() const { return pinned_id_; };
   void SetPinnedNodeId(int pinned_id);
 
@@ -66,6 +67,10 @@ class OverlayAgent : public UiDevToolsBaseAgent<protocol::Overlay::Metainfo>,
   void ShowDistancesInHighlightOverlay(int pinned_id, int element_id);
 
  private:
+  protocol::Response HighlightNode(int node_id, bool show_size = false);
+  void UpdateHighlight(
+      const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds);
+
   // ui:EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -74,12 +79,6 @@ class OverlayAgent : public UiDevToolsBaseAgent<protocol::Overlay::Metainfo>,
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
-
-  protocol::Response HighlightNode(int node_id, bool show_size = false);
-  void UpdateHighlight(
-      const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds);
-
-  DOMAgent* const dom_agent_;
 
   std::unique_ptr<gfx::RenderText> render_text_;
   bool show_size_on_canvas_ = false;
@@ -91,9 +90,9 @@ class OverlayAgent : public UiDevToolsBaseAgent<protocol::Overlay::Metainfo>,
   gfx::Rect pinned_rect_;
   int pinned_id_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(OverlayAgent);
+  DISALLOW_COPY_AND_ASSIGN(OverlayAgentAura);
 };
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_AURA_H_

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_UI_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_UI_ELEMENT_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
+#include "components/ui_devtools/devtools_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/view.h"
 
 namespace ui_devtools {
 
@@ -24,7 +25,7 @@ class Array;
 // UIElement type.
 enum UIElementType { WINDOW, WIDGET, VIEW, ROOT };
 
-class UIElement {
+class UI_DEVTOOLS_EXPORT UIElement {
  public:
   virtual ~UIElement();
   int node_id() const { return node_id_; };
@@ -87,4 +88,4 @@ class UIElement {
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_UI_ELEMENT_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/views/root_element.h"
+#include "components/ui_devtools/root_element.h"
 
 #include "components/ui_devtools/Protocol.h"
-#include "components/ui_devtools/views/ui_element_delegate.h"
+#include "components/ui_devtools/ui_element_delegate.h"
 
 namespace ui_devtools {
 
