@@ -55,6 +55,7 @@ const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kUseRipples = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = true;
+const bool PlatformStyle::kShouldElideBookmarksInBookmarksBar = false;
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
