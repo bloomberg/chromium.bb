@@ -3139,6 +3139,10 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kForceColorProfileChoices)},
 
 #if defined(OS_CHROMEOS)
+    {"use-monitor-color-space", flag_descriptions::kUseMonitorColorSpaceName,
+     flag_descriptions::kUseMonitorColorSpaceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kUseMonitorColorSpace)},
+
     {"quick-unlock-pin-signin", flag_descriptions::kQuickUnlockPinSignin,
      flag_descriptions::kQuickUnlockPinSigninDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kQuickUnlockPinSignin)},
