@@ -1207,7 +1207,7 @@ TEST(CBORReaderTest, TestDuplicateKeyError) {
   base::Optional<CBORValue> cbor =
       CBORReader::Read(kMapWithDuplicateKey, &error_code);
   EXPECT_FALSE(cbor.has_value());
-  EXPECT_EQ(error_code, CBORReader::DecoderError::DUPLICATE_KEY);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::OUT_OF_ORDER_KEY);
 }
 
 // Leveraging Markus Kuhn’s UTF-8 decoder stress test. See

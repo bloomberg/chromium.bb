@@ -40,10 +40,9 @@ const char kIncorrectMapKeyType[] =
 const char kTooMuchNesting[] = "Too much nesting.";
 const char kInvalidUTF8[] = "String encoding other than utf8 are not allowed.";
 const char kExtraneousData[] = "Trailing data bytes are not allowed.";
-const char kDuplicateKey[] = "Duplicate map keys are not allowed.";
 const char kMapKeyOutOfOrder[] =
-    "Map keys must be sorted by byte length and then by byte-wise lexical "
-    "order.";
+    "Map keys must be strictly monotonically increasing based on byte length "
+    "and then by byte-wise lexical order.";
 const char kNonMinimalCBOREncoding[] =
     "Unsigned integers must be encoded with minimum number of bytes.";
 const char kUnsupportedSimpleValue[] =
@@ -314,8 +313,7 @@ base::Optional<CBORValue> CBORReader::ReadMapContent(
         error_code_ = DecoderError::INCORRECT_MAP_KEY_TYPE;
         return base::nullopt;
     }
-    if (!CheckDuplicateKey(key.value(), &cbor_map) ||
-        !CheckOutOfOrderKey(key.value(), &cbor_map)) {
+    if (!CheckOutOfOrderKey(key.value(), &cbor_map)) {
       return base::nullopt;
     }
 
@@ -347,15 +345,6 @@ void CBORReader::CheckExtraneousData() {
     error_code_ = DecoderError::EXTRANEOUS_DATA;
 }
 
-bool CBORReader::CheckDuplicateKey(const CBORValue& new_key,
-                                   CBORValue::MapValue* map) {
-  if (base::ContainsKey(*map, new_key)) {
-    error_code_ = DecoderError::DUPLICATE_KEY;
-    return false;
-  }
-  return true;
-}
-
 bool CBORReader::HasValidUTF8Format(const std::string& string_data) {
   if (!base::IsStringUTF8(string_data)) {
     error_code_ = DecoderError::INVALID_UTF8;
@@ -366,8 +355,13 @@ bool CBORReader::HasValidUTF8Format(const std::string& string_data) {
 
 bool CBORReader::CheckOutOfOrderKey(const CBORValue& new_key,
                                     CBORValue::MapValue* map) {
-  auto comparator = map->key_comp();
-  if (!map->empty() && comparator(new_key, map->rbegin()->first)) {
+  if (map->empty()) {
+    return true;
+  }
+
+  const auto& max_current_key = map->rbegin()->first;
+  const auto less = map->key_comp();
+  if (!less(max_current_key, new_key)) {
     error_code_ = DecoderError::OUT_OF_ORDER_KEY;
     return false;
   }
@@ -397,8 +391,6 @@ const char* CBORReader::ErrorCodeToString(DecoderError error) {
       return kInvalidUTF8;
     case DecoderError::EXTRANEOUS_DATA:
       return kExtraneousData;
-    case DecoderError::DUPLICATE_KEY:
-      return kDuplicateKey;
     case DecoderError::OUT_OF_ORDER_KEY:
       return kMapKeyOutOfOrder;
     case DecoderError::NON_MINIMAL_CBOR_ENCODING:
