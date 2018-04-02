@@ -332,8 +332,6 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  window()->SetName(params.name);
-  content_window()->SetName("DesktopNativeWidgetAura - content window");
   if (params.parent && params.parent->GetHost()) {
     parent_ = static_cast<DesktopWindowTreeHostMus*>(params.parent->GetHost());
     parent_->children_.insert(this);

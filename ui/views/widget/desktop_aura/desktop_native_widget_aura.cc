@@ -474,6 +474,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     aura::client::SetCursorClient(host_->window(), cursor_manager_);
   }
 
+  host_->window()->SetName(params.name);
+  content_window_->SetName("DesktopNativeWidgetAura - content window");
   desktop_window_tree_host_->OnNativeWidgetCreated(params);
 
   UpdateWindowTransparency();
