@@ -172,8 +172,12 @@ AXPosition::AXPosition(const AXObject& container)
 }
 
 const AXObject* AXPosition::ObjectAfterPosition() const {
-  if (IsTextPosition() || !IsValid())
+  if (!IsValid() || IsTextPosition())
     return nullptr;
+  if (!container_object_->ChildCount())
+    return container_object_->NextInTreeObject();
+  if (container_object_->ChildCount() == ChildIndex())
+    return container_object_->LastChild()->NextInTreeObject();
   return *(container_object_->Children().begin() + ChildIndex());
 }
 
@@ -298,17 +302,35 @@ bool operator!=(const AXPosition& a, const AXPosition& b) {
 
 bool operator<(const AXPosition& a, const AXPosition& b) {
   DCHECK(a.IsValid() && b.IsValid());
-  if (*a.ContainerObject() > *b.ContainerObject())
+
+  if (a.ContainerObject() == b.ContainerObject()) {
+    if (a.IsTextPosition() && b.IsTextPosition())
+      return a.TextOffset() < b.TextOffset();
+    if (!a.IsTextPosition() && !b.IsTextPosition())
+      return a.ChildIndex() < b.ChildIndex();
+    NOTREACHED()
+        << "AXPosition objects having the same container object should "
+           "have the same type.";
     return false;
-  if (*a.ContainerObject() < *b.ContainerObject())
-    return true;
-  if (a.IsTextPosition() && b.IsTextPosition())
-    return a.TextOffset() < b.TextOffset();
-  if (!a.IsTextPosition() && !b.IsTextPosition())
-    return a.ChildIndex() < b.ChildIndex();
-  NOTREACHED() << "AXPosition objects having the same container object should "
-                  "have the same type.";
-  return false;
+  }
+
+  int index_in_ancestor1, index_in_ancestor2;
+  const AXObject* ancestor =
+      AXObject::LowestCommonAncestor(*a.ContainerObject(), *b.ContainerObject(),
+                                     &index_in_ancestor1, &index_in_ancestor2);
+  DCHECK_GE(index_in_ancestor1, -1);
+  DCHECK_GE(index_in_ancestor2, -1);
+  if (!ancestor)
+    return false;
+  if (ancestor == a.ContainerObject()) {
+    DCHECK(!a.IsTextPosition());
+    index_in_ancestor1 = a.ChildIndex();
+  }
+  if (ancestor == b.ContainerObject()) {
+    DCHECK(!b.IsTextPosition());
+    index_in_ancestor2 = b.ChildIndex();
+  }
+  return index_in_ancestor1 < index_in_ancestor2;
 }
 
 bool operator<=(const AXPosition& a, const AXPosition& b) {
@@ -317,17 +339,35 @@ bool operator<=(const AXPosition& a, const AXPosition& b) {
 
 bool operator>(const AXPosition& a, const AXPosition& b) {
   DCHECK(a.IsValid() && b.IsValid());
-  if (*a.ContainerObject() < *b.ContainerObject())
+
+  if (a.ContainerObject() == b.ContainerObject()) {
+    if (a.IsTextPosition() && b.IsTextPosition())
+      return a.TextOffset() > b.TextOffset();
+    if (!a.IsTextPosition() && !b.IsTextPosition())
+      return a.ChildIndex() > b.ChildIndex();
+    NOTREACHED()
+        << "AXPosition objects having the same container object should "
+           "have the same type.";
     return false;
-  if (*a.ContainerObject() > *b.ContainerObject())
-    return true;
-  if (a.IsTextPosition() && b.IsTextPosition())
-    return a.TextOffset() > b.TextOffset();
-  if (!a.IsTextPosition() && !b.IsTextPosition())
-    return a.ChildIndex() > b.ChildIndex();
-  NOTREACHED() << "AXPosition objects having the same container object should "
-                  "have the same type.";
-  return false;
+  }
+
+  int index_in_ancestor1, index_in_ancestor2;
+  const AXObject* ancestor =
+      AXObject::LowestCommonAncestor(*a.ContainerObject(), *b.ContainerObject(),
+                                     &index_in_ancestor1, &index_in_ancestor2);
+  DCHECK_GE(index_in_ancestor1, -1);
+  DCHECK_GE(index_in_ancestor2, -1);
+  if (!ancestor)
+    return false;
+  if (ancestor == a.ContainerObject()) {
+    DCHECK(!a.IsTextPosition());
+    index_in_ancestor1 = a.ChildIndex();
+  }
+  if (ancestor == b.ContainerObject()) {
+    DCHECK(!b.IsTextPosition());
+    index_in_ancestor2 = b.ChildIndex();
+  }
+  return index_in_ancestor1 > index_in_ancestor2;
 }
 
 bool operator>=(const AXPosition& a, const AXPosition& b) {
