@@ -103,6 +103,18 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface->HasActiveFrame());
   if (last_activated_surface_id_ != surface->surface_id()) {
     if (last_activated_surface_id_.is_valid()) {
+      const LocalSurfaceId& local_surface_id =
+          surface->surface_id().local_surface_id();
+      const LocalSurfaceId& last_activated_local_surface_id =
+          last_activated_surface_id_.local_surface_id();
+      CHECK_GE(local_surface_id.parent_sequence_number(),
+               last_activated_local_surface_id.parent_sequence_number());
+      CHECK_GE(local_surface_id.child_sequence_number(),
+               last_activated_local_surface_id.child_sequence_number());
+      CHECK(local_surface_id.parent_sequence_number() >
+                last_activated_local_surface_id.parent_sequence_number() ||
+            local_surface_id.child_sequence_number() >
+                last_activated_local_surface_id.child_sequence_number());
       Surface* prev_surface =
           surface_manager_->GetSurfaceForId(last_activated_surface_id_);
       DCHECK(prev_surface);
