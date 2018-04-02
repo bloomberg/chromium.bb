@@ -28,8 +28,8 @@ class ServiceWorkerRegistration;
 // ServiceWorkerRegistration itself.
 class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
  public:
-  typedef base::Callback<void(int64_t registration_id,
-                              ServiceWorkerStatusCode status)>
+  typedef base::OnceCallback<void(int64_t registration_id,
+                                  ServiceWorkerStatusCode status)>
       UnregistrationCallback;
 
   ServiceWorkerUnregisterJob(base::WeakPtr<ServiceWorkerContextCore> context,
@@ -38,7 +38,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
 
   // Registers a callback to be called when the job completes (whether
   // successfully or not). Multiple callbacks may be registered.
-  void AddCallback(const UnregistrationCallback& callback);
+  void AddCallback(UnregistrationCallback callback);
 
   // ServiceWorkerRegisterJobBase implementation:
   void Start() override;

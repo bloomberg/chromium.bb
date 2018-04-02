@@ -38,9 +38,9 @@ namespace content {
 class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
                                  public EmbeddedWorkerInstance::Listener {
  public:
-  typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              const std::string& status_message,
-                              ServiceWorkerRegistration* registration)>
+  typedef base::OnceCallback<void(ServiceWorkerStatusCode status,
+                                  const std::string& status_message,
+                                  ServiceWorkerRegistration* registration)>
       RegistrationCallback;
 
   // For registration jobs.
@@ -59,7 +59,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
 
   // Registers a callback to be called when the promise would resolve (whether
   // successfully or not). Multiple callbacks may be registered.
-  void AddCallback(const RegistrationCallback& callback);
+  void AddCallback(RegistrationCallback callback);
 
   // ServiceWorkerRegisterJobBase implementation:
   void Start() override;

@@ -29,18 +29,17 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
   void Register(const GURL& script_url,
                 const blink::mojom::ServiceWorkerRegistrationOptions& options,
-                const ServiceWorkerRegisterJob::RegistrationCallback& callback);
+                ServiceWorkerRegisterJob::RegistrationCallback callback);
 
-  void Unregister(
-      const GURL& pattern,
-      const ServiceWorkerUnregisterJob::UnregistrationCallback& callback);
+  void Unregister(const GURL& pattern,
+                  ServiceWorkerUnregisterJob::UnregistrationCallback callback);
 
   void Update(ServiceWorkerRegistration* registration, bool force_bypass_cache);
 
   void Update(ServiceWorkerRegistration* registration,
               bool force_bypass_cache,
               bool skip_script_comparison,
-              const ServiceWorkerRegisterJob::RegistrationCallback& callback);
+              ServiceWorkerRegisterJob::RegistrationCallback callback);
 
   // Calls ServiceWorkerRegisterJobBase::Abort() on all jobs and removes them.
   void AbortAll();
