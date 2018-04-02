@@ -418,7 +418,8 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
       1);
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadedFileAction",
-      static_cast<base::HistogramBase::Sample>(DownloadedFileAction::NoAction),
+      static_cast<base::HistogramBase::Sample>(
+          DownloadedFileAction::NoActionOrOpenedViaExtension),
       1);
 }
 

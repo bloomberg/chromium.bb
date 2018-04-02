@@ -9983,7 +9983,7 @@ Called by update_net_error_codes.py.-->
 <enum name="DownloadedFileAction">
   <int value="0" label="Opened in Drive"/>
   <int value="1" label="Opened in another app"/>
-  <int value="2" label="No action"/>
+  <int value="2" label="No action or opened via extension"/>
 </enum>
 
 <enum name="DownloadFilePickerResult">
