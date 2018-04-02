@@ -25,9 +25,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "diy-fp.h"
+#include "platform/wtf/dtoa/diy-fp.h"
 
-#include "utils.h"
+#include "platform/wtf/dtoa/utils.h"
 
 namespace WTF {
 

@@ -19,7 +19,7 @@
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/Allocator.h"
-#include "v8.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

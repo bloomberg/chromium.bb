@@ -11,7 +11,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/wtf/Noncopyable.h"
-#include "v8.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
