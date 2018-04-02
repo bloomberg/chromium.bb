@@ -13,18 +13,16 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
-BlacklistStateFetcher::BlacklistStateFetcher()
-    : url_fetcher_id_(0),
-      weak_ptr_factory_(this) {}
+BlacklistStateFetcher::BlacklistStateFetcher() : weak_ptr_factory_(this) {}
 
 BlacklistStateFetcher::~BlacklistStateFetcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -49,10 +47,9 @@ void BlacklistStateFetcher::Request(const std::string& id,
   if (request_already_sent)
     return;
 
-  if (!url_request_context_getter_ && g_browser_process &&
-      g_browser_process->safe_browsing_service()) {
-    url_request_context_getter_ =
-        g_browser_process->safe_browsing_service()->url_request_context();
+  if (g_browser_process && g_browser_process->safe_browsing_service()) {
+    url_loader_factory_ =
+        g_browser_process->safe_browsing_service()->GetURLLoaderFactory();
   }
 
   SendRequest(id);
@@ -98,26 +95,25 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
             }
           }
         })");
-  std::unique_ptr<net::URLFetcher> fetcher_ptr =
-      net::URLFetcher::Create(url_fetcher_id_++, request_url,
-                              net::URLFetcher::POST, this, traffic_annotation);
-  net::URLFetcher* fetcher = fetcher_ptr.get();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = request_url;
+  resource_request->method = "POST";
+  std::unique_ptr<network::SimpleURLLoader> fetcher_ptr =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  auto* fetcher = fetcher_ptr.get();
+  fetcher->AttachStringForUpload(request_str, "application/octet-stream");
   requests_[fetcher] = {std::move(fetcher_ptr), id};
-  fetcher->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
-  fetcher->SetRequestContext(url_request_context_getter_.get());
-  fetcher->SetUploadData("application/octet-stream", request_str);
-  fetcher->Start();
+  fetcher->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&BlacklistStateFetcher::OnURLLoaderComplete,
+                     base::Unretained(this), fetcher));
 }
 
 void BlacklistStateFetcher::SetSafeBrowsingConfig(
     const safe_browsing::SafeBrowsingProtocolConfig& config) {
   safe_browsing_config_.reset(
       new safe_browsing::SafeBrowsingProtocolConfig(config));
-}
-
-void BlacklistStateFetcher::SetURLRequestContextForTest(
-      net::URLRequestContextGetter* request_context) {
-  url_request_context_getter_ = request_context;
 }
 
 GURL BlacklistStateFetcher::RequestUrl() const {
@@ -135,37 +131,54 @@ GURL BlacklistStateFetcher::RequestUrl() const {
   return GURL(url);
 }
 
-void BlacklistStateFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+void BlacklistStateFetcher::OnURLLoaderComplete(
+    network::SimpleURLLoader* url_loader,
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto it = requests_.find(source);
+  int response_code = 0;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
+
+  std::string response_body_str;
+  if (response_body.get())
+    response_body_str = std::move(*response_body.get());
+
+  OnURLLoaderCompleteInternal(url_loader, response_body_str, response_code,
+                              url_loader->NetError());
+}
+
+void BlacklistStateFetcher::OnURLLoaderCompleteInternal(
+    network::SimpleURLLoader* url_loader,
+    const std::string& response_body,
+    int response_code,
+    int net_error) {
+  auto it = requests_.find(url_loader);
   if (it == requests_.end()) {
     NOTREACHED();
     return;
   }
 
-  std::unique_ptr<net::URLFetcher> fetcher = std::move(it->second.first);
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      std::move(it->second.first);
   std::string id = it->second.second;
   requests_.erase(it);
 
   BlacklistState state;
-
-  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
-    std::string data;
-    source->GetResponseAsString(&data);
+  if (net_error == net::OK && response_code == 200) {
     ClientCRXListInfoResponse response;
-    if (response.ParseFromString(data)) {
+    if (response.ParseFromString(response_body)) {
       state = static_cast<BlacklistState>(response.verdict());
     } else {
       state = BLACKLISTED_UNKNOWN;
     }
   } else {
-    if (source->GetStatus().status() == net::URLRequestStatus::FAILED) {
+    if (net_error != net::OK) {
       VLOG(1) << "Blacklist request for: " << id
-              << " failed with error: " << source->GetStatus().error();
+              << " failed with error: " << net_error;
     } else {
       VLOG(1) << "Blacklist request for: " << id
-              << " failed with error: " << source->GetResponseCode();
+              << " failed with error: " << response_code;
     }
 
     state = BLACKLISTED_UNKNOWN;
@@ -174,8 +187,7 @@ void BlacklistStateFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   std::pair<CallbackMultiMap::iterator, CallbackMultiMap::iterator> range =
       callbacks_.equal_range(id);
   for (CallbackMultiMap::const_iterator callback_it = range.first;
-       callback_it != range.second;
-       ++callback_it) {
+       callback_it != range.second; ++callback_it) {
     callback_it->second.Run(state);
   }
 
