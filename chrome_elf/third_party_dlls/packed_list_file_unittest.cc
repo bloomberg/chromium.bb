@@ -109,7 +109,7 @@ class ThirdPartyFileTest : public testing::Test {
     OverrideFilePathForTesting(bl_test_file_path_);
   }
 
-  void TearDown() override { DeinitFromFileForTesting(); }
+  void TearDown() override { DeinitFromFile(); }
 
   void CreateTestFile() {
     base::File file(base::FilePath(bl_test_file_path_),
@@ -163,20 +163,30 @@ TEST_F(ThirdPartyFileTest, Success) {
   // Init.
   ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
 
+  std::string fingerprint_hash;
+  std::string name_hash;
+
   // Test matching.
   for (const auto& test_module : GetTestArray()) {
-    EXPECT_TRUE(IsModuleListed(test_module.basename, test_module.imagesize,
-                               test_module.timedatestamp));
+    fingerprint_hash =
+        GetFingerprintHash(test_module.imagesize, test_module.timedatestamp);
+    name_hash = elf_sha1::SHA1HashString(test_module.basename);
+    EXPECT_TRUE(IsModuleListed(name_hash, fingerprint_hash));
   }
 
   // Test a failure to match.
-  EXPECT_FALSE(IsModuleListed("booya.dll", 1337, 0x12345678));
+  fingerprint_hash = GetFingerprintHash(1337, 0x12345678);
+  name_hash = elf_sha1::SHA1HashString("booya.dll");
+  EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));
 }
 
 // Test successful initialization with no packed files.
 TEST_F(ThirdPartyFileTest, NoFiles) {
   ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
-  EXPECT_FALSE(IsModuleListed("booya.dll", 1337, 0x12345678));
+
+  std::string fingerprint_hash = GetFingerprintHash(1337, 0x12345678);
+  std::string name_hash = elf_sha1::SHA1HashString("booya.dll");
+  EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));
 }
 
 TEST_F(ThirdPartyFileTest, CorruptFile) {

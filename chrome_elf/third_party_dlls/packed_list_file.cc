@@ -164,22 +164,28 @@ FileStatus InitInternal() {
 // Public defines & functions
 //------------------------------------------------------------------------------
 
-bool IsModuleListed(const std::string& basename,
-                    DWORD image_size,
-                    DWORD time_date_stamp) {
+std::string GetFingerprintHash(DWORD image_size, DWORD time_data_stamp) {
+  // Max hex 32-bit value is 8 characters long.  2*8+1.
+  char buffer[17] = {};
+  ::snprintf(buffer, sizeof(buffer), "%08lX%lx", time_data_stamp, image_size);
+
+  std::string shell(buffer);
+  return elf_sha1::SHA1HashString(shell);
+}
+
+bool IsModuleListed(const std::string& basename_hash,
+                    const std::string& fingerprint_hash) {
   assert(g_initialized);
+  assert(!basename_hash.empty() && !fingerprint_hash.empty());
+  assert(basename_hash.length() == elf_sha1::kSHA1Length &&
+         fingerprint_hash.length() == elf_sha1::kSHA1Length);
+
   if (!g_bl_module_array_size)
     return false;
 
-  // Max hex 32-bit value is 8 characters long.  2*8+1.
-  char buffer[17] = {};
-  ::snprintf(buffer, sizeof(buffer), "%08lX%lx", time_date_stamp, image_size);
-  std::string code_id(buffer);
-  code_id = elf_sha1::SHA1HashString(code_id);
-  std::string basename_hash = elf_sha1::SHA1HashString(basename);
   PackedListModule target = {};
   ::memcpy(target.basename_hash, basename_hash.data(), elf_sha1::kSHA1Length);
-  ::memcpy(target.code_id_hash, code_id.data(), elf_sha1::kSHA1Length);
+  ::memcpy(target.code_id_hash, fingerprint_hash.data(), elf_sha1::kSHA1Length);
 
   // Binary search for primary hash (basename).  There can be more than one
   // match.
@@ -198,6 +204,7 @@ bool IsModuleListed(const std::string& basename,
 }
 
 std::wstring GetBlFilePathUsed() {
+  assert(g_initialized);
   return GetBlFilePath();
 }
 
@@ -215,11 +222,7 @@ FileStatus InitFromFile() {
   return status;
 }
 
-void OverrideFilePathForTesting(const std::wstring& new_bl_path) {
-  GetBlFilePath().assign(new_bl_path);
-}
-
-void DeinitFromFileForTesting() {
+void DeinitFromFile() {
   if (!g_initialized)
     return;
 
@@ -229,6 +232,10 @@ void DeinitFromFileForTesting() {
   GetBlFilePath().clear();
 
   g_initialized = false;
+}
+
+void OverrideFilePathForTesting(const std::wstring& new_bl_path) {
+  GetBlFilePath().assign(new_bl_path);
 }
 
 }  // namespace third_party_dlls

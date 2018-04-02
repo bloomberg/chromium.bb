@@ -27,11 +27,14 @@ enum class FileStatus {
   COUNT
 };
 
+// Utility function that takes required PE fingerprint data and returns a SHA-1
+// fingerprint hash.  To be used with IsModuleListed() and logging APIs.
+std::string GetFingerprintHash(DWORD image_size, DWORD time_data_stamp);
+
 // Look up a binary based on the required data points.
 // - Returns true if match found in the list.
-bool IsModuleListed(const std::string& basename,
-                    DWORD image_size,
-                    DWORD time_date_stamp);
+bool IsModuleListed(const std::string& basename_hash,
+                    const std::string& fingerprint_hash);
 
 // Get the full path of the blacklist file used.
 std::wstring GetBlFilePathUsed();
@@ -39,11 +42,11 @@ std::wstring GetBlFilePathUsed();
 // Initialize internal module list from file.
 FileStatus InitFromFile();
 
+// Removes initialization for use by tests, or cleanup on failure.
+void DeinitFromFile();
+
 // Overrides the blacklist path for use by tests.
 void OverrideFilePathForTesting(const std::wstring& new_bl_path);
-
-// Removes initialization for use by tests.
-void DeinitFromFileForTesting();
 
 }  // namespace third_party_dlls
 

@@ -20,21 +20,21 @@ enum class LogStatus { kSuccess = 0, kCreateMutexFailure = 1, COUNT };
 
 // Adds a module load attempt to the internal load log.
 // - |log_type| indicates the type of logging.
-// - |basename_hash| and |code_id_hash| must each point to a 20-byte buffer
-//   holding a SHA-1 digest (of the module's basename and code identifier,
-//   respectively).
+// - |basename_hash| and |code_id_hash| must each point to a buffer of size
+//   elf_sha1::kSHA1Length, holding a SHA-1 digest (of the module's basename and
+//   code identifier, respectively).
 // - For loads that are allowed, |full_image_path| indicates the full path of
 //   the loaded image.
 void LogLoadAttempt(LogType log_type,
-                    const uint8_t* basename_hash,
-                    const uint8_t* code_id_hash,
-                    const char* full_image_path);
+                    const std::string& basename_hash,
+                    const std::string& code_id_hash,
+                    const std::string& full_image_path);
 
 // Initialize internal logs.
 LogStatus InitLogs();
 
-// Removes initialization for use by tests.
-void DeinitLogsForTesting();
+// Removes initialization for use by tests, or cleanup on failure.
+void DeinitLogs();
 
 }  // namespace third_party_dlls
 

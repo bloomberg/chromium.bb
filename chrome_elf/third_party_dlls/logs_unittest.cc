@@ -151,13 +151,19 @@ TEST(ThirdParty, Logs) {
   ASSERT_EQ(InitLogs(), LogStatus::kSuccess);
 
   for (size_t i = 0; i < arraysize(kTestLogs); ++i) {
+    std::string fingerprint_hash(
+        reinterpret_cast<char*>(kTestLogs[i].code_id_hash),
+        elf_sha1::kSHA1Length);
+    std::string name_hash(reinterpret_cast<char*>(kTestLogs[i].basename_hash),
+                          elf_sha1::kSHA1Length);
+
     // Add some blocked entries.
-    LogLoadAttempt(LogType::kBlocked, kTestLogs[i].basename_hash,
-                   kTestLogs[i].code_id_hash, nullptr);
+    LogLoadAttempt(LogType::kBlocked, name_hash, fingerprint_hash,
+                   std::string());
 
     // Add some allowed entries.
-    LogLoadAttempt(LogType::kAllowed, kTestLogs[i].basename_hash,
-                   kTestLogs[i].code_id_hash, kTestPaths[i].c_str());
+    LogLoadAttempt(LogType::kAllowed, name_hash, fingerprint_hash,
+                   kTestPaths[i]);
   }
 
   uint32_t initial_log = 0;
@@ -172,7 +178,7 @@ TEST(ThirdParty, Logs) {
 
   VerifyBuffer(&buffer[0], bytes_written);
 
-  DeinitLogsForTesting();
+  DeinitLogs();
 }
 
 // Test notifications.
@@ -200,9 +206,15 @@ TEST(ThirdParty, LogNotifications) {
       nullptr, 0, &NotificationHandler, &handler_data, 0, nullptr));
 
   for (size_t i = 0; i < handler_data.logs_expected; ++i) {
+    std::string fingerprint_hash(
+        reinterpret_cast<char*>(kTestLogs[i].code_id_hash),
+        elf_sha1::kSHA1Length);
+    std::string name_hash(reinterpret_cast<char*>(kTestLogs[i].basename_hash),
+                          elf_sha1::kSHA1Length);
+
     // Add blocked entries - type doesn't matter in this test.
-    LogLoadAttempt(LogType::kBlocked, kTestLogs[i].basename_hash,
-                   kTestLogs[i].code_id_hash, nullptr);
+    LogLoadAttempt(LogType::kBlocked, name_hash, fingerprint_hash,
+                   std::string());
   }
 
   EXPECT_EQ(::WaitForSingleObject(thread.Get(), kWaitTimeoutMs * 2),
@@ -211,7 +223,7 @@ TEST(ThirdParty, LogNotifications) {
   EXPECT_TRUE(::GetExitCodeThread(thread.Get(), &exit_code));
   EXPECT_EQ(exit_code, DWORD{0});
 
-  DeinitLogsForTesting();
+  DeinitLogs();
 }
 
 }  // namespace

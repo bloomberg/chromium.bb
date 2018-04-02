@@ -34,8 +34,8 @@ extern const wchar_t kImeRegistryKey[];
 // Initialize internal list of registered IMEs.
 IMEStatus InitIMEs();
 
-// Removes initialization for use by tests.
-void DeinitIMEsForTesting();
+// Removes initialization for use by tests, or cleanup on failure.
+void DeinitIMEs();
 
 }  // namespace third_party_dlls
 

@@ -108,6 +108,9 @@ class Log {
     return bytes_written;
   }
 
+  // Empty the log.
+  void Reset() { DequeueEntries(static_cast<uint32_t>(entries_.size())); }
+
  private:
   // Logs are currently unordered, so just loop.
   // - Returns true if the given hashes already exist in the log.
@@ -159,16 +162,22 @@ Log& GetAllowedLog() {
 
 // This is called from inside a hook shim, so don't bother with return status.
 void LogLoadAttempt(LogType log_type,
-                    const uint8_t* basename_hash,
-                    const uint8_t* code_id_hash,
-                    const char* full_image_path) {
+                    const std::string& basename_hash,
+                    const std::string& code_id_hash,
+                    const std::string& full_image_path) {
+  assert(g_log_mutex);
+  assert(!basename_hash.empty() && !code_id_hash.empty());
+  assert(basename_hash.length() == elf_sha1::kSHA1Length &&
+         code_id_hash.length() == elf_sha1::kSHA1Length);
+
   if (::WaitForSingleObject(g_log_mutex, kMaxMutexWaitMs) != WAIT_OBJECT_0)
     return;
 
   // Build the new log entry.
   LogEntryInternal entry;
-  ::memcpy(&entry.basename_hash[0], basename_hash, elf_sha1::kSHA1Length);
-  ::memcpy(&entry.code_id_hash[0], code_id_hash, elf_sha1::kSHA1Length);
+  ::memcpy(&entry.basename_hash[0], basename_hash.data(),
+           elf_sha1::kSHA1Length);
+  ::memcpy(&entry.code_id_hash[0], code_id_hash.data(), elf_sha1::kSHA1Length);
 
   // Only store full path if the module was allowed to load.
   if (log_type == LogType::kAllowed) {
@@ -198,10 +207,13 @@ LogStatus InitLogs() {
   return LogStatus::kSuccess;
 }
 
-void DeinitLogsForTesting() {
+void DeinitLogs() {
   if (g_log_mutex)
     ::CloseHandle(g_log_mutex);
   g_log_mutex = nullptr;
+
+  GetBlockedLog().Reset();
+  GetAllowedLog().Reset();
 }
 
 }  // namespace third_party_dlls
@@ -216,7 +228,8 @@ using namespace third_party_dlls;
 uint32_t DrainLog(uint8_t* buffer,
                   uint32_t buffer_size,
                   uint32_t* log_remaining) {
-  if (::WaitForSingleObject(g_log_mutex, kMaxMutexWaitMs) != WAIT_OBJECT_0)
+  if (!g_log_mutex ||
+      ::WaitForSingleObject(g_log_mutex, kMaxMutexWaitMs) != WAIT_OBJECT_0)
     return 0;
 
   Log& blocked = GetBlockedLog();
@@ -242,6 +255,10 @@ uint32_t DrainLog(uint8_t* buffer,
 }
 
 bool RegisterLogNotification(HANDLE event_handle) {
+  if (!g_log_mutex)
+    return false;
+
+  // Duplicate the new handle, if not clearing with nullptr.
   HANDLE temp = nullptr;
   if (event_handle && !::DuplicateHandle(::GetCurrentProcess(), event_handle,
                                          ::GetCurrentProcess(), &temp, 0, FALSE,
@@ -249,6 +266,7 @@ bool RegisterLogNotification(HANDLE event_handle) {
     return false;
   }
 
+  // Close any existing registered handle.
   if (g_notification_event)
     ::CloseHandle(g_notification_event);
 
