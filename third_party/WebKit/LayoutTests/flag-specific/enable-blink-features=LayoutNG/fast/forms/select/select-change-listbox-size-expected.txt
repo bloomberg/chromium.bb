@@ -26,8 +26,8 @@ layer at (8,100) size 54x104 clip at (9,101) size 37x102
       LayoutText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"
     LayoutBlockFlow {OPTION} at (1,18) size 37x17
-      LayoutText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "Two"
+      LayoutText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
     LayoutBlockFlow {OPTION} at (1,35) size 37x17
       LayoutText {#text} at (2,0) size 33x16
         text run at (2,0) width 33: "Three"

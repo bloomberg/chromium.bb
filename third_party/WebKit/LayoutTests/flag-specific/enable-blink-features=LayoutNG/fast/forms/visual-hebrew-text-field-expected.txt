@@ -19,11 +19,11 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 271x19
           text run at (0,0) width 271: "Text in the field should look like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
       LayoutNGBlockFlow (anonymous) at (0,110) size 784x22
-        LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,64) size 784x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,56) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (10,121) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 31x16
-      text run at (0,0) width 31 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"
+layer at (10,121) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
+    LayoutText {#text} at (0,0) size 34x16
+      text run at (0,0) width 34 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"

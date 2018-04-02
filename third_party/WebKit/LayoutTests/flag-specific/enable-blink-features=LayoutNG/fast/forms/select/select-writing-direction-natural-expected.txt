@@ -24,117 +24,117 @@ layer at (0,0) size 800x600
         LayoutNGBlockFlow {DIV} at (0,0) size 784x20
           LayoutMenuList {SELECT} at (0,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 16x16
-                text run at (4,1) width 7 RTL: "\x{5D0}"
-                text run at (11,1) width 9: "A"
+              LayoutText (anonymous) at (4,1) size 17x16
+                text run at (4,1) width 8 RTL: "\x{5D0}"
+                text run at (12,1) width 9: "A"
           LayoutText {#text} at (70,0) size 4x19
             text run at (70,0) width 4: " "
           LayoutMenuList {SELECT} at (74,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 16x16
+              LayoutText (anonymous) at (4,1) size 17x16
                 text run at (4,1) width 9: "A"
-                text run at (13,1) width 7 RTL: "\x{5D0}"
+                text run at (13,1) width 8 RTL: "\x{5D0}"
           LayoutText {#text} at (144,0) size 4x19
             text run at (144,0) width 4: " "
           LayoutMenuList {SELECT} at (148,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 20x16
+              LayoutText (anonymous) at (4,1) size 21x16
                 text run at (4,1) width 4: "("
-                text run at (8,1) width 7 RTL: "\x{5D0}"
-                text run at (15,1) width 9: "A"
+                text run at (8,1) width 8 RTL: "\x{5D0}"
+                text run at (16,1) width 9: "A"
           LayoutText {#text} at (218,0) size 4x19
             text run at (218,0) width 4: " "
           LayoutMenuList {SELECT} at (222,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 20x16
+              LayoutText (anonymous) at (4,1) size 21x16
                 text run at (4,1) width 13: "(A"
-                text run at (17,1) width 7 RTL: "\x{5D0}"
+                text run at (17,1) width 8 RTL: "\x{5D0}"
           LayoutText {#text} at (0,0) size 0x0
         LayoutNGBlockFlow {DIV} at (0,20) size 784x20
           LayoutMenuList {SELECT} at (492,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 16x16
-                text run at (4,1) width 7 RTL: "\x{5D0}"
-                text run at (11,1) width 9: "A"
+              LayoutText (anonymous) at (4,1) size 17x16
+                text run at (4,1) width 8 RTL: "\x{5D0}"
+                text run at (12,1) width 9: "A"
           LayoutText {#text} at (562,0) size 4x19
             text run at (562,0) width 4: " "
           LayoutMenuList {SELECT} at (566,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 16x16
+              LayoutText (anonymous) at (4,1) size 17x16
                 text run at (4,1) width 9: "A"
-                text run at (13,1) width 7 RTL: "\x{5D0}"
+                text run at (13,1) width 8 RTL: "\x{5D0}"
           LayoutText {#text} at (636,0) size 4x19
             text run at (636,0) width 4: " "
           LayoutMenuList {SELECT} at (640,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 20x16
+              LayoutText (anonymous) at (4,1) size 21x16
                 text run at (4,1) width 4: "("
-                text run at (8,1) width 7 RTL: "\x{5D0}"
-                text run at (15,1) width 9: "A"
+                text run at (8,1) width 8 RTL: "\x{5D0}"
+                text run at (16,1) width 9: "A"
           LayoutText {#text} at (710,0) size 4x19
             text run at (710,0) width 4: " "
           LayoutMenuList {SELECT} at (714,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (4,1) size 20x16
+              LayoutText (anonymous) at (4,1) size 21x16
                 text run at (4,1) width 13: "(A"
-                text run at (17,1) width 7 RTL: "\x{5D0}"
+                text run at (17,1) width 8 RTL: "\x{5D0}"
           LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,132) size 784x40
         LayoutNGBlockFlow {DIV} at (0,0) size 784x20
           LayoutMenuList {SELECT} at (222,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (48,1) size 16x16
-                text run at (48,1) width 9: "A"
-                text run at (57,1) width 7 RTL: "\x{5D0}"
+              LayoutText (anonymous) at (47,1) size 17x16
+                text run at (47,1) width 9: "A"
+                text run at (56,1) width 8 RTL: "\x{5D0}"
           LayoutText {#text} at (218,0) size 4x19
             text run at (218,0) width 4: " "
           LayoutMenuList {SELECT} at (148,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (48,1) size 16x16
-                text run at (48,1) width 7 RTL: "\x{5D0}"
+              LayoutText (anonymous) at (47,1) size 17x16
+                text run at (47,1) width 8 RTL: "\x{5D0}"
                 text run at (55,1) width 9: "A"
           LayoutText {#text} at (144,0) size 4x19
             text run at (144,0) width 4: " "
           LayoutMenuList {SELECT} at (74,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (44,1) size 20x16
-                text run at (44,1) width 9: "A"
-                text run at (53,1) width 11 RTL: "(\x{5D0}"
+              LayoutText (anonymous) at (43,1) size 21x16
+                text run at (43,1) width 9: "A"
+                text run at (52,1) width 12 RTL: "(\x{5D0}"
           LayoutText {#text} at (70,0) size 4x19
             text run at (70,0) width 4: " "
           LayoutMenuList {SELECT} at (0,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (44,1) size 20x16
-                text run at (44,1) width 7 RTL: "\x{5D0}"
+              LayoutText (anonymous) at (43,1) size 21x16
+                text run at (43,1) width 8 RTL: "\x{5D0}"
                 text run at (51,1) width 9: "A"
                 text run at (60,1) width 4 RTL: "("
           LayoutText {#text} at (0,0) size 0x0
         LayoutNGBlockFlow {DIV} at (0,20) size 784x20
           LayoutMenuList {SELECT} at (714,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (48,1) size 16x16
-                text run at (48,1) width 9: "A"
-                text run at (57,1) width 7 RTL: "\x{5D0}"
+              LayoutText (anonymous) at (47,1) size 17x16
+                text run at (47,1) width 9: "A"
+                text run at (56,1) width 8 RTL: "\x{5D0}"
           LayoutText {#text} at (710,0) size 4x19
             text run at (710,0) width 4: " "
           LayoutMenuList {SELECT} at (640,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (48,1) size 16x16
-                text run at (48,1) width 7 RTL: "\x{5D0}"
+              LayoutText (anonymous) at (47,1) size 17x16
+                text run at (47,1) width 8 RTL: "\x{5D0}"
                 text run at (55,1) width 9: "A"
           LayoutText {#text} at (636,0) size 4x19
             text run at (636,0) width 4: " "
           LayoutMenuList {SELECT} at (566,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (44,1) size 20x16
-                text run at (44,1) width 9: "A"
-                text run at (53,1) width 11 RTL: "(\x{5D0}"
+              LayoutText (anonymous) at (43,1) size 21x16
+                text run at (43,1) width 9: "A"
+                text run at (52,1) width 12 RTL: "(\x{5D0}"
           LayoutText {#text} at (562,0) size 4x19
             text run at (562,0) width 4: " "
           LayoutMenuList {SELECT} at (492,0) size 70x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutNGBlockFlow (anonymous) at (1,1) size 68x18
-              LayoutText (anonymous) at (44,1) size 20x16
-                text run at (44,1) width 7 RTL: "\x{5D0}"
+              LayoutText (anonymous) at (43,1) size 21x16
+                text run at (43,1) width 8 RTL: "\x{5D0}"
                 text run at (51,1) width 9: "A"
                 text run at (60,1) width 4 RTL: "("
           LayoutText {#text} at (0,0) size 0x0
