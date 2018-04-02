@@ -211,7 +211,7 @@ pid_t ZygoteHostImpl::LaunchZygote(
 
     if (real_pid != pid) {
       // Reap the sandbox.
-      base::EnsureProcessGetsReaped(pid);
+      base::EnsureProcessGetsReaped(std::move(process));
     }
     pid = real_pid;
   }
@@ -290,7 +290,7 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
   base::Process sandbox_helper_process =
       base::LaunchProcess(adj_oom_score_cmdline, options);
   if (sandbox_helper_process.IsValid())
-    base::EnsureProcessGetsReaped(sandbox_helper_process.Pid());
+    base::EnsureProcessGetsReaped(std::move(sandbox_helper_process));
 }
 #endif
 

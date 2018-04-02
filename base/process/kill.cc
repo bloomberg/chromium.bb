@@ -4,7 +4,10 @@
 
 #include "base/process/kill.h"
 
+#include "base/bind.h"
 #include "base/process/process_iterator.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/time/time.h"
 
 namespace base {
 
@@ -27,5 +30,32 @@ bool KillProcesses(const FilePath::StringType& executable_name,
   }
   return result;
 }
+
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
+// Common implementation for platforms under which |process| is a handle to
+// the process, rather than an identifier that must be "reaped".
+void EnsureProcessTerminated(Process process) {
+  DCHECK(!process.is_current());
+
+  if (process.WaitForExitWithTimeout(TimeDelta(), nullptr))
+    return;
+
+  PostDelayedTaskWithTraits(
+      FROM_HERE,
+      {TaskPriority::BACKGROUND, TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      BindOnce(
+          [](Process process) {
+            if (process.WaitForExitWithTimeout(TimeDelta(), nullptr))
+              return;
+#if defined(OS_WIN)
+            process.Terminate(win::kProcessKilledExitCode, false);
+#else
+            process.Terminate(-1, false);
+#endif
+          },
+          std::move(process)),
+      TimeDelta::FromSeconds(2));
+}
+#endif  // defined(OS_WIN) || defined(OS_FUCHSIA)
 
 }  // namespace base

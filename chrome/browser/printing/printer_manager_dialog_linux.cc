@@ -46,7 +46,7 @@ bool OpenPrinterConfigDialog(const char* const* command) {
   base::Process process = base::LaunchProcess(argv, base::LaunchOptions());
   if (!process.IsValid())
     return false;
-  base::EnsureProcessGetsReaped(process.Pid());
+  base::EnsureProcessGetsReaped(std::move(process));
   return true;
 }
 

@@ -54,7 +54,7 @@ void RunCommand(const std::string& command,
 
   base::Process process = base::LaunchProcess(argv, options);
   if (process.IsValid())
-    base::EnsureProcessGetsReaped(process.Pid());
+    base::EnsureProcessGetsReaped(std::move(process));
 }
 
 void XDGOpen(const base::FilePath& working_directory, const std::string& path) {
