@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_job_factory.h"
+#include "components/download/public/common/download_job_factory.h"
 
 #include <memory>
 
@@ -12,17 +12,16 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/parallel_download_job.h"
 #include "components/download/public/common/parallel_download_utils.h"
-#include "content/browser/download/save_package_download_job.h"
-#include "content/public/common/content_features.h"
+#include "components/download/public/common/save_package_download_job.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace content {
+namespace download {
 
 namespace {
 
 // Returns if the download can be parallelized.
-bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
-                              download::DownloadItem* download_item) {
+bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
+                              DownloadItem* download_item) {
   // To enable parallel download, following conditions need to be satisfied.
   // 1. Feature |kParallelDownloading| enabled.
   // 2. Strong validators response headers. i.e. ETag and Last-Modified.
@@ -41,7 +40,7 @@ bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
   bool has_content_length = create_info.total_bytes > 0;
   bool satisfy_min_file_size =
       !download_item->GetReceivedSlices().empty() ||
-      create_info.total_bytes >= download::GetMinSliceSizeConfig();
+      create_info.total_bytes >= GetMinSliceSizeConfig();
   bool satisfy_connection_type = create_info.connection_info ==
                                  net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
   bool http_get_method =
@@ -51,42 +50,37 @@ bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
                            has_content_length && satisfy_min_file_size &&
                            satisfy_connection_type && http_get_method;
 
-  if (!download::IsParallelDownloadEnabled())
+  if (!IsParallelDownloadEnabled())
     return is_parallelizable;
 
-  download::RecordParallelDownloadCreationEvent(
+  RecordParallelDownloadCreationEvent(
       is_parallelizable
-          ? download::ParallelDownloadCreationEvent::STARTED_PARALLEL_DOWNLOAD
-          : download::ParallelDownloadCreationEvent::
-                FELL_BACK_TO_NORMAL_DOWNLOAD);
+          ? ParallelDownloadCreationEvent::STARTED_PARALLEL_DOWNLOAD
+          : ParallelDownloadCreationEvent::FELL_BACK_TO_NORMAL_DOWNLOAD);
 
   if (!has_strong_validator) {
-    download::RecordParallelDownloadCreationEvent(
-        download::ParallelDownloadCreationEvent::
-            FALLBACK_REASON_STRONG_VALIDATORS);
+    RecordParallelDownloadCreationEvent(
+        ParallelDownloadCreationEvent::FALLBACK_REASON_STRONG_VALIDATORS);
   }
   if (!create_info.accept_range) {
-    download::RecordParallelDownloadCreationEvent(
-        download::ParallelDownloadCreationEvent::
-            FALLBACK_REASON_ACCEPT_RANGE_HEADER);
+    RecordParallelDownloadCreationEvent(
+        ParallelDownloadCreationEvent::FALLBACK_REASON_ACCEPT_RANGE_HEADER);
   }
   if (!has_content_length) {
-    download::RecordParallelDownloadCreationEvent(
-        download::ParallelDownloadCreationEvent::
-            FALLBACK_REASON_CONTENT_LENGTH_HEADER);
+    RecordParallelDownloadCreationEvent(
+        ParallelDownloadCreationEvent::FALLBACK_REASON_CONTENT_LENGTH_HEADER);
   }
   if (!satisfy_min_file_size) {
-    download::RecordParallelDownloadCreationEvent(
-        download::ParallelDownloadCreationEvent::FALLBACK_REASON_FILE_SIZE);
+    RecordParallelDownloadCreationEvent(
+        ParallelDownloadCreationEvent::FALLBACK_REASON_FILE_SIZE);
   }
   if (!satisfy_connection_type) {
-    download::RecordParallelDownloadCreationEvent(
-        download::ParallelDownloadCreationEvent::
-            FALLBACK_REASON_CONNECTION_TYPE);
+    RecordParallelDownloadCreationEvent(
+        ParallelDownloadCreationEvent::FALLBACK_REASON_CONNECTION_TYPE);
   }
   if (!http_get_method) {
-    download::RecordParallelDownloadCreationEvent(
-        download::ParallelDownloadCreationEvent::FALLBACK_REASON_HTTP_METHOD);
+    RecordParallelDownloadCreationEvent(
+        ParallelDownloadCreationEvent::FALLBACK_REASON_HTTP_METHOD);
   }
 
   return is_parallelizable;
@@ -95,10 +89,10 @@ bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
 }  // namespace
 
 // static
-std::unique_ptr<download::DownloadJob> DownloadJobFactory::CreateJob(
-    download::DownloadItem* download_item,
-    std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
-    const download::DownloadCreateInfo& create_info,
+std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
+    DownloadItem* download_item,
+    std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+    const DownloadCreateInfo& create_info,
     bool is_save_package_download,
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     net::URLRequestContextGetter* url_request_context_getter) {
@@ -109,15 +103,15 @@ std::unique_ptr<download::DownloadJob> DownloadJobFactory::CreateJob(
 
   bool is_parallelizable = IsParallelizableDownload(create_info, download_item);
   // Build parallel download job.
-  if (download::IsParallelDownloadEnabled() && is_parallelizable) {
-    return std::make_unique<download::ParallelDownloadJob>(
+  if (IsParallelDownloadEnabled() && is_parallelizable) {
+    return std::make_unique<ParallelDownloadJob>(
         download_item, std::move(req_handle), create_info,
         std::move(shared_url_loader_factory), url_request_context_getter);
   }
 
   // An ordinary download job.
-  return std::make_unique<download::DownloadJobImpl>(
-      download_item, std::move(req_handle), is_parallelizable);
+  return std::make_unique<DownloadJobImpl>(download_item, std::move(req_handle),
+                                           is_parallelizable);
 }
 
-}  // namespace
+}  // namespace download

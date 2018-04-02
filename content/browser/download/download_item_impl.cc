@@ -43,6 +43,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_job_factory.h"
 #include "components/download/public/common/download_job_impl.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
@@ -50,7 +51,6 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/parallel_download_utils.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/download_job_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_utils.h"
 #include "content/public/browser/download_item_utils.h"
@@ -411,9 +411,9 @@ DownloadItemImpl::DownloadItemImpl(
       destination_info_(path, path, 0, false, std::string(), base::Time()),
       is_updating_observers_(false),
       weak_ptr_factory_(this) {
-  job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
-                                       download::DownloadCreateInfo(), true,
-                                       nullptr, nullptr);
+  job_ = download::DownloadJobFactory::CreateJob(
+      this, std::move(request_handle), download::DownloadCreateInfo(), true,
+      nullptr, nullptr);
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
 }
@@ -1405,7 +1405,7 @@ void DownloadItemImpl::Start(
                                           download_source_);
 
   download_file_ = std::move(file);
-  job_ = DownloadJobFactory::CreateJob(
+  job_ = download::DownloadJobFactory::CreateJob(
       this, std::move(req_handle), new_create_info, false,
       std::move(shared_url_loader_factory), url_request_context_getter);
   if (job_->IsParallelizable()) {
