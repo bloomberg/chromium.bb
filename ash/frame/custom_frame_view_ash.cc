@@ -593,6 +593,11 @@ CustomFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
 }
 
 int CustomFrameViewAsh::NonClientTopBorderHeight() const {
+  // TODO(oshima): CustomFrameViewAsh should be able to tell if it's
+  // in immersive mode and return 0, instead of using custom logic.
+  if (zero_top_border_height_)
+    return 0;
+
   // The frame should not occupy the window area when it's in fullscreen,
   // not visible or disabled.
   if (frame_->IsFullscreen() || !visible() || !enabled())
