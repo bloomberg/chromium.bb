@@ -219,9 +219,9 @@ TEST_F(EditingUtilitiesTest, NextNodeIndex) {
 
   EXPECT_EQ(
       Position(host, 3),
-      NextPositionOf(Position(two, 2), PositionMoveType::kGraphemeCluster));
+      NextPositionOf(Position(two, 1), PositionMoveType::kGraphemeCluster));
   EXPECT_EQ(PositionInFlatTree(host, 1),
-            NextPositionOf(PositionInFlatTree(two, 2),
+            NextPositionOf(PositionInFlatTree(two, 1),
                            PositionMoveType::kGraphemeCluster));
 }
 
