@@ -139,7 +139,7 @@ static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
   const int comp_allowed = is_comp_ref_allowed(sb_type);
   switch (type) {
     case COMPOUND_AVERAGE:
-    case COMPOUND_SEG: return comp_allowed;
+    case COMPOUND_DIFFWTD: return comp_allowed;
     case COMPOUND_WEDGE:
       return comp_allowed && wedge_params_lookup[sb_type].bits > 0;
     default: assert(0); return 0;
@@ -176,14 +176,16 @@ static INLINE int get_interintra_wedge_bits(BLOCK_SIZE sb_type) {
   return wedge_params_lookup[sb_type].bits;
 }
 
-void build_compound_seg_mask(uint8_t *mask, SEG_MASK_TYPE mask_type,
-                             const uint8_t *src0, int src0_stride,
-                             const uint8_t *src1, int src1_stride,
-                             BLOCK_SIZE sb_type, int h, int w);
-void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
-                                    const uint8_t *src0, int src0_stride,
-                                    const uint8_t *src1, int src1_stride,
-                                    BLOCK_SIZE sb_type, int h, int w, int bd);
+void build_compound_diffwtd_mask(uint8_t *mask, DIFFWTD_MASK_TYPE mask_type,
+                                 const uint8_t *src0, int src0_stride,
+                                 const uint8_t *src1, int src1_stride,
+                                 BLOCK_SIZE sb_type, int h, int w);
+void build_compound_diffwtd_mask_highbd(uint8_t *mask,
+                                        DIFFWTD_MASK_TYPE mask_type,
+                                        const uint8_t *src0, int src0_stride,
+                                        const uint8_t *src1, int src1_stride,
+                                        BLOCK_SIZE sb_type, int h, int w,
+                                        int bd);
 
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,

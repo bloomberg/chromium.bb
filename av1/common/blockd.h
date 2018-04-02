@@ -35,23 +35,23 @@ extern "C" {
 
 #define MAX_MB_PLANE 3
 
-// Set COMPOUND_SEGMENT_TYPE to one of the three
+// Set COMPOUND_DIFFWTD_TYPE to one of the three
 // 0: Uniform
 // 1: Difference weighted
-#define COMPOUND_SEGMENT_TYPE 1
-#define MAX_SEG_MASK_BITS 1
+#define COMPOUND_DIFFWTD_TYPE 1
+#define MAX_DIFFWTD_MASK_BITS 1
 
-// SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
+// DIFFWTD_MASK_TYPES should not surpass 1 << MAX_DIFFWTD_MASK_BITS
 typedef enum {
-#if COMPOUND_SEGMENT_TYPE == 0
+#if COMPOUND_DIFFWTD_TYPE == 0
   UNIFORM_45 = 0,
   UNIFORM_45_INV,
-#elif COMPOUND_SEGMENT_TYPE == 1
+#elif COMPOUND_DIFFWTD_TYPE == 1
   DIFFWTD_38 = 0,
   DIFFWTD_38_INV,
-#endif  // COMPOUND_SEGMENT_TYPE
-  SEG_MASK_TYPES,
-} SEG_MASK_TYPE;
+#endif  // COMPOUND_DIFFWTD_TYPE
+  DIFFWTD_MASK_TYPES,
+} DIFFWTD_MASK_TYPE;
 
 typedef enum {
   KEY_FRAME = 0,
@@ -162,7 +162,7 @@ static INLINE int use_masked_motion_search(COMPOUND_TYPE type) {
 }
 
 static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
-  return (type == COMPOUND_WEDGE || type == COMPOUND_SEG);
+  return (type == COMPOUND_WEDGE || type == COMPOUND_DIFFWTD);
 }
 
 /* For keyframes, intra block modes are predicted by the (already decoded)
@@ -217,7 +217,7 @@ typedef struct RD_STATS {
 typedef struct {
   int wedge_index;
   int wedge_sign;
-  SEG_MASK_TYPE mask_type;
+  DIFFWTD_MASK_TYPE mask_type;
   uint8_t *seg_mask;
   COMPOUND_TYPE interinter_compound_type;
 } INTERINTER_COMPOUND_DATA;
@@ -263,7 +263,7 @@ typedef struct MB_MODE_INFO {
   COMPOUND_TYPE interinter_compound_type;
   int wedge_index;
   int wedge_sign;
-  SEG_MASK_TYPE mask_type;
+  DIFFWTD_MASK_TYPE mask_type;
   MOTION_MODE motion_mode;
   int overlappable_neighbors[2];
   int_mv mv[2];

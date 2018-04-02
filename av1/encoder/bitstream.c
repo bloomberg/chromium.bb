@@ -1088,7 +1088,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     // First write idx to indicate current compound inter prediction mode group
     // Group A (0): jnt_comp, compound_average
-    // Group B (1): interintra, compound_segment, wedge
+    // Group B (1): interintra, compound_diffwtd, wedge
     if (has_second_ref(mbmi)) {
       const int masked_compound_used = is_any_masked_compound_used(bsize) &&
                                        cm->seq_params.enable_masked_compound;
@@ -1117,9 +1117,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                is_inter_compound_mode(mbmi->mode) &&
                mbmi->motion_mode == SIMPLE_TRANSLATION);
         assert(masked_compound_used);
-        // compound_segment, wedge
+        // compound_diffwtd, wedge
         assert(mbmi->interinter_compound_type == COMPOUND_WEDGE ||
-               mbmi->interinter_compound_type == COMPOUND_SEG);
+               mbmi->interinter_compound_type == COMPOUND_DIFFWTD);
 
         if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
           aom_write_symbol(w, mbmi->interinter_compound_type - 1,
@@ -1132,8 +1132,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                            16);
           aom_write_bit(w, mbmi->wedge_sign);
         } else {
-          assert(mbmi->interinter_compound_type == COMPOUND_SEG);
-          aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
+          assert(mbmi->interinter_compound_type == COMPOUND_DIFFWTD);
+          aom_write_literal(w, mbmi->mask_type, MAX_DIFFWTD_MASK_BITS);
         }
       }
     }
