@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/ui_base_features.h"
 
 ArcAppContextMenu::ArcAppContextMenu(
     app_list::AppContextMenuDelegate* delegate,
@@ -22,8 +23,7 @@ ArcAppContextMenu::ArcAppContextMenu(
     : app_list::AppContextMenu(delegate, profile, app_id, controller) {
 }
 
-ArcAppContextMenu::~ArcAppContextMenu() {
-}
+ArcAppContextMenu::~ArcAppContextMenu() = default;
 
 void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
@@ -36,22 +36,22 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   }
 
   if (!controller()->IsAppOpen(app_id())) {
-    menu_model->AddItemWithStringId(LAUNCH_NEW,
-                                    IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    AddContextMenuOption(LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    if (!features::IsTouchableAppContextMenuEnabled())
+      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
   // Create default items.
   app_list::AppContextMenu::BuildMenu(menu_model);
 
-  menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+  if (!features::IsTouchableAppContextMenuEnabled())
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   if (arc_prefs->IsShortcut(app_id()))
-    menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT);
+    AddContextMenuOption(UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT);
   else if (!app_info->sticky)
-    menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
+    AddContextMenuOption(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
 
   // App Info item.
-  menu_model->AddItemWithStringId(SHOW_APP_INFO,
-                                  IDS_APP_CONTEXT_MENU_SHOW_INFO);
+  AddContextMenuOption(SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO);
 }
 
 bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {

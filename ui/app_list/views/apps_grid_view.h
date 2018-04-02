@@ -165,6 +165,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
 
+  // Returns the ideal bounds of an AppListItemView in AppsGridView coordinates.
+  const gfx::Rect& GetIdealBounds(AppListItemView* view) const;
+
   // Returns the item view of the item at |index|.
   AppListItemView* GetItemViewAt(int index) const;
 

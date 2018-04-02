@@ -58,6 +58,7 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
+  bool GetIconForCommandId(int command_id, gfx::Image* icon) const override;
 
  protected:
   AppContextMenu(AppContextMenuDelegate* delegate,
@@ -71,6 +72,14 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
 
   // Helper that toggles pinning state of provided app.
   void TogglePin(const std::string& shelf_app_id);
+
+  // Helper method to add touchable or normal context menu options.
+  void AddContextMenuOption(CommandId command_id, int string_id);
+
+  // Helper method to get the gfx::VectorIcon for a |command_id|. Returns an
+  // empty gfx::VectorIcon if there is no icon for this |command_id|.
+  const gfx::VectorIcon& GetMenuItemVectorIcon(int command_id,
+                                               int string_id) const;
 
   const std::string& app_id() const { return app_id_; }
   Profile* profile() const { return profile_; }

@@ -15,6 +15,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/vector_icons.h"
 
 namespace app_list {
 
@@ -28,12 +32,6 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 
 }  // namespace
 
-// static
-void ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
-    bool disable) {
-  disable_installed_extension_check_for_testing = disable;
-}
-
 ExtensionAppContextMenu::ExtensionAppContextMenu(
     AppContextMenuDelegate* delegate,
     Profile* profile,
@@ -43,6 +41,24 @@ ExtensionAppContextMenu::ExtensionAppContextMenu(
 }
 
 ExtensionAppContextMenu::~ExtensionAppContextMenu() {
+}
+
+// static
+void ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
+    bool disable) {
+  disable_installed_extension_check_for_testing = disable;
+}
+
+int ExtensionAppContextMenu::GetLaunchStringId() const {
+  // If --enable-new-bookmark-apps is enabled, then only check if
+  // USE_LAUNCH_TYPE_WINDOW is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
+  // as pinned tab) and fullscreen-by-default windows do not exist.
+  bool launch_in_window = extensions::util::IsNewBookmarkAppsEnabled()
+                              ? IsCommandIdChecked(USE_LAUNCH_TYPE_WINDOW)
+                              : !(IsCommandIdChecked(USE_LAUNCH_TYPE_PINNED) ||
+                                  IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR));
+  return launch_in_window ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
+                          : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB;
 }
 
 ui::MenuModel* ExtensionAppContextMenu::GetMenuModel() {
@@ -56,17 +72,13 @@ ui::MenuModel* ExtensionAppContextMenu::GetMenuModel() {
 
 void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   if (app_id() == extension_misc::kChromeAppId) {
-    menu_model->AddItemWithStringId(
-        MENU_NEW_WINDOW,
-        IDS_APP_LIST_NEW_WINDOW);
+    AddContextMenuOption(MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW);
     if (!profile()->IsOffTheRecord()) {
-      menu_model->AddItemWithStringId(
-          MENU_NEW_INCOGNITO_WINDOW,
-          IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
+      AddContextMenuOption(MENU_NEW_INCOGNITO_WINDOW,
+                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
     if (controller()->CanDoShowAppInfoFlow()) {
-      menu_model->AddItemWithStringId(SHOW_APP_INFO,
-                                      IDS_APP_CONTEXT_MENU_SHOW_INFO);
+      AddContextMenuOption(SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }
   } else {
     extension_menu_items_.reset(new extensions::ContextMenuMatcher(
@@ -74,45 +86,14 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
         base::Bind(MenuItemHasLauncherContext)));
 
     // First, add the primary actions.
-    if (!is_platform_app_)
-      menu_model->AddItem(LAUNCH_NEW, base::string16());
+    if (!is_platform_app_) {
+      AddContextMenuOption(LAUNCH_NEW, GetLaunchStringId());
+    }
 
     // Create default items.
     AppContextMenu::BuildMenu(menu_model);
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-
-    if (!is_platform_app_) {
-      // When bookmark apps are enabled, hosted apps can only toggle between
-      // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR.
-      if (extensions::util::CanHostedAppsOpenInWindows() &&
-          extensions::util::IsNewBookmarkAppsEnabled()) {
-        // When both flags are enabled, only allow toggling between
-        // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR
-        menu_model->AddCheckItemWithStringId(
-            USE_LAUNCH_TYPE_WINDOW, IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-      } else if (!extensions::util::IsNewBookmarkAppsEnabled()) {
-        // When new bookmark apps are disabled, add pinned and full screen
-        // options as well. Add open as window if CanHostedAppsOpenInWindows
-        // is enabled.
-        menu_model->AddCheckItemWithStringId(
-            USE_LAUNCH_TYPE_REGULAR,
-            IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-        menu_model->AddCheckItemWithStringId(
-            USE_LAUNCH_TYPE_PINNED,
-            IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-        if (extensions::util::CanHostedAppsOpenInWindows()) {
-          menu_model->AddCheckItemWithStringId(
-              USE_LAUNCH_TYPE_WINDOW,
-              IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-        }
-        // Even though the launch type is Full Screen it is more accurately
-        // described as Maximized in Ash.
-        menu_model->AddCheckItemWithStringId(
-            USE_LAUNCH_TYPE_FULLSCREEN,
-            IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-      }
+    if (!features::IsTouchableAppContextMenuEnabled())
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-    }
 
     // Assign unique IDs to commands added by the app itself.
     int index = USE_LAUNCH_TYPE_COMMAND_END;
@@ -123,20 +104,50 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
         false);  // is_action_menu
 
     // If at least 1 item was added, add another separator after the list.
-    if (index > USE_LAUNCH_TYPE_COMMAND_END)
+    if (index > USE_LAUNCH_TYPE_COMMAND_END &&
+        !features::IsTouchableAppContextMenuEnabled()) {
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    }
 
     if (!is_platform_app_)
-      menu_model->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
+      AddContextMenuOption(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
 
-    menu_model->AddItemWithStringId(UNINSTALL,
-                                    is_platform_app_
+    AddContextMenuOption(UNINSTALL, is_platform_app_
                                         ? IDS_APP_LIST_UNINSTALL_ITEM
                                         : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
 
-    if (controller()->CanDoShowAppInfoFlow()) {
-      menu_model->AddItemWithStringId(SHOW_APP_INFO,
-                                      IDS_APP_CONTEXT_MENU_SHOW_INFO);
+    if (controller()->CanDoShowAppInfoFlow())
+      AddContextMenuOption(SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO);
+
+    if (!features::IsTouchableAppContextMenuEnabled())
+      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+
+    if (!is_platform_app_) {
+      // When bookmark apps are enabled, hosted apps can only toggle between
+      // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR.
+      if (extensions::util::CanHostedAppsOpenInWindows() &&
+          extensions::util::IsNewBookmarkAppsEnabled()) {
+        // When both flags are enabled, only allow toggling between
+        // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR
+        AddContextMenuOption(USE_LAUNCH_TYPE_WINDOW,
+                             IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+      } else if (!extensions::util::IsNewBookmarkAppsEnabled()) {
+        // When new bookmark apps are disabled, add pinned and full screen
+        // options as well. Add open as window if CanHostedAppsOpenInWindows
+        // is enabled.
+        AddContextMenuOption(USE_LAUNCH_TYPE_REGULAR,
+                             IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+        AddContextMenuOption(USE_LAUNCH_TYPE_PINNED,
+                             IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+        if (extensions::util::CanHostedAppsOpenInWindows()) {
+          AddContextMenuOption(USE_LAUNCH_TYPE_WINDOW,
+                               IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+        }
+        // Even though the launch type is Full Screen it is more accurately
+        // described as Maximized in Ash.
+        AddContextMenuOption(USE_LAUNCH_TYPE_FULLSCREEN,
+                             IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+      }
     }
   }
 }
@@ -153,18 +164,24 @@ base::string16 ExtensionAppContextMenu::GetLabelForCommandId(
 
   DCHECK_EQ(LAUNCH_NEW, command_id);
 
-  // If --enable-new-bookmark-apps is enabled, then only check if
-  // USE_LAUNCH_TYPE_WINDOW is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
-  // as pinned tab) and fullscreen-by-default windows do not exist.
-  bool launches_in_window =
-      (extensions::util::IsNewBookmarkAppsEnabled()
-           ? IsCommandIdChecked(USE_LAUNCH_TYPE_WINDOW)
-           : !(IsCommandIdChecked(USE_LAUNCH_TYPE_PINNED) ||
-               IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR)));
+  return l10n_util::GetStringUTF16(GetLaunchStringId());
+}
 
-  return launches_in_window ?
-      l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW) :
-      l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB);
+bool ExtensionAppContextMenu::GetIconForCommandId(int command_id,
+                                                  gfx::Image* icon) const {
+  if (!features::IsTouchableAppContextMenuEnabled())
+    return false;
+
+  if (command_id == TOGGLE_PIN)
+    return AppContextMenu::GetIconForCommandId(command_id, icon);
+
+  DCHECK_EQ(LAUNCH_NEW, command_id);
+
+  const views::MenuConfig& menu_config = views::MenuConfig::instance();
+  *icon = gfx::Image(gfx::CreateVectorIcon(
+      GetMenuItemVectorIcon(LAUNCH_NEW, GetLaunchStringId()),
+      menu_config.touchable_icon_size, menu_config.touchable_icon_color));
+  return true;
 }
 
 bool ExtensionAppContextMenu::IsCommandIdChecked(int command_id) const {
