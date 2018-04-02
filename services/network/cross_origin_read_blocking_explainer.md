@@ -385,9 +385,13 @@ Examples:
   * WPT test: `fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html`
 
 In addition to the HTML `<img>` tag, the examples above should apply to other
-web features that consume images: `/favicon.ico`, SVG's `<image>`,
-`background-image` in stylesheets, painting images onto (potentially tainted)
-HTML's `<canvas>`, etc.
+web features that consume images - including, but not limited to:
+* `/favicon.ico`
+* SVG's `<image>`,
+* `<link rel="preload" as="image" ...>` (see WPT test:
+  `fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html`)
+* `background-image` in stylesheets
+* painting images onto (potentially tainted) HTML's `<canvas>`
 
 > [lukasza@chromium.org] Earlier attempts to block nosniff images with
 > incompatible MIME types
