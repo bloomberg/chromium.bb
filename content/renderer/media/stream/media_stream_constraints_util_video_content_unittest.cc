@@ -17,6 +17,9 @@ namespace content {
 
 namespace {
 
+const double kDefaultScreenCastAspectRatio =
+    static_cast<double>(kDefaultScreenCastWidth) / kDefaultScreenCastHeight;
+
 void CheckNonResolutionDefaults(const VideoCaptureSettings& result) {
   EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(base::Optional<double>(), result.min_frame_rate());
@@ -61,7 +64,9 @@ class MediaStreamConstraintsUtilVideoContentTest : public testing::Test {
           std::string(kMediaStreamSourceScreen)) {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
-    return SelectSettingsVideoContentCapture(constraints, stream_source);
+    return SelectSettingsVideoContentCapture(constraints, stream_source,
+                                             kDefaultScreenCastWidth,
+                                             kDefaultScreenCastHeight);
   }
 
   MockConstraintFactory constraint_factory_;

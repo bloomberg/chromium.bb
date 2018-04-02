@@ -38,10 +38,10 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   // the free store. http://crbug.com/764293
   // |render_frame| and |dependency_factory| must outlive this instance.
   UserMediaClientImpl(
-      RenderFrame* render_frame,
+      RenderFrameImpl* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
       std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer);
-  UserMediaClientImpl(RenderFrame* render_frame,
+  UserMediaClientImpl(RenderFrameImpl* render_frame,
                       std::unique_ptr<UserMediaProcessor> user_media_processor);
   ~UserMediaClientImpl() override;
 

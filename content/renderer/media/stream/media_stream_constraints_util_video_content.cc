@@ -28,8 +28,6 @@ static_assert(kMaxScreenCastDimension * kMaxScreenCastDimension <
 
 const int kDefaultScreenCastWidth = 2880;
 const int kDefaultScreenCastHeight = 1800;
-const double kDefaultScreenCastAspectRatio =
-    static_cast<double>(kDefaultScreenCastWidth) / kDefaultScreenCastHeight;
 static_assert(kDefaultScreenCastWidth <= kMaxScreenCastDimension,
               "Invalid kDefaultScreenCastWidth");
 static_assert(kDefaultScreenCastHeight <= kMaxScreenCastDimension,
@@ -260,28 +258,30 @@ int ClampToValidScreenCastDimension(int value) {
 VideoCaptureSettings SelectResultFromCandidates(
     const VideoContentCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
-    const std::string& stream_source) {
+    const std::string& stream_source,
+    int screen_width,
+    int screen_height) {
   std::string device_id = SelectDeviceIDFromCandidates(
       candidates.device_id_set(), basic_constraint_set);
   // If a maximum width or height is explicitly given, use them as default.
   // If only one of them is given, use the default aspect ratio to determine the
   // other default value.
-  // TODO(guidou): Use native screen-capture resolution as default.
-  // http://crbug.com/257097
-  int default_height = kDefaultScreenCastHeight;
-  int default_width = kDefaultScreenCastWidth;
+  int default_width = screen_width;
+  int default_height = screen_height;
+  double default_aspect_ratio =
+      static_cast<double>(default_width) / default_height;
   if (candidates.has_explicit_max_height() &&
       candidates.has_explicit_max_width()) {
     default_height = candidates.resolution_set().max_height();
     default_width = candidates.resolution_set().max_width();
   } else if (candidates.has_explicit_max_height()) {
     default_height = candidates.resolution_set().max_height();
-    default_width = static_cast<int>(
-        std::round(default_height * kDefaultScreenCastAspectRatio));
+    default_width =
+        static_cast<int>(std::round(default_height * default_aspect_ratio));
   } else if (candidates.has_explicit_max_width()) {
     default_width = candidates.resolution_set().max_width();
-    default_height = static_cast<int>(
-        std::round(default_width / kDefaultScreenCastAspectRatio));
+    default_height =
+        static_cast<int>(std::round(default_width / default_aspect_ratio));
   }
   // When the given maximum values are large, the computed values using default
   // aspect ratio may fall out of range. Ensure the defaults are in the valid
@@ -344,7 +344,9 @@ VideoCaptureSettings UnsatisfiedConstraintsResult(
 
 VideoCaptureSettings SelectSettingsVideoContentCapture(
     const blink::WebMediaConstraints& constraints,
-    const std::string& stream_source) {
+    const std::string& stream_source,
+    int screen_width,
+    int screen_height) {
   VideoContentCaptureCandidates candidates;
   candidates.set_resolution_set(ScreenCastResolutionCapabilities());
 
@@ -363,7 +365,7 @@ VideoCaptureSettings SelectSettingsVideoContentCapture(
 
   DCHECK(!candidates.IsEmpty());
   return SelectResultFromCandidates(candidates, constraints.Basic(),
-                                    stream_source);
+                                    stream_source, screen_width, screen_height);
 }
 
 }  // namespace content
