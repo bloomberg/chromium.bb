@@ -81,6 +81,11 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   // preferred height is used.
   void SetHeaderHeight(base::Optional<int> height);
 
+  // Overrides the default top border height with zero value.
+  void set_zero_top_border_height(bool zero_top_border_height) {
+    zero_top_border_height_ = zero_top_border_height;
+  }
+
   // Get the view of the header.
   views::View* GetHeaderView();
 
@@ -165,6 +170,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   HeaderView* header_view_;
 
   OverlayView* overlay_view_;
+
+  bool zero_top_border_height_ = false;
 
   ImmersiveFullscreenControllerDelegate* immersive_delegate_;
 

@@ -637,6 +637,16 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
 #endif
 }
 
+TEST_F(CustomFrameViewAshTest, ZeroTopBorderHeightOverride) {
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
+  custom_frame_view->set_zero_top_border_height(true);
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+  custom_frame_view->set_zero_top_border_height(false);
+  EXPECT_EQ(33, delegate->GetCustomFrameViewTopBorderHeight());
+}
+
 namespace {
 
 class CustomFrameViewAshFrameColorTest
