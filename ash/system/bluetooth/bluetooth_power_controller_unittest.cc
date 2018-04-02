@@ -356,7 +356,7 @@ TEST_F(BluetoothPowerControllerIntegrationTest, Basics) {
   device::BluetoothAdapter* adapter = GetBluetoothAdapter();
 
   // Verify toggling bluetooth before login.
-  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
+  PrefService* local_state = ash_test_helper()->GetLocalStatePrefService();
   GetController()->ToggleBluetoothEnabled();
   EXPECT_TRUE(local_state->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
   EXPECT_TRUE(adapter->IsPowered());

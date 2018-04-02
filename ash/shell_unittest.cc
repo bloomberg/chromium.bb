@@ -567,7 +567,7 @@ TEST_F(ShellLocalStateTest, LocalState) {
   TestingPrefServiceSimple* local_state_ptr = local_state.get();
   ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));
   EXPECT_EQ(local_state_ptr, observer.last_local_state_);
-  EXPECT_EQ(local_state_ptr, Shell::Get()->GetLocalStatePrefService());
+  EXPECT_EQ(local_state_ptr, ash_test_helper()->GetLocalStatePrefService());
 
   Shell::Get()->RemoveShellObserver(&observer);
 }

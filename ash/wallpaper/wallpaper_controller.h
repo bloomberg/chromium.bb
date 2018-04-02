@@ -496,6 +496,15 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // system state (e.g. wallpaper image, SessionState, etc.).
   bool ShouldCalculateColors() const;
 
+  // Caches color calculation results in the local state pref service.
+  void CacheProminentColors(const std::vector<SkColor>& colors,
+                            const std::string& current_location);
+
+  // Gets prominent color cache from the local state pref service. Returns an
+  // empty value if the cache is not available.
+  base::Optional<std::vector<SkColor>> GetCachedColors(
+      const std::string& current_location);
+
   // Move all wallpaper widgets to the locked container.
   // Returns true if the wallpaper moved.
   bool MoveToLockedContainer();
@@ -613,6 +622,11 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // 'set wallpaper' request. (e.g. when a custom wallpaper decoding fails, a
   // default wallpaper decoding is initiated.)
   std::vector<base::FilePath> decode_requests_for_testing_;
+
+  // PrefService provided by Shell::OnLocalStatePrefServiceInitialized.
+  // Valid for the lifetime of ash::Shell which owns WallpaperController.
+  // May be null during intialization or in tests.
+  PrefService* local_state_ = nullptr;
 
   base::WeakPtrFactory<WallpaperController> weak_factory_;
 

@@ -19,6 +19,8 @@
 #include "base/test/scoped_command_line.h"
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
 
+class PrefService;
+
 namespace aura {
 class Window;
 class WindowTreeClientPrivate;
@@ -88,6 +90,8 @@ class AshTestHelper {
   void RunAllPendingInMessageLoop();
 
   void NotifyClientAboutAcceleratedWidgets();
+
+  PrefService* GetLocalStatePrefService();
 
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }
   void set_test_shell_delegate(TestShellDelegate* test_shell_delegate) {

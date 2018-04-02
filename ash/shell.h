@@ -509,10 +509,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
 
-  // Gets the local state pref service. It can be null in mash if connecting to
-  // local state pref service has not completed successfully.
-  PrefService* GetLocalStatePrefService() const;
-
   // Returns WebNotificationTray on the primary root window.
   WebNotificationTray* GetWebNotificationTray();
 

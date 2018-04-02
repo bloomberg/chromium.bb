@@ -82,44 +82,6 @@ constexpr int kCompositorLockTimeoutMs = 750;
 // Default quality for encoding wallpaper.
 const int kDefaultEncodingQuality = 90;
 
-// Caches color calculation results in local state pref service.
-void CacheProminentColors(const std::vector<SkColor>& colors,
-                          const std::string& current_location) {
-  // Local state can be null in tests.
-  if (!Shell::Get()->GetLocalStatePrefService())
-    return;
-  DictionaryPrefUpdate wallpaper_colors_update(
-      Shell::Get()->GetLocalStatePrefService(), prefs::kWallpaperColors);
-  auto wallpaper_colors = std::make_unique<base::ListValue>();
-  for (SkColor color : colors)
-    wallpaper_colors->AppendDouble(static_cast<double>(color));
-  wallpaper_colors_update->SetWithoutPathExpansion(current_location,
-                                                   std::move(wallpaper_colors));
-}
-
-// Gets prominent color cache from local state pref service. Returns an empty
-// value if cache is not available.
-base::Optional<std::vector<SkColor>> GetCachedColors(
-    const std::string& current_location) {
-  base::Optional<std::vector<SkColor>> cached_colors_out;
-  const base::ListValue* prominent_colors = nullptr;
-  // Local state can be null in tests.
-  if (!Shell::Get()->GetLocalStatePrefService() ||
-      !Shell::Get()
-           ->GetLocalStatePrefService()
-           ->GetDictionary(prefs::kWallpaperColors)
-           ->GetListWithoutPathExpansion(current_location, &prominent_colors)) {
-    return cached_colors_out;
-  }
-  cached_colors_out = std::vector<SkColor>();
-  for (base::ListValue::const_iterator iter = prominent_colors->begin();
-       iter != prominent_colors->end(); ++iter) {
-    cached_colors_out.value().push_back(
-        static_cast<SkColor>(iter->GetDouble()));
-  }
-  return cached_colors_out;
-}
-
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
 bool IsShelfColoringEnabled() {
@@ -468,7 +430,7 @@ base::FilePath WallpaperController::GetCustomWallpaperDir(
     const std::string& sub_dir) {
   DCHECK(!dir_chrome_os_custom_wallpapers_path.empty());
   return dir_chrome_os_custom_wallpapers_path.Append(sub_dir);
-  }
+}
 
 // static
 bool WallpaperController::ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
@@ -840,6 +802,7 @@ void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
 
 void WallpaperController::OnLocalStatePrefServiceInitialized(
     PrefService* pref_service) {
+  local_state_ = pref_service;
   if (wallpaper_controller_client_) {
     wallpaper_controller_client_->OnReadyToSetWallpaper();
   } else {
@@ -927,20 +890,20 @@ bool WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
     return true;
   }
 
-  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
-  // Local state can be null in tests.
-  if (!local_state)
+  if (!local_state_)
     return false;
+
   WallpaperInfo old_info;
   if (GetUserWallpaperInfo(account_id, &old_info, is_ephemeral)) {
     // Remove the color cache of the previous wallpaper if it exists.
-    DictionaryPrefUpdate wallpaper_colors_update(local_state,
+    DictionaryPrefUpdate wallpaper_colors_update(local_state_,
                                                  prefs::kWallpaperColors);
     wallpaper_colors_update->RemoveWithoutPathExpansion(old_info.location,
                                                         nullptr);
   }
 
-  DictionaryPrefUpdate wallpaper_update(local_state, prefs::kUserWallpaperInfo);
+  DictionaryPrefUpdate wallpaper_update(local_state_,
+                                        prefs::kUserWallpaperInfo);
   auto wallpaper_info_dict = std::make_unique<base::DictionaryValue>();
   wallpaper_info_dict->SetString(
       kNewWallpaperDateNodeName,
@@ -967,12 +930,10 @@ bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
     return true;
   }
 
-  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
-  // Local state can be null in tests.
-  if (!local_state)
+  if (!local_state_)
     return false;
   const base::DictionaryValue* info_dict;
-  if (!local_state->GetDictionary(prefs::kUserWallpaperInfo)
+  if (!local_state_->GetDictionary(prefs::kUserWallpaperInfo)
            ->GetDictionaryWithoutPathExpansion(account_id.GetUserEmail(),
                                                &info_dict)) {
     return false;
@@ -1425,8 +1386,9 @@ void WallpaperController::OnColorCalculationComplete() {
   // the |kWallpaperColors| pref.
   // TODO(crbug.com/787134): The |prominent_colors_| of wallpapers with empty
   // location should be cached as well.
-  if (!current_wallpaper_->wallpaper_info().location.empty())
+  if (!current_wallpaper_->wallpaper_info().location.empty()) {
     CacheProminentColors(colors, current_wallpaper_->wallpaper_info().location);
+  }
   SetProminentColors(colors);
 }
 
@@ -1514,18 +1476,16 @@ void WallpaperController::RemoveUserWallpaperInfo(const AccountId& account_id,
   if (wallpaper_cache_map_.find(account_id) != wallpaper_cache_map_.end())
     wallpaper_cache_map_.erase(account_id);
 
-  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
-  // Local state can be null in tests.
-  if (!local_state)
+  if (!local_state_)
     return;
   WallpaperInfo info;
   GetUserWallpaperInfo(account_id, &info, is_ephemeral);
-  DictionaryPrefUpdate prefs_wallpapers_info_update(local_state,
+  DictionaryPrefUpdate prefs_wallpapers_info_update(local_state_,
                                                     prefs::kUserWallpaperInfo);
   prefs_wallpapers_info_update->RemoveWithoutPathExpansion(
       account_id.GetUserEmail(), nullptr);
   // Remove the color cache of the previous wallpaper if it exists.
-  DictionaryPrefUpdate wallpaper_colors_update(local_state,
+  DictionaryPrefUpdate wallpaper_colors_update(local_state_,
                                                prefs::kWallpaperColors);
   wallpaper_colors_update->RemoveWithoutPathExpansion(info.location, nullptr);
 }
@@ -1837,6 +1797,38 @@ bool WallpaperController::ShouldCalculateColors() const {
          Shell::Get()->session_controller()->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
          !image.isNull();
+}
+
+void WallpaperController::CacheProminentColors(
+    const std::vector<SkColor>& colors,
+    const std::string& current_location) {
+  if (!local_state_)
+    return;
+  DictionaryPrefUpdate wallpaper_colors_update(local_state_,
+                                               prefs::kWallpaperColors);
+  auto wallpaper_colors = std::make_unique<base::ListValue>();
+  for (SkColor color : colors)
+    wallpaper_colors->AppendDouble(static_cast<double>(color));
+  wallpaper_colors_update->SetWithoutPathExpansion(current_location,
+                                                   std::move(wallpaper_colors));
+}
+
+base::Optional<std::vector<SkColor>> WallpaperController::GetCachedColors(
+    const std::string& current_location) {
+  base::Optional<std::vector<SkColor>> cached_colors_out;
+  const base::ListValue* prominent_colors = nullptr;
+  if (!local_state_ ||
+      !local_state_->GetDictionary(prefs::kWallpaperColors)
+           ->GetListWithoutPathExpansion(current_location, &prominent_colors)) {
+    return cached_colors_out;
+  }
+  cached_colors_out = std::vector<SkColor>();
+  for (base::ListValue::const_iterator iter = prominent_colors->begin();
+       iter != prominent_colors->end(); ++iter) {
+    cached_colors_out.value().push_back(
+        static_cast<SkColor>(iter->GetDouble()));
+  }
+  return cached_colors_out;
 }
 
 bool WallpaperController::MoveToLockedContainer() {
