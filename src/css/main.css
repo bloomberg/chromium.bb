@@ -430,7 +430,7 @@ body.mirror #effects li canvas {
 #buttons input[disabled],
 .buttons button[disabled],
 .buttons input[disabled] {
-  opacity: 0.75;
+  opacity: 0.65;
   pointer-events: none;
 }
 
