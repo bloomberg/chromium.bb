@@ -430,7 +430,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   """Sends a request to Buildbucket to trigger try jobs for a changelist.
 
   Args:
-    auth_config: AuthConfig for Rietveld.
+    auth_config: AuthConfig for Buildbucket.
     changelist: Changelist that the try jobs are associated with.
     buckets: A nested dict mapping bucket names to builders to tests.
     options: Command-line options.
@@ -442,6 +442,8 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   assert patchset, 'CL must be uploaded first'
 
   codereview_host = urlparse.urlparse(codereview_url).hostname
+  # Cache the buildbucket credentials under the codereview host key, so that
+  # users can use different credentials for different buckets.
   authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
   http = authenticator.authorize(httplib2.Http())
   http.force_exception_to_status_code = True
