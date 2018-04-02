@@ -268,6 +268,24 @@ void BlockedDll(size_t blocked_index) {
   }
 }
 
+int DllMatch(const std::wstring& module_name) {
+  if (module_name.empty())
+    return -1;
+
+  for (int i = 0; blacklist::g_troublesome_dlls[i] != NULL; ++i) {
+    if (_wcsicmp(module_name.c_str(), blacklist::g_troublesome_dlls[i]) == 0)
+      return i;
+  }
+  return -1;
+}
+
+bool DllMatch(const std::string& module_name) {
+  if (module_name.empty())
+    return false;
+
+  return DllMatch(std::wstring(module_name.begin(), module_name.end())) != -1;
+}
+
 bool Initialize(bool force) {
   // Check to see that we found the functions we need in ntdll.
   if (!InitializeInterceptImports())

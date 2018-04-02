@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome_elf/third_party_dlls/logging_api.h"
 
 namespace third_party_dlls {
 

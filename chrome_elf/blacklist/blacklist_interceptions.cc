@@ -36,17 +36,6 @@ FARPROC GetNtDllExportByName(const char* export_name) {
   return ::GetProcAddress(ntdll, export_name);
 }
 
-int DllMatch(const std::wstring& module_name) {
-  if (module_name.empty())
-    return -1;
-
-  for (int i = 0; blacklist::g_troublesome_dlls[i] != NULL; ++i) {
-    if (_wcsicmp(module_name.c_str(), blacklist::g_troublesome_dlls[i]) == 0)
-      return i;
-  }
-  return -1;
-}
-
 // TODO(robertshield): Some of the helper functions below overlap somewhat with
 // code in sandbox_nt_util.cc. See if they can be unified.
 
@@ -200,7 +189,7 @@ NTSTATUS BlNtMapViewOfSectionImpl(
     std::wstring module_name_from_image(GetImageInfoFromLoadedModule(
         reinterpret_cast<HMODULE>(*base), &image_flags));
 
-    int blocked_index = DllMatch(module_name_from_image);
+    int blocked_index = blacklist::DllMatch(module_name_from_image);
 
     // If the module name isn't blacklisted, see if the file name is different
     // and blacklisted.
@@ -209,7 +198,7 @@ NTSTATUS BlNtMapViewOfSectionImpl(
       std::wstring module_name_from_file = ExtractLoadedModuleName(file_name);
 
       if (module_name_from_image != module_name_from_file)
-        blocked_index = DllMatch(module_name_from_file);
+        blocked_index = blacklist::DllMatch(module_name_from_file);
     }
 
     if (blocked_index != -1) {
