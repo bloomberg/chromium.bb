@@ -103,10 +103,9 @@ PinDialogManager::RequestPinResponse PinDialogManager::ShowPinDialog(
                                           attempts_left, callback, this);
 
   gfx::NativeWindow parent = GetBrowserParentWindow();
-  gfx::NativeWindow context =
-      parent ? nullptr : ash::Shell::GetPrimaryRootWindow();
-  active_window_ = views::DialogDelegate::CreateDialogWidget(active_pin_dialog_,
-                                                             context, parent);
+  // If there is no parent, falls back to the root window for new windows.
+  active_window_ = views::DialogDelegate::CreateDialogWidget(
+      active_pin_dialog_, /*context=*/ nullptr, parent);
   active_window_->Show();
 
   return SUCCESS;

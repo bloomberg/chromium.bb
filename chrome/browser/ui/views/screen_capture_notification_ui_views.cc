@@ -30,7 +30,13 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/shell.h"
+#include "ash/shell.h"  // mash-ok
+#include "chrome/browser/chromeos/ash_config.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #endif
 
 namespace {
@@ -184,8 +190,14 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   // TODO(sergeyu): The notification bar must be shown on the monitor that's
   // being captured. Make sure it's always the case. Currently we always capture
   // the primary monitor.
-  if (ash::Shell::HasInstance())
+  if (chromeos::GetAshConfig() != ash::Config::MASH) {
     params.context = ash::Shell::GetPrimaryRootWindow();
+  } else {
+    const display::Display primary_display =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
+    params.mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(primary_display.id());
+  }
 #endif
 
   widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);

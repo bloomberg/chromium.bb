@@ -20,11 +20,13 @@
 #include "ui/views/mus/window_manager_frame_values.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_style.mojom.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #endif
 
@@ -32,7 +34,12 @@ BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::DesktopNativeWidgetAura(browser_frame),
       browser_frame_(browser_frame),
-      browser_view_(browser_view) {}
+      browser_view_(browser_view) {
+#if defined(OS_CHROMEOS)
+  // Not used with Mus on Chrome OS.
+  DCHECK_EQ(chromeos::GetAshConfig(), ash::Config::MASH);
+#endif
+}
 
 BrowserFrameMus::~BrowserFrameMus() {}
 

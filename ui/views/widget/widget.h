@@ -276,8 +276,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // hierarchy this widget should be placed. (This is separate from |parent|;
     // if you pass a RootWindow to |parent|, your window will be parented to
     // |parent|. If you pass a RootWindow to |context|, we ask that RootWindow
-    // where it wants your window placed.) NULL is not allowed if you are using
-    // aura.
+    // where it wants your window placed.) Nullptr is not allowed on Windows and
+    // Linux. Nullptr is allowed on Chrome OS, which will place the window on
+    // the default desktop for new windows.
     gfx::NativeWindow context;
     // If true, forces the window to be shown in the taskbar, even for window
     // types that do not appear in the taskbar by default (popup and bubble).

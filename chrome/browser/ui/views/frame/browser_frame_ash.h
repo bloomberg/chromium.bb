@@ -12,7 +12,8 @@
 class BrowserFrame;
 class BrowserView;
 
-// BrowserFrameAsh provides the frame for Chrome browser windows on Chrome OS.
+// BrowserFrameAsh provides the frame for Chrome browser windows on Chrome OS
+// under classic ash.
 class BrowserFrameAsh : public views::NativeWidgetAura,
                         public NativeBrowserFrame {
  public:

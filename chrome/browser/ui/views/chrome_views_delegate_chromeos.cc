@@ -75,18 +75,11 @@ ChromeViewsDelegate::GetOpacityForInitParams(
 views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
     views::Widget::InitParams* params,
     views::internal::NativeWidgetDelegate* delegate) {
-  // When we are doing straight chromeos builds, we still need to handle the
-  // toplevel window case.
-  // There may be a few remaining widgets in Chrome OS that are not top level,
-  // but have neither a context nor a parent. Provide a fallback context so
-  // users don't crash. Developers will hit the DCHECK and should provide a
-  // context.
-  if (params->context)
-    params->context = params->context->GetRootWindow();
-  DCHECK(params->parent || params->context || !params->child)
-      << "Please provide a parent or context for this widget.";
-  if (!params->parent && !params->context)
-    params->context = ash::Shell::GetPrimaryRootWindow();
+  // Classic ash requires a parent or a context that it can use to look up a
+  // root window to find a WindowParentingClient. Mash handles window parenting
+  // inside ash, see ash::CreateAndParentTopLevelWindow().
+  if (!ash_util::IsRunningInMash() && !params->parent && !params->context)
+    params->context = ash::Shell::GetRootWindowForNewWindows();
 
   // By returning null Widget creates the default NativeWidget implementation,
   // which for chromeos is NativeWidgetAura.
