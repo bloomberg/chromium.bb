@@ -31,6 +31,7 @@
 
 #include <memory>
 #include "base/gtest_prod_util.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/Resource.h"
@@ -40,6 +41,7 @@
 #include "platform/wtf/Forward.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
 
@@ -54,7 +56,8 @@ class ResourceFetcher;
 class PLATFORM_EXPORT ResourceLoader final
     : public GarbageCollectedFinalized<ResourceLoader>,
       public ResourceLoadSchedulerClient,
-      protected WebURLLoaderClient {
+      protected WebURLLoaderClient,
+      protected mojom::blink::ProgressClient {
   USING_GARBAGE_COLLECTED_MIXIN(ResourceLoader);
   USING_PRE_FINALIZER(ResourceLoader, Dispose);
 
@@ -168,6 +171,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
   void CancelTimerFired(TimerBase*);
 
+  void OnProgress(uint64_t delta) override;
   void FinishedCreatingBlob(const scoped_refptr<BlobDataHandle>&);
 
   std::unique_ptr<WebURLLoader> loader_;
@@ -180,6 +184,7 @@ class PLATFORM_EXPORT ResourceLoader final
   bool is_cache_aware_loading_activated_;
 
   bool is_downloading_to_blob_ = false;
+  mojo::AssociatedBinding<mojom::blink::ProgressClient> progress_binding_;
   bool blob_finished_ = false;
   bool blob_response_started_ = false;
   // If DidFinishLoading is called while downloading to a blob before the blob

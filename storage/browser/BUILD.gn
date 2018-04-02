@@ -323,6 +323,8 @@ static_library("test_support") {
   sources = [
     "test/async_file_test_helper.cc",
     "test/async_file_test_helper.h",
+    "test/fake_progress_client.cc",
+    "test/fake_progress_client.h",
     "test/fileapi_test_file_set.cc",
     "test/fileapi_test_file_set.h",
     "test/mock_blob_registry_delegate.cc",

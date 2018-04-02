@@ -25,6 +25,7 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
                           const String& content_disposition,
                           uint64_t expected_length,
                           mojo::ScopedDataPipeConsumerHandle,
+                          mojom::blink::ProgressClientAssociatedPtrInfo,
                           RegisterFromStreamCallback) override;
 
   void GetBlobFromUUID(mojom::blink::BlobRequest,
