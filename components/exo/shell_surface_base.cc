@@ -721,10 +721,15 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType type) {
 
 void ShellSurfaceBase::OnSetFrameColors(SkColor active_color,
                                         SkColor inactive_color) {
-  // TODO(reveman): Allow frame colors to change after surface has been enabled.
   has_frame_colors_ = true;
-  active_frame_color_ = active_color;
-  inactive_frame_color_ = inactive_color;
+  active_frame_color_ = SkColorSetA(active_color, SK_AlphaOPAQUE);
+  inactive_frame_color_ = SkColorSetA(inactive_color, SK_AlphaOPAQUE);
+  if (widget_) {
+    widget_->GetNativeWindow()->SetProperty(ash::kFrameActiveColorKey,
+                                            active_frame_color_);
+    widget_->GetNativeWindow()->SetProperty(ash::kFrameInactiveColorKey,
+                                            inactive_frame_color_);
+  }
 }
 
 void ShellSurfaceBase::OnSetParent(Surface* parent,
