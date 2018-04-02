@@ -23,7 +23,7 @@
       ]
     },
     "notifications",
-    "storage"
+    "unlimitedStorage"
   ],
   "file_system_provider_capabilities": {
     "multipleMounts": true,

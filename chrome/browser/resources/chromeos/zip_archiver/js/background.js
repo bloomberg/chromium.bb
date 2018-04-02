@@ -30,3 +30,7 @@ unpacker.app.loadNaclModule('module.nmf', 'application/x-pnacl');
 
 // Load translations
 unpacker.app.loadStringData();
+
+// Clean all temporary files inside the work directory, just in case the
+// extension aborted previously without removing ones.
+unpacker.app.cleanWorkDirectory();
