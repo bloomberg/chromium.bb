@@ -10,6 +10,7 @@
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webrunner/browser/webrunner_browser_main.h"
+#include "webrunner/browser/webrunner_content_browser_client.h"
 #include "webrunner/common/webrunner_content_client.h"
 
 namespace webrunner {
@@ -67,6 +68,13 @@ int WebRunnerMainDelegate::RunProcess(
     return -1;
 
   return WebRunnerBrowserMain(main_function_params);
+}
+
+content::ContentBrowserClient*
+WebRunnerMainDelegate::CreateContentBrowserClient() {
+  DCHECK(!browser_client_);
+  browser_client_ = std::make_unique<WebRunnerContentBrowserClient>();
+  return browser_client_.get();
 }
 
 }  // namespace webrunner

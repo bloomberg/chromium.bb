@@ -1,3 +1,5 @@
 include_rules = [
   "+content/public/browser",
+  "+ui/aura",
+  "+ui/display",
 ]

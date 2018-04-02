@@ -18,6 +18,7 @@ executable("webrunner") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
+    "//ui/display",
   ]
 
   data_deps = [
@@ -33,6 +34,12 @@ executable("webrunner") {
     "app/webrunner_main_delegate.h",
     "browser/webrunner_browser_main.cc",
     "browser/webrunner_browser_main.h",
+    "browser/webrunner_browser_main_parts.cc",
+    "browser/webrunner_browser_main_parts.h",
+    "browser/webrunner_content_browser_client.cc",
+    "browser/webrunner_content_browser_client.h",
+    "browser/webrunner_screen.cc",
+    "browser/webrunner_screen.h",
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
   ]

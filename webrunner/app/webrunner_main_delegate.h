@@ -27,9 +27,11 @@ class WebRunnerMainDelegate : public content::ContentMainDelegate {
   int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
+  content::ContentBrowserClient* CreateContentBrowserClient() override;
 
  private:
   std::unique_ptr<content::ContentClient> content_client_;
+  std::unique_ptr<content::ContentBrowserClient> browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRunnerMainDelegate);
 };
