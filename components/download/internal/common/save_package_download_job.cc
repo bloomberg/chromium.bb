@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/save_package_download_job.h"
+#include "components/download/public/common/save_package_download_job.h"
 
-namespace content {
+namespace download {
 
 SavePackageDownloadJob::SavePackageDownloadJob(
-    download::DownloadItem* download_item,
-    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
-    : download::DownloadJob(download_item, std::move(request_handle)) {}
+    DownloadItem* download_item,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
+    : DownloadJob(download_item, std::move(request_handle)) {}
 
 SavePackageDownloadJob::~SavePackageDownloadJob() = default;
 
@@ -17,4 +17,4 @@ bool SavePackageDownloadJob::IsSavePackageDownload() const {
   return true;
 }
 
-}  // namespace content
+}  // namespace download

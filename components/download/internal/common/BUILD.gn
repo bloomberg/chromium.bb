@@ -19,6 +19,7 @@ source_set("internal") {
     "download_interrupt_reasons_impl.cc",
     "download_interrupt_reasons_utils.cc",
     "download_job.cc",
+    "download_job_factory.cc",
     "download_job_impl.cc",
     "download_response_handler.cc",
     "download_stats.cc",
@@ -30,6 +31,7 @@ source_set("internal") {
     "parallel_download_utils.cc",
     "rate_estimator.cc",
     "resource_downloader.cc",
+    "save_package_download_job.cc",
     "stream_handle_input_stream.cc",
     "url_download_handler_factory.cc",
   ]

@@ -31,6 +31,7 @@ component("public") {
     "download_interrupt_reasons_utils.h",
     "download_item.h",
     "download_job.h",
+    "download_job_factory.h",
     "download_job_impl.h",
     "download_request_handle_interface.h",
     "download_response_handler.h",
@@ -51,6 +52,7 @@ component("public") {
     "rate_estimator.h",
     "resource_downloader.h",
     "resume_mode.h",
+    "save_package_download_job.h",
     "stream_handle_input_stream.h",
     "url_download_handler_factory.h",
   ]
