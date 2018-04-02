@@ -17,6 +17,8 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/timezone_settings.h"
 
+class Profile;
+
 namespace arc {
 class ArcOptInPreferenceHandler;
 }
@@ -73,6 +75,9 @@ class ArcTermsOfServiceScreenHandler
   void MaybeLoadPlayStoreToS(bool ignore_network_state);
 
   void StartNetworkAndTimeZoneObserving();
+
+  // Sends if Arc enable status is manged to screen.
+  void SendArcManagedStatus(Profile* profile);
 
   bool NeedDispatchEventOnAction();
 
