@@ -5,6 +5,7 @@
 #ifndef IDBValueWrapping_h
 #define IDBValueWrapping_h
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
@@ -26,6 +27,9 @@ class ScriptState;
 class ScriptValue;
 class SerializedScriptValue;
 class SharedBuffer;
+
+const base::Feature kIndexedDBLargeValueWrapping{
+    "IndexedDBLargeValueWrapping", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Logic for serializing V8 values for storage in IndexedDB.
 //
@@ -163,11 +167,7 @@ class MODULES_EXPORT IDBValueWrapper {
   // storage for IndexedDB, was not designed with large values in mind. At the
   // very least, large values will slow down compaction, causing occasional I/O
   // spikes.
-  //
-  // TODO(crbug.com/756447): 128MB is the maximum IPC size, so this threshold
-  // effectively disables wrapping. Set the threshold back to 64 * 1024 after
-  // the IDB Blob reading error is fixed.
-  static constexpr unsigned kWrapThreshold = 128 * 1024 * 1024;
+  static constexpr unsigned kWrapThreshold = 64 * 1024;
 
   // MIME type used for Blobs that wrap IDBValues.
   static constexpr const char* kWrapMimeType =

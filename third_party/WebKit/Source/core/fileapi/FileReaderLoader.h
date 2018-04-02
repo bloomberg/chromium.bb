@@ -99,6 +99,8 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 
   FileError::ErrorCode GetErrorCode() const { return error_code_; }
 
+  int32_t GetNetError() const { return net_error_; }
+
   void SetEncoding(const String&);
   void SetDataType(const String& data_type) { data_type_ = data_type; }
 
@@ -145,10 +147,11 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   uint64_t bytes_loaded_ = 0;
   // total_bytes_ is set to the total size of the blob being loaded as soon as
   // it is known, and  the buffer for receiving data of total_bytes_ is
-  // allocated and never grow even when extra data is appeneded.
+  // allocated and never grow even when extra data is appended.
   Optional<uint64_t> total_bytes_;
   int64_t memory_usage_reported_to_v8_ = 0;
 
+  int32_t net_error_ = 0;  // net::OK
   FileError::ErrorCode error_code_ = FileError::kOK;
 
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;

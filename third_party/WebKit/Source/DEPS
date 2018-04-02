@@ -3,6 +3,7 @@ include_rules = [
     "+base/callback_forward.h",
     "+base/containers/span.h",
     "+base/debug",
+    "+base/feature_list.h",
     "+base/gtest_prod_util.h",
     "+base/location.h",
     "+base/macros.h",

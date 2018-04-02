@@ -67,7 +67,9 @@ _CONFIG = [
             'base::debug::.+',
 
             # Feature list checking.
-            'base::FeatureList',
+            'base::Feature.*',
+            'base::FEATURE_.+',
+
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',
