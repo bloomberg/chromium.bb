@@ -7,6 +7,7 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/NodeList.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
@@ -3206,6 +3207,28 @@ TEST_F(InputMethodControllerTest, SetCompositionAfterNonEditableElement) {
           SelectionInDOMTree::Builder()
               .SetBaseAndExtent(Controller().CompositionEphemeralRange())
               .Build()));
+}
+
+TEST_F(InputMethodControllerTest, SetCompositionInTableCell) {
+  GetFrame().Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<table id='sample' contenteditable><tr><td>a</td><td "
+          "id='td2'>|</td></tr></table>"),
+      SetSelectionOptions());
+  Element* const table = GetDocument().getElementById("sample");
+  table->focus();
+
+  Controller().SetComposition(String::FromUTF8("c"), Vector<ImeTextSpan>(), 1,
+                              1);
+
+  Element* const td2 = GetDocument().getElementById("td2");
+  const Node* const text_node = td2->firstChild();
+
+  Range* range = GetCompositionRange();
+  EXPECT_EQ(text_node, range->startContainer());
+  EXPECT_EQ(0u, range->startOffset());
+  EXPECT_EQ(text_node, range->endContainer());
+  EXPECT_EQ(1u, range->endOffset());
 }
 
 }  // namespace blink
