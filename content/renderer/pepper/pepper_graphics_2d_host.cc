@@ -17,9 +17,10 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
-#include "components/viz/client/client_shared_bitmap_manager.h"
+#include "cc/resources/cross_thread_shared_bitmap.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -326,7 +327,8 @@ bool PepperGraphics2DHost::BindToInstance(
     new_instance->InvalidateRect(gfx::Rect());
   }
 
-  cached_bitmap_.reset();
+  cached_bitmap_ = nullptr;
+  cached_bitmap_registration_ = cc::SharedBitmapIdRegistration();
   composited_output_modified_ = true;
 
   bound_instance_ = new_instance;
@@ -408,7 +410,8 @@ gfx::Size PepperGraphics2DHost::Size() const {
 }
 
 void PepperGraphics2DHost::ClearCache() {
-  cached_bitmap_.reset();
+  cached_bitmap_ = nullptr;
+  cached_bitmap_registration_ = cc::SharedBitmapIdRegistration();
 }
 
 int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
@@ -560,16 +563,18 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
 }
 
 void PepperGraphics2DHost::ReleaseSoftwareCallback(
-    std::unique_ptr<viz::SharedBitmap> bitmap,
-    const gfx::Size& bitmap_size,
+    scoped_refptr<cc::CrossThreadSharedBitmap> bitmap,
+    cc::SharedBitmapIdRegistration registration,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
-  cached_bitmap_.reset();
+  cached_bitmap_ = nullptr;
+  cached_bitmap_registration_ = cc::SharedBitmapIdRegistration();
   // Only keep around a cached bitmap if the plugin is currently drawing (has
   // need_flush_ack_ set).
-  if (need_flush_ack_ && bound_instance_)
+  if (need_flush_ack_ && bound_instance_) {
     cached_bitmap_ = std::move(bitmap);
-  cached_bitmap_size_ = bitmap_size;
+    cached_bitmap_registration_ = std::move(registration);
+  }
 }
 
 // static
@@ -605,6 +610,7 @@ void PepperGraphics2DHost::ReleaseTextureCallback(
 }
 
 bool PepperGraphics2DHost::PrepareTransferableResource(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* transferable_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   // Reuse the |main_thread_context_| if it is not lost. If it is lost, we
@@ -751,33 +757,38 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   }
 
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  std::unique_ptr<viz::SharedBitmap> shared_bitmap;
+  scoped_refptr<cc::CrossThreadSharedBitmap> shared_bitmap;
+  cc::SharedBitmapIdRegistration registration;
   if (cached_bitmap_) {
-    if (cached_bitmap_size_ == pixel_image_size)
+    if (cached_bitmap_->size() == pixel_image_size) {
       shared_bitmap = std::move(cached_bitmap_);
-    else
-      cached_bitmap_.reset();
+      registration = std::move(cached_bitmap_registration_);
+    } else {
+      cached_bitmap_ = nullptr;
+      cached_bitmap_registration_ = cc::SharedBitmapIdRegistration();
+    }
   }
   if (!shared_bitmap) {
-    shared_bitmap =
-        RenderThreadImpl::current()
-            ->shared_bitmap_manager()
-            ->AllocateSharedBitmap(pixel_image_size, viz::RGBA_8888);
+    viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
+    std::unique_ptr<base::SharedMemory> shm =
+        viz::bitmap_allocation::AllocateMappedBitmap(pixel_image_size,
+                                                     viz::RGBA_8888);
+    shared_bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
+        id, std::move(shm), pixel_image_size, viz::RGBA_8888);
+    registration = bitmap_registrar->RegisterSharedBitmapId(id, shared_bitmap);
   }
-  if (!shared_bitmap)
-    return false;
   void* src = image_data_->Map();
-  memcpy(shared_bitmap->pixels(), src,
+  memcpy(shared_bitmap->shared_memory()->memory(), src,
          viz::ResourceSizes::CheckedSizeInBytes<size_t>(pixel_image_size,
                                                         viz::RGBA_8888));
   image_data_->Unmap();
 
   *transferable_resource = viz::TransferableResource::MakeSoftware(
-      shared_bitmap->id(), shared_bitmap->sequence_number(), pixel_image_size,
+      shared_bitmap->id(), /*sequence_number=*/0, pixel_image_size,
       viz::RGBA_8888);
   *release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
-      base::Passed(&shared_bitmap), pixel_image_size));
+      base::Passed(&shared_bitmap), base::Passed(&registration)));
   composited_output_modified_ = false;
   return true;
 }
