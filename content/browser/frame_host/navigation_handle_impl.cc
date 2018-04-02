@@ -192,7 +192,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_download_(false),
       is_stream_(false),
       started_from_context_menu_(started_from_context_menu),
-      is_same_process_(false),
+      is_same_process_(true),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",
