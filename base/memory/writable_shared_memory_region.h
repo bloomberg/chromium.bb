@@ -66,13 +66,13 @@ class BASE_EXPORT WritableSharedMemoryRegion {
   // at least |subtle::PlatformSharedMemoryRegion::kMapMinimumAlignment|.
   // Returns a valid WritableSharedMemoryMapping instance on success, invalid
   // otherwise.
-  WritableSharedMemoryMapping Map();
+  WritableSharedMemoryMapping Map() const;
 
   // Same as above, but maps only |size| bytes of the shared memory block
   // starting with the given |offset|. |offset| must be aligned to value of
   // |SysInfo::VMAllocationGranularity()|. Returns an invalid mapping if
   // requested bytes are out of the region limits.
-  WritableSharedMemoryMapping MapAt(off_t offset, size_t size);
+  WritableSharedMemoryMapping MapAt(off_t offset, size_t size) const;
 
   // Whether underlying platform handles are valid.
   bool IsValid() const;

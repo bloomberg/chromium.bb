@@ -38,16 +38,16 @@ UnsafeSharedMemoryRegion& UnsafeSharedMemoryRegion::operator=(
     UnsafeSharedMemoryRegion&& region) = default;
 UnsafeSharedMemoryRegion::~UnsafeSharedMemoryRegion() = default;
 
-UnsafeSharedMemoryRegion UnsafeSharedMemoryRegion::Duplicate() {
+UnsafeSharedMemoryRegion UnsafeSharedMemoryRegion::Duplicate() const {
   return UnsafeSharedMemoryRegion(handle_.Duplicate());
 }
 
-WritableSharedMemoryMapping UnsafeSharedMemoryRegion::Map() {
+WritableSharedMemoryMapping UnsafeSharedMemoryRegion::Map() const {
   return MapAt(0, handle_.GetSize());
 }
 
 WritableSharedMemoryMapping UnsafeSharedMemoryRegion::MapAt(off_t offset,
-                                                            size_t size) {
+                                                            size_t size) const {
   if (!IsValid())
     return {};
 

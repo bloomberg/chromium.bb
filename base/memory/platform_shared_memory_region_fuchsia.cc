@@ -44,7 +44,7 @@ bool PlatformSharedMemoryRegion::IsValid() const {
   return handle_.is_valid();
 }
 
-PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Duplicate() {
+PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Duplicate() const {
   if (!IsValid())
     return {};
 
@@ -92,7 +92,7 @@ bool PlatformSharedMemoryRegion::ConvertToReadOnly() {
 bool PlatformSharedMemoryRegion::MapAt(off_t offset,
                                        size_t size,
                                        void** memory,
-                                       size_t* mapped_size) {
+                                       size_t* mapped_size) const {
   if (!IsValid())
     return false;
 

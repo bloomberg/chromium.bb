@@ -116,7 +116,7 @@ bool PlatformSharedMemoryRegion::IsValid() const {
          (mode_ == Mode::kWritable ? handle_.readonly_fd.is_valid() : true);
 }
 
-PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Duplicate() {
+PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Duplicate() const {
   if (!IsValid())
     return {};
 
@@ -148,7 +148,7 @@ bool PlatformSharedMemoryRegion::ConvertToReadOnly() {
 bool PlatformSharedMemoryRegion::MapAt(off_t offset,
                                        size_t size,
                                        void** memory,
-                                       size_t* mapped_size) {
+                                       size_t* mapped_size) const {
   if (!IsValid())
     return false;
 

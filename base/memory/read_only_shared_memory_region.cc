@@ -58,16 +58,17 @@ ReadOnlySharedMemoryRegion& ReadOnlySharedMemoryRegion::operator=(
     ReadOnlySharedMemoryRegion&& region) = default;
 ReadOnlySharedMemoryRegion::~ReadOnlySharedMemoryRegion() = default;
 
-ReadOnlySharedMemoryRegion ReadOnlySharedMemoryRegion::Duplicate() {
+ReadOnlySharedMemoryRegion ReadOnlySharedMemoryRegion::Duplicate() const {
   return ReadOnlySharedMemoryRegion(handle_.Duplicate());
 }
 
-ReadOnlySharedMemoryMapping ReadOnlySharedMemoryRegion::Map() {
+ReadOnlySharedMemoryMapping ReadOnlySharedMemoryRegion::Map() const {
   return MapAt(0, handle_.GetSize());
 }
 
-ReadOnlySharedMemoryMapping ReadOnlySharedMemoryRegion::MapAt(off_t offset,
-                                                              size_t size) {
+ReadOnlySharedMemoryMapping ReadOnlySharedMemoryRegion::MapAt(
+    off_t offset,
+    size_t size) const {
   if (!IsValid())
     return {};
 

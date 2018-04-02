@@ -157,7 +157,7 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
   // invalid region on failure, the current instance remains valid.
   // Can be called only in kReadOnly and kUnsafe modes, CHECK-fails if is
   // called in kWritable mode.
-  PlatformSharedMemoryRegion Duplicate();
+  PlatformSharedMemoryRegion Duplicate() const;
 
   // Converts the region to read-only. Returns whether the operation succeeded.
   // Makes the current instance invalid on failure. Can be called only in
@@ -180,7 +180,10 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
   // and leaves output parameters in unspecified state otherwise. The mapped
   // address is guaranteed to have an alignment of at least
   // |kMapMinimumAlignment|.
-  bool MapAt(off_t offset, size_t size, void** memory, size_t* mapped_size);
+  bool MapAt(off_t offset,
+             size_t size,
+             void** memory,
+             size_t* mapped_size) const;
 
   const UnguessableToken& GetGUID() const { return guid_; }
 
