@@ -24,7 +24,6 @@
 
 #include "platform/wtf/text/Base64.h"
 
-#include "platform/wtf/StringExtras.h"
 #include <limits.h>
 
 namespace WTF {

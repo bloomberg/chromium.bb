@@ -26,8 +26,6 @@
 
 #include "platform/wtf/text/TextCodec.h"
 
-#include "platform/wtf/StringExtras.h"
-
 namespace WTF {
 
 TextCodec::~TextCodec() = default;
