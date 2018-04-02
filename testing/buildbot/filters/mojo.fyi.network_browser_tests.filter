@@ -12,6 +12,7 @@
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
 -ExtensionApiTest.Debugger
+-ExtensionApiTest.XHRFileURLs
 -ExtensionApiTestWithSwitch.ExtensionDebugger
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
 -LocalNTPVoiceJavascriptTest.TextTests

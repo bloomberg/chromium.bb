@@ -31,11 +31,24 @@ IN_PROC_BROWSER_TEST_F(CrossOriginXHR, ContentScript) {
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/content_script")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginXHR, FileAccess) {
-  ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/file_access")) << message_;
+// Tests that an extension frame can xhr a file url if it has file access and
+// "<all_urls>" host permissions.
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, FileAccessAllURLs) {
+  ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/file_access_all_urls"))
+      << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginXHR, NoFileAccess) {
-  ASSERT_TRUE(RunExtensionTestNoFileAccess(
-      "cross_origin_xhr/no_file_access")) << message_;
+// Tests that an extension frame can't xhr a file url if it has no file access
+// even with the "<all_urls>" host permissions.
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, NoFileAccessAllURLs) {
+  ASSERT_TRUE(
+      RunExtensionTestNoFileAccess("cross_origin_xhr/no_file_access_all_urls"))
+      << message_;
+}
+
+// Tests that an extension frame can't xhr a file url if it does not have host
+// permissions to the file scheme even though it has file access.
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, FileAccessNoHosts) {
+  ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/file_access_no_hosts"))
+      << message_;
 }
