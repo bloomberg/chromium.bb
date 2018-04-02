@@ -118,6 +118,8 @@ extern const base::Feature kDownloadsForeground;
 extern const base::Feature kDownloadsLocationChange;
 #endif
 
+extern const base::Feature kEnableEmojiContextMenu;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kEnableUnifiedMultiDeviceSettings;
 extern const base::Feature kEnableUnifiedMultiDeviceSetup;

@@ -3787,6 +3787,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kViewsCastDialog)},
 #endif  // defined(TOOLKIT_VIEWS)
 
+    {"enable-emoji-context-menu",
+     flag_descriptions::kEnableEmojiContextMenuName,
+     flag_descriptions::kEnableEmojiContextMenuDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kEnableEmojiContextMenu)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

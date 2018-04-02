@@ -26033,6 +26033,7 @@ from previous Chrome versions.
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1457775295" label="PasswordSearchMobile:disabled"/>
+  <int value="-1456627355" label="EnableEmojiContextMenu:disabled"/>
   <int value="-1456004000" label="VrShell:disabled"/>
   <int value="-1455852875" label="WebAuthentication:disabled"/>
   <int value="-1454397907" label="OptimizationHints:disabled"/>
@@ -26461,6 +26462,7 @@ from previous Chrome versions.
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-410852857" label="ImprovedA2HS:disabled"/>
+  <int value="-406850932" label="EnableEmojiContextMenu:enabled"/>
   <int value="-405380243" label="enable-encryption-migration"/>
   <int value="-401170566"
       label="OmniboxUIExperimentHideSuggestionUrlPath:disabled"/>
