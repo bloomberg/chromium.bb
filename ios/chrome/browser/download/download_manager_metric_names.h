@@ -13,8 +13,9 @@ enum class DownloadedFileAction {
   // Downloaded file was open in the app other than Google Drive.
   OpenedInOtherApp = 1,
   // Downloaded file was discarded (the user closed the app, tab, or download
-  // manager UI).
-  NoAction = 2,
+  // manager UI) or opened via Extension (Chrome is not notified if the download
+  // was open in the extension).
+  NoActionOrOpenedViaExtension = 2,
   Count,
 };
 

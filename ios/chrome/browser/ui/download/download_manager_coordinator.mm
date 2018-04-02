@@ -67,9 +67,10 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
     }
 
     if (task->IsDone() && task->GetErrorCode() == net::OK) {
-      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadedFileAction",
-                                DownloadedFileAction::NoAction,
-                                DownloadedFileAction::Count);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Download.IOSDownloadedFileAction",
+          DownloadedFileAction::NoActionOrOpenedViaExtension,
+          DownloadedFileAction::Count);
     }
   }
 };
