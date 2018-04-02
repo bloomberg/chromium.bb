@@ -140,7 +140,6 @@ class CBOR_EXPORT CBORReader {
   base::Optional<CBORValue> ReadMapContent(const DataItemHeader& header,
                                            int max_nesting_level);
   bool CanConsume(uint64_t bytes);
-  void CheckExtraneousData();
   bool HasValidUTF8Format(const std::string& string_data);
   bool CheckOutOfOrderKey(const CBORValue& new_key, CBORValue::MapValue* map);
   bool CheckMinimalEncoding(uint8_t additional_bytes, uint64_t uint_data);
