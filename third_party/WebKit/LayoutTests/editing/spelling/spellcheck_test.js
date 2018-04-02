@@ -386,6 +386,8 @@ add_result_callback(testObj => {
 
     if (shouldRemoveSample)
       testObj.sample.remove();
+    else
+      testObj.sample.keep();
 
     // This is the earliest timing when a new spellcheck_test can be started.
     spellcheckTestRunning = false;

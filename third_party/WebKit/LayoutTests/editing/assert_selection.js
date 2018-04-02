@@ -721,10 +721,7 @@ class Sample {
    */
   constructor(sampleText) {
     /** @const @type {!HTMLIFrameElement} */
-    this.iframe_ = document.createElement('iframe');
-    if (!document.body)
-        document.body = document.createElement("body");
-    document.body.appendChild(this.iframe_);
+    this.iframe_ = Sample.getOrCreatePlayground();
     /** @const @type {!HTMLDocument} */
     this.document_ = this.iframe_.contentDocument;
 
@@ -747,6 +744,17 @@ class Sample {
 
   /** @return {!Selection} */
   get selection() { return this.selection_; }
+
+  /** @return {string} */
+  static get playgroundId() { return 'playground'; }
+
+  /**
+   * @public
+   * Marks this sample not to be reused.
+   */
+  keep() {
+    this.iframe_.removeAttribute('id');
+  }
 
   /**
    * @private
@@ -813,6 +821,32 @@ class Sample {
    * @public
    */
   remove() { this.iframe_.remove(); }
+
+  /**
+   * @public
+   */
+  reset() {
+    if (window.internals && internals.isOverwriteModeEnabled(this.document_))
+      internals.toggleOverwriteModeEnabled(this.document_);
+    this.document_.documentElement.innerHTML = '<head></head><body></body>';
+    this.selection.removeAllRanges();
+    this.iframe_.style.display = 'none';
+  }
+
+  /** @return {HTMLIFrameElement} */
+  static getOrCreatePlayground() {
+    const present = document.getElementById(Sample.playgroundId);
+    if (present) {
+      present.style.display = 'block';
+      return present;
+    }
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('id', Sample.playgroundId);
+    if (!document.body)
+        document.body = document.createElement("body");
+    document.body.appendChild(iframe);
+    return iframe;
+  }
 
   /**
    * @public
@@ -967,9 +1001,12 @@ function assertSelection(
   // case.
   if (actualText === expectedText) {
     if (removeSampleIfSucceeded)
-        sample.remove();
+        sample.reset();
+    else
+        sample.keep();
     return sample;
   }
+  sample.keep();
   throw new Error(`${description}\n` +
     `\t expected ${expectedText},\n` +
     `\t but got  ${actualText},\n` +
@@ -996,4 +1033,5 @@ function selectionTest(inputText, tester, expectedText, opt_options,
 window.Sample = Sample;
 window.assert_selection = assertSelection;
 window.selection_test = selectionTest;
+window.DOMTreeTraversal = DOMTreeTraversal;
 })();
