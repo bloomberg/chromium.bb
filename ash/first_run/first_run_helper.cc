@@ -4,10 +4,50 @@
 
 #include "ash/first_run/first_run_helper.h"
 
-namespace ash {
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_bubble.h"
+#include "base/logging.h"
+#include "ui/app_list/views/app_list_view.h"
+#include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
-FirstRunHelper::FirstRunHelper() = default;
-FirstRunHelper::~FirstRunHelper() = default;
+namespace ash {
+namespace {
+
+views::Widget* CreateFirstRunWindow() {
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                      ash::kShellWindowId_OverlayContainer);
+  views::Widget* window = new views::Widget;
+  window->Init(params);
+  return window;
+}
+
+}  // namespace
+
+FirstRunHelper::FirstRunHelper() : widget_(CreateFirstRunWindow()) {
+  Shell::Get()->overlay_filter()->Activate(this);
+}
+
+FirstRunHelper::~FirstRunHelper() {
+  Shell::Get()->overlay_filter()->Deactivate(this);
+  if (IsTrayBubbleOpened())
+    CloseTrayBubble();
+  widget_->Close();
+}
 
 void FirstRunHelper::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
@@ -17,4 +57,57 @@ void FirstRunHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-}  // namespace chromeos
+views::Widget* FirstRunHelper::GetOverlayWidget() {
+  return widget_;
+}
+
+gfx::Rect FirstRunHelper::GetAppListButtonBounds() {
+  Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+  AppListButton* app_button = shelf->shelf_widget()->GetAppListButton();
+  return app_button->GetBoundsInScreen();
+}
+
+void FirstRunHelper::OpenTrayBubble() {
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
+  tray->ShowPersistentDefaultView();
+}
+
+void FirstRunHelper::CloseTrayBubble() {
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
+  DCHECK(tray->HasSystemBubble()) << "Tray bubble is closed already.";
+  tray->CloseBubble();
+}
+
+bool FirstRunHelper::IsTrayBubbleOpened() {
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
+  return tray->HasSystemBubble();
+}
+
+gfx::Rect FirstRunHelper::GetTrayBubbleBounds() {
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
+  views::View* bubble = tray->GetSystemBubble()->bubble_view();
+  return bubble->GetBoundsInScreen();
+}
+
+gfx::Rect FirstRunHelper::GetHelpButtonBounds() {
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
+  views::View* help_button = tray->GetHelpButtonView();
+  return help_button->GetBoundsInScreen();
+}
+
+// OverlayEventFilter::Delegate:
+
+void FirstRunHelper::Cancel() {
+  for (auto& observer : observers_)
+    observer.OnCancelled();
+}
+
+bool FirstRunHelper::IsCancelingKeyEvent(ui::KeyEvent* event) {
+  return event->key_code() == ui::VKEY_ESCAPE;
+}
+
+aura::Window* FirstRunHelper::GetWindow() {
+  return widget_->GetNativeWindow();
+}
+
+}  // namespace ash

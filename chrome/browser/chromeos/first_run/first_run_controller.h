@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "ash/first_run/first_run_helper.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
@@ -48,6 +48,30 @@ class FirstRunController : public FirstRunActor::Delegate,
 
   // Finalizes first-run tutorial and destroys UI.
   static void Stop();
+
+  // Returns bounds of application list button in screen coordinates.
+  gfx::Rect GetAppListButtonBounds() const;
+
+  // Opens and closes system tray bubble.
+  void OpenTrayBubble();
+  void CloseTrayBubble();
+
+  // Returns |true| iff system tray bubble is opened now.
+  bool IsTrayBubbleOpened() const;
+
+  // Returns bounds of system tray bubble in screen coordinates. The bubble
+  // must be open.
+  gfx::Rect GetTrayBubbleBounds() const;
+
+  // Returns bounds of help app button from system tray bubble in screen
+  // coordinates. The bubble must be open.
+  gfx::Rect GetHelpButtonBounds() const;
+
+  // Returns the size of the semi-transparent overlay window in DIPs.
+  gfx::Size GetOverlaySize() const;
+
+  // Returns the shelf alignment on the primary display.
+  ash::ShelfAlignment GetShelfAlignment() const;
 
  private:
   friend class FirstRunUIBrowserTest;

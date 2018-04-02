@@ -183,8 +183,6 @@ component("ash") {
     "first_run/desktop_cleaner.h",
     "first_run/first_run_helper.cc",
     "first_run/first_run_helper.h",
-    "first_run/first_run_helper_impl.cc",
-    "first_run/first_run_helper_impl.h",
     "focus_cycler.cc",
     "focus_cycler.h",
     "frame/caption_buttons/caption_button_types.h",

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/first_run/first_run_helper.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
@@ -101,10 +100,6 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
 
   test::JSChecker& js() { return js_; }
 
-  ash::FirstRunHelper* shell_helper() {
-    return controller()->shell_helper_.get();
-  }
-
   FirstRunController* controller() {
     return FirstRunController::GetInstanceForTest();
   }
@@ -123,20 +118,19 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
   LaunchTutorial();
   WaitForInitialization();
   WaitForStep(first_run::kAppListStep);
-  EXPECT_FALSE(shell_helper()->IsTrayBubbleOpened());
+  EXPECT_FALSE(controller()->IsTrayBubbleOpened());
   AdvanceStep();
   WaitForStep(first_run::kTrayStep);
-  EXPECT_TRUE(shell_helper()->IsTrayBubbleOpened());
+  EXPECT_TRUE(controller()->IsTrayBubbleOpened());
   AdvanceStep();
   WaitForStep(first_run::kHelpStep);
-  EXPECT_TRUE(shell_helper()->IsTrayBubbleOpened());
+  EXPECT_TRUE(controller()->IsTrayBubbleOpened());
   AdvanceStep();
   WaitForFinalization();
   content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(controller(), (void*)NULL);
-  // shell_helper() is destructed already, thats why we call Shell directly.
+  EXPECT_EQ(controller(), nullptr);
+  // controller() is destructed already, that's why we call Shell directly.
   EXPECT_FALSE(ash::Shell::Get()->GetPrimarySystemTray()->HasSystemBubble());
 }
 
 }  // namespace chromeos
-
