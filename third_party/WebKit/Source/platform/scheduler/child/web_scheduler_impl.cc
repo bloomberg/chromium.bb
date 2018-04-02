@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/scheduler/child/task_runner_impl.h"
-#include "platform/scheduler/child/worker_scheduler.h"
+#include "platform/scheduler/public/non_main_thread_scheduler.h"
 #include "platform/scheduler/public/page_scheduler.h"
 
 namespace blink {

@@ -13,9 +13,9 @@
 #include "platform/scheduler/child/default_params.h"
 #include "platform/scheduler/common/throttling/budget_pool.h"
 #include "platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 #include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {

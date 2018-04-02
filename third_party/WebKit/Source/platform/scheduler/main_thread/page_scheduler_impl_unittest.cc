@@ -16,7 +16,7 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/main_thread/frame_scheduler_impl.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"

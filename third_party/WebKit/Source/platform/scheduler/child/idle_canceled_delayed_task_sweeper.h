@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "platform/scheduler/child/scheduler_helper.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/single_thread_idle_task_runner.h"
 
 namespace blink {
 namespace scheduler {

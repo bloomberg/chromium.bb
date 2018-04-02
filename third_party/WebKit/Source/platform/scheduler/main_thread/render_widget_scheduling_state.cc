@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/scheduler/renderer/render_widget_scheduling_state.h"
+#include "public/platform/scheduler/render_widget_scheduling_state.h"
 
 #include "platform/scheduler/renderer/render_widget_signals.h"
 

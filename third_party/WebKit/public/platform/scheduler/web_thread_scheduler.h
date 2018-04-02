@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_CHILD_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_CHILD_SCHEDULER_H_
+#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/single_thread_idle_task_runner.h"
 
 namespace base {
 class MessageLoop;
@@ -18,6 +18,7 @@ class MessageLoop;
 namespace blink {
 namespace scheduler {
 
+// TODO(yutak): Rename this class to WebThreadScheduler.
 class BLINK_PLATFORM_EXPORT ChildScheduler {
  public:
   virtual ~ChildScheduler() = default;
@@ -70,4 +71,4 @@ class BLINK_PLATFORM_EXPORT ChildScheduler {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_CHILD_SCHEDULER_H_
+#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_THREAD_SCHEDULER_H_

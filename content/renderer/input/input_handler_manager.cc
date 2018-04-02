@@ -15,7 +15,7 @@
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/input_handler_wrapper.h"
-#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/input_handler_proxy.h"
 #include "ui/events/blink/web_input_event_traits.h"

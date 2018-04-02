@@ -10,7 +10,7 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/child/web_scheduler_impl.h"
-#include "platform/scheduler/child/worker_scheduler_impl.h"
+#include "platform/scheduler/worker/worker_thread_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

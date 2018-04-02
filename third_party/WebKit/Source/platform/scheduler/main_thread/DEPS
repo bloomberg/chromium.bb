@@ -1,3 +1,8 @@
+include_rules = [
+  "+base/metrics/single_sample_metrics.h",
+  "+components/viz/common",
+]
+
 specific_include_rules = {
   ".*test\.cc": [
     "+components/viz/test",

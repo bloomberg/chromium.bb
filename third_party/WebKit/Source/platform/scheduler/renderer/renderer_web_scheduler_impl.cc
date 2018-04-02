@@ -10,8 +10,8 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/task_runner_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 #include "platform/scheduler/main_thread/page_scheduler_impl.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {

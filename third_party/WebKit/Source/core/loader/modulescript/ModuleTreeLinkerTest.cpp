@@ -20,7 +20,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "public/platform/scheduler/web_main_thread_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

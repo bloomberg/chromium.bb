@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/single_thread_idle_task_runner.h"
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

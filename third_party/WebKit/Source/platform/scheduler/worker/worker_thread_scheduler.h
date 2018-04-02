@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -13,8 +13,8 @@
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/worker_metrics_helper.h"
-#include "platform/scheduler/child/worker_scheduler.h"
 #include "platform/scheduler/public/frame_scheduler.h"
+#include "platform/scheduler/public/non_main_thread_scheduler.h"
 #include "platform/scheduler/util/task_duration_metric_reporter.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
 #include "public/platform/WebThreadType.h"
@@ -25,6 +25,7 @@ namespace scheduler {
 class TaskQueueManager;
 class WorkerSchedulerProxy;
 
+// TODO(yutak): Rename this class to WorkerThreadScheduler.
 class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
                                             public IdleHelper::Delegate,
                                             public TaskTimeObserver {
@@ -107,4 +108,4 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_SCHEDULER_H_

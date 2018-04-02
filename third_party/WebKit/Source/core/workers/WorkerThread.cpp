@@ -53,7 +53,7 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "platform/scheduler/child/worker_global_scope_scheduler.h"
-#include "platform/scheduler/child/worker_scheduler.h"
+#include "platform/scheduler/public/non_main_thread_scheduler.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Threading.h"

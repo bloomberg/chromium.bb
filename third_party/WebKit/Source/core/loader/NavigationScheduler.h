@@ -44,7 +44,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "public/platform/scheduler/web_main_thread_scheduler.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "public/platform/scheduler/web_main_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

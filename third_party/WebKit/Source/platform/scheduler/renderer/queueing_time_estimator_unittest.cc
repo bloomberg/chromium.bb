@@ -5,7 +5,7 @@
 #include "platform/scheduler/renderer/queueing_time_estimator.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/main_thread/main_thread_scheduler.h"
 #include "platform/scheduler/test/fake_frame_scheduler.h"
 #include "platform/testing/HistogramTester.h"
 #include "testing/gmock/include/gmock/gmock.h"

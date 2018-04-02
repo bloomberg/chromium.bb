@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/compositor_worker_scheduler.h"
+#include "platform/scheduler/worker/compositor_thread_scheduler.h"
 
 #include <memory>
 #include <utility>
