@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/resources/shared_bitmap_id_registrar.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ppapi/c/ppb_graphics_2d.h"
@@ -21,6 +22,10 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace cc {
+class CrossThreadSharedBitmap;
+}
 
 namespace gfx {
 class Rect;
@@ -32,7 +37,6 @@ struct SyncToken;
 
 namespace viz {
 class ContextProvider;
-class SharedBitmap;
 class SingleReleaseCallback;
 struct TransferableResource;
 }
@@ -75,6 +79,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
              const gfx::Rect& paint_rect);
 
   bool PrepareTransferableResource(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar,
       viz::TransferableResource* transferable_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback);
   void AttachedToNewLayer();
@@ -173,10 +178,11 @@ class CONTENT_EXPORT PepperGraphics2DHost
                                      gfx::Point* delta);
 
   // Callback when compositor is done with a software resource given to it.
-  void ReleaseSoftwareCallback(std::unique_ptr<viz::SharedBitmap> bitmap,
-                               const gfx::Size& bitmap_size,
-                               const gpu::SyncToken& sync_token,
-                               bool lost_resource);
+  void ReleaseSoftwareCallback(
+      scoped_refptr<cc::CrossThreadSharedBitmap> bitmap,
+      cc::SharedBitmapIdRegistration registration,
+      const gpu::SyncToken& sync_token,
+      bool lost_resource);
   // Callback when compositor is done with a gpu resource given to it. Static
   // for speed. Just kidding, it's so this can clean up the texture if the host
   // has been destroyed.
@@ -246,9 +252,11 @@ class CONTENT_EXPORT PepperGraphics2DHost
   std::vector<TextureInfo> recycled_texture_copies_;
 
   // This is a bitmap that was recently released by the compositor and may be
-  // used to transfer bytes to the compositor again.
-  std::unique_ptr<viz::SharedBitmap> cached_bitmap_;
-  gfx::Size cached_bitmap_size_;
+  // used to transfer bytes to the compositor again, along with the registration
+  // of the SharedBitmapId that is kept alive as long as the bitmap is, in order
+  // to give the bitmap to the compositor.
+  scoped_refptr<cc::CrossThreadSharedBitmap> cached_bitmap_;
+  cc::SharedBitmapIdRegistration cached_bitmap_registration_;
 
   friend class PepperGraphics2DHostTest;
   DISALLOW_COPY_AND_ASSIGN(PepperGraphics2DHost);
