@@ -13,13 +13,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
-#include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/stream/apply_constraints_processor.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/media/webrtc_logging.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -86,7 +86,7 @@ UserMediaClientImpl::Request::MoveUserMediaRequest() {
 }
 
 UserMediaClientImpl::UserMediaClientImpl(
-    RenderFrame* render_frame,
+    RenderFrameImpl* render_frame,
     std::unique_ptr<UserMediaProcessor> user_media_processor)
     : RenderFrameObserver(render_frame),
       user_media_processor_(std::move(user_media_processor)),
@@ -98,7 +98,7 @@ UserMediaClientImpl::UserMediaClientImpl(
 // base::Unretained(this) is safe here because |this| owns
 // |user_media_processor_|.
 UserMediaClientImpl::UserMediaClientImpl(
-    RenderFrame* render_frame,
+    RenderFrameImpl* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
     std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer)
     : UserMediaClientImpl(

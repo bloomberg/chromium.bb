@@ -21,7 +21,6 @@ CONTENT_EXPORT extern const int kMinScreenCastDimension;
 CONTENT_EXPORT extern const int kMaxScreenCastDimension;
 CONTENT_EXPORT extern const int kDefaultScreenCastWidth;
 CONTENT_EXPORT extern const int kDefaultScreenCastHeight;
-CONTENT_EXPORT extern const double kDefaultScreenCastAspectRatio;
 
 CONTENT_EXPORT extern const double kMaxScreenCastFrameRate;
 CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
@@ -30,7 +29,9 @@ CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
 // for content video capture based on the given |constraints|.
 VideoCaptureSettings CONTENT_EXPORT
 SelectSettingsVideoContentCapture(const blink::WebMediaConstraints& constraints,
-                                  const std::string& stream_source);
+                                  const std::string& stream_source,
+                                  int screen_width,
+                                  int screen_height);
 
 }  // namespace content
 
