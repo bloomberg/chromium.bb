@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/fuchsia/config.gni")
+import("//build/config/fuchsia/rules.gni")
 import("//build/config/sysroot.gni")
 
 assert(is_fuchsia)
@@ -60,4 +61,73 @@ config("compiler") {
   cflags += [ "-fno-sanitize=safe-stack" ]
 
   libs = [ "zircon" ]
+}
+
+# Writes an extended version of fvm.blk to fvm.extended.blk.
+blobstore_extended_path = "$root_out_dir/fvm.extended.blk"
+action("blobstore_extended_fvm") {
+  # The file is grown by 500MB, which should be large enough to hold packaged
+  # binaries and assets. The value should be increased if the size becomes a
+  # limitation in the future.
+  _extend_size = "524288000"  # 500MB = 500 * 1024 * 1024
+
+  script = "//build/config/fuchsia/extend_fvm.py"
+
+  if (current_cpu == "arm64") {
+    _blobstore_src_path = "//third_party/fuchsia-sdk/sdk/target/aarch64/fvm.blk"
+  } else if (current_cpu == "x64") {
+    _blobstore_src_path = "//third_party/fuchsia-sdk/sdk/target/x86_64/fvm.blk"
+  }
+  inputs = [
+    _blobstore_src_path,
+  ]
+  outputs = [
+    blobstore_extended_path,
+  ]
+
+  args = [
+    rebase_path("${fuchsia_sdk}/tools/fvm"),
+    rebase_path(_blobstore_src_path),
+    rebase_path(blobstore_extended_path),
+    _extend_size,
+  ]
+}
+
+#  _________________________________________
+# / Create a compressed copy-on-write (COW) \
+# \ image based on fvm.blk.                 /
+#  -----------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+action("blobstore_extended_qcow2") {
+  script = "//build/gn_run_binary.py"
+
+  deps = [
+    ":blobstore_extended_fvm",
+  ]
+  inputs = [
+    blobstore_extended_path,
+  ]
+  outputs = [
+    blobstore_qcow_path,
+  ]
+  data = [
+    blobstore_qcow_path,
+  ]
+
+  args = [
+    rebase_path("//third_party/fuchsia-sdk/sdk/qemu/bin/qemu-img",
+                root_build_dir),
+    "convert",
+    "-f",
+    "raw",
+    "-O",
+    "qcow2",
+    "-c",
+    rebase_path(blobstore_extended_path),
+    rebase_path(blobstore_qcow_path),
+  ]
 }
