@@ -1,5 +1,4 @@
 # Mojo
-This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]
 
