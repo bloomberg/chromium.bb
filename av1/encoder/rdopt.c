@@ -8308,7 +8308,7 @@ static void sf_refine_fast_tx_type_search(
   const AV1_COMMON *const cm = &cpi->common;
   const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
   const int num_planes = av1_num_planes(cm);
 
   if (xd->lossless[mbmi->segment_id] == 0 && best_mode_index >= 0 &&
