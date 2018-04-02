@@ -170,11 +170,7 @@ void ExecuteByArcAfterMimeTypesCollected(
     const FileTaskFinishedCallback& done,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
-  if (ExecuteArcTask(profile, task, file_urls, *mime_types)) {
-    done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
-  } else {
-    done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
-  }
+  ExecuteArcTask(profile, task, file_urls, *mime_types, done);
 }
 
 void PostProcessFoundTasks(
@@ -627,7 +623,7 @@ void FindAllTypesOfTasks(Profile* profile,
     FindDriveAppTasks(*drive_app_registry, entries, result_list.get());
 
   // 2. Find and append ARC handler tasks.
-  FindArcTasks(profile, entries, std::move(result_list),
+  FindArcTasks(profile, entries, file_urls, std::move(result_list),
                base::Bind(&FindExtensionAndAppTasks, profile, entries,
                           file_urls, callback));
 }
