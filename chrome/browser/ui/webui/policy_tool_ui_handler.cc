@@ -212,8 +212,14 @@ bool PolicyToolUIHandler::IsValidSessionName(
     const base::FilePath::StringType& name) const {
   // Check if the session name is valid, which means that it doesn't use
   // filesystem navigation (e.g. ../ or nested folder).
+
+  // Sanity check to avoid that GetSessionPath(|name|) crashed.
+  if (base::FilePath(name).IsAbsolute())
+    return false;
   base::FilePath session_path = GetSessionPath(name);
-  return !session_path.empty() && session_path.DirName() == sessions_dir_;
+  return !session_path.empty() && session_path.DirName() == sessions_dir_ &&
+         session_path.BaseName().RemoveExtension() == base::FilePath(name) &&
+         !session_path.EndsWithSeparator();
 }
 
 void PolicyToolUIHandler::HandleLoadSession(const base::ListValue* args) {
