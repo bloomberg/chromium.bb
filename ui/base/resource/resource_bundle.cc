@@ -214,10 +214,8 @@ void ResourceBundle::InitSharedInstanceWithPakPath(const base::FilePath& path) {
 
 // static
 void ResourceBundle::CleanupSharedInstance() {
-  if (g_shared_instance_) {
-    delete g_shared_instance_;
-    g_shared_instance_ = NULL;
-  }
+  delete g_shared_instance_;
+  g_shared_instance_ = NULL;
 }
 
 // static
