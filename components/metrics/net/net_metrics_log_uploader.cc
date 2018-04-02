@@ -20,7 +20,7 @@
 namespace {
 
 const base::Feature kHttpRetryFeature{"UMAHttpRetry",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Constants used for encrypting logs that are sent over HTTP. The
 // corresponding private key is used by the metrics server to decrypt logs.

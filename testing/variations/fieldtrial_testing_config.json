@@ -4103,6 +4103,26 @@
             ]
         }
     ],
+    "VariationsHttpDisabled": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "VariationsHttpDisabled",
+                    "disable_features": [
+                        "VariationsHTTPRetry"
+                    ]
+                }
+            ]
+        }
+    ],
     "VideoCaptureService": [
         {
             "platforms": [
