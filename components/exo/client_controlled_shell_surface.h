@@ -212,7 +212,7 @@ class ClientControlledShellSurface
       aura::Window* window,
       int component) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-  gfx::Point GetWidgetOrigin() const override;
+  gfx::Rect GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
 
   void UpdateBackdrop();

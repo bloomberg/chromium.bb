@@ -325,9 +325,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // End current drag operation.
   void EndDrag(bool revert);
 
-  // Return the origin of the widget/surface taking visible bounds and current
-  // resize direction into account.
-  virtual gfx::Point GetWidgetOrigin() const;
+  // Return the bounds of the widget/origin of surface taking visible
+  // bounds and current resize direction into account.
+  virtual gfx::Rect GetWidgetBounds() const;
   virtual gfx::Point GetSurfaceOrigin() const;
 
   bool activatable_ = true;

@@ -1230,11 +1230,7 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
   if (!pending_configs_.empty() || scoped_configure_)
     return;
 
-  gfx::Rect visible_bounds = GetVisibleBounds();
-  gfx::Rect new_widget_bounds =
-      widget_->non_client_view()->GetWindowBoundsForClientBounds(
-          visible_bounds);
-  new_widget_bounds.set_origin(GetWidgetOrigin());
+  gfx::Rect new_widget_bounds = GetWidgetBounds();
 
   // Set |ignore_window_bounds_changes_| as this change to window bounds
   // should not result in a configure request.
@@ -1445,21 +1441,26 @@ void ShellSurfaceBase::EndDrag(bool revert) {
   UpdateWidgetBounds();
 }
 
-gfx::Point ShellSurfaceBase::GetWidgetOrigin() const {
-  if (movement_disabled_)
-    return origin_;
-
-  // Preserve widget position.
-  if (resize_component_ == HTCAPTION)
-    return widget_->GetWindowBoundsInScreen().origin();
-
-  // Compute widget origin using surface origin if the current location of
-  // surface is being anchored to one side of the widget as a result of a
-  // resize operation.
+gfx::Rect ShellSurfaceBase::GetWidgetBounds() const {
   gfx::Rect visible_bounds = GetVisibleBounds();
-  gfx::Point origin = GetSurfaceOrigin() + visible_bounds.OffsetFromOrigin();
-  wm::ConvertPointToScreen(widget_->GetNativeWindow(), &origin);
-  return origin;
+  gfx::Rect new_widget_bounds =
+      widget_->non_client_view()->GetWindowBoundsForClientBounds(
+          visible_bounds);
+  if (movement_disabled_) {
+    new_widget_bounds.set_origin(origin_);
+  } else if (resize_component_ == HTCAPTION) {
+    // Preserve widget position.
+    new_widget_bounds.set_origin(widget_->GetWindowBoundsInScreen().origin());
+  } else {
+    // Compute widget origin using surface origin if the current location of
+    // surface is being anchored to one side of the widget as a result of a
+    // resize operation.
+    gfx::Rect visible_bounds = GetVisibleBounds();
+    gfx::Point origin = GetSurfaceOrigin() + visible_bounds.OffsetFromOrigin();
+    wm::ConvertPointToScreen(widget_->GetNativeWindow(), &origin);
+    new_widget_bounds.set_origin(origin);
+  }
+  return new_widget_bounds;
 }
 
 gfx::Point ShellSurfaceBase::GetSurfaceOrigin() const {
