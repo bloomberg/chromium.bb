@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/public/common/resource_type.mojom";
 import "net/interfaces/ip_address.mojom";
+import "services/network/public/mojom/url_loader.mojom";
 import "url/mojom/url.mojom";
 
 // Information pertaining to resource loading.
@@ -37,4 +38,7 @@ struct ResourceLoadInfo {
 
   // True if the request accessed the network in the process of retrieving data.
   bool network_accessed;
+
+  // The priority level for this request.
+  network.mojom.RequestPriority priority;
 };

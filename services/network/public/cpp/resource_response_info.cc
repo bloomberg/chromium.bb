@@ -17,6 +17,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       encoded_body_length(-1),
       network_accessed(false),
       appcache_id(0),
+      priority(net::RequestPriority::DEFAULT_PRIORITY),
       was_fetched_via_spdy(false),
       was_alpn_negotiated(false),
       was_alternate_protocol_available(false),

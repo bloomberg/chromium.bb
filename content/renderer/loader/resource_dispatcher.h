@@ -204,6 +204,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     net::IPAddress parsed_ip;
     bool network_accessed = false;
     std::string mime_type;
+    net::RequestPriority priority = net::RequestPriority::DEFAULT_PRIORITY;
 
     // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;
