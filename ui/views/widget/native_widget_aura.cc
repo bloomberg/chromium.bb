@@ -147,7 +147,6 @@ void NativeWidgetAura::SetShadowElevationFromInitParams(
 // NativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
-  // Aura needs to know which desktop (Ash or regular) will manage this widget.
   // See Widget::InitParams::context for details.
   DCHECK(params.parent || params.context);
 

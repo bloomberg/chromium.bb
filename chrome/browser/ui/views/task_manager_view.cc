@@ -34,12 +34,9 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_CHROMEOS)
-// gn check complains on Linux Ozone.
-#include "ash/public/cpp/shelf_item.h"         // nogncheck
-#include "ash/public/cpp/window_properties.h"  // nogncheck
+#include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/wm/window_util.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -75,13 +72,10 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
 
   g_task_manager_view = new TaskManagerView();
 
+  // On Chrome OS, pressing Search-Esc when there are no open browser windows
+  // will open the task manager on the root window for new windows.
   gfx::NativeWindow context =
       browser ? browser->window()->GetNativeWindow() : nullptr;
-#if defined(OS_CHROMEOS)
-  if (!ash_util::IsRunningInMash() && !context)
-    context = ash::wm::GetActiveWindow();
-#endif
-
   DialogDelegate::CreateDialogWidget(g_task_manager_view, context, nullptr);
   g_task_manager_view->InitAlwaysOnTopState();
 
