@@ -49,12 +49,13 @@ WritableSharedMemoryRegion& WritableSharedMemoryRegion::operator=(
     WritableSharedMemoryRegion&& region) = default;
 WritableSharedMemoryRegion::~WritableSharedMemoryRegion() = default;
 
-WritableSharedMemoryMapping WritableSharedMemoryRegion::Map() {
+WritableSharedMemoryMapping WritableSharedMemoryRegion::Map() const {
   return MapAt(0, handle_.GetSize());
 }
 
-WritableSharedMemoryMapping WritableSharedMemoryRegion::MapAt(off_t offset,
-                                                              size_t size) {
+WritableSharedMemoryMapping WritableSharedMemoryRegion::MapAt(
+    off_t offset,
+    size_t size) const {
   if (!IsValid())
     return {};
 

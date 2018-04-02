@@ -62,20 +62,20 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   // ReadOnlySharedMemoryRegion instance that owns this handle. Returns a valid
   // ReadOnlySharedMemoryRegion on success, invalid otherwise. The current
   // region instance remains valid in any case.
-  ReadOnlySharedMemoryRegion Duplicate();
+  ReadOnlySharedMemoryRegion Duplicate() const;
 
   // Maps the shared memory region into the caller's address space with
   // read-only access. The mapped address is guaranteed to have an alignment of
   // at least |subtle::PlatformSharedMemoryRegion::kMapMinimumAlignment|.
   // Returns a valid ReadOnlySharedMemoryMapping instance on success, invalid
   // otherwise.
-  ReadOnlySharedMemoryMapping Map();
+  ReadOnlySharedMemoryMapping Map() const;
 
   // Same as above, but maps only |size| bytes of the shared memory region
   // starting with the given |offset|. |offset| must be aligned to value of
   // |SysInfo::VMAllocationGranularity()|. Returns an invalid mapping if
   // requested bytes are out of the region limits.
-  ReadOnlySharedMemoryMapping MapAt(off_t offset, size_t size);
+  ReadOnlySharedMemoryMapping MapAt(off_t offset, size_t size) const;
 
   // Whether the underlying platform handle is valid.
   bool IsValid() const;
