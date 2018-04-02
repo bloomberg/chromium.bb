@@ -254,13 +254,22 @@ void ScrollView::SetContents(View* a_view) {
   // Protect against clients passing a contents view that has its own Layer.
   DCHECK(!a_view->layer());
   if (ScrollsWithLayers()) {
-    if (!a_view->background() && GetBackgroundColor() != SK_ColorTRANSPARENT) {
-      a_view->SetBackground(CreateSolidBackground(GetBackgroundColor()));
+    bool fills_opaquely = true;
+    if (!a_view->background()) {
+      // Contents views may not be aware they need to fill their entire bounds -
+      // play it safe here to avoid graphical glitches
+      // (https://crbug.com/826472). If there's no solid background, mark the
+      // view as not filling its bounds opaquely.
+      if (GetBackgroundColor() != SK_ColorTRANSPARENT)
+        a_view->SetBackground(CreateSolidBackground(GetBackgroundColor()));
+      else
+        fills_opaquely = false;
     }
     a_view->SetPaintToLayer();
     a_view->layer()->SetDidScrollCallback(
         base::Bind(&ScrollView::OnLayerScrolled, base::Unretained(this)));
     a_view->layer()->SetScrollable(contents_viewport_->bounds().size());
+    a_view->layer()->SetFillsBoundsOpaquely(fills_opaquely);
   }
   SetHeaderOrContents(contents_viewport_, a_view, &contents_);
 }
