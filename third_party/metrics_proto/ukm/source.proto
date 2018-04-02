@@ -6,7 +6,6 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-
 package ukm;
 
 // Source contains data related to a top-level navigation.
@@ -35,7 +34,6 @@ message Source {
     // If unset, it’s equivalent to the count of the UrlInfo before it + 1,
     // or 0 if it’s the first UrlInfo.
     optional int32 previous_url_count = 2;
-
   }
 
   // Data about each URL associated with the source_id within the record's

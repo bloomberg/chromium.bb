@@ -9,7 +9,6 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "ExecutionContextProtos";
 option java_package = "org.chromium.components.metrics";
 
-
 package metrics;
 
 // Enums corresponding to the Chrome execution context in which data was
@@ -38,7 +37,7 @@ enum Thread {
   FILE_THREAD = 2;                // Deprecated.
   FILE_USER_BLOCKING_THREAD = 3;  // Deprecated.
   PROCESS_LAUNCHER_THREAD = 4;    // Deprecated.
-  CACHE_THREAD = 5;  // Deprecated.
+  CACHE_THREAD = 5;               // Deprecated.
   IO_THREAD = 6;
   DB_THREAD = 7;  // Deprecated.
 

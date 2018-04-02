@@ -9,7 +9,6 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "SystemProfileProtos";
 option java_package = "org.chromium.components.metrics";
 
-
 package metrics;
 
 import "extension_install.proto";
@@ -99,7 +98,6 @@ message SystemProfileProto {
     // DynamicLibraries/ directory. It's a necessary but insufficient indicator
     // of whether the operating system has been jailbroken.
     optional bool is_jailbroken = 4;
-
   }
   optional OS os = 5;
 
@@ -318,7 +316,8 @@ message SystemProfileProto {
     // The connection type according to NetworkChangeNotifier.
     optional ConnectionType connection_type = 2;
 
-    // Set to true if wifi_phy_layer_protocol changed during the lifetime of the log.
+    // Set to true if wifi_phy_layer_protocol changed during the lifetime of the
+    // log.
     optional bool wifi_phy_layer_protocol_is_ambiguous = 3;
 
     // See net::WifiPHYLayerProtocol.
