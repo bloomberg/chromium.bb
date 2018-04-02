@@ -353,6 +353,8 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidSessionName) {
   EXPECT_FALSE(IsInvalidSessionNameErrorMessageDisplayed());
   LoadSession("../test");
   EXPECT_TRUE(IsInvalidSessionNameErrorMessageDisplayed());
+  LoadSession("/full_path");
+  EXPECT_TRUE(IsInvalidSessionNameErrorMessageDisplayed());
   LoadSession("policy");
   EXPECT_FALSE(IsInvalidSessionNameErrorMessageDisplayed());
 }
@@ -504,5 +506,10 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSessionInvalidName) {
   expected.GetList().push_back(base::Value("2"));
   expected.GetList().push_back(base::Value("1"));
   expected.GetList().push_back(base::Value("0"));
+  EXPECT_EQ(expected, *ExtractSessionsList());
+
+  // Check that full path is not allowed
+  RenameSession("2", "/full_path");
+  EXPECT_TRUE(IsSessionRenameErrorMessageDisplayed());
   EXPECT_EQ(expected, *ExtractSessionsList());
 }
