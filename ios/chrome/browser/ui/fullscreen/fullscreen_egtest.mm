@@ -88,11 +88,24 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGrey loadURL:URL];
 
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  // Initial y scroll position is -56 on iPhone and -95 on iPad, to make room
-  // for the toolbar.
+  // Initial y scroll positions are set to make room for the toolbar.
   // TODO(crbug.com/618887) Replace use of specific values when API which
   // generates these values is exposed.
-  CGFloat yOffset = IsIPadIdiom() ? -95.0 : -56.0;
+  CGFloat yOffset = 0;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (IsIPadIdiom()) {
+      yOffset = -89.0;
+    } else {
+      yOffset = -48.0;
+    }
+  } else {
+    if (IsIPadIdiom()) {
+      yOffset = -95.0;
+    } else {
+      yOffset = -56.0;
+    }
+  }
+  DCHECK_LT(yOffset, 0);
   [[EarlGrey
       selectElementWithMatcher:web::WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
