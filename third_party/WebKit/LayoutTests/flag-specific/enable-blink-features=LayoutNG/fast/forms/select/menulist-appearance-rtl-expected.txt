@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x567
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x567
-    LayoutNGBlockFlow {BODY} at (8,16) size 784x543
+layer at (0,0) size 800x568
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x568
+    LayoutNGBlockFlow {BODY} at (8,16) size 784x544
       LayoutNGBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 742x39
           text run at (0,0) width 742: "This tests that bidirectional text is correctly rendered in popup controls. The order of the text below each popup button"
@@ -15,8 +15,8 @@ layer at (0,0) size 800x567
           LayoutNGBlockFlow (anonymous) at (0,0) size 744x20
             LayoutMenuList {SELECT} at (0,0) size 100x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
               LayoutNGBlockFlow (anonymous) at (1,1) size 98x18
-                LayoutText (anonymous) at (31,1) size 63x16
-                  text run at (31,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+                LayoutText (anonymous) at (26,1) size 68x16
+                  text run at (26,1) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
                   text run at (73,1) width 21: "abc"
             LayoutText {#text} at (0,0) size 0x0
           LayoutNGBlockFlow {DIV} at (0,20) size 100x20
@@ -30,9 +30,9 @@ layer at (0,0) size 800x567
           LayoutNGBlockFlow (anonymous) at (0,0) size 744x20
             LayoutMenuList {SELECT} at (0,0) size 200x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
               LayoutNGBlockFlow (anonymous) at (1,1) size 198x18
-                LayoutText (anonymous) at (4,1) size 63x16
+                LayoutText (anonymous) at (4,1) size 68x16
                   text run at (4,1) width 21: "abc"
-                  text run at (25,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+                  text run at (25,1) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
             LayoutText {#text} at (0,0) size 0x0
           LayoutNGBlockFlow {DIV} at (0,20) size 200x20
             LayoutText {#text} at (0,0) size 69x19
@@ -45,48 +45,48 @@ layer at (0,0) size 800x567
           LayoutNGBlockFlow (anonymous) at (0,0) size 744x20
             LayoutMenuList {SELECT} at (0,0) size 100x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
               LayoutNGBlockFlow (anonymous) at (1,1) size 98x18
-                LayoutText (anonymous) at (4,1) size 63x16
+                LayoutText (anonymous) at (4,1) size 68x16
                   text run at (4,1) width 21: "abc"
-                  text run at (25,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+                  text run at (25,1) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
             LayoutText {#text} at (0,0) size 0x0
           LayoutNGBlockFlow {DIV} at (0,20) size 100x20
             LayoutText {#text} at (0,0) size 69x19
               text run at (0,0) width 22: "abc"
               text run at (22,0) width 47: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-      LayoutNGBlockFlow {DIV} at (0,262) size 784x59
+      LayoutNGBlockFlow {DIV} at (0,262) size 784x60
         LayoutNGBlockFlow (anonymous) at (0,0) size 784x20
           LayoutText {#text} at (0,0) size 622x19
             text run at (0,0) width 622: "The following line and the SELECT element should have same text, and no characters are lacking."
-        LayoutNGBlockFlow {DIV} at (0,20) size 784x19
+        LayoutNGBlockFlow {DIV} at (0,20) size 784x20
           LayoutText {#text} at (0,0) size 108x18
             text run at (0,0) width 108: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
-        LayoutNGBlockFlow (anonymous) at (0,39) size 784x20
+        LayoutNGBlockFlow (anonymous) at (0,40) size 784x20
           LayoutMenuList {SELECT} at (0,0) size 113x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 111x18
+            LayoutNGBlockFlow (anonymous) at (1,1) size 111x19
               LayoutText (anonymous) at (4,1) size 91x16
                 text run at (4,1) width 91 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
           LayoutText {#text} at (0,0) size 0x0
-      LayoutNGBlockFlow {P} at (0,347) size 784x20
+      LayoutNGBlockFlow {P} at (0,348) size 784x20
         LayoutText {#text} at (0,0) size 693x19
           text run at (0,0) width 693: "Verify that the alignment and writing direction of each selected item matches the one below the pop-up button."
 layer at (8,268) size 784x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,252) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,345) size 784x2 clip at (0,0) size 0x0
-  LayoutNGBlockFlow {HR} at (0,329) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,399) size 784x160
-  LayoutBlockFlow {DIV} at (0,383) size 784x160
+layer at (8,346) size 784x2 clip at (0,0) size 0x0
+  LayoutNGBlockFlow {HR} at (0,330) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,400) size 784x160
+  LayoutBlockFlow {DIV} at (0,384) size 784x160
     LayoutMultiColumnSet (anonymous) at (0,0) size 784x160
-layer at (8,399) size 384x320 backgroundClip at (0,0) size 400x559 clip at (0,0) size 400x559
+layer at (8,400) size 384x320 backgroundClip at (0,0) size 400x560 clip at (0,0) size 400x560
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 384x320
     LayoutBlockFlow {DIV} at (0,0) size 384x160
       LayoutMenuList {SELECT} at (0,0) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (4,1) size 174x18
+          LayoutText (anonymous) at (4,1) size 179x18
             text run at (4,1) width 35: "First "
-            text run at (39,1) width 52 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
-            text run at (91,1) width 18: "03"
-            text run at (109,1) width 40 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
-            text run at (149,1) width 29: " fifth"
+            text run at (39,1) width 56 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
+            text run at (95,1) width 18: "03"
+            text run at (113,1) width 41 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+            text run at (154,1) width 29: " fifth"
       LayoutBlockFlow {DIV} at (0,22) size 352x18
         LayoutText {#text} at (1,1) size 133x15
           text run at (1,1) width 27: "First "
@@ -96,12 +96,12 @@ layer at (8,399) size 384x320 backgroundClip at (0,0) size 400x559 clip at (0,0)
           text run at (108,1) width 26: " fifth"
       LayoutMenuList {SELECT} at (0,40) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (4,1) size 174x18
+          LayoutText (anonymous) at (4,1) size 179x18
             text run at (4,1) width 25: "fifth"
-            text run at (29,1) width 56 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
-            text run at (85,1) width 18: "03"
-            text run at (103,1) width 44 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
-            text run at (147,1) width 31: "First"
+            text run at (29,1) width 60 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
+            text run at (89,1) width 18: "03"
+            text run at (107,1) width 45 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+            text run at (152,1) width 31: "First"
       LayoutBlockFlow {DIV} at (0,62) size 352x18
         LayoutText {#text} at (1,1) size 133x15
           text run at (1,1) width 23: "fifth"
@@ -111,26 +111,26 @@ layer at (8,399) size 384x320 backgroundClip at (0,0) size 400x559 clip at (0,0)
           text run at (110,1) width 24: "First"
       LayoutMenuList {SELECT} at (0,80) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (4,1) size 174x18
-            text run at (4,1) width 174 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+          LayoutText (anonymous) at (4,1) size 179x18
+            text run at (4,1) width 179 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
       LayoutBlockFlow {DIV} at (0,102) size 352x18
         LayoutText {#text} at (1,1) size 133x15
           text run at (1,1) width 133 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
       LayoutMenuList {SELECT} at (0,120) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (4,1) size 174x18
-            text run at (4,1) width 174 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+          LayoutText (anonymous) at (4,1) size 179x18
+            text run at (4,1) width 179 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
       LayoutBlockFlow {DIV} at (0,142) size 352x18
         LayoutText {#text} at (1,1) size 133x15
           text run at (1,1) width 133 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
     LayoutBlockFlow {DIV} at (0,160) size 384x160
       LayoutMenuList {SELECT} at (0,0) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (170,1) size 174x18
-            text run at (170,1) width 35: "First "
-            text run at (205,1) width 52 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
-            text run at (257,1) width 18: "03"
-            text run at (275,1) width 40 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+          LayoutText (anonymous) at (165,1) size 179x18
+            text run at (165,1) width 35: "First "
+            text run at (200,1) width 56 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
+            text run at (256,1) width 18: "03"
+            text run at (274,1) width 41 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
             text run at (315,1) width 29: " fifth"
       LayoutBlockFlow {DIV} at (0,22) size 352x18
         LayoutText {#text} at (218,1) size 133x15
@@ -141,11 +141,11 @@ layer at (8,399) size 384x320 backgroundClip at (0,0) size 400x559 clip at (0,0)
           text run at (325,1) width 26: " fifth"
       LayoutMenuList {SELECT} at (0,40) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (170,1) size 174x18
-            text run at (170,1) width 25: "fifth"
-            text run at (195,1) width 56 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
-            text run at (251,1) width 18: "03"
-            text run at (269,1) width 44 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+          LayoutText (anonymous) at (165,1) size 179x18
+            text run at (165,1) width 25: "fifth"
+            text run at (190,1) width 60 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
+            text run at (250,1) width 18: "03"
+            text run at (268,1) width 45 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
             text run at (313,1) width 31: "First"
       LayoutBlockFlow {DIV} at (0,62) size 352x18
         LayoutText {#text} at (218,1) size 133x15
@@ -156,15 +156,15 @@ layer at (8,399) size 384x320 backgroundClip at (0,0) size 400x559 clip at (0,0)
           text run at (327,1) width 24: "First"
       LayoutMenuList {SELECT} at (0,80) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (170,1) size 174x18
-            text run at (170,1) width 174 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+          LayoutText (anonymous) at (165,1) size 179x18
+            text run at (165,1) width 179 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
       LayoutBlockFlow {DIV} at (0,102) size 352x18
         LayoutText {#text} at (218,1) size 133x15
           text run at (218,1) width 133 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
       LayoutMenuList {SELECT} at (0,120) size 350x22 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutNGBlockFlow (anonymous) at (1,1) size 348x21
-          LayoutText (anonymous) at (170,1) size 174x18
-            text run at (170,1) width 174 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+          LayoutText (anonymous) at (165,1) size 179x18
+            text run at (165,1) width 179 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
       LayoutBlockFlow {DIV} at (0,142) size 352x18
         LayoutText {#text} at (218,1) size 133x15
           text run at (218,1) width 133 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"

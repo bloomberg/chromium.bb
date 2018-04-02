@@ -83,22 +83,22 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutNGBlockFlow {DIV} at (1,1) size 17x17 [border: (2px solid #0000FF)]
                 LayoutInline {FONT} at (0,0) size 13x13
                   LayoutBlockFlow {INPUT} at (2,2) size 13x13
-      LayoutTable {TABLE} at (0,241.25) size 583x80
-        LayoutTableSection {TBODY} at (0,0) size 583x80
-          LayoutTableRow {TR} at (0,2) size 583x76
-            LayoutNGTableCell {TD} at (2,2) size 100x28 [r=0 c=0 rs=1 cs=1]
-              LayoutNGBlockFlow {DIV} at (1,1) size 98x26 [border: (2px solid #0000FF)]
-                LayoutTextControl {INPUT} at (2,2) size 94x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            LayoutNGTableCell {TD} at (104,2) size 44x76 [r=0 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,241.25) size 590x80
+        LayoutTableSection {TBODY} at (0,0) size 590x80
+          LayoutTableRow {TR} at (0,2) size 590x76
+            LayoutNGTableCell {TD} at (2,2) size 107x28 [r=0 c=0 rs=1 cs=1]
+              LayoutNGBlockFlow {DIV} at (1,1) size 105x26 [border: (2px solid #0000FF)]
+                LayoutTextControl {INPUT} at (2,2) size 101x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            LayoutNGTableCell {TD} at (111,2) size 44x76 [r=0 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 42x74 [border: (2px solid #0000FF)]
-            LayoutNGTableCell {TD} at (150,2) size 244x28 [r=0 c=2 rs=1 cs=1]
+            LayoutNGTableCell {TD} at (157,2) size 244x28 [r=0 c=2 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 242x26 [border: (2px solid #0000FF)]
                 LayoutFileUploadControl {INPUT} at (2,2) size 238x22 "No file chosen"
                   LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     LayoutNGBlockFlow (anonymous) at (8,3) size 69x16
                       LayoutText {#text} at (0,0) size 69x16
                         text run at (0,0) width 69: "Choose File"
-            LayoutNGTableCell {TD} at (396,2) size 185x42 [r=0 c=3 rs=1 cs=1]
+            LayoutNGTableCell {TD} at (403,2) size 185x42 [r=0 c=3 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 183x40 [border: (2px solid #0000FF)]
       LayoutNGBlockFlow {H2} at (0,341.16) size 784x27
         LayoutText {#text} at (0,0) size 198x26
@@ -168,16 +168,16 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutNGBlockFlow {DIV} at (0,460.06) size 784x42
         LayoutText {#text} at (0,21) size 27x19
           text run at (0,21) width 27: "text "
-        LayoutTextControl {INPUT} at (27,20) size 94x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (121,21) size 4x19
-          text run at (121,21) width 4: " "
-        LayoutFileUploadControl {INPUT} at (125,20) size 238x22 "No file chosen"
+        LayoutTextControl {INPUT} at (27,20) size 101x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (128,21) size 4x19
+          text run at (128,21) width 4: " "
+        LayoutFileUploadControl {INPUT} at (132,20) size 238x22 "No file chosen"
           LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             LayoutNGBlockFlow (anonymous) at (8,3) size 69x16
               LayoutText {#text} at (0,0) size 69x16
                 text run at (0,0) width 69: "Choose File"
-        LayoutText {#text} at (363,21) size 4x19
-          text run at (363,21) width 4: " "
+        LayoutText {#text} at (370,21) size 4x19
+          text run at (370,21) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {H2} at (0,521.97) size 784x27
         LayoutText {#text} at (0,0) size 197x26
@@ -240,11 +240,11 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutText (anonymous) at (4,1) size 56x16
                 text run at (4,1) width 56: "xxxxxxxx"
           LayoutText {#text} at (0,0) size 0x0
-layer at (15,257) size 90x16
-  LayoutBlockFlow {DIV} at (2,3) size 90x16
+layer at (15,257) size 97x16
+  LayoutBlockFlow {DIV} at (2,3) size 97x16
     LayoutText {#text} at (0,0) size 50x16
       text run at (0,0) width 50: "text field"
-layer at (115,254) size 38x70 clip at (116,255) size 21x68 scrollHeight 85
+layer at (122,254) size 38x70 clip at (123,255) size 21x68 scrollHeight 85
   LayoutListBox {SELECT} at (2,2) size 38x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 21x17
       LayoutText {#text} at (2,0) size 17x16
@@ -261,17 +261,17 @@ layer at (115,254) size 38x70 clip at (116,255) size 21x68 scrollHeight 85
     LayoutBlockFlow {OPTION} at (1,69) size 21x17
       LayoutText {#text} at (2,0) size 7x16
         text run at (2,0) width 7: "5"
-layer at (407,254) size 179x36 clip at (408,255) size 177x34
+layer at (414,254) size 179x36 clip at (415,255) size 177x34
   LayoutTextControl {TEXTAREA} at (2,2) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {DIV} at (3,3) size 175x16
       LayoutText {#text} at (0,0) size 64x16
         text run at (0,0) width 64: "textarea"
-layer at (37,491) size 90x16
-  LayoutBlockFlow {DIV} at (2,3) size 90x16
+layer at (37,491) size 97x16
+  LayoutBlockFlow {DIV} at (2,3) size 97x16
     LayoutText {#text} at (0,0) size 50x16
       text run at (0,0) width 50: "text field"
-layer at (375,468) size 179x36 clip at (376,469) size 177x34
-  LayoutTextControl {TEXTAREA} at (367,0) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (382,468) size 179x36 clip at (383,469) size 177x34
+  LayoutTextControl {TEXTAREA} at (374,0) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {DIV} at (3,3) size 175x16
       LayoutText {#text} at (0,0) size 64x16
         text run at (0,0) width 64: "textarea"

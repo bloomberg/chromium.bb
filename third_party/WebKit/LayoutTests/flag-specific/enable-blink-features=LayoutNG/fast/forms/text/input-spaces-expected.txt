@@ -7,9 +7,9 @@ layer at (0,0) size 800x600
         text run at (0,0) width 776: "This tests that leading and trailing spaces in a text field don't get lost. There should be 3 spaces before and 3 spaces after the"
         text run at (0,20) width 98: "text in the field."
       LayoutBR {BR} at (98,20) size 0x0
-      LayoutTextControl {INPUT} at (0,40) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (0,40) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-layer at (10,51) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (10,51) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
     LayoutText {#text} at (0,0) size 64x16
       text run at (0,0) width 64: "   foo bar   "

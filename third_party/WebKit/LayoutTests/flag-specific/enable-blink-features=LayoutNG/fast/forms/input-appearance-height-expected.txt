@@ -9,14 +9,14 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {FORM} at (0,20) size 784x266
         LayoutText {#text} at (0,1) size 36x19
           text run at (0,1) width 36: "input "
-        LayoutTextControl {INPUT} at (36,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (36,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (190,1) size 0x0
+        LayoutBR {BR} at (217,1) size 0x0
         LayoutText {#text} at (0,23) size 27x19
           text run at (0,23) width 27: "text "
-        LayoutTextControl {INPUT} at (27,22) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (27,22) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (181,23) size 0x0
+        LayoutBR {BR} at (208,23) size 0x0
         LayoutText {#text} at (0,45) size 65x19
           text run at (0,45) width 65: "checkbox "
         LayoutBlockFlow {INPUT} at (69,47) size 13x13
@@ -67,29 +67,29 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (103,179) size 0x0
         LayoutText {#text} at (0,201) size 49x19
           text run at (0,201) width 49: "isindex "
-        LayoutTextControl {INPUT} at (49,200) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (49,200) size 183x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (205,201) size 0x0
+        LayoutBR {BR} at (232,201) size 0x0
         LayoutText {#text} at (0,223) size 64x19
           text run at (0,223) width 64: "password "
-        LayoutTextControl {INPUT} at (64,222) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (64,222) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (218,223) size 0x0
+        LayoutBR {BR} at (245,223) size 0x0
         LayoutText {#text} at (0,245) size 44x19
           text run at (0,245) width 44: "search "
-        LayoutTextControl {INPUT} at (44,244) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 150x16
-            LayoutBlockFlow {DIV} at (0,0) size 137x16
+        LayoutTextControl {INPUT} at (44,244) size 183x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutFlexibleBox {DIV} at (3,3) size 177x16
+            LayoutBlockFlow {DIV} at (0,0) size 164x16
         LayoutText {#text} at (0,0) size 0x0
-layer at (46,31) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
-layer at (37,53) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
-layer at (60,231) size 150x16
-  LayoutBlockFlow {DIV} at (3,3) size 150x16
-layer at (74,253) size 150x16
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
-layer at (55,275) size 137x16
-  LayoutBlockFlow {DIV} at (0,0) size 137x16
-layer at (193,279) size 9x9 transparent
-  LayoutBlockFlow {DIV} at (138,3.50) size 9x9
+layer at (46,31) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
+layer at (37,53) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
+layer at (60,231) size 177x16
+  LayoutBlockFlow {DIV} at (3,3) size 177x16
+layer at (74,253) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
+layer at (55,275) size 164x16
+  LayoutBlockFlow {DIV} at (0,0) size 164x16
+layer at (220,279) size 9x9 transparent
+  LayoutBlockFlow {DIV} at (165,3.50) size 9x9

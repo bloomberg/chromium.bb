@@ -7,7 +7,7 @@ layer at (0,0) size 785x638 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 335x19
           text run at (0,0) width 335: "This tests the selection methods on the new text field."
       LayoutNGBlockFlow {P} at (0,36) size 769x22
-        LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,74) size 769x540
         LayoutBR {BR} at (0,0) size 0x0
@@ -74,8 +74,8 @@ layer at (0,0) size 785x638 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,520) width 47: "Passed."
         LayoutBR {BR} at (47,520) size 0x0
       LayoutNGBlockFlow {P} at (0,630) size 769x0
-layer at (10,47) size 150x16 scrollWidth 151
-  LayoutBlockFlow {DIV} at (2,3) size 150x16
+layer at (10,47) size 177x16
+  LayoutBlockFlow {DIV} at (2,3) size 177x16
     LayoutText {#text} at (0,0) size 150x16
       text run at (0,0) width 150: "123456789 ABCDEFGHIJ"
 selection start: position 3 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 1 {P} of body
