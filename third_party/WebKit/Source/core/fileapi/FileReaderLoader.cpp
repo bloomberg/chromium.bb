@@ -43,6 +43,7 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "platform/Histogram.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/loader/fetch/ResourceError.h"
@@ -51,6 +52,7 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
+#include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -293,7 +295,13 @@ void FileReaderLoader::OnCalculatedSize(uint64_t total_size,
 }
 
 void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(SparseHistogram,
+                                  file_reader_loader_read_errors_histogram,
+                                  ("Storage.Blob.FileReaderLoader.ReadError"));
   if (status != net::OK || data_length != total_bytes_) {
+    net_error_ = status;
+    if (net_error_ != net::OK)
+      file_reader_loader_read_errors_histogram.Sample(net_error_);
     Failed(status == net::ERR_FILE_NOT_FOUND ? FileError::kNotFoundErr
                                              : FileError::kNotReadableErr);
     return;

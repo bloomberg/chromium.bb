@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
@@ -92,9 +91,14 @@ BlobReader::~BlobReader() = default;
 BlobReader::Status BlobReader::CalculateSize(net::CompletionOnceCallback done) {
   DCHECK(!total_size_calculated_);
   DCHECK(size_callback_.is_null());
-  if (!blob_handle_.get() || blob_handle_->IsBroken()) {
+  if (!blob_handle_.get())
     return ReportError(net::ERR_FILE_NOT_FOUND);
+
+  if (blob_handle_->IsBroken()) {
+    return ReportError(
+        ConvertBlobErrorToNetError(blob_handle_->GetBlobStatus()));
   }
+
   if (blob_handle_->IsBeingBuilt()) {
     blob_handle_->RunOnConstructionComplete(
         base::BindOnce(&BlobReader::AsyncCalculateSize,
@@ -157,15 +161,17 @@ void BlobReader::DidReadDiskCacheEntrySideData(const StatusCallback& done,
 }
 
 BlobReader::Status BlobReader::SetReadRange(uint64_t offset, uint64_t length) {
-  if (!blob_handle_.get() || blob_handle_->IsBroken()) {
+  if (!blob_handle_.get())
     return ReportError(net::ERR_FILE_NOT_FOUND);
+  if (blob_handle_->IsBroken()) {
+    return ReportError(
+        ConvertBlobErrorToNetError(blob_handle_->GetBlobStatus()));
   }
-  if (!total_size_calculated_) {
-    return ReportError(net::ERR_FAILED);
-  }
-  if (offset + length > total_size_) {
-    return ReportError(net::ERR_FILE_NOT_FOUND);
-  }
+  if (!total_size_calculated_)
+    return ReportError(net::ERR_UNEXPECTED);
+  if (offset + length > total_size_)
+    return ReportError(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+
   // Skip the initial items that are not in the range.
   remaining_bytes_ = length;
   const auto& items = blob_data_->items();
@@ -199,17 +205,14 @@ BlobReader::Status BlobReader::Read(net::IOBuffer* buffer,
   DCHECK(read_callback_.is_null());
 
   *bytes_read = 0;
-  if (!blob_data_.get()) {
+  if (!blob_data_.get())
     return ReportError(net::ERR_FILE_NOT_FOUND);
-  }
-  if (!total_size_calculated_) {
-    return ReportError(net::ERR_FAILED);
-  }
+  if (!total_size_calculated_)
+    return ReportError(net::ERR_UNEXPECTED);
 
   // Bail out immediately if we encountered an error.
-  if (net_error_ != net::OK) {
+  if (net_error_ != net::OK)
     return Status::NET_ERROR;
-  }
 
   DCHECK_GE(dest_size, 0ul);
   if (remaining_bytes_ < static_cast<uint64_t>(dest_size))
@@ -303,34 +306,30 @@ BlobReader::Status BlobReader::CalculateSizeImpl(
   pending_get_file_info_count_ = 0;
   for (size_t i = 0; i < items.size(); ++i) {
     const BlobDataItem& item = *items.at(i);
-    if (IsFileType(item.type())) {
-      ++pending_get_file_info_count_;
-      storage::FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
-      if (!reader) {
-        return ReportError(net::ERR_FAILED);
-      }
-      int64_t length_output = reader->GetLength(base::Bind(
-          &BlobReader::DidGetFileItemLength, weak_factory_.GetWeakPtr(), i));
-      if (length_output == net::ERR_IO_PENDING) {
-        continue;
-      }
-      if (length_output < 0) {
-        return ReportError(length_output);
-      }
-      // We got the length right away
-      --pending_get_file_info_count_;
-      uint64_t resolved_length;
-      if (!ResolveFileItemLength(item, length_output, &resolved_length)) {
-        return ReportError(net::ERR_FILE_NOT_FOUND);
-      }
-      if (!AddItemLength(i, resolved_length)) {
-        return ReportError(net::ERR_FAILED);
-      }
+    if (!IsFileType(item.type())) {
+      if (!AddItemLength(i, item.length()))
+        return ReportError(net::ERR_INSUFFICIENT_RESOURCES);
       continue;
     }
+    ++pending_get_file_info_count_;
+    storage::FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
+    if (!reader)
+      return ReportError(net::ERR_FILE_NOT_FOUND);
 
-    if (!AddItemLength(i, item.length()))
+    int64_t length_output = reader->GetLength(base::Bind(
+        &BlobReader::DidGetFileItemLength, weak_factory_.GetWeakPtr(), i));
+    if (length_output == net::ERR_IO_PENDING)
+      continue;
+    if (length_output < 0)
+      return ReportError(length_output);
+
+    // We got the length right away
+    --pending_get_file_info_count_;
+    uint64_t resolved_length;
+    if (!ResolveFileItemLength(item, length_output, &resolved_length))
       return ReportError(net::ERR_FAILED);
+    if (!AddItemLength(i, resolved_length))
+      return ReportError(net::ERR_FILE_TOO_BIG);
   }
 
   if (pending_get_file_info_count_ == 0) {
@@ -343,9 +342,8 @@ BlobReader::Status BlobReader::CalculateSizeImpl(
 }
 
 bool BlobReader::AddItemLength(size_t index, uint64_t item_length) {
-  if (item_length > std::numeric_limits<uint64_t>::max() - total_size_) {
+  if (item_length > std::numeric_limits<uint64_t>::max() - total_size_)
     return false;
-  }
 
   // Cache the size and add it to the total size.
   DCHECK_LT(index, item_length_list_.size());
@@ -362,9 +360,8 @@ bool BlobReader::ResolveFileItemLength(const BlobDataItem& item,
   uint64_t file_length = total_length;
   uint64_t item_offset = item.offset();
   uint64_t item_length = item.length();
-  if (item_offset > file_length) {
+  if (item_offset > file_length)
     return false;
-  }
 
   uint64_t max_length = file_length - item_offset;
 
@@ -385,8 +382,6 @@ void BlobReader::DidGetFileItemLength(size_t index, int64_t result) {
   if (net_error_)
     return;
 
-  if (result == net::ERR_UPLOAD_FILE_CHANGED)
-    result = net::ERR_FILE_NOT_FOUND;
   if (result < 0) {
     InvalidateCallbacksAndDone(result, std::move(size_callback_));
     return;
@@ -397,12 +392,12 @@ void BlobReader::DidGetFileItemLength(size_t index, int64_t result) {
   const BlobDataItem& item = *items.at(index);
   uint64_t length;
   if (!ResolveFileItemLength(item, result, &length)) {
-    InvalidateCallbacksAndDone(net::ERR_FILE_NOT_FOUND,
-                               std::move(size_callback_));
+    InvalidateCallbacksAndDone(net::ERR_FAILED, std::move(size_callback_));
     return;
   }
   if (!AddItemLength(index, length)) {
-    InvalidateCallbacksAndDone(net::ERR_FAILED, std::move(size_callback_));
+    InvalidateCallbacksAndDone(net::ERR_FILE_TOO_BIG,
+                               std::move(size_callback_));
     return;
   }
 
@@ -423,9 +418,8 @@ BlobReader::Status BlobReader::ReadLoop(int* bytes_read) {
   // Read until we encounter an error or could not get the data immediately.
   while (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
     Status read_status = ReadItem();
-    if (read_status == Status::DONE) {
+    if (read_status == Status::DONE)
       continue;
-    }
     return read_status;
   }
 
@@ -441,9 +435,8 @@ BlobReader::Status BlobReader::ReadItem() {
   const auto& items = blob_data_->items();
   // If we get to the last item but still expect something to read, bail out
   // since something is wrong.
-  if (current_item_index_ >= items.size()) {
-    return ReportError(net::ERR_FAILED);
-  }
+  if (current_item_index_ >= items.size())
+    return ReportError(net::ERR_UNEXPECTED);
 
   // Compute the bytes to read for current item.
   int bytes_to_read = ComputeBytesToRead();
@@ -464,13 +457,12 @@ BlobReader::Status BlobReader::ReadItem() {
     return ReadDiskCacheEntryItem(item, bytes_to_read);
   if (!IsFileType(item.type())) {
     NOTREACHED();
-    return ReportError(net::ERR_FAILED);
+    return ReportError(net::ERR_UNEXPECTED);
   }
   storage::FileStreamReader* const reader =
       GetOrCreateFileReaderAtIndex(current_item_index_);
-  if (!reader) {
-    return ReportError(net::ERR_FAILED);
-  }
+  if (!reader)
+    return ReportError(net::ERR_FILE_NOT_FOUND);
 
   return ReadFileItem(reader, bytes_to_read);
 }

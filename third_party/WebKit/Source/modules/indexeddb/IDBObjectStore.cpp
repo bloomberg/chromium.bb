@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ToV8ForCore.h"
@@ -559,7 +560,9 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
       script_state, source, transaction_.Get(), std::move(metrics));
 
   value_wrapper.DoneCloning();
-  value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
+
+  if (base::FeatureList::IsEnabled(kIndexedDBLargeValueWrapping))
+    value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
   BackendDB()->Put(

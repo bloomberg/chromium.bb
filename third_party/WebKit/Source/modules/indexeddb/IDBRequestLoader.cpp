@@ -10,6 +10,8 @@
 #include "modules/indexeddb/IDBRequestQueueItem.h"
 #include "modules/indexeddb/IDBValue.h"
 #include "modules/indexeddb/IDBValueWrapping.h"
+#include "platform/Histogram.h"
+#include "platform/wtf/StdLibExtras.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 namespace blink {
@@ -114,6 +116,11 @@ void IDBRequestLoader::DidFail(FileError::ErrorCode) {
   DCHECK(file_reader_loading_);
   file_reader_loading_ = false;
 #endif  // DCHECK_IS_ON()
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(SparseHistogram,
+                                  idb_request_loader_read_errors_histogram,
+                                  ("Storage.Blob.IDBRequestLoader.ReadError"));
+  idb_request_loader_read_errors_histogram.Sample(loader_->GetNetError());
 
   ReportError();
 }
