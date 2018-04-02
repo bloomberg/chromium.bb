@@ -173,10 +173,9 @@ void XRWebGLLayer::requestViewportScaling(double scale_factor) {
         ClampToRange(scale_factor, kViewportMinScale, kViewportMaxScale);
   }
 
-  if (viewport_scale_ != scale_factor) {
-    viewport_scale_ = scale_factor;
-    viewports_dirty_ = true;
-  }
+  // Don't set this as the viewport_scale_ directly, since that would allow the
+  // viewports to change mid-frame.
+  requested_viewport_scale_ = scale_factor;
 }
 
 void XRWebGLLayer::UpdateViewports() {
@@ -239,6 +238,12 @@ void XRWebGLLayer::UpdateViewports() {
 }
 
 void XRWebGLLayer::OnFrameStart() {
+  // If the requested scale has changed since the last from, update it now.
+  if (viewport_scale_ != requested_viewport_scale_) {
+    viewport_scale_ = requested_viewport_scale_;
+    viewports_dirty_ = true;
+  }
+
   framebuffer_->MarkOpaqueBufferComplete(true);
   framebuffer_->SetContentsChanged(false);
 }

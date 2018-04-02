@@ -111,14 +111,14 @@ XRSession::XRSession(XRDevice* device,
 
 void XRSession::setDepthNear(double value) {
   if (depth_near_ != value) {
-    views_dirty_ = true;
+    update_views_next_frame_ = true;
     depth_near_ = value;
   }
 }
 
 void XRSession::setDepthFar(double value) {
   if (depth_far_ != value) {
-    views_dirty_ = true;
+    update_views_next_frame_ = true;
     depth_far_ = value;
   }
 }
@@ -313,6 +313,12 @@ void XRSession::OnFrame(
   if (pending_frame_) {
     pending_frame_ = false;
 
+    // Make sure that any frame-bounded changed to the views array take effect.
+    if (update_views_next_frame_) {
+      views_dirty_ = true;
+      update_views_next_frame_ = false;
+    }
+
     // Cache the base layer, since it could change during the frame callback.
     XRLayer* frame_base_layer = base_layer_;
     frame_base_layer->OnFrameStart();
@@ -345,7 +351,7 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
     devicePixelRatio = frame->DevicePixelRatio();
   }
 
-  views_dirty_ = true;
+  update_views_next_frame_ = true;
   output_width_ = element->OffsetWidth() * devicePixelRatio;
   output_height_ = element->OffsetHeight() * devicePixelRatio;
 
