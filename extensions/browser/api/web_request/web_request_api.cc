@@ -113,6 +113,16 @@ enum RequestAction {
   MAX
 };
 
+// Corresponds to the "WebRequestEventResponse" histogram enumeration type in
+// src/tools/metrics/histograms/enums.xml.
+//
+// DO NOT REORDER OR CHANGE THE MEANING OF THESE VALUES.
+enum class WebRequestEventResponse {
+  kIgnored,
+  kObserved,
+  kMaxValue = kObserved,
+};
+
 const char kWebRequestEventPrefix[] = "webRequest.";
 
 // List of all the webRequest events.
@@ -744,6 +754,11 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
                       std::move(event_details));
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.WebRequest.OnBeforeSendHeadersEventResponse",
+      initialize_blocked_requests ? WebRequestEventResponse::kObserved
+                                  : WebRequestEventResponse::kIgnored);
+
   if (!initialize_blocked_requests)
     return net::OK;  // Nobody saw a reason for modifying the request.
 
@@ -822,6 +837,11 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
         DispatchEvent(browser_context, extension_info_map, request, listeners,
                       std::move(event_details));
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.WebRequest.OnHeadersReceivedEventResponse",
+      initialize_blocked_requests ? WebRequestEventResponse::kObserved
+                                  : WebRequestEventResponse::kIgnored);
 
   if (!initialize_blocked_requests)
     return net::OK;  // Nobody saw a reason for modifying the request.
