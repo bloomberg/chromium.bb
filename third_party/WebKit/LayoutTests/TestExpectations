@@ -1987,7 +1987,7 @@ crbug.com/626703 external/wpt/requestidlecallback/cancel-invoked.html [ Timeout 
 crbug.com/626703 external/wpt/resource-timing/resource-timing.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ Timeout ]
-crbug.com/626703 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
+crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 external/wpt/wasm/wasm_indexeddb_test.https.html [ Failure ]
