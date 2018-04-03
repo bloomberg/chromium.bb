@@ -4191,7 +4191,8 @@
       {
         "args": [
           "--xvfb",
-          "--extra-browser-args=--enable-features=VizDisplayCompositor"
+          "--extra-browser-args=--enable-features=VizDisplayCompositor",
+          "--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests_viz",
@@ -4211,7 +4212,9 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-features=VizDisplayCompositor"
+          "--extra-browser-args=--enable-features=VizDisplayCompositor",
+          "--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot",
+          "--skip=telemetry.internal.browser.tab_unittest.GpuTabTest.testScreenshot"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests_viz",
