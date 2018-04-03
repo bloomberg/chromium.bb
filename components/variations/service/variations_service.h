@@ -171,6 +171,8 @@ class VariationsService
                         std::unique_ptr<base::FeatureList> feature_list,
                         variations::PlatformFieldTrials* platform_field_trials);
 
+  int request_count() const { return request_count_; }
+
  protected:
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
   // the response. This calls DoFetchToURL with the set url.

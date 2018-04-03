@@ -850,6 +850,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       shutdown_watcher_(new ShutdownWatcherHelper()),
       ui_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread(
           metrics::CallStackProfileParams::UI_THREAD)),
+      should_call_pre_main_loop_start_startup_on_variations_service_(
+          !parameters.ui_task),
       profile_(NULL),
       run_message_loop_(true) {
   // If we're running tests (ui_task is non-null).
@@ -2031,9 +2033,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     const base::TimeDelta delta = base::TimeTicks::Now() - browser_open_start;
     startup_metric_utils::RecordBrowserOpenTabsDelta(delta);
 
-    // If we're running tests (ui_task is non-null), then we don't want to
-    // call StartRepeatedVariationsSeedFetch
-    if (parameters().ui_task == NULL) {
+    if (should_call_pre_main_loop_start_startup_on_variations_service_) {
       // Request new variations seed information from server.
       variations::VariationsService* variations_service =
           browser_process_->variations_service();

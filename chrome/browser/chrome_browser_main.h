@@ -103,6 +103,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   Profile* profile() { return profile_; }
 
  private:
+  friend class ChromeBrowserMainPartsTestApi;
+
   // Sets up the field trials and related initialization. Call only after
   // about:flags have been converted to switches.
   void SetupFieldTrials();
@@ -167,6 +169,11 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // A profiler that periodically samples stack traces on the UI thread.
   std::unique_ptr<ThreadProfiler> ui_thread_profiler_;
+
+  // Whether PerformPreMainMessageLoopStartup() is called on VariationsService.
+  // Initialized to true if |MainFunctionParams::ui_task| is null (meaning not
+  // running browser_tests), but may be forced to true for tests.
+  bool should_call_pre_main_loop_start_startup_on_variations_service_;
 
   // Members initialized after / released before main_message_loop_ ------------
 
