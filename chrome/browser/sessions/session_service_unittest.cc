@@ -986,12 +986,6 @@ void OnGotPreviousSession(
   FAIL() << "SessionService was destroyed, this shouldn't be reached.";
 }
 
-void PostBackToThread(base::MessageLoop* message_loop,
-                      base::RunLoop* run_loop) {
-  message_loop->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&base::RunLoop::Quit, base::Unretained(run_loop)));
-}
-
 // Blocks until |keep_waiting| is false.
 void SimulateWaitForTesting(const base::AtomicFlag* flag) {
   // Ideally this code would use WaitableEvent, but that triggers a DCHECK in
@@ -1024,11 +1018,7 @@ TEST_F(SessionServiceTest, GetSessionsAndDestroy) {
       FROM_HERE, base::Bind(&SimulateWaitForTesting, base::Unretained(&flag)));
   service()->GetLastSession(base::Bind(&OnGotPreviousSession),
                             &cancelable_task_tracker);
-  helper_.RunTaskOnBackendThread(
-      FROM_HERE,
-      base::Bind(&PostBackToThread,
-                 base::Unretained(base::MessageLoop::current()),
-                 base::Unretained(&run_loop)));
+  helper_.RunTaskOnBackendThread(FROM_HERE, run_loop.QuitClosure());
   delete helper_.ReleaseService();
   flag.Set();
   run_loop.Run();
