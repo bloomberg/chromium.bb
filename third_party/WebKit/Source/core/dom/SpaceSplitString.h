@@ -54,6 +54,12 @@ class CORE_EXPORT SpaceSplitString {
   void Remove(size_t index);
   void ReplaceAt(size_t index, const AtomicString&);
 
+  // https://dom.spec.whatwg.org/#concept-ordered-set-serializer
+  // The ordered set serializer takes a set and returns the concatenation of the
+  // strings in set, separated from each other by U+0020, if set is non-empty,
+  // and the empty string otherwise.
+  AtomicString SerializeToString() const;
+
   size_t size() const { return data_ ? data_->size() : 0; }
   bool IsNull() const { return !data_; }
   const AtomicString& operator[](size_t i) const { return (*data_)[i]; }

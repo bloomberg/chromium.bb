@@ -23,6 +23,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringHash.h"
 
 namespace blink {
@@ -146,9 +147,24 @@ void SpaceSplitString::Remove(size_t index) {
 }
 
 void SpaceSplitString::ReplaceAt(size_t index, const AtomicString& token) {
-  DCHECK_LT(index, size());
+  DCHECK_LT(index, data_->size());
   EnsureUnique();
   (*data_)[index] = token;
+}
+
+AtomicString SpaceSplitString::SerializeToString() const {
+  size_t size = data_->size();
+  if (size == 0)
+    return g_empty_atom;
+  if (size == 1)
+    return (*data_)[0];
+  StringBuilder builder;
+  builder.Append((*data_)[0]);
+  for (size_t i = 1; i < size; ++i) {
+    builder.Append(' ');
+    builder.Append((*data_)[i]);
+  }
+  return builder.ToAtomicString();
 }
 
 SpaceSplitString::DataMap& SpaceSplitString::SharedDataMap() {

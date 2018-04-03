@@ -85,7 +85,6 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   void AddTokens(const Vector<String>&);
   void RemoveTokens(const Vector<String>&);
   void UpdateWithTokenSet(const SpaceSplitString&);
-  static AtomicString SerializeTokenSet(const SpaceSplitString&);
 
   SpaceSplitString token_set_;
   AtomicString value_;

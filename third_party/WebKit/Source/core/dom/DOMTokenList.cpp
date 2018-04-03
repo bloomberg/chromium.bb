@@ -29,7 +29,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/AutoReset.h"
-#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -250,30 +249,10 @@ void DOMTokenList::RemoveTokens(const Vector<String>& tokens) {
   UpdateWithTokenSet(token_set_);
 }
 
-// https://dom.spec.whatwg.org/#concept-ordered-set-serializer
-// The ordered set serializer takes a set and returns the concatenation of the
-// strings in set, separated from each other by U+0020, if set is non-empty, and
-// the empty string otherwise.
-AtomicString DOMTokenList::SerializeTokenSet(
-    const SpaceSplitString& token_set) {
-  size_t size = token_set.size();
-  if (size == 0)
-    return g_empty_atom;
-  if (size == 1)
-    return token_set[0];
-  StringBuilder builder;
-  builder.Append(token_set[0]);
-  for (size_t i = 1; i < size; ++i) {
-    builder.Append(' ');
-    builder.Append(token_set[i]);
-  }
-  return builder.ToAtomicString();
-}
-
 // https://dom.spec.whatwg.org/#concept-dtl-update
 void DOMTokenList::UpdateWithTokenSet(const SpaceSplitString& token_set) {
   AutoReset<bool> updating(&is_in_update_step_, true);
-  setValue(SerializeTokenSet(token_set));
+  setValue(token_set.SerializeToString());
 }
 
 void DOMTokenList::setValue(const AtomicString& value) {
