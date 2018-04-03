@@ -24,9 +24,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -84,24 +85,27 @@ bool ModelLoader::ModelHasValidHashIds(const ClientSideModel& model) {
 }
 
 // Model name and URL are a function of is_extended_reporting and Finch.
-ModelLoader::ModelLoader(base::Closure update_renderers_callback,
-                         net::URLRequestContextGetter* request_context_getter,
-                         bool is_extended_reporting)
+ModelLoader::ModelLoader(
+    base::Closure update_renderers_callback,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    bool is_extended_reporting)
     : name_(FillInModelName(is_extended_reporting, GetModelNumber())),
       url_(kClientModelUrlPrefix + name_),
       update_renderers_callback_(update_renderers_callback),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(url_loader_factory),
       weak_factory_(this) {
   DCHECK(url_.is_valid());
 }
 
 // For testing only
-ModelLoader::ModelLoader(base::Closure update_renderers_callback,
-                         const std::string& model_name)
+ModelLoader::ModelLoader(
+    base::Closure update_renderers_callback,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const std::string& model_name)
     : name_(model_name),
       url_(kClientModelUrlPrefix + name_),
       update_renderers_callback_(update_renderers_callback),
-      request_context_getter_(NULL),
+      url_loader_factory_(url_loader_factory),
       weak_factory_(this) {
   DCHECK(url_.is_valid());
 }
@@ -149,36 +153,38 @@ void ModelLoader::StartFetch() {
             }
           }
         })");
-  fetcher_ =
-      net::URLFetcher::Create(0 /* ID used for testing */, url_,
-                              net::URLFetcher::GET, this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  fetcher_->SetRequestContext(request_context_getter_);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                         net::LOAD_DO_NOT_SEND_COOKIES);
-  fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url_;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&ModelLoader::OnURLLoaderComplete,
+                     base::Unretained(this)));
 }
 
-void ModelLoader::OnURLFetchComplete(const net::URLFetcher* source) {
+void ModelLoader::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
-  DCHECK_EQ(fetcher_.get(), source);
-  DCHECK_EQ(url_, source->GetURL());
 
   std::string data;
-  source->GetResponseAsString(&data);
-  net::URLRequestStatus status = source->GetStatus();
-  const bool is_success = status.is_success();
-  const int response_code = source->GetResponseCode();
+  if (response_body)
+    data = std::move(*response_body.get());
+  const bool is_success = url_loader_->NetError() == net::OK;
+  int response_code = 0;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
   SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
-      kUmaModelDownloadResponseMetricName, status, response_code);
+      kUmaModelDownloadResponseMetricName, url_loader_->NetError(),
+      response_code);
 
   // max_age is valid iff !0.
   base::TimeDelta max_age;
-  if (is_success && net::HTTP_OK == response_code &&
-      source->GetResponseHeaders()) {
-    source->GetResponseHeaders()->GetMaxAgeValue(&max_age);
-  }
+  if (is_success && net::HTTP_OK == response_code)
+    url_loader_->ResponseInfo()->headers->GetMaxAgeValue(&max_age);
+
   std::unique_ptr<ClientSideModel> model(new ClientSideModel());
   ClientModelStatus model_status;
   if (!is_success || net::HTTP_OK != response_code) {
@@ -227,8 +233,8 @@ void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
     delay_ms = max_age.InMilliseconds();
   }
 
-  // Reset |fetcher_| as it will be re-created on next fetch.
-  fetcher_.reset();
+  // Reset |loader_| as it will be re-created on next load.
+  url_loader_.reset();
 
   // Schedule the next model reload.
   ScheduleFetch(delay_ms);
@@ -249,7 +255,7 @@ void ModelLoader::CancelFetcher() {
   // Invalidate any scheduled request.
   weak_factory_.InvalidateWeakPtrs();
   // Cancel any request in progress.
-  fetcher_.reset();
+  url_loader_.reset();
 }
 
 }  // namespace safe_browsing

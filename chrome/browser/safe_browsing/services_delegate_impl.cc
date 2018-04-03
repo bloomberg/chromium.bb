@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
 namespace safe_browsing {
@@ -45,12 +46,12 @@ ServicesDelegateImpl::~ServicesDelegateImpl() {
 }
 
 void ServicesDelegateImpl::InitializeCsdService(
-    net::URLRequestContextGetter* context_getter) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(SAFE_BROWSING_CSD)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
-    csd_service_.reset(ClientSideDetectionService::Create(context_getter));
+    csd_service_.reset(ClientSideDetectionService::Create(url_loader_factory));
   }
 #endif  // defined(SAFE_BROWSING_CSD)
 }

@@ -216,8 +216,15 @@ void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
     const char* metric_name,
     const net::URLRequestStatus& status,
     int response_code) {
-  base::UmaHistogramSparse(
-      metric_name, status.is_success() ? response_code : status.error());
+  RecordHttpResponseOrErrorCode(metric_name, status.error(), response_code);
+}
+
+void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
+    const char* metric_name,
+    int net_error,
+    int response_code) {
+  base::UmaHistogramSparse(metric_name,
+                           net_error == net::OK ? response_code : net_error);
 }
 
 bool SafeBrowsingProtocolManager::IsUpdateScheduled() const {

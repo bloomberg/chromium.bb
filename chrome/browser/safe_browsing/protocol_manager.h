@@ -169,6 +169,9 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   static void RecordHttpResponseOrErrorCode(
       const char* metric_name, const net::URLRequestStatus& status,
       int response_code);
+  static void RecordHttpResponseOrErrorCode(const char* metric_name,
+                                            int net_error,
+                                            int response_code);
 
   // Returns whether another update is currently scheduled.
   bool IsUpdateScheduled() const;

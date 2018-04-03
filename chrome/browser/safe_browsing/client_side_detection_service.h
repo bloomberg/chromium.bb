@@ -31,18 +31,16 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace content {
 class RenderProcessHost;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-class URLRequestStatus;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 class ClientMalwareRequest;
@@ -50,8 +48,7 @@ class ClientPhishingRequest;
 
 // Main service which pushes models to the renderers, responds to classification
 // requests. This owns two ModelLoader objects.
-class ClientSideDetectionService : public net::URLFetcherDelegate,
-                                   public content::NotificationObserver {
+class ClientSideDetectionService : public content::NotificationObserver {
  public:
   // void(GURL phishing_url, bool is_phishing).
   typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
@@ -65,7 +62,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // disabled, use SetEnabledAndRefreshState() to start it.  The caller takes
   // ownership of the object.  This function may return NULL.
   static ClientSideDetectionService* Create(
-      net::URLRequestContextGetter* request_context_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Enables or disables the service, and refreshes the state of all renderers.
   // This is usually called by the SafeBrowsingService, which tracks whether
@@ -81,8 +78,8 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
     return enabled_;
   }
 
-  // From the net::URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+                           std::unique_ptr<std::string> response_body);
 
   // content::NotificationObserver overrides:
   void Observe(int type,
@@ -141,7 +138,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
  protected:
   // Use Create() method to create an instance of this object.
   explicit ClientSideDetectionService(
-      net::URLRequestContextGetter* request_context_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
  private:
   friend class ClientSideDetectionServiceTest;
@@ -178,17 +175,17 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
 
   // Called by OnURLFetchComplete to handle the server response from
   // sending the client-side phishing request.
-  void HandlePhishingVerdict(const net::URLFetcher* source,
+  void HandlePhishingVerdict(network::SimpleURLLoader* source,
                              const GURL& url,
-                             const net::URLRequestStatus& status,
+                             int net_error,
                              int response_code,
                              const std::string& data);
 
   // Called by OnURLFetchComplete to handle the server response from
   // sending the client-side malware request.
-  void HandleMalwareVerdict(const net::URLFetcher* source,
+  void HandleMalwareVerdict(network::SimpleURLLoader* source,
                             const GURL& url,
-                            const net::URLRequestStatus& status,
+                            int net_error,
                             int response_code,
                             const std::string& data);
 
@@ -223,12 +220,14 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
   struct ClientPhishingReportInfo;
-  std::map<const net::URLFetcher*, std::unique_ptr<ClientPhishingReportInfo>>
+  std::map<const network::SimpleURLLoader*,
+           std::unique_ptr<ClientPhishingReportInfo>>
       client_phishing_reports_;
   // Map of client malware ip request to the corresponding callback that
   // has to be invoked when the request is done.
   struct ClientMalwareReportInfo;
-  std::map<const net::URLFetcher*, std::unique_ptr<ClientMalwareReportInfo>>
+  std::map<const network::SimpleURLLoader*,
+           std::unique_ptr<ClientMalwareReportInfo>>
       client_malware_reports_;
 
   // Cache of completed requests. Used to satisfy requests for the same urls
@@ -248,8 +247,8 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // of malware requests that we send in a day.
   base::queue<base::Time> malware_report_times_;
 
-  // The context we use to issue network requests.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // The URLLoaderFactory we use to issue network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   content::NotificationRegistrar registrar_;
 

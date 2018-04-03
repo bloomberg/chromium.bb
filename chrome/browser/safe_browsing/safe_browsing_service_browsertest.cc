@@ -91,6 +91,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/websockets/websocket_handshake_constants.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"

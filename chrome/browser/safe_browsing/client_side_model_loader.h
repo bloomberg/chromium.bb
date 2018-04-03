@@ -20,24 +20,23 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace base {
 class TimeDelta;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace safe_browsing {
 class ClientSideModel;
 
 // Class which owns and loads a single client-Side detection model.
 // The ClientSideDetectionService uses this.
-class ModelLoader : public net::URLFetcherDelegate {
+class ModelLoader {
  public:
   static const size_t kMaxModelSizeBytes;
   static const int kClientModelFetchIntervalMs;
@@ -46,16 +45,15 @@ class ModelLoader : public net::URLFetcherDelegate {
   static const char kClientModelUrlPrefix[];
   static const char kClientModelNamePattern[];
 
-  // Constructs a model loader to fetch a model using |request_context_getter|.
+  // Constructs a model loader to fetch a model using |url_loader_factory|.
   // When ScheduleFetch is called, |update_renderers| will be called on the
   // same sequence if the fetch is successful.
   ModelLoader(base::Closure update_renderers,
-              net::URLRequestContextGetter* request_context_getter,
+              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               bool is_extended_reporting);
-  ~ModelLoader() override;
+  virtual ~ModelLoader();
 
-  // From the net::URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Schedules the next fetch of the model.
   virtual void ScheduleFetch(int64_t delay_ms);
@@ -83,7 +81,9 @@ class ModelLoader : public net::URLFetcherDelegate {
   };
 
   // For testing only.
-  ModelLoader(base::Closure update_renderers, const std::string& model_name);
+  ModelLoader(base::Closure update_renderers,
+              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+              const std::string& model_name);
 
   // This is called periodically to check whether a new client model is
   // available for download.
@@ -115,13 +115,12 @@ class ModelLoader : public net::URLFetcherDelegate {
   // If the model isn't yet loaded, model_str_ will be empty.
   std::string model_str_;
   std::unique_ptr<ClientSideModel> model_;
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // Callback to invoke when we've got a new model.  CSD will send it around.
   base::Closure update_renderers_callback_;
 
-  // Not owned, must outlive this obj or be NULL.
-  net::URLRequestContextGetter* request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to check that ScheduleFetch and CancelFetcher are called on the same
   // sequence.
