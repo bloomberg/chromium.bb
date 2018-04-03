@@ -78,4 +78,4 @@ AccessibilityTest.define('SettingsA11ySignOut', {
   violationFilter: SettingsAccessibilityTest.violationFilter,
 });
 
-GEN('#endif  // defined(OS_CHROMEOS)');
+GEN('#endif  // !defined(OS_CHROMEOS)');
