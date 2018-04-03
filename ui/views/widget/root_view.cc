@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -73,7 +74,8 @@ class PreEventDispatchHandler : public ui::EventHandler {
     View* v = NULL;
     if (owner_->GetFocusManager())  // Can be NULL in unittests.
       v = owner_->GetFocusManager()->GetFocusedView();
-
+// macOS doesn't have keyboard-triggered context menus.
+#if !defined(OS_MACOSX)
     // Special case to handle keyboard-triggered context menus.
     if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
        (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
@@ -88,6 +90,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
       v->ShowContextMenu(location, ui::MENU_SOURCE_KEYBOARD);
       event->StopPropagation();
     }
+#endif
   }
 
   View* owner_;
