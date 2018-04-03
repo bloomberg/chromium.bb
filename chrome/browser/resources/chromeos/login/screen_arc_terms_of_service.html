@@ -15,21 +15,39 @@
           <div id="arc-tos-view-container">
             <webview id="arc-tos-view"></webview>
           </div>
-          <label>
-            <a id="arc-policy-link" href="#" i18n-content="arcPolicyLink">
-            </a>
-          </label>
-          <label>
-            <p id="arc-text-metrics"></p>
-          </label>
-          <label>
-            <input type="checkbox" id="arc-enable-backup-restore">
-            <p i18n-values=".innerHTML:arcTextBackupRestore"></p>
-          </label>
-          <label>
-            <input type="checkbox" id="arc-enable-location-service">
-            <p i18n-values=".innerHTML:arcTextLocationService"></p>
-          </label>
+          <div>
+            <label>
+              <a id="arc-policy-link" href="#" i18n-content="arcPolicyLink">
+              </a>
+            </label>
+          </div>
+          <div>
+            <label>
+              <p id="arc-text-metrics"></p>
+            </label>
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" id="arc-enable-backup-restore">
+              <p i18n-values=".innerHTML:arcTextBackupRestore"></p>
+            </label>
+          </div>
+          <div>
+            <label id = "arc-location-service">
+              <input type="checkbox" id="arc-enable-location-service">
+              <p i18n-values=".innerHTML:arcTextLocationService"></p>
+            </label>
+          </div>
+          <div>
+            <label id="arc-pai-service">
+              <p i18n-values=".innerHTML:arcTextPaiService"></p>
+            </label>
+          </div>
+          <div>
+            <label id="arc-google-service-confirmation">
+              <p i18n-values=".innerHTML:arcTextGoogleServiceConfirmation"></p>
+            </label>
+          </div>
         </div>
         <div id="arc-tos-loading">
           <p i18n-content="arcTermsOfServiceLoading"></p>

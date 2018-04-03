@@ -330,6 +330,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     enableButtons_: function(enable) {
       $('arc-tos-skip-button').disabled = !enable;
       $('arc-tos-accept-button').disabled = !enable;
+      $('arc-tos-next-button').disabled = !enable;
       $('arc-tos-retry-button').disabled = !enable;
       $('arc-tos-md').arcTosButtonsDisabled = !enable;
     },
