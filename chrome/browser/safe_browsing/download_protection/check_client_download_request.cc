@@ -28,6 +28,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace safe_browsing {
 
@@ -163,13 +165,13 @@ void CheckClientDownloadRequest::StartTimeout() {
 void CheckClientDownloadRequest::Cancel() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cancelable_task_tracker_.TryCancelAll();
-  if (fetcher_.get()) {
+  if (loader_.get()) {
     // The DownloadProtectionService is going to release its reference, so we
-    // might be destroyed before the URLFetcher completes.  Cancel the
-    // fetcher so it does not try to invoke OnURLFetchComplete.
-    fetcher_.reset();
+    // might be destroyed before the URLLoader completes.  Cancel the
+    // loader so it does not try to invoke OnURLFetchComplete.
+    loader_.reset();
   }
-  // Note: If there is no fetcher, then some callback is still holding a
+  // Note: If there is no loader, then some callback is still holding a
   // reference to this object.  We'll eventually wind up in some method on
   // the UI thread that will call FinishRequest() again.  If FinishRequest()
   // is called a second time, it will be a no-op.
@@ -186,31 +188,28 @@ void CheckClientDownloadRequest::OnDownloadDestroyed(
 }
 
 // TODO: this method puts "DownloadProtectionService::" in front of a lot of
-// stuff to avoid referencing the enums i copied to this .h file. From the
-// net::URLFetcherDelegate interface.
-void CheckClientDownloadRequest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+// stuff to avoid referencing the enums i copied to this .h file.
+void CheckClientDownloadRequest::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(source, fetcher_.get());
+  bool success = loader_->NetError() == net::OK;
+  int response_code = 0;
+  if (loader_->ResponseInfo() && loader_->ResponseInfo()->headers)
+    response_code = loader_->ResponseInfo()->headers->response_code();
   DVLOG(2) << "Received a response for URL: " << item_->GetUrlChain().back()
-           << ": success=" << source->GetStatus().is_success()
-           << " response_code=" << source->GetResponseCode();
-  if (source->GetStatus().is_success()) {
+           << ": success=" << success << " response_code=" << response_code;
+  if (success) {
     base::UmaHistogramSparse("SBClientDownload.DownloadRequestResponseCode",
-                             source->GetResponseCode());
+                             response_code);
   }
   base::UmaHistogramSparse("SBClientDownload.DownloadRequestNetError",
-                           -source->GetStatus().error());
+                           -loader_->NetError());
   DownloadCheckResultReason reason = REASON_SERVER_PING_FAILED;
   DownloadCheckResult result = DownloadCheckResult::UNKNOWN;
   std::string token;
-  if (source->GetStatus().is_success() &&
-      net::HTTP_OK == source->GetResponseCode()) {
+  if (success && net::HTTP_OK == response_code) {
     ClientDownloadResponse response;
-    std::string data;
-    bool got_data = source->GetResponseAsString(&data);
-    DCHECK(got_data);
-    if (!response.ParseFromString(data)) {
+    if (!response.ParseFromString(*response_body.get())) {
       reason = REASON_INVALID_RESPONSE_PROTO;
       result = DownloadCheckResult::UNKNOWN;
     } else if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE) {
@@ -260,10 +259,11 @@ void CheckClientDownloadRequest::OnURLFetchComplete(
 
     bool upload_requested = response.upload();
     DownloadFeedbackService::MaybeStorePingsForDownload(
-        result, upload_requested, item_, client_download_request_data_, data);
+        result, upload_requested, item_, client_download_request_data_,
+        *response_body.get());
   }
-  // We don't need the fetcher anymore.
-  fetcher_.reset();
+  // We don't need the loader anymore.
+  loader_.reset();
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration",
                       base::TimeTicks::Now() - start_time_);
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestNetworkDuration",
@@ -772,7 +772,7 @@ void CheckClientDownloadRequest::CheckCertificateChainAgainstWhitelist() {
     return;
   }
 
-  // The URLFetcher is owned by the UI thread, so post a message to
+  // The URLLoader is owned by the UI thread, so post a message to
   // start the pingback.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -1004,20 +1004,21 @@ void CheckClientDownloadRequest::SendRequest() {
               }
             }
           })");
-  fetcher_ =
-      net::URLFetcher::Create(0, PPAPIDownloadRequest::GetDownloadRequestUrl(),
-                              net::URLFetcher::POST, this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher_->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
-  fetcher_->SetRequestContext(service_->request_context_getter_.get());
-  fetcher_->SetUploadData("application/octet-stream",
-                          client_download_request_data_);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = PPAPIDownloadRequest::GetDownloadRequestUrl();
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                             traffic_annotation);
+  loader_->AttachStringForUpload(client_download_request_data_,
+                                 "application/octet-stream");
+  loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      service_->url_loader_factory_.get(),
+      base::BindOnce(&CheckClientDownloadRequest::OnURLLoaderComplete,
+                     base::Unretained(this)));
   request_start_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_COUNTS("SBClientDownload.DownloadRequestPayloadSize",
                        client_download_request_data_.size());
-  fetcher_->Start();
 }
 
 void CheckClientDownloadRequest::PostFinishTask(

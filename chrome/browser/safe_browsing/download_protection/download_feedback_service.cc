@@ -15,6 +15,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace safe_browsing {
 
@@ -68,9 +69,9 @@ DownloadFeedbackPings* DownloadFeedbackPings::FromDownload(
 }  // namespace
 
 DownloadFeedbackService::DownloadFeedbackService(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TaskRunner* file_task_runner)
-    : request_context_getter_(request_context_getter),
+    : url_loader_factory_(url_loader_factory),
       file_task_runner_(file_task_runner),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -182,9 +183,9 @@ void DownloadFeedbackService::BeginFeedback(const std::string& ping_request,
                                             const std::string& ping_response,
                                             const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<DownloadFeedback> feedback(DownloadFeedback::Create(
-      request_context_getter_.get(), file_task_runner_.get(), path,
-      ping_request, ping_response));
+  std::unique_ptr<DownloadFeedback> feedback(
+      DownloadFeedback::Create(url_loader_factory_, file_task_runner_.get(),
+                               path, ping_request, ping_response));
   active_feedback_.push(std::move(feedback));
   UMA_HISTOGRAM_COUNTS_100("SBDownloadFeedback.ActiveFeedbacks",
                            active_feedback_.size());

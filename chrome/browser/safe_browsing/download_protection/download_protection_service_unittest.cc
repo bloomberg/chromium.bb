@@ -27,6 +27,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -52,6 +53,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
@@ -59,10 +61,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_fetcher_impl.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
@@ -108,7 +107,11 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 class FakeSafeBrowsingService : public SafeBrowsingService,
                                 public ServicesDelegate::ServicesCreator {
  public:
-  FakeSafeBrowsingService() : download_report_count_(0) {
+  FakeSafeBrowsingService()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
+        download_report_count_(0) {
     services_delegate_ = ServicesDelegate::CreateForTest(this, this);
   }
 
@@ -118,8 +121,17 @@ class FakeSafeBrowsingService : public SafeBrowsingService,
     return mock_database_manager_;
   }
 
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
+    return test_shared_loader_factory_;
+  }
+
   void SendSerializedDownloadReport(const std::string& unused_report) override {
     download_report_count_++;
+  }
+
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
   }
 
   int download_report_count() { return download_report_count_; }
@@ -156,6 +168,8 @@ class FakeSafeBrowsingService : public SafeBrowsingService,
     return nullptr;
   }
 
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   MockSafeBrowsingDatabaseManager* mock_database_manager_;
   int download_report_count_;
 
@@ -181,34 +195,18 @@ class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
   DISALLOW_COPY_AND_ASSIGN(MockBinaryFeatureExtractor);
 };
 
-class TestURLFetcherWatcher : public net::TestURLFetcherDelegateForTests {
- public:
-  explicit TestURLFetcherWatcher(net::TestURLFetcherFactory* factory)
-      : factory_(factory), fetcher_id_(-1) {
-    factory_->SetDelegateForTests(this);
-  }
-  ~TestURLFetcherWatcher() { factory_->SetDelegateForTests(NULL); }
-
-  // TestURLFetcherDelegateForTests impl:
-  void OnRequestStart(int fetcher_id) override {
-    fetcher_id_ = fetcher_id;
-    run_loop_.Quit();
-  }
-  void OnChunkUpload(int fetcher_id) override {}
-  void OnRequestEnd(int fetcher_id) override {}
-
-  int WaitForRequest() {
-    run_loop_.Run();
-    return fetcher_id_;
-  }
-
- private:
-  net::TestURLFetcherFactory* factory_;
-  int fetcher_id_;
-  RunLoop run_loop_;
-};
-
 using NiceMockDownloadItem = NiceMock<download::MockDownloadItem>;
+
+std::string GetBodyFromRequest(const network::ResourceRequest& request) {
+  auto body = request.request_body;
+  if (!body)
+    return std::string();
+
+  CHECK_EQ(1u, body->elements()->size());
+  auto& element = body->elements()->at(0);
+  CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+  return std::string(element.bytes(), element.length());
+}
 
 }  // namespace
 
@@ -404,17 +402,24 @@ class DownloadProtectionServiceTest : public testing::Test {
 
   void ClearClientDownloadRequest() { last_client_download_request_.reset(); }
 
-  void PrepareResponse(net::FakeURLFetcherFactory* factory,
-                       ClientDownloadResponse::Verdict verdict,
+  void PrepareResponse(ClientDownloadResponse::Verdict verdict,
                        net::HttpStatusCode response_code,
-                       net::URLRequestStatus::Status status,
+                       int net_error,
                        bool upload_requested = false) {
+    if (net_error != net::OK) {
+      network::URLLoaderCompletionStatus status;
+      sb_service_->test_url_loader_factory()->AddResponse(
+          PPAPIDownloadRequest::GetDownloadRequestUrl(),
+          network::ResourceResponseHead(), std::string(),
+          network::URLLoaderCompletionStatus(net_error));
+      return;
+    }
     ClientDownloadResponse response;
     response.set_verdict(verdict);
     response.set_upload(upload_requested);
-    factory->SetFakeResponse(PPAPIDownloadRequest::GetDownloadRequestUrl(),
-                             response.SerializeAsString(), response_code,
-                             status);
+    sb_service_->test_url_loader_factory()->AddResponse(
+        PPAPIDownloadRequest::GetDownloadRequestUrl().spec(),
+        response.SerializeAsString());
   }
 
   void PrepareBasicDownloadItem(
@@ -515,10 +520,6 @@ class DownloadProtectionServiceTest : public testing::Test {
     has_result_ = true;
   }
 
-  void SendURLFetchComplete(net::TestURLFetcher* fetcher) {
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-  }
-
   testing::AssertionResult IsResult(DownloadCheckResult expected) {
     if (!has_result_)
       return testing::AssertionFailure() << "No result";
@@ -567,8 +568,7 @@ class DownloadProtectionServiceTest : public testing::Test {
 
 void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
     ArchiveType type) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -663,8 +663,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadWhitelistedUrlWithoutSampling) {
   // Response to any requests will be DANGEROUS.
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -758,8 +757,7 @@ TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadWhitelistedUrlWithSampling) {
   // Server responses "SAFE" to every requests coming from whitelisted
   // download.
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -902,8 +900,7 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
   // Server response will be discarded.
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -994,9 +991,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
   // HTTP request will fail.
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE,
-                  net::HTTP_INTERNAL_SERVER_ERROR,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_INTERNAL_SERVER_ERROR,
                   net::URLRequestStatus::FAILED);
 
   NiceMockDownloadItem item;
@@ -1021,8 +1016,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -1057,9 +1051,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // Invalid response should result in SAFE (default value in proto).
     ClientDownloadResponse invalid_response;
-    factory.SetFakeResponse(PPAPIDownloadRequest::GetDownloadRequestUrl(),
-                            invalid_response.SerializePartialAsString(),
-                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+    sb_service_->test_url_loader_factory()->AddResponse(
+        PPAPIDownloadRequest::GetDownloadRequestUrl().spec(),
+        invalid_response.SerializePartialAsString());
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1074,7 +1068,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is dangerous the result should also be marked as
     // dangerous, and should not upload if not requested.
-    PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                     net::URLRequestStatus::SUCCESS,
                     false /* upload_requested */);
     RunLoop run_loop;
@@ -1091,7 +1085,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is dangerous and the server requests an upload,
     // we should upload.
-    PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                     net::URLRequestStatus::SUCCESS,
                     true /* upload_requested */);
     RunLoop run_loop;
@@ -1107,7 +1101,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   }
   {
     // If the response is uncommon the result should also be marked as uncommon.
-    PrepareResponse(&factory, ClientDownloadResponse::UNCOMMON, net::HTTP_OK,
+    PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK,
                     net::URLRequestStatus::SUCCESS,
                     true /* upload_requested */);
     RunLoop run_loop;
@@ -1130,8 +1124,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is dangerous_host the result should also be marked as
     // dangerous_host.
-    PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS_HOST,
-                    net::HTTP_OK, net::URLRequestStatus::SUCCESS,
+    PrepareResponse(ClientDownloadResponse::DANGEROUS_HOST, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS,
                     true /* upload_requested */);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1150,8 +1144,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is POTENTIALLY_UNWANTED the result should also be marked
     // as POTENTIALLY_UNWANTED.
-    PrepareResponse(&factory, ClientDownloadResponse::POTENTIALLY_UNWANTED,
-                    net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+    PrepareResponse(ClientDownloadResponse::POTENTIALLY_UNWANTED, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1164,7 +1158,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is UNKNOWN the result should also be marked as
     // UNKNOWN. And if the server requests an upload, we should upload.
-    PrepareResponse(&factory, ClientDownloadResponse::UNKNOWN, net::HTTP_OK,
+    PrepareResponse(ClientDownloadResponse::UNKNOWN, net::HTTP_OK,
                     net::URLRequestStatus::SUCCESS,
                     true /* upload_requested */);
     RunLoop run_loop;
@@ -1181,8 +1175,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -1212,8 +1205,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -1245,8 +1237,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -1303,8 +1294,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   NiceMockDownloadItem item;
@@ -1369,7 +1359,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   {
     // If the response is dangerous the result should also be marked as
     // dangerous.
-    PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                     net::URLRequestStatus::SUCCESS);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1434,8 +1424,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportCorruptDmg) {
 // Tests that signatures get recorded and uploaded for signed DMGs.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportDmgWithSignature) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath signed_dmg;
@@ -1481,8 +1470,7 @@ TEST_F(DownloadProtectionServiceTest,
 // Tests that no signature gets recorded and uploaded for unsigned DMGs.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportDmgWithoutSignature) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath unsigned_dmg;
@@ -1518,8 +1506,7 @@ TEST_F(DownloadProtectionServiceTest,
 // trailer are treated as disk images and processed accordingly.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportDmgWithoutExtension) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath test_data;
@@ -1552,8 +1539,7 @@ TEST_F(DownloadProtectionServiceTest,
 // Demonstrate that a .dmg file whose a) extension has been changed to .txt and
 // b) 'koly' signature has been removed is not processed as a disk image.
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath test_data;
@@ -1586,8 +1572,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
 // Test that a large DMG (size equals max value of 64 bit signed int) is not
 // unpacked for binary feature analysis.
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath unsigned_dmg;
@@ -1625,8 +1610,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
 #endif  // OS_MACOSX
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
-  net::TestURLFetcherFactory factory;
-
 #if defined(OS_MACOSX)
   std::string download_file_path("ftp://www.google.com/bla.dmg");
 #else
@@ -1697,14 +1680,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_TRUE(headers.pe_headers().has_dos_header());
   EXPECT_EQ("dummy dos header", headers.pe_headers().dos_header());
 #endif  // OS_MACOSX
-
 }
 
 // Similar to above, but with an unsigned binary.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadValidateRequestNoSignature) {
-  net::TestURLFetcherFactory factory;
-
 #if defined(OS_MACOSX)
   std::string download_file_path("ftp://www.google.com/bla.dmg");
 #else
@@ -1767,8 +1747,6 @@ TEST_F(DownloadProtectionServiceTest,
 // Similar to above, but with tab history.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadValidateRequestTabHistory) {
-  net::TestURLFetcherFactory factory;
-
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
       &item,
@@ -1797,19 +1775,29 @@ TEST_F(DownloadProtectionServiceTest,
 
   // First test with no history match for the tab URL.
   {
-    TestURLFetcherWatcher fetcher_watcher(&factory);
+    RunLoop interceptor_run_loop;
+
+    std::string upload_data;
+    sb_service_->test_url_loader_factory()->SetInterceptor(
+        base::BindLambdaForTesting(
+            [&](const network::ResourceRequest& request) {
+              upload_data = GetBodyFromRequest(request);
+              if (!upload_data.empty())
+                interceptor_run_loop.Quit();
+            }));
+
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
 
-    EXPECT_EQ(0, fetcher_watcher.WaitForRequest());
+    interceptor_run_loop.Run();
+
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
-    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
+
     ClientDownloadRequest request;
-    EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
+    EXPECT_TRUE(request.ParseFromString(upload_data));
     EXPECT_EQ("http://www.google.com/bla.exe", request.url());
     EXPECT_EQ(hash_, request.digests().sha256());
     EXPECT_EQ(item.GetReceivedBytes(), request.length());
@@ -1836,16 +1824,26 @@ TEST_F(DownloadProtectionServiceTest,
     EXPECT_TRUE(headers.pe_headers().has_dos_header());
     EXPECT_EQ("dummy dos header", headers.pe_headers().dos_header());
 
+    sb_service_->test_url_loader_factory()->SetInterceptor(
+        network::TestURLLoaderFactory::Interceptor());
+
     // Simulate the request finishing.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                       base::Unretained(this), fetcher));
     run_loop.Run();
   }
 
   // Now try with a history match.
   {
+    RunLoop interceptor_run_loop;
+
+    std::string upload_data;
+    sb_service_->test_url_loader_factory()->SetInterceptor(
+        base::BindLambdaForTesting(
+            [&](const network::ResourceRequest& request) {
+              upload_data = GetBodyFromRequest(request);
+              if (!upload_data.empty())
+                interceptor_run_loop.Quit();
+            }));
+
     history::RedirectList redirects;
     redirects.push_back(GURL("http://tab.com/ref1"));
     redirects.push_back(GURL("http://tab.com/ref2"));
@@ -1856,18 +1854,17 @@ TEST_F(DownloadProtectionServiceTest,
                   reinterpret_cast<history::ContextID>(1), 0, GURL(), redirects,
                   ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
 
-    TestURLFetcherWatcher fetcher_watcher(&factory);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
-    EXPECT_EQ(0, fetcher_watcher.WaitForRequest());
+
+    interceptor_run_loop.Run();
+
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
-    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
     ClientDownloadRequest request;
-    EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
+    EXPECT_TRUE(request.ParseFromString(upload_data));
     EXPECT_EQ("http://www.google.com/bla.exe", request.url());
     EXPECT_EQ(hash_, request.digests().sha256());
     EXPECT_EQ(item.GetReceivedBytes(), request.length());
@@ -1896,17 +1893,11 @@ TEST_F(DownloadProtectionServiceTest,
     EXPECT_EQ("dummy cert data", chain.element(0).certificate());
 
     // Simulate the request finishing.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                       base::Unretained(this), fetcher));
     run_loop.Run();
   }
 }
 
 TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
-  net::TestURLFetcherFactory factory;
-
   std::vector<GURL> url_chain;
   url_chain.push_back(GURL("http://www.google.com/"));
   url_chain.push_back(GURL("http://www.google.com/bla.exe"));
@@ -1975,8 +1966,6 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
 }
 
 TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
-  net::TestURLFetcherFactory factory;
-
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/bla.exe"},  // url_chain
                            "http://www.google.com/",                // referrer
@@ -2043,7 +2032,6 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
 
 TEST_F(DownloadProtectionServiceTest,
        TestDownloadItemDestroyedDuringWhitelistCheck) {
-  net::TestURLFetcherFactory factory;
   std::unique_ptr<NiceMockDownloadItem> item(new NiceMockDownloadItem);
   PrepareBasicDownloadItem(item.get(),
                            {"http://www.evil.com/bla.exe"},  // url_chain
@@ -2213,7 +2201,6 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Unsupported) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
-  net::FakeURLFetcherFactory factory(nullptr);
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions;
   EXPECT_CALL(*sb_service_->mock_database_manager(),
@@ -2234,8 +2221,8 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
   };
 
   for (const auto& test_case : kExpectedResults) {
-    factory.ClearFakeResponses();
-    PrepareResponse(&factory, test_case.verdict, net::HTTP_OK,
+    sb_service_->test_url_loader_factory()->ClearResponses();
+    PrepareResponse(test_case.verdict, net::HTTP_OK,
                     net::URLRequestStatus::SUCCESS);
     SetExtendedReportingPreference(true);
     RunLoop run_loop;
@@ -2252,11 +2239,10 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedAlternate) {
-  net::FakeURLFetcherFactory factory(nullptr);
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
   std::vector<base::FilePath::StringType> alternate_extensions{
       FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".crx")};
-  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
@@ -2276,7 +2262,6 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedAlternate) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_WhitelistedURL) {
-  net::FakeURLFetcherFactory factory(nullptr);
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions;
   EXPECT_CALL(*sb_service_->mock_database_manager(),
@@ -2295,10 +2280,9 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_WhitelistedURL) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_FetchFailed) {
-  net::FakeURLFetcherFactory factory(nullptr);
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions;
-  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
                   net::URLRequestStatus::FAILED);
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
@@ -2315,12 +2299,10 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_FetchFailed) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_InvalidResponse) {
-  net::FakeURLFetcherFactory factory(nullptr);
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions;
-  factory.SetFakeResponse(PPAPIDownloadRequest::GetDownloadRequestUrl(),
-                          "Hello world!", net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+  sb_service_->test_url_loader_factory()->AddResponse(
+      PPAPIDownloadRequest::GetDownloadRequestUrl().spec(), "Hello world!");
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
@@ -2336,13 +2318,12 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_InvalidResponse) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Timeout) {
-  net::FakeURLFetcherFactory factory(nullptr);
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions;
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   download_service_->download_request_timeout_ms_ = 0;
   RunLoop run_loop;
@@ -2356,47 +2337,15 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Timeout) {
   ASSERT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
 }
 
-namespace {
-
-std::unique_ptr<net::FakeURLFetcher> FakeURLFetcherCreatorFunc(
-    std::string* upload_data_receiver,
-    const GURL& url,
-    net::URLFetcherDelegate* delegate,
-    const std::string& response_body,
-    net::HttpStatusCode response_code,
-    net::URLRequestStatus::Status status) {
-  class URLFetcher : public net::FakeURLFetcher {
-   public:
-    URLFetcher(std::string* upload_data_receiver,
-               const GURL& url,
-               net::URLFetcherDelegate* delegate,
-               const std::string& response_body,
-               net::HttpStatusCode response_code,
-               net::URLRequestStatus::Status status)
-        : FakeURLFetcher(url, delegate, response_body, response_code, status),
-          upload_data_receiver_(upload_data_receiver) {}
-
-    void SetUploadData(const std::string& upload_content_type,
-                       const std::string& upload_content) override {
-      *upload_data_receiver_ = upload_content;
-      FakeURLFetcher::SetUploadData(upload_content_type, upload_content);
-    }
-
-   private:
-    std::string* upload_data_receiver_;
-  };
-
-  return std::unique_ptr<net::FakeURLFetcher>(
-      new URLFetcher(upload_data_receiver, url, delegate, response_body,
-                     response_code, status));
-}
-
-}  // namespace
-
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
+  RunLoop interceptor_run_loop;
+
   std::string upload_data;
-  net::FakeURLFetcherFactory factory(
-      nullptr, base::Bind(&FakeURLFetcherCreatorFunc, &upload_data));
+  sb_service_->test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        upload_data = GetBodyFromRequest(request);
+      }));
+
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions{
       FILE_PATH_LITERAL(".txt"), FILE_PATH_LITERAL(".abc"),
@@ -2404,7 +2353,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   const GURL kRequestorUrl("http://example.com/foo");
   RunLoop run_loop;

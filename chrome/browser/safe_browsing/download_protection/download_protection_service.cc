@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using content::BrowserThread;
 namespace safe_browsing {
@@ -64,13 +65,13 @@ DownloadProtectionService::DownloadProtectionService(
     SafeBrowsingService* sb_service)
     : sb_service_(sb_service),
       navigation_observer_manager_(nullptr),
-      request_context_getter_(sb_service ? sb_service->url_request_context()
-                                         : nullptr),
+      url_loader_factory_(sb_service ? sb_service->GetURLLoaderFactory()
+                                     : nullptr),
       enabled_(false),
       binary_feature_extractor_(new BinaryFeatureExtractor()),
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(new DownloadFeedbackService(
-          request_context_getter_.get(),
+          url_loader_factory_,
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BACKGROUND})
               .get())),

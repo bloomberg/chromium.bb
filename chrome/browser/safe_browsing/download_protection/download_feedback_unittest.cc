@@ -18,6 +18,8 @@
 #include "content/public/test/test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
@@ -26,42 +28,33 @@ namespace {
 
 class FakeUploader : public TwoPhaseUploader {
  public:
-  FakeUploader(net::URLRequestContextGetter* url_request_context_getter,
-               base::TaskRunner* file_task_runner,
+  FakeUploader(base::TaskRunner* file_task_runner,
                const GURL& base_url,
                const std::string& metadata,
                const base::FilePath& file_path,
-               const ProgressCallback& progress_callback,
                const FinishCallback& finish_callback);
   ~FakeUploader() override {}
 
   void Start() override { start_called_ = true; }
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
   GURL base_url_;
   std::string metadata_;
   base::FilePath file_path_;
-  ProgressCallback progress_callback_;
   FinishCallback finish_callback_;
 
   bool start_called_;
 };
 
-FakeUploader::FakeUploader(
-    net::URLRequestContextGetter* url_request_context_getter,
-    base::TaskRunner* file_task_runner,
-    const GURL& base_url,
-    const std::string& metadata,
-    const base::FilePath& file_path,
-    const ProgressCallback& progress_callback,
-    const FinishCallback& finish_callback)
-    : url_request_context_getter_(url_request_context_getter),
-      file_task_runner_(file_task_runner),
+FakeUploader::FakeUploader(base::TaskRunner* file_task_runner,
+                           const GURL& base_url,
+                           const std::string& metadata,
+                           const base::FilePath& file_path,
+                           const FinishCallback& finish_callback)
+    : file_task_runner_(file_task_runner),
       base_url_(base_url),
       metadata_(metadata),
       file_path_(file_path),
-      progress_callback_(progress_callback),
       finish_callback_(finish_callback),
       start_called_(false) {}
 
@@ -71,12 +64,11 @@ class FakeUploaderFactory : public TwoPhaseUploaderFactory {
   ~FakeUploaderFactory() override {}
 
   std::unique_ptr<TwoPhaseUploader> CreateTwoPhaseUploader(
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,
       const std::string& metadata,
       const base::FilePath& file_path,
-      const TwoPhaseUploader::ProgressCallback& progress_callback,
       const TwoPhaseUploader::FinishCallback& finish_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
@@ -84,21 +76,51 @@ class FakeUploaderFactory : public TwoPhaseUploaderFactory {
 };
 
 std::unique_ptr<TwoPhaseUploader> FakeUploaderFactory::CreateTwoPhaseUploader(
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TaskRunner* file_task_runner,
     const GURL& base_url,
     const std::string& metadata,
     const base::FilePath& file_path,
-    const TwoPhaseUploader::ProgressCallback& progress_callback,
     const TwoPhaseUploader::FinishCallback& finish_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   EXPECT_FALSE(uploader_);
 
-  uploader_ =
-      new FakeUploader(url_request_context_getter, file_task_runner, base_url,
-                       metadata, file_path, progress_callback, finish_callback);
+  uploader_ = new FakeUploader(file_task_runner, base_url, metadata, file_path,
+                               finish_callback);
   return base::WrapUnique(uploader_);
 }
+
+class SharedURLLoaderFactory : public network::SharedURLLoaderFactory {
+ public:
+  explicit SharedURLLoaderFactory(
+      network::mojom::URLLoaderFactory* url_loader_factory)
+      : url_loader_factory_(url_loader_factory) {}
+
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // network::URLLoaderFactory implementation:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    url_loader_factory_->CreateLoaderAndStart(
+        std::move(loader), routing_id, request_id, options, std::move(request),
+        std::move(client), traffic_annotation);
+  }
+
+ private:
+  friend class base::RefCounted<SharedURLLoaderFactory>;
+  ~SharedURLLoaderFactory() override = default;
+
+  network::mojom::URLLoaderFactory* url_loader_factory_;
+};
 
 }  // namespace
 
@@ -113,6 +135,14 @@ class DownloadFeedbackTest : public testing::Test {
             new net::TestURLRequestContextGetter(io_task_runner_)),
         feedback_finish_called_(false) {
     EXPECT_NE(io_task_runner_, file_task_runner_);
+    network::mojom::NetworkContextPtr network_context;
+    network_context_ = std::make_unique<network::NetworkContext>(
+        nullptr, mojo::MakeRequest(&network_context),
+        url_request_context_getter_);
+    network_context_->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_), 0);
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<SharedURLLoaderFactory>(url_loader_factory_.get());
   }
 
   void SetUp() override {
@@ -145,6 +175,9 @@ class DownloadFeedbackTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   FakeUploaderFactory two_phase_uploader_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
+  std::unique_ptr<network::NetworkContext> network_context_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory_;
 
   bool feedback_finish_called_;
 };
@@ -163,8 +196,8 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
       expected_report_metadata.download_response().SerializeAsString());
 
   std::unique_ptr<DownloadFeedback> feedback = DownloadFeedback::Create(
-      url_request_context_getter_.get(), file_task_runner_.get(),
-      upload_file_path_, ping_request, ping_response);
+      shared_url_loader_factory_, file_task_runner_.get(), upload_file_path_,
+      ping_request, ping_response);
   EXPECT_FALSE(uploader());
 
   feedback->Start(base::Bind(&DownloadFeedbackTest::FinishCallback,
@@ -173,8 +206,6 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
   EXPECT_FALSE(feedback_finish_called_);
   EXPECT_TRUE(uploader()->start_called_);
 
-  EXPECT_EQ(url_request_context_getter_,
-            uploader()->url_request_context_getter_);
   EXPECT_EQ(file_task_runner_, uploader()->file_task_runner_);
   EXPECT_EQ(upload_file_path_, uploader()->file_path_);
   EXPECT_EQ(expected_report_metadata.SerializeAsString(),
@@ -206,8 +237,8 @@ TEST_F(DownloadFeedbackTest, CancelUpload) {
       expected_report_metadata.download_response().SerializeAsString());
 
   std::unique_ptr<DownloadFeedback> feedback = DownloadFeedback::Create(
-      url_request_context_getter_.get(), file_task_runner_.get(),
-      upload_file_path_, ping_request, ping_response);
+      shared_url_loader_factory_, file_task_runner_.get(), upload_file_path_,
+      ping_request, ping_response);
   EXPECT_FALSE(uploader());
 
   feedback->Start(base::Bind(&DownloadFeedbackTest::FinishCallback,

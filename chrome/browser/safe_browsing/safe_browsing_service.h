@@ -152,7 +152,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // NetworkContext and URLLoaderFactory used for safe browsing requests.
   network::mojom::NetworkContext* GetNetworkContext();
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
   // Called on IO thread thread when QUIC should be disabled (e.g. because of
   // policy). This should not be necessary anymore when http://crbug.com/678653

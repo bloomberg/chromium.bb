@@ -41,6 +41,9 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   // Clear all the responses that were previously set.
   void ClearResponses();
 
+  using Interceptor = base::RepeatingCallback<void(const ResourceRequest&)>;
+  void SetInterceptor(const Interceptor& interceptor);
+
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,
@@ -77,6 +80,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     mojom::URLLoaderClientPtr client;
   };
   std::vector<Pending> pending_;
+
+  Interceptor interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };

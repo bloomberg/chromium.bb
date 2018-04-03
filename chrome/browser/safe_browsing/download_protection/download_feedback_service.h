@@ -24,8 +24,8 @@ namespace download {
 class DownloadItem;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
@@ -37,8 +37,9 @@ class DownloadFeedback;
 // Lives on the UI thread.
 class DownloadFeedbackService {
  public:
-  DownloadFeedbackService(net::URLRequestContextGetter* request_context_getter,
-                          base::TaskRunner* file_task_runner);
+  DownloadFeedbackService(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      base::TaskRunner* file_task_runner);
   ~DownloadFeedbackService();
 
   // Stores the request and response ping data from the download check, if the
@@ -86,7 +87,7 @@ class DownloadFeedbackService {
                      const base::FilePath& path);
   void FeedbackComplete();
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
 
   // Currently active & pending uploads. The first item is active, remaining

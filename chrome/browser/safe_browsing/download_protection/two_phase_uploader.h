@@ -13,14 +13,13 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace base {
 class TaskRunner;
 }
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 class TwoPhaseUploaderFactory;
@@ -42,7 +41,6 @@ class TwoPhaseUploader {
     UPLOAD_FILE,
     STATE_SUCCESS,
   };
-  using ProgressCallback = base::Callback<void(int64_t sent, int64_t total)>;
   using FinishCallback = base::Callback<void(State state,
                                              int net_error,
                                              int response_code,
@@ -55,8 +53,6 @@ class TwoPhaseUploader {
   // The uploaded |file_path| will be read on |file_task_runner|.
   // The first phase request will be sent to |base_url|, with |metadata|
   // included.
-  // |progress_callback| will be called periodically as the second phase
-  // progresses, if it is non-null.
   // On success |finish_callback| will be called with state = STATE_SUCCESS and
   // the server response in response_data. On failure, state will specify
   // which step the failure occurred in, and net_error, response_code, and
@@ -64,12 +60,11 @@ class TwoPhaseUploader {
   // will not be called if the upload is cancelled by destructing the
   // TwoPhaseUploader object before completion.
   static std::unique_ptr<TwoPhaseUploader> Create(
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,
       const std::string& metadata,
       const base::FilePath& file_path,
-      const ProgressCallback& progress_callback,
       const FinishCallback& finish_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
@@ -93,12 +88,11 @@ class TwoPhaseUploaderFactory {
   virtual ~TwoPhaseUploaderFactory() {}
 
   virtual std::unique_ptr<TwoPhaseUploader> CreateTwoPhaseUploader(
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,
       const std::string& metadata,
       const base::FilePath& file_path,
-      const TwoPhaseUploader::ProgressCallback& progress_callback,
       const TwoPhaseUploader::FinishCallback& finish_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 };

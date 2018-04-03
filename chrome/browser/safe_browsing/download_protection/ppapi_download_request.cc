@@ -20,6 +20,8 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 using content::BrowserThread;
 
@@ -66,7 +68,7 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
 }
 
 PPAPIDownloadRequest::~PPAPIDownloadRequest() {
-  if (fetcher_ && !callback_.is_null())
+  if (loader_ && !callback_.is_null())
     Finish(RequestOutcome::REQUEST_DESTROYED, DownloadCheckResult::UNKNOWN);
 }
 
@@ -236,35 +238,35 @@ void PPAPIDownloadRequest::SendRequest() {
           }
         }
       })");
-  fetcher_ =
-      net::URLFetcher::Create(0, GetDownloadRequestUrl(), net::URLFetcher::POST,
-                              this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher_->SetAutomaticallyRetryOn5xx(false);
-  fetcher_->SetRequestContext(service_->request_context_getter_.get());
-  fetcher_->SetUploadData("application/octet-stream",
-                          client_download_request_data_);
-  fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GetDownloadRequestUrl();
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                             traffic_annotation);
+  loader_->AttachStringForUpload(client_download_request_data_,
+                                 "application/octet-stream");
+  loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      service_->url_loader_factory_.get(),
+      base::BindOnce(&PPAPIDownloadRequest::OnURLLoaderComplete,
+                     base::Unretained(this)));
 }
 
-// net::URLFetcherDelegate
-void PPAPIDownloadRequest::OnURLFetchComplete(const net::URLFetcher* source) {
+void PPAPIDownloadRequest::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!source->GetStatus().is_success() ||
-      net::HTTP_OK != source->GetResponseCode()) {
+  int response_code = 0;
+  if (loader_->ResponseInfo() && loader_->ResponseInfo()->headers)
+    response_code = loader_->ResponseInfo()->headers->response_code();
+  if (loader_->NetError() != net::OK || net::HTTP_OK != response_code) {
     Finish(RequestOutcome::FETCH_FAILED, DownloadCheckResult::UNKNOWN);
     return;
   }
 
   ClientDownloadResponse response;
-  std::string response_body;
-  bool got_data = source->GetResponseAsString(&response_body);
-  DCHECK(got_data);
 
-  if (response.ParseFromString(response_body)) {
+  if (response.ParseFromString(*response_body.get())) {
     Finish(RequestOutcome::SUCCEEDED,
            DownloadCheckResultFromClientDownloadResponse(response.verdict()));
   } else {
@@ -291,7 +293,7 @@ void PPAPIDownloadRequest::Finish(RequestOutcome reason,
                       base::TimeTicks::Now() - start_time_);
   if (!callback_.is_null())
     base::ResetAndReturn(&callback_).Run(response);
-  fetcher_.reset();
+  loader_.reset();
   weakptr_factory_.InvalidateWeakPtrs();
 
   // If the request is being destroyed, don't notify the service_. It already
