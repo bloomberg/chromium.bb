@@ -26,10 +26,6 @@ class LoFiDecider {
  public:
   virtual ~LoFiDecider() {}
 
-  // Returns true when Lo-Fi Previews are on for the given |request|. This means
-  // the Lo-Fi header should be added to the given request.
-  virtual bool IsUsingLoFi(const net::URLRequest& request) const = 0;
-
   // Adds a previews-specific directive to the Chrome-Proxy-Accept-Transform
   // header if needed.
   virtual void MaybeSetAcceptTransformHeader(

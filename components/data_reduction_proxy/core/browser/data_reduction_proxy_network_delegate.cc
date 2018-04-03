@@ -112,14 +112,11 @@ void RecordNewContentLengthHistograms(
   }
 }
 
-// |lofi_low_header_added| is set to true iff Lo-Fi request header
-// can be added to the Chrome proxy header. |received_content_length| is
-// the number of prefilter bytes received. |original_content_length| is the
-// length of resource if accessed directly without data saver proxy.
-// |freshness_lifetime| specifies how long the resource will
-// be fresh for.
-void RecordContentLengthHistograms(bool lofi_low_header_added,
-                                   bool is_https,
+// |received_content_length| is the number of prefilter bytes received.
+// |original_content_length| is the length of resource if accessed directly
+// without data saver proxy. |freshness_lifetime| specifies how long the
+// resource will be fresh for.
+void RecordContentLengthHistograms(bool is_https,
                                    bool is_video,
                                    int64_t received_content_length,
                                    int64_t original_content_length,
@@ -134,19 +131,6 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
                             original_content_length);
     UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthDifferenceWithValidOCL",
                             original_content_length - received_content_length);
-
-    // Populate Lo-Fi content length histograms.
-    if (lofi_low_header_added) {
-      UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthWithValidOCL.LoFiOn",
-                              received_content_length);
-      UMA_HISTOGRAM_COUNTS_1M(
-          "Net.HttpOriginalContentLengthWithValidOCL.LoFiOn",
-          original_content_length);
-      UMA_HISTOGRAM_COUNTS_1M(
-          "Net.HttpContentLengthDifferenceWithValidOCL.LoFiOn",
-          original_content_length - received_content_length);
-    }
-
   } else {
     // Presume the original content length is the same as the received content
     // length.
@@ -640,11 +624,6 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
   }
 
   RecordContentLengthHistograms(
-      // |data_reduction_proxy_io_data_| can be NULL for Webview.
-      data_reduction_proxy_io_data_ &&
-          data_reduction_proxy_io_data_->IsEnabled() &&
-          data_reduction_proxy_io_data_->lofi_decider() &&
-          data_reduction_proxy_io_data_->lofi_decider()->IsUsingLoFi(request),
       is_https, is_video, request.received_response_content_length(),
       original_content_length, freshness_lifetime, request_type);
 
