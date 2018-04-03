@@ -87,3 +87,32 @@ rootWebArea
 ++++++inlineTextBox name=' '
 ++++staticText name='space'
 ++++++inlineTextBox name='space'
+++paragraph
+++++staticText name='K4. Keep '
+++++++inlineTextBox name='K4. Keep '
+++++staticText name='space'
+++++++inlineTextBox name='space'
+++paragraph
+++++staticText name='K5. Keep'
+++++++inlineTextBox name='K5. Keep'
+++++staticText name=' '
+++++++inlineTextBox name=' '
+++++staticText name='space'
+++++++inlineTextBox name='space'
+++paragraph
+++++staticText name='K6. Keep '
+++++++inlineTextBox name='K6. Keep '
+++++staticText name='space'
+++++++inlineTextBox name='space'
+++paragraph
+++++staticText name='K7. Keep'
+++++++inlineTextBox name='K7. Keep'
+++++staticText name=' space'
+++++++inlineTextBox name=' space'
+++paragraph
+++++staticText name='K8. Keep'
+++++++inlineTextBox name='K8. Keep'
+++++staticText name=' '
+++++++inlineTextBox name=' '
+++++staticText name='space'
+++++++inlineTextBox name='space'
