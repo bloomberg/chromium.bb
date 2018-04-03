@@ -20,8 +20,10 @@
       }
 
       #dialog {
-        min-width: 500px;
-        width: 500px;
+        --cr-dialog-native: {
+          min-width: 500px;
+          width: 500px;
+        };
       }
 
       #image {
@@ -52,7 +54,7 @@
       }
     </style>
 
-    <dialog is="cr-dialog" id="dialog" on-close="close"
+    <cr-dialog id="dialog" on-close="close"
         close-text="$i18n{close}">
       <div slot="title">$i18n{configureFingerprintTitle}</div>
       <div slot="body">
@@ -82,7 +84,7 @@
           [[getCloseButtonText_(step_)]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
 
   <script src="setup_fingerprint_dialog.js"></script>

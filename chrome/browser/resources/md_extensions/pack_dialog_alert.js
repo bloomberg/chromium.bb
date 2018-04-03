@@ -17,12 +17,12 @@ cr.define('extensions', function() {
       /** @private */
       message_: String,
 
-      /** @private */
+      /** @private {?string} */
       cancelLabel_: String,
 
       /**
        * This needs to be initialized to trigger data-binding.
-       * @private
+       * @private {?string}
        */
       confirmLabel_: {
         type: String,
@@ -32,7 +32,9 @@ cr.define('extensions', function() {
 
     /** @return {string} */
     get returnValue() {
-      return this.$.dialog.returnValue;
+      return /** @type {!CrDialogElement} */ (this.$.dialog)
+          .getNative()
+          .returnValue;
     },
 
     /** @override */

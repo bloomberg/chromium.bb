@@ -75,7 +75,7 @@
         visibility: visible;
       }
     </style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}"
+    <cr-dialog id="dialog" close-text="$i18n{close}"
         ignore-enter-key>
       <div slot="title">$i18n{manageKioskApp}</div>
       <div slot="body">
@@ -131,8 +131,8 @@
           $i18n{done}
         </paper-button>
       </div>
-    </dialog>
-    <dialog is="cr-dialog" id="confirm-dialog" close-text="$i18n{close}"
+    </cr-dialog>
+    <cr-dialog id="confirm-dialog" close-text="$i18n{close}"
         ignore-enter-key on-close="stopPropagation_">
       <div slot="title">$i18n{kioskDisableBailoutWarningTitle}</div>
       <div slot="body">$i18n{kioskDisableBailoutWarningBody}</div>
@@ -146,7 +146,7 @@
           $i18n{confirm}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="kiosk_dialog.js"></script>
 </dom-module>

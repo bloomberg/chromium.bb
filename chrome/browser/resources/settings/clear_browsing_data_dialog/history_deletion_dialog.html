@@ -7,7 +7,7 @@
   <template>
     <style include="settings-shared"></style>
 
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{historyDeletionDialogTitle}</div>
       <div slot="body">$i18nRaw{historyDeletionDialogBody}</div>
       <div slot="button-container">
@@ -15,7 +15,7 @@
           $i18n{historyDeletionDialogOK}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="history_deletion_dialog.js"></script>
 </dom-module>
