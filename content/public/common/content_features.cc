@@ -231,6 +231,10 @@ const base::Feature kNotificationContentImage{"NotificationContentImage",
 const base::Feature kNotificationsWithMojo{"NotificationsWithMojo",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Off-main-thread WebSocket. See https://crbug.com/825740
+const base::Feature kOffMainThreadWebSocket{"OffMainThreadWebSocket",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Origin Manifest. See crbug.com/751996
 const base::Feature kOriginManifest{"OriginManifest",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

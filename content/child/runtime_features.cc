@@ -436,6 +436,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   // Make srcset on link rel=preload work with SignedHTTPExchange flag too.
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
     WebRuntimeFeatures::EnablePreloadImageSrcSetEnabled(true);
+
+  WebRuntimeFeatures::EnableOffMainThreadWebSocket(
+      base::FeatureList::IsEnabled(features::kOffMainThreadWebSocket));
 };
 
 }  // namespace content

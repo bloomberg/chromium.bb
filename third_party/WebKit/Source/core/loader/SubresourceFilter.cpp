@@ -13,6 +13,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/TaskType.h"
@@ -68,8 +69,11 @@ bool SubresourceFilter::AllowLoad(
 }
 
 bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
-  // Currently WebSocket is handled via document on the main thread.
-  DCHECK(execution_context_->IsDocument());
+  // WebSocket is handled via document on the main thread unless the
+  // experimental off-main-thread WebSocket flag is enabled. See
+  // https://crbug.com/825740 for the details of the off-main-thread WebSocket.
+  DCHECK(execution_context_->IsDocument() ||
+         RuntimeEnabledFeatures::OffMainThreadWebSocketEnabled());
 
   WebDocumentSubresourceFilter::LoadPolicy load_policy =
       subresource_filter_->GetLoadPolicyForWebSocketConnect(url);

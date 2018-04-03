@@ -208,6 +208,7 @@
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "blink::mojom::QuotaDispatcherHost",
+          "network::mojom::WebSocket",
           "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",

@@ -791,6 +791,9 @@
       status: "experimental",
     },
     {
+      name: "OffMainThreadWebSocket",
+    },
+    {
       name: "OffscreenCanvas",
       status: "experimental",
     },
