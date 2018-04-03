@@ -72,8 +72,10 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::EditingPositionOf(
   if (!anchor_node || anchor_node->IsTextNode())
     return PositionTemplate<Strategy>(anchor_node, offset);
 
-  if (!EditingIgnoresContent(*anchor_node))
-    return PositionTemplate<Strategy>(anchor_node, offset);
+  if (!EditingIgnoresContent(*anchor_node)) {
+    return PositionTemplate<Strategy>::CreateWithoutValidationDeprecated(
+        *anchor_node, offset);
+  }
 
   if (offset == 0)
     return PositionTemplate<Strategy>(anchor_node,
@@ -125,12 +127,23 @@ PositionTemplate<Strategy>::PositionTemplate(const Node* anchor_node,
     : anchor_node_(const_cast<Node*>(anchor_node)),
       offset_(offset),
       anchor_type_(PositionAnchorType::kOffsetInAnchor) {
-  if (anchor_node_)
-    DCHECK_GE(offset, 0);
-  else
-    DCHECK_EQ(offset, 0);
 #if DCHECK_IS_ON()
   DCHECK(CanBeAnchorNode<Strategy>(anchor_node_.Get())) << anchor_node_;
+  if (!anchor_node_) {
+    DCHECK_EQ(offset, 0);
+    return;
+  }
+  if (anchor_node_->IsCharacterDataNode()) {
+    DCHECK_GE(offset, 0);
+    DCHECK_LE(static_cast<unsigned>(offset),
+              ToCharacterData(anchor_node_)->length())
+        << anchor_node_;
+    return;
+  }
+  DCHECK_GE(offset, 0);
+  DCHECK_LE(static_cast<unsigned>(offset),
+            Strategy::CountChildren(*anchor_node))
+      << anchor_node_;
 #endif
 }
 
@@ -144,6 +157,25 @@ PositionTemplate<Strategy>::PositionTemplate(const PositionTemplate& other)
     : anchor_node_(other.anchor_node_),
       offset_(other.offset_),
       anchor_type_(other.anchor_type_) {}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::CreateWithoutValidation(
+    const Node& container,
+    int offset) {
+  PositionTemplate<Strategy> result(container, 0);
+  result.offset_ = offset;
+  return result;
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy>
+PositionTemplate<Strategy>::CreateWithoutValidationDeprecated(
+    const Node& container,
+    int offset) {
+  return CreateWithoutValidation(container, offset);
+}
 
 // --
 

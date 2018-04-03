@@ -3579,7 +3579,10 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
     if (!HasEditableStyle(*node)) {
       // If it can be found, we prefer a visually equivalent position that is
       // editable.
-      const Position position = Position(node, offset);
+      // TODO(layout-dev): Once we fix callers of |CreatePositionWithAffinity()|
+      // we should use |Position| constructor. See http://crbug.com/827923
+      const Position position =
+          Position::CreateWithoutValidationDeprecated(*node, offset);
       Position candidate =
           MostForwardCaretPosition(position, kCanCrossEditingBoundary);
       if (HasEditableStyle(*candidate.AnchorNode()))

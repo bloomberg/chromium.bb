@@ -944,8 +944,9 @@ static Position ComputeExtentForForwardDeleteUndo(
           ? selection.End().ComputeOffsetInContainerNode() -
                 selection.Start().ComputeOffsetInContainerNode()
           : selection.End().ComputeOffsetInContainerNode();
-  return Position(extent.ComputeContainerNode(),
-                  extent.ComputeOffsetInContainerNode() + extra_characters);
+  return Position::CreateWithoutValidation(
+      *extent.ComputeContainerNode(),
+      extent.ComputeOffsetInContainerNode() + extra_characters);
 }
 
 void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
