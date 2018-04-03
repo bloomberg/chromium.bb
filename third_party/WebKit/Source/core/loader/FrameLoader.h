@@ -52,6 +52,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebTriggeringEventInfo.h"
 #include "public/web/commit_result.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/blob/blob_url_store.mojom-blink.h"
 
 #include <memory>
 
@@ -207,7 +208,8 @@ class CORE_EXPORT FrameLoader final {
       FrameLoadType,
       bool is_client_redirect,
       WebTriggeringEventInfo,
-      HTMLFormElement*);
+      HTMLFormElement*,
+      mojom::blink::BlobURLTokenPtr);
 
   // Like ShouldContinueForNavigationPolicy, but should be used when following
   // redirects.

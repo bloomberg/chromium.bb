@@ -1413,7 +1413,8 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
     FrameLoadType frame_load_type,
     bool is_client_redirect,
     WebTriggeringEventInfo triggering_event_info,
-    HTMLFormElement* form) {
+    HTMLFormElement* form,
+    mojom::blink::BlobURLTokenPtr blob_url_token) {
   // Don't ask if we are loading an empty URL.
   if (request.Url().IsEmpty() || substitute_data.IsValid())
     return kNavigationPolicyCurrentTab;
@@ -1442,7 +1443,8 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
   policy = Client()->DecidePolicyForNavigation(
       request, origin_document, loader, type, policy,
       replaces_current_history_item, is_client_redirect, triggering_event_info,
-      form, should_check_main_world_content_security_policy);
+      form, should_check_main_world_content_security_policy,
+      std::move(blob_url_token));
   DCHECK(policy == kNavigationPolicyCurrentTab ||
          policy == kNavigationPolicyIgnore ||
          policy == kNavigationPolicyHandledByClient ||
@@ -1479,7 +1481,8 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
       nullptr,  // origin_document
       substitute_data, loader, should_check_main_world_content_security_policy,
       type, policy, frame_load_type, is_client_redirect,
-      WebTriggeringEventInfo::kNotFromEvent, form);
+      WebTriggeringEventInfo::kNotFromEvent, form,
+      nullptr /* blob_url_token */);
 }
 
 void FrameLoader::ClientDroppedNavigation() {
@@ -1528,7 +1531,8 @@ NavigationPolicy FrameLoader::CheckLoadCanStart(
       navigation_type, navigation_policy, type,
       frame_load_request.ClientRedirect() ==
           ClientRedirectPolicy::kClientRedirect,
-      triggering_event_info, frame_load_request.Form());
+      triggering_event_info, frame_load_request.Form(),
+      frame_load_request.GetBlobURLToken());
 }
 
 void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,

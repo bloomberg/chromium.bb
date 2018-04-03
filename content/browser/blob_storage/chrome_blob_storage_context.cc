@@ -19,6 +19,7 @@
 #include "base/task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +29,7 @@
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_loader_factory.h"
 
 using base::FilePath;
 using base::UserDataAdapter;
@@ -191,6 +193,29 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
   std::unique_ptr<BlobHandle> blob_handle(
       new BlobHandleImpl(std::move(blob_data_handle)));
   return blob_handle;
+}
+
+// static
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeBlobStorageContext::URLLoaderFactoryForToken(
+    BrowserContext* browser_context,
+    blink::mojom::BlobURLTokenPtr token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  network::mojom::URLLoaderFactoryPtr blob_url_loader_factory_ptr;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<ChromeBlobStorageContext> context,
+             network::mojom::URLLoaderFactoryRequest request,
+             blink::mojom::BlobURLTokenPtrInfo token) {
+            storage::BlobURLLoaderFactory::Create(
+                blink::mojom::BlobURLTokenPtr(std::move(token)),
+                context->context()->AsWeakPtr(), std::move(request));
+          },
+          base::WrapRefCounted(GetFor(browser_context)),
+          MakeRequest(&blob_url_loader_factory_ptr), token.PassInterface()));
+  return base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+      std::move(blob_url_loader_factory_ptr));
 }
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {}

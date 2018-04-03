@@ -35,4 +35,9 @@ void FakeBlobURLStore::ResolveAsURLLoaderFactory(
   NOTREACHED();
 }
 
+void FakeBlobURLStore::ResolveForNavigation(const KURL&,
+                                            mojom::blink::BlobURLTokenRequest) {
+  NOTREACHED();
+}
+
 }  // namespace blink

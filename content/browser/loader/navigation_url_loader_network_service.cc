@@ -300,7 +300,8 @@ std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
       previous_request_info.frame_tree_node_id,
       previous_request_info.is_for_guests_only,
       previous_request_info.report_raw_headers,
-      previous_request_info.is_prerendering);
+      previous_request_info.is_prerendering,
+      nullptr /* blob_url_loader_factory */);
 }
 
 // Called for requests that we don't have a URLLoaderFactory for.
@@ -540,6 +541,23 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
               std::move(factory_for_webui)),
           CreateURLLoaderThrottles(), 0 /* routing_id */, 0 /* request_id? */,
+          network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
+          kNavigationUrlLoaderTrafficAnnotation,
+          base::ThreadTaskRunnerHandle::Get());
+      return;
+    }
+
+    // Requests to Blob scheme won't get redirected to/from other schemes
+    // or be intercepted, so we just let it go here.
+    if (request_info->common_params.url.SchemeIsBlob() &&
+        request_info->blob_url_loader_factory) {
+      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+          network::SharedURLLoaderFactory::Create(
+              std::move(request_info->blob_url_loader_factory)),
+          GetContentClient()->browser()->CreateURLLoaderThrottles(
+              *resource_request_, resource_context_, web_contents_getter_,
+              navigation_ui_data_.get(), frame_tree_node_id_),
+          0 /* routing_id */, 0 /* request_id? */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());

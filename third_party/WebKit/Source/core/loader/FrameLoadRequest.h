@@ -115,6 +115,30 @@ struct CORE_EXPORT FrameLoadRequest {
     return devtools_navigation_token_;
   }
 
+  // Sets the BlobURLToken that should be used when fetching the resource. This
+  // is needed for blob URLs, because the blob URL might be revoked before the
+  // actual fetch happens, which would result in incorrect failures to fetch.
+  // The token lets the browser process securely resolves the blob URL even
+  // after the url has been revoked.
+  // FrameFetchRequest initializes this in its constructor, but in some cases
+  // FrameFetchRequest is created asynchronously rather than when a navigation
+  // is scheduled, so in those cases NavigationScheduler needs to override the
+  // blob FrameLoadRequest might have found.
+  void SetBlobURLToken(mojom::blink::BlobURLTokenPtr blob_url_token) {
+    DCHECK(blob_url_token);
+    blob_url_token_ = base::MakeRefCounted<
+        base::RefCountedData<mojom::blink::BlobURLTokenPtr>>(
+        std::move(blob_url_token));
+  }
+
+  mojom::blink::BlobURLTokenPtr GetBlobURLToken() const {
+    if (!blob_url_token_)
+      return nullptr;
+    mojom::blink::BlobURLTokenPtr result;
+    blob_url_token_->data->Clone(MakeRequest(&result));
+    return result;
+  }
+
  private:
   FrameLoadRequest(Document* origin_document,
                    const ResourceRequest&,
@@ -136,6 +160,8 @@ struct CORE_EXPORT FrameLoadRequest {
   ContentSecurityPolicyDisposition
       should_check_main_world_content_security_policy_;
   base::UnguessableToken devtools_navigation_token_;
+  scoped_refptr<base::RefCountedData<mojom::blink::BlobURLTokenPtr>>
+      blob_url_token_;
 };
 
 }  // namespace blink

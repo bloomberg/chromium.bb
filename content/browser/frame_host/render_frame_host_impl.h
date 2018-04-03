@@ -897,7 +897,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params) override;
   void BeginNavigation(const CommonNavigationParams& common_params,
-                       mojom::BeginNavigationParamsPtr begin_params) override;
+                       mojom::BeginNavigationParamsPtr begin_params,
+                       blink::mojom::BlobURLTokenPtr blob_url_token) override;
   void SubresourceResponseStarted(const GURL& url,
                                   net::CertStatus cert_status) override;
   void ResourceLoadComplete(
@@ -1381,8 +1382,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true then this frame's document has a focused element which is editable.
   bool has_focused_editable_element_;
 
-  typedef std::pair<CommonNavigationParams, mojom::BeginNavigationParamsPtr>
-      PendingNavigation;
+  struct PendingNavigation {
+    PendingNavigation(
+        const CommonNavigationParams& common_params,
+        mojom::BeginNavigationParamsPtr begin_params,
+        scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+    ~PendingNavigation();
+    CommonNavigationParams common_params;
+    mojom::BeginNavigationParamsPtr begin_params;
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
+  };
   std::unique_ptr<PendingNavigation> pending_navigate_;
 
   // A collection of non-network URLLoaderFactory implementations which are used

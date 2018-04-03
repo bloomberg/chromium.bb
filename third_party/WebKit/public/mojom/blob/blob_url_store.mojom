@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 module blink.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/WebKit/public/mojom/blob/blob.mojom";
 import "url/mojom/url.mojom";
@@ -32,4 +33,18 @@ interface BlobURLStore {
   // both the blob URL and all other references to the blob have been dropped.
   ResolveAsURLLoaderFactory(url.mojom.Url url,
                             network.mojom.URLLoaderFactory& factory);
+
+  // Resolves a public Blob URL into a BlobURLToken. The BlobURLToken can be
+  // used by the browser process to securely look up the blob a URL used to
+  // refer to, even after the URL is revoked.
+  // As long as the token is alive, the resolved blob will also be kept alive.
+  ResolveForNavigation(url.mojom.Url url, BlobURLToken& token);
+};
+
+// A token representing a Blob URL. The browser process can use this to look up
+// the blob URL and blob it referred to, even after the blob URL itself is
+// revoked. For the renderer this is just an opaque token without any meaning.
+interface BlobURLToken {
+  Clone(BlobURLToken& token);
+  GetToken() => (mojo_base.mojom.UnguessableToken token);
 };

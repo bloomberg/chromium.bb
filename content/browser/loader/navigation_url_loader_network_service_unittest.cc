@@ -152,7 +152,8 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
             common_params, std::move(begin_params), url, is_main_frame,
             false /* parent_is_main_frame */, false /* are_ancestors_secure */,
             -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
-            false /* report_raw_headers */, false /* is_prerenering */));
+            false /* report_raw_headers */, false /* is_prerenering */,
+            nullptr /* blob_url_loader_factory */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = base::nullopt;
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(

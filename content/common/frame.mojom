@@ -16,6 +16,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
+import "third_party/WebKit/public/mojom/blob/blob_url_store.mojom";
 import "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/public/web/commit_result.mojom";
@@ -267,9 +268,18 @@ interface FrameHost {
       DidCommitProvisionalLoadParams params);
 
   // Sent by the renderer to request a navigation.
+  // |blob_url_token| should be non-null when this is a navigation to a blob:
+  // URL. The token will then be used to look up the blob associated with the
+  // blob URL. Without this by the time the navigation code starts fetching
+  // the URL the blob URL might no longer be valid. |blob_url_token| is
+  // not part of BeginNavigationParams because that struct needs to be
+  // cloneable, and thus can't contain mojo interfaces.
+  // If an invalid BlobURLToken is passed in, or if the token doesn't match the
+  // url in |common_params|, the navigation will result in a network error.
   BeginNavigation(
       CommonNavigationParams common_params,
-      BeginNavigationParams begin_params);
+      BeginNavigationParams begin_params,
+      blink.mojom.BlobURLToken? blob_url_token);
 
   // Sent when a subresource response has started.
   // |cert_status| is the bitmask of status info of the SSL certificate. (see

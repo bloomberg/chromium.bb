@@ -59,6 +59,11 @@ class CORE_EXPORT PublicURLManager final
   // When mojo Blob URLs are enabled this resolves the provided URL to a
   // factory capable of creating loaders for the specific URL.
   void Resolve(const KURL&, network::mojom::blink::URLLoaderFactoryRequest);
+  // When mojo Blob URLs are enabled this resolves the provided URL to a mojom
+  // BlobURLToken. This token can be used by the browser process to securely
+  // lookup what blob a URL used to refer to, even after the URL is revoked.
+  // If the URL fails to resolve the request will simply be disconnected.
+  void Resolve(const KURL&, mojom::blink::BlobURLTokenRequest);
 
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;

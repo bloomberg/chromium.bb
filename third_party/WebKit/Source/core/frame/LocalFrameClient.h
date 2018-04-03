@@ -149,7 +149,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       WebTriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition
-          should_check_main_world_content_security_policy) = 0;
+          should_check_main_world_content_security_policy,
+      mojom::blink::BlobURLTokenPtr) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
   virtual void DispatchWillSubmitForm(HTMLFormElement*) = 0;

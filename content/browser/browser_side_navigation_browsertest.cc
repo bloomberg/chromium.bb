@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
   // termination.
   RenderProcessHostKillWaiter process_kill_waiter(rfh->GetProcess());
   rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
-      common_params, std::move(begin_params));
+      common_params, std::move(begin_params), nullptr);
   EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
             process_kill_waiter.Wait());
 

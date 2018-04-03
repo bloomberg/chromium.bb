@@ -159,9 +159,11 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
 
   // Used to start a new renderer-initiated navigation, following a
   // BeginNavigation IPC from the renderer.
-  virtual void OnBeginNavigation(FrameTreeNode* frame_tree_node,
-                                 const CommonNavigationParams& common_params,
-                                 mojom::BeginNavigationParamsPtr begin_params);
+  virtual void OnBeginNavigation(
+      FrameTreeNode* frame_tree_node,
+      const CommonNavigationParams& common_params,
+      mojom::BeginNavigationParamsPtr begin_params,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
   // Used to restart a navigation that was thought to be same-document in
   // cross-document mode.

@@ -92,4 +92,28 @@ BlobEntry* BlobStorageRegistry::GetEntryFromURL(const GURL& url,
   return entry;
 }
 
+void BlobStorageRegistry::AddTokenMapping(const base::UnguessableToken& token,
+                                          const GURL& url,
+                                          const std::string& uuid) {
+  DCHECK(token_to_url_and_uuid_.find(token) == token_to_url_and_uuid_.end());
+  token_to_url_and_uuid_.emplace(token, std::make_pair(url, uuid));
+}
+
+void BlobStorageRegistry::RemoveTokenMapping(
+    const base::UnguessableToken& token) {
+  DCHECK(token_to_url_and_uuid_.find(token) != token_to_url_and_uuid_.end());
+  token_to_url_and_uuid_.erase(token);
+}
+
+bool BlobStorageRegistry::GetTokenMapping(const base::UnguessableToken& token,
+                                          GURL* url,
+                                          std::string* uuid) const {
+  auto it = token_to_url_and_uuid_.find(token);
+  if (it == token_to_url_and_uuid_.end())
+    return false;
+  *url = it->second.first;
+  *uuid = it->second.second;
+  return true;
+}
+
 }  // namespace storage

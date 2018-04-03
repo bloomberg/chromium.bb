@@ -313,7 +313,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     mojom::BeginNavigationParamsPtr begin_params,
     int current_history_list_offset,
     int current_history_list_length,
-    bool override_user_agent) {
+    bool override_user_agent,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated fragment-navigations never take place in the browser,
   //   even with PlzNavigate.
@@ -348,6 +349,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       true,   // from_begin_navigation
       nullptr, entry,
       nullptr));  // navigation_ui_data
+  navigation_request->blob_url_loader_factory_ =
+      std::move(blob_url_loader_factory);
   return navigation_request;
 }
 
@@ -1216,7 +1219,9 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==
-              blink::mojom::PageVisibilityState::kPrerender),
+              blink::mojom::PageVisibilityState::kPrerender,
+          blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
+                                   : nullptr),
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(),
       navigation_handle_->appcache_handle(), this);

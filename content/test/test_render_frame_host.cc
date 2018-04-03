@@ -531,7 +531,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     common_params.transition = ui::PAGE_TRANSITION_LINK;
     common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
     common_params.has_user_gesture = has_user_gesture;
-    BeginNavigation(common_params, std::move(begin_params));
+    BeginNavigation(common_params, std::move(begin_params), nullptr);
   }
 }
 
