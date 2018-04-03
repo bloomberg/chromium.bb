@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
+#include "net/base/mime_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -283,12 +284,6 @@ TEST(FilenameUtilTest, FileURLConversion) {
   EXPECT_FALSE(FileURLToFilePath(GURL("filefoobar"), &output));
 }
 
-#if defined(OS_WIN)
-#define JPEG_EXT L".jpg"
-#else
-#define JPEG_EXT L".jpeg"
-#endif
-
 TEST(FilenameUtilTest, GenerateSafeFileName) {
   const struct {
     const char* mime_type;
@@ -362,6 +357,13 @@ TEST(FilenameUtilTest, GenerateSafeFileName) {
     EXPECT_EQ(safe_tests[i].expected_filename, file_path.value())
         << "Iteration " << i;
   }
+}
+
+TEST(FilenameUtilTest, GenerateFileName_Assumptions) {
+  base::FilePath::StringType extension;
+  EXPECT_TRUE(GetPreferredExtensionForMimeType("application/x-chrome-extension",
+                                               &extension));
+  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("crx")), extension);
 }
 
 TEST(FilenameUtilTest, GenerateFileName) {
@@ -483,7 +485,8 @@ TEST(FilenameUtilTest, GenerateFileName) {
        __LINE__, "http://www.examples.com/",
        "attachment; "
        "filename=\"%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg\"",
-       "", "", "image/jpeg", L"download", L"\uc608\uc220 \uc608\uc220.jpg"},
+       "", "", "application/x-chrome-extension", L"download",
+       L"\uc608\uc220 \uc608\uc220.jpg"},
       {// Invalid C-D header. Name value is skipped now.
        __LINE__, "http://www.examples.com/q.cgi?id=abc",
        "attachment; name=abc de.pdf", "", "", "application/octet-stream",
@@ -656,8 +659,8 @@ TEST(FilenameUtilTest, GenerateFileName) {
      L"Thumbs.db"
 #endif
     },
-    {__LINE__, "http://www.hotmail.com", "filename=source.jpg", "", "",
-     "application/x-javascript", L"download", L"source.jpg"},
+
+    // Regression tests for older issues:
     {// http://crbug.com/5772.
      __LINE__, "http://www.example.com/foo.tar.gz", "", "", "",
      "application/x-tar", L"download", L"foo.tar.gz"},
@@ -679,13 +682,13 @@ TEST(FilenameUtilTest, GenerateFileName) {
      L"download", L"bar.sh"},
     {// http://crbug.com/61571
      __LINE__, "http://www.example.com/npdf.php?fn=foobar.pdf", "", "", "",
-     "text/plain", L"download", L"npdf.txt"},
+     "application/x-chrome-extension", L"download", L"npdf.crx"},
     {// Shouldn't overwrite C-D specified extension.
      __LINE__, "http://www.example.com/npdf.php?fn=foobar.pdf",
      "filename=foobar.jpg", "", "", "text/plain", L"download", L"foobar.jpg"},
     {// http://crbug.com/87719
      __LINE__, "http://www.example.com/image.aspx?id=blargh", "", "", "",
-     "image/jpeg", L"download", L"image" JPEG_EXT},
+     "application/x-chrome-extension", L"download", L"image.crx"},
     {__LINE__, "http://www.example.com/image.aspx?id=blargh", "", "", " .foo",
      "", L"download", L"_.foo"},
 
