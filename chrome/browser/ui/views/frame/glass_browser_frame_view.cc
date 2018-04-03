@@ -820,10 +820,8 @@ void GlassBrowserFrameView::LayoutTitleBar() {
 void GlassBrowserFrameView::LayoutCaptionButton(Windows10CaptionButton* button,
                                                 int previous_button_x) {
   gfx::Size button_size = button->GetPreferredSize();
-  constexpr int kCaptionButtonSpacing = 1;
-  button->SetBounds(
-      previous_button_x - button_size.width() - kCaptionButtonSpacing,
-      WindowTopY(), button_size.width(), button_size.height());
+  button->SetBounds(previous_button_x - button_size.width(), WindowTopY(),
+                    button_size.width(), button_size.height());
 }
 
 void GlassBrowserFrameView::LayoutCaptionButtons() {

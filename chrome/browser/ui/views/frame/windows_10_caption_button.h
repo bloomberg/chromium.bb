@@ -23,6 +23,11 @@ class Windows10CaptionButton : public views::Button {
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
+  // Returns the amount we should visually reserve on the left (right in RTL)
+  // for spacing between buttons. We do this instead of repositioning the
+  // buttons to avoid the sliver of deadspace that would result.
+  int GetBetweenButtonSpacing() const;
+
   // The base color to use for the button symbols and background blending. Uses
   // the more readable of black and white.
   SkColor GetBaseColor() const;
