@@ -17,7 +17,10 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_handle.h"
+#include "base/memory/unsafe_shared_memory_region.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process_handle.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -119,6 +122,26 @@ UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
                          base::SharedMemoryHandle* memory_handle,
                          size_t* size,
                          UnwrappedSharedMemoryHandleProtection* protection);
+
+// Helpers for wrapping and unwrapping new base shared memory API primitives.
+
+MOJO_CPP_SYSTEM_EXPORT ScopedSharedBufferHandle
+WrapReadOnlySharedMemoryRegion(base::ReadOnlySharedMemoryRegion region);
+
+MOJO_CPP_SYSTEM_EXPORT ScopedSharedBufferHandle
+WrapUnsafeSharedMemoryRegion(base::UnsafeSharedMemoryRegion region);
+
+MOJO_CPP_SYSTEM_EXPORT ScopedSharedBufferHandle
+WrapWritableSharedMemoryRegion(base::WritableSharedMemoryRegion region);
+
+MOJO_CPP_SYSTEM_EXPORT base::ReadOnlySharedMemoryRegion
+UnwrapReadOnlySharedMemoryRegion(ScopedSharedBufferHandle handle);
+
+MOJO_CPP_SYSTEM_EXPORT base::UnsafeSharedMemoryRegion
+UnwrapUnsafeSharedMemoryRegion(ScopedSharedBufferHandle handle);
+
+MOJO_CPP_SYSTEM_EXPORT base::WritableSharedMemoryRegion
+UnwrapWritableSharedMemoryRegion(ScopedSharedBufferHandle handle);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Wraps a mach_port_t as a Mojo handle. This takes a reference to the
