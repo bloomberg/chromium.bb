@@ -19,12 +19,25 @@ BrowsingDataRemoverCompletionObserver::
     ~BrowsingDataRemoverCompletionObserver() {}
 
 void BrowsingDataRemoverCompletionObserver::BlockUntilCompletion() {
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushAsyncForTesting(base::BindOnce(
+      [](BrowsingDataRemoverCompletionObserver* observer) {
+        observer->flush_for_testing_complete_ = true;
+        observer->QuitRunLoopWhenTasksComplete();
+      },
+      base::Unretained(this)));
   run_loop_.Run();
 }
 
 void BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone() {
+  browsing_data_remover_done_ = true;
   observer_.RemoveAll();
+  QuitRunLoopWhenTasksComplete();
+}
+
+void BrowsingDataRemoverCompletionObserver::QuitRunLoopWhenTasksComplete() {
+  if (!flush_for_testing_complete_ || !browsing_data_remover_done_)
+    return;
+
   run_loop_.QuitWhenIdle();
 }
 
@@ -52,9 +65,16 @@ void BrowsingDataRemoverCompletionInhibitor::Reset() {
 }
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushAsyncForTesting(base::BindOnce(
+      [](BrowsingDataRemoverCompletionInhibitor* inhibitor) {
+        inhibitor->flush_for_testing_complete_ = true;
+        inhibitor->QuitRunLoopWhenTasksComplete();
+      },
+      base::Unretained(this)));
   run_loop_->Run();
   run_loop_ = std::make_unique<base::RunLoop>();
+  flush_for_testing_complete_ = false;
+  browsing_data_remover_would_complete_done_ = false;
 }
 
 void BrowsingDataRemoverCompletionInhibitor::ContinueToCompletion() {
@@ -67,6 +87,16 @@ void BrowsingDataRemoverCompletionInhibitor::OnBrowsingDataRemoverWouldComplete(
     const base::Closure& continue_to_completion) {
   DCHECK(continue_to_completion_callback_.is_null());
   continue_to_completion_callback_ = continue_to_completion;
+  browsing_data_remover_would_complete_done_ = true;
+  QuitRunLoopWhenTasksComplete();
+}
+
+void BrowsingDataRemoverCompletionInhibitor::QuitRunLoopWhenTasksComplete() {
+  if (!flush_for_testing_complete_ ||
+      !browsing_data_remover_would_complete_done_) {
+    return;
+  }
+
   run_loop_->QuitWhenIdle();
 }
 
