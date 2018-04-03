@@ -846,6 +846,9 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kShowOverdrawFeedbackName[];
 extern const char kShowOverdrawFeedbackDescription[];
 
+extern const char kSupervisedUserCommittedInterstitialsName[];
+extern const char kSupervisedUserCommittedInterstitialsDescription[];
+
 extern const char kEnableDrawOcclusionName[];
 extern const char kEnableDrawOcclusionDescription[];
 

@@ -3792,6 +3792,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableEmojiContextMenuDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEnableEmojiContextMenu)},
 
+    {"SupervisedUserCommittedInterstitials",
+     flag_descriptions::kSupervisedUserCommittedInterstitialsName,
+     flag_descriptions::kSupervisedUserCommittedInterstitialsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kSupervisedUserCommittedInterstitials)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
