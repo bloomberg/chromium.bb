@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 433
+#   For your editing convenience: highest ID currently used: 434
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -420,6 +420,7 @@
         'DefaultMediaStreamSetting',
         'DefaultWebBluetoothGuardSetting',
         'DefaultKeygenSetting',
+        'DefaultWebUsbGuardSetting',
         'AutoSelectCertificateForUrls',
         'CookiesAllowedForUrls',
         'CookiesBlockedForUrls',
@@ -3771,6 +3772,38 @@
       'desc': '''Allows you to set whether websites are allowed to use key generation. Using key generation can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.''',
+    },
+    {
+      'name': 'DefaultWebUsbGuardSetting',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockWebUsb',
+          'value': 2,
+          'caption': '''Do not allow any site to request access to USB devices via the WebUSB API''',
+        },
+        {
+          'name': 'AskWebUsb',
+          'value': 3,
+          'caption': '''Allow sites to ask the user to grant access to a connected USB device''',
+        },
+      ],
+      'supported_on': ['chrome_os:67-', 'android:67-', 'chrome.*:67-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 434,
+      'caption': '''Control use of the WebUSB API''',
+      'tags': ['website-sharing'],
+      'desc': '''Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
+
+          If this policy is left not set, '3' will be used, and the user will be able to change it.''',
     },
     {
       'name': 'AutoSelectCertificateForUrls',
