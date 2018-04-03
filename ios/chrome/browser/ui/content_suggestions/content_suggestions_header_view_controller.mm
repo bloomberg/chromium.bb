@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
@@ -366,9 +365,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   UIView* voiceSearchButton = base::mac::ObjCCastStrict<UIView>(sender);
   [NamedGuide guideWithName:kVoiceSearchButtonGuide view:voiceSearchButton]
       .constrainedView = voiceSearchButton;
-  StartVoiceSearchCommand* command =
-      [[StartVoiceSearchCommand alloc] initWithOriginView:voiceSearchButton];
-  [self.dispatcher startVoiceSearch:command];
+  [self.dispatcher startVoiceSearch];
 }
 
 - (void)preloadVoiceSearch:(id)sender {

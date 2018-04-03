@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
-#import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
@@ -658,9 +657,7 @@ const CGFloat kScrollFadeDistance = 30;
   UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
   [NamedGuide guideWithName:kVoiceSearchButtonGuide view:view].constrainedView =
       view;
-  StartVoiceSearchCommand* command =
-      [[StartVoiceSearchCommand alloc] initWithOriginView:view];
-  [self.dispatcher startVoiceSearch:command];
+  [self.dispatcher startVoiceSearch];
 }
 
 // Sets all Toolbar Buttons opacity to |alpha|.

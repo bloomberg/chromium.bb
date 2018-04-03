@@ -114,7 +114,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/download/legacy_download_manager_controller.h"
 #import "ios/chrome/browser/ui/external_file_remover_factory.h"
 #import "ios/chrome/browser/ui/external_file_remover_impl.h"
@@ -420,7 +419,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Shows the tab switcher UI.
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
-- (void)startVoiceSearchInCurrentBVCWithOriginView:(UIView*)originView;
+- (void)startVoiceSearchInCurrentBVC;
 // Dismisses the tab switcher UI without animation into the given model.
 - (void)dismissTabSwitcherWithoutAnimationInModel:(TabModel*)tabModel;
 // Dismisses |signinInteractionCoordinator|.
@@ -1414,9 +1413,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self.currentBVC.dispatcher openNewTab:command];
 }
 
-- (void)startVoiceSearch:(StartVoiceSearchCommand*)command {
+- (void)startVoiceSearch {
   if (!_isProcessingTabSwitcherCommand) {
-    [self startVoiceSearchInCurrentBVCWithOriginView:command.originView];
+    [self startVoiceSearchInCurrentBVC];
     _isProcessingVoiceSearchCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  kExpectedTransitionDurationInNanoSeconds),
@@ -1424,6 +1423,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                      _isProcessingVoiceSearchCommand = NO;
                    });
   }
+}
+
+- (void)startVoiceSearch:(StartVoiceSearchCommand*)command {
+  [self startVoiceSearch];
 }
 
 - (void)showHistory {
@@ -1674,15 +1677,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self closeSettingsAnimated:YES completion:completion];
 }
 
-- (void)startVoiceSearchInCurrentBVCWithOriginView:(UIView*)originView {
+- (void)startVoiceSearchInCurrentBVC {
   // If the background (non-current) BVC is playing TTS audio, call
   // -startVoiceSearch on it to stop the TTS.
   BrowserViewController* backgroundBVC =
       self.mainBVC == self.currentBVC ? self.otrBVC : self.mainBVC;
   if (backgroundBVC.playingTTS)
-    [backgroundBVC startVoiceSearchWithOriginView:originView];
+    [backgroundBVC startVoiceSearch];
   else
-    [self.currentBVC startVoiceSearchWithOriginView:originView];
+    [self.currentBVC startVoiceSearch];
 }
 
 #pragma mark - Preferences Management
@@ -2185,7 +2188,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     case START_VOICE_SEARCH:
       if (@available(iOS 11, *)) {
         return ^{
-          [self startVoiceSearchInCurrentBVCWithOriginView:nil];
+          [self startVoiceSearchInCurrentBVC];
         };
       } else {
         return ^{
@@ -2201,8 +2204,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
           // TODO(crbug.com/766951): remove this workaround.
           dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC),
                          dispatch_get_main_queue(), ^{
-                           [self
-                               startVoiceSearchInCurrentBVCWithOriginView:nil];
+                           [self startVoiceSearchInCurrentBVC];
                          });
 
         };
