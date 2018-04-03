@@ -1734,6 +1734,28 @@ TEST_F(TemplateURLServiceTest, CheckEnginesWithSameKeywords) {
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("common_keyword")));
 }
 
+TEST_F(TemplateURLServiceTest, ConflictingReplaceableEnginesShouldOverwrite) {
+  test_util()->VerifyLoad();
+  // Add 2 replaceable user engine with different keywords.
+  TemplateURL* user1 =
+      AddKeywordWithDate("user_engine1", "user1", "http://test1", std::string(),
+                         std::string(), std::string(), true);
+  AddKeywordWithDate("user_engine2", "user2", "http://test2", std::string(),
+                     std::string(), std::string(), true);
+  // Update first engine to conflict with second by keyword. This should
+  // overwrite the second engine.
+  model()->ResetTemplateURL(user1, ASCIIToUTF16("title"), ASCIIToUTF16("user2"),
+                            "http://test_search.com");
+  // Check that first engine can now be found by new keyword.
+  EXPECT_EQ(user1, model()->GetTemplateURLForKeyword(ASCIIToUTF16("user2")));
+  // Update to return first engine original keyword.
+  model()->ResetTemplateURL(user1, ASCIIToUTF16("title"), ASCIIToUTF16("user1"),
+                            "http://test_search.com");
+  EXPECT_EQ(user1, model()->GetTemplateURLForKeyword(ASCIIToUTF16("user1")));
+  // Check that no engine is now found by keyword user2.
+  EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("user2")));
+}
+
 TEST_F(TemplateURLServiceTest, CheckNonreplaceableEnginesKeywordsConflicts) {
   test_util()->VerifyLoad();
 
