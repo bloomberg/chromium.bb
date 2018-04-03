@@ -1630,10 +1630,6 @@ crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass F
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
-# These tests have unstable error messages, so they can't be rebaselined.
-crbug.com/626703 external/wpt/html/semantics/document-metadata/the-link-element/link-load-error-events.html [ Failure ]
-crbug.com/626703 external/wpt/html/semantics/document-metadata/the-link-element/link-load-error-events.https.html [ Failure ]
-
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/DataTransfer-types-manual.html [ Skip ]
 crbug.com/626703 external/wpt/webvr/idlharness.https.html [ Timeout ]
