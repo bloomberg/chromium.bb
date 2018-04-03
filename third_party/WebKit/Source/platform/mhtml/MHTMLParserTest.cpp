@@ -6,6 +6,7 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/mhtml/ArchiveResource.h"
+#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -30,6 +31,13 @@ class MHTMLParserTest : public testing::Test {
     scoped_refptr<SharedBuffer> buf = SharedBuffer::Create(mhtml_data, size);
     MHTMLParser parser(buf);
     return parser.ParseArchive();
+  }
+
+  WTF::Time ParseArchiveTime(const char* mhtml_data, size_t size) {
+    scoped_refptr<SharedBuffer> buf = SharedBuffer::Create(mhtml_data, size);
+    MHTMLParser parser(buf);
+    EXPECT_GT(parser.ParseArchive().size(), 0U);
+    return parser.CreationDate();
   }
 };
 
@@ -328,6 +336,83 @@ TEST_F(MHTMLParserTest, NoContentTransferEncoding) {
   EXPECT_EQ(std::string("bin\0ary", 7), GetResourceData(resources, 0));
   EXPECT_EQ(std::string("bin\0ary", 7), GetResourceData(resources, 1));
   EXPECT_EQ("", GetResourceData(resources, 2));
+}
+
+TEST_F(MHTMLParserTest, DateParsing_EmptyDate) {
+  // Missing date is ignored.
+  const char mhtml_data[] =
+      "From: <Saved by Blink>\r\n"
+      "Subject: Test Subject\r\n"
+      "MIME-Version: 1.0\r\n"
+      "Content-Type: multipart/related;\r\n"
+      "\ttype=\"text/html\";\r\n"
+      "\tboundary=\"BoUnDaRy\"\r\n"
+      "\r\n"
+      "\r\n"
+      "--BoUnDaRy\r\n"
+      "Content-Location: http://www.example.com/page1\r\n"
+      "Content-Type: binary/octet-stream\r\n"
+      "\r\n"
+      "bin\0ary\r\n"
+      "--BoUnDaRy--\r\n";
+
+  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+
+  // No header should produce an invalid time.
+  EXPECT_EQ(WTF::Time(), creation_time);
+}
+
+TEST_F(MHTMLParserTest, DateParsing_InvalidDate) {
+  // Invalid date is ignored.  Also, Date header within a part should not be
+  // used.
+  const char mhtml_data[] =
+      "From: <Saved by Blink>\r\n"
+      "Subject: Test Subject\r\n"
+      "Date: 123xyz\r\n"
+      "MIME-Version: 1.0\r\n"
+      "Content-Type: multipart/related;\r\n"
+      "\ttype=\"text/html\";\r\n"
+      "\tboundary=\"BoUnDaRy\"\r\n"
+      "\r\n"
+      "\r\n"
+      "--BoUnDaRy\r\n"
+      "Content-Location: http://www.example.com/page1\r\n"
+      "Content-Type: binary/octet-stream\r\n"
+      "Date: Fri, 1 Mar 2017 22:44:17 -0000\r\n"
+      "\r\n"
+      "bin\0ary\r\n"
+      "--BoUnDaRy--\r\n";
+
+  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+
+  // Invalid header should produce an invalid time.
+  EXPECT_EQ(WTF::Time(), creation_time);
+}
+
+TEST_F(MHTMLParserTest, DateParsing_ValidDate) {
+  // Missing encoding is treated as binary.
+  const char mhtml_data[] =
+      "From: <Saved by Blink>\r\n"
+      "Subject: Test Subject\r\n"
+      "Date: Fri, 1 Mar 2017 22:44:17 -0000\r\n"
+      "MIME-Version: 1.0\r\n"
+      "Content-Type: multipart/related;\r\n"
+      "\ttype=\"text/html\";\r\n"
+      "\tboundary=\"BoUnDaRy\"\r\n"
+      "\r\n"
+      "\r\n"
+      "--BoUnDaRy\r\n"
+      "Content-Location: http://www.example.com/page1\r\n"
+      "Content-Type: binary/octet-stream\r\n"
+      "\r\n"
+      "bin\0ary\r\n"
+      "--BoUnDaRy--\r\n";
+
+  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  WTF::Time expected_time;
+  ASSERT_TRUE(WTF::Time::FromUTCExploded(
+      {2017, 3 /* March */, 5 /* Friday */, 1, 22, 44, 17, 0}, &expected_time));
+  EXPECT_EQ(expected_time, creation_time);
 }
 
 }  // namespace blink

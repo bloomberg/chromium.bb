@@ -9,9 +9,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
+#include "chrome/common/mhtml_page_notifier.mojom.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -43,11 +46,19 @@ enum class OfflinePageTrustedState {
 
 // Per-tab class that monitors the navigations and stores the necessary info
 // to facilitate the synchronous access to offline information.
-class OfflinePageTabHelper :
-    public content::WebContentsObserver,
-    public content::WebContentsUserData<OfflinePageTabHelper> {
+class OfflinePageTabHelper
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<OfflinePageTabHelper>,
+      public mojom::MhtmlPageNotifier {
  public:
   ~OfflinePageTabHelper() override;
+
+  // Creates the Mojo service that can listen to the renderer's archive events.
+  void CreateMhtmlPageNotifier(mojom::MhtmlPageNotifierRequest request);
+
+  // MhtmlPageNotifier overrides.
+  void NotifyIsMhtmlPage(const GURL& main_frame_url,
+                         base::Time date_header_time) override;
 
   void SetOfflinePage(const OfflinePageItem& offline_page,
                       const OfflinePageHeader& offline_header,
@@ -82,6 +93,11 @@ class OfflinePageTabHelper :
   // Returns trusted state of provisional offline page.
   OfflinePageTrustedState GetTrustedStateForTest() const;
 
+  // Sets the target frame, useful for unit testing the MhtmlPageNotifier
+  // interface.
+  void SetCurrentTargetFrameForTest(
+      content::RenderFrameHost* render_frame_host);
+
   // Helper function which normally should only be called by
   // OfflinePageUtils::ScheduleDownload to do the work. This is because we need
   // to ensure |web_contents| is still valid after returning from the
@@ -103,7 +119,16 @@ class OfflinePageTabHelper :
     LoadedOfflinePageInfo();
     ~LoadedOfflinePageInfo();
 
-    // The cached copy of OfflinePageItem.
+    // Constructs a valid but untrusted LoadedOfflinePageInfo with |url| as the
+    // online URL.
+    static LoadedOfflinePageInfo MakeUntrusted();
+
+    LoadedOfflinePageInfo& operator=(LoadedOfflinePageInfo&& other);
+    LoadedOfflinePageInfo(LoadedOfflinePageInfo&& other);
+
+    // The cached copy of OfflinePageItem. Note that if |is_trusted| is false,
+    // offline_page may contain information derived from the MHTML itself and
+    // should be exposed to the user as untrusted.
     std::unique_ptr<OfflinePageItem> offline_page;
 
     // The offline header that is provided when offline page is loaded.
@@ -114,7 +139,12 @@ class OfflinePageTabHelper :
 
     // Whether the page is an offline preview. Offline page previews are shown
     // when a user's effective connection type is prohibitively slow.
-    bool is_showing_offline_preview;
+    bool is_showing_offline_preview = false;
+
+    // Returns true if this contains an offline page.  When constructed,
+    // LoadedOfflinePageInfo objects are invalid until filled with an offline
+    // page.
+    bool IsValid() const;
 
     void Clear();
   };
@@ -139,9 +169,10 @@ class OfflinePageTabHelper :
   void TryLoadingOfflinePageOnNetError(
       content::NavigationHandle* navigation_handle);
 
-  void SelectPagesForURLDone(const std::vector<OfflinePageItem>& offline_pages);
+  // Creates an offline info with an invalid offline ID and the given URL.
+  LoadedOfflinePageInfo MakeUntrustedOfflineInfo(const GURL& url);
 
-  void GetPageByOfflineIdDone(const OfflinePageItem* offline_page);
+  void SelectPagesForURLDone(const std::vector<OfflinePageItem>& offline_pages);
 
   void DuplicateCheckDoneForScheduleDownload(
       content::WebContents* web_contents,
@@ -176,6 +207,11 @@ class OfflinePageTabHelper :
   // TODO(dimich): When we only have one shared version of PolicyController,
   // replace this instance with access to a shared one.
   ClientPolicyController policy_controller_;
+
+  // TODO(crbug.com/827215): We only really want interface messages for the main
+  // frame but this is not easily done with the current helper classes.
+  content::WebContentsFrameBindingSet<mojom::MhtmlPageNotifier>
+      mhtml_page_notifier_bindings_;
 
   base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
 

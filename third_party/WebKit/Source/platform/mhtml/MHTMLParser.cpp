@@ -31,6 +31,7 @@
 #include "platform/mhtml/MHTMLParser.h"
 
 #include "platform/mhtml/ArchiveResource.h"
+#include "platform/network/HTTPParsers.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/text/QuotedPrintable.h"
 #include "platform/wtf/HashMap.h"
@@ -70,6 +71,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   }
   String ContentLocation() const { return content_location_; }
   String ContentID() const { return content_id_; }
+  WTF::Time Date() const { return date_; }
 
   // Multi-part type and boundaries are only valid for multipart MIME headers.
   String MultiPartType() const { return multipart_type_; }
@@ -88,6 +90,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   Encoding content_transfer_encoding_;
   String content_location_;
   String content_id_;
+  WTF::Time date_;
   String multipart_type_;
   String end_of_part_boundary_;
   String end_of_document_boundary_;
@@ -172,6 +175,13 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
   if (mime_parameters_iterator != key_value_pairs.end())
     mime_header->content_id_ = mime_parameters_iterator->value;
 
+  mime_parameters_iterator = key_value_pairs.find("date");
+  if (mime_parameters_iterator != key_value_pairs.end()) {
+    double ms_since_epoch = ParseDate(mime_parameters_iterator->value);
+    if (!std::isnan(ms_since_epoch))
+      mime_header->date_ = WTF::Time::FromDoubleT(ms_since_epoch / 1000);
+  }
+
   return mime_header;
 }
 
@@ -213,7 +223,12 @@ HeapVector<Member<ArchiveResource>> MHTMLParser::ParseArchive() {
   HeapVector<Member<ArchiveResource>> resources;
   if (!ParseArchiveWithHeader(header, resources))
     resources.clear();
+  creation_date_ = header->Date();
   return resources;
+}
+
+WTF::Time MHTMLParser::CreationDate() const {
+  return creation_date_;
 }
 
 bool MHTMLParser::ParseArchiveWithHeader(

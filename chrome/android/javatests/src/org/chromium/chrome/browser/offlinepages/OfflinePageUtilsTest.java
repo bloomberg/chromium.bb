@@ -22,6 +22,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
@@ -41,6 +42,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Instrumentation tests for {@link OfflinePageUtils}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -384,6 +386,23 @@ public class OfflinePageUtilsTest {
 
         // Check that an empty URL is not sharable.
         checkIfOfflinePageIsSharable(fullPublicPath, EMPTY_URI, false);
+    }
+
+    @Test
+    @SmallTest
+    public void testMhtmlPropertiesFromRenderer() throws Exception {
+        // This gets a file:// URL which should result in an untrusted offline page.
+        String testUrl = UrlUtils.getTestFileUrl("offline_pages/hello.mhtml");
+        mActivityTestRule.loadUrl(testUrl);
+
+        final AtomicReference<OfflinePageItem> offlinePageItem = new AtomicReference<>();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            offlinePageItem.set(OfflinePageUtils.getOfflinePage(
+                    mActivityTestRule.getActivity().getActivityTab()));
+        });
+
+        Assert.assertEquals("http://www.example.com/", offlinePageItem.get().getUrl());
+        Assert.assertEquals(1321901946000L, offlinePageItem.get().getCreationTimeMs());
     }
 
     private void loadPageAndSave(ClientId clientId) throws Exception {

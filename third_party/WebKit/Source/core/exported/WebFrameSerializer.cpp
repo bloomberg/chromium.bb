@@ -67,6 +67,7 @@
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringConcatenate.h"
 #include "public/platform/WebString.h"
@@ -457,7 +458,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   scoped_refptr<RawData> buffer = RawData::Create();
   MHTMLArchive::GenerateMHTMLHeader(
       boundary, document->Url(), document->title(),
-      document->SuggestedMIMEType(), *buffer->MutableData());
+      document->SuggestedMIMEType(), WTF::Time::Now(), *buffer->MutableData());
   return WebThreadSafeData(buffer);
 }
 

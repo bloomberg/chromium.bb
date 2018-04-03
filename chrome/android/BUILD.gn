@@ -608,6 +608,7 @@ android_library("chrome_test_java") {
     "//chrome/test/data/media/",
     "//chrome/test/data/navigation_interception/",
     "//chrome/test/data/notifications/",
+    "//chrome/test/data/offline_pages/",
     "//chrome/test/data/popup_blocker/",
     "//chrome/test/data/push_messaging/",
     "//chrome/test/data/translate/",

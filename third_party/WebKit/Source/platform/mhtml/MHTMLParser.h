@@ -34,7 +34,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "platform/SharedBufferChunkReader.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/Member.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 
 namespace WTF {
@@ -54,6 +56,7 @@ class PLATFORM_EXPORT MHTMLParser final {
   explicit MHTMLParser(scoped_refptr<const SharedBuffer>);
 
   HeapVector<Member<ArchiveResource>> ParseArchive();
+  WTF::Time CreationDate() const;
 
   // Translates |contentIDFromMimeHeader| (of the form "<foo@bar.com>")
   // into a cid-scheme URI (of the form "cid:foo@bar.com").
@@ -71,6 +74,7 @@ class PLATFORM_EXPORT MHTMLParser final {
                                  const String& end_of_document_boundary,
                                  bool& end_of_archive_reached);
 
+  WTF::Time creation_date_;
   SharedBufferChunkReader line_reader_;
 };
 

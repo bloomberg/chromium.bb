@@ -33,6 +33,7 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringHash.h"
 
@@ -67,6 +68,7 @@ class PLATFORM_EXPORT MHTMLArchive final
                                   const KURL&,
                                   const String& title,
                                   const String& mime_type,
+                                  WTF::Time date,
                                   Vector<char>& output_buffer);
 
   // Serializes SerializedResource as an MHTML part and appends it in
@@ -95,8 +97,11 @@ class PLATFORM_EXPORT MHTMLArchive final
 
   typedef HeapHashMap<String, Member<ArchiveResource>> SubArchiveResources;
 
-  ArchiveResource* MainResource() { return main_resource_.Get(); }
+  ArchiveResource* MainResource() const { return main_resource_.Get(); }
   ArchiveResource* SubresourceForURL(const KURL&) const;
+
+  // The purported creation date (as expressed by the Date: header).
+  WTF::Time Date() const { return date_; }
 
   void Trace(blink::Visitor*);
 
@@ -107,6 +112,7 @@ class PLATFORM_EXPORT MHTMLArchive final
   void AddSubresource(ArchiveResource*);
   static bool CanLoadArchive(const KURL&);
 
+  WTF::Time date_;
   Member<ArchiveResource> main_resource_;
   SubArchiveResources subresources_;
 };

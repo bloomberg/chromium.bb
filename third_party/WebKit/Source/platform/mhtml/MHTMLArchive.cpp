@@ -161,6 +161,7 @@ MHTMLArchive* MHTMLArchive::Create(const KURL& url,
     return nullptr;  // Invalid MHTML file.
 
   MHTMLArchive* archive = new MHTMLArchive;
+  archive->date_ = parser.CreationDate();
 
   size_t resources_count = resources.size();
   // The first document suitable resource is the main resource of the top frame.
@@ -212,16 +213,19 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
                                        const KURL& url,
                                        const String& title,
                                        const String& mime_type,
+                                       WTF::Time date,
                                        Vector<char>& output_buffer) {
   DCHECK(!boundary.IsEmpty());
   DCHECK(!mime_type.IsEmpty());
 
-  DateComponents now;
-  now.SetMillisecondsSinceEpochForDateTime(CurrentTimeMS());
   // TODO(lukasza): Passing individual date/time components seems fragile.
+  base::Time::Exploded date_components;
+  date.UTCExplode(&date_components);
   String date_string = MakeRFC2822DateString(
-      now.WeekDay(), now.MonthDay(), now.Month(), now.FullYear(), now.Hour(),
-      now.Minute(), now.Second(), 0);
+      date_components.day_of_week, date_components.day_of_month,
+      // |month| is 1-based in Exploded, but 0-based in MakeRFC2822DateString.
+      date_components.month - 1, date_components.year, date_components.hour,
+      date_components.minute, date_components.second, 0);
 
   StringBuilder string_builder;
   string_builder.Append("From: <Saved by Blink>\r\n");

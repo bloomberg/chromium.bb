@@ -29,12 +29,12 @@ namespace {
 const char kTestURL[] = "http://example.com/hello.mhtml";
 const char kNonExistentURL[] = "http://example.com/non_existent.mhtml";
 // Size of chrome/test/data/offline_pages/hello.mhtml
-const int64_t kTestFileSize = 450LL;
+const int64_t kTestFileSize = 471LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 // SHA256 Hash of chrome/test/data/offline_pages/hello.mhtml
 const std::string kTestDigest(
-    "\x90\x64\xF9\x7C\x94\xE5\x9E\x91\x83\x3D\x41\xB0\x36\x90\x0A\xDF\xB3\xB1"
-    "\x5C\x13\xBE\xB8\x35\x8C\xF6\x5B\xC4\xB5\x5A\xFC\x3A\xCC",
+    "\x43\x60\x62\x02\x06\x15\x0f\x3e\x77\x99\x3d\xed\xdc\xd4\xe2\x0d\xbe\xbd"
+    "\x77\x1a\xfb\x32\x00\x51\x7e\x63\x7d\x3b\x2e\x46\x63\xf6",
     32);
 
 class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
