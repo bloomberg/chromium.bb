@@ -306,18 +306,9 @@ WebString WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
     size_t max_chars) {
   if (!frame)
     return WebString();
-  LocalFrame* local_frame = ToWebLocalFrameImpl(frame)->GetFrame();
-  // TODO(crbug.com/586241): We shoulndn't reach here with dirty layout as the
-  // function is called in DidMeaningfulLayout(); However, we still see this in
-  // the wild. As a workaround, we dump |textContent| instead when layout is
-  // dirty. We should always dump |innerText| when the bug is fixed.
-  bool needs_layout = local_frame->View()->NeedsLayout() ||
-                      local_frame->GetDocument()->NeedsLayoutTreeUpdate();
   StringBuilder text;
-  FrameContentAsPlainText(max_chars, local_frame,
-                          needs_layout ? TextDumpOption::kDumpTextContent
-                                       : TextDumpOption::kDumpInnerText,
-                          text);
+  FrameContentAsPlainText(max_chars, ToWebLocalFrameImpl(frame)->GetFrame(),
+                          TextDumpOption::kDumpTextContent, text);
   return text.ToString();
 }
 
