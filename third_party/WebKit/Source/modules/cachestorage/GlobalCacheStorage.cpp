@@ -4,7 +4,7 @@
 
 #include "modules/cachestorage/GlobalCacheStorage.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"

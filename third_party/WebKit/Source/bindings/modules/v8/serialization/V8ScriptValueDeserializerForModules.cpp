@@ -5,7 +5,7 @@
 #include "bindings/modules/v8/serialization/V8ScriptValueDeserializerForModules.h"
 
 #include "bindings/modules/v8/serialization/WebCryptoSubTags.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/crypto/CryptoKey.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/peerconnection/RTCCertificate.h"

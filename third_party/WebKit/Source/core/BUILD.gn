@@ -192,6 +192,7 @@ component("core") {
     "//third_party/WebKit/Source/core/dom",
     "//third_party/WebKit/Source/core/editing",
     "//third_party/WebKit/Source/core/events",
+    "//third_party/WebKit/Source/core/execution_context",
     "//third_party/WebKit/Source/core/exported",
     "//third_party/WebKit/Source/core/fetch",
     "//third_party/WebKit/Source/core/fileapi",

@@ -4,7 +4,7 @@
 
 #include "modules/background_fetch/BackgroundFetchIconLoader.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"

@@ -4,7 +4,7 @@
 
 #include "modules/mediasession/NavigatorMediaSession.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/mediasession/MediaSession.h"
 #include "platform/Supplementable.h"
 #include "platform/bindings/ScriptState.h"

@@ -4,7 +4,7 @@
 
 #include "modules/payments/PaymentHandlerUtils.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 
 using blink::mojom::ServiceWorkerResponseError;

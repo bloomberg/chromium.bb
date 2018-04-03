@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/modules/v8/array_buffer_view_or_blob_or_string_or_form_data.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

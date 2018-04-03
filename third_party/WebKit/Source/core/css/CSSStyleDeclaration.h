@@ -24,7 +24,7 @@
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css_property_names.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"

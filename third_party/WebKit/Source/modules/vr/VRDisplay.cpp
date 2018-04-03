@@ -38,7 +38,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 #include <array>
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 
 namespace blink {
 

@@ -4,7 +4,7 @@
 
 #include "modules/animationworklet/AnimatorDefinition.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/animationworklet/Animator.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8Binding.h"

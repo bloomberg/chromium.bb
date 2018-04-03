@@ -5,7 +5,7 @@
 #include "modules/notifications/NotificationImageLoader.h"
 
 #include <memory>
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/Histogram.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"

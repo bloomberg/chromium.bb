@@ -32,7 +32,7 @@
 #include "bindings/modules/v8/WebGLAny.h"
 #include "bindings/modules/v8/html_canvas_element_or_offscreen_canvas.h"
 #include "build/build_config.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"

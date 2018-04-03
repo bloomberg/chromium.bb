@@ -4,7 +4,7 @@
 
 #include "modules/notifications/NotificationImageLoader.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/testing/PageTestBase.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/HistogramTester.h"

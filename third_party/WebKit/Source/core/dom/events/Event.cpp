@@ -22,12 +22,12 @@
 
 #include "core/dom/events/Event.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/events/FocusEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/PointerEvent.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGElement.h"

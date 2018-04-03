@@ -5,7 +5,7 @@
 #include "core/testing/WorkerInternals.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/testing/OriginTrialsTest.h"

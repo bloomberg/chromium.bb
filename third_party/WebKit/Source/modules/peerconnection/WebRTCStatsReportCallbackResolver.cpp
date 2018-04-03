@@ -1,6 +1,6 @@
 #include "modules/peerconnection/WebRTCStatsReportCallbackResolver.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 
 namespace blink {
 

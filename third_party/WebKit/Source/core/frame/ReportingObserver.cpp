@@ -4,7 +4,7 @@
 
 #include "core/frame/ReportingObserver.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/Report.h"
 #include "core/frame/ReportingContext.h"
 #include "platform/bindings/ScriptState.h"

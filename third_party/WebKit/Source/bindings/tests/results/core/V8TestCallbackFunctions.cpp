@@ -18,7 +18,7 @@
 #include "bindings/core/v8/v8_any_callback_function_optional_any_arg.h"
 #include "bindings/core/v8/v8_long_callback_function.h"
 #include "bindings/core/v8/v8_void_callback_function.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8ObjectConstructor.h"

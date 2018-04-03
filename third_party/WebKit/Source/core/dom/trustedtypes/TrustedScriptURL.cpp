@@ -4,7 +4,7 @@
 
 #include "core/dom/trustedtypes/TrustedScriptURL.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/bindings/ScriptState.h"
 
 namespace blink {

@@ -5,7 +5,7 @@
 #include "core/testing/DictionaryTest.h"
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/testing/InternalDictionary.h"
 #include "core/testing/InternalDictionaryDerived.h"
 #include "core/testing/InternalDictionaryDerivedDerived.h"

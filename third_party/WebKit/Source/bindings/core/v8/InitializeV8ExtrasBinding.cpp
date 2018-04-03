@@ -9,7 +9,7 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/WebFeature.h"
 #include "platform/bindings/ToV8.h"

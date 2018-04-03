@@ -9,7 +9,7 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "platform/Histogram.h"

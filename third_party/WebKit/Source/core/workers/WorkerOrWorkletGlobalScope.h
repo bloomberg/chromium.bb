@@ -6,9 +6,9 @@
 #define WorkerOrWorkletGlobalScope_h
 
 #include "bindings/core/v8/V8CacheOptions.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/dom/SecurityContext.h"
 #include "core/dom/events/EventTarget.h"
+#include "core/execution_context/ExecutionContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/WebFeatureForward.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"

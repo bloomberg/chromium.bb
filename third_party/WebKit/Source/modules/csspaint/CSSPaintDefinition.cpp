@@ -8,7 +8,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/csspaint/PaintRenderingContext2D.h"
 #include "modules/csspaint/PaintSize.h"

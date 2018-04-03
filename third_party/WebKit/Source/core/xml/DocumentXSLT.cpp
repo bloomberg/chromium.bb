@@ -6,11 +6,11 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/Node.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventListener.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/probe/CoreProbes.h"
 #include "core/xml/XSLStyleSheet.h"

@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/probe/CoreProbes.h"
 #include "public/platform/TaskType.h"
 

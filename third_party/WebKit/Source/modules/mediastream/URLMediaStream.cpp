@@ -30,7 +30,7 @@
 
 #include "modules/mediastream/URLMediaStream.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/url/DOMURL.h"
 #include "modules/mediastream/MediaStream.h"

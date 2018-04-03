@@ -5,8 +5,8 @@
 #include "core/exported/WebRemoteFrameImpl.h"
 
 #include "bindings/core/v8/WindowProxy.h"
-#include "core/dom/RemoteSecurityContext.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/RemoteSecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrameClientImpl.h"

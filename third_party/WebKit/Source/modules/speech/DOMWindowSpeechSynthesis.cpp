@@ -31,7 +31,7 @@
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/bindings/ScriptState.h"

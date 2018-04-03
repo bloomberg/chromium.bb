@@ -11,7 +11,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"

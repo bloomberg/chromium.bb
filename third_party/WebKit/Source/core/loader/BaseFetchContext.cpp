@@ -4,7 +4,7 @@
 
 #include "core/loader/BaseFetchContext.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/WebFeature.h"

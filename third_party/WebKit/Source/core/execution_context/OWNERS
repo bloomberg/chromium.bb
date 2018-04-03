@@ -1,0 +1,5 @@
+# execution_context OWNERS
+file://third_party/WebKit/Source/bindings/OWNERS
+
+# TEAM: blink-reviews-bindings@chromium.org
+# COMPONENT: Blink>Bindings

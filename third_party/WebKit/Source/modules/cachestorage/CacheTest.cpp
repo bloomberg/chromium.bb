@@ -20,7 +20,7 @@
 #include "bindings/core/v8/V8Request.h"
 #include "bindings/core/v8/V8Response.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FormDataBytesConsumer.h"
 #include "core/fetch/GlobalFetch.h"

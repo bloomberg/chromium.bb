@@ -6,7 +6,7 @@
 #define RemoteSecurityContext_h
 
 #include "core/CoreExport.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

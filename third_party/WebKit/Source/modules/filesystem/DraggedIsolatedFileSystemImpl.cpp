@@ -30,7 +30,7 @@
 
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "platform/Supplementable.h"
 #include "platform/weborigin/SecurityOrigin.h"

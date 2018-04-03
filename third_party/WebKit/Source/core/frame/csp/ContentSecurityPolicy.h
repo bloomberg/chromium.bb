@@ -31,8 +31,8 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/CoreExport.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/ExecutionContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"

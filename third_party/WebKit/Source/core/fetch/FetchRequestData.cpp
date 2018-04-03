@@ -4,7 +4,7 @@
 
 #include "core/fetch/FetchRequestData.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BlobBytesConsumer.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/BytesConsumer.h"

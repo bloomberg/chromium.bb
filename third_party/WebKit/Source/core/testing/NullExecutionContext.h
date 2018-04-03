@@ -7,9 +7,9 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/dom/SecurityContext.h"
 #include "core/dom/events/EventQueue.h"
+#include "core/execution_context/ExecutionContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"

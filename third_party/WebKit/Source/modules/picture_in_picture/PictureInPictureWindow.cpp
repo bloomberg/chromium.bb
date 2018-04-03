@@ -4,7 +4,7 @@
 
 #include "modules/picture_in_picture/PictureInPictureWindow.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 
 namespace blink {
 

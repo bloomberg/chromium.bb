@@ -31,7 +31,7 @@
 #define DocumentInit_h
 
 #include "core/CoreExport.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/SandboxFlags.h"
 #include "core/html/custom/V0CustomElementRegistrationContext.h"
 #include "platform/heap/Handle.h"

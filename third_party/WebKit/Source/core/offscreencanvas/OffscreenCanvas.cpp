@@ -11,7 +11,7 @@
 #include "core/css/OffscreenFontSelector.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 #include "core/html/canvas/CanvasContextCreationAttributesCore.h"

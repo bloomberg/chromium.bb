@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/V8PaymentHandlerResponse.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/payments/PaymentHandlerResponse.h"
 #include "modules/payments/PaymentHandlerUtils.h"

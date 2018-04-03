@@ -5,7 +5,7 @@
 #include "modules/credentialmanager/CredentialManagerProxy.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/bindings/ScriptState.h"
 #include "services/service_manager/public/cpp/interface_provider.h"

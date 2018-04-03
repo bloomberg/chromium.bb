@@ -28,7 +28,7 @@
 #include "core/css/StyleRuleCSSStyleDeclaration.h"
 #include "core/css/cssom/DeclaredStylePropertyMap.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {

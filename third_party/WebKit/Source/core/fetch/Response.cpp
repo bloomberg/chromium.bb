@@ -15,7 +15,7 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BlobBytesConsumer.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FormDataBytesConsumer.h"

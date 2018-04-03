@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/Iterator.h"
+#include "core/execution_context/ExecutionContext.h"
 
 namespace blink {
 

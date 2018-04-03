@@ -6,7 +6,7 @@
 #define RemoteFrame_h
 
 #include "core/CoreExport.h"
-#include "core/dom/RemoteSecurityContext.h"
+#include "core/execution_context/RemoteSecurityContext.h"
 #include "core/frame/Frame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "public/platform/WebFocusType.h"

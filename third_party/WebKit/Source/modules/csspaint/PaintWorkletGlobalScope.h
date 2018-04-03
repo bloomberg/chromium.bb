@@ -6,7 +6,7 @@
 #define PaintWorkletGlobalScope_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletPendingGeneratorRegistry.h"

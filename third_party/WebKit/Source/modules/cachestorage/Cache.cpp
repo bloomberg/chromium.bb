@@ -16,7 +16,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FetchDataLoader.h"
 #include "core/fetch/Request.h"

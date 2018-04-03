@@ -16,7 +16,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/page/FocusController.h"
 #include "core/testing/PageTestBase.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"

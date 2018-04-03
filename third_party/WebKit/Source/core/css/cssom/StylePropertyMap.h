@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "bindings/core/v8/css_style_value_or_string.h"
 #include "core/css/cssom/StylePropertyMapReadOnly.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 
 namespace blink {
 

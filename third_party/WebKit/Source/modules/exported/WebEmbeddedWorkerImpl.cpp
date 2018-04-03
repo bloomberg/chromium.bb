@@ -32,7 +32,7 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"

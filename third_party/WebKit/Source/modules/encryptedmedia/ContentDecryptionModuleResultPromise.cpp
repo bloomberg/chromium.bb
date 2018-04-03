@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringBuilder.h"

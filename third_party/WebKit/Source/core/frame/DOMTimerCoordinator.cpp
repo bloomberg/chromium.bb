@@ -4,10 +4,10 @@
 
 #include "core/frame/DOMTimerCoordinator.h"
 
-#include "core/dom/ExecutionContext.h"
-#include "core/frame/DOMTimer.h"
 #include <algorithm>
 #include <memory>
+#include "core/execution_context/ExecutionContext.h"
+#include "core/frame/DOMTimer.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 
 #include <memory>
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "public/platform/TaskType.h"
 #include "third_party/skia/include/core/SkImage.h"
 

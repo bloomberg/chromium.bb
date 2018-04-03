@@ -7,7 +7,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "core/dom/AbortSignal.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "core/fetch/Request.h"
 #include "core/fetch/Response.h"

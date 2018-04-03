@@ -30,7 +30,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"

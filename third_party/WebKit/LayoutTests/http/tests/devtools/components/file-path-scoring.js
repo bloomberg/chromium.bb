@@ -32,8 +32,8 @@
     }
 
     runQuery(
-        ['svg/SVGTextRunRenderingContext.cpp', 'dom/ExecutionContext.cpp', 'testing/NullExecutionContext.cpp'],
-        'execontext', 'dom/ExecutionContext.cpp');
+        ['svg/SVGTextRunRenderingContext.cpp', 'execution_context/ExecutionContext.cpp', 'testing/NullExecutionContext.cpp'],
+        'execontext', 'execution_context/ExecutionContext.cpp');
 
     TestRunner.completeTest();
   }

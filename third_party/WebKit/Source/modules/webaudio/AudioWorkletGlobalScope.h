@@ -6,7 +6,7 @@
 #define AudioWorkletGlobalScope_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioParamDescriptor.h"

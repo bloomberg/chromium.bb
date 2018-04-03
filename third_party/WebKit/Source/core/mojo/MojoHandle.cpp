@@ -5,7 +5,7 @@
 #include "core/mojo/MojoHandle.h"
 
 #include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/mojo/MojoCreateSharedBufferResult.h"
 #include "core/mojo/MojoDiscardDataOptions.h"
 #include "core/mojo/MojoDuplicateBufferHandleOptions.h"

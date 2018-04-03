@@ -6,8 +6,8 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
-#include "core/dom/SecurityContext.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"

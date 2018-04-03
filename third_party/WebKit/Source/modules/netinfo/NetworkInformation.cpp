@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/EventTargetModules.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/WTFString.h"

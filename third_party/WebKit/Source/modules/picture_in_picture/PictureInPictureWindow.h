@@ -5,7 +5,7 @@
 #ifndef PictureInPictureWindow_h
 #define PictureInPictureWindow_h
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 
