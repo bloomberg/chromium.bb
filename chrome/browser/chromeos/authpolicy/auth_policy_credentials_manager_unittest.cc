@@ -184,4 +184,24 @@ TEST_F(AuthPolicyCredentialsManagerTest, ShowDifferentNotifications) {
   EXPECT_EQ(0, GetNumberOfNotifications());
 }
 
+// Tests invalid TGT status does not force online signin but still shows
+// a notification.
+TEST_F(AuthPolicyCredentialsManagerTest, InvalidTGTDoesntForceOnlineSignin) {
+  fake_auth_policy_client()->set_tgt_status(
+      authpolicy::ActiveDirectoryUserStatus::TGT_EXPIRED);
+  EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), false));
+  CallGetUserStatusAndWait();
+  EXPECT_EQ(1, GetNumberOfNotifications());
+  CancelNotificationById(IDS_ACTIVE_DIRECTORY_REFRESH_AUTH_TOKEN);
+  EXPECT_EQ(0, GetNumberOfNotifications());
+}
+
+// Tests successfull case does not show any notification and does not force
+// online signin.
+TEST_F(AuthPolicyCredentialsManagerTest, Success_NoNotifications) {
+  EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), false));
+  CallGetUserStatusAndWait();
+  EXPECT_EQ(0, GetNumberOfNotifications());
+}
+
 }  // namespace chromeos

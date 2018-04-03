@@ -202,28 +202,28 @@ void AuthPolicyCredentialsManager::OnGetUserStatusCallback(
     UpdateDisplayAndGivenName(user_status.account_info());
   }
 
-  // user_status.password_status() is missing if the TGT is invalid.
-  bool password_ok = false;
+  // user_status.password_status() is missing if the TGT is invalid or device is
+  // offline.
+  bool force_online_signin = false;
   if (user_status.has_password_status()) {
     switch (user_status.password_status()) {
       case authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID:
-        password_ok = true;
         break;
       case authpolicy::ActiveDirectoryUserStatus::PASSWORD_EXPIRED:
         ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED);
+        force_online_signin = true;
         break;
       case authpolicy::ActiveDirectoryUserStatus::PASSWORD_CHANGED:
         ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_CHANGED);
+        force_online_signin = true;
         break;
     }
   }
 
   // user_status.tgt_status() is always present.
-  bool tgt_ok = false;
   DCHECK(user_status.has_tgt_status());
   switch (user_status.tgt_status()) {
     case authpolicy::ActiveDirectoryUserStatus::TGT_VALID:
-      tgt_ok = true;
       break;
     case authpolicy::ActiveDirectoryUserStatus::TGT_EXPIRED:
     case authpolicy::ActiveDirectoryUserStatus::TGT_NOT_FOUND:
@@ -231,8 +231,8 @@ void AuthPolicyCredentialsManager::OnGetUserStatusCallback(
       break;
   }
 
-  const bool ok = password_ok && tgt_ok;
-  user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id_, !ok);
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id_,
+                                                          force_online_signin);
 }
 
 void AuthPolicyCredentialsManager::GetUserKerberosFiles() {
