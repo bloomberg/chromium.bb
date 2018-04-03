@@ -13,8 +13,8 @@
 // at runtime. Disabling at compile-time is always preferred.
 // Example:
 // - (void)testFoo
-// if (base::ios::IsRunningOnIOS10OrLater()) {
-//   EARL_GREY_TEST_DISABLED(@"Disabled on iOS 10.");
+// if (IsIPadIdiom()) {
+//   EARL_GREY_TEST_DISABLED(@"Disabled on iPad.");
 // }
 #define EARL_GREY_TEST_DISABLED(message)                                \
   while (true) {                                                        \
@@ -29,8 +29,8 @@
 // Disabling at compile-time is always preferred.
 // Example:
 // - (void)testFoo
-// if (base::ios::IsRunningOnIOS10OrLater()) {
-//   EARL_GREY_TEST_SKIPPED(@"Test not supported on iOS 10.");
+// if (IsIPadIdiom()) {
+//   EARL_GREY_TEST_SKIPPED(@"Test not supported on iPad.");
 // }
 #define EARL_GREY_TEST_SKIPPED(message)                                \
   while (true) {                                                       \
