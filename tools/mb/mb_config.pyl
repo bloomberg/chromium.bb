@@ -126,11 +126,10 @@
       'CrWinClngLLD64dbg': 'clang_tot_full_symbols_shared_debug_use_lld',
       'CrWinClngLLDdbg': 'clang_tot_full_symbols_shared_debug_use_lld_x86',
       'linux-win_cross-rel': 'clang_tot_win_release_cross',
-      'ToTAndroid': 'android_clang_tot_release',
+      'ToTAndroid': 'android_clang_tot_release_minimal_symbols',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroidASan': 'android_clang_tot_asan',
       'ToTAndroid (dbg)': 'android_clang_tot_dbg',
-      'ToTAndroid': 'android_clang_tot_release',
       'ToTAndroidCFI': 'android_clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
@@ -812,10 +811,6 @@
       'android_without_codecs', 'clang_tot', 'shared', 'debug',
     ],
 
-    'android_clang_tot_release': [
-      'android_without_codecs', 'clang_tot', 'release',
-    ],
-
     'android_clang_tot_release_arm64': [
       'android_without_codecs', 'clang_tot', 'release', 'arm64',
     ],
@@ -962,6 +957,11 @@
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols',
       'strip_debug_info',
+    ],
+
+    'android_clang_tot_release_minimal_symbols': [
+      'android', 'release', 'static', 'minimal_symbols',
+      'strip_debug_info', 'clang_tot',
     ],
 
     'android_release_bot_minimal_symbols_arm64': [
