@@ -70,23 +70,6 @@ class FunctionForScriptPromiseTest : public ScriptFunction {
   ScriptValue* output_;
 };
 
-class ScriptPromiseTestTryCatchScope {
- public:
-  explicit ScriptPromiseTestTryCatchScope(v8::Isolate* isolate)
-      : isolate_(isolate), trycatch_(isolate) {}
-
-  ~ScriptPromiseTestTryCatchScope() {
-    // Execute all pending microtasks
-    v8::MicrotasksScope::PerformCheckpoint(isolate_);
-  }
-
-  bool HasCaught() const { return trycatch_.HasCaught(); }
-
- private:
-  v8::Isolate* isolate_;
-  v8::TryCatch trycatch_;
-};
-
 String ToString(v8::Local<v8::Context> context, const ScriptValue& value) {
   return ToCoreString(value.V8Value()->ToString(context).ToLocalChecked());
 }
@@ -99,16 +82,15 @@ Vector<String> ToStringArray(v8::Isolate* isolate, const ScriptValue& value) {
 
 TEST(ScriptPromiseTest, constructFromNonPromise) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
+  v8::TryCatch try_catch(scope.GetIsolate());
   ScriptPromise promise(scope.GetScriptState(),
                         v8::Undefined(scope.GetIsolate()));
-  ASSERT_TRUE(try_catch_scope.HasCaught());
+  ASSERT_TRUE(try_catch.HasCaught());
   ASSERT_TRUE(promise.IsEmpty());
 }
 
 TEST(ScriptPromiseTest, thenResolve) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   Resolver resolver(scope.GetScriptState());
   ScriptPromise promise = resolver.Promise();
   ScriptValue on_fulfilled, on_rejected;
@@ -135,7 +117,6 @@ TEST(ScriptPromiseTest, thenResolve) {
 
 TEST(ScriptPromiseTest, resolveThen) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   Resolver resolver(scope.GetScriptState());
   ScriptPromise promise = resolver.Promise();
   ScriptValue on_fulfilled, on_rejected;
@@ -157,7 +138,6 @@ TEST(ScriptPromiseTest, resolveThen) {
 
 TEST(ScriptPromiseTest, thenReject) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   Resolver resolver(scope.GetScriptState());
   ScriptPromise promise = resolver.Promise();
   ScriptValue on_fulfilled, on_rejected;
@@ -184,7 +164,6 @@ TEST(ScriptPromiseTest, thenReject) {
 
 TEST(ScriptPromiseTest, rejectThen) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   Resolver resolver(scope.GetScriptState());
   ScriptPromise promise = resolver.Promise();
   ScriptValue on_fulfilled, on_rejected;
@@ -206,7 +185,6 @@ TEST(ScriptPromiseTest, rejectThen) {
 
 TEST(ScriptPromiseTest, castPromise) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptPromise promise = Resolver(scope.GetScriptState()).Promise();
   ScriptPromise new_promise =
       ScriptPromise::Cast(scope.GetScriptState(), promise.V8Value());
@@ -217,7 +195,6 @@ TEST(ScriptPromiseTest, castPromise) {
 
 TEST(ScriptPromiseTest, castNonPromise) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue on_fulfilled1, on_fulfilled2, on_rejected1, on_rejected2;
 
   ScriptValue value = ScriptValue(scope.GetScriptState(),
@@ -257,7 +234,6 @@ TEST(ScriptPromiseTest, castNonPromise) {
 
 TEST(ScriptPromiseTest, reject) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue on_fulfilled, on_rejected;
 
   ScriptValue value = ScriptValue(scope.GetScriptState(),
@@ -283,7 +259,6 @@ TEST(ScriptPromiseTest, reject) {
 
 TEST(ScriptPromiseTest, rejectWithExceptionState) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue on_fulfilled, on_rejected;
   ScriptPromise promise = ScriptPromise::RejectWithDOMException(
       scope.GetScriptState(),
@@ -306,7 +281,6 @@ TEST(ScriptPromiseTest, rejectWithExceptionState) {
 
 TEST(ScriptPromiseTest, allWithEmptyPromises) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue on_fulfilled, on_rejected;
 
   ScriptPromise promise =
@@ -330,7 +304,6 @@ TEST(ScriptPromiseTest, allWithEmptyPromises) {
 
 TEST(ScriptPromiseTest, allWithResolvedPromises) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue on_fulfilled, on_rejected;
 
   Vector<ScriptPromise> promises;
@@ -361,7 +334,6 @@ TEST(ScriptPromiseTest, allWithResolvedPromises) {
 
 TEST(ScriptPromiseTest, allWithRejectedPromise) {
   V8TestingScope scope;
-  ScriptPromiseTestTryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue on_fulfilled, on_rejected;
 
   Vector<ScriptPromise> promises;

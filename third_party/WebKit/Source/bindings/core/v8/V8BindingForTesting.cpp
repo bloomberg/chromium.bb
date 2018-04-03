@@ -69,6 +69,11 @@ Document& V8TestingScope::GetDocument() {
 }
 
 V8TestingScope::~V8TestingScope() {
+  // Execute all pending microtasks.
+  // The document can be manually shut down here, so we cannot use GetIsolate()
+  // which relies on the active document.
+  v8::MicrotasksScope::PerformCheckpoint(GetContext()->GetIsolate());
+
   // TODO(yukishiino): We put this statement here to clear an exception from
   // the isolate.  Otherwise, the leak detector complains.  Really mysterious
   // hack.
