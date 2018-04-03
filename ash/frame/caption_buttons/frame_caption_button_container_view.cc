@@ -14,10 +14,12 @@
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/event_sink.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -423,6 +425,19 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     } else {
       RecordAction(UserMetricsAction("CloseButton_Clk"));
     }
+  } else if (sender == menu_button_) {
+    // Send up event as well as down event as ARC++ clients expect this
+    // sequence.
+    aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+    ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_APPS,
+                                 ui::EF_NONE);
+    ignore_result(root_window->GetHost()->event_sink()->OnEventFromSource(
+        &press_key_event));
+    ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED, ui::VKEY_APPS,
+                                   ui::EF_NONE);
+    ignore_result(root_window->GetHost()->event_sink()->OnEventFromSource(
+        &release_key_event));
+    // TODO(oshima): Add metrics
   }
 }
 
