@@ -6971,8 +6971,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   RD_STATS best_rd_stats, best_rd_stats_y, best_rd_stats_uv;
   MB_MODE_INFO base_mbmi, best_mbmi;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
-  int interintra_allowed =
-      cm->seq_params.enable_interintra_compound && is_interintra_allowed(mbmi);
+  int interintra_allowed = cm->seq_params.enable_interintra_compound &&
+                           is_interintra_allowed(mbmi) && mbmi->compound_idx;
   int pts0[SAMPLES_ARRAY_SIZE], pts_inref0[SAMPLES_ARRAY_SIZE];
   int total_samples;
 
@@ -7534,7 +7534,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int64_t early_terminate = 0;
 
   int comp_idx;
-  const int search_jnt_comp = is_comp_pred & cm->seq_params.enable_jnt_comp;
+  const int search_jnt_comp = is_comp_pred & cm->seq_params.enable_jnt_comp &
+                              (mbmi->mode != GLOBAL_GLOBALMV);
   // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
   for (comp_idx = !search_jnt_comp; comp_idx < 2; ++comp_idx) {
     compmode_interinter_cost = 0;
@@ -7863,6 +7864,13 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
                       &tmp_dist, &skip_txfm_sb, &skip_sse_sb);
       rd = RDCOST(x->rdmult, rs + tmp_rate, tmp_dist);
+
+      // if 1/2 model rd is larger than best_rd in jnt_comp mode,
+      // use jnt_comp mode, save additional search
+      if ((rd >> 1) > best_rd) {
+        restore_dst_buf(xd, orig_dst, num_planes);
+        continue;
+      }
     }
 
     if (!is_comp_pred)
