@@ -16,6 +16,7 @@
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/contrib/core/macros.h"
+#include "libassistant/shared/public/conversation_state_listener.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace assistant_client {
@@ -30,7 +31,8 @@ namespace assistant {
 class AssistantManagerServiceImpl
     : public AssistantManagerService,
       public ::chromeos::assistant::action::AssistantActionObserver,
-      public AssistantEventObserver {
+      public AssistantEventObserver,
+      public assistant_client::ConversationStateListener {
  public:
   explicit AssistantManagerServiceImpl(mojom::AudioInputPtr audio_input);
   ~AssistantManagerServiceImpl() override;
@@ -55,6 +57,12 @@ class AssistantManagerServiceImpl
   // AssistantEventObserver overrides:
   void OnSpeechLevelUpdated(float speech_level) override;
 
+  // assistant_client::ConversationStateListener overrides:
+  void OnRecognitionStateChanged(
+      assistant_client::ConversationStateListener::RecognitionState state,
+      const assistant_client::ConversationStateListener::RecognitionResult&
+          recognition_result) override;
+
  private:
   void StartAssistantInternal(const std::string& access_token,
                               const std::string& arc_version);
@@ -65,6 +73,10 @@ class AssistantManagerServiceImpl
       const std::vector<std::string>& suggestions);
   void OnShowTextOnMainThread(const std::string& text);
   void OnOpenUrlOnMainThread(const std::string& url);
+  void OnRecognitionStateChangedOnMainThread(
+      assistant_client::ConversationStateListener::RecognitionState state,
+      const assistant_client::ConversationStateListener::RecognitionResult&
+          recognition_result);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
 
   bool running_ = false;

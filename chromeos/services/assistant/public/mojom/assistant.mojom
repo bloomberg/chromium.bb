@@ -34,6 +34,19 @@ interface AssistantEventSubscriber {
   // Assistant got open URL response from server.
   OnOpenUrlResponse(url.mojom.Url url);
 
+  // Assistant speech recognition has started.
+  OnSpeechRecognitionStarted();
+
+  // Assistant speech recognition intermediate result is available.
+  OnSpeechRecognitionIntermediateResult(string high_confidence_text,
+                                        string low_confidence_text);
+
+  // Assistant speech recognition detected end of utterance.
+  OnSpeechRecognitionEndOfUtterance();
+
+  // Assistant speech recognition final result is available.
+  OnSpeechRecognitionFinalResult(string final_result);
+
   // Assistant got an instantaneous speech level update in dB.
   OnSpeechLevelUpdated(float speech_level);
 };

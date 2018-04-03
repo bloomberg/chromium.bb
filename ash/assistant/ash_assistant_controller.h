@@ -26,6 +26,12 @@ class AshAssistantController
   void OnSuggestionsResponse(const std::vector<std::string>& response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url) override;
+  void OnSpeechRecognitionStarted() override;
+  void OnSpeechRecognitionIntermediateResult(
+      const std::string& high_confidence_text,
+      const std::string& low_confidence_text) override;
+  void OnSpeechRecognitionEndOfUtterance() override;
+  void OnSpeechRecognitionFinalResult(const std::string& final_result) override;
 
   // Assistant got a speech level update in dB.
   void OnSpeechLevelUpdated(float speech_level) override;

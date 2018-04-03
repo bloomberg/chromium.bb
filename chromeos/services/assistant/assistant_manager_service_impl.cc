@@ -32,7 +32,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           UnwrapAssistantManagerInternal(assistant_manager_.get())),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  assistant_manager_->AddConversationStateListener(this);
+}
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
@@ -106,6 +108,17 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
                      weak_factory_.GetWeakPtr(), url));
 }
 
+void AssistantManagerServiceImpl::OnRecognitionStateChanged(
+    assistant_client::ConversationStateListener::RecognitionState state,
+    const assistant_client::ConversationStateListener::RecognitionResult&
+        recognition_result) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread,
+          weak_factory_.GetWeakPtr(), state, recognition_result));
+}
+
 void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
     const float speech_level) {
   main_thread_task_runner_->PostTask(
@@ -171,6 +184,38 @@ void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
     const std::string& url) {
   subscribers_.ForAllPtrs(
       [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
+}
+
+void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
+    assistant_client::ConversationStateListener::RecognitionState state,
+    const assistant_client::ConversationStateListener::RecognitionResult&
+        recognition_result) {
+  switch (state) {
+    case assistant_client::ConversationStateListener::RecognitionState::STARTED:
+      subscribers_.ForAllPtrs(
+          [](auto* ptr) { ptr->OnSpeechRecognitionStarted(); });
+      break;
+    case assistant_client::ConversationStateListener::RecognitionState::
+        INTERMEDIATE_RESULT:
+      subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
+        ptr->OnSpeechRecognitionIntermediateResult(
+            recognition_result.high_confidence_text,
+            recognition_result.low_confidence_text);
+      });
+      break;
+    case assistant_client::ConversationStateListener::RecognitionState::
+        END_OF_UTTERANCE:
+      subscribers_.ForAllPtrs(
+          [](auto* ptr) { ptr->OnSpeechRecognitionEndOfUtterance(); });
+      break;
+    case assistant_client::ConversationStateListener::RecognitionState::
+        FINAL_RESULT:
+      subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
+        ptr->OnSpeechRecognitionFinalResult(
+            recognition_result.recognized_speech);
+      });
+      break;
+  }
 }
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(

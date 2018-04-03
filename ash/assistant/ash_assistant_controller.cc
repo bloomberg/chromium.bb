@@ -47,6 +47,29 @@ void AshAssistantController::OnTextResponse(const std::string& response) {
   NOTIMPLEMENTED();
 }
 
+void AshAssistantController::OnSpeechRecognitionStarted() {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
+void AshAssistantController::OnSpeechRecognitionIntermediateResult(
+    const std::string& high_confidence_text,
+    const std::string& low_confidence_text) {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
+void AshAssistantController::OnSpeechRecognitionEndOfUtterance() {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
+void AshAssistantController::OnSpeechRecognitionFinalResult(
+    const std::string& final_result) {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
 void AshAssistantController::OnSpeechLevelUpdated(float speech_level) {
   // TODO(dmblack): Handle.
   NOTIMPLEMENTED();
