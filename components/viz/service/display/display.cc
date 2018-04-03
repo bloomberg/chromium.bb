@@ -595,7 +595,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     if (!pass->filters.IsEmpty() || !pass->background_filters.IsEmpty()) {
       for (auto* const quad : pass->quad_list) {
         total_quad_area_shown_wo_occlusion_px +=
-            quad->visible_rect.height() * quad->visible_rect.width();
+            quad->visible_rect.size().GetCheckedArea();
       }
       continue;
     }
@@ -605,7 +605,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     if (pass != frame->render_pass_list.back()) {
       for (auto* const quad : pass->quad_list) {
         total_quad_area_shown_wo_occlusion_px +=
-            quad->visible_rect.height() * quad->visible_rect.width();
+            quad->visible_rect.size().GetCheckedArea();
       }
       continue;
     }
@@ -614,7 +614,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     gfx::Rect occlusion_in_quad_content_space;
     for (auto quad = pass->quad_list.begin(); quad != quad_list_end;) {
       total_quad_area_shown_wo_occlusion_px +=
-          quad->visible_rect.height() * quad->visible_rect.width();
+          quad->visible_rect.size().GetCheckedArea();
 
       // Skip quad if it is a RenderPassDrawQuad because RenderPassDrawQuad is a
       // special type of DrawQuad where the visible_rect of shared quad state is
@@ -693,8 +693,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         // Case 1: for simple transforms (scale or translation), define the
         // occlusion region in the quad content space. If the |quad| is not
         // shown on the screen, then remove |quad| from the compositor frame.
-        total_area_saved_in_px +=
-            quad->visible_rect.height() * quad->visible_rect.width();
+        total_area_saved_in_px += quad->visible_rect.size().GetCheckedArea();
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
 
       } else if (occlusion_in_quad_content_space.Intersects(
@@ -706,7 +705,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         quad->visible_rect.Subtract(occlusion_in_quad_content_space);
         if (origin_rect != quad->visible_rect) {
           origin_rect.Subtract(quad->visible_rect);
-          total_area_saved_in_px += origin_rect.height() * origin_rect.width();
+          total_area_saved_in_px += origin_rect.size().GetCheckedArea();
         }
         ++quad;
       } else if (occlusion_in_quad_content_space.IsEmpty() &&
@@ -716,14 +715,14 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         // Case 3: for non simple transforms, define the occlusion region in
         // target space. If the |quad| is not shown on the screen, then remove
         // |quad| from the compositor frame.
-        total_area_saved_in_px +=
-            quad->visible_rect.height() * quad->visible_rect.width();
+        total_area_saved_in_px += quad->visible_rect.size().GetCheckedArea();
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
       } else {
         ++quad;
       }
     }
   }
+
   UMA_HISTOGRAM_PERCENTAGE(
       "Compositing.Display.Draw.Occlusion.Percentage.Saved",
       total_quad_area_shown_wo_occlusion_px.ValueOrDefault(0) == 0

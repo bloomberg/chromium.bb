@@ -3101,9 +3101,9 @@ TEST_F(DisplayTest, DrawOcclusionWithLargeDrawQuad) {
   display_->Initialize(&client, manager_.surface_manager());
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
-  // The size of this DrawQuad will be 19770x97790 > 2^32 (uint32_t.max())
+  // The size of this DrawQuad will be 237790x237790 > 2^32 (uint32_t.max())
   // which caused the integer overflow in the bug.
-  gfx::Rect rect1(197790, 97790);
+  gfx::Rect rect1(237790, 237790);
 
   bool is_clipped = false;
   bool are_contents_opaque = true;
