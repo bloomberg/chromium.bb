@@ -34,7 +34,7 @@ using message_center::Notification;
 
 namespace {
 
-const char kLaunchId[] = "0|Default|0|https://example.com/|notification_id";
+const char kLaunchId[] = "0|0|Default|0|https://example.com/|notification_id";
 const char kOrigin[] = "https://www.google.com/";
 const char kNotificationId[] = "id";
 const char kProfileId[] = "Default";
@@ -60,6 +60,7 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
     notification->set_renotify(renotify);
     MockNotificationImageRetainer image_retainer;
     NotificationLaunchId launch_id(kLaunchId);
+    DCHECK(launch_id.is_valid());
     std::unique_ptr<NotificationTemplateBuilder> builder =
         NotificationTemplateBuilder::Build(&image_retainer, launch_id,
                                            kProfileId, *notification);
@@ -142,7 +143,7 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
   // Register a single notification.
   base::string16 tag = base::UintToString16(base::Hash(kNotificationId));
   MockIToastNotification item1(
-      L"<toast launch=\"0|Default|0|https://foo.com/|id\"></toast>", tag);
+      L"<toast launch=\"0|0|Default|0|https://foo.com/|id\"></toast>", tag);
   notifications.push_back(&item1);
 
   // Request this notification with renotify true (should not be suppressed).
