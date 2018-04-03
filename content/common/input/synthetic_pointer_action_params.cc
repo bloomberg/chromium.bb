@@ -27,6 +27,10 @@ unsigned SyntheticPointerActionParams::GetWebMouseEventModifier(
       return blink::WebMouseEvent::kMiddleButtonDown;
     case SyntheticPointerActionParams::Button::RIGHT:
       return blink::WebMouseEvent::kRightButtonDown;
+    case SyntheticPointerActionParams::Button::BACK:
+      return blink::WebMouseEvent::kBackButtonDown;
+    case SyntheticPointerActionParams::Button::FORWARD:
+      return blink::WebMouseEvent::kForwardButtonDown;
   }
   NOTREACHED();
   return blink::WebMouseEvent::kNoModifiers;
@@ -43,6 +47,10 @@ SyntheticPointerActionParams::GetWebMouseEventButton(
       return blink::WebMouseEvent::Button::kMiddle;
     case SyntheticPointerActionParams::Button::RIGHT:
       return blink::WebMouseEvent::Button::kRight;
+    case SyntheticPointerActionParams::Button::BACK:
+      return blink::WebMouseEvent::Button::kBack;
+    case SyntheticPointerActionParams::Button::FORWARD:
+      return blink::WebMouseEvent::Button::kForward;
   }
   NOTREACHED();
   return blink::WebMouseEvent::Button::kNoButton;

@@ -33,7 +33,14 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     POINTER_ACTION_TYPE_MAX = IDLE
   };
 
-  enum class Button { LEFT, MIDDLE, RIGHT, BUTTON_MAX = RIGHT };
+  enum class Button {
+    LEFT,
+    MIDDLE,
+    RIGHT,
+    BACK,
+    FORWARD,
+    BUTTON_MAX = FORWARD
+  };
 
   SyntheticPointerActionParams();
   SyntheticPointerActionParams(PointerActionType action_type);

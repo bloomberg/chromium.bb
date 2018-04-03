@@ -970,8 +970,12 @@ bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
   // Get all the pointer actions from the user input and wrap them into a
   // SyntheticPointerActionListParams object.
   ActionsParser actions_parser(value.get());
-  if (!actions_parser.ParsePointerActionSequence())
+  if (!actions_parser.ParsePointerActionSequence()) {
+    // TODO(dtapuska): Throw an error here, some layout tests start
+    // failing when this is done though.
+    // args->ThrowTypeError(actions_parser.error_message());
     return false;
+  }
 
   if (!GetOptionalArg(args, &callback)) {
     args->ThrowError();
