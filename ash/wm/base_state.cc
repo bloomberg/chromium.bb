@@ -5,6 +5,7 @@
 #include "ash/wm/base_state.h"
 
 #include "ash/public/cpp/window_state_type.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_animation_types.h"
@@ -82,6 +83,58 @@ mojom::WindowStateType BaseState::GetStateForTransitionEvent(
     NOTREACHED() << "Can't get the state for Bounds event:" << event->type();
 #endif
   return mojom::WindowStateType::NORMAL;
+}
+
+// static
+void BaseState::CenterWindow(WindowState* window_state) {
+  if (!window_state->IsNormalOrSnapped())
+    return;
+  aura::Window* window = window_state->window();
+  if (window_state->IsSnapped()) {
+    gfx::Rect center_in_screen = display::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(window)
+                                     .work_area();
+    gfx::Size size = window_state->HasRestoreBounds()
+                         ? window_state->GetRestoreBoundsInScreen().size()
+                         : window->bounds().size();
+    center_in_screen.ClampToCenteredSize(size);
+    window_state->SetRestoreBoundsInScreen(center_in_screen);
+    window_state->Restore();
+  } else {
+    gfx::Rect center_in_parent =
+        screen_util::GetDisplayWorkAreaBoundsInParent(window);
+    center_in_parent.ClampToCenteredSize(window->bounds().size());
+    const wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, center_in_parent,
+                                   /*animate=*/true);
+    window_state->OnWMEvent(&event);
+  }
+  // Centering window is treated as if a user moved and resized the window.
+  window_state->set_bounds_changed_by_user(true);
+}
+
+// static
+void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
+  mojom::WindowStateType desired_snap_state =
+      event == WM_EVENT_CYCLE_SNAP_LEFT ? mojom::WindowStateType::LEFT_SNAPPED
+                                        : mojom::WindowStateType::RIGHT_SNAPPED;
+
+  if (window_state->CanSnap() &&
+      window_state->GetStateType() != desired_snap_state &&
+      window_state->window()->type() != aura::client::WINDOW_TYPE_PANEL) {
+    const wm::WMEvent event(desired_snap_state ==
+                                    mojom::WindowStateType::LEFT_SNAPPED
+                                ? wm::WM_EVENT_SNAP_LEFT
+                                : wm::WM_EVENT_SNAP_RIGHT);
+    window_state->OnWMEvent(&event);
+    return;
+  }
+
+  if (window_state->IsSnapped()) {
+    window_state->Restore();
+    return;
+  }
+  ::wm::AnimateWindow(window_state->window(),
+                      ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
 }
 
 void BaseState::UpdateMinimizedState(

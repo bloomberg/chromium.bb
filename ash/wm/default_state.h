@@ -47,8 +47,6 @@ class DefaultState : public BaseState {
   static void SetBounds(WindowState* window_state,
                         const SetBoundsEvent* bounds_event);
 
-  static void CenterWindow(WindowState* window_state);
-
   // Enters next state. This is used when the state moves from one to another
   // within the same desktop mode.
   void EnterToNextState(wm::WindowState* window_state,

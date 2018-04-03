@@ -349,6 +349,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   };
 
  private:
+  friend class BaseState;
   friend class DefaultState;
   friend class ash::wm::ClientControlledState;
   friend class ash::LockWindowState;
