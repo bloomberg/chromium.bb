@@ -755,6 +755,8 @@ void ThreadState::SetGCState(GCState gc_state) {
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
           gc_state_ == kPageNavigationGCScheduled ||
+          gc_state_ == kIncrementalMarkingStartScheduled ||
+          gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled);
       break;
     case kIncrementalMarkingStartScheduled:
@@ -781,6 +783,8 @@ void ThreadState::SetGCState(GCState gc_state) {
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
           gc_state_ == kIncrementalMarkingStartScheduled ||
+          gc_state_ == kIncrementalMarkingStepScheduled ||
+          gc_state_ == kIncrementalMarkingFinalizeScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
           gc_state_ == kPageNavigationGCScheduled);
       CompleteSweep();
