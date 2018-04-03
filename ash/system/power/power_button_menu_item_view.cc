@@ -16,6 +16,9 @@ namespace ash {
 
 namespace {
 
+// Color of the image icon.
+constexpr SkColor kItemIconColor = SkColorSetARGBMacro(0xFF, 0x20, 0x21, 0x24);
+
 // Color of the title of the label.
 constexpr SkColor kItemTitleColor = SkColorSetARGBMacro(0xFF, 0x5F, 0x63, 0x68);
 
@@ -27,10 +30,10 @@ constexpr int kTitleFontSizeDelta = -1;
 constexpr int kIconSize = 24;
 
 // Top padding of the image icon to the top of the item view.
-constexpr int kIconTopPadding = 24;
+constexpr int kIconTopPadding = 16;
 
 // Top padding of the label of title to the top of the item view.
-constexpr int kTitleTopPadding = 50;
+constexpr int kTitleTopPadding = 53;
 
 }  // namespace
 
@@ -42,7 +45,7 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
       icon_view_(new views::ImageView),
       title_(new views::Label) {
   SetPaintToLayer();
-  icon_view_->SetImage(gfx::CreateVectorIcon(icon, gfx::kChromeIconGrey));
+  icon_view_->SetImage(gfx::CreateVectorIcon(icon, kItemIconColor));
   AddChildView(icon_view_);
 
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
