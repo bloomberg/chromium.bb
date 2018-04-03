@@ -636,10 +636,10 @@ void VrTestContext::CycleOrigin() {
       // Do not show URL
       {GURL(), security_state::SecurityLevel::HTTP_SHOW_WARNING,
        &toolbar::kHttpIcon, base::string16(), false, false},
-      {GURL("file:///C:/path/filename"),
+      {GURL("file://very-very-very-long-file-hostname/path/path/path/path"),
        security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
        base::string16(), true, false},
-      {GURL("file:///C:/path/path/path/path/path/path/path/path"),
+      {GURL("file:///path/path/path/path/path/path/path/path/path"),
        security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
        base::string16(), true, false},
       // Elision-related cases.
