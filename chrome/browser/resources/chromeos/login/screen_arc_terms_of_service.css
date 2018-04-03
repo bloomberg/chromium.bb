@@ -90,6 +90,10 @@
   margin: 0;
 }
 
+#arc-tos-legacy .oobe-icon {
+  -webkit-margin-start: -36px;
+}
+
 #arc-tos-loading,
 #arc-tos-error {
   -webkit-align-items: center;

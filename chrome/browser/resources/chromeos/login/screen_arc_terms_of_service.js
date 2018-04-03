@@ -504,11 +504,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       Oobe.getInstance().headerHidden = true;
 
-      // Reload caption image in case it was not loaded during the
-      // initialization phase.
-      $('arc-tos-logo').src =
-          'https://play.google.com/about/images/play_logo.png';
-
       this.hideOverlay();
       // ToS content may be loaded before the page is shown. In that case,
       // height of ToS webview is not correctly caculated. Recaculate the
