@@ -72,7 +72,6 @@ views::Widget* CreateWidget(views::View* contents_view,
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
-  params.context = Shell::GetPrimaryRootWindow();
   params.bounds = bounds;
   widget->Init(params);
 

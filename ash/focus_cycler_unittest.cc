@@ -277,7 +277,6 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   test_widget_delegate.reset(new PanedWidgetDelegate(browser_widget.get()));
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
-  widget_params.context = CurrentContext();
   widget_params.delegate = test_widget_delegate.get();
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

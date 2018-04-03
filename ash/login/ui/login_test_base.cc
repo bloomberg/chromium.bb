@@ -53,7 +53,6 @@ std::unique_ptr<views::Widget> LoginTestBase::CreateWidgetWithContent(
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.context = CurrentContext();
   params.bounds = gfx::Rect(0, 0, 800, 800);
   params.delegate = new WidgetDelegate(content);
 

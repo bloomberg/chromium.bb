@@ -146,21 +146,10 @@ class ExtendedDesktopTest : public AshTestBase {
     Shell::Get()->cursor_manager()->ShowCursor();
   }
 
+  // TODO(jamescook): Switch to AshTestBase::CreateTestWidget().
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
-    return CreateTestWidgetWithParentAndContext(nullptr, CurrentContext(),
-                                                bounds, false);
-  }
-
-  views::Widget* CreateTestWidgetWithParentAndContext(views::Widget* parent,
-                                                      gfx::NativeView context,
-                                                      const gfx::Rect& bounds,
-                                                      bool child) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-    if (parent)
-      params.parent = parent->GetNativeView();
-    params.context = context;
     params.bounds = bounds;
-    params.child = child;
     views::Widget* widget = new views::Widget;
     widget->Init(params);
     widget->Show();

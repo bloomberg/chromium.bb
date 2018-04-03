@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 
 #include "ash/shell.h"
+#include "ash/test/ash_test_helper.h"
 
 namespace ash {
 
@@ -18,10 +18,8 @@ void AshTestViewsDelegate::OnBeforeWidgetInit(
     views::internal::NativeWidgetDelegate* delegate) {
   TestViewsDelegate::OnBeforeWidgetInit(params, delegate);
 
-  if (!params->parent && !params->context && ash::Shell::HasInstance()) {
-    // If the window has neither a parent nor a context add to the root.
-    params->parent = ash::Shell::Get()->GetPrimaryRootWindow();
-  }
+  if (!params->parent && !params->context && ash::Shell::HasInstance())
+    params->context = Shell::GetRootWindowForNewWindows();
 }
 
 void AshTestViewsDelegate::NotifyAccessibilityEvent(

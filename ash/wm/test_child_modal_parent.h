@@ -28,9 +28,9 @@ class TestChildModalParent : public views::WidgetDelegateView,
                              public views::WidgetObserver {
  public:
   // Creates the test window.
-  static void Create(aura::Window* context);
+  static void Create();
 
-  explicit TestChildModalParent(aura::Window* context);
+  TestChildModalParent();
   ~TestChildModalParent() override;
 
   void ShowChild();

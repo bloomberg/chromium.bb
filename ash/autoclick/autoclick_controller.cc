@@ -146,7 +146,6 @@ views::Widget* AutoclickControllerImpl::CreateAutoclickRingWidget(
   params.accept_events = false;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.context = root_window;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
