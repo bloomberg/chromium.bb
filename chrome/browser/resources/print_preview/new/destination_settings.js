@@ -12,6 +12,9 @@ Polymer({
     /** @type {?print_preview.DestinationStore} */
     destinationStore: Object,
 
+    /** @type {?print_preview.InvitationStore} */
+    invitationStore: Object,
+
     /** @type {!Array<!print_preview.RecentDestination>} */
     recentDestinations: Array,
 
@@ -60,6 +63,7 @@ Polymer({
   /** @private */
   onChangeButtonClick_: function() {
     this.destinationStore.startLoadAllDestinations();
+    this.invitationStore.startLoadingInvitations();
     const dialog = this.$.destinationDialog.get();
     // This async() call is a workaround to prevent a DCHECK - see
     // https://crbug.com/804047.

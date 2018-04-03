@@ -78,6 +78,12 @@
       <structure name="IDR_PRINT_PREVIEW_DATA_INVITATION_JS"
                  file="data/invitation.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_DATA_INVITATION_STORE_HTML"
+                 file="data/invitation_store.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_DATA_INVITATION_STORE_JS"
+                 file="data/invitation_store.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_DATA_MARGINS_HTML"
                  file="data/margins.html"
                  type="chrome_html" />

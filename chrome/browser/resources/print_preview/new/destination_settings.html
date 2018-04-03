@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
+<link rel="import" href="../data/invitation_store.html">
 <link rel="import" href="../data/user_info.html">
 <link rel="import" href="button_css.html">
 <link rel="import" href="destination_dialog.html">
@@ -92,6 +93,7 @@
       <template>
         <print-preview-destination-dialog
             destination-store="[[destinationStore]]"
+            invitation-store="[[invitationStore]]"
             recent-destinations="[[recentDestinations]]"
             user-info="{{userInfo}}"
             show-cloud-print-promo="{{showCloudPrintPromo_}}">

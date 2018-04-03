@@ -14,6 +14,18 @@ Polymer({
       observer: 'onDestinationStoreSet_',
     },
 
+    /** @type {?print_preview.InvitationStore} */
+    invitationStore: {
+      type: Object,
+      observer: 'onInvitationStoreSet_',
+    },
+
+    /** @private {?print_preview.Invitation} */
+    invitation_: {
+      type: Object,
+      value: null,
+    },
+
     /** @type {!print_preview.UserInfo} */
     userInfo: {
       type: Object,
@@ -78,7 +90,7 @@ Polymer({
     this.tracker_.add(
         assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
     this.tracker_.add(
-        assert(this.$$('.cloudprint-promo > .close-button')), 'click',
+        assert(this.$$('#cloudprintPromo > .close-button')), 'click',
         this.onCloudPrintPromoDismissed_.bind(this));
   },
 
@@ -93,7 +105,26 @@ Polymer({
     this.tracker_.add(
         destinationStore,
         print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
-        this.updateDestinations_.bind(this));
+        this.onDestinationSearchDone_.bind(this));
+  },
+
+  /** @private */
+  onInvitationStoreSet_: function() {
+    const invitationStore = assert(this.invitationStore);
+    this.tracker_.add(
+        invitationStore,
+        print_preview.InvitationStore.EventType.INVITATION_SEARCH_DONE,
+        this.updateInvitations_.bind(this));
+    this.tracker_.add(
+        invitationStore,
+        print_preview.InvitationStore.EventType.INVITATION_PROCESSED,
+        this.updateInvitations_.bind(this));
+  },
+
+  /** @private */
+  onDestinationSearchDone_: function() {
+    this.updateDestinations_();
+    this.invitationStore.startLoadingInvitations();
   },
 
   /** @private */
@@ -179,6 +210,66 @@ Polymer({
     this.showCloudPrintPromo = false;
   },
 
+  /**
+   * Updates printer sharing invitations UI.
+   * @private
+   */
+  updateInvitations_: function() {
+    const invitations = this.userInfo.activeUser ?
+        this.invitationStore.invitations(this.userInfo.activeUser) :
+        [];
+    this.invitation_ = invitations.length > 0 ? invitations[0] : null;
+  },
+
+  /**
+   * @return {string} The text show show on the "accept" button in the
+   *     invitation promo. 'Accept', 'Accept for group', or empty if there is no
+   *     invitation.
+   * @private
+   */
+  getAcceptButtonText_: function() {
+    if (!this.invitation_)
+      return '';
+
+    return this.invitation_.asGroupManager ? this.i18n('acceptForGroup') :
+                                             this.i18n('accept');
+  },
+
+  /**
+   * @return {string} The formatted text to show for the invitation promo.
+   * @private
+   */
+  getInvitationText_: function() {
+    if (!this.invitation_)
+      return '';
+
+    if (this.invitation_.asGroupManager) {
+      return this.i18nAdvanced('groupPrinterSharingInviteText', {
+        substitutions: [
+          this.invitation_.sender, this.invitation_.destination.displayName,
+          this.invitation_.receiver
+        ]
+      });
+    }
+
+    return this.i18nAdvanced('printerSharingInviteText', {
+      substitutions:
+          [this.invitation_.sender, this.invitation_.destination.displayName]
+    });
+  },
+
+  /** @private */
+  onInvitationAcceptClick_: function() {
+    this.invitationStore.processInvitation(assert(this.invitation_), true);
+    this.updateInvitations_();
+  },
+
+  /** @private */
+  onInvitationRejectClick_: function() {
+    this.invitationStore.processInvitation(assert(this.invitation_), false);
+    this.updateInvitations_();
+  },
+
   /** @private */
   onUserChange_: function() {
     const select = this.$$('select');
@@ -189,6 +280,7 @@ Polymer({
       this.notifyPath('userInfo.activeUser');
       this.notifyPath('userInfo.loggedIn');
       this.destinationStore.reloadUserCookieBasedDestinations();
+      this.invitationStore.startLoadingInvitations();
     } else {
       print_preview.NativeLayer.getInstance().signIn(true).then(
           this.destinationStore.onDestinationsReload.bind(
