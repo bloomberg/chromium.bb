@@ -1414,6 +1414,13 @@ if (enable_java_templates) {
           _build_config,
         ]
 
+        # Although these will be listed as deps in the depfile, they must also
+        # appear here so that "gn analyze" knows about them.
+        # https://crbug.com/827197
+        if (defined(invoker.proguard_configs)) {
+          inputs += invoker.proguard_configs
+        }
+
         output_jar_path = invoker.output
         args = [
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
@@ -1542,6 +1549,13 @@ if (enable_java_templates) {
       inputs = [
         _build_config,
       ]
+
+      # Although these will be listed as deps in the depfile, they must also
+      # appear here so that "gn analyze" knows about them.
+      # https://crbug.com/827197
+      if (defined(invoker.proguard_configs)) {
+        inputs += invoker.proguard_configs
+      }
 
       outputs = [
         invoker.output,
@@ -3254,6 +3268,9 @@ if (enable_java_templates) {
                                "testonly",
                                "visibility",
                              ])
+      public_deps = [
+        ":$_unpack_target_name",
+      ]
       deps = []
       if (defined(_jar_target_name)) {
         deps += [ ":$_jar_target_name" ]
