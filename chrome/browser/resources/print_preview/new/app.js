@@ -36,6 +36,13 @@ Polymer({
       notify: true,
     },
 
+    /** @private {?print_preview.InvitationStore} */
+    invitationStore_: {
+      type: Object,
+      notify: true,
+      value: null,
+    },
+
     /** @private {!Array<print_preview.RecentDestination>} */
     recentDestinations_: {
       type: Array,
@@ -115,6 +122,7 @@ Polymer({
         'use-cloud-print', this.onCloudPrintEnable_.bind(this));
     this.destinationStore_ = new print_preview.DestinationStore(
         this.userInfo_, this.listenerTracker_);
+    this.invitationStore_ = new print_preview.InvitationStore(this.userInfo_);
     this.tracker_.add(
         this.destinationStore_,
         print_preview.DestinationStore.EventType.DESTINATION_SELECT,
@@ -194,8 +202,11 @@ Polymer({
     });
 
     this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
-    if (this.$.destinationSettings.isDialogOpen())
+    this.invitationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
+    if (this.$.destinationSettings.isDialogOpen()) {
       this.destinationStore_.startLoadCloudDestinations();
+      this.invitationStore_.startLoadingInvitations();
+    }
   },
 
   /** @private */

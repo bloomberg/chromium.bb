@@ -26,6 +26,7 @@
         '../compiled_resources2.gyp:native_layer',
         '../data/compiled_resources2.gyp:destination',
         '../data/compiled_resources2.gyp:destination_store',
+        '../data/compiled_resources2.gyp:invitation_store',
         '../data/compiled_resources2.gyp:document_info',
         '../data/compiled_resources2.gyp:measurement_system',
         '../data/compiled_resources2.gyp:user_info',
@@ -51,6 +52,7 @@
       'dependencies': [
         '../data/compiled_resources2.gyp:destination',
         '../data/compiled_resources2.gyp:destination_store',
+        '../data/compiled_resources2.gyp:invitation_store',
         '../data/compiled_resources2.gyp:user_info',
         'destination_dialog',
         'state',
@@ -230,9 +232,11 @@
       'target_name': 'destination_dialog',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '../data/compiled_resources2.gyp:destination',
         '../data/compiled_resources2.gyp:destination_store',
+        '../data/compiled_resources2.gyp:invitation',
+        '../data/compiled_resources2.gyp:invitation_store',
         '../data/compiled_resources2.gyp:user_info',
         'destination_list',
         'print_preview_search_box',

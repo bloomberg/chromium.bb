@@ -21,6 +21,17 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'invitation_store',
+      'dependencies': [
+        'invitation',
+        'user_info',
+        '../compiled_resources2.gyp:cloud_print_interface',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:event_tracker',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'local_parsers',
       'dependencies': [
         'destination',

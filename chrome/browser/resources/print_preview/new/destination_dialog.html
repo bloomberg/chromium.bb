@@ -4,19 +4,21 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
+<link rel="import" href="../data/invitation.html">
+<link rel="import" href="../data/invitation_store.html">
 <link rel="import" href="button_css.html">
 <link rel="import" href="destination_list.html">
 <link rel="import" href="print_preview_search_box.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="search_dialog_css.html">
 <link rel="import" href="select_css.html">
+<link rel="import" href="throbber_css.html">
 
 <dom-module id="print-preview-destination-dialog">
   <template>
-    <style include="print-preview-shared button action-link select cr-hidden-style search-dialog">
+    <style include="print-preview-shared button action-link select cr-hidden-style search-dialog throbber">
       :host #dialog {
         width: 640px;
       }
@@ -34,29 +36,31 @@
         width: auto
       }
 
-      :host #dialog .cloudprint-promo {
+      :host #dialog #promos {
+        padding: 0;
+      }
+
+      :host #dialog .promo {
         align-items: center;
         background-color: #f5f5f5;
-        border-color: #e7e7e7;
-        border-top-style: solid;
-        border-width: 1px;
+        border-top: 1px solid #e7e7e7;
         color: #888;
         display: flex;
         padding: 14px 17px;
       }
 
-      :host .cloudprint-promo .promo-text {
+      :host #cloudprintPromo .promo-text {
         flex: 1;
       }
 
-      :host .cloudprint-promo .icon {
+      :host #cloudprintPromo .icon {
         -webkit-margin-end: 12px;
         display: block;
         height: 24px;
         width: 24px;
       }
 
-      :host .cloudprint-promo .close-button {
+      :host #cloudprintPromo .close-button {
         -webkit-margin-start: 12px;
         background-image: -webkit-image-set(
           url(chrome://theme/IDR_CLOSE_DIALOG) 1x,
@@ -67,16 +71,28 @@
         width: 14px;
       }
 
-      :host .cloudprint-promo .close-button:hover {
+      :host #cloudprintPromo .close-button:hover {
         background-image: -webkit-image-set(
           url(chrome://theme/IDR_CLOSE_DIALOG_H) 1x,
           url(chrome://theme/IDR_CLOSE_DIALOG_H@2x) 2x);
       }
 
-      :host .cloudprint-promo .close-button:active {
+      :host #cloudprintPromo .close-button:active {
         background-image: -webkit-image-set(
           url(chrome://theme/IDR_CLOSE_DIALOG_P) 1x,
           url(chrome://theme/IDR_CLOSE_DIALOG_P@2x) 2x);
+      }
+
+      :host #invitationPromo {
+        flex-direction: column;
+      }
+
+      :host #invitationPromo .invitation-text {
+        padding-bottom: 12px;
+      }
+
+      :host #invitationPromo .invitation-reject-button {
+        -webkit-margin-start: 10px;
       }
     </style>
     <dialog is="cr-dialog" id="dialog" on-close="onCloseOrCancel_">
@@ -120,11 +136,29 @@
           $i18n{cancel}
         </button>
       </div>
-      <div class="cloudprint-promo" slot="footer"
-          hidden$="[[!showCloudPrintPromo]]">
-        <img src="../images/cloud.png" class="icon" alt="">
-        <div class="promo-text"></div>
-        <div class="close-button"></div>
+      <div id="promos" slot="footer">
+        <div class="promo" id="cloudprintPromo"
+            hidden$="[[!showCloudPrintPromo]]">
+          <img src="../images/cloud.png" class="icon" alt="">
+          <div class="promo-text"></div>
+          <div class="close-button"></div>
+        </div>
+        <div class="promo" id="invitationPromo" hidden="[[!invitation_]]">
+          <div class="invitation-text"
+              inner-h-t-m-l="[[getInvitationText_(invitation_)]]">
+          </div>
+          <div class="invitation-buttons">
+            <button class="invitation-accept-button"
+                on-click="onInvitationAcceptClick_">
+              [[getAcceptButtonText_(invitation_)]]
+            </button>
+            <button class="invitation-reject-button"
+                on-click="onInvitationRejectClick_">
+              $i18n{reject}
+            </button>
+            <div id="invitation-process-throbber" class="throbber" hidden></div>
+          </div>
+        </div>
       </div>
     </dialog>
   </template>
