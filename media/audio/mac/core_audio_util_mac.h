@@ -38,6 +38,11 @@ base::Optional<std::string> GetDeviceLabel(AudioObjectID device_id,
 // |device_id|. Returns zero if there are no streams or if there is an error.
 uint32_t GetNumStreams(AudioObjectID device_id, bool is_input);
 
+// Returns the source associated with the given |device_id|, or no value if
+// |device_id| has no source or if there is an error.
+base::Optional<uint32_t> GetDeviceSource(AudioObjectID device_id,
+                                         bool is_input);
+
 }  // namespace core_audio_mac
 }  // namespace media
 

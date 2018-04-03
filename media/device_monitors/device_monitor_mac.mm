@@ -451,7 +451,8 @@ void DeviceMonitorMac::StartMonitoring() {
               base::SystemMonitor::DEVTYPE_AUDIO);
         }
       }),
-      true /* monitor_default_input */, true /* monitor_addition_removal */);
+      true /* monitor_default_input */, true /* monitor_addition_removal */,
+      true /* monitor_sources */);
 }
 
 void DeviceMonitorMac::NotifyDeviceChanged(
