@@ -48,6 +48,7 @@ class AssistantManagerServiceImpl
 
   // AssistantActionObserver overrides:
   void OnShowHtml(const std::string& html) override;
+  void OnShowSuggestions(const std::vector<std::string>& suggestions) override;
   void OnShowText(const std::string& text) override;
   void OnOpenUrl(const std::string& url) override;
 
@@ -59,18 +60,12 @@ class AssistantManagerServiceImpl
                               const std::string& arc_version);
   std::string BuildUserAgent(const std::string& arc_version) const;
 
-  static void OnShowHtmlInternal(
-      const base::WeakPtr<AssistantManagerServiceImpl>& self,
-      const std::string& html);
-  static void OnShowTextInternal(
-      const base::WeakPtr<AssistantManagerServiceImpl>& self,
-      const std::string& text);
-  static void OnOpenUrlInteranl(
-      const base::WeakPtr<AssistantManagerServiceImpl>& self,
-      const std::string& url);
-  static void OnSpeechLevelUpdatedInternal(
-      const base::WeakPtr<AssistantManagerServiceImpl>& self,
-      const float speech_level);
+  void OnShowHtmlOnMainThread(const std::string& html);
+  void OnShowSuggestionsOnMainThread(
+      const std::vector<std::string>& suggestions);
+  void OnShowTextOnMainThread(const std::string& text);
+  void OnOpenUrlOnMainThread(const std::string& url);
+  void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
 
   bool running_ = false;
   PlatformApiImpl platform_api_;

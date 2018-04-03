@@ -36,6 +36,12 @@ void AshAssistantController::OnHtmlResponse(const std::string& response) {
   NOTIMPLEMENTED();
 }
 
+void AshAssistantController::OnSuggestionsResponse(
+    const std::vector<std::string>& response) {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
 void AshAssistantController::OnTextResponse(const std::string& response) {
   // TODO(dmblack): Handle.
   NOTIMPLEMENTED();

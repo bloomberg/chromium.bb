@@ -25,6 +25,9 @@ interface AssistantEventSubscriber {
   // Assistant got Html response from server.
   OnHtmlResponse(string response);
 
+  // Assistant got suggestions response from server.
+  OnSuggestionsResponse(array<string> response);
+
   // Assistant got text response from server.
   OnTextResponse(string response);
 

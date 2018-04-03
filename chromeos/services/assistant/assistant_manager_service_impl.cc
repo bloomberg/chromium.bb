@@ -79,26 +79,40 @@ void AssistantManagerServiceImpl::AddAssistantEventSubscriber(
 void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&OnShowHtmlInternal, weak_factory_.GetWeakPtr(), html));
+      base::BindOnce(&AssistantManagerServiceImpl::OnShowHtmlOnMainThread,
+                     weak_factory_.GetWeakPtr(), html));
+}
+
+void AssistantManagerServiceImpl::OnShowSuggestions(
+    const std::vector<std::string>& suggestions) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread,
+          weak_factory_.GetWeakPtr(), suggestions));
 }
 
 void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&OnShowTextInternal, weak_factory_.GetWeakPtr(), text));
+      base::BindOnce(&AssistantManagerServiceImpl::OnShowTextOnMainThread,
+                     weak_factory_.GetWeakPtr(), text));
 }
 
 void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&OnOpenUrlInteranl, weak_factory_.GetWeakPtr(), url));
+      base::BindOnce(&AssistantManagerServiceImpl::OnOpenUrlOnMainThread,
+                     weak_factory_.GetWeakPtr(), url));
 }
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
     const float speech_level) {
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&OnSpeechLevelUpdatedInternal,
-                                weak_factory_.GetWeakPtr(), speech_level));
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread,
+          weak_factory_.GetWeakPtr(), speech_level));
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
@@ -137,45 +151,32 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
   return user_agent;
 }
 
-// static
-void AssistantManagerServiceImpl::OnShowHtmlInternal(
-    const base::WeakPtr<AssistantManagerServiceImpl>& self,
+void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
     const std::string& html) {
-  if (self) {
-    self->subscribers_.ForAllPtrs(
-        [&html](auto* ptr) { ptr->OnHtmlResponse(html); });
-  }
+  subscribers_.ForAllPtrs([&html](auto* ptr) { ptr->OnHtmlResponse(html); });
 }
 
-// static
-void AssistantManagerServiceImpl::OnShowTextInternal(
-    const base::WeakPtr<AssistantManagerServiceImpl>& self,
+void AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread(
+    const std::vector<std::string>& suggestions) {
+  subscribers_.ForAllPtrs(
+      [&suggestions](auto* ptr) { ptr->OnSuggestionsResponse(suggestions); });
+}
+
+void AssistantManagerServiceImpl::OnShowTextOnMainThread(
     const std::string& text) {
-  if (self) {
-    self->subscribers_.ForAllPtrs(
-        [&text](auto* ptr) { ptr->OnTextResponse(text); });
-  }
+  subscribers_.ForAllPtrs([&text](auto* ptr) { ptr->OnTextResponse(text); });
 }
 
-// static
-void AssistantManagerServiceImpl::OnOpenUrlInteranl(
-    const base::WeakPtr<AssistantManagerServiceImpl>& self,
+void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
     const std::string& url) {
-  if (self) {
-    self->subscribers_.ForAllPtrs(
-        [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
-  }
+  subscribers_.ForAllPtrs(
+      [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
 }
 
-// static
-void AssistantManagerServiceImpl::OnSpeechLevelUpdatedInternal(
-    const base::WeakPtr<AssistantManagerServiceImpl>& self,
+void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
     const float speech_level) {
-  if (self) {
-    self->subscribers_.ForAllPtrs([&speech_level](auto* ptr) {
-      ptr->OnSpeechLevelUpdated(speech_level);
-    });
-  }
+  subscribers_.ForAllPtrs(
+      [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
 }
 
 }  // namespace assistant
