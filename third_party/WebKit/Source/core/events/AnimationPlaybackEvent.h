@@ -7,6 +7,7 @@
 
 #include "core/dom/events/Event.h"
 #include "core/events/AnimationPlaybackEventInit.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -28,9 +29,7 @@ class AnimationPlaybackEvent final : public Event {
   ~AnimationPlaybackEvent() override;
 
   double currentTime(bool& is_null) const;
-  double currentTime() const;
   double timelineTime(bool& is_null) const;
-  double timelineTime() const;
 
   const AtomicString& InterfaceName() const override;
 
@@ -43,8 +42,8 @@ class AnimationPlaybackEvent final : public Event {
   AnimationPlaybackEvent(const AtomicString&,
                          const AnimationPlaybackEventInit&);
 
-  double current_time_;
-  double timeline_time_;
+  WTF::Optional<double> current_time_;
+  WTF::Optional<double> timeline_time_;
 };
 
 }  // namespace blink

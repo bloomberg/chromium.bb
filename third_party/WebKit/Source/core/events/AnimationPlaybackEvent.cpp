@@ -16,7 +16,7 @@ AnimationPlaybackEvent::AnimationPlaybackEvent(const AtomicString& type,
 AnimationPlaybackEvent::AnimationPlaybackEvent(
     const AtomicString& type,
     const AnimationPlaybackEventInit& initializer)
-    : Event(type, initializer), current_time_(0.0), timeline_time_(0.0) {
+    : Event(type, initializer) {
   if (initializer.hasCurrentTime())
     current_time_ = initializer.currentTime();
   if (initializer.hasTimelineTime())
@@ -26,23 +26,13 @@ AnimationPlaybackEvent::AnimationPlaybackEvent(
 AnimationPlaybackEvent::~AnimationPlaybackEvent() = default;
 
 double AnimationPlaybackEvent::currentTime(bool& is_null) const {
-  double result = currentTime();
-  is_null = std::isnan(result);
-  return result;
-}
-
-double AnimationPlaybackEvent::currentTime() const {
-  return current_time_;
+  is_null = !current_time_.has_value();
+  return current_time_.value_or(0);
 }
 
 double AnimationPlaybackEvent::timelineTime(bool& is_null) const {
-  double result = timelineTime();
-  is_null = std::isnan(result);
-  return result;
-}
-
-double AnimationPlaybackEvent::timelineTime() const {
-  return timeline_time_;
+  is_null = !timeline_time_.has_value();
+  return timeline_time_.value_or(0);
 }
 
 const AtomicString& AnimationPlaybackEvent::InterfaceName() const {
