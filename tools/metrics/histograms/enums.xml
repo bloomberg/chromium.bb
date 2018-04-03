@@ -44033,6 +44033,7 @@ Full version information for the fingerprint enum values:
   <int value="987973414" label="IFX 9670 rev 15 fw 6.40 build 00be"/>
   <int value="1013730596" label="CROS Cr50 0.0.26 Flags 0x10(pre-pvt)"/>
   <int value="1065916186" label="CROS Cr50 0.0.19"/>
+  <int value="1123680979" label="CROS Cr50 0.3.4"/>
   <int value="1190683265" label="CROS Cr50 0.0.14"/>
   <int value="1311411160" label="WEC 345"/>
   <int value="1353576267" label="IFX 9635 fw 3.18 build 0009"/>
@@ -44050,7 +44051,8 @@ Full version information for the fingerprint enum values:
   <int value="1941011596" label="IFX 9655 rev 35 fw 4.34 build 03f2"/>
   <int value="1953654937" label="IFX 9645 rev 45 fw 133.33 build 00e3"/>
   <int value="2024714959" label="IFX 9655 rev 32 fw 4.34 build 03f2"/>
-  <int value="2061474747" label="CROS Cr50 0.2.2 Flags 0x10(pre-pvt)"/>
+  <int value="2061474747"
+      label="CROS Cr50 0.2.2 aka 0.4.4 Flags 0x10(pre-pvt)"/>
 </enum>
 
 <enum name="TrackedPreference">
