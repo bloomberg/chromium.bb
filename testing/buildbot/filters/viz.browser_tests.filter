@@ -93,7 +93,10 @@
 -ThumbnailTest.ShouldContainProperContentIfCapturedOnTabSwitch
 
 # Windows timeouts. https://crbug.com/821029
+-BrowserNavigatorTest.Disposition_NewPopupFromAppPopup
+-ExtensionApiCaptureTest.CaptureNullWindow
 -ManifestVerifierBrowserTest.*
+-OmniboxPopupContentsViewTest.ThemeIntegration/*
 -PDFIsolatedExtensionTest.MultipleDomains
 -PrefHashBrowserTest*
 -UserInitiatedRunsDisabled*
