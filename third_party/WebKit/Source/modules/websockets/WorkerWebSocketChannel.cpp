@@ -31,7 +31,7 @@
 #include "modules/websockets/WorkerWebSocketChannel.h"
 
 #include <memory>
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"

@@ -12,7 +12,7 @@
 #include "bindings/core/v8/V8FragmentResultOptions.h"
 #include "bindings/core/v8/V8LayoutFragmentRequest.h"
 #include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/custom/CustomLayoutConstraints.h"
 #include "core/layout/custom/CustomLayoutFragment.h"

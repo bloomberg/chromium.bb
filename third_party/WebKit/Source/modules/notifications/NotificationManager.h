@@ -6,7 +6,7 @@
 #define NotificationManager_h
 
 #include "bindings/modules/v8/v8_notification_permission_callback.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/notifications/notification_service.mojom-blink.h"

@@ -8,7 +8,7 @@
 #include "core/css/OffscreenFontSelector.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/FontStyleResolver.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/Settings.h"
 #include "core/html/canvas/TextMetrics.h"
 #include "core/imagebitmap/ImageBitmap.h"

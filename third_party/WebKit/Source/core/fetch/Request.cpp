@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/AbortSignal.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FetchManager.h"
 #include "core/fetch/RequestInit.h"

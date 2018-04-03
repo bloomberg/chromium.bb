@@ -7,7 +7,7 @@
 #include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/Document.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"

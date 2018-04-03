@@ -8,9 +8,9 @@
 
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/dom/SecurityContext.h"
 #include "core/events/MessageEvent.h"
+#include "core/execution_context/ExecutionContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/FrameConsole.h"

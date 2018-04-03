@@ -4,7 +4,7 @@
 
 #include "modules/canvas/offscreencanvas/OffscreenCanvasModule.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesHelpers.h"
 #include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesModule.h"

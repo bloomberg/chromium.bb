@@ -4,7 +4,7 @@
 
 #include "modules/keyboard/Keyboard.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/keyboard/KeyboardLock.h"
 #include "platform/bindings/ScriptState.h"
 

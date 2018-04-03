@@ -27,7 +27,7 @@
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8StringResource.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 
 namespace blink {
 

@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/layout/custom/PendingLayoutRegistry.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "platform/bindings/ScriptWrappable.h"

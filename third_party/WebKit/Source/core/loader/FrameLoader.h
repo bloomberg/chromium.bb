@@ -36,7 +36,7 @@
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/IconURL.h"
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 #include "core/frame/FrameTypes.h"
 #include "core/frame/SandboxFlags.h"
 #include "core/loader/FrameLoaderStateMachine.h"

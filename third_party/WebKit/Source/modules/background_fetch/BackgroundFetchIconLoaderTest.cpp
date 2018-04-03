@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LiICENSE file.
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/testing/PageTestBase.h"
 #include "modules/background_fetch/BackgroundFetchIconLoader.h"
 #include "modules/background_fetch/IconDefinition.h"

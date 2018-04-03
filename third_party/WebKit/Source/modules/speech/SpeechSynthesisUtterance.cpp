@@ -25,7 +25,7 @@
 
 #include "modules/speech/SpeechSynthesisUtterance.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 
 namespace blink {
 

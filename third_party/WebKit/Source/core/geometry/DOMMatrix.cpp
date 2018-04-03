@@ -4,7 +4,7 @@
 
 #include "core/geometry/DOMMatrix.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {

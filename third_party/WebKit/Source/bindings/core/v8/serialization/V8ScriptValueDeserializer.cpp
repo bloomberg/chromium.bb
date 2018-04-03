@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"

@@ -5,7 +5,7 @@
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 
 namespace blink {

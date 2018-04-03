@@ -5,7 +5,7 @@
 #include "core/workers/WorkerModuleTreeClient.h"
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/script/ModuleScript.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"

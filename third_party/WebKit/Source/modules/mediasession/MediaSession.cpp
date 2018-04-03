@@ -7,8 +7,8 @@
 #include <memory>
 #include "bindings/modules/v8/v8_media_session_action_handler.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/mediasession/MediaMetadata.h"
 #include "modules/mediasession/MediaMetadataSanitizer.h"

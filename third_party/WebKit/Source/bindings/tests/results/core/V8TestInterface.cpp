@@ -31,7 +31,7 @@
 #include "bindings/tests/idls/core/TestInterfacePartial.h"
 #include "bindings/tests/idls/core/TestInterfacePartial2Implementation.h"
 #include "bindings/tests/idls/core/TestInterfacePartialSecureContext.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/bindings/RuntimeCallStats.h"

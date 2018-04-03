@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css_property_names.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/WebFeatureForward.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"

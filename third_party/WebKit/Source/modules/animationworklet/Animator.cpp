@@ -5,7 +5,7 @@
 #include "modules/animationworklet/Animator.h"
 
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/animationworklet/AnimatorDefinition.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/ToV8.h"

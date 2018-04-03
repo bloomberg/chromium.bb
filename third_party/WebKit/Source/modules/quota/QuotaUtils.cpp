@@ -4,7 +4,7 @@
 
 #include "modules/quota/QuotaUtils.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {

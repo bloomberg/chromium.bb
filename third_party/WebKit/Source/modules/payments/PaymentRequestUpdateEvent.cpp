@@ -10,7 +10,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/payments/PaymentUpdater.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/TaskType.h"

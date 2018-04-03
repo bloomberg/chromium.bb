@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/html/canvas/ImageData.h"

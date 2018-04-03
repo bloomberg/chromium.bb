@@ -15,7 +15,7 @@
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
 #include "core/svg_names.h"
 #include "platform/bindings/RuntimeCallStats.h"

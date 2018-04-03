@@ -35,7 +35,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "platform/wtf/text/StringBuilder.h"
 

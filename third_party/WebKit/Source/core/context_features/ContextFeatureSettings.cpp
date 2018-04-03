@@ -4,7 +4,7 @@
 
 #include "core/context_features/ContextFeatureSettings.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

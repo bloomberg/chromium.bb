@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/location.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/TaskType.h"
 

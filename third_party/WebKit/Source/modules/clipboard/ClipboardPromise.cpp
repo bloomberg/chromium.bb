@@ -10,7 +10,7 @@
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"

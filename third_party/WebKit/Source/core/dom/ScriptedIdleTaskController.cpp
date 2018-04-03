@@ -5,8 +5,8 @@
 #include "core/dom/ScriptedIdleTaskController.h"
 
 #include "base/location.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/IdleRequestOptions.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"

@@ -31,7 +31,7 @@
 #ifndef SourceBufferList_h
 #define SourceBufferList_h
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 

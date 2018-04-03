@@ -32,7 +32,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/Dictionary.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"

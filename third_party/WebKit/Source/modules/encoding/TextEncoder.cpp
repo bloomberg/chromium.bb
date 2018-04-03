@@ -31,7 +31,7 @@
 #include "modules/encoding/TextEncoder.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/encoding/Encoding.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/TextEncodingRegistry.h"

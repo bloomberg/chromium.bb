@@ -31,7 +31,7 @@
 #include "modules/filesystem/DOMFileSystemBase.h"
 
 #include <memory>
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/DOMFilePath.h"

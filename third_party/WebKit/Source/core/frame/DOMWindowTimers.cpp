@@ -34,8 +34,8 @@
 
 #include "bindings/core/v8/V8GCForContextDispose.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/events/EventTarget.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"

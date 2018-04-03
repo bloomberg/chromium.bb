@@ -31,7 +31,7 @@
 #include "modules/webdatabase/SQLTransactionClient.h"
 
 #include "base/location.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "platform/CrossThreadFunctional.h"

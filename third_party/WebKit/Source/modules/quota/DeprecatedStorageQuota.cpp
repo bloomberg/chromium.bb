@@ -36,7 +36,7 @@
 #include "bindings/modules/v8/v8_storage_usage_callback.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/quota/DOMError.h"
 #include "modules/quota/QuotaUtils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"

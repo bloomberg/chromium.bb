@@ -4,7 +4,7 @@
 
 #include "core/loader/SubresourceIntegrityHelper.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/origin_trials/origin_trials.h"

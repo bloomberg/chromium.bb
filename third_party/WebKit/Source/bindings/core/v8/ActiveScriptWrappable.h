@@ -5,7 +5,7 @@
 #ifndef ActiveScriptWrappable_h
 #define ActiveScriptWrappable_h
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/bindings/ActiveScriptWrappableBase.h"
 
 namespace blink {

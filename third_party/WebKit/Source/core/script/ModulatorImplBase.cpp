@@ -5,7 +5,7 @@
 #include "core/script/ModulatorImplBase.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <algorithm>
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BlobBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/Functional.h"

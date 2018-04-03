@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/dom/SecurityContext.h"
+#include "core/execution_context/SecurityContext.h"
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/feature_policy/FeaturePolicy.h"

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FetchDataLoader.h"
 #include "core/fileapi/Blob.h"

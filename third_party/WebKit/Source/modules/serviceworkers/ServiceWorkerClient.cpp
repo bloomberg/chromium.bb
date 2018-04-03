@@ -10,7 +10,7 @@
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/messaging/BlinkTransferableMessage.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"

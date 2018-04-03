@@ -29,7 +29,7 @@
  */
 #include "modules/filesystem/Entry.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/UseCounter.h"
 #include "modules/filesystem/DirectoryEntry.h"

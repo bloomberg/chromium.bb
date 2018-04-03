@@ -26,7 +26,7 @@
 
 #include "core/dom/PausableObject.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/InstanceCounters.h"
 
 namespace blink {

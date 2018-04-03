@@ -25,7 +25,7 @@
 
 #include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "public/platform/TaskType.h"
 

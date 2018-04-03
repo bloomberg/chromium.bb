@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSImageValue.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleImage.h"
 #include "platform/bindings/ScriptState.h"

@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ScriptSourceLocationType.h"
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/CoreExport.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/bindings/SharedPersistent.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"

@@ -45,7 +45,7 @@ CALLBACK_INTERFACE_H_INCLUDES = frozenset([
 CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/GeneratedCodeHelper.h',
     'bindings/core/v8/V8BindingForCore.h',
-    'core/dom/ExecutionContext.h',
+    'core/execution_context/ExecutionContext.h',
 ])
 LEGACY_CALLBACK_INTERFACE_H_INCLUDES = frozenset([
     'platform/bindings/DOMWrapperWorld.h',

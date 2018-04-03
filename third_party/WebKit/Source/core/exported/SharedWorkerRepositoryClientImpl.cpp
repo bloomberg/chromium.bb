@@ -32,8 +32,8 @@
 
 #include <memory>
 #include <utility>
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/probe/CoreProbes.h"

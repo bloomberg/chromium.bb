@@ -5,7 +5,7 @@
 #include "modules/battery/NavigatorBattery.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "modules/battery/BatteryManager.h"
 

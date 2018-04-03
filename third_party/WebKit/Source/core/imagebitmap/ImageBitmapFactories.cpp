@@ -35,7 +35,7 @@
 #include "base/location.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"

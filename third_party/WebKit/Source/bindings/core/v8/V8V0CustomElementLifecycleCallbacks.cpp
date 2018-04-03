@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Element.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/V0CustomElementBinding.h"
 #include "platform/bindings/V8PerContextData.h"

@@ -32,7 +32,7 @@
 
 #include "base/location.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/TaskType.h"

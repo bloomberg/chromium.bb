@@ -32,8 +32,8 @@
 #define DOMVisualViewport_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/events/EventTarget.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"

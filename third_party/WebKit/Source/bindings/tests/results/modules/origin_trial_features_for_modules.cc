@@ -14,7 +14,7 @@
 #include "bindings/core/v8/origin_trial_features_for_core.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/context_features/ContextFeatureSettings.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/origin_trials/origin_trials.h"
 #include "platform/bindings/OriginTrialFeatures.h"

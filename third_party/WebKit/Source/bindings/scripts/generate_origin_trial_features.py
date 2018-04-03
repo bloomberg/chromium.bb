@@ -151,7 +151,7 @@ def origin_trial_features_context(generator_name, feature_info, snake_case):
     # Add includes needed for cpp code and normalize.
     includes.update([
         'core/context_features/ContextFeatureSettings.h',
-        'core/dom/ExecutionContext.h',
+        'core/execution_context/ExecutionContext.h',
         'core/frame/Frame.h',
         'core/origin_trials/origin_trials.h',
         'platform/bindings/OriginTrialFeatures.h',
