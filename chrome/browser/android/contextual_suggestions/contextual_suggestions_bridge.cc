@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ContextualSuggestionsBridge_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
@@ -122,9 +124,23 @@ void ContextualSuggestionsBridge::ClearState(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
 }
 
-void ContextualSuggestionsBridge::ReportEvent(JNIEnv* env,
-                                              const JavaParamRef<jobject>& obj,
-                                              jint j_event_id) {}
+void ContextualSuggestionsBridge::ReportEvent(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_web_contents,
+    jint j_event_id) {
+  if (!contextual_content_suggestions_service_)
+    return;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+
+  ukm::SourceId ukm_source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents);
+
+  contextual_content_suggestions_service_->ReportEvent(ukm_source_id,
+                                                       j_event_id);
+}
 
 void ContextualSuggestionsBridge::OnSuggestionsAvailable(
     ScopedJavaGlobalRef<jobject> j_callback,

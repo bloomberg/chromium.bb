@@ -12,6 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,11 +74,14 @@ public class ContextualSuggestionsBridge {
     /**
      * Reports an event happening in the context of the current URL.
      *
+     * @param webContents Web contents with the document for which event is reported.
      * @param eventId Id of the reported event.
      */
-    public void reportEvent(int eventId) {
+    public void reportEvent(WebContents webContents, int eventId) {
         assert mNativeContextualSuggestionsBridge != 0;
-        nativeReportEvent(mNativeContextualSuggestionsBridge, eventId);
+        assert webContents != null && !webContents.isDestroyed();
+
+        nativeReportEvent(mNativeContextualSuggestionsBridge, webContents, eventId);
     }
 
     @CalledByNative
@@ -112,5 +116,6 @@ public class ContextualSuggestionsBridge {
     private native void nativeFetchSuggestionFavicon(
             long nativeContextualSuggestionsBridge, String suggestionId, Callback<Bitmap> callback);
     private native void nativeClearState(long nativeContextualSuggestionsBridge);
-    private native void nativeReportEvent(long nativeContextualSuggestionsBridge, int eventId);
+    private native void nativeReportEvent(
+            long nativeContextualSuggestionsBridge, WebContents webContents, int eventId);
 }

@@ -17,6 +17,7 @@
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace ntp_snippets {
 
@@ -68,6 +69,10 @@ class ContextualContentSuggestionsService : public KeyedService {
   void FetchContextualSuggestionImage(
       const ContentSuggestion::ID& suggestion_id,
       ImageFetchedCallback callback);
+
+  // Used to report events using various metrics (e.g. UMA, UKM).
+  // TODO(donnd): Change type of event ID, implement.
+  void ReportEvent(ukm::SourceId sourceId, int event_id);
 
  private:
   void DidFetchContextualSuggestions(

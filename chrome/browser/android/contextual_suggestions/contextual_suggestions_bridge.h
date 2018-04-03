@@ -58,6 +58,7 @@ class ContextualSuggestionsBridge {
   // Reports an event happening in UI (for the purpose of metrics collection).
   void ReportEvent(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jobject>& j_web_contents,
                    jint j_event_id);
 
  private:

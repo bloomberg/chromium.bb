@@ -163,6 +163,7 @@ static_library("ntp_snippets") {
     "//components/variations/service",
     "//components/web_resource",
     "//services/identity/public/cpp",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//third_party/icu/",
     "//ui/gfx",
   ]

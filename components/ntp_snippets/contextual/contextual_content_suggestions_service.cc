@@ -69,6 +69,10 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
   }
 }
 
+void ContextualContentSuggestionsService::ReportEvent(
+    ukm::SourceId ukm_source_id,
+    int event_id) {}
+
 // TODO(gaschler): Cache contextual suggestions at run-time.
 void ContextualContentSuggestionsService::DidFetchContextualSuggestions(
     const GURL& url,
