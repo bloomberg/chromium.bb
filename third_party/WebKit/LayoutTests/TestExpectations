@@ -252,6 +252,10 @@ crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-gi
 # ====== Layout team owned tests to here ======
 
 crbug.com/819617 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Failure ]
+crbug.com/828260 [ Win10 ] fast/text/color-emoji.html [ Failure ]
+crbug.com/828260 [ Win10 ] fast/text/emoticons.html [ Failure ]
+crbug.com/828260 [ Win10 ] fast/text/international/002.html [ Failure ]
+crbug.com/828260 [ Win10 ] fast/text/international/wrap-CJK-001.html [ Failure ]
 
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
