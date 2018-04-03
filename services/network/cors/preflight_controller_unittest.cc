@@ -4,8 +4,10 @@
 
 #include "services/network/cors/preflight_controller.h"
 
+#include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace network {
 
@@ -15,6 +17,7 @@ namespace {
 
 TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
   ResourceRequest request;
+  request.request_initiator = url::Origin();
   request.headers.SetHeader("Orange", "Orange");
   request.headers.SetHeader("Apple", "Red");
   request.headers.SetHeader("Kiwifruit", "Green");
@@ -25,6 +28,10 @@ TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
       PreflightController::CreatePreflightRequest(request);
 
   std::string header;
+  EXPECT_TRUE(
+      preflight->headers.GetHeader(net::HttpRequestHeaders::kOrigin, &header));
+  EXPECT_EQ("null", header);
+
   EXPECT_TRUE(preflight->headers.GetHeader(
       cors::header_names::kAccessControlRequestHeaders, &header));
   EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry", header);
@@ -32,6 +39,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
 
 TEST(PreflightControllerCreatePreflightRequestTest, ExcludeSimpleHeaders) {
   ResourceRequest request;
+  request.request_initiator = url::Origin();
   request.headers.SetHeader("Accept", "everything");
   request.headers.SetHeader("Accept-Language", "everything");
   request.headers.SetHeader("Content-Language", "everything");
@@ -51,6 +59,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeSimpleHeaders) {
 TEST(PreflightControllerCreatePreflightRequestTest,
      ExcludeSimpleContentTypeHeader) {
   ResourceRequest request;
+  request.request_initiator = url::Origin();
   request.headers.SetHeader("Content-Type", "text/plain");
 
   std::unique_ptr<ResourceRequest> preflight =
@@ -64,6 +73,7 @@ TEST(PreflightControllerCreatePreflightRequestTest,
 
 TEST(PreflightControllerCreatePreflightRequestTest, IncludeNonSimpleHeader) {
   ResourceRequest request;
+  request.request_initiator = url::Origin();
   request.headers.SetHeader("X-Custom-Header", "foobar");
 
   std::unique_ptr<ResourceRequest> preflight =
@@ -78,6 +88,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, IncludeNonSimpleHeader) {
 TEST(PreflightControllerCreatePreflightRequestTest,
      IncludeNonSimpleContentTypeHeader) {
   ResourceRequest request;
+  request.request_initiator = url::Origin();
   request.headers.SetHeader("Content-Type", "application/octet-stream");
 
   std::unique_ptr<ResourceRequest> preflight =
@@ -91,6 +102,7 @@ TEST(PreflightControllerCreatePreflightRequestTest,
 
 TEST(PreflightControllerCreatePreflightRequestTest, ExcludeForbiddenHeaders) {
   ResourceRequest request;
+  request.request_initiator = url::Origin();
   request.headers.SetHeader("referer", "https://www.google.com/");
 
   std::unique_ptr<ResourceRequest> preflight =

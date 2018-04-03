@@ -85,6 +85,10 @@ std::unique_ptr<ResourceRequest> PreflightController::CreatePreflightRequest(
         cors::header_names::kAccessControlRequestExternal, "true");
   }
 
+  DCHECK(request.request_initiator);
+  preflight_request->headers.SetHeader(net::HttpRequestHeaders::kOrigin,
+                                       request.request_initiator->Serialize());
+
   // TODO(toyoshim): Remove the following line once the network service is
   // enabled by default.
   preflight_request->skip_service_worker = true;
