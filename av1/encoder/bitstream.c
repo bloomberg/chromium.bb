@@ -3328,6 +3328,9 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
 
   write_profile(cm->profile, &wb);
 
+  // Still picture or not
+  aom_wb_write_bit(&wb, cm->seq_params.still_picture);
+
   uint8_t operating_points_minus1_cnt = enhancement_layers_cnt;
   aom_wb_write_literal(&wb, operating_points_minus1_cnt, 5);
   int i;

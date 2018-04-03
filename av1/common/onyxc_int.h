@@ -193,7 +193,8 @@ typedef struct SequenceHeader {
   int force_integer_mv;            // 0 - Not to force. MV can be in 1/4 or 1/8
                                    // 1 - force to integer
                                    // 2 - adaptive
-  int monochrome;
+  int still_picture;               // Video is a single frame still picture
+  int monochrome;                  // Monochorme video
   int enable_filter_intra;         // enables/disables filterintra
   int enable_intra_edge_filter;    // enables/disables corner/edge/upsampling
   int enable_interintra_compound;  // enables/disables interintra_compound

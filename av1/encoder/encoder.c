@@ -891,6 +891,7 @@ static void init_buffer_indices(AV1_COMP *cpi) {
 }
 
 void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
+  seq->still_picture = 0;
   seq->force_screen_content_tools = 2;
   seq->force_integer_mv = 2;
   seq->order_hint_bits_minus1 = DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1;

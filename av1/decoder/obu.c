@@ -146,10 +146,14 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   cm->profile = av1_read_profile(rb);
 
+  SequenceHeader *seq_params = &cm->seq_params;
+
+  // Still picture or not
+  seq_params->still_picture = aom_rb_read_bit(rb);
+
   uint8_t operating_points_minus1_cnt = aom_rb_read_literal(rb, 5);
   pbi->common.enhancement_layers_cnt = operating_points_minus1_cnt + 1;
   int i;
-  SequenceHeader *seq_params = &cm->seq_params;
   for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
     seq_params->operating_point_idc[i] = aom_rb_read_literal(rb, 12);
     seq_params->level[i] = aom_rb_read_literal(rb, 4);
