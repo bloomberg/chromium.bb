@@ -29,14 +29,7 @@ import time
 import cygprofile_utils
 import patch_orderfile
 import process_profiles
-
-try:
-  import profile_android_startup
-except ImportError as e:
-  logging.error(
-      'Import error, if this happens outside unittests, this module will '
-      'not work correctly. Error: %s', e)
-
+import profile_android_startup
 import symbol_extractor
 
 
