@@ -37,6 +37,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"

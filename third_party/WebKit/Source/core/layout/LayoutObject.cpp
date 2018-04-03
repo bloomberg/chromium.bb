@@ -271,6 +271,11 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return new LayoutDeprecatedFlexibleBox(*element);
     case EDisplay::kFlex:
     case EDisplay::kInlineFlex:
+      if (RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled() &&
+          ShouldUseNewLayout(style)) {
+        // TODO(dgrogan): Change this to new class LayoutNGFlex.
+        return new LayoutNGBlockFlow(element);
+      }
       return new LayoutFlexibleBox(element);
     case EDisplay::kGrid:
     case EDisplay::kInlineGrid:
