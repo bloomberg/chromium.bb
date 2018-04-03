@@ -254,6 +254,12 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
   if (p->eobs[block] == 0 && plane == 0) {
+  // TODO(debargha, jingning): Temporarily disable txk_type check for eob=0
+  // case. It is possible that certain collision in hash index would cause
+  // the assertion failure. To further optimize the rate-distortion
+  // performance, we need to re-visit this part and enable this assert
+  // again.
+#if 0
     if (args->cpi->oxcf.aq_mode == NO_AQ &&
         args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
       // TODO(jingning,angiebird,huisu@google.com): enable txk_check when
@@ -264,6 +270,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                                                      blk_col)] == DCT_DCT);
       }
     }
+#endif
     update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
                      DCT_DCT);
   }
