@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "url/gurl.h"
@@ -87,31 +86,44 @@ void GetRegistrationTask::DidGetRegistration(
   }
 }
 
-void GetRegistrationTask::CreateRegistration(
-    const std::string& registration_data) {
-  proto::BackgroundFetchRegistration registration_proto;
-  if (!registration_proto.ParseFromString(registration_data)) {
-    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-                             nullptr /* registration */);
-    Finished();
-    return;
-  }
+void GetRegistrationTask::InitializeRegistration(
+    const proto::BackgroundFetchRegistration& registration_proto,
+    BackgroundFetchRegistration* registration) {
+  DCHECK(registration);
 
-  auto registration = std::make_unique<BackgroundFetchRegistration>();
-  if (registration_proto.developer_id() != developer_id_ ||
-      !origin_.IsSameOriginWith(
-          url::Origin::Create(GURL(registration_proto.origin())))) {
-    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-                             nullptr /* registration */);
-    Finished();
-    return;
-  }
-
+  // per-registration data.
   registration->developer_id = registration_proto.developer_id();
   registration->unique_id = registration_proto.unique_id();
 
-  // TODO(delphick): Initialize all the other parts of the registration once
-  // they're persisted.
+  // Download/Upload stats.
+  registration->upload_total = registration_proto.upload_total();
+  registration->uploaded = registration_proto.uploaded();
+  registration->download_total = registration_proto.download_total();
+  registration->downloaded = registration_proto.downloaded();
+}
+
+void GetRegistrationTask::CreateRegistration(const std::string& metadata) {
+  proto::BackgroundFetchMetadata metadata_proto;
+  if (!metadata_proto.ParseFromString(metadata)) {
+    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
+                             nullptr /* registration */);
+    Finished();
+    return;
+  }
+
+  const auto& registration_proto = metadata_proto.registration();
+  if (registration_proto.developer_id() != developer_id_ ||
+      !origin_.IsSameOriginWith(
+          url::Origin::Create(GURL(metadata_proto.origin())))) {
+    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
+                             nullptr /* registration */);
+    Finished();
+    return;
+  }
+
+  // TODO(rayankans): Initialize all the other parts of the metadata.
+  auto registration = std::make_unique<BackgroundFetchRegistration>();
+  InitializeRegistration(metadata_proto.registration(), registration.get());
 
   std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE,
                            std::move(registration));

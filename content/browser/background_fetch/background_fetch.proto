@@ -9,8 +9,9 @@ option optimize_for = LITE_RUNTIME;
 package content.proto;
 
 // Stores per-registration (as opposed to per-request) data.
+// https://wicg.github.io/background-fetch/#background-fetch-registration
 //
-// Next tag: 5
+// Next Tag: 7
 message BackgroundFetchRegistration {
   // See definition of |unique_id| in BackgroundFetchRegistrationId.
   optional string unique_id = 1;
@@ -18,12 +19,58 @@ message BackgroundFetchRegistration {
   // See definition of |developer_id| in BackgroundFetchRegistrationId.
   optional bytes developer_id = 2;
 
-  optional string origin = 3;
+  optional uint64 upload_total = 3;
+  optional uint64 uploaded = 4;
+  optional uint64 download_total = 5;
+  optional uint64 downloaded = 6;
+}
 
-  optional int64 creation_microseconds_since_unix_epoch = 4;
+// Developer provided options.
+// https://wicg.github.io/background-fetch/#background-fetch-manager
+//
+// Next Tag: 4
+message BackgroundFetchOptions {
+  optional string title = 1;
 
-  // The notification title provided by the developer. Can be updated by
-  // calling `BackgroundFetchUpdateEvent.updateUI`.
+  // https://w3c.github.io/manifest/#icons-member
+  // Note that sizes can have multiple values (e.g. "32x32 64x64").
+  //
+  // Next Tag: 4
+  message IconDefinition {
+    optional string src = 1;
+    optional string sizes = 2;
+    optional string type = 3;
+  }
+
+  // Example value:
+  // icons: {
+  //   src: "icon/lowres.webp"
+  //   sizes: "48x48"
+  //   type: "image/webp"
+  // }
+  // icons: {
+  //   src: "icon/hd_hi.ico"
+  //   sizes: "72x72 96x96 128x128 256x256"
+  // }
+  repeated IconDefinition icons = 2;
+
+  optional uint64 download_total = 3;
+}
+
+// Stores information about the background fetch that will be persisted
+// in memory. This information should be everything needed to reconstruct
+// the state of an interrupted background fetch.
+//
+// Next Tag: 6
+message BackgroundFetchMetadata {
+  optional int64 creation_microseconds_since_unix_epoch = 1;
+  optional string origin = 2;
+
+  optional BackgroundFetchRegistration registration = 3;
+  optional BackgroundFetchOptions options = 4;
+
+  // Defaults to BackgroundFetchOptions.title.
+  // Can be updated by calling `BackgroundFetchUpdateEvent.updateUI`.
   // https://wicg.github.io/background-fetch/#backgroundfetchupdateevent.
-  optional string title = 5;
+  optional string ui_title = 5;
 }

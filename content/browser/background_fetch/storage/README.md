@@ -21,7 +21,7 @@ value: "<unique_id>"
 ```
 ```
 key: "bgfetch_registration_<unique_id>"
-value: "<serialized content::proto::BackgroundFetchRegistration>"
+value: "<serialized content::proto::BackgroundFetchMetadata>"
 ```
 ```
 key: "bgfetch_request_<unique_id>_<request_index>"

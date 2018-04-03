@@ -68,10 +68,11 @@ void CleanupTask::DidGetActiveUniqueIds(
 
   for (const auto& entry : registration_data) {
     int64_t service_worker_registration_id = entry.first;
-    proto::BackgroundFetchRegistration registration_proto;
-    if (registration_proto.ParseFromString(entry.second)) {
-      if (registration_proto.has_unique_id()) {
-        const std::string& unique_id = registration_proto.unique_id();
+    proto::BackgroundFetchMetadata metadata_proto;
+    if (metadata_proto.ParseFromString(entry.second)) {
+      if (metadata_proto.registration().has_unique_id()) {
+        const std::string& unique_id =
+            metadata_proto.registration().unique_id();
         if (!active_unique_ids.count(unique_id) &&
             !ref_counted_unique_ids().count(unique_id)) {
           // This |unique_id| can be safely cleaned up. Re-use

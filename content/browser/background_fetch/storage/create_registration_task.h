@@ -40,11 +40,11 @@ class CreateRegistrationTask : public DatabaseTask {
   void DidGetUniqueId(const std::vector<std::string>& data,
                       ServiceWorkerStatusCode status);
 
-  void StoreRegistration();
+  void StoreMetadata();
 
-  void DidStoreRegistration(ServiceWorkerStatusCode status);
+  void DidStoreMetadata(ServiceWorkerStatusCode status);
 
-  proto::BackgroundFetchRegistration CreateRegistrationProto() const;
+  proto::BackgroundFetchMetadata CreateMetadataProto() const;
 
   BackgroundFetchRegistrationId registration_id_;
   std::vector<ServiceWorkerFetchRequest> requests_;

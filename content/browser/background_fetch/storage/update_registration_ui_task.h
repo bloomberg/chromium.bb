@@ -38,7 +38,7 @@ class UpdateRegistrationUITask : public DatabaseTask {
   void DidGetUniqueId(const std::vector<std::string>& data,
                       ServiceWorkerStatusCode status);
 
-  void UpdateUI(const std::string& serialized_registration_proto);
+  void UpdateUI(const std::string& serialized_metadata_proto);
 
   void DidUpdateUI(ServiceWorkerStatusCode status);
 

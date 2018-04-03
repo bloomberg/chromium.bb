@@ -48,7 +48,7 @@ void CreateRegistrationTask::DidGetUniqueId(
     ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
-      StoreRegistration();
+      StoreMetadata();
       return;
     case DatabaseStatus::kOk:
       // Can't create a registration since there is already an active
@@ -68,27 +68,37 @@ void CreateRegistrationTask::DidGetUniqueId(
   }
 }
 
-proto::BackgroundFetchRegistration
-CreateRegistrationTask::CreateRegistrationProto() const {
-  int64_t registration_creation_microseconds_since_unix_epoch =
-      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+proto::BackgroundFetchMetadata CreateRegistrationTask::CreateMetadataProto()
+    const {
+  proto::BackgroundFetchMetadata metadata_proto;
 
-  // First serialize per-registration (as opposed to per-request) data.
-  // TODO(crbug.com/757760): Serialize BackgroundFetchOptions as part of this.
-  proto::BackgroundFetchRegistration registration_proto;
-  registration_proto.set_unique_id(registration_->unique_id);
-  registration_proto.set_developer_id(registration_->developer_id);
-  registration_proto.set_origin(registration_id_.origin().Serialize());
-  registration_proto.set_creation_microseconds_since_unix_epoch(
-      registration_creation_microseconds_since_unix_epoch);
+  // Set BackgroundFetchRegistration fields.
+  // Upload/Download stats default to correct initial values.
+  auto* registration_proto = metadata_proto.mutable_registration();
+  registration_proto->set_unique_id(registration_->unique_id);
+  registration_proto->set_developer_id(registration_->developer_id);
 
-  // TODO(crbug.com/826257): Write options to the proto.
-  registration_proto.set_title(options_.title);
+  // Set Options fields.
+  auto* options_proto = metadata_proto.mutable_options();
+  options_proto->set_title(options_.title);
+  options_proto->set_download_total(options_.download_total);
+  for (const auto& icon : options_.icons) {
+    auto* icon_definition_proto = options_proto->add_icons();
+    icon_definition_proto->set_src(icon.src);
+    icon_definition_proto->set_sizes(icon.sizes);
+    icon_definition_proto->set_type(icon.type);
+  }
 
-  return registration_proto;
+  // Set other metadata fields.
+  metadata_proto.set_origin(registration_id_.origin().Serialize());
+  metadata_proto.set_creation_microseconds_since_unix_epoch(
+      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds());
+  metadata_proto.set_ui_title(options_.title);
+
+  return metadata_proto;
 }
 
-void CreateRegistrationTask::StoreRegistration() {
+void CreateRegistrationTask::StoreMetadata() {
   DCHECK(!registration_);
   DCHECK(!registration_id_.origin().unique());
 
@@ -104,11 +114,10 @@ void CreateRegistrationTask::StoreRegistration() {
   std::vector<std::pair<std::string, std::string>> entries;
   entries.reserve(requests_.size() * 2 + 1);
 
-  const proto::BackgroundFetchRegistration registration_proto =
-      CreateRegistrationProto();
-  std::string serialized_registration_proto;
+  const proto::BackgroundFetchMetadata metadata_proto = CreateMetadataProto();
+  std::string serialized_metadata_proto;
 
-  if (!registration_proto.SerializeToString(&serialized_registration_proto)) {
+  if (!metadata_proto.SerializeToString(&serialized_metadata_proto)) {
     // TODO(crbug.com/780025): Log failures to UMA.
     std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
                              nullptr /* registration */);
@@ -120,7 +129,7 @@ void CreateRegistrationTask::StoreRegistration() {
       ActiveRegistrationUniqueIdKey(registration_id_.developer_id()),
       registration_id_.unique_id());
   entries.emplace_back(RegistrationKey(registration_id_.unique_id()),
-                       std::move(serialized_registration_proto));
+                       std::move(serialized_metadata_proto));
 
   // Signed integers are used for request indexes to avoid unsigned gotchas.
   for (int i = 0; i < base::checked_cast<int>(requests_.size()); i++) {
@@ -129,7 +138,7 @@ void CreateRegistrationTask::StoreRegistration() {
                          "TODO: Serialize FetchAPIRequest as value");
     entries.emplace_back(
         PendingRequestKey(
-            registration_proto.creation_microseconds_since_unix_epoch(),
+            metadata_proto.creation_microseconds_since_unix_epoch(),
             registration_id_.unique_id(), i),
         std::string());
   }
@@ -137,12 +146,11 @@ void CreateRegistrationTask::StoreRegistration() {
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(), entries,
-      base::Bind(&CreateRegistrationTask::DidStoreRegistration,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&CreateRegistrationTask::DidStoreMetadata,
+                          weak_factory_.GetWeakPtr()));
 }
 
-void CreateRegistrationTask::DidStoreRegistration(
-    ServiceWorkerStatusCode status) {
+void CreateRegistrationTask::DidStoreMetadata(ServiceWorkerStatusCode status) {
   DCHECK(registration_);
 
   switch (ToDatabaseStatus(status)) {
