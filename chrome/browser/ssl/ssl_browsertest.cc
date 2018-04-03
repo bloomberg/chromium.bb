@@ -74,6 +74,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -737,7 +738,9 @@ class SSLUITestBase : public InProcessBrowserTest {
 
   // Sets the policy identified by |policy_name| to be true, ensuring
   // that the corresponding boolean pref |pref_name| is updated to match.
-  void EnablePolicy(const char* policy_name, const char* pref_name) {
+  void EnablePolicy(PrefService* pref_service,
+                    const char* policy_name,
+                    const char* pref_name) {
     policy::PolicyMap policy_map;
     policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
@@ -745,9 +748,38 @@ class SSLUITestBase : public InProcessBrowserTest {
 
     EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
 
-    EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(pref_name));
-    EXPECT_TRUE(
-        g_browser_process->local_state()->IsManagedPreference(pref_name));
+    EXPECT_TRUE(pref_service->GetBoolean(pref_name));
+    EXPECT_TRUE(pref_service->IsManagedPreference(pref_name));
+  }
+
+  // Sets the policy identified by |policy_name| to the value specified by
+  // |list_values|, ensuring that the corresponding list pref |pref_name| is
+  // updated to match. |policy_name| must specify a policy that is a list of
+  // string values.
+  void ConfigureStringListPolicy(PrefService* pref_service,
+                                 const char* policy_name,
+                                 const char* pref_name,
+                                 const std::vector<std::string>& list_values) {
+    std::unique_ptr<base::ListValue> policy_value =
+        std::make_unique<base::ListValue>();
+    for (const auto& value : list_values) {
+      policy_value->GetList().emplace_back(value);
+    }
+    policy::PolicyMap policy_map;
+    policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                   std::move(policy_value), nullptr);
+
+    EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
+
+    const base::ListValue* pref_value = pref_service->GetList(pref_name);
+    ASSERT_TRUE(pref_value);
+    std::vector<std::string> pref_values;
+    for (const auto& value : pref_value->GetList()) {
+      ASSERT_TRUE(value.is_string());
+      pref_values.push_back(value.GetString());
+    }
+    EXPECT_THAT(pref_values, testing::UnorderedElementsAreArray(list_values));
   }
 
   // Checks that the SSLConfig associated with the net::URLRequestContext
@@ -761,6 +793,25 @@ class SSLUITestBase : public InProcessBrowserTest {
     RunOnIOThreadBlocking(base::BindOnce(
         &SSLUITestBase::CheckSSLConfigOnIOThread, base::Unretained(this),
         context_getter, member, expected));
+  }
+
+  // Checks that the TransportSecurityState associated with the
+  // net::URLRequestContext of the |context_getter| will return
+  // |expected_status| for |host|, given the certificate |cert|,
+  // |is_issued_by_known_root|, associated |hashes|, and a CT policy result of
+  // |policy_compliance|.
+  void CheckCTStatus(
+      scoped_refptr<net::URLRequestContextGetter> context_getter,
+      const std::string& host,
+      scoped_refptr<net::X509Certificate> cert,
+      bool is_issued_by_known_root,
+      const net::HashValueVector& hashes,
+      net::ct::CTPolicyCompliance policy_compliance,
+      net::TransportSecurityState::CTRequirementsStatus expected_status) {
+    RunOnIOThreadBlocking(base::BindOnce(
+        &SSLUITestBase::CheckCTStatusOnIOThread, base::Unretained(this),
+        context_getter, host, cert, is_issued_by_known_root, hashes,
+        policy_compliance, expected_status));
   }
 
   // Helper function for TestInterstitialLinksOpenInNewTab. Implemented as a
@@ -887,6 +938,30 @@ class SSLUITestBase : public InProcessBrowserTest {
     net::SSLConfig config;
     context->ssl_config_service()->GetSSLConfig(&config);
     EXPECT_EQ(expected, config.*member);
+  }
+
+  void CheckCTStatusOnIOThread(
+      scoped_refptr<net::URLRequestContextGetter> context_getter,
+      std::string host,
+      scoped_refptr<net::X509Certificate> cert,
+      bool known_root,
+      net::HashValueVector hashes,
+      net::ct::CTPolicyCompliance compliance_level,
+      net::TransportSecurityState::CTRequirementsStatus expected_status) {
+    net::URLRequestContext* context = context_getter->GetURLRequestContext();
+    ASSERT_TRUE(context);
+
+    net::TransportSecurityState* tss = context->transport_security_state();
+    ASSERT_TRUE(tss);
+
+    net::HostPortPair host_port_pair(host, 443);
+
+    EXPECT_EQ(expected_status,
+              tss->CheckCTRequirements(
+                  host_port_pair, known_root, hashes, cert.get(), cert.get(),
+                  net::SignedCertificateTimestampAndStatusList(),
+                  net::TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+                  compliance_level));
   }
 
   policy::MockConfigurationPolicyProvider policy_provider_;
@@ -1787,7 +1862,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestHTTPSExpiredCertAndGoForward) {
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
   bool net::SSLConfig::*member = &net::SSLConfig::rev_checking_enabled;
   ASSERT_NO_FATAL_FAILURE(
-      EnablePolicy(policy::key::kEnableOnlineRevocationChecks,
+      EnablePolicy(g_browser_process->local_state(),
+                   policy::key::kEnableOnlineRevocationChecks,
                    ssl_config::prefs::kCertRevocationCheckingEnabled));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
@@ -1814,7 +1890,8 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevoked) {
   bool net::SSLConfig::*member = &net::SSLConfig::rev_checking_enabled;
   ASSERT_NO_FATAL_FAILURE(
-      EnablePolicy(policy::key::kEnableOnlineRevocationChecks,
+      EnablePolicy(g_browser_process->local_state(),
+                   policy::key::kEnableOnlineRevocationChecks,
                    ssl_config::prefs::kCertRevocationCheckingEnabled));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
@@ -1852,9 +1929,9 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1IsDefaultDisabled) {
 IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
   bool net::SSLConfig::*member = &net::SSLConfig::sha1_local_anchors_enabled;
 
-  ASSERT_NO_FATAL_FAILURE(
-      EnablePolicy(policy::key::kEnableSha1ForLocalAnchors,
-                   ssl_config::prefs::kCertEnableSha1LocalAnchors));
+  ASSERT_NO_FATAL_FAILURE(EnablePolicy(
+      g_browser_process->local_state(), policy::key::kEnableSha1ForLocalAnchors,
+      ssl_config::prefs::kCertEnableSha1LocalAnchors));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 
@@ -1879,10 +1956,45 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecPrefsCanEnable) {
   bool net::SSLConfig::*member = &net::SSLConfig::symantec_enforcement_disabled;
 
   ASSERT_NO_FATAL_FAILURE(
-      EnablePolicy(policy::key::kEnableSymantecLegacyInfrastructure,
+      EnablePolicy(g_browser_process->local_state(),
+                   policy::key::kEnableSymantecLegacyInfrastructure,
                    ssl_config::prefs::kCertEnableSymantecLegacyInfrastructure));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
+}
+
+IN_PROC_BROWSER_TEST_P(SSLUITest,
+                       CertificateTransparencyEnforcementDisabledForUrls) {
+  bool require = true;
+  net::TransportSecurityState::SetShouldRequireCTForTesting(&require);
+
+  scoped_refptr<net::X509Certificate> cert = https_server_.GetCertificate();
+  net::HashValueVector hashes;
+  hashes.push_back(GetSPKIHash(cert->cert_buffer()));
+  std::vector<std::string> disabled_urls{"www.google.com"};
+
+  // Make sure that CT is required without the policy set.
+  ASSERT_NO_FATAL_FAILURE(CheckCTStatus(
+      browser()->profile()->GetRequestContext(), disabled_urls.front(), cert,
+      true, hashes, net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
+      net::TransportSecurityState::CTRequirementsStatus::
+          CT_REQUIREMENTS_NOT_MET));
+  ASSERT_NO_FATAL_FAILURE(CheckCTStatus(
+      browser()->profile()->GetRequestContext(), disabled_urls.front(), cert,
+      true, hashes, net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS,
+      net::TransportSecurityState::CTRequirementsStatus::CT_REQUIREMENTS_MET));
+
+  // Configure the policy.
+  ASSERT_NO_FATAL_FAILURE(ConfigureStringListPolicy(
+      browser()->profile()->GetPrefs(),
+      policy::key::kCertificateTransparencyEnforcementDisabledForUrls,
+      certificate_transparency::prefs::kCTExcludedHosts, disabled_urls));
+
+  // Make sure CT is now explicitly disabled.
+  ASSERT_NO_FATAL_FAILURE(CheckCTStatus(
+      browser()->profile()->GetRequestContext(), disabled_urls.front(), cert,
+      true, hashes, net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
+      net::TransportSecurityState::CTRequirementsStatus::CT_NOT_REQUIRED));
 }
 
 // Visit a HTTP page which request WSS connection to a server providing invalid
