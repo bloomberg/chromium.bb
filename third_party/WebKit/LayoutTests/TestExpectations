@@ -896,7 +896,6 @@ crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-position-below-le
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-position-below-left-002.xht [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-position-below-right-001.xht [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-position-below-right-002.xht [ Failure ]
-crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-style-001.html [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-style-002.html [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-style-006.html [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-style-007.html [ Failure ]
