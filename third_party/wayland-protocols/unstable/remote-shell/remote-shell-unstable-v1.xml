@@ -468,6 +468,7 @@
     </request>
 
     <!-- Version 3 additions -->
+
     <request name="set_systemui_visibility" since="3">
       <description summary="requests the system ui visibility behavior for the surface">
 	Requests how the surface will change the visibility of the system UI when it is made active.
@@ -624,6 +625,7 @@
     </event>
 
     <!-- Version 10 additions -->
+
     <enum name="bounds_change_reason">
       <description summary="bounds_change_reason">
         Specifies the cause of the window bounds change event.
@@ -761,6 +763,7 @@
     </request>
 
     <!-- Version 11 additions -->
+
     <request name="set_snapped_to_left" since="11">
       <description summary="set the surface to left snapped">
         Request that surface is snapped to left.
