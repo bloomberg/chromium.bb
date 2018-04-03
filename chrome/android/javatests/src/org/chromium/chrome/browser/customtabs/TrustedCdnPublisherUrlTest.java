@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -44,6 +45,7 @@ import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -210,6 +212,21 @@ public class TrustedCdnPublisherUrlTest {
         runTrustedCdnPublisherUrlTest(
                 "https://example.com/test", "com.example.test", null, getDefaultSecurityIcon());
     }
+
+    @Test
+    @SmallTest
+    @Feature({"UiCatalogue"})
+    @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
+    @OverrideTrustedCdn
+    public void testPageInfo() throws Exception {
+        runTrustedCdnPublisherUrlTest("https://example.com/test", "com.example.test", "example.com",
+                R.drawable.omnibox_https_valid);
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mCustomTabActivityTestRule.getActivity().findViewById(R.id.security_button));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        mScreenShooter.shoot("Page Info");
+    }
+
     // TODO(bauerb): Test an insecure HTTPS connection.
 
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,

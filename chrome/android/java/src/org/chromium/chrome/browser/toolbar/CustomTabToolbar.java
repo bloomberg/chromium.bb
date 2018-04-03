@@ -180,18 +180,13 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
-        mSecurityButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Tab currentTab = getToolbarDataProvider().getTab();
-                if (currentTab == null || currentTab.getWebContents() == null) return;
-                Activity activity = currentTab.getWindowAndroid().getActivity().get();
-                if (activity == null) return;
-                String publisherName = mState == STATE_TITLE_ONLY
-                        ? parsePublisherNameFromUrl(currentTab.getUrl()) : null;
-                PageInfoPopup.show(
-                        activity, currentTab, publisherName, PageInfoPopup.OPENED_FROM_TOOLBAR);
-            }
+        mSecurityButton.setOnClickListener(v -> {
+            Tab currentTab = getToolbarDataProvider().getTab();
+            if (currentTab == null || currentTab.getWebContents() == null) return;
+            Activity activity = currentTab.getWindowAndroid().getActivity().get();
+            if (activity == null) return;
+            PageInfoPopup.show(
+                    activity, currentTab, getContentPublisher(), PageInfoPopup.OPENED_FROM_TOOLBAR);
         });
     }
 
@@ -334,10 +329,15 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public String getContentPublisher() {
-        if (mState == STATE_TITLE_ONLY) {
-            if (getToolbarDataProvider().getTab() == null) return null;
-            return parsePublisherNameFromUrl(getToolbarDataProvider().getTab().getUrl());
-        }
+        Tab tab = getToolbarDataProvider().getTab();
+        if (tab == null) return null;
+
+        String publisherUrl = tab.getTrustedCdnPublisherUrl();
+        if (publisherUrl != null) return extractPublisherFromPublisherUrl(publisherUrl);
+
+        // TODO(bauerb): Remove this once trusted CDN publisher URLs have rolled out completely.
+        if (mState == STATE_TITLE_ONLY) return parsePublisherNameFromUrl(tab.getUrl());
+
         return null;
     }
 
@@ -377,6 +377,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         updateSecurityIcon();
     }
 
+    private static String extractPublisherFromPublisherUrl(String publisherUrl) {
+        return BidiFormatter.getInstance().unicodeWrap(
+                UrlFormatter.formatUrlForDisplayOmitScheme(GURLUtils.getOrigin(publisherUrl)));
+    }
+
     @Override
     public void setUrlToPageUrl() {
         if (getCurrentTab() == null) {
@@ -400,10 +405,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         }
         CharSequence displayText;
         if (publisherUrl != null) {
-            String publisherOrigin =
-                    UrlFormatter.formatUrlForDisplayOmitScheme(GURLUtils.getOrigin(publisherUrl));
             String plainDisplayText = getContext().getString(R.string.custom_tab_amp_publisher_url,
-                    BidiFormatter.getInstance().unicodeWrap(publisherOrigin));
+                    extractPublisherFromPublisherUrl(publisherUrl));
             ColorStateList tint = mUseDarkColors ? mDarkModeTint : mLightModeTint;
             displayText = SpanApplier.applySpans(plainDisplayText,
                     new SpanInfo("<bg>", "</bg>", new ForegroundColorSpan(tint.getDefaultColor())));
