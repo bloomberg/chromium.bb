@@ -813,17 +813,10 @@ bool LayoutFlexibleBox::CrossAxisLengthIsDefinite(const LayoutBox& child,
 void LayoutFlexibleBox::CacheChildMainSize(const LayoutBox& child) {
   DCHECK(!child.NeedsLayout());
   LayoutUnit main_size;
-  if (HasOrthogonalFlow(child)) {
+  if (HasOrthogonalFlow(child))
     main_size = child.LogicalHeight();
-  } else {
-    // The max preferred logical width includes the intrinsic scrollbar logical
-    // width, which is only set for overflow: scroll. To handle overflow: auto,
-    // we have to take scrollbarLogicalWidth() into account, and then subtract
-    // the intrinsic width again so as to not double-count overflow: scroll
-    // scrollbars.
-    main_size = child.MaxPreferredLogicalWidth() +
-                child.ScrollbarLogicalWidth() - child.ScrollbarLogicalWidth();
-  }
+  else
+    main_size = child.MaxPreferredLogicalWidth();
   intrinsic_size_along_main_axis_.Set(&child, main_size);
   relaid_out_children_.insert(&child);
 }
