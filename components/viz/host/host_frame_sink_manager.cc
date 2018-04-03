@@ -249,9 +249,9 @@ void HostFrameSinkManager::EvictSurfaces(
 }
 
 void HostFrameSinkManager::RequestCopyOfOutput(
-    const FrameSinkId& frame_sink_id,
+    const SurfaceId& surface_id,
     std::unique_ptr<CopyOutputRequest> request) {
-  frame_sink_manager_->RequestCopyOfOutput(frame_sink_id, std::move(request));
+  frame_sink_manager_->RequestCopyOfOutput(surface_id, std::move(request));
 }
 
 std::unique_ptr<CompositorFrameSinkSupport>

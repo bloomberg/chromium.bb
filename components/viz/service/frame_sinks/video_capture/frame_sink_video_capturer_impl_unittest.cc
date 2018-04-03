@@ -199,6 +199,7 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
   gfx::Size GetActiveFrameSize() override { return kSourceSize; }
 
   void RequestCopyOfOutput(
+      const LocalSurfaceId& local_surface_id,
       std::unique_ptr<CopyOutputRequest> request) override {
     EXPECT_EQ(CopyOutputResult::Format::I420_PLANES, request->result_format());
     EXPECT_NE(base::UnguessableToken(), request->source());

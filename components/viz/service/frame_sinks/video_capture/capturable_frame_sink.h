@@ -17,6 +17,7 @@ class Rect;
 namespace viz {
 
 class CopyOutputRequest;
+class LocalSurfaceId;
 
 // Interface for CompositorFrameSink implementations that support frame sink
 // video capture.
@@ -51,8 +52,12 @@ class CapturableFrameSink {
   // active frame.
   virtual gfx::Size GetActiveFrameSize() = 0;
 
-  // Issues a request for a copy of the next composited frame.
+  // Issues a request for a copy of the next composited frame whose
+  // LocalSurfaceId is at least |local_surface_id|. Note that if this id is
+  // default constructed, then the next surface will provide the copy output
+  // regardless of its LocalSurfaceId.
   virtual void RequestCopyOfOutput(
+      const LocalSurfaceId& local_surface_id,
       std::unique_ptr<CopyOutputRequest> request) = 0;
 };
 

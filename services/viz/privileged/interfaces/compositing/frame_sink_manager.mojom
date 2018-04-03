@@ -129,10 +129,10 @@ interface FrameSinkManager {
   // Marks the given SurfaceIds for destruction.
   EvictSurfaces(array<SurfaceId> surface_ids);
 
-  // Takes a snapshot of |frame_sink_id|. Next time a display frame is
-  // generated, the snapshot will be taken from the Surface belonging to
-  // |frame_sink_id| that is reachable from the root Surface.
-  RequestCopyOfOutput(FrameSinkId frame_sink_id, CopyOutputRequest request);
+  // Takes a snapshot of |surface_id| or a newer surface with the same
+  // FrameSinkId. The request will be queued up until such surface exists and is
+  // reachable from the root surface.
+  RequestCopyOfOutput(SurfaceId surface_id, CopyOutputRequest request);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

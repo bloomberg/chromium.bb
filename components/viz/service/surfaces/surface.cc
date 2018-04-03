@@ -426,9 +426,6 @@ void Surface::TakeCopyOutputRequests(Surface::CopyRequestsMap* copy_requests) {
   if (!active_frame_data_)
     return;
 
-  // TakeCopyOutputRequestsFromClient() has to be called before this method.
-  DCHECK(!surface_client_ || !surface_client_->HasCopyOutputRequests());
-
   for (const auto& render_pass : active_frame_data_->frame.render_pass_list) {
     for (auto& request : render_pass->copy_requests) {
       copy_requests->insert(
@@ -442,7 +439,8 @@ void Surface::TakeCopyOutputRequestsFromClient() {
   if (!surface_client_)
     return;
   for (std::unique_ptr<CopyOutputRequest>& request :
-       surface_client_->TakeCopyOutputRequests()) {
+       surface_client_->TakeCopyOutputRequests(
+           surface_id().local_surface_id())) {
     RequestCopyOfOutput(std::move(request));
   }
 }
@@ -450,8 +448,6 @@ void Surface::TakeCopyOutputRequestsFromClient() {
 bool Surface::HasCopyOutputRequests() {
   if (!active_frame_data_)
     return false;
-  if (surface_client_ && surface_client_->HasCopyOutputRequests())
-    return true;
   for (const auto& render_pass : active_frame_data_->frame.render_pass_list) {
     if (!render_pass->copy_requests.empty())
       return true;

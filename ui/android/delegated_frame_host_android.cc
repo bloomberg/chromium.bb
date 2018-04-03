@@ -112,6 +112,8 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
+  // TODO(vmpstr): We should defer this request until such time that this
+  // returns true. https://crbug.com/826097.
   if (!CanCopyFromCompositingSurface()) {
     std::move(callback).Run(SkBitmap());
     return;
@@ -148,7 +150,7 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
 
-  support_->RequestCopyOfOutput(std::move(request));
+  support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {

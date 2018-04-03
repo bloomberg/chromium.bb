@@ -1187,7 +1187,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
                         device_scale_factor);
   auto copy_request = CopyOutputRequest::CreateStubForTesting();
   auto* copy_request_ptr = copy_request.get();
-  embedded_support->RequestCopyOfOutput(std::move(copy_request));
+  embedded_support->RequestCopyOfOutput(embedded_local_surface_id,
+                                        std::move(copy_request));
 
   Quad root_quads[] = {
       Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(5, 5)),
@@ -1333,7 +1334,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
                         device_scale_factor);
   auto copy_request(CopyOutputRequest::CreateStubForTesting());
   auto* copy_request_ptr = copy_request.get();
-  embedded_support->RequestCopyOfOutput(std::move(copy_request));
+  embedded_support->RequestCopyOfOutput(embedded_local_surface_id,
+                                        std::move(copy_request));
 
   LocalSurfaceId parent_local_surface_id = allocator_.GenerateId();
   SurfaceId parent_surface_id(parent_support->frame_sink_id(),

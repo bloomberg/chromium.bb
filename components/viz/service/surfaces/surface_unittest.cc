@@ -91,9 +91,11 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   ASSERT_TRUE(!!surface);
 
   bool copy_called = false;
-  support->RequestCopyOfOutput(std::make_unique<CopyOutputRequest>(
-      CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&TestCopyResultCallback, &copy_called)));
+  support->RequestCopyOfOutput(
+      local_surface_id,
+      std::make_unique<CopyOutputRequest>(
+          CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          base::BindOnce(&TestCopyResultCallback, &copy_called)));
   surface->TakeCopyOutputRequestsFromClient();
   EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   EXPECT_FALSE(copy_called);

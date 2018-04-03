@@ -52,7 +52,7 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
       mojom::FrameSinkVideoCapturerRequest request) override {}
   void EvictSurfaces(const std::vector<SurfaceId>& surface_ids) override {}
   void RequestCopyOfOutput(
-      const FrameSinkId& frame_sink_id,
+      const SurfaceId& surface_id,
       std::unique_ptr<CopyOutputRequest> request) override {}
 
   mojo::Binding<mojom::FrameSinkManager> binding_;

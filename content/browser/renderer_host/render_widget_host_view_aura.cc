@@ -843,10 +843,6 @@ void RenderWidgetHostViewAura::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  if (!IsSurfaceAvailableForCopy()) {
-    std::move(callback).Run(SkBitmap());
-    return;
-  }
   delegated_frame_host_->CopyFromCompositingSurface(src_subrect, dst_size,
                                                     std::move(callback));
 }
