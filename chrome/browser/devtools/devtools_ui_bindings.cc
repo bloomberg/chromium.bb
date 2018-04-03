@@ -91,7 +91,7 @@ namespace {
 static const char kFrontendHostId[] = "id";
 static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
-static const char kTitleFormat[] = "Developer Tools - %s";
+static const char kTitleFormat[] = "DevTools - %s";
 
 static const char kDevToolsActionTakenHistogram[] = "DevTools.ActionTaken";
 static const char kDevToolsPanelShownHistogram[] = "DevTools.PanelShown";
@@ -573,8 +573,8 @@ DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
        it != instances->end(); ++it) {
     if ((*it)->web_contents() == web_contents)
       return *it;
- }
- return NULL;
+  }
+  return NULL;
 }
 
 DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
@@ -728,9 +728,19 @@ void DevToolsUIBindings::InspectElementCompleted() {
 void DevToolsUIBindings::InspectedURLChanged(const std::string& url) {
   content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
+
+  const std::string kHttpPrefix = "http://";
+  const std::string kHttpsPrefix = "https://";
+  const std::string simplified_url =
+      base::StartsWith(url, kHttpsPrefix, base::CompareCase::SENSITIVE)
+          ? url.substr(kHttpsPrefix.length())
+          : base::StartsWith(url, kHttpPrefix, base::CompareCase::SENSITIVE)
+                ? url.substr(kHttpPrefix.length())
+                : url;
   // DevTools UI is not localized.
   web_contents()->UpdateTitleForEntry(
-      entry, base::UTF8ToUTF16(base::StringPrintf(kTitleFormat, url.c_str())));
+      entry, base::UTF8ToUTF16(
+                 base::StringPrintf(kTitleFormat, simplified_url.c_str())));
 }
 
 void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
