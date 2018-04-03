@@ -87,8 +87,8 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   ::Display* xdisplay_;
   ::Window x_root_window_;
 
-  // Whether the x server supports the XRandR extension.
-  bool has_xrandr_;
+  // XRandR version. MAJOR * 100 + MINOR. Zero if no xrandr is present.
+  int xrandr_version_;
 
   // The base of the event numbers used to represent XRandr events used in
   // decoding events regarding output add/remove.
