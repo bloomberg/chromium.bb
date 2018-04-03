@@ -153,7 +153,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
                        attribute.reflect_invalid, attribute.reflect_empty,
                        attribute.cpp_value)
-      | indent(2)}}
+      | trim | indent(2)}}
   {% endif %}
 
   {% if attribute.cached_attribute_validation_method %}
@@ -238,7 +238,7 @@ v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
   {% if attribute.runtime_call_stats.extended_attribute_defined %}
-  {{ runtime_timer_scope(attribute.runtime_call_stats.getter_counter) | indent(2) }}
+  {{ runtime_timer_scope(attribute.runtime_call_stats.getter_counter) | trim | indent(2) }}
   {% else %}
   {{ runtime_timer_scope_disabled_by_default(attribute.runtime_call_stats.getter_counter) }}
   {% endif %}
@@ -387,7 +387,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 
   // Prepare the value to be set.
   {% if attribute.idl_type != 'EventHandler' %}
-  {{v8_value_to_local_cpp_value(attribute) | indent(2)}}
+  {{v8_value_to_local_cpp_value(attribute) | trim | indent(2)}}
   {% endif %}
 
   {% if attribute.has_type_checking_interface %}
@@ -402,7 +402,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
   DummyExceptionStateForTesting dummyExceptionState;
-  {{declare_enum_validation_variable(attribute.enum_values) | indent(2)}}
+  {{declare_enum_validation_variable(attribute.enum_values) | trim | indent(2)}}
   if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", dummyExceptionState)) {
     ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
@@ -458,7 +458,7 @@ v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInf
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
   {% if attribute.runtime_call_stats.extended_attribute_defined %}
-  {{ runtime_timer_scope(attribute.runtime_call_stats.setter_counter) | indent(2) }}
+  {{ runtime_timer_scope(attribute.runtime_call_stats.setter_counter) | trim | indent(2) }}
   {% else %}
   {{ runtime_timer_scope_disabled_by_default(attribute.runtime_call_stats.setter_counter) }}
   {% endif %}
@@ -590,7 +590,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% filter runtime_enabled(feature_name) %}
 static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
     {% for attribute in attribute_list | sort %}
-    {{accessor_configuration(attribute) | indent(4)}},
+    {{accessor_configuration(attribute) | trim | indent(4)}},
     {% endfor %}
 };
 V8DOMConfiguration::InstallAccessors(
@@ -616,7 +616,7 @@ V8DOMConfiguration::InstallAccessors(
 {% filter runtime_enabled(feature_name) %}
 static const V8DOMConfiguration::AttributeConfiguration attribute_configurations[] = {
     {% for attribute in attribute_list | sort %}
-    {{attribute_configuration(attribute) | indent(4)}},
+    {{attribute_configuration(attribute) | trim | indent(4)}},
     {% endfor %}
 };
 V8DOMConfiguration::InstallAttributes(

@@ -79,7 +79,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
   {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
-  {{v8_value_to_local_cpp_value(setter) | indent(2)}}
+  {{v8_value_to_local_cpp_value(setter) | trim | indent(2)}}
   {% if setter.has_type_checking_interface %}
   {# Type checking for interface types (if interface not implemented, throw
      TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
@@ -439,7 +439,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
   {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
-  {{v8_value_to_local_cpp_value(setter) | indent(2)}}
+  {{v8_value_to_local_cpp_value(setter) | trim | indent(2)}}
   {% if setter.has_type_checking_interface %}
   {# Type checking for interface types (if interface not implemented, throw
      TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
@@ -981,7 +981,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObjec
   // Named Properties object has SetPrototype method of Immutable Prototype Exotic Objects
   namedPropertiesObjectTemplate->SetImmutableProto();
   V8DOMConfiguration::SetClassString(isolate, namedPropertiesObjectTemplate, "{{interface_name}}Properties");
-  {{install_named_property_handler('namedPropertiesObjectTemplate') | indent(2)}}
+  {{install_named_property_handler('namedPropertiesObjectTemplate') | trim | indent(2)}}
 
   return namedPropertiesObjectFunctionTemplate;
 }

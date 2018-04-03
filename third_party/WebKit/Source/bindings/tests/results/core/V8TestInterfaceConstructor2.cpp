@@ -165,7 +165,6 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
     V8SetReturnValue(info, wrapper);
-
     return;
   }
   optionalStringArg = info[5];

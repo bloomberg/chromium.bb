@@ -361,7 +361,7 @@ void {{v8_class_or_partial}}::crossOriginIndexedGetter(uint32_t index, const v8:
 #endif
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
     {% for data_attribute in data_attributes %}
-    {{attribute_configuration(data_attribute) | indent(4)}},
+    {{attribute_configuration(data_attribute) | trim | indent(4)}},
     {% endfor %}
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
@@ -382,7 +382,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 #endif
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}LazyDataAttributes[] = {
     {% for data_attribute in lazy_data_attributes %}
-    {{attribute_configuration(data_attribute) | indent(4)}},
+    {{attribute_configuration(data_attribute) | trim | indent(4)}},
     {% endfor %}
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
@@ -397,7 +397,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}LazyDataAttr
 {% if accessors %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for accessor in accessors %}
-    {{accessor_configuration(accessor) | indent(4)}},
+    {{accessor_configuration(accessor) | trim | indent(4)}},
     {% endfor %}
 };
 
@@ -409,7 +409,7 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 {% if methods | has_method_configuration(is_partial) %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in methods | has_method_configuration(is_partial) %}
-    {{method_configuration(method) | indent(4)}},
+    {{method_configuration(method) | trim | indent(4)}},
     {% endfor %}
 };
 
@@ -486,7 +486,7 @@ static void install{{v8_class}}Template(
 
   // Register IDL constants, attributes and operations.
   {% if constants %}
-  {{install_constants() | indent(2)}}
+  {{install_constants() | trim | indent(2)}}
   {% endif %}
   {% if data_attributes %}
   V8DOMConfiguration::InstallAttributes(
@@ -529,11 +529,11 @@ static void install{{v8_class}}Template(
 
   {% if (indexed_property_getter or named_property_getter) and not is_partial %}
   // Indexed properties
-  {{install_indexed_property_handler('instanceTemplate') | indent(2)}}
+  {{install_indexed_property_handler('instanceTemplate') | trim | indent(2)}}
   {% endif %}
   {% if named_property_getter and not is_partial and not has_named_properties_object %}
   // Named properties
-  {{install_named_property_handler('instanceTemplate') | indent(2)}}
+  {{install_named_property_handler('instanceTemplate') | trim | indent(2)}}
   {% endif %}
 
   {% if has_array_iterator and not is_partial %}
@@ -661,9 +661,9 @@ static void install{{v8_class}}Template(
                         if method.overloads else method.runtime_enabled_feature_name %}
   {% if not feature_name %}
   {% if method.is_cross_origin %}
-  {{install_origin_safe_method(method, 'instanceTemplate', 'prototypeTemplate') | indent(2)}}
+  {{install_origin_safe_method(method, 'instanceTemplate', 'prototypeTemplate') | trim | indent(2)}}
   {% else %}
-  {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'interfaceTemplate', 'signature') | indent(2)}}
+  {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'interfaceTemplate', 'signature') | trim | indent(2)}}
   {% endif %}
   {% endif %}
   {% endfilter %}
@@ -701,7 +701,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
   {% filter runtime_enabled(feature_name) %}
   static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
       {% for constant in constants_list %}
-      {{constant_configuration(constant) | indent(6)}},
+      {{constant_configuration(constant) | trim | indent(6)}},
       {% endfor %}
   };
   V8DOMConfiguration::InstallConstants(
@@ -714,7 +714,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
   {% filter runtime_enabled(feature_name) %}
   static const V8DOMConfiguration::AttributeConfiguration attribute_configurations[] = {
       {% for attribute in attribute_list | sort %}
-      {{attribute_configuration(attribute) | indent(6)}},
+      {{attribute_configuration(attribute) | trim | indent(6)}},
       {% endfor %}
   };
   V8DOMConfiguration::InstallAttributes(
@@ -727,7 +727,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
   {% filter runtime_enabled(feature_name) %}
   static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
       {% for attribute in attribute_list | sort %}
-      {{accessor_configuration(attribute) | indent(6)}},
+      {{accessor_configuration(attribute) | trim | indent(6)}},
       {% endfor %}
   };
   V8DOMConfiguration::InstallAccessors(
@@ -770,9 +770,9 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
   {% if feature_name %}
   {% filter runtime_enabled(feature_name) %}
   {% if method.is_cross_origin %}
-  {{install_origin_safe_method(method, 'instance_template', 'prototype_template') | indent(2)}}
+  {{install_origin_safe_method(method, 'instance_template', 'prototype_template') | trim | indent(2)}}
   {% else %}
-  {{install_custom_signature(method, 'instance_template', 'prototype_template', 'interface_template', 'signature') | indent(2)}}
+  {{install_custom_signature(method, 'instance_template', 'prototype_template', 'interface_template', 'signature') | trim | indent(2)}}
   {% endif %}
   {% endfilter %}
   {% endif %}
@@ -827,7 +827,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
   {% filter runtime_enabled(feature_name) %}
   static const V8DOMConfiguration::AttributeConfiguration attribute_configurations[] = {
       {% for attribute in attrs | sort %}
-      {{attribute_configuration(attribute) | indent(6)}},
+      {{attribute_configuration(attribute) | trim | indent(6)}},
       {% endfor %}
   };
   V8DOMConfiguration::InstallAttributes(isolate, world, instance, prototype,
@@ -839,7 +839,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
   {% filter runtime_enabled(feature_name) %}
   static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
       {% for attribute in attrs | sort %}
-      {{accessor_configuration(attribute) | indent(6)}},
+      {{accessor_configuration(attribute) | trim | indent(6)}},
       {% endfor %}
   };
   V8DOMConfiguration::InstallAccessors(isolate, world, instance, prototype,
@@ -863,7 +863,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
   {% if method.is_cross_origin %}
 #error "{{v8_class_or_partial}} should not have runtime enabled and cross origin methods."
   {% else %}
-  {{install_custom_signature(method, 'instance', 'prototype', 'interface', 'signature') | indent(2)}}
+  {{install_custom_signature(method, 'instance', 'prototype', 'interface', 'signature') | trim | indent(2)}}
   {% endif %}
   {% endfilter %}
   {% endif %}
@@ -897,13 +897,13 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
   {% filter secure_context(attribute.secure_context_test, 'isSecureContext') %}
   {% if attribute.is_data_type_property %}
   static const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration[] = {
-    {{attribute_configuration(attribute) | indent(2)}}
+    {{attribute_configuration(attribute) | trim | indent(2)}}
   };
   for (const auto& attributeConfig : attribute{{attribute.name}}Configuration)
     V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, attributeConfig);
   {% else %}
   static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
-    {{accessor_configuration(attribute) | indent(2)}}
+    {{accessor_configuration(attribute) | trim | indent(2)}}
   };
   for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
     V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
@@ -921,7 +921,7 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
   {% filter secure_context(method.secure_context_test, 'isSecureContext') %}
   {% set method_name = method.name.title().replace('_', '') %}
   static const V8DOMConfiguration::MethodConfiguration method{{method_name}}Configuration[] = {
-    {{method_configuration(method) | indent(2)}}
+    {{method_configuration(method) | trim | indent(2)}}
   };
   for (const auto& methodConfig : method{{method_name}}Configuration)
     V8DOMConfiguration::InstallMethod(isolate, world, instance, prototype, interface, signature, methodConfig);
@@ -1009,16 +1009,16 @@ void {{v8_class_or_partial}}::InstallConditionalFeatures(
   {% set attributes_on_instance = conditional_attributes | selectattr('on_instance') | list  %}
   {% if attributes_on_instance or conditional_interface_objects %}
   if (!instanceObject.IsEmpty()) {
-    {{install_conditional_attributes('isSecureContext', attributes_on_instance) | indent(4)}}
-    {{install_conditional_interface_objects('isSecureContext', conditional_interface_objects) | indent(4)}}
+    {{install_conditional_attributes('isSecureContext', attributes_on_instance) | trim | indent(4)}}
+    {{install_conditional_interface_objects('isSecureContext', conditional_interface_objects) | trim | indent(4)}}
   }
   {% endif %}
 
   {% set attributes_on_prototype = conditional_attributes | selectattr('on_prototype') | list  %}
   {% set attributes_on_interface = conditional_attributes | selectattr('on_interface') | list  %}
   if (!prototypeObject.IsEmpty() || !interfaceObject.IsEmpty()) {
-    {{install_conditional_attributes('isSecureContext', attributes_on_prototype + attributes_on_interface) | indent(4)}}
-    {{install_conditional_methods('isSecureContext') | indent(4)}}
+    {{install_conditional_attributes('isSecureContext', attributes_on_prototype + attributes_on_interface) | trim | indent(4)}}
+    {{install_conditional_methods('isSecureContext') | trim | indent(4)}}
   }
   {% endif %}{# conditional_attributes or conditional_methods #}
 }

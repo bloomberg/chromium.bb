@@ -72,7 +72,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
   {% endif %}
 
-  {{function_call | indent(2)}}
+  {{function_call | trim | indent(2)}}
 }
 {% endfilter %}
 {% endmacro %}
@@ -120,9 +120,9 @@ while (numArgsPassed > 0) {
 {% for argument in method.arguments %}
 {% if argument.set_default_value %}
 if (!info[{{argument.index}}]->IsUndefined()) {
-  {{generate_argument(method, argument, world_suffix) | indent(2)}}
+  {{generate_argument(method, argument, world_suffix) | trim | indent(2)}}
 } else {
-  {{argument.set_default_value | indent(2)}};
+  {{argument.set_default_value | trim | indent(2)}};
 }
 {% else %}
 {{generate_argument(method, argument, world_suffix)}}
@@ -141,9 +141,9 @@ if (!info[{{argument.index}}]->IsUndefined()) {
    Optional Dictionary arguments default to empty dictionary. #}
 if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
   {% if world_suffix %}
-  {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value) | indent(2)}}
+  {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value) | trim | indent(2)}}
   {% else %}
-  {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | indent(2)}}
+  {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | trim | indent(2)}}
   {% endif %}
   return;
 }
@@ -211,7 +211,7 @@ if (!info[{{argument.index}}]->IsNullOrUndefined() && !info[{{argument.index}}]-
 {{v8_value_to_local_cpp_value(argument)}}
 {% elif argument.is_explicit_nullable %}
 if (!info[{{argument.index}}]->IsNullOrUndefined()) {
-  {{v8_value_to_local_cpp_value(argument) | indent(2)}}
+  {{v8_value_to_local_cpp_value(argument) | trim | indent(2)}}
 }
 {% else %}{# argument is something else #}
 {{v8_value_to_local_cpp_value(argument)}}
@@ -510,7 +510,7 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
 {% macro method_callback(method, world_suffix) %}
 void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% if method.runtime_call_stats.extended_attribute_defined %}
-  {{ runtime_timer_scope(method.runtime_call_stats.method_counter) | indent(2) }}
+  {{ runtime_timer_scope(method.runtime_call_stats.method_counter) | trim | indent(2) }}
   {% else %}
   {{ runtime_timer_scope_disabled_by_default(method.runtime_call_stats.method_counter) }}
   {% endif %}
@@ -615,7 +615,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
       info.NewTarget().As<v8::Object>()->CreationContext());
   {% endif %}
 
-  {{function_call | indent(2)}}
+  {{function_call | trim | indent(2)}}
 }
 {% endmacro %}
 
@@ -660,7 +660,7 @@ V8SetReturnValue(info, wrapper);
 {######################################}
 {% macro install_custom_signature(method, instance_template, prototype_template, interface_template, signature) %}
 const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration[] = {
-  {{method_configuration(method) | indent(2)}}
+  {{method_configuration(method) | trim | indent(2)}}
 };
 for (const auto& methodConfig : {{method.name}}MethodConfiguration)
   V8DOMConfiguration::InstallMethod(isolate, world, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, methodConfig);
@@ -681,7 +681,7 @@ for (const auto& methodConfig : {{method.name}}MethodConfiguration)
                           if method.overloads else
                           method.runtime_enabled_feature_name) %}
 const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration[] = {
-  {{method_configuration(method) | indent(2)}}
+  {{method_configuration(method) | trim | indent(2)}}
 };
 for (const auto& methodConfig : {{method.name}}MethodConfiguration)
   V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);

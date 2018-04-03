@@ -41,7 +41,7 @@ void {{cpp_class}}::Set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
   DCHECK(IsNull());
   {% if member.enum_values %}
   NonThrowableExceptionState exceptionState;
-  {{declare_enum_validation_variable(member.enum_values) | indent(2)}}
+  {{declare_enum_validation_variable(member.enum_values) | trim | indent(2)}}
   if (!IsValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.enum_type}}", exceptionState)) {
     NOTREACHED();
     return;
@@ -85,7 +85,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% if dictionary_type %}
   {# 3. Dictionaries for null or undefined #}
   if (IsUndefinedOrNull(v8Value)) {
-    {{v8_value_to_local_cpp_value(dictionary_type) | indent}}
+    {{v8_value_to_local_cpp_value(dictionary_type) | trim | indent}}
     impl.Set{{dictionary_type.type_name}}(cppValue);
     return;
   }
@@ -93,26 +93,26 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% endif %}
   {# 4. Platform objects (interfaces) #}
   {% for interface in interface_types %}
-  {{assign_and_return_if_hasinstance(interface) | indent(2)}}
+  {{assign_and_return_if_hasinstance(interface) | trim | indent(2)}}
 
   {% endfor %}
   {# 8. ArrayBuffer #}
   {% if array_buffer_type %}
-  {{assign_and_return_if_hasinstance(array_buffer_type) | indent(2)}}
+  {{assign_and_return_if_hasinstance(array_buffer_type) | trim | indent(2)}}
 
   {% endif %}
   {# 9., 10. ArrayBufferView #}
   {# FIXME: Individual typed arrays (e.g. Uint8Array) aren\'t supported yet. #}
   {% if array_buffer_view_type %}
-  {{assign_and_return_if_hasinstance(array_buffer_view_type) | indent(2)}}
+  {{assign_and_return_if_hasinstance(array_buffer_view_type) | trim | indent(2)}}
 
   {% endif %}
   {% if array_or_sequence_type %}
   {# 11.1, 11.2. Sequences and frozen arrays #}
   if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    {{v8_value_to_local_cpp_value(array_or_sequence_type) | indent}}
+    {{v8_value_to_local_cpp_value(array_or_sequence_type) | trim | indent}}
     {% if array_or_sequence_type.enum_values %}
-    {{declare_enum_validation_variable(array_or_sequence_type.enum_values) | indent(4)}}
+    {{declare_enum_validation_variable(array_or_sequence_type.enum_values) | trim | indent(4)}}
     if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{array_or_sequence_type.enum_type}}", exceptionState))
       return;
     {% endif %}
@@ -124,7 +124,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% if dictionary_type %}
   {# 11.3. Dictionaries #}
   if (v8Value->IsObject()) {
-    {{v8_value_to_local_cpp_value(dictionary_type) | indent}}
+    {{v8_value_to_local_cpp_value(dictionary_type) | trim | indent}}
     impl.Set{{dictionary_type.type_name}}(cppValue);
     return;
   }
@@ -133,7 +133,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {# 11.4. Records #}
   {% if record_type %}
   if (v8Value->IsObject()) {
-    {{v8_value_to_local_cpp_value(record_type) | indent}}
+    {{v8_value_to_local_cpp_value(record_type) | trim | indent}}
     impl.Set{{record_type.type_name}}(cppValue);
     return;
   }
@@ -143,7 +143,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {# 11.6. Objects #}
   {% if object_type %}
   if (IsUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-    {{v8_value_to_local_cpp_value(object_type) | indent}}
+    {{v8_value_to_local_cpp_value(object_type) | trim | indent}}
     impl.Set{{object_type.type_name}}(cppValue);
     return;
   }
@@ -162,7 +162,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% if numeric_type %}
   {# 13. Number #}
   if (v8Value->IsNumber()) {
-    {{v8_value_to_local_cpp_value(numeric_type) | indent}}
+    {{v8_value_to_local_cpp_value(numeric_type) | trim | indent}}
     impl.Set{{numeric_type.type_name}}(cppValue);
     return;
   }
@@ -171,9 +171,9 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% if string_type %}
   {# 14. String #}
   {
-    {{v8_value_to_local_cpp_value(string_type) | indent}}
+    {{v8_value_to_local_cpp_value(string_type) | trim | indent}}
     {% if string_type.enum_values %}
-    {{declare_enum_validation_variable(string_type.enum_values) | indent}}
+    {{declare_enum_validation_variable(string_type.enum_values) | trim | indent}}
     if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{string_type.enum_type}}", exceptionState))
       return;
     {% endif %}
@@ -184,7 +184,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {# 15. Number (fallback) #}
   {% elif numeric_type %}
   {
-    {{v8_value_to_local_cpp_value(numeric_type) | indent}}
+    {{v8_value_to_local_cpp_value(numeric_type) | trim | indent}}
     impl.Set{{numeric_type.type_name}}(cppValue);
     return;
   }

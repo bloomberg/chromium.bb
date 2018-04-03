@@ -97,7 +97,7 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
 #if DCHECK_IS_ON()
   {
     {% set valid_enum_variables = 'valid_' + argument.name + '_values' %}
-    {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | indent(4)}}
+    {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | trim | indent(4)}}
     ExceptionState exception_state(GetIsolate(),
                                    ExceptionState::kExecutionContext,
                                    "{{cpp_class}}",
