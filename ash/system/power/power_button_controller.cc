@@ -260,7 +260,8 @@ void PowerButtonController::OnPowerButtonEvent(
 
     // Cancel the menu animation if it's still ongoing when the button is
     // released on a clamshell device.
-    if (!ShouldTurnScreenOffForTap() && !show_menu_animation_done_) {
+    if (!ShouldTurnScreenOffForTap() && IsMenuOpened() &&
+        !show_menu_animation_done_) {
       static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
           ->ScheduleShowHideAnimation(false);
     }
