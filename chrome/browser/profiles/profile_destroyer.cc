@@ -36,39 +36,66 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   DCHECK(profile);
   profile->MaybeSendDestroyedNotification();
 
-  HostSet hosts;
   // Testing profiles can simply be deleted directly. Some tests don't setup
   // RenderProcessHost correctly and don't necessary run on the UI thread
-  // anyway, so we can't use the AllHostIterator.
-  if (profile->AsTestingProfile() == NULL) {
-    GetHostsForProfile(profile, &hosts);
-    if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile())
-      GetHostsForProfile(profile->GetOffTheRecordProfile(), &hosts);
-  }
-  // Generally, !hosts.empty() means that there is a leak in a render process
-  // host that MUST BE FIXED!!!
-  //
-  // However, off-the-record profiles are destroyed before their
-  // RenderProcessHosts in order to erase private data quickly, and
-  // RenderProcessHostImpl::Release() avoids destroying RenderProcessHosts in
-  // --single-process mode to avoid race conditions.
-  DCHECK(hosts.empty() || profile->IsOffTheRecord() ||
-         profile->HasOffTheRecordProfile() ||
-         content::RenderProcessHost::run_renderer_in_process())
-      << "Profile still has " << hosts.size() << " hosts";
-  // Note that we still test for !profile->IsOffTheRecord here even though we
-  // DCHECK'd above because we want to protect Release builds against this even
-  // we need to identify if there are leaks when we run Debug builds.
-  if (hosts.empty() || !profile->IsOffTheRecord()) {
+  // anyway, so we can't iterate them via AllHostsIterator anyway.
+  if (profile->AsTestingProfile()) {
     if (profile->IsOffTheRecord())
       profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
     else
       delete profile;
-  } else {
-    // The instance will destroy itself once all render process hosts referring
-    // to it are properly terminated.
-    new ProfileDestroyer(profile, &hosts);
+    return;
   }
+
+  HostSet profile_hosts = GetHostsForProfile(profile);
+  const bool profile_is_off_the_record = profile->IsOffTheRecord();
+  base::debug::Alias(&profile_is_off_the_record);
+  const bool profile_has_off_the_record =
+      !profile_is_off_the_record && profile->HasOffTheRecordProfile();
+  base::debug::Alias(&profile_has_off_the_record);
+
+  // Off-the-record profiles have DestroyProfileWhenAppropriate() called before
+  // their RenderProcessHosts are destroyed, to ensure private data is erased
+  // promptly. In this case, defer deletion until all the hosts are gone.
+  const size_t profile_hosts_count = profile_hosts.size();
+  base::debug::Alias(&profile_hosts_count);
+  if (profile_is_off_the_record) {
+    DCHECK(!profile_has_off_the_record);
+    if (profile_hosts_count) {
+      // The instance will destroy itself once all render process hosts
+      // referring to it are properly terminated.
+      new ProfileDestroyer(profile, &profile_hosts);
+    } else {
+      profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+    }
+    return;
+  }
+
+  // If |profile| has an off-the-record profile then count its hosts so crashes
+  // and DCHECKs will contain that detail.
+  HostSet off_the_record_hosts;
+  if (profile_has_off_the_record) {
+    off_the_record_hosts =
+        GetHostsForProfile(profile->GetOffTheRecordProfile());
+  }
+  const size_t off_the_record_hosts_count = off_the_record_hosts.size();
+  base::debug::Alias(&off_the_record_hosts_count);
+
+  // |profile| is not off-the-record, so if |profile_hosts| is not empty then
+  // something has leaked a RenderProcessHost, and needs fixing.
+  //
+  // The exception is that RenderProcessHostImpl::Release() avoids destroying
+  // RenderProcessHosts in --single-process mode, to avoid race conditions.
+  if (!content::RenderProcessHost::run_renderer_in_process()) {
+    DCHECK_EQ(profile_hosts_count, 0u);
+#if !defined(OS_CHROMEOS)
+    // ChromeOS' system profile can be outlived by its off-the-record profile
+    // (see https://crbug.com/828479).
+    DCHECK_EQ(off_the_record_hosts_count, 0u);
+#endif
+  }
+
+  delete profile;
 }
 
 // This can be called to cancel any pending destruction and destroy the profile
@@ -173,16 +200,17 @@ void ProfileDestroyer::DestroyProfile() {
 }
 
 // static
-bool ProfileDestroyer::GetHostsForProfile(
-    Profile* const profile, HostSet* hosts) {
+ProfileDestroyer::HostSet ProfileDestroyer::GetHostsForProfile(
+    Profile* const profile) {
+  HostSet hosts;
   for (content::RenderProcessHost::iterator iter(
         content::RenderProcessHost::AllHostsIterator());
       !iter.IsAtEnd(); iter.Advance()) {
     content::RenderProcessHost* render_process_host = iter.GetCurrentValue();
     if (render_process_host &&
             render_process_host->GetBrowserContext() == profile) {
-      hosts->insert(render_process_host);
+      hosts.insert(render_process_host);
     }
   }
-  return !hosts->empty();
+  return hosts;
 }
