@@ -7,7 +7,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-static_library("in_progress") {
+source_set("in_progress") {
   sources = [
     "download_entry.cc",
     "download_entry.h",
@@ -21,7 +21,6 @@ static_library("in_progress") {
   deps = [
     "//base",
     "//components/download/downloader/in_progress/proto",
-    "//components/download/public/common:public",
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",
   ]

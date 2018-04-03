@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_DELEGATE_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_DELEGATE_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_IMPL_DELEGATE_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_IMPL_DELEGATE_H_
 
 #include <stdint.h>
 
@@ -11,23 +11,19 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/common/content_export.h"
-#include "content/public/browser/download_manager_delegate.h"
 
 namespace download {
 struct DownloadEntry;
-}
-
-namespace content {
 class DownloadItemImpl;
 
 // Delegate for operations that a DownloadItemImpl can't do for itself.
 // The base implementation of this class does nothing (returning false
 // on predicates) so interfaces not of interest to a derived class may
 // be left unimplemented.
-class CONTENT_EXPORT DownloadItemImplDelegate {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
  public:
   // The boolean argument indicates whether or not the download was
   // actually opened.
@@ -40,22 +36,27 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   void Attach();
   void Detach();
 
+  using DownloadTargetCallback =
+      base::Callback<void(const base::FilePath& target_path,
+                          DownloadItem::TargetDisposition disposition,
+                          DownloadDangerType danger_type,
+                          const base::FilePath& intermediate_path,
+                          DownloadInterruptReason interrupt_reason)>;
   // Request determination of the download target from the delegate.
-  virtual void DetermineDownloadTarget(
-      DownloadItemImpl* download, const DownloadTargetCallback& callback);
+  virtual void DetermineDownloadTarget(DownloadItemImpl* download,
+                                       const DownloadTargetCallback& callback);
 
   // Allows the delegate to delay completion of the download.  This function
   // will either return true (if the download may complete now) or will return
   // false and call the provided callback at some future point.  This function
   // may be called repeatedly.
-  virtual bool ShouldCompleteDownload(
-      DownloadItemImpl* download,
-      const base::Closure& complete_callback);
+  virtual bool ShouldCompleteDownload(DownloadItemImpl* download,
+                                      const base::Closure& complete_callback);
 
   // Allows the delegate to override the opening of a download. If it returns
   // true then it's reponsible for opening the item.
-  virtual bool ShouldOpenDownload(
-      DownloadItemImpl* download, const ShouldOpenDownloadCallback& callback);
+  virtual bool ShouldOpenDownload(DownloadItemImpl* download,
+                                  const ShouldOpenDownloadCallback& callback);
 
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
@@ -76,7 +77,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   // Called when an interrupted download is resumed.
   virtual void ResumeInterruptedDownload(
-      std::unique_ptr<download::DownloadUrlParameters> params,
+      std::unique_ptr<DownloadUrlParameters> params,
       uint32_t id,
       const GURL& site_url);
 
@@ -94,7 +95,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   virtual void ShowDownloadInShell(DownloadItemImpl* download);
 
   // Handle any delegate portions of a state change operation on the
-  // download::DownloadItem.
+  // DownloadItem.
   virtual void DownloadRemoved(DownloadItemImpl* download);
 
   // Assert consistent state for delgate object at various transitions.
@@ -104,7 +105,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   virtual void DownloadInterrupted(DownloadItemImpl* download);
 
   // Get the in progress entry for the download item.
-  virtual base::Optional<download::DownloadEntry> GetInProgressEntry(
+  virtual base::Optional<DownloadEntry> GetInProgressEntry(
       DownloadItemImpl* download);
 
   // Whether the download is off the record.
@@ -120,6 +121,6 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImplDelegate);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_DELEGATE_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_IMPL_DELEGATE_H_

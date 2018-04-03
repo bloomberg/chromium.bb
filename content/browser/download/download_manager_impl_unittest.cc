@@ -28,13 +28,13 @@
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_item_impl.h"
+#include "components/download/public/common/download_item_impl_delegate.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/mock_download_file.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_item_factory.h"
-#include "content/browser/download/download_item_impl.h"
-#include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -123,8 +123,8 @@ class MockDownloadItemFactory
   void SetHasObserverCalls(bool observer_calls);
 
   // Overridden methods from DownloadItemFactory.
-  DownloadItemImpl* CreatePersistedItem(
-      DownloadItemImplDelegate* delegate,
+  download::DownloadItemImpl* CreatePersistedItem(
+      download::DownloadItemImplDelegate* delegate,
       const std::string& guid,
       uint32_t download_id,
       const base::FilePath& current_path,
@@ -151,12 +151,12 @@ class MockDownloadItemFactory
       bool transient,
       const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
       override;
-  DownloadItemImpl* CreateActiveItem(
-      DownloadItemImplDelegate* delegate,
+  download::DownloadItemImpl* CreateActiveItem(
+      download::DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const download::DownloadCreateInfo& info) override;
-  DownloadItemImpl* CreateSavePageItem(
-      DownloadItemImplDelegate* delegate,
+  download::DownloadItemImpl* CreateSavePageItem(
+      download::DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const base::FilePath& path,
       const GURL& url,
@@ -166,7 +166,7 @@ class MockDownloadItemFactory
 
  private:
   std::map<uint32_t, MockDownloadItemImpl*> items_;
-  DownloadItemImplDelegate item_delegate_;
+  download::DownloadItemImplDelegate item_delegate_;
   bool has_observer_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDownloadItemFactory);
@@ -203,8 +203,8 @@ void MockDownloadItemFactory::SetHasObserverCalls(bool has_observer_calls) {
   has_observer_calls_ = has_observer_calls;
 }
 
-DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
-    DownloadItemImplDelegate* delegate,
+download::DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
+    download::DownloadItemImplDelegate* delegate,
     const std::string& guid,
     uint32_t download_id,
     const base::FilePath& current_path,
@@ -240,8 +240,8 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
   return result;
 }
 
-DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
-    DownloadItemImplDelegate* delegate,
+download::DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
+    download::DownloadItemImplDelegate* delegate,
     uint32_t download_id,
     const download::DownloadCreateInfo& info) {
   DCHECK(items_.find(download_id) == items_.end());
@@ -267,8 +267,8 @@ DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
   return result;
 }
 
-DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
-    DownloadItemImplDelegate* delegate,
+download::DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
+    download::DownloadItemImplDelegate* delegate,
     uint32_t download_id,
     const base::FilePath& path,
     const GURL& url,
@@ -446,7 +446,7 @@ class DownloadManagerTest : public testing::Test {
     interrupt_reason_ = interrupt_reason;
   }
 
-  void DetermineDownloadTarget(DownloadItemImpl* item) {
+  void DetermineDownloadTarget(download::DownloadItemImpl* item) {
     download_manager_->DetermineDownloadTarget(
         item, base::Bind(
             &DownloadManagerTest::DownloadTargetDeterminedCallback,

@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"

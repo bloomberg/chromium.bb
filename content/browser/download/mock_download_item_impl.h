@@ -12,18 +12,18 @@
 #include "base/macros.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_file.h"
+#include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_request_handle_interface.h"
-#include "content/browser/download/download_item_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
 class DownloadManager;
 
-class MockDownloadItemImpl : public DownloadItemImpl {
+class MockDownloadItemImpl : public download::DownloadItemImpl {
  public:
   // Use history constructor for minimal base object.
-  explicit MockDownloadItemImpl(DownloadItemImplDelegate* delegate);
+  explicit MockDownloadItemImpl(download::DownloadItemImplDelegate* delegate);
   ~MockDownloadItemImpl() override;
 
   MOCK_METHOD5(OnDownloadTargetDetermined,

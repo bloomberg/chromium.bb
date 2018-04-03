@@ -30,6 +30,8 @@ component("public") {
     "download_interrupt_reasons.h",
     "download_interrupt_reasons_utils.h",
     "download_item.h",
+    "download_item_impl.h",
+    "download_item_impl_delegate.h",
     "download_job.h",
     "download_job_factory.h",
     "download_job_impl.h",
@@ -65,6 +67,7 @@ component("public") {
 
   deps = [
     "//base",
+    "//components/download/downloader/in_progress",
     "//components/download/internal/common:internal",
     "//crypto",
     "//net",
@@ -74,8 +77,10 @@ component("public") {
     "//ui/base",
   ]
 
-  allow_circular_includes_from =
-      [ "//components/download/internal/common:internal" ]
+  allow_circular_includes_from = [
+    "//components/download/internal/common:internal",
+    "//components/download/downloader/in_progress",
+  ]
 }
 
 if (is_android) {

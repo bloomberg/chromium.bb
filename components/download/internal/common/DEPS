@@ -1,5 +1,6 @@
 include_rules = [
   "-content",
+  "+components/download/downloader/in_progress",
   "+components/download/public/common",
   "+components/download/quarantine",
   "+components/ukm/test_ukm_recorder.h",

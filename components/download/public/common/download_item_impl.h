@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_IMPL_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_IMPL_H_
 
 #include <stdint.h>
 
@@ -25,33 +25,30 @@
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
-#include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
-
-namespace download {
-class DownloadFile;
-class DownloadJob;
-}  // namespace download
 
 namespace net {
 class URLRequestContextGetter;
 }
 
-namespace content {
+namespace download {
+
+class DownloadFile;
 class DownloadItemImplDelegate;
+class DownloadJob;
 
 // See download_item.h for usage.
-class CONTENT_EXPORT DownloadItemImpl
-    : public download::DownloadItem,
-      public download::DownloadDestinationObserver {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
+    : public DownloadItem,
+      public DownloadDestinationObserver {
  public:
   // Information about the initial request that triggers the download. Most of
-  // the fields are immutable after the download::DownloadItem is successfully
+  // the fields are immutable after the DownloadItem is successfully
   // created. However, it is possible that the url chain is changed when
   // resuming an interrupted download. In that case, the download will restart
   // from the beginning.
-  struct CONTENT_EXPORT RequestInfo {
+  struct COMPONENTS_DOWNLOAD_EXPORT RequestInfo {
     RequestInfo(const std::vector<GURL>& url_chain,
                 const GURL& referrer_url,
                 const GURL& site_url,
@@ -106,7 +103,7 @@ class CONTENT_EXPORT DownloadItemImpl
   };
 
   // Information about the current state of the download destination.
-  struct CONTENT_EXPORT DestinationInfo {
+  struct COMPONENTS_DOWNLOAD_EXPORT DestinationInfo {
     DestinationInfo(const base::FilePath& target_path,
                     const base::FilePath& current_path,
                     int64_t received_bytes,
@@ -162,39 +159,39 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Constructing from persistent store:
   // |net_log| is constructed externally for our use.
-  DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   const std::string& guid,
-                   uint32_t id,
-                   const base::FilePath& current_path,
-                   const base::FilePath& target_path,
-                   const std::vector<GURL>& url_chain,
-                   const GURL& referrer_url,
-                   const GURL& site_url,
-                   const GURL& tab_url,
-                   const GURL& tab_referrer_url,
-                   const std::string& mime_type,
-                   const std::string& original_mime_type,
-                   base::Time start_time,
-                   base::Time end_time,
-                   const std::string& etag,
-                   const std::string& last_modified,
-                   int64_t received_bytes,
-                   int64_t total_bytes,
-                   const std::string& hash,
-                   download::DownloadItem::DownloadState state,
-                   download::DownloadDangerType danger_type,
-                   download::DownloadInterruptReason interrupt_reason,
-                   bool opened,
-                   base::Time last_access_time,
-                   bool transient,
-                   const std::vector<download::DownloadItem::ReceivedSlice>&
-                       received_slices);
+  DownloadItemImpl(
+      DownloadItemImplDelegate* delegate,
+      const std::string& guid,
+      uint32_t id,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
+      const std::vector<GURL>& url_chain,
+      const GURL& referrer_url,
+      const GURL& site_url,
+      const GURL& tab_url,
+      const GURL& tab_referrer_url,
+      const std::string& mime_type,
+      const std::string& original_mime_type,
+      base::Time start_time,
+      base::Time end_time,
+      const std::string& etag,
+      const std::string& last_modified,
+      int64_t received_bytes,
+      int64_t total_bytes,
+      const std::string& hash,
+      DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
+      bool opened,
+      base::Time last_access_time,
+      bool transient,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices);
 
   // Constructing for a regular download.
   // |net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    uint32_t id,
-                   const download::DownloadCreateInfo& info);
+                   const DownloadCreateInfo& info);
 
   // Constructing for the "Save Page As..." feature:
   // |net_log| is constructed externally for our use.
@@ -204,13 +201,13 @@ class CONTENT_EXPORT DownloadItemImpl
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle);
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle);
 
   ~DownloadItemImpl() override;
 
-  // download::DownloadItem
-  void AddObserver(download::DownloadItem::Observer* observer) override;
-  void RemoveObserver(download::DownloadItem::Observer* observer) override;
+  // DownloadItem
+  void AddObserver(DownloadItem::Observer* observer) override;
+  void RemoveObserver(DownloadItem::Observer* observer) override;
   void UpdateObservers() override;
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool need_removal,
@@ -224,7 +221,7 @@ class CONTENT_EXPORT DownloadItemImpl
   uint32_t GetId() const override;
   const std::string& GetGuid() const override;
   DownloadState GetState() const override;
-  download::DownloadInterruptReason GetLastReason() const override;
+  DownloadInterruptReason GetLastReason() const override;
   bool IsPaused() const override;
   bool IsTemporary() const override;
   bool CanResume() const override;
@@ -257,16 +254,16 @@ class CONTENT_EXPORT DownloadItemImpl
   const std::string& GetHash() const override;
   bool GetFileExternallyRemoved() const override;
   void DeleteFile(const base::Callback<void(bool)>& callback) override;
-  download::DownloadFile* GetDownloadFile() override;
+  DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
-  download::DownloadDangerType GetDangerType() const override;
+  DownloadDangerType GetDangerType() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   int64_t CurrentSpeed() const override;
   int PercentComplete() const override;
   bool AllDataSaved() const override;
   int64_t GetTotalBytes() const override;
   int64_t GetReceivedBytes() const override;
-  const std::vector<download::DownloadItem::ReceivedSlice>& GetReceivedSlices()
+  const std::vector<DownloadItem::ReceivedSlice>& GetReceivedSlices()
       const override;
   base::Time GetStartTime() const override;
   base::Time GetEndTime() const override;
@@ -278,16 +275,14 @@ class CONTENT_EXPORT DownloadItemImpl
   bool GetOpened() const override;
   base::Time GetLastAccessTime() const override;
   bool IsTransient() const override;
-  void OnContentCheckCompleted(
-      download::DownloadDangerType danger_type,
-      download::DownloadInterruptReason reason) override;
+  void OnContentCheckCompleted(DownloadDangerType danger_type,
+                               DownloadInterruptReason reason) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
   void SetLastAccessTime(base::Time last_access_time) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;
-  void SimulateErrorForTesting(
-      download::DownloadInterruptReason reason) override;
+  void SimulateErrorForTesting(DownloadInterruptReason reason) override;
 
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.
@@ -299,14 +294,14 @@ class CONTENT_EXPORT DownloadItemImpl
   // |req_handle| is the new request handle associated with the download.
   // |new_create_info| is a DownloadCreateInfo containing the new response
   // parameters. It may be different from the DownloadCreateInfo used to create
-  // the download::DownloadItem if Start() is being called in response for a
+  // the DownloadItem if Start() is being called in response for a
   // download resumption request.
   // TODO(qinmin): Remove |url_request_context_getter| once network service is
   // enabled.
   virtual void Start(
-      std::unique_ptr<download::DownloadFile> download_file,
-      std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
-      const download::DownloadCreateInfo& new_create_info,
+      std::unique_ptr<DownloadFile> download_file,
+      std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+      const DownloadCreateInfo& new_create_info,
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       net::URLRequestContextGetter* url_request_context_getter);
 
@@ -319,7 +314,7 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Provide a weak pointer reference to a DownloadDestinationObserver
   // for use by download destinations.
-  virtual base::WeakPtr<download::DownloadDestinationObserver>
+  virtual base::WeakPtr<DownloadDestinationObserver>
   DestinationObserverAsWeakPtr();
 
   // DownloadItemImpl routines only needed by SavePackage ----------------------
@@ -330,20 +325,19 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void OnAllDataSaved(int64_t total_bytes,
                               std::unique_ptr<crypto::SecureHash> hash_state);
 
-  // Called by SavePackage to display progress when the download::DownloadItem
+  // Called by SavePackage to display progress when the DownloadItem
   // should be considered complete.
   virtual void MarkAsComplete();
 
-  download::DownloadSource download_source() const { return download_source_; }
+  DownloadSource download_source() const { return download_source_; }
 
-  // download::DownloadDestinationObserver
+  // DownloadDestinationObserver
   void DestinationUpdate(
       int64_t bytes_so_far,
       int64_t bytes_per_sec,
-      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
-      override;
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
   void DestinationError(
-      download::DownloadInterruptReason reason,
+      DownloadInterruptReason reason,
       int64_t bytes_so_far,
       std::unique_ptr<crypto::SecureHash> hash_state) override;
   void DestinationCompleted(
@@ -511,10 +505,10 @@ class CONTENT_EXPORT DownloadItemImpl
   // Construction common to all constructors. |active| should be true for new
   // downloads and false for downloads from the history.
   // |download_type| indicates to the trace event what kind of download this is.
-  void Init(bool active, download::DownloadItem::DownloadType download_type);
+  void Init(bool active, DownloadItem::DownloadType download_type);
 
   // Callback from file thread when we initialize the DownloadFile.
-  void OnDownloadFileInitialized(download::DownloadInterruptReason result,
+  void OnDownloadFileInitialized(DownloadInterruptReason result,
                                  int64_t bytes_wasted);
 
   // Called to determine the target path. Will cause OnDownloadTargetDetermined
@@ -529,13 +523,12 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void OnDownloadTargetDetermined(
       const base::FilePath& target_path,
       TargetDisposition disposition,
-      download::DownloadDangerType danger_type,
+      DownloadDangerType danger_type,
       const base::FilePath& intermediate_path,
-      download::DownloadInterruptReason interrupt_reason);
+      DownloadInterruptReason interrupt_reason);
 
-  void OnDownloadRenamedToIntermediateName(
-      download::DownloadInterruptReason reason,
-      const base::FilePath& full_path);
+  void OnDownloadRenamedToIntermediateName(DownloadInterruptReason reason,
+                                           const base::FilePath& full_path);
 
   void OnTargetResolved();
 
@@ -546,10 +539,10 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Called when the download is ready to complete.
   // This may perform final rename if necessary and will eventually call
-  // download::DownloadItem::Completed().
+  // DownloadItem::Completed().
   void OnDownloadCompleting();
 
-  void OnDownloadRenamedToFinalName(download::DownloadInterruptReason reason,
+  void OnDownloadRenamedToFinalName(DownloadInterruptReason reason,
                                     const base::FilePath& full_path);
 
   // Called if the embedder took over opening a download, to indicate that
@@ -565,8 +558,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Indicate that an error has occurred on the download. Discards partial
   // state. The interrupted download will not be considered continuable, but may
   // be restarted.
-  void InterruptAndDiscardPartialState(
-      download::DownloadInterruptReason reason);
+  void InterruptAndDiscardPartialState(DownloadInterruptReason reason);
 
   // Indiates that an error has occurred on the download. The |bytes_so_far| and
   // |hash_state| should correspond to the state of the DownloadFile. If the
@@ -574,7 +566,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // interrupted download upon resumption.
   void InterruptWithPartialState(int64_t bytes_so_far,
                                  std::unique_ptr<crypto::SecureHash> hash_state,
-                                 download::DownloadInterruptReason reason);
+                                 DownloadInterruptReason reason);
 
   void UpdateProgress(int64_t bytes_so_far, int64_t bytes_per_sec);
 
@@ -598,7 +590,7 @@ class CONTENT_EXPORT DownloadItemImpl
   void TransitionTo(DownloadInternalState new_state);
 
   // Set the |danger_type_| and invoke observers if necessary.
-  void SetDangerType(download::DownloadDangerType danger_type);
+  void SetDangerType(DownloadDangerType danger_type);
 
   void SetFullPath(const base::FilePath& new_path);
 
@@ -610,7 +602,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Update origin information based on the response to a download resumption
   // request. Should only be called if the resumption request was successful.
   virtual void UpdateValidatorsOnResumption(
-      const download::DownloadCreateInfo& new_create_info);
+      const DownloadCreateInfo& new_create_info);
 
   // Notify observers that this item is being removed by the user.
   void NotifyRemoved();
@@ -618,7 +610,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Determines the resume mode for an interrupted download. Requires
   // last_reason_ to be set, but doesn't require the download to be in
   // INTERRUPTED state.
-  download::ResumeMode GetResumeMode() const;
+  ResumeMode GetResumeMode() const;
 
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);
@@ -627,7 +619,7 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Debugging routines --------------------------------------------------------
   static const char* DebugDownloadStateString(DownloadInternalState state);
-  static const char* DebugResumeModeString(download::ResumeMode mode);
+  static const char* DebugResumeModeString(ResumeMode mode);
   static bool IsValidSavePackageStateTransition(DownloadInternalState from,
                                                 DownloadInternalState to);
   static bool IsValidStateTransition(DownloadInternalState from,
@@ -636,7 +628,7 @@ class CONTENT_EXPORT DownloadItemImpl
   RequestInfo request_info_;
 
   // GUID to identify the download, generated by |base::GenerateGUID| in
-  // download item, or provided by |download::DownloadUrlParameters|.
+  // download item, or provided by |DownloadUrlParameters|.
   // The format should follow UUID version 4 in RFC 4122.
   // The string representation is case sensitive. Legacy download GUID hex
   // digits may be upper case ASCII characters, and new GUID will be in lower
@@ -673,8 +665,7 @@ class CONTENT_EXPORT DownloadItemImpl
   int64_t total_bytes_ = 0;
 
   // Last reason.
-  download::DownloadInterruptReason last_reason_ =
-      download::DOWNLOAD_INTERRUPT_REASON_NONE;
+  DownloadInterruptReason last_reason_ = DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // Start time for recording statistics.
   base::TimeTicks start_tick_;
@@ -683,8 +674,7 @@ class CONTENT_EXPORT DownloadItemImpl
   DownloadInternalState state_ = INITIAL_INTERNAL;
 
   // Current danger type for the download.
-  download::DownloadDangerType danger_type_ =
-      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+  DownloadDangerType danger_type_ = DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
 
   // The views of this item in the download shelf and download contents.
   base::ObserverList<Observer> observers_;
@@ -724,16 +714,16 @@ class CONTENT_EXPORT DownloadItemImpl
   // Error return from DestinationError or received at Start().  Stored
   // separately from last_reason_ so that we can avoid handling destination
   // errors until after file name determination has occurred.
-  download::DownloadInterruptReason deferred_interrupt_reason_ =
-      download::DOWNLOAD_INTERRUPT_REASON_NONE;
+  DownloadInterruptReason deferred_interrupt_reason_ =
+      DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // The following fields describe the current state of the download file.
 
   // DownloadFile associated with this download.  Note that this
   // pointer may only be used or destroyed on the download sequence.
-  // This pointer will be non-null only while the download::DownloadItem is in
+  // This pointer will be non-null only while the DownloadItem is in
   // the IN_PROGRESS state.
-  std::unique_ptr<download::DownloadFile> download_file_;
+  std::unique_ptr<DownloadFile> download_file_;
 
   // Information about |download_file_|.
   DestinationInfo destination_info_;
@@ -757,9 +747,9 @@ class CONTENT_EXPORT DownloadItemImpl
   std::string etag_;
 
   // The data slices that have been received so far.
-  std::vector<download::DownloadItem::ReceivedSlice> received_slices_;
+  std::vector<DownloadItem::ReceivedSlice> received_slices_;
 
-  std::unique_ptr<download::DownloadJob> job_;
+  std::unique_ptr<DownloadJob> job_;
 
   // Value of |received_bytes_| at the time the download was interrupted with
   // CONTENT_LENGTH_MISMATCH.
@@ -774,10 +764,10 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Request header key/value pairs that will be added to the download HTTP
   // request.
-  download::DownloadUrlParameters::RequestHeadersType request_headers_;
+  DownloadUrlParameters::RequestHeadersType request_headers_;
 
   // Source of the download, used in metrics.
-  download::DownloadSource download_source_ = download::DownloadSource::UNKNOWN;
+  DownloadSource download_source_ = DownloadSource::UNKNOWN;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -786,6 +776,6 @@ class CONTENT_EXPORT DownloadItemImpl
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_IMPL_H_

@@ -25,20 +25,19 @@ class FilePath;
 
 namespace download {
 struct DownloadCreateInfo;
+class DownloadItemImpl;
+class DownloadItemImplDelegate;
 class DownloadRequestHandleInterface;
 }  // namespace download
 
 namespace content {
 
-class DownloadItemImpl;
-class DownloadItemImplDelegate;
-
 class DownloadItemFactory {
 public:
   virtual ~DownloadItemFactory() {}
 
-  virtual DownloadItemImpl* CreatePersistedItem(
-      DownloadItemImplDelegate* delegate,
+  virtual download::DownloadItemImpl* CreatePersistedItem(
+      download::DownloadItemImplDelegate* delegate,
       const std::string& guid,
       uint32_t download_id,
       const base::FilePath& current_path,
@@ -66,13 +65,13 @@ public:
       const std::vector<download::DownloadItem::ReceivedSlice>&
           received_slices) = 0;
 
-  virtual DownloadItemImpl* CreateActiveItem(
-      DownloadItemImplDelegate* delegate,
+  virtual download::DownloadItemImpl* CreateActiveItem(
+      download::DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const download::DownloadCreateInfo& info) = 0;
 
-  virtual DownloadItemImpl* CreateSavePageItem(
-      DownloadItemImplDelegate* delegate,
+  virtual download::DownloadItemImpl* CreateSavePageItem(
+      download::DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const base::FilePath& path,
       const GURL& url,
