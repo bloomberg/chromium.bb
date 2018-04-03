@@ -1,23 +1,35 @@
-<html>
-<head>
-<style>
-blockquote {
-    color: blue;
-    border-left: 2px solid blue;
-    margin-left: 0px;
-    padding-left: 10px;
-}
-</style>
-</head>
-<body>
-<div id="description">When your cursor is after an empty blockquote, hitting delete should bring the cursor (and the content following the cursor) back into the blockquote, instead of deleting the empty blockquote.</div>
-<div id="edit" contenteditable="true"><blockquote type="cite"><br></blockquote>This should be quoted</div>
-
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-edit = document.getElementById("edit");
-var s = window.getSelection();
-s.collapse(edit, 1);
-document.execCommand("Delete");
+selection_test(
+  [
+    '<div contenteditable>',
+      '<blockquote type="cite"><br></blockquote>|',
+      'ab',
+    '</div>',
+  ],
+  'Delete',
+  [
+    '<div contenteditable>',
+      '<blockquote type="cite">|ab</blockquote>',
+    '</div>',
+  ],
+  '1 Delete to replace empty blockquote placeholder BR with following text');
+
+selection_test(
+  [
+    '<div contenteditable>',
+      '<blockquote type="cite">ab<br><br></blockquote>|',
+      'CD',
+    '</div>',
+  ],
+  'Delete',
+  [
+    '<div contenteditable>',
+      '<blockquote type="cite">ab<br>|CD</blockquote>',
+    '</div>',
+  ],
+  '2 Delete to replace blockquote placeholder BR with following text');
 </script>
-</body>
-</html>
