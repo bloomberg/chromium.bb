@@ -5,7 +5,7 @@
 #ifndef NET_BASE_NETWORK_CONFIG_WATCHER_MAC_H_
 #define NET_BASE_NETWORK_CONFIG_WATCHER_MAC_H_
 
-#include <SystemConfiguration/SCDynamicStore.h>
+#include <SystemConfiguration/SystemConfiguration.h>
 
 #include <memory>
 
