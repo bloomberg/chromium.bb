@@ -40,8 +40,8 @@ class NotificationDetails;
 class NotificationSource;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace prefs {
@@ -116,7 +116,6 @@ class IncidentReportingService : public content::NotificationObserver {
   // be specified.
   IncidentReportingService(
       SafeBrowsingService* safe_browsing_service,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       base::TimeDelta delayed_task_interval,
       const scoped_refptr<base::TaskRunner>& delayed_task_runner);
 
@@ -148,7 +147,6 @@ class IncidentReportingService : public content::NotificationObserver {
   // Initiates an upload. Overridden by unit tests to provide a fake uploader.
   virtual std::unique_ptr<IncidentReportUploader> StartReportUpload(
       const IncidentReportUploader::OnResultCallback& callback,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const ClientIncidentReport& report);
 
   // Returns true if a report is currently being processed.
@@ -271,8 +269,8 @@ class IncidentReportingService : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Accessor for an URL context with which reports will be sent.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  // Accessor for an URLLoaderFactory with which reports will be sent.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // A pointer to a function that collects environment data. The function will
   // be run by |environment_collection_task_runner_|. This is ordinarily
