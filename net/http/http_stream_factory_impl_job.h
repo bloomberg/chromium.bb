@@ -430,6 +430,11 @@ class HttpStreamFactoryImpl::Job {
   // True if request is for Websocket.
   const bool is_websocket_;
 
+  // True if WebSocket request is allowed to use a WebSocket-capable existing
+  // HTTP/2 connection.  In this case FindAvailableSession() must be called with
+  // |enable_websocket = true|.
+  const bool try_websocket_over_http2_;
+
   // Enable pooling to a SpdySession with matching IP and certificate
   // even if the SpdySessionKey is different.
   const bool enable_ip_based_pooling_;

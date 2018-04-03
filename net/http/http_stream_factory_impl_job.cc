@@ -184,6 +184,10 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       origin_url_(origin_url),
       alternative_proxy_server_(alternative_proxy_server),
       is_websocket_(is_websocket),
+      try_websocket_over_http2_(is_websocket_ &&
+                                origin_url_.SchemeIs(url::kWssScheme) &&
+                                proxy_info_.is_direct() &&
+                                session_->params().enable_websocket_over_http2),
       enable_ip_based_pooling_(enable_ip_based_pooling),
       delegate_(delegate),
       job_type_(job_type),
@@ -428,24 +432,19 @@ bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
     return false;
   }
 
-  if (is_websocket_ && origin_url_.SchemeIs(url::kWssScheme) &&
-      session_->params().enable_websocket_over_http2) {
-    return true;
-  }
-
   // We need to make sure that if a spdy session was created for
   // https://somehost/ then we do not use that session for http://somehost:443/.
   // The only time we can use an existing session is if the request URL is
   // https (the normal case) or if we are connecting to a SPDY proxy.
   // https://crbug.com/133176
-  return origin_url_.SchemeIs(url::kHttpsScheme) ||
+  return origin_url_.SchemeIs(url::kHttpsScheme) || try_websocket_over_http2_ ||
          proxy_info_.proxy_server().is_https();
 }
 
 void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
   DCHECK(stream_.get());
   DCHECK_NE(job_type_, PRECONNECT);
-  DCHECK(!is_websocket_ || session_->params().enable_websocket_over_http2);
+  DCHECK(!is_websocket_ || try_websocket_over_http2_);
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
@@ -930,8 +929,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
     if (!existing_spdy_session_) {
       existing_spdy_session_ =
           session_->spdy_session_pool()->FindAvailableSession(
-              spdy_session_key_, enable_ip_based_pooling_, is_websocket_,
-              net_log_);
+              spdy_session_key_, enable_ip_based_pooling_,
+              try_websocket_over_http2_, net_log_);
     }
     if (existing_spdy_session_) {
       // If we're preconnecting, but we already have a SpdySession, we don't
@@ -973,7 +972,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
       CanUseExistingSpdySession()
           ? base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
                        spdy_session_key_, enable_ip_based_pooling_,
-                       is_websocket_)
+                       try_websocket_over_http2_)
           : OnHostResolutionCallback();
   if (is_websocket_) {
     DCHECK(request_info_.socket_tag == SocketTag());
@@ -1015,8 +1014,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     // probably an IP pooled connection.
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key_, enable_ip_based_pooling_, is_websocket_,
-            net_log_);
+            spdy_session_key_, enable_ip_based_pooling_,
+            try_websocket_over_http2_, net_log_);
     if (existing_spdy_session_) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
@@ -1152,12 +1151,16 @@ int HttpStreamFactoryImpl::Job::DoWaitingUserAction(int result) {
 int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
     base::WeakPtr<SpdySession> session) {
   DCHECK(using_spdy_);
-  if (is_websocket_ && !session_->params().enable_websocket_over_http2) {
-    return ERR_NOT_IMPLEMENTED;
-  }
   if (is_websocket_) {
     DCHECK_NE(job_type_, PRECONNECT);
     DCHECK(delegate_->websocket_handshake_stream_create_helper());
+
+    if (!try_websocket_over_http2_) {
+      // Plaintext WebSocket is not supported over HTTP/2 proxy,
+      // see https://crbug.com/684681.
+      return ERR_NOT_IMPLEMENTED;
+    }
+
     websocket_stream_ = delegate_->websocket_handshake_stream_create_helper()
                             ->CreateHttp2Stream(session);
     return OK;
@@ -1224,8 +1227,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     if (!existing_spdy_session_) {
       existing_spdy_session_ =
           session_->spdy_session_pool()->FindAvailableSession(
-              spdy_session_key_, enable_ip_based_pooling_, is_websocket_,
-              net_log_);
+              spdy_session_key_, enable_ip_based_pooling_,
+              /* is_websocket = */ false, net_log_);
     }
   }
   if (existing_spdy_session_) {

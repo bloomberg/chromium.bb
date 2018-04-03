@@ -7250,6 +7250,56 @@ TEST_F(SpdyNetworkTransactionTest, PlaintextWebSocketOverHttp2Proxy) {
   helper.VerifyDataConsumed();
 }
 
+// Regression test for https://crbug.com/819101.  Open two identical plaintext
+// websocket requests over proxy.  The HttpStreamFactoryImpl::Job for the second
+// request should reuse the first connection.
+TEST_F(SpdyNetworkTransactionTest, TwoWebSocketRequestsOverHttp2Proxy) {
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
+      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 80)));
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
+
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  MockRead reads[] = {CreateMockRead(resp, 1),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  request_.url = GURL("ws://www.example.org/");
+  auto session_deps = std::make_unique<SpdySessionDependencies>(
+      ProxyResolutionService::CreateFixed("https://proxy:70",
+                                          TRAFFIC_ANNOTATION_FOR_TESTS));
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  HttpNetworkTransaction* trans1 = helper.trans();
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+  trans1->SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  EXPECT_TRUE(helper.StartDefaultTest());
+  helper.WaitForCallbackToComplete();
+  EXPECT_THAT(helper.output().rv, IsError(ERR_NOT_IMPLEMENTED));
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  trans2.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback2;
+  int rv = trans2.Start(&request_, callback2.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback2.WaitForResult();
+  EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  helper.VerifyDataConsumed();
+}
+
 TEST_F(SpdyNetworkTransactionTest, SecureWebSocketOverHttp2Proxy) {
   SpdySerializedFrame connect_request(spdy_util_.ConstructSpdyConnect(
       nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
