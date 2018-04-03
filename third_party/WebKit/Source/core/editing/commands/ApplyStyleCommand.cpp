@@ -176,16 +176,13 @@ ApplyStyleCommand::ApplyStyleCommand(
       is_inline_element_to_remove_function_(
           is_inline_element_to_remove_function) {}
 
-void ApplyStyleCommand::UpdateStartEnd(const Position& new_start,
-                                       const Position& new_end) {
-  DCHECK_GE(new_end, new_start);
-
-  if (!use_ending_selection_ && (new_start != start_ || new_end != end_))
+void ApplyStyleCommand::UpdateStartEnd(const EphemeralRange& range) {
+  if (!use_ending_selection_ &&
+      (range.StartPosition() != start_ || range.EndPosition() != end_))
     use_ending_selection_ = true;
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   const bool was_base_first =
       StartingSelection().IsBaseFirst() || !SelectionIsDirectional();
-  const EphemeralRange range(new_start, new_end);
   SelectionInDOMTree::Builder builder;
   if (was_base_first)
     builder.SetAsForwardSelection(range);
@@ -195,8 +192,8 @@ void ApplyStyleCommand::UpdateStartEnd(const Position& new_start,
       CreateVisibleSelection(builder.Build());
   SetEndingSelection(
       SelectionForUndoStep::From(visible_selection.AsSelection()));
-  start_ = new_start;
-  end_ = new_end;
+  start_ = range.StartPosition();
+  end_ = range.EndPosition();
 }
 
 Position ApplyStyleCommand::StartPosition() {
@@ -369,8 +366,8 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
       PlainTextRange(end_index).CreateRangeForSelection(ToContainerNode(scope));
   if (end_ephemeral_range.IsNull())
     return;
-  UpdateStartEnd(start_ephemeral_range.StartPosition(),
-                 end_ephemeral_range.StartPosition());
+  UpdateStartEnd(EphemeralRange(start_ephemeral_range.StartPosition(),
+                                end_ephemeral_range.StartPosition()));
 }
 
 static MutableCSSPropertyValueSet* CopyStyleOrCreateEmpty(
@@ -1549,7 +1546,7 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
     node = next;
   }
 
-  UpdateStartEnd(s, e);
+  UpdateStartEnd(EphemeralRange(s, e));
 }
 
 bool ApplyStyleCommand::ElementFullySelected(const HTMLElement& element,
@@ -1580,7 +1577,7 @@ void ApplyStyleCommand::SplitTextAtStart(const Position& start,
 
   Text* text = ToText(start.ComputeContainerNode());
   SplitTextNode(text, start.OffsetInContainerNode());
-  UpdateStartEnd(Position::FirstPositionInNode(*text), new_end);
+  UpdateStartEnd(EphemeralRange(Position::FirstPositionInNode(*text), new_end));
 }
 
 void ApplyStyleCommand::SplitTextAtEnd(const Position& start,
@@ -1601,7 +1598,8 @@ void ApplyStyleCommand::SplitTextAtEnd(const Position& start,
       should_update_start
           ? Position(ToText(prev_node), start.OffsetInContainerNode())
           : start;
-  UpdateStartEnd(new_start, Position::LastPositionInNode(*prev_node));
+  UpdateStartEnd(
+      EphemeralRange(new_start, Position::LastPositionInNode(*prev_node)));
 }
 
 void ApplyStyleCommand::SplitTextElementAtStart(const Position& start,
@@ -1618,7 +1616,8 @@ void ApplyStyleCommand::SplitTextElementAtStart(const Position& start,
 
   SplitTextNodeContainingElement(ToText(start.ComputeContainerNode()),
                                  start.OffsetInContainerNode());
-  UpdateStartEnd(Position::BeforeNode(*start.ComputeContainerNode()), new_end);
+  UpdateStartEnd(EphemeralRange(
+      Position::BeforeNode(*start.ComputeContainerNode()), new_end));
 }
 
 void ApplyStyleCommand::SplitTextElementAtEnd(const Position& start,
@@ -1641,7 +1640,8 @@ void ApplyStyleCommand::SplitTextElementAtEnd(const Position& start,
       should_update_start
           ? Position(ToText(first_text_node), start.OffsetInContainerNode())
           : start;
-  UpdateStartEnd(new_start, Position::AfterNode(*first_text_node));
+  UpdateStartEnd(
+      EphemeralRange(new_start, Position::AfterNode(*first_text_node)));
 }
 
 bool ApplyStyleCommand::ShouldSplitTextElement(Element* element,
@@ -1700,9 +1700,10 @@ bool ApplyStyleCommand::MergeStartWithPreviousIfIdentical(
     int start_offset_adjustment = start_child->NodeIndex();
     int end_offset_adjustment =
         start_node == end.AnchorNode() ? start_offset_adjustment : 0;
-    UpdateStartEnd(Position(start_node, start_offset_adjustment),
-                   Position(end.AnchorNode(), end.ComputeEditingOffset() +
-                                                  end_offset_adjustment));
+    UpdateStartEnd(EphemeralRange(
+        Position(start_node, start_offset_adjustment),
+        Position(end.AnchorNode(),
+                 end.ComputeEditingOffset() + end_offset_adjustment)));
     return true;
   }
 
@@ -1742,10 +1743,11 @@ bool ApplyStyleCommand::MergeEndWithNextIfIdentical(
     bool should_update_start = start.ComputeContainerNode() == end_node;
     int end_offset = next_child ? next_child->NodeIndex()
                                 : next_element->childNodes()->length();
-    UpdateStartEnd(should_update_start
-                       ? Position(next_element, start.OffsetInContainerNode())
-                       : start,
-                   Position(next_element, end_offset));
+    UpdateStartEnd(EphemeralRange(
+        should_update_start
+            ? Position(next_element, start.OffsetInContainerNode())
+            : start,
+        Position(next_element, end_offset)));
     return true;
   }
 
@@ -2071,7 +2073,7 @@ void ApplyStyleCommand::JoinChildTextNodes(ContainerNode* node,
     // don't move child node pointer. it may want to merge with more text nodes.
   }
 
-  UpdateStartEnd(new_start, new_end);
+  UpdateStartEnd(EphemeralRange(new_start, new_end));
 }
 
 void ApplyStyleCommand::Trace(blink::Visitor* visitor) {

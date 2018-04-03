@@ -190,7 +190,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
                                          HTMLElement* unsplit_ancestor,
                                          EditingState*);
 
-  void UpdateStartEnd(const Position& new_start, const Position& new_end);
+  void UpdateStartEnd(const EphemeralRange&);
   Position StartPosition();
   Position EndPosition();
 
