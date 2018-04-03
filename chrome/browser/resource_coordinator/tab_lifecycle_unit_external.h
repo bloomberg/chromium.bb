@@ -35,6 +35,9 @@ class TabLifecycleUnitExternal {
   // Allows/disallows this tab to be automatically discarded.
   virtual void SetAutoDiscardable(bool auto_discardable) = 0;
 
+  // Freezes the tab.
+  virtual bool FreezeTab() = 0;
+
   // Discards the tab.
   virtual bool DiscardTab() = 0;
 
