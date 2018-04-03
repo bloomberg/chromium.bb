@@ -79,10 +79,11 @@ struct CacheMetadataEntry {
 };
 
 // Mock Platform implementation that provides basic crypto and caching.
-class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
+class SourceKeyedCachedMetadataHandlerMockPlatform final
+    : public TestingPlatformSupportWithMockScheduler {
  public:
-  MockPlatform() {}
-  ~MockPlatform() override = default;
+  SourceKeyedCachedMetadataHandlerMockPlatform() {}
+  ~SourceKeyedCachedMetadataHandlerMockPlatform() override = default;
 
   WebCrypto* Crypto() override { return &mock_web_crypto_; }
 
@@ -196,7 +197,8 @@ template <size_t N>
 
 TEST(SourceKeyedCachedMetadataHandlerTest,
      HandlerForSource_InitiallyNonNullHandlersWithNullData) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
@@ -219,7 +221,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
 
 TEST(SourceKeyedCachedMetadataHandlerTest,
      HandlerForSource_OneHandlerSetOtherNull) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
@@ -245,7 +248,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
 }
 
 TEST(SourceKeyedCachedMetadataHandlerTest, HandlerForSource_BothHandlersSet) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
@@ -274,7 +278,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest, HandlerForSource_BothHandlersSet) {
 }
 
 TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EmptyClearDoesSend) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
@@ -292,7 +297,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EmptyClearDoesSend) {
 }
 
 TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EachSetDoesSend) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
@@ -321,7 +327,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EachSetDoesSend) {
 }
 
 TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_SetWithNoSendDoesNotSend) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   SourceKeyedCachedMetadataHandler* handler =
@@ -352,7 +359,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_SetWithNoSendDoesNotSend) {
 
 TEST(SourceKeyedCachedMetadataHandlerTest,
      SerializeAndDeserialize_NoHandlersSet) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   WTF::String source1("source1");
@@ -397,7 +405,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
 
 TEST(SourceKeyedCachedMetadataHandlerTest,
      SerializeAndDeserialize_BothHandlersSet) {
-  ScopedTestingPlatformSupport<MockPlatform> platform;
+  ScopedTestingPlatformSupport<SourceKeyedCachedMetadataHandlerMockPlatform>
+      platform;
 
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   WTF::String source1("source1");
