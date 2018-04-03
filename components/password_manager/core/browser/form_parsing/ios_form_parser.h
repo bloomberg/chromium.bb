@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_PASSWORDS_FORM_PARSER_H_
-#define IOS_CHROME_BROWSER_PASSWORDS_FORM_PARSER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_PARSING_IOS_FORM_PARSER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_PARSING_IOS_FORM_PARSER_H_
 
 #include <memory>
 
@@ -12,11 +12,13 @@ struct FormData;
 struct PasswordForm;
 }  // namespace autofill
 
+namespace password_manager {
+
 enum class FormParsingMode { FILLING, SAVING };
 
-class FormParser {
+class IOSFormParser {
  public:
-  FormParser();
+  IOSFormParser();
 
   // Parse DOM information |form_data| to Password Manager form representation
   // PasswordForm.
@@ -26,4 +28,6 @@ class FormParser {
       FormParsingMode mode);
 };
 
-#endif  // IOS_CHROME_BROWSER_PASSWORDS_FORM_PARSER_H_
+}  // namespace password_manager
+
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_PARSING_IOS_FORM_PARSER_H_

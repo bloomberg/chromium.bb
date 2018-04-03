@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/passwords/form_parser.h"
+#include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 
 #include <algorithm>
 #include <utility>
@@ -17,6 +17,8 @@ using autofill::FormFieldData;
 using autofill::PasswordForm;
 
 using FieldPointersVector = std::vector<const FormFieldData*>;
+
+namespace password_manager {
 
 namespace {
 
@@ -305,10 +307,10 @@ void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
 
 }  // namespace
 
-FormParser::FormParser() = default;
+IOSFormParser::IOSFormParser() = default;
 
-std::unique_ptr<PasswordForm> FormParser::Parse(const FormData& form_data,
-                                                FormParsingMode mode) {
+std::unique_ptr<PasswordForm> IOSFormParser::Parse(const FormData& form_data,
+                                                   FormParsingMode mode) {
   FieldPointersVector fields = GetNonCreditCardFields(form_data.fields);
 
   // Skip forms without password fields.
@@ -338,3 +340,5 @@ std::unique_ptr<PasswordForm> FormParser::Parse(const FormData& form_data,
   SetFields(*base_heuristics_parse_result, result.get());
   return result;
 }
+
+}  // namespace password_manager
