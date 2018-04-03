@@ -6,28 +6,23 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(
-    () => {
-        return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-            .then(
-                () => requestDeviceWithTrustedClick(
-                    {filters: [{services: ['health_thermometer']}]}))
-            .then(device => device.gatt.connect())
-            .then(
-                gattServer =>
-                    gattServer.getPrimaryService('health_thermometer'))
-            .then(service => service.getCharacteristic('measurement_interval'))
-            .then(
-                characteristic => characteristic.getDescriptor(
-                    'bad3ec61-3cc3-4954-9702-7977df514114'))
-            .then(descriptor => {
-              return assert_promise_rejects_with_message(
-                  descriptor.readValue(),
-                  new DOMException(
-                      'readValue() called on blocklisted object marked exclude-reads. ' +
-                          'https://goo.gl/4NeimX',
-                      'SecurityError'));
-            })},
-    'Attempt to call readValue on a blocked descriptor must generate a SecurityError');
+const test_desc = 'An attempt to call readValue on a blocked descriptor must ' +
+    'generate a SecurityError';
+const expected = new DOMException(
+    'readValue() called on blocklisted object marked exclude-reads. ' +
+    'https://goo.gl/4NeimX',
+    'SecurityError');
+let descriptor, fake_descriptor;
 
+// 1. Connect to the device and retrieve the GATT descriptor.
+bluetooth_test(() => getBlocklistExcludeReadsDescriptor()
+    .then(_ => ({descriptor, fake_descriptor} = _))
+    // 2. Attempt to write and read the descriptor.
+    .then(() => fake_descriptor.setNextWriteResponse(HCI_SUCCESS))
+    .then(() => descriptor.writeValue(new Uint8Array(1 /* length */)))
+    .then(() => assert_promise_rejects_with_message(
+        descriptor.readValue(),
+        expected,
+        'readValue() should reject.')),
+    test_desc);
 </script>

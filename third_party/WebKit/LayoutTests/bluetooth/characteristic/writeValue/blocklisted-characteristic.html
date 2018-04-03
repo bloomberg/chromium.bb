@@ -6,23 +6,23 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  return setBluetoothFakeAdapter('BlocklistTestAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: [blocklist_test_service_uuid]}],
-      optionalServices: ['generic_access']}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('generic_access'))
-    .then(service => service.getCharacteristic('gap.peripheral_privacy_flag'))
-    .then(characteristic => {
-      return characteristic.readValue()
-        .then(() => assert_promise_rejects_with_message(
-          characteristic.writeValue(new Uint8Array(1 /* length */)),
-          new DOMException(
-            'writeValue() called on blocklisted object marked exclude-writes.' +
-            ' https://goo.gl/4NeimX',
-            'SecurityError'),
-          'writeValue() should reject.'));
-    });
-}, 'Characteristic with exclude-writes fullfills read and rejects write.');
+const test_desc = 'Characteristic with exclude-writes fullfills read and ' +
+    'rejects write.';
+const expected = new DOMException(
+    'writeValue() called on blocklisted object marked exclude-writes. ' +
+    'https://goo.gl/4NeimX',
+    'SecurityError');
+let characteristic, fake_characteristic;
+
+// 1. Connect to the device and retrieve the GATT characteristic.
+bluetooth_test(() => getBlocklistExcludeWritesCharacteristic()
+    .then(_ => ({characteristic, fake_characteristic} = _))
+    // 2. Attempt to write and read the characteristic.
+    .then(() => fake_characteristic.setNextReadResponse(HCI_SUCCESS, 'foo'))
+    .then(() => characteristic.readValue())
+    .then(() => assert_promise_rejects_with_message(
+        characteristic.writeValue(new Uint8Array(1 /* length */)),
+        expected,
+        'writeValue() should reject.')),
+    test_desc);
 </script>
