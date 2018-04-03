@@ -530,7 +530,6 @@ html[dir=rtl] #attribution,
   right: 0;
   top: 0;
   transition: opacity 130ms;
-  z-index: 1;
 }
 
 #one-google.hidden {
