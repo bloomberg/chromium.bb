@@ -95,7 +95,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
                          std::unique_ptr<views::View> icon_view,
                          const base::string16& title,
                          const base::string16& subtitle,
-                         bool show_submenu_arrow)
+                         std::unique_ptr<views::View> secondary_icon_view)
     : HoverButton(button_listener, base::string16()) {
   label()->SetHandlesTooltips(false);
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
@@ -174,6 +174,19 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   title_wrapper->set_can_process_events_within_subtree(false);
   grid_layout->AddView(title_wrapper);
 
+  if (secondary_icon_view) {
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                       kFixed, views::GridLayout::USE_PREF, 0, 0);
+    // Make sure hovering over |secondary_icon_view| also hovers the
+    // |HoverButton|.
+    secondary_icon_view->set_can_process_events_within_subtree(false);
+    // |secondary_icon_view| needs a layer otherwise it's obscured by the layer
+    // used in drawing ink drops.
+    secondary_icon_view->SetPaintToLayer();
+    secondary_icon_view->layer()->SetFillsBoundsOpaquely(false);
+    grid_layout->AddView(secondary_icon_view.release(), 1, num_labels);
+  }
+
   if (!subtitle.empty()) {
     grid_layout->StartRow(0, kColumnSetId, row_height);
     subtitle_ = new views::Label(subtitle, views::style::CONTEXT_BUTTON,
@@ -184,23 +197,6 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
     grid_layout->AddView(subtitle_);
   }
 
-  if (show_submenu_arrow) {
-    constexpr int kSubmenuArrowSize = 12;
-    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                       kFixed, views::GridLayout::USE_PREF, 0, 0);
-    views::ImageView* arrow = new views::ImageView();
-    arrow->SetImage(gfx::CreateVectorIcon(
-        kUserMenuRightArrowIcon, kSubmenuArrowSize, gfx::kChromeIconGrey));
-    // Make sure hovering over |arrow| also hovers the |HoverButton|.
-    arrow->set_can_process_events_within_subtree(false);
-    // |arrow| needs a layer otherwise it's obscured by the layer used in
-    // drawing ink drops.
-    arrow->SetPaintToLayer();
-    arrow->layer()->SetFillsBoundsOpaquely(false);
-    // Make sure that the arrow is flipped in RTL mode.
-    arrow->EnableCanvasFlippingForRTLUI(true);
-    grid_layout->AddView(arrow, 1, num_labels);
-  }
   SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
                               taken_width_, auto_compute_tooltip_);
 

@@ -1133,12 +1133,20 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   // The accounts submenu is only needed when there are additional accounts to
   // list, i.e. when there is more than 1 account (the first account has it's
   // own button).
-  const bool show_submenu_arrow = dice_sync_promo_accounts_.size() > 1;
-  sync_to_another_account_button_ =
-      new HoverButton(this, std::move(switch_account_icon_view),
-                      l10n_util::GetStringUTF16(
-                          IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON),
-                      base::string16() /* subtitle */, show_submenu_arrow);
+  std::unique_ptr<views::ImageView> submenu_arrow_icon_view;
+  if (dice_sync_promo_accounts_.size() > 1) {
+    constexpr int kSubmenuArrowSize = 12;
+    submenu_arrow_icon_view = std::make_unique<views::ImageView>();
+    submenu_arrow_icon_view->SetImage(gfx::CreateVectorIcon(
+        kUserMenuRightArrowIcon, kSubmenuArrowSize, gfx::kChromeIconGrey));
+    // Make sure that the arrow is flipped in RTL mode.
+    submenu_arrow_icon_view->EnableCanvasFlippingForRTLUI(true);
+  }
+  sync_to_another_account_button_ = new HoverButton(
+      this, std::move(switch_account_icon_view),
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON),
+      base::string16() /* subtitle */, std::move(submenu_arrow_icon_view));
   view->AddChildView(sync_to_another_account_button_);
   return view;
 }
