@@ -953,23 +953,26 @@ const int kRelativeTimeMaxHours = 4;
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
   DCHECK(self.signinPromoViewMediator);
-  if ([self.tableViewModel sectionIsCollapsed:SectionIdentifierOtherDevices])
-    return;
+  // Update the TableViewSigninPromoItem configurator. It will be used by the
+  // item to configure the cell once |self.tableView| requests a cell on
+  // cellForRowAtIndexPath.
   NSIndexPath* indexPath =
       [self.tableViewModel indexPathForItemType:ItemTypeOtherDevicesSigninPromo
                               sectionIdentifier:SectionIdentifierOtherDevices];
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  TableViewSigninPromoItem* signInItem =
+      base::mac::ObjCCastStrict<TableViewSigninPromoItem>(item);
+  signInItem.configurator = configurator;
+  // If section is collapsed no tableView update is needed.
+  if ([self.tableViewModel sectionIsCollapsed:SectionIdentifierOtherDevices]) {
+    return;
+  }
+  // If the section is not collapsed and the identity has changed, reload the
+  // Cell.
   if (identityChanged) {
     [self.tableView reloadRowsAtIndexPaths:@[ indexPath ]
                           withRowAnimation:UITableViewRowAnimationNone];
-    return;
   }
-  UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-  NSArray<UIView*>* contentViews = cell.contentView.subviews;
-  DCHECK(contentViews.count == 1);
-  UIView* subview = contentViews[0];
-  DCHECK([subview isKindOfClass:[SigninPromoView class]]);
-  SigninPromoView* signinPromoView = (SigninPromoView*)subview;
-  [configurator configureSigninPromoView:signinPromoView];
 }
 
 - (void)signinDidFinish {

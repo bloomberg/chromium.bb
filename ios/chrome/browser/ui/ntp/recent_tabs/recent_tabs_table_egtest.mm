@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -76,9 +77,10 @@ id<GREYMatcher> TitleOfTestPage() {
 
 // Closes the recent tabs panel.
 - (void)closeRecentTabs {
-  id<GREYMatcher> exit_button_matcher = grey_accessibilityID(@"Exit");
-  [[EarlGrey selectElementWithMatcher:exit_button_matcher]
-      performAction:grey_tap()];
+  NSString* exitID =
+      IsUIRefreshPhase1Enabled() ? kTableContainerDismissButtonId : @"Exit";
+  id<GREYMatcher> exitMatcher = grey_accessibilityID(exitID);
+  [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
   // Wait until the recent tabs panel is dismissed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
@@ -125,16 +127,23 @@ id<GREYMatcher> TitleOfTestPage() {
   OpenRecentTabsPanel();
 
   // Tap "Show Full History"
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   l10n_util::GetNSString(
-                                       IDS_HISTORY_SHOWFULLHISTORY_LINK))]
+  id<GREYMatcher> showHistoryMatcher =
+      IsUIRefreshPhase1Enabled()
+          ? chrome_test_util::StaticTextWithAccessibilityLabelId(
+                IDS_HISTORY_SHOWFULLHISTORY_LINK)
+          : chrome_test_util::ButtonWithAccessibilityLabelId(
+                IDS_HISTORY_SHOWFULLHISTORY_LINK);
+  [[EarlGrey selectElementWithMatcher:showHistoryMatcher]
       performAction:grey_tap()];
 
   // Make sure history is opened.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(
-                                   l10n_util::GetNSString(IDS_HISTORY_TITLE))]
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(
+                                              l10n_util::GetNSString(
+                                                  IDS_HISTORY_TITLE)),
+                                          grey_accessibilityTrait(
+                                              UIAccessibilityTraitHeader),
+                                          nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Close History.
