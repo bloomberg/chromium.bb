@@ -39,19 +39,6 @@ static aom_image_t *img_alloc_helper(aom_image_t *img, aom_img_fmt_t fmt,
 
   /* Get sample size for this format */
   switch (fmt) {
-    case AOM_IMG_FMT_RGB32:
-    case AOM_IMG_FMT_RGB32_LE:
-    case AOM_IMG_FMT_ARGB:
-    case AOM_IMG_FMT_ARGB_LE: bps = 32; break;
-    case AOM_IMG_FMT_RGB24:
-    case AOM_IMG_FMT_BGR24: bps = 24; break;
-    case AOM_IMG_FMT_RGB565:
-    case AOM_IMG_FMT_RGB565_LE:
-    case AOM_IMG_FMT_RGB555:
-    case AOM_IMG_FMT_RGB555_LE:
-    case AOM_IMG_FMT_UYVY:
-    case AOM_IMG_FMT_YUY2:
-    case AOM_IMG_FMT_YVYU: bps = 16; break;
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_YV12:
     case AOM_IMG_FMT_AOMI420:

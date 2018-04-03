@@ -38,19 +38,6 @@ extern "C" {
 /*!\brief List of supported image formats */
 typedef enum aom_img_fmt {
   AOM_IMG_FMT_NONE,
-  AOM_IMG_FMT_RGB24,     /**< 24 bit per pixel packed RGB */
-  AOM_IMG_FMT_RGB32,     /**< 32 bit per pixel packed 0RGB */
-  AOM_IMG_FMT_RGB565,    /**< 16 bit per pixel, 565 */
-  AOM_IMG_FMT_RGB555,    /**< 16 bit per pixel, 555 */
-  AOM_IMG_FMT_UYVY,      /**< UYVY packed YUV */
-  AOM_IMG_FMT_YUY2,      /**< YUYV packed YUV */
-  AOM_IMG_FMT_YVYU,      /**< YVYU packed YUV */
-  AOM_IMG_FMT_BGR24,     /**< 24 bit per pixel packed BGR */
-  AOM_IMG_FMT_RGB32_LE,  /**< 32 bit packed BGR0 */
-  AOM_IMG_FMT_ARGB,      /**< 32 bit packed ARGB, alpha=255 */
-  AOM_IMG_FMT_ARGB_LE,   /**< 32 bit packed BGRA, alpha=255 */
-  AOM_IMG_FMT_RGB565_LE, /**< 16 bit per pixel, gggbbbbb rrrrrggg */
-  AOM_IMG_FMT_RGB555_LE, /**< 16 bit per pixel, gggbbbbb 0rrrrrgg */
   AOM_IMG_FMT_YV12 =
       AOM_IMG_FMT_PLANAR | AOM_IMG_FMT_UV_FLIP | 1, /**< planar YVU */
   AOM_IMG_FMT_I420 = AOM_IMG_FMT_PLANAR | 2,
