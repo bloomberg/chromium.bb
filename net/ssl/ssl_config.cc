@@ -32,7 +32,6 @@ SSLConfig::SSLConfig()
       version_interference_probe(false),
       channel_id_enabled(true),
       false_start_enabled(true),
-      signed_cert_timestamps_enabled(true),
       require_ecdhe(false),
       send_client_cert(false),
       verify_ev_cert(false),

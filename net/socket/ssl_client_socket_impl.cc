@@ -962,10 +962,8 @@ int SSLClientSocketImpl::Init() {
                         wire_protos.size());
   }
 
-  if (ssl_config_.signed_cert_timestamps_enabled) {
-    SSL_enable_signed_cert_timestamps(ssl_.get());
-    SSL_enable_ocsp_stapling(ssl_.get());
-  }
+  SSL_enable_signed_cert_timestamps(ssl_.get());
+  SSL_enable_ocsp_stapling(ssl_.get());
 
   if (cert_verifier_->SupportsOCSPStapling())
     SSL_enable_ocsp_stapling(ssl_.get());

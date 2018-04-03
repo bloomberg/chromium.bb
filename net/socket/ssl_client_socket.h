@@ -162,9 +162,9 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocket, SerializeNextProtos);
   // For signed_cert_timestamps_received_ and stapled_ocsp_response_received_.
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
-                           ConnectSignedCertTimestampsEnabledTLSExtension);
+                           ConnectSignedCertTimestampsTLSExtension);
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
-                           ConnectSignedCertTimestampsEnabledOCSP);
+                           ConnectSignedCertTimestampsEnablesOCSP);
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
                            ConnectSignedCertTimestampsDisabled);
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
