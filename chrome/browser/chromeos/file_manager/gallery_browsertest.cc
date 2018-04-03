@@ -22,7 +22,6 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
   void set_test_case_name(const std::string& name) { test_case_name_ = name; }
 
  private:
-  base::ListValue scripts_;
   std::string test_case_name_;
 };
 
