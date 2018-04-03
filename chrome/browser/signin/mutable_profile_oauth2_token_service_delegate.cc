@@ -96,7 +96,7 @@ void RecordTokenChanged(const std::string& existing_token,
         (new_token ==
          MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
             ? TokenStateTransition::kRegularToInvalid
-            : transition = TokenStateTransition::kRegularToRegular;
+            : TokenStateTransition::kRegularToRegular;
   }
   DCHECK_NE(TokenStateTransition::kCount, transition);
   RecordTokenStateTransition(transition);
