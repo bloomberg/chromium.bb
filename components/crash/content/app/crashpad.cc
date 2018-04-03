@@ -354,7 +354,7 @@ void GetReportsImpl(std::vector<Report>* reports) {
     report.upload_time = 0;
     report.state = pending_report.upload_explicitly_requested
                        ? ReportUploadState::Pending_UserRequested
-                       : report.state = ReportUploadState::Pending;
+                       : ReportUploadState::Pending;
     reports->push_back(report);
   }
 
