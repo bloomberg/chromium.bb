@@ -122,7 +122,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       bool is_client_redirect,
       WebTriggeringEventInfo,
       HTMLFormElement*,
-      ContentSecurityPolicyDisposition should_bypass_main_world_csp) override;
+      ContentSecurityPolicyDisposition should_bypass_main_world_csp,
+      mojom::blink::BlobURLTokenPtr) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DispatchWillSubmitForm(HTMLFormElement*) override;
   void DidStartLoading(LoadStartType) override;

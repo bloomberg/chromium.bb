@@ -4,12 +4,60 @@
 
 #include "storage/browser/blob/blob_url_store_impl.h"
 
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_loader_factory.h"
 #include "storage/browser/blob/blob_url_utils.h"
 
 namespace storage {
+
+// Self deletes when the last binding to it is closed.
+class BlobURLTokenImpl : public blink::mojom::BlobURLToken {
+ public:
+  BlobURLTokenImpl(base::WeakPtr<BlobStorageContext> context,
+                   const GURL& url,
+                   std::unique_ptr<BlobDataHandle> blob,
+                   blink::mojom::BlobURLTokenRequest request)
+      : context_(std::move(context)),
+        url_(url),
+        blob_(std::move(blob)),
+        token_(base::UnguessableToken::Create()) {
+    bindings_.AddBinding(this, std::move(request));
+    bindings_.set_connection_error_handler(base::BindRepeating(
+        &BlobURLTokenImpl::OnConnectionError, base::Unretained(this)));
+    if (context_) {
+      context_->mutable_registry()->AddTokenMapping(token_, url_,
+                                                    blob_->uuid());
+    }
+  }
+
+  ~BlobURLTokenImpl() override {
+    if (context_)
+      context_->mutable_registry()->RemoveTokenMapping(token_);
+  }
+
+  void GetToken(GetTokenCallback callback) override {
+    std::move(callback).Run(token_);
+  }
+
+  void Clone(blink::mojom::BlobURLTokenRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  void OnConnectionError() {
+    if (!bindings_.empty())
+      return;
+    delete this;
+  }
+
+  base::WeakPtr<BlobStorageContext> context_;
+  mojo::BindingSet<blink::mojom::BlobURLToken> bindings_;
+  const GURL url_;
+  const std::unique_ptr<BlobDataHandle> blob_;
+  const base::UnguessableToken token_;
+};
 
 BlobURLStoreImpl::BlobURLStoreImpl(base::WeakPtr<BlobStorageContext> context,
                                    BlobRegistryImpl::Delegate* delegate)
@@ -70,6 +118,18 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
   BlobURLLoaderFactory::Create(
       context_ ? context_->GetBlobDataFromPublicURL(url) : nullptr, url,
       std::move(request));
+}
+
+void BlobURLStoreImpl::ResolveForNavigation(
+    const GURL& url,
+    blink::mojom::BlobURLTokenRequest token) {
+  if (!context_)
+    return;
+  std::unique_ptr<BlobDataHandle> blob_handle =
+      context_->GetBlobDataFromPublicURL(url);
+  if (!blob_handle)
+    return;
+  new BlobURLTokenImpl(context_, url, std::move(blob_handle), std::move(token));
 }
 
 void BlobURLStoreImpl::RegisterWithUUID(blink::mojom::BlobPtr blob,

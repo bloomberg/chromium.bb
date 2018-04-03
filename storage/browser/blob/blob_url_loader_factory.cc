@@ -4,10 +4,32 @@
 
 #include "storage/browser/blob/blob_url_loader_factory.h"
 
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_loader.h"
 
 namespace storage {
+
+namespace {
+
+// The BlobURLTokenPtr parameter is passed in to make sure the connection stays
+// alive until this method is called, it is not otherwise used by this method.
+void CreateFactoryForToken(blink::mojom::BlobURLTokenPtr,
+                           const base::WeakPtr<BlobStorageContext>& context,
+                           network::mojom::URLLoaderFactoryRequest request,
+                           const base::UnguessableToken& token) {
+  std::unique_ptr<BlobDataHandle> handle;
+  GURL blob_url;
+  if (context) {
+    std::string uuid;
+    if (context->registry().GetTokenMapping(token, &blob_url, &uuid))
+      handle = context->GetBlobDataFromUUID(uuid);
+  }
+  BlobURLLoaderFactory::Create(std::move(handle), blob_url, std::move(request));
+}
+
+}  // namespace
 
 // static
 void BlobURLLoaderFactory::Create(
@@ -15,6 +37,22 @@ void BlobURLLoaderFactory::Create(
     const GURL& blob_url,
     network::mojom::URLLoaderFactoryRequest request) {
   new BlobURLLoaderFactory(std::move(handle), blob_url, std::move(request));
+}
+
+// static
+void BlobURLLoaderFactory::Create(
+    blink::mojom::BlobURLTokenPtr token,
+    base::WeakPtr<BlobStorageContext> context,
+    network::mojom::URLLoaderFactoryRequest request) {
+  // Not every URLLoaderFactory user deals with the URLLoaderFactory simply
+  // disconnecting very well, so make sure we always at least bind the request
+  // to some factory that can then fail with a network error. Hence the callback
+  // is wrapped in WrapCallbackWithDefaultInvokeIfNotRun.
+  auto* raw_token = token.get();
+  raw_token->GetToken(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      base::BindOnce(&CreateFactoryForToken, std::move(token),
+                     std::move(context), std::move(request)),
+      base::UnguessableToken()));
 }
 
 void BlobURLLoaderFactory::CreateLoaderAndStart(
@@ -25,8 +63,10 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (request.url != url_) {
+  if (url_.is_valid() && request.url != url_) {
     bindings_.ReportBadMessage("Invalid URL when attempting to fetch Blob");
+    client->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));
     return;
   }
   DCHECK(!request.download_to_file);

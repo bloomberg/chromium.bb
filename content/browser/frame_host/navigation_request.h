@@ -107,7 +107,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       mojom::BeginNavigationParamsPtr begin_params,
       int current_history_list_offset,
       int current_history_list_length,
-      bool override_user_agent);
+      bool override_user_agent,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
   ~NavigationRequest() override;
 
@@ -334,6 +335,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // is created. This can be null if the embedded did not provide a
   // NavigationUIData at the beginning of the navigation.
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
+
+  // URLLoaderFactory to facilitate loading blob URLs.
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory_;
 
   NavigationState state_;
 

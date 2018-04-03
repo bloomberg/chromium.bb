@@ -349,6 +349,7 @@ class BLINK_EXPORT WebFrameClient {
     WebString devtools_initiator_info;
     WebContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy;
+    mojo::ScopedMessagePipeHandle blob_url_token;
 
     // Specify whether or not a MHTML Archive can be used to load a subframe
     // resource instead of doing a network request.

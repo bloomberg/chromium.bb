@@ -861,7 +861,7 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
           : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.has_user_gesture = has_user_gesture_;
   render_frame_host_->frame_host_binding_for_testing().impl()->BeginNavigation(
-      common_params, std::move(begin_params));
+      common_params, std::move(begin_params), nullptr);
   NavigationRequest* request =
       render_frame_host_->frame_tree_node()->navigation_request();
 

@@ -275,7 +275,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       bool,
       WebTriggeringEventInfo,
       HTMLFormElement*,
-      ContentSecurityPolicyDisposition) override;
+      ContentSecurityPolicyDisposition,
+      mojom::blink::BlobURLTokenPtr) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DispatchWillSubmitForm(HTMLFormElement*) override;

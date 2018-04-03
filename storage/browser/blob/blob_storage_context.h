@@ -164,6 +164,7 @@ class STORAGE_EXPORT BlobStorageContext
   friend class BlobDataHandle::BlobDataHandleShared;
   friend class BlobRegistryImplTest;
   friend class BlobStorageContextTest;
+  friend class BlobURLTokenImpl;
 
   enum class TransportQuotaType { MEMORY, FILE };
 

@@ -23,6 +23,8 @@ class FakeBlobURLStore : public mojom::blink::BlobURLStore {
   void ResolveAsURLLoaderFactory(
       const KURL&,
       network::mojom::blink::URLLoaderFactoryRequest) override;
+  void ResolveForNavigation(const KURL&,
+                            mojom::blink::BlobURLTokenRequest) override;
 
   HashMap<KURL, mojom::blink::BlobPtr> registrations;
   Vector<KURL> revocations;

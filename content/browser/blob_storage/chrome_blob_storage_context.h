@@ -15,7 +15,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "third_party/WebKit/public/mojom/blob/blob_url_store.mojom.h"
 
 namespace base {
 class FilePath;
@@ -71,6 +73,11 @@ class CONTENT_EXPORT ChromeBlobStorageContext
       int64_t offset,
       int64_t size,
       const base::Time& expected_modification_time);
+
+  // Must be called on the UI thread.
+  static scoped_refptr<network::SharedURLLoaderFactory>
+  URLLoaderFactoryForToken(BrowserContext* browser_context,
+                           blink::mojom::BlobURLTokenPtr token);
 
  protected:
   virtual ~ChromeBlobStorageContext();

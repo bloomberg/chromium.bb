@@ -105,6 +105,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/url_loader_factory_bundle.mojom.h"
 #include "content/common/widget.mojom.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -151,6 +152,8 @@
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_loader_factory.h"
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/common/frame/frame_policy.h"
 #include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom.h"
@@ -375,6 +378,16 @@ bool IsOutOfProcessNetworkService() {
 }
 
 }  // namespace
+
+RenderFrameHostImpl::PendingNavigation::PendingNavigation(
+    const CommonNavigationParams& common_params,
+    mojom::BeginNavigationParamsPtr begin_params,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
+    : common_params(common_params),
+      begin_params(std::move(begin_params)),
+      blob_url_loader_factory(std::move(blob_url_loader_factory)) {}
+
+RenderFrameHostImpl::PendingNavigation::~PendingNavigation() = default;
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
     : public service_manager::mojom::InterfaceProvider {
@@ -1307,8 +1320,9 @@ void RenderFrameHostImpl::Init() {
   waiting_for_init_ = false;
   if (pending_navigate_) {
     frame_tree_node()->navigator()->OnBeginNavigation(
-        frame_tree_node(), pending_navigate_->first,
-        std::move(pending_navigate_->second));
+        frame_tree_node(), pending_navigate_->common_params,
+        std::move(pending_navigate_->begin_params),
+        std::move(pending_navigate_->blob_url_loader_factory));
     pending_navigate_.reset();
   }
 }
@@ -3014,7 +3028,8 @@ void RenderFrameHostImpl::IssueKeepAliveHandle(
 //  otherwise mojo bad message reporting.
 void RenderFrameHostImpl::BeginNavigation(
     const CommonNavigationParams& common_params,
-    mojom::BeginNavigationParamsPtr begin_params) {
+    mojom::BeginNavigationParamsPtr begin_params,
+    blink::mojom::BlobURLTokenPtr blob_url_token) {
   if (!is_active())
     return;
 
@@ -3045,14 +3060,27 @@ void RenderFrameHostImpl::BeginNavigation(
     return;
   }
 
+  if (blob_url_token && !validated_params.url.SchemeIsBlob()) {
+    mojo::ReportBadMessage("Blob URL Token, but not a blob: URL");
+    return;
+  }
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
+  if (blob_url_token) {
+    blob_url_loader_factory =
+        ChromeBlobStorageContext::URLLoaderFactoryForToken(
+            GetSiteInstance()->GetBrowserContext(), std::move(blob_url_token));
+  }
+
   if (waiting_for_init_) {
     pending_navigate_ = std::make_unique<PendingNavigation>(
-        validated_params, std::move(begin_params));
+        validated_params, std::move(begin_params),
+        std::move(blob_url_loader_factory));
     return;
   }
 
   frame_tree_node()->navigator()->OnBeginNavigation(
-      frame_tree_node(), validated_params, std::move(begin_params));
+      frame_tree_node(), validated_params, std::move(begin_params),
+      std::move(blob_url_loader_factory));
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(

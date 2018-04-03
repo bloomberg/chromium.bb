@@ -28,6 +28,8 @@ class STORAGE_EXPORT BlobURLStoreImpl : public blink::mojom::BlobURLStore {
   void ResolveAsURLLoaderFactory(
       const GURL& url,
       network::mojom::URLLoaderFactoryRequest request) override;
+  void ResolveForNavigation(const GURL& url,
+                            blink::mojom::BlobURLTokenRequest token) override;
 
  private:
   void RegisterWithUUID(blink::mojom::BlobPtr blob,

@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/Event.h"
+#include "core/fileapi/PublicURLManager.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -129,6 +130,12 @@ class ScheduledURLNavigation : public ScheduledNavigation {
       should_check_main_world_content_security_policy_ =
           kDoNotCheckContentSecurityPolicy;
     }
+
+    if (origin_document && url.ProtocolIs("blob") &&
+        RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+      origin_document->GetPublicURLManager().Resolve(
+          url_, MakeRequest(&blob_url_token_));
+    }
   }
 
   void Fire(LocalFrame* frame) override {
@@ -138,6 +145,12 @@ class ScheduledURLNavigation : public ScheduledNavigation {
                              should_check_main_world_content_security_policy_);
     request.SetReplacesCurrentItem(ReplacesCurrentItem());
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+
+    if (blob_url_token_) {
+      mojom::blink::BlobURLTokenPtr token_clone;
+      blob_url_token_->Clone(MakeRequest(&token_clone));
+      request.SetBlobURLToken(std::move(token_clone));
+    }
 
     ScheduledNavigationType type =
         IsLocationChange() ? ScheduledNavigationType::kScheduledFrameNavigation
@@ -150,6 +163,7 @@ class ScheduledURLNavigation : public ScheduledNavigation {
 
  private:
   KURL url_;
+  mojom::blink::BlobURLTokenPtr blob_url_token_;
   ContentSecurityPolicyDisposition
       should_check_main_world_content_security_policy_;
 };

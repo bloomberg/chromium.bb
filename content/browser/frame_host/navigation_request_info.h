@@ -12,6 +12,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/referrer.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -30,7 +31,9 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         int frame_tree_node_id,
                         bool is_for_guests_only,
                         bool report_raw_headers,
-                        bool is_prerendering);
+                        bool is_prerendering,
+                        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                            blob_url_loader_factory);
   NavigationRequestInfo(const NavigationRequestInfo& other);
   ~NavigationRequestInfo();
 
@@ -55,6 +58,9 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const bool report_raw_headers;
 
   const bool is_prerendering;
+
+  // URLLoaderFactory to facilitate loading blob URLs.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> blob_url_loader_factory;
 };
 
 }  // namespace content

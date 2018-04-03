@@ -4143,6 +4143,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     info.source_location = pending_navigation_info_->source_location;
     info.devtools_initiator_info =
         pending_navigation_info_->devtools_initiator_info;
+    info.blob_url_token =
+        pending_navigation_info_->blob_url_token.PassInterface().PassHandle();
 
     pending_navigation_info_.reset(nullptr);
     BeginNavigation(info);
@@ -6965,6 +6967,15 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   if (info.is_client_redirect)
     client_side_redirect_url = frame_->GetDocument().Url();
 
+  blink::mojom::BlobURLTokenPtr blob_url_token;
+  if (info.blob_url_token.is_valid()) {
+    blink::mojom::BlobURLTokenPtr token(blink::mojom::BlobURLTokenPtrInfo(
+        mojo::ScopedMessagePipeHandle(info.blob_url_token.get()),
+        blink::mojom::BlobURLToken::Version_));
+    token->Clone(MakeRequest(&blob_url_token));
+    ignore_result(token.PassInterface().PassHandle().release());
+  }
+
   int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
   std::unique_ptr<base::DictionaryValue> initiator =
       GetDevToolsInitiator(info.devtools_initiator_info);
@@ -6978,7 +6989,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
           initiator_origin, client_side_redirect_url, std::move(initiator));
 
   GetFrameHost()->BeginNavigation(MakeCommonNavigationParams(info, load_flags),
-                                  std::move(begin_navigation_params));
+                                  std::move(begin_navigation_params),
+                                  std::move(blob_url_token));
 }
 
 void RenderFrameImpl::LoadDataURL(
@@ -7563,7 +7575,17 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       triggering_event_info(info.triggering_event_info),
       form(info.form),
       source_location(info.source_location),
-      devtools_initiator_info(info.devtools_initiator_info) {}
+      devtools_initiator_info(info.devtools_initiator_info) {
+  if (info.blob_url_token.is_valid()) {
+    blink::mojom::BlobURLTokenPtr token(blink::mojom::BlobURLTokenPtrInfo(
+        mojo::ScopedMessagePipeHandle(info.blob_url_token.get()),
+        blink::mojom::BlobURLToken::Version_));
+    token->Clone(MakeRequest(&blob_url_token));
+    ignore_result(token.PassInterface().PassHandle().release());
+  }
+}
+
+RenderFrameImpl::PendingNavigationInfo::~PendingNavigationInfo() = default;
 
 void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
   GetRenderWidget()->SetWidgetBinding(std::move(request));
