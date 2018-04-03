@@ -226,12 +226,6 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_icon_view_->SizeToPreferredSize();
-
-  if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
-    suggestion_tab_switch_button_ =
-        std::make_unique<OmniboxTabSwitchButton>(this, GetTextHeight());
-    suggestion_tab_switch_button_->set_owned_by_client();
-  }
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -249,15 +243,16 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   suggestion_image_view_->SetVisible(false);  // Until SetAnswerImage is called.
   keyword_icon_view_->SetVisible(match_.associated_keyword.get());
-  if (suggestion_tab_switch_button_) {
-    if (match.type == AutocompleteMatchType::TAB_SEARCH &&
-        !keyword_icon_view_->visible()) {
-      if (!suggestion_tab_switch_button_->parent()) {
-        AddChildView(suggestion_tab_switch_button_.get());
-      }
-    } else if (suggestion_tab_switch_button_->parent()) {
-      RemoveChildView(suggestion_tab_switch_button_.get());
-    }
+
+  if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial() &&
+      match.type == AutocompleteMatchType::TAB_SEARCH &&
+      !keyword_icon_view_->visible()) {
+    suggestion_tab_switch_button_ =
+        std::make_unique<OmniboxTabSwitchButton>(this, GetTextHeight());
+    suggestion_tab_switch_button_->set_owned_by_client();
+    AddChildView(suggestion_tab_switch_button_.get());
+  } else {
+    suggestion_tab_switch_button_.reset();
   }
   Invalidate();
   if (GetWidget())
@@ -379,8 +374,7 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
     if (event.IsOnlyLeftMouseButton()) {
       if (!IsSelected())
         model_->SetSelectedLine(model_index_);
-      if (suggestion_tab_switch_button_ &&
-          suggestion_tab_switch_button_->parent()) {
+      if (suggestion_tab_switch_button_) {
         gfx::Point point_in_child_coords(event.location());
         View::ConvertPointToTarget(this, suggestion_tab_switch_button_.get(),
                                    &point_in_child_coords);
@@ -594,8 +588,7 @@ void OmniboxResultView::Layout() {
   suggestion_icon_view_->SetBounds(
       start_x, icon_y, std::min(end_x, icon.Width()), icon.Height());
 
-  if (suggestion_tab_switch_button_ &&
-      match_.type == AutocompleteMatchType::TAB_SEARCH) {
+  if (suggestion_tab_switch_button_) {
     const gfx::Size ts_button_size =
         suggestion_tab_switch_button_->GetPreferredSize();
     suggestion_tab_switch_button_->SetSize(ts_button_size);

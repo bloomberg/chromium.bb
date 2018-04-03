@@ -56,7 +56,7 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   }
   if (state() == STATE_PRESSED)
     SetPressed();
-  LabelButton::StateChanged(old_state);
+  MdTextButton::StateChanged(old_state);
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
