@@ -9,16 +9,16 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace safe_browsing {
 
@@ -28,8 +28,7 @@ class ClientIncidentReport;
 // method. The upload can be cancelled by deleting the returned instance. The
 // instance is no longer usable after the delegate is notified, and may safely
 // be destroyed by the delegate.
-class IncidentReportUploaderImpl : public IncidentReportUploader,
-                                   public net::URLFetcherDelegate {
+class IncidentReportUploaderImpl : public IncidentReportUploader {
  public:
   // The id associated with the URLFetcher, for use by tests.
   static const int kTestUrlFetcherId;
@@ -41,24 +40,30 @@ class IncidentReportUploaderImpl : public IncidentReportUploader,
   // for transmission, in which case the delegate is not notified.
   static std::unique_ptr<IncidentReportUploader> UploadReport(
       const OnResultCallback& callback,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       const ClientIncidentReport& report);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(IncidentReportUploaderImplTest, Success);
+
   IncidentReportUploaderImpl(
       const OnResultCallback& callback,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       const std::string& post_data);
 
   // Returns the URL to which incident reports are to be sent.
   static GURL GetIncidentReportUrl();
 
-  // net::URLFetcherDelegate methods.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Callback when SimpleURLLoader gets the response.
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  // The underlying URL fetcher. The instance is alive from construction through
-  // OnURLFetchComplete.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  void OnURLLoaderCompleteInternal(const std::string& response_body,
+                                   int response_code,
+                                   int net_error);
+
+  // The underlying URLLoader. The instance is alive from construction through
+  // OnURLLoaderComplete.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // The time at which the upload was initiated.
   base::TimeTicks time_begin_;

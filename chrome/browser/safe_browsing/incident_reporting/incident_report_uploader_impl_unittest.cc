@@ -7,21 +7,24 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace safe_browsing {
 
 class IncidentReportUploaderImplTest : public testing::Test {
  public:
   // safe_browsing::IncidentReportUploader::OnResultCallback implementation.
-  void OnReportUploadResult(
-      safe_browsing::IncidentReportUploader::Result result,
-      std::unique_ptr<safe_browsing::ClientIncidentResponse> response) {
+  void OnReportUploadResult(IncidentReportUploader::Result result,
+                            std::unique_ptr<ClientIncidentResponse> response) {
     result_ = result;
     response_ = std::move(response);
   }
@@ -29,42 +32,38 @@ class IncidentReportUploaderImplTest : public testing::Test {
  protected:
   IncidentReportUploaderImplTest()
       : task_runner_(new base::TestSimpleTaskRunner),
-        result_(safe_browsing::IncidentReportUploader::UPLOAD_REQUEST_FAILED) {}
+        handle_(task_runner_),
+        result_(IncidentReportUploader::UPLOAD_REQUEST_FAILED) {}
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
-  safe_browsing::IncidentReportUploader::Result result_;
-  std::unique_ptr<safe_browsing::ClientIncidentResponse> response_;
+  base::ThreadTaskRunnerHandle handle_;
+  IncidentReportUploader::Result result_;
+  std::unique_ptr<ClientIncidentResponse> response_;
 };
 
 TEST_F(IncidentReportUploaderImplTest, Success) {
-  safe_browsing::ClientIncidentReport report;
-  std::unique_ptr<safe_browsing::IncidentReportUploader> instance(
-      safe_browsing::IncidentReportUploaderImpl::UploadReport(
-          base::Bind(&IncidentReportUploaderImplTest::OnReportUploadResult,
-                     base::Unretained(this)),
-          NULL, report));
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto url_loader_factory =
+      base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
-      safe_browsing::IncidentReportUploaderImpl::kTestUrlFetcherId);
-  ASSERT_NE(static_cast<net::TestURLFetcher*>(NULL), fetcher);
+  ClientIncidentReport report;
+  auto instance(IncidentReportUploaderImpl::UploadReport(
+      base::Bind(&IncidentReportUploaderImplTest::OnReportUploadResult,
+                 base::Unretained(this)),
+      url_loader_factory, report));
 
-  safe_browsing::ClientIncidentReport uploaded_report;
-
-  EXPECT_EQ(net::LOAD_DISABLE_CACHE, fetcher->GetLoadFlags());
-  EXPECT_TRUE(uploaded_report.ParseFromString(fetcher->upload_data()));
-
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
-  fetcher->set_response_code(net::HTTP_OK);
   std::string response;
-  safe_browsing::ClientIncidentResponse().SerializeToString(&response);
-  fetcher->SetResponseString(response);
+  ClientIncidentResponse().SerializeToString(&response);
 
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  static_cast<IncidentReportUploaderImpl*>(instance.get())
+      ->OnURLLoaderCompleteInternal(response, net::HTTP_OK, net::OK);
 
-  EXPECT_EQ(safe_browsing::IncidentReportUploader::UPLOAD_SUCCESS, result_);
+  EXPECT_EQ(IncidentReportUploader::UPLOAD_SUCCESS, result_);
   EXPECT_TRUE(response_);
 }
+
+}  // namespace safe_browsing
 
 // TODO(grt):
 // bad status/response code

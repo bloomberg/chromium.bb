@@ -14,7 +14,8 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace safe_browsing {
 
@@ -68,35 +69,33 @@ IncidentReportUploaderImpl::~IncidentReportUploaderImpl() {
 std::unique_ptr<IncidentReportUploader>
 IncidentReportUploaderImpl::UploadReport(
     const OnResultCallback& callback,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     const ClientIncidentReport& report) {
   std::string post_data;
   if (!report.SerializeToString(&post_data))
     return std::unique_ptr<IncidentReportUploader>();
-  return std::unique_ptr<IncidentReportUploader>(new IncidentReportUploaderImpl(
-      callback, request_context_getter, post_data));
+  return std::unique_ptr<IncidentReportUploader>(
+      new IncidentReportUploaderImpl(callback, url_loader_factory, post_data));
 }
 
 IncidentReportUploaderImpl::IncidentReportUploaderImpl(
     const OnResultCallback& callback,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     const std::string& post_data)
-    : IncidentReportUploader(callback),
-      url_fetcher_(
-          net::URLFetcher::Create(kTestUrlFetcherId,
-                                  GetIncidentReportUrl(),
-                                  net::URLFetcher::POST,
-                                  this,
-                                  kSafeBrowsingIncidentTrafficAnnotation)),
-      time_begin_(base::TimeTicks::Now()) {
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
+    : IncidentReportUploader(callback) {
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GetIncidentReportUrl();
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), kSafeBrowsingIncidentTrafficAnnotation);
+  url_loader_->AttachStringForUpload(post_data, "application/octet-stream");
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(),
+      base::BindOnce(&IncidentReportUploaderImpl::OnURLLoaderComplete,
+                     base::Unretained(this)));
+  time_begin_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_COUNTS("SBIRS.ReportPayloadSize", post_data.size());
-  url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetRequestContext(request_context_getter.get());
-  url_fetcher_->SetUploadData("application/octet-stream", post_data);
-  url_fetcher_->Start();
 }
 
 // static
@@ -108,23 +107,34 @@ GURL IncidentReportUploaderImpl::GetIncidentReportUrl() {
   return url.Resolve("?key=" + net::EscapeQueryParamValue(api_key, true));
 }
 
-void IncidentReportUploaderImpl::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  // Take ownership of the fetcher in this scope (source == url_fetcher_).
-  std::unique_ptr<net::URLFetcher> url_fetcher(std::move(url_fetcher_));
+void IncidentReportUploaderImpl::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  // Take ownership of the loader in this scope.
+  std::unique_ptr<network::SimpleURLLoader> url_loader(std::move(url_loader_));
+  int response_code = 0;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
 
+  std::string response_body_str;
+  if (response_body.get())
+    response_body_str = std::move(*response_body.get());
+
+  OnURLLoaderCompleteInternal(response_body_str, response_code,
+                              url_loader->NetError());
+}
+
+void IncidentReportUploaderImpl::OnURLLoaderCompleteInternal(
+    const std::string& response_body,
+    int response_code,
+    int net_error) {
   UMA_HISTOGRAM_TIMES("SBIRS.ReportUploadTime",
                       base::TimeTicks::Now() - time_begin_);
 
   Result result = UPLOAD_REQUEST_FAILED;
   std::unique_ptr<ClientIncidentResponse> response;
-
-  if (source->GetStatus().is_success() &&
-      source->GetResponseCode() == net::HTTP_OK) {
-    std::string data;
-    source->GetResponseAsString(&data);
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     response.reset(new ClientIncidentResponse());
-    if (!response->ParseFromString(data)) {
+    if (!response->ParseFromString(response_body)) {
       response.reset();
       result = UPLOAD_INVALID_RESPONSE;
     } else {
