@@ -187,10 +187,8 @@ TEST_F(PowerButtonScreenshotControllerTest,
   // Tests volume down key can stop power button's shutdown timer and power
   // button menu timer.
   PressPowerButton();
-  EXPECT_TRUE(power_button_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   PressKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
@@ -199,11 +197,9 @@ TEST_F(PowerButtonScreenshotControllerTest,
   // Tests volume up key can stop power button's shutdown timer and power button
   // menu timer. Also tests that volume up key is not consumed.
   PressPowerButton();
-  EXPECT_TRUE(power_button_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   PressKey(ui::VKEY_VOLUME_UP);
   EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_UP);
@@ -211,20 +207,19 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(LastKeyConsumed());
 }
 
-// Tests volume key pressed can not cancel the started real shutdown.
+// Tests volume key pressed can not cancel the started pre-shutdown animation.
 TEST_F(PowerButtonScreenshotControllerTest,
        PowerButtonPressedFirst_VolumeKeyNotCancelPowerButton) {
-  // Power button shutdown behavior will turn screen off and then start the real
-  // shutdown.
   PressPowerButton();
-  EXPECT_TRUE(power_button_test_api_->TriggerShutdownTimeout());
-  ShutdownSoundPlayed();
-  EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
+  ASSERT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
+  EXPECT_TRUE(power_button_test_api_->PreShutdownTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   PressKey(ui::VKEY_VOLUME_DOWN);
-  ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
-  EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  ReleasePowerButton();
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
 }
 
 // Tests volume down key pressed first and meets screenshot chord condition.
@@ -300,7 +295,6 @@ TEST_F(PowerButtonScreenshotControllerTest,
   // Tests volume down key invalidates the power button behavior.
   PressKey(ui::VKEY_VOLUME_DOWN);
   PressPowerButton();
-  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
@@ -311,7 +305,6 @@ TEST_F(PowerButtonScreenshotControllerTest,
   PressKey(ui::VKEY_VOLUME_UP);
   PressPowerButton();
   EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_UP);

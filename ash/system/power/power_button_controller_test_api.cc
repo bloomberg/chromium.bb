@@ -20,16 +20,16 @@ PowerButtonControllerTestApi::PowerButtonControllerTestApi(
 
 PowerButtonControllerTestApi::~PowerButtonControllerTestApi() = default;
 
-bool PowerButtonControllerTestApi::ShutdownTimerIsRunning() const {
-  return controller_->shutdown_timer_.IsRunning();
+bool PowerButtonControllerTestApi::PreShutdownTimerIsRunning() const {
+  return controller_->pre_shutdown_timer_.IsRunning();
 }
 
-bool PowerButtonControllerTestApi::TriggerShutdownTimeout() {
-  if (!controller_->shutdown_timer_.IsRunning())
+bool PowerButtonControllerTestApi::TriggerPreShutdownTimeout() {
+  if (!controller_->pre_shutdown_timer_.IsRunning())
     return false;
 
-  base::Closure task = controller_->shutdown_timer_.user_task();
-  controller_->shutdown_timer_.Stop();
+  base::Closure task = controller_->pre_shutdown_timer_.user_task();
+  controller_->pre_shutdown_timer_.Stop();
   task.Run();
   return true;
 }

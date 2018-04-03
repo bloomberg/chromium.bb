@@ -44,6 +44,8 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
 
   bool sign_out_item_for_testing() const { return sign_out_item_; }
 
+  PowerButtonMenuItemView* power_off_item() const { return power_off_item_; }
+
   // Schedules an animation to show or hide the view.
   void ScheduleShowHideAnimation(bool show);
 
