@@ -22,9 +22,14 @@ unwind information.
 
 The output file starts with 4 bytes counting the size of UNW_INDEX in bytes.
 Then UNW_INDEX table and UNW_DATA table.
-UNW_INDEX contains one row for each function. Each row is 6 bytes long:
-  4 bytes: Function start address.
-  2 bytes: offset (in count of 2 bytes) of function data from start of UNW_DATA.
+
+UNW_INDEX contains two columns of N rows each, where N is the number of
+functions.
+  1. First column 4 byte rows of all the function start address as offset from
+     start of the binary, in sorted order.
+  2. For each function addr, the second column contains 2 byte indices in order.
+     The indices are offsets (in count of 2 bytes) of the CFI data from start of
+     UNW_DATA.
 The last entry in the table always contains CANT_UNWIND index to specify the
 end address of the last function.
 
@@ -237,9 +242,11 @@ def _WriteCfiData(cfi_data, out_file):
   # Write the size of UNW_INDEX file in bytes.
   _Write4Bytes(out_file, len(func_addr_to_index) * 6)
 
-  # Write the UNW_INDEX table.
-  for addr, index in sorted(func_addr_to_index.iteritems()):
+  # Write the UNW_INDEX table. First list of addresses and then indices.
+  sorted_unw_index = sorted(func_addr_to_index.iteritems())
+  for addr, index in sorted_unw_index:
     _Write4Bytes(out_file, addr)
+  for addr, index in sorted_unw_index:
     _Write2Bytes(out_file, index)
 
   # Write the UNW_DATA table.

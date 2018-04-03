@@ -66,13 +66,20 @@ TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
   STACK CFI INIT 2200 10
   STACK CFI 2204 .cfa: sp 44 + .ra: .cfa -8 + ^ r4: .cfa -16 + ^
   */
-  uint16_t input[] = {0x2A,   0x0,    0x1000, 0x0,    0x0,    0x1502, 0x0,
-                      0xffff, 0x2000, 0x0,    0xb,    0x2024, 0x0,    0x10,
-                      0x2126, 0x0,    0xffff, 0x2200, 0x0,    0x15,   0x2212,
-                      0x0,    0xffff, 0x5,    0x2,    0x111,  0x8,    0x220,
-                      0x40,   0x330,  0x50,   0x332,  0x80,   0x220,  0x2,
-                      0x4,    0x13,   0x8,    0x13,   0x2,    0xc,    0x33,
-                      0xdc,   0x40,   0x1,    0x4,    0x2e};
+  uint16_t input[] = {// UNW_INDEX size
+                      0x2A,
+
+                      // UNW_INDEX address column (4 byte rows).
+                      0x0, 0x1000, 0x0, 0x1502, 0x0, 0x2000, 0x0, 0x2024, 0x0,
+                      0x2126, 0x0, 0x2200, 0x0, 0x2212, 0x0,
+
+                      // UNW_INDEX index column (2 byte rows).
+                      0x0, 0xffff, 0xb, 0x10, 0xffff, 0x15, 0xffff,
+
+                      // UNW_DATA table.
+                      0x5, 0x2, 0x111, 0x8, 0x220, 0x40, 0x330, 0x50, 0x332,
+                      0x80, 0x220, 0x2, 0x4, 0x13, 0x8, 0x13, 0x2, 0xc, 0x33,
+                      0xdc, 0x40, 0x1, 0x4, 0x2e};
   FilePath temp_path;
   CreateTemporaryFile(&temp_path);
   EXPECT_EQ(
@@ -81,11 +88,7 @@ TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
 
   unwinder->cfi_mmap_.reset(new MemoryMappedFile());
   unwinder->cfi_mmap_->Initialize(temp_path);
-  unwinder->unw_index_start_addr_ =
-      reinterpret_cast<const size_t*>(unwinder->cfi_mmap_->data()) + 1;
-  unwinder->unw_index_row_count_ = input[0] / 6;
-  unwinder->unw_data_start_addr_ = reinterpret_cast<const uint16_t*>(
-      reinterpret_cast<uintptr_t>(unwinder->unw_index_start_addr_) + input[0]);
+  unwinder->ParseCFITables();
 
   CFIBacktraceAndroid::CFIRow cfi_row = {0};
   EXPECT_FALSE(unwinder->FindCFIRowForPC(0x00, &cfi_row));
