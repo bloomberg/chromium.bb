@@ -669,6 +669,7 @@ static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
   return (ref_frame <= ALTREF_FRAME);
 }
 
+// Token buffer is only used for palette tokens.
 static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
                                            int sb_size_log2,
                                            const int num_planes) {
@@ -679,19 +680,10 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
   const int sb_rows = ALIGN_POWER_OF_TWO(mb_rows, shift) >> shift;
   const int sb_cols = ALIGN_POWER_OF_TWO(mb_cols, shift) >> shift;
 
-  // For transform coefficients, assume planes with no subsampling. We assume
-  // up to 1 token per pixel, and then allow a head room of 1 EOSB token per
-  // 4x4 block per plane, plus EOSB_TOKEN per plane.
-  const int sb_coeff_toks =
-      num_planes * (sb_size_square + (sb_size_square / 16) + 1);
+  // One palette token for each pixel. There can be palettes on two planes.
+  const int sb_palette_toks = AOMMIN(2, num_planes) * sb_size_square;
 
-  // For palette coefficients, there can be at most one palette for each 8x8
-  // block. If w, h are the width and height of the block, the palette has at
-  // most 1 + h * w tokens (65 for an 8x8 block) without (see
-  // cost_and_tokenize_map). At most, there can be palettes on two planes.
-  const int sb_palette_toks = 2 * (1 + 64) * (sb_size_square / 64);
-
-  return sb_rows * sb_cols * (sb_coeff_toks + sb_palette_toks);
+  return sb_rows * sb_cols * sb_palette_toks;
 }
 
 // Get the allocated token size for a tile. It does the same calculation as in
