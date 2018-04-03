@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "services/viz/public/interfaces/compositing/selection.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // See components/viz/service/quads/render_frame_metadata.h
@@ -20,6 +21,10 @@ struct RenderFrameMetadata {
   // Indicates whether the scroll offset of the root layer is at top, i.e.,
   // whether scroll_offset.y() == 0.
   bool is_scroll_offset_at_top;
+
+  // Selection region relative to the current viewport. If the selection is
+  // empty or otherwise unused, the bound types will indicate such.
+  viz.mojom.Selection selection;
 };
 
 // This interface is provided by the renderer. It can optionally enable

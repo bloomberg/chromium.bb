@@ -888,13 +888,6 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
 
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
-  if (frame.metadata.selection.start != selection_start_ ||
-      frame.metadata.selection.end != selection_end_) {
-    selection_start_ = frame.metadata.selection.start;
-    selection_end_ = frame.metadata.selection.end;
-    selection_controller_client_->UpdateClientSelectionBounds(selection_start_,
-                                                              selection_end_);
-  }
 }
 
 void RenderWidgetHostViewAura::OnDidNotProduceFrame(
@@ -1793,10 +1786,17 @@ void RenderWidgetHostViewAura::OnHostMovedInPixels(
 // implementation:
 void RenderWidgetHostViewAura::OnRenderFrameMetadataChanged() {
   RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
-  UpdateBackgroundColorFromRenderer(host()
-                                        ->render_frame_metadata_provider()
-                                        ->LastRenderFrameMetadata()
-                                        .root_background_color);
+  const cc::RenderFrameMetadata& metadata =
+      host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
+  UpdateBackgroundColorFromRenderer(metadata.root_background_color);
+
+  if (metadata.selection.start != selection_start_ ||
+      metadata.selection.end != selection_end_) {
+    selection_start_ = metadata.selection.start;
+    selection_end_ = metadata.selection.end;
+    selection_controller_client_->UpdateClientSelectionBounds(selection_start_,
+                                                              selection_end_);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -160,6 +160,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       const gfx::PointF& point) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
+  void OnRenderFrameMetadataChanged() override;
 
   bool IsRenderWidgetHostViewChildFrame() override;
 

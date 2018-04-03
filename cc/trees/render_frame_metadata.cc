@@ -20,7 +20,8 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
     const RenderFrameMetadata& rfm1,
     const RenderFrameMetadata& rfm2) {
   return rfm1.root_background_color != rfm2.root_background_color ||
-         rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top;
+         rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
+         rfm1.selection != rfm2.selection;
 }
 
 RenderFrameMetadata& RenderFrameMetadata::operator=(
@@ -32,7 +33,8 @@ RenderFrameMetadata& RenderFrameMetadata::operator=(
 bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) {
   return root_scroll_offset == other.root_scroll_offset &&
          root_background_color == other.root_background_color &&
-         is_scroll_offset_at_top == other.is_scroll_offset_at_top;
+         is_scroll_offset_at_top == other.is_scroll_offset_at_top &&
+         selection == other.selection;
 }
 
 bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) {

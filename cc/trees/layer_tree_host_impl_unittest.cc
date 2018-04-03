@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -13979,11 +13980,18 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
   void OnRenderFrameSubmission(RenderFrameMetadata metadata) override {
     if (increment_counter_)
       frame_token_allocator_->GetOrAllocateFrameToken();
+    last_metadata_ = metadata;
+  }
+
+  const base::Optional<RenderFrameMetadata>& last_metadata() const {
+    return last_metadata_;
   }
 
  private:
   FrameTokenAllocator* frame_token_allocator_;
   bool increment_counter_;
+  base::Optional<RenderFrameMetadata> last_metadata_;
+
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameMetadataObserver);
 };
 
@@ -14078,6 +14086,71 @@ TEST_F(LayerTreeHostImplTest, FrameTokenAllocation) {
     // The RenderFrameMetadataObserver should advance the counter by one.
     EXPECT_EQ(++expected_frame_token, metadata.frame_token);
   }
+}
+
+TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToRenderFrameMetadata) {
+  const int root_layer_id = 1;
+  std::unique_ptr<SolidColorLayerImpl> root =
+      SolidColorLayerImpl::Create(host_impl_->active_tree(), root_layer_id);
+  root->SetPosition(gfx::PointF());
+  root->SetBounds(gfx::Size(10, 10));
+  root->SetDrawsContent(true);
+  root->test_properties()->force_render_surface = true;
+
+  host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  auto observer = std::make_unique<TestRenderFrameMetadataObserver>(false);
+  auto* observer_ptr = observer.get();
+  host_impl_->SetRenderFrameObserver(std::move(observer));
+  EXPECT_FALSE(observer_ptr->last_metadata());
+
+  // Trigger a draw-swap sequence.
+  host_impl_->SetNeedsRedraw();
+  TestFrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  EXPECT_TRUE(host_impl_->DrawLayers(&frame));
+  host_impl_->DidDrawAllLayers(frame);
+
+  // Ensure the selection bounds propagated to the render frame metadata
+  // represent an empty selection.
+  ASSERT_TRUE(observer_ptr->last_metadata());
+  const viz::Selection<gfx::SelectionBound>& selection_1 =
+      observer_ptr->last_metadata()->selection;
+  EXPECT_EQ(gfx::SelectionBound::EMPTY, selection_1.start.type());
+  EXPECT_EQ(gfx::SelectionBound::EMPTY, selection_1.end.type());
+  EXPECT_EQ(gfx::PointF(), selection_1.start.edge_bottom());
+  EXPECT_EQ(gfx::PointF(), selection_1.start.edge_top());
+  EXPECT_FALSE(selection_1.start.visible());
+  EXPECT_FALSE(selection_1.end.visible());
+
+  // Plumb the layer-local selection bounds.
+  gfx::Point selection_top(5, 0);
+  gfx::Point selection_bottom(5, 5);
+  LayerSelection selection;
+  selection.start.type = gfx::SelectionBound::CENTER;
+  selection.start.layer_id = root_layer_id;
+  selection.start.edge_bottom = selection_bottom;
+  selection.start.edge_top = selection_top;
+  selection.end = selection.start;
+  host_impl_->active_tree()->RegisterSelection(selection);
+
+  // Trigger a draw-swap sequence.
+  host_impl_->SetNeedsRedraw();
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  EXPECT_TRUE(host_impl_->DrawLayers(&frame));
+  host_impl_->DidDrawAllLayers(frame);
+
+  // Ensure the selection bounds have propagated to the render frame metadata.
+  ASSERT_TRUE(observer_ptr->last_metadata());
+  const viz::Selection<gfx::SelectionBound>& selection_2 =
+      observer_ptr->last_metadata()->selection;
+  EXPECT_EQ(selection.start.type, selection_2.start.type());
+  EXPECT_EQ(selection.end.type, selection_2.end.type());
+  EXPECT_EQ(gfx::PointF(selection_bottom), selection_2.start.edge_bottom());
+  EXPECT_EQ(gfx::PointF(selection_top), selection_2.start.edge_top());
+  EXPECT_TRUE(selection_2.start.visible());
+  EXPECT_TRUE(selection_2.end.visible());
 }
 
 }  // namespace
