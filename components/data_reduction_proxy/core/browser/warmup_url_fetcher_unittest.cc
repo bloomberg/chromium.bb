@@ -18,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
@@ -52,7 +53,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
   static void InitExperiment(
       base::test::ScopedFeatureList* scoped_feature_list) {
     std::map<std::string, std::string> params;
-    params["warmup_fetch_callback_enabled"] = "true";
+    params[params::GetWarmupCallbackParamName()] = "true";
     scoped_feature_list->InitAndEnableFeatureWithParameters(
         features::kDataReductionProxyRobustConnection, params);
   }

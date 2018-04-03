@@ -53,6 +53,9 @@ const char kServerExperimentsFieldTrial[] =
 // LitePage black list version.
 const char kLitePageBlackListVersion[] = "lite-page-blacklist-version";
 
+const char kWarmupFetchCallbackEnabledParam[] = "warmup_fetch_callback_enabled";
+const char kMissingViaBypassDisabledParam[] = "bypass_missing_via_disabled";
+
 bool IsIncludedInFieldTrial(const std::string& name) {
   return base::StartsWith(base::FieldTrialList::FindFullName(name), kEnabled,
                           base::CompareCase::SENSITIVE);
@@ -113,6 +116,14 @@ const char* GetLoFiFieldTrialName() {
 
 const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
+}
+
+const char* GetWarmupCallbackParamName() {
+  return kWarmupFetchCallbackEnabledParam;
+}
+
+const char* GetMissingViaBypassParamName() {
+  return kMissingViaBypassDisabledParam;
 }
 
 bool IsIncludedInServerExperimentsFieldTrial() {

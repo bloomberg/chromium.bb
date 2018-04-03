@@ -171,7 +171,7 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (!GetFieldTrialParamByFeatureAsBool(
           features::kDataReductionProxyRobustConnection,
-          "warmup_fetch_callback_enabled", false)) {
+          params::GetWarmupCallbackParamName(), false)) {
     CleanupAfterFetch();
     return;
   }
@@ -257,7 +257,7 @@ void WarmupURLFetcher::OnFetchTimeout() {
 
   if (!GetFieldTrialParamByFeatureAsBool(
           features::kDataReductionProxyRobustConnection,
-          "warmup_fetch_callback_enabled", false)) {
+          params::GetWarmupCallbackParamName(), false)) {
     // Running the callback is not enabled.
     CleanupAfterFetch();
     return;
