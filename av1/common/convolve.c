@@ -28,8 +28,8 @@
 
 void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
-                             const int16_t *x_filters, const int x0_qn,
-                             const int x_step_qn) {
+                             const int16_t *x_filters, int x0_qn,
+                             int x_step_qn) {
   src -= UPSCALE_NORMATIVE_TAPS / 2 - 1;
   for (int y = 0; y < h; ++y) {
     int x_qn = x0_qn;

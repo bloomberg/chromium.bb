@@ -5983,7 +5983,7 @@ int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *frame_size) {
     // move the rest of data to new location
     memmove(buff_ptr + length_of_obu_size + obu_header_size,
             buff_ptr + obu_bytes_read, remaining_size - obu_bytes_read);
-    obu_bytes_read += obu_payload_size;
+    obu_bytes_read += (size_t)obu_payload_size;
 
     // write the new obu size
     const uint64_t obu_size = obu_header_size + obu_payload_size;
@@ -5999,7 +5999,7 @@ int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *frame_size) {
     total_bytes_read += obu_bytes_read;
     remaining_size -= obu_bytes_read;
     buff_ptr += length_of_obu_size + obu_size;
-    output_size += length_of_obu_size + obu_size;
+    output_size += length_of_obu_size + (size_t)obu_size;
   }
 
   *frame_size = output_size;

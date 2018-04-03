@@ -133,7 +133,7 @@ static int obudec_read_obu_payload(FILE *f, uint64_t payload_length,
     return -1;
   }
 
-  *bytes_read += payload_length;
+  *bytes_read += (size_t)payload_length;
   return 0;
 }
 
