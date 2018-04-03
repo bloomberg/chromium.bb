@@ -45,9 +45,9 @@
   _editView->UpdateAppearance();
 }
 
-- (void)setNextFocusSourceAsFakebox {
+- (void)setNextFocusSourceAsSearchButton {
   OmniboxEditModel* model = _editView->model();
-  model->set_focus_source(OmniboxEditModel::FocusSource::FAKEBOX);
+  model->set_focus_source(OmniboxEditModel::FocusSource::SEARCH_BUTTON);
 }
 
 - (void)endEditing {

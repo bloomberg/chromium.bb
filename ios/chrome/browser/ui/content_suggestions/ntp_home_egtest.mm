@@ -24,8 +24,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -406,9 +408,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // It is important for ranking algorithm of omnibox that requests from fakebox
 // and real omnibox are marked appropriately.
 - (void)testTapFakeOmniboxLogsCorrectly {
-  if (!IsIPadIdiom()) {
-    // This logging only happens on iPad, since on iPhone there is no real
-    // omnibox on NTP, only fakebox.
+  if (!IsIPadIdiom() || IsUIRefreshPhase1Enabled()) {
+    // This logging only happens on iPad pre-UIRefresh, since on iPhone there is
+    // no real omnibox on NTP, only fakebox, and post-UIRefresh the NTP never
+    // shows multiple omniboxes.
     return;
   }
 
@@ -426,6 +429,33 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Check that the page is loaded.
   GREYAssertTrue(tapped, @"The tap on the fakebox was not correctly logged.");
+}
+
+// Tests that tapping the omnibox search button logs correctly.
+// It is important for ranking algorithm of omnibox that requests from the
+// search button and real omnibox are marked appropriately.
+- (void)testTapOmniboxSearchButtonLogsCorrectly {
+  if (IsIPadIdiom() || !IsUIRefreshPhase1Enabled()) {
+    // This logging only happens on iPhone, since on iPad there's no secondary
+    // toolbar.
+    return;
+  }
+
+  // Swizzle the method that needs to be called for correct logging.
+  __block BOOL tapped = NO;
+  ScopedBlockSwizzler swizzler([LocationBarCoordinator class],
+                               @selector(focusOmniboxFromSearchButton), ^() {
+                                 tapped = YES;
+                               });
+
+  // Tap the search button.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kToolbarOmniboxButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Check that the page is loaded.
+  GREYAssertTrue(tapped,
+                 @"The tap on the search button was not correctly logged.");
 }
 
 // Tests that tapping the fake omnibox moves the collection.

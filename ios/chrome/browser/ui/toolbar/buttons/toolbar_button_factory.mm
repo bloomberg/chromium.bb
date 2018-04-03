@@ -427,7 +427,7 @@ const int styleCount = 2;
 
   [self configureButton:omniboxButton width:kAdaptiveToolbarButtonWidth];
   [omniboxButton addTarget:self.dispatcher
-                    action:@selector(focusOmnibox)
+                    action:@selector(focusOmniboxFromSearchButton)
           forControlEvents:UIControlEventTouchUpInside];
   omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
 

@@ -136,13 +136,7 @@
 #pragma mark - FakeboxFocuser
 
 - (void)focusFakebox {
-  if (IsIPadIdiom()) {
-    // On iPhone there is no visible omnibox, so there's no need to indicate
-    // interaction was initiated from the fakebox.
-    [self.locationBarCoordinator focusOmniboxFromFakebox];
-  } else {
-    [self.locationBarCoordinator focusOmnibox];
-  }
+  [self.locationBarCoordinator focusOmnibox];
 }
 
 - (void)onFakeboxBlur {

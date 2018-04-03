@@ -56,9 +56,6 @@ class WebStateList;
 // Indicates if the omnibox currently displays a popup with suggestions.
 - (BOOL)showingOmniboxPopup;
 
-// Focuses omnibox with fakebox as the focus event source.
-- (void)focusOmniboxFromFakebox;
-
 // Indicates when the omnibox is the first responder.
 - (BOOL)isOmniboxFirstResponder;
 
