@@ -44,7 +44,6 @@ class ContentLoFiDecider : public LoFiDecider {
       content::PreviewsState initial_state);
 
   // LoFiDecider implementation:
-  bool IsUsingLoFi(const net::URLRequest& request) const override;
   void MaybeSetAcceptTransformHeader(
       const net::URLRequest& request,
       net::HttpRequestHeaders* headers) const override;

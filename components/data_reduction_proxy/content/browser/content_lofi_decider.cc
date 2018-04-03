@@ -59,15 +59,6 @@ ContentLoFiDecider::DetermineCommittedServerPreviewsState(
   return updated_state;
 }
 
-bool ContentLoFiDecider::IsUsingLoFi(const net::URLRequest& request) const {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(&request);
-  if (!request_info)
-    return false;
-
-  return (request_info->GetPreviewsState() & content::SERVER_LOFI_ON);
-}
-
 void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
     const net::URLRequest& request,
     net::HttpRequestHeaders* headers) const {
