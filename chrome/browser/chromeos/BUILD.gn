@@ -962,6 +962,8 @@ source_set("chromeos") {
     "login/oobe_screen.h",
     "login/profile_auth_data.cc",
     "login/profile_auth_data.h",
+    "login/quick_unlock/auth_token.cc",
+    "login/quick_unlock/auth_token.h",
     "login/quick_unlock/fingerprint_storage.cc",
     "login/quick_unlock/fingerprint_storage.h",
     "login/quick_unlock/pin_storage.cc",

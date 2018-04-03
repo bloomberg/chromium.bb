@@ -10,6 +10,7 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
@@ -40,6 +41,7 @@ using CredentialCheck = quick_unlock_private::CredentialCheck;
 using CredentialRequirements = quick_unlock_private::CredentialRequirements;
 using QuickUnlockMode = quick_unlock_private::QuickUnlockMode;
 
+using AuthToken = chromeos::quick_unlock::AuthToken;
 using QuickUnlockModeList = std::vector<QuickUnlockMode>;
 using QuickUnlockStorage = chromeos::quick_unlock::QuickUnlockStorage;
 
@@ -253,8 +255,8 @@ void QuickUnlockPrivateGetAuthTokenFunction::OnAuthSuccess(
   Profile* profile = Profile::FromBrowserContext(browser_context());
   QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-  result->token = quick_unlock_storage->CreateAuthToken();
-  result->lifetime_seconds = QuickUnlockStorage::kTokenExpirationSeconds;
+  result->token = quick_unlock_storage->CreateAuthToken(user_context);
+  result->lifetime_seconds = AuthToken::kTokenExpirationSeconds;
 
   Respond(ArgumentList(
       quick_unlock_private::GetAuthToken::Results::Create(*result)));
@@ -395,8 +397,8 @@ QuickUnlockPrivateGetCredentialRequirementsFunction::Run() {
 QuickUnlockPrivateSetModesFunction::QuickUnlockPrivateSetModesFunction()
     : chrome_details_(this) {}
 
-QuickUnlockPrivateSetModesFunction::~QuickUnlockPrivateSetModesFunction() {
-}
+QuickUnlockPrivateSetModesFunction::~QuickUnlockPrivateSetModesFunction() =
+    default;
 
 void QuickUnlockPrivateSetModesFunction::SetModesChangedEventHandlerForTesting(
     const ModesChangedEventHandler& handler) {
