@@ -70,6 +70,9 @@ int RunContentMain(
 
 }  // namespace
 
+const base::FilePath::CharType kDefaultProfileName[] =
+    FILE_PATH_LITERAL("Default");
+
 HeadlessBrowserImpl::HeadlessBrowserImpl(
     base::OnceCallback<void(HeadlessBrowser*)> on_start_callback,
     HeadlessBrowser::Options options)
