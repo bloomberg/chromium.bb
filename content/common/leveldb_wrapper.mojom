@@ -40,6 +40,9 @@ interface LevelDBWrapperGetAllCallback {
 
 // A wrapper around leveldb that supports giving notifications when values
 // change.
+// TODO(dmurph): rename & move LevelDBWrapper to DOMStorageDatabase as the
+// implementation is now tied specifically to that functionality.
+// https://crbug.com/809771
 interface LevelDBWrapper {
   AddObserver(associated LevelDBObserver observer);
 
