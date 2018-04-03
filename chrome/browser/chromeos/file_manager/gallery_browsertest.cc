@@ -522,10 +522,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
-// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
-// http://crbug.com/804413.
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       DISABLED_SlideshowTraversalOnDownloads) {
+                       SlideshowTraversalOnDownloads) {
   set_test_case_name("slideshowTraversalOnDownloads");
   StartTest();
 }
@@ -545,10 +543,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DISABLED_SlideshowTraversalOnDrive) {
   StartTest();
 }
 
-// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
-// http://crbug.com/804413.
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       DISABLED_StopStartSlideshowOnDownloads) {
+                       StopStartSlideshowOnDownloads) {
   set_test_case_name("stopStartSlideshowOnDownloads");
   StartTest();
 }
