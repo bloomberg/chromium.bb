@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_TEST_TEST_URL_LOADER_FACTORY_H_
 #define SERVICES_NETWORK_TEST_TEST_URL_LOADER_FACTORY_H_
 
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
@@ -23,8 +24,9 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   using Redirects =
       std::vector<std::pair<net::RedirectInfo, ResourceResponseHead>>;
 
-  // Adds a response to be served. Once served it will be removed, so if you
-  // expect n requests to the same URL call this method n times.
+  // Adds a response to be served. There is one unique response per URL, and if
+  // this method is called multiple times for the same URL the last response
+  // data is used.
   // This can be called before or after a request is made. If it's called after,
   // then pending requests will be "woken up".
   void AddResponse(const GURL& url,
@@ -35,6 +37,9 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
   // Simpler version of above for the common success case.
   void AddResponse(const std::string& url, const std::string& content);
+
+  // Clear all the responses that were previously set.
+  void ClearResponses();
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -61,7 +66,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     std::string content;
     URLLoaderCompletionStatus status;
   };
-  std::vector<Response> responses_;
+  std::map<GURL, Response> responses_;
 
   struct Pending {
     Pending();

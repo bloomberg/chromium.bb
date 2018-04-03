@@ -19,10 +19,10 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -37,9 +37,12 @@ namespace {
 
 class MockModelLoader : public ModelLoader {
  public:
-  explicit MockModelLoader(base::Closure update_renderers_callback,
-                           const std::string model_name)
-      : ModelLoader(update_renderers_callback, model_name) {}
+  MockModelLoader(
+      base::Closure update_renderers_callback,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string model_name)
+      : ModelLoader(update_renderers_callback, url_loader_factory, model_name) {
+  }
   ~MockModelLoader() override {}
 
   MOCK_METHOD1(ScheduleFetch, void(int64_t));
@@ -54,7 +57,9 @@ class MockModelLoader : public ModelLoader {
 class ModelLoaderTest : public testing::Test {
  protected:
   ModelLoaderTest()
-      : factory_(new net::FakeURLFetcherFactory(nullptr)),
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
         field_trials_(new base::FieldTrialList(nullptr)) {}
 
   void SetUp() override {
@@ -87,16 +92,26 @@ class ModelLoaderTest : public testing::Test {
   // Set the URL for future SetModelFetchResponse() calls.
   void SetModelUrl(const ModelLoader& loader) { model_url_ = loader.url_; }
 
-  void SetModelFetchResponse(std::string response_data,
-                             net::HttpStatusCode response_code,
-                             net::URLRequestStatus::Status status) {
+  void SetModelFetchResponse(std::string response_data, int net_error) {
     CHECK(model_url_.is_valid());
-    factory_->SetFakeResponse(model_url_, response_data, response_code, status);
+    if (net_error != net::OK) {
+      network::URLLoaderCompletionStatus status;
+      test_url_loader_factory_.AddResponse(
+          model_url_, network::ResourceResponseHead(), std::string(),
+          network::URLLoaderCompletionStatus(net_error));
+      return;
+    }
+    test_url_loader_factory_.AddResponse(model_url_.spec(), response_data);
+  }
+
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory() {
+    return test_shared_loader_factory_;
   }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<net::FakeURLFetcherFactory> factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<base::FieldTrialList> field_trials_;
   GURL model_url_;
 };
@@ -107,14 +122,14 @@ ACTION_P(InvokeClosure, closure) {
 
 // Test the reponse to many variations of model responses.
 TEST_F(ModelLoaderTest, FetchModelTest) {
-  StrictMock<MockModelLoader> loader(base::Closure(), "top_model.pb");
+  StrictMock<MockModelLoader> loader(
+      base::Closure(), test_shared_loader_factory(), "top_model.pb");
   SetModelUrl(loader);
 
   // The model fetch failed.
   {
     base::RunLoop loop;
-    SetModelFetchResponse("blamodel", net::HTTP_INTERNAL_SERVER_ERROR,
-                          net::URLRequestStatus::FAILED);
+    SetModelFetchResponse("blamodel", net::ERR_FAILED);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_FETCH_FAILED, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -125,8 +140,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   // Empty model file.
   {
     base::RunLoop loop;
-    SetModelFetchResponse(std::string(), net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse(std::string(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_EMPTY, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -138,7 +152,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   {
     base::RunLoop loop;
     SetModelFetchResponse(std::string(ModelLoader::kMaxModelSizeBytes + 1, 'x'),
-                          net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+                          net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_TOO_LARGE, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -149,8 +163,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   // Unable to parse the model file.
   {
     base::RunLoop loop;
-    SetModelFetchResponse("Invalid model file", net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse("Invalid model file", net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_PARSE_ERROR, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -163,8 +176,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   model.set_max_words_per_term(4);
   {
     base::RunLoop loop;
-    SetModelFetchResponse(model.SerializePartialAsString(), net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse(model.SerializePartialAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_MISSING_FIELDS, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -178,8 +190,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   model.add_page_term(1);  // Should be 0 instead of 1.
   {
     base::RunLoop loop;
-    SetModelFetchResponse(model.SerializePartialAsString(), net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse(model.SerializePartialAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_BAD_HASH_IDS, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -192,8 +203,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   model.set_version(-1);
   {
     base::RunLoop loop;
-    SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_INVALID_VERSION_NUMBER, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -205,8 +215,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   model.set_version(10);
   {
     base::RunLoop loop;
-    SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_SUCCESS, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -220,8 +229,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   loader.model_->set_version(11);
   {
     base::RunLoop loop;
-    SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_INVALID_VERSION_NUMBER, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -233,8 +241,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
   loader.model_->set_version(10);
   {
     base::RunLoop loop;
-    SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
+    SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_NOT_CHANGED, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
     loader.StartFetch();
@@ -247,7 +254,8 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
 TEST_F(ModelLoaderTest, UpdateRenderersTest) {
   // Use runloop for convenient callback detection.
   base::RunLoop loop;
-  StrictMock<MockModelLoader> loader(loop.QuitClosure(), "top_model.pb");
+  StrictMock<MockModelLoader> loader(loop.QuitClosure(), nullptr,
+                                     "top_model.pb");
   EXPECT_CALL(loader, ScheduleFetch(_));
   loader.ModelLoader::EndFetch(ModelLoader::MODEL_SUCCESS, base::TimeDelta());
   loop.Run();
@@ -256,7 +264,7 @@ TEST_F(ModelLoaderTest, UpdateRenderersTest) {
 
 // Test that a one fetch schedules another fetch.
 TEST_F(ModelLoaderTest, RescheduleFetchTest) {
-  StrictMock<MockModelLoader> loader(base::Closure(), "top_model.pb");
+  StrictMock<MockModelLoader> loader(base::Closure(), nullptr, "top_model.pb");
 
   // Zero max_age.  Uses default.
   base::TimeDelta max_age;

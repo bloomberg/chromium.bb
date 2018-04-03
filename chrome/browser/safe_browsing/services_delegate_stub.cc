@@ -30,7 +30,7 @@ ServicesDelegateStub::ServicesDelegateStub() {}
 ServicesDelegateStub::~ServicesDelegateStub() {}
 
 void ServicesDelegateStub::InitializeCsdService(
-    net::URLRequestContextGetter* context_getter) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {}
 
 const scoped_refptr<SafeBrowsingDatabaseManager>&
 ServicesDelegateStub::v4_local_database_manager() const {

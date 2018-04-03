@@ -53,22 +53,12 @@ TEST_F(TestURLLoaderFactoryTest, Simple) {
   std::string data = "bar";
 
   factory()->AddResponse(url, data);
-  StartRequest(url);
-  client()->RunUntilComplete();
-  EXPECT_EQ(GetData(client()), data);
-}
-
-TEST_F(TestURLLoaderFactoryTest, MultipleSameURL) {
-  std::string url = "http://foo";
-  std::string data = "bar";
-
-  factory()->AddResponse(url, data);
-  factory()->AddResponse(url, data);
 
   StartRequest(url);
   client()->RunUntilComplete();
   EXPECT_EQ(GetData(client()), data);
 
+  // Data can be fetched multiple times.
   mojom::URLLoaderPtr loader2;
   TestURLLoaderClient client2;
   StartRequest(url, &client2);
@@ -76,24 +66,17 @@ TEST_F(TestURLLoaderFactoryTest, MultipleSameURL) {
   EXPECT_EQ(GetData(&client2), data);
 }
 
-TEST_F(TestURLLoaderFactoryTest, MultipleDifferentURL) {
-  std::string url1 = "http://foo";
-  std::string data1 = "bar";
-  factory()->AddResponse(url1, data1);
-
-  StartRequest(url1);
-  client()->RunUntilComplete();
-  EXPECT_EQ(GetData(client()), data1);
-
-  std::string url2 = "http://foo2";
+TEST_F(TestURLLoaderFactoryTest, MultipleSameURL) {
+  std::string url = "http://foo";
+  std::string data1 = "bar1";
   std::string data2 = "bar2";
-  factory()->AddResponse(url2, data2);
 
-  mojom::URLLoaderPtr loader2;
-  TestURLLoaderClient client2;
-  StartRequest(url2, &client2);
-  client2.RunUntilComplete();
-  EXPECT_EQ(GetData(&client2), data2);
+  factory()->AddResponse(url, data1);
+  factory()->AddResponse(url, data2);
+
+  StartRequest(url);
+  client()->RunUntilComplete();
+  EXPECT_EQ(GetData(client()), data2);
 }
 
 }  // namespace network
