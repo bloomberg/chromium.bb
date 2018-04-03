@@ -7,7 +7,7 @@
 
 #include "chrome/common/profiling/memlog_sender_pipe.h"
 #include "chrome/common/profiling/memlog_stream.h"
-#include "chrome/common/profiling/profiling_client.mojom.h"
+#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 
 namespace profiling {
 

@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/services/heap_profiling/public",
   "+content/public/child",
   "+mojo/edk/embedder",
   "+services/resource_coordinator/public",

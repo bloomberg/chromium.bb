@@ -1,0 +1,17 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+mojom("interfaces") {
+  sources = [
+    "mojom/constants.mojom",
+    "mojom/heap_profiling_client.mojom",
+    "mojom/heap_profiling_service.mojom",
+  ]
+  deps = [
+    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
+  ]
+}

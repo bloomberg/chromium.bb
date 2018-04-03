@@ -20,7 +20,7 @@ static_library("profiling") {
   ]
 
   public_deps = [
-    ":interfaces",
+    "//components/services/heap_profiling/public:interfaces",
   ]
   deps = [
     "//base",
@@ -29,18 +29,6 @@ static_library("profiling") {
     "//chrome/common:constants",
     "//content/public/common",
     "//mojo/edk",
-  ]
-}
-
-mojom("interfaces") {
-  sources = [
-    "constants.mojom",
-    "profiling_client.mojom",
-    "profiling_service.mojom",
-  ]
-  deps = [
-    "//mojo/common:common_custom_types",
-    "//mojo/public/mojom/base",
   ]
 }
 
