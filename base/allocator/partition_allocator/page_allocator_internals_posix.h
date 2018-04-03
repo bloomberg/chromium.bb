@@ -17,10 +17,6 @@
 
 #include "build/build_config.h"
 
-#ifndef MADV_FREE
-#define MADV_FREE MADV_DONTNEED
-#endif
-
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
 #endif
@@ -162,23 +158,19 @@ bool RecommitSystemPagesInternal(void* address,
 }
 
 void DiscardSystemPagesInternal(void* address, size_t length) {
-#if defined(OS_MACOSX)
-  // On macOS, MADV_FREE_REUSABLE has comparable behavior to MADV_FREE, but also
-  // marks the pages with the reusable bit, which allows both Activity Monitor
-  // and memory-infra to correctly track the pages.
-  int flags = MADV_FREE_REUSABLE;
-#else
-  int flags = MADV_FREE;
-#endif
-
-  int ret = madvise(address, length, flags);
-  if (ret != 0 && errno == EINVAL) {
-    // MADV_FREE only works on Linux 4.5+. If request failed, retry with older
-    // MADV_DONTNEED. Note that MADV_FREE being defined at compile time doesn't
-    // imply runtime support.
-    ret = madvise(address, length, MADV_DONTNEED);
-  }
-  CHECK(!ret);
+  // We have experimented with other flags values, but with suboptimal results.
+  //
+  // MADV_FREE (Linux): Makes our memory measurements less predictable;
+  // performance benefits unclear.
+  //
+  // MADV_FREE_REUSABLE (macOS): Apparently never worked (EINVAL), and the
+  // failure was masked by a retry block intended for Linux in cases when
+  // MADV_FREE was defined but not implemented in the running kernel. So we were
+  // making an unnecessary system call.
+  //
+  // Therefore, we just do the simple thing: MADV_DONTNEED.
+  int flags = MADV_DONTNEED;
+  CHECK(!madvise(address, length, flags));
 }
 
 }  // namespace base
