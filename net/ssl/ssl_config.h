@@ -124,9 +124,6 @@ struct NET_EXPORT SSLConfig {
   std::vector<TokenBindingParam> token_binding_params;
 
   bool false_start_enabled;  // True if we'll use TLS False Start.
-  // True if the Certificate Transparency signed_certificate_timestamp
-  // TLS extension is enabled.
-  bool signed_cert_timestamps_enabled;
 
   // If true, causes only ECDHE cipher suites to be enabled.
   bool require_ecdhe;

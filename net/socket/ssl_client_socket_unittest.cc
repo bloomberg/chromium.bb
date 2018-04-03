@@ -2448,7 +2448,9 @@ TEST_F(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, request_info->cert_key_types[1]);
 }
 
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
+// Tests that the Certificate Transparency (RFC 6962) TLS extension is
+// supported.
+TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsTLSExtension) {
   // Encoding of SCT List containing 'test'.
   base::StringPiece sct_ext("\x00\x06\x00\x04test", 8);
 
@@ -2457,7 +2459,6 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
   ASSERT_TRUE(StartTestServer(ssl_options));
 
   SSLConfig ssl_config;
-  ssl_config.signed_cert_timestamps_enabled = true;
 
   MockCTVerifier ct_verifier;
   SetCTVerifier(&ct_verifier);
@@ -2610,8 +2611,9 @@ TEST_F(SSLClientSocketTest, CTCompliantEVHistogram) {
       static_cast<int>(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS), 1);
 }
 
-// Test that enabling Signed Certificate Timestamps enables OCSP stapling.
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
+// Tests that OCSP stapling is requested, as per Certificate Transparency (RFC
+// 6962).
+TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnablesOCSP) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.staple_ocsp_response = true;
   // The test server currently only knows how to generate OCSP responses
@@ -2621,32 +2623,12 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
   ASSERT_TRUE(StartTestServer(ssl_options));
 
   SSLConfig ssl_config;
-  // Enabling Signed Cert Timestamps ensures we request OCSP stapling for
-  // Certificate Transparency verification regardless of whether the platform
-  // is able to process the OCSP status itself.
-  ssl_config.signed_cert_timestamps_enabled = true;
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(sock_->stapled_ocsp_response_received_);
-}
-
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.signed_cert_timestamps_tls_ext = "test";
-
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLConfig ssl_config;
-  ssl_config.signed_cert_timestamps_enabled = false;
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-
-  EXPECT_FALSE(sock_->signed_cert_timestamps_received_);
 }
 
 // Tests that IsConnectedAndIdle and WasEverUsed behave as expected.
