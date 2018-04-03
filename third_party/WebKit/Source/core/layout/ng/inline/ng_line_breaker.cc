@@ -329,10 +329,9 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
 
     if (!is_overflow || state == LineBreakState::kTrailing) {
       if (item_result->end_offset < item.EndOffset()) {
-        // The break point found, and text follows. Break here.
-        HandleTrailingSpaces(item, line_info);
-        line_info->SetIsLastLine(false);
-        return LineBreakState::kDone;
+        // The break point found, and text follows. Break here, after trailing
+        // spaces.
+        return HandleTrailingSpaces(item, line_info);
       }
 
       // The break point found, but items that prohibit breaking before them may
