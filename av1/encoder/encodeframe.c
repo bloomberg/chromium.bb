@@ -4635,7 +4635,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int is_inter = is_inter_block(mbmi);
 
   if (!is_inter) {
-    xd->cfl.store_y = 1;
+    xd->cfl.is_chroma_reference = is_chroma_reference(
+        mi_row, mi_col, bsize, cm->subsampling_x, cm->subsampling_y);
+    xd->cfl.store_y = store_cfl_required(cm, xd);
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
       av1_encode_intra_block_plane(cpi, x, bsize, plane,

@@ -555,7 +555,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   // very expensive.
   *(args->skip) = 0;
 
-  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(xd)) {
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y) {
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
 }

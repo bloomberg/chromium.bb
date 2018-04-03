@@ -799,9 +799,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
         read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(xd), mbmi->mode);
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx = read_cfl_alphas(ec_ctx, r, &mbmi->cfl_alpha_signs);
-      xd->cfl.store_y = 1;
-    } else {
-      xd->cfl.store_y = 0;
     }
     mbmi->angle_delta[PLANE_TYPE_UV] =
         (use_angle_delta && av1_is_directional_mode(get_uv_mode(mbmi->uv_mode)))
@@ -812,8 +809,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
     xd->cfl.is_chroma_reference = 0;
-    xd->cfl.store_y = 1;
   }
+  xd->cfl.store_y = store_cfl_required(cm, xd);
 
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, mi_row, mi_col, r);
@@ -1057,17 +1054,16 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
       use_angle_delta && av1_is_directional_mode(mbmi->mode)
           ? read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED])
           : 0;
-  if (!cm->seq_params.monochrome &&
+  const int has_chroma =
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y)) {
+                          xd->plane[1].subsampling_y);
+  xd->cfl.is_chroma_reference = has_chroma;
+  if (!cm->seq_params.monochrome && has_chroma) {
     mbmi->uv_mode =
         read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(xd), mbmi->mode);
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx =
           read_cfl_alphas(xd->tile_ctx, r, &mbmi->cfl_alpha_signs);
-      xd->cfl.store_y = 1;
-    } else {
-      xd->cfl.store_y = 0;
     }
     mbmi->angle_delta[PLANE_TYPE_UV] =
         use_angle_delta && av1_is_directional_mode(get_uv_mode(mbmi->uv_mode))
@@ -1077,9 +1073,8 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   } else {
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
-    xd->cfl.is_chroma_reference = 0;
-    xd->cfl.store_y = 1;
   }
+  xd->cfl.store_y = store_cfl_required(cm, xd);
 
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
@@ -1502,6 +1497,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->wm_params[0].invalid = 1;
     }
   }
+
+  xd->cfl.is_chroma_reference = is_chroma_reference(
+      mi_row, mi_col, bsize, cm->subsampling_x, cm->subsampling_y);
+  xd->cfl.store_y = store_cfl_required(cm, xd);
 
 #if DEC_MISMATCH_DEBUG
   dec_dump_logs(cm, mi, mi_row, mi_col, mode_ctx);

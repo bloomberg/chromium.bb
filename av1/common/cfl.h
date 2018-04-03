@@ -13,7 +13,9 @@
 #define AV1_COMMON_CFL_H_
 
 #include "av1/common/blockd.h"
+#include "av1/common/onyxc_int.h"
 
+// Can we use CfL for the current block?
 static INLINE CFL_ALLOWED_TYPE is_cfl_allowed(const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const BLOCK_SIZE bsize = mbmi->sb_type;
@@ -28,6 +30,29 @@ static INLINE CFL_ALLOWED_TYPE is_cfl_allowed(const MACROBLOCKD *xd) {
   // Spec: CfL is available to luma partitions lesser than or equal to 32x32
   return (CFL_ALLOWED_TYPE)(block_size_wide[bsize] <= 32 &&
                             block_size_high[bsize] <= 32);
+}
+
+// Do we need to save the luma pixels from the current block,
+// for a possible future CfL prediction?
+static inline CFL_ALLOWED_TYPE store_cfl_required(const AV1_COMMON *cm,
+                                                  const MACROBLOCKD *xd) {
+  const MB_MODE_INFO *mbmi = xd->mi[0];
+
+  if (cm->seq_params.monochrome) return CFL_DISALLOWED;
+
+  if (!xd->cfl.is_chroma_reference) {
+    // For non-chroma-reference blocks, we should always store the luma pixels,
+    // in case the corresponding chroma-reference block uses CfL.
+    // Note that this can only happen for block sizes which are <8 on
+    // their shortest side, as otherwise they would be chroma reference
+    // blocks.
+    return CFL_ALLOWED;
+  }
+
+  // If this block has chroma information, we know whether we're
+  // actually going to perform a CfL prediction
+  return (CFL_ALLOWED_TYPE)(!is_inter_block(mbmi) &&
+                            mbmi->uv_mode == UV_CFL_PRED);
 }
 
 static INLINE int get_scaled_luma_q0(int alpha_q3, int16_t pred_buf_q3) {

@@ -356,6 +356,28 @@ static INLINE int write_uniform_cost(int n, int v) {
     return av1_cost_literal(l);
 }
 
+// Similar to store_cfl_required(), but for use during the RDO process,
+// where we haven't yet determined whether this block uses CfL.
+static inline CFL_ALLOWED_TYPE store_cfl_required_rdo(const AV1_COMMON *cm,
+                                                      const MACROBLOCK *x) {
+  const MACROBLOCKD *xd = &x->e_mbd;
+
+  if (cm->seq_params.monochrome || x->skip_chroma_rd) return CFL_DISALLOWED;
+
+  if (!xd->cfl.is_chroma_reference) {
+    // For non-chroma-reference blocks, we should always store the luma pixels,
+    // in case the corresponding chroma-reference block uses CfL.
+    // Note that this can only happen for block sizes which are <8 on
+    // their shortest side, as otherwise they would be chroma reference
+    // blocks.
+    return CFL_ALLOWED;
+  }
+
+  // For chroma reference blocks, we should store data in the encoder iff we're
+  // allowed to try out CfL.
+  return is_cfl_allowed(xd);
+}
+
 // constants for prune 1 and prune 2 decision boundaries
 #define FAST_EXT_TX_CORR_MID 0.0
 #define FAST_EXT_TX_EDST_MID 0.1
@@ -2265,7 +2287,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                   a, l, 0, args->use_fast_coef_costing,
                   args->best_rd - args->this_rd, &this_rd_stats);
 
-  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(xd)) {
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y) {
     assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
@@ -5171,8 +5193,11 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                  int *rate_uv, int *rate_uv_tokenonly,
                                  int64_t *dist_uv, int *skip_uv,
                                  UV_PREDICTION_MODE *mode_uv) {
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
+  const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
+  const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
   // Use an estimated rd for uv_intra based on DC_PRED if the
   // appropriate speed flag is set.
   init_sbuv_mode(mbmi);
@@ -5184,15 +5209,15 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
     *mode_uv = UV_DC_PRED;
     return;
   }
+  xd->cfl.is_chroma_reference = is_chroma_reference(
+      mi_row, mi_col, bsize, cm->subsampling_x, cm->subsampling_y);
   bsize = scale_chroma_bsize(bsize, xd->plane[AOM_PLANE_U].subsampling_x,
                              xd->plane[AOM_PLANE_U].subsampling_y);
   // Only store reconstructed luma when there's chroma RDO. When there's no
   // chroma RDO, the reconstructed luma will be stored in encode_superblock().
-  xd->cfl.store_y = !x->skip_chroma_rd;
+  xd->cfl.store_y = store_cfl_required_rdo(cm, x);
   if (xd->cfl.store_y) {
     // Restore reconstructed luma values.
-    const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-    const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
     av1_encode_intra_block_plane(cpi, x, mbmi->sb_type, AOM_PLANE_Y,
                                  cpi->optimize_seg_arr[mbmi->segment_id],
                                  mi_row, mi_col);
@@ -8136,7 +8161,9 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   if (intra_yrd < best_rd) {
     // Only store reconstructed luma when there's chroma RDO. When there's no
     // chroma RDO, the reconstructed luma will be stored in encode_superblock().
-    xd->cfl.store_y = !x->skip_chroma_rd;
+    xd->cfl.is_chroma_reference = is_chroma_reference(
+        mi_row, mi_col, bsize, cm->subsampling_x, cm->subsampling_y);
+    xd->cfl.store_y = store_cfl_required_rdo(cm, x);
     if (xd->cfl.store_y) {
       // Restore reconstructed luma values.
       memcpy(x->blk_skip, ctx->blk_skip,
