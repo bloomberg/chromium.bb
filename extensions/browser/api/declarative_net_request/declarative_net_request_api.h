@@ -29,6 +29,9 @@ class DeclarativeNetRequestUpdateWhitelistedPagesFunction
       const std::vector<std::string>& patterns,
       Action action);
 
+  // ExtensionFunction override:
+  bool PreRunValidation(std::string* error) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateWhitelistedPagesFunction);
 };
@@ -83,7 +86,8 @@ class DeclarativeNetRequestGetWhitelistedPagesFunction
  protected:
   ~DeclarativeNetRequestGetWhitelistedPagesFunction() override;
 
-  // ExtensionFunction override:
+  // ExtensionFunction overrides:
+  bool PreRunValidation(std::string* error) override;
   ExtensionFunction::ResponseAction Run() override;
 
  private:

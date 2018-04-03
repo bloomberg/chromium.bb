@@ -100,6 +100,12 @@ bool RulesMonitorService::HasAnyRegisteredRulesets() const {
   return !extensions_with_rulesets_.empty();
 }
 
+bool RulesMonitorService::HasRegisteredRuleset(
+    const Extension* extension) const {
+  return extensions_with_rulesets_.find(extension) !=
+         extensions_with_rulesets_.end();
+}
+
 RulesMonitorService::RulesMonitorService(
     content::BrowserContext* browser_context)
     : registry_observer_(this),

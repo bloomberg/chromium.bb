@@ -37,6 +37,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   bool HasAnyRegisteredRulesets() const;
 
+  // Returns true if the given |extension| has a registered declarative ruleset.
+  bool HasRegisteredRuleset(const Extension* extension) const;
+
  private:
   friend class BrowserContextKeyedAPIFactory<RulesMonitorService>;
 
