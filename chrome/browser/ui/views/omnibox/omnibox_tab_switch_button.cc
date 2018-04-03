@@ -18,11 +18,13 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view,
     : MdTextButton(this, views::style::CONTEXT_BUTTON_MD),
       text_height_(text_height),
       result_view_(result_view) {
-  // TODO: SetTooltipText(text);
-  //       SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
+  // TODO(krb): SetTooltipText(text);
+  //            SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL,
-           gfx::CreateVectorIcon(omnibox::kSwitchIcon, 16, SK_ColorBLACK));
+           gfx::CreateVectorIcon(omnibox::kSwitchIcon,
+                                 GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                                 SK_ColorBLACK));
   SetText(base::ASCIIToUTF16("Switch to open tab"));
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
 }
