@@ -6,6 +6,7 @@
 
 #include "core/html/HTMLDivElement.h"
 #include "core/input_type_names.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/resize_observer/ResizeObserver.h"
@@ -22,6 +23,20 @@ void SetSegmentDivPosition(blink::HTMLDivElement* segment,
                            float zoom_factor) {
   int segment_width = int((position.width * width) / zoom_factor);
   int segment_left = int((position.left * width) / zoom_factor);
+  int current_width = 0;
+  int current_left = 0;
+
+  // Get the current width and left for the segment. If the box is not present
+  // then it will be a nullptr so we should assume zero.
+  blink::LayoutBox* box = segment->GetLayoutBox();
+  if (box) {
+    current_width = box->PixelSnappedWidth();
+    current_left = box->LogicalLeft().ToInt();
+  }
+
+  // If the width and left has not changed then do not update the segment.
+  if (segment_width == current_width && segment_left == current_left)
+    return;
 
   StringBuilder builder;
   builder.Append("width: ");
