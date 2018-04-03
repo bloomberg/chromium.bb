@@ -12,9 +12,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_utils.h"
-#include "content/renderer/device_sensors/fake_sensor_and_provider.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/generic_sensor/orientation_data.h"
+#include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +28,8 @@ constexpr double kEpsilon = 1e-8;
 }  // namespace
 
 namespace content {
+
+using device::FakeSensorProvider;
 
 class MockDeviceOrientationListener
     : public blink::WebDeviceOrientationListener {
@@ -344,7 +346,7 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActive) {
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetRelativeOrientationSensorData(
+  sensor_provider()->UpdateRelativeOrientationSensorData(
       1 /* alpha */, 2 /* beta */, 3 /* gamma */);
 
   FireEvent();
@@ -379,7 +381,7 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActiveWithSensorFallback) {
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */, 5 /* beta */, 6 /* gamma */);
 
   FireEvent();
@@ -415,7 +417,7 @@ TEST_F(DeviceOrientationEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetRelativeOrientationSensorData(
+  sensor_provider()->UpdateRelativeOrientationSensorData(
       NAN /* alpha */, 2 /* beta */, 3 /* gamma */);
 
   FireEvent();
@@ -448,7 +450,7 @@ TEST_F(DeviceOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */, NAN /* beta */, 6 /* gamma */);
 
   FireEvent();
@@ -556,7 +558,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetRelativeOrientationSensorData(
+  sensor_provider()->UpdateRelativeOrientationSensorData(
       1 /* alpha */, 2 /* beta */, 3 /* gamma */);
 
   FireEvent();
@@ -576,7 +578,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   listener()->set_did_change_device_orientation(false);
 
-  sensor_provider()->SetRelativeOrientationSensorData(
+  sensor_provider()->UpdateRelativeOrientationSensorData(
       1 + DeviceOrientationEventPump::kOrientationThreshold / 2.0 /* alpha */,
       2 /* beta */, 3 /* gamma */);
 
@@ -595,7 +597,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   listener()->set_did_change_device_orientation(false);
 
-  sensor_provider()->SetRelativeOrientationSensorData(
+  sensor_provider()->UpdateRelativeOrientationSensorData(
       1 + DeviceOrientationEventPump::kOrientationThreshold /* alpha */,
       2 /* beta */, 3 /* gamma */);
 
@@ -631,7 +633,7 @@ TEST_F(DeviceOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */, 5 /* beta */, 6 /* gamma */);
 
   FireEvent();
@@ -654,7 +656,7 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   listener()->set_did_change_device_orientation(false);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
       5 + DeviceOrientationEventPump::kOrientationThreshold / 2.0 /* beta */,
       6 /* gamma */);
@@ -674,7 +676,7 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   listener()->set_did_change_device_orientation(false);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
       5 + DeviceOrientationEventPump::kOrientationThreshold +
           kEpsilon /* beta */,
@@ -845,7 +847,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, SensorIsActive) {
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */, 5 /* beta */, 6 /* gamma */);
 
   FireEvent();
@@ -875,7 +877,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */, NAN /* beta */, 6 /* gamma */);
 
   FireEvent();
@@ -948,7 +950,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */, 5 /* beta */, 6 /* gamma */);
 
   FireEvent();
@@ -966,7 +968,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   listener()->set_did_change_device_orientation(false);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
       5 + DeviceOrientationEventPump::kOrientationThreshold / 2.0 /* beta */,
       6 /* gamma */);
@@ -986,7 +988,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   listener()->set_did_change_device_orientation(false);
 
-  sensor_provider()->SetAbsoluteOrientationSensorData(
+  sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
       5 + DeviceOrientationEventPump::kOrientationThreshold +
           kEpsilon /* beta */,

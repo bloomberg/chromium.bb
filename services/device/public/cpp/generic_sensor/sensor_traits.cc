@@ -37,10 +37,44 @@ double GetSensorMaxAllowedFrequency(SensorType type) {
     case SensorType::RELATIVE_ORIENTATION_QUATERNION:
       return SensorTraits<
           SensorType::RELATIVE_ORIENTATION_QUATERNION>::kMaxAllowedFrequency;
-    default:
-      NOTREACHED() << "Unknown sensor type " << type;
-      return SensorTraits<SensorType::LAST>::kMaxAllowedFrequency;
+    // No default so the compiler will warn us if a new type is added.
   }
+  NOTREACHED() << "Unknown sensor type " << type;
+  return SensorTraits<SensorType::LAST>::kMaxAllowedFrequency;
+}
+
+double GetSensorDefaultFrequency(mojom::SensorType type) {
+  switch (type) {
+    case SensorType::AMBIENT_LIGHT:
+      return SensorTraits<SensorType::AMBIENT_LIGHT>::kDefaultFrequency;
+    case SensorType::PROXIMITY:
+      return SensorTraits<SensorType::PROXIMITY>::kDefaultFrequency;
+    case SensorType::ACCELEROMETER:
+      return SensorTraits<SensorType::ACCELEROMETER>::kDefaultFrequency;
+    case SensorType::LINEAR_ACCELERATION:
+      return SensorTraits<SensorType::LINEAR_ACCELERATION>::kDefaultFrequency;
+    case SensorType::GYROSCOPE:
+      return SensorTraits<SensorType::GYROSCOPE>::kDefaultFrequency;
+    case SensorType::MAGNETOMETER:
+      return SensorTraits<SensorType::MAGNETOMETER>::kDefaultFrequency;
+    case SensorType::PRESSURE:
+      return SensorTraits<SensorType::PRESSURE>::kDefaultFrequency;
+    case SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
+      return SensorTraits<
+          SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES>::kDefaultFrequency;
+    case SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
+      return SensorTraits<
+          SensorType::ABSOLUTE_ORIENTATION_QUATERNION>::kDefaultFrequency;
+    case SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
+      return SensorTraits<
+          SensorType::RELATIVE_ORIENTATION_EULER_ANGLES>::kDefaultFrequency;
+    case SensorType::RELATIVE_ORIENTATION_QUATERNION:
+      return SensorTraits<
+          SensorType::RELATIVE_ORIENTATION_QUATERNION>::kDefaultFrequency;
+    // No default so the compiler will warn us if a new type is added.
+  }
+  NOTREACHED() << "Unknown sensor type " << type;
+  return SensorTraits<SensorType::LAST>::kDefaultFrequency;
 }
 
 }  // namespace device
