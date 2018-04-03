@@ -5,5 +5,7 @@ include_rules = [
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+content/public/test",
   "+net",
+  "+services/network/public",
+  "+services/network/test",
 ]
 

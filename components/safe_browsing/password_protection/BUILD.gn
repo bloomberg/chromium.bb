@@ -54,6 +54,7 @@ source_set("password_protection_unittest") {
       "//components/sync_preferences:test_support",
       "//content/test:test_support",
       "//net:test_support",
+      "//services/network:test_support",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/protobuf:protobuf_lite",

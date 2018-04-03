@@ -21,7 +21,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace content {
@@ -114,7 +114,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   PasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
       HostContentSettingsMap* host_content_settings_map);
 
@@ -268,8 +268,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual int GetStoredVerdictCount(
       LoginReputationClientRequest::TriggerType trigger_type);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter() {
-    return request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() {
+    return url_loader_factory_;
   }
 
   // Returns the URL where PasswordProtectionRequest instances send requests.
@@ -402,7 +402,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // The context we use to issue network requests. This request_context_getter
   // is obtained from SafeBrowsingService so that we can use the Safe Browsing
   // cookie store.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Set of pending PasswordProtectionRequests that are still waiting for
   // verdict.

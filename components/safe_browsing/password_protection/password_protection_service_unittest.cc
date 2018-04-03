@@ -17,8 +17,9 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,32 +56,14 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
-class DummyURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  DummyURLRequestContextGetter()
-      : dummy_task_runner_(new base::NullTaskRunner) {}
-
-  net::URLRequestContext* GetURLRequestContext() override { return nullptr; }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return dummy_task_runner_;
-  }
-
- private:
-  ~DummyURLRequestContextGetter() override {}
-
-  scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner_;
-};
-
 class TestPasswordProtectionService : public PasswordProtectionService {
  public:
   TestPasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<HostContentSettingsMap> content_setting_map)
       : PasswordProtectionService(database_manager,
-                                  request_context_getter,
+                                  url_loader_factory,
                                   nullptr,
                                   content_setting_map.get()),
         is_extended_reporting_(true),
@@ -96,6 +79,7 @@ class TestPasswordProtectionService : public PasswordProtectionService {
       std::unique_ptr<LoginReputationClientResponse> response) override {
     latest_request_ = request;
     latest_response_ = std::move(response);
+    run_loop_.Quit();
   }
 
   bool IsExtendedReporting() override { return is_extended_reporting_; }
@@ -133,6 +117,8 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   LoginReputationClientResponse* latest_response() {
     return latest_response_.get();
   }
+
+  void WaitForResponse() { run_loop_.Run(); }
 
   ~TestPasswordProtectionService() override {}
 
@@ -173,6 +159,7 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   bool is_extended_reporting_;
   bool is_incognito_;
   PasswordProtectionRequest* latest_request_;
+  base::RunLoop run_loop_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
   PasswordProtectionTrigger password_protection_trigger_;
   LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
@@ -202,15 +189,17 @@ class PasswordProtectionServiceTest
         &test_pref_service_, false /* incognito */, false /* guest_profile */,
         false /* store_last_modified */);
     database_manager_ = new MockSafeBrowsingDatabaseManager();
-    dummy_request_context_getter_ = new DummyURLRequestContextGetter();
     password_protection_service_ =
         std::make_unique<TestPasswordProtectionService>(
-            database_manager_, dummy_request_context_getter_,
+            database_manager_,
+            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_),
             content_setting_map_);
 
     ASSERT_EQ(2ul, GetParam().size());
     password_protection_service_->set_extended_reporting(GetParam()[0]);
     password_protection_service_->set_incognito(GetParam()[1]);
+    url_ = PasswordProtectionService::GetPasswordProtectionRequestUrl();
   }
 
   void TearDown() override { content_setting_map_->ShutdownOnUIThread(); }
@@ -302,7 +291,8 @@ class PasswordProtectionServiceTest
   scoped_refptr<MockSafeBrowsingDatabaseManager> database_manager_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
-  scoped_refptr<DummyURLRequestContextGetter> dummy_request_context_getter_;
+  GURL url_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestPasswordProtectionService> password_protection_service_;
   scoped_refptr<PasswordProtectionRequest> request_;
   base::HistogramTester histograms_;
@@ -675,15 +665,14 @@ TEST_P(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
 
 TEST_P(PasswordProtectionServiceTest, TestResponseFetchFailed) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
-  net::TestURLFetcher failed_fetcher(0, GURL("http://bar.com"), nullptr);
   // Set up failed response.
-  failed_fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
+  network::ResourceResponseHead head;
+  network::URLLoaderCompletionStatus status(net::ERR_FAILED);
+  test_url_loader_factory_.AddResponse(url_, head, std::string(), status);
 
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
                                            10000 /* timeout in ms*/);
-  request_->OnURLFetchComplete(&failed_fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
@@ -693,16 +682,11 @@ TEST_P(PasswordProtectionServiceTest, TestResponseFetchFailed) {
 TEST_P(PasswordProtectionServiceTest, TestMalformedResponse) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   // Set up malformed response.
-  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
-  fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher.set_response_code(200);
-  fetcher.SetResponseString("invalid response");
+  test_url_loader_factory_.AddResponse(url_.spec(), "invalid response");
 
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
                                            10000 /* timeout in ms*/);
-  request_->OnURLFetchComplete(&fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
@@ -724,19 +708,15 @@ TEST_P(PasswordProtectionServiceTest,
        TestPasswordOnFocusRequestAndResponseSuccessfull) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   // Set up valid response.
-  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
-  fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher.set_response_code(200);
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
                          GURL(kTargetUrl).host());
-  fetcher.SetResponseString(expected_response.SerializeAsString());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
 
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
                                            10000 /* timeout in ms*/);
-  request_->OnURLFetchComplete(&fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
@@ -758,21 +738,17 @@ TEST_P(PasswordProtectionServiceTest,
   histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
                                0);
   // Set up valid response.
-  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
-  fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher.set_response_code(200);
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
                          GURL(kTargetUrl).host());
-  fetcher.SetResponseString(expected_response.SerializeAsString());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
 
   // Initiate a saved password entry request (w/ no sync password).
   InitializeAndStartPasswordEntryRequest(
       false /* matches_sync_password */, {"example.com"},
       false /* match whitelist */, 10000 /* timeout in ms*/);
-  request_->OnURLFetchComplete(&fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
 
   // UMA: request outcomes
   EXPECT_THAT(
@@ -802,21 +778,17 @@ TEST_P(PasswordProtectionServiceTest,
   histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
                                0);
   // Set up valid response.
-  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
-  fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher.set_response_code(200);
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
                          GURL(kTargetUrl).host());
-  fetcher.SetResponseString(expected_response.SerializeAsString());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
 
   // Initiate a sync password entry request (w/ no saved password).
   InitializeAndStartPasswordEntryRequest(true /* matches_sync_password */, {},
                                          false /* match whitelist */,
                                          10000 /* timeout in ms*/);
-  request_->OnURLFetchComplete(&fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
 
   // UMA: request outcomes
   EXPECT_THAT(
@@ -958,20 +930,15 @@ TEST_P(PasswordProtectionServiceTest,
 
 TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
   // Set up valid response.
-  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
-  fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher.set_response_code(200);
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
                          GURL(kTargetUrl).host());
-  fetcher.SetResponseString(expected_response.SerializeAsString());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
 
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
                                            100000 /* timeout in ms*/);
-  base::RunLoop().RunUntilIdle();
-  request_->OnURLFetchComplete(&fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
 
   const LoginReputationClientRequest* actual_request =
       password_protection_service_->GetLatestRequestProto();
@@ -989,22 +956,17 @@ TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
 TEST_P(PasswordProtectionServiceTest,
        VerifySyncPasswordProtectionRequestProto) {
   // Set up valid response.
-  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
-  fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher.set_response_code(200);
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
                          GURL(kTargetUrl).host());
-  fetcher.SetResponseString(expected_response.SerializeAsString());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
 
   // Initialize request triggered by chrome sync password reuse.
   InitializeAndStartPasswordEntryRequest(true /* matches_sync_password */, {},
                                          false /* match whitelist */,
                                          100000 /* timeout in ms*/);
-  base::RunLoop().RunUntilIdle();
-  request_->OnURLFetchComplete(&fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
 
   const LoginReputationClientRequest* actual_request =
       password_protection_service_->GetLatestRequestProto();
@@ -1023,22 +985,17 @@ TEST_P(PasswordProtectionServiceTest,
 TEST_P(PasswordProtectionServiceTest,
        VerifyNonSyncPasswordProtectionRequestProto) {
   // Set up valid response.
-  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
-  fetcher.set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher.set_response_code(200);
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
                          GURL(kTargetUrl).host());
-  fetcher.SetResponseString(expected_response.SerializeAsString());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
 
   // Initialize request triggered by saved password reuse.
   InitializeAndStartPasswordEntryRequest(
       false /* matches_sync_password */, {kSavedDomain, kSavedDomain2},
       false /* match whitelist */, 100000 /* timeout in ms*/);
-  base::RunLoop().RunUntilIdle();
-  request_->OnURLFetchComplete(&fetcher);
-  base::RunLoop().RunUntilIdle();
+  password_protection_service_->WaitForResponse();
 
   const LoginReputationClientRequest* actual_request =
       password_protection_service_->GetLatestRequestProto();
