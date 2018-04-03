@@ -11380,7 +11380,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 3600000 },
       'caption': '''Set the period for update relaunch notifications''',
