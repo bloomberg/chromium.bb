@@ -512,6 +512,22 @@ class DeveloperPrivateLoadUnpackedFunction
   DeveloperPrivateAPI::UnpackedRetryId retry_guid_;
 };
 
+class DeveloperPrivateInstallDroppedFileFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.installDroppedFile",
+                             DEVELOPERPRIVATE_INSTALLDROPPEDFILE);
+  DeveloperPrivateInstallDroppedFileFunction();
+
+ private:
+  ~DeveloperPrivateInstallDroppedFileFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateInstallDroppedFileFunction);
+};
+
 class DeveloperPrivateNotifyDragInstallInProgressFunction
     : public DeveloperPrivateAPIFunction {
  public:

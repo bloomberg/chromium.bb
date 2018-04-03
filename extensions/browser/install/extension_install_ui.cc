@@ -7,7 +7,7 @@
 namespace extensions {
 
 // static
-bool ExtensionInstallUI::disable_failure_ui_for_tests_ = false;
+bool ExtensionInstallUI::disable_ui_for_tests_ = false;
 
 ExtensionInstallUI::ExtensionInstallUI() {
 }

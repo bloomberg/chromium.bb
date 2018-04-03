@@ -14882,6 +14882,7 @@ Called by update_net_error_codes.py.-->
   <int value="1231" label="DECLARATIVENETREQUEST_ADDWHITELISTEDPAGES"/>
   <int value="1232" label="DECLARATIVENETREQUEST_REMOVEWHITELISTEDPAGES"/>
   <int value="1233" label="DECLARATIVENETREQUEST_GETWHITELISTEDPAGES"/>
+  <int value="1234" label="DEVELOPERPRIVATE_INSTALLDROPPEDFILE"/>
 </enum>
 
 <enum name="ExtensionIconState">

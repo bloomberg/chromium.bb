@@ -215,7 +215,7 @@ class WebstoreStartupInstallUnpackFailureTest
 
   void SetUpInProcessBrowserTestFixture() override {
     WebstoreStartupInstallerTest::SetUpInProcessBrowserTestFixture();
-    extensions::ExtensionInstallUI::set_disable_failure_ui_for_tests();
+    extensions::ExtensionInstallUI::set_disable_ui_for_tests();
   }
 };
 
