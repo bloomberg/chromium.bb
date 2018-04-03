@@ -160,10 +160,23 @@ void HeadlessContentMainDelegate::InitLogging(
   base::FilePath log_path;
   logging::LoggingSettings settings;
 
-  if (PathService::Get(base::DIR_MODULE, &log_path)) {
+// In release builds we should log into the user profile directory.
+#ifdef NDEBUG
+  if (!browser_->options()->user_data_dir.empty()) {
+    log_path = browser_->options()->user_data_dir;
+    log_path = log_path.Append(kDefaultProfileName);
+    base::CreateDirectory(log_path);
     log_path = log_path.Append(log_filename);
-  } else {
-    log_path = log_filename;
+  }
+#endif  // NDEBUG
+
+  // Otherwise we log to where the executable is.
+  if (log_path.empty()) {
+    if (PathService::Get(base::DIR_MODULE, &log_path)) {
+      log_path = log_path.Append(log_filename);
+    } else {
+      log_path = log_filename;
+    }
   }
 
   std::string filename;

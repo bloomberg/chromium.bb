@@ -33,6 +33,8 @@ namespace headless {
 class HeadlessBrowserContextImpl;
 class HeadlessBrowserMainParts;
 
+extern const base::FilePath::CharType kDefaultProfileName[];
+
 // Exported for tests.
 class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
                                             public HeadlessDevToolsTarget {
