@@ -107,7 +107,7 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
 
   bool GetGlobalTouchscreenEnabled() const {
     return Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
-        TouchscreenEnabledSource::GLOBAL);
+        TouchDeviceEnabledSource::GLOBAL);
   }
 
   // Tapping power button when screen is off will turn the screen on but not
@@ -699,7 +699,7 @@ TEST_F(PowerButtonControllerTest, TabletModeEventsStopForcingOff) {
 // be synced with new backlights forced off state from powerd.
 TEST_F(PowerButtonControllerTest, SyncTouchscreenEnabled) {
   Shell::Get()->touch_devices_controller()->SetTouchscreenEnabled(
-      false, TouchscreenEnabledSource::GLOBAL);
+      false, TouchDeviceEnabledSource::GLOBAL);
   ASSERT_FALSE(GetGlobalTouchscreenEnabled());
 
   // Simulate system reboot by resetting backlights forced off state in powerd

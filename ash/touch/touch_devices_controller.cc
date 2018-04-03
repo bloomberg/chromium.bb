@@ -17,16 +17,28 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
 namespace {
 
-void OnSetTouchpadEnabledDone(bool succeeded) {
+void OnSetTouchpadEnabledDone(bool enabled, bool succeeded) {
   // Don't log here, |succeeded| is only true if there is a touchpad *and* the
   // value changed. In other words |succeeded| is false when not on device or
   // the value was already at the value specified. Neither of these are
   // interesting failures.
+  if (!succeeded)
+    return;
+
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  if (!cursor_manager)
+    return;
+
+  if (enabled)
+    cursor_manager->ShowCursor();
+  else
+    cursor_manager->HideCursor();
 }
 
 ui::InputDeviceControllerClient* GetInputDeviceControllerClient() {
@@ -75,9 +87,33 @@ void TouchDevicesController::ToggleTouchpad() {
   prefs->SetBoolean(prefs::kTouchpadEnabled, !touchpad_enabled);
 }
 
+bool TouchDevicesController::GetTouchpadEnabled(
+    TouchDeviceEnabledSource source) const {
+  if (source == TouchDeviceEnabledSource::GLOBAL)
+    return global_touchpad_enabled_;
+
+  PrefService* prefs = GetActivePrefService();
+  return prefs && prefs->GetBoolean(prefs::kTouchpadEnabled);
+}
+
+void TouchDevicesController::SetTouchpadEnabled(
+    bool enabled,
+    TouchDeviceEnabledSource source) {
+  if (source == TouchDeviceEnabledSource::GLOBAL) {
+    global_touchpad_enabled_ = enabled;
+    UpdateTouchpadEnabled();
+    return;
+  }
+
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kTouchpadEnabled, enabled);
+}
+
 bool TouchDevicesController::GetTouchscreenEnabled(
-    TouchscreenEnabledSource source) const {
-  if (source == TouchscreenEnabledSource::GLOBAL)
+    TouchDeviceEnabledSource source) const {
+  if (source == TouchDeviceEnabledSource::GLOBAL)
     return global_touchscreen_enabled_;
 
   PrefService* prefs = GetActivePrefService();
@@ -86,8 +122,8 @@ bool TouchDevicesController::GetTouchscreenEnabled(
 
 void TouchDevicesController::SetTouchscreenEnabled(
     bool enabled,
-    TouchscreenEnabledSource source) {
-  if (source == TouchscreenEnabledSource::GLOBAL) {
+    TouchDeviceEnabledSource source) {
+  if (source == TouchDeviceEnabledSource::GLOBAL) {
     global_touchscreen_enabled_ = enabled;
     // Explicitly call |UpdateTouchscreenEnabled()| to update the actual
     // touchscreen state from multiple sources.
@@ -163,11 +199,11 @@ void TouchDevicesController::UpdateTouchpadEnabled() {
   if (!GetInputDeviceControllerClient())
     return;  // Happens in tests.
 
-  PrefService* prefs = GetActivePrefService();
+  bool enabled = global_touchpad_enabled_ &&
+                 GetActivePrefService()->GetBoolean(prefs::kTouchpadEnabled);
 
   GetInputDeviceControllerClient()->SetInternalTouchpadEnabled(
-      prefs->GetBoolean(prefs::kTouchpadEnabled),
-      base::BindRepeating(&OnSetTouchpadEnabledDone));
+      enabled, base::BindRepeating(&OnSetTouchpadEnabledDone, enabled));
 }
 
 void TouchDevicesController::UpdateTouchscreenEnabled() {
@@ -175,8 +211,8 @@ void TouchDevicesController::UpdateTouchscreenEnabled() {
     return;  // Happens in tests.
 
   GetInputDeviceControllerClient()->SetTouchscreensEnabled(
-      GetTouchscreenEnabled(TouchscreenEnabledSource::GLOBAL) &&
-      GetTouchscreenEnabled(TouchscreenEnabledSource::USER_PREF));
+      GetTouchscreenEnabled(TouchDeviceEnabledSource::GLOBAL) &&
+      GetTouchscreenEnabled(TouchDeviceEnabledSource::USER_PREF));
 }
 
 }  // namespace ash

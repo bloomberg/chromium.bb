@@ -653,13 +653,13 @@ TEST_F(LockStateControllerTest, DisableTouchscreenForScreenOff) {
   // Manually turn the screen off and check that the touchscreen is enabled.
   SendBrightnessChange(0, kUserCause);
   EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
-      TouchscreenEnabledSource::GLOBAL));
+      TouchDeviceEnabledSource::GLOBAL));
 
   // It should be disabled if the screen is turned off due to user inactivity.
   SendBrightnessChange(100, kUserCause);
   SendBrightnessChange(0, kOtherCause);
   EXPECT_FALSE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
-      TouchscreenEnabledSource::GLOBAL));
+      TouchDeviceEnabledSource::GLOBAL));
 }
 
 // Tests that the kTouchscreenUsableWhileScreenOff switch keeps the touchscreen
@@ -676,7 +676,7 @@ TEST_F(LockStateControllerTest, TouchscreenUnableWhileScreenOff) {
   // The touchscreen should remain enabled.
   SendBrightnessChange(0, kOtherCause);
   EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
-      TouchscreenEnabledSource::GLOBAL));
+      TouchDeviceEnabledSource::GLOBAL));
 }
 
 }  // namespace ash

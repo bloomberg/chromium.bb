@@ -9,10 +9,6 @@
 #include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 
-namespace ash {
-enum class TouchscreenEnabledSource;
-}  // namespace ash
-
 namespace chromeos {
 namespace system {
 
