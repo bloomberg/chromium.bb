@@ -17,10 +17,10 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/common/profiling/profiling_service.mojom.h"
 #include "chrome/profiling/allocation_event.h"
 #include "chrome/profiling/allocation_tracker.h"
 #include "chrome/profiling/backtrace_storage.h"
+#include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 

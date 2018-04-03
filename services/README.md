@@ -31,7 +31,7 @@ Individual services are structured like so:
 //services/foo/                   <-- Implementation code, may have subdirs.
               /public/
                      /cpp/        <-- C++ client libraries (optional)
-                     /interfaces/ <-- Mojom interfaces
+                     /mojom/      <-- Mojom interfaces
 ```
 
 ## Dependencies

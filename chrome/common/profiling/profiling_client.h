@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
 #define CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
 
-#include "chrome/common/profiling/profiling_client.mojom.h"
+#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/handle.h"
 
