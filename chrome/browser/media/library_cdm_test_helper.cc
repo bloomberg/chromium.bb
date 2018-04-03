@@ -21,7 +21,7 @@ void RegisterClearKeyCdm(base::CommandLine* command_line,
   cdm_path = cdm_path
                  .Append(media::GetPlatformSpecificDirectory(
                      media::kClearKeyCdmBaseDirectory))
-                 .AppendASCII(base::GetNativeLibraryName(cdm_library_name));
+                 .AppendASCII(base::GetLoadableModuleName(cdm_library_name));
 
   // Append the switch to register the Clear Key CDM path.
   command_line->AppendSwitchNative(switches::kClearKeyCdmPathForTesting,

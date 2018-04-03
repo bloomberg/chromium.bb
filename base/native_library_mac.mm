@@ -38,7 +38,6 @@ std::string NativeLibraryLoadError::ToString() const {
   return message;
 }
 
-// static
 NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
                                            const NativeLibraryOptions& options,
                                            NativeLibraryLoadError* error) {
@@ -75,7 +74,6 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
   return native_lib;
 }
 
-// static
 void UnloadNativeLibrary(NativeLibrary library) {
   if (library->objc_status == OBJC_NOT_PRESENT) {
     if (library->type == BUNDLE) {
@@ -95,7 +93,6 @@ void UnloadNativeLibrary(NativeLibrary library) {
   delete library;
 }
 
-// static
 void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
                                           StringPiece name) {
   void* function_pointer = nullptr;
@@ -118,10 +115,14 @@ void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
   return function_pointer;
 }
 
-// static
 std::string GetNativeLibraryName(StringPiece name) {
   DCHECK(IsStringASCII(name));
   return "lib" + name.as_string() + ".dylib";
+}
+
+std::string GetLoadableModuleName(StringPiece name) {
+  DCHECK(IsStringASCII(name));
+  return name.as_string() + ".so";
 }
 
 }  // namespace base

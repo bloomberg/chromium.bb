@@ -40,6 +40,20 @@ TEST(NativeLibraryTest, GetNativeLibraryName) {
   EXPECT_EQ(kExpectedName, GetNativeLibraryName("mylib"));
 }
 
+TEST(NativeLibraryTest, GetLoadableModuleName) {
+  const char kExpectedName[] =
+#if defined(OS_IOS)
+      "mylib";
+#elif defined(OS_MACOSX)
+      "mylib.so";
+#elif defined(OS_POSIX)
+      "libmylib.so";
+#elif defined(OS_WIN)
+      "mylib.dll";
+#endif
+  EXPECT_EQ(kExpectedName, GetLoadableModuleName("mylib"));
+}
+
 // We don't support dynamic loading on iOS, and ASAN will complain about our
 // intentional ODR violation because of |g_native_library_exported_value| being
 // defined globally both here and in the shared library.

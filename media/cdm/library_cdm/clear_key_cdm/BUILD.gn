@@ -6,7 +6,7 @@ import("//build/config/features.gni")
 import("//media/cdm/library_cdm/cdm_paths.gni")
 import("//media/media_options.gni")
 
-shared_library("clear_key_cdm") {
+loadable_module("clear_key_cdm") {
   output_dir = "$root_out_dir/$clearkey_cdm_path"
   output_name = "clearkeycdm"
   sources = [
@@ -50,10 +50,6 @@ shared_library("clear_key_cdm") {
     ]
     defines += [ "CLEAR_KEY_CDM_USE_FFMPEG_DECODER" ]
     deps += [ "//third_party/ffmpeg" ]
-  }
-
-  if (is_mac) {
-    ldflags = [ "-Wl,-install_name,@loader_path/libclearkeycdm.dylib" ]
   }
 }
 
