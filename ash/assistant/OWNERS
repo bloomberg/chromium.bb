@@ -1,0 +1,3 @@
+# Temporary, since the IPC endpoint is just a skeleton.
+per-file ash_assistant_controller.cc=set noparent
+per-file ash_assistant_controller.cc=file://ipc/SECURITY_OWNERS

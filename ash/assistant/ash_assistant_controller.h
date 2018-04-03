@@ -23,6 +23,7 @@ class AshAssistantController
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
   void OnHtmlResponse(const std::string& response) override;
+  void OnSuggestionsResponse(const std::vector<std::string>& response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url) override;
 
