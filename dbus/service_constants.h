@@ -160,6 +160,12 @@ const char kDisplayServiceSetSoftwareDimmingMethod[] = "SetSoftwareDimming";
 const char kDisplayServiceTakeOwnershipMethod[] = "TakeOwnership";
 const char kDisplayServiceReleaseOwnershipMethod[] = "ReleaseOwnership";
 
+const char kScreenLockServiceName[] = "org.chromium.ScreenLockService";
+const char kScreenLockServicePath[] = "/org/chromium/ScreenLockService";
+const char kScreenLockServiceInterface[] =
+    "org.chromium.ScreenLockServiceInterface";
+const char kScreenLockServiceShowLockScreenMethod[] = "ShowLockScreen";
+
 constexpr char kVirtualFileRequestServiceName[] =
     "org.chromium.VirtualFileRequestService";
 constexpr char kVirtualFileRequestServicePath[] =
