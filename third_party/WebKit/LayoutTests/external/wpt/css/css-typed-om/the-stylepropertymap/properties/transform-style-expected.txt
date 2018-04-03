@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: 'preserve-3d' is not a valid CSS component
+PASS Can set 'transform-style' to CSS-wide keywords
+PASS Can set 'transform-style' to var() references
+FAIL Can set 'transform-style' to the 'auto' keyword Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS Can set 'transform-style' to the 'flat' keyword
+Harness: the test ran to completion.
+
