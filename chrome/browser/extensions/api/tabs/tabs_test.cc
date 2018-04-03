@@ -77,7 +77,10 @@ namespace {
 
 class ExtensionTabsTest : public PlatformAppBrowserTest {
  public:
-  ExtensionTabsTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {}
+  ExtensionTabsTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    // Start with a non-null time.
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  }
 
   // Fast-forward time until no tab is protected from being discarded for having
   // recently been used.

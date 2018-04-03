@@ -11,8 +11,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
-#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "chrome/common/webui_url_constants.h"
@@ -44,31 +45,44 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
   void GetTabDiscardsInfo(GetTabDiscardsInfoCallback callback) override {
     resource_coordinator::TabManager* tab_manager =
         g_browser_process->GetTabManager();
-    resource_coordinator::TabStatsList stats = tab_manager->GetTabStats();
+    const resource_coordinator::LifecycleUnitVector lifecycle_units =
+        tab_manager->GetSortedLifecycleUnits();
 
     std::vector<mojom::TabDiscardsInfoPtr> infos;
-    infos.reserve(stats.size());
+    infos.reserve(lifecycle_units.size());
 
-    base::TimeTicks now = resource_coordinator::NowTicks();
+    const base::TimeTicks now = resource_coordinator::NowTicks();
 
-    // Convert the TabStatsList to a vector of TabDiscardsInfos.
+    // Convert the LifecycleUnits to a vector of TabDiscardsInfos.
     size_t rank = 1;
-    for (const auto& tab : stats) {
+    for (auto* lifecycle_unit : lifecycle_units) {
       mojom::TabDiscardsInfoPtr info(mojom::TabDiscardsInfo::New());
 
-      info->tab_url = tab.tab_url;
+      resource_coordinator::TabLifecycleUnitExternal*
+          tab_lifecycle_unit_external =
+              lifecycle_unit->AsTabLifecycleUnitExternal();
+      content::WebContents* contents =
+          tab_lifecycle_unit_external->GetWebContents();
+
+      info->tab_url = contents->GetLastCommittedURL().spec();
       // This can be empty for pages without a favicon. The WebUI takes care of
       // showing the chrome://favicon default in that case.
-      info->favicon_url = tab.favicon_url;
-      info->title = base::UTF16ToUTF8(tab.title);
-      info->is_media = tab.is_media;
-      info->is_discarded = tab.is_discarded;
-      info->discard_count = tab.discard_count;
+      info->favicon_url = lifecycle_unit->GetIconURL();
+      info->title = base::UTF16ToUTF8(lifecycle_unit->GetTitle());
+      info->is_media = tab_lifecycle_unit_external->IsMediaTab();
+      info->is_discarded = tab_lifecycle_unit_external->IsDiscarded();
+      info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();
       info->utility_rank = rank++;
-      auto elapsed = now - tab.last_active;
+      const base::TimeTicks last_focused_time =
+          lifecycle_unit->GetSortKey().last_focused_time;
+      const base::TimeDelta elapsed =
+          (last_focused_time == base::TimeTicks::Max())
+              ? base::TimeDelta()
+              : (now - last_focused_time);
       info->last_active_seconds = static_cast<int32_t>(elapsed.InSeconds());
-      info->is_auto_discardable = tab.is_auto_discardable;
-      info->id = tab.id;
+      info->is_auto_discardable =
+          tab_lifecycle_unit_external->IsAutoDiscardable();
+      info->id = lifecycle_unit->GetID();
 
       infos.push_back(std::move(info));
     }

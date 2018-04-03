@@ -29,7 +29,7 @@ void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitDestroyed(
     LifecycleUnit* lifecycle_unit) {
   // If the browser is not shutting down and the tab is in a LOADED state after
   // being discarded, record TabManager.Discarding.ReloadToCloseTime.
-  if (!g_browser_process->IsShuttingDown() &&
+  if (g_browser_process && !g_browser_process->IsShuttingDown() &&
       lifecycle_unit->GetState() == LifecycleUnit::State::LOADED &&
       !reload_time_.is_null()) {
     auto reload_to_close_time = NowTicks() - reload_time_;
