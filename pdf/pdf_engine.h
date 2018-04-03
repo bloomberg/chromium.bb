@@ -235,8 +235,8 @@ class PDFEngine {
     virtual void DocumentPaintOccurred() = 0;
 
     // Notifies the client that the document has finished loading.
-    virtual void DocumentLoadComplete(
-        const DocumentFeatures& document_features) = 0;
+    virtual void DocumentLoadComplete(const DocumentFeatures& document_features,
+                                      uint32_t file_size) = 0;
 
     // Notifies the client that the document has failed to load.
     virtual void DocumentLoadFailed() = 0;

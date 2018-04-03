@@ -135,7 +135,8 @@ class OutOfProcessInstance : public pp::Instance,
                                                bool case_sensitive) override;
   void DocumentPaintOccurred() override;
   void DocumentLoadComplete(
-      const PDFEngine::DocumentFeatures& document_features) override;
+      const PDFEngine::DocumentFeatures& document_features,
+      uint32_t file_size) override;
   void DocumentLoadFailed() override;
   void FontSubstituted() override;
   pp::Instance* GetPluginInstance() override;

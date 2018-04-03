@@ -1378,7 +1378,8 @@ void PDFiumEngine::FinishLoadingDocument() {
         (FPDFAvail_IsLinearized(fpdf_availability_) == PDF_LINEARIZED);
     document_features.is_tagged = FPDFCatalog_IsTagged(doc_);
     document_features.form_type = static_cast<FormType>(FPDF_GetFormType(doc_));
-    client_->DocumentLoadComplete(document_features);
+    client_->DocumentLoadComplete(document_features,
+                                  doc_loader_->bytes_received());
   }
 }
 
