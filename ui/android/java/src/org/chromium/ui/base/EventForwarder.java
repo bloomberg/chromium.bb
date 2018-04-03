@@ -106,10 +106,10 @@ public class EventForwarder {
             if (!isValidTouchEventActionForNative(eventAction)) return false;
 
             // A zero offset is quite common, in which case the unnecessary copy should be avoided.
-            MotionEvent offset = null;
+            boolean didOffsetEvent = false;
             if (mCurrentTouchOffsetX != 0 || mCurrentTouchOffsetY != 0) {
-                offset = createOffsetMotionEvent(event);
-                event = offset;
+                event = createOffsetMotionEvent(event);
+                didOffsetEvent = true;
             }
 
             final int pointerCount = event.getPointerCount();
@@ -145,7 +145,7 @@ public class EventForwarder {
                     pointerCount > 1 ? event.getToolType(1) : MotionEvent.TOOL_TYPE_UNKNOWN,
                     event.getButtonState(), event.getMetaState(), isTouchHandleEvent);
 
-            if (offset != null) offset.recycle();
+            if (didOffsetEvent) event.recycle();
             return consumed;
         } finally {
             TraceEvent.end("sendTouchEvent");
@@ -212,7 +212,11 @@ public class EventForwarder {
     private boolean sendNativeMouseEvent(MotionEvent event) {
         assert mNativeEventForwarder != 0;
 
-        MotionEvent offsetEvent = createOffsetMotionEvent(event);
+        boolean didOffsetEvent = false;
+        if (mCurrentTouchOffsetX != 0.0f || mCurrentTouchOffsetY != 0.0f) {
+            event = createOffsetMotionEvent(event);
+            didOffsetEvent = true;
+        }
         try {
             int eventAction = event.getActionMasked();
 
@@ -229,8 +233,8 @@ public class EventForwarder {
                 if (mLastMouseButtonState == MotionEvent.BUTTON_PRIMARY) {
                     float scale = getEventSourceScaling();
                     nativeOnMouseEvent(mNativeEventForwarder, event.getEventTime(),
-                            MotionEvent.ACTION_BUTTON_RELEASE, offsetEvent.getX() / scale,
-                            offsetEvent.getY() / scale, event.getPointerId(0), event.getPressure(0),
+                            MotionEvent.ACTION_BUTTON_RELEASE, event.getX() / scale,
+                            event.getY() / scale, event.getPointerId(0), event.getPressure(0),
                             event.getOrientation(0), event.getAxisValue(MotionEvent.AXIS_TILT, 0),
                             MotionEvent.BUTTON_PRIMARY, event.getButtonState(),
                             event.getMetaState(), event.getToolType(0));
@@ -259,13 +263,13 @@ public class EventForwarder {
             float scale = getEventSourceScaling();
 
             nativeOnMouseEvent(mNativeEventForwarder, event.getEventTime(), eventAction,
-                    offsetEvent.getX() / scale, offsetEvent.getY() / scale, event.getPointerId(0),
+                    event.getX() / scale, event.getY() / scale, event.getPointerId(0),
                     event.getPressure(0), event.getOrientation(0),
                     event.getAxisValue(MotionEvent.AXIS_TILT, 0), getMouseEventActionButton(event),
                     event.getButtonState(), event.getMetaState(), event.getToolType(0));
             return true;
         } finally {
-            offsetEvent.recycle();
+            if (didOffsetEvent) event.recycle();
         }
     }
 
