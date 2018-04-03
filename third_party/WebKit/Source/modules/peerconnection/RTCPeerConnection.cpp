@@ -1515,8 +1515,9 @@ void RTCPeerConnection::NoteSdpCreated(const RTCSessionDescription& desc) {
 
 void RTCPeerConnection::OnStreamAddTrack(MediaStream* stream,
                                          MediaStreamTrack* track) {
-  ExceptionState exception_state(nullptr, ExceptionState::kUnknownContext,
-                                 nullptr, nullptr);
+  ExceptionState exception_state(v8::Isolate::GetCurrent(),
+                                 ExceptionState::kExecutionContext, nullptr,
+                                 nullptr);
   MediaStreamVector streams;
   streams.push_back(stream);
   addTrack(track, streams, exception_state);
@@ -1530,8 +1531,9 @@ void RTCPeerConnection::OnStreamRemoveTrack(MediaStream* stream,
                                             MediaStreamTrack* track) {
   auto sender = FindSenderForTrackAndStream(track, stream);
   if (sender) {
-    ExceptionState exception_state(nullptr, ExceptionState::kUnknownContext,
-                                   nullptr, nullptr);
+    ExceptionState exception_state(v8::Isolate::GetCurrent(),
+                                   ExceptionState::kExecutionContext, nullptr,
+                                   nullptr);
     removeTrack(sender, exception_state);
     // If removeTracl() failed most likely the connection is closed. The
     // exception can be suppressed, there is nothing to do.
