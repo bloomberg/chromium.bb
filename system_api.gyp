@@ -251,6 +251,29 @@
       ]
     },
     {
+      'target_name': 'system_api-vm_applications-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/vm_applications',
+        'proto_out_dir': 'include/vm_applications/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/apps.proto',
+      ],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-vm_applications-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-vm_applications-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/vm_applications/proto_bindings/apps.pb.cc',
+      ]
+    },
+    {
       'target_name': 'ml_service_mojo_bindings',
       'type': 'none',
       'variables': {
