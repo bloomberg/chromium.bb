@@ -290,8 +290,8 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
 
   const auto& vector_icon_type =
       AutocompleteMatch::TypeToVectorIcon(match.type, IsStarredMatch(match));
-  return gfx::Image(
-      gfx::CreateVectorIcon(vector_icon_type, 16, vector_icon_color));
+  return edit_model_->client()->GetSizedIcon(vector_icon_type,
+                                             vector_icon_color);
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 

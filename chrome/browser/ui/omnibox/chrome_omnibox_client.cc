@@ -35,6 +35,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -57,6 +58,8 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
@@ -211,6 +214,14 @@ gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
         template_url->GetExtensionId());
   }
   return gfx::Image();
+}
+
+gfx::Image ChromeOmniboxClient::GetSizedIcon(
+    const gfx::VectorIcon& vector_icon_type,
+    SkColor vector_icon_color) const {
+  return gfx::Image(gfx::CreateVectorIcon(
+      vector_icon_type, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      vector_icon_color));
 }
 
 bool ChromeOmniboxClient::ProcessExtensionKeyword(
