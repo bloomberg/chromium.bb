@@ -32,4 +32,22 @@ TEST(SpaceSplitStringTest, Set) {
   EXPECT_EQ(AtomicString("foo"), tokens[0]);
   EXPECT_EQ(AtomicString("bar"), tokens[1]);
 }
+
+TEST(SpaceSplitStringTest, SerializeToString) {
+  SpaceSplitString tokens;
+
+  tokens.Set("foo");
+  EXPECT_EQ("foo", tokens.SerializeToString());
+
+  tokens.Set("foo bar");
+  EXPECT_EQ("foo bar", tokens.SerializeToString());
+
+  tokens.Set("foo");
+  tokens.Add("bar");
+  EXPECT_EQ("foo bar", tokens.SerializeToString());
+
+  tokens.Set("bar");
+  tokens.Add("foo");
+  EXPECT_EQ("bar foo", tokens.SerializeToString());
+}
 }
