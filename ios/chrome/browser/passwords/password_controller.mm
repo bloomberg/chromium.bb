@@ -28,6 +28,7 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -38,7 +39,6 @@
 #include "ios/chrome/browser/passwords/account_select_fill_data.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
-#include "ios/chrome/browser/passwords/form_parser.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/js_password_manager.h"
@@ -272,7 +272,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   AccountSelectFillData fillData_;
 
-  FormParser formParser_;
+  password_manager::IOSFormParser formParser_;
 
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
@@ -546,7 +546,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   for (const auto& formData : formsData) {
     std::unique_ptr<PasswordForm> form =
-        formParser_.Parse(formData, FormParsingMode::FILLING);
+        formParser_.Parse(formData, password_manager::FormParsingMode::FILLING);
     if (form)
       forms->push_back(*form);
   }
@@ -583,7 +583,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     }
 
     std::unique_ptr<PasswordForm> form =
-        formParser_.Parse(formData, FormParsingMode::SAVING);
+        formParser_.Parse(formData, password_manager::FormParsingMode::SAVING);
     if (!form) {
       completionHandler(NO, PasswordForm());
       return;
@@ -863,7 +863,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   }
 
   std::unique_ptr<PasswordForm> form =
-      formParser_.Parse(formData, FormParsingMode::SAVING);
+      formParser_.Parse(formData, password_manager::FormParsingMode::SAVING);
   if (!form)
     return NO;
 

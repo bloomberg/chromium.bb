@@ -1,0 +1,33 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_ios) {
+  static_library("form_parsing") {
+    sources = [
+      "ios_form_parser.cc",
+      "ios_form_parser.h",
+    ]
+
+    deps = [
+      "//base",
+      "//components/autofill/core/common",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "ios_form_parser_unittest.cc",
+    ]
+
+    deps = [
+      ":form_parsing",
+      "//base",
+      "//components/autofill/core/common",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//url",
+    ]
+  }
+}  # if (is_ios)

@@ -412,6 +412,11 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
+
+  if (is_ios) {
+    deps +=
+        [ "//components/password_manager/core/browser/form_parsing:unit_tests" ]
+  }
 }
 
 fuzzer_test("csv_reader_fuzzer") {

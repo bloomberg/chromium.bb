@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/passwords/form_parser.h"
+#include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -12,7 +12,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 using autofill::FormData;
@@ -20,6 +19,8 @@ using autofill::FormFieldData;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using base::UintToString16;
+
+namespace password_manager {
 
 namespace {
 
@@ -57,12 +58,12 @@ struct FormParsingTestCase {
   ParseResultIndices save_result;
 };
 
-class FormParserTest : public PlatformTest {
+class IOSFormParserTest : public testing::Test {
  public:
-  FormParserTest() {}
+  IOSFormParserTest() {}
 
  protected:
-  FormParser form_parser_;
+  IOSFormParser form_parser_;
 
   void CheckTestData(const std::vector<FormParsingTestCase>& test_cases);
 };
@@ -133,7 +134,7 @@ void CheckPasswordFormFields(const PasswordForm& password_form,
              password_form.confirmation_password_element, nullptr);
 }
 
-void FormParserTest::CheckTestData(
+void IOSFormParserTest::CheckTestData(
     const std::vector<FormParsingTestCase>& test_cases) {
   for (const FormParsingTestCase& test_case : test_cases) {
     const FormData form_data = GetFormData(test_case);
@@ -165,7 +166,7 @@ void FormParserTest::CheckTestData(
   }
 }
 
-TEST_F(FormParserTest, NotPasswordForm) {
+TEST_F(IOSFormParserTest, NotPasswordForm) {
   std::vector<FormParsingTestCase> test_data = {
       {
           "No fields",
@@ -184,7 +185,7 @@ TEST_F(FormParserTest, NotPasswordForm) {
   CheckTestData(test_data);
 }
 
-TEST_F(FormParserTest, OnlyPasswordFields) {
+TEST_F(IOSFormParserTest, OnlyPasswordFields) {
   std::vector<FormParsingTestCase> test_data = {
       {
           "1 password field",
@@ -248,7 +249,7 @@ TEST_F(FormParserTest, OnlyPasswordFields) {
   CheckTestData(test_data);
 }
 
-TEST_F(FormParserTest, TestFocusability) {
+TEST_F(IOSFormParserTest, TestFocusability) {
   std::vector<FormParsingTestCase> test_data = {
       {
           "non-focusable fields are considered when there are no focusable "
@@ -294,7 +295,7 @@ TEST_F(FormParserTest, TestFocusability) {
   CheckTestData(test_data);
 }
 
-TEST_F(FormParserTest, TextAndPasswordFields) {
+TEST_F(IOSFormParserTest, TextAndPasswordFields) {
   std::vector<FormParsingTestCase> test_data = {
       {
           "Simple empty sign-in form",
@@ -358,7 +359,7 @@ TEST_F(FormParserTest, TextAndPasswordFields) {
   CheckTestData(test_data);
 }
 
-TEST_F(FormParserTest, TestAutocomplete) {
+TEST_F(IOSFormParserTest, TestAutocomplete) {
   std::vector<FormParsingTestCase> test_data = {
       {
           "All possible password autocomplete attributes and some fields "
@@ -426,7 +427,7 @@ TEST_F(FormParserTest, TestAutocomplete) {
   CheckTestData(test_data);
 }
 
-TEST_F(FormParserTest, SkippingFieldsWithCreditCardFields) {
+TEST_F(IOSFormParserTest, SkippingFieldsWithCreditCardFields) {
   std::vector<FormParsingTestCase> test_data = {
       {
           "Simple form with all fields are credit card related",
@@ -453,3 +454,5 @@ TEST_F(FormParserTest, SkippingFieldsWithCreditCardFields) {
 }
 
 }  // namespace
+
+}  // namespace password_manager
