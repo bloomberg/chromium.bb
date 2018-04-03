@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">การเข้ารหัสข้อมูล</translation>
-<translation id="1074944608454986967">หากต้องการให้อ่านออกเสียงเนื้อหา ให้กดแป้น Search ค้างไว้ จากนั้นคลิกหรือลากเพื่อเลือกเนื้อหา หรือไฮไลต์บริเวณที่ต้องการแล้วใช้แป้น Search + S</translation>
 <translation id="1076698951459398590">เปิดใช้ธีม</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">ติดตั้งการอัปเดตอัตโนมัติสำหรับผู้ใช้ทั้งหมด</translation>
@@ -685,7 +684,7 @@
 <translation id="2071393345806050157">ไม่มีไฟล์บันทึกในเครื่อง</translation>
 <translation id="2074527029802029717">ยกเลิกการตรึงแท็บ</translation>
 <translation id="2075474481720804517">แบตเตอรี่ <ph name="BATTERY_PERCENTAGE" />%</translation>
-<translation id="2075959085554270910">ให้คุณเปิด/ปิดใช้การแตะเพื่อคลิกและการแตะแล้วลาก</translation>
+<translation id="2075959085554270910">ช่วยให้คุณเปิด/ปิดใช้การแตะเพื่อคลิกและการแตะแล้วลากได้</translation>
 <translation id="2076269580855484719">ซ่อนปลั๊กอินนี้</translation>
 <translation id="2076672359661571384">กลาง (แนะนำ)</translation>
 <translation id="2077129598763517140">ใช้การเร่งฮาร์ดแวร์เมื่อสามารถใช้ได้</translation>
@@ -3792,7 +3791,6 @@
 <translation id="6979737339423435258">ตั้งแต่ต้น</translation>
 <translation id="6980462514016882061">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
-<translation id="6983201004195852174">กดแป้น Search ค้างไว้แล้วคลิกหรือลากเพื่อเลือกเนื้อหาที่จะให้อ่านออกเสียง</translation>
 <translation id="6983783921975806247">OID ที่ลงทะเบียนแล้ว</translation>
 <translation id="6983991971286645866">การแก้ไขทั้งหมดจะบันทึกเป็น $1</translation>
 <translation id="6984299437918708277">เลือกรูปภาพสำหรับบัญชีของคุณเพื่อแสดงในหน้าลงชื่อเข้าใช้</translation>

@@ -205,7 +205,7 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ved at låse din profil, når du ikke bruger Chromium. Du gør dette ved at klikke på dit profilnavn øverst til højre i browseren og vælge "Afslut, og aktivér børnesikring".
 <ph name="BEGIN_LINK_2" />Få flere oplysninger<ph name="END_LINK_2" />
 
-Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
+Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium for udviklere</translation>
 <translation id="7451052299415159299">Chromium skal have tilladelse til at bruge dit kamera på dette website</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>

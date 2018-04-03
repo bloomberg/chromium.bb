@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Andmete šifreerimine</translation>
-<translation id="1074944608454986967">Sisu ettelugemiseks vajutage pikalt otsinguklahvi ja klõpsake või lohistage sisu valimiseks. Võite ka piirkonna esile tõsta ja kasutada klahvikombinatsiooni Otsing + S.</translation>
 <translation id="1076698951459398590">Luba teema</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Automaatsete värskenduste seadistamine kõikidele kasutajatele</translation>
@@ -3792,7 +3791,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6979737339423435258">Algusest</translation>
 <translation id="6980462514016882061">Google võib kasutada teie sirvimisajalugu otsingu, reklaamide ja muude Google'i teenuste isikupärastamiseks</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
-<translation id="6983201004195852174">Vajutage pikalt otsinguklahvi ja klõpsake sisu valimiseks või lohistage sellele, et see ette lugeda</translation>
 <translation id="6983783921975806247">Registreeritud OID</translation>
 <translation id="6983991971286645866">Kõik muudatused salvestatakse koopiasse $1.</translation>
 <translation id="6984299437918708277">Valige pilt, mis konto sisselogimisekraanil kuvada</translation>

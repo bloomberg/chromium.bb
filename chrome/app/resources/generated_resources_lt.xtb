@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Duomenų kodavimas</translation>
-<translation id="1074944608454986967">Jei norite, kad turinys būtų skaitomas garsiai, paspauskite ir palaikykite parinktį „Ieškoti“, tada spustelėkite pasirinktą turinį arba nuvilkite ant jo laukelį. Arba paryškinkite sritį ir naudokite „Ieškoti“ + S.</translation>
 <translation id="1076698951459398590">Įgalinti temą</translation>
 <translation id="1076818208934827215">„Microsoft Internet Explorer“</translation>
 <translation id="1077946062898560804">Nustatyti automatinius naujinius visiems naudotojams</translation>
@@ -3793,7 +3792,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6979737339423435258">Visas laikotarpis</translation>
 <translation id="6980462514016882061">„Google“ gali naudoti jūsų naršymo istoriją, kad suasmenintų Paiešką, skelbimus ir kitas „Google“ paslaugas</translation>
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
-<translation id="6983201004195852174">Paspauskite ir palaikykite parinktį „Ieškoti“, tada spustelėkite pasirinktą turinį arba nuvilkite ant jo laukelį, kad jis būtų perskaitytas garsiai</translation>
 <translation id="6983783921975806247">Registruotas OID</translation>
 <translation id="6983991971286645866">Visi redagavimo veiksmai bus išsaugoti kaip $1.</translation>
 <translation id="6984299437918708277">Pasirinkite paskyros paveikslėlį, kurį norite pateikti prisijungimo ekrane</translation>

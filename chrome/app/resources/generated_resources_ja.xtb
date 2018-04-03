@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">データの暗号化</translation>
-<translation id="1074944608454986967">コンテンツを読み上げるには、検索キーを押したままクリックまたはドラッグしてコンテンツを選択するか、読み上げる部分をハイライト表示して検索+S キーを押します。</translation>
 <translation id="1076698951459398590">テーマを有効にする</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">すべてのユーザーの自動更新を設定</translation>
@@ -3793,7 +3792,6 @@
 <translation id="6979737339423435258">全期間</translation>
 <translation id="6980462514016882061">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
-<translation id="6983201004195852174">検索キーを押したままクリックまたはドラッグして、読み上げるコンテンツを選択します</translation>
 <translation id="6983783921975806247">登録されている OID</translation>
 <translation id="6983991971286645866">編集内容はすべて $1 に保存されます。</translation>
 <translation id="6984299437918708277">ログイン画面で自分のアカウントに表示する画像を選択します</translation>

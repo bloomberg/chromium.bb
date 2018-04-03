@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Encriptació de dades</translation>
-<translation id="1074944608454986967">Per escoltar contingut en veu alta, mantén premuda la tecla Cerca i, a continuació, fes clic al quadre o arrossega'l per seleccionar el contingut. També pots destacar una regió i prémer Cerca+S.</translation>
 <translation id="1076698951459398590">Activa el tema</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Configura actualitzacions automàtiques per a tots els usuaris</translation>
@@ -630,7 +629,7 @@
 <translation id="1956390763342388273">Es penjaran tots els fitxers que hi ha a <ph name="FOLDER_PATH" />. Fes-ho només si confies en el lloc web.</translation>
 <translation id="1962233722219655970">Aquesta pàgina fa servir una aplicació de Native Client que no funciona al vostre ordinador.</translation>
 <translation id="1962969542251276847">Bloqueja la pantalla</translation>
-<translation id="1963227389609234879">Elimina-ho tot</translation>
+<translation id="1963227389609234879">Esborra-ho tot</translation>
 <translation id="1965624977906726414">No té permisos especials.</translation>
 <translation id="1970368523891847084">S'ha activat el mode de vídeo</translation>
 <translation id="197288927597451399">Conserva</translation>
@@ -3791,7 +3790,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6979737339423435258">Sempre</translation>
 <translation id="6980462514016882061">És possible que Google utilitzi el vostre historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
-<translation id="6983201004195852174">Mantén premuda la tecla Cerca i, a continuació, fes clic al quadre o arrossega'l per seleccionar el contingut que s'hagi de llegir en veu alta</translation>
 <translation id="6983783921975806247">OID registrat</translation>
 <translation id="6983991971286645866">Tots els canvis es desaran a $1.</translation>
 <translation id="6984299437918708277">Tria una imatge per al teu compte perquè es mostri a la pantalla d'inici de sessió</translation>

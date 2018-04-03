@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Šifriranje podataka</translation>
-<translation id="1074944608454986967">Za čitanje sadržaja naglas pritisnite i zadržite tipku za pretraživanje, a zatim kliknite ili povucite sadržaj. Možete i istaknuti područje i pritisnuti tipku za pretraživanje i S.</translation>
 <translation id="1076698951459398590">Omogući temu</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Postavi automatsko ažuriranje za sve korisnike</translation>
@@ -3792,7 +3791,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="6979737339423435258">Cijelo vrijeme</translation>
 <translation id="6980462514016882061">Google može upotrebljavati vašu povijest pregledavanja za prilagodbu Pretraživanja, oglasa i drugih Googleovih usluga</translation>
 <translation id="6981982820502123353">Pristupačnost</translation>
-<translation id="6983201004195852174">Pritisnite i zadržite Pretraživanje, a zatim kliknite ili povucite da biste odabrali sadržaj za čitanje naglas</translation>
 <translation id="6983783921975806247">Registrirani OID</translation>
 <translation id="6983991971286645866">Sva uređivanja spremit će se u $1.</translation>
 <translation id="6984299437918708277">Odaberite sliku za prikaz za svoj račun na zaslonu za prijavu</translation>
