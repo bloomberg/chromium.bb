@@ -27,12 +27,6 @@
     shouldBe("test.style.getPropertyValue('font')", "''");
     test.style.font = "12pt/14pt inherit";
     shouldBe("test.style.getPropertyValue('font')", "''");
-    test.style.font = "12pt/14pt bold inherit";
-    shouldBe("test.style.getPropertyValue('font')", "''");
-    test.style.font = "italic 12pt/14pt bold inherit";
-    shouldBe("test.style.getPropertyValue('font')", "''");
-    test.style.font = "italic 12pt/14pt bold arial inherit";
-    shouldBe("test.style.getPropertyValue('font')", "''");
     test.style.font = "x-large/110% 'new century schoolbook', serif, inherit";
     shouldBe("test.style.getPropertyValue('font')", "''");
     test.style.font = " 'inherit'";
@@ -47,6 +41,12 @@
     shouldBe("test.style.getPropertyValue('font')", "''");
     test.style.font = "italic inherit 12pt/14pt bold arial initial";
     shouldBe("test.style.getPropertyValue('font')", "''");
+    test.style.font = "12pt/14pt bold inherit";
+    shouldBe("test.style.getPropertyValue('font')", "'12pt/14pt \"bold inherit\"'");
+    test.style.font = "italic 12pt/14pt bold inherit";
+    shouldBe("test.style.getPropertyValue('font')", "'italic 12pt/14pt \"bold inherit\"'");
+    test.style.font = "italic 12pt/14pt bold arial inherit";
+    shouldBe("test.style.getPropertyValue('font')", "'italic 12pt/14pt \"bold arial inherit\"'");
     // clean up after ourselves
     var tests_container = document.getElementById("tests_container");
     tests_container.parentNode.removeChild(tests_container);

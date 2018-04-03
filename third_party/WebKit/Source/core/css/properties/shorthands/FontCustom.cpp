@@ -91,13 +91,6 @@ bool ConsumeFont(bool important,
                  CSSParserTokenRange& range,
                  const CSSParserContext& context,
                  HeapVector<CSSPropertyValue, 256>& properties) {
-  // Let's check if there is an inherit or initial somewhere in the shorthand.
-  CSSParserTokenRange range_copy = range;
-  while (!range_copy.AtEnd()) {
-    CSSValueID id = range_copy.ConsumeIncludingWhitespace().Id();
-    if (id == CSSValueInherit || id == CSSValueInitial)
-      return false;
-  }
   // Optional font-style, font-variant, font-stretch and font-weight.
   CSSValue* font_style = nullptr;
   CSSIdentifierValue* font_variant_caps = nullptr;
