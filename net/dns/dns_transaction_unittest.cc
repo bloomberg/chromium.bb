@@ -789,8 +789,7 @@ class DnsTransactionTest : public testing::Test {
 
   void TearDown() override {
     // Check that all socket data was at least written to.
-    if (base::MessageLoop::current() &&
-        base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO)) {
+    if (base::MessageLoopForIO::IsCurrent()) {
       URLRequestFilter* filter = URLRequestFilter::GetInstance();
       filter->ClearHandlers();
     }
