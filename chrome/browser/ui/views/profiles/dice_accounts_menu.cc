@@ -24,37 +24,17 @@ constexpr int kUseAnotherAccountCmdId = std::numeric_limits<int>::max();
 // Anchor inset used to position the accounts menu.
 constexpr int kAnchorInset = 8;
 
-// TODO(tangltom): Calculate these values considering the existing menu config
+// TODO(tangltom): Calculate these values considering the existing menu config.
 constexpr int kVerticalImagePadding = 9;
 constexpr int kHorizontalImagePadding = 6;
-
-class PaddedImageSource : public gfx::CanvasImageSource {
- public:
-  explicit PaddedImageSource(const gfx::Image& image)
-      : CanvasImageSource(gfx::Size(image.Width() + 2 * kHorizontalImagePadding,
-                                    image.Height() + 2 * kVerticalImagePadding),
-                          false),
-        image_(image) {}
-
-  // gfx::CanvasImageSource:
-  void Draw(gfx::Canvas* canvas) override {
-    canvas->DrawImageInt(*image_.ToImageSkia(), kHorizontalImagePadding,
-                         kVerticalImagePadding);
-  }
-
- private:
-  gfx::Image image_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaddedImageSource);
-};
 
 gfx::Image SizeAndCircleIcon(const gfx::Image& icon) {
   gfx::Image circled_icon = profiles::GetSizedAvatarIcon(
       icon, true, kAvatarIconSize, kAvatarIconSize, profiles::SHAPE_CIRCLE);
 
-  gfx::Image padded_icon = gfx::Image(gfx::ImageSkia(
-      std::make_unique<PaddedImageSource>(circled_icon), 1 /* scale */));
-  return padded_icon;
+  return gfx::Image(gfx::CanvasImageSource::CreatePadded(
+      *circled_icon.ToImageSkia(),
+      gfx::Insets(kVerticalImagePadding, kHorizontalImagePadding)));
 }
 
 }  // namespace
