@@ -80,11 +80,6 @@ public interface ContentViewCore {
          * @see View#onScrollChanged(int, int, int, int)
          */
         void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
-
-        /**
-         * @see View#awakenScrollBars(int, boolean)
-         */
-        boolean super_awakenScrollBars(int startDelay, boolean invalidate);
     }
 
     /**
@@ -248,11 +243,6 @@ public interface ContentViewCore {
      * @see View#computeVerticalScrollExtent()
      */
     int computeVerticalScrollExtent();
-
-    /**
-     * @see View#awakenScrollBars(int, boolean)
-     */
-    boolean awakenScrollBars(int startDelay, boolean invalidate);
 
     /**
      * Enable or disable multi-touch zoom support.

@@ -122,11 +122,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public boolean awakenScrollBars(int startDelay, boolean invalidate) {
-        return false;
-    }
-
-    @Override
     public void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom) {}
 
     @Override

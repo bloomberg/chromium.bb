@@ -550,11 +550,6 @@ public class AwTestContainerView extends FrameLayout {
         }
 
         @Override
-        public boolean super_awakenScrollBars(int startDelay, boolean invalidate) {
-            return AwTestContainerView.super.awakenScrollBars(startDelay, invalidate);
-        }
-
-        @Override
         public void setMeasuredDimension(int measuredWidth, int measuredHeight) {
             AwTestContainerView.super.setMeasuredDimension(measuredWidth, measuredHeight);
         }

@@ -13,7 +13,6 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ObserverList;
@@ -578,19 +577,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     }
 
     // End FrameLayout overrides.
-
-    @SuppressWarnings("javadoc")
-    @Override
-    public boolean awakenScrollBars(int startDelay, boolean invalidate) {
-        // For the default implementation of ContentView which draws the scrollBars on the native
-        // side, calling this function may get us into a bad state where we keep drawing the
-        // scrollBars, so disable it by always returning false.
-        if (mContainerView.getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
-            return false;
-        } else {
-            return mContainerViewInternals.super_awakenScrollBars(startDelay, invalidate);
-        }
-    }
 
     @Override
     public void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom) {

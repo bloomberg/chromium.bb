@@ -303,9 +303,11 @@ public class ContentView
 
     @Override
     public boolean awakenScrollBars(int startDelay, boolean invalidate) {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.awakenScrollBars(startDelay, invalidate);
+        // For the default implementation of ContentView which draws the scrollBars on the native
+        // side, calling this function may get us into a bad state where we keep drawing the
+        // scrollBars, so disable it by always returning false.
+        if (getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) return false;
+        return super.awakenScrollBars(startDelay, invalidate);
     }
 
     @Override
@@ -356,11 +358,6 @@ public class ContentView
     @Override
     public void super_onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public boolean super_awakenScrollBars(int startDelay, boolean invalidate) {
-        return super.awakenScrollBars(startDelay, invalidate);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
