@@ -20,6 +20,9 @@ namespace ntp_snippets {
 
 ContextualContentSuggestionsService::Cluster::Cluster() = default;
 
+ContextualContentSuggestionsService::Cluster::Cluster(Cluster&& other) =
+    default;
+
 ContextualContentSuggestionsService::Cluster::~Cluster() = default;
 
 ContextualContentSuggestionsService::ContextualContentSuggestionsService(
@@ -49,7 +52,11 @@ void ContextualContentSuggestionsService::FetchContextualSuggestions(
 void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
     const GURL& url,
     FetchContextualSuggestionClustersCallback callback) {
-  // Fetch suggestions using the updated fetcher.
+  // TODO(pnoland): Fetch suggestions using the new fetcher.
+  contextual_suggestions_fetcher_->FetchContextualSuggestions(
+      url, base::BindOnce(&ContextualContentSuggestionsService::
+                              DidFetchContextualSuggestionsClusterWrapper,
+                          base::Unretained(this), std::move(callback)));
 }
 
 void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
@@ -90,6 +97,26 @@ void ContextualContentSuggestionsService::DidFetchContextualSuggestions(
     }
   }
   std::move(callback).Run(status, url, std::move(suggestions));
+}
+
+void ContextualContentSuggestionsService::
+    DidFetchContextualSuggestionsClusterWrapper(
+        FetchContextualSuggestionClustersCallback callback,
+        Status status,
+        ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions) {
+  std::vector<Cluster> clusters;
+  if (fetched_suggestions.has_value()) {
+    clusters.emplace_back();
+    Cluster& cluster = clusters.back();
+    for (const std::unique_ptr<ContextualSuggestion>& suggestion :
+         fetched_suggestions.value()) {
+      cluster.suggestions.emplace_back(suggestion->ToContentSuggestion());
+      ContentSuggestion::ID id = cluster.suggestions.back().id();
+      GURL image_url = suggestion->salient_image_url();
+      image_url_by_id_[id.id_within_category()] = image_url;
+    }
+  }
+  std::move(callback).Run(std::move(clusters));
 }
 
 }  // namespace ntp_snippets

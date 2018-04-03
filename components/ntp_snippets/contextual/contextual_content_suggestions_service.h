@@ -30,12 +30,15 @@ class ContextualContentSuggestionsService : public KeyedService {
  public:
   // A structure representing a suggestion cluster.
   struct Cluster {
+   public:
     Cluster();
+    Cluster(Cluster&& other);
     ~Cluster();
 
     std::string title;
     std::vector<ContentSuggestion> suggestions;
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(Cluster);
   };
 
@@ -81,8 +84,10 @@ class ContextualContentSuggestionsService : public KeyedService {
       Status status,
       ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions);
 
-  void DidFetchContextualSuggestionsCluster(
+  // Temporary function to wire new bridge to the old prototype.
+  void DidFetchContextualSuggestionsClusterWrapper(
       FetchContextualSuggestionClustersCallback callback,
+      Status status,
       ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions);
 
   // Cache for images of contextual suggestions, needed by CachedImageFetcher.
