@@ -166,7 +166,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     bool is_current;
     bool is_in_effect;
     bool is_in_play;
-    double local_time;
+    double local_time = NullValue();
     double time_to_forwards_effect_change;
     double time_to_reverse_effect_change;
   } calculated_;
