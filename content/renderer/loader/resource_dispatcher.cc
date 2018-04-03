@@ -278,6 +278,7 @@ void ResourceDispatcher::OnRequestComplete(
 
   auto resource_load_info = mojom::ResourceLoadInfo::New();
   resource_load_info->url = request_info->response_url;
+  resource_load_info->original_url = request_info->url;
   resource_load_info->referrer = request_info->response_referrer;
   resource_load_info->method = request_info->response_method;
   resource_load_info->resource_type = request_info->resource_type;
@@ -288,6 +289,8 @@ void ResourceDispatcher::OnRequestComplete(
   resource_load_info->network_accessed = request_info->network_accessed;
   resource_load_info->priority = request_info->priority;
   resource_load_info->was_cached = status.exists_in_cache;
+  resource_load_info->net_error = status.error_code;
+  resource_load_info->request_start = request_info->request_start;
   NotifyResourceLoadComplete(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
                              std::move(resource_load_info));

@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
@@ -41,6 +42,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
@@ -640,7 +642,9 @@ class ResourceLoadObserver : public WebContentsObserver {
                            const std::string& mime_type,
                            const std::string& ip_address,
                            bool was_cached,
-                           bool first_network_request) {
+                           bool first_network_request,
+                           const base::TimeTicks& before_request,
+                           const base::TimeTicks& after_request) {
     bool resource_load_info_found = false;
     for (const auto& resource_load_info : resource_load_infos_) {
       if (resource_load_info->url == url) {
@@ -656,6 +660,9 @@ class ResourceLoadObserver : public WebContentsObserver {
           EXPECT_EQ(ip_address, resource_load_info->ip->ToString());
         }
         EXPECT_EQ(was_cached, resource_load_info->was_cached);
+        // Simple sanity check of the request start time.
+        EXPECT_GT(resource_load_info->request_start, before_request);
+        EXPECT_GT(after_request, resource_load_info->request_start);
       }
     }
     EXPECT_TRUE(resource_load_info_found);
@@ -690,7 +697,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ResourceLoadComplete) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Load a page with an image and an image.
   GURL page_url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  base::TimeTicks before = base::TimeTicks::Now();
   NavigateToURL(shell(), page_url);
+  base::TimeTicks after = base::TimeTicks::Now();
   ASSERT_EQ(3U, observer.resource_load_infos().size());
   // TODO(crbug.com/826082): we should test the IP address/MIME type parameters
   // for frames once they are reported correctly.
@@ -698,18 +707,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ResourceLoadComplete) {
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
       /*mime-type*/ "",
       /*ip_address=*/"",
-      /*was_cached=*/false, /*first_network_request=*/true));
+      /*was_cached=*/false, /*first_network_request=*/true, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       embedded_test_server()->GetURL("/image.jpg"),
       /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_IMAGE, "image/jpeg",
       "127.0.0.1",
-      /*was_cached=*/false, /*first_network_request=*/false));
+      /*was_cached=*/false, /*first_network_request=*/false, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       embedded_test_server()->GetURL("/title1.html"),
       /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SUB_FRAME,
       /*mime_type=*/"",
       /*ip_address=*/"",
-      /*was_cached=*/false, /*first_network_request=*/false));
+      /*was_cached=*/false, /*first_network_request=*/false, before, after));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -737,7 +746,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL page_url(
       embedded_test_server()->GetURL("/page_with_cached_subresource.html"));
+  base::TimeTicks before = base::TimeTicks::Now();
   NavigateToURL(shell(), page_url);
+  base::TimeTicks after = base::TimeTicks::Now();
 
   // TODO(crbug.com/826082): we should test the IP address/MIME type parameters
   // for frames once they are reported correctly.
@@ -746,22 +757,25 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
       /*mime-type*/ "",
-      /*ip_address=*/"", /*was_cached=*/false, /*first_network_request=*/true));
+      /*ip_address=*/"", /*was_cached=*/false, /*first_network_request=*/true,
+      before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
       "text/html", "127.0.0.1",
-      /*was_cached=*/false, /*first_network_request=*/false));
+      /*was_cached=*/false, /*first_network_request=*/false, before, after));
   EXPECT_TRUE(observer.resource_load_infos()[1]->network_accessed);
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   observer.Reset();
 
   // Loading again should serve the request out of the in-memory cache.
+  before = base::TimeTicks::Now();
   NavigateToURL(shell(), page_url);
+  after = base::TimeTicks::Now();
   ASSERT_EQ(1U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
       /*mime-type*/ "", /*ip_address=*/"",
-      /*was_cached=*/false, /*first_network_request=*/false));
+      /*was_cached=*/false, /*first_network_request=*/false, before, after));
   ASSERT_EQ(1U, observer.memory_cached_loaded_urls().size());
   EXPECT_EQ(resource_url, observer.memory_cached_loaded_urls()[0]);
   observer.Reset();
@@ -771,16 +785,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   NavigateToURL(shell(), GURL("chrome:crash"));
 
   // Reload that URL, the subresource should be served from the network cache.
+  before = base::TimeTicks::Now();
   NavigateToURL(shell(), page_url);
+  after = base::TimeTicks::Now();
   ASSERT_EQ(2U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
       /*mime-type*/ "", /*ip_address=*/"",
-      /*was_cached=*/false, /*first_network_request=*/true));
+      /*was_cached=*/false, /*first_network_request=*/true, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
       "text/html", "127.0.0.1",
-      /*was_cached=*/true, /*first_network_request=*/false));
+      /*was_cached=*/true, /*first_network_request=*/false, before, after));
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   EXPECT_FALSE(observer.resource_load_infos()[1]->network_accessed);
 }
@@ -803,6 +819,68 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
        observer.resource_load_infos()) {
     EXPECT_FALSE(resource_load_info->network_accessed);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ResourceLoadCompleteWithRedirect) {
+  ResourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL page_destination_url(
+      embedded_test_server()->GetURL("/page_with_image_redirect.html"));
+  GURL page_original_url(embedded_test_server()->GetURL(
+      "/server-redirect?" + page_destination_url.spec()));
+  NavigateToURL(shell(), page_original_url);
+
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  const mojom::ResourceLoadInfoPtr& page_load_info =
+      observer.resource_load_infos()[0];
+  // TODO(crbug.com/826082): turn this back on when the ResourceDispatcher
+  // receives redirects for the main frame.
+  // EXPECT_EQ(page_destination_url, page_load_info->url);
+  EXPECT_EQ(page_original_url, page_load_info->original_url);
+
+  GURL image_destination_url(embedded_test_server()->GetURL("/blank.jpg"));
+  GURL image_original_url(
+      embedded_test_server()->GetURL("/server-redirect?blank.jpg"));
+  const mojom::ResourceLoadInfoPtr& image_load_info =
+      observer.resource_load_infos()[1];
+  EXPECT_EQ(image_destination_url, image_load_info->url);
+  EXPECT_EQ(image_original_url, image_load_info->original_url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ResourceLoadCompleteNetError) {
+  ResourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL page_url(embedded_test_server()->GetURL("/page_with_image.html"));
+  GURL image_url(embedded_test_server()->GetURL("/blank.jpg"));
+
+  // Load the page without errors.
+  NavigateToURL(shell(), page_url);
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  EXPECT_EQ(net::OK, observer.resource_load_infos()[0]->net_error);
+  EXPECT_EQ(net::OK, observer.resource_load_infos()[1]->net_error);
+  observer.Reset();
+
+  // Load the page and simulate a network error.
+  content::URLLoaderInterceptor url_interceptor(base::BindRepeating(
+      [](const GURL& url,
+         content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url != url)
+          return false;
+        network::URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_ADDRESS_UNREACHABLE;
+        params->client->OnComplete(status);
+        return true;
+      },
+      image_url));
+  NavigateToURL(shell(), page_url);
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  EXPECT_EQ(net::OK, observer.resource_load_infos()[0]->net_error);
+  EXPECT_EQ(net::ERR_ADDRESS_UNREACHABLE,
+            observer.resource_load_infos()[1]->net_error);
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
