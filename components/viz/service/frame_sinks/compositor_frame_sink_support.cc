@@ -160,13 +160,22 @@ void CompositorFrameSinkSupport::ReceiveFromChild(
   surface_resource_holder_.ReceiveFromChild(resources);
 }
 
-bool CompositorFrameSinkSupport::HasCopyOutputRequests() {
-  return !copy_output_requests_.empty();
-}
-
 std::vector<std::unique_ptr<CopyOutputRequest>>
-CompositorFrameSinkSupport::TakeCopyOutputRequests() {
-  return std::move(copy_output_requests_);
+CompositorFrameSinkSupport::TakeCopyOutputRequests(
+    const LocalSurfaceId& latest_local_id) {
+  std::vector<std::unique_ptr<CopyOutputRequest>> results;
+  for (auto it = copy_output_requests_.begin();
+       it != copy_output_requests_.end();) {
+    // Requests with a non-valid local id should be satisfied as soon as
+    // possible.
+    if (!it->first.is_valid() || it->first <= latest_local_id) {
+      results.push_back(std::move(it->second));
+      it = copy_output_requests_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  return results;
 }
 
 void CompositorFrameSinkSupport::EvictLastActivatedSurface() {
@@ -500,13 +509,15 @@ gfx::Size CompositorFrameSinkSupport::GetActiveFrameSize() {
 }
 
 void CompositorFrameSinkSupport::RequestCopyOfOutput(
+    const LocalSurfaceId& local_surface_id,
     std::unique_ptr<CopyOutputRequest> copy_request) {
-  if (!last_activated_surface_id_.is_valid())
-    return;
-  copy_output_requests_.push_back(std::move(copy_request));
-  BeginFrameAck ack;
-  ack.has_damage = true;
-  surface_manager_->SurfaceModified(last_activated_surface_id_, ack);
+  copy_output_requests_.push_back(
+      std::make_pair(local_surface_id, std::move(copy_request)));
+  if (last_activated_surface_id_.is_valid()) {
+    BeginFrameAck ack;
+    ack.has_damage = true;
+    surface_manager_->SurfaceModified(last_activated_surface_id_, ack);
+  }
 }
 
 HitTestAggregator* CompositorFrameSinkSupport::GetHitTestAggregator() {

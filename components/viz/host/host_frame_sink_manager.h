@@ -137,10 +137,13 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Marks the given SurfaceIds for destruction.
   void EvictSurfaces(const std::vector<SurfaceId>& surface_ids);
 
-  // Takes a snapshot of |frame_sink_id|. Next time a display frame is
-  // generated, the snapshot will be taken from the Surface belonging to
-  // |frame_sink_id| that is reachable from the root Surface.
-  void RequestCopyOfOutput(const FrameSinkId& frame_sink_id,
+  // Takes snapshot of a |surface_id| or a newer surface with the same
+  // FrameSinkId. The FrameSinkId is used to identify which frame we're
+  // interested in. The snapshot will only be taken if the LocalSurfaceId is at
+  // least the given LocalSurfaceId (|surface_id.local_frame_id()|). If the
+  // LocalSurfaceId is lower than the given id, then the request is queued up to
+  // be executed later.
+  void RequestCopyOfOutput(const SurfaceId& surface_id,
                            std::unique_ptr<CopyOutputRequest> request);
 
   // CompositorFrameSinkSupportManager:

@@ -287,14 +287,15 @@ void FrameSinkManagerImpl::EvictSurfaces(
 }
 
 void FrameSinkManagerImpl::RequestCopyOfOutput(
-    const FrameSinkId& frame_sink_id,
+    const SurfaceId& surface_id,
     std::unique_ptr<CopyOutputRequest> request) {
-  auto it = support_map_.find(frame_sink_id);
+  auto it = support_map_.find(surface_id.frame_sink_id());
   if (it == support_map_.end()) {
     // |request| will send an empty result when it goes out of scope.
     return;
   }
-  it->second->RequestCopyOfOutput(std::move(request));
+  it->second->RequestCopyOfOutput(surface_id.local_surface_id(),
+                                  std::move(request));
 }
 
 void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceId& surface_id) {

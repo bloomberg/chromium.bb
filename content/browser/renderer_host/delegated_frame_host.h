@@ -229,6 +229,9 @@ class CONTENT_EXPORT DelegatedFrameHost
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
 
+  void ProcessCopyOutputRequest(
+      std::unique_ptr<viz::CopyOutputRequest> request);
+
   const viz::FrameSinkId frame_sink_id_;
   DelegatedFrameHostClient* const client_;
   const bool enable_surface_synchronization_;
@@ -294,6 +297,9 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   uint32_t first_parent_sequence_number_after_navigation_ = 0;
   bool received_frame_after_navigation_ = false;
+
+  std::vector<std::unique_ptr<viz::CopyOutputRequest>>
+      pending_first_frame_requests_;
 };
 
 }  // namespace content

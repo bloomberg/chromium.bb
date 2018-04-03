@@ -132,12 +132,6 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  if (!CanCopyFromCompositingSurface() ||
-      current_frame_size_in_dip_.IsEmpty()) {
-    std::move(callback).Run(SkBitmap());
-    return;
-  }
-
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
@@ -148,24 +142,41 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
               },
               std::move(callback)));
 
-  if (src_subrect.IsEmpty()) {
-    request->set_area(gfx::Rect(current_frame_size_in_dip_));
-  } else {
+  if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
-  }
+  if (!output_size.IsEmpty())
+    request->set_result_selection(gfx::Rect(output_size));
 
+  // If there is enough information to populate the copy output request fields,
+  // then process it now. Otherwise, wait until the information becomes
+  // available.
+  if (CanCopyFromCompositingSurface())
+    ProcessCopyOutputRequest(std::move(request));
+  else
+    pending_first_frame_requests_.push_back(std::move(request));
+}
+
+void DelegatedFrameHost::ProcessCopyOutputRequest(
+    std::unique_ptr<viz::CopyOutputRequest> request) {
+  if (!request->has_area())
+    request->set_area(gfx::Rect(pending_surface_dip_size_));
+
+  // TODO(vmpstr): Should use pending device scale factor. We need to plumb
+  // it here.
   request->set_area(
       gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
 
-  if (!output_size.IsEmpty()) {
-    request->set_result_selection(gfx::Rect(output_size));
+  if (request->has_result_selection()) {
+    const gfx::Rect& area = request->area();
+    const gfx::Rect& result_selection = request->result_selection();
     request->SetScaleRatio(
-        gfx::Vector2d(request->area().width(), request->area().height()),
-        gfx::Vector2d(output_size.width(), output_size.height()));
+        gfx::Vector2d(area.width(), area.height()),
+        gfx::Vector2d(result_selection.width(), result_selection.height()));
   }
 
-  GetHostFrameSinkManager()->RequestCopyOfOutput(frame_sink_id_,
-                                                 std::move(request));
+  GetHostFrameSinkManager()->RequestCopyOfOutput(
+      viz::SurfaceId(frame_sink_id_, pending_local_surface_id_),
+      std::move(request));
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
@@ -552,6 +563,13 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
 
   frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
   // Note: the frame may have been evicted immediately.
+
+  if (!pending_first_frame_requests_.empty()) {
+    DCHECK(CanCopyFromCompositingSurface());
+    for (auto& request : pending_first_frame_requests_)
+      ProcessCopyOutputRequest(std::move(request));
+    pending_first_frame_requests_.clear();
+  }
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
