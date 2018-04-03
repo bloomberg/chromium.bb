@@ -29,6 +29,15 @@ class BrowsingDataRemoverCompletionObserver
   void OnBrowsingDataRemoverDone() override;
 
  private:
+  void QuitRunLoopWhenTasksComplete();
+
+  // Tracks when the Task Scheduler task flushing is done.
+  bool flush_for_testing_complete_ = false;
+
+  // Tracks when BrowsingDataRemover::Observer::OnBrowsingDataRemoverDone() is
+  // called.
+  bool browsing_data_remover_done_ = false;
+
   base::RunLoop run_loop_;
   ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
 
@@ -57,6 +66,14 @@ class BrowsingDataRemoverCompletionInhibitor {
       const base::Closure& continue_to_completion);
 
  private:
+  void QuitRunLoopWhenTasksComplete();
+
+  // Tracks when the Task Scheduler task flushing is done.
+  bool flush_for_testing_complete_ = false;
+
+  // Tracks when OnBrowsingDataRemoverWouldComplete() is called.
+  bool browsing_data_remover_would_complete_done_ = false;
+
   // Not owned by this class. If the pointer becomes invalid, the owner of
   // this class is responsible for calling Reset().
   BrowsingDataRemover* remover_;
