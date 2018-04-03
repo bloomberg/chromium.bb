@@ -108,10 +108,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
 
   double IterationDuration() const;
   double ActiveDurationInternal() const;
-  double EndTimeInternal() const {
-    return SpecifiedTiming().start_delay + ActiveDurationInternal() +
-           SpecifiedTiming().end_delay;
-  }
+  double EndTimeInternal() const;
 
   const Timing& SpecifiedTiming() const { return timing_; }
   virtual AnimationEffectTimingReadOnly* timing();
