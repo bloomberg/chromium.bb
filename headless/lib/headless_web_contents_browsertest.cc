@@ -322,7 +322,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessNoDevToolsTabSocketTest, Test) {
   RunAsynchronousTest();
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Focus) {
+#if defined(OS_WIN)
+// crbug.com/828042
+#define MAYBE_Focus DISABLED_Focus
+#else
+#define MAYBE_Focus Focus
+#endif
+
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_Focus) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
