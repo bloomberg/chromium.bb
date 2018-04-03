@@ -13,6 +13,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace safe_browsing {
 
@@ -36,11 +37,12 @@ enum UploadResultType {
 // download feedback service.
 class DownloadFeedbackImpl : public DownloadFeedback {
  public:
-  DownloadFeedbackImpl(net::URLRequestContextGetter* request_context_getter,
-                       base::TaskRunner* file_task_runner,
-                       const base::FilePath& file_path,
-                       const std::string& ping_request,
-                       const std::string& ping_response);
+  DownloadFeedbackImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      base::TaskRunner* file_task_runner,
+      const base::FilePath& file_path,
+      const std::string& ping_request,
+      const std::string& ping_response);
   ~DownloadFeedbackImpl() override;
 
   void Start(const base::Closure& finish_callback) override;
@@ -64,7 +66,7 @@ class DownloadFeedbackImpl : public DownloadFeedback {
 
   void RecordUploadResult(UploadResultType result);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
   const base::FilePath file_path_;
   int64_t file_size_;
@@ -80,12 +82,12 @@ class DownloadFeedbackImpl : public DownloadFeedback {
 };
 
 DownloadFeedbackImpl::DownloadFeedbackImpl(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TaskRunner* file_task_runner,
     const base::FilePath& file_path,
     const std::string& ping_request,
     const std::string& ping_response)
-    : request_context_getter_(request_context_getter),
+    : url_loader_factory_(url_loader_factory),
       file_task_runner_(file_task_runner),
       file_path_(file_path),
       file_size_(-1),
@@ -164,9 +166,8 @@ void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
         })");
 
   uploader_ = TwoPhaseUploader::Create(
-      request_context_getter_.get(), file_task_runner_.get(),
-      GURL(kSbFeedbackURL), metadata_string, file_path_,
-      TwoPhaseUploader::ProgressCallback(),
+      url_loader_factory_, file_task_runner_.get(), GURL(kSbFeedbackURL),
+      metadata_string, file_path_,
       base::Bind(&DownloadFeedbackImpl::FinishedUpload, base::Unretained(this),
                  finish_callback),
       traffic_annotation);
@@ -237,18 +238,18 @@ DownloadFeedbackFactory* DownloadFeedback::factory_ = nullptr;
 
 // static
 std::unique_ptr<DownloadFeedback> DownloadFeedback::Create(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TaskRunner* file_task_runner,
     const base::FilePath& file_path,
     const std::string& ping_request,
     const std::string& ping_response) {
   if (!factory_) {
     return base::WrapUnique(
-        new DownloadFeedbackImpl(request_context_getter, file_task_runner,
+        new DownloadFeedbackImpl(url_loader_factory, file_task_runner,
                                  file_path, ping_request, ping_response));
   }
   return DownloadFeedback::factory_->CreateDownloadFeedback(
-      request_context_getter, file_task_runner, file_path, ping_request,
+      url_loader_factory, file_task_runner, file_path, ping_request,
       ping_response);
 }
 

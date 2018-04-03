@@ -24,7 +24,7 @@ class DownloadFeedback {
   // Takes ownership of the file pointed to be |file_path|, it will be deleted
   // when the DownloadFeedback is destructed.
   static std::unique_ptr<DownloadFeedback> Create(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::TaskRunner* file_task_runner,
       const base::FilePath& file_path,
       const std::string& ping_request,
@@ -66,7 +66,7 @@ class DownloadFeedbackFactory {
   virtual ~DownloadFeedbackFactory() {}
 
   virtual std::unique_ptr<DownloadFeedback> CreateDownloadFeedback(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::TaskRunner* file_task_runner,
       const base::FilePath& file_path,
       const std::string& ping_request,

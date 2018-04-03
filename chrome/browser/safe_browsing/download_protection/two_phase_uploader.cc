@@ -12,13 +12,14 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 
@@ -30,16 +31,14 @@ const char kLocationHeader[] = "Location";
 
 const char kUploadContentType[] = "application/octet-stream";
 
-class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
-                             public TwoPhaseUploader {
+class TwoPhaseUploaderImpl : public TwoPhaseUploader {
  public:
   TwoPhaseUploaderImpl(
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,
       const std::string& metadata,
       const base::FilePath& file_path,
-      const ProgressCallback& progress_callback,
       const FinishCallback& finish_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~TwoPhaseUploaderImpl() override;
@@ -47,11 +46,7 @@ class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
   // Begins the upload process.
   void Start() override;
 
-  // net::URLFetcherDelegate implementation:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-  void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64_t current,
-                                int64_t total) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
  private:
   void UploadMetadata();
@@ -59,37 +54,34 @@ class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
   void Finish(int net_error, int response_code, const std::string& response);
 
   State state_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
   GURL base_url_;
   GURL upload_url_;
   std::string metadata_;
   const base::FilePath file_path_;
-  ProgressCallback progress_callback_;
   FinishCallback finish_callback_;
   net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(TwoPhaseUploaderImpl);
 };
 
 TwoPhaseUploaderImpl::TwoPhaseUploaderImpl(
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TaskRunner* file_task_runner,
     const GURL& base_url,
     const std::string& metadata,
     const base::FilePath& file_path,
-    const ProgressCallback& progress_callback,
     const FinishCallback& finish_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : state_(STATE_NONE),
-      url_request_context_getter_(url_request_context_getter),
+      url_loader_factory_(url_loader_factory),
       file_task_runner_(file_task_runner),
       base_url_(base_url),
       metadata_(metadata),
       file_path_(file_path),
-      progress_callback_(progress_callback),
       finish_callback_(finish_callback),
       traffic_annotation_(traffic_annotation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -106,33 +98,33 @@ void TwoPhaseUploaderImpl::Start() {
   UploadMetadata();
 }
 
-void TwoPhaseUploaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
+void TwoPhaseUploaderImpl::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  net::URLRequestStatus status = source->GetStatus();
-  int response_code = source->GetResponseCode();
+  int response_code = 0;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
 
-  DVLOG(1) << __func__ << " " << source->GetURL().spec() << " "
-           << status.status() << " " << response_code;
+  DVLOG(1) << __func__ << " " << url_loader_->GetFinalURL().spec() << " "
+           << url_loader_->NetError() << " " << response_code;
 
-  if (!status.is_success()) {
-    LOG(ERROR) << "URLFetcher failed, status=" << status.status()
-               << " err=" << status.error();
-    Finish(status.error(), response_code, std::string());
+  if (url_loader_->NetError() != net::OK) {
+    LOG(ERROR) << "URLFetcher failed, err=" << url_loader_->NetError();
+    Finish(url_loader_->NetError(), response_code, std::string());
     return;
   }
-
-  std::string response;
-  source->GetResponseAsString(&response);
 
   switch (state_) {
     case UPLOAD_METADATA: {
       if (response_code != 201) {
         LOG(ERROR) << "Invalid response to initial request: " << response_code;
-        Finish(net::OK, response_code, response);
+        Finish(net::OK, response_code, *response_body.get());
         return;
       }
       std::string location;
-      if (!source->GetResponseHeaders()->EnumerateHeader(
+      if (!url_loader_->ResponseInfo() ||
+          !url_loader_->ResponseInfo()->headers ||
+          !url_loader_->ResponseInfo()->headers->EnumerateHeader(
               nullptr, kLocationHeader, &location)) {
         LOG(ERROR) << "no location header";
         Finish(net::OK, response_code, std::string());
@@ -149,51 +141,45 @@ void TwoPhaseUploaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
       } else {
         state_ = STATE_SUCCESS;
       }
-      Finish(net::OK, response_code, response);
+      Finish(net::OK, response_code, *response_body.get());
       return;
     default:
       NOTREACHED();
   }
 }
 
-void TwoPhaseUploaderImpl::OnURLFetchUploadProgress(
-    const net::URLFetcher* source,
-    int64_t current,
-    int64_t total) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG(3) << __func__ << " " << source->GetURL().spec() << " " << current
-           << "/" << total;
-  if (state_ == UPLOAD_FILE && !progress_callback_.is_null())
-    progress_callback_.Run(current, total);
-}
-
 void TwoPhaseUploaderImpl::UploadMetadata() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   state_ = UPLOAD_METADATA;
-  url_fetcher_ = net::URLFetcher::Create(base_url_, net::URLFetcher::POST, this,
-                                         traffic_annotation_);
-
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  url_fetcher_->SetRequestContext(url_request_context_getter_.get());
-  url_fetcher_->SetExtraRequestHeaders(kStartHeader);
-  url_fetcher_->SetUploadData(kUploadContentType, metadata_);
-  url_fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = base_url_;
+  resource_request->method = "POST";
+  resource_request->headers.AddHeadersFromString(kStartHeader);
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation_);
+  url_loader_->SetAllowHttpErrorResults(true);
+  url_loader_->AttachStringForUpload(metadata_, kUploadContentType);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&TwoPhaseUploaderImpl::OnURLLoaderComplete,
+                     base::Unretained(this)));
 }
 
 void TwoPhaseUploaderImpl::UploadFile() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   state_ = UPLOAD_FILE;
 
-  url_fetcher_ = net::URLFetcher::Create(upload_url_, net::URLFetcher::PUT,
-                                         this, traffic_annotation_);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  url_fetcher_->SetRequestContext(url_request_context_getter_.get());
-  url_fetcher_->SetUploadFilePath(kUploadContentType, file_path_, 0,
-                                  std::numeric_limits<uint64_t>::max(),
-                                  file_task_runner_);
-  url_fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = upload_url_;
+  resource_request->method = "PUT";
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation_);
+  url_loader_->SetAllowHttpErrorResults(true);
+  url_loader_->AttachFileForUpload(file_path_, kUploadContentType);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&TwoPhaseUploaderImpl::OnURLLoaderComplete,
+                     base::Unretained(this)));
 }
 
 void TwoPhaseUploaderImpl::Finish(int net_error,
@@ -210,20 +196,19 @@ TwoPhaseUploaderFactory* TwoPhaseUploader::factory_ = nullptr;
 
 // static
 std::unique_ptr<TwoPhaseUploader> TwoPhaseUploader::Create(
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TaskRunner* file_task_runner,
     const GURL& base_url,
     const std::string& metadata,
     const base::FilePath& file_path,
-    const ProgressCallback& progress_callback,
     const FinishCallback& finish_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   if (!factory_) {
     return base::WrapUnique(new TwoPhaseUploaderImpl(
-        url_request_context_getter, file_task_runner, base_url, metadata,
-        file_path, progress_callback, finish_callback, traffic_annotation));
+        url_loader_factory, file_task_runner, base_url, metadata, file_path,
+        finish_callback, traffic_annotation));
   }
   return TwoPhaseUploader::factory_->CreateTwoPhaseUploader(
-      url_request_context_getter, file_task_runner, base_url, metadata,
-      file_path, progress_callback, finish_callback, traffic_annotation);
+      url_loader_factory, file_task_runner, base_url, metadata, file_path,
+      finish_callback, traffic_annotation);
 }

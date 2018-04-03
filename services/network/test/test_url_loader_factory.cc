@@ -60,6 +60,10 @@ void TestURLLoaderFactory::ClearResponses() {
   responses_.clear();
 }
 
+void TestURLLoaderFactory::SetInterceptor(const Interceptor& interceptor) {
+  interceptor_ = interceptor;
+}
+
 void TestURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderRequest request,
     int32_t routing_id,
@@ -68,6 +72,9 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  if (interceptor_)
+    interceptor_.Run(url_request);
+
   if (CreateLoaderAndStartInternal(url_request.url, client.get()))
     return;
 
