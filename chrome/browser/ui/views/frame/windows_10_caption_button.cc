@@ -25,6 +25,14 @@ Windows10CaptionButton::Windows10CaptionButton(
   SetAccessibleName(accessible_name);
 }
 
+int Windows10CaptionButton::GetBetweenButtonSpacing() const {
+  constexpr int kCaptionButtonVisualSpacing = 1;
+  // There's no next button after the minimize button, so we don't need to
+  // reserve any space.
+  return button_type_ == VIEW_ID_MINIMIZE_BUTTON ? 0
+                                                 : kCaptionButtonVisualSpacing;
+}
+
 gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
   // TODO(bsep): The sizes in this function are for 1x device scale and don't
   // match Windows button sizes at hidpi.
@@ -38,7 +46,7 @@ gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
     h -= kMaximizedBottomMargin;
   }
   constexpr int kButtonWidth = 45;
-  return gfx::Size(kButtonWidth, h);
+  return gfx::Size(kButtonWidth + GetBetweenButtonSpacing(), h);
 }
 
 namespace {
@@ -67,15 +75,17 @@ void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
   const SkColor bg_color =
       theme_provider->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND);
   const SkAlpha theme_alpha = SkColorGetA(bg_color);
+  gfx::Rect bounds = GetContentsBounds();
+  bounds.Inset(GetBetweenButtonSpacing(), 0, 0, 0);
+
   if (theme_alpha > 0) {
-    canvas->FillRect(GetContentsBounds(),
+    canvas->FillRect(bounds,
                      SkColorSetA(bg_color, ButtonBackgroundAlpha(theme_alpha)));
   }
   if (theme_provider->HasCustomImage(IDR_THEME_WINDOW_CONTROL_BACKGROUND)) {
-    const gfx::Rect bounds = GetContentsBounds();
     canvas->TileImageInt(
         *theme_provider->GetImageSkiaNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND),
-        0, 0, bounds.width(), bounds.height());
+        bounds.x(), bounds.y(), bounds.width(), bounds.height());
   }
 
   SkColor base_color;
@@ -105,7 +115,7 @@ void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
   else
     alpha = gfx::Tween::IntValueBetween(hover_animation().GetCurrentValue(),
                                         SK_AlphaTRANSPARENT, hovered_alpha);
-  canvas->FillRect(GetContentsBounds(), SkColorSetA(base_color, alpha));
+  canvas->FillRect(bounds, SkColorSetA(base_color, alpha));
 }
 
 void Windows10CaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
