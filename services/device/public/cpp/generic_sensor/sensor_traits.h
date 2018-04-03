@@ -30,6 +30,8 @@ struct SensorTraits<mojom::SensorType::MAGNETOMETER> {
 
 double GetSensorMaxAllowedFrequency(mojom::SensorType type);
 
+double GetSensorDefaultFrequency(mojom::SensorType type);
+
 }  // namespace device
 
 #endif  // SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_TRAITS_H_

@@ -15,9 +15,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/test_utils.h"
-#include "content/renderer/device_sensors/fake_sensor_and_provider.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/generic_sensor/motion_data.h"
+#include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +26,8 @@
 #include "ui/gfx/geometry/angle_conversions.h"
 
 namespace content {
+
+using device::FakeSensorProvider;
 
 class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
  public:
@@ -216,9 +218,9 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAccelerometerData(1, 2, 3);
-  sensor_provider()->SetLinearAccelerationSensorData(4, 5, 6);
-  sensor_provider()->SetGyroscopeData(7, 8, 9);
+  sensor_provider()->UpdateAccelerometerData(1, 2, 3);
+  sensor_provider()->UpdateLinearAccelerationSensorData(4, 5, 6);
+  sensor_provider()->UpdateGyroscopeData(7, 8, 9);
 
   FireEvent();
 
@@ -262,8 +264,8 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
       DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
   ExpectGyroscopeStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAccelerometerData(1, 2, 3);
-  sensor_provider()->SetGyroscopeData(7, 8, 9);
+  sensor_provider()->UpdateAccelerometerData(1, 2, 3);
+  sensor_provider()->UpdateGyroscopeData(7, 8, 9);
 
   FireEvent();
 
@@ -302,9 +304,9 @@ TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAccelerometerData(NAN, 2, 3);
-  sensor_provider()->SetLinearAccelerationSensorData(4, NAN, 6);
-  sensor_provider()->SetGyroscopeData(7, 8, NAN);
+  sensor_provider()->UpdateAccelerometerData(NAN, 2, 3);
+  sensor_provider()->UpdateLinearAccelerationSensorData(4, NAN, 6);
+  sensor_provider()->UpdateGyroscopeData(7, 8, NAN);
 
   FireEvent();
 
@@ -379,15 +381,15 @@ TEST_F(DeviceMotionEventPumpTest,
   FireEvent();
   EXPECT_FALSE(listener()->did_change_device_motion());
 
-  sensor_provider()->SetAccelerometerData(1, 2, 3);
+  sensor_provider()->UpdateAccelerometerData(1, 2, 3);
   FireEvent();
   EXPECT_FALSE(listener()->did_change_device_motion());
 
-  sensor_provider()->SetLinearAccelerationSensorData(4, 5, 6);
+  sensor_provider()->UpdateLinearAccelerationSensorData(4, 5, 6);
   FireEvent();
   EXPECT_FALSE(listener()->did_change_device_motion());
 
-  sensor_provider()->SetGyroscopeData(7, 8, 9);
+  sensor_provider()->UpdateGyroscopeData(7, 8, 9);
   FireEvent();
   // Event is fired only after all the available sensors have data.
   EXPECT_TRUE(listener()->did_change_device_motion());
@@ -410,9 +412,9 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
 
-  sensor_provider()->SetAccelerometerData(1, 2, 3);
-  sensor_provider()->SetLinearAccelerationSensorData(4, 5, 6);
-  sensor_provider()->SetGyroscopeData(7, 8, 9);
+  sensor_provider()->UpdateAccelerometerData(1, 2, 3);
+  sensor_provider()->UpdateLinearAccelerationSensorData(4, 5, 6);
+  sensor_provider()->UpdateGyroscopeData(7, 8, 9);
 
   blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
