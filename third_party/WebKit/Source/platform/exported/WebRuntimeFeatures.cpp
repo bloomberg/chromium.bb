@@ -88,6 +88,10 @@ void WebRuntimeFeatures::EnableAudioOutputDevices(bool enable) {
   RuntimeEnabledFeatures::SetAudioOutputDevicesEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
+  RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableCanvas2dImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(enable);
 }

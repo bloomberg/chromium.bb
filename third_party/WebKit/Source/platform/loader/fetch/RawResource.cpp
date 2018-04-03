@@ -31,6 +31,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/SourceKeyedCachedMetadataHandler.h"
 #include "platform/network/http_names.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
@@ -192,6 +193,11 @@ void RawResource::WillNotFollowRedirect() {
     c->RedirectBlocked();
 }
 
+SourceKeyedCachedMetadataHandler* RawResource::CacheHandler() {
+  return static_cast<SourceKeyedCachedMetadataHandler*>(
+      Resource::CacheHandler());
+}
+
 void RawResource::ResponseReceived(
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
@@ -218,8 +224,20 @@ void RawResource::ResponseReceived(
   }
 }
 
+CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
+    std::unique_ptr<CachedMetadataSender> send_callback) {
+  return new SourceKeyedCachedMetadataHandler(Encoding(),
+                                              std::move(send_callback));
+}
+
 void RawResource::SetSerializedCachedMetadata(const char* data, size_t size) {
   Resource::SetSerializedCachedMetadata(data, size);
+
+  SourceKeyedCachedMetadataHandler* cache_handler = CacheHandler();
+  if (cache_handler) {
+    cache_handler->SetSerializedCachedMetadata(data, size);
+  }
+
   ResourceClientWalker<RawResourceClient> w(Clients());
   while (RawResourceClient* c = w.Next())
     c->SetSerializedCachedMetadata(this, data, size);

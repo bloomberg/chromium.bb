@@ -21,6 +21,15 @@ class CachedMetadataHandler
     kSendToPlatform,  // send cache data to blink::Platform::cacheMetadata
     kCacheLocally     // cache only in Resource's member variables
   };
+
+  // Enum for marking serialized cached metadatas so that the deserializers
+  // do not conflict.
+  enum CachedMetadataType : uint32_t {
+    kSingleEntry,    // the metadata is a single CachedMetadata entry
+    kSourceKeyedMap  // the metadata is multiple CachedMetadata entries keyed by
+                     // a source string.
+  };
+
   virtual ~CachedMetadataHandler() = default;
   virtual void Trace(blink::Visitor* visitor) {}
 

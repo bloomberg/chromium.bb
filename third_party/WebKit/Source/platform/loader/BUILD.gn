@@ -73,6 +73,8 @@ blink_platform_sources("loader") {
     "fetch/ResourceTimingInfo.h",
     "fetch/ScriptFetchOptions.cpp",
     "fetch/ScriptFetchOptions.h",
+    "fetch/SourceKeyedCachedMetadataHandler.cpp",
+    "fetch/SourceKeyedCachedMetadataHandler.h",
     "fetch/SubstituteData.h",
     "fetch/TextResourceDecoderOptions.cpp",
     "fetch/TextResourceDecoderOptions.h",
@@ -114,6 +116,7 @@ jumbo_source_set("unit_tests") {
     "fetch/ResourceRequestTest.cpp",
     "fetch/ResourceResponseTest.cpp",
     "fetch/ResourceTest.cpp",
+    "fetch/SourceKeyedCachedMetadataHandlerTest.cpp",
   ]
 
   configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]

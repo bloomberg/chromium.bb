@@ -134,6 +134,12 @@ class WTF_EXPORT String {
     return impl_->Characters16();
   }
 
+  ALWAYS_INLINE const void* Bytes() const {
+    if (!impl_)
+      return nullptr;
+    return impl_->Bytes();
+  }
+
   // Return characters8() or characters16() depending on CharacterType.
   template <typename CharacterType>
   inline const CharacterType* GetCharacters() const;
