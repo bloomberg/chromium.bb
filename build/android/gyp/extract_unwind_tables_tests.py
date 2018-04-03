@@ -92,16 +92,18 @@ STACK CFI 3b93218 .cfa: r7 16 + .ra: .cfa -4 + ^
       # |actual_output| is in blocks of 2 bytes. Skip first 4 bytes representing
       # size.
       unw_index_start = 2
-      unw_index_end = unw_index_start + unw_index_size / 2
-      unw_index = actual_output[unw_index_start: unw_index_end]
+      unw_index_addr_end = unw_index_start + expected_function_count * 2
+      unw_index_end = unw_index_addr_end + expected_function_count
+      unw_index_addr_col = actual_output[unw_index_start : unw_index_addr_end]
+      unw_index_index_col = actual_output[unw_index_addr_end : unw_index_end]
 
       unw_data_start = unw_index_end
       unw_data = actual_output[unw_data_start:]
 
       for func_iter in range(0, expected_function_count):
-        func_addr = (unw_index[func_iter * 3 + 1] << 16 |
-                     unw_index[func_iter * 3])
-        index = unw_index[func_iter * 3 + 2]
+        func_addr = (unw_index_addr_col[func_iter * 2 + 1] << 16 |
+                     unw_index_addr_col[func_iter * 2])
+        index = unw_index_index_col[func_iter]
         # If index is CANT_UNWIND then invalid function.
         if index == 0xFFFF:
           self.assertEqual(expected_cfi_data[func_addr], [])

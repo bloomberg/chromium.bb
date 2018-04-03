@@ -33,11 +33,13 @@ EHABI format. The first table contains function addresses and an index into the
 UNW_DATA table. The second table contains one or more rows for the function
 unwind information.
 
-The output file starts with 4 bytes counting the size of UNW_INDEX in bytes.
-Then UNW_INDEX table and UNW_DATA table.
-UNW_INDEX contains one row for each function. Each row is 6 bytes long:
-  4 bytes: Function start address.
-  2 bytes: offset (in count of 2 bytes) of function data from start of UNW_DATA.
+UNW_INDEX contains two columns of N rows each, where N is the number of
+functions.
+  1. First column 4 byte rows of all the function start address as offset from
+     start of the binary, in sorted order.
+  2. For each function addr, the second column contains 2 byte indices in order.
+     The indices are offsets (in count of 2 bytes) of the CFI data from start of
+     UNW_DATA.
 The last entry in the table always contains CANT_UNWIND index to specify the
 end address of the last function.
 
@@ -83,30 +85,6 @@ constexpr uint16_t kRAShift = 2;
 static_assert(sizeof(uintptr_t) == 4,
               "The unwind table format is only valid for 32 bit builds.");
 
-// The struct that corresponds to each row in the UNW_INDEX table. The first 4
-// bytes in the row represents the address of the function w.r.t. to the start
-// of the binary and the next 2 bytes have the index. The members of this struct
-// is in order of the input format. We cast the memory map of the unwind table
-// as an array of CFIUnwindIndexRow and use it to read data and search. So, the
-// size of this struct should be 6 bytes and the order of the members is fixed
-// according to the given format.
-struct CFIUnwindIndexRow {
-  // Declare all the members of the function with size 2 bytes to make sure the
-  // alignment is 2 bytes and the struct is not padded to 8 bytes. The |addr_l|
-  // and |addr_r| represent the lower and higher 2 bytes of the function
-  // address.
-  uint16_t addr_l;
-  uint16_t addr_r;
-
-  // The |index| is count in terms of 2 byte address into the UNW_DATA table,
-  // where the CFI data of the function exists.
-  uint16_t index;
-
-  // Returns the address of the function as offset from the start of the binary,
-  // to which the index row corresponds to.
-  uintptr_t addr() const { return (addr_r << 16) | addr_l; }
-};
-
 // The CFI data in UNW_DATA table starts with number of rows (N) and then
 // followed by N rows of 4 bytes long. The CFIUnwindDataRow represents a single
 // row of CFI data of a function in the table. Since we cast the memory at the
@@ -129,10 +107,6 @@ struct CFIUnwindDataRow {
   // Returns the CFA offset for the current unwind row.
   size_t cfa_offset() const { return cfi_data & kCFAMask; }
 };
-
-static_assert(
-    sizeof(CFIUnwindIndexRow) == 6,
-    "The CFIUnwindIndexRow struct must be exactly 6 bytes for searching.");
 
 static_assert(
     sizeof(CFIUnwindDataRow) == 4,
@@ -173,22 +147,28 @@ void CFIBacktraceAndroid::Initialize() {
   if (!cfi_mmap_->Initialize(base::File(fd), cfi_region))
     return;
 
-  // The first 4 bytes in the file is the size of UNW_INDEX table. The UNW_INDEX
-  // table contains rows of 6 bytes each.
+  ParseCFITables();
+  can_unwind_stack_frames_ = true;
+}
+
+void CFIBacktraceAndroid::ParseCFITables() {
+  // The first 4 bytes in the file is the size of UNW_INDEX table.
+  static constexpr size_t kUnwIndexRowSize =
+      sizeof(*unw_index_function_col_) + sizeof(*unw_index_indices_col_);
   size_t unw_index_size = 0;
   memcpy(&unw_index_size, cfi_mmap_->data(), sizeof(unw_index_size));
-  DCHECK_EQ(0u, unw_index_size % sizeof(CFIUnwindIndexRow));
-  DCHECK_GT(cfi_region.size, unw_index_size);
-  unw_index_start_addr_ =
-      reinterpret_cast<const size_t*>(cfi_mmap_->data()) + 1;
-  unw_index_row_count_ = unw_index_size / sizeof(CFIUnwindIndexRow);
+  DCHECK_EQ(0u, unw_index_size % kUnwIndexRowSize);
+  // UNW_INDEX table starts after 4 bytes.
+  unw_index_function_col_ =
+      reinterpret_cast<const uintptr_t*>(cfi_mmap_->data()) + 1;
+  unw_index_row_count_ = unw_index_size / kUnwIndexRowSize;
+  unw_index_indices_col_ = reinterpret_cast<const uint16_t*>(
+      unw_index_function_col_ + unw_index_row_count_);
 
   // The UNW_DATA table data is right after the end of UNW_INDEX table.
   // Interpret the UNW_DATA table as an array of 2 byte numbers since the
   // indexes we have from the UNW_INDEX table are in terms of 2 bytes.
-  unw_data_start_addr_ = reinterpret_cast<const uint16_t*>(
-      reinterpret_cast<uintptr_t>(unw_index_start_addr_) + unw_index_size);
-  can_unwind_stack_frames_ = true;
+  unw_data_start_addr_ = unw_index_indices_col_ + unw_index_row_count_;
 }
 
 size_t CFIBacktraceAndroid::Unwind(const void** out_trace,
@@ -232,39 +212,37 @@ size_t CFIBacktraceAndroid::Unwind(const void** out_trace,
 bool CFIBacktraceAndroid::FindCFIRowForPC(
     uintptr_t func_addr,
     CFIBacktraceAndroid::CFIRow* cfi) const {
-  // Consider the UNW_TABLE as an array of CFIUnwindIndexRow since each row
-  // is 6 bytes long and it contains |unw_index_size_| / 6 rows. We define
-  // start and end iterator on this array and use std::lower_bound() to binary
-  // search on this array. std::lower_bound() returns the row that corresponds
-  // to the first row that has address greater than the current value, since
-  // address is used in compartor.
-  const CFIUnwindIndexRow* start =
-      static_cast<const CFIUnwindIndexRow*>(unw_index_start_addr_);
-  const CFIUnwindIndexRow* end = start + unw_index_row_count_;
-  const CFIUnwindIndexRow to_find = {func_addr & 0xffff, func_addr >> 16, 0};
-  const CFIUnwindIndexRow* found = std::lower_bound(
-      start, end, to_find,
-      [](const auto& a, const auto& b) { return a.addr() < b.addr(); });
+  // Consider each column of UNW_INDEX table as arrays of uintptr_t (function
+  // addresses) and uint16_t (indices). Define start and end iterator on the
+  // first column array (addresses) and use std::lower_bound() to binary search
+  // on this array to find the required function address.
+  static const uintptr_t* const unw_index_fn_end =
+      unw_index_function_col_ + unw_index_row_count_;
+  const uintptr_t* found =
+      std::lower_bound(unw_index_function_col_, unw_index_fn_end, func_addr);
   *cfi = {0};
 
   // If found is start, then the given function is not in the table. If the
   // given pc is start of a function then we cannot unwind.
-  if (found == start || found->addr() == func_addr)
+  if (found == unw_index_function_col_ || *found == func_addr)
     return false;
 
-  // The required row is always one less than the value returned by
-  // std::lower_bound().
-  found--;
-  uintptr_t func_start_addr = found->addr();
+  // std::lower_bound() returns the iter that corresponds to the first address
+  // that is greater than the given address. So, the required iter is always one
+  // less than the value returned by std::lower_bound().
+  --found;
+  uintptr_t func_start_addr = *found;
+  size_t row_num = found - unw_index_function_col_;
+  uint16_t index = unw_index_indices_col_[row_num];
   DCHECK_LE(func_start_addr, func_addr);
   // If the index is CANT_UNWIND then we do not have unwind infomation for the
   // function.
-  if (found->index == kCantUnwind)
+  if (index == kCantUnwind)
     return false;
 
   // The unwind data for the current function is at an offsset of the index
   // found in UNW_INDEX table.
-  const uint16_t* unwind_data = unw_data_start_addr_ + found->index;
+  const uint16_t* unwind_data = unw_data_start_addr_ + index;
   // The value of first 2 bytes is the CFI data row count for the function.
   uint16_t row_count = 0;
   memcpy(&row_count, unwind_data, sizeof(row_count));

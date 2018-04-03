@@ -81,6 +81,9 @@ class BASE_EXPORT CFIBacktraceAndroid {
   // still reduce the total amount of address space available in process.
   void Initialize();
 
+  // Finds the UNW_INDEX and UNW_DATA tables in from the CFI file memory map.
+  void ParseCFITables();
+
   // Finds the CFI row for the given |func_addr| in terms of offset from
   // the start of the current binary.
   bool FindCFIRowForPC(uintptr_t func_addr, CFIRow* out) const;
@@ -94,8 +97,13 @@ class BASE_EXPORT CFIBacktraceAndroid {
   // because it is replaced in tests.
   std::unique_ptr<MemoryMappedFile> cfi_mmap_;
 
-  // The start address of UNW_IDX table.
-  const void* unw_index_start_addr_ = nullptr;
+  // The UNW_INDEX table: Start address of the function address column. The
+  // memory segment corresponding to this column is treated as an array of
+  // uintptr_t.
+  const uintptr_t* unw_index_function_col_ = nullptr;
+  // The UNW_INDEX table: Start address of the index column. The memory segment
+  // corresponding to this column is treated as an array of uint16_t.
+  const uint16_t* unw_index_indices_col_ = nullptr;
   // The number of rows in UNW_INDEX table.
   size_t unw_index_row_count_ = 0;
 
