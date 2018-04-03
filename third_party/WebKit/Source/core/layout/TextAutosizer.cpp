@@ -1111,7 +1111,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
                                     SubtreeLayoutScope* layouter,
                                     RelayoutBehavior relayout_behavior) {
   DCHECK(layout_object);
-  ComputedStyle& current_style = layout_object->MutableStyleRef();
+  const ComputedStyle& current_style = layout_object->StyleRef();
   if (!current_style.GetTextSizeAdjust().IsAuto()) {
     // The accessibility font scale factor is applied by the autosizer so we
     // need to apply that scale factor on top of the text-size-adjust
