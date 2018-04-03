@@ -312,16 +312,16 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   };
 
   struct Signals {
-    Signals();
+    bool activate_tile_tasks_completed = false;
+    bool draw_tile_tasks_completed = false;
+    bool all_tile_tasks_completed = false;
 
-    void reset();
+    bool activate_gpu_work_completed = false;
+    bool draw_gpu_work_completed = false;
 
-    bool ready_to_activate;
-    bool did_notify_ready_to_activate;
-    bool ready_to_draw;
-    bool did_notify_ready_to_draw;
-    bool all_tile_tasks_completed;
-    bool did_notify_all_tile_tasks_completed;
+    bool did_notify_ready_to_activate = false;
+    bool did_notify_ready_to_draw = false;
+    bool did_notify_all_tile_tasks_completed = false;
   };
 
   struct PrioritizedWorkToSchedule {
