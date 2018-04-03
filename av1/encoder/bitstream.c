@@ -349,28 +349,27 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
                             BLOCK_SIZE plane_bsize, aom_bit_depth_t bit_depth,
                             int block, int blk_row, int blk_col,
                             TX_SIZE tx_size, TOKEN_STATS *token_stats) {
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
   const TX_SIZE plane_tx_size =
       plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
 
   if (tx_size == plane_tx_size || plane) {
-    TOKEN_STATS tmp_token_stats;
-    init_token_stats(&tmp_token_stats);
-
     tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
-    uint16_t eob = x->mbmi_ext->eobs[plane][block];
+    const uint16_t eob = x->mbmi_ext->eobs[plane][block];
     TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
                         x->mbmi_ext->dc_sign_ctx[plane][block] };
     av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, plane, tx_size, tcoeff,
                          eob, &txb_ctx);
 #if CONFIG_RD_DEBUG
+    TOKEN_STATS tmp_token_stats;
+    init_token_stats(&tmp_token_stats);
     token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
     token_stats->cost += tmp_token_stats.cost;
 #endif
@@ -378,6 +377,7 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
+    const int step = bsh * bsw;
 
     assert(bsw > 0 && bsh > 0);
 
@@ -385,10 +385,7 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
       for (int c = 0; c < tx_size_wide_unit[tx_size]; c += bsw) {
         const int offsetr = blk_row + r;
         const int offsetc = blk_col + c;
-        const int step = bsh * bsw;
-
         if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
-
         pack_txb_tokens(w, cm, x, tp, tok_end, xd, mbmi, plane, plane_bsize,
                         bit_depth, block, offsetr, offsetc, sub_txs,
                         token_stats);
