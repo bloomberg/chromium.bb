@@ -25,6 +25,7 @@ class RenderTextWrapper {
                           bool value,
                           const gfx::Range& range);
 
+  virtual void SetWeight(gfx::Font::Weight weight);
   virtual void ApplyWeight(gfx::Font::Weight weight, const gfx::Range& range);
 
   virtual void SetDirectionalityMode(gfx::DirectionalityMode mode);

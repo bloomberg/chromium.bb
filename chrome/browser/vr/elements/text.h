@@ -78,7 +78,7 @@ class Text : public TexturedElement {
   void SetText(const base::string16& text);
 
   // TODO(vollick): should use TexturedElement::SetForegroundColor
-  void SetColor(SkColor color);
+  virtual void SetColor(SkColor color);
   void SetSelectionColors(const TextSelectionColors& colors);
 
   // Formatting must be applied only to non-wrapping text elements.
@@ -114,6 +114,17 @@ class Text : public TexturedElement {
 
   const std::vector<std::unique_ptr<gfx::RenderText>>& LayOutTextForTest();
   gfx::SizeF GetTextureSizeForTest() const;
+  void SetUnsupportedCodePointsForTest(bool unsupported);
+
+ protected:
+  void SetOnUnhandledCodePointCallback(
+      base::RepeatingCallback<void()> callback);
+  void SetOnRenderTextCreated(
+      base::RepeatingCallback<void(gfx::RenderText*)> callback);
+  void SetOnRenderTextRendered(
+      base::RepeatingCallback<void(const gfx::RenderText&, SkCanvas* canvas)>
+          callback);
+  float MetersToPixels(float meters);
 
  private:
   UiTexture* GetTexture() const override;

@@ -41,10 +41,6 @@ static constexpr float kFullscreenVerticalOffsetDMM = -0.1f;
 static constexpr float kFullscreenVerticalOffset =
     kFullscreenVerticalOffsetDMM * kFullscreenDistance;
 
-static constexpr float kExitPromptWidth = 0.672f * kContentDistance;
-static constexpr float kExitPromptHeight = 0.2f * kContentDistance;
-static constexpr float kExitPromptVerticalOffset = -0.09f * kContentDistance;
-
 static constexpr float kUrlBarDistance = 2.4f;
 static constexpr float kUrlBarHeightDMM = 0.088f;
 // This is the non-DMM relative offset of the URL bar. It is used to position
@@ -62,8 +58,6 @@ static constexpr float kUrlBarSeparatorWidthDMM = 0.002f;
 static constexpr float kUrlBarOriginRegionWidthDMM = 0.492f;
 static constexpr float kUrlBarOriginRightMarginDMM = 0.020f;
 static constexpr float kUrlBarOriginContentOffsetDMM = 0.020f;
-static constexpr float kUrlBarOriginFadeWidth = 0.044f;
-static constexpr float kUrlBarOriginMinimumPathWidth = 0.044f;
 static constexpr float kUrlBarItemCornerRadiusDMM = 0.006f;
 static constexpr float kUrlBarUrlWidthDMM = kUrlBarOriginRegionWidthDMM -
                                             kUrlBarEndButtonWidthDMM -
@@ -82,27 +76,12 @@ static constexpr float kIndicatorVerticalOffset = 0.1f;
 static constexpr float kIndicatorDistanceOffset = 0.1f;
 static constexpr float kIndicatorDepth = 2.4f;
 
-static constexpr float kWebVrUrlToastWidthDMM = 0.472f;
-static constexpr float kWebVrUrlToastHeightDMM = 0.064f;
-static constexpr float kWebVrUrlToastDistance = 1.0f;
-static constexpr float kWebVrUrlToastWidth =
-    kWebVrUrlToastWidthDMM * kWebVrUrlToastDistance;
-static constexpr float kWebVrUrlToastHeight =
-    kWebVrUrlToastHeightDMM * kWebVrUrlToastDistance;
-static constexpr int kWebVrUrlToastTimeoutSeconds = 6;
-static constexpr float kWebVrUrlToastOpacity = 0.8f;
-static constexpr float kWebVrUrlToastRotationRad = gfx::DegToRad(14.0f);
-
 static constexpr float kWebVrToastDistance = 1.0f;
-static constexpr float kFullScreenToastOffsetDMM = 0.1f;
 static constexpr float kToastXPaddingDMM = 0.017f;
 static constexpr float kToastYPaddingDMM = 0.02f;
 static constexpr float kToastCornerRadiusDMM = 0.004f;
 static constexpr float kToastTextFontHeightDMM = 0.023f;
-// When changing the value here, make sure it doesn't collide with
-// kWarningAngleRadians.
-static constexpr float kWebVrAngleRadians = gfx::DegToRad(9.88f);
-static constexpr int kToastTimeoutSeconds = kWebVrUrlToastTimeoutSeconds;
+static constexpr int kToastTimeoutSeconds = 6;
 
 static constexpr float kSplashScreenTextDistance = 2.5f;
 static constexpr float kSplashScreenTextFontHeightDMM = 0.05f;
@@ -145,7 +124,6 @@ static constexpr float kVoiceSearchRecognitionResultTextHeight =
     0.026f * kContentDistance;
 static constexpr float kVoiceSearchRecognitionResultTextWidth =
     0.4f * kContentDistance;
-static constexpr float kVoiceSearchIconScaleFactor = 0.75f;
 
 static constexpr float kTimeoutScreenDisatance = 2.5f;
 static constexpr float kTimeoutSpinnerSizeDMM = 0.088f;

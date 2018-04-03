@@ -475,7 +475,7 @@ TEST_F(UiTest, WebVrAutopresented) {
   EXPECT_TRUE(IsVisible(kWebVrUrlToast));
 
   // Make sure the transient URL bar times out.
-  RunFor(MsToDelta(1000 * (kWebVrUrlToastTimeoutSeconds + kSmallDelaySeconds)));
+  RunFor(MsToDelta(1000 * (kToastTimeoutSeconds + kSmallDelaySeconds)));
   RunFor(MsToDelta(1000));
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }

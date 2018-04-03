@@ -46,6 +46,14 @@ ElisionParameters GetElisionParameters(const GURL& gurl,
                                        gfx::RenderText* render_text,
                                        int min_path_pixels);
 
+// Given a formatted URL and associated Parsed data, generates a VR-specific
+// text formatting description that can be applied to a RenderText.  This mainly
+// handles emphasis of hosts, etc., but could also include color.
+TextFormatting CreateUrlFormatting(const base::string16& formatted_url,
+                                   const url::Parsed& parsed,
+                                   SkColor emphasized_color,
+                                   SkColor deemphasized_color);
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_ELEMENTS_OMNIBOX_FORMATTING_H_

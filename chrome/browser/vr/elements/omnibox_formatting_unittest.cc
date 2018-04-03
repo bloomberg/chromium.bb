@@ -16,14 +16,16 @@ namespace vr {
 namespace {
 
 constexpr SkColor kDefaultColor = 0xFF000001;
-constexpr SkColor kUrlColor = 0xFF000003;
+constexpr SkColor kUrlColor = 0xFF000002;
+constexpr SkColor kEmphasizedColor = 0xFF000003;
+constexpr SkColor kDeemphasizedColor = 0xFF000004;
 
 constexpr bool kNoOffset = false;
 constexpr bool kHasOffset = true;
 
 }  // namespace
 
-TEST(OmniboxFormatting, MultiLine) {
+TEST(OmniboxSuggestionFormatting, TextFormatting) {
   ACMatchClassifications classifications = {
       ACMatchClassification(0, ACMatchClassification::NONE),
       ACMatchClassification(1, ACMatchClassification::URL),
@@ -137,5 +139,45 @@ const std::vector<ElisionTestcase> elision_test_cases = {
 INSTANTIATE_TEST_CASE_P(ElisionTestCases,
                         ElisionTest,
                         ::testing::ValuesIn(elision_test_cases));
+
+TextFormatting CreateTextUrlFormatting(const std::string& url_string,
+                                       const std::string& expected_string) {
+  GURL url(base::UTF8ToUTF16(url_string));
+  url::Parsed parsed;
+  const base::string16 formatted_url = url_formatter::FormatUrl(
+      url, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed, nullptr,
+      nullptr);
+  EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
+  return CreateUrlFormatting(formatted_url, parsed, kEmphasizedColor,
+                             kDeemphasizedColor);
+}
+
+TEST(UrlFormatting, HttpUrlHasHostEmphasized) {
+  TextFormatting formatting =
+      CreateTextUrlFormatting("https://host.com/page", "host.com/page");
+  ASSERT_EQ(formatting.size(), 2u);
+  EXPECT_EQ(formatting[0], TextFormattingAttribute(kDeemphasizedColor,
+                                                   gfx::Range::InvalidRange()));
+  EXPECT_EQ(formatting[1],
+            TextFormattingAttribute(kEmphasizedColor, gfx::Range(0, 8)));
+}
+
+TEST(UrlFormatting, FileUrlIsAllEmphasized) {
+  TextFormatting formatting =
+      CreateTextUrlFormatting("file:///abc/def", "file:///abc/def");
+  ASSERT_EQ(formatting.size(), 1u);
+  EXPECT_EQ(formatting[0], TextFormattingAttribute(kEmphasizedColor,
+                                                   gfx::Range::InvalidRange()));
+}
+
+TEST(UrlFormatting, DataUrlHasSchemeEmphasized) {
+  TextFormatting formatting = CreateTextUrlFormatting(
+      "data:text/html,lots of data", "data:text/html,lots of data");
+  ASSERT_EQ(formatting.size(), 2u);
+  EXPECT_EQ(formatting[0], TextFormattingAttribute(kDeemphasizedColor,
+                                                   gfx::Range::InvalidRange()));
+  EXPECT_EQ(formatting[1],
+            TextFormattingAttribute(kEmphasizedColor, gfx::Range(0, 4)));
+}
 
 }  // namespace vr

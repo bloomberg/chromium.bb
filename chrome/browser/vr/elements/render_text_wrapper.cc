@@ -29,6 +29,10 @@ void RenderTextWrapper::ApplyStyle(gfx::TextStyle style,
   render_text_->ApplyStyle(style, value, range);
 }
 
+void RenderTextWrapper::SetWeight(gfx::Font::Weight weight) {
+  render_text_->SetWeight(weight);
+}
+
 void RenderTextWrapper::ApplyWeight(gfx::Font::Weight weight,
                                     const gfx::Range& range) {
   render_text_->ApplyWeight(weight, range);

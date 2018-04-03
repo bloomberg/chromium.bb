@@ -49,7 +49,7 @@
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
-#include "chrome/browser/vr/elements/url_bar.h"
+#include "chrome/browser/vr/elements/url_text.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 #include "chrome/browser/vr/elements/webvr_url_toast.h"
@@ -633,17 +633,23 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
 
   std::unique_ptr<UiElement> description_element;
   if (spec.is_url) {
-    auto url_text = Create<UrlBar>(
-        kNone, kPhaseOverlayForeground, 512,
+    auto url_text = Create<UrlText>(
+        kNone, kPhaseOverlayForeground, kWebVrPermissionFontHeight,
         base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
-                            base::Unretained(browser)));
+                            base::Unretained(browser),
+                            UiUnsupportedMode::kUnhandledCodePoint)
+
+            );
     url_text->SetSize(kWebVrPermissionTextWidth, 0);
-    url_text->AddBinding(VR_BIND_FUNC(ToolbarState, Model, model,
-                                      model->toolbar_state, UrlBar,
-                                      url_text.get(), SetToolbarState));
+    url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model,
+                                      model->toolbar_state.gurl, UrlText,
+                                      url_text.get(), SetUrl));
     VR_BIND_COLOR(model, url_text.get(),
                   &ColorScheme::webvr_permission_foreground,
-                  &UrlBar::SetSingleColor);
+                  &UrlText::SetEmphasizedColor);
+    VR_BIND_COLOR(model, url_text.get(),
+                  &ColorScheme::webvr_permission_foreground,
+                  &UrlText::SetDeemphasizedColor);
     description_element = std::move(url_text);
 
   } else {
@@ -2115,18 +2121,20 @@ void UiSceneCreator::CreateUrlBar() {
           base::Unretained(security_button.get()))));
   scene_->AddUiElement(kUrlBarSecurityButtonRegion, std::move(security_button));
 
-  auto url_text =
-      Create<UrlBar>(kUrlBarUrlText, kPhaseForeground, 512,
-                     base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
-                                         base::Unretained(browser_)));
-  url_text->SetSize(kUrlBarUrlWidthDMM, kUrlBarHeightDMM);
+  auto url_text = Create<UrlText>(
+      kUrlBarUrlText, kPhaseForeground, kUrlBarFontHeightDMM,
+      base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
+                          base::Unretained(browser_),
+                          UiUnsupportedMode::kUnhandledCodePoint));
+  url_text->SetSize(kUrlBarUrlWidthDMM, 0);
   VR_BIND_VISIBILITY(url_text, model->toolbar_state.should_display_url);
-  url_text->AddBinding(VR_BIND_FUNC(ToolbarState, Model, model_,
-                                    model->toolbar_state, UrlBar,
-                                    url_text.get(), SetToolbarState));
-  url_text->AddBinding(VR_BIND_FUNC(UrlTextColors, Model, model_,
-                                    model->color_scheme().url_text, UrlBar,
-                                    url_text.get(), SetColors));
+  url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model_,
+                                    model->toolbar_state.gurl, UrlText,
+                                    url_text.get(), SetUrl));
+  VR_BIND_COLOR(model_, url_text.get(), &ColorScheme::url_text_emphasized,
+                &UrlText::SetEmphasizedColor);
+  VR_BIND_COLOR(model_, url_text.get(), &ColorScheme::url_text_deemphasized,
+                &UrlText::SetDeemphasizedColor);
   scene_->AddUiElement(kUrlBarOriginLayout, std::move(url_text));
 
   auto right_margin = Create<Rect>(kNone, kPhaseNone);
@@ -2775,7 +2783,7 @@ void UiSceneCreator::CreatePrompts() {
 void UiSceneCreator::CreateWebVrOverlayElements() {
   // Create url toast shown when WebVR is auto-presented.
   auto parent = CreateTransientParent(kWebVrUrlToastTransientParent,
-                                      kWebVrUrlToastTimeoutSeconds, true);
+                                      kToastTimeoutSeconds, true);
   parent->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
           [](Model* model, UiElement* splash_screen) {

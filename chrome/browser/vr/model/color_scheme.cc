@@ -108,8 +108,8 @@ void InitializeColorSchemes() {
   normal_scheme.url_bar_button.background_down = MakeBlack(8);
   normal_scheme.url_bar_button.foreground = MakeBlack(65);
   normal_scheme.url_bar_button.foreground_disabled = MakeBlack(24);
-  normal_scheme.url_text.deemphasized = MakeBlack(30);
-  normal_scheme.url_text.emphasized = MakeBlack(80);
+  normal_scheme.url_text_emphasized = MakeBlack(80);
+  normal_scheme.url_text_deemphasized = MakeBlack(30);
   normal_scheme.omnibox_background = 0xFFEEEEEE;
   normal_scheme.omnibox_text_selection.cursor = 0xFF5595FE;      // TODO
   normal_scheme.omnibox_text_selection.background = 0xFFC6DAFC;  // TODO
@@ -212,8 +212,8 @@ void InitializeColorSchemes() {
   incognito_scheme.url_bar_button.background_down = MakeWhite(8);
   incognito_scheme.url_bar_button.foreground = MakeWhite(65);
   incognito_scheme.url_bar_button.foreground_disabled = MakeWhite(24);
-  incognito_scheme.url_text.deemphasized = MakeWhite(30);
-  incognito_scheme.url_text.emphasized = MakeWhite(80);
+  incognito_scheme.url_text_emphasized = MakeWhite(80);
+  incognito_scheme.url_text_deemphasized = MakeWhite(30);
   incognito_scheme.omnibox_background = incognito_scheme.url_bar_background;
   incognito_scheme.omnibox_text_selection.foreground =
       incognito_scheme.url_bar_text;
@@ -227,7 +227,6 @@ void InitializeColorSchemes() {
 }
 
 static constexpr size_t kButtonColorsSize = 20;
-static constexpr size_t kUrlTextColorsSize = 8;
 
 }  // namespace
 
@@ -262,19 +261,6 @@ SkColor ButtonColors::GetBackgroundColor(bool hovered, bool pressed) const {
 
 SkColor ButtonColors::GetForegroundColor(bool disabled) const {
   return disabled ? foreground_disabled : foreground;
-}
-
-static_assert(
-    kUrlTextColorsSize == sizeof(UrlTextColors),
-    "If the new colors are added to UrlTextColors, we must explicitly "
-    "bump this size and update operator== below");
-
-bool UrlTextColors::operator==(const UrlTextColors& other) const {
-  return deemphasized == other.deemphasized && emphasized == other.emphasized;
-}
-
-bool UrlTextColors::operator!=(const UrlTextColors& other) const {
-  return !(*this == other);
 }
 
 bool TextSelectionColors::operator==(const TextSelectionColors& other) const {
