@@ -244,27 +244,7 @@ void FreeFullPage(PartitionPage* page) {
 }
 
 #if defined(OS_LINUX)
-bool KernelSupportsMadvFree() {
-  int32_t major_version;
-  int32_t minor_version;
-  int32_t bugfix_version;
-  SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                         &bugfix_version);
-  return std::vector<int32_t>{major_version, minor_version, bugfix_version} >=
-         std::vector<int32_t>{4, 5};
-}
-
 bool CheckPageInCore(void* ptr, bool in_core) {
-  // If the kernel supports MADV_FREE, then pages may still be in core to be
-  // reclaimed by the OS later.  This is a cool optimization that prevents the
-  // kernel from freeing and allocating memory in case the app needs more memory
-  // soon -- it can just reuse the memory already allocated.  Unfortunately,
-  // there's no way to test if a page is in core because it needs to be, or if
-  // it just hasn't been reclaimed yet.
-  static bool kernel_supports_madv_free = KernelSupportsMadvFree();
-  if (kernel_supports_madv_free)
-    return true;
-
   unsigned char ret = 0;
   EXPECT_EQ(0, mincore(ptr, kSystemPageSize, &ret));
   return in_core == (ret & 1);
