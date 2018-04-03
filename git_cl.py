@@ -1525,7 +1525,6 @@ class Changelist(object):
       return presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
           default_presubmit=None, may_prompt=may_prompt,
-          rietveld_obj=self._codereview_impl.GetRietveldObjForPresubmit(),
           gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit())
     except presubmit_support.PresubmitFailure as e:
       DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
@@ -1806,11 +1805,6 @@ class _ChangelistCodereviewBase(object):
   def _PostUnsetIssueProperties(self):
     """Which branch-specific properties to erase when unsetting issue."""
     return []
-
-  def GetRietveldObjForPresubmit(self):
-    # This is an unfortunate Rietveld-embeddedness in presubmit.
-    # For non-Rietveld code reviews, this probably should return a dummy object.
-    raise NotImplementedError()
 
   def GetGerritObjForPresubmit(self):
     # None is valid return value, otherwise presubmit_support.GerritAccessor.
@@ -2128,9 +2122,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   @classmethod
   def CodereviewServerConfigKey(cls):
     return 'rietveldserver'
-
-  def GetRietveldObjForPresubmit(self):
-    return self.RpcServer()
 
   def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
     raise NotImplementedError()
@@ -2503,24 +2494,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def _PostUnsetIssueProperties(self):
     """Which branch-specific properties to erase when unsetting issue."""
     return ['gerritsquashhash']
-
-  def GetRietveldObjForPresubmit(self):
-    class ThisIsNotRietveldIssue(object):
-      def __nonzero__(self):
-        # This is a hack to make presubmit_support think that rietveld is not
-        # defined, yet still ensure that calls directly result in a decent
-        # exception message below.
-        return False
-
-      def __getattr__(self, attr):
-        print(
-            'You aren\'t using Rietveld at the moment, but Gerrit.\n'
-            'Using Rietveld in your PRESUBMIT scripts won\'t work.\n'
-            'Please, either change your PRESUBMIT to not use rietveld_obj.%s,\n'
-            'or use Rietveld for codereview.\n'
-            'See also http://crbug.com/579160.' % attr)
-        raise NotImplementedError()
-    return ThisIsNotRietveldIssue()
 
   def GetGerritObjForPresubmit(self):
     return presubmit_support.GerritAccessor(self._GetGerritHost())
