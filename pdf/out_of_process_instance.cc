@@ -1500,7 +1500,8 @@ OutOfProcessInstance::SearchString(const base::char16* string,
 void OutOfProcessInstance::DocumentPaintOccurred() {}
 
 void OutOfProcessInstance::DocumentLoadComplete(
-    const PDFEngine::DocumentFeatures& document_features) {
+    const PDFEngine::DocumentFeatures& document_features,
+    uint32_t file_size) {
   // Clear focus state for OSK.
   FormTextFieldFocusChange(false);
 
@@ -1565,6 +1566,9 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
+  static const int32_t kMaxFileSizeInKB = 12 * 1024 * 1024;
+  HistogramCustomCounts("PDF.FileSizeInKB", file_size / 1024, 0,
+                        kMaxFileSizeInKB, 50);
   HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
                         1000000, 50);
   HistogramEnumeration("PDF.HasAttachment",
