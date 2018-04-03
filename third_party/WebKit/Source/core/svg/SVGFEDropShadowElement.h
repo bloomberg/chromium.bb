@@ -51,9 +51,6 @@ class SVGFEDropShadowElement final
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  static const AtomicString& StdDeviationXIdentifier();
-  static const AtomicString& StdDeviationYIdentifier();
-
   Member<SVGAnimatedNumber> dx_;
   Member<SVGAnimatedNumber> dy_;
   Member<SVGAnimatedNumberOptionalNumber> std_deviation_;
