@@ -82,12 +82,15 @@ class LocalEmulationServer:
     self._server_class = server_class
     self._server = None
 
-  def StartAndReturn(self):
+  def StartAndReturn(self, timeout=30):
     """Start the server in a new thread and return once the server is running.
 
     A new server of the given server_class at init is started with the given
     handler. The server will listen forever in a new thread unless Shutdown() is
     called.
+
+    Args:
+      timeout: The timeout to start the server.
     """
     self._server = self._server_class(("0.0.0.0", self._port),
       self._handler_class)
@@ -98,7 +101,8 @@ class LocalEmulationServer:
     thread = threading.Thread(target=WaitForRunning, args=[event])
     thread.daemon = True
     thread.start()
-    event.wait()
+    if not event.wait(timeout=timeout):
+      raise Exception("Emulation server didn't start in %d seconds" % timeout)
 
   def Shutdown(self):
     """Shutdown a running server.
