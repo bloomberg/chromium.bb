@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_observer.h"
@@ -647,9 +648,7 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
     list.clear();
 
     overriding.SetScopedHandle(std::move(override_handle));
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
-    loop->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration::
@@ -666,7 +665,7 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
   }
 
  private:
-  base::RunLoop run_loop_;
+  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
 };
 
 RUN_TEST_IN_MESSAGE_LOOP(
@@ -710,11 +709,9 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
 
     second_overriding.SetScopedHandle(std::move(second_override_handle));
     second_overriding.set_post_dispatch_action(POST_DISPATCH_NONE);
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     second_overriding.set_callback(run_loop.QuitClosure());
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
-    loop->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&TestPlatformEventSource::Dispatch),
                        base::Unretained(source()), *event));
@@ -749,9 +746,7 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
     // Start a nested message-loop, and destroy |override_handle| in the nested
     // loop. That should terminate the nested loop, restore the previous
     // dispatchers, and return control to this function.
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
-    loop->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration::
@@ -768,7 +763,7 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
   }
 
  private:
-  base::RunLoop run_loop_;
+  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
 };
 
 RUN_TEST_IN_MESSAGE_LOOP(
