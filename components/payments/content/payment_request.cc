@@ -151,7 +151,7 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
           spec_->url_payment_method_identifiers().end());
 }
 
-void PaymentRequest::Show() {
+void PaymentRequest::Show(bool is_user_gesture) {
   if (!client_.is_bound() || !binding_.is_bound()) {
     LOG(ERROR) << "Attempted Show(), but binding(s) missing.";
     OnConnectionTerminated();
@@ -176,6 +176,8 @@ void PaymentRequest::Show() {
     OnConnectionTerminated();
     return;
   }
+
+  is_show_user_gesture_ = is_user_gesture;
 
   // TODO(crbug.com/783811): Display a spinner when checking whether
   // the methods are supported asynchronously for better user experience.
@@ -356,7 +358,7 @@ bool PaymentRequest::IsIncognito() const {
 bool PaymentRequest::SatisfiesSkipUIConstraints() const {
   return base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
          base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps) &&
-         state()->is_get_all_instruments_finished() &&
+         is_show_user_gesture_ && state()->is_get_all_instruments_finished() &&
          state()->available_instruments().size() == 1 &&
          spec()->stringified_method_data().size() == 1 &&
          !spec()->request_shipping() && !spec()->request_payer_name() &&

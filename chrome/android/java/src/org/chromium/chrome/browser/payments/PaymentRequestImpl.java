@@ -619,7 +619,7 @@ public class PaymentRequestImpl
      * Called by the merchant website to show the payment request to the user.
      */
     @Override
-    public void show() {
+    public void show(boolean isUserGesture) {
         if (mClient == null) return;
 
         if (mUI != null) {
@@ -660,6 +660,7 @@ public class PaymentRequestImpl
         mObservedTabModel.addObserver(mTabModelObserver);
 
         buildUI(chromeActivity);
+        if (!isUserGesture) mShouldSkipShowingPaymentRequestUi = false;
         if (!mShouldSkipShowingPaymentRequestUi) mUI.show();
 
         triggerPaymentAppUiSkipIfApplicable();

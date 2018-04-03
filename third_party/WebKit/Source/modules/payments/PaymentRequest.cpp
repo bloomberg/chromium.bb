@@ -817,7 +817,8 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
 
   // TODO(crbug.com/825270): Reject with SecurityError DOMException if triggered
   // without user activation.
-  if (!Frame::HasTransientUserActivation(GetFrame())) {
+  bool is_user_gesture = Frame::HasTransientUserActivation(GetFrame());
+  if (!is_user_gesture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPaymentRequestShowWithoutGesture);
   }
@@ -830,7 +831,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
         DOMException::Create(kInvalidStateError, "Page popups are suppressed"));
   }
 
-  payment_provider_->Show();
+  payment_provider_->Show(is_user_gesture);
 
   show_resolver_ = ScriptPromiseResolver::Create(script_state);
   return show_resolver_->Promise();

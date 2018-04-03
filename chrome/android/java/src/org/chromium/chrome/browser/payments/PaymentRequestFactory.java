@@ -36,7 +36,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         }
 
         @Override
-        public void show() {
+        public void show(boolean isUserGesture) {
             if (mClient != null) {
                 mClient.onError(PaymentErrorReason.USER_CANCEL);
                 mClient.close();
