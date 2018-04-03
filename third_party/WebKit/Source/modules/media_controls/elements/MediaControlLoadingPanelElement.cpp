@@ -149,6 +149,14 @@ void MediaControlLoadingPanelElement::SetAnimationIterationCount(
 }
 
 void MediaControlLoadingPanelElement::UpdateDisplayState() {
+  // If the media consols are playing then we should hide the element as
+  // soon as possible since we are obscuring the video.
+  if (GetMediaControls().State() == MediaControlsImpl::kPlaying &&
+      state_ != State::kHidden) {
+    HideAnimation();
+    return;
+  }
+
   switch (state_) {
     case State::kHidden:
       // If the media controls are loading metadata then we should show the
@@ -162,9 +170,8 @@ void MediaControlLoadingPanelElement::UpdateDisplayState() {
       }
       break;
     case State::kPlaying:
-      // If the media controls are either stopped or playing then we should
-      // hide the loading panel, but not until the current cycle of animations
-      // is complete.
+      // If the media controls are stopped then we should hide the loading
+      // panel, but not until the current cycle of animations is complete.
       if (GetMediaControls().State() != MediaControlsImpl::kLoadingMetadata) {
         SetAnimationIterationCount(WTF::String::Number(animation_count_ + 1));
         state_ = State::kCoolingDown;
