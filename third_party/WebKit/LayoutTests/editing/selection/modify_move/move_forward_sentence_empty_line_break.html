@@ -1,34 +1,20 @@
 <!doctype html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<p>This tests for sentence boundary when there are empty line break between
-lines of text.<p>
-<div id="sample" contenteditable>foo<div id="empty"><br></div>bar</div>
+<script src="../../assert_selection.js"></script>
 <div id="log"></idv>
 <script>
-test(function() {
-    var selection = window.getSelection();
-    var sample = document.getElementById('sample');
-    selection.collapse(sample, 1);
-    selection.modify('move', 'forward', 'sentence');
+// This tests for sentence boundary when there are empty line break between
+// lines of text.
+selection_test(
+  '<div contenteditable>foo|<div><br></div>bar</div>',
+  selection => selection.modify('move', 'forward', 'sentence'),
+  '<div contenteditable>foo<div>|<br></div>bar</div>',
+  '1 move forward sentence to empty line break');
 
-    var anchor = document.getElementById('empty');
-    assert_equals(selection.anchorNode, anchor, 'anchorNode');
-    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
-    assert_equals(selection.focusNode, anchor, 'focusNode');
-    assert_equals(selection.focusOffset, 0, 'focusOffset');
-}, 'to empty line break');
-
-test(function() {
-    var selection = window.getSelection();
-    var empty = document.getElementById('empty');
-    selection.collapse(empty, 0);
-    selection.modify('move', 'forward', 'sentence');
-
-    var anchor = sample.lastChild;
-    assert_equals(selection.anchorNode, anchor, 'anchorNode');
-    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
-    assert_equals(selection.focusNode, anchor, 'focusNode');
-    assert_equals(selection.focusOffset, 0, 'focusOffset');
-}, 'from empty line break');
+selection_test(
+  '<div contenteditable>foo<div>|<br></div>bar</div>',
+  selection => selection.modify('move', 'forward', 'sentence'),
+  '<div contenteditable>foo<div><br></div>|bar</div>',
+  '2 move forward sentence from empty line break');
 </script>
