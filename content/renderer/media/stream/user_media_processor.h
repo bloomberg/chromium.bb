@@ -23,6 +23,10 @@
 #include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace blink {
 class WebMediaStream;
 class WebMediaStreamSource;
@@ -151,6 +155,8 @@ class CONTENT_EXPORT UserMediaProcessor
       const std::string& label,
       const std::string& device_id,
       const media::VideoCaptureFormats& formats);
+
+  gfx::Size GetScreenSize();
 
   void OnStreamGenerationFailed(int request_id,
                                 MediaStreamRequestResult result);
