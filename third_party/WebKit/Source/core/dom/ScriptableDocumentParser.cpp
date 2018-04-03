@@ -27,6 +27,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
+#include "platform/loader/fetch/SourceKeyedCachedMetadataHandler.h"
 
 namespace blink {
 
@@ -39,6 +40,11 @@ ScriptableDocumentParser::ScriptableDocumentParser(
 
 bool ScriptableDocumentParser::IsParsingAtLineNumber() const {
   return IsParsing() && !IsWaitingForScripts() && !IsExecutingScript();
+}
+
+void ScriptableDocumentParser::Trace(blink::Visitor* visitor) {
+  visitor->Trace(inline_script_cache_handler_);
+  DecodedDataDocumentParser::Trace(visitor);
 }
 
 }  // namespace blink

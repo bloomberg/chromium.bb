@@ -99,8 +99,10 @@ namespace content {
 
 namespace {
 
-// V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag + timestamp).
-const int kV8CacheTimeStampDataSize = sizeof(unsigned) + sizeof(double);
+// V8ScriptRunner::setCacheTimeStamp() stores 16 byte data (marker + tag +
+// timestamp).
+const int kV8CacheTimeStampDataSize =
+    sizeof(uint32_t) + sizeof(uint32_t) + sizeof(double);
 
 struct FetchResult {
   ServiceWorkerStatusCode status;

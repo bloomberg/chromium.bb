@@ -173,7 +173,8 @@ uint32_t CacheTag(CacheTagKind kind, const String& encoding) {
   // about encodings, but the cached data is specific to one encoding. If we
   // later load the script from the cache and interpret it with a different
   // encoding, the cached data is not valid for that encoding.
-  return (v8_cache_data_version | kind) + StringHash::GetHash(encoding);
+  return (v8_cache_data_version | kind) +
+         (encoding.IsNull() ? 0 : StringHash::GetHash(encoding));
 }
 
 // Check previously stored timestamp.

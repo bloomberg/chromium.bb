@@ -39,6 +39,7 @@ class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
 class SubstituteData;
+class SourceKeyedCachedMetadataHandler;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:
@@ -83,12 +84,23 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 
+  void SetSerializedCachedMetadata(const char*, size_t) override;
+
+  // Used for code caching of scripts with source code inline in the HTML.
+  // Returns a cache handler which can store multiple cache metadata entries,
+  // keyed by the source code of the script.
+  SourceKeyedCachedMetadataHandler* CacheHandler();
+
   WTF::Optional<int64_t> DownloadedFileLength() const {
     return downloaded_file_length_;
   }
   scoped_refptr<BlobDataHandle> DownloadedBlob() const {
     return downloaded_blob_;
   }
+
+ protected:
+  CachedMetadataHandler* CreateCachedMetadataHandler(
+      std::unique_ptr<CachedMetadataSender> send_callback) override;
 
  private:
   class RawResourceFactory : public NonTextResourceFactory {
@@ -113,7 +125,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void WillNotFollowRedirect() override;
   void ResponseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;
-  void SetSerializedCachedMetadata(const char*, size_t) override;
   void DidSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent) override;
   void DidDownloadData(int) override;

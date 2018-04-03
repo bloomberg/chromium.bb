@@ -46,6 +46,10 @@ const base::Feature kBlockCredentialedSubresources{
 const base::Feature kBrotliEncoding{"brotli-encoding",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables code caching for inline scripts.
+const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kCanvas2DImageChromium {

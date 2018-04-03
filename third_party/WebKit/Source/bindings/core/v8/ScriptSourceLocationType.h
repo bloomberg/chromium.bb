@@ -10,6 +10,9 @@ namespace blink {
 // An enumeration for reporting the source of javascript source code. Only used
 // for logging/stats purposes, and shouldn't be used for behavioural differences
 // to avoid layer violations.
+// TODO(leszeks): This is actually being used for affecting the behaviour of
+// inline script caching currently, we should either update this documentation
+// or remove that usage.
 enum class ScriptSourceLocationType {
   // An unknown or unspecified source.
   kUnknown,

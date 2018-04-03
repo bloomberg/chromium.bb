@@ -40,8 +40,10 @@
 
 namespace blink {
 
-// |m_serializedData| consists of 32 bits type ID and and actual data.
-constexpr size_t kCachedMetaDataStart = sizeof(uint32_t);
+// |m_serializedData| consists of a 32 bit marker, 32 bits type ID, and actual
+// data.
+constexpr size_t kCacheDataTypeStart = sizeof(uint32_t);
+constexpr size_t kCachedMetaDataStart = kCacheDataTypeStart + sizeof(uint32_t);
 
 // Metadata retrieved from the embedding application's cache.
 //
@@ -57,9 +59,7 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
 
   static scoped_refptr<CachedMetadata> CreateFromSerializedData(
       const char* data,
-      size_t size) {
-    return base::AdoptRef(new CachedMetadata(data, size));
-  }
+      size_t);
 
   ~CachedMetadata() = default;
 
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   uint32_t DataTypeID() const {
     DCHECK_GE(serialized_data_.size(), kCachedMetaDataStart);
     return *reinterpret_cast_ptr<uint32_t*>(
-        const_cast<char*>(serialized_data_.data()));
+        const_cast<char*>(serialized_data_.data() + kCacheDataTypeStart));
   }
 
   const char* Data() const {

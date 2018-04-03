@@ -148,6 +148,9 @@
       status: "experimental",
     },
     {
+      name: "CacheInlineScriptCode"
+    },
+    {
       name: "CacheStyleSheetWithMediaQueries",
       status: "experimental",
     },

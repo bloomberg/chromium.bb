@@ -427,6 +427,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableCodeCacheAfterExecute(
       base::FeatureList::IsEnabled(features::kCodeCacheAfterExecute));
 
+  WebRuntimeFeatures::EnableCacheInlineScriptCode(
+      base::FeatureList::IsEnabled(features::kCacheInlineScriptCode));
+
   if (base::FeatureList::IsEnabled(features::kUnifiedTouchAdjustment))
     WebRuntimeFeatures::EnableUnifiedTouchAdjustment(true);
 

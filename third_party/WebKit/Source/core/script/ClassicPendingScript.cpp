@@ -8,14 +8,21 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/AllowedByNosniff.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/SubresourceIntegrityHelper.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "core/script/DocumentWriteIntervention.h"
 #include "core/script/ScriptLoader.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/loader/fetch/CachedMetadata.h"
 #include "platform/loader/fetch/MemoryCache.h"
+#include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceClient.h"
+#include "platform/loader/fetch/SourceKeyedCachedMetadataHandler.h"
+#include "platform/runtime_enabled_features.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {
@@ -226,6 +233,20 @@ bool ClassicPendingScript::CheckMIMETypeBeforeRunScript(
                                             GetResource()->GetResponse());
 }
 
+static SingleCachedMetadataHandler* GetInlineCacheHandler(const String& source,
+                                                          Document& document) {
+  if (!RuntimeEnabledFeatures::CacheInlineScriptCodeEnabled())
+    return nullptr;
+
+  SourceKeyedCachedMetadataHandler* document_cache_handler =
+      document.GetScriptableDocumentParser()->GetInlineScriptCacheHandler();
+
+  if (!document_cache_handler)
+    return nullptr;
+
+  return document_cache_handler->HandlerForSource(source);
+}
+
 ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
                                                bool& error_occurred) const {
   CheckState();
@@ -233,9 +254,22 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
 
   error_occurred = ErrorOccurred();
   if (!is_external_) {
-    ScriptSourceCode source_code(
-        GetElement()->TextFromChildren(), source_location_type_,
-        nullptr /* cache_handler */, document_url, StartingPosition());
+    SingleCachedMetadataHandler* cache_handler = nullptr;
+    String source = GetElement()->TextFromChildren();
+    // We only create an inline cache handler for html-embedded scripts, not
+    // for scripts produced by document.write, or not parser-inserted. This is
+    // because we expect those to be too dynamic to benefit from caching.
+    // TODO(leszeks): ScriptSourceLocationType was previously only used for UMA,
+    // so it's a bit of a layer violation to use it for affecting cache
+    // behaviour. We should decide whether it is ok for this parameter to be
+    // used for behavioural changes (and if yes, update its documentation), or
+    // otherwise trigger this behaviour differently.
+    if (source_location_type_ == ScriptSourceLocationType::kInline) {
+      cache_handler =
+          GetInlineCacheHandler(source, GetElement()->GetDocument());
+    }
+    ScriptSourceCode source_code(source, source_location_type_, cache_handler,
+                                 document_url, StartingPosition());
     return ClassicScript::Create(source_code, base_url_for_inline_script_,
                                  options_, kSharableCrossOrigin);
   }
