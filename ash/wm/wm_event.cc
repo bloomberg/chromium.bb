@@ -82,8 +82,10 @@ bool WMEvent::IsTransitionEvent() const {
   return false;
 }
 
-SetBoundsEvent::SetBoundsEvent(WMEventType type, const gfx::Rect& bounds)
-    : WMEvent(type), requested_bounds_(bounds) {}
+SetBoundsEvent::SetBoundsEvent(WMEventType type,
+                               const gfx::Rect& bounds,
+                               bool animate)
+    : WMEvent(type), requested_bounds_(bounds), animate_(animate) {}
 
 SetBoundsEvent::~SetBoundsEvent() = default;
 

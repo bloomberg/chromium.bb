@@ -131,13 +131,18 @@ class ASH_EXPORT WMEvent {
 // An WMEvent to request new bounds for the window.
 class ASH_EXPORT SetBoundsEvent : public WMEvent {
  public:
-  SetBoundsEvent(WMEventType type, const gfx::Rect& requested_bounds);
+  SetBoundsEvent(WMEventType type,
+                 const gfx::Rect& requested_bounds,
+                 bool animate = false);
   ~SetBoundsEvent() override;
 
   const gfx::Rect& requested_bounds() const { return requested_bounds_; }
 
+  bool animate() const { return animate_; }
+
  private:
   gfx::Rect requested_bounds_;
+  bool animate_;
 
   DISALLOW_COPY_AND_ASSIGN(SetBoundsEvent);
 };

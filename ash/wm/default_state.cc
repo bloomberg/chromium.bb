@@ -72,30 +72,6 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   }
 }
 
-void CycleSnap(WindowState* window_state, WMEventType event) {
-  mojom::WindowStateType desired_snap_state =
-      event == WM_EVENT_CYCLE_SNAP_LEFT ? mojom::WindowStateType::LEFT_SNAPPED
-                                        : mojom::WindowStateType::RIGHT_SNAPPED;
-
-  if (window_state->CanSnap() &&
-      window_state->GetStateType() != desired_snap_state &&
-      window_state->window()->type() != aura::client::WINDOW_TYPE_PANEL) {
-    const wm::WMEvent event(desired_snap_state ==
-                                    mojom::WindowStateType::LEFT_SNAPPED
-                                ? wm::WM_EVENT_SNAP_LEFT
-                                : wm::WM_EVENT_SNAP_RIGHT);
-    window_state->OnWMEvent(&event);
-    return;
-  }
-
-  if (window_state->IsSnapped()) {
-    window_state->Restore();
-    return;
-  }
-  ::wm::AnimateWindow(window_state->window(),
-                      ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-}
-
 }  // namespace
 
 DefaultState::DefaultState(mojom::WindowStateType initial_state_type)
@@ -415,33 +391,12 @@ void DefaultState::SetBounds(WindowState* window_state,
     // TODO(oshima|varkha): Is this still needed? crbug.com/485612.
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
-    window_state->SetBoundsConstrained(event->requested_bounds());
+    if (event->animate()) {
+      window_state->SetBoundsDirectAnimated(event->requested_bounds());
+    } else {
+      window_state->SetBoundsConstrained(event->requested_bounds());
+    }
   }
-}
-
-// static
-void DefaultState::CenterWindow(WindowState* window_state) {
-  if (!window_state->IsNormalOrSnapped())
-    return;
-  aura::Window* window = window_state->window();
-  if (window_state->IsSnapped()) {
-    gfx::Rect center_in_screen = display::Screen::GetScreen()
-                                     ->GetDisplayNearestWindow(window)
-                                     .work_area();
-    gfx::Size size = window_state->HasRestoreBounds()
-                         ? window_state->GetRestoreBoundsInScreen().size()
-                         : window->bounds().size();
-    center_in_screen.ClampToCenteredSize(size);
-    window_state->SetRestoreBoundsInScreen(center_in_screen);
-    window_state->Restore();
-  } else {
-    gfx::Rect center_in_parent =
-        screen_util::GetDisplayWorkAreaBoundsInParent(window);
-    center_in_parent.ClampToCenteredSize(window->bounds().size());
-    window_state->SetBoundsDirectAnimated(center_in_parent);
-  }
-  // Centering window is treated as if a user moved and resized the window.
-  window_state->set_bounds_changed_by_user(true);
 }
 
 void DefaultState::EnterToNextState(WindowState* window_state,

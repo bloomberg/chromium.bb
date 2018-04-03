@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef ASH_WM_BASE_STATE_H_
+#define ASH_WM_BASE_STATE_H_
+
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "base/macros.h"
 
 namespace aura {
@@ -26,6 +30,9 @@ class BaseState : public WindowState::State {
   // Returns the WindowStateType corresponds to the WMEvent type.
   static mojom::WindowStateType GetStateForTransitionEvent(
       const WMEvent* event);
+
+  static void CenterWindow(WindowState* window_state);
+  static void CycleSnap(WindowState* window_state, WMEventType event);
 
   // Handles workspace related events, such as DISPLAY_BOUNDS_CHANGED.
   virtual void HandleWorkspaceEvents(WindowState* window_state,
@@ -62,3 +69,5 @@ class BaseState : public WindowState::State {
 
 }  // namespace wm
 }  // namespace ash
+
+#endif  // ASH_WM_BASE_STATE_H_

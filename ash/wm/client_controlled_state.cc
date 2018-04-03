@@ -179,7 +179,7 @@ void ClientControlledState::HandleCompoundEvents(WindowState* window_state,
       break;
     case WM_EVENT_CYCLE_SNAP_LEFT:
     case WM_EVENT_CYCLE_SNAP_RIGHT:
-      // TODO(oshima): implement this.
+      CycleSnap(window_state, event->type());
       break;
     default:
       NOTREACHED() << "Invalid event :" << event->type();
@@ -214,7 +214,7 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
       break;
     }
     case WM_EVENT_CENTER:
-      // TODO(oshima): implement this.
+      CenterWindow(window_state);
       break;
     default:
       NOTREACHED() << "Unknown event:" << event->type();
