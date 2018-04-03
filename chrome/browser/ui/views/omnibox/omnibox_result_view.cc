@@ -96,29 +96,63 @@ int GetIconAlignmentOffset() {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// OmniboxImageView:
+
+class OmniboxImageView : public views::ImageView {
+ public:
+  bool CanProcessEventsWithinSubtree() const override { return false; }
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // OmniboxSeparatedLineView:
 
 class OmniboxSeparatedLineView : public views::View {
  public:
-  explicit OmniboxSeparatedLineView(OmniboxResultView* result_view);
+  explicit OmniboxSeparatedLineView(OmniboxResultView* result_view,
+                                    const gfx::FontList& font_list);
   ~OmniboxSeparatedLineView() override;
+
+  void OnMatchUpdate(const AutocompleteMatch& match);
+  void OnHighlightUpdate(const AutocompleteMatch& match);
 
  protected:
   // views::View:
   void Layout() override;
   const char* GetClassName() const override;
 
+  // Weak pointers for easy reference.
   OmniboxResultView* result_view_;
+  views::ImageView* icon_view_;   // An icon resembling a '>'.
+  views::ImageView* image_view_;  // For rich suggestions.
+  OmniboxTextView* content_view_;
+  OmniboxTextView* description_view_;
+  OmniboxTextView* separator_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OmniboxSeparatedLineView);
 };
 
 OmniboxSeparatedLineView::OmniboxSeparatedLineView(
-    OmniboxResultView* result_view)
-    : result_view_(result_view) {}
+    OmniboxResultView* result_view,
+    const gfx::FontList& font_list)
+    : result_view_(result_view) {
+  AddChildView(icon_view_ = new OmniboxImageView());
+  AddChildView(image_view_ = new OmniboxImageView());
+  AddChildView(content_view_ = new OmniboxTextView(result_view, font_list));
+  AddChildView(description_view_ = new OmniboxTextView(result_view, font_list));
+  AddChildView(separator_view_ = new OmniboxTextView(result_view, font_list));
+}
 
 OmniboxSeparatedLineView::~OmniboxSeparatedLineView() = default;
+
+void OmniboxSeparatedLineView::OnMatchUpdate(const AutocompleteMatch& match) {
+  // TODO(dschuyler): Fill this in.
+}
+
+void OmniboxSeparatedLineView::OnHighlightUpdate(
+    const AutocompleteMatch& match) {
+  // TODO(dschuyler): Fill this in.
+}
 
 const char* OmniboxSeparatedLineView::GetClassName() const {
   return "OmniboxSeparatedLineView";
@@ -133,7 +167,8 @@ void OmniboxSeparatedLineView::Layout() {
 
 class OmniboxSuggestionView : public OmniboxSeparatedLineView {
  public:
-  explicit OmniboxSuggestionView(OmniboxResultView* result_view);
+  explicit OmniboxSuggestionView(OmniboxResultView* result_view,
+                                 const gfx::FontList& font_list);
   ~OmniboxSuggestionView() override;
 
  private:
@@ -144,8 +179,10 @@ class OmniboxSuggestionView : public OmniboxSeparatedLineView {
   DISALLOW_COPY_AND_ASSIGN(OmniboxSuggestionView);
 };
 
-OmniboxSuggestionView::OmniboxSuggestionView(OmniboxResultView* result_view)
-    : OmniboxSeparatedLineView::OmniboxSeparatedLineView(result_view) {}
+OmniboxSuggestionView::OmniboxSuggestionView(OmniboxResultView* result_view,
+                                             const gfx::FontList& font_list)
+    : OmniboxSeparatedLineView::OmniboxSeparatedLineView(result_view,
+                                                         font_list) {}
 
 OmniboxSuggestionView::~OmniboxSuggestionView() = default;
 
@@ -156,14 +193,6 @@ const char* OmniboxSuggestionView::GetClassName() const {
 void OmniboxSuggestionView::Layout() {
   // TODO(dschuyler): Fill this in.
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// OmniboxImageView:
-
-class OmniboxImageView : public views::ImageView {
- public:
-  bool CanProcessEventsWithinSubtree() const override { return false; }
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
@@ -189,8 +218,8 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       keyword_separator_view_(AddOmniboxTextView(font_list)) {
   CHECK_GE(model_index, 0);
 
-  AddChildView(suggestion_view_ = new OmniboxSuggestionView(this));
-  AddChildView(keyword_view_ = new OmniboxSeparatedLineView(this));
+  AddChildView(suggestion_view_ = new OmniboxSuggestionView(this, font_list));
+  AddChildView(keyword_view_ = new OmniboxSeparatedLineView(this, font_list));
 
   keyword_icon_view_->EnableCanvasFlippingForRTLUI(true);
   keyword_icon_view_->SetImage(gfx::CreateVectorIcon(
@@ -215,6 +244,9 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match.GetMatchWithContentsAndDescriptionPossiblySwapped();
   animation_->Reset();
   is_hovered_ = false;
+  suggestion_view_->OnMatchUpdate(match_);
+  keyword_view_->OnMatchUpdate(match_);
+
   suggestion_image_view_->SetVisible(false);  // Until SetAnswerImage is called.
   keyword_icon_view_->SetVisible(match_.associated_keyword.get());
   if (suggestion_tab_switch_button_) {
@@ -227,7 +259,6 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
       RemoveChildView(suggestion_tab_switch_button_.get());
     }
   }
-
   Invalidate();
   if (GetWidget())
     Layout();
@@ -249,6 +280,9 @@ void OmniboxResultView::Invalidate() {
     SkColor color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
     SetBackground(CreateBackgroundWithColor(color));
   }
+
+  suggestion_view_->OnHighlightUpdate(match_);
+  keyword_view_->OnHighlightUpdate(match_);
 
   // Recreate the icons in case the color needs to change.
   // Note: if this is an extension icon or favicon then this can be done in
