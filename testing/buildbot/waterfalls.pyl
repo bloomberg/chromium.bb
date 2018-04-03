@@ -1435,6 +1435,11 @@
           'scripts': 'check_network_annotations_script',
         }
       },
+      'Linux Builder Jumbo': {
+        'additional_compile_targets': [
+          'all'
+        ]
+      },
       'Linux Builder (dbg)': {
         'additional_compile_targets': [
           'all'
