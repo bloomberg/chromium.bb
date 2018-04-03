@@ -50,6 +50,22 @@ bool MediaControlsWindowEventListener::operator==(
   return this == &other;
 }
 
+void MediaControlsWindowEventListener::MaybeAddClickEventListener(
+    Element* element) {
+  if (!element)
+    return;
+
+  element->addEventListener(EventTypeNames::click, this, false);
+}
+
+void MediaControlsWindowEventListener::MaybeRemoveClickEventListener(
+    Element* element) {
+  if (!element)
+    return;
+
+  element->removeEventListener(EventTypeNames::click, this, false);
+}
+
 void MediaControlsWindowEventListener::Start() {
   if (is_active_)
     return;
@@ -74,12 +90,8 @@ void MediaControlsWindowEventListener::Start() {
                                                false);
   media_controls_->cast_button_->addEventListener(EventTypeNames::click, this,
                                                   false);
-  media_controls_->volume_slider_->addEventListener(EventTypeNames::click, this,
-                                                    false);
-  if (media_controls_->overlay_play_button_) {
-    media_controls_->overlay_play_button_->addEventListener(
-        EventTypeNames::click, this, false);
-  }
+  MaybeAddClickEventListener(media_controls_->volume_slider_);
+  MaybeAddClickEventListener(media_controls_->overlay_play_button_);
 
   is_active_ = true;
 }
@@ -109,12 +121,8 @@ void MediaControlsWindowEventListener::Stop() {
                                                   false);
   media_controls_->cast_button_->removeEventListener(EventTypeNames::click,
                                                      this, false);
-  media_controls_->volume_slider_->removeEventListener(EventTypeNames::click,
-                                                       this, false);
-  if (media_controls_->overlay_play_button_) {
-    media_controls_->overlay_play_button_->removeEventListener(
-        EventTypeNames::click, this, false);
-  }
+  MaybeRemoveClickEventListener(media_controls_->volume_slider_);
+  MaybeRemoveClickEventListener(media_controls_->overlay_play_button_);
 
   is_active_ = false;
 }

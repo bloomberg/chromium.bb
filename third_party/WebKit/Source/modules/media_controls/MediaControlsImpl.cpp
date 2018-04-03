@@ -155,6 +155,12 @@ bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   return true;
 }
 
+void MaybeAppendChild(Element* parent, Element* child) {
+  DCHECK(parent);
+  if (child)
+    parent->AppendChild(child);
+}
+
 bool ShouldShowPictureInPictureButton(HTMLMediaElement& media_element) {
   return media_element.SupportsPictureInPicture();
 }
@@ -438,7 +444,8 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     |  |  (-internal-media-controls-button-panel)
 //     |  |  <video> only, otherwise children are directly attached to parent
 //     |  +-MediaControlPlayButtonElement
-//     |  |   (-webkit-media-controls-play-button)
+//     |  |    (-webkit-media-controls-play-button)
+//     |  |    {only present if audio only or ModernMediaControls is disabled}
 //     |  +-MediaControlCurrentTimeDisplayElement
 //     |  |    (-webkit-media-controls-current-time-display)
 //     |  +-MediaControlRemainingTimeDisplayElement
@@ -450,16 +457,20 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     |  |    (-webkit-media-controls-mute-button)
 //     |  +-MediaControlVolumeSliderElement
 //     |  |    (-webkit-media-controls-volume-slider)
+//     |  |    {if not ModernMediaControlsEnabled}
 //     |  +-MediaControlPictureInPictureButtonElement
-//     |  |   (-webkit-media-controls-picture-in-picture-button)
+//     |  |    (-webkit-media-controls-picture-in-picture-button)
 //     |  +-MediaControlFullscreenButtonElement
 //     |  |    (-webkit-media-controls-fullscreen-button)
 //     |  +-MediaControlDownloadButtonElement
 //     |  |    (-internal-media-controls-download-button)
+//     |  |    {on the overflow menu if ModernMediaControls is enabled}
 //     |  +-MediaControlToggleClosedCaptionsButtonElement
 //     |  |    (-webkit-media-controls-toggle-closed-captions-button)
+//     |  |    {on the overflow menu if ModernMediaControls is enabled}
 //     |  +-MediaControlCastButtonElement
-//     |    (-internal-media-controls-cast-button)
+//     |       (-internal-media-controls-cast-button)
+//     |       {on the overflow menu if ModernMediaControls is enabled}
 //     \-MediaControlTimelineElement
 //          (-webkit-media-controls-timeline)
 // +-MediaControlTextTrackListElement
@@ -516,9 +527,12 @@ void MediaControlsImpl::InitializeControls() {
   timeline_ = new MediaControlTimelineElement(*this);
   mute_button_ = new MediaControlMuteButtonElement(*this);
 
-  volume_slider_ = new MediaControlVolumeSliderElement(*this);
-  if (PreferHiddenVolumeControls(GetDocument()))
-    volume_slider_->SetIsWanted(false);
+  // The volume slider should be shown if we are using the legacy controls.
+  if (!IsModern()) {
+    volume_slider_ = new MediaControlVolumeSliderElement(*this);
+    if (PreferHiddenVolumeControls(GetDocument()))
+      volume_slider_->SetIsWanted(false);
+  }
 
   // TODO(apacible): Enable for modern controls when SVG is added.
   if (RuntimeEnabledFeatures::PictureInPictureEnabled() && !IsModern() &&
@@ -585,14 +599,19 @@ void MediaControlsImpl::PopulatePanel() {
   Element* button_panel = panel_;
   if (IsModern() && MediaElement().IsHTMLVideoElement() &&
       !is_acting_as_audio_controls_) {
-    if (scrubbing_message_)
-      panel_->AppendChild(scrubbing_message_);
+    MaybeAppendChild(panel_, scrubbing_message_);
     panel_->AppendChild(overlay_play_button_);
     panel_->AppendChild(media_button_panel_);
     button_panel = media_button_panel_;
   }
 
-  button_panel->AppendChild(play_button_);
+  // The play button should only be on the button panel if we are playing audio
+  // only or are using the legacy controls.
+  if (!IsModern() || is_acting_as_audio_controls_ ||
+      MediaElement().IsHTMLAudioElement()) {
+    button_panel->AppendChild(play_button_);
+  }
+
   button_panel->AppendChild(current_time_display_);
   button_panel->AppendChild(duration_display_);
 
@@ -604,15 +623,20 @@ void MediaControlsImpl::PopulatePanel() {
   panel_->AppendChild(timeline_);
 
   button_panel->AppendChild(mute_button_);
-  button_panel->AppendChild(volume_slider_);
 
-  if (picture_in_picture_button_)
-    button_panel->AppendChild(picture_in_picture_button_);
+  MaybeAppendChild(button_panel, volume_slider_);
+  MaybeAppendChild(button_panel, picture_in_picture_button_);
 
   button_panel->AppendChild(fullscreen_button_);
-  button_panel->AppendChild(download_button_);
-  button_panel->AppendChild(cast_button_);
-  button_panel->AppendChild(toggle_closed_captions_button_);
+
+  // The download, cast and captions buttons should not be present on the modern
+  // controls button panel.
+  if (!IsModern()) {
+    button_panel->AppendChild(download_button_);
+    button_panel->AppendChild(cast_button_);
+    button_panel->AppendChild(toggle_closed_captions_button_);
+  }
+
   button_panel->AppendChild(overflow_menu_);
 }
 
@@ -1367,15 +1391,17 @@ bool MediaControlsImpl::ContainsRelatedTarget(Event* event) {
 
 void MediaControlsImpl::OnVolumeChange() {
   mute_button_->UpdateDisplayType();
-  volume_slider_->SetVolume(MediaElement().muted() ? 0
-                                                   : MediaElement().volume());
 
   // Update visibility of volume controls.
   // TODO(mlamouri): it should not be part of the volumechange handling because
   // it is using audio availability as input.
   BatchedControlUpdate batch(this);
-  volume_slider_->SetIsWanted(MediaElement().HasAudio() &&
-                              !PreferHiddenVolumeControls(GetDocument()));
+  if (volume_slider_) {
+    volume_slider_->SetVolume(MediaElement().muted() ? 0
+                                                     : MediaElement().volume());
+    volume_slider_->SetIsWanted(MediaElement().HasAudio() &&
+                                !PreferHiddenVolumeControls(GetDocument()));
+  }
   if (ShouldShowDisabledControls()) {
     mute_button_->SetIsWanted(true);
     mute_button_->setAttribute(
