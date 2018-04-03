@@ -42,8 +42,6 @@ void av1_get_tile_limits(AV1_COMMON *const cm) {
   cm->max_log2_tile_rows = tile_log2(1, AOMMIN(sb_rows, MAX_TILE_ROWS));
   cm->min_log2_tiles = tile_log2(max_tile_area_sb, sb_cols * sb_rows);
   cm->min_log2_tiles = AOMMAX(cm->min_log2_tiles, cm->min_log2_tile_cols);
-  // TODO(dominic.symes@arm.com):
-  // Add in levelMinLog2Tiles as a lower limit when levels are defined
 }
 
 void av1_calculate_tile_cols(AV1_COMMON *const cm) {

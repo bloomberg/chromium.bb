@@ -252,6 +252,7 @@ typedef struct AV1Common {
 
   int largest_tile_id;
   size_t largest_tile_size;
+  int context_update_tile_id;
 
   // Scale of the current frame with respect to itself.
   struct scale_factors sf_identity;

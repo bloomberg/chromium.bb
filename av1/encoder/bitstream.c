@@ -2215,6 +2215,8 @@ static void write_tile_info(const AV1_COMMON *const cm,
     return;
   }
   if (cm->tile_rows * cm->tile_cols > 1) {
+    // tile id used for cdf update
+    aom_wb_write_literal(wb, 0, cm->log2_tile_cols + cm->log2_tile_rows);
     // Number of bytes in tile size - 1
     aom_wb_write_literal(wb, 3, 2);
   }
@@ -3681,6 +3683,11 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
                              max_tile_col_size, &tile_size_bytes, &unused);
     total_size += tile_data_offset;
     assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
+
+    // fill in id of tile to use for the cdf update which encoder currently
+    // sets to the largest tile (but is up to the encoder)
+    aom_wb_overwrite_literal(saved_wb, cm->largest_tile_id,
+                             cm->log2_tile_cols + cm->log2_tile_rows);
     aom_wb_overwrite_literal(saved_wb, tile_size_bytes - 1, 2);
 
     // Update the OBU length if remux_tiles() reduced the size.

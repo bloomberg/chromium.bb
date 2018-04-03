@@ -1580,7 +1580,11 @@ static void read_tile_info(AV1Decoder *const pbi,
 
   read_tile_info_max_tile(cm, rb);
 
+  cm->context_update_tile_id = 0;
   if (cm->tile_rows * cm->tile_cols > 1) {
+    // tile to use for cdf update
+    cm->context_update_tile_id =
+        aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
     // tile size magnitude
     pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
   }
@@ -1771,11 +1775,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   int tc = 0;
   int first_tile_in_tg = 0;
 
-  if (startTile == 0) {
-    cm->largest_tile_size = 0;
-    cm->largest_tile_id = 0;
-  }
-
   for (int r = 0; r < tile_rows; ++r) {
     for (int c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
@@ -1793,10 +1792,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
       data += hdr_offset;
       get_tile_buffer(data_end, pbi->tile_size_bytes, is_last,
                       &pbi->common.error, &data, buf);
-      if (buf->size > cm->largest_tile_size) {
-        cm->largest_tile_size = buf->size;
-        cm->largest_tile_id = r * tile_cols + c;
-      }
     }
   }
 }
@@ -3270,7 +3265,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-      *cm->fc = pbi->tile_data[cm->largest_tile_id].tctx;
+      *cm->fc = pbi->tile_data[cm->context_update_tile_id].tctx;
       av1_reset_cdf_symbol_counters(cm->fc);
     } else {
       debug_check_frame_counts(cm);
