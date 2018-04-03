@@ -183,11 +183,8 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
     return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
   }
 
-  if (unicode_bidi == UnicodeBidi::kPlaintext) {
-    if (inline_box->BidiLevel() < level)
-      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+  if (unicode_bidi == UnicodeBidi::kPlaintext)
     return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
-  }
 
   InlineBox* const next_box = inline_box->NextLeafChildIgnoringLineBreak();
   if (!next_box || next_box->BidiLevel() < level) {
