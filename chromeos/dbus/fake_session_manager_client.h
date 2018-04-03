@@ -86,8 +86,13 @@ class FakeSessionManagerClient : public SessionManagerClient {
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(StateKeysCallback callback) override;
 
-  void StartArcInstance(const login_manager::StartArcInstanceRequest& request,
-                        StartArcInstanceCallback callback) override;
+  void StartArcMiniContainer(
+      const login_manager::StartArcMiniContainerRequest& request,
+      StartArcMiniContainerCallback callback) override;
+  void UpgradeArcContainer(
+      const login_manager::UpgradeArcContainerRequest& request,
+      UpgradeArcContainerCallback success_callback,
+      UpgradeErrorCallback error_callback) override;
   void StopArcInstance(VoidDBusMethodCallback callback) override;
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
@@ -140,8 +145,9 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void set_device_local_account_policy(const std::string& account_id,
                                        const std::string& policy_blob);
 
-  const login_manager::StartArcInstanceRequest& last_start_arc_request() const {
-    return last_start_arc_request_;
+  const login_manager::UpgradeArcContainerRequest& last_upgrade_arc_request()
+      const {
+    return last_upgrade_arc_request_;
   }
 
   // Notify observers about a property change completion.
@@ -213,7 +219,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   std::string container_instance_id_;
 
   // Contains last requst passed to StartArcInstance
-  login_manager::StartArcInstanceRequest last_start_arc_request_;
+  login_manager::UpgradeArcContainerRequest last_upgrade_arc_request_;
 
   StubDelegate* delegate_;
 

@@ -373,21 +373,41 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void StartArcInstance(const login_manager::StartArcInstanceRequest& request,
-                        StartArcInstanceCallback callback) override {
+  void StartArcMiniContainer(
+      const login_manager::StartArcMiniContainerRequest& request,
+      StartArcMiniContainerCallback callback) override {
     DCHECK(!callback.is_null());
-
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
-        login_manager::kSessionManagerStartArcInstance);
+        login_manager::kSessionManagerStartArcMiniContainer);
+    dbus::MessageWriter writer(&method_call);
+
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnStartArcMiniContainer,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void UpgradeArcContainer(
+      const login_manager::UpgradeArcContainerRequest& request,
+      UpgradeArcContainerCallback success_callback,
+      UpgradeErrorCallback error_callback) override {
+    DCHECK(!success_callback.is_null());
+    DCHECK(!error_callback.is_null());
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerUpgradeArcContainer);
     dbus::MessageWriter writer(&method_call);
 
     writer.AppendProtoAsArrayOfBytes(request);
 
     session_manager_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnStartArcInstance,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+        base::BindOnce(&SessionManagerClientImpl::OnUpgradeArcContainer,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(success_callback), std::move(error_callback)));
   }
 
   void StopArcInstance(VoidDBusMethodCallback callback) override {
@@ -757,34 +777,44 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(base::TimeTicks::FromInternalValue(ticks));
   }
 
-  void OnStartArcInstance(StartArcInstanceCallback callback,
-                          dbus::Response* response,
-                          dbus::ErrorResponse* error) {
+  void OnStartArcMiniContainer(StartArcMiniContainerCallback callback,
+                               dbus::Response* response) {
     if (!response) {
-      LOG(ERROR) << "Failed to call StartArcInstance: "
-                 << (error ? error->ToString() : "(null)");
-      std::move(callback).Run(
-          error && error->GetErrorName() ==
-                       login_manager::dbus_error::kLowFreeDisk
-              ? StartArcInstanceResult::LOW_FREE_DISK_SPACE
-              : StartArcInstanceResult::UNKNOWN_ERROR,
-          std::string(), base::ScopedFD());
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
     dbus::MessageReader reader(response);
     std::string container_instance_id;
-    base::ScopedFD server_socket;
-    if (!reader.PopString(&container_instance_id) ||
-        !reader.PopFileDescriptor(&server_socket)) {
+    if (!reader.PopString(&container_instance_id)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(callback).Run(StartArcInstanceResult::UNKNOWN_ERROR,
-                              std::string(), base::ScopedFD());
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(std::move(container_instance_id));
+  }
+
+  void OnUpgradeArcContainer(UpgradeArcContainerCallback success_callback,
+                             UpgradeErrorCallback error_callback,
+                             dbus::Response* response,
+                             dbus::ErrorResponse* error) {
+    if (!response) {
+      LOG(ERROR) << "Failed to call UpgradeArcContainer: "
+                 << (error ? error->ToString() : "(null)");
+      std::move(error_callback)
+          .Run(error && error->GetErrorName() ==
+                            login_manager::dbus_error::kLowFreeDisk);
       return;
     }
 
-    std::move(callback).Run(StartArcInstanceResult::SUCCESS,
-                            container_instance_id, std::move(server_socket));
+    dbus::MessageReader reader(response);
+    base::ScopedFD server_socket;
+    if (!reader.PopFileDescriptor(&server_socket)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      std::move(error_callback).Run(false);
+      return;
+    }
+    std::move(success_callback).Run(std::move(server_socket));
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;

@@ -87,7 +87,7 @@ class TestArcSessionObserver : public ArcSession::Observer {
   struct OnSessionStoppedArgs {
     ArcStopReason reason;
     bool was_running;
-    bool full_requested;
+    bool upgrade_requested;
   };
 
   explicit TestArcSessionObserver(ArcSession* arc_session)
@@ -104,9 +104,9 @@ class TestArcSessionObserver : public ArcSession::Observer {
   // ArcSession::Observer overrides:
   void OnSessionStopped(ArcStopReason reason,
                         bool was_running,
-                        bool full_requested) override {
+                        bool upgrade_requested) override {
     on_session_stopped_args_.emplace(
-        OnSessionStoppedArgs{reason, was_running, full_requested});
+        OnSessionStoppedArgs{reason, was_running, upgrade_requested});
   }
 
  private:
@@ -199,8 +199,8 @@ TEST_F(ArcSessionImplTest, MiniInstance_Success) {
   EXPECT_FALSE(observer.on_session_stopped_args().has_value());
 }
 
-// SessionManagerClient::StartArcInstance() reports an error, so that
-// the container fails to start as a mini container.
+// SessionManagerClient::StartArcMiniContainer() reports an error, causing the
+// mini-container start to fail.
 TEST_F(ArcSessionImplTest, MiniInstance_DBusFail) {
   EmulateDBusFailure();
 
@@ -214,18 +214,21 @@ TEST_F(ArcSessionImplTest, MiniInstance_DBusFail) {
   EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_FALSE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_FALSE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
-// SessionManagerClient::StartArcInstance() reports an error due to low disk,
-// so that the container fails to start as a mini container with reporting
+// SessionManagerClient::UpgradeArcContainer() reports an error due to low disk,
+// causing the container upgrade to fail to start container with reason
 // LOW_DISK_SPACE.
-TEST_F(ArcSessionImplTest, MiniInstance_LowDisk) {
+TEST_F(ArcSessionImplTest, Upgrade_LowDisk) {
   GetSessionManagerClient()->set_low_disk(true);
-
+  // Set up. Start mini-container. The mini-container doesn't use the disk, so
+  // there being low disk space won't cause it to start.
   auto arc_session = CreateArcSession();
   TestArcSessionObserver observer(arc_session.get());
-  arc_session->StartMiniInstance();
+  ASSERT_NO_FATAL_FAILURE(SetupMiniContainer(arc_session.get(), &observer));
+
+  arc_session->RequestUpgrade();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
@@ -233,7 +236,7 @@ TEST_F(ArcSessionImplTest, MiniInstance_LowDisk) {
   EXPECT_EQ(ArcStopReason::LOW_DISK_SPACE,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_FALSE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Upgrading a mini container to a full container. Success case.
@@ -252,15 +255,15 @@ TEST_F(ArcSessionImplTest, Upgrade_Success) {
   EXPECT_FALSE(observer.on_session_stopped_args().has_value());
 }
 
-// SessionManagerClient::StartArcInstance() reports an error for upgrading
-// case, then the upgrading fails.
+// SessionManagerClient::UpgradeArcContainer() reports an error, then the
+// upgrade fails.
 TEST_F(ArcSessionImplTest, Upgrade_DBusFail) {
   // Set up. Start a mini instance.
   auto arc_session = CreateArcSession();
   TestArcSessionObserver observer(arc_session.get());
   ASSERT_NO_FATAL_FAILURE(SetupMiniContainer(arc_session.get(), &observer));
 
-  // Hereafter, let SessionManagerClient::StartArcInstance() fail.
+  // Hereafter, let SessionManagerClient::UpgradeArcContainer() fail.
   EmulateDBusFailure();
 
   // Then upgrade, which should fail.
@@ -272,7 +275,7 @@ TEST_F(ArcSessionImplTest, Upgrade_DBusFail) {
   EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_TRUE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Mojo connection fails on upgrading. Then, the upgrade fails.
@@ -297,10 +300,10 @@ TEST_F(ArcSessionImplTest, Upgrade_MojoConnectionFail) {
   EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_TRUE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
-// Calling StartArcInstance() during STARTING_MINI_INSTANCE should eventually
+// Calling UpgradeArcContainer() during STARTING_MINI_INSTANCE should eventually
 // succeed to run a full container.
 TEST_F(ArcSessionImplTest, Upgrade_StartingMiniInstance) {
   auto arc_session = CreateArcSession();
@@ -340,7 +343,7 @@ TEST_F(ArcSessionImplTest, Stop_StartingMiniInstance) {
   EXPECT_EQ(ArcStopReason::SHUTDOWN,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_FALSE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_FALSE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Testing stop during RUNNING_MINI_INSTANCE.
@@ -360,7 +363,7 @@ TEST_F(ArcSessionImplTest, Stop_RunningMiniInstance) {
   EXPECT_EQ(ArcStopReason::SHUTDOWN,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_FALSE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_FALSE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Testing stop during STARTING_FULL_INSTANCE for upgrade.
@@ -384,7 +387,7 @@ TEST_F(ArcSessionImplTest, Stop_StartingFullInstanceForUpgrade) {
   EXPECT_EQ(ArcStopReason::SHUTDOWN,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_TRUE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Testing stop during CONNECTING_MOJO for upgrade.
@@ -414,7 +417,7 @@ TEST_F(ArcSessionImplTest, Stop_ConnectingMojoForUpgrade) {
   EXPECT_EQ(ArcStopReason::SHUTDOWN,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_TRUE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Testing stop during RUNNING_FULL_INSTANCE after upgrade.
@@ -439,7 +442,7 @@ TEST_F(ArcSessionImplTest, Stop_RunningFullInstanceForUpgrade) {
   EXPECT_EQ(ArcStopReason::SHUTDOWN,
             observer.on_session_stopped_args()->reason);
   EXPECT_TRUE(observer.on_session_stopped_args()->was_running);
-  EXPECT_TRUE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Testing stop during STARTING_MINI_INSTANCE with upgrade request.
@@ -466,15 +469,15 @@ TEST_F(ArcSessionImplTest,
   EXPECT_EQ(ArcStopReason::SHUTDOWN,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_TRUE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Stop is requested, but at the same time
-// SessionManagerClient::StartArcInstance() reports an error. Then, it should
-// be handled as regular SHUTDOWN, because graceful shutdown itself is
+// SessionManagerClient::StartArcMiniContainer() reports an error. Then, it
+// should be handled as regular SHUTDOWN, because graceful shutdown itself is
 // difficult and sometimes reports unexpected error although it succeeds.
 TEST_F(ArcSessionImplTest, Stop_ConflictWithFailure) {
-  // Let SessionManagerClient::StartArcInstance() fail.
+  // Let SessionManagerClient::StartArcMiniContainer() fail.
   EmulateDBusFailure();
 
   auto arc_session = CreateArcSession();
@@ -493,7 +496,7 @@ TEST_F(ArcSessionImplTest, Stop_ConflictWithFailure) {
   EXPECT_EQ(ArcStopReason::SHUTDOWN,
             observer.on_session_stopped_args()->reason);
   EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_FALSE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_FALSE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // Emulating crash.
@@ -516,7 +519,7 @@ TEST_F(ArcSessionImplTest, ArcStopInstance) {
   ASSERT_TRUE(observer.on_session_stopped_args().has_value());
   EXPECT_EQ(ArcStopReason::CRASH, observer.on_session_stopped_args()->reason);
   EXPECT_TRUE(observer.on_session_stopped_args()->was_running);
-  EXPECT_TRUE(observer.on_session_stopped_args()->full_requested);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
 // ArcStopInstance for the *previous* ARC container may be reported
@@ -544,24 +547,24 @@ struct PackagesCacheModeState {
   // Possible values for chromeos::switches::kArcPackagesCacheMode
   const char* chrome_switch;
   bool full_container;
-  login_manager::StartArcInstanceRequest_PackageCacheMode
+  login_manager::UpgradeArcContainerRequest_PackageCacheMode
       expected_packages_cache_mode;
 };
 
 constexpr PackagesCacheModeState kPackagesCacheModeStates[] = {
     {nullptr, true,
-     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+     login_manager::UpgradeArcContainerRequest_PackageCacheMode_DEFAULT},
     {nullptr, false,
-     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+     login_manager::UpgradeArcContainerRequest_PackageCacheMode_DEFAULT},
     {ArcSessionImpl::kPackagesCacheModeCopy, true,
-     login_manager::StartArcInstanceRequest_PackageCacheMode_COPY_ON_INIT},
+     login_manager::UpgradeArcContainerRequest_PackageCacheMode_COPY_ON_INIT},
     {ArcSessionImpl::kPackagesCacheModeCopy, false,
-     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+     login_manager::UpgradeArcContainerRequest_PackageCacheMode_DEFAULT},
     {ArcSessionImpl::kPackagesCacheModeSkipCopy, true,
      login_manager::
-         StartArcInstanceRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT},
+         UpgradeArcContainerRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT},
     {ArcSessionImpl::kPackagesCacheModeCopy, false,
-     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+     login_manager::UpgradeArcContainerRequest_PackageCacheMode_DEFAULT},
 };
 
 class ArcSessionImplPackagesCacheModeTest
@@ -584,7 +587,7 @@ TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
     arc_session->RequestUpgrade();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(state.expected_packages_cache_mode, GetSessionManagerClient()
-                                                    ->last_start_arc_request()
+                                                    ->last_upgrade_arc_request()
                                                     .packages_cache_mode());
 }
 

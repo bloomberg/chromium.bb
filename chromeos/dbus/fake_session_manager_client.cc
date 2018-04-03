@@ -504,29 +504,38 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
   }
 }
 
-void FakeSessionManagerClient::StartArcInstance(
-    const login_manager::StartArcInstanceRequest& request,
-    StartArcInstanceCallback callback) {
-  last_start_arc_request_ = request;
-  StartArcInstanceResult result;
-  std::string container_instance_id;
+void FakeSessionManagerClient::StartArcMiniContainer(
+    const login_manager::StartArcMiniContainerRequest& request,
+    StartArcMiniContainerCallback callback) {
   if (!arc_available_) {
-    result = StartArcInstanceResult::UNKNOWN_ERROR;
-  } else if (low_disk_) {
-    result = StartArcInstanceResult::LOW_FREE_DISK_SPACE;
-  } else {
-    result = StartArcInstanceResult::SUCCESS;
-    if (container_instance_id_.empty()) {
-      // This is starting a new container.
-      base::Base64Encode(kFakeContainerInstanceId, &container_instance_id_);
-      // Note that empty |container_instance_id| should be returned if
-      // this is upgrade case, so assign only when starting a new container.
-      container_instance_id = container_instance_id_;
-    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+    return;
+  }
+  // This is starting a new container.
+  base::Base64Encode(kFakeContainerInstanceId, &container_instance_id_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), container_instance_id_));
+}
+
+void FakeSessionManagerClient::UpgradeArcContainer(
+    const login_manager::UpgradeArcContainerRequest& request,
+    UpgradeArcContainerCallback success_callback,
+    UpgradeErrorCallback error_callback) {
+  last_upgrade_arc_request_ = request;
+
+  if (!arc_available_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(error_callback), false));
+    return;
+  }
+  if (low_disk_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(error_callback), true));
+    return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), result,
-                                container_instance_id, base::ScopedFD()));
+      FROM_HERE, base::BindOnce(std::move(success_callback), base::ScopedFD()));
 }
 
 void FakeSessionManagerClient::StopArcInstance(

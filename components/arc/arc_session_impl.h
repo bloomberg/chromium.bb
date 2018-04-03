@@ -13,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_session.h"
@@ -145,24 +146,20 @@ class ArcSessionImpl : public ArcSession,
   void OnShutdown() override;
 
  private:
-  // D-Bus callback for StartArcInstance() for a mini instance.
-  // In case of success, |container_instance_id| must not be empty, and
-  // |socket_fd| is /dev/null.
-  // TODO(hidehiko): Remove |socket_fd| from this callback.
-  void OnMiniInstanceStarted(
-      chromeos::SessionManagerClient::StartArcInstanceResult result,
-      const std::string& container_instance_id,
-      base::ScopedFD socket_fd);
+  // D-Bus callback for StartArcMiniContainer().
+  void OnMiniInstanceStarted(base::Optional<std::string> container_instance_id);
 
   // Sends a D-Bus message to upgrade to a full instance.
   void DoUpgrade();
 
-  // D-Bus callback for StartArcInstance() for an upgrade. |socket_fd| should be
-  // a socket which should be accept(2)ed to connect ArcBridgeService Mojo
-  // channel.
-  void OnUpgraded(chromeos::SessionManagerClient::StartArcInstanceResult result,
-                  const std::string& container_instance_id,  // unused
-                  base::ScopedFD socket_fd);
+  // D-Bus callback for UpgradeArcContainer(). |socket_fd| should be a socket
+  // which should be accept(2)ed to connect ArcBridgeService Mojo channel.
+  void OnUpgraded(base::ScopedFD socket_fd);
+
+  // D-Bus callback for UpgradeArcContainer when the upgrade fails.
+  // |low_free_disk_space| signals whether the failure was due to low free disk
+  // space.
+  void OnUpgradeError(bool low_free_disk_space);
 
   // Called when Mojo connection is established (or canceled during the
   // connect.)
