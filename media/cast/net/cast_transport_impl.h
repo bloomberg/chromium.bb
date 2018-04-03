@@ -54,7 +54,7 @@ namespace cast {
 class CastTransportImpl final : public CastTransport {
  public:
   CastTransportImpl(
-      base::TickClock* clock,  // Owned by the caller.
+      const base::TickClock* clock,  // Owned by the caller.
       base::TimeDelta logging_flush_interval,
       std::unique_ptr<Client> client,
       std::unique_ptr<PacketTransport> transport,
@@ -143,7 +143,7 @@ class CastTransportImpl final : public CastTransport {
   void OnReceivedCastMessage(uint32_t ssrc,
                              const RtcpCastMessage& cast_message);
 
-  base::TickClock* const clock_;  // Not owned by this class.
+  const base::TickClock* const clock_;  // Not owned by this class.
   const base::TimeDelta logging_flush_interval_;
   const std::unique_ptr<Client> transport_client_;
   const std::unique_ptr<PacketTransport> transport_;

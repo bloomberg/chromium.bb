@@ -117,7 +117,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
 
   void SetMockTimeForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::TickClock* tick_clock);
+      const base::TickClock* tick_clock);
 
  private:
   // webrtc::DesktopCapturer::Callback interface.
@@ -166,7 +166,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // be returned to the caller directly then this is NULL.
   std::unique_ptr<webrtc::DesktopFrame> output_frame_;
 
-  base::TickClock* tick_clock_ = nullptr;
+  const base::TickClock* tick_clock_ = nullptr;
 
   // Timer used to capture the frame.
   std::unique_ptr<base::OneShotTimer> capture_timer_;
@@ -271,7 +271,7 @@ void DesktopCaptureDevice::Core::SetNotificationWindowId(
 
 void DesktopCaptureDevice::Core::SetMockTimeForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
   capture_timer_.reset(new base::OneShotTimer(tick_clock_));
   capture_timer_->SetTaskRunner(task_runner);
@@ -578,7 +578,7 @@ DesktopCaptureDevice::DesktopCaptureDevice(
 
 void DesktopCaptureDevice::SetMockTimeForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   core_->SetMockTimeForTesting(task_runner, tick_clock);
 }
 

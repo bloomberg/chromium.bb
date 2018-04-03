@@ -29,7 +29,8 @@ class MockAffiliationFetchThrottlerDelegate
     : public AffiliationFetchThrottlerDelegate {
  public:
   // The |tick_clock| should outlive this instance.
-  explicit MockAffiliationFetchThrottlerDelegate(base::TickClock* tick_clock)
+  explicit MockAffiliationFetchThrottlerDelegate(
+      const base::TickClock* tick_clock)
       : tick_clock_(tick_clock),
         emulated_return_value_(true),
         can_send_count_(0u) {}
@@ -50,7 +51,7 @@ class MockAffiliationFetchThrottlerDelegate
   }
 
  private:
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   bool emulated_return_value_;
   size_t can_send_count_;
   base::TimeTicks last_can_send_time_;

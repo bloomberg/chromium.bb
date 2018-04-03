@@ -42,7 +42,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
  private:
   friend class base::NoDestructor<UpgradeDetectorChromeos>;
 
-  explicit UpgradeDetectorChromeos(base::TickClock* tick_clock);
+  explicit UpgradeDetectorChromeos(const base::TickClock* tick_clock);
 
   // Returns the threshold to reach high annoyance level.
   static base::TimeDelta DetermineHighThreshold();

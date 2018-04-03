@@ -93,7 +93,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   void RegisterTimeDomain(TimeDomain* time_domain) override;
   void UnregisterTimeDomain(TimeDomain* time_domain) override;
   RealTimeDomain* GetRealTimeDomain() const override;
-  base::TickClock* GetClock() const override;
+  const base::TickClock* GetClock() const override;
   base::TimeTicks NowTicks() const override;
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;

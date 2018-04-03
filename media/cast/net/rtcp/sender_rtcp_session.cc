@@ -68,7 +68,7 @@ std::pair<uint64_t, uint64_t> GetReceiverEventKey(
 
 }  // namespace
 
-SenderRtcpSession::SenderRtcpSession(base::TickClock* clock,
+SenderRtcpSession::SenderRtcpSession(const base::TickClock* clock,
                                      PacedPacketSender* packet_sender,
                                      RtcpObserver* observer,
                                      uint32_t local_ssrc,

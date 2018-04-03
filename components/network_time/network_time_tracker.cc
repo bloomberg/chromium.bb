@@ -203,7 +203,7 @@ void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
 
 NetworkTimeTracker::NetworkTimeTracker(
     std::unique_ptr<base::Clock> clock,
-    std::unique_ptr<base::TickClock> tick_clock,
+    std::unique_ptr<const base::TickClock> tick_clock,
     PrefService* pref_service,
     scoped_refptr<net::URLRequestContextGetter> getter)
     : server_url_(kTimeServiceURL),

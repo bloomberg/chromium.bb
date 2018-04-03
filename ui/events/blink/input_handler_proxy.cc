@@ -1400,7 +1400,8 @@ void InputHandlerProxy::HandleScrollElasticityOverscroll(
           scroll_result));
 }
 
-void InputHandlerProxy::SetTickClockForTesting(base::TickClock* tick_clock) {
+void InputHandlerProxy::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

@@ -36,7 +36,7 @@ class AppManagerImpl : public AppManager,
                        public chromeos::NoteTakingHelper::Observer,
                        public extensions::ExtensionRegistryObserver {
  public:
-  explicit AppManagerImpl(base::TickClock* tick_clock);
+  explicit AppManagerImpl(const base::TickClock* tick_clock);
   ~AppManagerImpl() override;
 
   // AppManager implementation:
@@ -155,7 +155,7 @@ class AppManagerImpl : public AppManager,
   State state_ = State::kNotInitialized;
   std::string lock_screen_app_id_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

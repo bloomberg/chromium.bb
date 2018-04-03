@@ -42,7 +42,7 @@ class ChromeRuntimeAPIDelegate : public extensions::RuntimeAPIDelegate,
   ~ChromeRuntimeAPIDelegate() override;
 
   // Sets a custom TickClock to use in tests.
-  static void set_tick_clock_for_tests(base::TickClock* clock);
+  static void set_tick_clock_for_tests(const base::TickClock* clock);
 
  private:
   friend class extensions::RuntimeAPI;

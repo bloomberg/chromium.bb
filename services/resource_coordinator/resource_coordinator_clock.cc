@@ -10,8 +10,8 @@ namespace resource_coordinator {
 
 namespace {
 
-base::TickClock*& g_tick_clock_for_testing() {
-  static base::TickClock* tick_clock_for_testing = nullptr;
+const base::TickClock*& g_tick_clock_for_testing() {
+  static const base::TickClock* tick_clock_for_testing = nullptr;
   return tick_clock_for_testing;
 }
 
@@ -22,7 +22,7 @@ base::TimeTicks ResourceCoordinatorClock::NowTicks() {
                                     : base::TimeTicks::Now();
 }
 
-base::TickClock* ResourceCoordinatorClock::GetClockForTesting() {
+const base::TickClock* ResourceCoordinatorClock::GetClockForTesting() {
   return g_tick_clock_for_testing();
 }
 
@@ -30,7 +30,8 @@ void ResourceCoordinatorClock::ResetClockForTesting() {
   g_tick_clock_for_testing() = nullptr;
 }
 
-void ResourceCoordinatorClock::SetClockForTesting(base::TickClock* tick_clock) {
+void ResourceCoordinatorClock::SetClockForTesting(
+    const base::TickClock* tick_clock) {
   DCHECK(!g_tick_clock_for_testing());
   g_tick_clock_for_testing() = tick_clock;
 }

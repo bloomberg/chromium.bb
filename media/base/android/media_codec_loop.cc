@@ -58,7 +58,7 @@ MediaCodecLoop::~MediaCodecLoop() {
   io_timer_.Stop();
 }
 
-void MediaCodecLoop::SetTestTickClock(base::TickClock* test_tick_clock) {
+void MediaCodecLoop::SetTestTickClock(const base::TickClock* test_tick_clock) {
   test_tick_clock_ = test_tick_clock;
 }
 

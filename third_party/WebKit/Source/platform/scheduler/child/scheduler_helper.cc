@@ -118,7 +118,7 @@ void SchedulerHelper::OnExitNestedRunLoop() {
     observer_->OnExitNestedRunLoop();
 }
 
-base::TickClock* SchedulerHelper::GetClock() const {
+const base::TickClock* SchedulerHelper::GetClock() const {
   return task_queue_manager_->GetClock();
 }
 

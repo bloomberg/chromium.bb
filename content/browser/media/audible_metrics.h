@@ -29,7 +29,7 @@ class CONTENT_EXPORT AudibleMetrics {
   void UpdateAudibleWebContentsState(const WebContents* web_contents,
                                      bool audible);
 
-  void SetClockForTest(base::TickClock* test_clock);
+  void SetClockForTest(const base::TickClock* test_clock);
 
  private:
   void AddAudibleWebContents(const WebContents* web_contents);
@@ -37,7 +37,7 @@ class CONTENT_EXPORT AudibleMetrics {
 
   base::TimeTicks concurrent_web_contents_start_time_;
   size_t max_concurrent_audible_web_contents_in_session_;
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   std::set<const WebContents*> audible_web_contents_;
 

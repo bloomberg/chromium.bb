@@ -58,7 +58,7 @@ class AffiliationFetchThrottler
   AffiliationFetchThrottler(
       AffiliationFetchThrottlerDelegate* delegate,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      base::TickClock* tick_clock);
+      const base::TickClock* tick_clock);
   ~AffiliationFetchThrottler() override;
 
   // Signals to the throttling logic that a network request is needed, and that
@@ -119,7 +119,7 @@ class AffiliationFetchThrottler
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   State state_;
   bool has_network_connectivity_;
   bool is_fetch_scheduled_;

@@ -62,7 +62,7 @@ class CaptureScheduler : public VideoFeedbackStub {
   }
 
   // Helper functions for tests.
-  void SetTickClockForTest(base::TickClock* tick_clock);
+  void SetTickClockForTest(const base::TickClock* tick_clock);
   void SetTimerForTest(std::unique_ptr<base::Timer> timer);
   void SetNumOfProcessorsForTest(int num_of_processors);
 
@@ -78,7 +78,7 @@ class CaptureScheduler : public VideoFeedbackStub {
 
   base::Closure capture_closure_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Timer used to schedule CaptureNextFrame().
   std::unique_ptr<base::Timer> capture_timer_;

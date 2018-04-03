@@ -184,7 +184,7 @@ void RenderMediaLog::SendQueuedMediaEvents() {
   RenderThread::Get()->Send(new ViewHostMsg_MediaLogEvents(events_to_send));
 }
 
-void RenderMediaLog::SetTickClockForTesting(base::TickClock* tick_clock) {
+void RenderMediaLog::SetTickClockForTesting(const base::TickClock* tick_clock) {
   base::AutoLock auto_lock(lock_);
   tick_clock_ = tick_clock;
   last_ipc_send_time_ = tick_clock_->NowTicks();

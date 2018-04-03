@@ -9,7 +9,7 @@
 namespace blink {
 namespace scheduler {
 
-TaskCostEstimator::TaskCostEstimator(base::TickClock* time_source,
+TaskCostEstimator::TaskCostEstimator(const base::TickClock* time_source,
                                      int sample_count,
                                      double estimation_percentile)
     : rolling_time_delta_history_(sample_count),

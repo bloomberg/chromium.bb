@@ -29,7 +29,7 @@ class VideoDetectorTest;
 class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
  public:
   VideoDetector(SurfaceManager* surface_manager,
-                std::unique_ptr<base::TickClock> tick_clock =
+                std::unique_ptr<const base::TickClock> tick_clock =
                     std::make_unique<base::DefaultTickClock>(),
                 scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr);
   virtual ~VideoDetector();
@@ -87,7 +87,7 @@ class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
   bool video_is_playing_ = false;
 
   // Provides the current time.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<const base::TickClock> tick_clock_;
 
   // Calls OnVideoActivityEnded() after |kVideoTimeout|. Uses |tick_clock_| to
   // measure time.

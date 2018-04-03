@@ -29,7 +29,7 @@ class ASH_EXPORT PowerButtonScreenshotController : public ui::EventHandler {
   static constexpr base::TimeDelta kScreenshotChordDelay =
       base::TimeDelta::FromMilliseconds(150);
 
-  explicit PowerButtonScreenshotController(base::TickClock* tick_clock);
+  explicit PowerButtonScreenshotController(const base::TickClock* tick_clock);
   ~PowerButtonScreenshotController() override;
 
   // Returns true if power button event is consumed by |this|, otherwise false.
@@ -73,7 +73,7 @@ class ASH_EXPORT PowerButtonScreenshotController : public ui::EventHandler {
   base::OneShotTimer volume_down_timer_;
 
   // Time source for performed action times.
-  base::TickClock* tick_clock_;  // Not owned.
+  const base::TickClock* tick_clock_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonScreenshotController);
 };

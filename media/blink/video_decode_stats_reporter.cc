@@ -18,7 +18,7 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
     GetPipelineStatsCB get_pipeline_stats_cb,
     const VideoDecoderConfig& video_config,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : kRecordingInterval(
           base::TimeDelta::FromMilliseconds(kRecordingIntervalMs)),
       kTinyFpsWindowDuration(

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/simple_test_tick_clock.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"

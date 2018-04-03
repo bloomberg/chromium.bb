@@ -35,7 +35,7 @@ class PopupOpenerTabHelper
   // ownership of the clock. |tick_clock| must outlive the PopupOpenerTabHelper
   // instance.
   static void CreateForWebContents(content::WebContents* contents,
-                                   base::TickClock* tick_clock);
+                                   const base::TickClock* tick_clock);
   ~PopupOpenerTabHelper() override;
 
   void OnOpenedPopup(PopupTracker* popup_tracker);
@@ -53,7 +53,7 @@ class PopupOpenerTabHelper
   friend class content::WebContentsUserData<PopupOpenerTabHelper>;
 
   PopupOpenerTabHelper(content::WebContents* web_contents,
-                       base::TickClock* tick_clock);
+                       const base::TickClock* tick_clock);
 
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -65,7 +65,7 @@ class PopupOpenerTabHelper
   base::Optional<base::TimeDelta> visible_time_before_tab_under_;
 
   // The clock which is used by the visibility trackers.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Keeps track of the total foreground time for this tab.
   std::unique_ptr<ScopedVisibilityTracker> visibility_tracker_;

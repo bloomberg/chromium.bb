@@ -57,7 +57,7 @@ class SocketWatcherFactory : public SocketPerformanceWatcherFactory {
       base::TimeDelta min_notification_interval,
       OnUpdatedRTTAvailableCallback updated_rtt_observation_callback,
       ShouldNotifyRTTCallback should_notify_rtt_callback,
-      base::TickClock* tick_clock);
+      const base::TickClock* tick_clock);
 
   ~SocketWatcherFactory() override;
 
@@ -71,7 +71,7 @@ class SocketWatcherFactory : public SocketPerformanceWatcherFactory {
   }
 
   // Overrides the tick clock used by |this| for testing.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -91,7 +91,7 @@ class SocketWatcherFactory : public SocketPerformanceWatcherFactory {
   // notification should be notified using |updated_rtt_observation_callback_|.
   ShouldNotifyRTTCallback should_notify_rtt_callback_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketWatcherFactory);
 };

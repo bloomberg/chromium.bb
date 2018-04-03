@@ -189,7 +189,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // Overrides the internal clock for testing.
   // This doesn't take the ownership of the clock. |tick_clock| must outlive the
   // InputHandlerProxy instance.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   // |is_touching_scrolling_layer| indicates if one of the points that has
   // been touched hits a currently scrolling layer.
@@ -270,7 +270,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   bool has_ongoing_compositor_scroll_fling_pinch_;
   bool is_first_gesture_scroll_update_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   std::unique_ptr<FlingBooster> fling_booster_;
 

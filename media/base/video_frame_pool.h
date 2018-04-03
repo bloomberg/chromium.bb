@@ -48,7 +48,7 @@ class MEDIA_EXPORT VideoFramePool {
   size_t GetPoolSizeForTesting() const;
 
   // Allows injection of a base::SimpleTestClock for testing.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  private:
   class PoolImpl;

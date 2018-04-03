@@ -76,7 +76,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // be used.
   HttpServerPropertiesManager(std::unique_ptr<PrefDelegate> pref_delegate,
                               NetLog* net_log,
-                              base::TickClock* clock = nullptr);
+                              const base::TickClock* clock = nullptr);
 
   ~HttpServerPropertiesManager() override;
 
@@ -267,7 +267,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // result of them being changed by the changes just made by this class.
   bool setting_prefs_ = false;
 
-  base::TickClock* clock_;  // Unowned
+  const base::TickClock* clock_;  // Unowned
 
   // Set to true once the initial prefs have been loaded.
   bool is_initialized_ = false;

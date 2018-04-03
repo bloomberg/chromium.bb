@@ -43,7 +43,7 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
 
   ~WebrtcVideoEncoderVpx() override;
 
-  void SetTickClockForTests(base::TickClock* tick_clock);
+  void SetTickClockForTests(const base::TickClock* tick_clock);
 
   void SetLosslessEncode(bool want_lossless);
   void SetLosslessColor(bool want_lossless);
@@ -103,7 +103,7 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
   std::unique_ptr<uint8_t[]> active_map_;
   webrtc::DesktopSize active_map_size_;
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   EncoderBitrateFilter bitrate_filter_;
 

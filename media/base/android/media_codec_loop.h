@@ -209,7 +209,7 @@ class MEDIA_EXPORT MediaCodecLoop {
   // Optionally set the tick clock used for testing.  It is our caller's
   // responsibility to maintain ownership of this, since
   // FakeSingleThreadTaskRunner maintains a raw ptr to it also.
-  void SetTestTickClock(base::TickClock* test_tick_clock);
+  void SetTestTickClock(const base::TickClock* test_tick_clock);
 
   // Does the MediaCodec processing cycle: enqueues an input buffer, then
   // dequeues output buffers.  This should be called by the client when more
@@ -313,7 +313,7 @@ class MEDIA_EXPORT MediaCodecLoop {
 
   // Optional clock for use during testing.  It may be null.  We do not maintain
   // ownership of it.
-  base::TickClock* test_tick_clock_ = nullptr;
+  const base::TickClock* test_tick_clock_ = nullptr;
 
   // Has the value of BuildInfo::sdk_int(), except in tests where it
   // might be set to other values. Will not be needed when there is a

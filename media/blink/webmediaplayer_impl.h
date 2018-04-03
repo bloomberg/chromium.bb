@@ -542,7 +542,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Records |natural_size| to MediaLog and video height to UMA.
   void RecordVideoNaturalSize(const gfx::Size& natural_size);
 
-  void SetTickClockForTest(base::TickClock* tick_clock);
+  void SetTickClockForTest(const base::TickClock* tick_clock);
 
   // Returns the current time without clamping to Duration() as required by
   // HTMLMediaElement for handling ended. This method will never return a
@@ -687,7 +687,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  base::TickClock* tick_clock_ = nullptr;
+  const base::TickClock* tick_clock_ = nullptr;
 
   BufferedDataSourceHostImpl buffered_data_source_host_;
   UrlIndex* const url_index_;

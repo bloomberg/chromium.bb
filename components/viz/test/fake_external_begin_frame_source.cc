@@ -75,7 +75,7 @@ bool FakeExternalBeginFrameSource::IsThrottled() const {
 
 BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
     BeginFrameArgs::CreationLocation location,
-    base::SimpleTestTickClock* now_src) {
+    const base::TickClock* now_src) {
   return CreateBeginFrameArgsForTesting(location, source_id(),
                                         next_begin_frame_number_++, now_src);
 }

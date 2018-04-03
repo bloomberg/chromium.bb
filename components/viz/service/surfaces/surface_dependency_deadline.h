@@ -22,7 +22,7 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyDeadline : public BeginFrameObserver {
  public:
   SurfaceDependencyDeadline(SurfaceDeadlineClient* client,
                             BeginFrameSource* begin_frame_source,
-                            base::TickClock* tick_clock);
+                            const base::TickClock* tick_clock);
   ~SurfaceDependencyDeadline() override;
 
   // Sets up a deadline in wall time where
@@ -61,7 +61,7 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyDeadline : public BeginFrameObserver {
 
   SurfaceDeadlineClient* const client_;
   BeginFrameSource* begin_frame_source_ = nullptr;
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   base::TimeTicks start_time_;
   base::Optional<base::TimeTicks> deadline_;
 

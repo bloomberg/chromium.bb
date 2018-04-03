@@ -152,7 +152,7 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   // The callback to send frame events to renderer process for logging.
   const FrameEventCallback frame_event_cb_;
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   // Callback that is run to notify when a fatal error occurs.
   base::OnceClosure error_callback_;

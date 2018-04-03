@@ -164,7 +164,7 @@ void TestReportingDelegate::ParseJson(
 }
 
 TestReportingContext::TestReportingContext(base::Clock* clock,
-                                           base::TickClock* tick_clock,
+                                           const base::TickClock* tick_clock,
                                            const ReportingPolicy& policy)
     : ReportingContext(
           policy,

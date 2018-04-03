@@ -57,14 +57,14 @@ class PrefetchBackgroundTaskHandlerImpl : public PrefetchBackgroundTaskHandler {
   int GetAdditionalBackoffSeconds() const override;
 
   // This is used to construct the backoff value.
-  void SetTickClockForTesting(base::TickClock* clock);
+  void SetTickClockForTesting(const base::TickClock* clock);
 
  private:
   std::unique_ptr<net::BackoffEntry> GetCurrentBackoff() const;
   void UpdateBackoff(net::BackoffEntry* backoff);
 
   PrefService* prefs_;
-  base::TickClock* clock_ = nullptr;
+  const base::TickClock* clock_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchBackgroundTaskHandlerImpl);
 };

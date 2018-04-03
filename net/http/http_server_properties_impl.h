@@ -43,7 +43,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   // used.
   // |clock| is used for converting base::TimeTicks to base::Time for
   // wherever base::Time is preferable.
-  HttpServerPropertiesImpl(base::TickClock* tick_clock, base::Clock* clock);
+  HttpServerPropertiesImpl(const base::TickClock* tick_clock,
+                           base::Clock* clock);
 
   // Default clock will be used.
   HttpServerPropertiesImpl();
@@ -180,8 +181,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   // have an entry associated with |server|, the method will add one.
   void UpdateCanonicalServerInfoMap(const QuicServerId& server);
 
-  base::TickClock* tick_clock_;  // Unowned
-  base::Clock* clock_;           // Unowned
+  const base::TickClock* tick_clock_;  // Unowned
+  base::Clock* clock_;                 // Unowned
 
   SpdyServersMap spdy_servers_map_;
   Http11ServerHostPortSet http11_servers_;

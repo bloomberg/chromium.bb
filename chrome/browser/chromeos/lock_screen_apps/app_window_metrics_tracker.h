@@ -25,7 +25,7 @@ namespace lock_screen_apps {
 // Helper for tracking metrics for lock screen app window launches.
 class AppWindowMetricsTracker : public content::WebContentsObserver {
  public:
-  explicit AppWindowMetricsTracker(base::TickClock* clock);
+  explicit AppWindowMetricsTracker(const base::TickClock* clock);
   ~AppWindowMetricsTracker() override;
 
   // Register app launch request.
@@ -63,7 +63,7 @@ class AppWindowMetricsTracker : public content::WebContentsObserver {
 
   void SetState(State state);
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   State state_ = State::kInitial;
 

@@ -164,7 +164,7 @@ void InstallExtensionCopy(
 
 }  // namespace
 
-AppManagerImpl::AppManagerImpl(base::TickClock* tick_clock)
+AppManagerImpl::AppManagerImpl(const base::TickClock* tick_clock)
     : tick_clock_(tick_clock),
       extensions_observer_(this),
       lock_screen_profile_extensions_observer_(this),

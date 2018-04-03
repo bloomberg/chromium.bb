@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   // |clock| is used for setting expiration times and scheduling the
   // expiration of broken alternative services. It must not be null.
   // |delegate| and |clock| are both unowned and must outlive this.
-  BrokenAlternativeServices(Delegate* delegate, base::TickClock* clock);
+  BrokenAlternativeServices(Delegate* delegate, const base::TickClock* clock);
 
   BrokenAlternativeServices(const BrokenAlternativeServices&) = delete;
   void operator=(const BrokenAlternativeServices&) = delete;
@@ -135,8 +135,8 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   void ExpireBrokenAlternateProtocolMappings();
   void ScheduleBrokenAlternateProtocolMappingsExpiration();
 
-  Delegate* delegate_;      // Unowned
-  base::TickClock* clock_;  // Unowned
+  Delegate* delegate_;            // Unowned
+  const base::TickClock* clock_;  // Unowned
 
   // List of <broken alt svc, expiration time> pairs sorted by expiration time.
   BrokenAlternativeServiceList broken_alternative_service_list_;

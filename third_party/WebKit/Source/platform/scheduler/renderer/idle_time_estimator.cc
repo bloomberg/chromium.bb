@@ -11,7 +11,7 @@ namespace scheduler {
 
 IdleTimeEstimator::IdleTimeEstimator(
     const scoped_refptr<TaskQueue>& compositor_task_runner,
-    base::TickClock* time_source,
+    const base::TickClock* time_source,
     int sample_count,
     double estimation_percentile)
     : compositor_task_queue_(compositor_task_runner),

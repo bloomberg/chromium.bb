@@ -176,7 +176,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // |tick_clock| and |stop_event| are for tests only.
   AVDACodecAllocator(AVDACodecAllocator::CodecFactoryCB factory_cb,
                      scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     base::TickClock* tick_clock = nullptr,
+                     const base::TickClock* tick_clock = nullptr,
                      base::WaitableEvent* stop_event = nullptr);
   virtual ~AVDACodecAllocator();
 
@@ -217,7 +217,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
   class HangDetector : public base::MessageLoop::TaskObserver {
    public:
-    HangDetector(base::TickClock* tick_clock);
+    HangDetector(const base::TickClock* tick_clock);
     void WillProcessTask(const base::PendingTask& pending_task) override;
     void DidProcessTask(const base::PendingTask& pending_task) override;
     bool IsThreadLikelyHung();
@@ -228,14 +228,15 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
     // Non-null when a task is currently running.
     base::TimeTicks task_start_time_;
 
-    base::TickClock* tick_clock_;
+    const base::TickClock* tick_clock_;
 
     DISALLOW_COPY_AND_ASSIGN(HangDetector);
   };
 
   // Handy combination of a thread and hang detector for it.
   struct ThreadAndHangDetector {
-    ThreadAndHangDetector(const std::string& name, base::TickClock* tick_clock)
+    ThreadAndHangDetector(const std::string& name,
+                          const base::TickClock* tick_clock)
         : thread(name), hang_detector(tick_clock) {}
     base::Thread thread;
     HangDetector hang_detector;

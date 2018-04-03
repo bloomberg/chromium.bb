@@ -127,7 +127,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Updates the rotation information for frames given to |submitter_|.
   void UpdateRotation(media::VideoRotation rotation);
 
-  void set_tick_clock_for_testing(base::TickClock* tick_clock) {
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
 
@@ -182,7 +182,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // media thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Allows tests to disable the background rendering task.
   bool background_rendering_enabled_;

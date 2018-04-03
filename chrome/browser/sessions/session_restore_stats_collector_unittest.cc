@@ -160,7 +160,7 @@ class TestSessionRestoreStatsCollector : public SessionRestoreStatsCollector {
   using SessionRestoreStatsCollector::Observe;
 
   TestSessionRestoreStatsCollector(
-      std::unique_ptr<base::TickClock> tick_clock,
+      std::unique_ptr<const base::TickClock> tick_clock,
       std::unique_ptr<StatsReportingDelegate> reporting_delegate)
       : SessionRestoreStatsCollector(tick_clock->NowTicks(),
                                      std::move(reporting_delegate)) {
@@ -202,7 +202,7 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     // its job, and will clean itself up when done.
     scoped_refptr<TestSessionRestoreStatsCollector> stats_collector =
         new TestSessionRestoreStatsCollector(
-            std::unique_ptr<base::TickClock>(test_tick_clock_),
+            std::unique_ptr<const base::TickClock>(test_tick_clock_),
             std::unique_ptr<StatsReportingDelegate>(
                 passthrough_reporting_delegate_));
     stats_collector_ = stats_collector.get();

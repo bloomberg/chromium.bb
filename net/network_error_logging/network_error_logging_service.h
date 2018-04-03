@@ -119,13 +119,13 @@ class NET_EXPORT NetworkErrorLoggingService {
   // Sets a base::TickClock (used to track policy expiration) for tests.
   // |tick_clock| must outlive the NetworkErrorLoggingService, and cannot be
   // nullptr.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  protected:
   NetworkErrorLoggingService();
 
   // Unowned:
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   ReportingService* reporting_service_;
 
  private:

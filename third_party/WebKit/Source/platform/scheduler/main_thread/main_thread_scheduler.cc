@@ -342,7 +342,7 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
     RendererSchedulerImpl* renderer_scheduler_impl,
     const scoped_refptr<MainThreadTaskQueue>& compositor_task_runner,
-    base::TickClock* time_source,
+    const base::TickClock* time_source,
     base::TimeTicks now)
     : loading_task_cost_estimator(time_source,
                                   kLoadingTaskEstimationSampleCount,
@@ -2429,7 +2429,7 @@ void RendererSchedulerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {
   helper_.UnregisterTimeDomain(time_domain);
 }
 
-base::TickClock* RendererSchedulerImpl::tick_clock() const {
+const base::TickClock* RendererSchedulerImpl::tick_clock() const {
   return helper_.GetClock();
 }
 

@@ -37,7 +37,7 @@ class ASH_EXPORT LogoutConfirmationController : public SessionObserver {
   LogoutConfirmationController();
   ~LogoutConfirmationController() override;
 
-  base::TickClock* clock() const { return clock_; }
+  const base::TickClock* clock() const { return clock_; }
 
   // Shows a LogoutConfirmationDialog. If a confirmation dialog is already being
   // shown, it is closed and a new one opened if |logout_time| is earlier than
@@ -57,7 +57,7 @@ class ASH_EXPORT LogoutConfirmationController : public SessionObserver {
   // Overrides the internal clock for testing. This doesn't take the ownership
   // of the clock. |clock| must outlive the LogoutConfirmationController
   // instance.
-  void SetClockForTesting(base::TickClock* clock);
+  void SetClockForTesting(const base::TickClock* clock);
   void SetLogoutClosureForTesting(const base::Closure& logout_closure);
   LogoutConfirmationDialog* dialog_for_testing() const { return dialog_; }
 
@@ -65,7 +65,7 @@ class ASH_EXPORT LogoutConfirmationController : public SessionObserver {
   class LastWindowClosedObserver;
   std::unique_ptr<LastWindowClosedObserver> last_window_closed_observer_;
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
   base::Closure logout_closure_;
 
   base::TimeTicks logout_time_;

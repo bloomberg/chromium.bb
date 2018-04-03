@@ -166,7 +166,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
                           mojom::ChildMemoryCoordinatorPtr child);
 
   // Sets a TickClock for testing.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   // Callback invoked by mojo when the child connection goes down. Exposed
   // for testing.
@@ -204,7 +204,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   std::unique_ptr<MemoryCoordinatorDelegate> delegate_;
   std::unique_ptr<MemoryMonitor> memory_monitor_;
   std::unique_ptr<MemoryConditionObserver> condition_observer_;
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   NotificationRegistrar notification_registrar_;
 
   // The current memory condition.

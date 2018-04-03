@@ -438,7 +438,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SimulatePingTimeoutForTesting();
 
   // Used to allow tests to change time for testing.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   // Used to allow tests to change wall clock for testing.
   void SetClockForTesting(base::Clock* clock);
@@ -835,7 +835,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerStatusCode start_worker_status_ = SERVICE_WORKER_OK;
 
   // The clock used to vend tick time.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // The clock used for actual (wall clock) time
   base::Clock* clock_;

@@ -89,7 +89,7 @@ class VideoDetector::ClientInfo {
 
 VideoDetector::VideoDetector(
     SurfaceManager* surface_manager,
-    std::unique_ptr<base::TickClock> tick_clock,
+    std::unique_ptr<const base::TickClock> tick_clock,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : tick_clock_(std::move(tick_clock)),
       video_inactive_timer_(tick_clock_.get()),

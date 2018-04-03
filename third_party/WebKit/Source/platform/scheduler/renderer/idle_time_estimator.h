@@ -20,7 +20,7 @@ class PLATFORM_EXPORT IdleTimeEstimator
     : public base::MessageLoop::TaskObserver {
  public:
   IdleTimeEstimator(const scoped_refptr<TaskQueue>& compositor_task_runner,
-                    base::TickClock* time_source,
+                    const base::TickClock* time_source,
                     int sample_count,
                     double estimation_percentile);
 
@@ -42,7 +42,7 @@ class PLATFORM_EXPORT IdleTimeEstimator
  private:
   scoped_refptr<TaskQueue> compositor_task_queue_;
   cc::RollingTimeDeltaHistory per_frame_compositor_task_runtime_;
-  base::TickClock* time_source_;  // NOT OWNED
+  const base::TickClock* time_source_;  // NOT OWNED
   double estimation_percentile_;
 
   base::TimeTicks task_start_time_;

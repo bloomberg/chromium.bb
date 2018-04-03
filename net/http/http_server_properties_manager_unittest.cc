@@ -150,7 +150,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
   // Overrides the main thread's message loop with a mock tick clock.
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner_;
 
-  base::TickClock* net_test_task_runner_clock_;
+  const base::TickClock* net_test_task_runner_clock_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManagerTest);

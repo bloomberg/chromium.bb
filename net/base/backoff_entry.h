@@ -69,7 +69,7 @@ class NET_EXPORT BackoffEntry {
   // Lifetime of policy and clock must enclose lifetime of BackoffEntry.
   // |policy| pointer must be valid but isn't dereferenced during construction.
   // |clock| pointer may be null.
-  BackoffEntry(const Policy* policy, base::TickClock* clock);
+  BackoffEntry(const Policy* policy, const base::TickClock* clock);
   virtual ~BackoffEntry();
 
   // Inform this item that a request for the network resource it is
@@ -124,7 +124,7 @@ class NET_EXPORT BackoffEntry {
 
   const Policy* const policy_;  // Not owned.
 
-  base::TickClock* const clock_;  // Not owned.
+  const base::TickClock* const clock_;  // Not owned.
 
   THREAD_CHECKER(thread_checker_);
 

@@ -49,7 +49,7 @@ class AccessRateLimiter {
  public:
   AccessRateLimiter(size_t max_num_accesses,
                     const base::TimeDelta& recharge_period,
-                    base::TickClock* tick_clock);
+                    const base::TickClock* tick_clock);
   ~AccessRateLimiter();
 
   // Attempt to access a resource. Will update |counter_| based on how much time
@@ -76,7 +76,7 @@ class AccessRateLimiter {
   base::TimeDelta counter_;
 
   // Points to a timer clock implementation for keeping track of access times.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessRateLimiter);
 };

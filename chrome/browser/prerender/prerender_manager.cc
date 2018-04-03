@@ -1024,7 +1024,7 @@ base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
 }
 
 void PrerenderManager::SetTickClockForTesting(
-    std::unique_ptr<base::SimpleTestTickClock> tick_clock) {
+    std::unique_ptr<const base::TickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
 }
 

@@ -52,7 +52,8 @@ RuntimeCallTimer* RuntimeCallTimer::Stop() {
   return parent_;
 }
 
-RuntimeCallStats::RuntimeCallStats(base::TickClock* clock) : clock_(clock) {
+RuntimeCallStats::RuntimeCallStats(const base::TickClock* clock)
+    : clock_(clock) {
   static const char* const names[] = {
 #define BINDINGS_COUNTER_NAME(name) "Blink_Bindings_" #name,
       BINDINGS_COUNTERS(BINDINGS_COUNTER_NAME)  //

@@ -224,7 +224,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   }
 
   const ReportingPolicy& policy() { return context_->policy(); }
-  base::TickClock* tick_clock() { return context_->tick_clock(); }
+  const base::TickClock* tick_clock() { return context_->tick_clock(); }
   ReportingDelegate* delegate() { return context_->delegate(); }
   ReportingCache* cache() { return context_->cache(); }
   ReportingUploader* uploader() { return context_->uploader(); }

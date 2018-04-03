@@ -1976,14 +1976,14 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
 
 class CancelableTask {
  public:
-  explicit CancelableTask(base::TickClock* clock)
+  explicit CancelableTask(const base::TickClock* clock)
       : clock_(clock), weak_factory_(this) {}
 
   void RecordTimeTask(std::vector<base::TimeTicks>* run_times) {
     run_times->push_back(clock_->NowTicks());
   }
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
   base::WeakPtrFactory<CancelableTask> weak_factory_;
 };
 

@@ -83,7 +83,8 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // |timer_clock| is not owned and its lifetime should cover lifetime of
   // DeviceOffHoursContoller.
-  void SetClockForTesting(base::Clock* clock, base::TickClock* timer_clock);
+  void SetClockForTesting(base::Clock* clock,
+                          const base::TickClock* timer_clock);
 
  private:
   // Run OnOffHoursEndTimeChanged() for observers.

@@ -55,7 +55,7 @@ class RelaunchNotificationController : public UpgradeObserver,
       base::TimeDelta::FromMinutes(3);
 
   RelaunchNotificationController(UpgradeDetector* upgrade_detector,
-                                 base::TickClock* tick_clock);
+                                 const base::TickClock* tick_clock);
 
   // UpgradeObserver:
   void OnUpgradeRecommended() override;
@@ -136,7 +136,7 @@ class RelaunchNotificationController : public UpgradeObserver,
 
   // A provider of TimeTicks to the controller and its timer for the sake of
   // testability.
-  base::TickClock* const tick_clock_;
+  const base::TickClock* const tick_clock_;
 
   // Observes changes to the browser.relaunch_notification Local State pref.
   PrefChangeRegistrar pref_change_registrar_;

@@ -49,7 +49,7 @@ class MEDIA_EXPORT MediaServiceThrottler {
   base::TimeDelta GetDelayForClientCreation();
 
   // Test only methods.
-  void SetTickClockForTesting(base::TickClock* clock);
+  void SetTickClockForTesting(const base::TickClock* clock);
   void ResetInternalStateForTesting();
   base::TimeDelta GetBaseThrottlingRateForTesting();
   bool IsCrashListenerAliveForTesting();
@@ -79,7 +79,7 @@ class MEDIA_EXPORT MediaServiceThrottler {
   // based on |current_crashes_|.
   base::TimeDelta GetThrottlingDelayFromServerCrashes();
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   // Effective number of media server crashes.
   // NOTE: This is of type double because we decay the number of crashes at a

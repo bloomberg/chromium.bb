@@ -386,7 +386,7 @@ void EncryptionMigrationScreenHandler::SetFreeDiskSpaceFetcherForTesting(
 }
 
 void EncryptionMigrationScreenHandler::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

@@ -66,7 +66,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // migration.
   // This doesn't toke the ownership of the clock. |tick_clock| must outlive the
   // EncryptionMigrationScreenHandler instance.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   virtual device::mojom::WakeLock* GetWakeLock();
 
@@ -182,7 +182,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   std::unique_ptr<LoginFeedback> login_feedback_;
 
   // Used to measure elapsed time during migration.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   FreeDiskSpaceFetcher free_disk_space_fetcher_;
 

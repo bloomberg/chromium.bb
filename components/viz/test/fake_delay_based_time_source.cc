@@ -4,6 +4,8 @@
 
 #include "components/viz/test/fake_delay_based_time_source.h"
 
+#include "base/time/tick_clock.h"
+
 namespace viz {
 
 void FakeDelayBasedTimeSourceClient::OnTimerTick() {
@@ -11,7 +13,7 @@ void FakeDelayBasedTimeSourceClient::OnTimerTick() {
 }
 
 FakeDelayBasedTimeSource::FakeDelayBasedTimeSource(
-    base::SimpleTestTickClock* now_src,
+    const base::TickClock* now_src,
     base::SingleThreadTaskRunner* task_runner)
     : DelayBasedTimeSource(task_runner), now_src_(now_src) {}
 

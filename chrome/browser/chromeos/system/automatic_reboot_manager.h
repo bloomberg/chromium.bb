@@ -91,7 +91,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
     base::TimeTicks update_reboot_needed_time;
   };
 
-  explicit AutomaticRebootManager(base::TickClock* clock);
+  explicit AutomaticRebootManager(const base::TickClock* clock);
   ~AutomaticRebootManager() override;
 
   AutomaticRebootManagerObserver::Reason reboot_reason() const {
@@ -149,7 +149,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   base::WaitableEvent initialized_;
 
   // A clock that can be mocked in tests to fast-forward time.
-  base::TickClock* const clock_;
+  const base::TickClock* const clock_;
 
   PrefChangeRegistrar local_state_registrar_;
 

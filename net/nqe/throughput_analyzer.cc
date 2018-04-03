@@ -46,7 +46,7 @@ ThroughputAnalyzer::ThroughputAnalyzer(
     const NetworkQualityEstimatorParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ThroughputObservationCallback throughput_observation_callback,
-    base::TickClock* tick_clock,
+    const base::TickClock* tick_clock,
     const NetLogWithSource& net_log)
     : network_quality_provider_(network_quality_provider),
       params_(params),
@@ -118,7 +118,8 @@ bool ThroughputAnalyzer::IsCurrentlyTrackingThroughput() const {
   return true;
 }
 
-void ThroughputAnalyzer::SetTickClockForTesting(base::TickClock* tick_clock) {
+void ThroughputAnalyzer::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
   tick_clock_ = tick_clock;
   DCHECK(tick_clock_);

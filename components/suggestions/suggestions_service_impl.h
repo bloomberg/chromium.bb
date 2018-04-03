@@ -64,7 +64,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
                          std::unique_ptr<SuggestionsStore> suggestions_store,
                          std::unique_ptr<ImageManager> thumbnail_manager,
                          std::unique_ptr<BlacklistStore> blacklist_store,
-                         base::TickClock* tick_clock);
+                         const base::TickClock* tick_clock);
   ~SuggestionsServiceImpl() override;
 
   // SuggestionsService implementation.
@@ -195,7 +195,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
   // The local cache for temporary blacklist, until uploaded to the server.
   std::unique_ptr<BlacklistStore> blacklist_store_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Backoff for scheduling blacklist upload tasks.
   net::BackoffEntry blacklist_upload_backoff_;

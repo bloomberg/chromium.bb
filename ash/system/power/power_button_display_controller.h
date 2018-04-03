@@ -36,7 +36,7 @@ class ASH_EXPORT PowerButtonDisplayController
  public:
   PowerButtonDisplayController(
       BacklightsForcedOffSetter* backlights_forced_off_setter,
-      base::TickClock* tick_clock);
+      const base::TickClock* tick_clock);
   ~PowerButtonDisplayController() override;
 
   bool IsScreenOn() const;
@@ -83,7 +83,7 @@ class ASH_EXPORT PowerButtonDisplayController
   bool send_accessibility_alert_on_backlights_forced_off_change_ = false;
 
   // Time source for performed action times.
-  base::TickClock* tick_clock_;  // Not owned.
+  const base::TickClock* tick_clock_;  // Not owned.
 
   // If set, the active request passed to |backlights_forced_off_setter_| in
   // order to force the backlights off.

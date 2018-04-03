@@ -25,7 +25,7 @@ constexpr int64_t kDownloadHistoryMinBytesPerEntry = 1000;
 
 BufferedDataSourceHostImpl::BufferedDataSourceHostImpl(
     base::RepeatingClosure progress_cb,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : total_bytes_(0),
       did_loading_progress_(false),
       progress_cb_(std::move(progress_cb)),
@@ -180,7 +180,7 @@ bool BufferedDataSourceHostImpl::CanPlayThrough(
 }
 
 void BufferedDataSourceHostImpl::SetTickClockForTest(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

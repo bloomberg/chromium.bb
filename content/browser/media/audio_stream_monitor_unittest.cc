@@ -58,7 +58,7 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
     web_contents->SetDelegate(&mock_web_contents_delegate_);
 
     monitor_ = web_contents->audio_stream_monitor();
-    const_cast<base::TickClock*&>(monitor_->clock_) = &clock_;
+    const_cast<const base::TickClock*&>(monitor_->clock_) = &clock_;
   }
 
   base::TimeTicks GetTestClockTime() { return clock_.NowTicks(); }

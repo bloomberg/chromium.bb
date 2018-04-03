@@ -16,7 +16,7 @@ namespace media {
 namespace cast {
 
 CastEnvironment::CastEnvironment(
-    base::TickClock* clock,
+    const base::TickClock* clock,
     scoped_refptr<SingleThreadTaskRunner> main_thread_proxy,
     scoped_refptr<SingleThreadTaskRunner> audio_thread_proxy,
     scoped_refptr<SingleThreadTaskRunner> video_thread_proxy)

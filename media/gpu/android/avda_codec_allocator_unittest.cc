@@ -155,7 +155,8 @@ class AVDACodecAllocatorTest : public testing::Test {
         FROM_HERE, base::Bind(
                        [](AVDACodecAllocator::CodecFactoryCB factory_cb,
                           scoped_refptr<base::SequencedTaskRunner> task_runner,
-                          base::TickClock* clock, base::WaitableEvent* event) {
+                          const base::TickClock* clock,
+                          base::WaitableEvent* event) {
                          return new AVDACodecAllocator(factory_cb, task_runner,
                                                        clock, event);
                        },

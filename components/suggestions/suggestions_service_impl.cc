@@ -123,7 +123,7 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
     std::unique_ptr<SuggestionsStore> suggestions_store,
     std::unique_ptr<ImageManager> thumbnail_manager,
     std::unique_ptr<BlacklistStore> blacklist_store,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : identity_manager_(identity_manager),
       sync_service_(sync_service),
       sync_service_observer_(this),

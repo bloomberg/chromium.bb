@@ -530,7 +530,8 @@ bool TabletModeController::CanUseUnstableLidAngle() const {
   return elapsed_time >= kUnstableLidAngleDuration;
 }
 
-void TabletModeController::SetTickClockForTest(base::TickClock* tick_clock) {
+void TabletModeController::SetTickClockForTest(
+    const base::TickClock* tick_clock) {
   DCHECK(tick_clock_);
   tick_clock_ = tick_clock;
 }

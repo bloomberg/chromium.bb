@@ -36,7 +36,7 @@ class RuntimeCallStatsTest : public testing::Test {
     clock_.Advance(TimeDelta::FromMilliseconds(milliseconds));
   }
 
-  base::TickClock* clock() { return &clock_; }
+  const base::TickClock* clock() { return &clock_; }
 
  private:
   RuntimeEnabledFeatures::Backup features_backup_;

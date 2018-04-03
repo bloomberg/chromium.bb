@@ -169,7 +169,7 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   // TODO(tzik): Replace Remove DeprecatedGetMockTickClock() after updating all
   // callers to use non-owning TickClock.
   std::unique_ptr<TickClock> DeprecatedGetMockTickClock() const;
-  TickClock* GetMockTickClock() const;
+  const TickClock* GetMockTickClock() const;
 
   base::circular_deque<TestPendingTask> TakePendingTasks();
   bool HasPendingTask() const;

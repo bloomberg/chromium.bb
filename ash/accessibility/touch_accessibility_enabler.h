@@ -125,7 +125,7 @@ class ASH_EXPORT TouchAccessibilityEnabler : public ui::EventHandler {
 
   // When touch_accessibility_enabler gets time relative to real time during
   // testing, this clock is set to the simulated clock and used.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Whether or not we currently have an event handler installed. It can
   // be removed when TouchExplorationController is running.

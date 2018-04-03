@@ -43,7 +43,7 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   base::TimeTicks GetHighAnnoyanceDeadline() override;
 
  protected:
-  explicit UpgradeDetectorImpl(base::TickClock* tick_clock);
+  explicit UpgradeDetectorImpl(const base::TickClock* tick_clock);
 
   // Sends out a notification and starts a one shot timer to wait until
   // notifying the user.

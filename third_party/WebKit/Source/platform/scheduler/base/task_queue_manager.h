@@ -56,7 +56,7 @@ class PLATFORM_EXPORT TaskQueueManager {
   virtual void UnregisterTimeDomain(TimeDomain* time_domain) = 0;
   virtual RealTimeDomain* GetRealTimeDomain() const = 0;
 
-  virtual base::TickClock* GetClock() const = 0;
+  virtual const base::TickClock* GetClock() const = 0;
   virtual base::TimeTicks NowTicks() const = 0;
 
   // Sets the SingleThreadTaskRunner that will be returned by

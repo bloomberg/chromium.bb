@@ -65,7 +65,7 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   // over the timing of the TrafficStatsAmortizer and the byte counts returned
   // from TrafficStats. |traffic_stats_query_timer| must not be a repeating
   // timer.
-  TrafficStatsAmortizer(base::TickClock* tick_clock,
+  TrafficStatsAmortizer(const base::TickClock* tick_clock,
                         std::unique_ptr<base::Timer> traffic_stats_query_timer,
                         const base::TimeDelta& traffic_stats_query_delay,
                         const base::TimeDelta& max_amortization_delay,
@@ -95,7 +95,7 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   base::ThreadChecker thread_checker_;
 
   // TickClock for determining the current time tick.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // One-shot timer used to wait a short time after receiving DataUse before
   // querying TrafficStats, to give TrafficStats time to update and give the

@@ -63,7 +63,7 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   // other testing entities inheriting the common runner and tick interfaces.
   void SetMockTimeForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::TickClock* tick_clock);
+      const base::TickClock* tick_clock);
 
   base::Thread thread_;
   std::unique_ptr<Core> core_;

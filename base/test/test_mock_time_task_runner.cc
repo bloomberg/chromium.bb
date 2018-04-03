@@ -239,7 +239,7 @@ std::unique_ptr<TickClock> TestMockTimeTaskRunner::DeprecatedGetMockTickClock()
   return std::make_unique<LegacyMockTickClock>(this);
 }
 
-TickClock* TestMockTimeTaskRunner::GetMockTickClock() const {
+const TickClock* TestMockTimeTaskRunner::GetMockTickClock() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return &mock_clock_;
 }

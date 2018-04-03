@@ -167,7 +167,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
 
-  void set_clock_for_testing(base::TickClock* clock) { clock_ = clock; }
+  void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
 
   // Returns the viz::FrameSinkId that this object uses to put things on screen.
   // This value is constant throughout the lifetime of this object. Note that
@@ -904,7 +904,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   const int routing_id_;
 
   // The clock used; overridable for tests.
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   // Indicates whether a page is loading or not.
   bool is_loading_;

@@ -84,7 +84,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
 
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  private:
   friend class AlsaPcmOutputStreamTest;
@@ -211,7 +211,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   std::unique_ptr<ChannelMixer> channel_mixer_;
   std::unique_ptr<AudioBus> mixed_audio_bus_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

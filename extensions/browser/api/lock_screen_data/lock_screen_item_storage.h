@@ -305,7 +305,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   const std::string crypto_key_;
   PrefService* local_state_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   SessionLockedState session_locked_state_ = SessionLockedState::kUnknown;
 

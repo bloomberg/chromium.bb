@@ -96,7 +96,7 @@ void SurfaceManager::SetActivationDeadlineInFramesForTesting(
   activation_deadline_in_frames_ = activation_deadline_in_frames;
 }
 
-void SurfaceManager::SetTickClockForTesting(base::TickClock* tick_clock) {
+void SurfaceManager::SetTickClockForTesting(const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

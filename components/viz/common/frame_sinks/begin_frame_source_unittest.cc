@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/begin_frame_source_test.h"

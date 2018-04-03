@@ -8,8 +8,9 @@
 
 #include "base/time/tick_clock.h"
 
-ScopedVisibilityTracker::ScopedVisibilityTracker(base::TickClock* tick_clock,
-                                                 bool is_shown)
+ScopedVisibilityTracker::ScopedVisibilityTracker(
+    const base::TickClock* tick_clock,
+    bool is_shown)
     : tick_clock_(tick_clock) {
   DCHECK(tick_clock_);
   if (is_shown)

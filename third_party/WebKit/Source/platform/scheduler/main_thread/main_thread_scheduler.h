@@ -248,7 +248,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   bool PolicyNeedsUpdateForTesting();
   WakeUpBudgetPool* GetWakeUpBudgetPoolForTesting();
 
-  base::TickClock* tick_clock() const;
+  const base::TickClock* tick_clock() const;
 
   RealTimeDomain* real_time_domain() const {
     return helper_.real_time_domain();
@@ -631,7 +631,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     MainThreadOnly(
         RendererSchedulerImpl* renderer_scheduler_impl,
         const scoped_refptr<MainThreadTaskQueue>& compositor_task_runner,
-        base::TickClock* time_source,
+        const base::TickClock* time_source,
         base::TimeTicks now);
     ~MainThreadOnly();
 

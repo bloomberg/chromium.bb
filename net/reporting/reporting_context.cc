@@ -72,7 +72,7 @@ void ReportingContext::NotifyCacheUpdated() {
 
 ReportingContext::ReportingContext(const ReportingPolicy& policy,
                                    base::Clock* clock,
-                                   base::TickClock* tick_clock,
+                                   const base::TickClock* tick_clock,
                                    const RandIntCallback& rand_callback,
                                    std::unique_ptr<ReportingUploader> uploader,
                                    std::unique_ptr<ReportingDelegate> delegate)

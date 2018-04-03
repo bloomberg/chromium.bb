@@ -17,7 +17,7 @@ constexpr base::TimeDelta MinimumDelayAfterFailedOverlay =
 
 AndroidVideoSurfaceChooserImpl::AndroidVideoSurfaceChooserImpl(
     bool allow_dynamic,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : allow_dynamic_(allow_dynamic),
       tick_clock_(tick_clock),
       weak_factory_(this) {

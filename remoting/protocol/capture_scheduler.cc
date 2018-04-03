@@ -127,7 +127,7 @@ void CaptureScheduler::ProcessVideoAck(std::unique_ptr<VideoAck> video_ack) {
   ScheduleNextCapture();
 }
 
-void CaptureScheduler::SetTickClockForTest(base::TickClock* tick_clock) {
+void CaptureScheduler::SetTickClockForTest(const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

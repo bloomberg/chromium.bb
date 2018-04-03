@@ -19,7 +19,7 @@ namespace internal {
 ThreadControllerImpl::ThreadControllerImpl(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* time_source)
+    const base::TickClock* time_source)
     : message_loop_(message_loop),
       task_runner_(task_runner),
       message_loop_task_runner_(message_loop ? message_loop->task_runner()
@@ -38,7 +38,7 @@ ThreadControllerImpl::~ThreadControllerImpl() = default;
 
 std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
     base::MessageLoop* message_loop,
-    base::TickClock* time_source) {
+    const base::TickClock* time_source) {
   return base::WrapUnique(new ThreadControllerImpl(
       message_loop, message_loop->task_runner(), time_source));
 }
@@ -117,7 +117,7 @@ bool ThreadControllerImpl::RunsTasksInCurrentSequence() {
   return task_runner_->RunsTasksInCurrentSequence();
 }
 
-base::TickClock* ThreadControllerImpl::GetClock() {
+const base::TickClock* ThreadControllerImpl::GetClock() {
   return time_source_;
 }
 

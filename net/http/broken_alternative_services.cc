@@ -30,11 +30,10 @@ base::TimeDelta ComputeBrokenAlternativeServiceExpirationDelay(
 
 }  // namespace
 
-BrokenAlternativeServices::BrokenAlternativeServices(Delegate* delegate,
-                                                     base::TickClock* clock)
-    : delegate_(delegate),
-      clock_(clock),
-      weak_ptr_factory_(this) {
+BrokenAlternativeServices::BrokenAlternativeServices(
+    Delegate* delegate,
+    const base::TickClock* clock)
+    : delegate_(delegate), clock_(clock), weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(clock_);
 }

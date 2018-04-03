@@ -267,7 +267,7 @@ class NET_EXPORT NetworkQualityEstimator
       const;
 
   // Overrides the tick clock used by |this| for testing.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   // Returns the effective type of the current connection based on only the
   // observations received after |start_time|. |http_rtt|, |transport_rtt| and
@@ -532,7 +532,7 @@ class NET_EXPORT NetworkQualityEstimator
   bool disable_offline_check_;
 
   // Tick clock used by the network quality estimator.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Intervals after the main frame request arrives at which accuracy of network
   // quality prediction is recorded.

@@ -36,7 +36,7 @@ ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
 
 ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
     base::RepeatingClosure idle_callback,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : idle_callback_(std::move(idle_callback)), tick_clock_(tick_clock) {
   // |idle_callback_| will be invoked if no event happens in |kIdleDelay|.
   idle_time_ = tick_clock_->NowTicks() + kIdleDelay;

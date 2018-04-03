@@ -19,12 +19,12 @@ namespace resource_coordinator {
 base::TimeTicks NowTicks();
 
 // Returns the testing TickClock.
-base::TickClock* GetTickClock();
+const base::TickClock* GetTickClock();
 
 // Sets the testing TickClock within its scope.
 class ScopedSetTickClockForTesting {
  public:
-  explicit ScopedSetTickClockForTesting(base::TickClock* tick_clock);
+  explicit ScopedSetTickClockForTesting(const base::TickClock* tick_clock);
   ~ScopedSetTickClockForTesting();
 
  private:

@@ -230,7 +230,7 @@ class ASH_EXPORT PowerButtonController
   LockStateController* lock_state_controller_;  // Not owned.
 
   // Time source for performed action times.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Used to interact with the display.
   std::unique_ptr<PowerButtonDisplayController> display_controller_;

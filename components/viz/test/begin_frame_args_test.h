@@ -9,9 +9,12 @@
 
 #include <iosfwd>
 
-#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace viz {
 
@@ -50,7 +53,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     uint64_t source_id,
     uint64_t sequence_number,
-    base::SimpleTestTickClock* now_src);
+    const base::TickClock* now_src);
 
 // gtest helpers -- these *must* be in the same namespace as the types they
 // operate on.

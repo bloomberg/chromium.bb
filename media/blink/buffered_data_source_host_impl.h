@@ -40,7 +40,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
     : public BufferedDataSourceHost {
  public:
   BufferedDataSourceHostImpl(base::Closure progress_cb,
-                             base::TickClock* tick_clock);
+                             const base::TickClock* tick_clock);
   ~BufferedDataSourceHostImpl() override;
 
   // BufferedDataSourceHost implementation.
@@ -62,7 +62,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
                       double playback_rate) const;
 
   // Caller must make sure |tick_clock| is valid for lifetime of this object.
-  void SetTickClockForTest(base::TickClock* tick_clock);
+  void SetTickClockForTest(const base::TickClock* tick_clock);
 
  private:
   // Returns number of bytes not yet loaded in the given interval.
@@ -88,7 +88,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
   base::circular_deque<std::pair<base::TimeTicks, uint64_t>> download_history_;
   base::Closure progress_cb_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   FRIEND_TEST_ALL_PREFIXES(BufferedDataSourceHostImplTest, CanPlayThrough);
   FRIEND_TEST_ALL_PREFIXES(BufferedDataSourceHostImplTest,

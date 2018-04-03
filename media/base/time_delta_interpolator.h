@@ -24,7 +24,7 @@ class MEDIA_EXPORT TimeDeltaInterpolator {
   // Constructs an interpolator initialized to zero with a rate of 1.0.
   //
   // |tick_clock| is used for sampling wall clock time for interpolating.
-  explicit TimeDeltaInterpolator(base::TickClock* tick_clock);
+  explicit TimeDeltaInterpolator(const base::TickClock* tick_clock);
   ~TimeDeltaInterpolator();
 
   bool interpolating() { return interpolating_; }
@@ -63,7 +63,7 @@ class MEDIA_EXPORT TimeDeltaInterpolator {
   base::TimeDelta GetInterpolatedTime();
 
  private:
-  base::TickClock* const tick_clock_;
+  const base::TickClock* const tick_clock_;
 
   bool interpolating_;
 

@@ -79,7 +79,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // will cause the idle timer to run with each run of the message loop.
   void SetIdleCleanupParamsForTesting(base::TimeDelta idle_timeout,
                                       base::TimeDelta idle_cleanup_interval,
-                                      base::TickClock* tick_clock,
+                                      const base::TickClock* tick_clock,
                                       bool is_jelly_bean);
   bool IsIdleCleanupTimerRunningForTesting() const;
 
@@ -144,7 +144,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
 
   // Clock used for calculating when players have become stale. May be
   // overridden for testing.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
 #if defined(OS_ANDROID)
   bool was_playing_background_video_ = false;

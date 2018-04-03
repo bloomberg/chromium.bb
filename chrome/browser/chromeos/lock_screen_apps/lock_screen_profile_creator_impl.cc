@@ -25,7 +25,7 @@ namespace lock_screen_apps {
 
 LockScreenProfileCreatorImpl::LockScreenProfileCreatorImpl(
     Profile* primary_profile,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : primary_profile_(primary_profile),
       tick_clock_(tick_clock),
       note_taking_helper_observer_(this),

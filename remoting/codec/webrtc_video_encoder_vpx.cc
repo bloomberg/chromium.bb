@@ -270,7 +270,8 @@ bool WebrtcVideoEncoderVpx::IsSupportedByVP9(
 
 WebrtcVideoEncoderVpx::~WebrtcVideoEncoderVpx() = default;
 
-void WebrtcVideoEncoderVpx::SetTickClockForTests(base::TickClock* tick_clock) {
+void WebrtcVideoEncoderVpx::SetTickClockForTests(
+    const base::TickClock* tick_clock) {
   clock_ = tick_clock;
 }
 

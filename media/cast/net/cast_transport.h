@@ -93,7 +93,7 @@ class CastTransport {
   };
 
   static std::unique_ptr<CastTransport> Create(
-      base::TickClock* clock,  // Owned by the caller.
+      const base::TickClock* clock,  // Owned by the caller.
       base::TimeDelta logging_flush_interval,
       std::unique_ptr<Client> client,
       std::unique_ptr<PacketTransport> transport,

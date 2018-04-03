@@ -41,7 +41,7 @@ struct WeightedObservation;
 class NET_EXPORT_PRIVATE ObservationBuffer {
  public:
   ObservationBuffer(const NetworkQualityEstimatorParams* params,
-                    base::TickClock* tick_clock,
+                    const base::TickClock* tick_clock,
                     double weight_multiplier_per_second,
                     double weight_multiplier_per_signal_level);
 
@@ -75,7 +75,7 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
       int percentile,
       size_t* observations_count) const;
 
-  void SetTickClockForTesting(base::TickClock* tick_clock) {
+  void SetTickClockForTesting(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
 
@@ -134,7 +134,7 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
   // |weight_multiplier_per_signal_level_| ^ 3.
   const double weight_multiplier_per_signal_level_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ObservationBuffer);
 };

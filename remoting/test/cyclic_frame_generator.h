@@ -59,7 +59,7 @@ class CyclicFrameGenerator : public protocol::InputEventTimestampsSource {
     cursor_blink_period_ = cursor_blink_period;
   }
 
-  void SetTickClock(base::TickClock* tick_clock);
+  void SetTickClock(const base::TickClock* tick_clock);
 
   std::unique_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::SharedMemoryFactory* shared_memory_factory);
@@ -80,7 +80,7 @@ class CyclicFrameGenerator : public protocol::InputEventTimestampsSource {
   friend class base::RefCountedThreadSafe<CyclicFrameGenerator>;
 
   std::vector<std::unique_ptr<webrtc::DesktopFrame>> reference_frames_;
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
   webrtc::DesktopSize screen_size_;
 
   // By default switch between reference frames every 2 seconds.

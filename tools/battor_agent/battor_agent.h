@@ -103,7 +103,7 @@ class BattOrAgent : public BattOrConnection::Listener,
   std::unique_ptr<BattOrConnection> connection_;
 
   // A source of TimeTicks. Protected so that it can be faked in testing.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Timeout for when an action isn't completed within the allotted time. This
   // is virtual and protected so that timeouts can be disabled in testing. The

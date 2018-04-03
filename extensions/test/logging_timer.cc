@@ -14,7 +14,7 @@ namespace extensions {
 
 namespace {
 
-base::TickClock* g_clock_for_testing = nullptr;
+const base::TickClock* g_clock_for_testing = nullptr;
 
 // A global record of all tracked times.
 class TimeTracker {
@@ -89,7 +89,7 @@ void LoggingTimer::Print() {
 }
 
 // static
-void LoggingTimer::set_clock_for_testing(base::TickClock* clock) {
+void LoggingTimer::set_clock_for_testing(const base::TickClock* clock) {
   g_clock_for_testing = clock;
 }
 

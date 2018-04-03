@@ -27,7 +27,7 @@ enum {
 }  // namespace
 
 CastMessageBuilder::CastMessageBuilder(
-    base::TickClock* clock,
+    const base::TickClock* clock,
     RtpPayloadFeedback* incoming_payload_feedback,
     const Framer* framer,
     uint32_t media_ssrc,

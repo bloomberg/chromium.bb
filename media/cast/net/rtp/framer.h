@@ -23,7 +23,7 @@ namespace cast {
 
 class Framer {
  public:
-  Framer(base::TickClock* clock,
+  Framer(const base::TickClock* clock,
          RtpPayloadFeedback* incoming_payload_feedback,
          uint32_t ssrc,
          bool decoder_faster_than_max_frame_rate,

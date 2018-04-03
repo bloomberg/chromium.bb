@@ -453,7 +453,7 @@ class ReportingCacheImpl : public ReportingCache {
       return earliest_used;
   }
 
-  base::TickClock* tick_clock() { return context_->tick_clock(); }
+  const base::TickClock* tick_clock() { return context_->tick_clock(); }
 
   ReportingContext* context_;
 

@@ -62,7 +62,7 @@ class PLATFORM_EXPORT RuntimeCallCounter {
 // with the macros below.
 class PLATFORM_EXPORT RuntimeCallTimer {
  public:
-  explicit RuntimeCallTimer(base::TickClock* clock) : clock_(clock) {}
+  explicit RuntimeCallTimer(const base::TickClock* clock) : clock_(clock) {}
   ~RuntimeCallTimer() { DCHECK(!IsRunning()); };
 
   // Starts recording time for <counter>, and pauses <parent> (if non-null).
@@ -97,7 +97,7 @@ class PLATFORM_EXPORT RuntimeCallTimer {
   RuntimeCallTimer* parent_;
   TimeTicks start_ticks_;
   TimeDelta elapsed_time_;
-  base::TickClock* clock_ = nullptr;
+  const base::TickClock* clock_ = nullptr;
 };
 
 // Macros that take RuntimeCallStats as a parameter; used only in
@@ -162,7 +162,7 @@ class PLATFORM_EXPORT RuntimeCallTimer {
 // scope.
 class PLATFORM_EXPORT RuntimeCallStats {
  public:
-  explicit RuntimeCallStats(base::TickClock*);
+  explicit RuntimeCallStats(const base::TickClock*);
   // Get RuntimeCallStats object associated with the given isolate.
   static RuntimeCallStats* From(v8::Isolate*);
 
@@ -305,7 +305,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
   RuntimeCallCounter* GetCounter(const char* name);
 #endif
 
-  base::TickClock* clock() const { return clock_; }
+  const base::TickClock* clock() const { return clock_; }
 
  private:
   RuntimeCallTimer* current_timer_ = nullptr;
@@ -313,7 +313,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
   RuntimeCallCounter counters_[static_cast<int>(CounterId::kNumberOfCounters)];
   static const int number_of_counters_ =
       static_cast<int>(CounterId::kNumberOfCounters);
-  base::TickClock* clock_ = nullptr;
+  const base::TickClock* clock_ = nullptr;
 
 #if BUILDFLAG(RCS_COUNT_EVERYTHING)
   typedef HashMap<const char*, std::unique_ptr<RuntimeCallCounter>> CounterMap;

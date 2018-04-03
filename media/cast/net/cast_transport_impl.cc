@@ -42,7 +42,7 @@ int LookupOptionWithDefault(const base::DictionaryValue& options,
 }  // namespace
 
 std::unique_ptr<CastTransport> CastTransport::Create(
-    base::TickClock* clock,  // Owned by the caller.
+    const base::TickClock* clock,  // Owned by the caller.
     base::TimeDelta logging_flush_interval,
     std::unique_ptr<Client> client,
     std::unique_ptr<PacketTransport> transport,
@@ -113,7 +113,7 @@ struct CastTransportImpl::RtpStreamSession {
 };
 
 CastTransportImpl::CastTransportImpl(
-    base::TickClock* clock,
+    const base::TickClock* clock,
     base::TimeDelta logging_flush_interval,
     std::unique_ptr<Client> client,
     std::unique_ptr<PacketTransport> transport,

@@ -38,7 +38,7 @@ class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
   void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame,
                         bool repaint_duplicate_frame) override;
 
-  void set_tick_clock_for_testing(base::TickClock* tick_clock) {
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
 
@@ -81,7 +81,7 @@ class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
   base::TimeTicks last_now_;
 
   // If specified, used instead of a DefaultTickClock.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // If set, called when Stop() is called.
   base::Closure stop_cb_;

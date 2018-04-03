@@ -58,7 +58,7 @@ void OutOfMemoryReporter::OnForegroundOOMDetected(const GURL& url,
 }
 
 void OutOfMemoryReporter::SetTickClockForTest(
-    std::unique_ptr<base::TickClock> tick_clock) {
+    std::unique_ptr<const base::TickClock> tick_clock) {
   DCHECK(tick_clock_);
   tick_clock_ = std::move(tick_clock);
 }

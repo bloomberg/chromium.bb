@@ -129,7 +129,7 @@ base::TimeDelta FakeCompositorTimingHistory::DrawDurationEstimate() const {
 }
 
 TestScheduler::TestScheduler(
-    base::SimpleTestTickClock* now_src,
+    const base::TickClock* now_src,
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
