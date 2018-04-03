@@ -9,6 +9,8 @@ source_set("table_view") {
     "chrome_table_view_controller.mm",
     "table_container_bottom_toolbar.h",
     "table_container_bottom_toolbar.mm",
+    "table_container_constants.h",
+    "table_container_constants.mm",
     "table_container_view_controller.h",
     "table_container_view_controller.mm",
     "table_view_model.h",

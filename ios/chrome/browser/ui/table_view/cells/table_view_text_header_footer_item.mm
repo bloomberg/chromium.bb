@@ -27,6 +27,8 @@ const CGFloat kVerticalSpacing = 2.0;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewTextHeaderFooterView class];
+    self.accessibilityTraits |=
+        UIAccessibilityTraitButton | UIAccessibilityTraitHeader;
   }
   return self;
 }
@@ -42,6 +44,7 @@ const CGFloat kVerticalSpacing = 2.0;
       base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
   header.textLabel.text = self.text;
   header.subtitleLabel.text = self.subtitleText;
+  header.accessibilityLabel = self.text;
 }
 
 @end

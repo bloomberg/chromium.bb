@@ -16,7 +16,7 @@
 // TableViewItem for SignIn Promo Cell.
 @interface TableViewSigninPromoItem : TableViewItem
 // SigninPromoViewConfigurator used to configure the SigninPromoView.
-@property(nonatomic, weak) SigninPromoViewConfigurator* configurator;
+@property(nonatomic, strong) SigninPromoViewConfigurator* configurator;
 // SigninPromoViewDelegate to perform SigninPromoView actions.
 @property(nonatomic, weak) id<SigninPromoViewDelegate> delegate;
 // Text being displayed.

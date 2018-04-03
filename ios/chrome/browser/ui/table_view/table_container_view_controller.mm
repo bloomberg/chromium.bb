@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,6 +34,7 @@
     _dismissButton.style = UIBarButtonItemStylePlain;
     _dismissButton.title =
         l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+    [_dismissButton setAccessibilityIdentifier:kTableContainerDismissButtonId];
   }
   return self;
 }
