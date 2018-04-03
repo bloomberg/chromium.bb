@@ -3485,9 +3485,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnablePixelCanvasRecording)},
 
 #if defined(OS_CHROMEOS)
-    {"disable-tablet-splitview", flag_descriptions::kDisableTabletSplitViewName,
-     flag_descriptions::kDisableTabletSplitViewDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshDisableTabletSplitView)},
+    {"enable-tablet-splitview", flag_descriptions::kEnableTabletSplitViewName,
+     flag_descriptions::kEnableTabletSplitViewDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableTabletSplitView)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-parallel-downloading", flag_descriptions::kParallelDownloadingName,

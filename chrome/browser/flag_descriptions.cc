@@ -2622,10 +2622,6 @@ const char kDisableTabletAutohideTitlebarsDescription[] =
     "Disable tablet mode autohide titlebars functionality. The user will be "
     "able to see the titlebar in tablet mode.";
 
-const char kDisableTabletSplitViewName[] = "Disable split view in Tablet mode";
-const char kDisableTabletSplitViewDescription[] =
-    "Disable split view for Chrome OS tablet mode.";
-
 const char kEnablePerUserTimezoneName[] = "Per-user time zone preferences.";
 const char kEnablePerUserTimezoneDescription[] =
     "Chrome OS system timezone preference is stored and handled for each user "
@@ -2680,6 +2676,10 @@ const char kEnableFullscreenHandwritingVirtualKeyboardName[] =
 const char kEnableFullscreenHandwritingVirtualKeyboardDescription[] =
     "If enabled, the handwriting virtual keyboard will allow user to write "
     "anywhere on the screen";
+
+const char kEnableTabletSplitViewName[] = "Split view in Tablet mode";
+const char kEnableTabletSplitViewDescription[] =
+    "Enable split view for Chrome OS tablet mode.";
 
 const char kEnableUnifiedMultiDeviceSettingsName[] =
     "Enable unified MultiDevice settings";
