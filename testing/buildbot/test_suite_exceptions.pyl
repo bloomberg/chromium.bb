@@ -512,14 +512,10 @@
       'Unswarmed N5X Tests Dummy Builder',
     ],
     'remove_from': [
-      # TODO(crbug.com/731759): Enable this once we're confident that it passes.
-      'Marshmallow Phone Tester (rel)',
       # chromium.clang
       'ToTAndroidCFI',
       # chromium.memory
       'Android CFI',
-      # TODO(dpranke): on chromium.swarm, this is probably also an accident.
-      'Android N5X Swarm',
     ],
     'key_removals': {
       # chromium.android.fyi
@@ -565,6 +561,11 @@
           'hard_timeout': 1200,
           'shards': 14,
         },
+      },
+      'Marshmallow Phone Tester (rel)': {
+        # TODO(crbug.com/731759): Enable this once we're confident that it
+        # passes.
+        'experiment_percentage': 100,
       },
       'Marshmallow Tablet Tester': {
         'swarming': {
@@ -616,6 +617,12 @@
           'shards': 1,
           'hard_timeout': 0,
         },
+      },
+      # chromium.swarm
+      'Android N5X Swarm': {
+        # TODO(crbug.com/731759): Enable this once we're confident that it
+        # passes.
+        'experiment_percentage': 100,
       },
     },
   },
