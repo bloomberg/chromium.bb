@@ -37,7 +37,7 @@ class BrokenAlternativeServicesTest
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   base::TestMockTimeTaskRunner::ScopedContext test_task_runner_context_;
 
-  base::TickClock* broken_services_clock_;
+  const base::TickClock* broken_services_clock_;
   BrokenAlternativeServices broken_services_;
 
   std::vector<AlternativeService> expired_alt_svcs_;

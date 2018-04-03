@@ -172,7 +172,7 @@ CaptivePortalService::RecheckPolicy::RecheckPolicy()
 
 CaptivePortalService::CaptivePortalService(
     Profile* profile,
-    base::TickClock* clock_for_testing,
+    const base::TickClock* clock_for_testing,
     network::mojom::URLLoaderFactory* loader_factory_for_testing)
     : profile_(profile),
       state_(STATE_IDLE),

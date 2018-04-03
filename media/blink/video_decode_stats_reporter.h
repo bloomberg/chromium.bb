@@ -33,7 +33,8 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
       GetPipelineStatsCB get_pipeline_stats_cb,
       const VideoDecoderConfig& video_config,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::TickClock* tick_clock = base::DefaultTickClock::GetInstance());
+      const base::TickClock* tick_clock =
+          base::DefaultTickClock::GetInstance());
   ~VideoDecodeStatsReporter();
 
   void OnPlaying();
@@ -152,7 +153,7 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
 
   // Clock for |stats_cb_timer_| and getting current tick count (NowTicks()).
   // Tests may supply a mock clock via the constructor.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Timer for all stats callbacks. Timer interval will be dynamically set based
   // on state of reporter. See calls to RunStatsTimerAtIntervalMs().

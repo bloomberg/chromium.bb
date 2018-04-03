@@ -40,7 +40,7 @@ class ASH_EXPORT TaskSwitchTimeTracker {
   // This doesn't take the ownership of the clock. |tick_clock| must outlive
   // TaskSwitchTimeTracker.
   TaskSwitchTimeTracker(const std::string& histogram_name,
-                        base::TickClock* tick_clock);
+                        const base::TickClock* tick_clock);
 
   // Returns true if |last_action_time_| has a valid value.
   bool HasLastActionTime() const;
@@ -66,7 +66,7 @@ class ASH_EXPORT TaskSwitchTimeTracker {
   base::TimeTicks last_action_time_ = base::TimeTicks();
 
   // The clock used to determine the |last_action_time_|.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchTimeTracker);
 };

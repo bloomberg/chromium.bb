@@ -96,7 +96,7 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   // null, will cause automatic queries to a time server.  Otherwise, time is
   // available only if |UpdateNetworkTime| is called.
   NetworkTimeTracker(std::unique_ptr<base::Clock> clock,
-                     std::unique_ptr<base::TickClock> tick_clock,
+                     std::unique_ptr<const base::TickClock> tick_clock,
                      PrefService* pref_service,
                      scoped_refptr<net::URLRequestContextGetter> getter);
   ~NetworkTimeTracker() override;
@@ -194,7 +194,7 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   // the NetworkTimeTracker to notice e.g. suspend/resume events and clock
   // resets.
   std::unique_ptr<base::Clock> clock_;
-  std::unique_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<const base::TickClock> tick_clock_;
 
   PrefService* pref_service_;
 

@@ -18,8 +18,9 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupOpenerTabHelper);
 
 // static
-void PopupOpenerTabHelper::CreateForWebContents(content::WebContents* contents,
-                                                base::TickClock* tick_clock) {
+void PopupOpenerTabHelper::CreateForWebContents(
+    content::WebContents* contents,
+    const base::TickClock* tick_clock) {
   DCHECK(contents);
   if (!FromWebContents(contents)) {
     contents->SetUserData(
@@ -61,7 +62,7 @@ void PopupOpenerTabHelper::OnDidTabUnder() {
 }
 
 PopupOpenerTabHelper::PopupOpenerTabHelper(content::WebContents* web_contents,
-                                           base::TickClock* tick_clock)
+                                           const base::TickClock* tick_clock)
     : content::WebContentsObserver(web_contents), tick_clock_(tick_clock) {
   visibility_tracker_ = std::make_unique<ScopedVisibilityTracker>(
       tick_clock_,

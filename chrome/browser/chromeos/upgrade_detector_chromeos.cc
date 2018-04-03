@@ -90,7 +90,8 @@ class ChannelsRequester {
 
 }  // namespace
 
-UpgradeDetectorChromeos::UpgradeDetectorChromeos(base::TickClock* tick_clock)
+UpgradeDetectorChromeos::UpgradeDetectorChromeos(
+    const base::TickClock* tick_clock)
     : UpgradeDetector(tick_clock),
       high_threshold_(DetermineHighThreshold()),
       upgrade_notification_timer_(tick_clock),

@@ -47,7 +47,7 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   explicit ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback);
   // For testing.
   ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback,
-                            base::TickClock* tick_clock);
+                            const base::TickClock* tick_clock);
   ~ServiceWorkerTimeoutTimer();
 
   // StartEvent() should be called at the beginning of an event. It returns an
@@ -143,7 +143,7 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   base::RepeatingTimer timer_;
 
   // |tick_clock_| outlives |this|.
-  base::TickClock* const tick_clock_;
+  const base::TickClock* const tick_clock_;
 };
 
 }  // namespace content

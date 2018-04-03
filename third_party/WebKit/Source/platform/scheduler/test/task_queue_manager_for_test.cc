@@ -16,7 +16,7 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
   ThreadControllerForTest(
       base::MessageLoop* message_loop,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::TickClock* time_source)
+      const base::TickClock* time_source)
       : ThreadControllerImpl(message_loop,
                              std::move(task_runner),
                              time_source) {}
@@ -47,7 +47,7 @@ TaskQueueManagerForTest::TaskQueueManagerForTest(
 std::unique_ptr<TaskQueueManagerForTest> TaskQueueManagerForTest::Create(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* clock) {
+    const base::TickClock* clock) {
   return std::make_unique<TaskQueueManagerForTest>(
       std::make_unique<ThreadControllerForTest>(message_loop,
                                                 std::move(task_runner), clock));

@@ -25,7 +25,7 @@ bool IsNewerSequenceNumber(uint16_t sequence_number,
 
 }  // namespace
 
-ReceiverStats::ReceiverStats(base::TickClock* clock)
+ReceiverStats::ReceiverStats(const base::TickClock* clock)
     : clock_(clock),
       min_sequence_number_(0),
       max_sequence_number_(0),

@@ -33,7 +33,7 @@ PacketPipe::PacketPipe() = default;
 PacketPipe::~PacketPipe() = default;
 void PacketPipe::InitOnIOThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::TickClock* clock) {
+    const base::TickClock* clock) {
   task_runner_ = task_runner;
   clock_ = clock;
   if (pipe_) {
@@ -233,7 +233,7 @@ class RandomSortedDelay : public PacketPipe {
   }
   void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) final {
+      const base::TickClock* clock) final {
     PacketPipe::InitOnIOThread(task_runner, clock);
     // As we start the stream, assume that we are in a random
     // place between two extra delays, thus multiplier = 1.0;
@@ -309,7 +309,7 @@ class NetworkGlitchPipe : public PacketPipe {
 
   void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) final {
+      const base::TickClock* clock) final {
     PacketPipe::InitOnIOThread(task_runner, clock);
     Flip();
   }
@@ -369,7 +369,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
 
   void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) final {
+      const base::TickClock* clock) final {
     clock_ = clock;
     if (ipp_)
       ipp_->InitOnIOThread(task_runner, clock);
@@ -405,7 +405,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
   const size_t stored_limit_;
   base::circular_deque<linked_ptr<Packet>> buffer_;
   base::circular_deque<base::TimeTicks> buffer_time_;
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
   base::WeakPtrFactory<InternalBuffer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalBuffer);
@@ -432,7 +432,7 @@ InterruptedPoissonProcess::~InterruptedPoissonProcess() = default;
 
 void InterruptedPoissonProcess::InitOnIOThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::TickClock* clock) {
+    const base::TickClock* clock) {
   // Already initialized and started.
   if (task_runner_.get() && clock_)
     return;

@@ -42,7 +42,7 @@ void FlingAnimation::Abort() {
   fling_tracker_.StopFling();
 }
 
-void FlingAnimation::SetTickClockForTest(base::TickClock* clock) {
+void FlingAnimation::SetTickClockForTest(const base::TickClock* clock) {
   clock_ = clock;
 }
 

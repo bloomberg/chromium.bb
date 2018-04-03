@@ -123,7 +123,7 @@ class MockTimerWithTickClock : public base::MockTimer {
  public:
   MockTimerWithTickClock(bool retain_user_task,
                          bool is_repeating,
-                         base::TickClock* tick_clock)
+                         const base::TickClock* tick_clock)
       : base::MockTimer(retain_user_task, is_repeating),
         tick_clock_(tick_clock) {}
 
@@ -135,7 +135,7 @@ class MockTimerWithTickClock : public base::MockTimer {
   }
 
  private:
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTimerWithTickClock);
 };
@@ -145,7 +145,7 @@ class MockTimerWithTickClock : public base::MockTimer {
 class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
  public:
   TestTrafficStatsAmortizer(
-      base::TickClock* tick_clock,
+      const base::TickClock* tick_clock,
       std::unique_ptr<base::Timer> traffic_stats_query_timer)
       : TrafficStatsAmortizer(tick_clock,
                               std::move(traffic_stats_query_timer),

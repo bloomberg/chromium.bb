@@ -34,7 +34,7 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
       bool promote_aggressively,
       std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator =
           nullptr,
-      base::TickClock* tick_clock = nullptr);
+      const base::TickClock* tick_clock = nullptr);
   ~SurfaceChooserHelper();
 
   enum class SecureSurfaceMode {
@@ -105,7 +105,7 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
   // Time since we last updated the chooser state.
   base::TimeTicks most_recent_chooser_retry_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Number of promotion hints that we need to receive before clearing the
   // "delay overlay promotion" flag in |surface_chooser_state_|.  We do this so

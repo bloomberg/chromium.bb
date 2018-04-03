@@ -98,7 +98,7 @@ StatsEventSubscriber::SimpleHistogram::GetHistogram() const {
 
 StatsEventSubscriber::StatsEventSubscriber(
     EventMediaType event_media_type,
-    base::TickClock* clock,
+    const base::TickClock* clock,
     ReceiverTimeOffsetEstimator* offset_estimator)
     : event_media_type_(event_media_type),
       clock_(clock),

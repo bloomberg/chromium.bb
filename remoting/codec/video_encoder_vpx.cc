@@ -239,7 +239,7 @@ std::unique_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9() {
 
 VideoEncoderVpx::~VideoEncoderVpx() = default;
 
-void VideoEncoderVpx::SetTickClockForTests(base::TickClock* tick_clock) {
+void VideoEncoderVpx::SetTickClockForTests(const base::TickClock* tick_clock) {
   clock_ = tick_clock;
 }
 

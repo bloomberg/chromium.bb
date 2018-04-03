@@ -380,7 +380,7 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
   base::MessageLoop loop;
   network_time::NetworkTimeTracker network_time_tracker(
       std::unique_ptr<base::Clock>(clock),
-      std::unique_ptr<base::TickClock>(tick_clock), &pref_service,
+      std::unique_ptr<const base::TickClock>(tick_clock), &pref_service,
       new net::TestURLRequestContextGetter(io_thread.task_runner()));
   network_time_tracker.SetTimeServerURLForTesting(test_server.GetURL("/"));
   field_trial_test()->SetNetworkQueriesWithVariationsService(

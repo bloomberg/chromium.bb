@@ -31,7 +31,7 @@ struct GetAppAvailabilityRequest {
   GetAppAvailabilityRequest(int channel_id,
                             const std::string& app_id,
                             GetAppAvailabilityCallback callback,
-                            base::TickClock* clock);
+                            const base::TickClock* clock);
   ~GetAppAvailabilityRequest();
 
   // ID of channel the request is sent over.
@@ -137,7 +137,7 @@ class CastMessageHandler : public CastSocket::Observer {
   CastSocketService* const socket_service_;
 
   // Non-owned pointer to TickClock used for request timeouts.
-  base::TickClock* const clock_;
+  const base::TickClock* const clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastMessageHandler> weak_ptr_factory_;

@@ -109,7 +109,7 @@ void PrefetchBackgroundTaskHandlerImpl::RemoveSuspension() {
 }
 
 void PrefetchBackgroundTaskHandlerImpl::SetTickClockForTesting(
-    base::TickClock* clock) {
+    const base::TickClock* clock) {
   clock_ = clock;
 }
 

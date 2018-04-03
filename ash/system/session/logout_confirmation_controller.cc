@@ -171,7 +171,8 @@ void LogoutConfirmationController::OnDialogClosed() {
   logout_timer_.Stop();
 }
 
-void LogoutConfirmationController::SetClockForTesting(base::TickClock* clock) {
+void LogoutConfirmationController::SetClockForTesting(
+    const base::TickClock* clock) {
   clock_ = clock;
 }
 

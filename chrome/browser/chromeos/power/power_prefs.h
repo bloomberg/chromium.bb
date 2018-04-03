@@ -47,7 +47,9 @@ class PowerPrefs : public PowerManagerClient::Observer,
   static void RegisterLoginProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry);
 
-  void set_tick_clock_for_test(base::TickClock* clock) { tick_clock_ = clock; }
+  void set_tick_clock_for_test(const base::TickClock* clock) {
+    tick_clock_ = clock;
+  }
 
   // PowerManagerClient::Observer:
   void ScreenIdleStateChanged(
@@ -79,7 +81,7 @@ class PowerPrefs : public PowerManagerClient::Observer,
   Profile* profile_ = nullptr;  // Not owned.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  base::TickClock* tick_clock_;  // Not owned.
+  const base::TickClock* tick_clock_;  // Not owned.
 
   // Time at which the screen was locked. Unset if the screen is unlocked.
   base::TimeTicks screen_lock_time_;

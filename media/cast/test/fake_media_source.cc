@@ -71,7 +71,7 @@ namespace cast {
 
 FakeMediaSource::FakeMediaSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* clock,
+    const base::TickClock* clock,
     const FrameSenderConfig& audio_config,
     const FrameSenderConfig& video_config,
     bool keep_frames)

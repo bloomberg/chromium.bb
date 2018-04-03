@@ -39,7 +39,7 @@ class FakeRelaunchNotificationController
     : public RelaunchNotificationController {
  public:
   FakeRelaunchNotificationController(UpgradeDetector* upgrade_detector,
-                                     base::TickClock* tick_clock,
+                                     const base::TickClock* tick_clock,
                                      ControllerDelegate* delegate)
       : RelaunchNotificationController(upgrade_detector, tick_clock),
         delegate_(delegate) {}
@@ -78,7 +78,7 @@ class MockControllerDelegate : public ControllerDelegate {
 // A fake UpgradeDetector.
 class FakeUpgradeDetector : public UpgradeDetector {
  public:
-  explicit FakeUpgradeDetector(base::TickClock* tick_clock)
+  explicit FakeUpgradeDetector(const base::TickClock* tick_clock)
       : UpgradeDetector(tick_clock) {
     set_upgrade_detected_time(this->tick_clock()->NowTicks());
   }
@@ -140,7 +140,7 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
   }
 
   // Returns the ScopedTaskEnvironment's MockTickClock.
-  base::TickClock* GetMockTickClock() {
+  const base::TickClock* GetMockTickClock() {
     return scoped_task_environment_.GetMockTickClock();
   }
 

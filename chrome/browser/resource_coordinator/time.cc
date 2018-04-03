@@ -11,7 +11,7 @@ namespace resource_coordinator {
 
 namespace {
 
-base::TickClock* g_tick_clock_for_testing = nullptr;
+const base::TickClock* g_tick_clock_for_testing = nullptr;
 
 }  // namespace
 
@@ -20,12 +20,12 @@ base::TimeTicks NowTicks() {
                                   : base::TimeTicks::Now();
 }
 
-base::TickClock* GetTickClock() {
+const base::TickClock* GetTickClock() {
   return g_tick_clock_for_testing;
 }
 
 ScopedSetTickClockForTesting::ScopedSetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   DCHECK(!g_tick_clock_for_testing);
   g_tick_clock_for_testing = tick_clock;
 }

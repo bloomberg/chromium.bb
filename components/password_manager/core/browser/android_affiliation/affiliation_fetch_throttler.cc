@@ -52,7 +52,7 @@ const int64_t AffiliationFetchThrottler::kGracePeriodAfterReconnectMs =
 AffiliationFetchThrottler::AffiliationFetchThrottler(
     AffiliationFetchThrottlerDelegate* delegate,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : delegate_(delegate),
       task_runner_(task_runner),
       tick_clock_(tick_clock),

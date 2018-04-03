@@ -36,7 +36,7 @@ constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(600);
 
 // Holds TickClock instance to overwrite TimeTicks::Now() for testing.
-base::TickClock* tick_clock_for_testing = nullptr;
+const base::TickClock* tick_clock_for_testing = nullptr;
 
 base::TimeTicks Now() {
   if (tick_clock_for_testing)
@@ -82,7 +82,8 @@ bool ParseAccessControlAllowList(const base::Optional<std::string>& string,
 }  // namespace
 
 // static
-void PreflightResult::SetTickClockForTesting(base::TickClock* tick_clock) {
+void PreflightResult::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
   tick_clock_for_testing = tick_clock;
 }
 

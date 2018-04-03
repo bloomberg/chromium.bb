@@ -17,7 +17,7 @@ namespace {
 
 class TestUpgradeDetectorImpl : public UpgradeDetectorImpl {
  public:
-  explicit TestUpgradeDetectorImpl(base::TickClock* tick_clock)
+  explicit TestUpgradeDetectorImpl(const base::TickClock* tick_clock)
       : UpgradeDetectorImpl(tick_clock) {}
   ~TestUpgradeDetectorImpl() override = default;
 
@@ -98,7 +98,7 @@ class UpgradeDetectorImplTest : public ::testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
-  base::TickClock* GetMockTickClock() {
+  const base::TickClock* GetMockTickClock() {
     return scoped_task_environment_.GetMockTickClock();
   }
 

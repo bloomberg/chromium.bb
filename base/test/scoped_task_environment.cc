@@ -244,7 +244,7 @@ void ScopedTaskEnvironment::FastForwardUntilNoTasksRemain() {
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
 
-TickClock* ScopedTaskEnvironment::GetMockTickClock() {
+const TickClock* ScopedTaskEnvironment::GetMockTickClock() {
   DCHECK(mock_time_task_runner_);
   return mock_time_task_runner_->GetMockTickClock();
 }

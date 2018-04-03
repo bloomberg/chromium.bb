@@ -42,7 +42,7 @@ using RtcpSendTimeQueue = base::queue<RtcpSendTimePair>;
 //   applications.
 class SenderRtcpSession : public RtcpSession {
  public:
-  SenderRtcpSession(base::TickClock* clock,            // Not owned.
+  SenderRtcpSession(const base::TickClock* clock,      // Not owned.
                     PacedPacketSender* packet_sender,  // Not owned.
                     RtcpObserver* observer,            // Not owned.
                     uint32_t local_ssrc,
@@ -99,8 +99,8 @@ class SenderRtcpSession : public RtcpSession {
                            uint32_t last_ntp_seconds,
                            uint32_t last_ntp_fraction);
 
-  base::TickClock* const clock_;      // Not owned.
-  PacedPacketSender* packet_sender_;  // Not owned.
+  const base::TickClock* const clock_;  // Not owned.
+  PacedPacketSender* packet_sender_;    // Not owned.
   const uint32_t local_ssrc_;
   const uint32_t remote_ssrc_;
   RtcpObserver* const rtcp_observer_;  // Owned by |CastTransportImpl|.

@@ -62,7 +62,9 @@ class BaseTimerTaskInternal {
 Timer::Timer(bool retain_user_task, bool is_repeating)
     : Timer(retain_user_task, is_repeating, nullptr) {}
 
-Timer::Timer(bool retain_user_task, bool is_repeating, TickClock* tick_clock)
+Timer::Timer(bool retain_user_task,
+             bool is_repeating,
+             const TickClock* tick_clock)
     : scheduled_task_(nullptr),
       is_repeating_(is_repeating),
       retain_user_task_(retain_user_task),
@@ -85,7 +87,7 @@ Timer::Timer(const Location& posted_from,
              TimeDelta delay,
              const base::Closure& user_task,
              bool is_repeating,
-             TickClock* tick_clock)
+             const TickClock* tick_clock)
     : scheduled_task_(nullptr),
       posted_from_(posted_from),
       delay_(delay),

@@ -15,7 +15,7 @@ ServiceWorkerLifetimeTracker::ServiceWorkerLifetimeTracker()
     : ServiceWorkerLifetimeTracker(base::DefaultTickClock::GetInstance()) {}
 
 ServiceWorkerLifetimeTracker::ServiceWorkerLifetimeTracker(
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : tick_clock_(tick_clock) {}
 
 ServiceWorkerLifetimeTracker::~ServiceWorkerLifetimeTracker() = default;

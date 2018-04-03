@@ -14,7 +14,7 @@ namespace viz {
 SurfaceDependencyDeadline::SurfaceDependencyDeadline(
     SurfaceDeadlineClient* client,
     BeginFrameSource* begin_frame_source,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : client_(client),
       begin_frame_source_(begin_frame_source),
       tick_clock_(tick_clock) {

@@ -30,7 +30,7 @@ class LockScreenProfileCreatorImpl
   // |primary_profile| - the primary profile - i.e. the profile which should be
   //     used to determine lock screen note taking availability.
   LockScreenProfileCreatorImpl(Profile* primary_profile,
-                               base::TickClock* tick_clock);
+                               const base::TickClock* tick_clock);
   ~LockScreenProfileCreatorImpl() override;
 
   // chromeos::NoteTakingHelper::Observer:
@@ -58,7 +58,7 @@ class LockScreenProfileCreatorImpl
                       Profile::CreateStatus status);
 
   Profile* const primary_profile_;
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   ScopedObserver<chromeos::NoteTakingHelper,
                  chromeos::NoteTakingHelper::Observer>

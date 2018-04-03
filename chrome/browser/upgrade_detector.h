@@ -137,14 +137,14 @@ class UpgradeDetector {
     UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU,
   };
 
-  explicit UpgradeDetector(base::TickClock* tick_clock);
+  explicit UpgradeDetector(const base::TickClock* tick_clock);
 
   // Returns the notification period specified via the
   // RelaunchNotificationPeriod policy setting, or a zero delta if unset or out
   // of range.
   static base::TimeDelta GetRelaunchNotificationPeriod();
 
-  base::TickClock* tick_clock() { return tick_clock_; }
+  const base::TickClock* tick_clock() { return tick_clock_; }
 
   // Notifies that update is recommended and triggers different actions based
   // on the update availability.
@@ -220,7 +220,7 @@ class UpgradeDetector {
   void IdleCallback(ui::IdleState state);
 
   // A provider of TimeTicks to the detector and its timers.
-  base::TickClock* const tick_clock_;
+  const base::TickClock* const tick_clock_;
 
   // Observes changes to the browser.relaunch_notification_period Local State
   // preference.

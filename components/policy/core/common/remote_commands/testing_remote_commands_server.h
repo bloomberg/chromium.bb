@@ -80,7 +80,7 @@ class TestingRemoteCommandsServer {
 
   // Set alternative clock for obtaining the command issue time. The default
   // clock uses the system clock.
-  void SetClock(base::TickClock* clock);
+  void SetClock(const base::TickClock* clock);
 
   // Get the number of commands for which no results have been reported yet.
   // This number also includes commands which have not been fetched yet.
@@ -104,7 +104,7 @@ class TestingRemoteCommandsServer {
   RemoteCommandJob::UniqueIDType last_generated_unique_id_ = 0;
 
   // Clock used to generate command issue time when IssueCommand() is called.
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   // A lock protecting the command queues, as well as generated and acknowledged
   // IDs.

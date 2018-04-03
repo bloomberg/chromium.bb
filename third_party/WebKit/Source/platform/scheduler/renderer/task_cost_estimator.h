@@ -22,7 +22,7 @@ namespace scheduler {
 class PLATFORM_EXPORT TaskCostEstimator
     : public base::MessageLoop::TaskObserver {
  public:
-  TaskCostEstimator(base::TickClock* time_source,
+  TaskCostEstimator(const base::TickClock* time_source,
                     int sample_count,
                     double estimation_percentile);
   ~TaskCostEstimator() override;
@@ -37,7 +37,7 @@ class PLATFORM_EXPORT TaskCostEstimator
 
  private:
   cc::RollingTimeDeltaHistory rolling_time_delta_history_;
-  base::TickClock* time_source_;  // NOT OWNED
+  const base::TickClock* time_source_;  // NOT OWNED
   int outstanding_task_count_;
   double estimation_percentile_;
   base::TimeTicks task_start_time_;

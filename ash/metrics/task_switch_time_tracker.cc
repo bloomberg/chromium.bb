@@ -30,7 +30,7 @@ TaskSwitchTimeTracker::TaskSwitchTimeTracker(const std::string& histogram_name)
                             base::DefaultTickClock::GetInstance()) {}
 
 TaskSwitchTimeTracker::TaskSwitchTimeTracker(const std::string& histogram_name,
-                                             base::TickClock* tick_clock)
+                                             const base::TickClock* tick_clock)
     : histogram_name_(histogram_name), tick_clock_(tick_clock) {}
 
 TaskSwitchTimeTracker::~TaskSwitchTimeTracker() = default;

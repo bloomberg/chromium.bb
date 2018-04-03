@@ -25,7 +25,7 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // will be used as our time source.  Otherwise, we'll use wall clock.  If
   // provided, then it must outlast |this|.
   AndroidVideoSurfaceChooserImpl(bool allow_dynamic,
-                                 base::TickClock* tick_clock = nullptr);
+                                 const base::TickClock* tick_clock = nullptr);
   ~AndroidVideoSurfaceChooserImpl() override;
 
   // AndroidVideoSurfaceChooser
@@ -84,7 +84,7 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   bool initial_state_received_ = false;
 
   // Not owned by us.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Time at which we most recently got a failed overlay request.
   base::TimeTicks most_recent_overlay_failure_;

@@ -76,7 +76,7 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
 class TestScheduler : public Scheduler {
  public:
   TestScheduler(
-      base::SimpleTestTickClock* now_src,
+      const base::TickClock* now_src,
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
@@ -134,7 +134,7 @@ class TestScheduler : public Scheduler {
   base::TimeTicks Now() const override;
 
  private:
-  base::SimpleTestTickClock* now_src_;
+  const base::TickClock* now_src_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScheduler);
 };

@@ -98,7 +98,7 @@ class HttpServerPropertiesImplTest : public testing::Test {
 
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 
-  base::TickClock* test_tick_clock_;
+  const base::TickClock* test_tick_clock_;
   base::SimpleTestClock test_clock_;
 
   HttpServerPropertiesImpl impl_;

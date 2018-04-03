@@ -57,7 +57,7 @@ class CaptivePortalService : public KeyedService {
 
   CaptivePortalService(
       Profile* profile,
-      base::TickClock* clock_for_testing = nullptr,
+      const base::TickClock* clock_for_testing = nullptr,
       network::mojom::URLLoaderFactory* loader_factory_for_testing = nullptr);
   ~CaptivePortalService() override;
 
@@ -207,7 +207,7 @@ class CaptivePortalService : public KeyedService {
   static TestingState testing_state_;
 
   // Test tick clock used by unit tests.
-  base::TickClock* const tick_clock_for_testing_;  // Not owned.
+  const base::TickClock* const tick_clock_for_testing_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalService);
 };

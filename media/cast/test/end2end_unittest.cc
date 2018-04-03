@@ -180,7 +180,7 @@ class LoopBackTransport : public PacketTransport {
   void SetPacketReceiver(
       const PacketReceiverCallback& packet_receiver,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) {
+      const base::TickClock* clock) {
     std::unique_ptr<test::PacketPipe> loopback_pipe(
         new LoopBackPacketPipe(packet_receiver));
     if (packet_pipe_) {

@@ -54,7 +54,7 @@ class LoopBackTransport : public PacketTransport {
       std::unique_ptr<test::PacketPipe> pipe,
       const PacketReceiverCallback& packet_receiver,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock);
+      const base::TickClock* clock);
 
  private:
   const scoped_refptr<CastEnvironment> cast_environment_;

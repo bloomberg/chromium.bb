@@ -214,7 +214,7 @@ class RendererController final : public mojom::RemotingSource,
   // remote the content while this timer is running.
   base::OneShotTimer delayed_start_stability_timer_;
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   base::WeakPtrFactory<RendererController> weak_factory_;
 

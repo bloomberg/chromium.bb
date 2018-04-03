@@ -33,7 +33,7 @@ class VideoFramePool::PoolImpl
 
   size_t get_pool_size_for_testing() const { return frames_.size(); }
 
-  void set_tick_clock_for_testing(base::TickClock* tick_clock) {
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
 
@@ -59,7 +59,7 @@ class VideoFramePool::PoolImpl
   base::circular_deque<FrameEntry> frames_;
 
   // |tick_clock_| is always a DefaultTickClock outside of testing.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
 };
@@ -160,7 +160,7 @@ size_t VideoFramePool::GetPoolSizeForTesting() const {
   return pool_->get_pool_size_for_testing();
 }
 
-void VideoFramePool::SetTickClockForTesting(base::TickClock* tick_clock) {
+void VideoFramePool::SetTickClockForTesting(const base::TickClock* tick_clock) {
   pool_->set_tick_clock_for_testing(tick_clock);
 }
 

@@ -40,7 +40,7 @@ CyclicFrameGenerator::CyclicFrameGenerator(
 
 CyclicFrameGenerator::~CyclicFrameGenerator() = default;
 
-void CyclicFrameGenerator::SetTickClock(base::TickClock* tick_clock) {
+void CyclicFrameGenerator::SetTickClock(const base::TickClock* tick_clock) {
   clock_ = tick_clock;
   started_time_ = clock_->NowTicks();
 }

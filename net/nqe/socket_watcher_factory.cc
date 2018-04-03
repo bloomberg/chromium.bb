@@ -18,7 +18,7 @@ SocketWatcherFactory::SocketWatcherFactory(
     base::TimeDelta min_notification_interval,
     OnUpdatedRTTAvailableCallback updated_rtt_observation_callback,
     ShouldNotifyRTTCallback should_notify_rtt_callback,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : task_runner_(std::move(task_runner)),
       min_notification_interval_(min_notification_interval),
       allow_rtt_private_address_(false),
@@ -41,7 +41,8 @@ SocketWatcherFactory::CreateSocketPerformanceWatcher(
       tick_clock_);
 }
 
-void SocketWatcherFactory::SetTickClockForTesting(base::TickClock* tick_clock) {
+void SocketWatcherFactory::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

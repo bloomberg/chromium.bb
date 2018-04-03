@@ -202,7 +202,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   scoped_refptr<TaskQueue> control_task_queue_;
   RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
   TraceableVariableController* tracing_controller_;  // NOT OWNED
-  base::TickClock* tick_clock_;                      // NOT OWNED
+  const base::TickClock* tick_clock_;                // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;
 
   CancelableClosureHolder pump_throttled_tasks_closure_;

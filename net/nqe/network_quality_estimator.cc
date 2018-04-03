@@ -1440,7 +1440,7 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 }
 
 void NetworkQualityEstimator::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
   tick_clock_ = tick_clock;
   http_rtt_ms_observations_.SetTickClockForTesting(tick_clock_);

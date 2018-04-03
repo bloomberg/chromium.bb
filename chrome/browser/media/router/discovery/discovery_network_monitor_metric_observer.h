@@ -19,7 +19,7 @@ class DiscoveryNetworkMonitorMetricObserver final
     : public DiscoveryNetworkMonitor::Observer {
  public:
   DiscoveryNetworkMonitorMetricObserver(
-      base::TickClock* tick_clock,
+      const base::TickClock* tick_clock,
       std::unique_ptr<DiscoveryNetworkMonitorMetrics> metrics);
   ~DiscoveryNetworkMonitorMetricObserver();
 
@@ -36,7 +36,7 @@ class DiscoveryNetworkMonitorMetricObserver final
   // value instead of the time that this later check runs.
   void ConfirmDisconnectedToReportMetrics(base::TimeTicks disconnect_time);
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   std::unique_ptr<DiscoveryNetworkMonitorMetrics> metrics_;
   base::Optional<base::TimeTicks> last_event_time_;
   base::OneShotTimer disconnect_timer_;

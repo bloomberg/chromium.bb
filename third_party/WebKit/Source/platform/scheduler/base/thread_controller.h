@@ -74,7 +74,7 @@ class PLATFORM_EXPORT ThreadController {
 
   virtual bool RunsTasksInCurrentSequence() = 0;
 
-  virtual base::TickClock* GetClock() = 0;
+  virtual const base::TickClock* GetClock() = 0;
 
   virtual void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;

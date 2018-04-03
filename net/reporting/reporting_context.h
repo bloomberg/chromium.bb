@@ -44,7 +44,7 @@ class NET_EXPORT ReportingContext {
   const ReportingPolicy& policy() { return policy_; }
 
   base::Clock* clock() { return clock_; }
-  base::TickClock* tick_clock() { return tick_clock_; }
+  const base::TickClock* tick_clock() { return tick_clock_; }
   ReportingUploader* uploader() { return uploader_.get(); }
 
   ReportingDelegate* delegate() { return delegate_.get(); }
@@ -65,7 +65,7 @@ class NET_EXPORT ReportingContext {
  protected:
   ReportingContext(const ReportingPolicy& policy,
                    base::Clock* clock,
-                   base::TickClock* tick_clock,
+                   const base::TickClock* tick_clock,
                    const RandIntCallback& rand_callback,
                    std::unique_ptr<ReportingUploader> uploader,
                    std::unique_ptr<ReportingDelegate> delegate);
@@ -74,7 +74,7 @@ class NET_EXPORT ReportingContext {
   ReportingPolicy policy_;
 
   base::Clock* clock_;
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   std::unique_ptr<ReportingUploader> uploader_;
 
   base::ObserverList<ReportingObserver, /* check_empty= */ true> observers_;

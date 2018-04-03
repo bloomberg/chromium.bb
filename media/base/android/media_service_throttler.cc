@@ -94,7 +94,8 @@ MediaServiceThrottler::MediaServiceThrottler()
   EnsureCrashListenerStarted();
 }
 
-void MediaServiceThrottler::SetTickClockForTesting(base::TickClock* clock) {
+void MediaServiceThrottler::SetTickClockForTesting(
+    const base::TickClock* clock) {
   clock_ = clock;
 }
 

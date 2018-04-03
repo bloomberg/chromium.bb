@@ -560,7 +560,7 @@ void NetworkErrorLoggingService::SetReportingService(
 }
 
 void NetworkErrorLoggingService::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

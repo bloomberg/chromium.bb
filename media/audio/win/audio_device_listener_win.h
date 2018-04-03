@@ -65,7 +65,7 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
   // AudioDeviceListenerWin must be constructed and destructed on one thread.
   base::ThreadChecker thread_checker_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerWin);
 };

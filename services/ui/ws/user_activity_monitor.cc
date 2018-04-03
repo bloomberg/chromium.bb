@@ -11,7 +11,8 @@
 namespace ui {
 namespace ws {
 
-UserActivityMonitor::UserActivityMonitor(std::unique_ptr<base::TickClock> clock)
+UserActivityMonitor::UserActivityMonitor(
+    std::unique_ptr<const base::TickClock> clock)
     : now_clock_(std::move(clock)) {
   if (!now_clock_)
     now_clock_ = base::WrapUnique(new base::DefaultTickClock);

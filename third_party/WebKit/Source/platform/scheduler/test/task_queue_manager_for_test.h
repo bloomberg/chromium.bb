@@ -29,7 +29,7 @@ class TaskQueueManagerForTest : public TaskQueueManagerImpl {
   static std::unique_ptr<TaskQueueManagerForTest> Create(
       base::MessageLoop* message_loop,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::TickClock* clock);
+      const base::TickClock* clock);
 
   size_t ActiveQueuesCount() const;
   bool HasImmediateWork() const;

@@ -256,7 +256,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   gfx::Size current_frame_size_in_dip_;
 
   // Overridable tick clock used for testing functions using current time.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // True after a delegated frame has been skipped, until a frame is not
   // skipped.

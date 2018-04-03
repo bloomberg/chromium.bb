@@ -379,7 +379,8 @@ void VideoRendererImpl::OnConfigChange(const VideoDecoderConfig& config) {
   }
 }
 
-void VideoRendererImpl::SetTickClockForTesting(base::TickClock* tick_clock) {
+void VideoRendererImpl::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

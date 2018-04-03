@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/viz/test/fake_delay_based_time_source.h"
 #include "testing/gtest/include/gtest/gtest.h"

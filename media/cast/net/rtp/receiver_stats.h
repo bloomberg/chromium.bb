@@ -19,13 +19,13 @@ namespace cast {
 // TODO(miu): Document this class.
 class ReceiverStats {
  public:
-  explicit ReceiverStats(base::TickClock* clock);
+  explicit ReceiverStats(const base::TickClock* clock);
 
   RtpReceiverStatistics GetStatistics();
   void UpdateStatistics(const RtpCastHeader& header, int rtp_timebase);
 
  private:
-  base::TickClock* const clock_;  // Not owned by this class.
+  const base::TickClock* const clock_;  // Not owned by this class.
 
   // Global metrics.
   uint16_t min_sequence_number_;

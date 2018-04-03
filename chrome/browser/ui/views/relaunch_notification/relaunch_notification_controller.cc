@@ -105,7 +105,7 @@ constexpr base::TimeDelta RelaunchNotificationController::kRelaunchGracePeriod;
 
 RelaunchNotificationController::RelaunchNotificationController(
     UpgradeDetector* upgrade_detector,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : upgrade_detector_(upgrade_detector),
       tick_clock_(tick_clock),
       last_notification_style_(NotificationStyle::kNone),

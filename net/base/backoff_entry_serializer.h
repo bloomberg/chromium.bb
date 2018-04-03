@@ -45,7 +45,7 @@ class NET_EXPORT BackoffEntrySerializer {
   static std::unique_ptr<BackoffEntry> DeserializeFromValue(
       const base::Value& serialized,
       const BackoffEntry::Policy* policy,
-      base::TickClock* clock,
+      const base::TickClock* clock,
       base::Time time_now);
 
  private:

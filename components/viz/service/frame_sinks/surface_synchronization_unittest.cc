@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/containers/flat_set.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"

@@ -25,10 +25,10 @@ class ResourceCoordinatorClock {
   // TimeTicks::Now().
   static base::TimeTicks NowTicks();
 
-  static base::TickClock* GetClockForTesting();
+  static const base::TickClock* GetClockForTesting();
 
   // Sets a TickClock for testing.
-  static void SetClockForTesting(base::TickClock* tick_clock);
+  static void SetClockForTesting(const base::TickClock* tick_clock);
 
   static void ResetClockForTesting();
 

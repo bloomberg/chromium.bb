@@ -66,7 +66,7 @@ void DeviceOffHoursController::RemoveObserver(Observer* observer) {
 
 void DeviceOffHoursController::SetClockForTesting(
     base::Clock* clock,
-    base::TickClock* timer_clock) {
+    const base::TickClock* timer_clock) {
   clock_ = clock;
   timer_ = std::make_unique<base::OneShotTimer>(timer_clock);
 }

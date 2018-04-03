@@ -19,7 +19,7 @@ BackoffEntry::BackoffEntry(const BackoffEntry::Policy* policy)
     : BackoffEntry(policy, nullptr) {}
 
 BackoffEntry::BackoffEntry(const BackoffEntry::Policy* policy,
-                           base::TickClock* clock)
+                           const base::TickClock* clock)
     : policy_(policy), clock_(clock) {
   DCHECK(policy_);
   Reset();

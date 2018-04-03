@@ -46,11 +46,10 @@ class CongestionControl {
                          base::TimeDelta playout_delay) = 0;
 };
 
-CongestionControl* NewAdaptiveCongestionControl(
-    base::TickClock* clock,
-    int max_bitrate_configured,
-    int min_bitrate_configured,
-    double max_frame_rate);
+CongestionControl* NewAdaptiveCongestionControl(const base::TickClock* clock,
+                                                int max_bitrate_configured,
+                                                int min_bitrate_configured,
+                                                double max_frame_rate);
 
 CongestionControl* NewFixedCongestionControl(int bitrate);
 

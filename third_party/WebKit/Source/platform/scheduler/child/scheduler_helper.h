@@ -27,7 +27,7 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 
-  base::TickClock* GetClock() const;
+  const base::TickClock* GetClock() const;
   base::TimeTicks NowTicks() const;
 
   // Returns the default task queue.

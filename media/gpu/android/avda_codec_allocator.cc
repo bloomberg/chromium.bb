@@ -81,7 +81,8 @@ void DeleteMediaCodecAndSignal(std::unique_ptr<MediaCodecBridge> codec,
 CodecConfig::CodecConfig() {}
 CodecConfig::~CodecConfig() {}
 
-AVDACodecAllocator::HangDetector::HangDetector(base::TickClock* tick_clock)
+AVDACodecAllocator::HangDetector::HangDetector(
+    const base::TickClock* tick_clock)
     : tick_clock_(tick_clock) {}
 
 void AVDACodecAllocator::HangDetector::WillProcessTask(
@@ -448,7 +449,7 @@ bool AVDACodecAllocator::WaitForPendingRelease(AndroidOverlay* overlay) {
 AVDACodecAllocator::AVDACodecAllocator(
     AVDACodecAllocator::CodecFactoryCB factory_cb,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::TickClock* tick_clock,
+    const base::TickClock* tick_clock,
     base::WaitableEvent* stop_event)
     : task_runner_(task_runner),
       stop_event_for_testing_(stop_event),

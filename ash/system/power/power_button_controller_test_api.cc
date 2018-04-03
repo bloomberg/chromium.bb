@@ -84,7 +84,8 @@ void PowerButtonControllerTestApi::SetPowerButtonType(
   controller_->button_type_ = button_type;
 }
 
-void PowerButtonControllerTestApi::SetTickClock(base::TickClock* tick_clock) {
+void PowerButtonControllerTestApi::SetTickClock(
+    const base::TickClock* tick_clock) {
   DCHECK(tick_clock);
   controller_->tick_clock_ = tick_clock;
 

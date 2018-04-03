@@ -22,7 +22,7 @@ namespace cast {
 // & NTP timestamps).
 class ReceiverRtcpSession : public RtcpSession {
  public:
-  ReceiverRtcpSession(base::TickClock* clock,            // Not owned.
+  ReceiverRtcpSession(const base::TickClock* clock,  // Not owned.
                       uint32_t local_ssrc,
                       uint32_t remote_ssrc);
 
@@ -61,7 +61,7 @@ class ReceiverRtcpSession : public RtcpSession {
                              uint32_t ntp_seconds,
                              uint32_t ntp_fraction);
 
-  base::TickClock* const clock_;      // Not owned.
+  const base::TickClock* const clock_;  // Not owned.
   const uint32_t local_ssrc_;
   const uint32_t remote_ssrc_;
 

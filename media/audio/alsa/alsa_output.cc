@@ -351,7 +351,8 @@ void AlsaPcmOutputStream::GetVolume(double* volume) {
   *volume = volume_;
 }
 
-void AlsaPcmOutputStream::SetTickClockForTesting(base::TickClock* tick_clock) {
+void AlsaPcmOutputStream::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
   DCHECK(tick_clock);
   tick_clock_ = tick_clock;
 }

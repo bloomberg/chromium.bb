@@ -625,7 +625,7 @@ void TaskQueueManagerImpl::SetDefaultTaskRunner(
   controller_->SetDefaultTaskRunner(task_runner);
 }
 
-base::TickClock* TaskQueueManagerImpl::GetClock() const {
+const base::TickClock* TaskQueueManagerImpl::GetClock() const {
   return controller_->GetClock();
 }
 

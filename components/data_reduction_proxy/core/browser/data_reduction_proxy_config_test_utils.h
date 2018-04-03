@@ -70,7 +70,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   // Sets the |tick_clock_| to |tick_clock|. Ownership of |tick_clock| is not
   // passed to the callee.
-  void SetTickClock(base::TickClock* tick_clock);
+  void SetTickClock(const base::TickClock* tick_clock);
 
   base::TimeTicks GetTicksNow() const override;
 
@@ -128,7 +128,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  private:
   bool GetIsCaptivePortal() const override;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   base::Optional<size_t> previous_attempt_counts_;
 

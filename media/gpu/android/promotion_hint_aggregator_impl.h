@@ -22,7 +22,7 @@ class MEDIA_GPU_EXPORT PromotionHintAggregatorImpl
  public:
   // |tick_clock| may be null, in which case we will use wall clock.  If it is
   // not null, then it must outlive |this|.  It is provided for tests.
-  PromotionHintAggregatorImpl(base::TickClock* tick_clock = nullptr);
+  PromotionHintAggregatorImpl(const base::TickClock* tick_clock = nullptr);
   ~PromotionHintAggregatorImpl() override;
 
   void NotifyPromotionHint(const Hint& hint) override;
@@ -30,7 +30,7 @@ class MEDIA_GPU_EXPORT PromotionHintAggregatorImpl
 
  private:
   // Clock, which we might not own, that we'll use.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // When did we receive the most recent "not promotable" frame?
   base::TimeTicks most_recent_unpromotable_;

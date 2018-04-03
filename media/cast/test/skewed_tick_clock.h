@@ -18,7 +18,7 @@ namespace test {
 class SkewedTickClock : public base::TickClock {
  public:
   // Does not take ownership of |clock_|.
-  explicit SkewedTickClock(base::TickClock* clock_);
+  explicit SkewedTickClock(const base::TickClock* clock_);
   // |skew| > 1.0 means clock runs faster.
   // |offset| > 0 means clock returns times from the future.
   // Note, |offset| is cumulative.
@@ -30,7 +30,7 @@ class SkewedTickClock : public base::TickClock {
 
  private:
   base::TimeTicks SkewTicks(base::TimeTicks now) const;
-  base::TickClock* clock_;  // Not owned.
+  const base::TickClock* clock_;  // Not owned.
   double skew_;
   base::TimeTicks last_skew_set_time_;
   base::TimeTicks skew_clock_at_last_set_;

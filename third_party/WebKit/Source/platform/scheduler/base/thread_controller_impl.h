@@ -34,7 +34,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
 
   static std::unique_ptr<ThreadControllerImpl> Create(
       base::MessageLoop* message_loop,
-      base::TickClock* time_source);
+      const base::TickClock* time_source);
 
   // ThreadController:
   void SetWorkBatchSize(int work_batch_size) override;
@@ -45,7 +45,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
   void CancelDelayedWork(base::TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
   bool RunsTasksInCurrentSequence() override;
-  base::TickClock* GetClock() override;
+  const base::TickClock* GetClock() override;
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner>) override;
   void RestoreDefaultTaskRunner() override;
@@ -59,7 +59,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
  protected:
   ThreadControllerImpl(base::MessageLoop* message_loop,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                       base::TickClock* time_source);
+                       const base::TickClock* time_source);
 
   // TODO(altimin): Make these const. Blocked on removing
   // lazy initialisation support.
@@ -113,7 +113,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> message_loop_task_runner_;
-  base::TickClock* time_source_;
+  const base::TickClock* time_source_;
   base::RepeatingClosure immediate_do_work_closure_;
   base::RepeatingClosure delayed_do_work_closure_;
   base::CancelableClosure cancelable_delayed_do_work_closure_;

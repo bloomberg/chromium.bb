@@ -141,7 +141,7 @@ AutomaticRebootManager::SystemEventTimes::SystemEventTimes(
   has_update_reboot_needed_time = true;
 }
 
-AutomaticRebootManager::AutomaticRebootManager(base::TickClock* clock)
+AutomaticRebootManager::AutomaticRebootManager(const base::TickClock* clock)
     : initialized_(base::WaitableEvent::ResetPolicy::MANUAL,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       clock_(clock),

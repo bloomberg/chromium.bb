@@ -65,7 +65,7 @@ class PowerButtonControllerTestApi {
 
   void SetPowerButtonType(PowerButtonController::ButtonType button_type);
 
-  void SetTickClock(base::TickClock* tick_clock);
+  void SetTickClock(const base::TickClock* tick_clock);
 
   void SetTurnScreenOffForTap(bool turn_screen_off_for_tap);
 

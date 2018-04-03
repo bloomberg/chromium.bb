@@ -135,7 +135,7 @@ TestingRemoteCommandsServer::FetchCommands(
   return fetched_commands;
 }
 
-void TestingRemoteCommandsServer::SetClock(base::TickClock* clock) {
+void TestingRemoteCommandsServer::SetClock(const base::TickClock* clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
   clock_ = clock;
 }

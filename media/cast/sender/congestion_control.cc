@@ -28,7 +28,7 @@ namespace cast {
 
 class AdaptiveCongestionControl : public CongestionControl {
  public:
-  AdaptiveCongestionControl(base::TickClock* clock,
+  AdaptiveCongestionControl(const base::TickClock* clock,
                             int max_bitrate_configured,
                             int min_bitrate_configured,
                             double max_frame_rate);
@@ -78,7 +78,7 @@ class AdaptiveCongestionControl : public CongestionControl {
   base::TimeTicks EstimatedSendingTime(FrameId frame_id,
                                        double estimated_bitrate);
 
-  base::TickClock* const clock_;  // Not owned by this class.
+  const base::TickClock* const clock_;  // Not owned by this class.
   const int max_bitrate_configured_;
   const int min_bitrate_configured_;
   const double max_frame_rate_;
@@ -127,12 +127,10 @@ class FixedCongestionControl : public CongestionControl {
   DISALLOW_COPY_AND_ASSIGN(FixedCongestionControl);
 };
 
-
-CongestionControl* NewAdaptiveCongestionControl(
-    base::TickClock* clock,
-    int max_bitrate_configured,
-    int min_bitrate_configured,
-    double max_frame_rate) {
+CongestionControl* NewAdaptiveCongestionControl(const base::TickClock* clock,
+                                                int max_bitrate_configured,
+                                                int min_bitrate_configured,
+                                                double max_frame_rate) {
   return new AdaptiveCongestionControl(clock,
                                        max_bitrate_configured,
                                        min_bitrate_configured,
@@ -156,10 +154,11 @@ static const size_t kHistorySize = 100;
 AdaptiveCongestionControl::FrameStats::FrameStats() : frame_size_in_bits(0) {
 }
 
-AdaptiveCongestionControl::AdaptiveCongestionControl(base::TickClock* clock,
-                                                     int max_bitrate_configured,
-                                                     int min_bitrate_configured,
-                                                     double max_frame_rate)
+AdaptiveCongestionControl::AdaptiveCongestionControl(
+    const base::TickClock* clock,
+    int max_bitrate_configured,
+    int min_bitrate_configured,
+    double max_frame_rate)
     : clock_(clock),
       max_bitrate_configured_(max_bitrate_configured),
       min_bitrate_configured_(min_bitrate_configured),

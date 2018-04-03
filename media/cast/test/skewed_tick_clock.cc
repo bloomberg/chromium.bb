@@ -10,12 +10,11 @@ namespace media {
 namespace cast {
 namespace test {
 
-SkewedTickClock::SkewedTickClock(base::TickClock* clock)
+SkewedTickClock::SkewedTickClock(const base::TickClock* clock)
     : clock_(clock),
       skew_(1.0),
       last_skew_set_time_(clock_->NowTicks()),
-      skew_clock_at_last_set_(last_skew_set_time_) {
-}
+      skew_clock_at_last_set_(last_skew_set_time_) {}
 
 base::TimeTicks SkewedTickClock::SkewTicks(base::TimeTicks now) const {
   return base::TimeDelta::FromMicroseconds(

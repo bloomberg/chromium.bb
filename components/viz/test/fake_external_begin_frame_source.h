@@ -14,7 +14,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 
 namespace base {
-class SimpleTestTickClock;
+class TickClock;
 }  // namespace base
 
 namespace viz {
@@ -43,7 +43,7 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
   BeginFrameArgs CreateBeginFrameArgs(
       BeginFrameArgs::CreationLocation location);
   BeginFrameArgs CreateBeginFrameArgs(BeginFrameArgs::CreationLocation location,
-                                      base::SimpleTestTickClock* now_src);
+                                      const base::TickClock* now_src);
   uint64_t next_begin_frame_number() const { return next_begin_frame_number_; }
 
   void TestOnBeginFrame(const BeginFrameArgs& args);

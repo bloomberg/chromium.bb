@@ -40,14 +40,14 @@ class PacketPipe {
   // Allows injection of fake test runner for testing.
   virtual void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock);
+      const base::TickClock* clock);
   virtual void AppendToPipe(std::unique_ptr<PacketPipe> pipe);
 
  protected:
   std::unique_ptr<PacketPipe> pipe_;
   // Allows injection of fake task runner for testing.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 };
 
 // Implements a Interrupted Poisson Process for packet delivery.
@@ -73,7 +73,7 @@ class InterruptedPoissonProcess {
   // |clock| is the system clock.
   void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock);
+      const base::TickClock* clock);
 
   base::TimeDelta NextEvent(double rate);
   double RandDouble();
@@ -84,7 +84,7 @@ class InterruptedPoissonProcess {
   void SendPacket();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
   const std::vector<double> average_rates_;
   const double coef_burstiness_;
   const double coef_variance_;

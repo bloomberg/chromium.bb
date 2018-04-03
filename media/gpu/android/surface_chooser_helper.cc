@@ -34,7 +34,7 @@ SurfaceChooserHelper::SurfaceChooserHelper(
     bool is_overlay_required,
     bool promote_aggressively,
     std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : surface_chooser_(std::move(surface_chooser)),
       is_overlay_required_(is_overlay_required),
       promotion_hint_aggregator_(

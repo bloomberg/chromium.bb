@@ -104,7 +104,7 @@ class PacedSender : public PacedPacketSender {
   PacedSender(
       size_t target_burst_size,  // Should normally be kTargetBurstSize.
       size_t max_burst_size,     // Should normally be kMaxBurstSize.
-      base::TickClock* clock,
+      const base::TickClock* clock,
       std::vector<PacketEvent>* recent_packet_events,
       PacketTransport* external_transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
@@ -198,7 +198,7 @@ class PacedSender : public PacedPacketSender {
   bool IsHighPriority(const PacketKey& packet_key) const;
 
   // These are externally-owned objects injected via the constructor.
-  base::TickClock* const clock_;
+  const base::TickClock* const clock_;
   std::vector<PacketEvent>* const recent_packet_events_;
   PacketTransport* const transport_;
 

@@ -70,7 +70,7 @@ class LoggingTimer {
 
   // Allows for setting a test clock. Otherwise, defaults to using
   // base::TimeTicks::Now().
-  static void set_clock_for_testing(base::TickClock* clock);
+  static void set_clock_for_testing(const base::TickClock* clock);
 
  private:
   // When the timer started. We don't use base::ElapsedTimer so that we can

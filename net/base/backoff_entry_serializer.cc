@@ -43,7 +43,7 @@ std::unique_ptr<base::Value> BackoffEntrySerializer::SerializeToValue(
 std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
     const base::Value& serialized,
     const BackoffEntry::Policy* policy,
-    base::TickClock* tick_clock,
+    const base::TickClock* tick_clock,
     base::Time time_now) {
   const base::ListValue* serialized_list = nullptr;
   if (!serialized.GetAsList(&serialized_list))

@@ -80,7 +80,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // |frames_|.
   void Shutdown();
 
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  private:
   friend class base::RefCountedThreadSafe<
@@ -203,7 +203,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   GpuVideoAcceleratorFactories::OutputFormat output_format_;
 
   // |tick_clock_| is always a DefaultTickClock outside of testing.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Queued up video frames for copies. The front is the currently
   // in-flight copy, new copies are added at the end.
@@ -948,7 +948,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::Shutdown() {
 }
 
 void GpuMemoryBufferVideoFramePool::PoolImpl::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 
@@ -1113,7 +1113,7 @@ void GpuMemoryBufferVideoFramePool::Abort() {
 }
 
 void GpuMemoryBufferVideoFramePool::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   pool_impl_->SetTickClockForTesting(tick_clock);
 }
 

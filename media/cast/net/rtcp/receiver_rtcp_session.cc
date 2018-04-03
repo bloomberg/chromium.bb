@@ -12,7 +12,7 @@
 namespace media {
 namespace cast {
 
-ReceiverRtcpSession::ReceiverRtcpSession(base::TickClock* clock,
+ReceiverRtcpSession::ReceiverRtcpSession(const base::TickClock* clock,
                                          uint32_t local_ssrc,
                                          uint32_t remote_ssrc)
     : clock_(clock),

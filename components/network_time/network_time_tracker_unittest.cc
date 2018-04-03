@@ -64,7 +64,7 @@ class NetworkTimeTrackerTest : public ::testing::Test {
 
     tracker_.reset(new NetworkTimeTracker(
         std::unique_ptr<base::Clock>(clock_),
-        std::unique_ptr<base::TickClock>(tick_clock_), &pref_service_,
+        std::unique_ptr<const base::TickClock>(tick_clock_), &pref_service_,
         new net::TestURLRequestContextGetter(io_thread_.task_runner())));
 
     // Do this to be sure that |is_null| returns false.
@@ -90,7 +90,7 @@ class NetworkTimeTrackerTest : public ::testing::Test {
     tick_clock_ = new_tick_clock;
     tracker_.reset(new NetworkTimeTracker(
         std::unique_ptr<base::Clock>(clock_),
-        std::unique_ptr<base::TickClock>(tick_clock_), &pref_service_,
+        std::unique_ptr<const base::TickClock>(tick_clock_), &pref_service_,
         new net::TestURLRequestContextGetter(io_thread_.task_runner())));
   }
 

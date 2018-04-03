@@ -179,7 +179,7 @@ void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
 }
 
 void DataReductionProxyDelegate::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
   // Update |last_network_change_time_| to the provided tick clock's current
   // time for testing.

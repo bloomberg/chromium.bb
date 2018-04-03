@@ -32,7 +32,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   };
 
   CastEnvironment(
-      base::TickClock* clock,
+      const base::TickClock* clock,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy);
@@ -54,7 +54,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   bool CurrentlyOn(ThreadId identifier);
 
   // All of the media::cast implementation must use this TickClock.
-  base::TickClock* Clock() const { return clock_; }
+  const base::TickClock* Clock() const { return clock_; }
 
   // Thread-safe log event dispatcher.
   LogEventDispatcher* logger() { return &logger_; }
@@ -73,7 +73,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy_;
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
   LogEventDispatcher logger_;
 
  private:

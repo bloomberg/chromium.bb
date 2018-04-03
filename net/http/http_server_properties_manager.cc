@@ -106,7 +106,7 @@ HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() = default;
 HttpServerPropertiesManager::HttpServerPropertiesManager(
     std::unique_ptr<PrefDelegate> pref_delegate,
     NetLog* net_log,
-    base::TickClock* clock)
+    const base::TickClock* clock)
     : pref_delegate_(std::move(pref_delegate)),
       clock_(clock ? clock : base::DefaultTickClock::GetInstance()),
       net_log_(

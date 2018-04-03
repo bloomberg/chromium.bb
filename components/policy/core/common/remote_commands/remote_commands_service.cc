@@ -76,7 +76,7 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   return true;
 }
 
-void RemoteCommandsService::SetClockForTesting(base::TickClock* clock) {
+void RemoteCommandsService::SetClockForTesting(const base::TickClock* clock) {
   queue_.SetClockForTesting(clock);
 }
 

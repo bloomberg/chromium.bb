@@ -32,7 +32,7 @@ class VideoEncoderVpx : public VideoEncoder {
 
   ~VideoEncoderVpx() override;
 
-  void SetTickClockForTests(base::TickClock* tick_clock);
+  void SetTickClockForTests(const base::TickClock* tick_clock);
 
   // VideoEncoder interface.
   void SetLosslessEncode(bool want_lossless) override;
@@ -88,7 +88,7 @@ class VideoEncoderVpx : public VideoEncoder {
   // Used to help initialize VideoPackets from DesktopFrames.
   VideoEncoderHelper helper_;
 
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderVpx);
 };

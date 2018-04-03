@@ -10,7 +10,7 @@
 namespace media {
 namespace cast {
 
-Framer::Framer(base::TickClock* clock,
+Framer::Framer(const base::TickClock* clock,
                RtpPayloadFeedback* incoming_payload_feedback,
                uint32_t ssrc,
                bool decoder_faster_than_max_frame_rate,

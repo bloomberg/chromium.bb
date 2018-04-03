@@ -58,12 +58,12 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
   void OnSessionSuspended();
   void OnSessionInactive();
 
-  void SetClockForTest(base::TickClock* testing_clock);
+  void SetClockForTest(const base::TickClock* testing_clock);
 
  private:
   base::TimeDelta total_active_time_;
   base::TimeTicks current_active_time_;
-  base::TickClock* clock_;
+  const base::TickClock* clock_;
 };
 
 }  // namespace content

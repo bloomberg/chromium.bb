@@ -54,7 +54,7 @@ GetAppAvailabilityRequest::GetAppAvailabilityRequest(
     int channel_id,
     const std::string& app_id,
     GetAppAvailabilityCallback callback,
-    base::TickClock* clock)
+    const base::TickClock* clock)
     : channel_id(channel_id),
       app_id(app_id),
       callback(std::move(callback)),

@@ -89,7 +89,7 @@ class BASE_EXPORT Timer {
   // retained or reset when it runs or stops. If |tick_clock| is provided, it is
   // used instead of TimeTicks::Now() to get TimeTicks when scheduling tasks.
   Timer(bool retain_user_task, bool is_repeating);
-  Timer(bool retain_user_task, bool is_repeating, TickClock* tick_clock);
+  Timer(bool retain_user_task, bool is_repeating, const TickClock* tick_clock);
 
   // Construct a timer with retained task info. If |tick_clock| is provided, it
   // is used instead of TimeTicks::Now() to get TimeTicks when scheduling tasks.
@@ -101,7 +101,7 @@ class BASE_EXPORT Timer {
         TimeDelta delay,
         const base::Closure& user_task,
         bool is_repeating,
-        TickClock* tick_clock);
+        const TickClock* tick_clock);
 
   virtual ~Timer();
 
@@ -229,7 +229,7 @@ class BASE_EXPORT Timer {
   const bool retain_user_task_;
 
   // The tick clock used to calculate the run time for scheduled tasks.
-  TickClock* const tick_clock_;
+  const TickClock* const tick_clock_;
 
   // If true, |user_task_| is scheduled to run sometime in the future.
   bool is_running_;
@@ -242,7 +242,7 @@ class BASE_EXPORT Timer {
 class OneShotTimer : public Timer {
  public:
   OneShotTimer() : OneShotTimer(nullptr) {}
-  explicit OneShotTimer(TickClock* tick_clock)
+  explicit OneShotTimer(const TickClock* tick_clock)
       : Timer(false, false, tick_clock) {}
 };
 
@@ -251,7 +251,7 @@ class OneShotTimer : public Timer {
 class RepeatingTimer : public Timer {
  public:
   RepeatingTimer() : RepeatingTimer(nullptr) {}
-  explicit RepeatingTimer(TickClock* tick_clock)
+  explicit RepeatingTimer(const TickClock* tick_clock)
       : Timer(true, true, tick_clock) {}
 };
 
@@ -280,7 +280,7 @@ class DelayTimer : protected Timer {
              TimeDelta delay,
              Receiver* receiver,
              void (Receiver::*method)(),
-             TickClock* tick_clock)
+             const TickClock* tick_clock)
       : Timer(posted_from,
               delay,
               base::Bind(method, base::Unretained(receiver)),

@@ -31,7 +31,7 @@ namespace cors {
 // See https://fetch.spec.whatwg.org/#concept-cache.
 class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
  public:
-  static void SetTickClockForTesting(base::TickClock* tick_clock);
+  static void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   // Creates a PreflightResult instance from a CORS-preflight result. Returns
   // nullptr and |detected_error| is populated with the failed reason if the

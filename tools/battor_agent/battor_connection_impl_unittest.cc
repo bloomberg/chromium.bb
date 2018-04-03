@@ -31,7 +31,7 @@ namespace battor {
 class TestableBattOrConnection : public BattOrConnectionImpl {
  public:
   TestableBattOrConnection(BattOrConnection::Listener* listener,
-                           base::TickClock* tick_clock)
+                           const base::TickClock* tick_clock)
       : BattOrConnectionImpl("/dev/test", listener, nullptr) {
     tick_clock_ = tick_clock;
   }

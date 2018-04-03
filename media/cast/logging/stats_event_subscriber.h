@@ -34,7 +34,7 @@ class StatsEventSubscriberTest;
 class StatsEventSubscriber : public RawEventSubscriber {
  public:
   StatsEventSubscriber(EventMediaType event_media_type,
-                       base::TickClock* clock,
+                       const base::TickClock* clock,
                        ReceiverTimeOffsetEstimator* offset_estimator);
 
   ~StatsEventSubscriber() final;
@@ -238,7 +238,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
   const EventMediaType event_media_type_;
 
   // Not owned by this class.
-  base::TickClock* const clock_;
+  const base::TickClock* const clock_;
 
   // Not owned by this class.
   ReceiverTimeOffsetEstimator* const offset_estimator_;

@@ -65,7 +65,8 @@ void MediaSessionUmaHelper::OnSessionInactive() {
   total_active_time_ = base::TimeDelta();
 }
 
-void MediaSessionUmaHelper::SetClockForTest(base::TickClock* testing_clock) {
+void MediaSessionUmaHelper::SetClockForTest(
+    const base::TickClock* testing_clock) {
   clock_ = testing_clock;
 }
 

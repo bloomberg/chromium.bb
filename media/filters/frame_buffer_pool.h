@@ -51,7 +51,7 @@ class MEDIA_EXPORT FrameBufferPool
 
   size_t get_pool_size_for_testing() const { return frame_buffers_.size(); }
 
-  void set_tick_clock_for_testing(base::TickClock* tick_clock) {
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
 
@@ -93,7 +93,7 @@ class MEDIA_EXPORT FrameBufferPool
   bool registered_dump_provider_ = false;
 
   // |tick_clock_| is always a DefaultTickClock outside of testing.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

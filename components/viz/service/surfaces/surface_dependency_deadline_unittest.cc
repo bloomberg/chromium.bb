@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/surfaces/surface_dependency_deadline.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "components/viz/common/quads/frame_deadline.h"
 #include "components/viz/service/surfaces/surface_deadline_client.h"
 #include "components/viz/test/begin_frame_args_test.h"

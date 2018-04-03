@@ -6,7 +6,6 @@
 #define BASE_TIME_DEFAULT_TICK_CLOCK_H_
 
 #include "base/base_export.h"
-#include "base/compiler_specific.h"
 #include "base/time/tick_clock.h"
 
 namespace base {
@@ -20,7 +19,7 @@ class BASE_EXPORT DefaultTickClock : public TickClock {
   TimeTicks NowTicks() const override;
 
   // Returns a shared instance of DefaultTickClock. This is thread-safe.
-  static DefaultTickClock* GetInstance();
+  static const DefaultTickClock* GetInstance();
 };
 
 }  // namespace base

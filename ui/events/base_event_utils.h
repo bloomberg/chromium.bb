@@ -30,7 +30,7 @@ EVENTS_BASE_EXPORT base::TimeTicks EventTimeForNow();
 // Overrides the clock used by EventTimeForNow for testing.
 // This doesn't take the ownership of the clock.
 EVENTS_BASE_EXPORT void SetEventTickClockForTesting(
-    base::TickClock* tick_clock);
+    const base::TickClock* tick_clock);
 
 // Converts an event timestamp ticks to seconds (floating point representation).
 // WARNING: This should only be used when interfacing with platform code that

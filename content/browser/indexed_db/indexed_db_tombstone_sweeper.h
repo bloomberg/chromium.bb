@@ -140,7 +140,7 @@ class CONTENT_EXPORT IndexedDBTombstoneSweeper
     sweep_state_.start_index_seed = index_seed;
   }
 
-  void SetClockForTesting(base::TickClock* clock) {
+  void SetClockForTesting(const base::TickClock* clock) {
     clock_for_testing_ = clock;
   }
 
@@ -177,7 +177,7 @@ class CONTENT_EXPORT IndexedDBTombstoneSweeper
   int total_indices_ = 0;
 
   // Used to measure total time of the task.
-  base::TickClock* clock_for_testing_ = nullptr;
+  const base::TickClock* clock_for_testing_ = nullptr;
   base::Optional<base::TimeTicks> start_time_;
 
   leveldb::DB* database_ = nullptr;

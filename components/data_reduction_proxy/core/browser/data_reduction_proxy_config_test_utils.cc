@@ -66,7 +66,8 @@ DataReductionProxyConfigValues* TestDataReductionProxyConfig::config_values() {
   return config_values_.get();
 }
 
-void TestDataReductionProxyConfig::SetTickClock(base::TickClock* tick_clock) {
+void TestDataReductionProxyConfig::SetTickClock(
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

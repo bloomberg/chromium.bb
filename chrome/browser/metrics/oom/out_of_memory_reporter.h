@@ -55,7 +55,7 @@ class OutOfMemoryReporter
   void OnForegroundOOMDetected(const GURL& url, ukm::SourceId source_id);
 
   // Used by tests to deterministically control time.
-  void SetTickClockForTest(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTest(std::unique_ptr<const base::TickClock> tick_clock);
 
   // content::WebContentsObserver:
   void DidFinishNavigation(content::NavigationHandle* handle) override;
@@ -71,7 +71,7 @@ class OutOfMemoryReporter
 
   base::Optional<ukm::SourceId> last_committed_source_id_;
   base::TimeTicks last_navigation_timestamp_;
-  std::unique_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<const base::TickClock> tick_clock_;
   int crashed_render_process_id_ = content::ChildProcessHost::kInvalidUniqueID;
 
 #if defined(OS_ANDROID)

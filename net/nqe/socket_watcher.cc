@@ -61,7 +61,7 @@ SocketWatcher::SocketWatcher(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     OnUpdatedRTTAvailableCallback updated_rtt_observation_callback,
     ShouldNotifyRTTCallback should_notify_rtt_callback,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : protocol_(protocol),
       task_runner_(std::move(task_runner)),
       updated_rtt_observation_callback_(updated_rtt_observation_callback),

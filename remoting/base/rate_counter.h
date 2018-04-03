@@ -34,7 +34,7 @@ class RateCounter {
   // Note that rates reported before |time_window| has elapsed are not accurate.
   double Rate() const;
 
-  void set_tick_clock_for_tests(base::TickClock* tick_clock) {
+  void set_tick_clock_for_tests(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
 
@@ -54,7 +54,7 @@ class RateCounter {
   // Sum of values in |data_points_|.
   int64_t sum_;
 
-  base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
+  const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
 
   SEQUENCE_CHECKER(sequence_checker_);
 

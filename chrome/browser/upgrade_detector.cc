@@ -60,7 +60,7 @@ gfx::Image UpgradeDetector::GetIcon() {
   return gfx::Image(gfx::CreateVectorIcon(kBrowserToolsUpdateIcon, color));
 }
 
-UpgradeDetector::UpgradeDetector(base::TickClock* tick_clock)
+UpgradeDetector::UpgradeDetector(const base::TickClock* tick_clock)
     : tick_clock_(tick_clock),
       upgrade_available_(UPGRADE_AVAILABLE_NONE),
       best_effort_experiment_updates_available_(false),

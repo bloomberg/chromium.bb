@@ -47,7 +47,7 @@ bool IsSystemKeyModifier(int flags) {
          (EF_ALTGR_DOWN & flags) == 0;
 }
 
-base::LazyInstance<base::TickClock*>::Leaky g_tick_clock =
+base::LazyInstance<const base::TickClock*>::Leaky g_tick_clock =
     LAZY_INSTANCE_INITIALIZER;
 
 base::TimeTicks EventTimeForNow() {
@@ -55,7 +55,7 @@ base::TimeTicks EventTimeForNow() {
                             : base::TimeTicks::Now();
 }
 
-void SetEventTickClockForTesting(base::TickClock* tick_clock) {
+void SetEventTickClockForTesting(const base::TickClock* tick_clock) {
   g_tick_clock.Get() = tick_clock;
 }
 

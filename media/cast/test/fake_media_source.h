@@ -57,7 +57,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   // |video_config| is the desired video config.
   // |keep_frames| is true if all VideoFrames are saved in a queue.
   FakeMediaSource(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                  base::TickClock* clock,
+                  const base::TickClock* clock,
                   const FrameSenderConfig& audio_config,
                   const FrameSenderConfig& video_config,
                   bool keep_frames);
@@ -129,7 +129,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
   uint8_t synthetic_count_;
-  base::TickClock* const clock_;  // Not owned by this class.
+  const base::TickClock* const clock_;  // Not owned by this class.
 
   // Time when the stream starts.
   base::TimeTicks start_time_;

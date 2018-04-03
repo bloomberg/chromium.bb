@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE SocketWatcher : public SocketPerformanceWatcher {
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 OnUpdatedRTTAvailableCallback updated_rtt_observation_callback,
                 ShouldNotifyRTTCallback should_notify_rtt_callback,
-                base::TickClock* tick_clock);
+                const base::TickClock* tick_clock);
 
   ~SocketWatcher() override;
 
@@ -97,7 +97,7 @@ class NET_EXPORT_PRIVATE SocketWatcher : public SocketPerformanceWatcher {
   // Time when this was last notified of updated RTT.
   base::TimeTicks last_rtt_notification_;
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   base::ThreadChecker thread_checker_;
 

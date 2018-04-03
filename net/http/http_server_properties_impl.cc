@@ -22,8 +22,9 @@
 
 namespace net {
 
-HttpServerPropertiesImpl::HttpServerPropertiesImpl(base::TickClock* tick_clock,
-                                                   base::Clock* clock)
+HttpServerPropertiesImpl::HttpServerPropertiesImpl(
+    const base::TickClock* tick_clock,
+    base::Clock* clock)
     : tick_clock_(tick_clock ? tick_clock
                              : base::DefaultTickClock::GetInstance()),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),

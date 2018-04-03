@@ -41,7 +41,7 @@ void RemoteCommandsQueue::AddJob(std::unique_ptr<RemoteCommandJob> job) {
     ScheduleNextJob();
 }
 
-void RemoteCommandsQueue::SetClockForTesting(base::TickClock* clock) {
+void RemoteCommandsQueue::SetClockForTesting(const base::TickClock* clock) {
   clock_ = clock;
 }
 

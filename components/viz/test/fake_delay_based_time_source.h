@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_VIZ_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_
 #define COMPONENTS_VIZ_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_
 
-#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace viz {
 
@@ -29,7 +32,7 @@ class FakeDelayBasedTimeSourceClient : public DelayBasedTimeSourceClient {
 
 class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
  public:
-  FakeDelayBasedTimeSource(base::SimpleTestTickClock* now_src,
+  FakeDelayBasedTimeSource(const base::TickClock* now_src,
                            base::SingleThreadTaskRunner* task_runner);
   ~FakeDelayBasedTimeSource() override;
 
@@ -39,7 +42,7 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
 
  private:
   // Not owned.
-  base::SimpleTestTickClock* now_src_;
+  const base::TickClock* now_src_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDelayBasedTimeSource);
 };

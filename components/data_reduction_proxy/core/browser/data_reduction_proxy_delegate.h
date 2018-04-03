@@ -56,7 +56,7 @@ class DataReductionProxyDelegate
                       net::ProxyInfo* result) override;
   void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
 
-  void SetTickClockForTesting(base::TickClock* tick_clock);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  protected:
   // Protected so that it can be overridden during testing.
@@ -92,7 +92,7 @@ class DataReductionProxyDelegate
   DataReductionProxyBypassStats* bypass_stats_;
 
   // Tick clock used for obtaining the current time.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // True if the metrics related to the first request whose resolved proxy was a
   // data saver proxy has been recorded. |first_data_saver_request_recorded_| is

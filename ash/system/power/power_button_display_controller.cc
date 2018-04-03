@@ -31,7 +31,7 @@ bool IsTabletModeActive() {
 
 PowerButtonDisplayController::PowerButtonDisplayController(
     BacklightsForcedOffSetter* backlights_forced_off_setter,
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : backlights_forced_off_setter_(backlights_forced_off_setter),
       backlights_forced_off_observer_(this),
       tick_clock_(tick_clock),

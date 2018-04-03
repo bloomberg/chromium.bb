@@ -28,7 +28,7 @@ constexpr base::TimeDelta MinimumUnpromotableFrameTime =
     base::TimeDelta::FromMilliseconds(2000);
 
 PromotionHintAggregatorImpl::PromotionHintAggregatorImpl(
-    base::TickClock* tick_clock)
+    const base::TickClock* tick_clock)
     : weak_ptr_factory_(this) {
   if (!tick_clock)
     tick_clock = base::DefaultTickClock::GetInstance();

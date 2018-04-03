@@ -28,7 +28,7 @@ AffiliationBackend::AffiliationBackend(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* time_source,
-    base::TickClock* time_tick_source)
+    const base::TickClock* time_tick_source)
     : request_context_getter_(request_context_getter),
       task_runner_(task_runner),
       clock_(time_source),

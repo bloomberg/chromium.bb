@@ -115,7 +115,7 @@ const net::BackoffEntry::Policy* BackoffPolicy::Get() {
   return &g_backoff_policy.Get().policy_;
 }
 
-base::TickClock* g_test_clock = nullptr;
+const base::TickClock* g_test_clock = nullptr;
 
 }  // namespace
 
@@ -150,7 +150,7 @@ ChromeRuntimeAPIDelegate::~ChromeRuntimeAPIDelegate() {
 
 // static
 void ChromeRuntimeAPIDelegate::set_tick_clock_for_tests(
-    base::TickClock* clock) {
+    const base::TickClock* clock) {
   g_test_clock = clock;
 }
 

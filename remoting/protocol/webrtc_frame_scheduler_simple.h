@@ -49,7 +49,7 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
                       HostFrameStats* frame_stats) override;
 
   // Allows unit-tests to provide a mock clock.
-  void SetTickClockForTest(base::TickClock* tick_clock);
+  void SetTickClockForTest(const base::TickClock* tick_clock);
 
  private:
   void ScheduleNextFrame();
@@ -57,7 +57,7 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
 
   // A TimeTicks provider which defaults to using a real system clock, but can
   // be replaced for unittests.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   base::Closure capture_callback_;
   bool paused_ = false;

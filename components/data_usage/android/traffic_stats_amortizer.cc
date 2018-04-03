@@ -219,7 +219,7 @@ base::WeakPtr<TrafficStatsAmortizer> TrafficStatsAmortizer::GetWeakPtr() {
 }
 
 TrafficStatsAmortizer::TrafficStatsAmortizer(
-    base::TickClock* tick_clock,
+    const base::TickClock* tick_clock,
     std::unique_ptr<base::Timer> traffic_stats_query_timer,
     const base::TimeDelta& traffic_stats_query_delay,
     const base::TimeDelta& max_amortization_delay,

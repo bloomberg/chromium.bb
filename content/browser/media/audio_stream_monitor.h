@@ -126,7 +126,7 @@ class CONTENT_EXPORT AudioStreamMonitor : public WebContentsObserver {
 
   // Note: |clock_| is always a DefaultTickClock, except during unit
   // testing.
-  base::TickClock* const clock_;
+  const base::TickClock* const clock_;
 
   // Confirms single-threaded access in debug builds.
   base::ThreadChecker thread_checker_;

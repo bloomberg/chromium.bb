@@ -140,7 +140,7 @@ class TestReportingDelegate : public ReportingDelegate {
 class TestReportingContext : public ReportingContext {
  public:
   TestReportingContext(base::Clock* clock,
-                       base::TickClock* tick_clock,
+                       const base::TickClock* tick_clock,
                        const ReportingPolicy& policy);
   ~TestReportingContext();
 

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
@@ -64,7 +65,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     uint64_t source_id,
     uint64_t sequence_number,
-    base::SimpleTestTickClock* now_src) {
+    const base::TickClock* now_src) {
   base::TimeTicks now = now_src->NowTicks();
   return BeginFrameArgs::Create(
       location, source_id, sequence_number, now,

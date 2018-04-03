@@ -22,7 +22,7 @@ namespace content {
 class CONTENT_EXPORT ServiceWorkerLifetimeTracker {
  public:
   ServiceWorkerLifetimeTracker();
-  explicit ServiceWorkerLifetimeTracker(base::TickClock* tick_clock);
+  explicit ServiceWorkerLifetimeTracker(const base::TickClock* tick_clock);
   virtual ~ServiceWorkerLifetimeTracker();
 
   // Called when the worker started running.
@@ -38,7 +38,7 @@ class CONTENT_EXPORT ServiceWorkerLifetimeTracker {
 
   void RecordHistograms();
 
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
   std::map<int64_t /* embedded_worker_id */, base::TimeTicks /* start_time */>
       running_workers_;
 

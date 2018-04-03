@@ -69,7 +69,7 @@ bool ChromeKeySystemsProvider::IsKeySystemsUpdateNeeded() {
 }
 
 void ChromeKeySystemsProvider::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 

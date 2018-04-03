@@ -120,7 +120,7 @@ void StateController::SetReadyCallbackForTesting(
   ready_callback_ = ready_callback;
 }
 
-void StateController::SetTickClockForTesting(base::TickClock* clock) {
+void StateController::SetTickClockForTesting(const base::TickClock* clock) {
   DCHECK(!tick_clock_);
   tick_clock_ = clock;
 }

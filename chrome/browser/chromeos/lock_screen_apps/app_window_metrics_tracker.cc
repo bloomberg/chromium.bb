@@ -57,7 +57,7 @@ const char kAppWindowStateOnRemoval[] =
 
 namespace lock_screen_apps {
 
-AppWindowMetricsTracker::AppWindowMetricsTracker(base::TickClock* clock)
+AppWindowMetricsTracker::AppWindowMetricsTracker(const base::TickClock* clock)
     : clock_(clock) {}
 
 AppWindowMetricsTracker::~AppWindowMetricsTracker() = default;

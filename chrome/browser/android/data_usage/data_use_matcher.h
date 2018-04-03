@@ -133,7 +133,7 @@ class DataUseMatcher {
   const base::TimeDelta default_matching_rule_expiration_duration_;
 
   // TickClock used for obtaining the current time.
-  base::TickClock* tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Callback to be run when a label is removed from the set of matching labels.
   const base::Callback<void(const std::string&)>

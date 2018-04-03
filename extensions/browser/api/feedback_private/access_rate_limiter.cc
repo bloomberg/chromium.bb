@@ -8,7 +8,7 @@ namespace extensions {
 
 AccessRateLimiter::AccessRateLimiter(size_t max_num_accesses,
                                      const base::TimeDelta& recharge_period,
-                                     base::TickClock* tick_clock)
+                                     const base::TickClock* tick_clock)
     : max_num_accesses_(max_num_accesses),
       recharge_period_(recharge_period),
       counter_(recharge_period * max_num_accesses),
