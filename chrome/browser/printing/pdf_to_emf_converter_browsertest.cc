@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
@@ -87,6 +88,12 @@ void CompareEmfHeaders(const ENHMETAHEADER& expected_header,
   EXPECT_EQ(expected_header.bOpenGL, actual_header.bOpenGL);
 }
 
+std::string HashData(const char* data, size_t len) {
+  unsigned char buf[base::kSHA1Length];
+  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(data), len, buf);
+  return base::HexEncode(buf, sizeof(buf));
+}
+
 class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
  protected:
   PdfToEmfConverterBrowserTest() : test_data_dir_(GetTestDataDir()) {}
@@ -160,6 +167,15 @@ class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
     CompareEmfHeaders(*expected_header, *actual_header);
   }
 
+  void ComparePageEmfPayload() {
+    ASSERT_EQ(expected_current_emf_data_.length(),
+              actual_current_emf_data_.length());
+    ASSERT_GT(expected_current_emf_data_.length(), kHeaderSize);
+    size_t size = expected_current_emf_data_.length() - kHeaderSize;
+    EXPECT_EQ(HashData(expected_current_emf_data_.data() + kHeaderSize, size),
+              HashData(actual_current_emf_data_.data() + kHeaderSize, size));
+  }
+
  private:
   base::FilePath GetTestDataDir() const {
     base::FilePath test_data_dir;
@@ -227,19 +243,56 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, FailureBadPdf) {
   EXPECT_EQ(0, page_count);
 }
 
-IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, EmfSuccess) {
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, EmfBasic) {
   const PdfRenderSettings pdf_settings(
       kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
       /*autorotate=*/false, PdfRenderSettings::Mode::NORMAL);
   constexpr int kNumberOfPages = 3;
 
-  ASSERT_TRUE(GetTestInput("pdf_to_emf_test.pdf"));
+  ASSERT_TRUE(GetTestInput("pdf_converter_basic.pdf"));
   ASSERT_TRUE(StartPdfConverter(pdf_settings, kNumberOfPages));
   for (int i = 0; i < kNumberOfPages; ++i) {
     ASSERT_TRUE(GetPage(i));
     ASSERT_TRUE(GetPageExpectedEmfData(
-        GetFileNameForPageNumber("pdf_to_emf_test_page_", i)));
+        GetFileNameForPageNumber("pdf_converter_basic_emf_page_", i)));
     ComparePageEmfHeader();
+    // TODO(thestig): Check if ComparePageEmfPayload() works on bots.
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, PostScriptLevel2Basic) {
+  const PdfRenderSettings pdf_settings(
+      kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
+      /*autorotate=*/false, PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2);
+  constexpr int kNumberOfPages = 3;
+
+  ASSERT_TRUE(GetTestInput("pdf_converter_basic.pdf"));
+  ASSERT_TRUE(StartPdfConverter(pdf_settings, kNumberOfPages));
+  for (int i = 0; i < kNumberOfPages; ++i) {
+    ASSERT_TRUE(GetPage(i));
+    // The output is PS encapsulated in EMF.
+    ASSERT_TRUE(GetPageExpectedEmfData(
+        GetFileNameForPageNumber("pdf_converter_basic_ps_page_", i)));
+    ComparePageEmfHeader();
+    ComparePageEmfPayload();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, PostScriptLevel3Basic) {
+  const PdfRenderSettings pdf_settings(
+      kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
+      /*autorotate=*/false, PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
+  constexpr int kNumberOfPages = 3;
+
+  ASSERT_TRUE(GetTestInput("pdf_converter_basic.pdf"));
+  ASSERT_TRUE(StartPdfConverter(pdf_settings, kNumberOfPages));
+  for (int i = 0; i < kNumberOfPages; ++i) {
+    ASSERT_TRUE(GetPage(i));
+    // The output is PS encapsulated in EMF.
+    ASSERT_TRUE(GetPageExpectedEmfData(
+        GetFileNameForPageNumber("pdf_converter_basic_ps_page_", i)));
+    ComparePageEmfHeader();
+    ComparePageEmfPayload();
   }
 }
 
