@@ -61,3 +61,9 @@ The **[Speed Launch Metrics](https://docs.google.com/document/d/1Ww487ZskJ-xBmJG
 doc explains metrics available in UMA for end user performance. If you want to
 test how your change impacts these metrics for end users, you'll probably want
 to **[Run a Finch Trial](http://goto.google.com/finch101)**.
+
+The **[UMA Sampling Profiler (Googlers only)](http://goto.google.com/uma-sampling-profiler-overview)**
+measures Chrome execution using statistical profiling, producing aggregate
+execution profiles across the function call tree. The profiler is useful for
+understanding how your code performs for end users, and the precise performance
+impact of code changes.
