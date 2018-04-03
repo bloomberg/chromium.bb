@@ -111,3 +111,17 @@ class PixelExpectations(GpuTestExpectations):
               ['linux', 'mac', 'win'], bug=744658)
     self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
               ['linux', 'mac', 'win'], bug=744658)
+
+    # TODO(enne): temporarily suppress these tests until rebaselined.
+    self.Fail('Pixel_2DCanvasWebGL', ['android'], bug=972546)
+    self.Fail('Pixel_Canvas2DRedBox', ['android'], bug=972546)
+    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D',
+              ['android'], bug=972546)
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+              ['android'], bug=972546)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', ['android'], bug=972546)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', ['android'], bug=972546)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_Alpha', ['android'], bug=972546)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha', ['android'], bug=972546)
+    self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
+              ['android'], bug=972546)
