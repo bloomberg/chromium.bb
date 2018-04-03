@@ -59,8 +59,7 @@ SelectToSpeakEventHandler::SelectToSpeakEventHandler() {
 
 SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
   if (aura::Env::GetInstanceDontCreate())
-    aura::Env::GetInstanceDontCreate()->AddPreTargetHandler(
-        this, ui::EventTarget::Priority::kAccessibility);
+    aura::Env::GetInstanceDontCreate()->RemovePreTargetHandler(this);
 }
 
 void SelectToSpeakEventHandler::CaptureForwardedEventsForTesting(
