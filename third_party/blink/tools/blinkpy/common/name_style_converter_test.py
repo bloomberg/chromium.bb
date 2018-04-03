@@ -131,6 +131,8 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenizer.tokenize(), ['V8', 'Binding', 'For', 'Core'])
         tokenizer = SmartTokenizer('V8DOMRect')
         self.assertEqual(tokenizer.tokenize(), ['V8', 'DOM', 'Rect'])
+        tokenizer = SmartTokenizer('String16MojomTraits')
+        self.assertEqual(tokenizer.tokenize(), ['String16', 'Mojom', 'Traits'])
 
         tokenizer = SmartTokenizer('V0InsertionPoint')
         self.assertEqual(tokenizer.tokenize(), ['V0', 'Insertion', 'Point'])
