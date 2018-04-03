@@ -430,9 +430,6 @@ public class OfflinePageUtils {
             return false;
         }
 
-        // If the page is not in a public location, we cannot share it.
-        if (offlinePageBridge.isInPrivateDirectory(offlinePath)) return false;
-
         return true;
     }
 
@@ -453,8 +450,8 @@ public class OfflinePageUtils {
     public static void publishThenShareInternalPage(final Activity activity, Profile profile,
             OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage,
             final Callback<ShareParams> shareCallback) {
-        Callback<OfflinePageItem> publishPageCallback =
-                new PublishPageCallback(activity, shareCallback);
+        Callback<String> publishPageCallback =
+                new PublishPageCallback(activity, offlinePage, shareCallback);
         offlinePageBridge.publishInternalPage(profile, offlinePage.getOfflineId(),
                 offlinePage.getTitle(), offlinePage.getUrl(), offlinePage.getFilePath(),
                 offlinePage.getFileSize(), publishPageCallback);

@@ -320,10 +320,18 @@ public class OfflinePageUtilsTest {
                 boolean shared =
                         OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
                                 mActivityTestRule.getActivity().getActivityTab(), shareCallback);
-                // The attempt to share a page from our private internal directory should fail.
-                Assert.assertFalse(shared);
+                // The attempt to share a page from our private internal directory should succeed.
+                Assert.assertTrue(shared);
             }
         });
+
+        // Wait for share callback to get called.
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Assert that URI is what we expected.
+        String foundUri = shareCallback.getSharedUri();
+        Uri uri = Uri.parse(foundUri);
+        String uriPath = uri.getPath();
+        Assert.assertEquals(TEST_PAGE, uriPath);
     }
 
     // Checks on the UI thread if an offline path corresponds to a sharable file.
@@ -353,9 +361,10 @@ public class OfflinePageUtilsTest {
         final String privatePath = activity().getApplicationContext().getCacheDir().getPath();
         final String publicPath = Environment.getExternalStorageDirectory().getPath();
 
-        // Check that an offline page item in the private directory is not sharable.
+        // Check that an offline page item in the private directory is sharable, since we can
+        // upgrade it.
         final String fullPrivatePath = privatePath + CACHE_SUBDIR + NEW_FILE;
-        checkIfOfflinePageIsSharable(fullPrivatePath, SHARED_URI, false);
+        checkIfOfflinePageIsSharable(fullPrivatePath, SHARED_URI, true);
 
         // Check that an offline page item with no file path is not sharable.
         checkIfOfflinePageIsSharable(EMPTY_PATH, SHARED_URI, false);

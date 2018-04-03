@@ -568,10 +568,11 @@ public class OfflinePageBridge {
      * @param url Url of the offline page.
      * @param filePath Path to the file for the offline page.
      * @param size Length of the offline page file.
-     * @param publishedCallback Function to call when publishing is done.
+     * @param publishedCallback Function to call when publishing is done.  This will be called
+     *        with the new path of the file.
      */
     public void publishInternalPage(Profile profile, long offlineId, String title, String url,
-            String filePath, long size, Callback<OfflinePageItem> publishedCallback) {
+            String filePath, long size, Callback<String> publishedCallback) {
         nativePublishInternalPage(mNativeOfflinePageBridge, profile, offlineId, title, url,
                 filePath, size, publishedCallback);
     }
@@ -858,7 +859,7 @@ public class OfflinePageBridge {
     @VisibleForTesting
     private native void nativePublishInternalPage(long nativeOfflinePageBridge, Profile profile,
             long offlineId, String title, String url, String filePath, long size,
-            Callback<OfflinePageItem> publishedCallback);
+            Callback<String> publishedCallback);
 
     private native void nativeSelectPageForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl, int tabId,

@@ -25,13 +25,14 @@ OfflinePageTestArchiver::OfflinePageTestArchiver(
       result_(result),
       size_to_report_(size_to_report),
       create_archive_called_(false),
+      publish_archive_called_(false),
       delayed_(false),
       result_title_(result_title),
       digest_to_report_(digest_to_report),
       task_runner_(task_runner) {}
 
 OfflinePageTestArchiver::~OfflinePageTestArchiver() {
-  EXPECT_TRUE(create_archive_called_);
+  EXPECT_TRUE(create_archive_called_ || publish_archive_called_);
 }
 
 void OfflinePageTestArchiver::CreateArchive(
@@ -53,6 +54,7 @@ void OfflinePageTestArchiver::PublishArchive(
     const base::FilePath& new_file_path,
     SystemDownloadManager* download_manager,
     PublishArchiveDoneCallback publish_done_callback) {
+  publish_archive_called_ = true;
   publish_archive_result_.move_result = SavePageResult::SUCCESS;
   publish_archive_result_.new_file_path = offline_page.file_path;
   publish_archive_result_.download_id = 0;

@@ -14,21 +14,37 @@ import org.chromium.chrome.browser.share.ShareParams;
  * This callback will save the state we need when the JNI call is done, and start the next stage of
  * processing for sharing.
  */
-public class PublishPageCallback implements Callback<OfflinePageItem> {
+public class PublishPageCallback implements Callback<String> {
     private Callback<ShareParams> mShareCallback;
+    OfflinePageItem mPage;
     private Activity mActivity;
     private static final String TAG = "PublishPageCallback";
 
     /** Create a callback for use when page publishing is completed. */
-    public PublishPageCallback(Activity activity, Callback<ShareParams> shareCallback) {
+    public PublishPageCallback(
+            Activity activity, OfflinePageItem page, Callback<ShareParams> shareCallback) {
         mActivity = activity;
+        mPage = page;
         mShareCallback = shareCallback;
     }
 
     @Override
     @CalledByNative
     /** Report results of publishing. */
-    public void onResult(OfflinePageItem page) {
+    public void onResult(String newFilePath) {
+        OfflinePageItem page = null;
+        // If the sharing failed, the file path will be empty.  We'll call the share callback
+        // with a null page to indicate failure.
+        if (!newFilePath.isEmpty()) {
+            // Make a new OfflinePageItem with the new path.
+            page = new OfflinePageItem(mPage.getUrl(), mPage.getOfflineId(),
+                    mPage.getClientId().getNamespace(), mPage.getClientId().getId(),
+                    mPage.getTitle(), newFilePath, mPage.getFileSize(), mPage.getCreationTimeMs(),
+                    mPage.getAccessCount(), mPage.getLastAccessTimeMs(), mPage.getRequestOrigin());
+        }
+
+        // TODO(petewil): Sharing seems out of place here. Move the call to sharing
+        // back to OfflinePageUtils.
         OfflinePageUtils.sharePublishedPage(page, mActivity, mShareCallback);
     }
 }

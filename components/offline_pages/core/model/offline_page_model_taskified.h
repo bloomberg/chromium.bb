@@ -216,7 +216,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // Callback for when publishing an internal archive has completed.
   void PublishInternalArchiveDone(PublishPageCallback publish_done_callback,
                                   const OfflinePageItem& offline_page,
-                                  PublishArchiveResult* move_results);
+                                  PublishArchiveResult* publish_results);
 
   // Method for unpublishing the page from the system download manager.
   static void RemoveFromDownloadManager(

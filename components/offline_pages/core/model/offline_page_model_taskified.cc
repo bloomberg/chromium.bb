@@ -27,6 +27,7 @@
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
+#include "components/offline_pages/core/model/update_file_path_task.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -542,21 +543,21 @@ void OfflinePageModelTaskified::PublishInternalArchiveDone(
     PublishPageCallback publish_done_callback,
     const OfflinePageItem& offline_page,
     PublishArchiveResult* publish_results) {
-  // Return an empty OfflinePageItem if we were unable to move the page.  The
-  // offline_id will be 0, which marks it as invalid.
+  // Call the callback with success == false if we failed to move the page.
   if (publish_results->move_result != SavePageResult::SUCCESS) {
-    OfflinePageItem empty_offline_page;
-    std::move(publish_done_callback).Run(empty_offline_page);
+    std::move(publish_done_callback).Run(publish_results->new_file_path, false);
     return;
   }
 
-  // TODO(petewil): Update the OfflinePageModel with the new location for the
-  // page, which is found in move_results.new_file_path, and with the download
-  // ID found at move_results.download_id.  Return the updated offline_page to
-  // the callback.
+  // Update the OfflinePageModel with the new location for the page, which is
+  // found in move_results.new_file_path, and with the download ID found at
+  // move_results.download_id.  Return the updated offline_page to the callback.
+  auto task = std::make_unique<UpdateFilePathTask>(
+      store_.get(), offline_page.offline_id, publish_results->new_file_path,
+      base::BindOnce(std::move(publish_done_callback),
+                     publish_results->new_file_path));
 
-  // Return to the OfflinePageBridge callback passed in.
-  std::move(publish_done_callback).Run(offline_page);
+  task_queue_.AddTask(std::move(task));
 }
 
 void OfflinePageModelTaskified::OnAddPageForSavePageDone(

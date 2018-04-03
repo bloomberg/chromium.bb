@@ -50,6 +50,8 @@ static_library("core") {
     "model/startup_maintenance_task.h",
     "model/store_thumbnail_task.cc",
     "model/store_thumbnail_task.h",
+    "model/update_file_path_task.cc",
+    "model/update_file_path_task.h",
     "offline_event_logger.cc",
     "offline_event_logger.h",
     "offline_page_archiver.cc",
