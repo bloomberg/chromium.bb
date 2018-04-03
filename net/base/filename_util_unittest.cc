@@ -285,13 +285,9 @@ TEST(FilenameUtilTest, FileURLConversion) {
 
 #if defined(OS_WIN)
 #define JPEG_EXT L".jpg"
-#define HTML_EXT L".htm"
 #else
 #define JPEG_EXT L".jpeg"
-#define HTML_EXT L".html"
 #endif
-#define TXT_EXT L".txt"
-#define TAR_EXT L".tar"
 
 TEST(FilenameUtilTest, GenerateSafeFileName) {
   const struct {
@@ -373,159 +369,143 @@ TEST(FilenameUtilTest, GenerateFileName) {
   // parameters and that Content-Disposition headers are properly
   // handled including failovers when the header is malformed.
   const GenerateFilenameCase selection_tests[] = {
-    {__LINE__, "http://www.google.com/", "attachment; filename=test.html", "",
-     "", "", L"", L"test.html"},
-    {__LINE__, "http://www.google.com/", "attachment; filename=\"test.html\"",
-     "", "", "", L"", L"test.html"},
-    {__LINE__, "http://www.google.com/", "attachment; filename= \"test.html\"",
-     "", "", "", L"", L"test.html"},
-    {__LINE__, "http://www.google.com/",
-     "attachment; filename   =   \"test.html\"", "", "", "", L"", L"test.html"},
-    {// filename is whitespace.  Should failover to URL host
-     __LINE__, "http://www.google.com/", "attachment; filename=  ", "", "", "",
-     L"", L"www.google.com"},
-    {// No filename.
-     __LINE__, "http://www.google.com/path/test.html", "attachment", "", "", "",
-     L"", L"test.html"},
-    {// Ditto
-     __LINE__, "http://www.google.com/path/test.html", "attachment;", "", "",
-     "", L"", L"test.html"},
-    {// No C-D
-     __LINE__, "http://www.google.com/", "", "", "", "", L"",
-     L"www.google.com"},
-    {__LINE__, "http://www.google.com/test.html", "", "", "", "", L"",
-     L"test.html"},
-    {// Now that we use src/url's ExtractFileName, this case falls back to
-     // the hostname. If this behavior is not desirable, we'd better change
-     // ExtractFileName (in url_parse.cc).
-     __LINE__, "http://www.google.com/path/", "", "", "", "", L"",
-     L"www.google.com"},
-    {__LINE__, "http://www.google.com/path", "", "", "", "", L"", L"path"},
-    {__LINE__, "file:///", "", "", "", "", L"", L"download"},
-    {__LINE__, "file:///path/testfile", "", "", "", "", L"", L"testfile"},
-    {__LINE__, "non-standard-scheme:", "", "", "", "", L"", L"download"},
-    {// C-D should override default
-     __LINE__, "http://www.google.com/", "attachment; filename =\"test.html\"",
-     "", "", "", L"download", L"test.html"},
-    {// But the URL shouldn't
-     __LINE__, "http://www.google.com/", "", "", "", "", L"download",
-     L"download"},
-    {__LINE__, "http://www.google.com/",
-     "attachment; filename=\"../test.html\"", "", "", "", L"", L"_test.html"},
-    {__LINE__, "http://www.google.com/",
-     "attachment; filename=\"..\\test.html\"", "", "", "", L"", L"test.html"},
-    {__LINE__, "http://www.google.com/",
-     "attachment; filename=\"..\\\\test.html\"", "", "", "", L"",
-     L"_test.html"},
-    {// Filename disappears after leading and trailing periods are removed.
-     __LINE__, "http://www.google.com/", "attachment; filename=\"..\"", "", "",
-     "", L"default", L"default"},
-    {// C-D specified filename disappears.  Failover to final filename.
-     __LINE__, "http://www.google.com/test.html", "attachment; filename=\"..\"",
-     "", "", "", L"default", L"default"},
-    // Below is a small subset of cases taken from HttpContentDisposition tests.
-    {__LINE__, "http://www.google.com/",
-     "attachment; filename=\"%EC%98%88%EC%88%A0%20"
-     "%EC%98%88%EC%88%A0.jpg\"",
-     "", "", "", L"", L"\uc608\uc220 \uc608\uc220.jpg"},
-    {__LINE__,
-     "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg", "",
-     "", "", "", L"download", L"\uc608\uc220 \uc608\uc220.jpg"},
-    {__LINE__, "http://www.google.com/", "attachment;", "", "", "",
-     L"\uB2E4\uC6B4\uB85C\uB4DC", L"\uB2E4\uC6B4\uB85C\uB4DC"},
-    {__LINE__, "http://www.google.com/",
-     "attachment; filename=\"=?EUC-JP?Q?=B7=DD=BD="
-     "D13=2Epng?=\"",
-     "", "", "", L"download", L"\u82b8\u88533.png"},
-    {__LINE__, "http://www.example.com/images?id=3",
-     "attachment; filename=caf\xc3\xa9.png", "iso-8859-1", "", "", L"",
-     L"caf\u00e9.png"},
-    {__LINE__, "http://www.example.com/images?id=3",
-     "attachment; filename=caf\xe5.png", "windows-1253", "", "", L"",
-     L"caf\u03b5.png"},
-    {// Invalid C-D header. Name value is skipped now.
-     __LINE__, "http://www.example.com/file?id=3",
-     "attachment; name=\xcf\xc2\xd4\xd8.zip", "GBK", "", "", L"", L"file"},
-    {// Invalid C-D header. Extracts filename from url.
-     __LINE__, "http://www.google.com/test.html",
-     "attachment; filename==?iiso88591?Q?caf=EG?=", "", "", "", L"",
-     L"test.html"},
-    // about: and data: URLs
-    {__LINE__, "about:chrome", "", "", "", "", L"", L"download"},
-    {__LINE__, "data:,looks/like/a.path", "", "", "", "", L"", L"download"},
-    {__LINE__, "data:text/plain;base64,VG8gYmUgb3Igbm90IHRvIGJlLg=", "", "", "",
-     "", L"", L"download"},
-    {__LINE__, "data:,looks/like/a.path", "", "", "", "",
-     L"default_filename_is_given", L"default_filename_is_given"},
-    {__LINE__, "data:,looks/like/a.path", "", "", "", "",
-     L"\u65e5\u672c\u8a9e",  // Japanese Kanji.
-     L"\u65e5\u672c\u8a9e"},
-    {// The filename encoding is specified by the referrer charset.
-     __LINE__, "http://example.com/V%FDvojov%E1%20psychologie.doc", "",
-     "iso-8859-1", "", "", L"", L"V\u00fdvojov\u00e1 psychologie.doc"},
-    {// Suggested filename takes precedence over URL
-     __LINE__, "http://www.google.com/test", "", "", "suggested", "", L"",
-     L"suggested"},
-    {// The content-disposition has higher precedence over the suggested name.
-     __LINE__, "http://www.google.com/test", "attachment; filename=test.html",
-     "", "suggested", "", L"", L"test.html"},
-    {__LINE__, "http://www.google.com/test", "attachment; filename=test",
-     "utf-8", "", "image/png", L"", L"test"},
-#if 0
-    { // The filename encoding doesn't match the referrer charset, the system
-      // charset, or UTF-8.
-      // TODO(jshin): we need to handle this case.
-      __LINE__,
-      "http://example.com/V%FDvojov%E1%20psychologie.doc",
-      "",
-      "utf-8",
-      "",
-      "",
-      L"",
-      L"V\u00fdvojov\u00e1 psychologie.doc",
-    },
-#endif
-    // Raw 8bit characters in C-D
-    {__LINE__, "http://www.example.com/images?id=3",
-     "attachment; filename=caf\xc3\xa9.png", "iso-8859-1", "", "image/png", L"",
-     L"caf\u00e9.png"},
-    {__LINE__, "http://www.example.com/images?id=3",
-     "attachment; filename=caf\xe5.png", "windows-1253", "", "image/png", L"",
-     L"caf\u03b5.png"},
-    {// No 'filename' keyword in the disposition, use the URL
-     __LINE__, "http://www.evil.com/my_download.txt", "a_file_name.txt", "", "",
-     "text/plain", L"download", L"my_download.txt"},
-    {// Spaces in the disposition file name
-     __LINE__, "http://www.frontpagehacker.com/a_download.exe",
-     "filename=My Downloaded File.exe", "", "", "application/octet-stream",
-     L"download", L"My Downloaded File.exe"},
-    {// % encoded
-     __LINE__, "http://www.examples.com/",
-     "attachment; "
-     "filename=\"%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg\"",
-     "", "", "image/jpeg", L"download", L"\uc608\uc220 \uc608\uc220.jpg"},
-    {// Invalid C-D header. Name value is skipped now.
-     __LINE__, "http://www.examples.com/q.cgi?id=abc",
-     "attachment; name=abc de.pdf", "", "", "application/octet-stream",
-     L"download", L"q.cgi"},
-    {__LINE__, "http://www.example.com/path",
-     "filename=\"=?EUC-JP?Q?=B7=DD=BD=D13=2Epng?=\"", "", "", "image/png",
-     L"download",
-     L"\x82b8\x8853"
-     L"3.png"},
-    {// The following two have invalid CD headers and filenames come from the
-     // URL.
-     __LINE__, "http://www.example.com/test%20123",
-     "attachment; filename==?iiso88591?Q?caf=EG?=", "", "", "image/jpeg",
-     L"download", L"test 123" JPEG_EXT},
-    {__LINE__,
-     "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg",
-     "malformed_disposition", "", "", "image/jpeg", L"download",
-     L"\uc608\uc220 \uc608\uc220.jpg"},
-    {// Invalid C-D. No filename from URL. Falls back to 'download'.
-     __LINE__, "http://www.google.com/path1/path2/",
-     "attachment; filename==?iso88591?Q?caf=E3?", "", "", "image/jpeg",
-     L"download", L"download" JPEG_EXT},
+      {// Picks the filename from the C-D header.
+       __LINE__, "http://www.google.com/", "attachment; filename=test.html", "",
+       "", "", L"", L"test.html"},
+      {// Ditto. The C-D header uses a quoted string.
+       __LINE__, "http://www.google.com/", "attachment; filename=\"test.html\"",
+       "", "", "", L"", L"test.html"},
+      {// Ditto. Extra whilespace after the '=' sign.
+       __LINE__, "http://www.google.com/",
+       "attachment; filename= \"test.html\"", "", "", "", L"", L"test.html"},
+      {// Ditto. Whitespace before and after '=' sign.
+       __LINE__, "http://www.google.com/",
+       "attachment; filename   =   \"test.html\"", "", "", "", L"",
+       L"test.html"},
+      {// Filename is whitespace.  Should failover to URL host
+       __LINE__, "http://www.google.com/", "attachment; filename=  ", "", "",
+       "", L"", L"www.google.com"},
+      {// No filename.
+       __LINE__, "http://www.google.com/path/test.html", "attachment", "", "",
+       "", L"", L"test.html"},
+      {// Ditto
+       __LINE__, "http://www.google.com/path/test.html", "attachment;", "", "",
+       "", L"", L"test.html"},
+      {// No C-D, and no URL path.
+       __LINE__, "http://www.google.com/", "", "", "", "", L"",
+       L"www.google.com"},
+      {// No C-D. URL has a path.
+       __LINE__, "http://www.google.com/test.html", "", "", "", "", L"",
+       L"test.html"},
+      {// No C-D. URL's path ends in a slash which results in an empty final
+       // component.
+       __LINE__, "http://www.google.com/path/", "", "", "", "", L"",
+       L"www.google.com"},
+      {// No C-D. URL has a path, but the path has no extension.
+       __LINE__, "http://www.google.com/path", "", "", "", "", L"", L"path"},
+      {// No C-D. URL gives no filename hints.
+       __LINE__, "file:///", "", "", "", "", L"", L"download"},
+      {// file:// URL.
+       __LINE__, "file:///path/testfile", "", "", "", "", L"", L"testfile"},
+      {// Unknown scheme.
+       __LINE__, "non-standard-scheme:", "", "", "", "", L"", L"download"},
+      {// C-D overrides default
+       __LINE__, "http://www.google.com/",
+       "attachment; filename =\"test.html\"", "", "", "", L"download",
+       L"test.html"},
+      {// But the URL doesn't
+       __LINE__, "http://www.google.com/", "", "", "", "", L"download",
+       L"download"},
+      // Below is a small subset of cases taken from HttpContentDisposition
+      // tests.
+      {__LINE__, "http://www.google.com/",
+       "attachment; filename=\"%EC%98%88%EC%88%A0%20"
+       "%EC%98%88%EC%88%A0.jpg\"",
+       "", "", "", L"", L"\uc608\uc220 \uc608\uc220.jpg"},
+      {__LINE__,
+       "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg", "",
+       "", "", "", L"download", L"\uc608\uc220 \uc608\uc220.jpg"},
+      {__LINE__, "http://www.google.com/", "attachment;", "", "", "",
+       L"\uB2E4\uC6B4\uB85C\uB4DC", L"\uB2E4\uC6B4\uB85C\uB4DC"},
+      {__LINE__, "http://www.google.com/",
+       "attachment; filename=\"=?EUC-JP?Q?=B7=DD=BD="
+       "D13=2Epng?=\"",
+       "", "", "", L"download", L"\u82b8\u88533.png"},
+      {__LINE__, "http://www.example.com/images?id=3",
+       "attachment; filename=caf\xc3\xa9.png", "iso-8859-1", "", "", L"",
+       L"caf\u00e9.png"},
+      {__LINE__, "http://www.example.com/images?id=3",
+       "attachment; filename=caf\xe5.png", "windows-1253", "", "", L"",
+       L"caf\u03b5.png"},
+      {// Invalid C-D header. Name value is skipped now.
+       __LINE__, "http://www.example.com/file?id=3",
+       "attachment; name=\xcf\xc2\xd4\xd8.zip", "GBK", "", "", L"", L"file"},
+      {// Invalid C-D header. Extracts filename from url.
+       __LINE__, "http://www.google.com/test.html",
+       "attachment; filename==?iiso88591?Q?caf=EG?=", "", "", "", L"",
+       L"test.html"},
+      // about: and data: URLs
+      {__LINE__, "about:chrome", "", "", "", "", L"", L"download"},
+      {__LINE__, "data:,looks/like/a.path", "", "", "", "", L"", L"download"},
+      {__LINE__, "data:text/plain;base64,VG8gYmUgb3Igbm90IHRvIGJlLg=", "", "",
+       "", "", L"", L"download"},
+      {__LINE__, "data:,looks/like/a.path", "", "", "", "",
+       L"default_filename_is_given", L"default_filename_is_given"},
+      {__LINE__, "data:,looks/like/a.path", "", "", "", "",
+       L"\u65e5\u672c\u8a9e",  // Japanese Kanji.
+       L"\u65e5\u672c\u8a9e"},
+      {// The filename encoding is specified by the referrer charset.
+       __LINE__, "http://example.com/V%FDvojov%E1%20psychologie.doc", "",
+       "iso-8859-1", "", "", L"", L"V\u00fdvojov\u00e1 psychologie.doc"},
+      {// Suggested filename takes precedence over URL
+       __LINE__, "http://www.google.com/test", "", "", "suggested", "", L"",
+       L"suggested"},
+      {// The content-disposition has higher precedence over the suggested name.
+       __LINE__, "http://www.google.com/test", "attachment; filename=test.html",
+       "", "suggested", "", L"", L"test.html"},
+      {__LINE__, "http://www.google.com/test", "attachment; filename=test",
+       "utf-8", "", "image/png", L"", L"test"},
+      // Raw 8bit characters in C-D
+      {__LINE__, "http://www.example.com/images?id=3",
+       "attachment; filename=caf\xc3\xa9.png", "iso-8859-1", "", "image/png",
+       L"", L"caf\u00e9.png"},
+      {__LINE__, "http://www.example.com/images?id=3",
+       "attachment; filename=caf\xe5.png", "windows-1253", "", "image/png", L"",
+       L"caf\u03b5.png"},
+      {// No 'filename' keyword in the disposition, use the URL
+       __LINE__, "http://www.evil.com/my_download.txt", "a_file_name.txt", "",
+       "", "text/plain", L"download", L"my_download.txt"},
+      {// Spaces in the disposition file name
+       __LINE__, "http://www.frontpagehacker.com/a_download.exe",
+       "filename=My Downloaded File.exe", "", "", "application/octet-stream",
+       L"download", L"My Downloaded File.exe"},
+      {// % encoded
+       __LINE__, "http://www.examples.com/",
+       "attachment; "
+       "filename=\"%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg\"",
+       "", "", "image/jpeg", L"download", L"\uc608\uc220 \uc608\uc220.jpg"},
+      {// Invalid C-D header. Name value is skipped now.
+       __LINE__, "http://www.examples.com/q.cgi?id=abc",
+       "attachment; name=abc de.pdf", "", "", "application/octet-stream",
+       L"download", L"q.cgi"},
+      {__LINE__, "http://www.example.com/path",
+       "filename=\"=?EUC-JP?Q?=B7=DD=BD=D13=2Epng?=\"", "", "", "image/png",
+       L"download",
+       L"\x82b8\x8853"
+       L"3.png"},
+      {// The following two have invalid CD headers and filenames come from the
+       // URL.
+       __LINE__, "http://www.example.com/test%20123",
+       "attachment; filename==?iiso88591?Q?caf=EG?=", "", "", "", L"download",
+       L"test 123"},
+      {__LINE__,
+       "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg",
+       "malformed_disposition", "", "", "", L"download",
+       L"\uc608\uc220 \uc608\uc220.jpg"},
+      {// Invalid C-D. No filename from URL. Falls back to 'download'.
+       __LINE__, "http://www.google.com/path1/path2/",
+       "attachment; filename==?iso88591?Q?caf=E3?", "", "", "", L"download",
+       L"download"},
   };
 
   // Tests filename generation.  Once the correct filename is
@@ -538,148 +518,92 @@ TEST(FilenameUtilTest, GenerateFileName) {
     {__LINE__, "http://www.google.com/.test", "", "", "", "", L"", L"test"},
     {__LINE__, "http://www.google.com/..test", "", "", "", "", L"", L"test"},
     {// Disposition has relative paths, remove directory separators
-     __LINE__, "http://www.evil.com/my_download.txt",
-     "filename=../../../../././../a_file_name.txt", "", "", "text/plain",
-     L"download", L"_.._.._.._._._.._a_file_name.txt"},
+     __LINE__, "", "filename=../../../../././../a_file_name.txt", "", "",
+     "text/plain", L"download", L"_.._.._.._._._.._a_file_name.txt"},
     {// Disposition has parent directories, remove directory separators
-     __LINE__, "http://www.evil.com/my_download.txt",
-     "filename=dir1/dir2/a_file_name.txt", "", "", "text/plain", L"download",
-     L"dir1_dir2_a_file_name.txt"},
+     __LINE__, "", "filename=dir1/dir2/a_file_name.txt", "", "", "text/plain",
+     L"download", L"dir1_dir2_a_file_name.txt"},
     {// Disposition has relative paths, remove directory separators
-     __LINE__, "http://www.evil.com/my_download.txt",
-     "filename=..\\..\\..\\..\\.\\.\\..\\a_file_name.txt", "", "", "text/plain",
-     L"download", L"_.._.._.._._._.._a_file_name.txt"},
+     __LINE__, "", "filename=..\\..\\..\\..\\.\\.\\..\\a_file_name.txt", "", "",
+     "text/plain", L"download", L"_.._.._.._._._.._a_file_name.txt"},
     {// Disposition has parent directories, remove directory separators
-     __LINE__, "http://www.evil.com/my_download.txt",
-     "filename=dir1\\dir2\\a_file_name.txt", "", "", "text/plain", L"download",
-     L"dir1_dir2_a_file_name.txt"},
-    {// No useful information in disposition or URL, use default
-     __LINE__, "http://www.truncated.com/path/", "", "", "", "text/plain",
-     L"download", L"download" TXT_EXT},
+     __LINE__, "", "filename=dir1\\dir2\\a_file_name.txt", "", "", "text/plain",
+     L"download", L"dir1_dir2_a_file_name.txt"},
     {// Filename looks like HTML?
-     __LINE__, "http://www.evil.com/get/malware/here",
-     "filename=\"<blink>Hello kitty</blink>\"", "", "", "text/plain",
-     L"default", L"_blink_Hello kitty__blink_"},
+     __LINE__, "", "filename=\"<blink>Hello kitty</blink>\"", "", "",
+     "text/plain", L"default", L"_blink_Hello kitty__blink_"},
     {// A normal avi should get .avi and not .avi.avi
-     __LINE__, "https://blah.google.com/misc/2.avi", "", "", "",
-     "video/x-msvideo", L"download", L"2.avi"},
+     __LINE__, "https://example.com/misc/2.avi", "", "", "", "video/x-msvideo",
+     L"download", L"2.avi"},
     {// Shouldn't unescape slashes.
-     __LINE__, "http://www.example.com/foo%2f..%2fbar.jpg", "", "", "",
+     __LINE__, "http://example.com/foo%2f..%2fbar.jpg", "", "", "",
      "text/plain", L"download", L"foo%2f..%2fbar.jpg"},
-    {// Extension generation
-     __LINE__, "http://www.example.com/my-cat", "filename=my-cat", "", "",
-     "image/jpeg", L"download", L"my-cat"},
-    {__LINE__, "http://www.example.com/my-cat", "filename=my-cat", "", "",
-     "text/plain", L"download", L"my-cat"},
-    {__LINE__, "http://www.example.com/my-cat", "filename=my-cat", "", "",
-     "text/html", L"download", L"my-cat"},
+    {// Extension generation for C-D derived filenames.
+     __LINE__, "", "filename=my-cat", "", "", "image/jpeg", L"download",
+     L"my-cat"},
     {// Unknown MIME type
-     __LINE__, "http://www.example.com/my-cat", "filename=my-cat", "", "",
-     "dance/party", L"download", L"my-cat"},
-    {__LINE__, "http://www.example.com/my-cat.jpg", "filename=my-cat.jpg", "",
-     "", "text/plain", L"download", L"my-cat.jpg"},
-// Windows specific tests
+     __LINE__, "", "filename=my-cat", "", "", "dance/party", L"download",
+     L"my-cat"},
+    {// Known MIME type.
+     __LINE__, "", "filename=my-cat.jpg", "", "", "text/plain", L"download",
+     L"my-cat.jpg"},
 #if defined(OS_WIN)
-    {__LINE__, "http://www.goodguy.com/evil.exe", "filename=evil.exe", "", "",
-     "image/jpeg", L"download", L"evil.exe"},
-    {__LINE__, "http://www.goodguy.com/ok.exe", "filename=ok.exe", "", "",
-     "binary/octet-stream", L"download", L"ok.exe"},
-    {__LINE__, "http://www.goodguy.com/evil.dll", "filename=evil.dll", "", "",
-     "dance/party", L"download", L"evil.dll"},
-    {__LINE__, "http://www.goodguy.com/evil.exe", "filename=evil", "", "",
-     "application/rss+xml", L"download", L"evil"},
-    // Test truncation of trailing dots and spaces
-    {__LINE__, "http://www.goodguy.com/evil.exe ", "filename=evil.exe ", "", "",
-     "binary/octet-stream", L"download", L"evil.exe"},
-    {__LINE__, "http://www.goodguy.com/evil.exe.", "filename=evil.exe.", "", "",
-     "binary/octet-stream", L"download", L"evil.exe_"},
-    {__LINE__, "http://www.goodguy.com/evil.exe.  .  .",
-     "filename=evil.exe.  .  .", "", "", "binary/octet-stream", L"download",
-     L"evil.exe_______"},
-    {__LINE__, "http://www.goodguy.com/evil.", "filename=evil.", "", "",
-     "binary/octet-stream", L"download", L"evil_"},
-    {__LINE__, "http://www.goodguy.com/. . . . .", "filename=. . . . .", "", "",
-     "binary/octet-stream", L"download", L"download"},
-    {__LINE__, "http://www.badguy.com/attachment?name=meh.exe%C2%A0",
-     "attachment; filename=\"meh.exe\xC2\xA0\"", "", "", "binary/octet-stream",
-     L"", L"meh.exe_"},
-#endif  // OS_WIN
-    {__LINE__, "http://www.goodguy.com/utils.js", "filename=utils.js", "", "",
-     "application/x-javascript", L"download", L"utils.js"},
-    {__LINE__, "http://www.goodguy.com/contacts.js", "filename=contacts.js", "",
-     "", "application/json", L"download", L"contacts.js"},
-    {__LINE__, "http://www.goodguy.com/utils.js", "filename=utils.js", "", "",
-     "text/javascript", L"download", L"utils.js"},
-    {__LINE__, "http://www.goodguy.com/utils.js", "filename=utils.js", "", "",
-     "text/javascript;version=2", L"download", L"utils.js"},
-    {__LINE__, "http://www.goodguy.com/utils.js", "filename=utils.js", "", "",
-     "application/ecmascript", L"download", L"utils.js"},
-    {__LINE__, "http://www.goodguy.com/utils.js", "filename=utils.js", "", "",
-     "application/ecmascript;version=4", L"download", L"utils.js"},
-    {__LINE__, "http://www.goodguy.com/program.exe", "filename=program.exe", "",
-     "", "application/foo-bar", L"download", L"program.exe"},
-    {__LINE__, "http://www.evil.com/../foo.txt", "filename=../foo.txt", "", "",
-     "text/plain", L"download", L"_foo.txt"},
-    {__LINE__, "http://www.evil.com/..\\foo.txt", "filename=..\\foo.txt", "",
-     "", "text/plain", L"download", L"_foo.txt"},
-    {__LINE__, "http://www.evil.com/.hidden", "filename=.hidden", "", "",
-     "text/plain", L"download", L"hidden"},
-    {__LINE__, "http://www.evil.com/trailing.", "filename=trailing.", "", "",
-     "dance/party", L"download",
-#if defined(OS_WIN)
-     L"trailing_"
-#else
-     L"trailing"
+    // Test truncation of trailing dots and spaces (Windows)
+    {__LINE__, "", "filename=evil.exe ", "", "", "binary/octet-stream",
+     L"download", L"evil.exe"},
+    {__LINE__, "", "filename=evil.exe.", "", "", "binary/octet-stream",
+     L"download", L"evil.exe_"},
+    {__LINE__, "", "filename=evil.exe.  .  .", "", "", "binary/octet-stream",
+     L"download", L"evil.exe_______"},
+    {__LINE__, "", "filename=evil.", "", "", "binary/octet-stream", L"download",
+     L"evil_"},
+    {__LINE__, "", "filename=. . . . .", "", "", "binary/octet-stream",
+     L"download", L"download"},
+#else  // OS_WIN
+    // Test truncation of trailing dots and spaces (non-Windows)
+    {__LINE__, "", "filename=evil.exe ", "", "", "binary/octet-stream",
+     L"download", L"evil.exe"},
+    {__LINE__, "", "filename=evil.exe.", "", "", "binary/octet-stream",
+     L"download", L"evil.exe"},
+    {__LINE__, "", "filename=evil.exe.  .  .", "", "", "binary/octet-stream",
+     L"download", L"evil.exe.  . _"},
+    {__LINE__, "", "filename=evil.", "", "", "binary/octet-stream", L"download",
+     L"evil"},
+    {__LINE__, "", "filename=. . . . .", "", "", "binary/octet-stream",
+     L"download", L"_. . ._"},
 #endif
-    },
-    {__LINE__, "http://www.evil.com/trailing.", "filename=trailing.", "", "",
-     "text/plain", L"download",
-#if defined(OS_WIN)
-     L"trailing_"
-#else
-     L"trailing"
-#endif
-    },
-    {__LINE__, "http://www.evil.com/.", "filename=.", "", "", "dance/party",
-     L"download", L"download"},
-    {__LINE__, "http://www.evil.com/..", "filename=..", "", "", "dance/party",
-     L"download", L"download"},
-    {__LINE__, "http://www.evil.com/...", "filename=...", "", "", "dance/party",
-     L"download", L"download"},
-    {// Note that this one doesn't have "filename=" on it.
-     __LINE__, "http://www.evil.com/", "a_file_name.txt", "", "", "image/jpeg",
-     L"download", L"download" JPEG_EXT},
-    {__LINE__, "http://www.evil.com/", "filename=", "", "", "image/jpeg",
-     L"download", L"download" JPEG_EXT},
-    {__LINE__, "http://www.example.com/simple", "filename=simple", "", "",
-     "application/octet-stream", L"download", L"simple"},
+    {__LINE__, "", "attachment; filename=\"meh.exe\xC2\xA0\"", "", "",
+     "binary/octet-stream", L"", L"meh.exe_"},
+    // Disappearing directory references:
+    {__LINE__, "", "filename=.", "", "", "dance/party", L"download",
+     L"download"},
+    {__LINE__, "", "filename=..", "", "", "dance/party", L"download",
+     L"download"},
+    {__LINE__, "", "filename=...", "", "", "dance/party", L"download",
+     L"download"},
     // Reserved words on Windows
-    {__LINE__, "http://www.goodguy.com/COM1", "filename=COM1", "", "",
-     "application/foo-bar", L"download",
+    {__LINE__, "", "filename=COM1", "", "", "application/foo-bar", L"download",
 #if defined(OS_WIN)
      L"_COM1"
 #else
      L"COM1"
 #endif
     },
-    {__LINE__, "http://www.goodguy.com/COM4.txt", "filename=COM4.txt", "", "",
-     "text/plain", L"download",
+    {__LINE__, "", "filename=COM4.txt", "", "", "text/plain", L"download",
 #if defined(OS_WIN)
      L"_COM4.txt"
 #else
      L"COM4.txt"
 #endif
     },
-    {__LINE__, "http://www.goodguy.com/lpt1.TXT", "filename=lpt1.TXT", "", "",
-     "text/plain", L"download",
+    {__LINE__, "", "filename=lpt1.TXT", "", "", "text/plain", L"download",
 #if defined(OS_WIN)
      L"_lpt1.TXT"
 #else
      L"lpt1.TXT"
 #endif
     },
-    {__LINE__, "http://www.goodguy.com/clock$.txt", "filename=clock$.txt", "",
-     "", "text/plain", L"download",
+    {__LINE__, "", "filename=clock$.txt", "", "", "text/plain", L"download",
 #if defined(OS_WIN)
      L"_clock$.txt"
 #else
@@ -687,51 +611,45 @@ TEST(FilenameUtilTest, GenerateFileName) {
 #endif
     },
     {// Validation should also apply to sugested name
-     __LINE__, "http://www.goodguy.com/blah$.txt", "filename=clock$.txt", "",
-     "clock$.txt", "text/plain", L"download",
+     __LINE__, "", "", "", "clock$.txt", "text/plain", L"download",
 #if defined(OS_WIN)
      L"_clock$.txt"
 #else
      L"clock$.txt"
 #endif
     },
-    {__LINE__, "http://www.goodguy.com/mycom1.foo", "filename=mycom1.foo", "",
-     "", "text/plain", L"download", L"mycom1.foo"},
-    {__LINE__, "http://www.badguy.com/Setup.exe.local",
-     "filename=Setup.exe.local", "", "", "application/foo-bar", L"download",
+    {// Device names only work when present at the start of the string.
+     __LINE__, "", "filename=mycom1.foo", "", "", "", L"download",
+     L"mycom1.foo"},
+    {__LINE__, "", "filename=Setup.exe.local", "", "", "", L"download",
 #if defined(OS_WIN)
      L"Setup.exe.download"
 #else
      L"Setup.exe.local"
 #endif
     },
-    {__LINE__, "http://www.badguy.com/Setup.exe.local",
-     "filename=Setup.exe.local.local", "", "", "application/foo-bar",
-     L"download",
+    {__LINE__, "", "filename=Setup.exe.local.local", "", "", "", L"download",
 #if defined(OS_WIN)
      L"Setup.exe.local.download"
 #else
      L"Setup.exe.local.local"
 #endif
     },
-    {__LINE__, "http://www.badguy.com/Setup.exe.lnk", "filename=Setup.exe.lnk",
-     "", "", "application/foo-bar", L"download",
+    {__LINE__, "", "filename=Setup.exe.lnk", "", "", "", L"download",
 #if defined(OS_WIN)
      L"Setup.exe.download"
 #else
      L"Setup.exe.lnk"
 #endif
     },
-    {__LINE__, "http://www.badguy.com/Desktop.ini", "filename=Desktop.ini", "",
-     "", "application/foo-bar", L"download",
+    {__LINE__, "", "filename=Desktop.ini", "", "", "", L"download",
 #if defined(OS_WIN)
      L"_Desktop.ini"
 #else
      L"Desktop.ini"
 #endif
     },
-    {__LINE__, "http://www.badguy.com/Thumbs.db", "filename=Thumbs.db", "", "",
-     "application/foo-bar", L"download",
+    {__LINE__, "", "filename=Thumbs.db", "", "", "", L"download",
 #if defined(OS_WIN)
      L"_Thumbs.db"
 #else
@@ -761,7 +679,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
      L"download", L"bar.sh"},
     {// http://crbug.com/61571
      __LINE__, "http://www.example.com/npdf.php?fn=foobar.pdf", "", "", "",
-     "text/plain", L"download", L"npdf" TXT_EXT},
+     "text/plain", L"download", L"npdf.txt"},
     {// Shouldn't overwrite C-D specified extension.
      __LINE__, "http://www.example.com/npdf.php?fn=foobar.pdf",
      "filename=foobar.jpg", "", "", "text/plain", L"download", L"foobar.jpg"},
