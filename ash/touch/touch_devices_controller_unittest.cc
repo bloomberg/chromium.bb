@@ -23,20 +23,25 @@ namespace {
 constexpr char kUser1Email[] = "user1@test.com";
 constexpr char kUser2Email[] = "user2@test.com";
 
-bool GetTouchpadEnabled() {
+bool GetUserPrefTouchpadEnabled() {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   return prefs && prefs->GetBoolean(prefs::kTouchpadEnabled);
 }
 
+bool GetGlobalTouchpadEnabled() {
+  return Shell::Get()->touch_devices_controller()->GetTouchpadEnabled(
+      TouchDeviceEnabledSource::GLOBAL);
+}
+
 bool GetUserPrefTouchscreenEnabled() {
   return Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
-      TouchscreenEnabledSource::USER_PREF);
+      TouchDeviceEnabledSource::USER_PREF);
 }
 
 bool GetGlobalTouchscreenEnabled() {
   return Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
-      TouchscreenEnabledSource::GLOBAL);
+      TouchDeviceEnabledSource::GLOBAL);
 }
 
 void SetTapDraggingEnabled(bool enabled) {
@@ -105,18 +110,38 @@ TEST_F(TouchDevicesControllerSigninTest, SetTapDraggingEnabled) {
 
 // Tests that touchpad enabled user pref works properly under debug accelerator.
 TEST_F(TouchDevicesControllerSigninTest, ToggleTouchpad) {
-  ASSERT_TRUE(GetTouchpadEnabled());
+  ASSERT_TRUE(GetUserPrefTouchpadEnabled());
   debug::PerformDebugActionIfEnabled(DEBUG_TOGGLE_TOUCH_PAD);
-  EXPECT_FALSE(GetTouchpadEnabled());
+  EXPECT_FALSE(GetUserPrefTouchpadEnabled());
 
   // Switch to user 2 and switch back.
   SwitchActiveUser(kUser2Email);
-  EXPECT_TRUE(GetTouchpadEnabled());
+  EXPECT_TRUE(GetUserPrefTouchpadEnabled());
   SwitchActiveUser(kUser1Email);
-  EXPECT_FALSE(GetTouchpadEnabled());
+  EXPECT_FALSE(GetUserPrefTouchpadEnabled());
 
   debug::PerformDebugActionIfEnabled(DEBUG_TOGGLE_TOUCH_PAD);
-  EXPECT_TRUE(GetTouchpadEnabled());
+  EXPECT_TRUE(GetUserPrefTouchpadEnabled());
+}
+
+TEST_F(TouchDevicesControllerSigninTest, SetTouchpadEnabled) {
+  ASSERT_TRUE(GetUserPrefTouchpadEnabled());
+  ASSERT_TRUE(GetGlobalTouchpadEnabled());
+
+  Shell::Get()->touch_devices_controller()->SetTouchpadEnabled(
+      false, TouchDeviceEnabledSource::GLOBAL);
+  ASSERT_TRUE(GetUserPrefTouchpadEnabled());
+  ASSERT_FALSE(GetGlobalTouchpadEnabled());
+
+  Shell::Get()->touch_devices_controller()->SetTouchpadEnabled(
+      false, TouchDeviceEnabledSource::USER_PREF);
+  ASSERT_FALSE(GetUserPrefTouchpadEnabled());
+  ASSERT_FALSE(GetGlobalTouchpadEnabled());
+
+  Shell::Get()->touch_devices_controller()->SetTouchpadEnabled(
+      true, TouchDeviceEnabledSource::GLOBAL);
+  ASSERT_FALSE(GetUserPrefTouchpadEnabled());
+  ASSERT_TRUE(GetGlobalTouchpadEnabled());
 }
 
 // Tests that touchscreen enabled user pref works properly under debug
@@ -142,7 +167,7 @@ TEST_F(TouchDevicesControllerSigninTest, SetTouchscreenEnabled) {
 
   // The global setting should be preserved when switching users.
   Shell::Get()->touch_devices_controller()->SetTouchscreenEnabled(
-      false, TouchscreenEnabledSource::GLOBAL);
+      false, TouchDeviceEnabledSource::GLOBAL);
   EXPECT_FALSE(GetGlobalTouchscreenEnabled());
   SwitchActiveUser(kUser2Email);
   EXPECT_FALSE(GetGlobalTouchscreenEnabled());
