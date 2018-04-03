@@ -187,7 +187,7 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // TODO(jingning): Revisit this part after cb4x4 is stable.
   if (abs(row_offset) > 1) {
     col_offset = 1;
-    if (mi_col & 0x01 && xd->n8_w < n8_w_8) --col_offset;
+    if ((mi_col & 0x01) && xd->n8_w < n8_w_8) --col_offset;
   }
   const int use_step_16 = (xd->n8_w >= 16);
   MB_MODE_INFO **const candidate_mi0 = xd->mi + row_offset * xd->mi_stride;
@@ -244,7 +244,7 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int shift = 0;
   if (abs(col_offset) > 1) {
     row_offset = 1;
-    if (mi_row & 0x01 && xd->n8_h < n8_h_8) --row_offset;
+    if ((mi_row & 0x01) && xd->n8_h < n8_h_8) --row_offset;
   }
   const int use_step_16 = (xd->n8_h >= 16);
   (void)mi_col;
