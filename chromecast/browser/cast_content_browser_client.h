@@ -64,9 +64,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   ~CastContentBrowserClient() override;
 
-  // Appends extra command line arguments before launching a new process.
-  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line);
-
   // Creates and returns the CastService instance for the current process.
   // Note: |request_context_getter| might be different than the main request
   // getter accessible via CastBrowserProcess.
