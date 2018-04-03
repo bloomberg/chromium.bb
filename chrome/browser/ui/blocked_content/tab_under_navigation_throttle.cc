@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/console_message_level.h"
@@ -143,13 +144,15 @@ TabUnderNavigationThrottle::TabUnderNavigationThrottle(
                  handle->GetWebContents()->GetBrowserContext())
                  ->GetBoolean(prefs::kTabUnderProtection)),
       has_opened_popup_since_last_user_gesture_at_start_(
-          HasOpenedPopupSinceLastUserGesture()) {}
+          HasOpenedPopupSinceLastUserGesture()),
+      started_in_foreground_(handle->GetWebContents()->GetVisibility() ==
+                             content::Visibility::VISIBLE) {}
 
 bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect() const {
   // Some browser initiated navigations have HasUserGesture set to false. This
   // should eventually be fixed in crbug.com/617904. In the meantime, just dont
   // block browser initiated ones.
-  if (!navigation_handle()->IsInMainFrame() ||
+  if (started_in_foreground_ || !navigation_handle()->IsInMainFrame() ||
       navigation_handle()->HasUserGesture() ||
       !navigation_handle()->IsRendererInitiated()) {
     return false;

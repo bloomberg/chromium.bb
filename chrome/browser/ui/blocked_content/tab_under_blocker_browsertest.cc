@@ -163,11 +163,8 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
 }
 
-// Test for crbug.com/733736, where a spoof shift-click does not trigger
-// tab-under because the subsequent navigation is not considered to be in the
-// background.
 IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
-                       SpoofShiftClickTabUnder_IsBlocked) {
+                       SpoofCtrlClickTabUnder_IsBlocked) {
   content::WebContents* opener =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(),
@@ -175,14 +172,17 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   const std::string cross_origin_url =
       embedded_test_server()->GetURL("a.com", "/title1.html").spec();
 
-  const std::string script = R"(
-    var evt = new MouseEvent("click", {
-      view : window,
-      shiftKey : true
-    });
-    document.getElementById("title1").dispatchEvent(evt);
-    window.location = "%s";
-  )";
+  const std::string script =
+      "var evt = new MouseEvent('click', {"
+      "  view : window,"
+#if defined(OS_MACOSX)
+      "  metaKey : true"
+#else
+      "  ctrlKey : true"
+#endif
+      "});"
+      "document.getElementById('title1').dispatchEvent(evt);"
+      "window.location = '%s';";
 
   content::TestNavigationObserver navigation_observer(nullptr, 1);
   content::TestNavigationObserver tab_under_observer(opener, 1);
