@@ -126,46 +126,20 @@ void MaybeRunCookieCallback(base::OnceCallback<void(T)> callback,
     std::move(callback).Run(result);
 }
 
-// See |InstrumentGetCookieListClosure()| below.
-class GetCookieListRequestTracker {
- public:
-  GetCookieListRequestTracker() : weak_ptr_factory_(this) {
-    // If this callback isn't destroyed within 60 seconds, we'll issue a crash
-    // dump.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&GetCookieListRequestTracker::CrashToReportTimeout,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(60));
-  }
-
-  ~GetCookieListRequestTracker() {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.GetCookieListCompletionTime",
-                               request_timer_.Elapsed(),
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromSeconds(60), 50);
-  }
-
- private:
-  void CrashToReportTimeout() { base::debug::DumpWithoutCrashing(); }
-
-  base::ElapsedTimer request_timer_;
-  base::WeakPtrFactory<GetCookieListRequestTracker> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCookieListRequestTracker);
-};
-
 // Wraps a OnceClosure -- specifically one used by
 // |GetCookieListWithOptionsAsync()| -- with additional bound state to track the
-// duration between when its creation and destruction time. If the callback
-// still exists after 60 seconds, we'll also log a crash dump.
-//
+// duration between when its creation and destruction time.
 // See https://crbug.com/824024 for context.
 base::OnceClosure InstrumentGetCookieListClosure(base::OnceClosure closure) {
   return base::BindOnce(
-      [](std::unique_ptr<GetCookieListRequestTracker> tracker,
-         base::OnceClosure closure) { std::move(closure).Run(); },
-      std::make_unique<GetCookieListRequestTracker>(), std::move(closure));
+      [](std::unique_ptr<base::ElapsedTimer> timer, base::OnceClosure closure) {
+        UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.GetCookieListCompletionTime",
+                                   timer->Elapsed(),
+                                   base::TimeDelta::FromMilliseconds(10),
+                                   base::TimeDelta::FromSeconds(60), 50);
+        std::move(closure).Run();
+      },
+      std::make_unique<base::ElapsedTimer>(), std::move(closure));
 }
 
 }  // namespace
