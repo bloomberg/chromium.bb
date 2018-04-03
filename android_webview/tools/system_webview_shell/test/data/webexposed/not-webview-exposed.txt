@@ -80,6 +80,12 @@ interface MediaDevices : EventTarget
     getter ondevicechange
     setter ondevicechange
 
+# WebAuthN API should not be exposed in WebView, crbug.com/828168
+interface AuthenticatorAssertionResponse : AuthenticatorResponse
+interface PublicKeyCredential : Credential
+interface AuthenticatorResponse
+interface AuthenticatorAttestationResponse : AuthenticatorResponse
+
 [GLOBAL OBJECT]
     method openDatabase
     attribute eventSender                    # test only
