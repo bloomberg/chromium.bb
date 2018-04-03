@@ -16,7 +16,7 @@ constexpr char kCrostiniAppIdPrefix[] = "crostini:";
 }  // namespace
 
 bool IsCrostiniAllowed() {
-  return base::FeatureList::IsEnabled(features::kCrostini) &&
+  return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
          virtual_machines::AreVirtualMachinesAllowedByPolicy();
 }
 
