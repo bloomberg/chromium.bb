@@ -121,9 +121,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/transform_feedback/switching-objects.html',
         ['linux', 'intel', 'no_angle'], bug=696345)
     self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['linux', 'amd', 'no_angle'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
         ['mac', 'intel', 'no_angle'], bug=696345)
     self.Fail('conformance2/transform_feedback/switching-objects.html',
         ['mac', 'amd', 'no_angle'], bug=696345)
+    self.Fail('conformance2/transform_feedback/switching-objects.html',
+        ['mac', 'nvidia', 'no_angle'], bug=828579)
 
     # transform_feedback/too-small-buffers.html
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
@@ -252,6 +256,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/' +
         'blitframebuffer-srgb-and-linear-drawbuffers.html',
         ['win', 'nvidia', 'opengl'], bug=2355) # ANGLE bug ID
+    self.Fail('conformance2/rendering/clipping-wide-points.html',
+        ['win', 'nvidia', 'opengl'], bug=828572)
 
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
