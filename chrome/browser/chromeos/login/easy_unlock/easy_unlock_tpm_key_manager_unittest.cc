@@ -196,7 +196,7 @@ void RecordStringAndRunClosure(std::string* result,
 class EasyUnlockTpmKeyManagerTest : public testing::Test {
  public:
   EasyUnlockTpmKeyManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         user_manager_(new FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
