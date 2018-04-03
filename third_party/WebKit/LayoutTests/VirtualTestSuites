@@ -623,5 +623,20 @@
     "prefix": "picture-in-picture",
     "base": "media/picture-in-picture",
     "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]
+  },
+  {
+    "prefix": "off-main-thread-websocket",
+    "base": "external/wpt/websockets",
+    "args": ["--enable-features=OffMainThreadWebSocket"]
+  },
+  {
+    "prefix": "off-main-thread-websocket",
+    "base": "http/tests/websocket",
+    "args": ["--enable-features=OffMainThreadWebSocket"]
+  },
+  {
+    "prefix": "off-main-thread-websocket",
+    "base": "http/tests/security/mixedContent/websocket",
+    "args": ["--enable-features=OffMainThreadWebSocket"]
   }
 ]

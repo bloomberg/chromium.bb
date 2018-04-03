@@ -187,6 +187,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableCodeCacheAfterExecute(bool);
   BLINK_PLATFORM_EXPORT static void EnableUnifiedTouchAdjustment(bool);
   BLINK_PLATFORM_EXPORT static void EnableMojoBlobURLs(bool);
+  BLINK_PLATFORM_EXPORT static void EnableOffMainThreadWebSocket(bool);
 
  private:
   WebRuntimeFeatures();

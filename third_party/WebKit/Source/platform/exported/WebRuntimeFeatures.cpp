@@ -506,4 +506,8 @@ void WebRuntimeFeatures::EnableMojoBlobURLs(bool enable) {
   RuntimeEnabledFeatures::SetMojoBlobURLsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableOffMainThreadWebSocket(bool enable) {
+  RuntimeEnabledFeatures::SetOffMainThreadWebSocketEnabled(enable);
+}
+
 }  // namespace blink
