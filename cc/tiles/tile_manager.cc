@@ -536,7 +536,7 @@ void TileManager::CheckForCompletedTasks() {
   tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
-  CheckPendingGpuWorkTiles(true /* issue_signals */, false /* flush */);
+  CheckPendingGpuWorkTiles(true /* issue_signals */);
 
   TRACE_EVENT_INSTANT1(
       "cc", "TileManager::CheckForCompletedTasksFinished",
@@ -1357,7 +1357,8 @@ void TileManager::CheckAndIssueSignals() {
   tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
-  CheckPendingGpuWorkTiles(false /* issue_signals */, true /* flush */);
+  raster_buffer_provider_->Flush();
+  CheckPendingGpuWorkTiles(false /* issue_signals */);
 
   // Ready to activate.
   if (signals_.ready_to_activate && !signals_.did_notify_ready_to_activate) {
@@ -1539,14 +1540,11 @@ bool TileManager::UsePartialRaster() const {
          raster_buffer_provider_->CanPartialRasterIntoProvidedResource();
 }
 
-void TileManager::CheckPendingGpuWorkTiles(bool issue_signals, bool flush) {
+void TileManager::CheckPendingGpuWorkTiles(bool issue_signals) {
   TRACE_EVENT2("cc", "TileManager::CheckPendingGpuWorkTiles",
                "pending_gpu_work_tiles", pending_gpu_work_tiles_.size(),
                "tree_priority",
                TreePriorityToString(global_state_.tree_priority));
-
-  if (flush)
-    raster_buffer_provider_->Flush();
 
   std::vector<const ResourcePool::InUsePoolResource*> required_for_activation;
   std::vector<const ResourcePool::InUsePoolResource*> required_for_draw;
@@ -1587,7 +1585,7 @@ void TileManager::CheckPendingGpuWorkTiles(bool issue_signals, bool flush) {
             required_for_activation,
             base::Bind(&TileManager::CheckPendingGpuWorkTiles,
                        ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr(),
-                       true /* issue_signals */, false /* flush */),
+                       true /* issue_signals */),
             pending_required_for_activation_callback_id_);
   }
 
@@ -1599,7 +1597,7 @@ void TileManager::CheckPendingGpuWorkTiles(bool issue_signals, bool flush) {
             required_for_draw,
             base::Bind(&TileManager::CheckPendingGpuWorkTiles,
                        ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr(),
-                       true /* issue_signals */, false /* flush */),
+                       true /* issue_signals */),
             pending_required_for_draw_callback_id_);
   }
 
