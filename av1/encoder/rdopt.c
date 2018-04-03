@@ -1752,8 +1752,10 @@ static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
     cur_hash_row += txb_w;
     cur_diff_row += diff_stride;
   }
-  return av1_get_crc_value(&x->mb_rd_record.crc_calculator,
-                           (uint8_t *)hash_data, 2 * txb_w * txb_h);
+  return (av1_get_crc_value(&x->mb_rd_record.crc_calculator,
+                            (uint8_t *)hash_data, 2 * txb_w * txb_h)
+          << 5) +
+         tx_size;
 }
 
 void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
