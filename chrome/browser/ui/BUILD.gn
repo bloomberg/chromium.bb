@@ -2500,6 +2500,8 @@ split_static_library("ui") {
       sources -= [
         "cocoa/bookmarks/bookmark_all_tabs_controller.h",
         "cocoa/bookmarks/bookmark_all_tabs_controller.mm",
+        "cocoa/bookmarks/bookmark_bubble_controller.h",
+        "cocoa/bookmarks/bookmark_bubble_controller.mm",
         "cocoa/bookmarks/bookmark_editor_base_controller.h",
         "cocoa/bookmarks/bookmark_editor_base_controller.mm",
         "cocoa/bookmarks/bookmark_editor_controller.h",

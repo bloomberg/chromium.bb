@@ -4084,6 +4084,7 @@ test("unit_tests") {
     if (mac_views_browser) {
       sources -= [
         "../browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller_unittest.mm",
+        "../browser/ui/cocoa/bookmarks/bookmark_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/bookmarks/bookmark_editor_base_controller_unittest.mm",
         "../browser/ui/cocoa/bookmarks/bookmark_editor_controller_unittest.mm",
         "../browser/ui/cocoa/content_settings/collected_cookies_mac_unittest.mm",
