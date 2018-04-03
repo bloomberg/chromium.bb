@@ -274,7 +274,6 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBrowserTest);
 };
 
-// Flaky. See https://crbug.com/822276
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // that request to be scheduled with the Download Service.
@@ -293,7 +292,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
   EXPECT_FALSE(guid.empty());
 }
 
-// TODO(crbug.com/822944): Disabled since flaky.
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        OfflineItemCollection_SingleFileMetadata) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
@@ -324,7 +322,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_FALSE(offline_item.is_resumable);
 }
 
-// Flaky. See https://crbug.com/822276
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        OfflineItemCollection_VerifyIconReceived) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
