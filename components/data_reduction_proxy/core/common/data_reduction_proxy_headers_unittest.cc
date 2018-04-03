@@ -18,6 +18,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -662,6 +663,56 @@ TEST_F(DataReductionProxyHeadersTest, MissingViaHeaderFallback) {
                 proxy_info.bypass_duration.InSeconds());
       EXPECT_TRUE(proxy_info.mark_proxies_as_bad);
     }
+  }
+}
+
+TEST_F(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
+  const struct {
+    const char* headers;
+    std::map<std::string, std::string> feature_parameters;
+    DataReductionProxyBypassType expected_result;
+  } tests[] = {
+      {
+          "HTTP/1.1 200 OK\n",
+          {
+              {params::GetWarmupCallbackParamName(), "true"},
+              {params::GetMissingViaBypassParamName(), "true"},
+          },
+          BYPASS_EVENT_TYPE_MAX,
+      },
+      {
+          "HTTP/1.1 200 OK\n",
+          {
+              {params::GetWarmupCallbackParamName(), "true"},
+              {params::GetMissingViaBypassParamName(), "false"},
+          },
+          BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
+      },
+      {
+          "HTTP/1.1 200 OK\n",
+          {
+              {params::GetWarmupCallbackParamName(), "false"},
+              {params::GetMissingViaBypassParamName(), "false"},
+          },
+          BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
+      },
+  };
+  for (auto test : tests) {
+    std::string headers(test.headers);
+    HeadersToRaw(&headers);
+    scoped_refptr<net::HttpResponseHeaders> parsed(
+        new net::HttpResponseHeaders(headers));
+    DataReductionProxyInfo proxy_info;
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kDataReductionProxyRobustConnection, test.feature_parameters);
+
+    EXPECT_EQ(test.expected_result,
+              GetDataReductionProxyBypassType(std::vector<GURL>(), *parsed,
+                                              &proxy_info));
+    if (test.expected_result != BYPASS_EVENT_TYPE_MAX)
+      EXPECT_TRUE(proxy_info.mark_proxies_as_bad);
   }
 }
 

@@ -133,6 +133,12 @@ bool FetchWarmupProbeURLEnabled();
 // Returns the warmup URL.
 GURL GetWarmupURL();
 
+// Returns the experiment parameter name to enable the warmup fetch callback.
+const char* GetWarmupCallbackParamName();
+
+// Returns the experiment parameter name to disable missing via header bypasses.
+const char* GetMissingViaBypassParamName();
+
 }  // namespace params
 
 // Contains information about a given proxy server. |proxies_for_http| contains
