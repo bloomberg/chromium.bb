@@ -119,7 +119,10 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
   std::string method_value = base::GetFieldTrialParamValueByFeature(
       kAccountConsistencyFeature, kAccountConsistencyFeatureMethodParameter);
 
-  if (method_value == kAccountConsistencyFeatureMethodDiceFixAuthErrors)
+  if (method_value == kAccountConsistencyFeatureMethodMirror)
+    return AccountConsistencyMethod::kMirror;
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  else if (method_value == kAccountConsistencyFeatureMethodDiceFixAuthErrors)
     return AccountConsistencyMethod::kDiceFixAuthErrors;
   else if (method_value == kAccountConsistencyFeatureMethodDicePrepareMigration)
     return AccountConsistencyMethod::kDicePrepareMigration;
@@ -127,8 +130,7 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
     return AccountConsistencyMethod::kDiceMigration;
   else if (method_value == kAccountConsistencyFeatureMethodDice)
     return AccountConsistencyMethod::kDice;
-  else if (method_value == kAccountConsistencyFeatureMethodMirror)
-    return AccountConsistencyMethod::kMirror;
+#endif
 
   return kDefaultMethod;
 }
