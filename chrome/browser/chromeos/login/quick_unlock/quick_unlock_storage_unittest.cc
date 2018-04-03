@@ -17,6 +17,7 @@
 
 namespace chromeos {
 
+using AuthToken = quick_unlock::AuthToken;
 using QuickUnlockStorage = quick_unlock::QuickUnlockStorage;
 
 namespace {
@@ -48,10 +49,7 @@ class QuickUnlockStorageUnitTest : public testing::Test {
 
   void ExpireAuthToken() {
     quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-        ->auth_token_issue_time_ =
-        base::TimeTicks::Now() -
-        base::TimeDelta::FromSeconds(
-            QuickUnlockStorage::kTokenExpirationSeconds);
+        ->auth_token_->ResetForTest();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -169,7 +167,8 @@ TEST_F(QuickUnlockStorageUnitTest, AuthToken) {
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get());
   EXPECT_EQ(std::string(), quick_unlock_storage->GetAuthToken());
 
-  std::string auth_token = quick_unlock_storage->CreateAuthToken();
+  chromeos::UserContext context;
+  std::string auth_token = quick_unlock_storage->CreateAuthToken(context);
   EXPECT_NE(std::string(), auth_token);
   EXPECT_EQ(auth_token, quick_unlock_storage->GetAuthToken());
   EXPECT_FALSE(quick_unlock_storage->GetAuthTokenExpired());

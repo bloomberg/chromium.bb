@@ -120,7 +120,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
 
     // Generate an auth token.
     token_ = quick_unlock::QuickUnlockFactory::GetForProfile(profile())
-                 ->CreateAuthToken();
+                 ->CreateAuthToken(auth_token_user_context_);
 
     // Ensure that quick unlock is turned off.
     RunSetModes(QuickUnlockModeList{}, CredentialList{});
@@ -395,6 +395,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
   QuickUnlockPrivateSetModesFunction::ModesChangedEventHandler
       modes_changed_handler_;
   bool expect_modes_changed_ = false;
+  chromeos::UserContext auth_token_user_context_;
   std::string token_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateUnitTest);
@@ -409,7 +410,7 @@ TEST_F(QuickUnlockPrivateUnitTest, GetAuthTokenValid) {
       quick_unlock::QuickUnlockFactory::GetForProfile(profile());
   EXPECT_EQ(token_info->token, quick_unlock_storage->GetAuthToken());
   EXPECT_EQ(token_info->lifetime_seconds,
-            quick_unlock::QuickUnlockStorage::kTokenExpirationSeconds);
+            quick_unlock::AuthToken::kTokenExpirationSeconds);
 }
 
 // Verifies that GetAuthTokenValid fails when an invalid password is provided.
