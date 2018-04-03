@@ -105,7 +105,7 @@ static inline native_handle_t *gralloc_handle_create(int32_t width,
 	handle->usage = usage;
 	handle->prime_fd = -1;
 
-	return handle;
+	return nhandle;
 }
 
 #endif
