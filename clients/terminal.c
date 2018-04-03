@@ -1686,6 +1686,7 @@ handle_escape(struct terminal *terminal)
 				fprintf(stderr, "Unimplemented windowOp %d\n", args[0]);
 			break;
 		}
+		break;
 	case 'u':    /* Restore cursor location */
 		terminal->row = terminal->saved_row;
 		terminal->column = terminal->saved_column;
