@@ -26,6 +26,7 @@
 #include <bitset>
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSMarkup.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/properties/css_property.h"
@@ -179,7 +180,7 @@ String StylePropertySerializer::GetCustomPropertyText(
     result.Append(' ');
   const CSSCustomPropertyDeclaration* value =
       ToCSSCustomPropertyDeclaration(property.Value());
-  result.Append(value->GetName());
+  SerializeIdentifier(value->GetName(), result, is_not_first_decl);
   result.Append(':');
   if (!value->Value())
     result.Append(' ');
