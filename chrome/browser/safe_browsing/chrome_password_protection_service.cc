@@ -150,7 +150,7 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
     Profile* profile)
     : PasswordProtectionService(
           sb_service->database_manager(),
-          sb_service->url_request_context(),
+          sb_service->GetURLLoaderFactory(),
           HistoryServiceFactory::GetForProfile(
               profile,
               ServiceAccessType::EXPLICIT_ACCESS),

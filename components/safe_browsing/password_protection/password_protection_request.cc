@@ -19,6 +19,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
@@ -266,18 +267,20 @@ void PasswordProtectionRequest::SendRequest() {
             }
           }
         })");
-  fetcher_ = net::URLFetcher::Create(
-      0, PasswordProtectionService::GetPasswordProtectionRequestUrl(),
-      net::URLFetcher::POST, this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher_->SetAutomaticallyRetryOn5xx(false);
-  fetcher_->SetRequestContext(
-      password_protection_service_->request_context_getter().get());
-  fetcher_->SetUploadData("application/octet-stream", serialized_request);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url =
+      PasswordProtectionService::GetPasswordProtectionRequestUrl();
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  url_loader_->AttachStringForUpload(serialized_request,
+                                     "application/octet-stream");
   request_start_time_ = base::TimeTicks::Now();
-  fetcher_->Start();
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      password_protection_service_->url_loader_factory().get(),
+      base::BindOnce(&PasswordProtectionRequest::OnURLLoaderComplete,
+                     base::Unretained(this)));
 }
 
 void PasswordProtectionRequest::StartTimeout() {
@@ -293,16 +296,18 @@ void PasswordProtectionRequest::StartTimeout() {
       base::TimeDelta::FromMilliseconds(request_timeout_in_ms_));
 }
 
-void PasswordProtectionRequest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void PasswordProtectionRequest::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::URLRequestStatus status = source->GetStatus();
-  const bool is_success = status.is_success();
-  const int response_code = source->GetResponseCode();
+  int response_code = 0;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+
+  const bool is_success = url_loader_->NetError() == net::OK;
 
   base::UmaHistogramSparse(
       "PasswordProtection.PasswordProtectionResponseOrErrorCode",
-      is_success ? response_code : status.error());
+      is_success ? response_code : url_loader_->NetError());
 
   if (!is_success || net::HTTP_OK != response_code) {
     Finish(PasswordProtectionService::FETCH_FAILED, nullptr);
@@ -311,13 +316,11 @@ void PasswordProtectionRequest::OnURLFetchComplete(
 
   std::unique_ptr<LoginReputationClientResponse> response =
       std::make_unique<LoginReputationClientResponse>();
-  std::string response_body;
-  bool received_data = source->GetResponseAsString(&response_body);
-  DCHECK(received_data);
-  fetcher_.reset();  // We don't need it anymore.
+  DCHECK(response_body.get());
+  url_loader_.reset();  // We don't need it anymore.
   UMA_HISTOGRAM_TIMES("PasswordProtection.RequestNetworkDuration",
                       base::TimeTicks::Now() - request_start_time_);
-  if (response->ParseFromString(response_body))
+  if (response_body.get() && response->ParseFromString(*response_body.get()))
     Finish(PasswordProtectionService::SUCCEEDED, std::move(response));
   else
     Finish(PasswordProtectionService::RESPONSE_MALFORMED, nullptr);
@@ -373,7 +376,7 @@ void PasswordProtectionRequest::Finish(
 
 void PasswordProtectionRequest::Cancel(bool timed_out) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  fetcher_.reset();
+  url_loader_.reset();
   // If request is canceled because |password_protection_service_| is shutting
   // down, ignore all these deferred navigations.
   if (!timed_out)

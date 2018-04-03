@@ -10,13 +10,14 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 
 #include <vector>
 
 class GURL;
+
+namespace network {
+class SimpleURLLoader;
+}
 
 namespace safe_browsing {
 
@@ -45,10 +46,10 @@ extern const char kProtectedPasswordEntryVerdictHistogram[];
 // (7) |   UI   | On receiving response, handle response and finish.
 //     |        | On request timeout, cancel request.
 //     |        | On deletion of |password_protection_service_|, cancel request.
-class PasswordProtectionRequest : public base::RefCountedThreadSafe<
-                                      PasswordProtectionRequest,
-                                      content::BrowserThread::DeleteOnUIThread>,
-                                  public net::URLFetcherDelegate {
+class PasswordProtectionRequest
+    : public base::RefCountedThreadSafe<
+          PasswordProtectionRequest,
+          content::BrowserThread::DeleteOnUIThread> {
  public:
   PasswordProtectionRequest(content::WebContents* web_contents,
                             const GURL& main_frame_url,
@@ -73,9 +74,8 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // due to timeout. This function will call Finish() to destroy |this|.
   void Cancel(bool timed_out);
 
-  // net::URLFetcherDelegate override.
   // Processes the received response.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
   GURL main_frame_url() const { return main_frame_url_; }
 
@@ -117,7 +117,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<PasswordProtectionRequest>;
   friend class ChromePasswordProtectionServiceTest;
-  ~PasswordProtectionRequest() override;
+  virtual ~PasswordProtectionRequest();
 
   // Start checking the whitelist.
   void CheckWhitelist();
@@ -176,8 +176,8 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // When request is sent.
   base::TimeTicks request_start_time_;
 
-  // URLFetcher instance for sending request and receiving response.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // SimpleURLLoader instance for sending request and receiving response.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // The PasswordProtectionService instance owns |this|.
   // Can only be accessed on UI thread.
