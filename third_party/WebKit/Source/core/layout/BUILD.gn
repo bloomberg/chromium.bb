@@ -429,6 +429,8 @@ blink_core_sources("layout") {
     "ng/ng_container_fragment_builder.h",
     "ng/ng_exclusion.cc",
     "ng/ng_exclusion.h",
+    "ng/ng_flex_layout_algorithm.cc",
+    "ng/ng_flex_layout_algorithm.h",
     "ng/ng_floats_utils.cc",
     "ng/ng_floats_utils.h",
     "ng/ng_fragment.cc",

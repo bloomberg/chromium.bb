@@ -21,6 +21,7 @@
 #include "core/layout/ng/ng_column_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_flex_layout_algorithm.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/ng/ng_layout_input_node.h"
@@ -48,6 +49,8 @@ scoped_refptr<NGLayoutResult> LayoutWithAlgorithm(
     const NGConstraintSpace& space,
     NGBreakToken* break_token) {
   auto* token = ToNGBlockBreakToken(break_token);
+  if (style.IsDisplayFlexibleBox())
+    return NGFlexLayoutAlgorithm(node, space, token).Layout();
   // If there's a legacy layout box, we can only do block fragmentation if we
   // would have done block fragmentation with the legacy engine. Otherwise
   // writing data back into the legacy tree will fail. Look for the flow

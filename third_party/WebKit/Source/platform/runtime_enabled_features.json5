@@ -590,10 +590,13 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFlexBox"],
     },
     {
       name: "LayoutNGBlockFragmentation",
+    },
+    {
+      name: "LayoutNGFlexBox",
     },
     {
       name: "LayoutNGFragmentCaching",

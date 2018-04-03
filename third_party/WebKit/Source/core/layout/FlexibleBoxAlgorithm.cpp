@@ -32,6 +32,7 @@
 
 #include "core/layout/LayoutBox.h"
 #include "core/layout/MinMaxSize.h"
+#include "core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 
@@ -47,7 +48,8 @@ FlexItem::FlexItem(LayoutBox* box,
           min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
       main_axis_border_and_padding(main_axis_border_and_padding),
       main_axis_margin(main_axis_margin),
-      frozen(false) {
+      frozen(false),
+      ng_input_node(/* LayoutBox* */ nullptr) {
   DCHECK(!box->IsOutOfFlowPositioned());
   DCHECK_GE(min_max_sizes.max_size, LayoutUnit())
       << "Use LayoutUnit::Max() for no max size";

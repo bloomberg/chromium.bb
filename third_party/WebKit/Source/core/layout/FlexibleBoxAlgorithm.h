@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/OrderIterator.h"
+#include "core/layout/ng/ng_layout_input_node.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -44,6 +45,7 @@ namespace blink {
 
 class FlexLayoutAlgorithm;
 class LayoutBox;
+class NGLayoutResult;
 struct MinMaxSize;
 
 enum FlexSign {
@@ -120,6 +122,10 @@ class FlexItem {
   LayoutPoint desired_location;
 
   bool frozen;
+
+  // TODO(dgrogan): Change this to NGBlockNode when all items are blockified.
+  NGLayoutInputNode ng_input_node;
+  scoped_refptr<NGLayoutResult> layout_result;
 };
 
 class FlexLine {
