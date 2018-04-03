@@ -539,7 +539,7 @@ std::string AudioManagerBase::GetGroupIDInput(
   if (output_device_id.empty()) {
     // Some characters are added to avoid accidentally
     // giving the input the same group id as an output.
-    return input_device_id + "input";
+    return real_input_device_id + "input";
   }
   return GetGroupIDOutput(output_device_id);
 }
