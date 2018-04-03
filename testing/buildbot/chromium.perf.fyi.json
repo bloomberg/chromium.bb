@@ -557,8 +557,8 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build113-b4",
-              "pool": "Chrome-perf-fyi"
+              "id": "build186-b7",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
