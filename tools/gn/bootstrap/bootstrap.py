@@ -39,11 +39,12 @@ is_posix = is_linux or is_mac or is_aix
 def check_call(cmd, **kwargs):
   logging.debug('Running: %s', ' '.join(cmd))
 
-  # With shell=False, subprocess expects an executable on Windows
-  if is_win and cmd and cmd[0].endswith('.py'):
-    cmd.insert(0, sys.executable)
-
   subprocess.check_call(cmd, cwd=GN_ROOT, **kwargs)
+
+def check_output(cmd, cwd=GN_ROOT, **kwargs):
+  logging.debug('Running: %s', ' '.join(cmd))
+
+  return subprocess.check_output(cmd, cwd=cwd, **kwargs)
 
 def mkdir_p(path):
   try:
@@ -71,8 +72,13 @@ def run_build(tempdir, options):
     build_rel = os.path.join('out', 'Release')
   build_root = os.path.join(SRC_ROOT, build_rel)
 
+  windows_x64_toolchain = None
+  if is_win:
+    windows_x64_toolchain = windows_prepare_toolchain(tempdir)
+    os.environ["PATH"] = windows_x64_toolchain["paths"]
+
   print 'Building gn manually in a temporary directory for bootstrapping...'
-  build_gn_with_ninja_manually(tempdir, options)
+  build_gn_with_ninja_manually(tempdir, options, windows_x64_toolchain)
   temp_gn = os.path.join(tempdir, 'gn')
   out_gn = os.path.join(build_root, 'gn')
 
@@ -99,6 +105,37 @@ def windows_target_build_arch():
     if platform.machine().lower() in ['x86_64', 'amd64']: return 'x64'
     return 'x86'
 
+def windows_prepare_toolchain(tempdir):
+
+  def CallPythonScopeScript(command, **kwargs):
+    response = check_output(command, **kwargs)
+
+    _globals = {"__builtins__":None}
+    _locals = {}
+    exec(response, _globals, _locals)
+
+    return _locals
+
+  toolchain_paths = CallPythonScopeScript(
+      [sys.executable,
+       os.path.join(SRC_ROOT, "build", "vs_toolchain.py"),
+      "get_toolchain_dir"],
+      cwd=tempdir)
+
+  windows_x64_toolchain =  CallPythonScopeScript(
+      [sys.executable,
+       os.path.join(SRC_ROOT, "build", "toolchain",
+                    "win", "setup_toolchain.py"),
+       toolchain_paths["vs_path"],
+       toolchain_paths["sdk_path"],
+       toolchain_paths["runtime_dirs"],
+       "x64",
+       "true"
+      ],
+      cwd=tempdir)
+
+  return windows_x64_toolchain
+
 def main(argv):
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option('-d', '--debug', action='store_true',
@@ -112,7 +149,9 @@ def main(argv):
                          'temporary location each time')
   parser.add_option('--gn-gen-args', help='Args to pass to gn gen --args')
   parser.add_option('--build-path', help='The directory in which to build gn, '
-                    'relative to the src directory. (eg. out/Release)')
+                    'relative to the src directory. (eg. out/Release)'
+                    'In the no-clean mode an absolute path will also force '
+                    'the out_bootstrap to be located in the parent directory')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Log more details')
   options, args = parser.parse_args(argv)
@@ -124,7 +163,10 @@ def main(argv):
 
   try:
     if options.no_clean:
-      build_dir = os.path.join(SRC_ROOT, 'out_bootstrap')
+      out_bootstrap_dir = SRC_ROOT
+      if options.build_path and os.path.isabs(options.build_path):
+        out_bootstrap_dir = os.path.dirname(options.build_path)
+      build_dir = os.path.join(out_bootstrap_dir, 'out_bootstrap')
       if not os.path.exists(build_dir):
         os.makedirs(build_dir)
       return run_build(build_dir, options)
@@ -159,6 +201,7 @@ def write_buildflag_header_manually(root_gen_dir, header, flags):
       f.write(' ' + name + '=' + value)
 
   check_call([
+      sys.executable,
       os.path.join(SRC_ROOT, 'build', 'write_buildflag_header.py'),
       '--output', header,
       '--gen-dir', root_gen_dir,
@@ -169,12 +212,13 @@ def write_buildflag_header_manually(root_gen_dir, header, flags):
 
 def write_build_date_header(root_gen_dir):
   check_call([
+       sys.executable,
        os.path.join(SRC_ROOT, 'build', 'write_build_date_header.py'),
        os.path.join(root_gen_dir, 'base/generated_build_date.h'),
        'default',
   ])
 
-def build_gn_with_ninja_manually(tempdir, options):
+def build_gn_with_ninja_manually(tempdir, options, windows_x64_toolchain):
   root_gen_dir = os.path.join(tempdir, 'gen')
   mkdir_p(root_gen_dir)
 
@@ -215,6 +259,7 @@ def build_gn_with_ninja_manually(tempdir, options):
     # and this file is only included for Mac builds.
     mkdir_p(os.path.join(root_gen_dir, 'base'))
     check_call([
+        sys.executable,
         os.path.join(SRC_ROOT, 'build', 'write_build_date_header.py'),
         os.path.join(root_gen_dir, 'base', 'generated_build_date.h'),
         'default'
@@ -233,7 +278,7 @@ def build_gn_with_ninja_manually(tempdir, options):
       {'USE_LLD': 'false', 'SUPPORTS_CODE_ORDERING': 'false'})
 
   write_gn_ninja(os.path.join(tempdir, 'build.ninja'),
-                 root_gen_dir, options)
+                 root_gen_dir, options, windows_x64_toolchain)
   cmd = ['ninja', '-C', tempdir, '-w', 'dupbuild=err']
   if options.verbose:
     cmd.append('-v')
@@ -332,12 +377,14 @@ def write_generic_ninja(path, static_libraries, executables,
     f.write(ninja_template)
     f.write('\n'.join(ninja_lines))
 
-def write_gn_ninja(path, root_gen_dir, options):
+def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
   if is_win:
-    cc = os.environ.get('CC', 'cl.exe')
-    cxx = os.environ.get('CXX', 'cl.exe')
-    ld = os.environ.get('LD', 'link.exe')
-    ar = os.environ.get('AR', 'lib.exe')
+    CCPATH = windows_x64_toolchain["vc_bin_dir"]
+
+    cc = os.environ.get('CC', os.path.join(CCPATH, 'cl.exe'))
+    cxx = os.environ.get('CXX', os.path.join(CCPATH, 'cl.exe'))
+    ld = os.environ.get('LD', os.path.join(CCPATH, 'link.exe'))
+    ar = os.environ.get('AR', os.path.join(CCPATH, 'lib.exe'))
   elif is_aix:
     cc = os.environ.get('CC', 'gcc')
     cxx = os.environ.get('CXX', 'c++')
@@ -835,6 +882,9 @@ def write_gn_ninja(path, root_gen_dir, options):
 
   if is_win:
     static_libraries['base']['sources'].extend([
+        "base/allocator/partition_allocator/address_space_randomization.cc",
+        'base/allocator/partition_allocator/page_allocator.cc',
+        "base/allocator/partition_allocator/spin_lock.cc",
         'base/base_paths_win.cc',
         'base/cpu.cc',
         'base/debug/close_handle_hook_win.cc',
@@ -871,17 +921,16 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/sync_socket_win.cc',
         'base/synchronization/condition_variable_win.cc',
         'base/synchronization/lock_impl_win.cc',
-        'base/synchronization/read_write_lock_win.cc',
         'base/synchronization/waitable_event_watcher_win.cc',
         'base/synchronization/waitable_event_win.cc',
         'base/sys_info_win.cc',
         'base/threading/platform_thread_win.cc',
         'base/threading/thread_local_storage_win.cc',
-        'base/threading/worker_pool_win.cc',
         'base/time/time_win.cc',
         'base/timer/hi_res_timer_manager_win.cc',
         'base/trace_event/heap_profiler_allocation_register_win.cc',
         'base/trace_event/trace_event_etw_export_win.cc',
+        'base/win/core_winrt_util.cc',
         'base/win/enum_variant.cc',
         'base/win/event_trace_controller.cc',
         'base/win/event_trace_provider.cc',
@@ -895,9 +944,12 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/win/registry.cc',
         'base/win/resource_util.cc',
         'base/win/scoped_bstr.cc',
+        'base/win/scoped_com_initializer.cc',
         'base/win/scoped_handle.cc',
+        'base/win/scoped_handle_verifier.cc',
         'base/win/scoped_process_information.cc',
         'base/win/scoped_variant.cc',
+        'base/win/scoped_winrt_initializer.cc',
         'base/win/shortcut.cc',
         'base/win/startup_information.cc',
         'base/win/wait_chain.cc',
@@ -930,7 +982,9 @@ def build_gn_with_gn(temp_gn, build_dir, options):
   gn_gen_args = options.gn_gen_args or ''
   if not options.debug:
     gn_gen_args += ' is_debug=false'
-  cmd = [temp_gn, 'gen', build_dir, '--args=%s' % gn_gen_args]
+  cmd = [temp_gn, 'gen', build_dir, '--args=%s' % gn_gen_args,
+          "--root="+SRC_ROOT
+         ]
   check_call(cmd)
 
   cmd = ['ninja', '-C', build_dir, '-w', 'dupbuild=err']
