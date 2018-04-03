@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class Element;
 class MediaControlsImpl;
 
 class MediaControlsWindowEventListener final : public EventListener {
@@ -29,6 +30,10 @@ class MediaControlsWindowEventListener final : public EventListener {
   explicit MediaControlsWindowEventListener(MediaControlsImpl*, Callback);
 
   void handleEvent(ExecutionContext*, Event*) override;
+
+  // Adds or removes a click event listener if the provided element is not null.
+  void MaybeAddClickEventListener(Element*);
+  void MaybeRemoveClickEventListener(Element*);
 
   Member<MediaControlsImpl> media_controls_;
   Callback callback_;
