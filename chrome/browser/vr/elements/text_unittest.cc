@@ -41,15 +41,21 @@ TEST(Text, Formatting) {
   formatting.push_back(
       TextFormattingAttribute(SK_ColorGREEN, gfx::Range(1, 2)));
   formatting.push_back(
+      TextFormattingAttribute(SK_ColorGREEN, gfx::Range::InvalidRange()));
+  formatting.push_back(
       TextFormattingAttribute(gfx::Font::Weight::BOLD, gfx::Range(3, 4)));
+  formatting.push_back(TextFormattingAttribute(gfx::Font::Weight::BOLD,
+                                               gfx::Range::InvalidRange()));
   formatting.push_back(
       TextFormattingAttribute(gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
 
   testing::InSequence in_sequence;
   testing::StrictMock<MockRenderText> render_text;
   EXPECT_CALL(render_text, ApplyColor(SK_ColorGREEN, gfx::Range(1, 2)));
+  EXPECT_CALL(render_text, SetColor(SK_ColorGREEN));
   EXPECT_CALL(render_text,
               ApplyWeight(gfx::Font::Weight::BOLD, gfx::Range(3, 4)));
+  EXPECT_CALL(render_text, SetWeight(gfx::Font::Weight::BOLD));
   EXPECT_CALL(render_text, SetDirectionalityMode(
                                gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
 

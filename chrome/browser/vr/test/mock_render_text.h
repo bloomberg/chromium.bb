@@ -21,6 +21,7 @@ class MockRenderText : public RenderTextWrapper {
   MOCK_METHOD2(SetStyle, void(gfx::TextStyle style, bool value));
   MOCK_METHOD3(ApplyStyle,
                void(gfx::TextStyle style, bool value, const gfx::Range& range));
+  MOCK_METHOD1(SetWeight, void(gfx::Font::Weight weight));
   MOCK_METHOD2(ApplyWeight,
                void(gfx::Font::Weight weight, const gfx::Range& range));
   MOCK_METHOD1(SetDirectionalityMode, void(gfx::DirectionalityMode mode));

@@ -24,13 +24,6 @@ struct ButtonColors {
   SkColor foreground_disabled = SK_ColorBLACK;
 };
 
-struct UrlTextColors {
-  bool operator==(const UrlTextColors& other) const;
-  bool operator!=(const UrlTextColors& other) const;
-  SkColor deemphasized = SK_ColorBLACK;
-  SkColor emphasized = SK_ColorBLACK;
-};
-
 struct TextSelectionColors {
   bool operator==(const TextSelectionColors& other) const;
   bool operator!=(const TextSelectionColors& other) const;
@@ -92,7 +85,8 @@ struct ColorScheme {
   SkColor url_bar_hint_text;
   SkColor url_bar_dangerous_icon;
   ButtonColors url_bar_button;
-  UrlTextColors url_text;
+  SkColor url_text_emphasized;
+  SkColor url_text_deemphasized;
   SkColor omnibox_background;
   TextSelectionColors omnibox_text_selection;
   SkColor hyperlink;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
@@ -93,6 +94,58 @@ ElisionParameters GetElisionParameters(const GURL& gurl,
   }
 
   return result;
+}
+
+TextFormatting CreateUrlFormatting(const base::string16& formatted_url,
+                                   const url::Parsed& parsed,
+                                   SkColor emphasized_color,
+                                   SkColor deemphasized_color) {
+  const url::Component& scheme = parsed.scheme;
+  const url::Component& host = parsed.host;
+
+  const base::string16 url_scheme =
+      formatted_url.substr(scheme.begin, scheme.len);
+
+  // Data URLs are rarely human-readable and can be used for spoofing, so draw
+  // attention to the scheme to emphasize "this is just a bunch of data".  For
+  // normal URLs, the host is the best proxy for "identity".
+  // TODO(cjgrant): Handle extensions, if required, for desktop.
+  enum DeemphasizeComponents {
+    ALL_BUT_SCHEME,
+    ALL_BUT_HOST,
+    NOTHING,
+  } deemphasize_mode = NOTHING;
+  if (url_scheme == base::UTF8ToUTF16(url::kDataScheme))
+    deemphasize_mode = ALL_BUT_SCHEME;
+  else if (host.is_nonempty())
+    deemphasize_mode = ALL_BUT_HOST;
+
+  gfx::Range scheme_range = scheme.is_nonempty()
+                                ? gfx::Range(scheme.begin, scheme.end())
+                                : gfx::Range::InvalidRange();
+  TextFormatting formatting;
+  switch (deemphasize_mode) {
+    case NOTHING:
+      formatting.push_back(TextFormattingAttribute(emphasized_color,
+                                                   gfx::Range::InvalidRange()));
+      break;
+    case ALL_BUT_SCHEME:
+      DCHECK(scheme_range.IsValid());
+      formatting.push_back(TextFormattingAttribute(deemphasized_color,
+                                                   gfx::Range::InvalidRange()));
+      formatting.push_back(
+          TextFormattingAttribute(emphasized_color, scheme_range));
+
+      break;
+    case ALL_BUT_HOST:
+      formatting.push_back(TextFormattingAttribute(deemphasized_color,
+                                                   gfx::Range::InvalidRange()));
+      formatting.push_back(TextFormattingAttribute(
+          emphasized_color, gfx::Range(host.begin, host.end())));
+      break;
+  }
+
+  return formatting;
 }
 
 }  // namespace vr

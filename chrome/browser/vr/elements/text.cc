@@ -73,11 +73,19 @@ bool TextFormattingAttribute::operator!=(
 void TextFormattingAttribute::Apply(RenderTextWrapper* render_text) const {
   switch (type_) {
     case COLOR: {
-      render_text->ApplyColor(color_, range_);
+      if (range_.IsValid()) {
+        render_text->ApplyColor(color_, range_);
+      } else {
+        render_text->SetColor(color_);
+      }
       break;
     }
     case WEIGHT:
-      render_text->ApplyWeight(weight_, range_);
+      if (range_.IsValid()) {
+        render_text->ApplyWeight(weight_, range_);
+      } else {
+        render_text->SetWeight(weight_);
+      }
       break;
     case DIRECTIONALITY:
       render_text->SetDirectionalityMode(directionality_);
@@ -153,6 +161,26 @@ class TextTexture : public UiTexture {
     return lines_;
   }
 
+  void SetOnUnhandledCodePointCallback(
+      base::RepeatingCallback<void()> callback) {
+    unhandled_codepoint_callback_ = callback;
+  }
+
+  void SetOnRenderTextCreated(
+      base::RepeatingCallback<void(gfx::RenderText*)> callback) {
+    render_text_created_callback_ = callback;
+  }
+
+  void SetOnRenderTextRendered(
+      base::RepeatingCallback<void(const gfx::RenderText&, SkCanvas* canvas)>
+          callback) {
+    render_text_rendered_callback_ = callback;
+  }
+
+  void set_unsupported_code_points_for_test(bool unsupported) {
+    unsupported_code_point_for_test_ = unsupported;
+  }
+
  private:
   void OnMeasureSize() override { LayOutText(); }
 
@@ -178,6 +206,13 @@ class TextTexture : public UiTexture {
   gfx::Rect cursor_bounds_;
   bool shadows_enabled_ = false;
   std::vector<std::unique_ptr<gfx::RenderText>> lines_;
+
+  base::RepeatingCallback<void()> unhandled_codepoint_callback_;
+  base::RepeatingCallback<void(gfx::RenderText*)> render_text_created_callback_;
+  base::RepeatingCallback<void(const gfx::RenderText&, SkCanvas*)>
+      render_text_rendered_callback_;
+
+  bool unsupported_code_point_for_test_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TextTexture);
 };
@@ -274,6 +309,30 @@ gfx::SizeF Text::GetTextureSizeForTest() const {
   return texture_->GetDrawnSize();
 }
 
+void Text::SetUnsupportedCodePointsForTest(bool unsupported) {
+  texture_->set_unsupported_code_points_for_test(unsupported);
+}
+
+void Text::SetOnUnhandledCodePointCallback(
+    base::RepeatingCallback<void()> callback) {
+  texture_->SetOnUnhandledCodePointCallback(callback);
+}
+
+void Text::SetOnRenderTextCreated(
+    base::RepeatingCallback<void(gfx::RenderText*)> callback) {
+  texture_->SetOnRenderTextCreated(callback);
+}
+
+void Text::SetOnRenderTextRendered(
+    base::RepeatingCallback<void(const gfx::RenderText&, SkCanvas* canvas)>
+        callback) {
+  texture_->SetOnRenderTextRendered(callback);
+}
+
+float Text::MetersToPixels(float meters) {
+  return DmmToPixel(meters);
+}
+
 UiTexture* Text::GetTexture() const {
   return texture_.get();
 }
@@ -287,7 +346,11 @@ void TextTexture::LayOutText() {
   }
 
   gfx::FontList fonts;
-  GetDefaultFontList(pixel_font_height, text_, &fonts);
+  if (!GetDefaultFontList(pixel_font_height, text_, &fonts) ||
+      unsupported_code_point_for_test_) {
+    if (unhandled_codepoint_callback_)
+      unhandled_codepoint_callback_.Run();
+  }
 
   TextRenderParameters parameters;
   parameters.color = color_;
@@ -331,6 +394,11 @@ void TextTexture::LayOutText() {
     }
   }
 
+  if (render_text_created_callback_) {
+    DCHECK_EQ(lines_.size(), 1u);
+    render_text_created_callback_.Run(lines_.front().get());
+  }
+
   // Note, there is no padding here whatsoever.
   size_ = gfx::SizeF(text_bounds.size());
   if (parameters.shadows_enabled) {
@@ -347,6 +415,11 @@ void TextTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
 
   for (auto& render_text : lines_)
     render_text->Draw(canvas);
+
+  if (render_text_rendered_callback_) {
+    DCHECK_EQ(lines_.size(), 1u);
+    render_text_rendered_callback_.Run(*lines_.front().get(), sk_canvas);
+  }
 }
 
 }  // namespace vr
