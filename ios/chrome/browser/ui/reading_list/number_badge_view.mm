@@ -77,6 +77,7 @@ const CGFloat kLabelMargin = 2.5f;
     } else {
       [self.textBadge setText:[NSString stringWithFormat:@"%" PRIdNS, number]];
       self.hidden = (number > 0 ? NO : YES);
+      self.alpha = (number > 0 ? 1 : 0);
     }
   }
 }

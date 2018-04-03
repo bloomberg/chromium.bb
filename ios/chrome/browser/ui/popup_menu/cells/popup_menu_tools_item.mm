@@ -4,8 +4,14 @@
 
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 
+#include <stdlib.h>
+
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/reading_list/number_badge_view.h"
+#import "ios/chrome/browser/ui/reading_list/text_badge_view.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/material_timing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,14 +20,17 @@
 namespace {
 const CGFloat kImageLength = 28;
 const CGFloat kCellHeight = 44;
-const CGFloat kImageTextMargin = 11;
+const CGFloat kInnerMargin = 11;
 const CGFloat kMargin = 15;
-const CGFloat kImageTopMargin = 8;
+const CGFloat kTopMargin = 8;
+const CGFloat kTopMarginBadge = 14;
 }
 
 @implementation PopupMenuToolsItem
 
 @synthesize actionIdentifier = _actionIdentifier;
+@synthesize badgeNumber = _badgeNumber;
+@synthesize badgeText = _badgeText;
 @synthesize image = _image;
 @synthesize title = _title;
 @synthesize enabled = _enabled;
@@ -41,12 +50,25 @@ const CGFloat kImageTopMargin = 8;
   cell.titleLabel.text = self.title;
   cell.imageView.image = self.image;
   cell.userInteractionEnabled = self.enabled;
+  [cell setBadgeNumber:self.badgeNumber];
+  [cell setBadgeText:self.badgeText];
 }
 
 #pragma mark - PopupMenuItem
 
 - (CGSize)cellSizeForWidth:(CGFloat)width {
-  return [self.cellClass sizeForWidth:width title:self.title];
+  // TODO(crbug.com/828357): This should be done at the table view level.
+  static PopupMenuToolsCell* cell;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    cell = [[PopupMenuToolsCell alloc] init];
+  });
+
+  [self configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+  cell.frame = CGRectMake(0, 0, width, 0);
+  [cell setNeedsLayout];
+  [cell layoutIfNeeded];
+  return [cell systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
 }
 
 @end
@@ -59,13 +81,21 @@ const CGFloat kImageTopMargin = 8;
 @property(nonatomic, strong, readwrite) UILabel* titleLabel;
 // Image view for the cell, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIImageView* imageView;
-
+// Badge displaying a number.
+@property(nonatomic, strong) NumberBadgeView* numberBadgeView;
+// Badge displaying text.
+@property(nonatomic, strong) TextBadgeView* textBadgeView;
+// Constraints between the trailing of the label and the badges.
+@property(nonatomic, strong) NSLayoutConstraint* titleToBadgeConstraint;
 @end
 
 @implementation PopupMenuToolsCell
 
 @synthesize imageView = _imageView;
+@synthesize numberBadgeView = _numberBadgeView;
+@synthesize textBadgeView = _textBadgeView;
 @synthesize titleLabel = _titleLabel;
+@synthesize titleToBadgeConstraint = _titleToBadgeConstraint;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -74,52 +104,129 @@ const CGFloat kImageTopMargin = 8;
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.numberOfLines = 0;
     _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    [_titleLabel
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+    [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
+                                   forAxis:UILayoutConstraintAxisHorizontal];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
     _imageView = [[UIImageView alloc] init];
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
 
+    _numberBadgeView = [[NumberBadgeView alloc] init];
+    _numberBadgeView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _textBadgeView = [[TextBadgeView alloc] initWithText:nil];
+    _textBadgeView.translatesAutoresizingMaskIntoConstraints = NO;
+    _textBadgeView.hidden = YES;
+
     [self.contentView addSubview:_titleLabel];
     [self.contentView addSubview:_imageView];
+    [self.contentView addSubview:_numberBadgeView];
+    [self.contentView addSubview:_textBadgeView];
 
     ApplyVisualConstraintsWithMetrics(
         @[
-          @"H:|-(margin)-[image(imageSize)]-(textImage)-[text]-(margin)-|",
-          @"V:|-(imageTopMargin)-[image(imageSize)]", @"V:|[text]|"
+          @"H:|-(margin)-[image(imageLength)]-(innerMargin)-[label]",
+          @"H:[numberBadge]-(margin)-|", @"H:[textBadge]-(margin)-|",
+          @"V:|-(topMargin)-[image(imageLength)]",
+          @"V:|-(topMarginBadge)-[numberBadge]",
+          @"V:|-(topMarginBadge)-[textBadge]",
+          @"V:|-(topMargin)-[label]-(topMargin)-|"
         ],
-        @{@"image" : _imageView, @"text" : _titleLabel}, @{
+        @{
+          @"image" : _imageView,
+          @"label" : _titleLabel,
+          @"numberBadge" : _numberBadgeView,
+          @"textBadge" : _textBadgeView
+        },
+        @{
           @"margin" : @(kMargin),
-          @"imageSize" : @(kImageLength),
-          @"textImage" : @(kImageTextMargin),
-          @"imageTopMargin" : @(kImageTopMargin),
+          @"innerMargin" : @(kInnerMargin),
+          @"topMargin" : @(kTopMargin),
+          @"topMarginBadge" : @(kTopMarginBadge),
+          @"imageLength" : @(kImageLength),
         });
 
     [self.contentView.heightAnchor
         constraintGreaterThanOrEqualToConstant:kCellHeight]
         .active = YES;
+    NSLayoutConstraint* trailingEdge = [_titleLabel.trailingAnchor
+        constraintEqualToAnchor:self.contentView.trailingAnchor
+                       constant:-kMargin];
+    trailingEdge.priority = UILayoutPriorityDefaultHigh - 2;
+    trailingEdge.active = YES;
   }
   return self;
 }
 
-+ (CGSize)sizeForWidth:(CGFloat)width title:(NSString*)title {
-  // This is not using a prototype cell and autolayout for performance reasons.
-  CGFloat nonTitleElementWidth = kImageLength + 2 * kMargin + kImageTextMargin;
-  // The width should be enough to contain more than the image.
-  DCHECK(width > nonTitleElementWidth);
-
-  CGSize titleSize = CGSizeMake(width - nonTitleElementWidth,
-                                [UIScreen mainScreen].bounds.size.height);
-  NSDictionary* attributes = @{NSFontAttributeName : [self cellFont]};
-  CGRect rectForString =
-      [title boundingRectWithSize:titleSize
-                          options:NSStringDrawingUsesLineFragmentOrigin
-                       attributes:attributes
-                          context:nil];
-  CGSize size = rectForString.size;
-  size.height = MAX(size.height, kCellHeight);
-  size.width += nonTitleElementWidth;
-  return size;
+- (void)setBadgeNumber:(NSInteger)badgeNumber {
+  BOOL wasHidden = self.numberBadgeView.hidden;
+  [self.numberBadgeView setNumber:badgeNumber animated:YES];
+  // If the number badge is shown, then the text badge must be hidden.
+  if (!self.numberBadgeView.hidden && !self.textBadgeView.hidden) {
+    [self setBadgeText:nil];
+  }
+  if (!self.numberBadgeView.hidden && wasHidden) {
+    self.titleToBadgeConstraint.active = NO;
+    self.titleToBadgeConstraint = [self.numberBadgeView.leadingAnchor
+        constraintGreaterThanOrEqualToAnchor:self.titleLabel.trailingAnchor
+                                    constant:kInnerMargin];
+    self.titleToBadgeConstraint.active = YES;
+  } else if (self.numberBadgeView.hidden && !wasHidden) {
+    self.titleToBadgeConstraint.active = NO;
+  }
 }
+
+- (void)setBadgeText:(NSString*)badgeText {
+  // Only 1 badge can be visible at a time, and the number badge takes priority.
+  if (badgeText && !self.numberBadgeView.isHidden) {
+    return;
+  }
+
+  if (badgeText) {
+    [self.textBadgeView setText:badgeText];
+    if (self.textBadgeView.hidden) {
+      self.textBadgeView.hidden = NO;
+      self.titleToBadgeConstraint.active = NO;
+      self.titleToBadgeConstraint = [self.textBadgeView.leadingAnchor
+          constraintGreaterThanOrEqualToAnchor:self.titleLabel.trailingAnchor
+                                      constant:kInnerMargin];
+      self.titleToBadgeConstraint.active = YES;
+      self.textBadgeView.alpha = 1;
+    }
+  } else if (!self.textBadgeView.hidden) {
+    self.textBadgeView.hidden = YES;
+    self.titleToBadgeConstraint.active = NO;
+  }
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+
+  // Adjust the text label preferredMaxLayoutWidth when the parent's width
+  // changes, for instance on screen rotation.
+  CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
+
+  CGFloat trailingMargin = kMargin;
+  if (!self.numberBadgeView.hidden) {
+    trailingMargin += self.numberBadgeView.bounds.size.width + kInnerMargin;
+  } else if (!self.textBadgeView.hidden) {
+    trailingMargin += self.textBadgeView.bounds.size.width + kInnerMargin;
+  }
+  CGFloat leadingMargin = kMargin + kImageLength + kInnerMargin;
+
+  self.titleLabel.preferredMaxLayoutWidth =
+      parentWidth - leadingMargin - trailingMargin;
+
+  // Re-layout with the new preferred width to allow the label to adjust its
+  // height.
+  [super layoutSubviews];
+}
+
+#pragma mark - UITableViewCell
 
 - (void)prepareForReuse {
   [super prepareForReuse];
@@ -138,18 +245,6 @@ const CGFloat kImageTopMargin = 8;
 }
 
 #pragma mark - Private
-
-// Returns the font used by this cell's label.
-+ (UIFont*)cellFont {
-  static UIFont* font;
-  if (!font) {
-    PopupMenuToolsCell* cell =
-        [[PopupMenuToolsCell alloc] initWithStyle:UITableViewCellStyleDefault
-                                  reuseIdentifier:@"fakeID"];
-    font = cell.titleLabel.font;
-  }
-  return font;
-}
 
 // Returns the color of the disabled button's title.
 + (UIColor*)disabledColor {
