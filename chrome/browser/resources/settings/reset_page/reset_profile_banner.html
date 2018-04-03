@@ -8,7 +8,7 @@
 <dom-module id="settings-reset-profile-banner">
   <template>
     <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}" ignore-popstate>
+    <cr-dialog id="dialog" close-text="$i18n{close}" ignore-popstate>
       <div slot="title">$i18n{resetAutomatedDialogTitle}</div>
       <div slot="body">
         <span id="description">
@@ -26,7 +26,7 @@
           $i18n{resetProfileBannerButton}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="reset_profile_banner.js"></script>
 </dom-module>

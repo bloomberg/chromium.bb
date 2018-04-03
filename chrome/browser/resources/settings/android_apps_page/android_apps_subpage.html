@@ -30,7 +30,7 @@
     </template>
 
     <!-- Confirm disable android apps dialog -->
-    <dialog is="cr-dialog" id="confirmDisableDialog" close-text="$i18n{close}"
+    <cr-dialog id="confirmDisableDialog" close-text="$i18n{close}"
         on-cancel="onConfirmDisableDialogCancel_"
         on-close="onConfirmDisableDialogClose_">
       <div slot="title">$i18n{androidAppsDisableDialogTitle}</div>
@@ -45,7 +45,7 @@
           $i18n{androidAppsDisableDialogRemove}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
 
   </template>
   <script src="android_apps_subpage.js"></script>

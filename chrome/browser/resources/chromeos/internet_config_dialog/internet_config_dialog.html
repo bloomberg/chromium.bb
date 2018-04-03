@@ -27,13 +27,15 @@
   <dom-module id="internet-config-dialog">
     <template>
       <style include="network-shared iron-flex">
-        dialog {
-          border-radius: 0;
-          height: 100%;
-          width: 100%;
+        cr-dialog {
+          --cr-dialog-native: {
+            border-radius: 0;
+            height: 100%;
+            width: 100%;
+          }
         }
 
-        dialog [slot=body] {
+        cr-dialog [slot=body] {
           /* This should match or exceed SystemWebDialogDelegate::kDialogHeight
              to ensure the content is stretched to fit. */
           height: 480px;
@@ -45,7 +47,7 @@
         }
       </style>
 
-      <dialog is="cr-dialog" id="dialog" no-cancel>
+      <cr-dialog id="dialog" no-cancel>
         <div slot="title">[[getDialogTitle_(networkProperties_)]]</div>
         <div slot="body">
           <network-config id="networkConfig" class="flex"
@@ -72,7 +74,7 @@
             $i18n{networkButtonConnect}
           </paper-button>
         </div>
-      </dialog>
+      </cr-dialog>
     </template>
     <script src="internet_config_dialog.js"></script>
   </dom-module>

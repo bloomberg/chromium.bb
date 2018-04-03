@@ -15,7 +15,7 @@
         display: none;
       }
     </style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{aboutChangeChannel}</div>
       <div slot="body">
         <!-- TODO(dbeam): this can be policy-controlled. Show this in the UI.
@@ -66,7 +66,7 @@
           $i18n{aboutChangeChannelAndPowerwash}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="channel_switcher_dialog.js"></script>
 </dom-module>

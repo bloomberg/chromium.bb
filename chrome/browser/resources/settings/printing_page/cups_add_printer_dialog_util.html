@@ -100,7 +100,7 @@
       }
     </style>
 
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">
         <slot name="dialog-title"></slot>
       </div>
@@ -110,7 +110,7 @@
       <div slot="button-container">
         <slot name="dialog-buttons"></slot>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="cups_add_printer_dialog_util.js"></script>
 </dom-module>

@@ -355,7 +355,7 @@
     </settings-animated-pages>
 
     <template is="dom-if" if="[[showDisconnectDialog_]]" restamp>
-      <dialog is="cr-dialog" id="disconnectDialog"
+      <cr-dialog id="disconnectDialog"
           ignore-popstate ignore-enter-key
           on-close="onDisconnectClosed_" close-text="$i18n{close}">
         <div slot="title">$i18n{syncDisconnectTitle}</div>
@@ -398,7 +398,7 @@
           </div>
         </template>
 </if>
-      </dialog>
+      </cr-dialog>
     </template>
 
     <template is="dom-if" if="[[showImportDataDialog_]]" restamp>

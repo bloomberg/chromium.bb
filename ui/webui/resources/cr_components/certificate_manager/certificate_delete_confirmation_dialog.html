@@ -9,7 +9,7 @@
 <dom-module id="certificate-delete-confirmation-dialog">
   <template>
     <style include="certificate-shared"></style>
-    <dialog is="cr-dialog" id="dialog" close-text="[[i18n('close')]]">
+    <cr-dialog id="dialog" close-text="[[i18n('close')]]">
       <div slot="title">
         [[getTitleText_(model, certificateType)]]
       </div>
@@ -24,7 +24,7 @@
           [[i18n('ok')]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="certificate_delete_confirmation_dialog.js"></script>
 </dom-module>
