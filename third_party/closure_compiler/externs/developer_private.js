@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -678,6 +678,13 @@ chrome.developerPrivate.updateExtensionConfiguration = function(update, callback
  * @see https://developer.chrome.com/extensions/developerPrivate#method-loadUnpacked
  */
 chrome.developerPrivate.loadUnpacked = function(options, callback) {};
+
+/**
+ * Installs the file that was dragged and dropped onto the associated page.
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/developerPrivate#method-installDroppedFile
+ */
+chrome.developerPrivate.installDroppedFile = function(callback) {};
 
 /**
  * Notifies the browser that a user began a drag in order to install an

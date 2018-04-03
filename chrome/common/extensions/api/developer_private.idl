@@ -562,6 +562,10 @@ namespace developerPrivate {
     static void loadUnpacked(optional LoadUnpackedOptions options,
                              optional LoadErrorCallback callback);
 
+    // Installs the file that was dragged and dropped onto the associated
+    // page.
+    static void installDroppedFile(optional VoidCallback callback);
+
     // Notifies the browser that a user began a drag in order to install an
     // extension.
     static void notifyDragInstallInProgress();

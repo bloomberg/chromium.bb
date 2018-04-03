@@ -76,7 +76,7 @@ ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {}
 
 void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                                                  const SkBitmap* icon) {
-  if (skip_post_install_ui_ || extension->is_theme())
+  if (disable_ui_for_tests() || skip_post_install_ui_ || extension->is_theme())
     return;
 
   if (!profile_) {
@@ -115,7 +115,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 void ExtensionInstallUIDefault::OnInstallFailure(
     const extensions::CrxInstallError& error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (disable_failure_ui_for_tests() || skip_post_install_ui_)
+  if (disable_ui_for_tests() || skip_post_install_ui_)
     return;
 
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);

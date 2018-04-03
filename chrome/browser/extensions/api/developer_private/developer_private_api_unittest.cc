@@ -35,17 +35,20 @@
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/services/unzip/unzip_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/mock_external_provider.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
@@ -55,6 +58,9 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
+#include "services/data_decoder/data_decoder_service.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 
 using testing::Return;
 using testing::_;
@@ -1218,6 +1224,120 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
   std::string error = extension_function_test_utils::RunFunctionAndReturnError(
       function.get(), "[]", browser());
   EXPECT_THAT(error, testing::HasSubstr("policy"));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileNoDraggedPath) {
+  extensions::ExtensionInstallUI::set_disable_ui_for_tests();
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  scoped_refptr<UIThreadExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateInstallDroppedFileFunction>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+
+  TestExtensionRegistryObserver observer(registry());
+  EXPECT_EQ("No dragged path", api_test_utils::RunFunctionAndReturnError(
+                                   function.get(), "[]", profile()));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileCrx) {
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "foo",
+           "version": "1.0",
+           "manifest_version": 2
+         })");
+  base::FilePath crx_path = test_dir.Pack();
+  extensions::ExtensionInstallUI::set_disable_ui_for_tests();
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  DeveloperPrivateAPI::Get(profile())->SetDraggedPath(web_contents.get(),
+                                                      crx_path);
+
+  scoped_refptr<UIThreadExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateInstallDroppedFileFunction>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+
+  TestExtensionRegistryObserver observer(registry());
+  ASSERT_TRUE(api_test_utils::RunFunction(function.get(), "[]", profile()))
+      << function->GetError();
+  const Extension* extension = observer.WaitForExtensionInstalled();
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("foo", extension->name());
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileUserScript) {
+  base::FilePath script_path =
+      data_dir().AppendASCII("user_script_basic.user.js");
+  extensions::ExtensionInstallUI::set_disable_ui_for_tests();
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  DeveloperPrivateAPI::Get(profile())->SetDraggedPath(web_contents.get(),
+                                                      script_path);
+
+  scoped_refptr<UIThreadExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateInstallDroppedFileFunction>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+
+  TestExtensionRegistryObserver observer(registry());
+  ASSERT_TRUE(api_test_utils::RunFunction(function.get(), "[]", profile()))
+      << function->GetError();
+  const Extension* extension = observer.WaitForExtensionInstalled();
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("My user script", extension->name());
+}
+
+class DeveloperPrivateZipInstallerUnitTest
+    : public DeveloperPrivateApiUnitTest {
+ public:
+  DeveloperPrivateZipInstallerUnitTest() {
+    service_manager::TestConnectorFactory::NameToServiceMap services;
+    services.insert(std::make_pair("data_decoder",
+                                   data_decoder::DataDecoderService::Create()));
+    services.insert(
+        std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
+    test_connector_factory_ =
+        service_manager::TestConnectorFactory::CreateForServices(
+            std::move(services));
+    connector_ = test_connector_factory_->CreateConnector();
+  }
+  ~DeveloperPrivateZipInstallerUnitTest() override {}
+
+ private:
+  std::unique_ptr<service_manager::TestConnectorFactory>
+      test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateZipInstallerUnitTest);
+};
+
+TEST_F(DeveloperPrivateZipInstallerUnitTest, InstallDroppedFileZip) {
+  base::FilePath zip_path = data_dir().AppendASCII("simple_empty.zip");
+  extensions::ExtensionInstallUI::set_disable_ui_for_tests();
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  DeveloperPrivateAPI::Get(profile())->SetDraggedPath(web_contents.get(),
+                                                      zip_path);
+
+  scoped_refptr<UIThreadExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateInstallDroppedFileFunction>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+
+  TestExtensionRegistryObserver observer(registry());
+  ASSERT_TRUE(api_test_utils::RunFunction(function.get(), "[]", profile()))
+      << function->GetError();
+  const Extension* extension = observer.WaitForExtensionInstalled();
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("Simple Empty Extension", extension->name());
 }
 
 class DeveloperPrivateApiSupervisedUserUnitTest
