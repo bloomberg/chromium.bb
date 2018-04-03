@@ -109,33 +109,12 @@ class TestWidgetConstraintsDelegate : public CustomFrameTestWidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWidgetConstraintsDelegate);
 };
 
-class CustomFrameViewAshTest : public AshTestBase {
- public:
-  CustomFrameViewAshTest() = default;
-  ~CustomFrameViewAshTest() override = default;
-
- protected:
-  std::unique_ptr<views::Widget> CreateWidget(
-      CustomFrameTestWidgetDelegate* delegate) {
-    std::unique_ptr<views::Widget> widget(new views::Widget);
-    views::Widget::InitParams params;
-    params.delegate = delegate;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect(0, 0, 100, 100);
-    params.context = CurrentContext();
-    widget->Init(params);
-    return widget;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshTest);
-};
+using CustomFrameViewAshTest = AshTestBase;
 
 // Verifies the client view is not placed at a y location of 0.
 TEST_F(CustomFrameViewAshTest, ClientViewCorrectlyPlaced) {
-  std::unique_ptr<views::Widget> widget(
-      CreateWidget(new CustomFrameTestWidgetDelegate));
-  widget->Show();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(new CustomFrameTestWidgetDelegate);
   EXPECT_NE(0, widget->client_view()->bounds().y());
 }
 
@@ -144,8 +123,7 @@ TEST_F(CustomFrameViewAshTest, ClientViewCorrectlyPlaced) {
 TEST_F(CustomFrameViewAshTest, HeaderHeight) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
 
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
-  widget->Show();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   // The header should have enough room for the window controls. The
   // header/content separator line overlays the window controls.
@@ -157,7 +135,7 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
 // sizes when the client view does not specify any size constraints.
 TEST_F(CustomFrameViewAshTest, NoSizeConstraints) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   gfx::Size min_frame_size = custom_frame_view->GetMinimumSize();
@@ -178,7 +156,7 @@ TEST_F(CustomFrameViewAshTest, MinimumAndMaximumSize) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
   delegate->set_minimum_size(min_client_size);
   delegate->set_maximum_size(max_client_size);
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   gfx::Size min_frame_size = custom_frame_view->GetMinimumSize();
@@ -198,7 +176,7 @@ TEST_F(CustomFrameViewAshTest, HonorsMinimumSizeProperty) {
   const gfx::Size min_client_size(500, 500);
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
   delegate->set_minimum_size(min_client_size);
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   // Update the native window's minimum size property.
   const gfx::Size min_window_size(600, 700);
@@ -215,7 +193,7 @@ TEST_F(CustomFrameViewAshTest, HonorsMinimumSizeProperty) {
 // avatar icon window property.
 TEST_F(CustomFrameViewAshTest, AvatarIcon) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
@@ -237,7 +215,7 @@ TEST_F(CustomFrameViewAshTest, AvatarIcon) {
 // new visibility.
 TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   const gfx::Rect initial =
       delegate->GetFrameCaptionButtonContainerViewBounds();
@@ -257,7 +235,7 @@ TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
 // header is zero.
 TEST_F(CustomFrameViewAshTest, FrameHiddenInTabletModeForMaximizedWindows) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   widget->Maximize();
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -268,7 +246,7 @@ TEST_F(CustomFrameViewAshTest, FrameHiddenInTabletModeForMaximizedWindows) {
 // the header is non zero.
 TEST_F(CustomFrameViewAshTest, FrameShownInTabletModeForNonMaximizedWindows) {
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
@@ -280,7 +258,7 @@ TEST_F(CustomFrameViewAshTest, FrameShownInTabletModeForNonMaximizedWindows) {
 TEST_F(CustomFrameViewAshTest,
        FrameRemainsHiddenInTabletModeWhenTogglingFullscreen) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   widget->SetFullscreen(true);
   EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
@@ -292,8 +270,7 @@ TEST_F(CustomFrameViewAshTest,
 
 TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
-  widget->Show();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   widget->Maximize();
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -321,11 +298,10 @@ TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
 // Verify windows that are minimized and then entered into tablet mode will have
 // no header when unminimized in tablet mode.
 TEST_F(CustomFrameViewAshTest, MinimizedWindowsInTabletMode) {
-  std::unique_ptr<views::Widget> widget(
-      CreateWidget(new CustomFrameTestWidgetDelegate));
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(new CustomFrameTestWidgetDelegate);
   widget->GetNativeWindow()->SetProperty(aura::client::kResizeBehaviorKey,
                                          ui::mojom::kResizeBehaviorCanMaximize);
-  widget->Show();
   widget->Maximize();
   widget->Minimize();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -337,8 +313,7 @@ TEST_F(CustomFrameViewAshTest, MinimizedWindowsInTabletMode) {
 
 TEST_F(CustomFrameViewAshTest, HeaderVisibilityInOverviewMode) {
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
-  widget->Show();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   // Verify the header is not painted in overview mode and painted when not in
   // overview mode.
@@ -351,8 +326,7 @@ TEST_F(CustomFrameViewAshTest, HeaderVisibilityInOverviewMode) {
 
 TEST_F(CustomFrameViewAshTest, HeaderVisibilityInSplitview) {
   auto create_widget = [this](CustomFrameTestWidgetDelegate* delegate) {
-    std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
-    widget->Show();
+    std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
     // Windows need to be resizable and maximizable to be used in splitview.
     widget->GetNativeWindow()->SetProperty(
         aura::client::kResizeBehaviorKey,
@@ -468,8 +442,7 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
   TestButtonModel* model_ptr = model.get();
 
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
-  widget->Show();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
   accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
@@ -526,14 +499,9 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
 // frame is hidden.
 TEST_F(CustomFrameViewAshTest, FrameVisibility) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  views::Widget* widget = new views::Widget();
   gfx::Rect window_bounds(10, 10, 200, 100);
-  views::Widget::InitParams params;
-  params.bounds = window_bounds;
-  params.context = CurrentContext();
-  params.delegate = delegate;
-  widget->Init(params);
-  widget->Show();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, window_bounds);
 
   // The height is smaller by the top border height.
   gfx::Size client_bounds(200, 67);
@@ -562,8 +530,7 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
   TestButtonModel* model_ptr = model.get();
 
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
-  widget->Show();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   custom_frame_view->SetCaptionButtonModel(std::move(model));
@@ -640,7 +607,7 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
 
 TEST_F(CustomFrameViewAshTest, ZeroTopBorderHeightOverride) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(delegate));
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   custom_frame_view->set_zero_top_border_height(true);
   EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
@@ -689,7 +656,7 @@ class TestWidgetDelegate : public TestWidgetConstraintsDelegate {
 // ash::kFrameActiveColorKey window property.
 TEST_P(CustomFrameViewAshFrameColorTest, kFrameActiveColorKey) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   SkColor active_color =
       widget->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
@@ -708,7 +675,7 @@ TEST_P(CustomFrameViewAshFrameColorTest, kFrameActiveColorKey) {
 // ash::kFrameInactiveColorKey window property.
 TEST_P(CustomFrameViewAshFrameColorTest, KFrameInactiveColor) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
-  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   SkColor active_color =
       widget->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);

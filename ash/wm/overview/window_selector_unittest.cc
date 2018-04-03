@@ -148,7 +148,6 @@ class WindowSelectorTest : public AshTestBase {
     widget->Show();
     aura::Window* window = widget->GetNativeWindow();
     window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-    ParentWindowInPrimaryRootWindow(window);
     return widget;
   }
 

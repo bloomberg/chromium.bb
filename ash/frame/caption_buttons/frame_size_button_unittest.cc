@@ -105,7 +105,6 @@ class FrameSizeButtonTest : public AshTestBase {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.context = CurrentContext();
     params.delegate = delegate;
     params.bounds = gfx::Rect(10, 10, 100, 100);
     widget->Init(params);

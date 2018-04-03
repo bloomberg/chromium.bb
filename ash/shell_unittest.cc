@@ -160,9 +160,9 @@ class TestShellObserver : public ShellObserver {
 
 class ShellTest : public AshTestBase {
  public:
+  // TODO(jamescook): Convert to AshTestBase::CreateTestWidget().
   views::Widget* CreateTestWindow(views::Widget::InitParams params) {
     views::Widget* widget = new views::Widget;
-    params.context = CurrentContext();
     widget->Init(params);
     return widget;
   }

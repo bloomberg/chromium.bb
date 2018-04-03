@@ -85,7 +85,6 @@ class CleanupAnimationObserverTest : public AshTestBase,
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget->Init(params);
     widget->Show();
-    ParentWindowInPrimaryRootWindow(widget->GetNativeWindow());
     widget->AddObserver(this);
     widget_ = widget.get();
     return widget;

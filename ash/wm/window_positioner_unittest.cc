@@ -114,7 +114,6 @@ TEST_F(WindowPositionerTest, EnsureMinimumVisibility) {
   views::Widget* widget = new views::Widget();
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = new OutOfDisplayDelegate(widget);
-  params.context = Shell::GetPrimaryRootWindow();
   widget->Init(params);
   widget->SetBounds(gfx::Rect(450, 10, 100, 100));
   wm::GetWindowState(widget->GetNativeView())->set_minimum_visibility(true);

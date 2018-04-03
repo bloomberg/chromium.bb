@@ -36,16 +36,6 @@ class ShelfTooltipManagerTest : public AshTestBase {
   bool IsTimerRunning() { return tooltip_manager_->timer_.IsRunning(); }
   views::Widget* GetTooltip() { return tooltip_manager_->bubble_->GetWidget(); }
 
-  std::unique_ptr<views::Widget> CreateTestWidget() {
-    std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
-    views::Widget::InitParams params;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.context = CurrentContext();
-    widget->Init(params);
-    widget->Show();
-    return widget;
-  }
-
  protected:
   ShelfView* shelf_view_;
   ShelfTooltipManager* tooltip_manager_;

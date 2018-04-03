@@ -109,7 +109,6 @@ class TabletModeWindowManagerTest : public AshTestBase {
   aura::Window* CreateWindowWithWidget(const gfx::Rect& bounds) {
     views::Widget* widget = new views::Widget();
     views::Widget::InitParams params;
-    params.context = CurrentContext();
     // Note: The widget will get deleted with the window.
     widget->Init(params);
     widget->Show();
