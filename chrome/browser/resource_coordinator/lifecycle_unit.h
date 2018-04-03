@@ -78,6 +78,10 @@ class LifecycleUnit {
   // Returns the last time that the visibility of the LifecycleUnit changed.
   virtual base::TimeTicks GetLastVisibilityChangeTime() const = 0;
 
+  // Freezes this LifecycleUnit, i.e. prevents it from using the CPU. Returns
+  // true on success.
+  virtual bool Freeze() = 0;
+
   // Returns the estimated number of kilobytes that would be freed if this
   // LifecycleUnit was discarded.
   //

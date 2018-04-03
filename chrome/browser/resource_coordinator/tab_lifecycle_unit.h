@@ -75,6 +75,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   base::string16 GetTitle() const override;
   std::string GetIconURL() const override;
   SortKey GetSortKey() const override;
+  bool Freeze() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanDiscard(DiscardReason reason) const override;
   bool Discard(DiscardReason discard_reason) override;
@@ -84,6 +85,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool IsMediaTab() const override;
   bool IsAutoDiscardable() const override;
   void SetAutoDiscardable(bool auto_discardable) override;
+  bool FreezeTab() override;
   bool DiscardTab() override;
   bool IsDiscarded() const override;
   int GetDiscardCount() const override;

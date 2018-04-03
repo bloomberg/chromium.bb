@@ -45,6 +45,7 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
   std::string GetIconURL() const override { return std::string(); }
   SortKey GetSortKey() const override { return SortKey(); }
   State GetState() const override { return State::LOADED; }
+  bool Freeze() override { return false; }
   int GetEstimatedMemoryFreedOnDiscardKB() const override { return 0; }
   bool CanDiscard(DiscardReason reason) const override { return false; }
   bool Discard(DiscardReason discard_reason) override { return false; }

@@ -99,6 +99,16 @@ LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
   return SortKey(last_focused_time_);
 }
 
+bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
+  // Can't freeze tabs that are already discarded or frozen.
+  // TODO(fmeawad): Don't freeze already frozen tabs.
+  if (GetState() != State::LOADED)
+    return false;
+
+  GetWebContents()->FreezePage();
+  return true;
+}
+
 int TabLifecycleUnitSource::TabLifecycleUnit::
     GetEstimatedMemoryFreedOnDiscardKB() const {
   // TODO(fdoray): Implement this. https://crbug.com/775644
@@ -295,6 +305,10 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetAutoDiscardable(
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::DiscardTab() {
   return Discard(DiscardReason::kExternal);
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::FreezeTab() {
+  return Freeze();
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
