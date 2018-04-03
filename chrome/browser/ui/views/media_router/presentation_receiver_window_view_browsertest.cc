@@ -4,9 +4,8 @@
 
 #include "chrome/browser/ui/views/media_router/presentation_receiver_window_view.h"
 
-#include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -17,14 +16,23 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/media_router/presentation_receiver_window_frame.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/view.h"
+#include "url/gurl.h"
+
+#if defined(CHROMEOS)
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
+#endif
 
 namespace {
 
@@ -44,9 +52,8 @@ class FakeReceiverDelegate final : public PresentationReceiverWindowDelegate {
 
   // PresentationReceiverWindowDelegate overrides.
   void WindowClosed() final {
-    if (closed_callback_) {
+    if (closed_callback_)
       std::move(closed_callback_).Run();
-    }
   }
   content::WebContents* web_contents() const final {
     return web_contents_.get();
@@ -77,20 +84,39 @@ class PresentationReceiverWindowViewBrowserTest : public InProcessBrowserTest {
     return view_raw;
   }
 
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    fake_delegate_ =
+        std::make_unique<FakeReceiverDelegate>(browser()->profile());
+    receiver_view_ = CreateReceiverWindowView(fake_delegate_.get(), bounds_);
+  }
+
+  void TearDownOnMainThread() override {
+    base::RunLoop run_loop;
+    fake_delegate_->set_window_closed_callback(run_loop.QuitClosure());
+    static_cast<PresentationReceiverWindow*>(receiver_view_)->Close();
+    run_loop.Run();
+    fake_delegate_.reset();
+
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  const gfx::Rect bounds_{100, 100};
+  std::unique_ptr<FakeReceiverDelegate> fake_delegate_ = nullptr;
+  PresentationReceiverWindowView* receiver_view_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(PresentationReceiverWindowViewBrowserTest);
 };
 
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
                        ChromeOSHardwareFullscreenButton) {
-  auto fake_delegate =
-      std::make_unique<FakeReceiverDelegate>(browser()->profile());
-  const gfx::Rect bounds(100, 100);
-  auto* receiver_view = CreateReceiverWindowView(fake_delegate.get(), bounds);
-  static_cast<PresentationReceiverWindow*>(receiver_view)
+  static_cast<PresentationReceiverWindow*>(receiver_view_)
       ->ShowInactiveFullscreen();
   ASSERT_TRUE(
-      static_cast<ExclusiveAccessContext*>(receiver_view)->IsFullscreen());
-  EXPECT_FALSE(receiver_view->location_bar_view()->visible());
+      static_cast<ExclusiveAccessContext*>(receiver_view_)->IsFullscreen());
+  EXPECT_FALSE(receiver_view_->location_bar_view()->visible());
   // Bypass ExclusiveAccessContext and default accelerator to simulate hardware
   // window state button, which sets the native aura window to a "normal" state.
 
@@ -146,38 +172,66 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
     DISALLOW_COPY_AND_ASSIGN(FullscreenWaiter);
   };
   auto* native_window =
-      static_cast<views::View*>(receiver_view)->GetWidget()->GetNativeWindow();
+      static_cast<views::View*>(receiver_view_)->GetWidget()->GetNativeWindow();
   {
     base::RunLoop fullscreen_loop;
-    FullscreenWaiter waiter(receiver_view,
+    FullscreenWaiter waiter(receiver_view_,
                             FullscreenWaiter::AwaitType::kOutOfFullscreen,
                             fullscreen_loop.QuitClosure());
     native_window->SetProperty(aura::client::kShowStateKey,
                                ui::SHOW_STATE_NORMAL);
     fullscreen_loop.Run();
     ASSERT_FALSE(
-        static_cast<ExclusiveAccessContext*>(receiver_view)->IsFullscreen());
-    EXPECT_TRUE(receiver_view->location_bar_view()->visible());
+        static_cast<ExclusiveAccessContext*>(receiver_view_)->IsFullscreen());
+    EXPECT_TRUE(receiver_view_->location_bar_view()->visible());
   }
 
   // Back to fullscreen with the hardware button.
   {
     base::RunLoop fullscreen_loop;
-    FullscreenWaiter waiter(receiver_view,
+    FullscreenWaiter waiter(receiver_view_,
                             FullscreenWaiter::AwaitType::kIntoFullscreen,
                             fullscreen_loop.QuitClosure());
     native_window->SetProperty(aura::client::kShowStateKey,
                                ui::SHOW_STATE_FULLSCREEN);
     fullscreen_loop.Run();
     ASSERT_TRUE(
-        static_cast<ExclusiveAccessContext*>(receiver_view)->IsFullscreen());
-    EXPECT_FALSE(receiver_view->location_bar_view()->visible());
+        static_cast<ExclusiveAccessContext*>(receiver_view_)->IsFullscreen());
+    EXPECT_FALSE(receiver_view_->location_bar_view()->visible());
   }
+  static_cast<views::View*>(receiver_view_)
+      ->GetWidget()
+      ->GetNativeWindow()
+      ->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  ASSERT_FALSE(
+      static_cast<ExclusiveAccessContext*>(receiver_view_)->IsFullscreen());
+  EXPECT_TRUE(receiver_view_->location_bar_view()->visible());
 
-  base::RunLoop run_loop;
-  fake_delegate->set_window_closed_callback(run_loop.QuitClosure());
-  static_cast<PresentationReceiverWindow*>(receiver_view)->Close();
-  run_loop.Run();
+  // Back to fullscreen with the hardware button.
+  static_cast<views::View*>(receiver_view_)
+      ->GetWidget()
+      ->GetNativeWindow()
+      ->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  ASSERT_TRUE(
+      static_cast<ExclusiveAccessContext*>(receiver_view_)->IsFullscreen());
+  EXPECT_FALSE(receiver_view_->location_bar_view()->visible());
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
+                       LocationBarViewShown) {
+  static_cast<PresentationReceiverWindow*>(receiver_view_)
+      ->ShowInactiveFullscreen();
+  static_cast<ExclusiveAccessContext*>(receiver_view_)->ExitFullscreen();
+  ASSERT_FALSE(
+      static_cast<ExclusiveAccessContext*>(receiver_view_)->IsFullscreen());
+
+  auto* location_bar_view = receiver_view_->location_bar_view();
+  EXPECT_TRUE(location_bar_view->IsDrawn());
+  EXPECT_LE(0, location_bar_view->x());
+  EXPECT_LE(0, location_bar_view->y());
+  EXPECT_LT(0, location_bar_view->width());
+  EXPECT_LT(0, location_bar_view->height());
 }
 
 }  // namespace

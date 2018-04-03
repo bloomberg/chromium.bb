@@ -310,6 +310,8 @@ void PresentationReceiverWindowView::ExitFullscreen() {
   exclusive_access_bubble_.reset();
   location_bar_view_->SetVisible(true);
   frame_->SetFullscreen(false);
+  if (location_bar_view_->height() <= 0)
+    Layout();
 }
 
 void PresentationReceiverWindowView::UpdateExclusiveAccessExitBubbleContent(
@@ -403,4 +405,6 @@ bool PresentationReceiverWindowView::GetAcceleratorForCommandId(
 void PresentationReceiverWindowView::EnterFullscreen() {
   location_bar_view_->SetVisible(false);
   frame_->SetFullscreen(true);
+  if (location_bar_view_->height() > 0)
+    Layout();
 }
