@@ -629,11 +629,6 @@ void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
     SendSurfaceInfoToEmbedder();
   }
 
-  if (selection_controller_client_) {
-    selection_controller_client_->UpdateSelectionBoundsIfNeeded(
-        frame.metadata.selection, current_device_scale_factor_);
-  }
-
   ProcessFrameSwappedCallbacks();
 }
 
@@ -918,6 +913,16 @@ RenderWidgetHostViewChildFrame::GetTouchSelectionControllerClientManager() {
 
   // There is only ever one manager, and it's owned by the root view.
   return root_view->GetTouchSelectionControllerClientManager();
+}
+
+void RenderWidgetHostViewChildFrame::OnRenderFrameMetadataChanged() {
+  RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
+  if (selection_controller_client_) {
+    const cc::RenderFrameMetadata& metadata =
+        host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
+    selection_controller_client_->UpdateSelectionBoundsIfNeeded(
+        metadata.selection, current_device_scale_factor_);
+  }
 }
 
 void RenderWidgetHostViewChildFrame::SetWantsAnimateOnlyBeginFrames() {

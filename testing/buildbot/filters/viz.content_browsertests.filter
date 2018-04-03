@@ -66,11 +66,6 @@
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
 -SitePerProcessBrowserTest.SubframeVisibleAfterRenderViewBecomesSwappedOut
 
-# Touch selection information is not provided to the browser
-# http://crbug.com/777882
--TouchSelectionControllerClientAuraScaleFactorTest.*
--TouchSelectionControllerClientAuraTest.*
-
 #### Tab Capture
 # Copy Surface timing out http://crbug.com/785257
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.CopyFromSurface*

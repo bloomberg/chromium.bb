@@ -7,8 +7,10 @@
 
 #include "base/optional.h"
 #include "cc/cc_export.h"
+#include "components/viz/common/quads/selection.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/selection_bound.h"
 
 namespace cc {
 
@@ -42,6 +44,10 @@ class CC_EXPORT RenderFrameMetadata {
   // Scroll offset of the root layer. This optional parameter is only valid
   // during tests.
   base::Optional<gfx::Vector2dF> root_scroll_offset;
+
+  // Selection region relative to the current viewport. If the selection is
+  // empty or otherwise unused, the bound types will indicate such.
+  viz::Selection<gfx::SelectionBound> selection;
 };
 
 }  // namespace cc

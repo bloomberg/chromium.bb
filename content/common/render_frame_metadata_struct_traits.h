@@ -28,6 +28,11 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.is_scroll_offset_at_top;
   }
 
+  static const viz::Selection<gfx::SelectionBound>& selection(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.selection;
+  }
+
   static bool Read(content::mojom::RenderFrameMetadataDataView data,
                    cc::RenderFrameMetadata* out);
 };
