@@ -1960,7 +1960,14 @@ class DynamicFormInteractiveTest : public AutofillInteractiveTest {
 };
 
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest, DynamicChangingFormFill) {
+// Flakily times out on ChromeOS http://crbug.com/827797
+#if defined(OS_CHROMEOS)
+#define MAYBE_DynamicChangingFormFill DISABLED_DynamicChangingFormFill
+#else
+#define MAYBE_DynamicChangingFormFill DynamicChangingFormFill
+#endif
+IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+                       MAYBE_DynamicChangingFormFill) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
 
