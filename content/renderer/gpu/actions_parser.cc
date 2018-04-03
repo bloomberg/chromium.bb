@@ -47,6 +47,10 @@ SyntheticPointerActionParams::Button ToSyntheticMouseButton(
     return SyntheticPointerActionParams::Button::MIDDLE;
   if (button == "right")
     return SyntheticPointerActionParams::Button::RIGHT;
+  if (button == "back")
+    return SyntheticPointerActionParams::Button::BACK;
+  if (button == "forward")
+    return SyntheticPointerActionParams::Button::FORWARD;
   NOTREACHED() << "Unexpected button";
   return SyntheticPointerActionParams::Button();
 }
@@ -210,7 +214,8 @@ bool ActionsParser::ParseAction(
         "actions[%d].actions.button is not a string", action_index_);
     return false;
   } else if (button_name != "left" && button_name != "middle" &&
-             button_name != "right") {
+             button_name != "right" && button_name != "back" &&
+             button_name != "forward") {
     error_message_ = base::StringPrintf(
         "actions[%d].actions.button is an unsupported button", action_index_);
     return false;
