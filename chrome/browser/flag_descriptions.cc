@@ -1369,6 +1369,12 @@ const char kShowOverdrawFeedbackDescription[] =
     "Visualize overdraw by color-coding elements based on if they have other "
     "elements drawn underneath.";
 
+const char kSupervisedUserCommittedInterstitialsName[] =
+    "Enable Supervised User Committed Interstitials";
+const char kSupervisedUserCommittedInterstitialsDescription[] =
+    "Use committed error pages instead of transient navigation entries for "
+    "supervised user interstitials";
+
 const char kEnableDrawOcclusionName[] = "Enable draw occlusion";
 const char kEnableDrawOcclusionDescription[] =
     "Enable the system to use draw occlusion to skip draw quads when they are "
