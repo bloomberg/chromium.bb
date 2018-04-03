@@ -404,6 +404,8 @@ function singleTapOnControl(control, callback) {
   singleTapAtCoordinates(coordinates[0], coordinates[1], callback);
 }
 
+// This function does not work on Mac due to crbug.com/613672. When using this
+// function, add an entry into TestExpectations to skip on Mac.
 function singleTouchAtCoordinates(xPos, yPos, callback) {
   chrome.gpuBenchmarking.pointerActionSequence([
     {

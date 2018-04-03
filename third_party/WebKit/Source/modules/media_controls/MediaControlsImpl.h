@@ -274,6 +274,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void DefaultEventHandler(Event*) override;
   bool ContainsRelatedTarget(Event*);
 
+  void HandlePointerEvent(Event*);
+  void HandleTouchEvent(Event*);
+
   // Internal cast related methods.
   void RemotePlaybackStateChanged();
   void RefreshCastButtonVisibility();
@@ -350,11 +353,15 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   bool keep_showing_until_timer_fires_ : 1;
 
-  bool pointer_event_did_show_controls_ = false;
-
   Member<MediaDownloadInProductHelpManager> download_iph_manager_;
 
   bool is_acting_as_audio_controls_ = false;
+
+  // Our best guess on whether the user is interacting with the controls via
+  // touch (as opposed to mouse). This is used to determine how to handle
+  // certain pointer events. In particular, when the user is interacting via
+  // touch events, we want to ignore pointerover/pointerout/pointermove events.
+  bool is_touch_interaction_ = false;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, IsMediaControls());
