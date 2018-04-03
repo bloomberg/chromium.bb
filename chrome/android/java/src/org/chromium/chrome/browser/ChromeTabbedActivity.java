@@ -29,6 +29,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -277,6 +278,8 @@ public class ChromeTabbedActivity
     private LocaleManager mLocaleManager;
 
     private AppIndexingUtil mAppIndexingUtil;
+
+    private Runnable mShowHistoryRunnable;
 
     /**
      * Whether an initial tab needs to be created during UI initialization.
@@ -2031,6 +2034,13 @@ public class ChromeTabbedActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // Detecting a long press of the back button via onLongPress is broken in Android N.
+        // To work around this, use a postDelayed, which is supported in all versions.
+        if (keyCode == KeyEvent.KEYCODE_BACK && !isTablet()) {
+            if (mShowHistoryRunnable == null) mShowHistoryRunnable = this ::showFullHistoryForTab;
+            mHandler.postDelayed(mShowHistoryRunnable, ViewConfiguration.getLongPressTimeout());
+            return super.onKeyDown(keyCode, event);
+        }
         if (!mUIInitialized) {
             return super.onKeyDown(keyCode, event);
         }
@@ -2039,6 +2049,16 @@ public class ChromeTabbedActivity
         return KeyboardShortcuts.onKeyDown(event, this, isCurrentTabVisible, true)
                 || super.onKeyDown(keyCode, event);
     }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && !isTablet()) {
+            mHandler.removeCallbacks(mShowHistoryRunnable);
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    private void showFullHistoryForTab() {}
 
     @Override
     public void onProvideKeyboardShortcuts(List<KeyboardShortcutGroup> data, Menu menu,
