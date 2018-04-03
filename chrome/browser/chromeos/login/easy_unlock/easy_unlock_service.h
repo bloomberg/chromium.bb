@@ -78,9 +78,6 @@ class EasyUnlockService : public KeyedService {
   // Removes the hardlock state for the given user.
   static void ResetLocalStateForUser(const AccountId& account_id);
 
-  // Returns the identifier for the device.
-  static std::string GetDeviceId();
-
   // Returns the ProximityAuthPrefManager, responsible for managing all
   // EasyUnlock preferences.
   virtual proximity_auth::ProximityAuthPrefManager*

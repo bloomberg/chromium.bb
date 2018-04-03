@@ -2194,10 +2194,12 @@ const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 // Whether profile can be used before sign in.
 const char kForceBrowserSignin[] = "profile.force_browser_signin";
 
-// Device identifier used by Easy Unlock stored in local state. This id will be
-// combined with a user id, before being registered with the CryptAuth server,
+// Device identifier used by CryptAuth stored in local state. This ID is
+// combined with a user ID before being registered with the CryptAuth server,
 // so it can't correlate users on the same device.
-const char kEasyUnlockDeviceId[] = "easy_unlock.device_id";
+// Note: This constant was previously specific to EasyUnlock, so the string
+//       constant contains "easy_unlock".
+const char kCryptAuthDeviceId[] = "easy_unlock.device_id";
 
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";

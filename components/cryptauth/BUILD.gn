@@ -127,6 +127,8 @@ static_library("test_support") {
     "fake_background_eid_generator.h",
     "fake_connection.cc",
     "fake_connection.h",
+    "fake_cryptauth_device_id_provider.cc",
+    "fake_cryptauth_device_id_provider.h",
     "fake_cryptauth_device_manager.cc",
     "fake_cryptauth_device_manager.h",
     "fake_cryptauth_enrollment_manager.cc",
