@@ -146,7 +146,9 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public boolean isInVrSession() {
-        return DaydreamApi.isInVrSession(mContext);
+        // The call to isInVrSession crashes when called on a non-Daydream ready device, so we add
+        // the device check (b/77268533).
+        return isDaydreamReadyDevice() && DaydreamApi.isInVrSession(mContext);
     }
 
     @Override
