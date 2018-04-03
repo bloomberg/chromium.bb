@@ -188,7 +188,7 @@ interface PaymentRequest {
        PaymentOptions options);
 
   // Shows the user interface with the payment details.
-  Show();
+  Show(bool is_user_gesture);
 
   // Updates the payment details in response to new shipping address or shipping
   // option.
