@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -18,6 +19,26 @@
 #include "extensions/common/url_pattern_set.h"
 
 namespace extensions {
+
+namespace {
+
+// Returns true if the given |extension| has a registered ruleset. If it
+// doesn't, returns false and populates |error|.
+bool HasRegisteredRuleset(content::BrowserContext* context,
+                          const Extension* extension,
+                          std::string* error) {
+  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
+      declarative_net_request::RulesMonitorService>::Get(context);
+  DCHECK(rules_monitor_service);
+
+  if (rules_monitor_service->HasRegisteredRuleset(extension))
+    return true;
+
+  *error = "The extension must have a ruleset in order to call this function.";
+  return false;
+}
+
+}  // namespace
 
 DeclarativeNetRequestUpdateWhitelistedPagesFunction::
     DeclarativeNetRequestUpdateWhitelistedPagesFunction() = default;
@@ -62,6 +83,12 @@ DeclarativeNetRequestUpdateWhitelistedPagesFunction::UpdateWhitelistedPages(
   return RespondNow(NoArguments());
 }
 
+bool DeclarativeNetRequestUpdateWhitelistedPagesFunction::PreRunValidation(
+    std::string* error) {
+  return UIThreadExtensionFunction::PreRunValidation(error) &&
+         HasRegisteredRuleset(browser_context(), extension(), error);
+}
+
 DeclarativeNetRequestAddWhitelistedPagesFunction::
     DeclarativeNetRequestAddWhitelistedPagesFunction() = default;
 DeclarativeNetRequestAddWhitelistedPagesFunction::
@@ -96,6 +123,12 @@ DeclarativeNetRequestGetWhitelistedPagesFunction::
     DeclarativeNetRequestGetWhitelistedPagesFunction() = default;
 DeclarativeNetRequestGetWhitelistedPagesFunction::
     ~DeclarativeNetRequestGetWhitelistedPagesFunction() = default;
+
+bool DeclarativeNetRequestGetWhitelistedPagesFunction::PreRunValidation(
+    std::string* error) {
+  return UIThreadExtensionFunction::PreRunValidation(error) &&
+         HasRegisteredRuleset(browser_context(), extension(), error);
+}
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestGetWhitelistedPagesFunction::Run() {
