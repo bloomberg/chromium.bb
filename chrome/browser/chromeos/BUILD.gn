@@ -306,6 +306,8 @@ source_set("chromeos") {
     "apps/intent_helper/apps_navigation_throttle.h",
     "arc/accessibility/arc_accessibility_helper_bridge.cc",
     "arc/accessibility/arc_accessibility_helper_bridge.h",
+    "arc/accessibility/arc_accessibility_util.cc",
+    "arc/accessibility/arc_accessibility_util.h",
     "arc/accessibility/ax_tree_source_arc.cc",
     "arc/accessibility/ax_tree_source_arc.h",
     "arc/arc_migration_constants.h",
