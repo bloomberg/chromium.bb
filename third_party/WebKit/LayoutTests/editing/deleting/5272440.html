@@ -1,15 +1,13 @@
-<p>This tests for a bug where deleting the contents of an editable root that's inline would introduce a new line.</p>
-<div style="border: 1px solid black;"><span id="span" contenteditable="true">foo</span></div>
-
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-span = document.getElementById("span");
-selection = window.getSelection();
-selection.collapse(span, 0);
-document.execCommand("SelectAll");
-document.execCommand("Delete");
-document.execCommand("InsertText", false, "x");
-document.execCommand("Delete");
-document.execCommand("InsertText", false, "x");
-document.execCommand("Delete");
-document.execCommand("InsertText", false, "There shouldn't be any blank lines in the black bordered area.");
+// This tests for a bug where deleting the contents of an editable root that's
+// inline would introduce a new line.
+selection_test(
+  '<div><span contenteditable>x|</span></div>',
+  'Delete',
+  '<div><span contenteditable>|</span></div>',
+  'Deleting contents of root editable');
 </script>
