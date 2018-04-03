@@ -42,6 +42,8 @@ class AssociatedInterfacePtr {
     internal_state_.Swap(&other.internal_state_);
   }
 
+  explicit AssociatedInterfacePtr(PtrInfoType&& info) { Bind(std::move(info)); }
+
   AssociatedInterfacePtr& operator=(AssociatedInterfacePtr&& other) {
     reset();
     internal_state_.Swap(&other.internal_state_);

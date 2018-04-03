@@ -63,7 +63,17 @@ LevelDBWrapperImpl::LevelDBWrapperImpl(
     const std::string& prefix,
     Delegate* delegate,
     const Options& options)
-    : prefix_(leveldb::StdStringToUint8Vector(prefix)),
+    : LevelDBWrapperImpl(database,
+                         leveldb::StdStringToUint8Vector(prefix),
+                         delegate,
+                         options) {}
+
+LevelDBWrapperImpl::LevelDBWrapperImpl(
+    leveldb::mojom::LevelDBDatabase* database,
+    std::vector<uint8_t> prefix,
+    Delegate* delegate,
+    const Options& options)
+    : prefix_(std::move(prefix)),
       delegate_(delegate),
       database_(database),
       cache_mode_(database ? options.cache_mode : CacheMode::KEYS_AND_VALUES),
@@ -105,8 +115,16 @@ std::unique_ptr<LevelDBWrapperImpl> LevelDBWrapperImpl::ForkToNewPrefix(
     const std::string& new_prefix,
     Delegate* delegate,
     const Options& options) {
+  return ForkToNewPrefix(leveldb::StdStringToUint8Vector(new_prefix), delegate,
+                         options);
+}
+
+std::unique_ptr<LevelDBWrapperImpl> LevelDBWrapperImpl::ForkToNewPrefix(
+    std::vector<uint8_t> new_prefix,
+    Delegate* delegate,
+    const Options& options) {
   auto forked_wrapper = std::make_unique<LevelDBWrapperImpl>(
-      database_, new_prefix, delegate, options);
+      database_, std::move(new_prefix), delegate, options);
 
   forked_wrapper->map_state_ = MapState::LOADING_FROM_FORK;
 
@@ -196,13 +214,25 @@ void LevelDBWrapperImpl::SetCacheModeForTesting(CacheMode cache_mode) {
   SetCacheMode(cache_mode);
 }
 
+mojo::InterfacePtrSetElementId LevelDBWrapperImpl::AddObserver(
+    mojom::LevelDBObserverAssociatedPtr observer) {
+  if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
+    observer->ShouldSendOldValueOnMutations(false);
+  return observers_.AddPtr(std::move(observer));
+}
+
+bool LevelDBWrapperImpl::HasObserver(mojo::InterfacePtrSetElementId id) {
+  return observers_.HasPtr(id);
+}
+
+mojom::LevelDBObserverAssociatedPtr LevelDBWrapperImpl::RemoveObserver(
+    mojo::InterfacePtrSetElementId id) {
+  return observers_.RemovePtr(id);
+}
+
 void LevelDBWrapperImpl::AddObserver(
     mojom::LevelDBObserverAssociatedPtrInfo observer) {
-  mojom::LevelDBObserverAssociatedPtr observer_ptr;
-  observer_ptr.Bind(std::move(observer));
-  if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
-    observer_ptr->ShouldSendOldValueOnMutations(false);
-  observers_.AddPtr(std::move(observer_ptr));
+  AddObserver(mojom::LevelDBObserverAssociatedPtr(std::move(observer)));
 }
 
 void LevelDBWrapperImpl::Put(
@@ -724,7 +754,6 @@ void LevelDBWrapperImpl::CommitChanges() {
   bool has_changes = !operations.empty() ||
                      !commit_batch_->changed_values.empty() ||
                      !commit_batch_->changed_keys.empty();
-
   if (commit_batch_->clear_all_first) {
     BatchedOperationPtr item = BatchedOperation::New();
     item->type = leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY;

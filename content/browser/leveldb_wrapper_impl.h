@@ -87,12 +87,17 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
     int max_commits_per_hour = 0;
   };
 
-  // |no_bindings_callback| will be called when this object has no more
+  // |Delegate::OnNoBindings| will be called when this object has no more
   // bindings and all pending modifications have been processed.
   LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
                      const std::string& prefix,
                      Delegate* delegate,
                      const Options& options);
+  LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
+                     std::vector<uint8_t> prefix,
+                     Delegate* delegate,
+                     const Options& options);
+
   ~LevelDBWrapperImpl() override;
 
   void Bind(mojom::LevelDBWrapperRequest request);
@@ -102,6 +107,10 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   // has been loaded (see initialized()).
   std::unique_ptr<LevelDBWrapperImpl> ForkToNewPrefix(
       const std::string& new_prefix,
+      Delegate* delegate,
+      const Options& options);
+  std::unique_ptr<LevelDBWrapperImpl> ForkToNewPrefix(
+      std::vector<uint8_t> new_prefix,
       Delegate* delegate,
       const Options& options);
 
@@ -132,6 +141,8 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   const std::vector<uint8_t>& prefix() { return prefix_; }
 
+  leveldb::mojom::LevelDBDatabase* database() { return database_; }
+
   // Commence aggressive flushing. This should be called early during startup,
   // before any localStorage writing. Currently scheduled writes will not be
   // rescheduled and will be flushed at the scheduled time after which
@@ -155,6 +166,13 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   // Sets cache mode to either store only keys or keys and values. See
   // SetCacheMode().
   void SetCacheModeForTesting(CacheMode cache_mode);
+
+  // Returns a pointer ID for use with HasObserver and RemoveObserver.
+  mojo::InterfacePtrSetElementId AddObserver(
+      mojom::LevelDBObserverAssociatedPtr observer);
+  bool HasObserver(mojo::InterfacePtrSetElementId id);
+  mojom::LevelDBObserverAssociatedPtr RemoveObserver(
+      mojo::InterfacePtrSetElementId id);
 
   // LevelDBWrapper:
   void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
