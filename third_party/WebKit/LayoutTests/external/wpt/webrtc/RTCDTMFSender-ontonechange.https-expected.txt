@@ -10,5 +10,7 @@ PASS Calling insertDTMF() in the middle of tonechange events should cause future
 PASS Calling insertDTMF() multiple times in the middle of tonechange events should cause future tonechanges to be updated the last provided tones
 PASS Calling insertDTMF('') in the middle of tonechange events should stop future tonechange events from firing
 FAIL Setting transceiver.currentDirection to recvonly in the middle of tonechange events should stop future tonechange events from firing pc.addTransceiver is not a function
+PASS Tone change event constructor works
+PASS Tone change event with unexpected name should not crash
 Harness: the test ran to completion.
 
