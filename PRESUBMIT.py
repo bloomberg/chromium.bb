@@ -1588,7 +1588,7 @@ def _CheckUniquePtr(input_api, output_api):
   return_construct_pattern = input_api.re.compile(
       r'(=|\breturn)\s*std::unique_ptr<.*?(?<!])>\([^)]+\)')
   null_construct_pattern = input_api.re.compile(
-      r'\b(?<!<)std::unique_ptr<.*?>\(\)')
+      r'\b(?<!<)std::unique_ptr<[^>]*>([^(<]*>)?\(\)')
   errors = []
   for f in input_api.AffectedSourceFiles(sources):
     for line_number, line in f.ChangedContents():
