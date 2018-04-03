@@ -33,8 +33,9 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   network::mojom::NetworkContext* GetNetworkContext() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (!network_context_) {
-      internal_state_ = base::MakeRefCounted<InternalState>(
-          request_context_getter_, MakeRequest(&network_context_));
+      internal_state_ = base::MakeRefCounted<InternalState>();
+      internal_state_->Initialize(request_context_getter_,
+                                  MakeRequest(&network_context_));
     }
     return network_context_.get();
   }
@@ -74,7 +75,9 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   // This class holds on to the network::NetworkContext object on the IO thread.
   class InternalState : public base::RefCountedThreadSafe<InternalState> {
    public:
-    InternalState(
+    InternalState() = default;
+
+    void Initialize(
         scoped_refptr<net::URLRequestContextGetter> request_context_getter,
         network::mojom::NetworkContextRequest network_context_request) {
       content::BrowserThread::PostTask(
