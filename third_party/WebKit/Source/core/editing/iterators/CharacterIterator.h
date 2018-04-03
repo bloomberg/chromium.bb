@@ -68,7 +68,21 @@ class CORE_EXPORT CharacterIteratorAlgorithm {
   const Node* CurrentContainer() const;
   int StartOffset() const;
   int EndOffset() const;
+
+  PositionTemplate<Strategy> GetPositionBefore() const;
+  PositionTemplate<Strategy> GetPositionAfter() const;
+
+  // TDOO(editing-dev): We should rename |StartPosition()| to
+  // |GetPositionBeforeDeprecated()| and use |GetPositionBefore()| to
+  // avoid using |EditingPositionOf()|.
+  // Note: Following two tests are failed when using |GetPositionBefore()|
+  // instead of |StartPosition()|:
+  //  1. extend-by-sentence-002.html
+  //  2. move_forward_sentence_empty_line_break.html
   PositionTemplate<Strategy> StartPosition() const;
+  // TDOO(editing-dev): We should rename |EndPosition()| to
+  // |GetPositionAfterDeprecated()| and use |GetPositionAfter()| to
+  // avoid using |EditingPositionOf()|.
   PositionTemplate<Strategy> EndPosition() const;
 
   EphemeralRangeTemplate<Strategy> CalculateCharacterSubrange(int offset,
@@ -89,6 +103,8 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 using CharacterIterator = CharacterIteratorAlgorithm<EditingStrategy>;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    CharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
+using CharacterIteratorInFlatTree =
     CharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 CORE_EXPORT EphemeralRange CalculateCharacterSubrange(const EphemeralRange&,
