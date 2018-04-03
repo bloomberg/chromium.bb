@@ -1565,16 +1565,24 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
   const TemplateURL* conflicting_keyword_turl =
       FindNonExtensionTemplateURLForKeyword(new_values.keyword());
 
-  // Update existing turl with new values.
-  existing_turl->CopyFrom(new_values);
-  existing_turl->data_.id = previous_id;
-
+  bool keep_old_keyword = false;
   if (conflicting_keyword_turl && conflicting_keyword_turl != existing_turl) {
     if (CanReplace(conflicting_keyword_turl))
       RemoveNoNotify(conflicting_keyword_turl);
     else
-      existing_turl->data_.SetKeyword(old_keyword);
+      keep_old_keyword = true;
   }
+  // Update existing turl with new values. This must happen after calling
+  // RemoveNoNotify(conflicting_keyword_turl) above, since otherwise during that
+  // function RemoveFromMaps() may find |existing_turl| as an alternate engine
+  // for the same keyword.  Duplicate keyword handling is only meant for the
+  // case of extensions, and if done here would leave internal state
+  // inconsistent (e.g. |existing_turl| would already be re-added to maps before
+  // calling AddToMaps() below).
+  existing_turl->CopyFrom(new_values);
+  existing_turl->data_.id = previous_id;
+  if (keep_old_keyword)
+    existing_turl->data_.SetKeyword(old_keyword);
 
   AddToMaps(existing_turl);
 
