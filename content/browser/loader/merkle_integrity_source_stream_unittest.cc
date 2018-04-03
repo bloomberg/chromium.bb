@@ -22,6 +22,8 @@ const char kMISingleRecord[] =
     "mi-sha256=dcRDgR2GM35DluAV13PzgnG6-pvQwPywfFvAu1UeFrs";
 const char kMIMultipleRecords[] =
     "mi-sha256=IVa9shfs0nyKEhHqtB3WVNANJ2Njm5KjQLjRtnbkYJ4";
+const char kMIWholeNumberOfRecords[] =
+    "mi-sha256=L2vdwBplKvIr0ZPkcuskWZfEVDgVdHa6aD363UpKuZs";
 
 enum class ReadResultType {
   // Each call to AddReadResult is a separate read from the lower layer
@@ -177,22 +179,57 @@ TEST_P(MerkleIntegritySourceStreamTest, MalformedMIHeader) {
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
 }
 
+TEST_P(MerkleIntegritySourceStreamTest, WrongMIAttributeName) {
+  Init("mi-sha255=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0");
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, HashTooShort) {
+  Init("mi-sha256=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoA");
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, HashTooLong) {
+  Init("mi-sha256=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0A");
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
+}
+
 TEST_P(MerkleIntegritySourceStreamTest, RecordSizeOnly) {
   Init(kMIEmptyBody);
-  const uint8_t record_size[] = {0, 0, 0, 0, 0, 0, 0, 10};
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 10};
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
   EXPECT_EQ(net::OK, result);
 }
 
+TEST_P(MerkleIntegritySourceStreamTest, TruncatedRecordSize) {
+  Init(kMIEmptyBody);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 1};
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
+}
+
 TEST_P(MerkleIntegritySourceStreamTest, RecordSizeOnlyWrongHash) {
   Init(kMISingleRecord);
-  const uint8_t record_size[] = {0, 0, 0, 0, 0, 0, 0, 10};
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 10};
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
@@ -202,10 +239,10 @@ TEST_P(MerkleIntegritySourceStreamTest, RecordSizeOnlyWrongHash) {
 TEST_P(MerkleIntegritySourceStreamTest, RecordSizeHuge) {
   Init(kMIEmptyBody);
   // 2^64 - 1 is far too large.
-  const uint8_t record_size[] = {0xff, 0xff, 0xff, 0xff,
+  const uint8_t kRecordSize[] = {0xff, 0xff, 0xff, 0xff,
                                  0xff, 0xff, 0xff, 0xff};
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
@@ -214,10 +251,22 @@ TEST_P(MerkleIntegritySourceStreamTest, RecordSizeHuge) {
 TEST_P(MerkleIntegritySourceStreamTest, RecordSizeTooBig) {
   Init(kMIEmptyBody);
   // 2^16 + 1 just exceeds the limit.
-  const uint8_t record_size[] = {0x00, 0x00, 0x00, 0x00,
+  const uint8_t kRecordSize[] = {0x00, 0x00, 0x00, 0x00,
                                  0x00, 0x00, 0x40, 0x01};
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, RecordSizeZero) {
+  Init(kMIEmptyBody);
+  // Zero is not a valid record size.
+  const uint8_t kRecordSize[] = {0x00, 0x00, 0x00, 0x00,
+                                 0x00, 0x00, 0x00, 0x00};
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
@@ -226,26 +275,26 @@ TEST_P(MerkleIntegritySourceStreamTest, RecordSizeTooBig) {
 // https://tools.ietf.org/html/draft-thomson-http-mice-02#section-4.1
 TEST_P(MerkleIntegritySourceStreamTest, SingleRecord) {
   Init(kMISingleRecord);
-  const uint8_t record_size[] = {0, 0, 0, 0, 0, 0, 0, 0x29};
-  const std::string message("When I grow up, I want to be a watermelon");
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
-  source()->AddReadResult(message.data(), message.size(), net::OK,
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 41};
+  const std::string kMessage("When I grow up, I want to be a watermelon");
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), kMessage.size(), net::OK,
                           GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(message.size()), rv);
-  EXPECT_EQ(message, actual_output);
+  EXPECT_EQ(static_cast<int>(kMessage.size()), rv);
+  EXPECT_EQ(kMessage, actual_output);
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, SingleRecordWrongHash) {
   Init(kMIEmptyBody);
-  const uint8_t record_size[] = {0, 0, 0, 0, 0, 0, 0, 0x29};
-  const std::string message("When I grow up, I want to be a watermelon");
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
-  source()->AddReadResult(message.data(), message.size(), net::OK,
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 41};
+  const std::string kMessage("When I grow up, I want to be a watermelon");
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), kMessage.size(), net::OK,
                           GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
@@ -254,55 +303,244 @@ TEST_P(MerkleIntegritySourceStreamTest, SingleRecordWrongHash) {
   EXPECT_EQ(0u, actual_output.size());
 }
 
+// The final record may not be larger than the record size.
+TEST_P(MerkleIntegritySourceStreamTest, SingleRecordTooLarge) {
+  Init(kMISingleRecord);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 40};
+  const std::string kMessage("When I grow up, I want to be a watermelon");
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), kMessage.size(), net::OK,
+                          GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, rv);
+  EXPECT_EQ("", actual_output);
+}
+
 // https://tools.ietf.org/html/draft-thomson-http-mice-02#section-4.2
 TEST_P(MerkleIntegritySourceStreamTest, MultipleRecords) {
   Init(kMIMultipleRecords);
-  const uint8_t record_size[] = {0, 0, 0, 0, 0, 0, 0, 16};
-  const std::string message("When I grow up, I want to be a watermelon");
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage("When I grow up, I want to be a watermelon");
 
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
-  source()->AddReadResult(message.data(), 16, net::OK, GetParam().mode);
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
       Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
-  source()->AddReadResult(message.data() + 16, 16, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
       Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
-  source()->AddReadResult(message.data() + 32, message.size() - 32, net::OK,
+  source()->AddReadResult(kMessage.data() + 32, kMessage.size() - 32, net::OK,
                           GetParam().mode);
 
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(message.size()), rv);
-  EXPECT_EQ(message, actual_output);
+  EXPECT_EQ(static_cast<int>(kMessage.size()), rv);
+  EXPECT_EQ(kMessage, actual_output);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, MultipleRecordsAllAtOnce) {
+  Init(kMIMultipleRecords);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage("When I grow up, I want to be a watermelon");
+
+  std::string body(reinterpret_cast<const char*>(kRecordSize),
+                   sizeof(kRecordSize));
+  body += kMessage.substr(0, 16);
+  body += Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+  body += kMessage.substr(16, 16);
+  body += Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+  body += kMessage.substr(32);
+
+  source()->AddReadResult(body.data(), body.size(), net::OK, GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(static_cast<int>(kMessage.size()), rv);
+  EXPECT_EQ(kMessage, actual_output);
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, MultipleRecordsWrongLastRecordHash) {
   Init(kMIMultipleRecords);
-  const uint8_t record_size[] = {0, 0, 0, 0, 0, 0, 0, 16};
-  const std::string message("When I grow up, I want to be a watermelon!");
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage("When I grow up, I want to be a watermelon!");
 
-  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
-                          sizeof(record_size), net::OK, GetParam().mode);
-  source()->AddReadResult(message.data(), 16, net::OK, GetParam().mode);
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
       Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
-  source()->AddReadResult(message.data() + 16, 16, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
       Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
-  source()->AddReadResult(message.data() + 32, message.size() - 32, net::OK,
+  source()->AddReadResult(kMessage.data() + 32, kMessage.size() - 32, net::OK,
                           GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
 
   std::string actual_output;
   int rv = ReadStream(&actual_output);
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, rv);
-  EXPECT_EQ(message.substr(0, 32), actual_output);
+  EXPECT_EQ(kMessage.substr(0, 32), actual_output);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, MultipleRecordsWrongFirstRecordHash) {
+  Init(kMIEmptyBody);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage("When I grow up, I want to be a watermelon!");
+
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
+  std::string hash1 =
+      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+  source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
+
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, rv);
+  EXPECT_EQ("", actual_output);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, TrailingNetError) {
+  Init(kMIMultipleRecords);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage("When I grow up, I want to be a watermelon");
+
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
+  std::string hash1 =
+      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+  source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
+  std::string hash2 =
+      Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+  source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 32, kMessage.size() - 32, net::OK,
+                          GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::ERR_FAILED, GetParam().mode);
+
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_FAILED, rv);
+  // MerkleIntegritySourceStream cannot read the last record without a clean EOF
+  // to denote its end.
+  EXPECT_EQ(kMessage.substr(0, 32), actual_output);
+}
+
+// Test that truncations are noticed, by way of the final record not matching
+// the hash.
+TEST_P(MerkleIntegritySourceStreamTest, Truncated) {
+  Init(kMIMultipleRecords);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage("When I grow up, I want to be a w");
+
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
+  std::string hash1 =
+      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+  source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
+  std::string hash2 =
+      Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+  source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
+  // |hash2| is the hash of "atermelon", but this stream ends early. Decoding
+  // thus should fail.
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, rv);
+  EXPECT_EQ(kMessage, actual_output);
+}
+
+// Test that the final record is allowed to be empty.
+//
+// TODO(davidben): This does not match the specification and means some inputs
+// have two valid encodings. However, the specification's version cannot
+// represent the empty string. Update the code and possibly this test depending
+// on how https://github.com/martinthomson/http-mice/issues/3 is resolved.
+TEST_P(MerkleIntegritySourceStreamTest, EmptyFinalRecord) {
+  Init("mi-sha256=JJnIuaOEc2247K9V88VQAQy1GJuQ6ylaVM7mG69QkE4");
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage(
+      "When I grow up, I want to be a watermelon!! \xf0\x9f\x8d\x89");
+
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
+  std::string hash1 =
+      Base64Decode("hhJEKpkbuZoWUjzBPAZxMUN2DXdJ6epkS0McZh77IXo");
+  source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
+  std::string hash2 =
+      Base64Decode("RKTTVSMiH3bkxUQKreVATPL1KUd5eqRdmDgRQcZq_80");
+  source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 32, 16, net::OK, GetParam().mode);
+  std::string hash3 =
+      Base64Decode("bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0");
+  source()->AddReadResult(hash3.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(static_cast<int>(kMessage.size()), rv);
+  EXPECT_EQ(kMessage, actual_output);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, WholeNumberOfRecords) {
+  Init(kMIWholeNumberOfRecords);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage(
+      "When I grow up, I want to be a watermelon!! \xf0\x9f\x8d\x89");
+
+  source()->AddReadResult(reinterpret_cast<const char*>(kRecordSize),
+                          sizeof(kRecordSize), net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
+  std::string hash1 =
+      Base64Decode("2s-MNG6NrTt556s__HYnQTjG3WOktEcXZ61O8mzG9f4");
+  source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
+  std::string hash2 =
+      Base64Decode("qa_cQSMjFyZsm0cnYG4H6LqwOM_hzMSclK6I8iVoZYQ");
+  source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
+  source()->AddReadResult(kMessage.data() + 32, 16, net::OK, GetParam().mode);
+
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(static_cast<int>(kMessage.size()), rv);
+  EXPECT_EQ(kMessage, actual_output);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, WholeNumberOfRecordsAllAtOnce) {
+  Init(kMIWholeNumberOfRecords);
+  const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
+  const std::string kMessage(
+      "When I grow up, I want to be a watermelon!! \xf0\x9f\x8d\x89");
+  std::string body(reinterpret_cast<const char*>(kRecordSize),
+                   sizeof(kRecordSize));
+  body += kMessage.substr(0, 16);
+  body += Base64Decode("2s-MNG6NrTt556s__HYnQTjG3WOktEcXZ61O8mzG9f4");
+  body += kMessage.substr(16, 16);
+  body += Base64Decode("qa_cQSMjFyZsm0cnYG4H6LqwOM_hzMSclK6I8iVoZYQ");
+  body += kMessage.substr(32, 16);
+
+  source()->AddReadResult(body.data(), body.size(), net::OK, GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(static_cast<int>(kMessage.size()), rv);
+  EXPECT_EQ(kMessage, actual_output);
 }
 
 }  // namespace content
