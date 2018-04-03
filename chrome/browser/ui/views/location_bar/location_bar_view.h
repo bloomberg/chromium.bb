@@ -219,6 +219,7 @@ class LocationBarView : public LocationBar,
   // LocationBar:
   void FocusLocation(bool select_all) override;
   void Revert() override;
+  bool ShowPageInfoDialog(content::WebContents* contents) override;
   OmniboxView* GetOmniboxView() override;
 
   // views::View:

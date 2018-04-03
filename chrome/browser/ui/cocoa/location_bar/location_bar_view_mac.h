@@ -81,6 +81,7 @@ class LocationBarViewMac : public LocationBar,
   void UpdateLocationBarVisibility(bool visible, bool animate) override;
   void SaveStateToContents(content::WebContents* contents) override;
   void Revert() override;
+  bool ShowPageInfoDialog(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
   OmniboxView* GetOmniboxView() override;
   LocationBarTesting* GetLocationBarForTesting() override;

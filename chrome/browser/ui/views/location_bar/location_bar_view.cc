@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -54,6 +55,7 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
@@ -67,12 +69,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/security_state/core/security_state.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/toolbar/vector_icons.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -390,6 +394,29 @@ void LocationBarView::FocusLocation(bool select_all) {
 
 void LocationBarView::Revert() {
   omnibox_view_->RevertAll();
+}
+
+bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
+  DCHECK(contents);
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  if (!entry)
+    return false;
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  DCHECK(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+
+  DCHECK(GetWidget());
+  views::BubbleDialogDelegateView* bubble =
+      PageInfoBubbleView::CreatePageInfoBubble(
+          GetSecurityBubbleAnchorView(), gfx::Rect(),
+          GetWidget()->GetNativeWindow(), profile(), contents,
+          entry->GetVirtualURL(), security_info);
+  location_icon_view()->OnBubbleCreated(bubble->GetWidget());
+  bubble->GetWidget()->Show();
+  return true;
 }
 
 OmniboxView* LocationBarView::GetOmniboxView() {

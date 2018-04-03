@@ -72,6 +72,10 @@ class LocationBar {
   // Reverts the location bar.  The bar's permanent text will be shown.
   virtual void Revert() = 0;
 
+  // Asks the location bar to show a page info dialog for |web_contents|.
+  // Returns true if a dialog was shown, false otherwise.
+  virtual bool ShowPageInfoDialog(content::WebContents* contents) = 0;
+
   virtual const OmniboxView* GetOmniboxView() const = 0;
   virtual OmniboxView* GetOmniboxView() = 0;
 

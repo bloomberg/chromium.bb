@@ -234,4 +234,32 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
   EXPECT_LT(0, location_bar_view->height());
 }
 
+IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
+                       ShowPageInfoDialog) {
+  content::NavigationController::LoadURLParams load_params(GURL("about:blank"));
+  fake_delegate_->web_contents()->GetController().LoadURLWithParams(
+      load_params);
+  static_cast<PresentationReceiverWindow*>(receiver_view_)
+      ->ShowInactiveFullscreen();
+  static_cast<ExclusiveAccessContext*>(receiver_view_)->ExitFullscreen();
+  ASSERT_FALSE(
+      static_cast<ExclusiveAccessContext*>(receiver_view_)->IsFullscreen());
+
+  auto* location_icon_view =
+      receiver_view_->location_bar_view()->location_icon_view();
+  gfx::Rect local_bounds = location_icon_view->GetLocalBounds();
+  gfx::Point local_icon_center(local_bounds.x() + local_bounds.width() / 2,
+                               local_bounds.y() + local_bounds.height() / 2);
+  ui::MouseEvent security_chip_press_event(
+      ui::ET_MOUSE_PRESSED, local_icon_center, local_icon_center,
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent security_chip_release_event(
+      ui::ET_MOUSE_RELEASED, local_icon_center, local_icon_center,
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+
+  location_icon_view->OnMousePressed(security_chip_press_event);
+  location_icon_view->OnMouseReleased(security_chip_release_event);
+  EXPECT_TRUE(location_icon_view->IsBubbleShowing());
+}
+
 }  // namespace

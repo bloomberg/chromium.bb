@@ -523,28 +523,25 @@ PageInfoBubbleView::~PageInfoBubbleView() {}
 
 // static
 views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
-    Browser* browser,
+    views::View* anchor_view,
+    const gfx::Rect& anchor_rect,
+    gfx::NativeWindow parent_window,
+    Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const security_state::SecurityInfo& security_info,
-    bubble_anchor_util::Anchor anchor) {
-  views::View* anchor_view = GetPageInfoAnchorView(browser, anchor);
-  gfx::Rect anchor_rect =
-      anchor_view ? gfx::Rect() : GetPageInfoAnchorRect(browser);
-  gfx::NativeView parent_window =
-      platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
+    const security_state::SecurityInfo& security_info) {
+  gfx::NativeView parent_view = platform_util::GetViewForWindow(parent_window);
 
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(extensions::kExtensionScheme) ||
       url.SchemeIs(content::kViewSourceScheme)) {
-    return new InternalPageInfoBubbleView(anchor_view, anchor_rect,
-                                          parent_window, web_contents, url);
+    return new InternalPageInfoBubbleView(anchor_view, anchor_rect, parent_view,
+                                          web_contents, url);
   }
 
-  return new PageInfoBubbleView(anchor_view, anchor_rect, parent_window,
-                                browser->profile(), web_contents, url,
-                                security_info);
+  return new PageInfoBubbleView(anchor_view, anchor_rect, parent_view, profile,
+                                web_contents, url, security_info);
 }
 
 PageInfoBubbleView::PageInfoBubbleView(
@@ -1034,12 +1031,18 @@ void ShowPageInfoDialogImpl(Browser* browser,
                                            security_info, anchor);
   }
 #endif
+  views::View* anchor_view = GetPageInfoAnchorView(browser, anchor);
+  gfx::Rect anchor_rect =
+      anchor_view ? gfx::Rect() : GetPageInfoAnchorRect(browser);
+  gfx::NativeWindow parent_window = browser->window()->GetNativeWindow();
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
-          browser, web_contents, virtual_url, security_info, anchor);
+          anchor_view, anchor_rect, parent_window, browser->profile(),
+          web_contents, virtual_url, security_info);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  bubble->GetWidget()->AddObserver(
-      browser_view->GetLocationBarView()->location_icon_view());
+  auto* location_bar = browser_view->GetLocationBarView();
+  if (location_bar)
+    location_bar->location_icon_view()->OnBubbleCreated(bubble->GetWidget());
   bubble->GetWidget()->Show();
 }
 #endif
