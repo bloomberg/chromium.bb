@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
@@ -14,6 +15,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#endif
 
 // Observer for NOTIFICATION_FULLSCREEN_CHANGED notifications.
 class FullscreenNotificationObserver
@@ -74,6 +79,13 @@ class FullscreenControllerTest : public InProcessBrowserTest {
  private:
   void ToggleTabFullscreen_Internal(bool enter_fullscreen,
                                     bool retry_until_success);
+
+#if defined(OS_MACOSX)
+  // On Mac, entering into the system fullscreen mode can tickle crashes in
+  // the WindowServer (c.f. https://crbug.com/828031), so provide a fake for
+  // testing.
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen_window_;
+#endif
 
   base::WeakPtrFactory<FullscreenControllerTest> weak_ptr_factory_;
 
