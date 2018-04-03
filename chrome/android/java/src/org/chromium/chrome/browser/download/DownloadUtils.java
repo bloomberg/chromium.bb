@@ -137,14 +137,19 @@ public class DownloadUtils {
             @Nullable Activity activity, @Nullable Tab tab, boolean showPrefetchedContent) {
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        Context appContext = ContextUtils.getApplicationContext();
+        boolean isTablet;
 
         if (tab == null && activity instanceof ChromeTabbedActivity) {
-            tab = ((ChromeTabbedActivity) activity).getActivityTab();
+            ChromeTabbedActivity chromeActivity = ((ChromeTabbedActivity) activity);
+            tab = chromeActivity.getActivityTab();
+            isTablet = chromeActivity.isTablet();
+        } else {
+            Context displayContext = activity != null ? activity : appContext;
+            isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(displayContext);
         }
 
-        Context appContext = ContextUtils.getApplicationContext();
-
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity)) {
+        if (isTablet) {
             // Download Home shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
             if (tab == null || !tab.isInitialized()) {
