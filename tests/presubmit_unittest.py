@@ -22,6 +22,7 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
 
 from testing_support.super_mox import mox, SuperMoxTestBase
+from third_party import mock
 
 import owners
 import owners_finder
@@ -172,16 +173,18 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     members = [
       'AffectedFile', 'Change', 'DoPostUploadExecuter', 'DoPresubmitChecks',
-      'GetPostUploadExecuter', 'GitAffectedFile', 'CallCommand', 'CommandData',
+      'GetPostUploadExecuter', 'GitAffectedFile', 'CommandData',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'main',
       'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
+      'SigintHandler', 'ThreadPool',
       'ast', 'cPickle', 'cpplint', 'cStringIO', 'contextlib',
       'canned_check_filter', 'fix_encoding', 'fnmatch', 'gclient_utils',
       'git_footers', 'glob', 'inspect', 'json', 'load_files', 'logging',
       'marshal', 'normpath', 'optparse', 'os', 'owners', 'owners_finder',
       'pickle', 'presubmit_canned_checks', 'random', 're', 'scm',
-      'subprocess', 'sys', 'tempfile',
+      'sigint_handler', 'signal',
+      'subprocess', 'sys', 'tempfile', 'threading',
       'time', 'traceback', 'types', 'unittest',
       'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
       'GetTryMastersExecuter', 'itertools', 'urlparse', 'gerrit_util',
@@ -893,7 +896,7 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
                                 mox.IgnoreArg(),
                                 mox.IgnoreArg(),
-                                None, False, None, None).AndReturn(output)
+                                None, False, None, None, None).AndReturn(output)
     self.mox.ReplayAll()
 
     self.assertEquals(
@@ -942,7 +945,6 @@ class InputApiUnittest(PresubmitTestsBase):
         'PresubmitLocalPath',
         'ReadFile',
         'RightHandSideLines',
-        'ShutdownPool',
         'ast',
         'basename',
         'cPickle',
@@ -965,6 +967,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'os_stat',
         'owners_db',
         'owners_finder',
+        'parallel',
         'pickle',
         'platform',
         'python_executable',
@@ -972,6 +975,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'subprocess',
         'tbr',
         'tempfile',
+        'thread_pool',
         'time',
         'traceback',
         'unittest',
@@ -1644,19 +1648,29 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEquals('bar,baz,foo', change.TBR)
 
 
-def CommHelper(input_api, cmd, ret=None, **kwargs):
-  ret = ret or (('', None), 0)
-  input_api.subprocess.communicate(
-      cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs
-      ).AndReturn(ret)
-
-
 class CannedChecksUnittest(PresubmitTestsBase):
   """Tests presubmit_canned_checks.py."""
+  def CommHelper(self, input_api, cmd, stdin=None, ret=None, **kwargs):
+    ret = ret or (('', None), 0)
+    kwargs.setdefault('cwd', mox.IgnoreArg())
+    kwargs.setdefault('stdin', subprocess.PIPE)
+
+    mock_process = input_api.mox.CreateMockAnything()
+    mock_process.returncode = ret[1]
+
+    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
+    input_api.subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs
+    ).AndReturn(mock_process)
+
+    presubmit.sigint_handler.wait(mock_process, stdin).AndReturn(ret[0])
 
   def MockInputApi(self, change, committing):
     # pylint: disable=no-self-use
     input_api = self.mox.CreateMock(presubmit.InputApi)
+    input_api.mox = self.mox
+    input_api.thread_pool = presubmit.ThreadPool()
+    input_api.parallel = False
     input_api.cStringIO = presubmit.cStringIO
     input_api.json = presubmit.json
     input_api.logging = logging
@@ -1689,6 +1703,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.Command = presubmit.CommandData
     input_api.RunTests = functools.partial(
         presubmit.InputApi.RunTests, input_api)
+    presubmit.sigint_handler = self.mox.CreateMock(presubmit.SigintHandler)
     return input_api
 
   def testMembersChanged(self):
@@ -2198,14 +2213,15 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testRunPythonUnitTestsNoTest(self):
     input_api = self.MockInputApi(None, False)
     self.mox.ReplayAll()
-    results = presubmit_canned_checks.RunPythonUnitTests(
+    presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, [])
+    results = input_api.thread_pool.RunAsync()
     self.assertEquals(results, [])
 
   def testRunPythonUnitTestsNonExistentUpload(self):
     input_api = self.MockInputApi(None, False)
-    CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
-                    ret=(('foo', None), 1), cwd=None, env=None)
+    self.CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
+                    ret=(('foo', None), 1), env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2216,8 +2232,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testRunPythonUnitTestsNonExistentCommitting(self):
     input_api = self.MockInputApi(None, True)
-    CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
-                    ret=(('foo', None), 1), cwd=None, env=None)
+    self.CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
+                    ret=(('foo', None), 1), env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2229,8 +2245,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi(None, False)
     input_api.unittest = self.mox.CreateMock(unittest)
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
-    CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
-                    ret=(('foo', None), 1), cwd=None, env=None)
+    self.CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
+                    ret=(('foo', None), 1), env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2242,8 +2258,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi(None, True)
-    CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
-                    ret=(('foo', None), 1), cwd=None, env=None)
+    self.CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
+                    ret=(('foo', None), 1), env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2256,13 +2272,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi(None, False)
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     input_api.unittest = self.mox.CreateMock(unittest)
-    CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
-                    cwd=None, env=None)
+    self.CommHelper(input_api, ['pyyyyython', '-m', 'test_module'], env=None)
     self.mox.ReplayAll()
 
-    results = presubmit_canned_checks.RunPythonUnitTests(
+    presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['test_module'])
-    self.assertEquals(len(results), 0)
+    results = input_api.thread_pool.RunAsync()
+    self.assertEquals(results, [])
 
   def testCannedRunPylint(self):
     input_api = self.MockInputApi(None, True)
@@ -2275,20 +2291,21 @@ class CannedChecksUnittest(PresubmitTestsBase):
     pylint = os.path.join(_ROOT, 'third_party', 'pylint.py')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
 
-    CommHelper(input_api,
-        ['pyyyyython', pylint, '--args-on-stdin'],
-        env=mox.IgnoreArg(), stdin=
-               '--rcfile=%s\n--disable=cyclic-import\n--jobs=2\nfile1.py'
-               % pylintrc)
-    CommHelper(input_api,
+    self.CommHelper(input_api,
         ['pyyyyython', pylint, '--args-on-stdin'],
         env=mox.IgnoreArg(), stdin=
                '--rcfile=%s\n--disable=all\n--enable=cyclic-import\nfile1.py'
+               % pylintrc)
+    self.CommHelper(input_api,
+        ['pyyyyython', pylint, '--args-on-stdin'],
+        env=mox.IgnoreArg(), stdin=
+               '--rcfile=%s\n--disable=cyclic-import\n--jobs=2\nfile1.py'
                % pylintrc)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPylint(
         input_api, presubmit.OutputApi)
+
     self.assertEquals([], results)
     self.checkstdout('')
 
@@ -2681,13 +2698,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
     unit_tests = ['allo', 'bar.py']
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
-    CommHelper(input_api, ['allo', '--verbose'], cwd=self.fake_root_dir)
     cmd = ['bar.py', '--verbose']
     if input_api.platform == 'win32':
       cmd.insert(0, 'vpython.bat')
     else:
       cmd.insert(0, 'vpython')
-    CommHelper(input_api, cmd, cwd=self.fake_root_dir, ret=(('', None), 1))
+    self.CommHelper(input_api, cmd, cwd=self.fake_root_dir, ret=(('', None), 1))
+    self.CommHelper(input_api, ['allo', '--verbose'], cwd=self.fake_root_dir)
 
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunUnitTests(
@@ -2696,9 +2713,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
         unit_tests)
     self.assertEqual(2, len(results))
     self.assertEqual(
-        presubmit.OutputApi.PresubmitNotifyResult, results[0].__class__)
+        presubmit.OutputApi.PresubmitNotifyResult, results[1].__class__)
     self.assertEqual(
-        presubmit.OutputApi.PresubmitPromptWarning, results[1].__class__)
+        presubmit.OutputApi.PresubmitPromptWarning, results[0].__class__)
     self.checkstdout('')
 
   def testCannedRunUnitTestsInDirectory(self):
@@ -2712,7 +2729,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     path = presubmit.os.path.join(self.fake_root_dir, 'random_directory')
     input_api.os_listdir(path).AndReturn(['.', '..', 'a', 'b', 'c'])
     input_api.os_path.isfile = lambda x: not x.endswith('.')
-    CommHelper(
+    self.CommHelper(
         input_api,
         [presubmit.os.path.join('random_directory', 'b'), '--verbose'],
         cwd=self.fake_root_dir)
@@ -2779,7 +2796,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, path='/path/to/foo')
     self.assertEquals(command.cmd,
         ['cipd', 'ensure-file-verify', '-ensure-file', '/path/to/foo'])
-    self.assertEquals(command.kwargs, {})
+    self.assertEquals(command.kwargs, {
+        'stdin': subprocess.PIPE,
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+    })
 
   def testCheckCIPDManifest_content(self):
     input_api = self.MockInputApi(None, False)
@@ -2790,7 +2811,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, content='manifest_content')
     self.assertEquals(command.cmd,
         ['cipd', 'ensure-file-verify', '-log-level', 'debug', '-ensure-file=-'])
-    self.assertEquals(command.kwargs, {'stdin': 'manifest_content'})
+    self.assertEquals(command.stdin, 'manifest_content')
+    self.assertEquals(command.kwargs, {
+        'stdin': subprocess.PIPE,
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+    })
 
   def testCheckCIPDPackages(self):
     content = '\n'.join([
@@ -2812,7 +2838,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
         })
     self.assertEquals(command.cmd,
         ['cipd', 'ensure-file-verify', '-ensure-file=-'])
-    self.assertEquals(command.kwargs, {'stdin': content})
+    self.assertEquals(command.stdin, content)
+    self.assertEquals(command.kwargs, {
+        'stdin': subprocess.PIPE,
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+    })
 
   def testCannedCheckVPythonSpec(self):
     change = presubmit.Change('a', 'b', self.fake_root_dir, None, 0, 0, None)
@@ -2835,7 +2866,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
       '-vpython-tool', 'verify'
     ])
     self.assertDictEqual(
-        commands[0].kwargs, {'stderr': input_api.subprocess.STDOUT})
+        commands[0].kwargs,
+        {
+            'stderr': input_api.subprocess.STDOUT,
+            'stdout': input_api.subprocess.PIPE,
+            'stdin': input_api.subprocess.PIPE,
+        })
     self.assertEqual(commands[0].message, presubmit.OutputApi.PresubmitError)
     self.assertIsNone(commands[0].info)
 

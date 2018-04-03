@@ -30,8 +30,10 @@ import os  # Somewhat exposed through the API.
 import pickle  # Exposed through the API.
 import random
 import re  # Exposed through the API.
+import signal
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
+import threading
 import time
 import traceback  # Exposed through the API.
 import types
@@ -64,9 +66,152 @@ class CommandData(object):
   def __init__(self, name, cmd, kwargs, message):
     self.name = name
     self.cmd = cmd
+    self.stdin = kwargs.get('stdin', None)
     self.kwargs = kwargs
+    self.kwargs['stdout'] = subprocess.PIPE
+    self.kwargs['stderr'] = subprocess.STDOUT
+    self.kwargs['stdin'] = subprocess.PIPE
     self.message = message
     self.info = None
+
+
+# Adapted from
+# https://github.com/google/gtest-parallel/blob/master/gtest_parallel.py#L37
+#
+# An object that catches SIGINT sent to the Python process and notices
+# if processes passed to wait() die by SIGINT (we need to look for
+# both of those cases, because pressing Ctrl+C can result in either
+# the main process or one of the subprocesses getting the signal).
+#
+# Before a SIGINT is seen, wait(p) will simply call p.wait() and
+# return the result. Once a SIGINT has been seen (in the main process
+# or a subprocess, including the one the current call is waiting for),
+# wait(p) will call p.terminate() and raise ProcessWasInterrupted.
+class SigintHandler(object):
+  class ProcessWasInterrupted(Exception):
+    pass
+
+  sigint_returncodes = {-signal.SIGINT,  # Unix
+                        -1073741510,     # Windows
+                        }
+  def __init__(self):
+    self.__lock = threading.Lock()
+    self.__processes = set()
+    self.__got_sigint = False
+    signal.signal(signal.SIGINT, lambda signal_num, frame: self.interrupt())
+
+  def __on_sigint(self):
+    self.__got_sigint = True
+    while self.__processes:
+      try:
+        self.__processes.pop().terminate()
+      except OSError:
+        pass
+
+  def interrupt(self):
+    with self.__lock:
+      self.__on_sigint()
+
+  def got_sigint(self):
+    with self.__lock:
+      return self.__got_sigint
+
+  def wait(self, p, stdin):
+    with self.__lock:
+      if self.__got_sigint:
+        p.terminate()
+      self.__processes.add(p)
+    stdout, stderr = p.communicate(stdin)
+    code = p.returncode
+    with self.__lock:
+      self.__processes.discard(p)
+      if code in self.sigint_returncodes:
+        self.__on_sigint()
+      if self.__got_sigint:
+        raise self.ProcessWasInterrupted
+    return stdout, stderr
+
+sigint_handler = SigintHandler()
+
+
+class ThreadPool(object):
+  def __init__(self, pool_size=None):
+    self._pool_size = pool_size or multiprocessing.cpu_count()
+    self._messages = []
+    self._messages_lock = threading.Lock()
+    self._tests = []
+    self._tests_lock = threading.Lock()
+    self._nonparallel_tests = []
+
+  def CallCommand(self, test):
+    """Runs an external program.
+
+    This function converts invocation of .py files and invocations of "python"
+    to vpython invocations.
+    """
+    vpython = 'vpython.bat' if sys.platform == 'win32' else 'vpython'
+
+    cmd = test.cmd
+    if cmd[0] == 'python':
+      cmd = list(cmd)
+      cmd[0] = vpython
+    elif cmd[0].endswith('.py'):
+      cmd = [vpython] + cmd
+
+    try:
+      start = time.time()
+      p = subprocess.Popen(cmd, **test.kwargs)
+      stdout, _ = sigint_handler.wait(p, test.stdin)
+      duration = time.time() - start
+    except OSError as e:
+      duration = time.time() - start
+      return test.message(
+          '%s exec failure (%4.2fs)\n   %s' % (test.name, duration, e))
+    if p.returncode != 0:
+      return test.message(
+          '%s (%4.2fs) failed\n%s' % (test.name, duration, stdout))
+    if test.info:
+      return test.info('%s (%4.2fs)' % (test.name, duration))
+
+  def AddTests(self, tests, parallel=True):
+    if parallel:
+      self._tests.extend(tests)
+    else:
+      self._nonparallel_tests.extend(tests)
+
+  def RunAsync(self):
+    self._messages = []
+
+    def _WorkerFn():
+      while True:
+        test = None
+        with self._tests_lock:
+          if not self._tests:
+            break
+          test = self._tests.pop()
+        result = self.CallCommand(test)
+        if result:
+          with self._messages_lock:
+            self._messages.append(result)
+
+    def _StartDaemon():
+      t = threading.Thread(target=_WorkerFn)
+      t.daemon = True
+      t.start()
+      return t
+
+    while self._nonparallel_tests:
+      test = self._nonparallel_tests.pop()
+      result = self.CallCommand(test)
+      if result:
+        self._messages.append(result)
+
+    if self._tests:
+      threads = [_StartDaemon() for _ in range(self._pool_size)]
+      for worker in threads:
+        worker.join()
+
+    return self._messages
 
 
 def normpath(path):
@@ -388,7 +533,7 @@ class InputApi(object):
   )
 
   def __init__(self, change, presubmit_path, is_committing,
-      verbose, gerrit_obj, dry_run=None):
+      verbose, gerrit_obj, dry_run=None, thread_pool=None, parallel=False):
     """Builds an InputApi object.
 
     Args:
@@ -397,6 +542,8 @@ class InputApi(object):
       is_committing: True if the change is about to be committed.
       gerrit_obj: provides basic Gerrit codereview functionality.
       dry_run: if true, some Checks will be skipped.
+      parallel: if true, all tests reported via input_api.RunTests for all
+                PRESUBMIT files will be run in parallel.
     """
     # Version number of the presubmit_support script.
     self.version = [int(x) for x in __version__.split('.')]
@@ -404,6 +551,9 @@ class InputApi(object):
     self.is_committing = is_committing
     self.gerrit = gerrit_obj
     self.dry_run = dry_run
+
+    self.parallel = parallel
+    self.thread_pool = thread_pool or ThreadPool()
 
     # We expose various modules and functions as attributes of the input_api
     # so that presubmit scripts don't have to import them.
@@ -443,12 +593,6 @@ class InputApi(object):
     self.platform = sys.platform
 
     self.cpu_count = multiprocessing.cpu_count()
-
-    # this is done here because in RunTests, the current working directory has
-    # changed, which causes Pool() to explode fantastically when run on windows
-    # (because it tries to load the __main__ module, which imports lots of
-    # things relative to the current working directory).
-    self._run_tests_pool = multiprocessing.Pool(self.cpu_count)
 
     # The local path of the currently-being-processed presubmit script.
     self._current_presubmit_path = os.path.dirname(presubmit_path)
@@ -627,27 +771,23 @@ class InputApi(object):
     return 'TBR' in self.change.tags or self.change.TBRsFromDescription()
 
   def RunTests(self, tests_mix, parallel=True):
+    # RunTests doesn't actually run tests. It adds them to a ThreadPool that
+    # will run all tests once all PRESUBMIT files are processed.
     tests = []
     msgs = []
     for t in tests_mix:
-      if isinstance(t, OutputApi.PresubmitResult):
+      if isinstance(t, OutputApi.PresubmitResult) and t:
         msgs.append(t)
       else:
         assert issubclass(t.message, _PresubmitResult)
         tests.append(t)
         if self.verbose:
           t.info = _PresubmitNotifyResult
-    if len(tests) > 1 and parallel:
-      # async recipe works around multiprocessing bug handling Ctrl-C
-      msgs.extend(self._run_tests_pool.map_async(CallCommand, tests).get(99999))
-    else:
-      msgs.extend(map(CallCommand, tests))
-    return [m for m in msgs if m]
-
-  def ShutdownPool(self):
-    self._run_tests_pool.close()
-    self._run_tests_pool.join()
-    self._run_tests_pool = None
+        t.kwargs['cwd'] = self.PresubmitLocalPath()
+    self.thread_pool.AddTests(tests, parallel)
+    if not self.parallel:
+      msgs.extend(self.thread_pool.RunAsync())
+    return msgs
 
 
 class _DiffCache(object):
@@ -1265,13 +1405,15 @@ def DoPostUploadExecuter(change,
 
 class PresubmitExecuter(object):
   def __init__(self, change, committing, verbose,
-               gerrit_obj, dry_run=None):
+               gerrit_obj, dry_run=None, thread_pool=None, parallel=False):
     """
     Args:
       change: The Change object.
       committing: True if 'git cl land' is running, False if 'git cl upload' is.
       gerrit_obj: provides basic Gerrit codereview functionality.
       dry_run: if true, some Checks will be skipped.
+      parallel: if true, all tests reported via input_api.RunTests for all
+                PRESUBMIT files will be run in parallel.
     """
     self.change = change
     self.committing = committing
@@ -1279,6 +1421,8 @@ class PresubmitExecuter(object):
     self.verbose = verbose
     self.dry_run = dry_run
     self.more_cc = []
+    self.thread_pool = thread_pool
+    self.parallel = parallel
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -1299,7 +1443,8 @@ class PresubmitExecuter(object):
     # Load the presubmit script into context.
     input_api = InputApi(self.change, presubmit_path, self.committing,
                          self.verbose, gerrit_obj=self.gerrit,
-                         dry_run=self.dry_run)
+                         dry_run=self.dry_run, thread_pool=self.thread_pool,
+                         parallel=self.parallel)
     output_api = OutputApi(self.committing)
     context = {}
     try:
@@ -1334,8 +1479,6 @@ class PresubmitExecuter(object):
     else:
       result = ()  # no error since the script doesn't care about current event.
 
-    input_api.ShutdownPool()
-
     # Return the process to the original working directory.
     os.chdir(main_path)
     return result
@@ -1348,7 +1491,8 @@ def DoPresubmitChecks(change,
                       default_presubmit,
                       may_prompt,
                       gerrit_obj,
-                      dry_run=None):
+                      dry_run=None,
+                      parallel=False):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1369,6 +1513,8 @@ def DoPresubmitChecks(change,
                 any questions are answered with yes by default.
     gerrit_obj: provides basic Gerrit codereview functionality.
     dry_run: if true, some Checks will be skipped.
+    parallel: if true, all tests specified by input_api.RunTests in all
+              PRESUBMIT files will be run in parallel.
 
   Warning:
     If may_prompt is true, output_stream SHOULD be sys.stdout and input_stream
@@ -1395,8 +1541,9 @@ def DoPresubmitChecks(change,
     if not presubmit_files and verbose:
       output.write("Warning, no PRESUBMIT.py found.\n")
     results = []
+    thread_pool = ThreadPool()
     executer = PresubmitExecuter(change, committing, verbose,
-                                 gerrit_obj, dry_run)
+                                 gerrit_obj, dry_run, thread_pool)
     if default_presubmit:
       if verbose:
         output.write("Running default presubmit script.\n")
@@ -1409,6 +1556,8 @@ def DoPresubmitChecks(change,
       # Accept CRLF presubmit script.
       presubmit_script = gclient_utils.FileRead(filename, 'rU')
       results += executer.ExecPresubmitScript(presubmit_script, filename)
+
+    results += thread_pool.RunAsync()
 
     output.more_cc.extend(executer.more_cc)
     errors = []
@@ -1517,41 +1666,6 @@ def canned_check_filter(method_names):
       setattr(presubmit_canned_checks, name, method)
 
 
-def CallCommand(cmd_data):
-  """Runs an external program, potentially from a child process created by the
-  multiprocessing module.
-
-  multiprocessing needs a top level function with a single argument.
-
-  This function converts invocation of .py files and invocations of "python" to
-  vpython invocations.
-  """
-  vpython = 'vpython.bat' if sys.platform == 'win32' else 'vpython'
-
-  cmd = cmd_data.cmd
-  if cmd[0] == 'python':
-    cmd = list(cmd)
-    cmd[0] = vpython
-  elif cmd[0].endswith('.py'):
-    cmd = [vpython] + cmd
-
-  cmd_data.kwargs['stdout'] = subprocess.PIPE
-  cmd_data.kwargs['stderr'] = subprocess.STDOUT
-  try:
-    start = time.time()
-    (out, _), code = subprocess.communicate(cmd, **cmd_data.kwargs)
-    duration = time.time() - start
-  except OSError as e:
-    duration = time.time() - start
-    return cmd_data.message(
-        '%s exec failure (%4.2fs)\n   %s' % (cmd_data.name, duration, e))
-  if code != 0:
-    return cmd_data.message(
-        '%s (%4.2fs) failed\n%s' % (cmd_data.name, duration, out))
-  if cmd_data.info:
-    return cmd_data.info('%s (%4.2fs)' % (cmd_data.name, duration))
-
-
 def main(argv=None):
   parser = optparse.OptionParser(usage="%prog [options] <files...>",
                                  version="%prog " + str(__version__))
@@ -1587,6 +1701,9 @@ def main(argv=None):
   parser.add_option("--gerrit_url", help=optparse.SUPPRESS_HELP)
   parser.add_option("--gerrit_fetch", action='store_true',
                     help=optparse.SUPPRESS_HELP)
+  parser.add_option('--parallel', action='store_true',
+                    help='Run all tests specified by input_api.RunTests in all '
+                         'PRESUBMIT files in parallel.')
 
   options, args = parser.parse_args(argv)
 
@@ -1630,7 +1747,8 @@ def main(argv=None):
           options.default_presubmit,
           options.may_prompt,
           gerrit_obj,
-          options.dry_run)
+          options.dry_run,
+          options.parallel)
     return not results.should_continue()
   except PresubmitFailure, e:
     print >> sys.stderr, e

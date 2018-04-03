@@ -1519,13 +1519,14 @@ class Changelist(object):
         new_description += foot + '\n'
     self.UpdateDescription(new_description, force)
 
-  def RunHook(self, committing, may_prompt, verbose, change):
+  def RunHook(self, committing, may_prompt, verbose, change, parallel):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     try:
       return presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
           default_presubmit=None, may_prompt=may_prompt,
-          gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit())
+          gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit(),
+          parallel=parallel)
     except presubmit_support.PresubmitFailure as e:
       DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
 
@@ -1589,9 +1590,9 @@ class Changelist(object):
                                             change)
         change.SetDescriptionText(change_description.description)
       hook_results = self.RunHook(committing=False,
-                                may_prompt=not options.force,
-                                verbose=options.verbose,
-                                change=change)
+                                  may_prompt=not options.force,
+                                  verbose=options.verbose,
+                                  change=change, parallel=options.parallel)
       if not hook_results.should_continue():
         return 1
       if not options.reviewers and hook_results.reviewers:
@@ -4793,6 +4794,9 @@ def CMDpresubmit(parser, args):
                     help='Run checks even if tree is dirty')
   parser.add_option('--all', action='store_true',
                     help='Run checks against all files, not just modified ones')
+  parser.add_option('--parallel', action='store_true',
+                    help='Run all tests specified by input_api.RunTests in all '
+                         'PRESUBMIT files in parallel.')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -4827,7 +4831,8 @@ def CMDpresubmit(parser, args):
       committing=not options.upload,
       may_prompt=False,
       verbose=options.verbose,
-      change=change)
+      change=change,
+      parallel=options.parallel)
   return 0
 
 
@@ -5009,6 +5014,9 @@ def CMDupload(parser, args):
                     help='Sends your change to the CQ after an approval. Only '
                          'works on repos that have the Auto-Submit label '
                          'enabled')
+  parser.add_option('--parallel', action='store_true',
+                    help='Run all tests specified by input_api.RunTests in all '
+                         'PRESUBMIT files in parallel.')
 
   # TODO: remove Rietveld flags
   parser.add_option('--private', action='store_true',
