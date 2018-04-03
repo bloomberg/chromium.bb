@@ -38,13 +38,13 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
 
   // Creates a HoverButton with custom subviews. |icon_view| replaces the
   // LabelButton icon, and titles appear on separate rows. An empty |subtitle|
-  // will vertically center |title|. If |show_submenu_arrow| is true, an arrow
-  // is shown, analogous to menu items with submenus.
+  // will vertically center |title|. |secondary_icon_view|, when set, is shown
+  // on the opposite side of the button from |icon_view|.
   HoverButton(views::ButtonListener* button_listener,
               std::unique_ptr<views::View> icon_view,
               const base::string16& title,
               const base::string16& subtitle,
-              bool show_submenu_arrow = false);
+              std::unique_ptr<views::View> secondary_icon_view = nullptr);
 
   ~HoverButton() override;
 
