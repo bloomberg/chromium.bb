@@ -106,12 +106,16 @@ void AnimationEffect::getComputedTiming(
   computed_timing.setEndTime(EndTimeInternal() * 1000);
   computed_timing.setActiveDuration(ActiveDurationInternal() * 1000);
 
-  if (EnsureCalculated().is_in_effect) {
+  if (IsNull(EnsureCalculated().local_time)) {
+    computed_timing.setLocalTimeToNull();
+  } else {
     computed_timing.setLocalTime(EnsureCalculated().local_time * 1000);
+  }
+
+  if (EnsureCalculated().is_in_effect) {
     computed_timing.setProgress(EnsureCalculated().progress.value());
     computed_timing.setCurrentIteration(EnsureCalculated().current_iteration);
   } else {
-    computed_timing.setLocalTimeToNull();
     computed_timing.setProgressToNull();
     computed_timing.setCurrentIterationToNull();
   }
