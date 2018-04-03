@@ -78,23 +78,22 @@ int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
 
 // Use only_chroma = 1 to only set the chroma planes
 static void set_planes_to_neutral_grey(AV1_COMMON *const cm,
-                                       MACROBLOCKD *const xd, int only_chroma) {
-  YV12_BUFFER_CONFIG *cur_buf = (YV12_BUFFER_CONFIG *)xd->cur_buf;
+                                       const YV12_BUFFER_CONFIG *const buf,
+                                       int only_chroma) {
   const int val = 1 << (cm->bit_depth - 1);
 
   for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
     const int is_uv = plane > 0;
-    for (int row_idx = 0; row_idx < cur_buf->crop_heights[is_uv]; row_idx++) {
+    for (int row_idx = 0; row_idx < buf->crop_heights[is_uv]; row_idx++) {
       if (cm->use_highbitdepth) {
         // TODO(yaowu): replace this with aom_memset16() for speed
-        for (int col_idx = 0; col_idx < cur_buf->crop_widths[is_uv];
-             col_idx++) {
-          uint16_t *base = CONVERT_TO_SHORTPTR(cur_buf->buffers[plane]);
-          base[row_idx * cur_buf->strides[is_uv] + col_idx] = val;
+        for (int col_idx = 0; col_idx < buf->crop_widths[is_uv]; col_idx++) {
+          uint16_t *base = CONVERT_TO_SHORTPTR(buf->buffers[plane]);
+          base[row_idx * buf->strides[is_uv] + col_idx] = val;
         }
       } else {
-        memset(&cur_buf->buffers[plane][row_idx * cur_buf->uv_stride], 1 << 7,
-               cur_buf->crop_widths[is_uv]);
+        memset(&buf->buffers[plane][row_idx * buf->uv_stride], 1 << 7,
+               buf->crop_widths[is_uv]);
       }
     }
   }
@@ -2727,7 +2726,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                                "Failed to allocate frame buffer");
           }
           unlock_buffer_pool(pool);
-          set_planes_to_neutral_grey(cm, xd, 0);
+          set_planes_to_neutral_grey(cm, &frame_bufs[buf_idx].buf, 0);
 
           cm->ref_frame_map[ref_idx] = buf_idx;
           frame_bufs[buf_idx].cur_frame_offset = frame_offset;
@@ -3241,7 +3240,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   const int num_planes = av1_num_planes(cm);
   // If the bit stream is monochrome, set the U and V buffers to a constant.
-  if (num_planes < 3) set_planes_to_neutral_grey(cm, xd, 1);
+  if (num_planes < 3) set_planes_to_neutral_grey(cm, xd->cur_buf, 1);
 
   if (endTile != cm->tile_rows * cm->tile_cols - 1) {
     return;
