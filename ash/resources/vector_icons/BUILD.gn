@@ -168,6 +168,10 @@ aggregate_vector_icons("ash_vector_icons") {
     "touch_calibration_complete_check.icon",
     "touch_calibration_hand.icon",
     "tray_action_new_lock_screen_note.icon",
+    "window_control_back.icon",
+    "window_control_dezoom.icon",
+    "window_control_menu.icon",
+    "window_control_zoom.icon",
   ]
 
   if (is_chrome_branded) {
