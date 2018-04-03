@@ -50,10 +50,14 @@ void SVGMaskPainter::FinishEffect(const LayoutObject& object,
     Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       const auto* properties = object.FirstFragment().PaintProperties();
-      DCHECK(properties && properties->Mask());
-      scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                            properties->Mask(), object,
-                                            DisplayItem::kSVGMask);
+      // TODO(crbug.com/814815): This condition should be a DCHECK, but for now
+      // we may paint the object for filters during PrePaint before the
+      // properties are ready.
+      if (properties && properties->Mask()) {
+        scoped_paint_chunk_properties.emplace(context.GetPaintController(),
+                                              properties->Mask(), object,
+                                              DisplayItem::kSVGMask);
+      }
     }
 
     DrawMaskForLayoutObject(context, object, object.ObjectBoundingBox());
