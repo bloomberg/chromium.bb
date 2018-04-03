@@ -1602,7 +1602,7 @@ static const uint8_t ii_weights1d[MAX_SB_SIZE] = {
 static uint8_t ii_size_scales[BLOCK_SIZES_ALL] = {
     32, 16, 16, 16, 8, 8, 8, 4,
     4,  4,  2,  2,  2, 1, 1, 1,
-    16, 16, 8, 8, 4, 4
+    8,  8,  4,  4,  2, 2
 };
 /* clang-format on */
 
