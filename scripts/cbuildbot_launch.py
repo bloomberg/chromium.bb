@@ -16,6 +16,7 @@ branch, but not on TOT.
 
 from __future__ import print_function
 
+import datetime
 import functools
 import os
 
@@ -30,10 +31,14 @@ from chromite.lib import osutils
 from chromite.lib import ts_mon_config
 from chromite.scripts import cbuildbot
 
+# Import setup by chromite import
+from infra_libs.time_functions import zulu
+
 
 # This number should be incremented when we change the layout of the buildroot
 # in a non-backwards compatible way. This wipes all buildroots.
 BUILDROOT_BUILDROOT_LAYOUT = 2
+_DISTFILES_CACHE_EXPIRY_DAYS = 8
 
 # Metrics reported to Monarch.
 METRIC_ACTIVE = 'chromeos/chromite/cbuildbot_launch/active'
@@ -45,6 +50,8 @@ METRIC_INITIAL = 'chromeos/chromite/cbuildbot_launch/initial_checkout_durations'
 METRIC_CBUILDBOT = 'chromeos/chromite/cbuildbot_launch/cbuildbot_durations'
 METRIC_CLOBBER = 'chromeos/chromite/cbuildbot_launch/clobber'
 METRIC_BRANCH_CLEANUP = 'chromeos/chromite/cbuildbot_launch/branch_cleanup'
+METRIC_DISTFILES_CLEANUP = (
+    'chromeos/chromite/cbuildbot_launch/distfiles_cleanup')
 METRIC_DEPOT_TOOLS = 'chromeos/chromite/cbuildbot_launch/depot_tools_prep'
 
 
@@ -128,30 +135,91 @@ def GetState(root):
   Returns:
     Layout version as an integer (0 for unknown).
     Previous branch as a string ('' for unknown).
+    Last distfiles clearance time as datetime.datetime (None for unknown).
   """
   state_file = os.path.join(root, '.cbuildbot_launch_state')
 
   try:
     state = osutils.ReadFile(state_file)
-    buildroot_layout, branchname = state.split()
-    buildroot_layout = int(buildroot_layout)
-    return buildroot_layout, branchname
-  except (IOError, ValueError):
+    parts = state.split()
+    if len(parts) >= 3:
+      return int(parts[0]), parts[1], parts[2]
+    else:
+      # TODO(pprabhu) delete this branch once most buildslaves have migrated to
+      # newer state with three parts.
+      return int(parts[0]), parts[1], None
+  except (IOError, ValueError, IndexError):
     # If we are unable to either read or parse the state file, we get here.
-    return 0, ''
+    return 0, '', None
 
 
-def SetState(branchname, root):
+def SetState(branchname, root, distfiles_ts=None):
   """Save the current state of our working directory.
 
   Args:
     branchname: Name of branch we prepped for as a string.
     root: Root of the working directory tree as a string.
+    distfiles_ts: A timestamp str to include as the distfiles timestamp. If
+        None, current time will be used.
   """
   assert branchname
   state_file = os.path.join(root, '.cbuildbot_launch_state')
-  new_state = '%d %s' % (BUILDROOT_BUILDROOT_LAYOUT, branchname)
+  if distfiles_ts is None:
+    now = datetime.datetime.utcnow()
+    distfiles_ts = zulu.to_zulu_string(now)
+  new_state = '%d %s %s' % (
+      BUILDROOT_BUILDROOT_LAYOUT, branchname, distfiles_ts)
   osutils.WriteFile(state_file, new_state)
+
+
+def _ComputeAge(timestamp_utc):
+  """Compute timedelta since a given timestamp.
+
+  Args:
+    timestamp_utc: A string representation of a timestamp in utc.
+
+  Returns:
+    a datetime.timedelta object, None on errors.
+  """
+  try:
+    last = zulu.parse_zulu_time(timestamp_utc)
+  except (OverflowError, ValueError, OSError):
+    return None
+  now = datetime.datetime.utcnow()
+  return now - last
+
+
+def _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields):
+  """Cleans the distfiles directory if too old.
+
+  Args:
+    repo: repository.RepoRepository instance.
+    distfiles_ts: A timestamp str for the last time distfiles was cleaned. May
+    be None.
+    metrics_fields: Dictionary of fields to include in metrics.
+
+  Returns:
+    The new distfiles_ts to persist in state.
+  """
+
+  if distfiles_ts is None:
+    return None
+
+  distfiles_age = _ComputeAge(distfiles_ts)
+  if distfiles_age is None:
+    # Corrupted distfiles_ts. Reset it
+    return None
+  if distfiles_age < datetime.timedelta(days=_DISTFILES_CACHE_EXPIRY_DAYS):
+    return distfiles_age
+
+  logging.info('Remove old distfiles cache (cache expiry %d days)',
+               _DISTFILES_CACHE_EXPIRY_DAYS)
+  osutils.RmDir(os.path.join(repo.directory, '.cache', 'distfiles'),
+                ignore_missing=True, sudo=True)
+  metrics.Counter(METRIC_DISTFILES_CLEANUP).increment(
+      field(metrics_fields, reason='cache_expired'))
+  # Cleaned cache, so reset distfiles_ts
+  return None
 
 
 @StageDecorator
@@ -167,7 +235,8 @@ def CleanBuildRoot(root, repo, metrics_fields):
     repo: repository.RepoRepository instance.
     metrics_fields: Dictionary of fields to include in metrics.
   """
-  old_buildroot_layout, old_branch = GetState(root)
+  old_buildroot_layout, old_branch, distfiles_ts = GetState(root)
+  distfiles_ts = _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields)
 
   if old_buildroot_layout != BUILDROOT_BUILDROOT_LAYOUT:
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
@@ -205,7 +274,7 @@ def CleanBuildRoot(root, repo, metrics_fields):
 
   # Ensure buildroot exists. Save the state we are prepped for.
   osutils.SafeMakedirs(repo.directory)
-  SetState(repo.branch, root)
+  SetState(repo.branch, root, distfiles_ts)
 
 
 @StageDecorator
