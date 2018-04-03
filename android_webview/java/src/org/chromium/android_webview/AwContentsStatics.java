@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.Uri;
 
@@ -109,8 +108,6 @@ public class AwContentsStatics {
         nativeSetSafeBrowsingWhitelist(urlArray, callback);
     }
 
-    @SuppressWarnings("unchecked")
-    @TargetApi(19)
     public static void initSafeBrowsing(Context context, final Callback<Boolean> callback) {
         // Wrap the callback to make sure we always invoke it on the UI thread, as guaranteed by the
         // API.

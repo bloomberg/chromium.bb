@@ -44,7 +44,6 @@ public class AwSafeBrowsingConfigHelper {
                 "SafeBrowsing.WebView.AppOptIn", value, AppOptIn.COUNT);
     }
 
-    @SuppressWarnings("unchecked")
     public static void maybeEnableSafeBrowsingFromManifest(final Context appContext) {
         Boolean appOptIn = getAppOptInPreference(appContext);
         if (appOptIn == null) {
