@@ -39,6 +39,11 @@ public class VrMainActivity extends Activity {
         try {
             super.onCreate(savedInstanceState);
 
+            if (!VrShellDelegate.isDaydreamReadyDevice(this)) {
+                finish();
+                return;
+            }
+
             // If the launcher was launched from a 2D context (without calling
             // DaydreamApi#launchInVr), then we need to relaunch the launcher in VR to allow
             // downstream Activities to make assumptions about whether they're in VR or not, and

@@ -784,6 +784,15 @@ public class VrShellDelegate
         return api.isInVrSession();
     }
 
+    public static boolean isDaydreamReadyDevice(Activity activty) {
+        if (sInstance != null) return sInstance.mVrDaydreamApi.isDaydreamReadyDevice();
+        VrClassesWrapper wrapper = getVrClassesWrapper();
+        if (wrapper == null) return false;
+        VrDaydreamApi api = wrapper.createVrDaydreamApi(activty);
+        if (api == null) return false;
+        return api.isDaydreamReadyDevice();
+    }
+
     // TODO(mthiesse): Should have package visibility only. We need to unify our vr and vr_shell
     // packages.
     public static boolean willChangeDensityInVr(ChromeActivity activity) {
