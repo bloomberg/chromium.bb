@@ -1,41 +1,37 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-.cell { 
-    padding: 12px; 
-    font-size: 24px;
-    height: 48px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+selection_test(
+  [
+    '<div contenteditable>',
+      '<frijole style="display:block;">one two three</frijole>',
+      '<doodad style="display:block;">four| five six</doodad>',
+    '</div>',
+  ],
+  selection => selection.modify('move', 'backward', 'sentence'),
+  [
+    '<div contenteditable>',
+      '<frijole style="display:block;">one two three</frijole>',
+      '<doodad style="display:block;">|four five six</doodad>',
+    '</div>',
+  ],
+  '1 move backward sentence');
 
-function editingTest() {
-	moveSelectionForwardByLineCommand();    
-	moveSelectionForwardByWordCommand();    
-	moveSelectionBackwardBySentenceCommand();    
-	extendSelectionForwardBySentenceCommand();    
-}
-
+selection_test(
+  [
+    '<div contenteditable>',
+      '<frijole style="display:block;">one two three</frijole>',
+      '<doodad style="display:block;">|four five six</doodad>',
+    '</div>',
+  ],
+  selection => selection.modify('extend', 'forward', 'sentence'),
+  [
+    '<div contenteditable>',
+      '<frijole style="display:block;">one two three</frijole>',
+      '<doodad style="display:block;">^four five six|</doodad>',
+    '</div>',
+  ],
+  '2 extend forkward sentence');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<div contenteditable id="root" class="editing">
-<frijole style="display:block;" id="test">one two three<frijole>
-<doodad style="display:block;">four five six</doodad>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
