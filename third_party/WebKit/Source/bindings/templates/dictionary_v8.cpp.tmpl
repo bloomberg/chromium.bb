@@ -83,7 +83,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {% if member.deprecate_as %}
     Deprecation::CountDeprecation(CurrentExecutionContext(isolate), WebFeature::k{{member.deprecate_as}});
     {% endif %}
-    {{v8_value_to_local_cpp_value(member) | indent}}
+    {{v8_value_to_local_cpp_value(member) | trim | indent}}
     {% if member.is_interface_type %}
     if (!{{member.name}}CppValue) {
       exceptionState.ThrowTypeError("member {{member.name}} is not of type {{member.idl_type}}.");
@@ -91,7 +91,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     }
     {% endif %}
     {% if member.enum_values %}
-    {{declare_enum_validation_variable(member.enum_values) | indent}}
+    {{declare_enum_validation_variable(member.enum_values) | trim | indent}}
     if (!IsValidEnum({{member.name}}CppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.enum_type}}", exceptionState))
       return;
     {% elif member.is_object %}

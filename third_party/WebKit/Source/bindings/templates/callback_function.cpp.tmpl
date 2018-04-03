@@ -73,7 +73,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
 #if DCHECK_IS_ON()
   {
     {% set valid_enum_variables = 'valid_' + argument.name + '_values' %}
-    {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | indent(4)}}
+    {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | trim | indent(4)}}
     ExceptionState exception_state(GetIsolate(),
                                    ExceptionState::kExecutionContext,
                                    "{{callback_function_name}}",
@@ -128,7 +128,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
                                   ExceptionState::kExecutionContext,
                                   "{{callback_function_name}}",
                                   "invoke");
-    {{v8_value_to_local_cpp_value(return_value_conversion) | indent(4)}}
+    {{v8_value_to_local_cpp_value(return_value_conversion) | trim | indent(4)}}
     return v8::Just<{{return_cpp_type}}>(native_result);
   }
   {% endif %}

@@ -58,7 +58,7 @@ static void Install{{v8_class}}Template(
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register DOM constants.
-  {{install_constants() | indent(2)}}
+  {{install_constants() | trim | indent(2)}}
 }
 
 v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate,
