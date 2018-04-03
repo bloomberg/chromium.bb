@@ -1153,7 +1153,7 @@
     ],
   },
   "load_library_perf_tests_v2": {
-    "label": "//chrome/test:load_library_perf_tests",
+    "label": "//chrome/test:load_library_perf_tests_v2",
     "type": "script",
     "script": "//testing/scripts/run_performance_tests.py",
     "args": [
