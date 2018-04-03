@@ -20,48 +20,64 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PendingInvalidationTest {
-    private static String sObjecId = "ObjectId";
-    private static int sObjectSource = 4;
-    private static long sVersion = 5;
-    private static String sPayload = "Payload";
-
     @Test
-    public void testParseFromBundle() {
-        PendingInvalidation invalidation =
-                new PendingInvalidation(sObjecId, sObjectSource, sVersion, sPayload);
-        Bundle bundle =
-                PendingInvalidation.createBundle(sObjecId, sObjectSource, sVersion, sPayload);
-        PendingInvalidation parsedInvalidation = new PendingInvalidation(bundle);
-        assertEquals(sObjecId, parsedInvalidation.mObjectId);
-        assertEquals(sObjectSource, parsedInvalidation.mObjectSource);
-        assertEquals(sVersion, parsedInvalidation.mVersion);
-        assertEquals(sPayload, parsedInvalidation.mPayload);
-        assertEquals(invalidation, parsedInvalidation);
+    public void testFullData() {
+        String objectId = "ObjectId";
+        int objectSource = 4;
+        long version = 5;
+        String payload = "Payload";
+        doTestParseFromBundle(objectId, objectSource, version, payload);
+        doTestParseToAndFromProtocolBuffer(objectId, objectSource, version, payload);
+        doTestParseToAndFromProtocolBufferThroughBundle(objectId, objectSource, version, payload);
     }
 
     @Test
-    public void testParseToAndFromProtocolBuffer() {
+    public void testNoData() {
+        String objectId = null;
+        int objectSource = 4;
+        long version = 0L;
+        String payload = null;
+        doTestParseFromBundle(objectId, objectSource, version, payload);
+        doTestParseToAndFromProtocolBuffer(objectId, objectSource, version, payload);
+        doTestParseToAndFromProtocolBufferThroughBundle(objectId, objectSource, version, payload);
+    }
+
+    public void doTestParseFromBundle(
+            String objectId, int objectSource, long version, String payload) {
         PendingInvalidation invalidation =
-                new PendingInvalidation(sObjecId, sObjectSource, sVersion, sPayload);
+                new PendingInvalidation(objectId, objectSource, version, payload);
+        Bundle bundle = PendingInvalidation.createBundle(objectId, objectSource, version, payload);
+        PendingInvalidation parsedInvalidation = new PendingInvalidation(bundle);
+        assertEquals(objectId, parsedInvalidation.mObjectId);
+        assertEquals(objectSource, parsedInvalidation.mObjectSource);
+        assertEquals(version, parsedInvalidation.mVersion);
+        assertEquals(payload, parsedInvalidation.mPayload);
+        assertEquals(invalidation, parsedInvalidation);
+    }
+
+    public void doTestParseToAndFromProtocolBuffer(
+            String objectId, int objectSource, long version, String payload) {
+        PendingInvalidation invalidation =
+                new PendingInvalidation(objectId, objectSource, version, payload);
         PendingInvalidation parsedInvalidation =
                 PendingInvalidation.decodeToPendingInvalidation(invalidation.encodeToString());
-        assertEquals(sObjecId, parsedInvalidation.mObjectId);
-        assertEquals(sObjectSource, parsedInvalidation.mObjectSource);
-        assertEquals(sVersion, parsedInvalidation.mVersion);
-        assertEquals(sPayload, parsedInvalidation.mPayload);
+        assertEquals(objectId, parsedInvalidation.mObjectId);
+        assertEquals(objectSource, parsedInvalidation.mObjectSource);
+        assertEquals(version, parsedInvalidation.mVersion);
+        assertEquals(payload, parsedInvalidation.mPayload);
         assertEquals(invalidation, parsedInvalidation);
     }
 
-    @Test
-    public void testParseToAndFromProtocolBufferThroughBundle() {
+    public void doTestParseToAndFromProtocolBufferThroughBundle(
+            String objectId, int objectSource, long version, String payload) {
         PendingInvalidation invalidation =
-                new PendingInvalidation(sObjecId, sObjectSource, sVersion, sPayload);
+                new PendingInvalidation(objectId, objectSource, version, payload);
         Bundle bundle = PendingInvalidation.decodeToBundle(invalidation.encodeToString());
         PendingInvalidation parsedInvalidation = new PendingInvalidation(bundle);
-        assertEquals(sObjecId, parsedInvalidation.mObjectId);
-        assertEquals(sObjectSource, parsedInvalidation.mObjectSource);
-        assertEquals(sVersion, parsedInvalidation.mVersion);
-        assertEquals(sPayload, parsedInvalidation.mPayload);
+        assertEquals(objectId, parsedInvalidation.mObjectId);
+        assertEquals(objectSource, parsedInvalidation.mObjectSource);
+        assertEquals(version, parsedInvalidation.mVersion);
+        assertEquals(payload, parsedInvalidation.mPayload);
         assertEquals(invalidation, parsedInvalidation);
     }
 }
