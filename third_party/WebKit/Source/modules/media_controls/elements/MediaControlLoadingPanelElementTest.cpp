@@ -114,13 +114,8 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
     ExpectAnimationIterationInfinite();
 
     // Transition the media controls to a playing state and expect the loading
-    // panel to start cooling down.
+    // panel to hide immediately.
     SimulatePlaying();
-    ExpectStateIsCoolingDown();
-    ExpectAnimationIterationCount("4");
-
-    // Simulate the animations ending.
-    SimulateAnimationEnd();
 
     // Make sure the loading panel is hidden now.
     ExpectStateIsHidden();
@@ -217,7 +212,6 @@ TEST_F(MediaControlLoadingPanelElementTest, Reset_DuringCycle) {
 
   // Now move to playing.
   SimulatePlaying();
-  SimulateAnimationEnd();
   ExpectStateIsHidden();
 }
 
