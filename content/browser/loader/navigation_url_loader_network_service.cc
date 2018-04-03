@@ -836,6 +836,16 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     } else {
       ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
       net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
+
+      // The |url_request| maybe have been removed from the resource dispatcher
+      // host during the time it took for OnReceiveResponse() to be received. In
+      // this case, it means the request has been canceled.
+      // See https://crbug.com/828156.
+      if (!url_request) {
+        OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+        return;
+      }
+
       ResourceRequestInfoImpl* info =
           ResourceRequestInfoImpl::ForRequest(url_request);
       is_download = !response_intercepted && info->IsDownload();
