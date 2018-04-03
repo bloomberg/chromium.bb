@@ -396,6 +396,8 @@ test("browser_tests") {
       # data or data_deps and through which dependencies.
       "//chrome/browser/chromeos/login/test/https_forwarder.py",
       "//chrome/browser/resources/chromeos/wallpaper_manager/",
+      "//chrome/browser/resources/chromeos/zip_archiver/",
+      "//chrome/browser/resources/chromeos/zip_archiver/test/",
       "//chromeos/test/data/",
       "//components/chrome_apps/webstore_widget/cws_widget/",
       "//ui/file_manager/file_manager/",
@@ -1658,6 +1660,7 @@ test("browser_tests") {
         "../browser/extensions/api/screenlock_private/screenlock_private_apitest.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/mash_service_registry_browsertest.cc",
+        "../browser/resources/chromeos/zip_archiver/test/zip_archiver_jstest.cc",
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
         "../browser/ui/app_list/app_list_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
