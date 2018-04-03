@@ -8551,12 +8551,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "mini_installer_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "native_theme_unittests"
       },
       {
