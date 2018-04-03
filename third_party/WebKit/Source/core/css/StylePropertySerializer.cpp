@@ -257,11 +257,6 @@ String StylePropertySerializer::AsText() const {
 
       CSSPropertyID shorthand_property = shorthand.id();
       int shorthand_property_index = shorthand_property - firstCSSProperty;
-      // TODO(timloh): Do we actually need this check? A previous comment
-      // said "old UAs can't recognize them but are important for editing"
-      // but Firefox doesn't do this.
-      if (shorthand_property == CSSPropertyFont)
-        continue;
       // We already tried serializing as this shorthand
       if (shorthand_appeared.test(shorthand_property_index))
         continue;

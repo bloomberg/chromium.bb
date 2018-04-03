@@ -3,7 +3,7 @@ Tests that console logging dumps properly styled messages, and that the whole me
 console-format-style-whitelist.js:13 Colors are awesome.
 Styled text #0: contain: paint; display: inline-block; color: blue;
 console-format-style-whitelist.js:14 So are fonts!
-Styled text #0: contain: paint; display: inline-block; font-style: normal; font-variant: normal; font-weight: normal; font-stretch: normal; font-size: 1em; line-height: normal; font-family: Helvetica;
+Styled text #0: contain: paint; display: inline-block; font: 1em Helvetica;
 console-format-style-whitelist.js:15 And borders and margins and paddings!
 Styled text #0: contain: paint; display: inline-block; border: 1px solid red; margin: 20px; padding: 10px;
 console-format-style-whitelist.js:16 text-* is fine by us!
