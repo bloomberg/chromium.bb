@@ -21,6 +21,7 @@ import android.graphics.RectF;
 import android.graphics.Region.Op;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.SystemClock;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -264,7 +265,11 @@ public class PopupZoomer extends View {
         RectF canvasRect = new RectF(0, 0, canvas.getWidth(), canvas.getHeight());
         float overlayCornerRadius = getOverlayCornerRadius(getContext());
         path.addRoundRect(canvasRect, overlayCornerRadius, overlayCornerRadius, Direction.CCW);
-        canvas.clipPath(path, Op.XOR);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            canvas.clipOutPath(path);
+        } else {
+            canvas.clipPath(path, Op.DIFFERENCE);
+        }
         Paint clearPaint = new Paint();
         clearPaint.setXfermode(new PorterDuffXfermode(Mode.SRC));
         clearPaint.setColor(Color.TRANSPARENT);
