@@ -144,3 +144,24 @@ fuzzer_test("appcache_manifest_parser_fuzzer") {
   seed_corpus =
       "//third_party/WebKit/LayoutTests/http/tests/appcache/resources/"
 }
+
+fuzzer_test("merkle_integrity_source_stream_fuzzer") {
+  sources = [
+    "merkle_integrity_source_stream_fuzzer.cc",
+  ]
+
+  # This fuzzer depends on net::FuzzedSourceStream, in net_fuzzer_test_support,
+  # but both it and //content:test_support set up similar globals. As
+  # MerkleIntegritySourceStream does not depend on anything in //content and
+  # will ultimately live in //net, use the //net one instead of the //content
+  # one.
+  deps = [
+    "//content/browser:for_content_tests",
+    "//content/renderer:for_content_tests",
+    "//content/shell:content_shell_lib",
+    "//content/test:test_support",
+    "//net:net_fuzzer_test_support",
+    "//net:test_support",
+  ]
+  dict = "//content/test/data/fuzzer_dictionaries/merkle_integrity_source_stream_fuzzer.dict"
+}
