@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Datenverschlüsselung</translation>
-<translation id="1074944608454986967">Um sich Inhalte laut vorlesen zu lassen, halten Sie die Suchtaste gedrückt. Klicken oder ziehen Sie anschließend, um Inhalte auszuwählen. Sie können auch einen Bereich markieren und "Suchtaste" + "S" verwenden.</translation>
 <translation id="1076698951459398590">Design aktivieren</translation>
 <translation id="1076818208934827215">Internet Explorer</translation>
 <translation id="1077946062898560804">Automatische Updates für alle Nutzer einrichten</translation>
@@ -3788,7 +3787,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
 <translation id="6980462514016882061">Mithilfe Ihres Browserverlaufs kann Google die Suche, Werbung und andere Google-Dienste personalisieren</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
-<translation id="6983201004195852174">Suchtaste gedrückt halten und anschließend klicken oder ziehen, um den vorzulesenden Inhalt auszuwählen</translation>
 <translation id="6983783921975806247">Registrierte OID</translation>
 <translation id="6983991971286645866">Alle Änderungen werden in $1 gespeichert.</translation>
 <translation id="6984299437918708277">Wählen Sie ein Bild aus, das auf der Anmeldeseite für Ihr Konto zu sehen sein soll</translation>

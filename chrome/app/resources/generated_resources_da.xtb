@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Omsætning af data til kode</translation>
-<translation id="1074944608454986967">Hold søgeknappen nede, og klik eller træk derefter for at vælge det indhold, der skal læses op. Du kan også fremhæve et område, og brug søgeknappen + S.</translation>
 <translation id="1076698951459398590">Aktivér tema</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Konfigurer automatiske opdateringer for alle brugere</translation>
@@ -2159,7 +2158,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindue.</translation>
 <translation id="4364830672918311045">Vis underretninger</translation>
 <translation id="4365673000813822030">Ups, synkroniseringen fungerer ikke.</translation>
-<translation id="4370975561335139969">Den e-mail og adgangskode, du indtastede, stemmer ikke overens</translation>
+<translation id="4370975561335139969">Den mail og adgangskode, du indtastede, stemmer ikke overens</translation>
 <translation id="437184764829821926">Avancerede indstillinger for skrifttype</translation>
 <translation id="4372884569765913867">1 x 1</translation>
 <translation id="4375035964737468845">Åbne downloadede filer</translation>
@@ -2352,7 +2351,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4699357559218762027">(automatisk opstart)</translation>
 <translation id="4707302005824653064">Forbrug og historik kan gennemgås af administratoren (<ph name="CUSTODIAN_EMAIL" />) på chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + brugercertifikat</translation>
-<translation id="4707934200082538898">Tjek din e-mail på <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> for at få yderligere vejledning.</translation>
+<translation id="4707934200082538898">Tjek din mail på <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> for at få yderligere vejledning.</translation>
 <translation id="4708794300267213770">Vis låseskærmen, når enheden vågner fra dvale</translation>
 <translation id="4708849949179781599">Afslut <ph name="PRODUCT_NAME" /></translation>
 <translation id="4711638718396952945">Gendan indstillinger</translation>
@@ -2701,7 +2700,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5254368820972107711">Vis de filer, der skal slettes</translation>
 <translation id="52550593576409946">Terminalapplikationen kunne ikke startes.</translation>
 <translation id="5255315797444241226">Den angivne adgangssætning er forkert.</translation>
-<translation id="5260508466980570042">Din e-mail eller adgangskode blev ikke bekræftet. Prøv igen.</translation>
+<translation id="5260508466980570042">Din mail eller adgangskode blev ikke bekræftet. Prøv igen.</translation>
 <translation id="5261683757250193089">Åbn i Webshop</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Få adgang til filer overalt, også offline.<ph name="MARKUP_2" />
         Filer i Google Drev er opdaterede og tilgængelige på alle enheder.<ph name="MARKUP_3" />
@@ -2883,7 +2882,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5516183516694518900">Log ind på Chrome med din Google-konto for at få dine bogmærker, din historik og dine indstillinger på alle dine enheder.</translation>
 <translation id="551752069230578406">Føjer printer til din konto – dette kan tage et øjeblik...</translation>
 <translation id="5518219166343146486">Spørg om tilladelse, når et website vil se tekst og billeder, der er kopieret til udklipsholderen</translation>
-<translation id="5518584115117143805">Certifikat til kryptering af e-mail</translation>
+<translation id="5518584115117143805">Certifikat til kryptering af mail</translation>
 <translation id="5521078259930077036">Var det den startside, du forventede?</translation>
 <translation id="5521348028713515143">Tilføj skrivebordsgenvej</translation>
 <translation id="5522156646677899028">Denne udvidelse indeholder en alvorlig sikkerhedsbrist.</translation>
@@ -3793,7 +3792,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6979737339423435258">Alle browserdata</translation>
 <translation id="6980462514016882061">Google kan bruge din browserhistorik til at personliggøre Søgning, annoncer og andre Google-tjenester.</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
-<translation id="6983201004195852174">Hold søgeknappen nede, og klik eller træk derefter for at vælge det indhold, der skal læses op</translation>
 <translation id="6983783921975806247">Registreret OID</translation>
 <translation id="6983991971286645866">Alle ændringer gemmes i $1.</translation>
 <translation id="6984299437918708277">Vælg et billede, som skal vises på loginskærmen for din konto</translation>
@@ -5062,7 +5060,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9011178328451474963">Sidste fane</translation>
 <translation id="901440679911238150">Dine kontooplysninger er forældede. <ph name="BEGIN_LINK" />Log ind igen<ph name="END_LINK" />.</translation>
 <translation id="9014987600015527693">Vis en anden telefon</translation>
-<translation id="901834265349196618">e-mail</translation>
+<translation id="901834265349196618">mail</translation>
 <translation id="9019062154811256702">Læse og redigere indstillinger for autofyld</translation>
 <translation id="9020362265352758658">4x</translation>
 <translation id="9021662811137657072">Der er fundet en virus</translation>
@@ -5111,7 +5109,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">USB-mus er tilsluttet</translation>
-<translation id="9076523132036239772">Din e-mail eller adgangskode blev ikke bekræftet. Prøv at oprette forbindelse til et netværk først.</translation>
+<translation id="9076523132036239772">Din mail eller adgangskode blev ikke bekræftet. Prøv at oprette forbindelse til et netværk først.</translation>
 <translation id="9084064520949870008">Åbn som vindue</translation>
 <translation id="9088234649737575428"><ph name="PLUGIN_NAME" /> er blokeret af en virksomhedspolitik</translation>
 <translation id="9088917181875854783">Bekræft, at denne adgangsnøgle vises på "<ph name="DEVICE_NAME" />":</translation>

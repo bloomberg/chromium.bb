@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Cifrado de datos</translation>
-<translation id="1074944608454986967">Para leer el contenido en voz alta, mantén pulsada la tecla de búsqueda y haz clic o arrastra el cursor para seleccionar contenido. También puedes resaltar una zona y pulsar la tecla de búsqueda + S.</translation>
 <translation id="1076698951459398590">Habilitar tema</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Configurar actualizaciones automáticas para todos los usuarios</translation>
@@ -3789,7 +3788,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6979737339423435258">Desde siempre</translation>
 <translation id="6980462514016882061">Google puede utilizar tu historial de navegación para personalizar la Búsqueda, los anuncios y otros servicios de Google</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
-<translation id="6983201004195852174">Mantén pulsada la tecla de búsqueda y haz clic en el contenido o arrastra el cursor para que se lea en voz alta.</translation>
 <translation id="6983783921975806247">OID registrado</translation>
 <translation id="6983991971286645866">Todos los cambios se guardarán en $1.</translation>
 <translation id="6984299437918708277">Selecciona la imagen de tu cuenta que quieres mostrar en la pantalla de inicio de sesión</translation>

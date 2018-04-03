@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Tiedon salakoodaus</translation>
-<translation id="1074944608454986967">Jos haluat lukea sisältöä ääneen, pidä hakupainiketta painettuna ja valitse ääneen luettava sisältö klikkaamalla tai vetämällä. Voit myös korostaa alueen ja valita Haku + S.</translation>
 <translation id="1076698951459398590">Ota teema käyttöön</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Ota käyttöön automaattiset päivitykset kaikille käyttäjille</translation>
@@ -3792,7 +3791,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6979737339423435258">Kaikki</translation>
 <translation id="6980462514016882061">Google voi muokata hakua, mainoksia ja muita Googlen palveluita selaushistoriasi perusteella.</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
-<translation id="6983201004195852174">Pidä hakupainiketta painettuna, ja valitse ääneen luettava sisältö klikkaamalla tai vetämällä.</translation>
 <translation id="6983783921975806247">Rekisteröity OID</translation>
 <translation id="6983991971286645866">Kaikki muokkaukset tallennetaan kohteeseen $1.</translation>
 <translation id="6984299437918708277">Valitse kirjautumisnäytöllä näytettävä tilisi kuvake.</translation>

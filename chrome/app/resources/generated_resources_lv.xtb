@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Datu šifrēšana</translation>
-<translation id="1074944608454986967">Lai saturs tiktu skaļi nolasīts, turiet nospiestu meklēšanas taustiņu, pēc tam atlasiet saturu, noklikšķinot uz satura vai to velkot. Varat arī iezīmēt satura daļu un vienlaicīgi nospiest meklēšanas taustiņu un taustiņu S.</translation>
 <translation id="1076698951459398590">Iespējot motīvu</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Iestatīt visiem lietotājiem pieejamus automātiskos atjauninājumus</translation>
@@ -3792,7 +3791,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6979737339423435258">Visā periodā</translation>
 <translation id="6980462514016882061">Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus.</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
-<translation id="6983201004195852174">Turiet nospiestu meklēšanas taustiņu; pēc tam noklikšķiniet vai velciet, lai atlasītu izrunājamo saturu.</translation>
 <translation id="6983783921975806247">Reģistrētais OID</translation>
 <translation id="6983991971286645866">Visi labojumi tiks saglabāti šeit: $1.</translation>
 <translation id="6984299437918708277">Izvēlieties attēlu, ko rādīt savā kontā pierakstīšanās ekrānā.</translation>

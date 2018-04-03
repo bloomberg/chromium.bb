@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">数据加密</translation>
-<translation id="1074944608454986967">您可通过以下方法让系统读出屏幕上显示的内容：按住搜索键，然后通过点击或拖动鼠标来选择所需内容；或者，突出显示相应区域，然后使用“搜索键 + S”组合键。</translation>
 <translation id="1076698951459398590">启用主题背景</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">为所有用户设置自动更新</translation>
@@ -3778,7 +3777,6 @@
 <translation id="6979737339423435258">时间不限</translation>
 <translation id="6980462514016882061">Google 可能会利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务</translation>
 <translation id="6981982820502123353">无障碍</translation>
-<translation id="6983201004195852174">按住搜索键，然后点击或拖动以选择要让系统大声朗读的内容</translation>
 <translation id="6983783921975806247">已注册的 OID</translation>
 <translation id="6983991971286645866">所有修改都会被保存到 $1。</translation>
 <translation id="6984299437918708277">选择您的帐号在登录屏幕上的显示图片</translation>

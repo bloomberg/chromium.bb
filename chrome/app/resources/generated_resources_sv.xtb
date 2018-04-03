@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Datachiffrering</translation>
-<translation id="1074944608454986967">Om du vill få text uppläst håller du ned söktangenten och markerar det som ska läsas upp genom att klicka eller dra. Du kan också markera ett avsnitt och trycka på söktangenten + S.</translation>
 <translation id="1076698951459398590">Aktivera temat</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Konfigurera automatiska uppdateringar för alla användare</translation>
@@ -3791,7 +3790,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="6979737339423435258">Genom tiderna</translation>
 <translation id="6980462514016882061">Google kan anpassa Sök, annonser och andra Google-tjänster utifrån webbhistoriken.</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
-<translation id="6983201004195852174">Håll söktangenten nedtryckt och markera sedan texten som ska läsas upp genom att klicka och dra</translation>
 <translation id="6983783921975806247">Registrerat OID</translation>
 <translation id="6983991971286645866">Alla ändringar sparas i $1.</translation>
 <translation id="6984299437918708277">Välj en bild som ska visas för ditt konto på inloggningsskärmen</translation>

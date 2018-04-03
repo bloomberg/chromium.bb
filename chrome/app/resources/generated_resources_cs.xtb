@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Šifrování dat</translation>
-<translation id="1074944608454986967">Chcete-li obsah nahlas přečíst, podržte tlačítko Hledat a poté kliknutím nebo přetažením vyberte požadovaný obsah. Můžete také zvýraznit oblast a stisknout klávesy Hledat + S.</translation>
 <translation id="1076698951459398590">Zapnout motiv</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Nastavit automatické aktualizace pro všechny uživatele</translation>
@@ -3789,7 +3788,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6979737339423435258">Od počátku věků</translation>
 <translation id="6980462514016882061">Google vaši historii procházení může používat k personalizaci Vyhledávání, reklam a dalších služeb Google</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
-<translation id="6983201004195852174">Podržte tlačítko Hledat a poté kliknutím nebo přetažením vyberte obsah, který chcete nahlas přečíst</translation>
 <translation id="6983783921975806247">Registrovaný OID</translation>
 <translation id="6983991971286645866">Všechny úpravy budou uloženy do souboru $1.</translation>
 <translation id="6984299437918708277">Vyberte obrázek, který se pro váš účet bude zobrazovat na přihlašovací stránce</translation>

@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">קידוד נתונים</translation>
-<translation id="1074944608454986967">‏כדי שהתוכן יוקרא בקול, יש להקיש על מקש החיפוש ולהחזיק אותו, ולאחר מכן ללחוץ או לגרור כדי לבחור תוכן. לחלופין אפשר להדגיש אזור ולהקיש על מקש החיפוש + S.</translation>
 <translation id="1076698951459398590">הפעל עיצוב</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">הגדר עדכונים אוטומטיים לכל המשתמשים</translation>
@@ -3789,7 +3788,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6979737339423435258">משחר ההיסטוריה</translation>
 <translation id="6980462514016882061">‏חברת Google עשויה להשתמש בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים</translation>
 <translation id="6981982820502123353">נגישות</translation>
-<translation id="6983201004195852174">הקש והחזק את מקש החיפוש ולאחר מכן לחץ או גרור כדי לבחור תוכן להקראה בקול</translation>
 <translation id="6983783921975806247">‏OID רשום</translation>
 <translation id="6983991971286645866">כל העריכות יישמרו ב-$1.</translation>
 <translation id="6984299437918708277">בחר לחשבונך תמונה שתוצג במסך הכניסה</translation>

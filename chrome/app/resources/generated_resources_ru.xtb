@@ -51,7 +51,6 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Шифрование данных</translation>
-<translation id="1074944608454986967">Чтобы прослушать текст на экране, нажмите и удерживайте кнопку Поиск, а затем выберите контент, удерживая левую кнопку мыши. Также можно выделить область и нажать Поиск + S.</translation>
 <translation id="1076698951459398590">Включить тему</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Настройка автообновлений для всех пользователей</translation>
@@ -3793,7 +3792,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6979737339423435258">Все время</translation>
 <translation id="6980462514016882061">Google может использовать историю просмотров для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
-<translation id="6983201004195852174">Если вы хотите озвучить текст, нажмите и удерживайте кнопку поиска, а затем выберите поле или перетащите его, чтобы выделить контент.</translation>
 <translation id="6983783921975806247">Зарегистрированный OID</translation>
 <translation id="6983991971286645866">Все изменения будут сохранены в файле $1.</translation>
 <translation id="6984299437918708277">Выберите картинку, которая будет видна на экране входа в аккаунт</translation>

@@ -91,7 +91,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ved at låse din profil, når du ikke bruger Chrome. Du gør dette ved at klikke på dit profilnavn øverst til højre i browseren og vælge "Afslut, og aktivér børnesikring".
 <ph name="BEGIN_LINK_2" />Få flere oplysninger<ph name="END_LINK_2" />
 
-Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
+Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
 <translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
 <translation id="3395323229510056640">Få hjælp til Chrome OS</translation>
