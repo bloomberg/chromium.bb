@@ -34,6 +34,8 @@ crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Fail
 # Some additional bugs that are caused by painting problems are also within this section.
 
 crbug.com/805292 hittesting/image-with-clip-path.html [ Skip ]
+crbug.com/828314 [ Win10 ] svg/W3C-SVG-1.1/text-intro-01-t.svg [ Failure ]
+crbug.com/828314 [ Win10 ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Failure ]
 
 # Failures due to SPV2, that don't also fail without SPV2. DO NOT REBASELINE.
 # SPv2 paint properties are still being implemented.
