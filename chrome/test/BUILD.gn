@@ -491,6 +491,7 @@ test("browser_tests") {
       "../browser/browsing_data/counters/sync_aware_counter_browsertest.cc",
       "../browser/browsing_data/navigation_entry_remover_browsertest.cc",
       "../browser/budget_service/budget_manager_browsertest.cc",
+      "../browser/chrome_browser_main_browsertest.cc",
       "../browser/chrome_content_browser_client_browsertest.cc",
       "../browser/chrome_content_browser_client_browsertest_chromeos.cc",
       "../browser/chrome_do_not_track_browsertest.cc",
