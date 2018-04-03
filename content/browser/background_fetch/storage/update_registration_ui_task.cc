@@ -60,19 +60,19 @@ void UpdateRegistrationUITask::DidGetUniqueId(
 }
 
 void UpdateRegistrationUITask::UpdateUI(
-    const std::string& serialized_registration_proto) {
-  proto::BackgroundFetchRegistration registration_proto;
-  if (!registration_proto.ParseFromString(serialized_registration_proto)) {
+    const std::string& serialized_metadata_proto) {
+  proto::BackgroundFetchMetadata metadata_proto;
+  if (!metadata_proto.ParseFromString(serialized_metadata_proto)) {
     std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     Finished();  // Destroys |this|.
     return;
   }
 
-  registration_proto.set_title(updated_title_);
+  metadata_proto.set_ui_title(updated_title_);
 
   service_worker_context()->StoreRegistrationUserData(
       service_worker_registration_id_, origin_.GetURL(),
-      {{RegistrationKey(unique_id_), registration_proto.SerializeAsString()}},
+      {{RegistrationKey(unique_id_), metadata_proto.SerializeAsString()}},
       base::BindRepeating(&UpdateRegistrationUITask::DidUpdateUI,
                           weak_factory_.GetWeakPtr()));
 }

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "url/origin.h"
@@ -43,7 +44,11 @@ class GetRegistrationTask : public DatabaseTask {
   void DidGetRegistration(const std::vector<std::string>& data,
                           ServiceWorkerStatusCode status);
 
-  void CreateRegistration(const std::string& registration_data);
+  void InitializeRegistration(
+      const proto::BackgroundFetchRegistration& registration_proto,
+      BackgroundFetchRegistration* registration);
+
+  void CreateRegistration(const std::string& metadata);
 
   int64_t service_worker_registration_id_;
   url::Origin origin_;
