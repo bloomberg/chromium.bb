@@ -732,20 +732,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   return cost;
 }
 
-static INLINE int has_base(tran_low_t qc, int base_idx) {
-  const int level = base_idx + 1;
-  return abs(qc) >= level;
-}
-
-static INLINE int has_br(tran_low_t qc) {
-  return abs(qc) >= 1 + NUM_BASE_LEVELS;
-}
-
-static INLINE void set_eob(TxbInfo *txb_info, int eob) {
-  txb_info->eob = eob;
-  txb_info->seg_eob = av1_get_max_eob(txb_info->tx_size);
-}
-
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
                         const LV_MAP_EOB_COST *txb_eob_costs, int *rate_cost) {
   int update = 0;

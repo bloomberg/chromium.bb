@@ -1146,33 +1146,6 @@ static void get_horver_correlation_full(const int16_t *diff, int stride, int w,
   }
 }
 
-// Performs a forward pass through a neural network with 2 fully-connected
-// layers, assuming ReLU as activation function. Number of output neurons
-// is always equal to 4.
-// fc1, fc2 - weight matrices of the respective layers.
-// b1, b2 - bias vectors of the respective layers.
-static void compute_1D_scores(float *features, int num_features,
-                              const float *fc1, const float *b1,
-                              const float *fc2, const float *b2,
-                              int num_hidden_units, float *dst_scores) {
-  assert(num_hidden_units <= 32);
-  float hidden_layer[32];
-  for (int i = 0; i < num_hidden_units; i++) {
-    const float *cur_coef = fc1 + i * num_features;
-    hidden_layer[i] = 0.0f;
-    for (int j = 0; j < num_features; j++)
-      hidden_layer[i] += cur_coef[j] * features[j];
-    hidden_layer[i] = AOMMAX(hidden_layer[i] + b1[i], 0.0f);
-  }
-  for (int i = 0; i < 4; i++) {
-    const float *cur_coef = fc2 + i * num_hidden_units;
-    dst_scores[i] = 0.0f;
-    for (int j = 0; j < num_hidden_units; j++)
-      dst_scores[i] += cur_coef[j] * hidden_layer[j];
-    dst_scores[i] += b2[i];
-  }
-}
-
 // Transforms raw scores into a probability distribution across 16 TX types
 static void score_2D_transform_pow8(float *scores_2D, float shift) {
   float sum = 0.0f;
