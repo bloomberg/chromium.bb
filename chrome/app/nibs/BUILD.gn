@@ -10,8 +10,6 @@ assert(is_mac)
 translated_xibs = [
   "AppMenu.xib",
   "BookmarkAllTabs.xib",
-  "BookmarkBubble.xib",
-  "BookmarkEditor.xib",
   "BookmarkNameFolder.xib",
   "CookieDetailsView.xib",
   "DownloadItem.xib",
@@ -32,6 +30,8 @@ translated_xibs = [
 
 if (!mac_views_browser) {
   translated_xibs += [
+    "BookmarkBubble.xib",
+    "BookmarkEditor.xib",
     "CollectedCookies.xib",
     "ContentBlockedCookies.xib",
     "ContentBlockedDownloads.xib",

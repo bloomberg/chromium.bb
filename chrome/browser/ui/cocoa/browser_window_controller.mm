@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/buildflag.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -106,6 +107,7 @@
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
+#include "ui/base/ui_features.h"
 #include "ui/display/screen.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
@@ -1605,6 +1607,9 @@ bool IsTabDetachingInFullscreenEnabled() {
         browser_.get(), url, alreadyMarked,
         [self locationBarBridge]->star_decoration());
   } else {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+    NOTREACHED() << "MacViews Browser can't show cocoa dialogs";
+#else
     BookmarkModel* model =
         BookmarkModelFactory::GetForBrowserContext(browser_->profile());
     bookmarks::ManagedBookmarkService* managed =
@@ -1618,6 +1623,7 @@ bool IsTabDetachingInFullscreenEnabled() {
                         node:node
            alreadyBookmarked:alreadyMarked];
     [bookmarkBubbleController_ showWindow:self];
+#endif
   }
   DCHECK(bookmarkBubbleObserver_);
 }
