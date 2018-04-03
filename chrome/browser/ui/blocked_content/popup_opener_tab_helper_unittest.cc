@@ -201,14 +201,14 @@ TEST_F(PopupOpenerTabHelperTest, FirstNavigation_NoLogging) {
   histogram_tester()->ExpectTotalCount(kTabUnderVisibleTime, 0);
 }
 
-TEST_F(PopupOpenerTabHelperTest, VisibleNavigation_LogsMetrics) {
+TEST_F(PopupOpenerTabHelperTest, VisibleNavigation_NoLogging) {
   NavigateAndCommitWithoutGesture(GURL("https://first.test/"));
   SimulatePopup();
   web_contents()->WasShown();
   NavigateAndCommitWithoutGesture(GURL("https://example.test/"));
   raw_clock()->Advance(base::TimeDelta::FromMinutes(1));
   DeleteContents();
-  histogram_tester()->ExpectTotalCount(kTabUnderVisibleTime, 1);
+  histogram_tester()->ExpectTotalCount(kTabUnderVisibleTime, 0);
 }
 
 // This is counter intuitive, but we want to log metrics in the dry-run state if
@@ -748,4 +748,33 @@ TEST_F(BlockTabUnderTest, ControlledByPrefs) {
   prefs->SetBoolean(prefs::kTabUnderProtection, true);
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(GURL("https://example.test2/")));
   ExpectUIShown(true);
+}
+
+// Ensure that even though the *redirect* occurred in the background, if the
+// navigation started in the foreground there is no blocking.
+TEST_F(BlockTabUnderTest,
+       TabUnderCrossOriginRedirectFromForeground_IsNotBlocked) {
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
+  SimulatePopup();
+
+  web_contents()->WasShown();
+
+  // Navigate to a same-origin URL that redirects cross origin.
+  const GURL same_origin("https://first.test/path");
+  const GURL cross_origin("https://example.test/");
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(same_origin,
+                                                            main_rfh());
+  simulator->SetHasUserGesture(false);
+  simulator->Start();
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            simulator->GetLastThrottleCheckResult());
+
+  web_contents()->WasHidden();
+
+  simulator->Redirect(cross_origin);
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            simulator->GetLastThrottleCheckResult());
+  simulator->Commit();
+  ExpectUIShown(false);
 }

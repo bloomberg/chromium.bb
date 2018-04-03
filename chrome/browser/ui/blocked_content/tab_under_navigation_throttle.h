@@ -34,8 +34,18 @@ constexpr char kBlockTabUnderFormatMessage[] =
 //    c. It is cross site to the last committed URL in the tab.
 //    d. The target site has a Site Engagement score below some threshold (by
 //       default, a score of 0).
+//    e. The navigation started in the background.
 // 2. The tab has opened a popup and hasn't received a user gesture since then.
 //    This information is tracked by the PopupOpenerTabHelper.
+//
+//  TODO(csharrison): Unfortunately, the provision that a navigation must start
+//  in the background to be considered a tab-under restricts the scope of the
+//  intervention. For instance, popups that do not completely hide the original
+//  page may cause subsequent tab-under navigations to occur while visible (not
+//  compeltely backgrounded). See https://crbug.com/733736.
+//
+//  For now, we allow these tab-unders because this pattern seems to be
+//  legitimate for some cases (like auth).
 class TabUnderNavigationThrottle : public content::NavigationThrottle {
  public:
   static const base::Feature kBlockTabUnders;
@@ -107,6 +117,10 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
   // Tracks whether this WebContents has opened a popup since the last user
   // gesture, at the time this navigation is starting.
   const bool has_opened_popup_since_last_user_gesture_at_start_ = false;
+
+  // Whether this object was created when the hosting WebContents had visibility
+  // content::Visibility::VISIBLE.
+  const bool started_in_foreground_ = false;
 
   // True if the throttle has seen a tab under.
   bool seen_tab_under_ = false;
