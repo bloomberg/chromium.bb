@@ -38,6 +38,6 @@
     // The camel-cased and dashed attribute getters have custom bindings.
     // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-camel-cased-attribute
     // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-dashed-attribute
-    [Custom=(PropertyGetter,PropertyEnumerator,PropertyQuery)] getter (DOMString or float) (DOMString name);
-    [Custom] setter void (DOMString property, DOMString? propertyValue);
+    getter (DOMString or float) (DOMString name);
+    [CEReactions, CallWith=ScriptState, RaisesException] setter void (DOMString property, DOMString? propertyValue);
 };

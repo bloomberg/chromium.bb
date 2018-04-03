@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8CSSStyleDeclaration.h"
+#include "core/css/CSSStyleDeclaration.h"
 
 #include <algorithm>
-#include "base/memory/scoped_refptr.h"
+
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/string_or_float.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyIDTemplates.h"
 #include "core/css/CSSStyleDeclaration.h"
@@ -41,15 +41,14 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/html/custom/CEReactionsScope.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringConcatenate.h"
 
 namespace blink {
+
+namespace {
 
 // Check for a CSS prefix.
 // Passed prefix is all lowercase.
@@ -57,8 +56,8 @@ namespace blink {
 // lowercase.
 // Other characters in the prefix within the property name must be lowercase.
 // The prefix within the property name must be followed by a capital letter.
-static bool HasCSSPropertyNamePrefix(const String& property_name,
-                                     const char* prefix) {
+bool HasCSSPropertyNamePrefix(const AtomicString& property_name,
+                              const char* prefix) {
 #if DCHECK_IS_ON()
   DCHECK(*prefix);
   for (const char* p = prefix; *p; ++p)
@@ -79,7 +78,7 @@ static bool HasCSSPropertyNamePrefix(const String& property_name,
   return false;
 }
 
-static CSSPropertyID ParseCSSPropertyID(const String& property_name) {
+CSSPropertyID ParseCSSPropertyID(const AtomicString& property_name) {
   unsigned length = property_name.length();
   if (!length)
     return CSSPropertyInvalid;
@@ -130,7 +129,7 @@ static CSSPropertyID ParseCSSPropertyID(const String& property_name) {
 // Example: 'backgroundPositionY' -> 'background-position-y'
 //
 // Also, certain prefixes such as 'css-' are stripped.
-static CSSPropertyID CssPropertyInfo(const AtomicString& name) {
+CSSPropertyID CssPropertyInfo(const AtomicString& name) {
   typedef HashMap<String, CSSPropertyID> CSSPropertyIDMap;
   DEFINE_STATIC_LOCAL(CSSPropertyIDMap, map, ());
   CSSPropertyIDMap::iterator iter = map.find(name);
@@ -147,11 +146,52 @@ static CSSPropertyID CssPropertyInfo(const AtomicString& name) {
   return unresolved_property;
 }
 
-void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(
-    const v8::PropertyCallbackInfo<v8::Array>& info) {
+}  // namespace
+
+void CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name,
+                                               StringOrFloat& result) {
+  // Search the style declaration.
+  CSSPropertyID unresolved_property = CssPropertyInfo(name);
+
+  // Do not handle non-property names.
+  if (!unresolved_property)
+    return;
+  CSSPropertyID resolved_property = resolveCSSPropertyID(unresolved_property);
+
+  const CSSValue* css_value = GetPropertyCSSValueInternal(resolved_property);
+  if (css_value) {
+    const String css_text = css_value->CssText();
+    if (!css_text.IsNull()) {
+      result.SetString(css_text);
+      return;
+    }
+  }
+
+  result.SetString(GetPropertyValueInternal(resolved_property));
+}
+
+bool CSSStyleDeclaration::AnonymousNamedSetter(
+    ScriptState* script_state,
+    const AtomicString& name,
+    const String& value,
+    ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid())
+    return false;
+
+  CSSPropertyID unresolved_property = CssPropertyInfo(name);
+  if (!unresolved_property)
+    return false;
+  SetPropertyInternal(
+      unresolved_property, String(), value, false,
+      ExecutionContext::From(script_state)->GetSecureContextMode(),
+      exception_state);
+  return true;
+}
+
+void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
+                                                  ExceptionState&) {
   typedef Vector<String, numCSSProperties - 1> PreAllocatedPropertyVector;
   DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, property_names, ());
-  static unsigned property_names_length = 0;
 
   if (property_names.IsEmpty()) {
     for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
@@ -163,81 +203,13 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(
     }
     std::sort(property_names.begin(), property_names.end(),
               WTF::CodePointCompareLessThan);
-    property_names_length = property_names.size();
   }
-
-  v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
-  v8::Local<v8::Array> properties =
-      v8::Array::New(info.GetIsolate(), property_names_length);
-  for (unsigned i = 0; i < property_names_length; ++i) {
-    String key = property_names.at(i);
-    DCHECK(!key.IsNull());
-    if (!V8CallBoolean(properties->CreateDataProperty(
-            context, i, V8String(info.GetIsolate(), key))))
-      return;
-  }
-
-  V8SetReturnValue(info, properties);
+  names = property_names;
 }
 
-void V8CSSStyleDeclaration::namedPropertyQueryCustom(
-    const AtomicString& name,
-    const v8::PropertyCallbackInfo<v8::Integer>& info) {
-  // NOTE: cssPropertyInfo lookups incur several mallocs.
-  // Successful lookups have the same cost the first time, but are cached.
-  if (CssPropertyInfo(name)) {
-    V8SetReturnValueInt(info, 0);
-    return;
-  }
-}
-
-void V8CSSStyleDeclaration::namedPropertyGetterCustom(
-    const AtomicString& name,
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
-  // Search the style declaration.
-  CSSPropertyID unresolved_property = CssPropertyInfo(name);
-
-  // Do not handle non-property names.
-  if (!unresolved_property)
-    return;
-  CSSPropertyID resolved_property = resolveCSSPropertyID(unresolved_property);
-
-  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::ToImpl(info.Holder());
-  const CSSValue* css_value =
-      impl->GetPropertyCSSValueInternal(resolved_property);
-  if (css_value) {
-    V8SetReturnValueStringOrNull(info, css_value->CssText(), info.GetIsolate());
-    return;
-  }
-
-  String result = impl->GetPropertyValueInternal(resolved_property);
-  V8SetReturnValueString(info, result, info.GetIsolate());
-}
-
-void V8CSSStyleDeclaration::namedPropertySetterCustom(
-    const AtomicString& name,
-    v8::Local<v8::Value> value,
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
-  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::ToImpl(info.Holder());
-  CSSPropertyID unresolved_property = CssPropertyInfo(name);
-  if (!unresolved_property)
-    return;
-
-  CEReactionsScope ce_reactions_scope;
-  ExecutionContext* execution_context =
-      ToExecutionContext(info.Holder()->CreationContext());
-
-  TOSTRING_VOID(V8StringResource<kTreatNullAsNullString>, property_value,
-                value);
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kSetterContext, "CSSStyleDeclaration",
-      CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
-          .GetPropertyName());
-  impl->SetPropertyInternal(unresolved_property, String(), property_value,
-                            false, execution_context->GetSecureContextMode(),
-                            exception_state);
-
-  V8SetReturnValue(info, value);
+bool CSSStyleDeclaration::NamedPropertyQuery(const AtomicString& name,
+                                             ExceptionState&) {
+  return CssPropertyInfo(name);
 }
 
 }  // namespace blink

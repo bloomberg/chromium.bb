@@ -9,7 +9,6 @@ import("//third_party/WebKit/Source/bindings/modules/v8/v8.gni")
 
 bindings_core_v8_files =
     get_path_info([
-                    "core/v8/custom/V8CSSStyleDeclarationCustom.cpp",
                     "core/v8/custom/V8CustomXPathNSResolver.cpp",
                     "core/v8/custom/V8CustomXPathNSResolver.h",
                     "core/v8/custom/V8DevToolsHostCustom.cpp",
