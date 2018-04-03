@@ -225,13 +225,17 @@ bool UiTest::RunFor(base::TimeDelta delta) {
   base::TimeTicks target_time = current_time_ + delta;
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
   bool changed = false;
-  for (; current_time_ < target_time; current_time_ += frame_time) {
-    if (scene_->OnBeginFrame(current_time_, kStartHeadPose))
-      changed = true;
+
+  // Run a frame in the near future to trigger new state changes.
+  current_time_ += frame_time;
+  changed |= scene_->OnBeginFrame(current_time_, kStartHeadPose);
+
+  // If needed, skip ahead and run another frame at the target time.
+  if (current_time_ < target_time) {
+    current_time_ = target_time;
+    changed |= scene_->OnBeginFrame(current_time_, kStartHeadPose);
   }
-  current_time_ = target_time;
-  if (scene_->OnBeginFrame(current_time_, kStartHeadPose))
-    changed = true;
+
   return changed;
 }
 
@@ -239,7 +243,7 @@ bool UiTest::OnBeginFrame() const {
   return scene_->OnBeginFrame(current_time_, kStartHeadPose);
 }
 
-bool UiTest::OnBeginFrame(base::TimeDelta delta) {
+bool UiTest::OnDelayedFrame(base::TimeDelta delta) {
   current_time_ += delta;
   return OnBeginFrame();
 }

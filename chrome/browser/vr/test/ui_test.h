@@ -89,8 +89,10 @@ class UiTest : public testing::Test {
   // Check if element is using correct opacity in Render recursively.
   void CheckRendererOpacityRecursive(UiElement* element);
 
-  // Advances current_time_ by delta. This is done in frame increments and
-  // UiScene::OnBeginFrame is called at each increment.
+  // Advances current_time_ by delta. This is done by running the next frame,
+  // then jumping time ahead to the final time. Generally, the UI should not
+  // require all intermediate frames to be called. Tests that require this
+  // should simulate the required intermediate frames.
   bool RunFor(base::TimeDelta delta);
 
   // A wrapper to call scene_->OnBeginFrame.
@@ -98,7 +100,8 @@ class UiTest : public testing::Test {
 
   // Also wraps scene_->OnBeginFrame, but advances the current time by the given
   // delta before making the call. This is useful for simulating slow frames.
-  bool OnBeginFrame(base::TimeDelta delta);
+  // Generally, don't use this to simulate delay - use RunFor() instead.
+  bool OnDelayedFrame(base::TimeDelta delta);
 
   void GetBackgroundColor(SkColor* background_color) const;
 

@@ -1156,21 +1156,21 @@ TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
   // Enter WebVR with autopresentation.
   ui_->SetWebVrMode(true);
   ui_->SetCapturingState(CapturingStateModel());
-  OnBeginFrame(MsToDelta(1000 * kSplashScreenMinDurationSeconds));
+  OnDelayedFrame(MsToDelta(1000 * kSplashScreenMinDurationSeconds));
   EXPECT_TRUE(IsVisible(kSplashScreenText));
   EXPECT_TRUE(IsVisible(kWebVrBackground));
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 
-  OnBeginFrame(MsToDelta(2000));
+  OnDelayedFrame(MsToDelta(2000));
   ui_->OnWebVrTimeoutImminent();
-  OnBeginFrame(MsToDelta(3000));
+  OnDelayedFrame(MsToDelta(3000));
   ui_->OnWebVrTimedOut();
 
   // A while later, receive only one frame (possibly a splash screen). This will
   // trigger indicators to start fading in, but they won't actually be visible
   // on the first frame.  The transient element should know that it's not
   // visible, and not start its timeout.
-  OnBeginFrame(MsToDelta(5000));
+  OnDelayedFrame(MsToDelta(5000));
   ui_->OnWebVrFrameAvailable();
   EXPECT_FALSE(IsVisible(kSplashScreenText));
   EXPECT_FALSE(IsVisible(kWebVrBackground));
@@ -1179,11 +1179,11 @@ TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
   // If we advance far beyond the timeout for our first frame and our logic was
   // naive, we would start to hide the transient element.  But, because the
   // transient element was never actually visible, it should still be showing.
-  OnBeginFrame(MsToDelta(40000));
+  OnDelayedFrame(MsToDelta(40000));
   EXPECT_TRUE(IsVisible(kWebVrUrlToast));
 
   // Now that it's been seen, it should transiently fade.
-  OnBeginFrame(MsToDelta(10000));
+  OnDelayedFrame(MsToDelta(10000));
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }
 
