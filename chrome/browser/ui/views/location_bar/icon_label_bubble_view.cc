@@ -155,6 +155,10 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
+void IconLabelBubbleView::OnBubbleCreated(views::Widget* bubble_widget) {
+  bubble_widget->AddObserver(this);
+}
+
 bool IconLabelBubbleView::ShouldShowLabel() const {
   return label_->visible() && !label_->text().empty();
 }

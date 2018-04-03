@@ -85,6 +85,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
     next_element_interior_padding_ = padding;
   }
 
+  void OnBubbleCreated(views::Widget* bubble_widget);
+
  protected:
   static constexpr int kOpenTimeMS = 150;
 
