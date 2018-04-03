@@ -67,12 +67,12 @@ const base::FilePath kFilename1(FILE_PATH_LITERAL("hello.mhtml"));
 const base::FilePath kFilename2(FILE_PATH_LITERAL("test.mhtml"));
 const base::FilePath kNonexistentFilename(
     FILE_PATH_LITERAL("nonexistent.mhtml"));
-const int kFileSize1 = 450;  // Real size of hello.mhtml.
+const int kFileSize1 = 471;  // Real size of hello.mhtml.
 const int kFileSize2 = 444;  // Real size of test.mhtml.
 const int kMismatchedFileSize = 99999;
 const std::string kDigest1(
-    "\x90\x64\xF9\x7C\x94\xE5\x9E\x91\x83\x3D\x41\xB0\x36\x90\x0A\xDF\xB3\xB1"
-    "\x5C\x13\xBE\xB8\x35\x8C\xF6\x5B\xC4\xB5\x5A\xFC\x3A\xCC",
+    "\x43\x60\x62\x02\x06\x15\x0f\x3e\x77\x99\x3d\xed\xdc\xd4\xe2\x0d\xbe\xbd"
+    "\x77\x1a\xfb\x32\x00\x51\x7e\x63\x7d\x3b\x2e\x46\x63\xf6",
     32);  // SHA256 Hash of hello.mhtml.
 const std::string kDigest2(
     "\xBD\xD3\x37\x79\xDA\x7F\x4E\x6A\x16\x66\xED\x49\x67\x18\x54\x48\xC6\x8E"

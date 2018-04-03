@@ -31,6 +31,7 @@
 #include <map>
 
 #include "build/build_config.h"
+#include "platform/DateComponents.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/mhtml/MHTMLArchive.h"
@@ -40,6 +41,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
+#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::URLTestHelpers::ToKURL;
@@ -58,6 +60,8 @@ class MHTMLArchiveTest : public testing::Test {
  public:
   MHTMLArchiveTest() {
     file_path_ = test::CoreTestDataPath("frameserializer/css/");
+    mhtml_date_ = WTF::Time::FromJsTime(1520551829000);
+    mhtml_date_header_ = String::FromUTF8("Fri, 8 Mar 2018 23:30:29 -0000");
   }
 
  protected:
@@ -146,7 +150,7 @@ class MHTMLArchiveTest : public testing::Test {
     String boundary = String::FromUTF8("boundary-example");
 
     MHTMLArchive::GenerateMHTMLHeader(boundary, url, title, mime_type,
-                                      mhtml_data_);
+                                      mhtml_date_, mhtml_data_);
     for (const auto& resource : resources) {
       MHTMLArchive::GenerateMHTMLPart(boundary, String(), encoding_policy,
                                       resource, mhtml_data_);
@@ -169,6 +173,9 @@ class MHTMLArchiveTest : public testing::Test {
 
   Vector<char>& mhtml_data() { return mhtml_data_; }
 
+  WTF::Time mhtml_date() const { return mhtml_date_; }
+  const String& mhtml_date_header() const { return mhtml_date_header_; }
+
  private:
   scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
     String file_path = file_path_ + file_name;
@@ -178,6 +185,8 @@ class MHTMLArchiveTest : public testing::Test {
   String file_path_;
   Vector<SerializedResource> resources_;
   Vector<char> mhtml_data_;
+  WTF::Time mhtml_date_;
+  String mhtml_date_header_;
 };
 
 TEST_F(MHTMLArchiveTest,
@@ -342,5 +351,27 @@ TEST_F(MHTMLArchiveTest, MHTMLFromScheme) {
   EXPECT_NE(nullptr, MHTMLArchive::Create(special_scheme_url, data.get()));
 }
 
+TEST_F(MHTMLArchiveTest, MHTMLDate) {
+  const char kURL[] = "http://www.example.com";
+  AddTestMainResource();
+  Serialize(ToKURL(kURL), "Test Serialization", "text/html",
+            MHTMLArchive::kUseDefaultEncoding);
+  // The serialization process should have added a date header corresponding to
+  // mhtml_date().
+  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders();
+  ASSERT_EQ(mhtml_date_header(),
+            String::FromUTF8(mhtml_headers["Date"].c_str()));
+
+  scoped_refptr<SharedBuffer> data =
+      SharedBuffer::Create(mhtml_data().data(), mhtml_data().size());
+  KURL http_url = ToKURL("http://www.example.com");
+  MHTMLArchive* archive = MHTMLArchive::Create(http_url, data.get());
+  ASSERT_NE(nullptr, archive);
+
+  // The deserialization process should have parsed the header into a Date.
+  EXPECT_EQ(mhtml_date(), archive->Date());
+}
+
 }  // namespace test
+
 }  // namespace blink

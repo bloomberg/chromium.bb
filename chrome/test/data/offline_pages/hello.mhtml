@@ -6,12 +6,15 @@ Content-Type: multipart/related;
 	boundary="----=_NextPart_000_0000_0324C3DC.A3C79392";
 	type="text/html"
 
+
 ------=_NextPart_000_0000_0324C3DC.A3C79392
 Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: binary
 Content-Location: http://www.example.com
 
 <html>
+<body>
 Hello, World!
+</body>
 </html>
 ------=_NextPart_000_0000_0324C3DC.A3C79392--

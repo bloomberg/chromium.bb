@@ -7,6 +7,7 @@ import("//build/util/process_version.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 import("//components/nacl/features.gni")
+import("//components/offline_pages/buildflags/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
@@ -680,6 +681,10 @@ mojom("mojo_bindings") {
 
   if (is_win) {
     sources += [ "conflicts/module_event_sink_win.mojom" ]
+  }
+
+  if (enable_offline_pages) {
+    sources += [ "mhtml_page_notifier.mojom" ]
   }
 
   public_deps = [

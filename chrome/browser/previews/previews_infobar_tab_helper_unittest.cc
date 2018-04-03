@@ -233,6 +233,9 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
       PreviewsInfoBarTabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 
+  content::WebContentsTester::For(web_contents())
+      ->SetMainFrameMimeType("multipart/related");
+
   SimulateCommit();
   offline_pages::OfflinePageItem item;
   item.url = GURL(kTestUrl);

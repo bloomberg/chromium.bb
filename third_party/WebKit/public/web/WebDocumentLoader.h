@@ -36,6 +36,7 @@
 #include "WebNavigationType.h"
 #include "WebTextDirection.h"
 #include "base/time/time.h"
+#include "public/platform/WebArchiveInfo.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebSourceLocation.h"
 
@@ -151,6 +152,12 @@ class BLINK_EXPORT WebDocumentLoader {
   // fetch new data.
   virtual void BlockParser() = 0;
   virtual void ResumeParser() = 0;
+
+  // Returns info about whether the document is an MHTML archive.
+  virtual bool IsArchive() const = 0;
+  // Returns archive info for the archive.  Should never be called if
+  // IsArchive returns false.
+  virtual WebArchiveInfo GetArchiveInfo() const = 0;
 
  protected:
   ~WebDocumentLoader() = default;

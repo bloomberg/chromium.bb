@@ -26,6 +26,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/web_apps.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/translate/content/renderer/translate_helper.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
@@ -59,6 +60,10 @@
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#endif
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/common/mhtml_page_notifier.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -337,6 +342,31 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
     osdd_handler->PageHasOpenSearchDescriptionDocument(
         frame->GetDocument().Url(), osdd_url);
   }
+}
+
+void ChromeRenderFrameObserver::DidCreateNewDocument() {
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  DCHECK(render_frame());
+  if (!render_frame()->IsMainFrame())
+    return;
+
+  DCHECK(render_frame()->GetWebFrame());
+  blink::WebDocumentLoader* doc_loader =
+      render_frame()->GetWebFrame()->GetDocumentLoader();
+  DCHECK(doc_loader);
+  if (!doc_loader->IsArchive())
+    return;
+
+  // Connect to Mojo service on browser to notify it of the page's archive
+  // properties.
+  offline_pages::mojom::MhtmlPageNotifierAssociatedPtr mhtml_notifier;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+      &mhtml_notifier);
+  DCHECK(mhtml_notifier);
+  blink::WebArchiveInfo info = doc_loader->GetArchiveInfo();
+
+  mhtml_notifier->NotifyIsMhtmlPage(info.url, info.date);
+#endif
 }
 
 void ChromeRenderFrameObserver::DidStartProvisionalLoad(
