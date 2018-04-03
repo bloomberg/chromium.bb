@@ -1207,6 +1207,7 @@ crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/synthetic-events/tap-on-scaled-screen.html  [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/modern-media-controls/media/controls/modern/tap-to-hide-controls.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/modern-media-controls/media/controls/modern/singletouch-on-play-button.html [ Skip ]
 
 # We should send PointerLeave events for stylus devices.
 crbug.com/583413 external/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
