@@ -16,6 +16,9 @@
 #include "components/search_engines/template_url_service_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 TestOmniboxClient::TestOmniboxClient()
     : autocomplete_classifier_(
@@ -68,4 +71,12 @@ const AutocompleteSchemeClassifier& TestOmniboxClient::GetSchemeClassifier()
 
 AutocompleteClassifier* TestOmniboxClient::GetAutocompleteClassifier() {
   return &autocomplete_classifier_;
+}
+
+gfx::Image TestOmniboxClient::GetSizedIcon(
+    const gfx::VectorIcon& vector_icon_type,
+    SkColor vector_icon_color) const {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(16, 16);
+  return gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 }

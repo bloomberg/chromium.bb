@@ -37,6 +37,8 @@ class TestOmniboxClient : public OmniboxClient {
   const SessionID& GetSessionID() const override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
+  gfx::Image GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
+                          SkColor vector_icon_color) const override;
 
  private:
   AutocompleteMatch alternate_nav_match_;
