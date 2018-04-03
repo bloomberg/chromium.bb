@@ -174,6 +174,7 @@ CONTENT_EXPORT extern const char kLogFile[];
 CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];
 extern const char kMaxAppCacheOriginCacheSizeMb[];
 extern const char kMaxAppCacheDiskCacheSizeMb[];
+extern const char kMaxDecodedImageSizeMb[];
 extern const char kMaxUntiledLayerHeight[];
 extern const char kMaxUntiledLayerWidth[];
 CONTENT_EXPORT extern const char kMessageLoopTypeUi[];

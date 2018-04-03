@@ -587,6 +587,9 @@ const char kMaxAppCacheOriginCacheSizeMb[] =
 // value is 250MB.
 const char kMaxAppCacheDiskCacheSizeMb[] = "max-appcache-disk-cache-size-mb";
 
+// Sets the maximium decoded image size limitation.
+const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";
+
 // Sets the width and height above which a composited layer will get tiled.
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
 const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
