@@ -17,6 +17,10 @@
 @property(nonatomic, strong) UIImage* image;
 // Whether the cell associated with this item should be enabled.
 @property(nonatomic, assign) BOOL enabled;
+// Number to be displayed in the badge.
+@property(nonatomic, assign) NSInteger badgeNumber;
+// Text to be displayed in the badge. Set to nil to hide the badge.
+@property(nonatomic, copy) NSString* badgeText;
 
 @end
 
@@ -29,9 +33,10 @@
 // Title label for the cell.
 @property(nonatomic, strong, readonly) UILabel* titleLabel;
 
-// Returns the size this cell would use to display its content when it has a
-// |title| and a maximum |width|.
-+ (CGSize)sizeForWidth:(CGFloat)width title:(NSString*)title;
+// Sets the number on the badge number.
+- (void)setBadgeNumber:(NSInteger)badgeNumber;
+// Sets the text of the badge text. Hides the badge text if |badgeText| is nil.
+- (void)setBadgeText:(NSString*)badgeText;
 
 @end
 
