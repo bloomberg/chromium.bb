@@ -10,6 +10,7 @@ script will always roll to the tip of to origin/master.
 """
 
 import argparse
+import gclient_eval
 import os
 import re
 import subprocess
@@ -122,27 +123,13 @@ def generate_commit_message(
   return header + log_section
 
 
-def calculate_roll(full_dir, dependency, deps_content, roll_to, key):
-  """Calculates the roll for a dependency by processing deps_content, and
+def calculate_roll(full_dir, dependency, gclient_dict, roll_to):
+  """Calculates the roll for a dependency by processing gclient_dict, and
   fetching the dependency via git.
   """
-  head = check_output(['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
-  if not head in deps_content:
-    print('Warning: %s is not checked out at the expected revision in DEPS' %
-          dependency)
-    if not key:
-      key = dependency
-
-    # It happens if the user checked out a branch in the dependency by himself.
-    # Fall back to reading the DEPS to figure out the original commit.
-    for i in deps_content.splitlines():
-      m = re.match(r'\s+"' + key + '":.*"([a-z0-9]{40})",', i)
-      if m:
-        head = m.group(1)
-        break
-    else:
-      raise Error('Expected to find commit %s for %s in DEPS' % (head, key))
-
+  _, _, head = gclient_dict['deps'][dependency].partition('@')
+  if not head:
+    raise Error('%s is unpinned.' % dependency)
   check_call(['git', 'fetch', 'origin', '--quiet'], cwd=full_dir)
   roll_to = check_output(['git', 'rev-parse', roll_to], cwd=full_dir).strip()
   return head, roll_to
@@ -230,6 +217,7 @@ def main():
     # First gather all the information without modifying anything, except for a
     # git fetch.
     deps_path, deps_content = get_deps(root)
+    gclient_dict = gclient_eval.Parse(deps_content, True, True, deps_path)
     rolls = {}
     for dependency in dependencies:
       full_dir = os.path.normpath(
@@ -237,7 +225,7 @@ def main():
       if not os.path.isdir(full_dir):
         raise Error('Directory not found: %s (%s)' % (dependency, full_dir))
       head, roll_to = calculate_roll(
-          full_dir, dependency, deps_content, args.roll_to, args.key)
+          full_dir, dependency, gclient_dict, args.roll_to)
       if roll_to == head:
         if len(dependencies) == 1:
           raise AlreadyRolledError('No revision to roll!')
@@ -254,7 +242,9 @@ def main():
       log = generate_commit_message(
           full_dir, dependency, head, roll_to, args.no_log, args.log_limit)
       logs.append(log)
-      deps_content = deps_content.replace(head, roll_to)
+      gclient_eval.SetRevision(gclient_dict, dependency, roll_to)
+
+    deps_content = gclient_eval.RenderDEPSFile(gclient_dict)
 
     commit_msg = gen_commit_msg(logs, cmdline, rolls, reviewers, args.bug)
     finalize(commit_msg, deps_path, deps_content, rolls)
