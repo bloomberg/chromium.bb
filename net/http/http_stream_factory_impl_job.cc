@@ -257,6 +257,11 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
   if (job_type_ == PRECONNECT || is_websocket_) {
     DCHECK(request_info_.socket_tag == SocketTag());
   }
+  if (is_websocket_) {
+    DCHECK(origin_url_.SchemeIsWSOrWSS());
+  } else {
+    DCHECK(!origin_url_.SchemeIsWSOrWSS());
+  }
 }
 
 HttpStreamFactoryImpl::Job::~Job() {
