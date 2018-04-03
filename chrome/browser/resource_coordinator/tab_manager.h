@@ -17,21 +17,20 @@
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
-#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "ui/gfx/native_widget_types.h"
 
-class BrowserList;
 class GURL;
 class TabStripModel;
 
@@ -48,14 +47,6 @@ class BackgroundTabNavigationThrottle;
 class TabManagerDelegate;
 #endif
 class TabManagerStatsCollector;
-
-// Information about a Browser.
-struct BrowserInfo {
-  Browser* browser = nullptr;  // Can be nullptr in tests.
-  TabStripModel* tab_strip_model = nullptr;
-  bool window_is_minimized = false;
-  bool browser_is_app = false;
-};
 
 // The TabManager periodically updates (see
 // |kAdjustmentIntervalSeconds| in the source) the status of renderers
@@ -82,7 +73,11 @@ struct BrowserInfo {
 // Tabs are identified by a unique ID vended by this component. These IDs are
 // not reused in a session. They are stable for a given conceptual tab, and will
 // follow it through discards, reloads, tab strip operations, etc.
-class TabManager : public TabStripModelObserver, public BrowserListObserver {
+//
+// TODO(fdoray): Rename to LifecycleManager. https://crbug.com/775644
+class TabManager : public LifecycleUnitObserver,
+                   public LifecycleUnitSourceObserver,
+                   public TabStripModelObserver {
  public:
   // Forward declaration of resource coordinator signal observer.
   class ResourceCoordinatorSignalObserver;
@@ -93,24 +88,17 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   TabManager();
   ~TabManager() override;
 
-  // Number of discard events since Chrome started.
-  int discard_count() const { return discard_count_; }
-
   // Start/Stop the Tab Manager.
   void Start();
   void Stop();
 
-  // Returns the list of the stats for all renderers. Must be called on the UI
-  // thread. The returned list is sorted by reversed importance.
-  TabStatsList GetTabStats() const;
+  // Returns the LifecycleUnits managed by this, sorted from less to most
+  // important to the user. It is unsafe to access a pointer in the returned
+  // vector after a LifecycleUnit has been destroyed.
+  LifecycleUnitVector GetSortedLifecycleUnits();
 
   // Returns true if |contents| is currently discarded.
   bool IsTabDiscarded(content::WebContents* contents) const;
-
-  // Goes through a list of checks to see if a tab is allowed to be discarded
-  // for |reason|. Note that this is not used when discarding a particular tab
-  // from about:discards or from an extension.
-  bool CanDiscardTab(const TabStats& tab_stats, DiscardReason reason) const;
 
   // Discards a tab to free the memory occupied by its renderer. The tab still
   // exists in the tab-strip; clicking on it will reload it. If the |reason| is
@@ -123,7 +111,7 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // tab-strip; clicking on it will reload it. Returns null if the tab cannot
   // be found or cannot be discarded. Otherwise returns the new web_contents
   // of the discarded tab.
-  content::WebContents* DiscardTabById(int32_t tab_id, DiscardReason reason);
+  void DiscardTabById(int32_t tab_id, DiscardReason reason);
 
   // Freezes a tab with the given unique ID. Unlike discarding, freezing does
   // not kill or change the tab other than stopping its task queues. Revisiting
@@ -144,16 +132,8 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // Log memory statistics for the running processes, then call the callback.
   void LogMemory(const std::string& title, const base::Closure& callback);
 
-  // Returns TabStats for all tabs in the current Chrome instance. The tabs are
-  // sorted first by most recently used to least recently used Browser and
-  // second by index in the Browser. |windows_sorted_by_z_index| is a list of
-  // Browser windows sorted by z-index, from topmost to bottommost. If left
-  // empty, no window occlusion checks will be performed. Must be called on the
-  // UI thread.
-  TabStatsList GetUnsortedTabStats(
-      const std::vector<gfx::NativeWindow>& windows_sorted_by_z_index =
-          std::vector<gfx::NativeWindow>()) const;
-
+  // TODO(fdoray): Remove these methods. TabManager shouldn't know about tabs.
+  // https://crbug.com/775644
   void AddObserver(TabLifecycleObserver* observer);
   void RemoveObserver(TabLifecycleObserver* observer);
 
@@ -196,14 +176,6 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // Notifies TabManager that one tab WebContents has been destroyed. TabManager
   // needs to clean up data related to that tab.
   void OnWebContentsDestroyed(content::WebContents* contents);
-
-  // Returns true if |first| is considered less desirable to be killed than
-  // |second|.
-  static bool CompareTabStats(const TabStats& first, const TabStats& second);
-
-  // Returns the unique ID associated with a tab given the |web_contents|
-  // currently backing that tab.
-  static int32_t IdFromWebContents(content::WebContents* web_contents);
 
   // Return whether tabs are being loaded during session restore.
   bool IsSessionRestoreLoadingTabs() const {
@@ -248,23 +220,16 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, Comparator);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardedTabKeepsLastActiveTime);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardWebContentsAt);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, InvalidOrEmptyURL);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OomPressureListener);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectPDFPages);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectRecentlyUsedTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            TabManagerWasDiscardedCrossSiteSubFrame);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           GetUnsortedTabStatsIsInVisibleWindow);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardTabWithNonVisibleTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, MaybeThrottleNavigation);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDidFinishNavigation);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnTabIsLoaded);
@@ -309,20 +274,6 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // min time to purge times this value.
   const int kDefaultMinMaxTimeToPurgeRatio = 4;
 
-  // Finds TabStripModel which has a WebContents whose id is the given
-  // |tab_id|, and returns the WebContents index and the TabStripModel.
-  int FindTabStripModelById(int32_t tab_id, TabStripModel** model) const;
-
-  // Called by WebContentsData whenever the discard state of a WebContents
-  // changes, so that observers can be informed.
-  void OnDiscardedStateChange(content::WebContents* contents,
-                              bool is_discarded);
-
-  // Called by WebContentsData whenever the auto-discardable state of a
-  // WebContents changes, so that observers can be informed.
-  void OnAutoDiscardableStateChange(content::WebContents* contents,
-                                    bool is_auto_discardable);
-
   static void PurgeMemoryAndDiscardTab(DiscardReason reason);
 
   // Returns true if the |url| represents an internal Chrome web UI page that
@@ -332,21 +283,9 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // Purges data structures in the browser that can be easily recomputed.
   void PurgeBrowserMemory();
 
-  // Adds all the stats of the tabs in |browser_info| into |stats_list|.
-  // |window_is_active| indicates whether |browser_info|'s window is active.
-  // |window_is_visible| indicates whether |browser_info|'s window might be
-  // visible (true when window visibility is unknown).
-  void AddTabStats(const BrowserInfo& browser_info,
-                   bool window_is_active,
-                   bool window_is_visible,
-                   TabStatsList* stats_list) const;
-
   // Callback for when |update_timer_| fires. Takes care of executing the tasks
   // that need to be run periodically (see comment in implementation).
   void UpdateTimerCallback();
-
-  // Returns WebContents whose contents id matches the given |tab_id|.
-  content::WebContents* GetWebContentsById(int32_t tab_id) const;
 
   // Returns a random time-to-purge whose min value is min_time_to_purge and max
   // value is max_time_to_purge.
@@ -368,13 +307,6 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // (=ActiveTabChanged is invoked).
   void PurgeBackgroundedTabsIfNeeded();
 
-  // Does the actual discard by destroying the WebContents in |model| at |index|
-  // and replacing it by an empty one. Returns the new WebContents or NULL if
-  // the operation fails (return value used only in testing).
-  content::WebContents* DiscardWebContentsAt(int index,
-                                             TabStripModel* model,
-                                             DiscardReason reason);
-
   // Makes a request to the WebContents at the specified index to freeze its
   // page.
   void FreezeWebContentsAt(int index, TabStripModel* model);
@@ -389,9 +321,6 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   // TabStripModelObserver overrides.
-  void TabChangedAt(content::WebContents* contents,
-                    int index,
-                    TabChangeType change_type) override;
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,
                         int index,
@@ -400,31 +329,18 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
                      content::WebContents* contents,
                      int index,
                      bool foreground) override;
-
-  // BrowserListObserver overrides.
-  void OnBrowserSetLastActive(Browser* browser) override;
-
-  // Returns true if the tab is currently playing audio or has played audio
-  // recently, or if the tab is currently accessing the camera, microphone or
-  // mirroring the display.
-  bool IsMediaTab(content::WebContents* contents) const;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
 
   // Returns the WebContentsData associated with |contents|. Also takes care of
   // creating one if needed.
   static WebContentsData* GetWebContentsData(content::WebContents* contents);
 
-  // Implementation of DiscardTab. Returns null if no tab was discarded.
-  // Otherwise returns the new web_contents of the discarded tab.
+  // Discards the less important LifecycleUnit that supports discarding under
+  // |reason|.
   content::WebContents* DiscardTabImpl(DiscardReason reason);
-
-  // Returns true if |web_contents| is the active WebContents in the last active
-  // Browser.
-  bool IsActiveWebContentsInActiveBrowser(content::WebContents* contents) const;
-
-  // Returns a list of BrowserInfo constructed from either
-  // |test_browser_info_list_| or BrowserList. The first BrowserInfo in the list
-  // corresponds to the last active Browser.
-  std::vector<BrowserInfo> GetBrowserInfoList() const;
 
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
@@ -492,14 +408,23 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
 
   TabManagerStatsCollector* stats_collector() { return stats_collector_.get(); }
 
+  // Returns true if the background tab force load timer is running.
+  bool IsForceLoadTimerRunning() const;
+
+  // LifecycleUnitObserver:
+  void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
+
+  // LifecycleUnitSourceObserver:
+  void OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) override;
+
+  // LifecycleUnits managed by this.
+  LifecycleUnitSet lifecycle_units_;
+
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
 
   // A listener to global memory pressure events.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
-  // Number of times a tab has been discarded, for statistics.
-  int discard_count_;
 
   // A backgrounded renderer will be purged between min_time_to_purge_ and
   // max_time_to_purge_.
@@ -513,18 +438,6 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // Responsible for automatically registering this class as an observer of all
   // TabStripModels. Automatically tracks browsers as they come and go.
   BrowserTabStripTracker browser_tab_strip_tracker_;
-
-  // Injected BrowserInfo list. Allows this to be tested end-to-end without
-  // requiring a full browser environment. If specified these BrowserInfo will
-  // be crawled as the authoritative source of tabs, otherwise the BrowserList
-  // and associated Browser objects are crawled. The first BrowserInfo in the
-  // list corresponds to the last active Browser.
-  // TODO(chrisha): Factor out tab-strip model enumeration to a helper class,
-  //     and make a delegate that centralizes all testing seams.
-  std::vector<BrowserInfo> test_browser_info_list_;
-
-  // List of observers that will receive notifications on state changes.
-  base::ObserverList<TabLifecycleObserver> observers_;
 
   bool is_session_restore_loading_tabs_;
   size_t restored_tab_count_;

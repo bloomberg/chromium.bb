@@ -47,6 +47,10 @@ namespace policy {
 class PolicyService;
 }
 
+namespace resource_coordinator {
+class TabLifecycleUnitSource;
+}
+
 class TestingBrowserProcess : public BrowserProcess {
  public:
   // Initializes |g_browser_process| with a new TestingBrowserProcess.
@@ -194,6 +198,8 @@ class TestingBrowserProcess : public BrowserProcess {
   // GetTabManager() is invoked on supported platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   std::unique_ptr<resource_coordinator::TabManager> tab_manager_;
+  std::unique_ptr<resource_coordinator::TabLifecycleUnitSource>
+      tab_lifecycle_unit_source_;
 #endif
 
   // The following objects are not owned by TestingBrowserProcess:

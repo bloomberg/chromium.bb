@@ -94,6 +94,17 @@ std::string TabLifecycleUnitSource::TabLifecycleUnit::GetIconURL() const {
   return favicon.valid ? favicon.url.spec() : std::string();
 }
 
+base::ProcessHandle TabLifecycleUnitSource::TabLifecycleUnit::GetProcessHandle()
+    const {
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  if (!main_frame)
+    return base::ProcessHandle();
+  content::RenderProcessHost* process = main_frame->GetProcess();
+  if (!process)
+    return base::ProcessHandle();
+  return process->GetHandle();
+}
+
 LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
     const {
   return SortKey(last_focused_time_);
@@ -113,6 +124,11 @@ int TabLifecycleUnitSource::TabLifecycleUnit::
     GetEstimatedMemoryFreedOnDiscardKB() const {
   // TODO(fdoray): Implement this. https://crbug.com/775644
   return 0;
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::CanPurge() const {
+  // A renderer can be purged if it's not playing media.
+  return !IsMediaTab();
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(

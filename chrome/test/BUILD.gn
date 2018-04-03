@@ -693,7 +693,6 @@ test("browser_tests") {
       "../browser/repost_form_warning_browsertest.cc",
       "../browser/resource_coordinator/resource_coordinator_render_process_probe_browsertest.cc",
       "../browser/resource_coordinator/tab_activity_watcher_browsertest.cc",
-      "../browser/resource_coordinator/tab_lifecycle_observer_browsertest.cc",
       "../browser/resource_coordinator/tab_manager_browsertest.cc",
       "../browser/safe_browsing/chrome_cleaner/reporter_runner_browsertest_win.cc",
       "../browser/safe_browsing/test_safe_browsing_database_helper.cc",

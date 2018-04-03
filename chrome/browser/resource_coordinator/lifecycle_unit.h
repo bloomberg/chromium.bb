@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
@@ -62,6 +64,13 @@ class LifecycleUnit {
   // icon is available.
   virtual std::string GetIconURL() const = 0;
 
+  // Returns the process hosting this LifecycleUnit. Used to distribute OOM
+  // scores.
+  //
+  // TODO(fdoray): Change this to take into account the fact that a
+  // LifecycleUnit can be hosted in multiple processes. https://crbug.com/775644
+  virtual base::ProcessHandle GetProcessHandle() const = 0;
+
   // Returns a key that can be used to evaluate the relative importance of this
   // LifecycleUnit.
   //
@@ -91,6 +100,12 @@ class LifecycleUnit {
   // than for individual LifecycleUnits. https://crbug.com/775644
   virtual int GetEstimatedMemoryFreedOnDiscardKB() const = 0;
 
+  // Whether memory can be purged in the process hosting this LifecycleUnit.
+  //
+  // TODO(fdoray): This method should be on a class that represents a process,
+  // not on a LifecycleUnit. https://crbug.com/775644
+  virtual bool CanPurge() const = 0;
+
   // Returns true if this LifecycleUnit can be discared.
   virtual bool CanDiscard(DiscardReason reason) const = 0;
 
@@ -109,6 +124,7 @@ class LifecycleUnit {
 };
 
 using LifecycleUnitSet = base::flat_set<LifecycleUnit*>;
+using LifecycleUnitVector = std::vector<LifecycleUnit*>;
 
 }  // namespace resource_coordinator
 
