@@ -352,7 +352,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
 }
 
-// Test that service returns NOT_SUPPORTED_ERROR if user verification is
+// Test that service returns NOT_ALLOWED_ERROR if user verification is
 // REQUIRED for get().
 TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
   SimulateNavigation(GURL(kTestOrigin1));
@@ -365,10 +365,10 @@ TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
   TestGetAssertionCallback cb;
   authenticator->GetAssertion(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
 }
 
-// Test that service returns NOT_SUPPORTED_ERROR if user verification is
+// Test that service returns NOT_ALLOWED_ERROR if user verification is
 // REQUIRED for create().
 TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   SimulateNavigation(GURL(kTestOrigin1));
@@ -382,10 +382,10 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
 }
 
-// Test that service returns NOT_SUPPORTED_ERROR if resident key is
+// Test that service returns NOT_ALLOWED_ERROR if resident key is
 // requested for create().
 TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   SimulateNavigation(GURL(kTestOrigin1));
@@ -398,7 +398,24 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+}
+
+// Test that service returns NOT_ALLOWED_ERROR if a platform authenticator is
+// requested for U2F.
+TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->authenticator_selection->authenticator_attachment =
+      webauth::mojom::AuthenticatorAttachment::PLATFORM;
+
+  TestMakeCredentialCallback cb;
+  authenticator->MakeCredential(std::move(options), cb.callback());
+  cb.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
 }
 
 // Parses its arguments as JSON and expects that all the keys in the first are

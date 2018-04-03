@@ -55,27 +55,63 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
+constexpr char kNotAllowedErrorMessage[] =
+    "NotAllowedError: The operation either timed out or was not allowed. See: "
+    "https://w3c.github.io/webauthn/#sec-assertion-privacy.";
+
+constexpr char kRelyingPartySecurityErrorMessage[] =
+    "SecurityError: The relying party ID 'localhost' is not a registrable "
+    "domain suffix of, nor equal to 'https://www.example.com";
+
 constexpr char kNotSupportedErrorMessage[] =
     "NotSupportedError: Parameters for this operation are not supported.";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
-// modified to include up to 9 replacements.
+// modified to include up to 9 replacements. The default values for
+// any additional replacements added should also be added to the
+// CreateParameters struct.
 constexpr char kCreatePublicKeyTemplate[] =
     "navigator.credentials.create({ publicKey: {"
     "  challenge: new TextEncoder().encode('climb a mountain'),"
-    "  rp: { id: 'example.com', name: 'Acme' },"
+    "  rp: { id: '$3', name: 'Acme' },"
     "  user: { "
     "    id: new TextEncoder().encode('1098237235409872'),"
     "    name: 'avery.a.jones@example.com',"
     "    displayName: 'Avery A. Jones', "
     "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
-    "  pubKeyCredParams: [{ type: 'public-key', alg: '-7'}],"
+    "  pubKeyCredParams: [{ type: 'public-key', alg: '$4'}],"
     "  timeout: 60000,"
     "  excludeCredentials: [],"
-    "  authenticatorSelection : { "
-    "     requireResidentKey: $1, "
-    "     userVerification: '$2' }}"
+    "  authenticatorSelection : {"
+    "     requireResidentKey: $1,"
+    "     userVerification: '$2',"
+    "     authenticatorAttachment: '$5' }}"
     "}).catch(c => window.domAutomationController.send(c.toString()));";
+
+constexpr char kPlatform[] = "platform";
+constexpr char kCrossPlatform[] = "cross-platform";
+constexpr char kPreferredVerification[] = "preferred";
+constexpr char kRequiredVerification[] = "required";
+
+// Default values for kCreatePublicKeyTemplate.
+struct CreateParameters {
+  const char* rp_id = "example.com";
+  bool require_resident_key = false;
+  const char* user_verification = kPreferredVerification;
+  const char* authenticator_attachment = kCrossPlatform;
+  const char* algorithm_identifier = "-7";
+};
+
+std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
+  std::vector<std::string> substititions;
+  substititions.push_back(parameters.require_resident_key ? "true" : "false");
+  substititions.push_back(parameters.user_verification);
+  substititions.push_back(parameters.rp_id);
+  substititions.push_back(parameters.algorithm_identifier);
+  substititions.push_back(parameters.authenticator_attachment);
+  return base::ReplaceStringPlaceholders(kCreatePublicKeyTemplate,
+                                         substititions, nullptr);
+}
 
 constexpr char kGetPublicKeyTemplate[] =
     "navigator.credentials.get({ publicKey: {"
@@ -460,33 +496,34 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
 };
 
 // Tests that when navigator.credentials.create() is called with user
-// verification required we get a NotSupportedError.
+// verification required we get a NotAllowedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithUserVerification) {
-  const std::string kScript = base::ReplaceStringPlaceholders(
-      kCreatePublicKeyTemplate, {"false", "required"}, nullptr);
-
+  CreateParameters parameters;
+  parameters.user_verification = kRequiredVerification;
   std::string result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(), kScript, &result));
-  ASSERT_EQ(kNotSupportedErrorMessage, result);
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.create() is called with resident key
-// required, we get a NotSupportedError.
+// required, we get a NotAllowedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithResidentKeyRequired) {
-  const std::string kScript = base::ReplaceStringPlaceholders(
-      kCreatePublicKeyTemplate, {"true", "preferred"}, nullptr);
-
+  CreateParameters parameters;
+  parameters.require_resident_key = true;
   std::string result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(), kScript, &result));
-  ASSERT_EQ(kNotSupportedErrorMessage, result);
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.get() is called with user verification
-// required, we get a NotSupportedError.
+// required, we get a NotAllowedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialUserVerification) {
   const std::string kScript = base::ReplaceStringPlaceholders(
@@ -495,10 +532,54 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   std::string result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       shell()->web_contents()->GetMainFrame(), kScript, &result));
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.create() is called with an invalid
+// relying party id, we get a SecurityError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialInvalidRp) {
+  CreateParameters parameters;
+  parameters.rp_id = "localhost";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+
+  ASSERT_EQ(kRelyingPartySecurityErrorMessage,
+            result.substr(0, strlen(kRelyingPartySecurityErrorMessage)));
+}
+
+// Tests that when navigator.credentials.create() is called with an
+// unsupported algorithm, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialAlgorithmNotSupported) {
+  CreateParameters parameters;
+  parameters.algorithm_identifier = "123";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+
   ASSERT_EQ(kNotSupportedErrorMessage, result);
 }
 
-// WebAuthBrowserBleDisabledTest ----------------------------------------------
+// Tests that when navigator.credentials.create() is called with a
+// platform authenticator requested, we get a NotAllowedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialPlatformAuthenticator) {
+  CreateParameters parameters;
+  parameters.authenticator_attachment = kPlatform;
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
+}
+
+// WebAuthBrowserBleDisabledTest
+// ----------------------------------------------
 
 // A test fixture that does not enable BLE discovery.
 class WebAuthBrowserBleDisabledTest : public WebAuthLocalClientBrowserTest {

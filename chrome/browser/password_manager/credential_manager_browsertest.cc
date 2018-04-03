@@ -31,9 +31,7 @@ namespace {
 
 class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
  public:
-  CredentialManagerBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebAuth);
-  }
+  CredentialManagerBrowserTest() {}
 
   void SetUpOnMainThread() override {
     PasswordManagerBrowserTestBase::SetUpOnMainThread();
@@ -48,10 +46,6 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PasswordManagerBrowserTestBase::SetUpCommandLine(command_line);
-
-    // To permit using webauthentication features.
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   // Similarly to PasswordManagerBrowserTestBase::NavigateToFile this is a
@@ -80,56 +74,6 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
         "});",
         &result));
     ASSERT_EQ(expect_has_results, result);
-  }
-
-  // Attempt to create a publicKeyCredential with an unsupported algorithm type.
-  void CreatePublicKeyCredentialWithUnsupportedAlgorithmAndExpectNotSupported(
-      content::WebContents* web_contents) {
-    std::string result;
-    std::string script =
-        "navigator.credentials.create({ publicKey: {"
-        "  challenge: new TextEncoder().encode('climb a mountain'),"
-        "  rp: { id: 'example.com', name: 'Acme' },"
-        "  user: { "
-        "    id: new TextEncoder().encode('1098237235409872'),"
-        "    name: 'avery.a.jones@example.com',"
-        "    displayName: 'Avery A. Jones', "
-        "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
-        "  pubKeyCredParams: [{ type: 'public-key', alg: '123'}],"
-        "  timeout: 60000,"
-        "  excludeCredentials: [] }"
-        "}).catch(c => window.domAutomationController.send(c.toString()));";
-    ASSERT_TRUE(
-        content::ExecuteScriptAndExtractString(web_contents, script, &result));
-    ASSERT_EQ(
-        "NotSupportedError: Parameters for this operation are not supported.",
-        result);
-  }
-
-
-  // Attempt to create a publicKeyCredential with an invalid relying party.
-  void CreatePublicKeyCredentialWithUnsupportedRpIdAndExpectInvalidRpId(
-      content::WebContents* web_contents) {
-    std::string result;
-    std::string script =
-        "navigator.credentials.create({ publicKey: {"
-        "  challenge: new TextEncoder().encode('climb a mountain'),"
-        "  rp: { id: 'localhost', name: 'Acme' },"
-        "  user: { "
-        "    id: new TextEncoder().encode('1098237235409872'),"
-        "    name: 'avery.a.jones@example.com',"
-        "    displayName: 'Avery A. Jones', "
-        "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
-        "  pubKeyCredParams: [{ type: 'public-key', alg: '-7'}],"
-        "  timeout: 60000,"
-        "  excludeCredentials: [] }"
-        "}).catch(c => window.domAutomationController.send(c.toString()));";
-    ASSERT_TRUE(
-        content::ExecuteScriptAndExtractString(web_contents, script, &result));
-    ASSERT_EQ(
-        "SecurityError: The relying party ID 'localhost' is not a registrable "
-        "domain suffix of, nor equal to 'https://www.example.com",
-        result.substr(0, 124));
   }
 
   // Schedules a call to be made to navigator.credentials.store() in the
@@ -1036,32 +980,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, CredentialsAutofilled) {
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
   WaitForElementValue("username_field", "user");
   WaitForElementValue("password_field", "12345");
-}
-
-// Tests that when navigator.credentials.create() is called with an unsupported
-// algorithm, we get a NotSupportedError.
-IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
-                       CreatePublicKeyCredentialAlgorithmNotSupported) {
-  const GURL a_url1 =
-      https_test_server().GetURL("www.example.com", "/title1.html");
-  // Navigate to a mostly empty page.
-  ui_test_utils::NavigateToURL(browser(), a_url1);
-
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePublicKeyCredentialWithUnsupportedAlgorithmAndExpectNotSupported(
-          WebContents()));
-}
-
-// Tests that when navigator.credentials.create() is called with an invalid
-// relying party id, we get a SecurityError
-IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
-                       CreatePublicKeyCredentialInvalidRp) {
-  const GURL a_url1 =
-      https_test_server().GetURL("www.example.com", "/title1.html");
-  ui_test_utils::NavigateToURL(browser(), a_url1);
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePublicKeyCredentialWithUnsupportedRpIdAndExpectInvalidRpId(
-          WebContents()));
 }
 
 }  // namespace

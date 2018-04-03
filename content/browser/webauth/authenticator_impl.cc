@@ -174,11 +174,11 @@ bool AreOptionsSupportedByU2fAuthenticators(
   if (options->authenticator_selection) {
     if (options->authenticator_selection->user_verification ==
             webauth::mojom::UserVerificationRequirement::REQUIRED ||
-        options->authenticator_selection->require_resident_key)
+        options->authenticator_selection->require_resident_key ||
+        options->authenticator_selection->authenticator_attachment ==
+            webauth::mojom::AuthenticatorAttachment::PLATFORM)
       return false;
   }
-  if (!IsAlgorithmSupportedByU2fAuthenticators(options->public_key_parameters))
-    return false;
   return true;
 }
 
@@ -402,8 +402,17 @@ void AuthenticatorImpl::MakeCredential(
 
   // Verify that the request doesn't contain parameters that U2F authenticators
   // cannot fulfill.
-  // TODO(crbug.com/819256): Improve messages for "Not Supported" errors.
+  // TODO(crbug.com/819256): Improve messages for "Not Allowed" errors.
   if (!AreOptionsSupportedByU2fAuthenticators(options)) {
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+    return;
+  }
+
+  // TODO(crbug.com/819256): Improve messages for "Not Supported" errors.
+  if (!IsAlgorithmSupportedByU2fAuthenticators(
+          options->public_key_parameters)) {
     InvokeCallbackAndCleanup(
         std::move(callback),
         webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR, nullptr);
@@ -490,7 +499,7 @@ void AuthenticatorImpl::GetAssertion(
       webauth::mojom::UserVerificationRequirement::REQUIRED) {
     InvokeCallbackAndCleanup(
         std::move(callback),
-        webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR, nullptr);
+        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
     return;
   }
 
