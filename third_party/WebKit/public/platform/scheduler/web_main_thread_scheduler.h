@@ -44,7 +44,7 @@ enum class RendererProcessType;
 class RenderWidgetSchedulingState;
 
 // TODO(yutak): Rename this class to WebMainThreadScheduler.
-class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
+class BLINK_PLATFORM_EXPORT RendererScheduler : public WebThreadScheduler {
  public:
   class BLINK_PLATFORM_EXPORT RAILModeObserver {
    public:

@@ -18,10 +18,9 @@ class MessageLoop;
 namespace blink {
 namespace scheduler {
 
-// TODO(yutak): Rename this class to WebThreadScheduler.
-class BLINK_PLATFORM_EXPORT ChildScheduler {
+class BLINK_PLATFORM_EXPORT WebThreadScheduler {
  public:
-  virtual ~ChildScheduler() = default;
+  virtual ~WebThreadScheduler() = default;
 
   // Returns the default task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() = 0;
@@ -64,8 +63,8 @@ class BLINK_PLATFORM_EXPORT ChildScheduler {
   virtual void Shutdown() = 0;
 
  protected:
-  ChildScheduler() = default;
-  DISALLOW_COPY_AND_ASSIGN(ChildScheduler);
+  WebThreadScheduler() = default;
+  DISALLOW_COPY_AND_ASSIGN(WebThreadScheduler);
 };
 
 }  // namespace scheduler

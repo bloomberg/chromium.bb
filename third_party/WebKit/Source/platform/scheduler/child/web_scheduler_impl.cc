@@ -17,10 +17,10 @@ namespace scheduler {
 
 // TODO(kraynov): Ditch kDeprecatedNone here.
 WebSchedulerImpl::WebSchedulerImpl(
-    ChildScheduler* child_scheduler,
+    WebThreadScheduler* thread_scheduler,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
     scoped_refptr<TaskQueue> v8_task_runner)
-    : child_scheduler_(child_scheduler),
+    : thread_scheduler_(thread_scheduler),
       idle_task_runner_(idle_task_runner),
       v8_task_runner_(TaskRunnerImpl::Create(std::move(v8_task_runner),
                                              TaskType::kDeprecatedNone)) {}
@@ -28,15 +28,15 @@ WebSchedulerImpl::WebSchedulerImpl(
 WebSchedulerImpl::~WebSchedulerImpl() = default;
 
 void WebSchedulerImpl::Shutdown() {
-  child_scheduler_->Shutdown();
+  thread_scheduler_->Shutdown();
 }
 
 bool WebSchedulerImpl::ShouldYieldForHighPriorityWork() {
-  return child_scheduler_->ShouldYieldForHighPriorityWork();
+  return thread_scheduler_->ShouldYieldForHighPriorityWork();
 }
 
 bool WebSchedulerImpl::CanExceedIdleDeadlineIfRequired() {
-  return child_scheduler_->CanExceedIdleDeadlineIfRequired();
+  return thread_scheduler_->CanExceedIdleDeadlineIfRequired();
 }
 
 void WebSchedulerImpl::RunIdleTask(blink::WebThread::IdleTask task,
