@@ -8,6 +8,7 @@ import re
 
 SPECIAL_TOKENS = [
     # This list should be sorted by length.
+    'String16',
     'CString',
     'Float32',
     'Float64',
