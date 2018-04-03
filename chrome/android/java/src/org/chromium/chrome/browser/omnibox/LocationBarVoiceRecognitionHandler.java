@@ -201,10 +201,11 @@ public class LocationBarVoiceRecognitionHandler {
     public void startVoiceRecognition(@VoiceInteractionSource int source) {
         Tab tab = getCurrentTab();
         if (tab == null) return;
-        Activity activity = tab.getActivity();
+        WindowAndroid windowAndroid = tab.getWindowAndroid();
+        if (windowAndroid == null) return;
+        Activity activity = windowAndroid.getActivity().get();
         if (activity == null) return;
 
-        WindowAndroid windowAndroid = tab.getWindowAndroid();
         if (!windowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)) {
             if (windowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
                 WindowAndroid.PermissionCallback callback = new WindowAndroid.PermissionCallback() {
