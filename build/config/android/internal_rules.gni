@@ -1387,6 +1387,7 @@ if (enable_java_templates) {
     # possibly broken symlinks to them) get copied into the output
     # directory.
     copy_ex(_output_jar_target) {
+      forward_variables_from(invoker, [ "inputs" ])
       deps = _deps
       if (defined(invoker.deps)) {
         deps += invoker.deps
@@ -2496,6 +2497,7 @@ if (enable_java_templates) {
              "main_class cannot be used for target of type ${invoker.type}")
     }
 
+    # The only target that might have no prebuilt and no sources is a java_binary.
     if (_is_prebuilt || _has_sources) {
       if (defined(invoker.output_name)) {
         _output_name = invoker.output_name
@@ -2771,6 +2773,14 @@ if (enable_java_templates) {
         }
         output_jar_path = _final_jar_path
         deps = _accumulated_deps
+
+        # Although these will be listed as deps in the depfile, they must also
+        # appear here so that "gn analyze" knows about them.
+        # https://crbug.com/827197
+        if (defined(invoker.proguard_configs)) {
+          inputs = invoker.proguard_configs
+          deps += _srcjar_deps  # For the aapt-generated proguard rules.
+        }
       }
       _accumulated_deps += [ ":$_process_prebuilt_target_name" ]
 
