@@ -198,6 +198,10 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
                             IntToContentSetting(prefs_->GetInteger(
                                 GetPrefName(CONTENT_SETTINGS_TYPE_SOUND))),
                             CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.DefaultUsbGuardSetting",
+                            IntToContentSetting(prefs_->GetInteger(
+                                GetPrefName(CONTENT_SETTINGS_TYPE_USB_GUARD))),
+                            CONTENT_SETTING_NUM_SETTINGS);
 #endif
   pref_change_registrar_.Init(prefs_);
   PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(

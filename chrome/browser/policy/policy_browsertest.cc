@@ -89,6 +89,8 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -5365,5 +5367,26 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
 }
 
 #endif  // !defined(OS_ANDROID)
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
+  const GURL kTestUrl("https://foo.com:443");
+
+  // Expect the default permission value to be 'ask'.
+  auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
+  EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+
+  // Update policy to change the default permission value to 'block'.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
+            std::make_unique<base::Value>(2));
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+
+  // Update policy to change the default permission value to 'ask'.
+  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
+            std::make_unique<base::Value>(3));
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+}
 
 }  // namespace policy

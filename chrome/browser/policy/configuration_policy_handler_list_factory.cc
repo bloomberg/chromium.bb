@@ -791,6 +791,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kAutoplayWhitelist,
     base::Value::Type::LIST },
 #endif  // !defined(OS_ANDROID)
+
+  { key::kDefaultWebUsbGuardSetting,
+    prefs::kManagedDefaultWebUsbGuardSetting,
+    base::Value::Type::INTEGER },
 };
 // clang-format on
 

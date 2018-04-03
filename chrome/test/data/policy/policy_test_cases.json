@@ -1536,6 +1536,14 @@
     ]
   },
 
+  "DefaultWebUsbGuardSetting": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "DefaultWebUsbGuardSetting": 2 },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.web_usb_guard" }
+    ]
+  },
+
   "AutoSelectCertificateForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AutoSelectCertificateForUrls": ["{'pattern':'https://example.com','filter':{'ISSUER':{'CN': 'issuer-name'}}}"] },
