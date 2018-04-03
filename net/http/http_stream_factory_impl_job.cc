@@ -1156,6 +1156,10 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
     DCHECK(delegate_->websocket_handshake_stream_create_helper());
 
     if (!try_websocket_over_http2_) {
+      // TODO(bnc): Change to DCHECK once https://crbug.com/819101 is fixed.
+      CHECK(origin_url_.SchemeIs(url::kWsScheme));
+      CHECK(proxy_info_.is_https());
+
       // Plaintext WebSocket is not supported over HTTP/2 proxy,
       // see https://crbug.com/684681.
       return ERR_NOT_IMPLEMENTED;
