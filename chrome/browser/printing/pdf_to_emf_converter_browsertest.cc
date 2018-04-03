@@ -296,4 +296,36 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, PostScriptLevel3Basic) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest,
+                       PostScriptLevel2WithZeroSizedText) {
+  const PdfRenderSettings pdf_settings(
+      kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
+      /*autorotate=*/false, PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2);
+  constexpr int kNumberOfPages = 1;
+
+  ASSERT_TRUE(GetTestInput("bug_767343.pdf"));
+  ASSERT_TRUE(StartPdfConverter(pdf_settings, kNumberOfPages));
+  ASSERT_TRUE(GetPage(0));
+  // The output is PS encapsulated in EMF.
+  ASSERT_TRUE(GetPageExpectedEmfData("bug_767343.emf"));
+  ComparePageEmfHeader();
+  ComparePageEmfPayload();
+}
+
+IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest,
+                       PostScriptLevel3WithZeroSizedText) {
+  const PdfRenderSettings pdf_settings(
+      kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
+      /*autorotate=*/false, PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
+  constexpr int kNumberOfPages = 1;
+
+  ASSERT_TRUE(GetTestInput("bug_767343.pdf"));
+  ASSERT_TRUE(StartPdfConverter(pdf_settings, kNumberOfPages));
+  ASSERT_TRUE(GetPage(0));
+  // The output is PS encapsulated in EMF.
+  ASSERT_TRUE(GetPageExpectedEmfData("bug_767343.emf"));
+  ComparePageEmfHeader();
+  ComparePageEmfPayload();
+}
+
 }  // namespace printing
