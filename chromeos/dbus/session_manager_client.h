@@ -25,7 +25,8 @@ class Identification;
 }
 
 namespace login_manager {
-class StartArcInstanceRequest;
+class StartArcMiniContainerRequest;
+class UpgradeArcContainerRequest;
 }
 
 namespace chromeos {
@@ -280,36 +281,30 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // sync fails or there's no network, the callback is never invoked.
   virtual void GetServerBackedStateKeys(StateKeysCallback callback) = 0;
 
-  // Asynchronously starts the ARC instance for the user whose cryptohome is
-  // located by |cryptohome_id|.  Flag |disable_boot_completed_broadcast|
-  // blocks Android ACTION_BOOT_COMPLETED broadcast for 3rd party applications.
-  // Upon completion, invokes |callback| with the result.
-  // Running ARC requires some amount of disk space. LOW_FREE_DISK_SPACE will
-  // be returned when there is not enough free disk space for ARC.
-  // UNKNOWN_ERROR is returned for any other errors.
-  enum class StartArcInstanceResult {
-    SUCCESS,
-    UNKNOWN_ERROR,
-    LOW_FREE_DISK_SPACE,
-  };
-  // When ArcStartupMode is LOGIN_SCREEN, StartArcInstance starts a container
-  // with only a handful of ARC processes for Chrome OS login screen.
-  // |cryptohome_id|, |skip_boot_completed_broadcast|, and
-  // |scan_vendor_priv_app| are ignored when the mode is LOGIN_SCREEN.
-  enum class ArcStartupMode {
-    FULL,
-    LOGIN_SCREEN,
-  };
-  // In case of success, |container_instance_id| will be passed as its second
-  // param. The ID is passed to ArcInstanceStopped() to identify which instance
-  // is stopped.
-  using StartArcInstanceCallback =
-      base::OnceCallback<void(StartArcInstanceResult result,
-                              const std::string& container_instance_id,
-                              base::ScopedFD server_socket)>;
-  virtual void StartArcInstance(
-      const login_manager::StartArcInstanceRequest& request,
-      StartArcInstanceCallback callback) = 0;
+  // StartArcMiniContainer starts a container with only a handful of ARC
+  // processes for Chrome OS login screen.  In case of success, callback will be
+  // called with |container_instance_id| set to a string.  The ID is passed to
+  // ArcInstanceStopped() to identify which instance is stopped. In case of
+  // error, |container_instance_id| will be nullopt.
+  using StartArcMiniContainerCallback =
+      DBusMethodCallback<std::string /* container_instance_id */>;
+  virtual void StartArcMiniContainer(
+      const login_manager::StartArcMiniContainerRequest& request,
+      StartArcMiniContainerCallback callback) = 0;
+
+  // UpgradeArcContainer upgrades a mini-container to a full ARC container. In
+  // case of success, success_callback is called. |server_socket| should be
+  // accept(2)ed to connect to the ArcBridgeService Mojo channel.  In case of
+  // error, error_callback will be called with a |low_free_disk_space| signaling
+  // whether the failure was due to low free disk space.
+  using UpgradeArcContainerCallback =
+      base::OnceCallback<void(base::ScopedFD server_socket)>;
+  using UpgradeErrorCallback =
+      base::OnceCallback<void(bool low_free_disk_space)>;
+  virtual void UpgradeArcContainer(
+      const login_manager::UpgradeArcContainerRequest& request,
+      UpgradeArcContainerCallback success_callback,
+      UpgradeErrorCallback error_callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
   // |callback| with the result; true on success, false on failure (either

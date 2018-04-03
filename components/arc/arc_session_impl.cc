@@ -37,9 +37,6 @@ namespace arc {
 
 namespace {
 
-using StartArcInstanceResult =
-    chromeos::SessionManagerClient::StartArcInstanceResult;
-
 chromeos::SessionManagerClient* GetSessionManagerClient() {
   // If the DBusThreadManager or the SessionManagerClient aren't available,
   // there isn't much we can do. This should only happen when running tests.
@@ -92,22 +89,13 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
 }
 
 // Returns the ArcStopReason corresponding to the ARC instance staring failure.
-ArcStopReason GetArcStopReason(StartArcInstanceResult result,
-                               bool stop_requested) {
+ArcStopReason GetArcStopReason(bool low_disk_space, bool stop_requested) {
   if (stop_requested)
     return ArcStopReason::SHUTDOWN;
 
-  switch (result) {
-    case StartArcInstanceResult::SUCCESS:
-      NOTREACHED();
-      break;
-    case StartArcInstanceResult::UNKNOWN_ERROR:
-      return ArcStopReason::GENERIC_BOOT_FAILURE;
-    case StartArcInstanceResult::LOW_FREE_DISK_SPACE:
-      return ArcStopReason::LOW_DISK_SPACE;
-  }
+  if (low_disk_space)
+    return ArcStopReason::LOW_DISK_SPACE;
 
-  NOTREACHED();
   return ArcStopReason::GENERIC_BOOT_FAILURE;
 }
 
@@ -273,13 +261,13 @@ void ArcSessionImpl::StartMiniInstance() {
 
   state_ = State::STARTING_MINI_INSTANCE;
   VLOG(2) << "Starting ARC mini instance";
-  login_manager::StartArcInstanceRequest request;
+
+  login_manager::StartArcMiniContainerRequest request;
   request.set_native_bridge_experiment(
       base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
-  request.set_for_login_screen(true);
 
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  client->StartArcInstance(
+  client->StartArcMiniContainer(
       request, base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,
                               weak_factory_.GetWeakPtr()));
 }
@@ -312,20 +300,16 @@ void ArcSessionImpl::RequestUpgrade() {
 }
 
 void ArcSessionImpl::OnMiniInstanceStarted(
-    chromeos::SessionManagerClient::StartArcInstanceResult result,
-    const std::string& container_instance_id,
-    base::ScopedFD socket_fd) {
+    base::Optional<std::string> container_instance_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::STARTING_MINI_INSTANCE);
 
-  if (result != StartArcInstanceResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start ARC instance";
-    OnStopped(GetArcStopReason(result, stop_requested_));
+  if (!container_instance_id) {
+    OnStopped(GetArcStopReason(false, stop_requested_));
     return;
   }
 
-  DCHECK(!container_instance_id.empty());
-  container_instance_id_ = container_instance_id;
+  container_instance_id_ = std::move(*container_instance_id);
   VLOG(2) << "ARC mini instance is successfully started: "
           << container_instance_id_;
 
@@ -348,9 +332,7 @@ void ArcSessionImpl::DoUpgrade() {
   VLOG(2) << "Upgrading an existing ARC mini instance";
   state_ = State::STARTING_FULL_INSTANCE;
 
-  login_manager::StartArcInstanceRequest request;
-  request.set_native_bridge_experiment(
-      base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
+  login_manager::UpgradeArcContainerRequest request;
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   DCHECK(user_manager->GetPrimaryUser());
 
@@ -373,32 +355,27 @@ void ArcSessionImpl::DoUpgrade() {
   if (packages_cache_mode_string == kPackagesCacheModeSkipCopy) {
     request.set_packages_cache_mode(
         login_manager::
-            StartArcInstanceRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT);
+            UpgradeArcContainerRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT);
   } else if (packages_cache_mode_string == kPackagesCacheModeCopy) {
     request.set_packages_cache_mode(
-        login_manager::StartArcInstanceRequest_PackageCacheMode_COPY_ON_INIT);
+        login_manager::
+            UpgradeArcContainerRequest_PackageCacheMode_COPY_ON_INIT);
   } else if (!packages_cache_mode_string.empty()) {
     VLOG(2) << "Invalid packages cache mode switch "
             << packages_cache_mode_string << ".";
   }
 
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  client->StartArcInstance(request, base::BindOnce(&ArcSessionImpl::OnUpgraded,
-                                                   weak_factory_.GetWeakPtr()));
+  client->UpgradeArcContainer(
+      request,
+      base::BindOnce(&ArcSessionImpl::OnUpgraded, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ArcSessionImpl::OnUpgradeError,
+                     weak_factory_.GetWeakPtr()));
 }
 
-void ArcSessionImpl::OnUpgraded(
-    chromeos::SessionManagerClient::StartArcInstanceResult result,
-    const std::string& container_instance_id,  // unused
-    base::ScopedFD socket_fd) {
+void ArcSessionImpl::OnUpgraded(base::ScopedFD socket_fd) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::STARTING_FULL_INSTANCE);
-
-  if (result != StartArcInstanceResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start ARC instance";
-    OnStopped(GetArcStopReason(result, stop_requested_));
-    return;
-  }
 
   VLOG(2) << "ARC instance is successfully upgraded.";
 
@@ -418,6 +395,10 @@ void ArcSessionImpl::OnUpgraded(
     StopArcInstance();
     return;
   }
+}
+
+void ArcSessionImpl::OnUpgradeError(bool low_disk_space) {
+  OnStopped(GetArcStopReason(low_disk_space, stop_requested_));
 }
 
 void ArcSessionImpl::OnMojoConnected(
