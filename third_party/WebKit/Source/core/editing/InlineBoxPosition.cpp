@@ -153,7 +153,7 @@ InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
   return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
 }
 
-InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
+InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
     InlineBox* inline_box,
     int caret_offset,
     UnicodeBidi unicode_bidi) {
@@ -412,6 +412,14 @@ InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
     const PositionInFlatTreeWithAffinity& position) {
   return ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(position);
+}
+
+InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
+    InlineBox* inline_box,
+    int caret_offset,
+    UnicodeBidi unicode_bidi) {
+  return AdjustInlineBoxPositionForTextDirectionInternal(
+      inline_box, caret_offset, unicode_bidi);
 }
 
 }  // namespace blink
