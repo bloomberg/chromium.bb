@@ -51,3 +51,20 @@ AXWebArea
 ++++AXStaticText AXValue='K3. Keep'
 ++++AXStaticText AXValue=' '
 ++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='K4. Keep '
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='K5. Keep'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='K6. Keep '
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='K7. Keep'
+++++AXStaticText AXValue=' space'
+++AXGroup
+++++AXStaticText AXValue='K8. Keep'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='space'

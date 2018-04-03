@@ -774,9 +774,14 @@ bool AXLayoutObject::CanIgnoreSpaceNextTo(LayoutObject* layout,
     LayoutText* layout_text = ToLayoutText(layout);
     if (layout_text->HasEmptyText())
       return false;
-    auto text = layout_text->GetText().Impl();
+    if (layout_text->GetText().Impl()->ContainsOnlyWhitespace())
+      return true;
+    DCHECK(layout_text->HasTextBoxes());
+    InlineTextBox* adjacent =
+        is_after ? layout_text->FirstTextBox() : layout_text->LastTextBox();
+    auto text = adjacent->GetText();
     auto adjacent_char =
-        text->CharacterStartingAt(is_after ? 0 : text->length() - 1);
+        text.CharacterStartingAt(is_after ? 0 : text.length() - 1);
     return adjacent_char == ' ' || adjacent_char == '\n' ||
            adjacent_char == '\t';
   }
