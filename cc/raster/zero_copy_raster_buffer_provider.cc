@@ -168,6 +168,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
       // GpuMemoryBuffer allocation can fail (https://crbug.com/554541).
       if (!gpu_memory_buffer_)
         return;
+      gpu_memory_buffer_->SetColorSpace(resource_color_space_);
     }
 
     DCHECK_EQ(1u, gfx::NumberOfPlanesForBufferFormat(
