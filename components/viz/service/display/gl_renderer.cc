@@ -1949,15 +1949,18 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
       !quad->IsRightEdge() || texture_size.width() == tex_coord_rect.right();
   bool fills_bottom_edge =
       !quad->IsBottomEdge() || texture_size.height() == tex_coord_rect.bottom();
-  bool has_tex_clamp_rect =
-      filter == GL_LINEAR && (!fills_right_edge || !fills_bottom_edge);
+  bool has_tex_clamp_rect = true;
   gfx::SizeF tex_clamp_size(texture_size);
   // Clamp from the original tex coord rect, instead of the one that has
-  // been adjusted by the visible rect.
-  if (!fills_right_edge)
-    tex_clamp_size.set_width(quad->tex_coord_rect.right() - 0.5f);
-  if (!fills_bottom_edge)
-    tex_clamp_size.set_height(quad->tex_coord_rect.bottom() - 0.5f);
+  // been adjusted by the visible rect.  Nearest neighbor should never be
+  // clamped.  However, still specify a tex clamp rect so that we don't
+  // thrash shaders.
+  if (filter == GL_LINEAR) {
+    if (!fills_right_edge)
+      tex_clamp_size.set_width(quad->tex_coord_rect.right() - 0.5f);
+    if (!fills_bottom_edge)
+      tex_clamp_size.set_height(quad->tex_coord_rect.bottom() - 0.5f);
+  }
 
   // Map to normalized texture coordinates.
   if (sampler != SAMPLER_TYPE_2D_RECT) {
