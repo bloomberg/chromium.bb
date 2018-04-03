@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/external_search_commands.h"
-#import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -56,9 +55,7 @@
           CGRectGetHeight(frame);
       self.voiceSearchButtonGuide.constrainedFrame = frame;
     }
-    StartVoiceSearchCommand* command =
-        [[StartVoiceSearchCommand alloc] initWithOriginView:view];
-    [self.dispatcher startVoiceSearch:command];
+    [self.dispatcher startVoiceSearch];
   }
 }
 
