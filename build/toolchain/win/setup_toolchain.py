@@ -254,6 +254,7 @@ def main():
     print 'vc_lib_atlmfc_path = ' + gn_helpers.ToGNString(vc_lib_atlmfc_path)
   assert vc_lib_um_path
   print 'vc_lib_um_path = ' + gn_helpers.ToGNString(vc_lib_um_path)
+  print 'paths = ' + gn_helpers.ToGNString(env['PATH'])
 
 if __name__ == '__main__':
   main()
