@@ -86,7 +86,7 @@ TEST(LoadCDMPerfTest, Widevine) {
 TEST(LoadCDMPerfTest, ExternalClearKey) {
   MeasureSizeAndTimeToLoadCdm(
       media::kClearKeyCdmBaseDirectory,
-      base::GetNativeLibraryName(media::kClearKeyCdmLibraryName));
+      base::GetLoadableModuleName(media::kClearKeyCdmLibraryName));
 }
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

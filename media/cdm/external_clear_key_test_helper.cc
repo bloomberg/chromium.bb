@@ -37,7 +37,7 @@ void ExternalClearKeyTestHelper::LoadLibrary() {
   cdm_base_path = cdm_base_path.Append(
       GetPlatformSpecificDirectory(kClearKeyCdmBaseDirectory));
   library_path_ = cdm_base_path.AppendASCII(
-      base::GetNativeLibraryName(kClearKeyCdmLibraryName));
+      base::GetLoadableModuleName(kClearKeyCdmLibraryName));
   ASSERT_TRUE(base::PathExists(library_path_)) << library_path_.value();
 
   // Now load the CDM library.
