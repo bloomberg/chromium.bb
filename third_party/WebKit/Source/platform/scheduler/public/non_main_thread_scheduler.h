@@ -22,7 +22,7 @@ namespace scheduler {
 class WorkerSchedulerProxy;
 
 // TODO(yutak): Rename this class to NonMainThreadScheduler.
-class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
+class PLATFORM_EXPORT WorkerScheduler : public WebThreadScheduler {
  public:
   ~WorkerScheduler() override;
 

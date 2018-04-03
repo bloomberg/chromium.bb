@@ -18,13 +18,13 @@
 namespace blink {
 namespace scheduler {
 
-class ChildScheduler;
 class SingleThreadIdleTaskRunner;
 class TaskRunnerImpl;
+class WebThreadScheduler;
 
 class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
  public:
-  WebSchedulerImpl(ChildScheduler* child_scheduler,
+  WebSchedulerImpl(WebThreadScheduler* thread_scheduler,
                    scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
                    scoped_refptr<TaskQueue> v8_task_runner);
   ~WebSchedulerImpl() override;
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
  private:
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
 
-  ChildScheduler* child_scheduler_;  // NOT OWNED
+  WebThreadScheduler* thread_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<TaskRunnerImpl> v8_task_runner_;
 
