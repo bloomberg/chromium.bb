@@ -7,10 +7,14 @@
 
 #include <CoreAudio/AudioHardware.h>
 
+#include <map>
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"
 
@@ -25,7 +29,8 @@ class MEDIA_EXPORT AudioDeviceListenerMac {
   // might not be executed on the same thread as construction.
   AudioDeviceListenerMac(base::RepeatingClosure listener_cb,
                          bool monitor_default_input = false,
-                         bool monitor_addition_removal = false);
+                         bool monitor_addition_removal = false,
+                         bool monitor_sources = false);
   ~AudioDeviceListenerMac();
 
  private:
@@ -44,15 +49,24 @@ class MEDIA_EXPORT AudioDeviceListenerMac {
 
   bool AddPropertyListener(PropertyListener* property_listener);
   void RemovePropertyListener(PropertyListener* property_listener);
+  void OnDevicesAddedOrRemoved();
+  void UpdateSourceListeners();
 
   base::RepeatingClosure listener_cb_;
   std::unique_ptr<PropertyListener> default_output_listener_;
   std::unique_ptr<PropertyListener> default_input_listener_;
   std::unique_ptr<PropertyListener> addition_removal_listener_;
 
+  using SourceListenerKey = std::pair<AudioObjectID, bool>;
+  using SourceListenerMap =
+      base::flat_map<SourceListenerKey, std::unique_ptr<PropertyListener>>;
+  SourceListenerMap source_listeners_;
+
   // AudioDeviceListenerMac must be constructed and destructed on the same
   // thread.
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<AudioDeviceListenerMac> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerMac);
 };

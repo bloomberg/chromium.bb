@@ -63,12 +63,9 @@ base::Optional<uint32_t> GetDeviceUint32Property(
   OSStatus result = AudioObjectGetPropertyData(
       device_id, &property_address, 0 /* inQualifierDataSize */,
       nullptr /* inQualifierData */, &size, &property_value);
-  if (result != noErr) {
-    OSSTATUS_DLOG(WARNING, result)
-        << "Failed to read UInt32 property " << property_selector
-        << " for device " << device_id;
+  if (result != noErr)
     return base::nullopt;
-  }
+
   return property_value;
 }
 
@@ -189,6 +186,33 @@ std::string TransportTypeToString(uint32_t transport_type) {
   }
 }
 
+base::Optional<std::string> TranslateDeviceSource(AudioObjectID device_id,
+                                                  UInt32 source_id,
+                                                  bool is_input) {
+  CFStringRef source_name = nullptr;
+  AudioValueTranslation translation;
+  translation.mInputData = &source_id;
+  translation.mInputDataSize = sizeof(source_id);
+  translation.mOutputData = &source_name;
+  translation.mOutputDataSize = sizeof(source_name);
+
+  UInt32 translation_size = sizeof(AudioValueTranslation);
+  AudioObjectPropertyAddress property_address = {
+      kAudioDevicePropertyDataSourceNameForIDCFString,
+      InputOutputScope(is_input), kAudioObjectPropertyElementMaster};
+
+  OSStatus result = AudioObjectGetPropertyData(
+      device_id, &property_address, 0 /* inQualifierDataSize */,
+      nullptr /* inQualifierData */, &translation_size, &translation);
+  if (result)
+    return base::nullopt;
+
+  std::string ret = base::SysCFStringRefToUTF8(source_name);
+  CFRelease(source_name);
+
+  return ret;
+}
+
 }  // namespace
 
 std::vector<AudioObjectID> GetAllAudioDeviceIDs() {
@@ -206,9 +230,17 @@ base::Optional<std::string> GetDeviceUniqueID(AudioObjectID device_id) {
 
 base::Optional<std::string> GetDeviceLabel(AudioObjectID device_id,
                                            bool is_input) {
-  base::Optional<std::string> device_label = GetDeviceName(device_id);
-  if (!device_label)
-    return base::nullopt;
+  base::Optional<std::string> device_label;
+  base::Optional<uint32_t> source = GetDeviceSource(device_id, is_input);
+  if (source) {
+    device_label = TranslateDeviceSource(device_id, *source, is_input);
+  }
+
+  if (!device_label) {
+    device_label = GetDeviceName(device_id);
+    if (!device_label)
+      return base::nullopt;
+  }
 
   std::string suffix;
   base::Optional<uint32_t> transport_type = GetDeviceTransportType(device_id);
@@ -223,6 +255,7 @@ base::Optional<std::string> GetDeviceLabel(AudioObjectID device_id,
     }
   }
 
+  DCHECK(device_label);
   if (!suffix.empty())
     *device_label += " (" + suffix + ")";
 
@@ -232,6 +265,12 @@ base::Optional<std::string> GetDeviceLabel(AudioObjectID device_id,
 uint32_t GetNumStreams(AudioObjectID device_id, bool is_input) {
   return GetDevicePropertySize(device_id, kAudioDevicePropertyStreams,
                                InputOutputScope(is_input));
+}
+
+base::Optional<uint32_t> GetDeviceSource(AudioObjectID device_id,
+                                         bool is_input) {
+  return GetDeviceUint32Property(device_id, kAudioDevicePropertyDataSource,
+                                 InputOutputScope(is_input));
 }
 
 }  // namespace core_audio_mac
