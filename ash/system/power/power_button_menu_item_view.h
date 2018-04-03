@@ -26,9 +26,9 @@ namespace ash {
 class ASH_EXPORT PowerButtonMenuItemView : public views::ImageButton {
  public:
   // Height of the menu item in pixels.
-  static constexpr int kMenuItemHeight = 96;
+  static constexpr int kMenuItemHeight = 84;
   // Width of the menu item in pixels.
-  static constexpr int kMenuItemWidth = 96;
+  static constexpr int kMenuItemWidth = 84;
 
   PowerButtonMenuItemView(views::ButtonListener* listener,
                           const gfx::VectorIcon& icon,

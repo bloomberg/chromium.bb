@@ -28,6 +28,9 @@ constexpr int kMenuItemVerticalPadding = 16;
 // The amount of rounding applied to the corners of the menu view.
 constexpr int kMenuViewRoundRectRadiusDp = 16;
 
+// Horizontal padding between two menu items.
+constexpr int kPaddingBetweenMenuItems = 8;
+
 }  // namespace
 
 using PowerButtonPosition = PowerButtonController::PowerButtonPosition;
@@ -151,7 +154,8 @@ void PowerButtonMenuView::Layout() {
     sign_out_rect.set_size(sign_out_item_->GetPreferredSize());
     sign_out_rect.Offset(
         gfx::Vector2d(kMenuItemHorizontalPadding +
-                          power_off_item_->GetPreferredSize().width(),
+                          power_off_item_->GetPreferredSize().width() +
+                          kPaddingBetweenMenuItems,
                       kMenuItemVerticalPadding));
     sign_out_item_->SetBoundsRect(sign_out_rect);
   }
@@ -177,7 +181,8 @@ gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {
                                2 * kMenuItemVerticalPadding);
   menu_size.set_width(sign_out_item_
                           ? 2 * PowerButtonMenuItemView::kMenuItemWidth +
-                                2 * kMenuItemHorizontalPadding
+                                2 * kMenuItemHorizontalPadding +
+                                kPaddingBetweenMenuItems
                           : PowerButtonMenuItemView::kMenuItemWidth +
                                 2 * kMenuItemHorizontalPadding);
   return menu_size;
