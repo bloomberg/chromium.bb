@@ -10,6 +10,7 @@
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/Settings.h"
 #include "core/html/forms/HTMLInputElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/compositing/CompositedSelection.h"
@@ -179,6 +180,74 @@ TEST_P(RenderedPositionTest, PositionInScroller) {
   EXPECT_EQ(FloatPoint(1369, 905), composited_selection.end.edge_top_in_layer);
   EXPECT_EQ(FloatPoint(1369, 915),
             composited_selection.end.edge_bottom_in_layer);
+}
+
+// TODO(yoichio): These helper static functions are introduced to avoid
+// conflicting while merging this change into M66.
+// Refactor them into RenderedPositionTest member.
+namespace rendered_position_test {
+static void SetUpinternal(RenderedPositionTest* test) {
+  // Enable compositing.
+  test->GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
+  test->GetDocument().View()->SetParentVisible(true);
+  test->GetDocument().View()->SetSelfVisible(true);
+  test->GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
+static void FocusAndSelect(RenderedPositionTest* test,
+                           Element* focus,
+                           const Node& select) {
+  DCHECK(focus);
+  focus->focus();
+  test->Selection().SetSelection(
+      SelectionInDOMTree::Builder().SelectAllChildren(select).Build(),
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  test->UpdateAllLifecyclePhases();
+}
+}  // namespace rendered_position_test
+
+// crbug.com/807930
+TEST_P(RenderedPositionTest, ContentEditableLinebreak) {
+  rendered_position_test::SetUpinternal(this);
+  LoadAhem();
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem;' contenteditable>"
+      "test<br><br></div>");
+  Element* target = GetDocument().QuerySelector("div");
+  rendered_position_test::FocusAndSelect(this, target, *target);
+  const CompositedSelection& composited_selection =
+      RenderedPosition::ComputeCompositedSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
+            FloatPoint(8.0f, 8.0f));
+  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
+            FloatPoint(8.0f, 18.0f));
+  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
+            FloatPoint(8.0f, 18.0f));
+  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
+            FloatPoint(8.0f, 28.0f));
+}
+
+// crbug.com/807930
+TEST_P(RenderedPositionTest, TextAreaLinebreak) {
+  rendered_position_test::SetUpinternal(this);
+  LoadAhem();
+  SetBodyContent(
+      "<textarea style='font: 10px/10px Ahem;'>"
+      "test\n</textarea>");
+  TextControlElement* target =
+      ToTextControl(GetDocument().QuerySelector("textarea"));
+  rendered_position_test::FocusAndSelect(this, target,
+                                         *target->InnerEditorElement());
+  const CompositedSelection& composited_selection =
+      RenderedPosition::ComputeCompositedSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
+            FloatPoint(11.0f, 11.0f));
+  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
+            FloatPoint(11.0f, 21.0f));
+  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
+            FloatPoint(11.0f, 21.0f));
+  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
+            FloatPoint(11.0f, 31.0f));
 }
 
 }  // namespace blink

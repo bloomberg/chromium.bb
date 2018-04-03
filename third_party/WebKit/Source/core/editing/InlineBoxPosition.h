@@ -38,6 +38,7 @@
 namespace blink {
 
 class InlineBox;
+enum class UnicodeBidi : unsigned;
 
 struct InlineBoxPosition {
   STACK_ALLOCATED();
@@ -63,6 +64,13 @@ struct InlineBoxPosition {
   }
 };
 
+// TODO(yoichio): ComputeInlineBoxPosition returns null if position is at the
+// end of line and We fixed LocalCaretRectOfPosition for such position with
+// NeedsLineEndAdjustment and NextLinePositionOf.
+// We should include the fix into ComputeInlineBoxPosition however
+// SelectionModifierCharacter and SelectionModifierWord
+// depend on the null-line-end behavior of CIBP.
+// Move the fix into the CIBP while fixing the modifier functions.
 CORE_EXPORT InlineBoxPosition
 ComputeInlineBoxPosition(const PositionWithAffinity&);
 CORE_EXPORT InlineBoxPosition
@@ -78,6 +86,10 @@ InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
     const PositionWithAffinity&);
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
     const PositionInFlatTreeWithAffinity&);
+
+InlineBoxPosition AdjustInlineBoxPositionForTextDirection(InlineBox*,
+                                                          int,
+                                                          UnicodeBidi);
 
 // The print for |InlineBoxPosition| is available only for testing
 // in "webkit_unit_tests", and implemented in
