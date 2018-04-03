@@ -63,8 +63,7 @@ ElisionParameters GetElisionParameters(const GURL& gurl,
                                        gfx::RenderText* render_text,
                                        int min_path_pixels) {
   // In situations where there is no host, do not attempt to position the TLD.
-  bool allow_offset =
-      gurl.IsStandard() && !gurl.SchemeIsFile() && parsed.host.is_nonempty();
+  bool allow_offset = gurl.IsStandard() && parsed.host.is_nonempty();
   int total_width = render_text->GetContentWidth();
 
   ElisionParameters result;

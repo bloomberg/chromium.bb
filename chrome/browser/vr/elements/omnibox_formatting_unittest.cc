@@ -129,9 +129,12 @@ const std::vector<ElisionTestcase> elision_test_cases = {
     // A long domain and path should see fading at both ends.
     {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
      "abc.com/aaa", kHasOffset, true, true},
-    // A file URL should always fade to the right.
-    {"file://filer/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "file://filer/aaa",
+    // A file URL with no hostname should fade to the right.
+    {"file:///path/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "file://path/aaa",
      kNoOffset, false, true},
+    // A file URL with a hostname should treat the hostname like https.
+    {"file://very-long-file-hostname/aaaaaaaaaaaaaa", "file://hostname/aaa",
+     kHasOffset, true, true},
     {"data:text/plain;charset=UTF-8;aaaaaaaaaaaaaaaaaaa", "data:text/plain",
      kNoOffset, false, true},
 };
