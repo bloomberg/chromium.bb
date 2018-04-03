@@ -22,7 +22,6 @@ class TryCatchScope {
   ~TryCatchScope();
 
  private:
-  v8::Isolate* isolate_;
   v8::TryCatch trycatch_;
 };
 

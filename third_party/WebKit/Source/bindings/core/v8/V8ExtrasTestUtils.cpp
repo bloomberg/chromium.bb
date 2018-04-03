@@ -11,11 +11,9 @@
 
 namespace blink {
 
-TryCatchScope::TryCatchScope(v8::Isolate* isolate)
-    : isolate_(isolate), trycatch_(isolate) {}
+TryCatchScope::TryCatchScope(v8::Isolate* isolate) : trycatch_(isolate) {}
 
 TryCatchScope::~TryCatchScope() {
-  v8::MicrotasksScope::PerformCheckpoint(isolate_);
   EXPECT_FALSE(trycatch_.HasCaught());
 }
 
