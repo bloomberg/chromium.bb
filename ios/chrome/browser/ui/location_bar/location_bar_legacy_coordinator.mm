@@ -250,6 +250,10 @@ const int kLocationAuthorizationStatusCount = 4;
 // methods are already necessary though.
 #pragma mark - OmniboxFocuser
 
+- (void)focusOmniboxFromSearchButton {
+  NOTREACHED();
+}
+
 - (void)focusOmnibox {
   [self.locationBarView.textField becomeFirstResponder];
 }

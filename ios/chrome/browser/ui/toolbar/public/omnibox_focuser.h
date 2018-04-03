@@ -11,6 +11,8 @@
 @protocol OmniboxFocuser
 // Give focus to the omnibox, if it is visible. No-op if it is not visible.
 - (void)focusOmnibox;
+// Set next focus source as SEARCH_BUTTON and then call -focusOmnibox.
+- (void)focusOmniboxFromSearchButton;
 // Cancel omnibox edit (from shield tap or cancel button tap).
 - (void)cancelOmniboxEdit;
 @end

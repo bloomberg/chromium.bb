@@ -37,7 +37,7 @@ class WebOmniboxEditController;
 // Update the contents and the styling of the omnibox.
 - (void)updateOmniboxState;
 // Marks the next omnibox focus event source as the fakebox.
-- (void)setNextFocusSourceAsFakebox;
+- (void)setNextFocusSourceAsSearchButton;
 // Use this method to resign |textField| as the first responder.
 - (void)endEditing;
 // Creates a child popup coordinator. The popup coordinator is linked to the

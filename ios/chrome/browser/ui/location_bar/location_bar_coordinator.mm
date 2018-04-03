@@ -160,10 +160,6 @@ const int kLocationAuthorizationStatusCount = 4;
   return self.omniboxPopupCoordinator.isOpen;
 }
 
-- (void)focusOmniboxFromFakebox {
-  [self focusOmnibox];
-}
-
 - (BOOL)isOmniboxFirstResponder {
   return [self.locationBarView.textField isFirstResponder];
 }
@@ -249,6 +245,11 @@ const int kLocationAuthorizationStatusCount = 4;
 // This will be OmniboxFocuser implementation, but it's not yet ready. Some
 // methods are already necessary though.
 #pragma mark - OmniboxFocuser
+
+- (void)focusOmniboxFromSearchButton {
+  [self.omniboxCoordinator setNextFocusSourceAsSearchButton];
+  [self focusOmnibox];
+}
 
 - (void)focusOmnibox {
   [self.locationBarView.textField becomeFirstResponder];

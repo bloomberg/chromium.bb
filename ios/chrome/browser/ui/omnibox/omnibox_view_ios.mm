@@ -407,8 +407,10 @@ void OmniboxViewIOS::OnDidBeginEditing() {
   [field_ setText:[field_ text]];
   OnBeforePossibleChange();
   // In the case where the user taps the fakebox on the Google landing page,
-  // the focus source is already set to FAKEBOX. Otherwise, set it to OMNIBOX.
-  if (model()->focus_source() != OmniboxEditModel::FocusSource::FAKEBOX) {
+  // or from the secondary toolbar search button, the focus source is already
+  // set to FAKEBOX or SEARCH_BUTTON respectively. Otherwise, set it to OMNIBOX.
+  if (model()->focus_source() != OmniboxEditModel::FocusSource::FAKEBOX &&
+      model()->focus_source() != OmniboxEditModel::FocusSource::SEARCH_BUTTON) {
     model()->set_focus_source(OmniboxEditModel::FocusSource::OMNIBOX);
   }
 
