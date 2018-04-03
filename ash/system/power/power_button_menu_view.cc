@@ -29,7 +29,7 @@ constexpr int kMenuItemVerticalPadding = 16;
 constexpr int kMenuViewRoundRectRadiusDp = 16;
 
 // Horizontal padding between two menu items.
-constexpr int kPaddingBetweenMenuItems = 8;
+constexpr int kPaddingBetweenMenuItmes = 8;
 
 }  // namespace
 
@@ -145,8 +145,10 @@ void PowerButtonMenuView::Layout() {
   const gfx::Rect rect(GetContentsBounds());
   gfx::Rect power_off_rect(rect);
   power_off_rect.set_size(power_off_item_->GetPreferredSize());
-  power_off_rect.Offset(
-      gfx::Vector2d(kMenuItemVerticalPadding, kMenuItemHorizontalPadding));
+  power_off_rect.Offset(gfx::Vector2d(
+      kMenuItemVerticalPadding - PowerButtonMenuItemView::kItemBorderThickness,
+      kMenuItemHorizontalPadding -
+          PowerButtonMenuItemView::kItemBorderThickness));
   power_off_item_->SetBoundsRect(power_off_rect);
 
   if (sign_out_item_) {
@@ -155,8 +157,10 @@ void PowerButtonMenuView::Layout() {
     sign_out_rect.Offset(
         gfx::Vector2d(kMenuItemHorizontalPadding +
                           power_off_item_->GetPreferredSize().width() +
-                          kPaddingBetweenMenuItems,
-                      kMenuItemVerticalPadding));
+                          kPaddingBetweenMenuItmes -
+                          PowerButtonMenuItemView::kItemBorderThickness,
+                      kMenuItemVerticalPadding -
+                          PowerButtonMenuItemView::kItemBorderThickness));
     sign_out_item_->SetBoundsRect(sign_out_rect);
   }
 }
@@ -182,7 +186,7 @@ gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {
   menu_size.set_width(sign_out_item_
                           ? 2 * PowerButtonMenuItemView::kMenuItemWidth +
                                 2 * kMenuItemHorizontalPadding +
-                                kPaddingBetweenMenuItems
+                                kPaddingBetweenMenuItmes
                           : PowerButtonMenuItemView::kMenuItemWidth +
                                 2 * kMenuItemHorizontalPadding);
   return menu_size;

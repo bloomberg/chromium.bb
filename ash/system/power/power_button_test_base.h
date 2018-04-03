@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -20,7 +19,6 @@ class FakeSessionManagerClient;
 
 namespace ash {
 
-class AccessibilityController;
 class LockStateController;
 class LockStateControllerTestApi;
 class PowerButtonControllerTestApi;
@@ -93,9 +91,6 @@ class PowerButtonTestBase : public AshTestBase {
   // they come too close.
   void AdvanceClockToAvoidIgnoring();
 
-  // Simulate that shutdown sound duration callback is done.
-  void ShutdownSoundPlayed();
-
   // Ownership is passed on to chromeos::DBusThreadManager.
   chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
   chromeos::FakeSessionManagerClient* session_manager_client_ = nullptr;
@@ -107,8 +102,6 @@ class PowerButtonTestBase : public AshTestBase {
   std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
   std::unique_ptr<PowerButtonControllerTestApi> power_button_test_api_;
   base::SimpleTestTickClock tick_clock_;
-  AccessibilityController* a11y_controller_;
-  TestAccessibilityControllerClient a11y_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonTestBase);
 };

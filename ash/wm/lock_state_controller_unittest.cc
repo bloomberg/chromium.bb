@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
@@ -14,6 +16,7 @@
 #include "ash/shutdown_controller.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/system/power/power_button_controller_test_api.h"
 #include "ash/system/power/power_button_test_base.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
@@ -80,6 +83,9 @@ class LockStateControllerTest : public PowerButtonTestBase {
     test_animator_ = new TestSessionStateAnimator;
     lock_state_controller_->set_animator_for_test(test_animator_);
     lock_state_test_api_->set_shutdown_controller(&test_shutdown_controller_);
+
+    a11y_controller_ = Shell::Get()->accessibility_controller();
+    a11y_controller_->SetClient(a11y_client_.CreateInterfacePtrAndBind());
   }
 
  protected:
@@ -212,6 +218,22 @@ class LockStateControllerTest : public PowerButtonTestBase {
         SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
   }
 
+  void ExpectShutdownAnimationFinished() {
+    SCOPED_TRACE("Failure in ExpectShutdownAnimationFinished");
+    EXPECT_EQ(0u, test_animator_->GetAnimationCount());
+    EXPECT_FALSE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::ROOT_CONTAINER,
+        SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
+  }
+
+  void ExpectShutdownAnimationCancel() {
+    SCOPED_TRACE("Failure in ExpectShutdownAnimationCancel");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::ROOT_CONTAINER,
+        SessionStateAnimator::ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS));
+  }
+
   void ExpectWallpaperIsShowing() {
     SCOPED_TRACE("Failure in ExpectWallpaperIsShowing");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
@@ -263,8 +285,13 @@ class LockStateControllerTest : public PowerButtonTestBase {
     lock_state_controller_->OnLockScreenHide(closure);
   }
 
+  // Simulate that shutdown sound duration callback is done.
+  void ShutdownSoundPlayed() { a11y_controller_->FlushMojoForTest(); }
+
   TestShutdownController test_shutdown_controller_;
   TestSessionStateAnimator* test_animator_ = nullptr;  // not owned
+  AccessibilityController* a11y_controller_ = nullptr;  // not owned
+  TestAccessibilityControllerClient a11y_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LockStateControllerTest);
@@ -677,6 +704,44 @@ TEST_F(LockStateControllerTest, TouchscreenUnableWhileScreenOff) {
   SendBrightnessChange(0, kOtherCause);
   EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
       TouchDeviceEnabledSource::GLOBAL));
+}
+
+// Tests that continue pressing the power button for a while after power menu is
+// shown should trigger the cancellable pre-shutdown animation.
+TEST_F(LockStateControllerTest, ShutDownAfterShowPowerMenu) {
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
+  PressPowerButton();
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  ASSERT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+
+  ExpectShutdownAnimationStarted();
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN, 0.5f);
+  // Release the power button before the shutdown timer fires.
+  ReleasePowerButton();
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
+  ExpectShutdownAnimationCancel();
+
+  power_button_controller_->DismissMenu();
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
+
+  // Press the button again and make the shutdown timeout fire this time.
+  // Check that we start the timer for actually requesting the shutdown.
+  PressPowerButton();
+  ASSERT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+
+  Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
+  ExpectShutdownAnimationFinished();
+  lock_state_test_api_->trigger_shutdown_timeout();
+
+  ShutdownSoundPlayed();
+  EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
+  EXPECT_EQ(0, NumShutdownRequests());
+
+  // When the timeout fires, we should request a shutdown.
+  lock_state_test_api_->trigger_real_shutdown_timeout();
+  EXPECT_EQ(1, NumShutdownRequests());
 }
 
 }  // namespace ash

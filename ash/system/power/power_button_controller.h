@@ -159,9 +159,6 @@ class ASH_EXPORT PowerButtonController
   // button is pressed or when |power_button_menu_timer_| fires.
   void StartPowerMenuAnimation();
 
-  // Called by |shutdown_timer_| to turn the screen off and request shutdown.
-  void OnShutdownTimeout();
-
   // Updates |button_type_| and |force_clamshell_power_button_| based on the
   // current command line.
   void ProcessCommandLine();
@@ -245,9 +242,10 @@ class ASH_EXPORT PowerButtonController
   // Saves the most recent timestamp that power button was released.
   base::TimeTicks last_button_up_time_;
 
-  // Started when the power button is pressed and stopped when it's released.
-  // Runs OnShutdownTimeout() to start shutdown.
-  base::OneShotTimer shutdown_timer_;
+  // Started when |show_menu_animation_done_| is set to true and stopped when
+  // power button is released. Runs OnPreShutdownTimeout() to start the
+  // cancellable pre-shutdown animation.
+  base::OneShotTimer pre_shutdown_timer_;
 
   // Started when the power button of convertible/slate/detachable devices is
   // pressed and stopped when it's released. Runs StartPowerMenuAnimation() to

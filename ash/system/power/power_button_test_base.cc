@@ -4,7 +4,6 @@
 
 #include "ash/system/power/power_button_test_base.h"
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -44,9 +43,6 @@ void PowerButtonTestBase::SetUp() {
   lock_state_controller_ = Shell::Get()->lock_state_controller();
   lock_state_test_api_ =
       std::make_unique<LockStateControllerTestApi>(lock_state_controller_);
-
-  a11y_controller_ = Shell::Get()->accessibility_controller();
-  a11y_controller_->SetClient(a11y_client_.CreateInterfacePtrAndBind());
 }
 
 void PowerButtonTestBase::TearDown() {
@@ -146,10 +142,6 @@ void PowerButtonTestBase::EnableTabletMode(bool enable) {
 void PowerButtonTestBase::AdvanceClockToAvoidIgnoring() {
   tick_clock_.Advance(PowerButtonController::kIgnoreRepeatedButtonUpDelay +
                       base::TimeDelta::FromMilliseconds(1));
-}
-
-void PowerButtonTestBase::ShutdownSoundPlayed() {
-  a11y_controller_->FlushMojoForTest();
 }
 
 }  // namespace ash

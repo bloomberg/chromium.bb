@@ -9,6 +9,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
@@ -35,6 +36,17 @@ constexpr int kIconTopPadding = 16;
 // Top padding of the label of title to the top of the item view.
 constexpr int kTitleTopPadding = 53;
 
+// The amount of rounding applied to the corners of the focused menu item.
+constexpr int kFocusedItemRoundRectRadiusDp = 8;
+
+// Color of the focused menu item's border.
+constexpr SkColor kFocusedItemBorderColor =
+    SkColorSetARGBMacro(0x66, 0x1A, 0x73, 0xE8);
+
+// Color of the focused menu item.
+constexpr SkColor kFocusedItemColor =
+    SkColorSetARGBMacro(0x0A, 0x1A, 0x73, 0xE8);
+
 }  // namespace
 
 PowerButtonMenuItemView::PowerButtonMenuItemView(
@@ -44,6 +56,8 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
     : views::ImageButton(listener),
       icon_view_(new views::ImageView),
       title_(new views::Label) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetFocusPainter(nullptr);
   SetPaintToLayer();
   icon_view_->SetImage(gfx::CreateVectorIcon(icon, kItemIconColor));
   AddChildView(icon_view_);
@@ -57,6 +71,10 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
   title_->SetEnabledColor(kItemTitleColor);
   title_->SetText(title_text);
   AddChildView(title_);
+
+  SetBorder(views::CreateEmptyBorder(kItemBorderThickness, kItemBorderThickness,
+                                     kItemBorderThickness,
+                                     kItemBorderThickness));
 }
 
 PowerButtonMenuItemView::~PowerButtonMenuItemView() = default;
@@ -77,12 +95,29 @@ void PowerButtonMenuItemView::Layout() {
 }
 
 gfx::Size PowerButtonMenuItemView::CalculatePreferredSize() const {
-  return gfx::Size(kMenuItemWidth, kMenuItemHeight);
+  return gfx::Size(kMenuItemWidth + 2 * kItemBorderThickness,
+                   kMenuItemHeight + 2 * kItemBorderThickness);
+}
+
+void PowerButtonMenuItemView::OnFocus() {
+  SchedulePaint();
+}
+
+void PowerButtonMenuItemView::OnBlur() {
+  SchedulePaint();
 }
 
 void PowerButtonMenuItemView::PaintButtonContents(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
   canvas->DrawColor(SK_ColorWHITE);
+  if (!HasFocus() || GetContentsBounds().IsEmpty())
+    return;
+
+  SetBorder(views::CreateRoundedRectBorder(kItemBorderThickness,
+                                           kFocusedItemRoundRectRadiusDp,
+                                           kFocusedItemBorderColor));
+  canvas->FillRect(GetContentsBounds(), kFocusedItemColor);
+  views::View::OnPaintBorder(canvas);
 }
 
 }  // namespace ash

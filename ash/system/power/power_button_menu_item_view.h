@@ -30,6 +30,9 @@ class ASH_EXPORT PowerButtonMenuItemView : public views::ImageButton {
   // Width of the menu item in pixels.
   static constexpr int kMenuItemWidth = 84;
 
+  // Thickness of the menu item's border in pixels.
+  static constexpr int kItemBorderThickness = 2;
+
   PowerButtonMenuItemView(views::ButtonListener* listener,
                           const gfx::VectorIcon& icon,
                           const base::string16& title_text);
@@ -39,6 +42,8 @@ class ASH_EXPORT PowerButtonMenuItemView : public views::ImageButton {
   // views::View:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // views::ImageButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
