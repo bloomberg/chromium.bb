@@ -102,15 +102,6 @@ blink_core_sources("inspector") {
     "WorkerThreadDebugger.cpp",
     "WorkerThreadDebugger.h",
   ]
-
-  jumbo_excluded_sources = [
-    # Collides with InspectorPageAgent.cpp and
-    # NetworkResourcesData.cpp (patch incoming)
-    "InspectorNetworkAgent.cpp",
-
-    # Collides with InspectorPageAgent.cpp (patch incoming)
-    "MainThreadDebugger.cpp",
-  ]
 }
 
 # inspector protocol -----------------------------------------------------------
