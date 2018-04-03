@@ -73,6 +73,19 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
 
   PositionTemplate(const PositionTemplate&);
 
+  // Returns a newly created |Position| with |kOffsetInAnchor|. |offset| can be
+  // out of bound. Out of bound position is used for computing undo/redo
+  // selection for merging text typing.
+  static PositionTemplate<Strategy> CreateWithoutValidation(
+      const Node& container,
+      int offset);
+
+  // TODO(editing-dev): Once we get a reason to use out of bound position,
+  // we should change caller to use |CreateWithoutValidation()|.
+  static PositionTemplate<Strategy> CreateWithoutValidationDeprecated(
+      const Node& container,
+      int offset);
+
   explicit operator bool() const { return IsNotNull(); }
 
   PositionAnchorType AnchorType() const { return anchor_type_; }

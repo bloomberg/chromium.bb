@@ -454,7 +454,8 @@ void CompositeEditCommand::UpdatePositionForNodeRemovalPreservingChildren(
   position = ComputePositionForNodeRemoval(position, node);
   if (offset == 0)
     return;
-  position = Position(position.ComputeContainerNode(), offset);
+  position = Position::CreateWithoutValidationDeprecated(
+      *position.ComputeContainerNode(), offset);
 }
 
 HTMLSpanElement*
