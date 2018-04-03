@@ -6,26 +6,13 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  // DisconnectingHealthThermometerAdapter's measurement_interval contains
-  // one blocklisted descriptor.  Make sure that it isn't returned in the result
-  // of getDescriptors().
-  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['health_thermometer']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
-    .then(service => service.getCharacteristic('measurement_interval'))
-    .then(characteristic => characteristic.getDescriptors())
-    .then(descriptors => {
-      descriptors.forEach(descriptor => {
-            let bad_uuid = blocklist_test_descriptor_uuid;
-            // bad_uuid is a blocklisted UUID.  It should never be present
-            // in a getDescriptors() result.
-            assert_true(descriptor.uuid != bad_uuid)
-          });
-      })
-}, 'Making sure no blocklisted descriptors are present. ');
+const test_desc = 'Make sure blocklisted descriptors are not reported.';
 
-
+bluetooth_test(() => getBlocklistExcludeWritesCharacteristic()
+    .then(({characteristic}) => characteristic.getDescriptors())
+    .then(descriptors => descriptors.forEach(descriptor =>
+        // |blocklist_test_descriptor_uuid| is a blocklisted UUID. It should
+        // never be present in a getDescriptors() result.
+        assert_true(descriptor.uuid !== blocklist_test_descriptor_uuid))),
+    test_desc);
 </script>

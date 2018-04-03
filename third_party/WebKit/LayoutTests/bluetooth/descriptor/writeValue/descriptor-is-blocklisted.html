@@ -6,28 +6,23 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(
-    () => {
-      let val = new Uint8Array([1]);
-        return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-            .then(
-                () => requestDeviceWithTrustedClick(
-                    {filters: [{services: ['health_thermometer']}]}))
-            .then(device => device.gatt.connect())
-            .then(
-                gattServer =>
-                    gattServer.getPrimaryService('health_thermometer'))
-            .then(service => service.getCharacteristic('measurement_interval'))
-            .then(
-                characteristic => characteristic.getDescriptor(0x2902))
-            .then(descriptor => {
-              return assert_promise_rejects_with_message(
-                  descriptor.writeValue(val),
-                  new DOMException(
-                      'writeValue() called on blocklisted object marked exclude-writes. ' +
-                          'https://goo.gl/4NeimX',
-                      'SecurityError'));
-            })},
-    'Attempt to call writeValue on a blocked descriptor must generate a SecurityError');
+const test_desc = 'An attempt to call writeValue on a blocked descriptor ' +
+    'must generate a SecurityError';
+const expected = new DOMException(
+    'writeValue() called on blocklisted object marked exclude-writes. ' +
+    'https://goo.gl/4NeimX',
+    'SecurityError');
+let descriptor, fake_descriptor;
 
+// 1. Connect to the device and retrieve the GATT descriptor.
+bluetooth_test(() => getBlocklistExcludeWritesDescriptor()
+    .then(_ => ({descriptor, fake_descriptor} = _))
+    // 2. Attempt to read and write the descriptor.
+    .then(() => fake_descriptor.setNextReadResponse(HCI_SUCCESS, 'foo'))
+    .then(() => descriptor.readValue())
+    .then(() => assert_promise_rejects_with_message(
+        descriptor.writeValue(new Uint8Array(1 /* length */)),
+        expected,
+        'writeValue() should reject.')),
+    test_desc);
 </script>
