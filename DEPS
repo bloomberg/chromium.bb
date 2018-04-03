@@ -64,6 +64,9 @@ vars = {
   'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration == "default"',
 
+  # Define the default board to be targetted when building for CrOS.
+  'cros_board': 'amd64-generic',
+
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
   'chromium_git': 'https://chromium.googlesource.com',
@@ -1626,6 +1629,26 @@ hooks = [
     'action': [
       'python',
       'src/build/fuchsia/update_sdk.py',
+    ],
+  },
+
+  # Download CrOS simplechrome artifacts.
+  {
+    'name': 'cros_simplechrome_artifacts',
+    'pattern': '.',
+    # Building for CrOS is only supported on linux currently.
+    'condition': 'checkout_chromeos and host_os == "linux"',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--nostart-goma',
+      '--use-external-config',
+      '--nogn-gen',
+      '--download-vm',
+      '--board={cros_board}',
+      '--cache-dir=src/build/cros_cache/',
+      '--log-level=error',
+      'exit',
     ],
   },
 
