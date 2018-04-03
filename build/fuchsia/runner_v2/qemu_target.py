@@ -69,7 +69,8 @@ class QemuTarget(target.Target):
         # any changes.
         '-snapshot',
         '-drive', 'file=%s,format=qcow2,if=none,id=data,snapshot=on' %
-            os.path.join(self._output_dir, 'fvm.blk.qcow2'),
+            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                    'fvm.blk.qcow2'),
         '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
             self._MakeQcowDisk(boot_data.ConfigureDataFVM(self._output_dir,
                                                           False)),
