@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
@@ -847,7 +848,8 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetUserInfoFunction::Run() {
     user.data_ready = user.logged_in || service->GetRemoteDevices() != NULL;
 
     user.device_user_id = cryptauth::CalculateDeviceUserId(
-        chromeos::EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
+        cryptauth::CryptAuthDeviceIdProviderImpl::GetInstance()->GetDeviceId(),
+        account_id.GetUserEmail());
 
     user.ble_discovery_enabled = true;
     users.push_back(std::move(user));

@@ -12,6 +12,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,24 +45,10 @@ namespace chromeos {
 
 namespace {
 
-std::string GetDeviceId() {
-  PrefService* local_state =
-      g_browser_process ? g_browser_process->local_state() : nullptr;
-
-  if (!local_state)
-    return std::string();
-
-  std::string device_id = local_state->GetString(prefs::kEasyUnlockDeviceId);
-  if (device_id.empty()) {
-    device_id = base::GenerateGUID();
-    local_state->SetString(prefs::kEasyUnlockDeviceId, device_id);
-  }
-  return device_id;
-}
-
 cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
   cryptauth::GcmDeviceInfo device_info;
-  device_info.set_long_device_id(GetDeviceId());
+  device_info.set_long_device_id(
+      cryptauth::CryptAuthDeviceIdProviderImpl::GetInstance()->GetDeviceId());
   device_info.set_device_type(cryptauth::CHROME);
   device_info.set_device_software_version(version_info::GetVersionNumber());
   google::protobuf::int64 software_version_code =

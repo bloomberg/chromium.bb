@@ -21,8 +21,10 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
@@ -244,11 +246,15 @@ class EasyUnlockServiceTest : public testing::Test {
     ON_CALL(*mock_user_manager_, IsCurrentUserNonCryptohomeDataEphemeral())
         .WillByDefault(Return(false));
 
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_pref_service_);
+    RegisterLocalState(local_pref_service_.registry());
+
     SetUpProfile(&profile_, AccountId::FromUserEmailGaiaId(kTestUserPrimary,
                                                            kPrimaryGaiaId));
   }
 
   void TearDown() override {
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     delete app_manager_factory;
     app_manager_factory = NULL;
   }
@@ -331,6 +337,9 @@ class EasyUnlockServiceTest : public testing::Test {
 
   bool is_bluetooth_adapter_present_;
   scoped_refptr<testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
+
+  // PrefService which contains the browser process' local storage.
+  TestingPrefServiceSimple local_pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceTest);
 };

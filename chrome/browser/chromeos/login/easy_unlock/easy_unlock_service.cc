@@ -243,7 +243,6 @@ void EasyUnlockService::RegisterProfilePrefs(
 
 // static
 void EasyUnlockService::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kEasyUnlockDeviceId, std::string());
   registry->RegisterDictionaryPref(prefs::kEasyUnlockHardlockState);
   EasyUnlockTpmKeyManager::RegisterLocalStatePrefs(registry);
   proximity_auth::ProximityAuthLocalStatePrefManager::RegisterPrefs(registry);
@@ -261,20 +260,6 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
   update->RemoveWithoutPathExpansion(account_id.GetUserEmail(), NULL);
 
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
-}
-
-// static
-std::string EasyUnlockService::GetDeviceId() {
-  PrefService* local_state = GetLocalState();
-  if (!local_state)
-    return std::string();
-
-  std::string device_id = local_state->GetString(prefs::kEasyUnlockDeviceId);
-  if (device_id.empty()) {
-    device_id = base::GenerateGUID();
-    local_state->SetString(prefs::kEasyUnlockDeviceId, device_id);
-  }
-  return device_id;
 }
 
 void EasyUnlockService::Initialize(

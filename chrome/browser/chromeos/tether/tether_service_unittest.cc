@@ -16,9 +16,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
@@ -298,9 +300,14 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
         base::WrapUnique(new FakeTetherHostFetcherFactory(test_devices_));
     chromeos::tether::TetherHostFetcherImpl::Factory::SetInstanceForTesting(
         fake_tether_host_fetcher_factory_.get());
+
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_pref_service_);
+    RegisterLocalState(local_pref_service_.registry());
   }
 
   void TearDown() override {
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
+
     ShutdownTetherService();
 
     if (tether_service_) {
@@ -453,6 +460,9 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   bool is_adapter_present_;
   bool is_adapter_powered_;
   bool shutdown_reason_verified_;
+
+  // PrefService which contains the browser process' local storage.
+  TestingPrefServiceSimple local_pref_service_;
 
   std::unique_ptr<TestTetherService> tether_service_;
 
