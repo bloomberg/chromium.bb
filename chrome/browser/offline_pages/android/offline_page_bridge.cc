@@ -294,22 +294,18 @@ void SavePageLaterCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
 
 void PublishPageDone(
     const ScopedJavaGlobalRef<jobject>& j_published_callback_obj,
-    const OfflinePageItem& offline_page) {
+    const base::FilePath& file_path,
+    bool success) {
   // Create a java side OfflinePageItem for this offline_page.
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_page =
-      Java_OfflinePageBridge_createOfflinePageItem(
-          env, ConvertUTF8ToJavaString(env, offline_page.url.spec()),
-          offline_page.offline_id,
-          ConvertUTF8ToJavaString(env, offline_page.client_id.name_space),
-          ConvertUTF8ToJavaString(env, offline_page.client_id.id),
-          ConvertUTF16ToJavaString(env, offline_page.title),
-          ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
-          offline_page.file_size, offline_page.creation_time.ToJavaTime(),
-          offline_page.access_count, offline_page.last_access_time.ToJavaTime(),
-          ConvertUTF8ToJavaString(env, offline_page.request_origin));
 
-  base::android::RunCallbackAndroid(j_published_callback_obj, j_page);
+  base::FilePath file_path_or_empty;
+  if (success)
+    file_path_or_empty = file_path;
+
+  base::android::RunCallbackAndroid(
+      j_published_callback_obj,
+      ConvertUTF8ToJavaString(env, file_path.value()));
 }
 
 }  // namespace

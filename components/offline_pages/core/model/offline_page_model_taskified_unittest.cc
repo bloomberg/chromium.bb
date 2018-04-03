@@ -29,6 +29,7 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/system_download_manager_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,6 +67,34 @@ const std::string kTestRequestOrigin("abc.xyz");
 const std::string kEmptyRequestOrigin("");
 const std::string kTestDigest("test digest");
 const int64_t kDownloadId = 42LL;
+
+// Class to receive the callback for page publish completion.
+// TODO(romax): Convert this to a mock callback like the other tests use.
+class PublishPageTestCallback {
+ public:
+  PublishPageTestCallback()
+      : callback_called_(false), weak_ptr_factory_(this) {}
+
+  void Run(const base::FilePath& file_path, bool success) {
+    callback_called_ = true;
+    success_ = false;
+    file_path_ = file_path;
+    success_ = success;
+  }
+
+  bool callback_called() const { return callback_called_; }
+  bool success() const { return success_; };
+  const base::FilePath file_path() const { return file_path_; };
+  base::WeakPtr<PublishPageTestCallback> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  bool callback_called_;
+  bool success_;
+  base::FilePath file_path_;
+  base::WeakPtrFactory<PublishPageTestCallback> weak_ptr_factory_;
+};
 
 }  // namespace
 
@@ -1221,9 +1250,6 @@ TEST_F(OfflinePageModelTaskifiedTest,
 #endif
 TEST_F(OfflinePageModelTaskifiedTest,
        MAYBE_CheckPagesSavedInSeparateDirsPublic) {
-  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  feature_list->InitAndEnableFeature(
-      offline_pages::kOfflinePagesSharingFeature);
   // Save a temporary page.
   auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
   int64_t temporary_id = SavePageWithExpectedResult(
@@ -1252,6 +1278,51 @@ TEST_F(OfflinePageModelTaskifiedTest,
   // that the file ended up in the correct place instead of just not the wrong
   // place.
   EXPECT_NE(temporary_page_path.DirName(), persistent_page_path.DirName());
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_CheckPublishInternalArchive DISABLED_CheckPublishInternalArchive
+#else
+#define MAYBE_CheckPublishInternalArchive CheckPublishInternalArchive
+#endif
+TEST_F(OfflinePageModelTaskifiedTest, MAYBE_CheckPublishInternalArchive) {
+  // Save a persistent page into our internal directory that will not be
+  // published. We use a "browser actions" page for this purpose.
+  std::unique_ptr<OfflinePageTestArchiver> test_archiver =
+      BuildArchiver(kTestUrl2, ArchiverResult::SUCCESSFULLY_CREATED);
+  int64_t persistent_id = SavePageWithExpectedResult(
+      kTestUrl2, kTestBrowserActionsClientId, GURL(), kEmptyRequestOrigin,
+      std::move(test_archiver), SavePageResult::SUCCESS);
+
+  std::unique_ptr<OfflinePageItem> persistent_page =
+      store_test_util()->GetPageByOfflineId(persistent_id);
+
+  ASSERT_TRUE(persistent_page);
+
+  base::FilePath persistent_page_path = persistent_page->file_path;
+
+  // For a page in the browser actions namespace, it gets moved to the
+  // a private internal directory inside chromium.
+  EXPECT_TRUE(private_archive_dir_path().IsParent(persistent_page_path));
+
+  // Make another archiver, since SavePageWithExpectedResult deleted the first
+  // one.
+  test_archiver =
+      BuildArchiver(kTestUrl2, ArchiverResult::SUCCESSFULLY_CREATED);
+
+  // Publish the page from our internal store.
+  PublishPageTestCallback test_callback;
+  PublishPageCallback publish_done_callback =
+      base::BindOnce(&PublishPageTestCallback::Run, test_callback.GetWeakPtr());
+
+  model()->PublishInternalArchive(*persistent_page, std::move(test_archiver),
+                                  std::move(publish_done_callback));
+  PumpLoop();
+
+  // Check that the page was published as expected.
+  ASSERT_TRUE(test_callback.callback_called());
 }
 
 // This test is disabled since it's lacking the ability of mocking store failure

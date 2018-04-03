@@ -108,8 +108,10 @@ typedef base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)>
     GetThumbnailCallback;
 typedef base::OnceCallback<void(bool)> CleanupThumbnailsCallback;
 
-// Callback used for publishing an offline page.
-using PublishPageCallback = base::OnceCallback<void(const OfflinePageItem&)>;
+// Callbacks used for publishing an offline page.
+using PublishPageCallback =
+    base::OnceCallback<void(const base::FilePath&, bool)>;
+using UpdateFilePathDoneCallback = base::OnceCallback<void(bool)>;
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_PAGE_TYPES_H_
