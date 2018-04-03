@@ -43,6 +43,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
 namespace content {
@@ -197,13 +198,14 @@ class UserMediaProcessor::RequestInfo
     video_devices_ = std::move(video_devices);
   }
 
-  void AddVideoFormats(const std::string& device_id,
-                       media::VideoCaptureFormats formats) {
+  void AddNativeVideoFormats(const std::string& device_id,
+                             media::VideoCaptureFormats formats) {
     video_formats_map_[device_id] = std::move(formats);
   }
 
   // Do not store or delete the returned pointer.
-  media::VideoCaptureFormats* GetVideoFormats(const std::string& device_id) {
+  media::VideoCaptureFormats* GetNativeVideoFormats(
+      const std::string& device_id) {
     auto it = video_formats_map_.find(device_id);
     CHECK(it != video_formats_map_.end());
     return &it->second;
@@ -571,18 +573,11 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
 void UserMediaProcessor::SelectVideoContentSettings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
-  int screen_width = kDefaultScreenCastWidth;
-  int screen_height = kDefaultScreenCastHeight;
-  if (render_frame_) {  // Can be null in tests.
-    blink::WebScreenInfo info =
-        render_frame_->GetRenderWidget()->GetScreenInfo();
-    screen_width = info.rect.width;
-    screen_height = info.rect.height;
-  }
+  gfx::Size screen_size = GetScreenSize();
   VideoCaptureSettings settings = SelectSettingsVideoContentCapture(
       current_request_info_->web_request().VideoConstraints(),
       current_request_info_->stream_controls()->video.stream_source,
-      screen_width, screen_height);
+      screen_size.width(), screen_size.height());
   if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::FromASCII(settings.failed_constraint_name());
@@ -662,10 +657,13 @@ void UserMediaProcessor::OnStreamGenerated(
   }
 
   if (current_request_info_->is_video_content_capture()) {
+    media::VideoCaptureFormat format =
+        current_request_info_->video_capture_settings().Format();
     for (const auto& video_device : video_devices) {
-      current_request_info_->AddVideoFormats(
+      current_request_info_->AddNativeVideoFormats(
           video_device.id,
-          {current_request_info_->video_capture_settings().Format()});
+          {media::VideoCaptureFormat(GetScreenSize(), format.frame_rate,
+                                     format.pixel_format)});
     }
     StartTracks(label);
     return;
@@ -693,9 +691,19 @@ void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
   if (!IsCurrentRequestInfo(web_request))
     return;
 
-  current_request_info_->AddVideoFormats(device_id, formats);
+  current_request_info_->AddNativeVideoFormats(device_id, formats);
   if (current_request_info_->CanStartTracks())
     StartTracks(label);
+}
+
+gfx::Size UserMediaProcessor::GetScreenSize() {
+  gfx::Size screen_size(kDefaultScreenCastWidth, kDefaultScreenCastHeight);
+  if (render_frame_) {  // Can be null in tests.
+    blink::WebScreenInfo info =
+        render_frame_->GetRenderWidget()->GetScreenInfo();
+    screen_size = gfx::Size(info.rect.width, info.rect.height);
+  }
+  return screen_size;
 }
 
 void UserMediaProcessor::OnStreamGeneratedForCancelledRequest(
@@ -803,8 +811,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
                            weak_factory_.GetWeakPtr())));
     source.SetCapabilities(ComputeCapabilitiesForVideoSource(
         blink::WebString::FromUTF8(device.id),
-        *current_request_info_->GetVideoFormats(device.id), device.video_facing,
-        current_request_info_->is_video_device_capture()));
+        *current_request_info_->GetNativeVideoFormats(device.id),
+        device.video_facing, current_request_info_->is_video_device_capture()));
     local_sources_.push_back(source);
   }
   return source;
