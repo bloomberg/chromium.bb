@@ -13,6 +13,7 @@ namespace views {
 void MenuConfig::Init() {
   font_list = gfx::FontList(gfx::Font([NSFont menuFontOfSize:0.0]));
   menu_vertical_border_size = 4;
+  menu_horizontal_border_size = 0;
   item_top_margin = item_no_icon_top_margin = 1;
   item_bottom_margin = item_no_icon_bottom_margin = 1;
   item_left_margin = 2;
