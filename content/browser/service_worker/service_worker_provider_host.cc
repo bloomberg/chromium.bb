@@ -319,8 +319,6 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
     return nullptr;
   }
-  // TODO(bashi): Make sure the worker is running by calling
-  // controller_->RunAfterStartWorker().
   mojom::ControllerServiceWorkerPtr controller_ptr;
   controller_->controller()->Clone(mojo::MakeRequest(&controller_ptr));
   return controller_ptr;

@@ -212,8 +212,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
 
   // S13nServiceWorker:
-  // For service worker clients. Similar to GetControllerServiceWorker, but this
-  // returns a bound Mojo ptr which is supposed to be sent to clients. The
+  // For service worker clients. Similar to EnsureControllerServiceWorker, but
+  // this returns a bound Mojo ptr which is supposed to be sent to clients. The
   // controller ptr passed to the clients will be used to intercept requests
   // from them.
   // It is invalid to call this when controller_ is null.
@@ -229,6 +229,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // This may return nullptr if the controller service worker does not have a
   // fetch handler, i.e. when the renderer does not need the controller ptr.
+  //
+  // WARNING:
+  // Unlike EnsureControllerServiceWorker, this method doesn't guarantee that
+  // the controller worker is running because this method can be called in some
+  // situations where the worker isn't running yet. When the returned ptr is
+  // stored somewhere and intended to use later, clients need to make sure
+  // that the worker is eventually started to use the ptr.
+  // Currently all the callsites do this, i.e. they start the worker before
+  // or after calling this, but there's no mechanism to prevent future breakage.
+  // TODO(crbug.com/827935): Figure out a way to prevent misuse of this method.
+  // TODO(crbug.com/827935): Make sure the connection error handler fires in
+  // ControllerServiceWorkerConnector (so that it can correctly call
+  // EnsureControllerServiceWorker later) if the worker gets killed before
+  // events are dispatched.
+  //
   // TODO(kinuko): revisit this if we start to use the ControllerServiceWorker
   // for posting messages.
   mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
