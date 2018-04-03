@@ -336,18 +336,18 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     OnVSync(base::TimeTicks::Now());
 }
 
-bool VrShellGl::WebVrCanSubmitFrame() {
+bool VrShellGl::WebVrCanProcessFrame() {
   return mailbox_bridge_ready_ && !webvr_frame_processing_;
 }
 
-void VrShellGl::WebVrTryDeferredSubmit() {
-  if (!webvr_deferred_mojo_submit_ || !WebVrCanSubmitFrame())
+void VrShellGl::WebVrTryDeferredProcessing() {
+  if (!webvr_deferred_start_processing_ || !WebVrCanProcessFrame())
     return;
 
   DVLOG(2) << "Running deferred SubmitFrame";
   // Run synchronously, not via PostTask, to ensure we don't
   // get a new SendVSync scheduling in between.
-  base::ResetAndReturn(&webvr_deferred_mojo_submit_).Run();
+  base::ResetAndReturn(&webvr_deferred_start_processing_).Run();
 }
 
 void VrShellGl::OnGpuProcessConnectionReady() {
@@ -355,7 +355,7 @@ void VrShellGl::OnGpuProcessConnectionReady() {
   mailbox_bridge_ready_ = true;
   // We might have a deferred submit that was waiting for
   // mailbox_bridge_ready_.
-  WebVrTryDeferredSubmit();
+  WebVrTryDeferredProcessing();
 }
 
 void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
@@ -402,26 +402,13 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
   if (!submit_client_.get())
     return;
 
-  if (!WebVrCanSubmitFrame()) {
-    DVLOG(2) << "Deferring SubmitFrame, not ready";
-    DCHECK(!webvr_deferred_mojo_submit_);
-    webvr_deferred_mojo_submit_ =
-        base::BindOnce(&VrShellGl::SubmitFrame, weak_ptr_factory_.GetWeakPtr(),
-                       frame_index, mailbox, time_waited);
-    return;
-  }
-
   if (frame_index < 0 ||
       !webvr_frame_oustanding_[frame_index % kPoseRingBufferSize]) {
     mojo::ReportBadMessage("SubmitFrame called with an invalid frame_index");
     binding_.Close();
     return;
   }
-  webvr_frame_processing_ = true;
-  OnNewWebVRFrame();
 
-  webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
-      base::TimeTicks::Now();
 
   // The JavaScript wait time is supplied externally and not trustworthy. Clamp
   // to a reasonable range to avoid math errors.
@@ -432,6 +419,27 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
   webvr_js_wait_time_.AddSample(time_waited);
   TRACE_COUNTER1("gpu", "WebVR JS wait (ms)",
                  webvr_js_wait_time_.GetAverage().InMilliseconds());
+
+  webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
+      base::TimeTicks::Now();
+
+  if (WebVrCanProcessFrame()) {
+    ProcessWebVrFrame(frame_index, mailbox);
+  } else {
+    DVLOG(2) << "Deferring processing frame, not ready";
+    DCHECK(!webvr_deferred_start_processing_);
+    webvr_deferred_start_processing_ =
+        base::BindOnce(&VrShellGl::ProcessWebVrFrame,
+                       weak_ptr_factory_.GetWeakPtr(), frame_index, mailbox);
+  }
+}
+
+void VrShellGl::ProcessWebVrFrame(int16_t frame_index,
+                                  const gpu::MailboxHolder& mailbox) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  // Transition frame from "animating" to "processing" state.
+  webvr_frame_processing_ = true;
+  OnNewWebVRFrame();
 
   // Swapping twice on a Surface without calling updateTexImage in
   // between can lose frames, so don't draw+swap if we already have
@@ -454,6 +462,10 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
     // OnWebVRFrameAvailable where we'd normally report that.
     submit_client_->OnSubmitFrameRendered();
   }
+
+  // Unblock the next animating frame in case it was waiting for this
+  // one to start processing.
+  WebVrTryStartAnimatingFrame(false);
 }
 
 void VrShellGl::SubmitFrameWithTextureHandle(
@@ -1357,9 +1369,6 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     // but the logic is a bit complicated.
     if (frame_index >= 0) {
       webvr_frame_processing_ = false;
-      // If we have a waiting submit that arrived while processing this one,
-      // handle it now.
-      WebVrTryDeferredSubmit();
     }
   }
 
@@ -1368,6 +1377,13 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   vr_ui_fps_meter_.AddFrame(base::TimeTicks::Now());
   DVLOG(1) << "fps: " << vr_ui_fps_meter_.GetFPS();
   TRACE_COUNTER1("gpu", "VR UI FPS", vr_ui_fps_meter_.GetFPS());
+
+  if (ShouldDrawWebVr()) {
+    // We finished processing a frame, this may make pending WebVR
+    // work eligible to proceed.
+    WebVrTryDeferredProcessing();
+    WebVrTryStartAnimatingFrame(false);
+  }
 }
 
 bool VrShellGl::ShouldDrawWebVr() {
@@ -1434,8 +1450,10 @@ void VrShellGl::SetWebVrMode(bool enabled) {
     ClosePresentationBindings();
     // Ensure that re-entering VR later gets a fresh start by clearing out the
     // current session's animating and processing frame state.
-    webvr_deferred_mojo_submit_.Reset();
+    webvr_frame_oustanding_.assign(kPoseRingBufferSize, false);
+    webvr_deferred_start_processing_.Reset();
     webvr_frame_processing_ = false;
+    last_ui_allows_sending_webvr_vsync_ = false;
   }
 }
 
@@ -1457,6 +1475,78 @@ base::WeakPtr<BrowserUiInterface> VrShellGl::GetBrowserUiWeakPtr() {
   return ui_->GetBrowserUiWeakPtr();
 }
 
+bool VrShellGl::WebVrCanAnimateFrame(bool is_from_onvsync) {
+  // This check needs to be first to ensure that we start the WebVR
+  // first-frame timeout on presentation start.
+  bool can_send_webvr_vsync = ui_->CanSendWebVrVSync();
+  if (!last_ui_allows_sending_webvr_vsync_ && can_send_webvr_vsync) {
+    // We will start sending vsync to the WebVR page, so schedule the incoming
+    // frame timeout.
+    ScheduleOrCancelWebVrFrameTimeout();
+  }
+  last_ui_allows_sending_webvr_vsync_ = can_send_webvr_vsync;
+  if (!can_send_webvr_vsync) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for can_send_webvr_vsync";
+    return false;
+  }
+
+  // If we want to send vsync-aligned frames, we only allow animation to start
+  // when called from OnVSync, so if we're called from somewhere else we can
+  // skip all the other checks. Legacy Cardboard mode (not surfaceless) doesn't
+  // use vsync aligned frames, and there's a flag to disable it for surfaceless
+  // mode.
+  if (surfaceless_rendering_ && webvr_vsync_align_ && !is_from_onvsync) {
+    DVLOG(3) << __FUNCTION__ << ": waiting for onvsync (vsync aligned)";
+    return false;
+  }
+
+  if (get_vsync_callback_.is_null()) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for get_vsync_callback_";
+    return false;
+  }
+
+  if (!pending_vsync_) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for pending_vsync (too fast)";
+    return false;
+  }
+
+  // If the previous frame deferred starting processing, that frame is still
+  // considered the current animating frame, so we must wait for that to
+  // transition to processing before sending the next VSync. Don't check
+  // WebVrCanProcessFrame() here - we intentionally want to allow the first
+  // VSync to go out before mailbox_bridge_ready_ becomes true. The first
+  // SubmitFrame will be deferred if needed.
+  if (webvr_deferred_start_processing_) {
+    DVLOG(2) << __FUNCTION__
+             << ": waiting for previous frame to start processing";
+    return false;
+  }
+
+  // Keep the heuristic tests last since they update a trace counter, they
+  // should only be run if the remaining criteria are already met. There's no
+  // corresponding WebVrTryStartAnimating call for this, the retries happen
+  // via OnVSync.
+  bool still_rendering = WebVrHasSlowRenderingFrame();
+  bool overstuffed = WebVrHasOverstuffedBuffers();
+  TRACE_COUNTER2("gpu", "WebVR frame skip", "still rendering", still_rendering,
+                 "overstuffed", overstuffed);
+  if (still_rendering || overstuffed) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for backlogged frames,"
+             << " still_rendering=" << still_rendering
+             << " overstuffed=" << overstuffed;
+    return false;
+  }
+
+  DVLOG(2) << __FUNCTION__ << ": ready to animate frame";
+  return true;
+}
+
+void VrShellGl::WebVrTryStartAnimatingFrame(bool is_from_onvsync) {
+  if (WebVrCanAnimateFrame(is_from_onvsync)) {
+    SendVSync();
+  }
+}
+
 void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   TRACE_EVENT0("gpu", "VrShellGl::OnVSync");
   // Create a synthetic VSync trace event for the reported last-VSync time. Use
@@ -1476,25 +1566,10 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   vsync_helper_.RequestVSync(
       base::BindRepeating(&VrShellGl::OnVSync, base::Unretained(this)));
 
-  bool can_send_webvr_vsync = ui_->CanSendWebVrVSync();
-  if (!last_should_send_webvr_vsync_ && can_send_webvr_vsync) {
-    // We will start sending vsync to the WebVR page, so schedule the first
-    // frame timeout.
-    ScheduleOrCancelWebVrFrameTimeout();
-  }
-  last_should_send_webvr_vsync_ = can_send_webvr_vsync;
+  pending_vsync_ = true;
+  pending_time_ = frame_time;
+  WebVrTryStartAnimatingFrame(true);
 
-  // Process WebVR presenting VSync (VRDisplay rAF).
-  if (!callback_.is_null() && can_send_webvr_vsync) {
-    // A callback was stored by GetVSync. Use it now for sending a VSync.
-    SendVSync(frame_time, base::ResetAndReturn(&callback_));
-  } else {
-    // We don't have a callback yet. Mark that there's a pending VSync
-    // to indicate that the next GetVSync is allowed to call SendVSync
-    // immediately.
-    pending_vsync_ = true;
-    pending_time_ = frame_time;
-  }
   if (ShouldDrawWebVr()) {
     // When drawing WebVR, controller input doesn't need to be synchronized with
     // rendering as WebVR uses the gamepad api. To ensure we always handle input
@@ -1509,22 +1584,15 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
 }
 
 void VrShellGl::GetVSync(GetVSyncCallback callback) {
-  // In surfaceless (reprojecting) rendering, stay locked
-  // to vsync intervals. Otherwise, for legacy Cardboard mode,
-  // run requested animation frames now if it missed a vsync.
-  if ((surfaceless_rendering_ && webvr_vsync_align_) || !pending_vsync_ ||
-      !ui_->CanSendWebVrVSync()) {
-    if (!callback_.is_null()) {
-      mojo::ReportBadMessage(
-          "Requested VSync before waiting for response to previous request.");
-      ClosePresentationBindings();
-      return;
-    }
-    callback_ = std::move(callback);
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  if (!get_vsync_callback_.is_null()) {
+    mojo::ReportBadMessage(
+        "Requested VSync before waiting for response to previous request.");
+    ClosePresentationBindings();
     return;
   }
-  pending_vsync_ = false;
-  SendVSync(pending_time_, std::move(callback));
+  get_vsync_callback_ = std::move(callback);
+  WebVrTryStartAnimatingFrame(false);
 }
 
 void VrShellGl::ForceExitVr() {
@@ -1597,15 +1665,7 @@ base::TimeDelta VrShellGl::GetPredictedFrameTime() {
   return expected_frame_time;
 }
 
-bool VrShellGl::ShouldSkipVSync() {
-  // If we appear to be backlogged, don't send additional VSyncs. Don't check
-  // WebVrCanSubmit() here - we intentionally want to allow the first VSync to
-  // go out before mailbox_bridge_ready_ becomes true. The first SubmitFrame
-  // will be deferred if needed, and we'll throttle here to avoid requesting
-  // more frames until that's done.
-  if (webvr_deferred_mojo_submit_)
-    return true;
-
+bool VrShellGl::WebVrHasSlowRenderingFrame() {
   // Disable heuristic for traditional render path where we submit completed
   // frames.
   if (!webvr_use_gpu_fence_)
@@ -1621,7 +1681,6 @@ bool VrShellGl::ShouldSkipVSync() {
   // Also, AddWebVrRenderTimeEstimate zeroes the submit time once the rendered
   // frame is complete. In all of those cases, we don't need to wait for render
   // completion.
-  bool still_rendering = false;
   int16_t prev_idx =
       (next_frame_index_ + kPoseRingBufferSize - 2) % kPoseRingBufferSize;
   base::TimeTicks prev_js_submit = webvr_time_js_submit_[prev_idx];
@@ -1641,34 +1700,38 @@ bool VrShellGl::ShouldSkipVSync() {
     // this VSync if we'd arrive a full VSync interval early.
     if (mean_js_time - mean_js_wait + frame_interval <
         prev_render_time_left + frame_interval * 3 / 4) {
-      still_rendering = true;
+      return true;
     }
   }
+  return false;
+}
 
-  bool overstuffed = false;
+bool VrShellGl::WebVrHasOverstuffedBuffers() {
+  base::TimeDelta frame_interval = vsync_helper_.DisplayVSyncInterval();
+  base::TimeDelta mean_render_time =
+      webvr_render_time_.GetAverageOrDefault(frame_interval);
+
   if (webvr_unstuff_ratelimit_frames_ > 0) {
     --webvr_unstuff_ratelimit_frames_;
   } else if (webvr_acquire_time_.GetAverage() >= kWebVrSlowAcquireThreshold &&
              mean_render_time < frame_interval) {
-    overstuffed = true;
+    // This is a fast app with average render time less than the frame
+    // interval. If GVR acquire is slow, that means its internal swap chain was
+    // already full when we tried to give it the next frame. We can skip a
+    // SendVSync to drain one frame from the GVR queue. That should reduce
+    // latency by one frame.
     webvr_unstuff_ratelimit_frames_ = kWebVrUnstuffMaxDropRate;
+    return true;
   }
-  TRACE_COUNTER2("gpu", "WebVR frame skip", "still rendering", still_rendering,
-                 "overstuffed", overstuffed);
-
-  return still_rendering | overstuffed;
+  return false;
 }
 
-void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
-  // There must not be a stored callback at this point, callers should use
-  // ResetAndReturn to clear it before calling this method.
-  DCHECK(!callback_);
+void VrShellGl::SendVSync() {
+  DCHECK(!get_vsync_callback_.is_null());
+  DCHECK(pending_vsync_);
 
-  if (ShouldSkipVSync()) {
-    callback_ = std::move(callback);
-    DVLOG(2) << __FUNCTION__ << ": ShouldSkipVSync()=true";
-    return;
-  }
+  // Mark the VSync as consumed.
+  pending_vsync_ = false;
 
   // next_frame_index_ is an uint8_t that generates a wrapping 0.255 frame
   // number. We store it in an int16_t to match mojo APIs, and to avoid it
@@ -1706,19 +1769,19 @@ void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
   // frame.
   webvr_time_js_submit_[frame_index % kPoseRingBufferSize] = base::TimeTicks();
 
-  std::move(callback).Run(
-      std::move(pose), time - base::TimeTicks(), frame_index,
-      device::mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
+  base::ResetAndReturn(&get_vsync_callback_)
+      .Run(std::move(pose), pending_time_ - base::TimeTicks(), frame_index,
+           device::mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
 }
 
 void VrShellGl::ClosePresentationBindings() {
   webvr_frame_timeout_.Cancel();
   submit_client_.reset();
-  if (!callback_.is_null()) {
+  if (!get_vsync_callback_.is_null()) {
     // When this Presentation provider is going away we have to respond to
     // pending callbacks, so instead of providing a VSync, tell the requester
     // the connection is closing.
-    base::ResetAndReturn(&callback_)
+    base::ResetAndReturn(&get_vsync_callback_)
         .Run(nullptr, base::TimeDelta(), -1,
              device::mojom::VRPresentationProvider::VSyncStatus::CLOSING);
   }
