@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/test/views_test_base.h"
@@ -111,6 +112,10 @@ class TestContextMenuController : public ContextMenuController {
 // Tests that context menus are shown for certain key events (Shift+F10
 // and VKEY_APPS) by the pre-target handler installed on RootView.
 TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
+#if defined(OS_MACOSX)
+  // This behavior is intentionally unsupported on macOS.
+  return;
+#endif
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
