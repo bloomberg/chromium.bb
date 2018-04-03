@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 
 namespace download {
-struct DownloadEntry;
 class DownloadUrlParameters;
 }  // namespace download
 
@@ -25,17 +24,11 @@ class BlobStorageContext;
 
 namespace content {
 
-class BrowserContext;
 class ResourceContext;
 
 // Create a URLRequest from |params|.
 std::unique_ptr<net::URLRequest> CONTENT_EXPORT
 CreateURLRequestOnIOThread(download::DownloadUrlParameters* params);
-
-// Get the entry based on |guid| from in progress cache.
-CONTENT_EXPORT base::Optional<download::DownloadEntry> GetInProgressEntry(
-    const std::string& guid,
-    BrowserContext* browser_context);
 
 storage::BlobStorageContext* BlobStorageContextGetter(
     ResourceContext* resource_context);

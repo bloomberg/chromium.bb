@@ -99,21 +99,4 @@ std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
   return request;
 }
 
-base::Optional<download::DownloadEntry> GetInProgressEntry(
-    const std::string& guid,
-    BrowserContext* browser_context) {
-  base::Optional<download::DownloadEntry> entry;
-  if (!browser_context || guid.empty())
-    return entry;
-
-  auto* manager_delegate = browser_context->GetDownloadManagerDelegate();
-  if (manager_delegate) {
-    download::InProgressCache* in_progress_cache =
-        manager_delegate->GetInProgressCache();
-    if (in_progress_cache)
-      entry = in_progress_cache->RetrieveEntry(guid);
-  }
-  return entry;
-}
-
 }  // namespace content

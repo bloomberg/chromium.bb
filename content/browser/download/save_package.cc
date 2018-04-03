@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
@@ -31,7 +32,6 @@
 #include "components/filename_generation/filename_generation.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
@@ -297,7 +297,7 @@ bool SavePackage::Init(
 
 void SavePackage::InitWithDownloadItem(
     const SavePackageDownloadCreatedCallback& download_created_callback,
-    DownloadItemImpl* item) {
+    download::DownloadItemImpl* item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(item);
   download_ = item;

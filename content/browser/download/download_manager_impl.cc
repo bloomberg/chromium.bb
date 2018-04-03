@@ -29,6 +29,7 @@
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
@@ -40,7 +41,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_item_factory.h"
-#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/url_downloader.h"
@@ -260,8 +260,8 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
   DownloadItemFactoryImpl() {}
   ~DownloadItemFactoryImpl() override {}
 
-  DownloadItemImpl* CreatePersistedItem(
-      DownloadItemImplDelegate* delegate,
+  download::DownloadItemImpl* CreatePersistedItem(
+      download::DownloadItemImplDelegate* delegate,
       const std::string& guid,
       uint32_t download_id,
       const base::FilePath& current_path,
@@ -288,7 +288,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       bool transient,
       const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
       override {
-    return new DownloadItemImpl(
+    return new download::DownloadItemImpl(
         delegate, guid, download_id, current_path, target_path, url_chain,
         referrer_url, site_url, tab_url, tab_refererr_url, mime_type,
         original_mime_type, start_time, end_time, etag, last_modified,
@@ -296,23 +296,23 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
         opened, last_access_time, transient, received_slices);
   }
 
-  DownloadItemImpl* CreateActiveItem(
-      DownloadItemImplDelegate* delegate,
+  download::DownloadItemImpl* CreateActiveItem(
+      download::DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const download::DownloadCreateInfo& info) override {
-    return new DownloadItemImpl(delegate, download_id, info);
+    return new download::DownloadItemImpl(delegate, download_id, info);
   }
 
-  DownloadItemImpl* CreateSavePageItem(
-      DownloadItemImplDelegate* delegate,
+  download::DownloadItemImpl* CreateSavePageItem(
+      download::DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
       std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
       override {
-    return new DownloadItemImpl(delegate, download_id, path, url, mime_type,
-                                std::move(request_handle));
+    return new download::DownloadItemImpl(delegate, download_id, path, url,
+                                          mime_type, std::move(request_handle));
   }
 };
 
@@ -419,12 +419,13 @@ DownloadManagerImpl::~DownloadManagerImpl() {
   download::SetIOTaskRunner(nullptr);
 }
 
-DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
+download::DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
     uint32_t id,
     const download::DownloadCreateInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base::ContainsKey(downloads_, id));
-  DownloadItemImpl* download = item_factory_->CreateActiveItem(this, id, info);
+  download::DownloadItemImpl* download =
+      item_factory_->CreateActiveItem(this, id, info);
 
   downloads_[id] = base::WrapUnique(download);
   downloads_by_guid_[download->GetGuid()] = download;
@@ -442,7 +443,8 @@ void DownloadManagerImpl::GetNextId(const DownloadIdCallback& callback) {
 }
 
 void DownloadManagerImpl::DetermineDownloadTarget(
-    DownloadItemImpl* item, const DownloadTargetCallback& callback) {
+    download::DownloadItemImpl* item,
+    const DownloadTargetCallback& callback) {
   // Note that this next call relies on
   // DownloadItemImplDelegate::DownloadTargetCallback and
   // DownloadManagerDelegate::DownloadTargetCallback having the same
@@ -459,7 +461,8 @@ void DownloadManagerImpl::DetermineDownloadTarget(
 }
 
 bool DownloadManagerImpl::ShouldCompleteDownload(
-    DownloadItemImpl* item, const base::Closure& complete_callback) {
+    download::DownloadItemImpl* item,
+    const base::Closure& complete_callback) {
   if (!delegate_ ||
       delegate_->ShouldCompleteDownload(item, complete_callback)) {
     return true;
@@ -478,7 +481,8 @@ bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(
 }
 
 bool DownloadManagerImpl::ShouldOpenDownload(
-    DownloadItemImpl* item, const ShouldOpenDownloadCallback& callback) {
+    download::DownloadItemImpl* item,
+    const ShouldOpenDownloadCallback& callback) {
   if (!delegate_)
     return true;
 
@@ -533,7 +537,7 @@ void DownloadManagerImpl::Shutdown() {
   // accepted or discarded. Canceling will remove the intermediate download
   // file.
   for (const auto& it : downloads_) {
-    DownloadItemImpl* download = it.second.get();
+    download::DownloadItemImpl* download = it.second.get();
     if (download->GetState() == download::DownloadItem::IN_PROGRESS)
       download->Cancel(false);
   }
@@ -609,7 +613,7 @@ void DownloadManagerImpl::StartDownloadWithId(
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
-  DownloadItemImpl* download = nullptr;
+  download::DownloadItemImpl* download = nullptr;
   if (new_download) {
     download = CreateActiveItem(id, *info);
   } else {
@@ -720,12 +724,13 @@ void DownloadManagerImpl::StartDownloadWithId(
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& it : downloads_) {
-    DownloadItemImpl* item = it.second.get();
+    download::DownloadItemImpl* item = it.second.get();
     CheckForFileRemoval(item);
   }
 }
 
-void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
+void DownloadManagerImpl::CheckForFileRemoval(
+    download::DownloadItemImpl* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((download_item->GetState() == download::DownloadItem::COMPLETE) &&
       !download_item->GetFileExternallyRemoved() && delegate_) {
@@ -785,7 +790,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
   DCHECK(!base::ContainsKey(downloads_, id));
-  DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
+  download::DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle));
   DownloadItemUtils::AttachInfo(download_item, GetBrowserContext(),
                                 WebContentsImpl::FromRenderFrameHostID(
@@ -846,7 +851,8 @@ DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
   return file_factory_.get();
 }
 
-void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
+void DownloadManagerImpl::DownloadRemoved(
+    download::DownloadItemImpl* download) {
   if (!download)
     return;
 
@@ -854,7 +860,8 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
   downloads_.erase(download->GetId());
 }
 
-void DownloadManagerImpl::DownloadInterrupted(DownloadItemImpl* download) {
+void DownloadManagerImpl::DownloadInterrupted(
+    download::DownloadItemImpl* download) {
   WebContents* web_contents = DownloadItemUtils::GetWebContents(download);
   if (!web_contents) {
     download::RecordDownloadCountWithSource(
@@ -863,7 +870,7 @@ void DownloadManagerImpl::DownloadInterrupted(DownloadItemImpl* download) {
 }
 
 base::Optional<download::DownloadEntry> DownloadManagerImpl::GetInProgressEntry(
-    DownloadItemImpl* download) {
+    download::DownloadItemImpl* download) {
   if (!download || !delegate_)
     return base::Optional<download::DownloadEntry>();
 
@@ -878,7 +885,8 @@ bool DownloadManagerImpl::IsOffTheRecord() const {
   return browser_context_->IsOffTheRecord();
 }
 
-void DownloadManagerImpl::ReportBytesWasted(DownloadItemImpl* download) {
+void DownloadManagerImpl::ReportBytesWasted(
+    download::DownloadItemImpl* download) {
   if (!delegate_)
     return;
   auto entry_opt = GetInProgressEntry(download);
@@ -995,7 +1003,7 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
   int count = 0;
   auto it = downloads_.begin();
   while (it != downloads_.end()) {
-    DownloadItemImpl* download = it->second.get();
+    download::DownloadItemImpl* download = it->second.get();
 
     // Increment done here to protect against invalidation below.
     ++it;
@@ -1074,7 +1082,7 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     return nullptr;
   }
   DCHECK(!base::ContainsKey(downloads_by_guid_, guid));
-  DownloadItemImpl* item = item_factory_->CreatePersistedItem(
+  download::DownloadItemImpl* item = item_factory_->CreatePersistedItem(
       this, guid, id, current_path, target_path, url_chain, referrer_url,
       site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
       start_time, end_time, etag, last_modified, received_bytes, total_bytes,
@@ -1187,10 +1195,10 @@ void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
   }
 }
 
-void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
+void DownloadManagerImpl::OpenDownload(download::DownloadItemImpl* download) {
   int num_unopened = 0;
   for (const auto& it : downloads_) {
-    DownloadItemImpl* item = it.second.get();
+    download::DownloadItemImpl* item = it.second.get();
     if ((item->GetState() == download::DownloadItem::COMPLETE) &&
         !item->GetOpened())
       ++num_unopened;
@@ -1202,12 +1210,13 @@ void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
 }
 
 bool DownloadManagerImpl::IsMostRecentDownloadItemAtFilePath(
-    DownloadItemImpl* download) {
+    download::DownloadItemImpl* download) {
   return delegate_ ? delegate_->IsMostRecentDownloadItemAtFilePath(download)
                    : false;
 }
 
-void DownloadManagerImpl::ShowDownloadInShell(DownloadItemImpl* download) {
+void DownloadManagerImpl::ShowDownloadInShell(
+    download::DownloadItemImpl* download) {
   if (delegate_)
     delegate_->ShowDownloadInShell(download);
 }

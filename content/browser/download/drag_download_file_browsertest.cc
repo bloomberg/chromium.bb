@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
