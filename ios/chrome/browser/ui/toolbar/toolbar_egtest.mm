@@ -169,7 +169,12 @@ using chrome_test_util::OmniboxText;
 }
 
 // Verifies the existence and state of toolbar UI elements.
-- (void)testToolbarUI {
+- (void)testPreRefreshToolbarUI {
+  if (IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"This test is specific to the pre-refresh toolbar layout");
+  }
+
   id<GREYMatcher> reloadButton =
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
   id<GREYMatcher> bookmarkButton =
@@ -221,7 +226,12 @@ using chrome_test_util::OmniboxText;
     EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
   }
 
-  // Load some page so that the "Back" button is tappable.
+  // Load a webpage so that the "Back" button is tappable. Then load a second
+  // page so that the test can go back once without ending up on the NTP.
+  // (Subsequent steps in this test require the omnibox to be tappable, but in
+  // some configurations the NTP only has a fakebox and does not display the
+  // omnibox.)
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // First test: check that the keyboard is opened when tapping the omnibox,
