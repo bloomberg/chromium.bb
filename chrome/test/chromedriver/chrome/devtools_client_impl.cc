@@ -460,7 +460,10 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
           kUnknownError,
           "missing sessionId in Target.receivedMessageFromTarget event");
     if (children_.count(session_id) == 0)
-      return Status(kUnknownError, "unknown sessionId");
+      // ChromeDriver only cares about iframe targets. If we don't know about
+      // this sessionId, then it must be of a different target type and should
+      // be ignored.
+      return Status(kOk);
     DevToolsClientImpl* child = children_[session_id];
     std::string message;
     if (!event.params->GetString("message", &message))
