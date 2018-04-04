@@ -10,5 +10,26 @@
 
 @implementation HistoryTableViewController
 @synthesize browserState = _browserState;
+@synthesize historyService = _historyService;
 @synthesize loader = _loader;
+
+#pragma mark - HistoryConsumer
+
+- (void)
+historyQueryWasCompletedWithResults:
+    (const std::vector<history::BrowsingHistoryService::HistoryEntry>&)results
+                   queryResultsInfo:(const history::BrowsingHistoryService::
+                                         QueryResultsInfo&)queryResultsInfo
+                continuationClosure:(base::OnceClosure)continuationClosure {
+  // TODO(crbug.com/805190): Implement HistoryConsumer.
+}
+
+- (void)historyWasDeleted {
+  // TODO(crbug.com/805190): Implement HistoryConsumer.
+}
+
+- (void)showNoticeAboutOtherFormsOfBrowsingHistory:(BOOL)shouldShowNotice {
+  // TODO(crbug.com/805190): Implement HistoryConsumer.
+}
+
 @end
