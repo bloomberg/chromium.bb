@@ -16,6 +16,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
@@ -181,7 +182,7 @@ void AnswerCardWebContents::LoadURL(const GURL& url) {
   load_params.should_clear_history_list = true;
   web_contents_->GetController().LoadURLWithParams(load_params);
 
-  web_contents_->GetRenderViewHost()->EnableAutoResize(
+  web_contents_->GetRenderWidgetHostView()->EnableAutoResize(
       gfx::Size(1, 1), gfx::Size(INT_MAX, INT_MAX));
 }
 

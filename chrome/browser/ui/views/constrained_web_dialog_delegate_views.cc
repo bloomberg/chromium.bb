@@ -15,6 +15,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
@@ -374,9 +375,9 @@ void ConstrainedDialogWebView::SetAutoResizeSize(
   }
 
   void ConstrainedDialogWebView::EnableAutoResize() {
-    content::RenderViewHost* render_view_host =
-        GetWebContents()->GetRenderViewHost();
-    render_view_host->EnableAutoResize(min_size_, max_size_);
+    content::RenderWidgetHostView* render_widget_host_view =
+        GetWebContents()->GetRenderWidgetHostView();
+    render_widget_host_view->EnableAutoResize(min_size_, max_size_);
   }
 
 }  // namespace

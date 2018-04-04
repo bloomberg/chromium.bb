@@ -35,7 +35,7 @@ class RenderFrameHost;
 class Shell;
 class SiteInstance;
 class ToRenderFrameHost;
-struct ScreenInfo;
+struct FrameResizeParams;
 
 // Navigates the frame represented by |node| to |url|, blocking until the
 // navigation finishes.
@@ -212,11 +212,8 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   ~UpdateResizeParamsMessageFilter() override;
 
  private:
-  void OnUpdateResizeParams(const gfx::Rect& screen_space_rect,
-                            const gfx::Size& local_frame_size,
-                            const ScreenInfo& screen_info,
-                            uint64_t sequence_number,
-                            const viz::SurfaceId& surface_id);
+  void OnUpdateResizeParams(const viz::SurfaceId& surface_id,
+                            const FrameResizeParams& resize_params);
   // |rect| is in DIPs.
   void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
   void OnUpdatedFrameSinkIdOnUI();

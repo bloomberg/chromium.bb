@@ -12,6 +12,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_resize_params.h"
 
 namespace IPC {
 class Message;
@@ -19,7 +20,6 @@ class Message;
 
 namespace content {
 class RenderFrameProxyHost;
-struct ScreenInfo;
 
 // CrossProcessFrameConnector provides the platform view abstraction for
 // RenderWidgetHostViewChildFrame allowing RWHVChildFrame to remain ignorant
@@ -100,6 +100,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void FocusRootView() override;
   bool LockMouse() override;
   void UnlockMouse() override;
+  void EnableAutoResize(const gfx::Size& min_size,
+                        const gfx::Size& max_size) override;
+  void DisableAutoResize() override;
   bool IsInert() const override;
   bool IsHidden() const override;
   bool IsThrottled() const override;
@@ -130,11 +133,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void ResetScreenSpaceRect();
 
   // Handlers for messages received from the parent frame.
-  void OnUpdateResizeParams(const gfx::Rect& screen_space_rect,
-                            const gfx::Size& local_frame_size,
-                            const ScreenInfo& screen_info,
-                            uint64_t sequence_number,
-                            const viz::SurfaceId& surface_id);
+  void OnUpdateResizeParams(const viz::SurfaceId& surface_id,
+                            const FrameResizeParams& frame_resize_params);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
                                     const gfx::Rect& compositor_visible_rect);
   void OnVisibilityChanged(bool visible);

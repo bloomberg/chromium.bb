@@ -23,6 +23,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_resize_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -388,18 +389,17 @@ viz::FrameSinkId UpdateResizeParamsMessageFilter::GetOrWaitForId() {
 UpdateResizeParamsMessageFilter::~UpdateResizeParamsMessageFilter() {}
 
 void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
-    const gfx::Rect& screen_space_rect,
-    const gfx::Size& local_frame_size,
-    const ScreenInfo& screen_info,
-    uint64_t sequence_number,
-    const viz::SurfaceId& surface_id) {
-  gfx::Rect screen_space_rect_in_dip = screen_space_rect;
+    const viz::SurfaceId& surface_id,
+    const FrameResizeParams& resize_params) {
+  gfx::Rect screen_space_rect_in_dip = resize_params.screen_space_rect;
   if (IsUseZoomForDSFEnabled()) {
-    screen_space_rect_in_dip = gfx::Rect(
-        gfx::ScaleToFlooredPoint(screen_space_rect.origin(),
-                                 1.f / screen_info.device_scale_factor),
-        gfx::ScaleToCeiledSize(screen_space_rect.size(),
-                               1.f / screen_info.device_scale_factor));
+    screen_space_rect_in_dip =
+        gfx::Rect(gfx::ScaleToFlooredPoint(
+                      resize_params.screen_space_rect.origin(),
+                      1.f / resize_params.screen_info.device_scale_factor),
+                  gfx::ScaleToCeiledSize(
+                      resize_params.screen_space_rect.size(),
+                      1.f / resize_params.screen_info.device_scale_factor));
   }
   // Track each rect updates.
   content::BrowserThread::PostTask(

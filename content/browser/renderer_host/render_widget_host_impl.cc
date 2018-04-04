@@ -1922,7 +1922,6 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
   auto_resize_enabled_ = enable;
   min_size_for_auto_resize_ = min_size;
   max_size_for_auto_resize_ = max_size;
-  WasResized();
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {

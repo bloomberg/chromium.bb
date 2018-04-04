@@ -71,6 +71,7 @@ class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SiteInstance;
 struct DropData;
+struct FrameResizeParams;
 struct ScreenInfo;
 struct TextInputState;
 
@@ -178,6 +179,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
+  void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
+  void DisableAutoResize();
   void ResizeDueToAutoResize(const gfx::Size& new_size,
                              uint64_t sequence_number);
 
@@ -332,10 +335,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
   void OnUpdateResizeParams(int instance_id,
-                            const gfx::Rect& frame_rect,
-                            const ScreenInfo& screen_info,
-                            uint64_t sequence_number,
-                            const viz::LocalSurfaceId& local_surface_id);
+                            const viz::LocalSurfaceId& local_surface_id,
+                            const FrameResizeParams& resize_params);
 
   void OnTextInputStateChanged(const TextInputState& params);
   void OnImeSetComposition(

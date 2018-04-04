@@ -307,6 +307,23 @@ void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(
   text_input_manager_ = nullptr;
 }
 
+void RenderWidgetHostViewBase::EnableAutoResize(const gfx::Size& min_size,
+                                                const gfx::Size& max_size) {
+  host()->SetAutoResize(true, min_size, max_size);
+  host()->WasResized();
+}
+
+void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
+  if (!new_size.IsEmpty())
+    SetSize(new_size);
+  // This clears the cached value in the WebContents, so that OOPIFs will
+  // stop using it.
+  if (host()->delegate())
+    host()->delegate()->ResetAutoResizeSize();
+  host()->SetAutoResize(false, gfx::Size(), gfx::Size());
+  host()->WasResized();
+}
+
 bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() const {
   return is_scroll_offset_at_top_;
 }

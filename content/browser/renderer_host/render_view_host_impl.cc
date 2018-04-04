@@ -956,21 +956,6 @@ void RenderViewHostImpl::EnablePreferredSizeMode() {
   Send(new ViewMsg_EnablePreferredSizeChangedMode(GetRoutingID()));
 }
 
-void RenderViewHostImpl::EnableAutoResize(const gfx::Size& min_size,
-                                          const gfx::Size& max_size) {
-  GetWidget()->SetAutoResize(true, min_size, max_size);
-}
-
-void RenderViewHostImpl::DisableAutoResize(const gfx::Size& new_size) {
-  if (!new_size.IsEmpty())
-    GetWidget()->GetView()->SetSize(new_size);
-  // This clears the cached value in the WebContents, so that OOPIFs will
-  // stop using it.
-  if (GetWidget()->delegate())
-    GetWidget()->delegate()->ResetAutoResizeSize();
-  GetWidget()->SetAutoResize(false, gfx::Size(), gfx::Size());
-}
-
 void RenderViewHostImpl::ExecuteMediaPlayerActionAtLocation(
   const gfx::Point& location, const blink::WebMediaPlayerAction& action) {
   // TODO(wjmaclean): See if coordinate transforms need to be done for OOPIFs

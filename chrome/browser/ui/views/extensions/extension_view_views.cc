@@ -88,7 +88,7 @@ void ExtensionViewViews::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   extensions::ViewType host_type = host_->extension_host_type();
   if (host_type == extensions::VIEW_TYPE_EXTENSION_POPUP) {
-    host_->render_view_host()->EnableAutoResize(
+    host_->host_contents()->GetRenderWidgetHostView()->EnableAutoResize(
         gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight),
         gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight));
   }
