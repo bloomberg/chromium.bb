@@ -21,6 +21,8 @@ namespace {
 
 scoped_refptr<base::SingleThreadTaskRunner> InitializeAndCreateTaskRunner() {
   // TODO(wez): Remove this once AtExitManager dependencies are gone.
+  // This fails cronet_test in component builds, which are not supported.
+  // See https://crbug.com/816705.
   ignore_result(new base::AtExitManager);
 
   url::Initialize();

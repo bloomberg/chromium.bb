@@ -70,6 +70,17 @@ source_set("cronet_common_unittests") {
 # a cronet_tests binary that exercises it, and a unit-tests binary.
 # Android and iOS have their own platform-specific rules to build Cronet.
 if (!is_ios && !is_android) {
+  config("shared_library_public_config") {
+    if (is_mac && !is_component_build) {
+      # Executable targets that depend on the shared libraries below need to have
+      # the rpath setup in non-component build configurations.
+      ldflags = [
+        "-rpath",
+        "@executable_path/",
+      ]
+    }
+  }
+
   shared_library("cronet") {
     deps = [
       "//base",
@@ -85,6 +96,14 @@ if (!is_ios && !is_android) {
     sources = [
       "cronet_global_state_stubs.cc",
     ]
+
+    if (is_mac && !is_component_build) {
+      ldflags = [
+        "-install_name",
+        "@rpath/lib${target_name}.dylib",
+      ]
+      public_configs = [ ":shared_library_public_config" ]
+    }
   }
 
   test("cronet_tests") {
