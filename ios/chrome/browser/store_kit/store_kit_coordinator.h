@@ -13,9 +13,10 @@
 // Coordinates presentation of SKStoreProductViewController.
 @interface StoreKitCoordinator : ChromeCoordinator<StoreKitLauncher>
 
-// iTunes Store item identifier of the product. Must be set before starting the
-// coordinator.
-@property(nonatomic, copy) NSString* iTunesItemIdentifier;
+// iTunes store item product parameters dictionary. At least
+// SKStoreProductParameterITunesItemIdentifier key needs to be specified, all
+// other keys are optional. Must be set before starting the coordinator.
+@property(nonatomic, copy) NSDictionary* iTunesProductParameters;
 
 @end
 

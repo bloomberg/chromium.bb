@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 
+#import <StoreKit/StoreKit.h>
+
 #include <memory>
 
 #import "base/logging.h"
@@ -423,8 +425,10 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   if (!_storeKitCoordinator) {
     _storeKitCoordinator = [[StoreKitCoordinator alloc]
         initWithBaseViewController:self.baseViewController];
-    _storeKitCoordinator.iTunesItemIdentifier =
-        kGoogleDriveITunesItemIdentifier;
+    _storeKitCoordinator.iTunesProductParameters = @{
+      SKStoreProductParameterITunesItemIdentifier :
+          kGoogleDriveITunesItemIdentifier
+    };
   }
   [_storeKitCoordinator start];
   [_viewController setInstallDriveButtonVisible:NO animated:YES];

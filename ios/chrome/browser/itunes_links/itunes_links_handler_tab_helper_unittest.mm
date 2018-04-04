@@ -38,10 +38,12 @@ class ITunesLinksHandlerTabHelperTest : public PlatformTest {
   // store kit was launched.
   bool VerifyStoreKitLaunched(const std::string& url_string) {
     fake_launcher_.launchedProductID = nil;
+    fake_launcher_.launchedProductParams = nil;
     web::FakeNavigationContext context;
     context.SetUrl(GURL(url_string));
     web_state_.OnNavigationFinished(&context);
-    return fake_launcher_.launchedProductID != nil;
+    return fake_launcher_.launchedProductID != nil ||
+           fake_launcher_.launchedProductParams != nil;
   }
 
   // Checks that given the pending item URL & the request URL if
@@ -95,28 +97,34 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
 // launches storekit.
 TEST_F(ITunesLinksHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
   EXPECT_TRUE(VerifyStoreKitLaunched("http://itunes.apple.com/id123"));
-  EXPECT_NSEQ(@"123", fake_launcher_.launchedProductID);
+  NSString* product_id = @"id";
+  NSString* af_tkn = @"at";
+  NSDictionary* expected_params = @{product_id : @"123"};
 
-  EXPECT_TRUE(VerifyStoreKitLaunched("https://itunes.apple.com/id134"));
-  EXPECT_NSEQ(@"134", fake_launcher_.launchedProductID);
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
-  EXPECT_TRUE(VerifyStoreKitLaunched("http://itunes.apple.com/bar/id123"));
-  EXPECT_NSEQ(@"123", fake_launcher_.launchedProductID);
-
-  EXPECT_TRUE(VerifyStoreKitLaunched("http://itunes.apple.com/bar/id243?qux"));
-  EXPECT_NSEQ(@"243", fake_launcher_.launchedProductID);
-
-  EXPECT_TRUE(
-      VerifyStoreKitLaunched("http://itunes.apple.com/bar/idabc?qux&baz"));
-  EXPECT_NSEQ(@"abc", fake_launcher_.launchedProductID);
-
-  EXPECT_TRUE(
-      VerifyStoreKitLaunched("http://itunes.apple.com/bar/id123?qux&baz#foo"));
-  EXPECT_NSEQ(@"123", fake_launcher_.launchedProductID);
+  EXPECT_TRUE(VerifyStoreKitLaunched("http://itunes.apple.com/bar/id123?"));
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
       "http://foo.itunes.apple.com/bar/id123?qux&baz#foo"));
-  EXPECT_NSEQ(@"123", fake_launcher_.launchedProductID);
+  expected_params = @{product_id : @"123", @"qux" : @"", @"baz" : @""};
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
+
+  EXPECT_TRUE(
+      VerifyStoreKitLaunched("http://itunes.apple.com/bar/id243?at=12312"));
+  expected_params = @{product_id : @"243", af_tkn : @"12312"};
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
+
+  EXPECT_TRUE(VerifyStoreKitLaunched(
+      "http://itunes.apple.com/bar/idabc?at=213&ct=123"));
+  expected_params = @{product_id : @"abc", af_tkn : @"213", @"ct" : @"123"};
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
+
+  EXPECT_TRUE(VerifyStoreKitLaunched(
+      "http://itunes.apple.com/bar/id123?at=2&uo=4#foo"));
+  expected_params = @{product_id : @"123", af_tkn : @"2", @"uo" : @"4"};
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 }
 
 // Verifies that ItunesLinkHandlerPolicyDecider don't allow redirects to Apple
