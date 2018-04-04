@@ -42,6 +42,10 @@ interface AshMessageCenterController {
 
   NotifierEnabledChanged(message_center.mojom.NotifierId notifier_id,
                          bool enabled);
+
+  // Gets a list of all the notifications in the message center.
+  GetActiveNotifications() =>
+      (array<message_center.mojom.Notification> notifications);
 };
 
 // The message center client interface mimics

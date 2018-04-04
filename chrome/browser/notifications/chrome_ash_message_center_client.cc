@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/chrome_ash_message_center_client.h"
 
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/i18n/string_compare.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
