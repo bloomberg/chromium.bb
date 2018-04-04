@@ -44,7 +44,7 @@ namespace headless {
 HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     content::ProtocolHandlerMap* protocol_handlers,
-    ProtocolHandlerMap context_protocol_handlers,
+    content::ProtocolHandlerMap context_protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors,
     HeadlessBrowserContextOptions* options,
     net::NetLog* net_log,
@@ -62,13 +62,9 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::swap(protocol_handlers_, *protocol_handlers);
-
   for (auto& pair : context_protocol_handlers) {
-    protocol_handlers_[pair.first] =
-        linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-            pair.second.release());
+    protocol_handlers_[pair.first] = std::move(pair.second);
   }
-  context_protocol_handlers.clear();
 
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to

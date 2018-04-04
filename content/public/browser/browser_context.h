@@ -15,7 +15,6 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/linked_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -81,7 +80,7 @@ class SSLHostStateDelegate;
 // content.
 using ProtocolHandlerMap =
     std::map<std::string,
-             linked_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
+             std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
 
 // A owning vector of protocol interceptors.
 using URLRequestInterceptorScopedVector =

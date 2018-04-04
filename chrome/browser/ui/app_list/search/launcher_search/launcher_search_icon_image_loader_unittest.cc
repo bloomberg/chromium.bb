@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
 
 #include "base/macros.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

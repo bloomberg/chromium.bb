@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/web_preferences.h"
 #include "headless/lib/browser/headless_network_conditions.h"
@@ -38,10 +39,7 @@ class HeadlessBrowserContextOptions;
 using content::WebPreferences;
 
 using DevToolsStatus = content::ResourceRequestInfo::DevToolsStatus;
-
-using ProtocolHandlerMap = std::unordered_map<
-    std::string,
-    std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
+using content::ProtocolHandlerMap;
 
 // Represents an isolated session with a unique cache, cookies, and other
 // profile/session related data.

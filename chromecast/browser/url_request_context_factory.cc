@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -212,8 +211,7 @@ net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
       << "Main URLRequestContextGetter already initialized";
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   (*protocol_handlers)[extensions::kExtensionScheme] =
-      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          new ExtensionRequestProtocolHandler(browser_context));
+      std::make_unique<ExtensionRequestProtocolHandler>(browser_context);
 #endif
   main_getter_ =
       new MainURLRequestContextGetter(this, browser_context, protocol_handlers,
