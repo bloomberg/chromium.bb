@@ -2277,6 +2277,7 @@ crbug.com/591099 virtual/incremental-shadow-dom/html/details_summary/details-wri
 crbug.com/591099 virtual/incremental-shadow-dom/html/details_summary/details-writing-mode.html [ Failure ]
 crbug.com/714962 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-with-delegatesFocus.html [ Timeout ]
 crbug.com/591099 virtual/layout_ng/ [ Skip ]
+crbug.com/824918 virtual/layout_ng_experimental/ [ Skip ]
 crbug.com/714962 virtual/mouseevent_fractional/fast/events/drag-in-frames.html [ Failure ]
 crbug.com/714962 virtual/mouseevent_fractional/fast/events/event-on-culled_inline.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/keyboardevent-getModifierState.html [ Timeout ]
