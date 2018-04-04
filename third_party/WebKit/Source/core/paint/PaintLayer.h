@@ -667,6 +667,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool FixedToViewport() const;
   bool ScrollsWithRespectTo(const PaintLayer*) const;
 
+  bool IsAffectedByScrollOf(const PaintLayer* ancestor) const;
+
   void AddLayerHitTestRects(LayerHitTestRects&, TouchAction) const;
 
   // Compute rects only for this layer

@@ -890,19 +890,12 @@ TEST_P(PaintLayerClipperTestParameterized, FixedLayerClipRectInDocumentSpace) {
   PaintLayer* target_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
 
-  {
-    ClipRect clip_rect;
-    target_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
-        .CalculateBackgroundClipRect(
-            ClipRectsContext(GetDocument().GetLayoutView()->Layer(),
-                             kAbsoluteClipRectsIgnoringViewportClip,
-                             kIgnorePlatformOverlayScrollbarSize,
-                             kIgnoreOverflowClipAndScroll),
-            clip_rect);
-    EXPECT_EQ(LayoutRect(100, 200, 300, 400), clip_rect.Rect());
-  }
-
   GetDocument().domWindow()->scrollTo(0, 50);
+  GetDocument()
+      .GetLayoutView()
+      ->Layer()
+      ->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+      .ClearClipRectsIncludingDescendants();
 
   {
     ClipRect clip_rect;
@@ -914,6 +907,70 @@ TEST_P(PaintLayerClipperTestParameterized, FixedLayerClipRectInDocumentSpace) {
                              kIgnoreOverflowClipAndScroll),
             clip_rect);
     EXPECT_EQ(LayoutRect(100, 250, 300, 400), clip_rect.Rect());
+  }
+
+  GetDocument().domWindow()->scrollTo(0, 100);
+
+  {
+    ClipRect clip_rect;
+    target_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+        .CalculateBackgroundClipRect(
+            ClipRectsContext(GetDocument().GetLayoutView()->Layer(),
+                             kAbsoluteClipRectsIgnoringViewportClip,
+                             kIgnorePlatformOverlayScrollbarSize,
+                             kIgnoreOverflowClipAndScroll),
+            clip_rect);
+    EXPECT_EQ(LayoutRect(100, 300, 300, 400), clip_rect.Rect());
+  }
+}
+
+TEST_P(PaintLayerClipperTestParameterized,
+       FixedLayerClipRectInDocumentSpaceWithNestedScroller) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="position:fixed; left:100px; top:200px; width:300px; height:400px; overflow:scroll;">
+      <div style="width:200px; height:300px; overflow:hidden;">
+        <div id="target" style="position:relative;"></div>
+      </div>
+      <div style="height:3000px;"></div>
+    </div>
+    <div style="height:3000px;"></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* target_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+
+  GetDocument().domWindow()->scrollTo(0, 50);
+  GetDocument()
+      .GetLayoutView()
+      ->Layer()
+      ->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+      .ClearClipRectsIncludingDescendants();
+
+  {
+    ClipRect clip_rect;
+    target_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+        .CalculateBackgroundClipRect(
+            ClipRectsContext(GetDocument().GetLayoutView()->Layer(),
+                             kAbsoluteClipRectsIgnoringViewportClip,
+                             kIgnorePlatformOverlayScrollbarSize,
+                             kIgnoreOverflowClipAndScroll),
+            clip_rect);
+    EXPECT_EQ(LayoutRect(100, 250, 200, 300), clip_rect.Rect());
+  }
+
+  GetDocument().domWindow()->scrollTo(0, 100);
+
+  {
+    ClipRect clip_rect;
+    target_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+        .CalculateBackgroundClipRect(
+            ClipRectsContext(GetDocument().GetLayoutView()->Layer(),
+                             kAbsoluteClipRectsIgnoringViewportClip,
+                             kIgnorePlatformOverlayScrollbarSize,
+                             kIgnoreOverflowClipAndScroll),
+            clip_rect);
+    EXPECT_EQ(LayoutRect(100, 300, 200, 300), clip_rect.Rect());
   }
 }
 
