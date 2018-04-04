@@ -347,7 +347,14 @@ void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
 }
 
 void WebView::UpdateCrashedOverlayView() {
-  if (web_contents() && web_contents()->IsCrashed() && crashed_overlay_view_) {
+  // TODO(dmazzoni): Fix WebContents::IsCrashed() so we can call that
+  // instead of checking termination status codes.
+  if (web_contents() &&
+      web_contents()->GetCrashedStatus() !=
+          base::TERMINATION_STATUS_NORMAL_TERMINATION &&
+      web_contents()->GetCrashedStatus() !=
+          base::TERMINATION_STATUS_STILL_RUNNING &&
+      crashed_overlay_view_) {
     SetFocusBehavior(FocusBehavior::NEVER);
     holder_->SetVisible(false);
     crashed_overlay_view_->SetVisible(true);
