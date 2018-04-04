@@ -148,8 +148,9 @@ class BLINK_EXPORT WebDocumentLoader {
 
   virtual bool GetIsAdSubframe() const = 0;
 
-  // Used to pause or resume the parser. The document loader is still allowed to
-  // fetch new data.
+  // Can be used to temporarily suspend feeding the parser with new data. The
+  // parser will be allowed to read new data when ResumeParser() is called the
+  // same number of time than BlockParser().
   virtual void BlockParser() = 0;
   virtual void ResumeParser() = 0;
 
