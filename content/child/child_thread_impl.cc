@@ -676,11 +676,10 @@ mojom::FontCacheWin* ChildThreadImpl::GetFontCacheWin() {
 #elif defined(OS_MACOSX)
 bool ChildThreadImpl::LoadFont(const base::string16& font_name,
                                float font_point_size,
-                               uint32_t* out_buffer_size,
                                mojo::ScopedSharedBufferHandle* out_font_data,
                                uint32_t* out_font_id) {
-  return GetFontLoaderMac()->LoadFont(
-      font_name, font_point_size, out_buffer_size, out_font_data, out_font_id);
+  return GetFontLoaderMac()->LoadFont(font_name, font_point_size, out_font_data,
+                                      out_font_id);
 }
 
 mojom::FontLoaderMac* ChildThreadImpl::GetFontLoaderMac() {

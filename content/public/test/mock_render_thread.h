@@ -94,7 +94,6 @@ class MockRenderThread : public RenderThread {
 #elif defined(OS_MACOSX)
   bool LoadFont(const base::string16& font_name,
                 float font_point_size,
-                uint32_t* out_buffer_size,
                 mojo::ScopedSharedBufferHandle* out_font_data,
                 uint32_t* out_font_id) override;
 #endif
