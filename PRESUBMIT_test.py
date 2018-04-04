@@ -1646,21 +1646,31 @@ class CheckUniquePtr(unittest.TestCase):
       MockFile('dir/java/src/bar.mm', ['bar = std::unique_ptr<T>(foo)']),
       MockFile('dir/java/src/baz.cc', ['std::unique_ptr<T>()']),
       MockFile('dir/java/src/baz-p.cc', ['std::unique_ptr<T<P>>()']),
-      # TODO(crbug.com/827961) Fix multi-line support.
-      #MockFile('dir/java/src/mult.cc', [
-      #  'barVeryVeryLongLongBaaaaaarSoThatTheLineLimitIsAlmostReached =',
-      #  '    std::unique_ptr<T>(foo);'
-      #]),
+      MockFile('dir/java/src/mult.cc', [
+        'return',
+        '    std::unique_ptr<T>(barVeryVeryLongFooSoThatItWouldNotFitAbove);'
+      ]),
+      MockFile('dir/java/src/mult2.cc', [
+        'barVeryVeryLongLongBaaaaaarSoThatTheLineLimitIsAlmostReached =',
+        '    std::unique_ptr<T>(foo);'
+      ]),
+      MockFile('dir/java/src/mult3.cc', [
+        'bar = std::unique_ptr<T>(',
+        '    fooVeryVeryVeryLongStillGoingWellThisWillTakeAWhileFinallyThere);'
+      ]),
     ]
 
     results = PRESUBMIT._CheckUniquePtr(mock_input_api, MockOutputApi())
     # TODO(crbug.com/827961) Make the check return just one result, listing all
     # affected files in it.
-    self.assertEqual(4, len(results))
+    self.assertEqual(7, len(results))
     self.assertTrue('foo.cc' in results[0].message)
     self.assertTrue('bar.mm' in results[1].message)
     self.assertTrue('baz.cc' in results[2].message)
     self.assertTrue('baz-p.cc' in results[3].message)
+    self.assertTrue('mult.cc' in results[4].message)
+    self.assertTrue('mult2.cc' in results[5].message)
+    self.assertTrue('mult3.cc' in results[6].message)
 
   def testFalsePositives(self):
     mock_input_api = MockInputApi()
