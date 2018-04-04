@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
+#include "base/time/default_clock.h"
+#include "components/reading_list/core/reading_list_model_impl.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
@@ -37,12 +39,16 @@ const int kNumberOfWebStates = 3;
 class PopupMenuMediatorTest : public PlatformTest {
  public:
   PopupMenuMediatorTest() {
+    reading_list_model_.reset(new ReadingListModelImpl(
+        nullptr, nullptr, base::DefaultClock::GetInstance()));
     mediator_incognito_ =
         [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu
-                                    isIncognito:YES];
+                                    isIncognito:YES
+                               readingListModel:reading_list_model_.get()];
     mediator_non_incognito_ =
         [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu
-                                    isIncognito:NO];
+                                    isIncognito:NO
+                               readingListModel:reading_list_model_.get()];
     popup_menu_ = OCMClassMock([PopupMenuTableViewController class]);
     popup_menu_strict_ =
         OCMStrictClassMock([PopupMenuTableViewController class]);
@@ -91,6 +97,7 @@ class PopupMenuMediatorTest : public PlatformTest {
 
   PopupMenuMediator* mediator_incognito_;
   PopupMenuMediator* mediator_non_incognito_;
+  std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
   std::unique_ptr<WebStateList> web_state_list_;

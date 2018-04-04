@@ -9,6 +9,7 @@
 
 @protocol BrowserCommands;
 @class PopupMenuTableViewController;
+class ReadingListModel;
 class WebStateList;
 
 // Type of popup menus.
@@ -25,7 +26,9 @@ typedef NS_ENUM(NSInteger, PopupMenuType) {
 @interface PopupMenuMediator : NSObject
 
 - (instancetype)initWithType:(PopupMenuType)type
-                 isIncognito:(BOOL)isIncognito NS_DESIGNATED_INITIALIZER;
+                 isIncognito:(BOOL)isIncognito
+            readingListModel:(ReadingListModel*)readingListModel
+    NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // The WebStateList that this mediator listens for any changes on the current
