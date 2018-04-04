@@ -54,6 +54,19 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
         base::UmaHistogramSparse("Download.IOSDownloadedFileNetError",
                                  -task->GetErrorCode());
       }
+
+      bool backgrounded = task->HasPerformedBackgroundDownload();
+      DownloadFileInBackground histogram_value =
+          task->GetErrorCode()
+              ? (backgrounded
+                     ? DownloadFileInBackground::FailedWithBackgrounding
+                     : DownloadFileInBackground::FailedWithoutBackgrounding)
+              : (backgrounded
+                     ? DownloadFileInBackground::SucceededWithBackgrounding
+                     : DownloadFileInBackground::SucceededWithoutBackgrounding);
+      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileInBackground",
+                                histogram_value,
+                                DownloadFileInBackground::Count);
     }
   }
   void OnDownloadDestroyed(web::DownloadTask* task) override {
