@@ -341,12 +341,14 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
      * C++ object and saves a pointer to it.
      * @param activity                 Activity which is used for showing a popup.
      * @param tab                      Tab for which the pop up is shown.
+     * @param offlinePageUrl           URL that the offline page claims to be generated from.
      * @param offlinePageCreationDate  Date when the offline page was created.
      * @param offlinePageState         State of the tab showing offline page.
      * @param publisher                The name of the content publisher, if any.
      */
-    private PageInfoPopup(Activity activity, Tab tab, String offlinePageCreationDate,
-            @OfflinePageState int offlinePageState, String publisher) {
+    private PageInfoPopup(Activity activity, Tab tab, String offlinePageUrl,
+            String offlinePageCreationDate, @OfflinePageState int offlinePageState,
+            String publisher) {
         mContext = activity;
         mTab = tab;
         mIsBottomPopup = mTab.getActivity().getBottomSheet() != null;
@@ -416,14 +418,10 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         setVisibilityOfPermissionsList(false);
 
         // Work out the URL and connection message and status visibility.
-        mFullUrl = mTab.getOriginalUrl();
+        mFullUrl = isShowingOfflinePage() ? offlinePageUrl : mTab.getOriginalUrl();
 
         // This can happen if an invalid chrome-distiller:// url was entered.
         if (mFullUrl == null) mFullUrl = "";
-
-        if (isShowingOfflinePage()) {
-            mFullUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
-        }
 
         try {
             mParsedUrl = new URI(mFullUrl);
@@ -434,22 +432,26 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         }
         mSecurityLevel = SecurityStateModel.getSecurityLevelForWebContents(mTab.getWebContents());
 
-        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
-        OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mTab.getProfile(),
-                mSecurityLevel, mIsInternalPage, true, true);
+        String displayUrl = mFullUrl;
+        if (isShowingOfflinePage()) {
+            displayUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
+        }
+        SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
+        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
+                mTab.getProfile(), mSecurityLevel, mIsInternalPage, true, true);
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            mTab.getProfile(), urlBuilder.toString());
+                            mTab.getProfile(), displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
-                urlBuilder.setSpan(
+                displayUrlBuilder.setSpan(
                         new TextAppearanceSpan(mUrlTitle.getContext(), R.style.RobotoMediumStyle),
                         0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
-        mUrlTitle.setText(urlBuilder);
+        mUrlTitle.setText(displayUrlBuilder);
 
-        if (mParsedUrl == null || mParsedUrl.getScheme() == null
+        if (mParsedUrl == null || mParsedUrl.getScheme() == null || isShowingOfflinePage()
                 || !(mParsedUrl.getScheme().equals(UrlConstants.HTTP_SCHEME)
                            || mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME))) {
             mSiteSettingsButton.setVisibility(View.GONE);
@@ -1115,12 +1117,14 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
             assert false : "Invalid source passed";
         }
 
+        String offlinePageUrl = null;
         String offlinePageCreationDate = null;
         @OfflinePageState
         int offlinePageState = NOT_OFFLINE_PAGE;
 
         OfflinePageItem offlinePage = OfflinePageUtils.getOfflinePage(tab);
         if (offlinePage != null) {
+            offlinePageUrl = offlinePage.getUrl();
             if (OfflinePageUtils.isShowingTrustedOfflinePage(tab)) {
                 offlinePageState = TRUSTED_OFFLINE_PAGE;
             } else {
@@ -1137,8 +1141,8 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
             }
         }
 
-        new PageInfoPopup(
-                activity, tab, offlinePageCreationDate, offlinePageState, contentPublisher);
+        new PageInfoPopup(activity, tab, offlinePageUrl, offlinePageCreationDate, offlinePageState,
+                contentPublisher);
     }
 
     private static native long nativeInit(PageInfoPopup popup, WebContents webContents);
