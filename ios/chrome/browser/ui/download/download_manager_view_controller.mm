@@ -96,6 +96,10 @@ NSString* GetSizeString(long long size_in_bytes) {
 @property(nonatomic)
     NSLayoutConstraint* installDriveControlsRowTrailingConstraint;
 
+// Represents constraint for self.view.statusLabel, which is either anchored to
+// self.closeButton or to self.actionButton (when visible).
+@property(nonatomic) NSLayoutConstraint* statusLabelTrailingConstraint;
+
 @end
 
 @implementation DownloadManagerViewController
@@ -115,6 +119,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     _installDriveControlsRowLeadingConstraint;
 @synthesize installDriveControlsRowTrailingConstraint =
     _installDriveControlsRowTrailingConstraint;
+@synthesize statusLabelTrailingConstraint = _statusLabelTrailingConstraint;
 
 #pragma mark - UIViewController overrides
 
@@ -227,10 +232,8 @@ NSString* GetSizeString(long long size_in_bytes) {
         constraintEqualToAnchor:downloadRow.centerYAnchor],
     [statusLabel.leadingAnchor constraintEqualToAnchor:stateIcon.trailingAnchor
                                               constant:kElementMargin],
-    [statusLabel.trailingAnchor
-        constraintLessThanOrEqualToAnchor:actionButton.leadingAnchor
-                                 constant:-kElementMargin],
   ]];
+  [self updateStatusLabelTrailingConstraint];
 
   // action button constraints.
   [NSLayoutConstraint activateConstraints:@[
@@ -336,6 +339,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     [self updateStatusLabel];
     [self updateActionButton];
     [self updateProgressView];
+    [self updateStatusLabelTrailingConstraint];
   }
 }
 
@@ -613,6 +617,28 @@ NSString* GetSizeString(long long size_in_bytes) {
   self.installDriveControlsRowTrailingConstraint.constant = -constant;
 }
 
+// Anchors self.view.statusLabel to self.closeButton or to self.actionButton
+// (when download is not in progress and action button is visible).
+- (void)updateStatusLabelTrailingConstraint {
+  if (!self.viewLoaded || !self.view.superview) {
+    // Constraints can not be set if UI elements do not have a common view.
+    // This method will be called again when self.view is added to superview.
+    return;
+  }
+
+  self.statusLabelTrailingConstraint.active = NO;
+
+  UIView* secondAnchorElement = _state == kDownloadManagerStateInProgress
+                                    ? self.closeButton
+                                    : self.actionButton;
+
+  self.statusLabelTrailingConstraint = [self.statusLabel.trailingAnchor
+      constraintEqualToAnchor:secondAnchorElement.leadingAnchor
+                     constant:-kElementMargin];
+
+  self.statusLabelTrailingConstraint.active = YES;
+}
+
 // Updates state icon depending.
 - (void)updateStateIcon {
   [self.stateIcon setState:_state animated:YES];
@@ -654,7 +680,6 @@ NSString* GetSizeString(long long size_in_bytes) {
   }
 
   self.statusLabel.text = statusText;
-  [self.statusLabel sizeToFit];
 }
 
 // Updates title and hidden state for action button depending on |state|.
