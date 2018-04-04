@@ -58,8 +58,9 @@ namespace {
 
 typedef struct {
   const char* origin;
-  const char* relying_party_id;
-} OriginRelyingPartyIdPair;
+  // Either a relying party ID or a U2F AppID.
+  const char* claimed_authority;
+} OriginClaimedAuthorityPair;
 
 constexpr char kTestOrigin1[] = "https://a.google.com";
 constexpr char kTestRelyingPartyId[] = "google.com";
@@ -83,7 +84,7 @@ constexpr char kTestSignClientDataJsonString[] =
     R"("https://a.google.com","tokenBinding":{"status":"not-supported"},)"
     R"("type":"webauthn.get"})";
 
-constexpr OriginRelyingPartyIdPair kValidRelyingPartyTestCases[] = {
+constexpr OriginClaimedAuthorityPair kValidRelyingPartyTestCases[] = {
     {"http://localhost", "localhost"},
     {"https://myawesomedomain", "myawesomedomain"},
     {"https://foo.bar.google.com", "foo.bar.google.com"},
@@ -107,7 +108,7 @@ constexpr OriginRelyingPartyIdPair kValidRelyingPartyTestCases[] = {
     {"https://accounts.google.com", ".google.com"},
 };
 
-constexpr OriginRelyingPartyIdPair kInvalidRelyingPartyTestCases[] = {
+constexpr OriginClaimedAuthorityPair kInvalidRelyingPartyTestCases[] = {
     {"https://google.com", "com"},
     {"http://google.com", "google.com"},
     {"http://myawesomedomain", "myawesomedomain"},
@@ -167,6 +168,24 @@ constexpr OriginRelyingPartyIdPair kInvalidRelyingPartyTestCases[] = {
     // This case is acceptable according to spec, but both renderer
     // and browser handling currently do not permit it.
     {"https://login.awesomecompany", "awesomecompany"},
+
+    // These are AppID test cases, but should also be invalid relying party
+    // examples too.
+    {"https://example.com", "https://com/"},
+    {"https://example.com", "https://com/foo"},
+    {"https://example.com", "https://foo.com/"},
+    {"https://example.com", "http://example.com"},
+    {"http://example.com", "https://example.com"},
+    {"https://127.0.0.1", "https://127.0.0.1"},
+    {"https://www.notgoogle.com",
+     "https://www.gstatic.com/securitykey/origins.json"},
+    {"https://www.google.com",
+     "https://www.gstatic.com/securitykey/origins.json#x"},
+    {"https://www.google.com",
+     "https://www.gstatic.com/securitykey/origins.json2"},
+    {"https://www.google.com", "https://gstatic.com/securitykey/origins.json"},
+    {"https://ggoogle.com", "https://www.gstatic.com/securitykey/origi"},
+    {"https://com", "https://www.gstatic.com/securitykey/origins.json"},
 };
 
 using TestMakeCredentialCallback = device::test::StatusAndValueCallbackReceiver<
@@ -293,6 +312,23 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
         token_binding);
   }
 
+  AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,
+                                                 const std::string& appid) {
+    const GURL origin_url(origin);
+    NavigateAndCommit(origin_url);
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = origin_url.host();
+    options->appid = appid;
+
+    TestGetAssertionCallback cb;
+    authenticator->GetAssertion(std::move(options), cb.callback());
+    cb.WaitForCallback();
+
+    return cb.status();
+  }
+
  private:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 };
@@ -302,14 +338,14 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   // These instances should return security errors (for circumstances
   // that would normally crash the renderer).
   for (auto test_case : kInvalidRelyingPartyTestCases) {
-    SCOPED_TRACE(std::string(test_case.relying_party_id) + " " +
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
-    options->relying_party->id = test_case.relying_party_id;
+    options->relying_party->id = test_case.claimed_authority;
     TestMakeCredentialCallback cb;
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
@@ -319,14 +355,14 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   // These instances pass the origin and relying party checks and return at
   // the algorithm check.
   for (auto test_case : kValidRelyingPartyTestCases) {
-    SCOPED_TRACE(std::string(test_case.relying_party_id) + " " +
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
-    options->relying_party->id = test_case.relying_party_id;
+    options->relying_party->id = test_case.claimed_authority;
     options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
 
     TestMakeCredentialCallback cb;
@@ -519,16 +555,16 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
 TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
   // These instances should return security errors (for circumstances
   // that would normally crash the renderer).
-  for (const OriginRelyingPartyIdPair& test_case :
+  for (const OriginClaimedAuthorityPair& test_case :
        kInvalidRelyingPartyTestCases) {
-    SCOPED_TRACE(std::string(test_case.relying_party_id) + " " +
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
-    options->relying_party_id = test_case.relying_party_id;
+    options->relying_party_id = test_case.claimed_authority;
 
     TestGetAssertionCallback cb;
     authenticator->GetAssertion(std::move(options), cb.callback());
@@ -537,32 +573,19 @@ TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
   }
 }
 
-typedef struct {
-  const char* origin;
-  const char* appid;
-  bool should_succeed;
-} OriginAppIdPair;
-
-constexpr OriginAppIdPair kAppIdCases[] = {
-    {"https://example.com", "https://com/foo", false},
-    {"https://example.com", "https://foo.com/", false},
-    {"https://example.com", "http://example.com", false},
-    {"http://example.com", "https://example.com", false},
-    {"https://127.0.0.1", "https://127.0.0.1", false},
-    {"https://www.notgoogle.com",
-     "https://www.gstatic.com/securitykey/origins.json", false},
-
-    {"https://example.com", "https://example.com", true},
-    {"https://www.example.com", "https://example.com", true},
-    {"https://example.com", "https://www.example.com", true},
-    {"https://example.com", "https://foo.bar.example.com", true},
-    {"https://example.com", "https://foo.bar.example.com/foo/bar", true},
+constexpr OriginClaimedAuthorityPair kValidAppIdCases[] = {
+    {"https://example.com", "https://example.com"},
+    {"https://www.example.com", "https://example.com"},
+    {"https://example.com", "https://www.example.com"},
+    {"https://example.com", "https://foo.bar.example.com"},
+    {"https://example.com", "https://foo.bar.example.com/foo/bar"},
+    {"https://google.com", "https://www.gstatic.com/securitykey/origins.json"},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/origins.json", true},
+     "https://www.gstatic.com/securitykey/origins.json"},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/a/google.com/origins.json", true},
+     "https://www.gstatic.com/securitykey/a/google.com/origins.json"},
     {"https://accounts.google.com",
-     "https://www.gstatic.com/securitykey/origins.json", true},
+     "https://www.gstatic.com/securitykey/origins.json"},
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -570,31 +593,29 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
   TestServiceManagerContext smc;
   device::test::ScopedVirtualFidoDevice virtual_device;
 
-  for (const auto& test_case : kAppIdCases) {
+  for (const auto& test_case : kValidAppIdCases) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
-                 std::string(test_case.appid));
+                 std::string(test_case.claimed_authority));
 
-    const GURL origin_url(test_case.origin);
-    NavigateAndCommit(origin_url);
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
-    PublicKeyCredentialRequestOptionsPtr options =
-        GetTestPublicKeyCredentialRequestOptions();
-    options->relying_party_id = origin_url.host();
-    options->appid = std::string(test_case.appid);
-
-    TestGetAssertionCallback cb;
-    authenticator->GetAssertion(std::move(options), cb.callback());
-    cb.WaitForCallback();
-
-    const AuthenticatorStatus status = cb.status();
-    if (test_case.should_succeed) {
-      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, status);
-    } else {
-      EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, status);
-    }
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              TryAuthenticationWithAppId(test_case.origin,
+                                         test_case.claimed_authority));
   }
 
-  // TODO(agl): test positive cases once a mock U2F device exists.
+  // All the invalid relying party test cases should also be invalid as AppIDs.
+  for (const auto& test_case : kInvalidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.origin) + " " +
+                 std::string(test_case.claimed_authority));
+
+    if (strlen(test_case.claimed_authority) == 0) {
+      // In this case, no AppID is actually being tested.
+      continue;
+    }
+
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
+              TryAuthenticationWithAppId(test_case.origin,
+                                         test_case.claimed_authority));
+  }
 }
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
