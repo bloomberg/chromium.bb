@@ -18,9 +18,19 @@
 #include <pthread.h>
 #endif
 
+namespace profiling {
+class MemlogAllocatorShimInternal;
+}  // namespace profiling
+
 namespace base {
 
+namespace trace_event {
+class MallocDumpProvider;
+}  // namespace trace_event
+
 namespace internal {
+
+class ThreadLocalStorageTestInternal;
 
 // WARNING: You should *NOT* use this class directly.
 // PlatformThreadLocalStorage is a low-level abstraction of the OS's TLS
@@ -90,7 +100,6 @@ class BASE_EXPORT PlatformThreadLocalStorage {
 // an API for portability.
 class BASE_EXPORT ThreadLocalStorage {
  public:
-
   // Prototype for the TLS destructor function, which can be optionally used to
   // cleanup thread local storage on thread exit.  'value' is the data that is
   // stored in thread local storage.
@@ -134,6 +143,19 @@ class BASE_EXPORT ThreadLocalStorage {
   };
 
  private:
+  // In most cases, most callers should not need access to HasBeenDestroyed().
+  // If you are working in code that runs during thread destruction, contact the
+  // base OWNERs for advice and then make a friend request.
+  //
+  // Returns |true| if Chrome's implementation of TLS has been destroyed during
+  // thread destruction. Attempting to call Slot::Get() during destruction is
+  // disallowed and will hit a DCHECK. Any code that relies on TLS during thread
+  // destruction must first check this method before calling Slot::Get().
+  friend class base::internal::ThreadLocalStorageTestInternal;
+  friend class base::trace_event::MallocDumpProvider;
+  friend class profiling::MemlogAllocatorShimInternal;
+  static bool HasBeenDestroyed();
+
   DISALLOW_COPY_AND_ASSIGN(ThreadLocalStorage);
 };
 

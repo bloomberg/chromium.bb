@@ -12,6 +12,7 @@
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/debug/profiler.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_heap_dump_writer.h"
@@ -333,6 +334,9 @@ void MallocDumpProvider::OnHeapProfilingEnabled(bool enabled) {
 }
 
 void MallocDumpProvider::InsertAllocation(void* address, size_t size) {
+  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
+    return;
+
   // CurrentId() can be a slow operation (crbug.com/497226). This apparently
   // redundant condition short circuits the CurrentID() calls when unnecessary.
   if (tid_dumping_heap_ != kInvalidThreadId &&
@@ -358,6 +362,9 @@ void MallocDumpProvider::InsertAllocation(void* address, size_t size) {
 }
 
 void MallocDumpProvider::RemoveAllocation(void* address) {
+  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
+    return;
+
   // No re-entrancy is expected here as none of the calls below should
   // cause a free()-s (|allocation_register_| does its own heap management).
   if (tid_dumping_heap_ != kInvalidThreadId &&
