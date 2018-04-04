@@ -7,9 +7,9 @@
 
 #include <functional>
 #include <map>
-#include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "components/search_engines/template_url_service.h"
@@ -19,7 +19,7 @@
 // caller to ensure the right lifetime of them.
 class SearchHostToURLsMap {
  public:
-  typedef std::set<TemplateURL*> TemplateURLSet;
+  using TemplateURLSet = base::flat_set<TemplateURL*>;
 
   SearchHostToURLsMap();
   ~SearchHostToURLsMap();
