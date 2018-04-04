@@ -74,6 +74,15 @@ class PaintControllerTestBase : public testing::Test {
     return paint_controller_->GetSubsequenceMarkers(client);
   }
 
+  static bool ClientCacheIsValid(const PaintController& paint_controller,
+                                 const DisplayItemClient& client) {
+    return paint_controller.ClientCacheIsValid(client);
+  }
+
+  bool ClientCacheIsValid(const DisplayItemClient& client) const {
+    return ClientCacheIsValid(*paint_controller_, client);
+  }
+
  private:
   FakeDisplayItemClient root_paint_property_client_;
   PaintChunk::Id root_paint_chunk_id_;

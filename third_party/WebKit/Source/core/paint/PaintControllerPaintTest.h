@@ -108,6 +108,10 @@ class PaintControllerPaintTestBase : public RenderingTest {
   void InvalidateAll(PaintController& paint_controller) {
     paint_controller.InvalidateAllForTesting();
   }
+
+  bool ClientCacheIsValid(const DisplayItemClient& client) {
+    return RootPaintController().ClientCacheIsValid(client);
+  }
 };
 
 class PaintControllerPaintTest : public PaintTestConfigurations,

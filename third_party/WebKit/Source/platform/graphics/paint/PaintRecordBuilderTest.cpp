@@ -20,7 +20,7 @@ TEST_F(PaintRecordBuilderTest, TransientPaintController) {
   FakeDisplayItemClient client("client", LayoutRect(10, 10, 20, 20));
   DrawRect(context, client, kBackgroundType, FloatRect(10, 10, 20, 20));
   DrawRect(context, client, kForegroundType, FloatRect(15, 15, 10, 10));
-  EXPECT_FALSE(context.GetPaintController().ClientCacheIsValid(client));
+  EXPECT_FALSE(ClientCacheIsValid(context.GetPaintController(), client));
 
   MockPaintCanvas canvas;
   PaintFlags flags;
@@ -30,7 +30,7 @@ TEST_F(PaintRecordBuilderTest, TransientPaintController) {
   EXPECT_DISPLAY_LIST(context.GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(client, kBackgroundType),
                       TestDisplayItem(client, kForegroundType));
-  EXPECT_FALSE(context.GetPaintController().ClientCacheIsValid(client));
+  EXPECT_FALSE(ClientCacheIsValid(context.GetPaintController(), client));
 }
 
 TEST_F(PaintRecordBuilderTest, LastingPaintController) {
@@ -46,13 +46,13 @@ TEST_F(PaintRecordBuilderTest, LastingPaintController) {
   FakeDisplayItemClient client("client", LayoutRect(10, 10, 20, 20));
   DrawRect(context, client, kBackgroundType, FloatRect(10, 10, 20, 20));
   DrawRect(context, client, kForegroundType, FloatRect(15, 15, 10, 10));
-  EXPECT_FALSE(GetPaintController().ClientCacheIsValid(client));
+  EXPECT_FALSE(ClientCacheIsValid(client));
 
   MockPaintCanvas canvas;
   PaintFlags flags;
   EXPECT_CALL(canvas, drawPicture(_)).Times(1);
   builder.EndRecording(canvas);
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(client));
+  EXPECT_TRUE(ClientCacheIsValid(client));
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(client, kBackgroundType),
@@ -73,7 +73,7 @@ TEST_F(PaintRecordBuilderTest, LastingPaintController) {
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(client, kBackgroundType),
                       TestDisplayItem(client, kForegroundType));
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(client));
+  EXPECT_TRUE(ClientCacheIsValid(client));
 }
 
 TEST_F(PaintRecordBuilderTest, TransientAndAnotherPaintController) {
@@ -87,7 +87,7 @@ TEST_F(PaintRecordBuilderTest, TransientAndAnotherPaintController) {
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(client, kBackgroundType),
                       TestDisplayItem(client, kForegroundType));
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(client));
+  EXPECT_TRUE(ClientCacheIsValid(client));
 
   PaintRecordBuilder builder;
   EXPECT_NE(&builder.Context().GetPaintController(), &GetPaintController());
@@ -97,9 +97,9 @@ TEST_F(PaintRecordBuilderTest, TransientAndAnotherPaintController) {
 
   // The transient PaintController in PaintRecordBuilder doesn't affect the
   // client's cache status in another PaintController.
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(client));
+  EXPECT_TRUE(ClientCacheIsValid(client));
   EXPECT_FALSE(
-      builder.Context().GetPaintController().ClientCacheIsValid(client));
+      ClientCacheIsValid(builder.Context().GetPaintController(), client));
 }
 
 }  // namespace blink

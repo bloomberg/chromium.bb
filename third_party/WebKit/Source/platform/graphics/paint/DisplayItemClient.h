@@ -68,6 +68,11 @@ class PLATFORM_EXPORT DisplayItemClient {
     return false;
   }
 
+  // Indicates that the client will paint display items different from the ones
+  // cached by PaintController. However, PaintController allows a client to
+  // paint new display items that are not cached or to no longer paint some
+  // cached display items without calling this method.
+  // See PaintController::ClientCacheIsValid() for more details.
   void SetDisplayItemsUncached(
       PaintInvalidationReason reason = PaintInvalidationReason::kFull) const {
     cache_generation_or_invalidation_reason_.Invalidate(reason);
