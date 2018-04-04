@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.text.TextUtils;
+
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.cards.ChildNode;
 import org.chromium.chrome.browser.ntp.cards.InnerNode;
@@ -22,38 +24,34 @@ import java.util.List;
 import java.util.Set;
 
 /** A node in a tree that groups contextual suggestions in a cluster of related items. */
-public class ContextualSuggestionsCluster extends InnerNode {
+class ContextualSuggestionsCluster extends InnerNode {
     private final String mTitle;
+    private final boolean mShouldShowTitle;
     private final List<SnippetArticle> mSuggestions = new ArrayList<>();
 
     private SectionHeader mHeader;
-    private boolean mShouldShowTitle = true;
 
     /** Creates a new contextual suggestions cluster with provided title. */
-    public ContextualSuggestionsCluster(String title) {
+    ContextualSuggestionsCluster(String title) {
         mTitle = title;
+        mShouldShowTitle = !TextUtils.isEmpty(title);
     }
 
     /** @return A title related to this cluster */
-    public String getTitle() {
+    String getTitle() {
         return mTitle;
     }
 
     /** @return A list of suggestions in this cluster */
-    public List<SnippetArticle> getSuggestions() {
+    List<SnippetArticle> getSuggestions() {
         return mSuggestions;
-    }
-
-    /** @param showTitle Whether the cluster title should be shown. */
-    public void setShouldShowTitle(boolean showTitle) {
-        mShouldShowTitle = showTitle;
     }
 
     /**
      * Called to build the tree node's children. Should be called after all suggestions have been
      * added.
      */
-    public void buildChildren() {
+    void buildChildren() {
         if (mShouldShowTitle) {
             mHeader = new SectionHeader(mTitle);
             addChild(mHeader);
