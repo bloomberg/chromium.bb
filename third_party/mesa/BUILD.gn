@@ -99,7 +99,7 @@ config("mesa_internal_config") {
     ]
   }
 
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     defines += [
       "HAVE_DLOPEN",
       "HAVE_PTHREAD=1",
