@@ -76,16 +76,11 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
   details.item = GetLastCommittedItem();
   DCHECK(details.item);
   details.previous_item_index = GetPreviousItemIndex();
-  if (details.previous_item_index >= 0) {
-    NavigationItem* previous_item = GetItemAtIndex(details.previous_item_index);
-    DCHECK(previous_item);
-    details.previous_url = previous_item->GetURL();
-    details.is_in_page = IsFragmentChangeNavigationBetweenUrls(
-        details.previous_url, details.item->GetURL());
-  } else {
-    details.previous_url = GURL();
-    details.is_in_page = NO;
-  }
+  NavigationItem* previous_item = GetItemAtIndex(details.previous_item_index);
+  details.is_in_page =
+      previous_item ? IsFragmentChangeNavigationBetweenUrls(
+                          previous_item->GetURL(), details.item->GetURL())
+                    : NO;
 
   delegate_->OnNavigationItemCommitted(details);
 }

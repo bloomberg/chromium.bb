@@ -65,11 +65,9 @@ void LegacyNavigationManagerImpl::OnNavigationItemCommitted() {
   details.previous_item_index = [session_controller_ previousItemIndex];
   if (details.previous_item_index >= 0) {
     DCHECK([session_controller_ previousItem]);
-    details.previous_url = [session_controller_ previousItem]->GetURL();
     details.is_in_page = IsFragmentChangeNavigationBetweenUrls(
-        details.previous_url, details.item->GetURL());
+        [session_controller_ previousItem]->GetURL(), details.item->GetURL());
   } else {
-    details.previous_url = GURL();
     details.is_in_page = NO;
   }
 

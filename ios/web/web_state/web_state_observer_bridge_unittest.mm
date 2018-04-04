@@ -136,7 +136,6 @@ TEST_F(WebStateObserverBridgeTest, NavigationItemCommitted) {
   LoadCommittedDetails load_details;
   load_details.item = reinterpret_cast<web::NavigationItem*>(1);
   load_details.previous_item_index = 15;
-  load_details.previous_url = GURL("https://chromium.test/");
   load_details.is_in_page = true;
 
   observer_bridge_.NavigationItemCommitted(&test_web_state_, load_details);
@@ -147,8 +146,6 @@ TEST_F(WebStateObserverBridgeTest, NavigationItemCommitted) {
             [observer_ commitNavigationInfo]->load_details.item);
   EXPECT_EQ(load_details.previous_item_index,
             [observer_ commitNavigationInfo]->load_details.previous_item_index);
-  EXPECT_EQ(load_details.previous_url,
-            [observer_ commitNavigationInfo]->load_details.previous_url);
   EXPECT_EQ(load_details.is_in_page,
             [observer_ commitNavigationInfo]->load_details.is_in_page);
 }
