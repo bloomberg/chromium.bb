@@ -162,6 +162,9 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
   if (inline_box->Direction() == primary_direction)
     return AdjustInlineBoxPositionForPrimaryDirection(inline_box, caret_offset);
 
+  if (unicode_bidi == UnicodeBidi::kPlaintext)
+    return InlineBoxPosition(inline_box, caret_offset);
+
   const unsigned char level = inline_box->BidiLevel();
   if (caret_offset == inline_box->CaretLeftmostOffset()) {
     InlineBox* const prev_box = inline_box->PrevLeafChildIgnoringLineBreak();
@@ -182,9 +185,6 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
             *inline_box, level);
     return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
   }
-
-  if (unicode_bidi == UnicodeBidi::kPlaintext)
-    return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
 
   InlineBox* const next_box = inline_box->NextLeafChildIgnoringLineBreak();
   if (!next_box || next_box->BidiLevel() < level) {
