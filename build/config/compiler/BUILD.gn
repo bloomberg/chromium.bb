@@ -247,6 +247,15 @@ config("compiler") {
         cflags += [ "-fstack-protector" ]
       }
     }
+  } else {
+    cflags += [
+      # Assume UTF-8 by default to avoid code page dependencies.
+      "/utf-8",
+    ]
+    if (is_clang) {
+      # Don't look for includes in %INCLUDE%.
+      cflags += [ "/X" ]
+    }
   }
 
   # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
@@ -1118,11 +1127,6 @@ config("default_warnings") {
     if (fatal_linker_warnings) {
       ldflags += [ "/WX" ]
     }
-
-    cflags += [
-      # Assume UTF-8 by default to avoid code page dependencies.
-      "/utf-8",
-    ]
 
     cflags += [
       # Warnings permanently disabled:
