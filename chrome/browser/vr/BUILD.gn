@@ -341,7 +341,14 @@ test("vr_pixeltests") {
 
 test("vr_common_perftests") {
   sources = [
+    "test/fake_ui_element_renderer.cc",
+    "test/fake_ui_element_renderer.h",
+    "test/perf_test_utils.cc",
+    "test/perf_test_utils.h",
     "test/run_all_perftests.cc",
+    "test/ui_perftest.cc",
+    "test/ui_test.cc",
+    "test/ui_test.h",
     "text_perftest.cc",
   ]
   deps = [
