@@ -755,33 +755,6 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.physicalweb.NearbyMessageIntentService"
             android:exported="false" />
 
-        <!-- This activity is to expose the PhysicalWeb Share option via the generic Android share action. -->
-        <activity
-            android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebShareActivity"
-            android:icon="@drawable/physical_web_notification_large"
-            android:label="@string/physical_web_share_activity_title"
-            android:enabled="false"
-            android:excludeFromRecents="true"
-            android:noHistory="true"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize" >
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-        </activity>
-
-        <!-- This activity is to expose the PhysicalWeb Share option via the generic Android share action. -->
-        <activity
-            android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebShareEntryActivity"
-            android:label="@string/physical_web_share_entry_title"
-            android:excludeFromRecents="true"
-            android:noHistory="true"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize" >
-        </activity>
-
         <!-- Activities for Browser Actions -->
         <activity android:name="org.chromium.chrome.browser.browseractions.BrowserActionActivity"
             android:theme="@style/FullscreenTransparentActivityTheme"
@@ -796,12 +769,6 @@ by a child template that "extends" this file.
         </activity>
 
         <service android:name="org.chromium.chrome.browser.browseractions.BrowserActionsService"
-            android:exported="false">
-        </service>
-
-        <!-- Service for Broadcasting a Physical Web URL -->
-        <service
-            android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebBroadcastService"
             android:exported="false">
         </service>
 
