@@ -9,6 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -148,6 +149,7 @@ using chrome_test_util::RecentTabsMenuButton;
   // Open Bookmarks
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self verifyNoKeyboardCommandsAreRegistered];
 
@@ -156,20 +158,24 @@ using chrome_test_util::RecentTabsMenuButton;
 }
 
 // Tests that keyboard commands are not registered when the Recent Tabs UI is
-// shown on iPhone and registered on iPad.
+// shown.
 - (void)testKeyboardCommands_RecentTabsPresented {
   // Open Recent Tabs
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  if (IsIPadIdiom()) {
-    [self verifyKeyboardCommandsAreRegistered];
+  [self verifyNoKeyboardCommandsAreRegistered];
+
+  // Clean up by dismissing the recent tabs UI before ending the test. The
+  // a11y ID for the dismiss button depends on the UIRefresh experiment.
+  id<GREYMatcher> exitMatcher = nil;
+  if (IsUIRefreshPhase1Enabled()) {
+    exitMatcher = grey_accessibilityID(kTableContainerDismissButtonId);
   } else {
-    [self verifyNoKeyboardCommandsAreRegistered];
-
-    id<GREYMatcher> exit = grey_accessibilityID(@"Exit");
-    [[EarlGrey selectElementWithMatcher:exit] performAction:grey_tap()];
+    exitMatcher = grey_accessibilityID(@"Exit");
   }
+  [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
 }
 
 // Tests that when the app is opened on a web page and a key is pressed, the

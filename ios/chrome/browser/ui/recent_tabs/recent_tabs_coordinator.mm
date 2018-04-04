@@ -113,6 +113,7 @@
   self.recentTabsContainerViewController = nil;
   self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
+  self.mediator = nil;
 }
 
 #pragma mark - RecentTabsHandsetViewControllerCommand
