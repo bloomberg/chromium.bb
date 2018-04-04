@@ -267,9 +267,6 @@ Still reading?
   <issue id="RtlCompat" severity="ignore"/>
   <issue id="RtlEnabled" severity="ignore"/>
   <issue id="RtlSymmetry" severity="ignore"/>
-  <issue id="SdCardPath">
-    <ignore regexp="content/public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java"/>
-  </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore"/>
   <issue id="SignatureOrSystemPermissions" severity="ignore"/>
   <issue id="SpUsage" severity="Error">

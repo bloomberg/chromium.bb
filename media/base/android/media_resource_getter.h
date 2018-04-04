@@ -49,20 +49,6 @@ class MEDIA_EXPORT MediaResourceGetter {
   // Method for getting the platform path from a file system URL.
   virtual void GetPlatformPathFromURL(const GURL& url,
                                       GetPlatformPathCB callback) = 0;
-
-  // Extracts the metadata from a media URL. Once completed, the provided
-  // callback function will be run.
-  virtual void ExtractMediaMetadata(const std::string& url,
-                                    const std::string& cookies,
-                                    const std::string& user_agent,
-                                    ExtractMediaMetadataCB callback) = 0;
-
-  // Extracts the metadata from a file descriptor. Once completed, the
-  // provided callback function will be run.
-  virtual void ExtractMediaMetadata(const int fd,
-                                    const int64_t offset,
-                                    const int64_t size,
-                                    ExtractMediaMetadataCB callback) = 0;
 };
 
 }  // namespace media

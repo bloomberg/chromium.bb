@@ -49,14 +49,6 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
                   GetCookieCB callback) override;
   void GetPlatformPathFromURL(const GURL& url,
                               GetPlatformPathCB callback) override;
-  void ExtractMediaMetadata(const std::string& url,
-                            const std::string& cookies,
-                            const std::string& user_agent,
-                            ExtractMediaMetadataCB callback) override;
-  void ExtractMediaMetadata(const int fd,
-                            const int64_t offset,
-                            const int64_t size,
-                            ExtractMediaMetadataCB callback) override;
 
  private:
   // Called when GetAuthCredentials() finishes.
