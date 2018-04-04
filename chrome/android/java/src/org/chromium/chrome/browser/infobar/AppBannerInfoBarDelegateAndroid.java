@@ -23,17 +23,17 @@ public class AppBannerInfoBarDelegateAndroid implements InstallerDelegate.Observ
 
     @Override
     public void onInstallIntentCompleted(InstallerDelegate delegate, boolean isInstalling) {
-        nativeOnInstallIntentReturned(mNativePointer, isInstalling);
+        if (mNativePointer != 0) nativeOnInstallIntentReturned(mNativePointer, isInstalling);
     }
 
     @Override
     public void onInstallFinished(InstallerDelegate delegate, boolean success) {
-        nativeOnInstallFinished(mNativePointer, success);
+        if (mNativePointer != 0) nativeOnInstallFinished(mNativePointer, success);
     }
 
     @Override
     public void onApplicationStateChanged(InstallerDelegate delegate, int newState) {
-        nativeUpdateInstallState(mNativePointer);
+        if (mNativePointer != 0) nativeUpdateInstallState(mNativePointer);
     }
 
     @CalledByNative
