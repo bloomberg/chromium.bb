@@ -1,10 +1,9 @@
 <!doctype html>
 <html>
     <head>
-<!-- This is a fork of the web-platform-test version to support pinch-zoom.
-     It should be integrated into web-platform-test when the pinch-zoom is
-     accepted into the specification.
-     See https://github.com/w3c/pointerevents/issues/29 -->
+<!-- This is a fork of the main to support new additions to touch-action.
+     It should be integrated into web-platform-test when they are accepted into the
+     specification. -->
         <title>touch-action: basic verification</title>
         <meta name="assert" content="TA15.20 - The touch-action CSS property determines whether touch input MAY trigger default behavior supplied by the user agent.
         auto: The user agent MAY determine any permitted touch behaviors, such as panning and zooming manipulations of the viewport, for touches that begin on the element.
@@ -14,8 +13,8 @@
         manipulation: The user agent MAY consider touches that begin on the element only for the purposes of scrolling and continuous zooming. Any additional behaviors supported by auto are out of scope for this specification.">
         <meta name="viewport" content="width=device-width">
         <link rel="stylesheet" type="text/css" href="pointerevent_styles.css">
-        <script src="../../../resources/testharness.js"></script>
-        <script src="../../../resources/testharnessreport.js"></script>
+        <script src="/resources/testharness.js"></script>
+        <script src="/resources/testharnessreport.js"></script>
         <style>
           /*
           Give some rules below something to override in order to test
