@@ -32,7 +32,6 @@
     stringifier attribute [TreatNullAs=EmptyString] DOMString mediaText;
     readonly attribute unsigned long length;
     [Measure] getter DOMString? item(unsigned long index);
-    // TODO(foolip): appendMedium() and deleteMedium() should never throw.
-    [RaisesException] void appendMedium(DOMString medium);
+    void appendMedium(DOMString medium);
     [RaisesException] void deleteMedium(DOMString medium);
 };

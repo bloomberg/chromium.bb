@@ -82,7 +82,7 @@ bool MediaQuerySet::Add(const String& query_string) {
 
   // Only continue if exactly one media query is found, as described above.
   if (result->queries_.size() != 1)
-    return true;
+    return false;
 
   std::unique_ptr<MediaQuery> new_query = std::move(result->queries_[0]);
   // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
@@ -93,7 +93,7 @@ bool MediaQuerySet::Add(const String& query_string) {
   for (size_t i = 0; i < queries_.size(); ++i) {
     MediaQuery& query = *queries_[i];
     if (query == *new_query)
-      return true;
+      return false;
   }
 
   queries_.push_back(std::move(new_query));
@@ -192,17 +192,12 @@ void MediaList::deleteMedium(const String& medium,
     parent_style_sheet_->DidMutate();
 }
 
-void MediaList::appendMedium(const String& medium,
-                             ExceptionState& exception_state) {
+void MediaList::appendMedium(const String& medium) {
   CSSStyleSheet::RuleMutationScope mutation_scope(parent_rule_);
 
-  bool success = media_queries_->Add(medium);
-  if (!success) {
-    exception_state.ThrowDOMException(
-        kInvalidCharacterError,
-        "The value provided ('" + medium + "') is not a valid medium.");
+  bool added = media_queries_->Add(medium);
+  if (!added)
     return;
-  }
 
   if (parent_style_sheet_)
     parent_style_sheet_->DidMutate();
