@@ -993,6 +993,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Contents received in the current packet, especially used to identify
   // whether the current packet is a padded PING packet.
   PacketContent current_packet_content_;
+  // True if the packet currently being processed is a connectivity probing
+  // packet. Is set to false when a new packet is received, and will be set to
+  // true as soon as |current_packet_content_| is set to
+  // SECOND_FRAME_IS_PADDING.
+  bool is_current_packet_connectivity_probing_;
   // Caches the current peer migration type if a peer migration might be
   // initiated. As soon as the current packet is confirmed not a connectivity
   // probe, peer migration will start.

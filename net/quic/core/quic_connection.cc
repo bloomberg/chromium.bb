@@ -747,6 +747,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
 
   // Initialize the current packet content stats.
   current_packet_content_ = NO_FRAMES_RECEIVED;
+  is_current_packet_connectivity_probing_ = false;
 
   if (!enable_server_proxy_) {
     current_peer_migration_type_ = NO_CHANGE;
@@ -3022,6 +3023,10 @@ void QuicConnection::OnConnectionMigration(AddressChangeType addr_change_type) {
 }
 
 bool QuicConnection::IsCurrentPacketConnectivityProbing() const {
+  if (enable_server_proxy_) {
+    return is_current_packet_connectivity_probing_;
+  }
+
   if (current_packet_content_ != SECOND_FRAME_IS_PADDING) {
     return false;
   }
@@ -3133,6 +3138,16 @@ void QuicConnection::UpdatePacketContent(PacketContent type) {
   if (type == SECOND_FRAME_IS_PADDING) {
     if (current_packet_content_ == FIRST_FRAME_IS_PING) {
       current_packet_content_ = SECOND_FRAME_IS_PADDING;
+      if (enable_server_proxy_) {
+        if (perspective_ == Perspective::IS_SERVER) {
+          is_current_packet_connectivity_probing_ =
+              current_effective_peer_migration_type_ != NO_CHANGE;
+        } else {
+          is_current_packet_connectivity_probing_ =
+              (last_packet_source_address_ != peer_address_) ||
+              (last_packet_destination_address_ != self_address_);
+        }
+      }
       return;
     }
   }
