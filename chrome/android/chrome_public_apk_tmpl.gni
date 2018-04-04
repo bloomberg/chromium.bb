@@ -5,6 +5,8 @@
 import("//base/android/linker/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//build/config/android/extract_unwind_tables.gni")
+import("//build/config/compiler/compiler.gni")
 import("//chrome/common/features.gni")
 import("//third_party/leakcanary/config.gni")
 import("channel.gni")
@@ -24,6 +26,25 @@ default_chrome_public_jinja_variables = [
 ]
 
 template("chrome_public_apk_tmpl") {
+  # Adds unwind table asset to the chrome apk for the given library target. This
+  # is not part of generic apk assets target since it depends on the main shared
+  # library of the apk, to extract unwind tables.
+  if (defined(invoker.add_unwind_tables_in_apk) &&
+      invoker.add_unwind_tables_in_apk) {
+    _unwind_asset = "${target_name}_unwind_assets"
+    unwind_table_asset(_unwind_asset) {
+      if (defined(invoker.testonly)) {
+        testonly = invoker.testonly
+      }
+
+      # This value is only used when unwinding is possible.
+      if (can_unwind_with_cfi_table) {
+        library_target = invoker.shared_library_for_unwind_asset
+      }
+      deps = invoker.shared_libraries
+    }
+  }
+
   android_apk(target_name) {
     forward_variables_from(invoker, "*")
     exclude_xxxhdpi = true
@@ -98,6 +119,11 @@ template("chrome_public_apk_tmpl") {
           !use_lld && (use_chromium_linker || requires_sdk_api_level_23)
     }
     command_line_flags_file = "chrome-command-line"
+
+    if (defined(invoker.add_unwind_tables_in_apk) &&
+        invoker.add_unwind_tables_in_apk) {
+      deps += [ ":$_unwind_asset" ]
+    }
   }
 }
 
