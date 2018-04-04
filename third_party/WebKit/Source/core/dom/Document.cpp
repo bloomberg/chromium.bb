@@ -123,6 +123,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/History.h"
 #include "core/frame/HostsUsingFeatures.h"
+#include "core/frame/Intervention.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -3399,7 +3400,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   if (!GetFrame()->HasBeenActivated()) {
     beforeunload_dialog_histogram.Count(kNoDialogNoUserGesture);
     AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kErrorMessageLevel,
+        kInterventionMessageSource, kErrorMessageLevel,
         "Blocked attempt to show a 'beforeunload' confirmation panel for a "
         "frame that never had a user gesture since its load. "
         "https://www.chromestatus.com/feature/5082396709879808"));
@@ -3410,7 +3411,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
     beforeunload_dialog_histogram.Count(
         kNoDialogMultipleConfirmationForNavigation);
     AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kErrorMessageLevel,
+        kInterventionMessageSource, kErrorMessageLevel,
         "Blocked attempt to show multiple 'beforeunload' confirmation panels "
         "for a single navigation."));
     return true;
@@ -6403,7 +6404,11 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
         SourceLocation::Create(Url().GetString(), line_number, 0, nullptr));
     console_message->SetNodes(frame_, std::move(nodes));
   }
-  frame_->Console().AddMessage(console_message);
+
+  if (console_message->Source() == kInterventionMessageSource)
+    Intervention::GenerateReport(frame_, console_message->Message());
+  else
+    frame_->Console().AddMessage(console_message);
 }
 
 void Document::TasksWerePaused() {
