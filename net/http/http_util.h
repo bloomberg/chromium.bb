@@ -39,8 +39,8 @@ class NET_EXPORT HttpUtil {
   // charset values are normalized to lowercase.  The mime_type and charset
   // output values are only modified if the content_type_str contains a mime
   // type and charset value, respectively.  The boundary output value is
-  // optional and will be assigned the (quoted) value of the boundary
-  // paramter, if any.
+  // optional and will be assigned the (unquoted) value of the boundary
+  // parameter, if any.
   static void ParseContentType(const std::string& content_type_str,
                                std::string* mime_type,
                                std::string* charset,
