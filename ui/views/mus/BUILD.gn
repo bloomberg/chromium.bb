@@ -192,6 +192,7 @@ test("views_mus_unittests") {
     "//ui/views",
     "//ui/views:test_support_internal",
     "//ui/views:views_unittests_sources",
+    "//ui/views/mus/remote_view:tests",
     "//ui/wm",
     "//url",
   ]

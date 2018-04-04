@@ -80,6 +80,15 @@ class TestWindowTree : public ui::mojom::WindowTree {
   void NotifyClientAboutAcceleratedWidgets(
       display::DisplayManager* display_manager);
 
+  // Pretends that there is a scheduled embed request for |token|.
+  void AddScheduledEmbedToken(const base::UnguessableToken& token);
+
+  // Pretends the other side has called EmbedUsingToken for |token|.
+  void AddEmbedRootForToken(const base::UnguessableToken& token);
+
+  // Pretends the embedder window goes away.
+  void RemoveEmbedderWindow(ui::Id embedder_window_id);
+
   // Acks all changes with a value of true.
   void AckAllChanges();
 
@@ -274,6 +283,9 @@ class TestWindowTree : public ui::mojom::WindowTree {
   gfx::Rect last_set_window_bounds_;
 
   std::string last_wm_action_;
+
+  // Support only one scheduled embed in test.
+  base::UnguessableToken scheduled_embed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };
