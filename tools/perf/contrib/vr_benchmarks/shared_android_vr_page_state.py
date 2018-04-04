@@ -64,8 +64,9 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
     """Configures VrCore using the provided settings file."""
     settings = shared_preference_utils.ExtractSettingsFromJson(filepath)
     for setting in settings:
-      shared_pref = self._platform.GetSharedPrefs(setting['package'],
-                                                  setting['filename'])
+      shared_pref = self._platform.GetSharedPrefs(
+          setting['package'], setting['filename'],
+          use_encrypted_path=setting.get('supports_encrypted_path', False))
       shared_preference_utils.ApplySharedPreferenceSetting(
           shared_pref, setting)
 
