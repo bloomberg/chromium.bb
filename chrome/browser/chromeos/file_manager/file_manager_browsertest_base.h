@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/memory/linked_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"

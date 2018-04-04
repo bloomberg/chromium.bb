@@ -62,10 +62,11 @@ net::URLRequestJob* FileSystemProtocolHandler::MaybeCreateJob(
 
 }  // anonymous namespace
 
-net::URLRequestJobFactory::ProtocolHandler* CreateFileSystemProtocolHandler(
-    const std::string& storage_domain, FileSystemContext* context) {
+std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
+CreateFileSystemProtocolHandler(const std::string& storage_domain,
+                                FileSystemContext* context) {
   DCHECK(context);
-  return new FileSystemProtocolHandler(storage_domain, context);
+  return std::make_unique<FileSystemProtocolHandler>(storage_domain, context);
 }
 
 }  // namespace storage
