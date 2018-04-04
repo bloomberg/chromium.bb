@@ -222,7 +222,7 @@ TEST_F(GetUpdatesProcessorTest, InitialSyncRequest) {
 TEST_F(GetUpdatesProcessorTest, ConfigureTest) {
   sync_pb::ClientToServerMessage message;
   ConfigureGetUpdatesDelegate configure_delegate(
-      sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
+      sync_pb::SyncEnums::RECONFIGURATION);
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(configure_delegate));
   processor->PrepareGetUpdates(enabled_types(), &message);
@@ -423,7 +423,7 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
 // types.
 TEST_F(GetUpdatesProcessorApplyUpdatesTest, Configure) {
   ConfigureGetUpdatesDelegate configure_delegate(
-      sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
+      sync_pb::SyncEnums::RECONFIGURATION);
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(configure_delegate));
 

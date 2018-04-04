@@ -348,6 +348,24 @@ sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::GetLegacySource()
   }
 }
 
+sync_pb::SyncEnums::GetUpdatesOrigin NudgeTracker::GetOrigin() const {
+  for (const auto& type_and_tracker : type_trackers_) {
+    const DataTypeTracker& tracker = *type_and_tracker.second;
+    if (!tracker.IsBlocked() &&
+        (tracker.HasPendingInvalidation() ||
+         tracker.HasRefreshRequestPending() ||
+         tracker.HasLocalChangePending() || tracker.IsInitialSyncRequired())) {
+      return sync_pb::SyncEnums::GU_TRIGGER;
+    }
+  }
+
+  if (IsRetryRequired()) {
+    return sync_pb::SyncEnums::RETRY;
+  }
+
+  return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
+}
+
 void NudgeTracker::FillProtoMessage(ModelType type,
                                     sync_pb::GetUpdateTriggers* msg) const {
   DCHECK(type_trackers_.find(type) != type_trackers_.end());

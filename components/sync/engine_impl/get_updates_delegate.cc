@@ -50,16 +50,18 @@ NormalGetUpdatesDelegate::~NormalGetUpdatesDelegate() {}
 void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
+  // TODO(crbug.com/510165): Remove this once the server doesn't depend on it
+  // anymore.
   get_updates->mutable_caller_info()->set_source(
       nudge_tracker_.GetLegacySource());
 
-  // Set the new and improved version of source, too.
+  // Set the origin.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::GU_TRIGGER);
   get_updates->set_is_retry(nudge_tracker_.IsRetryRequired());
 
   // Special case: A GU performed for no other reason than retry will have its
   // origin set to RETRY.
-  if (nudge_tracker_.GetLegacySource() == sync_pb::GetUpdatesCallerInfo::RETRY)
+  if (nudge_tracker_.GetOrigin() == sync_pb::SyncEnums::RETRY)
     get_updates->set_get_updates_origin(sync_pb::SyncEnums::RETRY);
 
   // Fill in the notification hints.
@@ -93,15 +95,49 @@ std::unique_ptr<ProtocolEvent> NormalGetUpdatesDelegate::GetNetworkRequestEvent(
 }
 
 ConfigureGetUpdatesDelegate::ConfigureGetUpdatesDelegate(
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source)
-    : source_(source) {}
+    sync_pb::SyncEnums::GetUpdatesOrigin origin)
+    : origin_(origin) {}
 
 ConfigureGetUpdatesDelegate::~ConfigureGetUpdatesDelegate() {}
 
+namespace {
+
+sync_pb::GetUpdatesCallerInfo::GetUpdatesSource
+ConvertConfigureOriginToLegacySource(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin) {
+  switch (origin) {
+    case sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE:
+      return sync_pb::GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
+    case sync_pb::SyncEnums::MIGRATION:
+      return sync_pb::GetUpdatesCallerInfo::MIGRATION;
+    case sync_pb::SyncEnums::RECONFIGURATION:
+      return sync_pb::GetUpdatesCallerInfo::RECONFIGURATION;
+    case sync_pb::SyncEnums::NEW_CLIENT:
+      return sync_pb::GetUpdatesCallerInfo::NEW_CLIENT;
+    case sync_pb::SyncEnums::PROGRAMMATIC:
+      return sync_pb::GetUpdatesCallerInfo::PROGRAMMATIC;
+    // We shouldn't encounter any other (non-configure) origins here.
+    case sync_pb::SyncEnums::UNKNOWN_ORIGIN:
+    case sync_pb::SyncEnums::PERIODIC:
+    case sync_pb::SyncEnums::GU_TRIGGER:
+    case sync_pb::SyncEnums::RETRY:
+      break;
+  }
+  NOTREACHED();
+  return sync_pb::GetUpdatesCallerInfo::UNKNOWN;
+}
+
+}  // namespace
+
 void ConfigureGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
-  get_updates->mutable_caller_info()->set_source(source_);
-  get_updates->set_get_updates_origin(ConvertConfigureSourceToOrigin(source_));
+  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
+  // TODO(crbug.com/510165): Remove this once the server doesn't depend on it
+  // anymore.
+  get_updates->mutable_caller_info()->set_source(
+      ConvertConfigureOriginToLegacySource(origin_));
+
+  get_updates->set_get_updates_origin(origin_);
 }
 
 void ConfigureGetUpdatesDelegate::ApplyUpdates(
@@ -115,29 +151,8 @@ std::unique_ptr<ProtocolEvent>
 ConfigureGetUpdatesDelegate::GetNetworkRequestEvent(
     base::Time timestamp,
     const sync_pb::ClientToServerMessage& request) const {
-  return std::unique_ptr<ProtocolEvent>(new ConfigureGetUpdatesRequestEvent(
-      timestamp, ConvertConfigureSourceToOrigin(source_), request));
-}
-
-sync_pb::SyncEnums::GetUpdatesOrigin
-ConfigureGetUpdatesDelegate::ConvertConfigureSourceToOrigin(
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
-  switch (source) {
-    // Configurations:
-    case sync_pb::GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
-      return sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE;
-    case sync_pb::GetUpdatesCallerInfo::MIGRATION:
-      return sync_pb::SyncEnums::MIGRATION;
-    case sync_pb::GetUpdatesCallerInfo::RECONFIGURATION:
-      return sync_pb::SyncEnums::RECONFIGURATION;
-    case sync_pb::GetUpdatesCallerInfo::NEW_CLIENT:
-      return sync_pb::SyncEnums::NEW_CLIENT;
-    case sync_pb::GetUpdatesCallerInfo::PROGRAMMATIC:
-      return sync_pb::SyncEnums::PROGRAMMATIC;
-    default:
-      NOTREACHED();
-      return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
-  }
+  return std::make_unique<ConfigureGetUpdatesRequestEvent>(timestamp, origin_,
+                                                           request);
 }
 
 PollGetUpdatesDelegate::PollGetUpdatesDelegate() {}
@@ -147,10 +162,11 @@ PollGetUpdatesDelegate::~PollGetUpdatesDelegate() {}
 void PollGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
+  // TODO(crbug.com/510165): Remove this once the server doesn't depend on it
+  // anymore.
   get_updates->mutable_caller_info()->set_source(
       sync_pb::GetUpdatesCallerInfo::PERIODIC);
 
-  // Set the new and improved version of source, too.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::PERIODIC);
 }
 

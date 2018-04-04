@@ -148,6 +148,41 @@ TEST_F(NudgeTrackerTest, SourcePriorities) {
             nudge_tracker_.GetLegacySource());
 }
 
+// Verify that nudges override each other based on a priority order.
+// RETRY < all variants of GU_TRIGGER
+TEST_F(NudgeTrackerTest, OriginPriorities) {
+  // Start with a retry request.
+  const base::TimeTicks t0 =
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(1234);
+  const base::TimeTicks t1 = t0 + base::TimeDelta::FromSeconds(10);
+  nudge_tracker_.SetNextRetryTime(t0);
+  nudge_tracker_.SetSyncCycleStartTime(t1);
+  EXPECT_EQ(sync_pb::SyncEnums::RETRY, nudge_tracker_.GetOrigin());
+
+  // Track a local nudge.
+  nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, nudge_tracker_.GetOrigin());
+
+  // A refresh request will override it.
+  nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(TYPED_URLS));
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, nudge_tracker_.GetOrigin());
+
+  // Another local nudge will not be enough to change it.
+  nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, nudge_tracker_.GetOrigin());
+
+  // An invalidation will override the refresh request source.
+  nudge_tracker_.RecordRemoteInvalidation(PREFERENCES,
+                                          BuildInvalidation(1, "hint"));
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, nudge_tracker_.GetOrigin());
+
+  // Neither local nudges nor refresh requests will override it.
+  nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, nudge_tracker_.GetOrigin());
+  nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(TYPED_URLS));
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, nudge_tracker_.GetOrigin());
+}
+
 TEST_F(NudgeTrackerTest, SourcePriority_InitialSyncRequest) {
   nudge_tracker_.RecordInitialSyncRequired(BOOKMARKS);
 
