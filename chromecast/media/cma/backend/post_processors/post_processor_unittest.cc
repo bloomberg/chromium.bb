@@ -61,7 +61,7 @@ void TestDelay(AudioPostProcessor2* pp,
   EXPECT_TRUE(pp->SetSampleRate(sample_rate));
 
   const int num_output_channels = pp->NumOutputChannels();
-  const int test_size_frames = kBufSizeFrames * 10;
+  const int test_size_frames = kBufSizeFrames * 100;
   std::vector<float> data_in = LinearChirp(
       test_size_frames, std::vector<double>(num_input_channels, 0.0),
       std::vector<double>(num_input_channels, 1.0));
