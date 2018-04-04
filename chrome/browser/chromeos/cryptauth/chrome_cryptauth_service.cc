@@ -198,8 +198,6 @@ ChromeCryptAuthService::CreateCryptAuthClientFactory() {
   return CreateCryptAuthClientFactoryImpl(profile_);
 }
 
-void ChromeCryptAuthService::OnEnrollmentStarted() {}
-
 void ChromeCryptAuthService::OnEnrollmentFinished(bool success) {
   if (success)
     device_manager_->Start();

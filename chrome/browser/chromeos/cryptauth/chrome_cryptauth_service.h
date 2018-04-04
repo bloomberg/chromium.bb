@@ -53,7 +53,6 @@ class ChromeCryptAuthService
   CreateSecureMessageDelegate() override;
 
   // cryptauth::CryptAuthEnrollmentManager::Observer:
-  void OnEnrollmentStarted() override;
   void OnEnrollmentFinished(bool success) override;
 
  protected:
