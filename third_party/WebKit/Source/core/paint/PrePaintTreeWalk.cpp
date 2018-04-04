@@ -90,9 +90,6 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   auto context = [this]() -> PrePaintTreeWalkContext& {
     return context_storage_.back();
   };
-  AutoReset<bool> printing_reset(
-      &paint_invalidator_.document_printing_,
-      frame_view.GetFrame().GetDocument()->Printing());
 
   // ancestorOverflowLayer does not cross frame boundaries.
   context().ancestor_overflow_paint_layer = nullptr;

@@ -559,9 +559,6 @@ void PaintInvalidator::InvalidatePaint(
 
   UpdatePaintingLayer(object, context);
 
-  if (document_printing_ && !RuntimeEnabledFeatures::PrintBrowserEnabled())
-    return;  // Don't invalidate paints if we're printing.
-
   // TODO(chrishtr): refactor to remove these slow paths by expanding their
   // LocalVisualRect to include repeated locations.
   if (object.IsTableSection()) {

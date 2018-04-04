@@ -182,7 +182,6 @@ class PaintInvalidator {
                                       PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> pending_delayed_paint_invalidations_;
-  bool document_printing_ = false;
 };
 
 }  // namespace blink

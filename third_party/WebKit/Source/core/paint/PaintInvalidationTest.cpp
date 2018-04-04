@@ -303,6 +303,45 @@ TEST_P(PaintInvalidationTest, SVGHiddenContainer) {
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
+TEST_P(PaintInvalidationTest, UpdateVisualRectWhenPrinting) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0;}
+      span {
+        display: inline-block;
+        width: 150px;
+        height: 20px;
+        background: rebeccapurple;
+      }
+    </style>
+    <div><span id="a"></span><span id="b"></span><span id="c"></div>
+  )HTML");
+
+  auto* a = GetDocument().getElementById("a")->GetLayoutObject();
+  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  auto* b = GetDocument().getElementById("b")->GetLayoutObject();
+  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  auto* c = GetDocument().getElementById("c")->GetLayoutObject();
+  EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
+
+  // Print the page with a width of 400px which will require wrapping 'c'.
+  FloatSize page_size(400, 200);
+  GetFrame().StartPrinting(page_size, page_size, 1);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  // 'c' should be on the next line.
+  EXPECT_EQ(LayoutRect(0, 20, 150, 20), c->FirstFragment().VisualRect());
+
+  GetFrame().EndPrinting();
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
+};
+
 }  // namespace
 
 }  // namespace blink
