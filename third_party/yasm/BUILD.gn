@@ -72,7 +72,7 @@ if (current_toolchain == host_toolchain) {
       "source/patched-yasm",
     ]
     defines = [ "HAVE_CONFIG_H" ]
-    if (is_posix) {
+    if (is_posix || is_fuchsia) {
       cflags = [ "-std=gnu99" ]
     }
   }
