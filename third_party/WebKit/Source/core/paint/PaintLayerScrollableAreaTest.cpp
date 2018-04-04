@@ -901,6 +901,37 @@ TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
   EXPECT_EQ(hit_result.GetScrollbar(), scrollable_area->HorizontalScrollbar());
 }
 
+TEST_F(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=scroller style="overflow: scroll; width: 500px; height: 300px;
+        will-change: transform">
+      <div id=sticky style="top: 0px; position: sticky; background: green">
+      </div>
+      <div style="width: 10px; height: 700px; background: lightblue"></div>
+    </div>
+  )HTML");
+  auto* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scrollable_area = scroller->GetScrollableArea();
+  EXPECT_EQ(kPaintsIntoOwnBacking, scroller->Layer()->GetCompositingState());
+  auto* sticky = ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+
+  EXPECT_EQ(FloatSize(0, 0), sticky->FirstFragment()
+                                 .LocalBorderBoxProperties()
+                                 .Transform()
+                                 ->Matrix()
+                                 .To2DTranslation());
+
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
+                                  .LocalBorderBoxProperties()
+                                  .Transform()
+                                  ->Matrix()
+                                  .To2DTranslation());
+}
+
 class NonRLSPaintLayerScrollableAreaTest
     : public PaintLayerScrollableAreaTest,
       private ScopedRootLayerScrollingForTest {
