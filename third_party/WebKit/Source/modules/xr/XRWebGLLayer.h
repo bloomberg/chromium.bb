@@ -99,6 +99,7 @@ class XRWebGLLayer final : public XRLayer,
   double requested_viewport_scale_ = 1.0;
   double viewport_scale_ = 1.0;
   bool viewports_dirty_ = true;
+  bool mirroring_ = false;
 };
 
 }  // namespace blink
