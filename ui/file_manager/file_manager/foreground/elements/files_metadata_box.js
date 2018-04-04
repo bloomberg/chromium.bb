@@ -9,7 +9,7 @@ var FilesMetadataBox = Polymer({
     // File media type, e.g. image, video.
     type: String,
     size: String,
-    modiifcationTime: String,
+    modificationTime: String,
     filePath: String,
     mediaMimeType: String,
 
@@ -75,7 +75,7 @@ var FilesMetadataBox = Polymer({
    */
   clear: function(keepSizeFields) {
     this.type = '';
-    this.modiifcationTime = '';
+    this.modificationTime = '';
     this.mediaMimeType = '';
     this.filePath = '';
 
