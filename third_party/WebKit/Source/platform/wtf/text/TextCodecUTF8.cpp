@@ -34,8 +34,6 @@
 
 namespace WTF {
 
-using namespace WTF::Unicode;
-
 // We'll use nonCharacter* constants to signal invalid utf-8.
 // The number in the name signals how many input bytes were invalid.
 const int kNonCharacter1 = -1;

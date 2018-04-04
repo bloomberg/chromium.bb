@@ -27,8 +27,6 @@
 
 namespace blink {
 
-using namespace WTF::Unicode;
-
 static LineLayoutItem FirstLayoutObjectForDirectionalityDetermination(
     LineLayoutItem root,
     LineLayoutItem current = nullptr) {

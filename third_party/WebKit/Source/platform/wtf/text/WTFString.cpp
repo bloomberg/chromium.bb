@@ -37,8 +37,6 @@
 
 namespace WTF {
 
-using namespace Unicode;
-
 // Construct a string with UTF-16 data.
 String::String(const UChar* characters, unsigned length)
     : impl_(characters ? StringImpl::Create(characters, length) : nullptr) {}
@@ -658,11 +656,11 @@ CString String::Utf8(UTF8ConversionMode mode) const {
   if (Is8Bit()) {
     const LChar* characters = this->Characters8();
 
-    ConversionResult result =
-        ConvertLatin1ToUTF8(&characters, characters + length, &buffer,
-                            buffer + buffer_vector.size());
+    Unicode::ConversionResult result =
+        Unicode::ConvertLatin1ToUTF8(&characters, characters + length, &buffer,
+                                     buffer + buffer_vector.size());
     // (length * 3) should be sufficient for any conversion
-    DCHECK_NE(result, kTargetExhausted);
+    DCHECK_NE(result, Unicode::kTargetExhausted);
   } else {
     const UChar* characters = this->Characters16();
 
@@ -671,13 +669,13 @@ CString String::Utf8(UTF8ConversionMode mode) const {
       char* buffer_end = buffer + buffer_vector.size();
       while (characters < characters_end) {
         // Use strict conversion to detect unpaired surrogates.
-        ConversionResult result = ConvertUTF16ToUTF8(
+        Unicode::ConversionResult result = Unicode::ConvertUTF16ToUTF8(
             &characters, characters_end, &buffer, buffer_end, true);
-        DCHECK_NE(result, kTargetExhausted);
+        DCHECK_NE(result, Unicode::kTargetExhausted);
         // Conversion fails when there is an unpaired surrogate.  Put
         // replacement character (U+FFFD) instead of the unpaired
         // surrogate.
-        if (result != kConversionOK) {
+        if (result != Unicode::kConversionOK) {
           DCHECK_LE(0xD800, *characters);
           DCHECK_LE(*characters, 0xDFFF);
           // There should be room left, since one UChar hasn't been
@@ -689,20 +687,20 @@ CString String::Utf8(UTF8ConversionMode mode) const {
       }
     } else {
       bool strict = mode == kStrictUTF8Conversion;
-      ConversionResult result =
-          ConvertUTF16ToUTF8(&characters, characters + length, &buffer,
-                             buffer + buffer_vector.size(), strict);
+      Unicode::ConversionResult result =
+          Unicode::ConvertUTF16ToUTF8(&characters, characters + length, &buffer,
+                                      buffer + buffer_vector.size(), strict);
       // (length * 3) should be sufficient for any conversion
-      DCHECK_NE(result, kTargetExhausted);
+      DCHECK_NE(result, Unicode::kTargetExhausted);
 
       // Only produced from strict conversion.
-      if (result == kSourceIllegal) {
+      if (result == Unicode::kSourceIllegal) {
         DCHECK(strict);
         return CString();
       }
 
       // Check for an unconverted high surrogate.
-      if (result == kSourceExhausted) {
+      if (result == Unicode::kSourceExhausted) {
         if (strict)
           return CString();
         // This should be one unpaired high surrogate. Treat it the same
@@ -764,9 +762,10 @@ String String::FromUTF8(const LChar* string_start, size_t length) {
 
   UChar* buffer_current = buffer_start;
   const char* string_current = reinterpret_cast<const char*>(string_start);
-  if (ConvertUTF8ToUTF16(
+  if (Unicode::ConvertUTF8ToUTF16(
           &string_current, reinterpret_cast<const char*>(string_start + length),
-          &buffer_current, buffer_current + buffer.size()) != kConversionOK)
+          &buffer_current,
+          buffer_current + buffer.size()) != Unicode::kConversionOK)
     return String();
 
   unsigned utf16_length = buffer_current - buffer_start;

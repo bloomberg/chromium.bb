@@ -10,8 +10,6 @@
 namespace blink {
 namespace {{namespace}}Names {
 
-using namespace WTF;
-
 void* {{suffix}}NamesStorage[{{namespace}}{{suffix}}NamesCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
 
 {% for entry in entries|sort(attribute='name', case_sensitive=True) %}

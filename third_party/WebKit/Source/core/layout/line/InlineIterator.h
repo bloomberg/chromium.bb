@@ -148,13 +148,12 @@ inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2) {
 static inline WTF::Unicode::CharDirection EmbedCharFromDirection(
     TextDirection dir,
     UnicodeBidi unicode_bidi) {
-  using namespace WTF::Unicode;
   if (unicode_bidi == UnicodeBidi::kEmbed) {
-    return dir == TextDirection::kRtl ? kRightToLeftEmbedding
-                                      : kLeftToRightEmbedding;
+    return dir == TextDirection::kRtl ? WTF::Unicode::kRightToLeftEmbedding
+                                      : WTF::Unicode::kLeftToRightEmbedding;
   }
-  return dir == TextDirection::kRtl ? kRightToLeftOverride
-                                    : kLeftToRightOverride;
+  return dir == TextDirection::kRtl ? WTF::Unicode::kRightToLeftOverride
+                                    : WTF::Unicode::kLeftToRightOverride;
 }
 
 static inline bool TreatAsIsolated(const ComputedStyle& style) {

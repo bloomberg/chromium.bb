@@ -37,24 +37,21 @@
 
 namespace blink {
 
-using namespace WTF;
-using namespace Unicode;
-
 // CSS 2.1 http://www.w3.org/TR/CSS21/selector.html#first-letter "Punctuation
 // (i.e, characters defined in Unicode [UNICODE] in the "open" (Ps), "close"
 // (Pe), "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes),
 // that precedes or follows the first letter should be included"
 static inline bool IsPunctuationForFirstLetter(UChar32 c) {
-  CharCategory char_category = Category(c);
-  return char_category == kPunctuation_Open ||
-         char_category == kPunctuation_Close ||
-         char_category == kPunctuation_InitialQuote ||
-         char_category == kPunctuation_FinalQuote ||
-         char_category == kPunctuation_Other;
+  WTF::Unicode::CharCategory char_category = WTF::Unicode::Category(c);
+  return char_category == WTF::Unicode::kPunctuation_Open ||
+         char_category == WTF::Unicode::kPunctuation_Close ||
+         char_category == WTF::Unicode::kPunctuation_InitialQuote ||
+         char_category == WTF::Unicode::kPunctuation_FinalQuote ||
+         char_category == WTF::Unicode::kPunctuation_Other;
 }
 
 static inline bool IsSpaceForFirstLetter(UChar c) {
-  return IsSpaceOrNewline(c) || c == kNoBreakSpaceCharacter;
+  return IsSpaceOrNewline(c) || c == WTF::Unicode::kNoBreakSpaceCharacter;
 }
 
 unsigned FirstLetterPseudoElement::FirstLetterLength(const String& text) {

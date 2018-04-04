@@ -43,7 +43,6 @@
 namespace blink {
 
 using namespace HTMLNames;
-using namespace WTF::Unicode;
 
 class DateTimeEditBuilder : private DateTimeFormat::TokenHandler {
  public:
@@ -468,9 +467,10 @@ void DateTimeEditBuilder::VisitLiteral(const String& text) {
   HTMLDivElement* element = HTMLDivElement::Create(EditElement().GetDocument());
   element->SetShadowPseudoId(text_pseudo_id);
   if (parameters_.locale.IsRTL() && text.length()) {
-    CharDirection dir = Direction(text[0]);
-    if (dir == kSegmentSeparator || dir == kWhiteSpaceNeutral ||
-        dir == kOtherNeutral)
+    WTF::Unicode::CharDirection dir = WTF::Unicode::Direction(text[0]);
+    if (dir == WTF::Unicode::kSegmentSeparator ||
+        dir == WTF::Unicode::kWhiteSpaceNeutral ||
+        dir == WTF::Unicode::kOtherNeutral)
       element->AppendChild(Text::Create(EditElement().GetDocument(),
                                         String(&kRightToLeftMarkCharacter, 1)));
   }

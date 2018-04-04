@@ -10,8 +10,6 @@
 
 namespace blink {
 
-using namespace WTF::Unicode;
-
 SymbolsIterator::SymbolsIterator(const UChar* buffer, unsigned buffer_size)
     : utf16_iterator_(std::make_unique<UTF16TextIterator>(buffer, buffer_size)),
       buffer_size_(buffer_size),

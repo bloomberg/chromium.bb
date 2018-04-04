@@ -94,8 +94,6 @@
 namespace blink {
 
 using namespace HTMLNames;
-using namespace WTF;
-using namespace Unicode;
 
 namespace {
 
