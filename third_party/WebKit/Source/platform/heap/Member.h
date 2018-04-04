@@ -272,13 +272,14 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
  protected:
   ALWAYS_INLINE void WriteBarrier(const T* value) const {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-    if (LIKELY(value && !this->IsHashTableDeletedValue())) {
-      // The following method for retrieving a page works as allocation of
-      // mixins on large object pages is prohibited.
-      BasePage* const page = PageFromObject(value);
-      if (page->IsIncrementalMarking()) {
-        DCHECK(ThreadState::Current()->IsIncrementalMarking());
-        ThreadState::Current()->Heap().WriteBarrierInternal(page, value);
+    if (LIKELY(value && !this->IsHashTableDeletedValue()) &&
+        ThreadState::IsAnyIncrementalMarking()) {
+      ThreadState* const thread_state = ThreadState::Current();
+      if (thread_state->IsIncrementalMarking()) {
+        // The following method for retrieving a page works as allocation of
+        // mixins on large object pages is prohibited.
+        BasePage* const page = PageFromObject(value);
+        thread_state->Heap().WriteBarrierInternal(page, value);
       }
     }
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)

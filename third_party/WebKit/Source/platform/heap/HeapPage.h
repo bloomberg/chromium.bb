@@ -411,10 +411,6 @@ class BasePage {
     swept_ = false;
   }
 
-  void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
-
-  bool IsIncrementalMarking() const { return incremental_marking_; }
-
   // Returns true if magic number is valid.
   bool IsValid() const;
 
@@ -432,8 +428,7 @@ class BasePage {
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true  upon completion of lazy sweeping.
   bool swept_;
-  // Track whether incremental marking is currently running.
-  bool incremental_marking_;
+
   friend class BaseArena;
 };
 
@@ -778,9 +773,6 @@ class PLATFORM_EXPORT BaseArena {
   Address AllocateLargeObject(size_t allocation_size, size_t gc_info_index);
 
   bool WillObjectBeLazilySwept(BasePage*, void*) const;
-
-  void EnableIncrementalMarkingBarrier();
-  void DisableIncrementalMarkingBarrier();
 
   virtual void Verify(){};
   virtual void VerifyMarking(){};
