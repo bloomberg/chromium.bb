@@ -83,8 +83,6 @@ const char kOtherProxy[] = "testproxy:17";
 const char kTestURL[] = "http://www.google.com/";
 const char kSecureTestURL[] = "https://www.google.com/";
 
-const char kReceivedValidOCLHistogramName[] =
-    "Net.HttpContentLengthWithValidOCL";
 const char kOriginalValidOCLHistogramName[] =
     "Net.HttpOriginalContentLengthWithValidOCL";
 const char kDifferenceValidOCLHistogramName[] =
@@ -164,11 +162,6 @@ const char kOriginalHistogramName[] = "Net.HttpOriginalContentLength";
 const char kDifferenceHistogramName[] = "Net.HttpContentLengthDifference";
 const char kFreshnessLifetimeHistogramName[] =
     "Net.HttpContentFreshnessLifetime";
-const char kCacheableHistogramName[] = "Net.HttpContentLengthCacheable";
-const char kCacheable4HoursHistogramName[] =
-    "Net.HttpContentLengthCacheable4Hours";
-const char kCacheable24HoursHistogramName[] =
-    "Net.HttpContentLengthCacheable24Hours";
 const int64_t kResponseContentLength = 100;
 const int64_t kOriginalContentLength = 200;
 
@@ -1241,8 +1234,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       fake_request->response_info().headers->GetFreshnessLifetimes(
           fake_request->response_info().response_time).freshness;
 
-  histogram_tester.ExpectUniqueSample(kReceivedValidOCLHistogramName,
-                                      kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kOriginalValidOCLHistogramName,
                                       kOriginalContentLength, 1);
   histogram_tester.ExpectUniqueSample(kOriginalInsecureViaDRPHistogramName,
@@ -1267,12 +1258,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       kOriginalContentLength - kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kFreshnessLifetimeHistogramName,
                                       freshness_lifetime.InSeconds(), 1);
-  histogram_tester.ExpectUniqueSample(kCacheableHistogramName,
-                                      kResponseContentLength, 1);
-  histogram_tester.ExpectUniqueSample(kCacheable4HoursHistogramName,
-                                      kResponseContentLength, 1);
-  histogram_tester.ExpectUniqueSample(kCacheable24HoursHistogramName,
-                                      kResponseContentLength, 1);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, NetVideoHistograms) {

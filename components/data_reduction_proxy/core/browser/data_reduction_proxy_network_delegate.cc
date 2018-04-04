@@ -125,8 +125,6 @@ void RecordContentLengthHistograms(bool is_https,
   // Add the current resource to these histograms only when the content length
   // is valid.
   if (original_content_length >= 0) {
-    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthWithValidOCL",
-                            received_content_length);
     UMA_HISTOGRAM_COUNTS_1M("Net.HttpOriginalContentLengthWithValidOCL",
                             original_content_length);
     UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthDifferenceWithValidOCL",
@@ -154,19 +152,6 @@ void RecordContentLengthHistograms(bool is_https,
                               freshness_lifetime.InSeconds(),
                               base::TimeDelta::FromHours(1).InSeconds(),
                               base::TimeDelta::FromDays(30).InSeconds(), 100);
-  if (freshness_lifetime.InSeconds() <= 0)
-    return;
-  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable",
-                          received_content_length);
-  if (freshness_lifetime.InHours() < 4)
-    return;
-  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable4Hours",
-                          received_content_length);
-
-  if (freshness_lifetime.InHours() < 24)
-    return;
-  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable24Hours",
-                          received_content_length);
 }
 
 void RecordAcceptTransformEvent(AcceptTransformEvent event) {
