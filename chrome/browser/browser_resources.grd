@@ -652,6 +652,9 @@
         <include name="IDR_SYS_INTERNALS_IMAGE_MEMORY_SVG" file="resources\chromeos\sys_internals\img\memory.svg" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_IMAGE_ZRAM_SVG" file="resources\chromeos\sys_internals\img\zram.svg" type="BINDATA" />
       </if>
+      <if expr="chromeos">
+        <include name="IDR_ASSISTANT_LOGO_PNG" file="resources\chromeos\assistant_optin\assistant_logo.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

@@ -114,6 +114,7 @@ const char kCustomElementsUserPodHTMLPath[] = "custom_elements_user_pod.html";
 const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
+const char kArcAssistantLogoPath[] = "assistant_logo.png";
 const char kArcPlaystoreCSSPath[] = "playstore.css";
 const char kArcPlaystoreJSPath[] = "playstore.js";
 const char kArcPlaystoreLogoPath[] = "playstore.svg";
@@ -173,6 +174,9 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
   source->AddResourcePath(kArcPlaystoreLogoPath,
       IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
+
+  // Required for Assistant OOBE.
+  source->AddResourcePath(kArcAssistantLogoPath, IDR_ASSISTANT_LOGO_PNG);
 
   // Required in encryption migration screen.
   source->AddResourcePath(kProductLogoPath, IDR_PRODUCT_LOGO_64);
