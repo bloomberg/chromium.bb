@@ -162,10 +162,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   void DispatchBlurEvent(Element* new_focused_element,
                          WebFocusType,
                          InputDeviceCapabilities* source_capabilities) override;
-  void DispatchFocusEvent(
-      Element* old_focused_element,
-      WebFocusType,
-      InputDeviceCapabilities* source_capabilities) override;
   void WillCallDefaultEventHandler(const Event&) final;
 
   void DidRecalcStyle(StyleRecalcChange) override;
@@ -216,7 +212,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool is_valid_ : 1;
   bool validity_is_dirty_ : 1;
 
-  bool was_focused_by_mouse_ : 1;
   bool blocks_form_submission_ : 1;
 };
 

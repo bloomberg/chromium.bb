@@ -51,7 +51,6 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
                                      Document& document)
     : HTMLElement(tag_name, document),
       link_relations_(0),
-      was_focused_by_mouse_(false),
       cached_visited_link_hash_(0),
       rel_list_(RelList::Create(this)) {}
 
@@ -74,27 +73,7 @@ bool HTMLAnchorElement::MatchesEnabledPseudoClass() const {
 }
 
 bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
-  return !was_focused_by_mouse_ || HTMLElement::SupportsFocus();
-}
-
-void HTMLAnchorElement::DispatchFocusEvent(
-    Element* old_focused_element,
-    WebFocusType type,
-    InputDeviceCapabilities* source_capabilities) {
-  if (type != kWebFocusTypePage)
-    was_focused_by_mouse_ = type == kWebFocusTypeMouse;
-  HTMLElement::DispatchFocusEvent(old_focused_element, type,
-                                  source_capabilities);
-}
-
-void HTMLAnchorElement::DispatchBlurEvent(
-    Element* new_focused_element,
-    WebFocusType type,
-    InputDeviceCapabilities* source_capabilities) {
-  if (type != kWebFocusTypePage)
-    was_focused_by_mouse_ = false;
-  HTMLElement::DispatchBlurEvent(new_focused_element, type,
-                                 source_capabilities);
+  return !WasFocusedByMouse() || HTMLElement::SupportsFocus();
 }
 
 bool HTMLAnchorElement::IsMouseFocusable() const {

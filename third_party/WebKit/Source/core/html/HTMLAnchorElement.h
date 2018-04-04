@@ -105,13 +105,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
  private:
   void AttributeChanged(const AttributeModificationParams&) override;
   bool ShouldHaveFocusAppearance() const final;
-  void DispatchFocusEvent(
-      Element* old_focused_element,
-      WebFocusType,
-      InputDeviceCapabilities* source_capabilities) override;
-  void DispatchBlurEvent(Element* new_focused_element,
-                         WebFocusType,
-                         InputDeviceCapabilities* source_capabilities) override;
   bool IsMouseFocusable() const override;
   bool IsKeyboardFocusable() const override;
   void DefaultEventHandler(Event*) final;
@@ -128,7 +121,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   void HandleClick(Event*);
 
   unsigned link_relations_ : 31;
-  unsigned was_focused_by_mouse_ : 1;
   mutable LinkHash cached_visited_link_hash_;
   TraceWrapperMember<RelList> rel_list_;
 };

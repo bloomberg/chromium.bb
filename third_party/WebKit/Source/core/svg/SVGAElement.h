@@ -55,13 +55,6 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
 
   bool SupportsFocus() const override;
   bool ShouldHaveFocusAppearance() const final;
-  void DispatchFocusEvent(
-      Element* old_focused_element,
-      WebFocusType,
-      InputDeviceCapabilities* source_capabilities) override;
-  void DispatchBlurEvent(Element* new_focused_element,
-                         WebFocusType,
-                         InputDeviceCapabilities* source_capabilities) override;
   bool IsMouseFocusable() const override;
   bool IsKeyboardFocusable() const override;
   bool IsURLAttribute(const Attribute&) const override;
@@ -71,7 +64,6 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
   bool WillRespondToMouseClickEvents() override;
 
   Member<SVGAnimatedString> svg_target_;
-  bool was_focused_by_mouse_;
 };
 
 }  // namespace blink
