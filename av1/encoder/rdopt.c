@@ -3472,12 +3472,12 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   return is_cost_valid;
 }
 
-void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
-                       int blk_row, int blk_col, int plane, int block,
-                       int plane_bsize, const ENTROPY_CONTEXT *a,
-                       const ENTROPY_CONTEXT *l, RD_STATS *rd_stats,
-                       int fast_tx_search, int64_t ref_rdcost,
-                       TXB_RD_INFO *rd_info_array) {
+static void tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
+                          int blk_row, int blk_col, int plane, int block,
+                          int plane_bsize, const ENTROPY_CONTEXT *a,
+                          const ENTROPY_CONTEXT *l, RD_STATS *rd_stats,
+                          int fast_tx_search, int64_t ref_rdcost,
+                          TXB_RD_INFO *rd_info_array) {
   const struct macroblock_plane *const p = &x->plane[plane];
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
@@ -3578,10 +3578,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     rd_stats->zero_rate = zero_blk_rate;
     const int index = av1_get_txb_size_index(plane_bsize, blk_row, blk_col);
     mbmi->inter_tx_size[index] = tx_size;
-    av1_tx_block_rd_b(
-        cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize, pta, ptl,
-        rd_stats, fast_tx_search, ref_best_rd,
-        rd_info_node != NULL ? rd_info_node->rd_info_array : NULL);
+    tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize, pta,
+                  ptl, rd_stats, fast_tx_search, ref_best_rd,
+                  rd_info_node != NULL ? rd_info_node->rd_info_array : NULL);
     if (rd_stats->rate == INT_MAX) return;
 
     if ((RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
@@ -3952,8 +3951,8 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                                   .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
     rd_stats->zero_rate = zero_blk_rate;
     rd_stats->ref_rdcost = ref_best_rd;
-    av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize,
-                      ta, tl, rd_stats, fast, ref_best_rd, NULL);
+    tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize, ta,
+                  tl, rd_stats, fast, ref_best_rd, NULL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
             RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
@@ -4490,8 +4489,8 @@ static void tx_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   ENTROPY_CONTEXT *ta = above_ctx + blk_col;
   ENTROPY_CONTEXT *tl = left_ctx + blk_row;
-  av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
-                    plane_bsize, ta, tl, rd_stats, fast, INT64_MAX, NULL);
+  tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block, plane_bsize,
+                ta, tl, rd_stats, fast, INT64_MAX, NULL);
   av1_set_txb_context(x, plane, block, tx_size, ta, tl);
 }
 
