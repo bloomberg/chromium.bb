@@ -42,10 +42,24 @@ function init() {
 
 function runTests() {
   var rect = document.getElementById("target").getBoundingClientRect();
+
+  internals.settings.setShowContextMenuOnMouseUp(false);
   eventSender.gestureLongPress(rect.left + 5, rect.top + 5);
   testReceivedEvents([
     "mouseover", "mouseenter", "mousemove", "contextmenu"
-  ], "Long press events");
+  ], "Long press events show contextmenu");
+
+  eventSender.gestureLongTap(rect.left + 5, rect.top + 5);
+  testReceivedEvents([], "Long tap events no contextmenu");
+
+  internals.settings.setShowContextMenuOnMouseUp(true);
+  eventSender.gestureLongPress(rect.left + 5, rect.top + 5);
+  testReceivedEvents([], "Long press events no contextmenu");
+
+  eventSender.gestureLongTap(rect.left + 5, rect.top + 5);
+  testReceivedEvents([
+    "mousemove", "contextmenu"
+  ], "Long tap events show contextmenu");
 
 }
 

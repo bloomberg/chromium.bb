@@ -162,15 +162,6 @@ void RenderWidgetHostViewEventHandler::TrackHost(
 }
 
 #if defined(OS_WIN)
-void RenderWidgetHostViewEventHandler::SetContextMenuParams(
-    const ContextMenuParams& params) {
-  last_context_menu_params_.reset();
-  if (params.source_type == ui::MENU_SOURCE_LONG_PRESS) {
-    last_context_menu_params_.reset(new ContextMenuParams);
-    *last_context_menu_params_ = params;
-  }
-}
-
 void RenderWidgetHostViewEventHandler::UpdateMouseLockRegion() {
   RECT window_rect =
       display::Screen::GetScreen()
@@ -716,29 +707,6 @@ void RenderWidgetHostViewEventHandler::HandleGestureForTouchSelection(
     case ui::ET_GESTURE_SCROLL_END:
       delegate_->selection_controller_client()->OnScrollCompleted();
       break;
-#if defined(OS_WIN)
-    case ui::ET_GESTURE_LONG_TAP: {
-      if (!last_context_menu_params_)
-        break;
-
-      std::unique_ptr<ContextMenuParams> context_menu_params =
-          std::move(last_context_menu_params_);
-
-      // On Windows we want to display the context menu when the long press
-      // gesture is released. To achieve that, we switch the saved context
-      // menu params source type to MENU_SOURCE_TOUCH. This is to ensure that
-      // the RenderWidgetHostViewBase::OnShowContextMenu function which is
-      // called from the ShowContextMenu call below, does not treat it as
-      // a context menu request coming in from the long press gesture.
-      DCHECK(context_menu_params->source_type == ui::MENU_SOURCE_LONG_PRESS);
-      context_menu_params->source_type = ui::MENU_SOURCE_TOUCH;
-
-      delegate_->ShowContextMenu(*context_menu_params);
-      event->SetHandled();
-      // WARNING: we may have been deleted during the call to ShowContextMenu().
-      break;
-    }
-#endif
     default:
       break;
   }

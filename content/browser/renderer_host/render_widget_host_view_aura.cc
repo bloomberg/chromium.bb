@@ -2086,16 +2086,6 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
   has_snapped_to_boundary_ = true;
 }
 
-bool RenderWidgetHostViewAura::OnShowContextMenu(
-    const ContextMenuParams& params) {
-#if defined(OS_WIN)
-  event_handler_->SetContextMenuParams(params);
-  return params.source_type != ui::MENU_SOURCE_LONG_PRESS;
-#else
-  return true;
-#endif  // defined(OS_WIN)
-}
-
 void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
     std::unique_ptr<TouchSelectionControllerClientAura> client) {
   selection_controller_client_.swap(client);

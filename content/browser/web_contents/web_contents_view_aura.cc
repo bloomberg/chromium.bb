@@ -882,11 +882,6 @@ void WebContentsViewAura::ShowContextMenu(RenderFrameHost* render_frame_host,
   }
 
   if (delegate_) {
-    RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
-        web_contents_->GetRenderWidgetHostView());
-    if (view && !view->OnShowContextMenu(params))
-      return;
-
     delegate_->ShowContextMenu(render_frame_host, params);
     // WARNING: we may have been deleted during the call to ShowContextMenu().
   }

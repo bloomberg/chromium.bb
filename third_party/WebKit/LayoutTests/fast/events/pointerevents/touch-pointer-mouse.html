@@ -109,6 +109,7 @@ function testLongPressWithPairedGE() {
   eventSender.touchCancel();
 
   eventSender.gestureLongPress(x, y, tapWidth, tapHeight, uniqueId);
+  eventSender.gestureLongTap(x, y, tapWidth, tapHeight, uniqueId + 1);
 }
 
 function testLongPressWithoutPairedGE() {
@@ -127,9 +128,11 @@ function testLongPressWithoutPairedGE() {
 
   eventSender.gestureTapDown(x, y, tapWidth, tapHeight, uniqueId+1);
   eventSender.gestureLongPress(x, y);
+  eventSender.gestureLongTap(x, y);
 
   eventSender.gestureTapDown(x, y, tapWidth, tapHeight, uniqueId+2);
   eventSender.gestureLongPress(x, y);
+  eventSender.gestureLongTap(x, y);
 }
 
 function runTests() {

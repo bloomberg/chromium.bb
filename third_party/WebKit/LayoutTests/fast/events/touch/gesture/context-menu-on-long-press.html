@@ -17,17 +17,27 @@
 "use strict";
 
 var eventSequence = "";
-var testResult=""
+var ContextmenuReceived = false;
 
 function runTest(x, y, mouseUpFlag) {
-    eventSequence = "Event sequence:";
-    testResult="FAIL";
+    eventSequence = "";
+    ContextmenuReceived = false;
     internals.settings.setShowContextMenuOnMouseUp(mouseUpFlag);
     eventSender.gestureLongPress(x, y);
 
     debug("showContextMenuOnMouseUp = " + mouseUpFlag)
-    debug(eventSequence);
-    debug(testResult);
+    debug("Long press event sequence:" + eventSequence)
+    debug("Context Menu event received: " + ContextmenuReceived);
+    debug(ContextmenuReceived != mouseUpFlag ? "PASS" : "FAIL");
+    debug("");
+
+    eventSequence = "";
+    ContextmenuReceived = false;
+    eventSender.gestureLongTap(x, y);
+
+    debug("Long tap event sequence:" + eventSequence)
+    debug("Context Menu event received: " + ContextmenuReceived);
+    debug(ContextmenuReceived == mouseUpFlag ? "PASS" : "FAIL");
     debug("");
 }
 
@@ -37,7 +47,7 @@ function test()
         testRunner.dumpAsText();
 
     document.oncontextmenu = function() {
-      testResult = "PASS: Context Menu event seen.";
+      ContextmenuReceived = true;
     }
     for (let evtType of ["contextmenu", "mouseover", "mousemove", "mouseout",
             "mouseenter", "mouseleave", "mouseup", "mousedown"]) {

@@ -314,13 +314,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void SnapToPhysicalPixelBoundary();
 
-  // Called when the context menu is about to be displayed.
-  // Returns true if the context menu should be displayed. We only return false
-  // on Windows if the context menu is being displayed in response to a long
-  // press gesture. On Windows we should be consistent like other apps and
-  // display the menu when the touch is released.
-  bool OnShowContextMenu(const ContextMenuParams& params);
-
   // Used in tests to set a mock client for touch selection controller. It will
   // create a new touch selection controller for the new client.
   void SetSelectionControllerClientForTest(
