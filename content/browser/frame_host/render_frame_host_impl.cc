@@ -1298,6 +1298,8 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
       render_widget_host_->SetWidgetInputHandler(std::move(widget_handler),
                                                  std::move(host_request));
     }
+    render_widget_host_->input_router()->SetFrameTreeNodeId(
+        frame_tree_node_->frame_tree_node_id());
     viz::mojom::InputTargetClientPtr input_target_client;
     remote_interfaces_->GetInterface(&input_target_client);
     input_target_client_ = input_target_client.get();
