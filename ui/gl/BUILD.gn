@@ -198,7 +198,7 @@ component("gl") {
       "gl_surface_egl.h",
     ]
 
-    if (is_linux) {
+    if (is_linux || (is_win && use_ozone)) {
       sources += [
         "gl_image_native_pixmap.cc",
         "gl_image_native_pixmap.h",
@@ -230,7 +230,9 @@ component("gl") {
       "yuv_to_rgb_converter.h",
     ]
   }
-  if (is_android || is_linux || is_fuchsia) {
+
+  # TODO(camurcu): Windows/Ozone uses OSMesa for now. Will be updated.
+  if (is_android || is_linux || is_fuchsia || (is_win && use_ozone)) {
     sources += [
       "gl_implementation_osmesa.cc",
       "gl_implementation_osmesa.h",
