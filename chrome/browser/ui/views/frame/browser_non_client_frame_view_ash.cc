@@ -441,10 +441,13 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
   in_overview_mode_ = true;
 
-  // Update the window icon so that overview mode can grab the icon from
-  // aura::client::kWindowIcon to display.
-  if (base::FeatureList::IsEnabled(ash::features::kNewOverviewUi))
+  // Update the window icon if needed so that overview mode can grab the icon
+  // from kAppIconKey or kWindowIconKey to display.
+  if (base::FeatureList::IsEnabled(ash::features::kNewOverviewUi) &&
+      !frame()->GetNativeWindow()->GetProperty(
+          aura::client::kHasOverviewIcon)) {
     frame()->UpdateWindowIcon();
+  }
 
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewColor,
                                           GetFrameColor());

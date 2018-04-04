@@ -48,6 +48,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCreatedByUserGesture, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kDrawAttentionKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(FocusClient*, kFocusClientKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHasBackdrop, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHasOverviewIcon, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kHostWindowKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveFullscreenKey, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kMinimumSize, nullptr);
