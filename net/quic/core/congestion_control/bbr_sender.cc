@@ -412,7 +412,7 @@ bool BbrSender::UpdateBandwidthAndMinRtt(
     const AckedPacketVector& acked_packets) {
   QuicTime::Delta sample_min_rtt = QuicTime::Delta::Infinite();
   for (const auto& packet : acked_packets) {
-    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing2) &&
+    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing3) &&
         packet.bytes_acked == 0) {
       // Skip acked packets with 0 in flight bytes when updating bandwidth.
       continue;

@@ -51,22 +51,6 @@ size_t GenerateUniformInRange(size_t lo, size_t hi, QuicTestRandomBase* rng) {
   return lo + rng->Rand64() % (hi - lo);
 }
 
-// Here "word" means something that starts with a lower-case letter, and has
-// zero or more additional characters that are numbers or lower-case letters.
-QuicString GenerateQuicHttpHeaderName(size_t len, QuicTestRandomBase* rng) {
-  QuicStringPiece alpha_lc = "abcdefghijklmnopqrstuvwxyz";
-  // If the name is short, just make it one word.
-  if (len < 8) {
-    return RandomString(rng, len, alpha_lc);
-  }
-  // If the name is longer, ensure it starts with a word, and after that may
-  // have any character in alphanumdash_lc. 4 is arbitrary, could be as low
-  // as 1.
-  QuicStringPiece alphanumdash_lc = "abcdefghijklmnopqrstuvwxyz0123456789-";
-  return RandomString(rng, 4, alpha_lc) +
-         RandomString(rng, len - 4, alphanumdash_lc);
-}
-
 QuicString GenerateWebSafeString(size_t len, QuicTestRandomBase* rng) {
   return RandomString(rng, len, kWebsafe64);
 }

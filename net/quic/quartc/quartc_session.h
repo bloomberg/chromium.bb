@@ -80,6 +80,8 @@ class QUIC_EXPORT_PRIVATE QuartcSession
 
   void SetDelegate(QuartcSessionInterface::Delegate* session_delegate) override;
 
+  void SetSessionVisitor(QuartcSessionVisitor* debug_visitor) override;
+
   void OnTransportCanWrite() override;
 
   // Decrypts an incoming QUIC packet to a data stream.

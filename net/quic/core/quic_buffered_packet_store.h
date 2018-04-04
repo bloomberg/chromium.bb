@@ -69,6 +69,8 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
     QuicTime creation_time;
     // The alpn from the CHLO, if one was found.
     QuicString alpn;
+    // Indicating whether this is an IETF QUIC connection.
+    bool ietf_quic;
   };
 
   typedef QuicLinkedHashMap<QuicConnectionId, BufferedPacketList>
@@ -95,6 +97,7 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
 
   // Adds a copy of packet into packet queue for given connection.
   EnqueuePacketResult EnqueuePacket(QuicConnectionId connection_id,
+                                    bool ietf_quic,
                                     const QuicReceivedPacket& packet,
                                     QuicSocketAddress server_address,
                                     QuicSocketAddress client_address,

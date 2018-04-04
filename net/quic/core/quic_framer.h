@@ -281,6 +281,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns a new version negotiation packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildVersionNegotiationPacket(
       QuicConnectionId connection_id,
+      bool ietf_quic,
       const ParsedQuicVersionVector& versions);
 
   // If header.version_flag is set, the version in the
@@ -364,6 +365,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   Perspective perspective() const { return perspective_; }
 
   QuicVersionLabel last_version_label() const { return last_version_label_; }
+
+  bool last_packet_is_ietf_quic() const { return last_packet_is_ietf_quic_; }
 
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
@@ -546,13 +549,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                              QuicDataWriter* writer);
   bool AppendIetfConnectionCloseFrame(const QuicConnectionCloseFrame& frame,
                                       QuicDataWriter* writer);
-  bool AppendIetfConnectionCloseFrame(const QuicIetfTransportErrorCodes code,
-                                      const QuicString& phrase,
-                                      QuicDataWriter* writer);
   bool AppendIetfApplicationCloseFrame(const QuicConnectionCloseFrame& frame,
-                                       QuicDataWriter* writer);
-  bool AppendIetfApplicationCloseFrame(const uint16_t code,
-                                       const QuicString& phrase,
                                        QuicDataWriter* writer);
   bool AppendIetfCloseFrame(const QuicIetfFrameType type,
                             const uint16_t code,
@@ -618,6 +615,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicConnectionId last_serialized_connection_id_;
   // The last QUIC version label received.
   QuicVersionLabel last_version_label_;
+  // Whether last received packet is IETF QUIC packet.
+  bool last_packet_is_ietf_quic_;
   // Version of the protocol being used.
   ParsedQuicVersion version_;
   // This vector contains QUIC versions which we currently support.
@@ -657,7 +656,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
 
-  // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing2.
+  // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing3.
   const bool use_incremental_ack_processing_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);

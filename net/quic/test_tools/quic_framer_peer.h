@@ -47,19 +47,10 @@ class QuicFramerPeer {
       QuicFramer* framer,
       const QuicConnectionCloseFrame& frame,
       QuicDataWriter* writer);
-  static bool AppendIetfConnectionCloseFrame(
-      QuicFramer* framer,
-      const QuicIetfTransportErrorCodes code,
-      const std::string& phrase,
-      QuicDataWriter* writer);
   static bool AppendIetfApplicationCloseFrame(
       QuicFramer* framer,
       const QuicConnectionCloseFrame& frame,
       QuicDataWriter* writer);
-  static bool AppendIetfApplicationCloseFrame(QuicFramer* framer,
-                                              const uint16_t code,
-                                              const std::string& phrase,
-                                              QuicDataWriter* writer);
   static bool ProcessIetfConnectionCloseFrame(QuicFramer* framer,
                                               QuicDataReader* reader,
                                               const uint8_t frame_type,

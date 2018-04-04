@@ -203,7 +203,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Called when |connection_id| doesn't have an open connection yet, to buffer
   // |current_packet_| until it can be delivered to the connection.
-  void BufferEarlyPacket(QuicConnectionId connection_id);
+  void BufferEarlyPacket(QuicConnectionId connection_id, bool ietf_quic);
 
   // Called when |current_packet_| is a CHLO packet. Creates a new connection
   // and delivers any buffered packets for that connection id.

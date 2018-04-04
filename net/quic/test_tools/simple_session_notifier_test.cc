@@ -29,13 +29,6 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
                                 size_t write_length,
                                 QuicStreamOffset offset,
                                 StreamSendingState state));
-
-  static QuicConsumedData ConsumeAllData(QuicStreamId /*id*/,
-                                         size_t write_length,
-                                         QuicStreamOffset /*offset*/,
-                                         StreamSendingState state) {
-    return QuicConsumedData(write_length, state != NO_FIN);
-  }
 };
 
 class SimpleSessionNotifierTest : public QuicTest {

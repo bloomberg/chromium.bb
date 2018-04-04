@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/quartc/quartc_session_visitor_interface.h"
 #include "net/quic/quartc/quartc_stream_interface.h"
 
 namespace net {
@@ -130,6 +131,9 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
 
   // The |delegate| is not owned by QuartcSession.
   virtual void SetDelegate(Delegate* delegate) = 0;
+
+  // Sets a visitor for the session.
+  virtual void SetSessionVisitor(QuartcSessionVisitor* debug_visitor) = 0;
 };
 
 }  // namespace net

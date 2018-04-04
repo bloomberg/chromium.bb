@@ -93,7 +93,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
     termination_packets.push_back(std::unique_ptr<QuicEncryptedPacket>(
         new QuicEncryptedPacket(nullptr, 0, false)));
     time_wait_list_manager_.AddConnectionIdToTimeWait(
-        connection_id, QuicVersionMax(),
+        connection_id, QuicVersionMax(), false,
         /*connection_rejected_statelessly=*/true, &termination_packets);
   }
 
@@ -103,7 +103,8 @@ class QuicTimeWaitListManagerTest : public QuicTest {
       bool connection_rejected_statelessly,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets) {
     time_wait_list_manager_.AddConnectionIdToTimeWait(
-        connection_id, version, connection_rejected_statelessly, packets);
+        connection_id, version, false, connection_rejected_statelessly,
+        packets);
   }
 
   bool IsConnectionIdInTimeWait(QuicConnectionId connection_id) {
@@ -176,14 +177,15 @@ TEST_F(QuicTimeWaitListManagerTest, CheckStatelessConnectionIdInTimeWait) {
 
 TEST_F(QuicTimeWaitListManagerTest, SendVersionNegotiationPacket) {
   std::unique_ptr<QuicEncryptedPacket> packet(
-      QuicFramer::BuildVersionNegotiationPacket(connection_id_,
+      QuicFramer::BuildVersionNegotiationPacket(connection_id_, false,
                                                 AllSupportedVersions()));
   EXPECT_CALL(writer_, WritePacket(_, packet->length(), server_address_.host(),
                                    client_address_, _))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   time_wait_list_manager_.SendVersionNegotiationPacket(
-      connection_id_, AllSupportedVersions(), server_address_, client_address_);
+      connection_id_, false, AllSupportedVersions(), server_address_,
+      client_address_);
   EXPECT_EQ(0u, time_wait_list_manager_.num_connections());
 }
 

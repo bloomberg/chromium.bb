@@ -82,28 +82,11 @@ bool QuicFramerPeer::AppendIetfConnectionCloseFrame(
 }
 
 // static
-bool QuicFramerPeer::AppendIetfConnectionCloseFrame(
-    QuicFramer* framer,
-    const QuicIetfTransportErrorCodes code,
-    const string& phrase,
-    QuicDataWriter* writer) {
-  return framer->AppendIetfConnectionCloseFrame(code, phrase, writer);
-}
-
-// static
 bool QuicFramerPeer::AppendIetfApplicationCloseFrame(
     QuicFramer* framer,
     const QuicConnectionCloseFrame& frame,
     QuicDataWriter* writer) {
   return framer->AppendIetfApplicationCloseFrame(frame, writer);
-}
-
-// static
-bool QuicFramerPeer::AppendIetfApplicationCloseFrame(QuicFramer* framer,
-                                                     const uint16_t code,
-                                                     const string& phrase,
-                                                     QuicDataWriter* writer) {
-  return framer->AppendIetfApplicationCloseFrame(code, phrase, writer);
 }
 
 // static

@@ -321,7 +321,7 @@ void TcpCubicSenderBytes::OnPacketLost(QuicPacketNumber packet_number,
     prr_.OnPacketLost(prior_in_flight);
   }
 
-  // TODO(jri): Separate out all of slow start into a separate class.
+  // TODO(b/77268641): Separate out all of slow start into a separate class.
   if (slow_start_large_reduction_ && InSlowStart()) {
     DCHECK_LT(kDefaultTCPMSS, congestion_window_);
     if (congestion_window_ >= 2 * initial_tcp_congestion_window_) {

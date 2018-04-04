@@ -285,24 +285,7 @@ void QuicStream::WriteOrBufferData(
 
 void QuicStream::OnCanWrite() {
   if (HasPendingRetransmission()) {
-    const bool session_unblocks_stream = session_->session_unblocks_stream();
     WritePendingRetransmission();
-    if (session_unblocks_stream) {
-      // Exit early to allow other streams to write pending retransmissions if
-      // any.
-      return;
-    }
-    if (HasPendingRetransmission()) {
-      // Stream did not finish retransmission, session will unblock this stream
-      // later.
-      return;
-    }
-    const bool fin_only = !HasBufferedData() && fin_buffered_ && !fin_sent_;
-    if ((!flow_controller_.IsBlocked() && HasBufferedData()) || fin_only) {
-      // Stream finished retransmission. If there is new data which can be sent,
-      // tell the session to unblock this stream later.
-      session_->MarkConnectionLevelWriteBlocked(id_);
-    }
     // Exit early to allow other streams to write pending retransmissions if
     // any.
     return;
@@ -549,18 +532,8 @@ void QuicStream::OnClose() {
 
 void QuicStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
-    if (session_->session_unblocks_stream()) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_streams_unblocked_by_session2);
-      // Let session unblock this stream.
-      session_->MarkConnectionLevelWriteBlocked(id_);
-    } else {
-      // Writing can be done again!
-      // TODO(rjshade): This does not respect priorities (e.g. multiple
-      //                outstanding POSTs are unblocked on arrival of
-      //                SHLO with initial window).
-      // As long as the connection is not flow control blocked, write on!
-      OnCanWrite();
-    }
+    // Let session unblock this stream.
+    session_->MarkConnectionLevelWriteBlocked(id_);
   }
 }
 
@@ -603,12 +576,8 @@ void QuicStream::AddBytesConsumed(QuicByteCount bytes) {
 
 void QuicStream::UpdateSendWindowOffset(QuicStreamOffset new_window) {
   if (flow_controller_.UpdateSendWindowOffset(new_window)) {
-    if (session_->session_unblocks_stream()) {
-      // Let session unblock this stream.
-      session_->MarkConnectionLevelWriteBlocked(id_);
-    } else {
-      OnCanWrite();
-    }
+    // Let session unblock this stream.
+    session_->MarkConnectionLevelWriteBlocked(id_);
   }
 }
 

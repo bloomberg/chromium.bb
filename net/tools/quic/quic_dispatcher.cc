@@ -136,7 +136,7 @@ class StatelessConnectionTerminator {
     creator_.Flush();
     DCHECK_EQ(1u, collector_.packets()->size());
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        connection_id_, framer_->version(),
+        connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
         /*connection_rejected_statelessly=*/false, collector_.packets());
   }
 
@@ -162,7 +162,7 @@ class StatelessConnectionTerminator {
       creator_.Flush();
     }
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        connection_id_, framer_->version(),
+        connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
         /*connection_rejected_statelessly=*/true, collector_.packets());
     DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id_));
   }
@@ -323,7 +323,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   }
 
   if (buffered_packets_.HasChloForConnection(connection_id)) {
-    BufferEarlyPacket(connection_id);
+    BufferEarlyPacket(connection_id, framer_.last_packet_is_ietf_quic());
     return false;
   }
 
@@ -332,7 +332,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       temporarily_buffered_connections_.end()) {
     // This packet was received while the a CHLO for the same connection ID was
     // being processed.  Buffer it.
-    BufferEarlyPacket(connection_id);
+    BufferEarlyPacket(connection_id, framer_.last_packet_is_ietf_quic());
     return false;
   }
 
@@ -370,8 +370,8 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       // Since the version is not supported, send a version negotiation
       // packet and stop processing the current packet.
       time_wait_list_manager()->SendVersionNegotiationPacket(
-          connection_id, GetSupportedVersions(), current_self_address_,
-          current_peer_address_);
+          connection_id, framer_.last_packet_is_ietf_quic(),
+          GetSupportedVersions(), current_self_address_, current_peer_address_);
       return false;
     }
     version = packet_version;
@@ -425,6 +425,7 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
                         << "to time-wait list.";
         time_wait_list_manager_->AddConnectionIdToTimeWait(
             connection_id, framer_.version(),
+            framer_.last_packet_is_ietf_quic(),
             /*connection_rejected_statelessly=*/false, nullptr);
       }
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
@@ -441,7 +442,7 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
       // This packet is a non-CHLO packet which has arrived before the
       // corresponding CHLO, *or* this packet was received while the
       // corresponding CHLO was being processed.  Buffer it.
-      BufferEarlyPacket(connection_id);
+      BufferEarlyPacket(connection_id, framer_.last_packet_is_ietf_quic());
       break;
     case kFateDrop:
       // Do nothing with the packet.
@@ -509,7 +510,7 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
            !connection->termination_packets()->empty());
   }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      it->first, connection->version(), should_close_statelessly,
+      it->first, connection->version(), false, should_close_statelessly,
       connection->termination_packets());
   session_map_.erase(it);
 }
@@ -728,7 +729,8 @@ void QuicDispatcher::OnExpiredPackets(
     QuicConnectionId connection_id,
     BufferedPacketList early_arrived_packets) {
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      connection_id, framer_.version(), false, nullptr);
+      connection_id, framer_.version(), early_arrived_packets.ietf_quic, false,
+      nullptr);
 }
 
 void QuicDispatcher::ProcessBufferedChlos(size_t max_connections_to_create) {
@@ -785,14 +787,15 @@ QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
                                      alarm_factory_.get());
 }
 
-void QuicDispatcher::BufferEarlyPacket(QuicConnectionId connection_id) {
+void QuicDispatcher::BufferEarlyPacket(QuicConnectionId connection_id,
+                                       bool ietf_quic) {
   bool is_new_connection = !buffered_packets_.HasBufferedPackets(connection_id);
   if (is_new_connection &&
       !ShouldCreateOrBufferPacketForConnection(connection_id)) {
     return;
   }
   EnqueuePacketResult rs = buffered_packets_.EnqueuePacket(
-      connection_id, *current_packet_, current_self_address_,
+      connection_id, ietf_quic, *current_packet_, current_self_address_,
       current_peer_address_, /*is_chlo=*/false, /*alpn=*/"");
   if (rs != EnqueuePacketResult::SUCCESS) {
     OnBufferPacketFailure(rs, connection_id);
@@ -804,6 +807,7 @@ void QuicDispatcher::ProcessChlo() {
     // Don't any create new connection.
     time_wait_list_manager()->AddConnectionIdToTimeWait(
         current_connection_id(), framer()->version(),
+        framer()->last_packet_is_ietf_quic(),
         /*connection_rejected_statelessly=*/false,
         /*termination_packets=*/nullptr);
     // This will trigger sending Public Reset packet.
@@ -821,8 +825,9 @@ void QuicDispatcher::ProcessChlo() {
     // Can't create new session any more. Wait till next event loop.
     QUIC_BUG_IF(buffered_packets_.HasChloForConnection(current_connection_id_));
     EnqueuePacketResult rs = buffered_packets_.EnqueuePacket(
-        current_connection_id_, *current_packet_, current_self_address_,
-        current_peer_address_, /*is_chlo=*/true, current_alpn_);
+        current_connection_id_, framer_.last_packet_is_ietf_quic(),
+        *current_packet_, current_self_address_, current_peer_address_,
+        /*is_chlo=*/true, current_alpn_);
     if (rs != EnqueuePacketResult::SUCCESS) {
       OnBufferPacketFailure(rs, current_connection_id_);
     }

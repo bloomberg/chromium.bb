@@ -1219,20 +1219,14 @@ TEST_F(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
                                       1234);
 
   stream_->OnWindowUpdateFrame(window_update);
-  if (session_->session_unblocks_stream()) {
-    // Verify stream is marked connection level write blocked.
-    EXPECT_TRUE(HasWriteBlockedStreams());
-    EXPECT_TRUE(stream_->HasBufferedData());
-  } else {
-    EXPECT_FALSE(HasWriteBlockedStreams());
-    EXPECT_FALSE(stream_->HasBufferedData());
-  }
+  // Verify stream is marked connection level write blocked.
+  EXPECT_TRUE(HasWriteBlockedStreams());
+  EXPECT_TRUE(stream_->HasBufferedData());
 }
 
 // Regression test for b/73282665.
 TEST_F(QuicStreamTest,
        MarkConnectionLevelWriteBlockedOnWindowUpdateFrameWithNoBufferedData) {
-  SetQuicReloadableFlag(quic_streams_unblocked_by_session2, true);
   // Set a small initial flow control window size.
   const uint32_t kSmallWindow = 100;
   set_initial_flow_control_window_bytes(kSmallWindow);

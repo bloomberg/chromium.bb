@@ -94,6 +94,7 @@ QuicTimeWaitListManager::~QuicTimeWaitListManager() {
 void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
     ParsedQuicVersion version,
+    bool ietf_quic,
     bool connection_rejected_statelessly,
     std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets) {
   if (connection_rejected_statelessly) {
@@ -111,7 +112,8 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
   TrimTimeWaitListIfNeeded();
   DCHECK_LT(num_connections(),
             static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
-  ConnectionIdData data(num_packets, version, clock_->ApproximateNow(),
+  ConnectionIdData data(num_packets, version, ietf_quic,
+                        clock_->ApproximateNow(),
                         connection_rejected_statelessly);
   if (termination_packets != nullptr) {
     data.termination_packets.swap(*termination_packets);
@@ -180,13 +182,14 @@ void QuicTimeWaitListManager::ProcessPacket(
 
 void QuicTimeWaitListManager::SendVersionNegotiationPacket(
     QuicConnectionId connection_id,
+    bool ietf_quic,
     const ParsedQuicVersionVector& supported_versions,
     const QuicSocketAddress& server_address,
     const QuicSocketAddress& client_address) {
-  SendOrQueuePacket(
-      QuicMakeUnique<QueuedPacket>(server_address, client_address,
-                                   QuicFramer::BuildVersionNegotiationPacket(
-                                       connection_id, supported_versions)));
+  SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
+      server_address, client_address,
+      QuicFramer::BuildVersionNegotiationPacket(connection_id, ietf_quic,
+                                                supported_versions)));
 }
 
 // Returns true if the number of packets received for this connection_id is a
@@ -307,13 +310,15 @@ void QuicTimeWaitListManager::TrimTimeWaitListIfNeeded() {
 }
 
 QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
-    int num_packets_,
-    ParsedQuicVersion version_,
-    QuicTime time_added_,
+    int num_packets,
+    ParsedQuicVersion version,
+    bool ietf_quic,
+    QuicTime time_added,
     bool connection_rejected_statelessly)
-    : num_packets(num_packets_),
-      version(version_),
-      time_added(time_added_),
+    : num_packets(num_packets),
+      version(version),
+      ietf_quic(ietf_quic),
+      time_added(time_added),
       connection_rejected_statelessly(connection_rejected_statelessly) {}
 
 QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(

@@ -302,6 +302,10 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   bool PopulateHeaderBlockFromUrl(const std::string& uri,
                                   SpdyHeaderBlock* headers);
 
+  // Waits for a period of time that is long enough to receive all delayed acks
+  // sent by peer.
+  void WaitForDelayedAcks();
+
  protected:
   QuicTestClient();
 

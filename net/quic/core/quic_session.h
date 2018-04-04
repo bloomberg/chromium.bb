@@ -308,8 +308,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
 
-  bool session_unblocks_stream() const { return session_unblocks_stream_; }
-
   bool register_streams_early() const { return register_streams_early_; }
 
   bool session_decides_what_to_write() const;
@@ -554,9 +552,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // is not used here.
   // List of streams with pending retransmissions.
   QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
-
-  // Latched value of quic_reloadable_flag_quic_streams_unblocked_by_session2.
-  const bool session_unblocks_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

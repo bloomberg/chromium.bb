@@ -49,14 +49,7 @@ QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator)
           GetQuicReloadableFlag(quic_free_mem_slice_out_of_order)),
       enable_fast_path_on_data_acked_(
           free_mem_slice_out_of_order_ &&
-          GetQuicReloadableFlag(quic_fast_path_on_stream_data_acked)) {
-  if (free_mem_slice_out_of_order_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_free_mem_slice_out_of_order);
-  }
-  if (enable_fast_path_on_data_acked_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_path_on_stream_data_acked);
-  }
-}
+          GetQuicReloadableFlag(quic_fast_path_on_stream_data_acked)) {}
 
 QuicStreamSendBuffer::~QuicStreamSendBuffer() {}
 
@@ -167,8 +160,15 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
     return true;
   }
   if (enable_fast_path_on_data_acked_) {
-    if (bytes_acked_.IsDisjoint(
-            Interval<QuicStreamOffset>(offset, offset + data_length))) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_path_on_stream_data_acked);
+    bool is_disjoint = false;
+    if (GetQuicReloadableFlag(quic_fast_is_disjoint)) {
+      is_disjoint =
+          bytes_acked_.Empty() || offset >= bytes_acked_.rbegin()->max();
+      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_is_disjoint);
+    }
+    if (is_disjoint || bytes_acked_.IsDisjoint(Interval<QuicStreamOffset>(
+                           offset, offset + data_length))) {
       // Optimization for the typical case, when all data is newly acked.
       if (stream_bytes_outstanding_ < data_length) {
         return false;
@@ -201,6 +201,7 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
   bytes_acked_.Add(offset, offset + data_length);
   pending_retransmissions_.Difference(offset, offset + data_length);
   if (free_mem_slice_out_of_order_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_free_mem_slice_out_of_order);
     if (newly_acked.Empty()) {
       return true;
     }

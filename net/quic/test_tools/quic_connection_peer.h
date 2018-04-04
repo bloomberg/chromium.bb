@@ -64,6 +64,14 @@ class QuicConnectionPeer {
   static void SetPeerAddress(QuicConnection* connection,
                              const QuicSocketAddress& peer_address);
 
+  static void SetDirectPeerAddress(
+      QuicConnection* connection,
+      const QuicSocketAddress& direct_peer_address);
+
+  static void SetEffectivePeerAddress(
+      QuicConnection* connection,
+      const QuicSocketAddress& effective_peer_address);
+
   static bool IsSilentCloseEnabled(QuicConnection* connection);
 
   static void SwapCrypters(QuicConnection* connection, QuicFramer* framer);

@@ -492,7 +492,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // QuicSentPacketManager::NetworkChangeVisitor
   void OnCongestionChange() override;
-  // TODO(wangyix): remove OnPathDegrading() once
+  // TODO(b/76462614): remove OnPathDegrading() once
   // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
   void OnPathDegrading() override;
   void OnPathMtuIncreased(QuicPacketLength packet_size) override;
@@ -532,7 +532,20 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     packet_generator_.set_debug_delegate(visitor);
   }
   const QuicSocketAddress& self_address() const { return self_address_; }
-  const QuicSocketAddress& peer_address() const { return peer_address_; }
+  const QuicSocketAddress& peer_address() const {
+    if (enable_server_proxy_) {
+      return direct_peer_address_;
+    }
+    return peer_address_;
+  }
+  const QuicSocketAddress& effective_peer_address() const {
+    if (enable_server_proxy_) {
+      return effective_peer_address_;
+    }
+    QUIC_BUG << "effective_peer_address() should only be called when "
+                "enable_server_proxy_ is true.";
+    return peer_address_;
+  }
   QuicConnectionId connection_id() const { return connection_id_; }
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
@@ -762,6 +775,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     per_packet_options_ = options;
   }
 
+  bool IsServerProxyEnabled() const { return enable_server_proxy_; }
+
  protected:
   // Calls cancel() on all the alarms owned by this connection.
   void CancelAllAlarms();
@@ -777,6 +792,33 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Called when a peer address migration is validated.
   virtual void OnPeerMigrationValidated();
 
+  // Called after a packet is received from a new effective peer address and is
+  // decrypted. Starts validation of effective peer's address change. Calls
+  // OnConnectionMigration as soon as the address changed.
+  void StartEffectivePeerMigration(AddressChangeType type);
+
+  // Called when a effective peer address migration is validated.
+  virtual void OnEffectivePeerMigrationValidated();
+
+  // Get the effective peer address from the packet being processed. For proxied
+  // connections, effective peer address is the address of the endpoint behind
+  // the proxy. For non-proxied connections, effective peer address is the same
+  // as peer address.
+  //
+  // Notes for implementations in subclasses:
+  // - If the connection is not proxied, the overridden method should use the
+  //   base implementation:
+  //
+  //       return QuicConnection::GetEffectivePeerAddressFromCurrentPacket();
+  //
+  // - If the connection is proxied, the overridden method may return either of
+  //   the following:
+  //   a) The address of the endpoint behind the proxy. The address is used to
+  //      drive effective peer migration.
+  //   b) An uninitialized address, meaning the effective peer address does not
+  //      change.
+  virtual QuicSocketAddress GetEffectivePeerAddressFromCurrentPacket() const;
+
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
   // such a version exists, false otherwise.
@@ -787,6 +829,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   AddressChangeType active_peer_migration_type() {
     return active_peer_migration_type_;
+  }
+
+  AddressChangeType active_effective_peer_migration_type() const {
+    return active_effective_peer_migration_type_;
   }
 
   // Sends the connection close packet to the peer. |ack_mode| determines
@@ -807,7 +853,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Notify various components(SendPacketManager, Session etc.) that this
   // connection has been migrated.
-  void OnConnectionMigration(AddressChangeType addr_change_type);
+  virtual void OnConnectionMigration(AddressChangeType addr_change_type);
 
   // Return whether the packet being processed is a connectivity probing.
   // A packet is a connectivity probing if it is a padded ping packet with self
@@ -929,8 +975,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void CheckIfApplicationLimited();
 
   // Sets |current_packet_content_| to |type| if applicable. And
-  // starts peer miration if current packet is confirmed not a connectivity
-  // probe and |current_peer_migration_type_| indicates peer address change.
+  // starts effective peer miration if current packet is confirmed not a
+  // connectivity probe and |current_effective_peer_migration_type_| indicates
+  // effective peer address change.
   void UpdatePacketContent(PacketContent type);
 
   // Enables session decide what to write based on version and flags.
@@ -949,7 +996,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Caches the current peer migration type if a peer migration might be
   // initiated. As soon as the current packet is confirmed not a connectivity
   // probe, peer migration will start.
+  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy is
+  // deprecated.
   AddressChangeType current_peer_migration_type_;
+  // Caches the current effective peer migration type if a effective peer
+  // migration might be initiated. As soon as the current packet is confirmed
+  // not a connectivity probe, effective peer migration will start.
+  AddressChangeType current_effective_peer_migration_type_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
   QuicAlarmFactory* alarm_factory_;        // Not owned.
   PerPacketOptions* per_packet_options_;   // Not owned.
@@ -963,16 +1016,37 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   const QuicConnectionId connection_id_;
   // Address on the last successfully processed packet received from the
-  // client.
+  // direct peer.
   QuicSocketAddress self_address_;
   QuicSocketAddress peer_address_;
 
+  QuicSocketAddress direct_peer_address_;
+  // Address of the endpoint behind the proxy if the connection is proxied.
+  // Otherwise it is the same as |peer_address_|.
+  // NOTE: Currently |effective_peer_address_| and |peer_address_| are always
+  // the same(the address of the direct peer), but soon we'll change
+  // |effective_peer_address_| to be the address of the endpoint behind the
+  // proxy if the connection is proxied.
+  QuicSocketAddress effective_peer_address_;
+
   // Records change type when the peer initiates migration to a new peer
   // address. Reset to NO_CHANGE after peer migration is validated.
+  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy is
+  // deprecated.
   AddressChangeType active_peer_migration_type_;
 
   // Records highest sent packet number when peer migration is started.
+  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy is
+  // deprecated.
   QuicPacketNumber highest_packet_sent_before_peer_migration_;
+
+  // Records change type when the effective peer initiates migration to a new
+  // address. Reset to NO_CHANGE after effective peer migration is validated.
+  AddressChangeType active_effective_peer_migration_type_;
+
+  // Records highest sent packet number when effective peer migration is
+  // started.
+  QuicPacketNumber highest_packet_sent_before_effective_peer_migration_;
 
   // True if the last packet has gotten far enough in the framer to be
   // decrypted.
@@ -1227,6 +1301,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of
   // quic_reloadable_flag_quic_path_degrading_alarm
   const bool use_path_degrading_alarm_;
+
+  // Latched value of quic_reloadable_flag_quic_enable_server_proxy.
+  const bool enable_server_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
