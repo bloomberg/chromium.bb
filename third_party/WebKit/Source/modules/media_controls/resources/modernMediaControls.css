@@ -657,3 +657,26 @@ video::-internal-media-controls-scrubbing-message {
 .state-scrubbing input[pseudo="-webkit-media-controls-overlay-play-button" i] {
   display: none;
 }
+
+/**
+ * VR styling.
+ */
+@media (immersive) {
+  video::-webkit-media-controls-timeline,
+  video::-internal-media-controls-button-panel {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+  /* Timeline sizing does not include padding in max width. */
+  video::-webkit-media-controls-timeline {
+    max-width: 704px;
+  }
+  /* Button panel sizing does include padding in max width. */
+  video::-internal-media-controls-button-panel {
+    max-width: 800px; /* 704px + 96px padding. */
+  }
+
+  video::-webkit-media-controls-panel {
+    text-align: -webkit-center;
+  }
+}
