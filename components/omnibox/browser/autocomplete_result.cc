@@ -99,11 +99,9 @@ void AutocompleteResult::CopyOldMatches(
 void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
                                        const ACMatches& matches) {
   for (const auto& i : matches) {
-#ifndef NDEBUG
     DCHECK_EQ(AutocompleteMatch::SanitizeString(i.contents), i.contents);
     DCHECK_EQ(AutocompleteMatch::SanitizeString(i.description),
               i.description);
-#endif
     matches_.push_back(i);
     if (!AutocompleteMatch::IsSearchType(i.type)) {
       const OmniboxFieldTrial::EmphasizeTitlesCondition condition(
@@ -314,12 +312,12 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   alternate_nav_url_ = rhs.alternate_nav_url_;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void AutocompleteResult::Validate() const {
   for (const_iterator i(begin()); i != end(); ++i)
     i->Validate();
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 // static
 GURL AutocompleteResult::ComputeAlternateNavUrl(

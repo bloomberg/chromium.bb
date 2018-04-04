@@ -482,9 +482,9 @@ TEST_F(HistoryQuickProviderTest, ContentsClass) {
                             "82.A7.E3.83.AB.E3.82.B5.E3.82.A4.E3.83.A6.E4.BD."
                             "93.E5.88.B6"),
           base::string16());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   ac_matches()[0].Validate();
-#endif
+#endif  // DCHECK_IS_ON();
   // Verify that contents_class divides the string in the right places.
   // [22, 24) is the "第二".  All the other pairs are the "e3".
   ACMatchClassifications contents_class(ac_matches()[0].contents_class);

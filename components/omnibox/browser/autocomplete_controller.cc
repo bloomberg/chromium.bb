@@ -509,9 +509,9 @@ void AutocompleteController::UpdateResult(
 
   // Need to validate before invoking CopyOldMatches as the old matches are not
   // valid against the current input.
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   result_.Validate();
-#endif
+#endif  // DCHECK_IS_ON()
 
   if (!done_) {
     // This conditional needs to match the conditional in Start that invokes

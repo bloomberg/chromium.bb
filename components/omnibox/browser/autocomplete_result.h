@@ -92,10 +92,10 @@ class AutocompleteResult {
   // operator=() by another name.
   void CopyFrom(const AutocompleteResult& rhs);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   // Does a data integrity check on this result.
   void Validate() const;
-#endif
+#endif  // DCHECK_IS_ON()
 
   // Compute the "alternate navigation URL" for a given match. This is obtained
   // by interpreting the user input directly as a URL. See comments on

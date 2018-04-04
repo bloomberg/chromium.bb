@@ -465,7 +465,7 @@ struct AutocompleteMatch {
   // ensure if a match is deleted, the duplicates are deleted as well.
   std::vector<AutocompleteMatch> duplicate_matches;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   // Does a data integrity check on this match.
   void Validate() const;
 
@@ -473,7 +473,7 @@ struct AutocompleteMatch {
   void ValidateClassifications(
       const base::string16& text,
       const ACMatchClassifications& classifications) const;
-#endif
+#endif  // DCHECK_IS_ON()
 };
 
 typedef AutocompleteMatch::ACMatchClassification ACMatchClassification;
