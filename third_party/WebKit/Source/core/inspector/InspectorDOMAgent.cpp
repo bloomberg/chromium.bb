@@ -1658,6 +1658,12 @@ std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
 InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
       distributed_nodes = protocol::Array<protocol::DOM::BackendNode>::create();
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+    // TODO(hayato): Support distributed_nodes for IncrementalShadowDOM.
+    // We might use HTMLSlotElement::flat_tree_children here, however, we don't
+    // want to expose it, as of now.
+    return distributed_nodes;
+  }
   for (Node* node = slot_element->FirstDistributedNode(); node;
        node = slot_element->DistributedNodeNextTo(*node)) {
     if (IsWhitespace(node))
