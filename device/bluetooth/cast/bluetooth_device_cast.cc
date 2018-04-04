@@ -6,7 +6,11 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "chromecast/device/bluetooth/bluetooth_util.h"
+#include "chromecast/device/bluetooth/le/remote_characteristic.h"
+#include "chromecast/device/bluetooth/le/remote_service.h"
+#include "device/bluetooth/cast/bluetooth_remote_gatt_characteristic_cast.h"
+#include "device/bluetooth/cast/bluetooth_remote_gatt_service_cast.h"
+#include "device/bluetooth/cast/bluetooth_utils.h"
 
 namespace device {
 namespace {
@@ -52,8 +56,7 @@ BluetoothDeviceCast::BluetoothDeviceCast(
     scoped_refptr<chromecast::bluetooth::RemoteDevice> device)
     : BluetoothDevice(adapter),
       remote_device_(std::move(device)),
-      address_(CanonicalizeAddress(
-          chromecast::bluetooth::util::AddrToString(remote_device_->addr()))),
+      address_(GetCanonicalBluetoothAddress(remote_device_->addr())),
       weak_factory_(this) {}
 
 BluetoothDeviceCast::~BluetoothDeviceCast() {}
@@ -257,20 +260,84 @@ bool BluetoothDeviceCast::UpdateWithScanResult(
 
 bool BluetoothDeviceCast::SetConnected(bool connected) {
   DVLOG(2) << __func__ << " connected: " << connected;
-  bool changed = false;
-  if (!connected_ && connected) {
+  bool was_connected = connected_;
+
+  // Set the new state *before* calling the protected methods below. They may
+  // synchronously query the state of the device.
+  connected_ = connected;
+
+  // Update state in the base class. This will cause pending callbacks to be
+  // fired.
+  if (!was_connected && connected) {
     DidConnectGatt();
-    changed = true;
-  } else if (connected_ && !connected) {
+  } else if (was_connected && !connected) {
     DidDisconnectGatt();
+  }
+
+  // Return true if the value of |connected_| changed.
+  return was_connected != connected;
+}
+
+bool BluetoothDeviceCast::UpdateServices(
+    std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>> services) {
+  DVLOG(2) << __func__;
+  bool changed = false;
+
+  // Create a look-up for the updated list of services.
+  std::unordered_set<std::string> new_service_uuids;
+  for (const auto& service : services)
+    new_service_uuids.insert(GetCanonicalBluetoothUuid(service->uuid()));
+
+  // Remove any services in |gatt_services_| that are not present in |services|.
+  for (auto it = gatt_services_.cbegin(); it != gatt_services_.cend();) {
+    if (new_service_uuids.find(it->first) == new_service_uuids.end()) {
+      gatt_services_.erase(it++);
+      changed = true;
+    } else {
+      ++it;
+    }
+  }
+
+  // Add new services.
+  for (auto& service : services) {
+    auto key = GetCanonicalBluetoothUuid(service->uuid());
+
+    if (gatt_services_.find(key) != gatt_services_.end())
+      continue;
+
+    auto cast_service = std::make_unique<BluetoothRemoteGattServiceCast>(
+        this, std::move(service));
+    DCHECK_EQ(key, cast_service->GetIdentifier());
+    gatt_services_[key] = std::move(cast_service);
     changed = true;
   }
 
-  connected_ = connected;
   return changed;
 }
 
+bool BluetoothDeviceCast::UpdateCharacteristicValue(
+    scoped_refptr<chromecast::bluetooth::RemoteCharacteristic> characteristic,
+    std::vector<uint8_t> value,
+    OnValueUpdatedCallback callback) {
+  auto uuid = UuidToBluetoothUUID(characteristic->uuid());
+  // TODO(slan): Consider using a look-up to find characteristics instead. This
+  // approach could be inefficient if a device has a lot of characteristics.
+  for (const auto& it : gatt_services_) {
+    for (auto* c : it.second->GetCharacteristics()) {
+      if (c->GetUUID() == uuid) {
+        static_cast<BluetoothRemoteGattCharacteristicCast*>(c)->SetValue(value);
+        std::move(callback).Run(c, value);
+        return true;
+      }
+    }
+  }
+  LOG(WARNING) << GetAddress() << " does not have a service with "
+               << " characteristic " << uuid.canonical_value();
+  return false;
+}
+
 void BluetoothDeviceCast::CreateGattConnectionImpl() {
+  DVLOG(2) << __func__ << " " << pending_connect_;
   if (pending_connect_)
     return;
   pending_connect_ = true;
@@ -279,6 +346,7 @@ void BluetoothDeviceCast::CreateGattConnectionImpl() {
 }
 
 void BluetoothDeviceCast::DisconnectGatt() {
+  DVLOG(2) << __func__ << " pending:" << pending_disconnect_;
   if (pending_disconnect_)
     return;
   pending_disconnect_ = true;
@@ -287,6 +355,7 @@ void BluetoothDeviceCast::DisconnectGatt() {
 }
 
 void BluetoothDeviceCast::OnConnect(bool success) {
+  DVLOG(2) << __func__ << " success:" << success;
   pending_connect_ = false;
   if (success)
     SetConnected(true);
@@ -295,6 +364,7 @@ void BluetoothDeviceCast::OnConnect(bool success) {
 }
 
 void BluetoothDeviceCast::OnDisconnect(bool success) {
+  DVLOG(2) << __func__ << " success:" << success;
   pending_disconnect_ = false;
   if (success)
     SetConnected(false);

@@ -25,6 +25,10 @@ namespace breakpad {
 class CrashHandlerHostLinux;
 }
 
+namespace device {
+class BluetoothAdapterCast;
+}
+
 namespace metrics {
 class MetricsService;
 }
@@ -95,6 +99,14 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory() override;
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   media::MediaCapsImpl* media_caps();
+
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+  // Create a BluetoothAdapter for WebBluetooth support.
+  // TODO(slan): This further couples the browser to the Cast service. Remove
+  // this once the dedicated Bluetooth service has been implemented.
+  // (b/76155468)
+  virtual base::WeakPtr<device::BluetoothAdapterCast> CreateBluetoothAdapter();
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
   // Invoked when the metrics client ID changes.
   virtual void SetMetricsClientId(const std::string& client_id);

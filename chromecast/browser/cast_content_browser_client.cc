@@ -249,6 +249,14 @@ media::MediaCapsImpl* CastContentBrowserClient::media_caps() {
   return cast_browser_main_parts_->media_caps();
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+base::WeakPtr<device::BluetoothAdapterCast>
+CastContentBrowserClient::CreateBluetoothAdapter() {
+  NOTREACHED() << "Bluetooth Adapter is not supported!";
+  return nullptr;
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+
 void CastContentBrowserClient::SetMetricsClientId(
     const std::string& client_id) {}
 

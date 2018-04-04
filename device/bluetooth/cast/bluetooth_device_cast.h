@@ -97,6 +97,26 @@ class BluetoothDeviceCast : public BluetoothDevice {
   // connection state changed as a result.
   bool SetConnected(bool connected);
 
+  // Called by BluetoothAdapterCast when the GATT services for this device are
+  // updated. Updates the services in this devices to reflect |services|.
+  // Returns true if a service was added or removed.
+  bool UpdateServices(
+      std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>>
+          services);
+
+  // Called by BluetoothAdapterCast when the value of a characteristic in one of
+  // this device's services has changed, resulting in a notification to the
+  // device. Locate the characteristc and update the underluing value. If the
+  // value is updated, run |callback| synchronously. Return true if that value
+  // changed.
+  using OnValueUpdatedCallback =
+      base::OnceCallback<void(BluetoothRemoteGattCharacteristic*,
+                              const std::vector<uint8_t>&)>;
+  bool UpdateCharacteristicValue(
+      scoped_refptr<chromecast::bluetooth::RemoteCharacteristic> characteristic,
+      std::vector<uint8_t> value,
+      OnValueUpdatedCallback callback);
+
  private:
   // Implements platform specific operations to initiate a GATT connection.
   // Subclasses must also call DidConnectGatt, DidFailToConnectGatt, or

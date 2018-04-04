@@ -56,7 +56,7 @@ class BluetoothRemoteGattCharacteristicCast
 
   // Called by BluetoothAdapterCast to set the value when a new notification
   // comes in.
-  void SetValue(const std::vector<uint8_t>& value) { value_ = value; }
+  void SetValue(std::vector<uint8_t> value) { value_ = std::move(value); }
 
  private:
   // BluetoothRemoteGattCharacteristic implementation:

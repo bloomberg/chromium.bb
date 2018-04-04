@@ -6,26 +6,26 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager.h"
 #include "chromecast/device/bluetooth/le/le_scan_manager.h"
+#include "chromecast/device/bluetooth/le/remote_characteristic.h"
 #include "chromecast/device/bluetooth/le/remote_device.h"
+#include "chromecast/device/bluetooth/le/remote_service.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/cast/bluetooth_device_cast.h"
+#include "device/bluetooth/cast/bluetooth_utils.h"
 
 namespace device {
 namespace {
 
-// The classes in //device/bluetooth expect addresses to be in the canonical
-// format: "AA:BB:CC:DD:EE:FF". Use this utility whenever an address from the
-// Cast stack is converted.
-std::string GetCanonicalAddress(
-    const chromecast::bluetooth_v2_shlib::Addr& addr) {
-  return BluetoothDevice::CanonicalizeAddress(
-      chromecast::bluetooth::util::AddrToString(addr));
+BluetoothAdapterCast::FactoryCb& GetFactory() {
+  static base::NoDestructor<BluetoothAdapterCast::FactoryCb> factory_cb;
+  return *factory_cb;
 }
 
 }  // namespace
@@ -201,13 +201,18 @@ void BluetoothAdapterCast::RemovePairingDelegateInternal(
   NOTIMPLEMENTED();
 }
 
+base::WeakPtr<BluetoothAdapterCast> BluetoothAdapterCast::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
+
 void BluetoothAdapterCast::OnConnectChanged(
     scoped_refptr<chromecast::bluetooth::RemoteDevice> device,
     bool connected) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto address = GetCanonicalAddress(device->addr());
-  VLOG(1) << __func__ << " " << address << " connected: " << connected;
+  std::string address = GetCanonicalBluetoothAddress(device->addr());
+  DVLOG(1) << __func__ << " " << address << " connected: " << connected;
 
   // This method could be called before this device is detected in a scan and
   // GetDevice() is called. Add it if needed.
@@ -223,19 +228,26 @@ void BluetoothAdapterCast::OnMtuChanged(
     int mtu) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DVLOG(3) << __func__ << " " << GetCanonicalAddress(device->addr())
+  DVLOG(3) << __func__ << " " << GetCanonicalBluetoothAddress(device->addr())
            << " mtu: " << mtu;
 }
 
 void BluetoothAdapterCast::OnServicesUpdated(
     scoped_refptr<chromecast::bluetooth::RemoteDevice> device,
     std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>> services) {
+  DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto it = devices_.find(GetCanonicalAddress(device->addr()));
-  if (it == devices_.end())
+  std::string address = GetCanonicalBluetoothAddress(device->addr());
+  BluetoothDeviceCast* cast_device = GetCastDevice(address);
+  if (!cast_device)
     return;
-  it->second->SetGattServicesDiscoveryComplete(true);
+
+  if (!cast_device->UpdateServices(services))
+    LOG(WARNING) << "The services were not updated. Alerting anyway.";
+
+  cast_device->SetGattServicesDiscoveryComplete(true);
+  NotifyGattServicesDiscovered(cast_device);
 }
 
 void BluetoothAdapterCast::OnCharacteristicNotification(
@@ -244,20 +256,23 @@ void BluetoothAdapterCast::OnCharacteristicNotification(
     std::vector<uint8_t> value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DVLOG(1) << __func__ << " " << GetCanonicalAddress(device->addr())
-           << " updated.";
+  std::string address = GetCanonicalBluetoothAddress(device->addr());
+  BluetoothDeviceCast* cast_device = GetCastDevice(address);
+  if (!cast_device)
+    return;
 
-  // TODO(slan): Add an Observer interface to RemoteCharacteristc so this can be
-  // wired directly to the BluetoothRemoteGattCharacteristicCast proxy, rather
-  // than by performing a search of the services on device for |characteristc|.
-  NOTIMPLEMENTED();
+  cast_device->UpdateCharacteristicValue(
+      std::move(characteristic), std::move(value),
+      base::BindOnce(
+          &BluetoothAdapterCast::NotifyGattCharacteristicValueChanged,
+          weak_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterCast::OnNewScanResult(
     chromecast::bluetooth::LeScanManager::ScanResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto address = GetCanonicalAddress(result.addr);
+  std::string address = GetCanonicalBluetoothAddress(result.addr);
 
   // If we haven't created a BluetoothDeviceCast for this address yet, we need
   // to send an async request to |gatt_client_manager_| for a handle to the
@@ -300,7 +315,10 @@ void BluetoothAdapterCast::OnScanEnableChanged(bool enabled) {
 
 BluetoothDeviceCast* BluetoothAdapterCast::GetCastDevice(
     const std::string& address) {
-  return static_cast<BluetoothDeviceCast*>(devices_[address].get());
+  auto it = devices_.find(address);
+  return it == devices_.end()
+             ? nullptr
+             : static_cast<BluetoothDeviceCast*>(it->second.get());
 }
 
 void BluetoothAdapterCast::AddDevice(
@@ -309,7 +327,7 @@ void BluetoothAdapterCast::AddDevice(
 
   // This method should not be called if we already have a BluetoothDeviceCast
   // registered for this device.
-  auto address = GetCanonicalAddress(remote_device->addr());
+  std::string address = GetCanonicalBluetoothAddress(remote_device->addr());
   DCHECK(devices_.find(address) == devices_.end());
 
   devices_[address] =
@@ -346,7 +364,7 @@ void BluetoothAdapterCast::OnGetDevice(
     scoped_refptr<chromecast::bluetooth::RemoteDevice> remote_device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto address = GetCanonicalAddress(remote_device->addr());
+  std::string address = GetCanonicalBluetoothAddress(remote_device->addr());
 
   // This callback could run before or after the device becomes connected and
   // OnConnectChanged() is called for a particular device. If that happened,
@@ -384,17 +402,23 @@ void BluetoothAdapterCast::InitializeAsynchronously(InitCallback callback) {
 }
 
 // static
+void BluetoothAdapterCast::SetFactory(FactoryCb factory_cb) {
+  FactoryCb& factory = GetFactory();
+  DCHECK(!factory);
+  factory = std::move(factory_cb);
+}
+
+// static
+void BluetoothAdapterCast::ResetFactoryForTest() {
+  GetFactory().Reset();
+}
+
+// static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapterCast::Create(
     InitCallback callback) {
-  // TODO(slan): We need to figure out how to get these classes properly.
-  chromecast::bluetooth::GattClientManager* gatt_client_manager = nullptr;
-  chromecast::bluetooth::LeScanManager* le_scan_manager = nullptr;
-
-  // TODO(slan): Consider life-cycle management. Currently this just leaks.
-  auto* adapter =
-      new BluetoothAdapterCast(gatt_client_manager, le_scan_manager);
-  base::WeakPtr<BluetoothAdapterCast> weak_ptr =
-      adapter->weak_factory_.GetWeakPtr();
+  FactoryCb& factory = GetFactory();
+  DCHECK(factory) << "SetFactory() must be called before this method!";
+  base::WeakPtr<BluetoothAdapterCast> weak_ptr = factory.Run();
 
   // BluetoothAdapterFactory assumes that |init_callback| will be called
   // asynchronously the first time, and that IsInitialized() will return false.

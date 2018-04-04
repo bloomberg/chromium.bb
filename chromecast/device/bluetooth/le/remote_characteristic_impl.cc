@@ -119,8 +119,11 @@ void RemoteCharacteristicImpl::SetRegisterNotification(bool enable,
 
   auto it = uuid_to_descriptor_.find(RemoteDescriptor::kCccdUuid);
   if (it == uuid_to_descriptor_.end()) {
-    LOG(ERROR) << "No CCCD found";
-    EXEC_CB_AND_RET(cb, false);
+    // If there is no CCCD on the remote characteristic, this is unusual, but
+    // not something that we can necessarily help. Log a warning and return
+    // success.
+    LOG(WARNING) << "No CCCD found on the remote characteristic.";
+    EXEC_CB_AND_RET(cb, true);
   }
 
   it->second->WriteAuth(bluetooth_v2_shlib::Gatt::Client::AUTH_REQ_NONE,

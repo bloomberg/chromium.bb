@@ -127,6 +127,7 @@ cast_source_set("browser") {
     "//content/public/common",
     "//content/public/common:service_names",
     "//content/public/utility",
+    "//device/bluetooth",
     "//device/geolocation",
     "//gpu",
     "//ipc",
