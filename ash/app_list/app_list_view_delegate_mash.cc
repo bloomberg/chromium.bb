@@ -59,8 +59,8 @@ void AppListViewDelegateMash::OpenSearchResult(const std::string& result_id,
       UMA_HISTOGRAM_COUNTS_100(app_list::kSearchResultDistanceFromOrigin,
                                result->distance_from_origin());
     }
-    owner_->OpenSearchResult(result_id, event_flags);
   }
+  owner_->OpenSearchResult(result_id, event_flags);
 }
 
 void AppListViewDelegateMash::InvokeSearchResultAction(
