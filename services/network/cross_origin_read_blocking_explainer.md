@@ -682,8 +682,9 @@ In the future CORB may be extended to protect additional resources as follows:
   This would make it possible to CORB-protect resources like
   images or JavaScript (including JSONP).
 
-> [lukasza@chromium.org] TODO: Is there an existing HTTP response header
-> that may be used in this context?
+> [lukasza@chromium.org] Currently considered CORB opt-in signals include:
+> - `From-Origin:` header - https://github.com/whatwg/fetch/issues/687
+> - `Isolate-Me` header - https://github.com/WICG/isolation
 
 ## Appendix: Early attempt to codify CORB algorithm
 
