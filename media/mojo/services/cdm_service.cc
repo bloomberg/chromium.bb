@@ -67,17 +67,13 @@ class CdmFactoryImpl : public mojom::CdmFactory {
       : client_(client),
         interfaces_(std::move(interfaces)),
         connection_ref_(std::make_unique<DelayedReleaseServiceContextRef>(
-            std::move(connection_ref))) {
-    DVLOG(1) << __func__;
-  }
+            std::move(connection_ref))) {}
 
-  ~CdmFactoryImpl() final { DVLOG(1) << __func__; }
+  ~CdmFactoryImpl() final {}
 
   // mojom::CdmFactory implementation.
   void CreateCdm(const std::string& key_system,
                  mojom::ContentDecryptionModuleRequest request) final {
-    DVLOG(2) << __func__;
-
     auto* cdm_factory = GetCdmFactory();
     if (!cdm_factory)
       return;
@@ -114,15 +110,12 @@ class CdmFactoryImpl : public mojom::CdmFactory {
 
 CdmService::CdmService(std::unique_ptr<Client> client)
     : client_(std::move(client)) {
-  DVLOG(1) << __func__;
   DCHECK(client_);
   registry_.AddInterface<mojom::CdmService>(
       base::BindRepeating(&CdmService::Create, base::Unretained(this)));
 }
 
-CdmService::~CdmService() {
-  DVLOG(1) << __func__;
-}
+CdmService::~CdmService() = default;
 
 void CdmService::OnStart() {
   DVLOG(1) << __func__;
@@ -189,9 +182,11 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   std::vector<CdmHostFilePath> cdm_host_file_paths;
   client_->AddCdmHostFilePaths(&cdm_host_file_paths);
-  bool success = instance->Initialize(cdm_path, cdm_host_file_paths);
+  if (!instance->Initialize(cdm_path, cdm_host_file_paths))
+    return;
 #else
-  bool success = instance->Initialize(cdm_path);
+  if (!instance->Initialize(cdm_path))
+    return;
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
   // This may trigger the sandbox to be sealed.
@@ -203,8 +198,7 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
 #endif  // defined(OS_MACOSX)
 
   // Always called within the sandbox.
-  if (success)
-    instance->InitializeCdmModule();
+  instance->InitializeCdmModule();
 }
 
 void CdmService::CreateCdmFactory(
