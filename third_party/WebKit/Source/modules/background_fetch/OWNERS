@@ -1,5 +1,8 @@
 peter@chromium.org
 
+per-file *_type_converter*.*=set noparent
+per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
+# TODO(tkent): Remove per-file lines for CamelCase patterns.
 per-file *TypeConverter*.*=set noparent
 per-file *TypeConverter*.*=file://ipc/SECURITY_OWNERS
 

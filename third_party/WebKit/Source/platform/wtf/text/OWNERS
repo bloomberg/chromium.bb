@@ -1,3 +1,9 @@
+per-file character_names.h=drott@chromium.org
+per-file text_codec*.*=jsbell@chromium.org
+per-file text_codec*.*=jshin@chromium.org
+per-file text_encoding*.*=jshin@chromium.org
+per-file text_encoding*.*=jshin@chromium.org
+# TODO(tkent): Remove per-file lines for CamelCase patterns.
 per-file CharacterNames.h=drott@chromium.org
 per-file TextCodec*.*=jsbell@chromium.org
 per-file TextCodec*.*=jshin@chromium.org

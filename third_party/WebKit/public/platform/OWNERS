@@ -5,10 +5,18 @@ per-file *.mojom=file://ipc/SECURITY_OWNERS
 # review, but you should add a security team OWNER if you are changing others.
 per-file web_feature.mojom=file://third_party/WebKit/Source/core/OWNERS
 
+per-file *_enum_traits*.*=set noparent
+per-file *_enum_traits*.*=file://ipc/SECURITY_OWNERS
+per-file *_struct_traits*.*=set noparent
+per-file *_struct_traits*.*=file://ipc/SECURITY_OWNERS
+# TODO(tkent): Remove per-file lines for CamelCase patterns.
 per-file *EnumTraits*.*=set noparent
 per-file *EnumTraits*.*=file://ipc/SECURITY_OWNERS
 per-file *StructTraits*.*=set noparent
 per-file *StructTraits*.*=file://ipc/SECURITY_OWNERS
 per-file *.typemap=set noparent
 per-file *.typemap=file://ipc/SECURITY_OWNERS
+
+per-file web_rtc_*=hbos@chromium.org
+# TODO(tkent): Remove a per-file line for a CamelCase pattern.
 per-file WebRTC*=hbos@chromium.org

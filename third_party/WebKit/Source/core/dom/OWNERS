@@ -1,6 +1,9 @@
 hayato@chromium.org
 tkent@chromium.org
 
+per-file *_struct_traits*.*=set noparent
+per-file *_struct_traits*.*=file://ipc/SECURITY_OWNERS
+# TODO(tkent): Remove per-file lines for CamelCase patterns.
 per-file *StructTraits*.*=set noparent
 per-file *StructTraits*.*=file://ipc/SECURITY_OWNERS
 per-file *.typemap=set noparent
