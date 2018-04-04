@@ -104,8 +104,6 @@ source_set("content_suggestions_ui") {
     "content_suggestions_header_view_controller_delegate.h",
     "content_suggestions_layout.h",
     "content_suggestions_layout.mm",
-    "content_suggestions_layout_handset.h",
-    "content_suggestions_layout_handset.mm",
     "content_suggestions_metrics_recording.h",
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",

@@ -143,7 +143,7 @@ CGFloat centeredTilesMarginForWidth(CGFloat width) {
 }
 
 CGFloat doodleHeight(BOOL logoIsShowing) {
-  if (!IsIPadIdiom() && !logoIsShowing)
+  if (!IsRegularXRegularSizeClass() && !logoIsShowing)
     return kNonGoogleSearchDoodleHeight;
 
   return kGoogleSearchDoodleHeight;
@@ -189,7 +189,7 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
   CGFloat headerHeight = doodleTopMargin(toolbarPresent) +
                          doodleHeight(logoIsShowing) + searchFieldTopMargin() +
                          kSearchFieldHeight + kNTPSearchFieldBottomPadding;
-  if (!IsIPadIdiom()) {
+  if (!IsRegularXRegularSizeClass()) {
     return headerHeight;
   }
   if (!logoIsShowing) {
@@ -271,6 +271,19 @@ UIView* nearestAncestor(UIView* view, Class aClass) {
     return view;
   }
   return nearestAncestor([view superview], aClass);
+}
+
+// Content suggestion dupliations of uikit_ui_util to allow wrapping behind
+// the refresh flag.  Post refresh remove these helpers and just check
+// IsRxRSC instead.
+BOOL IsRegularXRegularSizeClass(id<UITraitEnvironment> environment) {
+  return IsUIRefreshPhase1Enabled() ? ::IsRegularXRegularSizeClass(environment)
+                                    : IsIPadIdiom();
+}
+
+BOOL IsRegularXRegularSizeClass() {
+  return IsUIRefreshPhase1Enabled() ? ::IsRegularXRegularSizeClass()
+                                    : IsIPadIdiom();
 }
 
 }  // namespace content_suggestions

@@ -60,6 +60,11 @@ const CGFloat kSearchIconLeftMargin = 9;
   return self;
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  self.toolBarView.hidden = IsRegularXRegularSizeClass(self);
+}
+
 #pragma mark - NTPHeaderViewAdapter
 
 - (void)addToolbarView:(UIView*)toolbarView {
@@ -180,10 +185,11 @@ const CGFloat kSearchIconLeftMargin = 9;
 
   CGFloat percent =
       [self searchFieldProgressForOffset:offset safeAreaInsets:safeAreaInsets];
-  if (self.cr_widthSizeClass == REGULAR && self.cr_heightSizeClass == REGULAR) {
+  if (IsRegularXRegularSizeClass(self)) {
     self.alpha = 1 - percent;
     widthConstraint.constant = searchFieldNormalWidth;
     hintLabelWidthConstraint.active = NO;
+    self.blurTopConstraint.constant = 0;
     return;
   } else {
     hintLabelWidthConstraint.active = YES;

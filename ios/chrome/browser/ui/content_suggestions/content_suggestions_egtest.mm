@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
+#include "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
@@ -486,7 +487,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   // Test that the omnibox is visible and taking full width, before any scroll
   // happen on iPhone.
-  if (!IsIPadIdiom()) {
+  if (!content_suggestions::IsRegularXRegularSizeClass()) {
     CGFloat collectionWidth = ntp_home::CollectionView().bounds.size.width;
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityID(
@@ -542,7 +543,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   [CellWithMatcher(grey_accessibilityID(title)) performAction:grey_longPress()];
 
-  if (!IsIPadIdiom()) {
+  if (!content_suggestions::IsRegularXRegularSizeClass()) {
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::ButtonWithAccessibilityLabelId(
                        IDS_APP_CANCEL)] assertWithMatcher:grey_interactable()];
@@ -772,7 +773,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)testMostVisitedLongPress {
   [self setupMostVisitedTileLongPress];
 
-  if (!IsIPadIdiom()) {
+  if (!content_suggestions::IsRegularXRegularSizeClass()) {
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::ButtonWithAccessibilityLabelId(
                        IDS_APP_CANCEL)] assertWithMatcher:grey_interactable()];

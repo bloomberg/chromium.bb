@@ -8,7 +8,9 @@
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MDCCollectionViewFlowLayout.h"
 
 // Layout used for ContentSuggestions. It makes sure the collection is high
-// enough to be scrolled up to the point the fake omnibox is hidden.
+// enough to be scrolled up to the point the fake omnibox is hidden. For size
+// classes other than RegularXRegular, this layout makes sure the fake omnibox
+// is pinned to the top of the collection.
 @interface ContentSuggestionsLayout : MDCCollectionViewFlowLayout
 
 @end

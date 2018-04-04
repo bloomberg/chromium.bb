@@ -55,6 +55,10 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
 // Returns the nearest ancestor of |view| that is kind of |aClass|.
 UIView* nearestAncestor(UIView* view, Class aClass);
 
+// Helper methods to support RxR for UIRefreshPhase1 and IpadIdiom pre-Refresh.
+BOOL IsRegularXRegularSizeClass(id<UITraitEnvironment> environment);
+BOOL IsRegularXRegularSizeClass();
+
 }  // namespace content_suggestions
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UTILS_H_
