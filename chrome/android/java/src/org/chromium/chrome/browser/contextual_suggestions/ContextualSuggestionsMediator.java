@@ -17,6 +17,9 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -37,12 +40,10 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
     private final EnabledStateMonitor mEnabledStateMonitor;
     private final ChromeFullscreenManager mFullscreenManager;
 
-    @Nullable
-    private SnippetsBridge mBridge;
-    @Nullable
-    private FetchHelper mFetchHelper;
-    @Nullable
-    private String mCurrentRequestUrl;
+    private @Nullable SnippetsBridge mBridge;
+    private @Nullable FetchHelper mFetchHelper;
+    private @Nullable String mCurrentRequestUrl;
+    private @Nullable BottomSheetObserver mSheetObserver;
 
     private boolean mDidSuggestionsShowForTab;
 
@@ -82,8 +83,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
                 // the top controls.
                 if (!mDidSuggestionsShowForTab && mModel.hasSuggestions()
                         && areBrowserControlsHidden() && mBridge != null) {
-                    mDidSuggestionsShowForTab = true;
-                    mCoordinator.showSuggestions();
+                    showContentInSheet();
                 }
             }
 
@@ -97,8 +97,17 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
     /** Destroys the mediator. */
     void destroy() {
-        if (mFetchHelper != null) mFetchHelper.destroy();
         mEnabledStateMonitor.destroy();
+
+        if (mFetchHelper != null) {
+            mFetchHelper.destroy();
+            mFetchHelper = null;
+        }
+
+        if (mBridge != null) {
+            mBridge.destroy();
+            mBridge = null;
+        }
     }
 
     /**
@@ -117,11 +126,15 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         } else {
             clearSuggestions();
 
-            mFetchHelper.destroy();
-            mFetchHelper = null;
+            if (mFetchHelper != null) {
+                mFetchHelper.destroy();
+                mFetchHelper = null;
+            }
 
-            mBridge.destroy();
-            mBridge = null;
+            if (mBridge != null) {
+                mBridge.destroy();
+                mBridge = null;
+            }
         }
     }
 
@@ -129,6 +142,8 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
     public void requestSuggestions(String url) {
         mCurrentRequestUrl = url;
         mBridge.fetchContextualSuggestions(url, (suggestions) -> {
+            if (mBridge == null) return;
+
             // Avoiding double fetches causing suggestions for incorrect context.
             if (!TextUtils.equals(url, mCurrentRequestUrl)) return;
 
@@ -137,10 +152,10 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
                     .show();
 
             if (suggestions.size() > 0) {
-                preloadSuggestions(generateClusterList(suggestions), suggestions.get(0).mTitle);
+                preloadContentInSheet(generateClusterList(suggestions), suggestions.get(0).mTitle);
                 // If the controls are already off-screen, show the suggestions immediately so they
                 // are available on reverse scroll.
-                if (areBrowserControlsHidden()) mCoordinator.showSuggestions();
+                if (areBrowserControlsHidden()) showContentInSheet();
             }
         });
     }
@@ -163,15 +178,35 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         mModel.setTitle(null);
         mCoordinator.removeSuggestions();
         mCurrentRequestUrl = "";
+
+        if (mSheetObserver != null) {
+            mCoordinator.removeBottomSheetObserver(mSheetObserver);
+        }
     }
 
-    private void preloadSuggestions(ClusterList clusters, String title) {
+    private void preloadContentInSheet(ClusterList clusters, String title) {
         if (mBridge == null) return;
 
         mModel.setClusterList(clusters);
         mModel.setCloseButtonOnClickListener(view -> { clearSuggestions(); });
         mModel.setTitle(mContext.getString(R.string.contextual_suggestions_toolbar_title, title));
-        mCoordinator.preloadSuggestionsInSheet(mBridge);
+        mCoordinator.preloadContentInSheet();
+    }
+
+    private void showContentInSheet() {
+        mDidSuggestionsShowForTab = true;
+
+        mSheetObserver = new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetOpened(@StateChangeReason int reason) {
+                mCoordinator.showSuggestions(mBridge);
+                mCoordinator.removeBottomSheetObserver(this);
+                mSheetObserver = null;
+            }
+        };
+
+        mCoordinator.addBottomSheetObserver(mSheetObserver);
+        mCoordinator.showContentInSheet();
     }
 
     // TODO(twellington): Remove after clusters are returned from the backend.
