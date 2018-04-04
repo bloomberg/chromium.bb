@@ -93,6 +93,17 @@ const unsigned char kSST210Corrected[] =
     "\x30\x31\x20\x54\x69\x44\x69\x67\x61\x74\x0a\x6c\x00\x00\xff\x00"
     "\x48\x00\x4b\x34\x41\x54\x30\x30\x32\x38\x0a\x38\x20\x20\xf8\x00";
 
+// This EDID produces blue primary coordinates too far off the expected point,
+// which would paint blue colors as purple. See https://crbug.com/809909.
+const unsigned char kBrokenBluePrimaries[] =
+    "\x00\xff\xff\xff\xff\xff\xff\x00\x4c\x83\x4d\x83\x00\x00\x00\x00"
+    "\x00\x19\x01\x04\x95\x1d\x10\x78\x0a\xee\x25\xa3\x54\x4c\x99\x29"
+    "\x26\x50\x54\x00\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
+    "\x01\x01\x01\x01\x01\x01\xd2\x37\x80\xa2\x70\x38\x40\x40\x30\x20"
+    "\x25\x00\x25\xa5\x10\x00\x00\x1a\xa6\x2c\x80\xa2\x70\x38\x40\x40"
+    "\x30\x20\x25\x00\x25\xa5\x10\x00\x00\x1a\x00\x00\x00\xfe\x00\x56"
+    "\x59\x54\x39\x36\x80\x31\x33\x33\x48\x4c\x0a\x20\x00\x00\x00\x00";
+
 }  // anonymous namespace
 
 bool operator==(const ui::DisplayMode_Params& a,
@@ -356,6 +367,14 @@ TEST_F(DrmUtilTest, GetInvalidColorSpaceFromEdid) {
       GetColorSpaceFromEdid(sst210_edid_2);
   EXPECT_FALSE(sst210_color_space_2.IsValid())
       << sst210_color_space_2.ToString();
+
+  const std::vector<uint8_t> broken_blue_edid(
+      kBrokenBluePrimaries,
+      kBrokenBluePrimaries + arraysize(kBrokenBluePrimaries) - 1);
+  const gfx::ColorSpace broken_blue_color_space =
+      GetColorSpaceFromEdid(broken_blue_edid);
+  EXPECT_FALSE(broken_blue_color_space.IsValid())
+      << broken_blue_color_space.ToString();
 }
 
 TEST_F(DrmUtilTest, TestDisplayModesExtraction) {

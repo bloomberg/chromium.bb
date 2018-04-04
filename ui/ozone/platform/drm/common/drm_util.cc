@@ -660,6 +660,19 @@ gfx::ColorSpace GetColorSpaceFromEdid(const std::vector<uint8_t>& edid) {
   if (primaries_area_twice < kBT709PrimariesArea)
     return gfx::ColorSpace();
 
+  // Sanity check: https://crbug.com/809909, the blue primary coordinates should
+  // not be too far left/upwards of the expected location (namely [0.15, 0.06]
+  // for sRGB/ BT.709/ Adobe RGB/ DCI-P3, and [0.131, 0.046] for BT.2020).
+  constexpr float kExpectedBluePrimaryX = 0.15f;
+  constexpr float kBluePrimaryXDelta = 0.02f;
+  constexpr float kExpectedBluePrimaryY = 0.06f;
+  constexpr float kBluePrimaryYDelta = 0.031f;
+  const bool is_blue_primary_broken =
+      (std::abs(primaries.fBX - kExpectedBluePrimaryX) > kBluePrimaryXDelta) ||
+      (std::abs(primaries.fBY - kExpectedBluePrimaryY) > kBluePrimaryYDelta);
+  if (is_blue_primary_broken)
+    return gfx::ColorSpace();
+
   SkMatrix44 color_space_as_matrix;
   if (!primaries.toXYZD50(&color_space_as_matrix))
     return gfx::ColorSpace();
