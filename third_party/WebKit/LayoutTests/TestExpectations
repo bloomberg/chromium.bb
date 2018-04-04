@@ -1531,7 +1531,6 @@ crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-se
 crbug.com/711529 http/tests/origin_trials/sample-api-workers.html [ Crash Timeout ]
 crbug.com/711529 http/tests/permissions/test-api-surface.html [ Timeout ]
 crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
-crbug.com/711529 http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 
 # This test requires enabling the flag CustomUserTiming in a virtual test.
 crbug.com/758385 http/tests/performance-timing/custom-user-timing/po-customusertiming-mark.html [ Skip ]
