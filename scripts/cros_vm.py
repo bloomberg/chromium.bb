@@ -100,6 +100,7 @@ class VM(object):
       # by root.
       error_str = ('VM state dir is misconfigured; please recreate: %s'
                    % self.vm_dir)
+      assert os.path.isdir(self.vm_dir), error_str
       assert not os.path.islink(self.vm_dir), error_str
       st_uid = os.stat(self.vm_dir).st_uid
       assert st_uid == 0 or st_uid == os.getuid(), error_str
@@ -440,11 +441,11 @@ class VM(object):
                         help='Start the VM.')
     parser.add_argument('--stop', action='store_true', default=False,
                         help='Stop the VM.')
-    parser.add_argument('--image-path', type='path',
+    parser.add_argument('--image-path', type=str,
                         help='Path to VM image to launch with --start.')
     parser.add_argument('--image-format', default=VM.IMAGE_FORMAT,
                         help='Format of the VM image (raw, qcow2, ...).')
-    parser.add_argument('--qemu-path', type='path',
+    parser.add_argument('--qemu-path', type=str,
                         help='Path of qemu binary to launch with --start.')
     parser.add_argument('--qemu-m', type=str, default='8G',
                         help='Memory argument that will be passed to qemu.')
@@ -456,7 +457,7 @@ class VM(object):
     parser.add_argument('--qemu-cpu', type=str,
                         default='SandyBridge,-invpcid,-tsc-deadline',
                         help='CPU argument that will be passed to qemu.')
-    parser.add_argument('--qemu-bios-path', type='path',
+    parser.add_argument('--qemu-bios-path', type=str,
                         help='Path of directory with qemu bios files.')
     parser.add_argument('--disable-kvm', dest='enable_kvm',
                         action='store_false', default=True,
@@ -468,7 +469,7 @@ class VM(object):
                         help='ssh port to communicate with VM.')
     sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
     parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
-    parser.add_argument('--vm-dir', type='path',
+    parser.add_argument('--vm-dir', type=str,
                         help='Temp VM directory to use.')
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='dry run for debugging.')
