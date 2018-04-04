@@ -32,6 +32,10 @@
                 "href": "/extensions/content_scripts"
               },
               {
+                "title": "Design User Interface",
+                "href": "/extensions/user_interface"
+              },
+              {
                 "title": "Protect User Privacy",
                 "href": "/extensions/user_privacy"
               },
@@ -299,18 +303,6 @@
               {
                 "title": "What Are Chrome Apps?",
                 "href": "/apps/about_apps"
-              },
-              {
-                "title": "Design User Interface",
-                "href": "/extensions/user_interface"
-              },
-              {
-                "title": "Design User Interface",
-                "href": "/extensions/user_interface"
-              },
-              {
-                "title": "Design User Interface",
-                "href": "/extensions/user_interface"
               },
               {
                 "title": "Extension Quality Guidelines FAQ",
