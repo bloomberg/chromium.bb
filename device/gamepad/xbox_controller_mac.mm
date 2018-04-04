@@ -153,8 +153,8 @@ struct XboxOneRumbleData {
   uint8_t rumble_mask;
   uint8_t trigger_left;
   uint8_t trigger_right;
-  uint8_t weak_magnitude;
   uint8_t strong_magnitude;
+  uint8_t weak_magnitude;
   uint8_t duration;
   uint8_t period;
   uint8_t extra;
@@ -885,8 +885,8 @@ void XboxControllerMac::WriteXboxOneRumble(uint8_t strong_magnitude,
   // Set rumble intensities.
   rumble_data->trigger_left = 0x00;
   rumble_data->trigger_right = 0x00;
-  rumble_data->weak_magnitude = weak_magnitude;
   rumble_data->strong_magnitude = strong_magnitude;
+  rumble_data->weak_magnitude = weak_magnitude;
 
   kern_return_t kr =
       (*interface_)
