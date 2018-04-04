@@ -5,6 +5,8 @@ smcgruer@chromium.org
 alancutter@chromium.org
 ericwilligers@chromium.org
 
+per-file compositor_*=loyso@chromium.org
+# TODO(tkent): Remove a per-file line for a CamelCase pattern.
 per-file Compositor*=loyso@chromium.org
 
 # TEAM: animations-dev@chromium.org

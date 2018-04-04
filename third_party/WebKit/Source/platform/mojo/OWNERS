@@ -1,3 +1,8 @@
+per-file *_mojom_traits*.*=set noparent
+per-file *_mojom_traits*.*=file://ipc/SECURITY_OWNERS
+per-file *_struct_traits*.*=set noparent
+per-file *_struct_traits*.*=file://ipc/SECURITY_OWNERS
+# TODO(tkent): Remove per-file lines for CamelCase patterns.
 per-file *MojomTraits*.*=set noparent
 per-file *MojomTraits*.*=file://ipc/SECURITY_OWNERS
 per-file *StructTraits*.*=set noparent
