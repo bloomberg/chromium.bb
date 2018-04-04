@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 using message_center::MessageCenter;
 using message_center::Notification;
@@ -27,44 +28,6 @@ const char kNotifierScreenShare[] = "ash.screen-share";
 
 namespace {
 
-class ScreenSecurityNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  ScreenSecurityNotificationDelegate(base::OnceClosure stop_callback,
-                                     bool is_capture);
-
-  // message_center::NotificationDelegate overrides:
-  void ButtonClick(int button_index) override;
-
- protected:
-  ~ScreenSecurityNotificationDelegate() override;
-
- private:
-  base::OnceClosure stop_callback_;
-  const bool is_capture_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenSecurityNotificationDelegate);
-};
-
-ScreenSecurityNotificationDelegate::ScreenSecurityNotificationDelegate(
-    base::OnceClosure stop_callback,
-    bool is_capture)
-    : stop_callback_(std::move(stop_callback)), is_capture_(is_capture) {}
-
-ScreenSecurityNotificationDelegate::~ScreenSecurityNotificationDelegate() =
-    default;
-
-void ScreenSecurityNotificationDelegate::ButtonClick(int button_index) {
-  DCHECK_EQ(0, button_index);
-  if (stop_callback_.is_null())
-    return;
-  std::move(stop_callback_).Run();
-  if (is_capture_) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
-  }
-}
-
 void CreateNotification(base::OnceClosure stop_callback,
                         const base::string16& message,
                         bool is_capture) {
@@ -72,6 +35,25 @@ void CreateNotification(base::OnceClosure stop_callback,
   data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
       is_capture ? IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP
                  : IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
+
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(
+              [](base::OnceClosure stop_callback, bool is_capture,
+                 base::Optional<int> button_index) {
+                if (!button_index || stop_callback.is_null())
+                  return;
+
+                DCHECK_EQ(0, *button_index);
+
+                std::move(stop_callback).Run();
+                if (is_capture) {
+                  Shell::Get()->metrics()->RecordUserMetricsAction(
+                      UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
+                }
+              },
+              base::Passed(&stop_callback), is_capture));
+
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -82,10 +64,7 @@ void CreateNotification(base::OnceClosure stop_callback,
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               is_capture ? kNotifierScreenCapture : kNotifierScreenShare),
-          data,
-          new ScreenSecurityNotificationDelegate(std::move(stop_callback),
-                                                 is_capture),
-          kNotificationScreenshareIcon,
+          data, std::move(delegate), kNotificationScreenshareIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   if (features::IsSystemTrayUnifiedEnabled())

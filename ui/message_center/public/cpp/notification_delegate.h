@@ -21,22 +21,19 @@ namespace message_center {
 // Handles actions performed on a notification.
 class MESSAGE_CENTER_PUBLIC_EXPORT NotificationObserver {
  public:
-  // To be called when the desktop notification is closed.  If closed by a
-  // user explicitly (as opposed to timeout/script), |by_user| should be true.
+  // Called when the desktop notification is closed. If closed by a user
+  // explicitly (as opposed to timeout/script), |by_user| should be true.
   virtual void Close(bool by_user) {}
 
-  // To be called when a desktop notification is clicked.
-  virtual void Click() {}
+  // Called when a desktop notification is clicked. |button_index| is filled in
+  // if a button was clicked (as opposed to the body of the notification) while
+  // |reply| is filled in if there was an input field associated with the
+  // button.
+  virtual void Click(const base::Optional<int>& button_index,
+                     const base::Optional<base::string16>& reply) {}
 
-  // To be called when the user clicks a button in a notification.
-  virtual void ButtonClick(int button_index) {}
-
-  // To be called when the user types a reply to a notification.
-  virtual void ButtonClickWithReply(int button_index,
-                                    const base::string16& reply) {}
-
-  // To be called when the user clicks the settings button in a notification
-  // which has a DELEGATE settings button action.
+  // Called when the user clicks the settings button in a notification which has
+  // a DELEGATE settings button action.
   virtual void SettingsClick() {}
 
   // Called when the user attempts to disable the notification.
@@ -58,8 +55,7 @@ class MESSAGE_CENTER_PUBLIC_EXPORT NotificationDelegate
 // A pass-through which converts the RefCounted requirement to a WeakPtr
 // requirement. This class replaces the need for individual delegates that pass
 // through to an actual controller class, and which only exist because the
-// actual controller has a strong ownership model. TODO(estade): replace many
-// existing NotificationDelegate overrides with an instance of this class.
+// actual controller has a strong ownership model.
 class MESSAGE_CENTER_PUBLIC_EXPORT ThunkNotificationDelegate
     : public NotificationDelegate {
  public:
@@ -67,10 +63,8 @@ class MESSAGE_CENTER_PUBLIC_EXPORT ThunkNotificationDelegate
 
   // NotificationDelegate:
   void Close(bool by_user) override;
-  void Click() override;
-  void ButtonClick(int button_index) override;
-  void ButtonClickWithReply(int button_index,
-                            const base::string16& reply) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
   void SettingsClick() override;
   void DisableNotification() override;
 
@@ -102,8 +96,8 @@ class MESSAGE_CENTER_PUBLIC_EXPORT HandleNotificationClickDelegate
       const base::RepeatingClosure& closure);
 
   // NotificationDelegate overrides:
-  void Click() override;
-  void ButtonClick(int button_index) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
  protected:
   ~HandleNotificationClickDelegate() override;

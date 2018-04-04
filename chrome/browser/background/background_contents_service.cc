@@ -99,7 +99,8 @@ class CrashNotificationDelegate : public message_center::NotificationDelegate {
         extension_id_(extension->id()) {
   }
 
-  void Click() override {
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {
     // http://crbug.com/247790 involves a crash notification balloon being
     // clicked while the extension isn't in the TERMINATED state. In that case,
     // any of the "reload" methods called below can unload the extension, which

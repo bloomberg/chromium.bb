@@ -69,8 +69,8 @@ class ASH_EXPORT ResolutionNotificationController
 
   // message_center::NotificationObserver
   void Close(bool by_user) override;
-  void Click() override;
-  void ButtonClick(int button_index) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
  private:
   friend class ResolutionNotificationControllerTest;

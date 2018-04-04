@@ -66,7 +66,8 @@ class QuickUnlockNotificationController
 
   // NotificationDelegate:
   void Close(bool by_user) override;
-  void Click() override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
   std::unique_ptr<message_center::Notification> CreateNotification();
   void SetNotificationPreferenceWasShown();

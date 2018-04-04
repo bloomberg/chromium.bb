@@ -169,13 +169,13 @@ TEST_F(DownloadItemNotificationTest, PauseAndResumeNotification) {
   // Pauses and makes sure the DownloadItem::Pause() is called.
   EXPECT_CALL(*download_item_, Pause()).Times(1);
   EXPECT_CALL(*download_item_, IsPaused()).WillRepeatedly(Return(true));
-  download_item_notification_->ButtonClick(0);
+  download_item_notification_->Click(0, base::nullopt);
   download_item_->NotifyObserversDownloadUpdated();
 
   // Resumes and makes sure the DownloadItem::Resume() is called.
   EXPECT_CALL(*download_item_, Resume()).Times(1);
   EXPECT_CALL(*download_item_, IsPaused()).WillRepeatedly(Return(false));
-  download_item_notification_->ButtonClick(0);
+  download_item_notification_->Click(0, base::nullopt);
   download_item_->NotifyObserversDownloadUpdated();
 }
 
@@ -192,7 +192,7 @@ TEST_F(DownloadItemNotificationTest, OpenDownload) {
   // Clicks and confirms that the OpenDownload() is called.
   EXPECT_CALL(*download_item_, OpenDownload()).Times(1);
   EXPECT_CALL(*download_item_, SetOpenWhenComplete(_)).Times(0);
-  download_item_notification_->Click();
+  download_item_notification_->Click(base::nullopt, base::nullopt);
 }
 
 TEST_F(DownloadItemNotificationTest, OpenWhenComplete) {
@@ -206,7 +206,7 @@ TEST_F(DownloadItemNotificationTest, OpenWhenComplete) {
   EXPECT_CALL(*download_item_, SetOpenWhenComplete(true))
       .Times(1)
       .WillOnce(Return());
-  download_item_notification_->Click();
+  download_item_notification_->Click(base::nullopt, base::nullopt);
   EXPECT_CALL(*download_item_, GetOpenWhenComplete())
       .WillRepeatedly(Return(true));
 
@@ -214,7 +214,7 @@ TEST_F(DownloadItemNotificationTest, OpenWhenComplete) {
   EXPECT_CALL(*download_item_, SetOpenWhenComplete(false))
       .Times(1)
       .WillOnce(Return());
-  download_item_notification_->Click();
+  download_item_notification_->Click(base::nullopt, base::nullopt);
   EXPECT_CALL(*download_item_, GetOpenWhenComplete())
       .WillRepeatedly(Return(false));
 
@@ -222,7 +222,7 @@ TEST_F(DownloadItemNotificationTest, OpenWhenComplete) {
   EXPECT_CALL(*download_item_, SetOpenWhenComplete(true))
       .Times(1)
       .WillOnce(Return());
-  download_item_notification_->Click();
+  download_item_notification_->Click(base::nullopt, base::nullopt);
   EXPECT_CALL(*download_item_, GetOpenWhenComplete())
       .WillRepeatedly(Return(true));
 

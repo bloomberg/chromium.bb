@@ -49,7 +49,8 @@ class NotificationManager : public NotificationManagerInterface,
                          const gfx::ImageSkia& image) override;
 
   // message_center::NotificationObserver overrides:
-  void ButtonClick(int button_index) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
   void Close(bool by_user) override;
 
  private:

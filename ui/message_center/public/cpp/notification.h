@@ -423,11 +423,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // method explicitly, to avoid setting it accidentally.
   void SetSystemPriority();
 
-  // Delegate actions.
-  void Click() const { delegate()->Click(); }
-  void ButtonClick(int index) const { delegate()->ButtonClick(index); }
-  void Close(bool by_user) const { delegate()->Close(by_user); }
-
   // Helper method to create a simple system notification. |click_callback|
   // will be invoked when the notification is clicked.
   //

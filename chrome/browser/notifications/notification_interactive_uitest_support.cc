@@ -92,7 +92,10 @@ class MessageCenterChangeObserver::Impl
     OnMessageCenterChanged();
   }
 
-  void OnNotificationClicked(const std::string& notification_id) override {
+  void OnNotificationClicked(
+      const std::string& notification_id,
+      const base::Optional<int>& button_index,
+      const base::Optional<base::string16>& reply) override {
     OnMessageCenterChanged();
   }
 

@@ -86,17 +86,8 @@ void StubNotificationDisplayService::SimulateClick(
     DCHECK(!handler);
 
     auto* delegate = iter->notification.delegate();
-    if (!delegate)
-      return;
-
-    if (reply.has_value()) {
-      DCHECK(action_index.has_value());
-      delegate->ButtonClickWithReply(action_index.value(), reply.value());
-    } else if (action_index.has_value()) {
-      delegate->ButtonClick(action_index.value());
-    } else {
-      delegate->Click();
-    }
+    if (delegate)
+      delegate->Click(action_index, reply);
     return;
   }
 

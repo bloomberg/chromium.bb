@@ -167,14 +167,12 @@ void ResolutionNotificationController::Close(bool by_user) {
     AcceptResolutionChange(false);
 }
 
-void ResolutionNotificationController::Click() {
-  AcceptResolutionChange(true);
-}
-
-void ResolutionNotificationController::ButtonClick(int button_index) {
+void ResolutionNotificationController::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   // If there's the timeout, the first button is "Accept". Otherwise the
-  // button click should be "Revert".
-  if (DoesNotificationTimeout() && button_index == 0)
+  // button click should be "Revert". Clicking on the body should accept.
+  if (!button_index || (DoesNotificationTimeout() && *button_index == 0))
     AcceptResolutionChange(true);
   else
     RevertResolutionChange(false /* display_was_removed */);

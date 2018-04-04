@@ -29,23 +29,6 @@ namespace {
 const char kDualRoleNotificationId[] = "dual-role";
 const char kNotifierDualRole[] = "ash.dual-role";
 
-// Opens power settings on click.
-class DualRoleNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  DualRoleNotificationDelegate() = default;
-
-  // Overridden from message_center::NotificationDelegate.
-  void Click() override {
-    Shell::Get()->system_tray_controller()->ShowPowerSettings();
-  }
-
- private:
-  ~DualRoleNotificationDelegate() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(DualRoleNotificationDelegate);
-};
-
 }  // namespace
 
 DualRoleNotification::DualRoleNotification(MessageCenter* message_center)
@@ -140,6 +123,12 @@ std::unique_ptr<Notification> DualRoleNotification::CreateNotification() {
         IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICES_TITLE);
   }
 
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating([]() {
+            Shell::Get()->system_tray_controller()->ShowPowerSettings();
+          }));
+
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDualRoleNotificationId,
@@ -148,8 +137,8 @@ std::unique_ptr<Notification> DualRoleNotification::CreateNotification() {
           gfx::Image(), base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDualRole),
-          message_center::RichNotificationData(),
-          new DualRoleNotificationDelegate, kNotificationChargingUsbCIcon,
+          message_center::RichNotificationData(), std::move(delegate),
+          kNotificationChargingUsbCIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::MIN_PRIORITY);
   return notification;

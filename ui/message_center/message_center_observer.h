@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_types.h"
 
@@ -34,20 +35,13 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   virtual void OnNotificationUpdated(const std::string& notification_id) {}
 
   // Called when a click event happens on the notification associated with
-  // |notification_id|.
-  virtual void OnNotificationClicked(const std::string& notification_id) {}
-
-  // Called when a click event happens on a button indexed by |button_index|
-  // of the notification associated with |notification_id|.
-  virtual void OnNotificationButtonClicked(const std::string& notification_id,
-                                           int button_index) {}
-
-  // Called when a click event happens on a button with an input indexed by
-  // |button_index| of the notification associated with |notification_id|.
-  virtual void OnNotificationButtonClickedWithReply(
+  // |notification_id|. |button_index| will be nullopt if the click occurred on
+  // the body of the notification. |reply| will be filled in only if there was
+  // an input field associated with the button.
+  virtual void OnNotificationClicked(
       const std::string& notification_id,
-      int button_index,
-      const base::string16& reply) {}
+      const base::Optional<int>& button_index,
+      const base::Optional<base::string16>& reply) {}
 
   // Called when notification settings button is clicked. The |handled| argument
   // indicates whether the notification delegate already handled the operation.

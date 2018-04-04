@@ -113,7 +113,8 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
     }
   }
 
-  void Click() override {
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {
     disposition_ = WEBUSB_NOTIFICATION_CLOSED_CLICKED;
 
     // If the URL is already open, activate that tab.
@@ -212,7 +213,8 @@ void WebUsbDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierWebUsb),
       rich_notification_data,
-      new WebUsbNotificationDelegate(landing_page, notification_id));
+      base::MakeRefCounted<WebUsbNotificationDelegate>(landing_page,
+                                                       notification_id));
   notification.SetSystemPriority();
   SystemNotificationHelper::GetInstance()->Display(notification);
 }

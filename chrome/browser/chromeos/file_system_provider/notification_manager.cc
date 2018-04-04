@@ -61,7 +61,11 @@ void NotificationManager::HideUnresponsiveNotification(int id) {
   }
 }
 
-void NotificationManager::ButtonClick(int button_index) {
+void NotificationManager::Click(const base::Optional<int>& button_index,
+                                const base::Optional<base::string16>& reply) {
+  if (!button_index)
+    return;
+
   OnNotificationResult(ABORT);
 }
 

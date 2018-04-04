@@ -118,8 +118,8 @@ class NetworkPortalNotificationControllerDelegate
 
   // Overridden from message_center::NotificationDelegate:
   void Close(bool by_user) override;
-  void Click() override;
-  void ButtonClick(int button_click) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
  private:
   ~NetworkPortalNotificationControllerDelegate() override {}
@@ -149,7 +149,30 @@ void NetworkPortalNotificationControllerDelegate::Close(bool by_user) {
       NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
 }
 
-void NetworkPortalNotificationControllerDelegate::Click() {
+void NetworkPortalNotificationControllerDelegate::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  if (button_index &&
+      *button_index ==
+          NetworkPortalNotificationController::kUseExtensionButtonIndex) {
+    Profile* profile = GetProfileForPrimaryUser();
+    // The user decided to notify the extension to authenticate to the captive
+    // portal. Notify the NetworkingConfigService, which in turn will notify the
+    // extension. OnExtensionFinsihedAuthentication will be called back if the
+    // authentication succeeded.
+    extensions::NetworkingConfigServiceFactory::GetForBrowserContext(profile)
+        ->DispatchPortalDetectedEvent(
+            extension_id_, guid_,
+            base::BindRepeating(&NetworkPortalNotificationController::
+                                    OnExtensionFinishedAuthentication,
+                                controller_));
+    return;
+  }
+
+  DCHECK(!button_index ||
+         *button_index ==
+             NetworkPortalNotificationController::kOpenPortalButtonIndex);
+
   clicked_ = true;
   UMA_HISTOGRAM_ENUMERATION(
       NetworkPortalNotificationController::kUserActionMetric,
@@ -179,27 +202,6 @@ void NetworkPortalNotificationControllerDelegate::Click() {
     ShowSingletonTab(displayer.browser(), url);
   }
   CloseNotification();
-}
-
-void NetworkPortalNotificationControllerDelegate::ButtonClick(
-    int button_index) {
-  if (button_index ==
-      NetworkPortalNotificationController::kUseExtensionButtonIndex) {
-    Profile* profile = GetProfileForPrimaryUser();
-    // The user decided to notify the extension to authenticate to the captive
-    // portal. Notify the NetworkingConfigService, which in turn will notify the
-    // extension. OnExtensionFinsihedAuthentication will be called back if the
-    // authentication succeeded.
-    extensions::NetworkingConfigServiceFactory::GetForBrowserContext(profile)
-        ->DispatchPortalDetectedEvent(
-            extension_id_, guid_,
-            base::Bind(&NetworkPortalNotificationController::
-                           OnExtensionFinishedAuthentication,
-                       controller_));
-  } else if (button_index ==
-             NetworkPortalNotificationController::kOpenPortalButtonIndex) {
-    Click();
-  }
 }
 
 }  // namespace
@@ -322,9 +324,9 @@ std::unique_ptr<message_center::Notification>
 NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
     const NetworkState* network) {
   message_center::RichNotificationData data;
-  scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
-      new NetworkPortalNotificationControllerDelegate(
-          std::string(), network->guid(), weak_factory_.GetWeakPtr()));
+  auto delegate =
+      base::MakeRefCounted<NetworkPortalNotificationControllerDelegate>(
+          std::string(), network->guid(), weak_factory_.GetWeakPtr());
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       kNotifierNetworkPortalDetector);
@@ -340,7 +342,7 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
                       : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
               base::UTF8ToUTF16(network->name())),
           gfx::Image(), base::string16(), GURL(), notifier_id, data,
-          delegate.get(), ash::kNotificationCaptivePortalIcon,
+          std::move(delegate), ash::kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;
@@ -353,9 +355,9 @@ NetworkPortalNotificationController::
         extensions::NetworkingConfigService* networking_config_service,
         const extensions::Extension* extension) {
   message_center::RichNotificationData data;
-  scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
-      new NetworkPortalNotificationControllerDelegate(
-          extension->id(), network->guid(), weak_factory_.GetWeakPtr()));
+  auto delegate =
+      base::MakeRefCounted<NetworkPortalNotificationControllerDelegate>(
+          extension->id(), network->guid(), weak_factory_.GetWeakPtr());
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       kNotifierNetworkPortalDetector);
@@ -394,7 +396,7 @@ NetworkPortalNotificationController::
               IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI),
           notification_text, gfx::Image(),
           base::string16() /* display_source */, GURL(), notifier_id, data,
-          delegate.get(), ash::kNotificationCaptivePortalIcon,
+          std::move(delegate), ash::kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;

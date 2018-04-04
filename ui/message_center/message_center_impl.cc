@@ -310,9 +310,9 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   for (auto& observer : observer_list_)
-    observer.OnNotificationClicked(id);
-  if (delegate.get())
-    delegate->Click();
+    observer.OnNotificationClicked(id, base::nullopt, base::nullopt);
+  if (delegate)
+    delegate->Click(base::nullopt, base::nullopt);
 }
 
 void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
@@ -327,9 +327,9 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   for (auto& observer : observer_list_)
-    observer.OnNotificationButtonClicked(id, button_index);
-  if (delegate.get())
-    delegate->ButtonClick(button_index);
+    observer.OnNotificationClicked(id, button_index, base::nullopt);
+  if (delegate)
+    delegate->Click(button_index, base::nullopt);
 }
 
 void MessageCenterImpl::ClickOnNotificationButtonWithReply(
@@ -346,9 +346,9 @@ void MessageCenterImpl::ClickOnNotificationButtonWithReply(
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   for (auto& observer : observer_list_)
-    observer.OnNotificationButtonClickedWithReply(id, button_index, reply);
-  if (delegate.get())
-    delegate->ButtonClickWithReply(button_index, reply);
+    observer.OnNotificationClicked(id, button_index, reply);
+  if (delegate)
+    delegate->Click(button_index, reply);
 }
 
 void MessageCenterImpl::ClickOnSettingsButton(const std::string& id) {

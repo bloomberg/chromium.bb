@@ -60,9 +60,10 @@ class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
   void OnNotificationUpdated(const std::string& notification_id) override;
-  void OnNotificationClicked(const std::string& notification_id) override;
-  void OnNotificationButtonClicked(const std::string& notification_id,
-                                   int button_index) override;
+  void OnNotificationClicked(
+      const std::string& notification_id,
+      const base::Optional<int>& button_index,
+      const base::Optional<base::string16>& reply) override;
   void OnNotificationSettingsClicked(bool handled) override;
   void OnNotificationDisplayed(const std::string& notification_id,
                                const DisplaySource source) override;

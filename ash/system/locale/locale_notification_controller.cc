@@ -36,8 +36,8 @@ class LocaleNotificationDelegate : public message_center::NotificationDelegate {
 
   // message_center::NotificationDelegate overrides:
   void Close(bool by_user) override;
-  void Click() override;
-  void ButtonClick(int button_index) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
  private:
   base::OnceCallback<void(ash::mojom::LocaleNotificationResult)> callback_;
@@ -63,18 +63,15 @@ void LocaleNotificationDelegate::Close(bool by_user) {
   }
 }
 
-void LocaleNotificationDelegate::Click() {
-  if (callback_) {
-    std::move(callback_).Run(ash::mojom::LocaleNotificationResult::ACCEPT);
-  }
-}
+void LocaleNotificationDelegate::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  if (!callback_)
+    return;
 
-void LocaleNotificationDelegate::ButtonClick(int button_index) {
-  DCHECK_EQ(0, button_index);
-
-  if (callback_) {
-    std::move(callback_).Run(ash::mojom::LocaleNotificationResult::REVERT);
-  }
+  std::move(callback_).Run(button_index
+                               ? ash::mojom::LocaleNotificationResult::REVERT
+                               : ash::mojom::LocaleNotificationResult::ACCEPT);
 }
 
 }  // namespace

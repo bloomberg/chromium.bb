@@ -148,14 +148,15 @@ class PrivetNotificationDelegate : public message_center::NotificationDelegate {
   explicit PrivetNotificationDelegate(Profile* profile);
 
   // NotificationDelegate implementation.
-  void ButtonClick(int button_index) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
  protected:
   // Refcounted.
   ~PrivetNotificationDelegate() override;
 
  private:
-  // ButtonClick() response handlers. Virtual for testing.
+  // Click() response handlers. Virtual for testing.
   virtual void OpenTab(const GURL& url);
   virtual void DisableNotifications();
 

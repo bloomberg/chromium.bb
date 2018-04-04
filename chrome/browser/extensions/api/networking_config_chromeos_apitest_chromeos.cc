@@ -150,8 +150,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigTest, FullTest) {
   ASSERT_TRUE(notification);
 
   // Simulate the user click which leads to the extension being notified.
-  notification->delegate()->ButtonClick(
-      NetworkPortalNotificationController::kUseExtensionButtonIndex);
+  notification->delegate()->Click(
+      NetworkPortalNotificationController::kUseExtensionButtonIndex,
+      base::nullopt);
 
   extensions::ResultCatcher catcher;
   EXPECT_TRUE(catcher.GetNextResult());

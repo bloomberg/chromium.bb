@@ -53,33 +53,6 @@ constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
 // Kerberos config file name.
 constexpr char kKrb5ConfFile[] = "krb5.conf";
 
-// A notification delegate for the sign-out button.
-// TODO(estade): Can this be a HandleNotificationButtonClickDelegate?
-class SigninNotificationDelegate : public message_center::NotificationDelegate {
- public:
-  SigninNotificationDelegate();
-
-  // NotificationDelegate:
-  void Click() override;
-  void ButtonClick(int button_index) override;
-
- protected:
-  ~SigninNotificationDelegate() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SigninNotificationDelegate);
-};
-
-SigninNotificationDelegate::SigninNotificationDelegate() {}
-
-void SigninNotificationDelegate::Click() {
-  chrome::AttemptUserExit();
-}
-
-void SigninNotificationDelegate::ButtonClick(int button_index) {
-  chrome::AttemptUserExit();
-}
-
 // Writes |blob| into file <UserPath>/kerberos/|file_name|. First writes into
 // temporary file and then replaces existing one.
 void WriteFile(const std::string& file_name, const std::string& blob) {
@@ -309,14 +282,20 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
   // Set |profile_id| for multi-user notification blocker.
   notifier_id.profile_id = profile_->GetProfileUserName();
 
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating([](base::Optional<int> button_index) {
+            chrome::AttemptUserExit();
+          }));
+
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
           l10n_util::GetStringUTF16(message_id), gfx::Image(),
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
-          GURL(notification_id), notifier_id, data,
-          new SigninNotificationDelegate(), ash::kNotificationWarningIcon,
+          GURL(notification_id), notifier_id, data, std::move(delegate),
+          ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
   notification->SetSystemPriority();
 

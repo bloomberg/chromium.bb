@@ -102,26 +102,6 @@ const char kUnsupportedLocaleToastId[] = "voice_interaction_locale_unsupported";
 const char kPolicyDisabledToastId[] = "voice_interaction_policy_disabled";
 const int kToastDurationMs = 2500;
 
-// The notification delegate that will be used to open the keyboard shortcut
-// help page when the notification is clicked.
-class DeprecatedAcceleratorNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  DeprecatedAcceleratorNotificationDelegate() = default;
-
-  // message_center::NotificationDelegate:
-  void Click() override {
-    if (!Shell::Get()->session_controller()->IsUserSessionBlocked())
-      Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
-  }
-
- private:
-  // Private destructor since NotificationDelegate is ref-counted.
-  ~DeprecatedAcceleratorNotificationDelegate() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorNotificationDelegate);
-};
-
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
 // as "Ctrl+Shift+Space".
 void EnsureNoWordBreaks(base::string16* shortcut_text) {
@@ -165,6 +145,13 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
                                            int new_shortcut_id) {
   const base::string16 message =
       GetNotificationText(message_id, old_shortcut_id, new_shortcut_id);
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating([]() {
+            if (!Shell::Get()->session_controller()->IsUserSessionBlocked())
+              Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
+          }));
+
   std::unique_ptr<Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
@@ -173,8 +160,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierAccelerator),
-          message_center::RichNotificationData(),
-          new DeprecatedAcceleratorNotificationDelegate,
+          message_center::RichNotificationData(), std::move(delegate),
           kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
