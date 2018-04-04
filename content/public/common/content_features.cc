@@ -335,7 +335,7 @@ const base::Feature kServiceWorkerPaymentApps{
 
 // Generate V8 full code cache of service worker scripts.
 const base::Feature kServiceWorkerScriptFullCodeCache{
-    "ServiceWorkerScriptFullCodeCache", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceWorkerScriptFullCodeCache", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Establish direct connection from clients to the service worker.
 const base::Feature kServiceWorkerServicification{
