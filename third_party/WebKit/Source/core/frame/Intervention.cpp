@@ -25,7 +25,7 @@ void Intervention::GenerateReport(const LocalFrame* frame,
 
   // Send the message to the console.
   frame->Console().AddMessage(ConsoleMessage::Create(
-      kInterventionMessageSource, kWarningMessageLevel, message));
+      kInterventionMessageSource, kErrorMessageLevel, message));
 
   if (!frame->Client())
     return;
