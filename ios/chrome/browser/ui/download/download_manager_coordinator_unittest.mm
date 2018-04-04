@@ -18,6 +18,9 @@
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/google_drive_app_util.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
+#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/test/fakes/fake_contained_presenter.h"
 #import "ios/chrome/test/fakes/fake_document_interaction_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -457,9 +460,59 @@ TEST_F(DownloadManagerCoordinatorTest, DestroyInProgressDownload) {
   task = nullptr;
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileAction", 0);
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileInBackground", 0);
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadFileResult",
       static_cast<base::HistogramBase::Sample>(DownloadFileResult::Other), 1);
+}
+
+// Tests quitting the app during in-progress download.
+TEST_F(DownloadManagerCoordinatorTest, QuitDuringInProgressDownload) {
+  auto task = CreateTestTask();
+  coordinator_.downloadTask = task.get();
+  web::DownloadTask* task_ptr = task.get();
+  FakeWebStateListDelegate web_state_list_delegate;
+  WebStateList web_state_list(&web_state_list_delegate);
+  auto web_state = std::make_unique<web::TestWebState>();
+  web_state_list.InsertWebState(
+      0, std::move(web_state), WebStateList::INSERT_NO_FLAGS, WebStateOpener());
+  coordinator_.webStateList = &web_state_list;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Start and the download.
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+
+  // Starting download is async for model.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
+
+  // Web States are closed without user action only during app termination.
+  web_state_list.CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
+
+  // Download task is destroyed before the download is complete.
+  task = nullptr;
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileAction", 0);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileInBackground",
+      static_cast<base::HistogramBase::Sample>(
+          DownloadFileInBackground::CanceledAfterAppQuit),
+      1);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileResult",
+      static_cast<base::HistogramBase::Sample>(DownloadFileResult::Other), 1);
+  coordinator_.webStateList = nullptr;
 }
 
 // Tests opening the download in Google Drive app.
@@ -721,6 +774,7 @@ TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
   ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
 
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileInBackground", 0);
   ASSERT_EQ(0,
             user_action_tester_.GetActionCount("MobileDownloadRetryDownload"));
 }
