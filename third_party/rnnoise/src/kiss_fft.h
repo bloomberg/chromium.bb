@@ -2,6 +2,7 @@
   Lots of modifications by Jean-Marc Valin
   Copyright (c) 2005-2007, Xiph.Org Foundation
   Copyright (c) 2008,      Xiph.Org Foundation, CSIRO
+  Copyright (c) 2018,      The WebRTC project authors
 
   All rights reserved.
 
@@ -29,182 +30,49 @@
 #ifndef THIRD_PARTY_RNNOISE_SRC_KISS_FFT_H_
 #define THIRD_PARTY_RNNOISE_SRC_KISS_FFT_H_
 
-#include <math.h>
-#include <stdlib.h>
-#include "arch.h"
+#include <array>
+#include <complex>
+#include <vector>
 
-#include <stdlib.h>
-#define opus_alloc(x) malloc(x)
-#define opus_free(x) free(x)
+namespace rnnoise {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class KissFft {
+ public:
+  // Example: an FFT of length 128 has 4 factors as far as kissfft is concerned
+  // (namely, 4*4*4*2).
+  static const size_t kMaxFactors = 8;
 
-#ifdef USE_SIMD
-#include <xmmintrin.h>
-#define kiss_fft_scalar __m128
-#define KISS_FFT_MALLOC(nbytes) memalign(16, nbytes)
-#else
-#define KISS_FFT_MALLOC opus_alloc
-#endif
+  class KissFftState {
+   public:
+    KissFftState(int num_fft_points);
+    KissFftState(const KissFftState&) = delete;
+    KissFftState& operator=(const KissFftState&) = delete;
+    ~KissFftState();
 
-#ifdef FIXED_POINT
-#include "arch.h"
+    const int nfft;
+    const float scale;
+    std::array<int16_t, 2 * kMaxFactors> factors;
+    std::vector<int16_t> bitrev;
+    std::vector<std::complex<float>> twiddles;
+  };
 
-#define kiss_fft_scalar opus_int32
-#define kiss_twiddle_scalar opus_int16
+  explicit KissFft(const int nfft);
+  KissFft(const KissFft&) = delete;
+  KissFft& operator=(const KissFft&) = delete;
+  ~KissFft();
+  void ForwardFft(const size_t in_size,
+                  const std::complex<float>* in,
+                  const size_t out_size,
+                  std::complex<float>* out);
+  void ReverseFft(const size_t in_size,
+                  const std::complex<float>* in,
+                  const size_t out_size,
+                  std::complex<float>* out);
 
-#else
-#ifndef kiss_fft_scalar
-/*  default is float */
-#define kiss_fft_scalar float
-#define kiss_twiddle_scalar float
-#define KF_SUFFIX _celt_single
-#endif
-#endif
+ private:
+  KissFftState state_;
+};
 
-typedef struct {
-  kiss_fft_scalar r;
-  kiss_fft_scalar i;
-} kiss_fft_cpx;
-
-typedef struct {
-  kiss_twiddle_scalar r;
-  kiss_twiddle_scalar i;
-} kiss_twiddle_cpx;
-
-#define MAXFACTORS 8
-/* e.g. an fft of length 128 has 4 factors
- as far as kissfft is concerned
- 4*4*4*2
- */
-
-typedef struct arch_fft_state {
-  int is_supported;
-  void* priv;
-} arch_fft_state;
-
-typedef struct kiss_fft_state {
-  int nfft;
-  opus_val16 scale;
-#ifdef FIXED_POINT
-  int scale_shift;
-#endif
-  int shift;
-  opus_int16 factors[2 * MAXFACTORS];
-  const opus_int16* bitrev;
-  const kiss_twiddle_cpx* twiddles;
-  arch_fft_state* arch_fft;
-} kiss_fft_state;
-
-// #if defined(HAVE_ARM_NE10)
-// #include "arm/fft_arm.h"
-// #endif
-
-/*typedef struct kiss_fft_state* kiss_fft_cfg;*/
-
-/**
- *  opus_fft_alloc
- *
- *  Initialize a FFT (or IFFT) algorithm's cfg/state buffer.
- *
- *  typical usage:      kiss_fft_cfg mycfg=opus_fft_alloc(1024,0,NULL,NULL);
- *
- *  The return value from fft_alloc is a cfg buffer used internally
- *  by the fft routine or NULL.
- *
- *  If lenmem is NULL, then opus_fft_alloc will allocate a cfg buffer using
- * malloc. The returned value should be free()d when done to avoid memory leaks.
- *
- *  The state can be placed in a user supplied buffer 'mem':
- *  If lenmem is not NULL and mem is not NULL and *lenmem is large enough,
- *      then the function places the cfg in mem and the size used in *lenmem
- *      and returns mem.
- *
- *  If lenmem is not NULL and ( mem is NULL or *lenmem is not large enough),
- *      then the function returns NULL and places the minimum cfg
- *      buffer size in *lenmem.
- * */
-
-kiss_fft_state* opus_fft_alloc_twiddles(int nfft,
-                                        void* mem,
-                                        size_t* lenmem,
-                                        const kiss_fft_state* base,
-                                        int arch);
-
-kiss_fft_state* opus_fft_alloc(int nfft, void* mem, size_t* lenmem, int arch);
-
-/**
- * opus_fft(cfg,in_out_buf)
- *
- * Perform an FFT on a complex input buffer.
- * for a forward FFT,
- * fin should be  f[0] , f[1] , ... ,f[nfft-1]
- * fout will be   F[0] , F[1] , ... ,F[nfft-1]
- * Note that each element is complex and can be accessed like
-    f[k].r and f[k].i
- * */
-void opus_fft_c(const kiss_fft_state* cfg,
-                const kiss_fft_cpx* fin,
-                kiss_fft_cpx* fout);
-void opus_ifft_c(const kiss_fft_state* cfg,
-                 const kiss_fft_cpx* fin,
-                 kiss_fft_cpx* fout);
-
-void opus_fft_impl(const kiss_fft_state* st, kiss_fft_cpx* fout);
-void opus_ifft_impl(const kiss_fft_state* st, kiss_fft_cpx* fout);
-
-void opus_fft_free(const kiss_fft_state* cfg, int arch);
-
-void opus_fft_free_arch_c(kiss_fft_state* st);
-int opus_fft_alloc_arch_c(kiss_fft_state* st);
-
-#if !defined(OVERRIDE_OPUS_FFT)
-/* Is run-time CPU detection enabled on this platform? */
-#if defined(OPUS_HAVE_RTCD) && (defined(HAVE_ARM_NE10))
-
-extern int (*const OPUS_FFT_ALLOC_ARCH_IMPL[OPUS_ARCHMASK + 1])(
-    kiss_fft_state* st);
-
-#define opus_fft_alloc_arch(_st, arch) \
-  ((*OPUS_FFT_ALLOC_ARCH_IMPL[(arch)&OPUS_ARCHMASK])(_st))
-
-extern void (*const OPUS_FFT_FREE_ARCH_IMPL[OPUS_ARCHMASK + 1])(
-    kiss_fft_state* st);
-#define opus_fft_free_arch(_st, arch) \
-  ((*OPUS_FFT_FREE_ARCH_IMPL[(arch)&OPUS_ARCHMASK])(_st))
-
-extern void (*const OPUS_FFT[OPUS_ARCHMASK + 1])(const kiss_fft_state* cfg,
-                                                 const kiss_fft_cpx* fin,
-                                                 kiss_fft_cpx* fout);
-#define opus_fft(_cfg, _fin, _fout, arch) \
-  ((*OPUS_FFT[(arch)&OPUS_ARCHMASK])(_cfg, _fin, _fout))
-
-extern void (*const OPUS_IFFT[OPUS_ARCHMASK + 1])(const kiss_fft_state* cfg,
-                                                  const kiss_fft_cpx* fin,
-                                                  kiss_fft_cpx* fout);
-#define opus_ifft(_cfg, _fin, _fout, arch) \
-  ((*OPUS_IFFT[(arch)&OPUS_ARCHMASK])(_cfg, _fin, _fout))
-
-#else /* else for if defined(OPUS_HAVE_RTCD) && (defined(HAVE_ARM_NE10)) */
-
-#define opus_fft_alloc_arch(_st, arch) \
-  ((void)(arch), opus_fft_alloc_arch_c(_st))
-
-#define opus_fft_free_arch(_st, arch) ((void)(arch), opus_fft_free_arch_c(_st))
-
-#define opus_fft(_cfg, _fin, _fout, arch) \
-  ((void)(arch), opus_fft_c(_cfg, _fin, _fout))
-
-#define opus_ifft(_cfg, _fin, _fout, arch) \
-  ((void)(arch), opus_ifft_c(_cfg, _fin, _fout))
-
-#endif /* end if defined(OPUS_HAVE_RTCD) && (defined(HAVE_ARM_NE10)) */
-#endif /* end if !defined(OVERRIDE_OPUS_FFT) */
-
-#ifdef __cplusplus
-}
-#endif
+}  // namespace rnnoise
 
 #endif  // THIRD_PARTY_RNNOISE_SRC_KISS_FFT_H_
