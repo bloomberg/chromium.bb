@@ -120,7 +120,10 @@ bool ContainerFullWidthBehavior::BoundsAffectWorkspaceLayout() const {
 }
 
 bool ContainerFullWidthBehavior::SetDraggableArea(const gfx::Rect& rect) {
-  return false;
+  // Allow extension to call this function but does nothing here.
+  // To avoid unnecessary exception when VK calls this function to
+  // clear draggable area in full width mode.
+  return true;
 }
 
 }  //  namespace keyboard

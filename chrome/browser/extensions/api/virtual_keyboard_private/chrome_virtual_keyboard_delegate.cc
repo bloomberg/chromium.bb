@@ -192,8 +192,10 @@ bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
     const api::virtual_keyboard_private::Bounds& rect) {
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
+  // Since controller will be destroyed when system switch from VK to
+  // physical keyboard, return true to avoid unneccessary exception.
   if (!controller)
-    return false;
+    return true;
   return controller->SetDraggableArea(
       gfx::Rect(rect.top, rect.left, rect.width, rect.height));
 }
