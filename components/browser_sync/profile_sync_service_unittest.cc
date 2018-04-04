@@ -649,6 +649,10 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
 
 // Verify that credential errors get returned from GetAuthError().
 TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
+  // This test needs to manually send access tokens (or errors), so disable
+  // automatic replies to access token requests.
+  auth_service()->set_auto_post_fetch_response_on_message_loop(false);
+
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
@@ -663,6 +667,8 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
       signin_manager()->GetAuthenticatedAccountId();
   auth_service()->LoadCredentials(primary_account_id);
   base::RunLoop().RunUntilIdle();
+  auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
+                                           base::Time::Max());
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
   ASSERT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
 
@@ -685,6 +691,10 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
 // Verify that credential errors get cleared when a new token is fetched
 // successfully.
 TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
+  // This test needs to manually send access tokens (or errors), so disable
+  // automatic replies to access token requests.
+  auth_service()->set_auto_post_fetch_response_on_message_loop(false);
+
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
@@ -699,6 +709,8 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
       signin_manager()->GetAuthenticatedAccountId();
   auth_service()->LoadCredentials(primary_account_id);
   base::RunLoop().RunUntilIdle();
+  auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
+                                           base::Time::Max());
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
   ASSERT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
 
