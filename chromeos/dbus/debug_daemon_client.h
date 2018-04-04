@@ -224,6 +224,12 @@ class CHROMEOS_EXPORT DebugDaemonClient
   // |callback| is called when the method finishes.
   virtual void StopVmConcierge(VmConciergeCallback callback) = 0;
 
+  // A callback to handle the result of SetRlzPingSent.
+  using SetRlzPingSentCallback = base::OnceCallback<void(bool success)>;
+  // Calls debugd::kSetRlzPingSent, which sets |should_send_rlz_ping| in RW_VPD
+  // to 0.
+  virtual void SetRlzPingSent(SetRlzPingSentCallback callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static DebugDaemonClient* Create();

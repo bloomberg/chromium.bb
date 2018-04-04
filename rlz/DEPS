@@ -56,6 +56,7 @@ deps = {
 
 include_rules = [
   "+build",
+  "+chromeos/dbus",
   "+chromeos/system",
   "+net",  # This is only used when force_rlz_use_chrome_net=1 is passed to gyp.
   "+third_party/zlib",

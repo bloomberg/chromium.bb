@@ -150,6 +150,9 @@ if (!is_android) {
       "//testing/gtest",
       "//third_party/zlib",
     ]
+    if (is_chromeos) {
+      deps += [ "//chromeos" ]
+    }
   }
 }
 

@@ -521,6 +521,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetRlzPingSent(SetRlzPingSentCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSetRlzPingSent);
+    dbus::MessageWriter writer(&method_call);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnSetRlzPingSent,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
@@ -729,6 +739,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   void OnStopVmConcierge(VmConciergeCallback callback,
                          dbus::Response* response) {
+    bool result = false;
+    dbus::MessageReader reader(response);
+    if (response) {
+      reader.PopBool(&result);
+    }
+    std::move(callback).Run(result);
+  }
+
+  void OnSetRlzPingSent(SetRlzPingSentCallback callback,
+                        dbus::Response* response) {
     bool result = false;
     dbus::MessageReader reader(response);
     if (response) {

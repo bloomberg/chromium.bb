@@ -12,10 +12,13 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "rlz/lib/financial_ping.h"
 #include "rlz/lib/lib_values.h"
@@ -118,10 +121,13 @@ bool HasRlzEmbargoEndDatePassed() {
 const int RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays =
     14;
 
+const int RlzValueStoreChromeOS::kMaxRetryCount = 3;
+
 RlzValueStoreChromeOS::RlzValueStoreChromeOS(const base::FilePath& store_path)
     : rlz_store_(new base::DictionaryValue),
       store_path_(store_path),
-      read_only_(true) {
+      read_only_(true),
+      weak_ptr_factory_(this) {
   ReadStore();
 }
 
@@ -250,7 +256,8 @@ bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (strcmp(event_rlz, "CAF") == 0) {
-    // TODO(wzang): Set rlz_first_use_ping_not_sent to 0 in RW_VPD.
+    set_rlz_ping_sent_attempts_ = 0;
+    SetRlzPingSent();
   }
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
                         std::make_unique<base::Value>(event_rlz));
@@ -279,13 +286,13 @@ bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
       }
       if (!HasRlzEmbargoEndDatePassed())
         return true;
+
       DCHECK_EQ(should_send_rlz_ping_value,
                 chromeos::system::kShouldSendRlzPingValueTrue);
-      if (event_exists) {
-        // TODO(wzang): If we reach here, it means there was an error writing to
-        // RW_VPD earlier. We should log the error and try writing to RW_VPD
-        // again. Also, capture UMA stat on persistent failure to write VPD.
-      }
+    } else {
+      // If |kShouldSendRlzPingKey| doesn't exist in RW_VPD, treat it in the
+      // same way with the case of |kShouldSendRlzPingValueFalse|.
+      return true;
     }
   }
 
@@ -356,6 +363,25 @@ bool RlzValueStoreChromeOS::RemoveValueFromList(const std::string& list_name,
   size_t index;
   list_value->Remove(value, &index);
   return true;
+}
+
+void RlzValueStoreChromeOS::SetRlzPingSent() {
+  ++set_rlz_ping_sent_attempts_;
+  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->SetRlzPingSent(
+      base::BindOnce(&RlzValueStoreChromeOS::OnSetRlzPingSent,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void RlzValueStoreChromeOS::OnSetRlzPingSent(bool success) {
+  if (success) {
+    UMA_HISTOGRAM_BOOLEAN("Rlz.SetRlzPingSent", true);
+  } else if (set_rlz_ping_sent_attempts_ >= kMaxRetryCount) {
+    UMA_HISTOGRAM_BOOLEAN("Rlz.SetRlzPingSent", false);
+    LOG(ERROR) << "Setting |should_send_rlz_ping| to 0 failed after "
+               << kMaxRetryCount << " attempts";
+  } else {
+    SetRlzPingSent();
+  }
 }
 
 namespace {

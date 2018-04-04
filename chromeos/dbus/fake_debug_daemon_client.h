@@ -88,6 +88,7 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
                          const base::Closure& error_callback) override;
   void StartVmConcierge(VmConciergeCallback callback) override;
   void StopVmConcierge(VmConciergeCallback callback) override;
+  void SetRlzPingSent(SetRlzPingSentCallback callback) override;
 
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int featues_mask);

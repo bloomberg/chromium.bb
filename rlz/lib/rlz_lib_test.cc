@@ -45,6 +45,12 @@
 #include "net/url_request/url_request_test_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_debug_daemon_client.h"
+#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
+#endif
+
 class MachineDealCodeHelper
 #if defined(OS_WIN)
     : public rlz_lib::MachineDealCode
@@ -1006,4 +1012,54 @@ TEST_F(RlzLibTest, LockAcquistionSucceedsButStoreFileCannotBeCreated) {
       rlz_lib::IE_DEFAULT_SEARCH, rlz_lib::INSTALL));
 }
 
+#endif
+
+#if defined(OS_CHROMEOS)
+class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
+ public:
+  TestDebugDaemonClient() = default;
+  ~TestDebugDaemonClient() override = default;
+
+  int num_set_rlz_ping_sent() const { return num_set_rlz_ping_sent_; }
+
+  // Sets the result returned by the callback in order to test both success and
+  // failure cases.
+  void set_default_result(bool default_result) {
+    default_result_ = default_result;
+  }
+
+  void SetRlzPingSent(SetRlzPingSentCallback callback) override {
+    ++num_set_rlz_ping_sent_;
+    std::move(callback).Run(default_result_);
+  }
+
+ private:
+  int num_set_rlz_ping_sent_ = 0;
+  bool default_result_;
+  DISALLOW_COPY_AND_ASSIGN(TestDebugDaemonClient);
+};
+
+TEST_F(RlzLibTest, SetRlzPingSent) {
+  TestDebugDaemonClient* debug_daemon_client = new TestDebugDaemonClient;
+  chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
+      std::unique_ptr<chromeos::DebugDaemonClient>(debug_daemon_client));
+  const char* kPingResponse =
+      "stateful-events: CAF\r\n"
+      "crc32: 3BB2FEAE\r\n";
+
+  // Verify that a |SetRlzPingSent| dbus call is made and it's made only once
+  // if success status is returned.
+  debug_daemon_client->set_default_result(true);
+  EXPECT_TRUE(
+      rlz_lib::ParsePingResponse(rlz_lib::TOOLBAR_NOTIFIER, kPingResponse));
+  EXPECT_EQ(debug_daemon_client->num_set_rlz_ping_sent(), 1);
+
+  // Verify that a maximum of |kMaxRetryCount| times of attempts are made if
+  // |SetRlzPingSent| returns failure status.
+  debug_daemon_client->set_default_result(false);
+  EXPECT_TRUE(
+      rlz_lib::ParsePingResponse(rlz_lib::TOOLBAR_NOTIFIER, kPingResponse));
+  EXPECT_EQ(debug_daemon_client->num_set_rlz_ping_sent(),
+            1 + rlz_lib::RlzValueStoreChromeOS::kMaxRetryCount);
+}
 #endif
