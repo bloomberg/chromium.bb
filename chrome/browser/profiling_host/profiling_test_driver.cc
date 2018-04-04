@@ -17,7 +17,7 @@
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/common/profiling/memlog_allocator_shim.h"
+#include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"

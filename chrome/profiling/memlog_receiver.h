@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/profiling/address.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 namespace profiling {
 

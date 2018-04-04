@@ -10,15 +10,15 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "chrome/common/profiling/memlog_sender_pipe.h"
 #include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/memlog_stream_receiver.h"
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 
 namespace profiling {
 
 MemlogReceiverPipe::MemlogReceiverPipe(mojo::edk::ScopedPlatformHandle handle)
     : MemlogReceiverPipeBase(std::move(handle)),
-      read_buffer_(new char[MemlogSenderPipe::kPipeSize]) {
+      read_buffer_(new char[SenderPipe::kPipeSize]) {
   ZeroOverlapped();
   base::MessageLoopForIO::current()->RegisterIOHandler(handle_.get().handle,
                                                        this);
@@ -43,8 +43,7 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
   DCHECK(!read_outstanding_);
   read_outstanding_ = this;
   if (!::ReadFile(handle_.get().handle, read_buffer_.get(),
-                  MemlogSenderPipe::kPipeSize, &bytes_read,
-                  &context_.overlapped)) {
+                  SenderPipe::kPipeSize, &bytes_read, &context_.overlapped)) {
     if (GetLastError() == ERROR_IO_PENDING) {
       return;
     } else {
@@ -79,7 +78,7 @@ void MemlogReceiverPipe::OnIOCompleted(
                                   base::MessageLoop::current()->task_runner(),
                                   std::move(read_buffer_),
                                   static_cast<size_t>(bytes_transfered)));
-    read_buffer_.reset(new char[MemlogSenderPipe::kPipeSize]);
+    read_buffer_.reset(new char[SenderPipe::kPipeSize]);
   }
   ReadUntilBlocking();
 }

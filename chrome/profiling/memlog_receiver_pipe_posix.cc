@@ -9,9 +9,9 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "chrome/common/profiling/memlog_sender_pipe.h"
 #include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/memlog_stream_receiver.h"
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle.h"
 
@@ -20,7 +20,7 @@ namespace profiling {
 MemlogReceiverPipe::MemlogReceiverPipe(mojo::edk::ScopedPlatformHandle handle)
     : MemlogReceiverPipeBase(std::move(handle)),
       controller_(FROM_HERE),
-      read_buffer_(new char[MemlogSenderPipe::kPipeSize]) {}
+      read_buffer_(new char[SenderPipe::kPipeSize]) {}
 
 MemlogReceiverPipe::~MemlogReceiverPipe() {}
 
@@ -36,8 +36,8 @@ void MemlogReceiverPipe::OnFileCanReadWithoutBlocking(int fd) {
   do {
     base::circular_deque<mojo::edk::PlatformHandle> dummy_for_receive;
 
-    bytes_read = HANDLE_EINTR(read(handle_.get().handle, read_buffer_.get(),
-                                   MemlogSenderPipe::kPipeSize));
+    bytes_read = HANDLE_EINTR(
+        read(handle_.get().handle, read_buffer_.get(), SenderPipe::kPipeSize));
     if (bytes_read > 0) {
       receiver_task_runner_->PostTask(
           FROM_HERE,
@@ -45,7 +45,7 @@ void MemlogReceiverPipe::OnFileCanReadWithoutBlocking(int fd) {
                          base::MessageLoop::current()->task_runner(),
                          std::move(read_buffer_),
                          static_cast<size_t>(bytes_read)));
-      read_buffer_.reset(new char[MemlogSenderPipe::kPipeSize]);
+      read_buffer_.reset(new char[SenderPipe::kPipeSize]);
       return;
     } else if (bytes_read == 0) {
       // Other end closed the pipe.

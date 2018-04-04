@@ -2,33 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
-#define CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
+#ifndef COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_
+#define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_
 
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/handle.h"
 
-namespace content {
-class ServiceManagerConnection;
-}  // namespace content
-
 namespace profiling {
 
-class MemlogSenderPipe;
+class SenderPipe;
 
-// The ProfilingClient listens on the interface for a StartProfiling message. On
+// The Client listens on the interface for a StartProfiling message. On
 // receiving the message, it begins profiling the current process.
-class ProfilingClient : public mojom::ProfilingClient {
+//
+// The owner of this object is responsible for binding it to the BinderRegistry.
+class Client : public mojom::ProfilingClient {
  public:
-  ProfilingClient();
-  ~ProfilingClient() override;
+  Client();
+  ~Client() override;
 
   // mojom::ProfilingClient overrides:
   void StartProfiling(mojom::ProfilingParamsPtr params) override;
   void FlushMemlogPipe(uint32_t barrier_id) override;
 
-  void OnServiceManagerConnected(content::ServiceManagerConnection* connection);
   void BindToInterface(profiling::mojom::ProfilingClientRequest request);
 
  private:
@@ -42,9 +39,9 @@ class ProfilingClient : public mojom::ProfilingClient {
 
   bool started_profiling_;
 
-  std::unique_ptr<MemlogSenderPipe> memlog_sender_pipe_;
+  std::unique_ptr<SenderPipe> sender_pipe_;
 };
 
 }  // namespace profiling
 
-#endif  // CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
+#endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_

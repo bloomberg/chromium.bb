@@ -33,8 +33,7 @@
 #include "chrome/browser/tracing/crash_service_uploader.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/profiling/memlog_sender_pipe.h"
-#include "chrome/common/profiling/profiling_constants.h"
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -249,7 +248,7 @@ void ProfilingProcessHost::AddClientToProfilingService(
     profiling::mojom::ProcessType process_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  MemlogSenderPipe::PipePair pipes;
+  SenderPipe::PipePair pipes;
 
   // Passes the client_for_profiling directly to the profiling process.
   // The client process can not start sending data until the pipe is ready,

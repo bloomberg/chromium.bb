@@ -2728,7 +2728,6 @@ test("unit_tests") {
     "//chrome:strings",
     "//chrome/browser/media/router:test_support",
     "//chrome/common:test_support",
-    "//chrome/common/profiling:unit_tests",
     "//chrome/profiling:unit_tests",
     "//components/autofill/content/renderer:test_support",
     "//components/browser_sync:test_support",

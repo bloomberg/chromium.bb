@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/profiling/memlog_sender_pipe.h"
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/profiling/memlog_stream.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 namespace profiling {
 
@@ -16,7 +16,7 @@ namespace {
 
 // The documentation for ::WriteFileEx indicates that the last parameter is an
 // OVERLAPPED*. But OVERLAPPED has no member to hold a void* context for
-// MemlogSenderPipe, and without that, the callback must only use global
+// SenderPipe, and without that, the callback must only use global
 // variables. This is problematic. The example
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365601(v=vs.85).aspx
 // instead uses a struct whose first member is an OVERLAPPED object, and passes
@@ -53,7 +53,7 @@ void WINAPI AsyncWriteFinishedGlobal(DWORD error,
 
 }  // namespace
 
-MemlogSenderPipe::PipePair::PipePair() {
+SenderPipe::PipePair::PipePair() {
   std::wstring pipe_name = base::StringPrintf(
       L"\\\\.\\pipe\\profiling.%u.%u.%I64u", GetCurrentProcessId(),
       GetCurrentThreadId(), base::RandUint64());
@@ -93,26 +93,25 @@ MemlogSenderPipe::PipePair::PipePair() {
   CHECK((result == 0) && (error == ERROR_PIPE_CONNECTED));
 }
 
-MemlogSenderPipe::PipePair::PipePair(PipePair&& other) = default;
+SenderPipe::PipePair::PipePair(PipePair&& other) = default;
 
-MemlogSenderPipe::MemlogSenderPipe(base::ScopedPlatformFile file)
+SenderPipe::SenderPipe(base::ScopedPlatformFile file)
     : file_(std::move(file)) {}
 
-MemlogSenderPipe::~MemlogSenderPipe() {
-}
+SenderPipe::~SenderPipe() {}
 
-MemlogSenderPipe::Result MemlogSenderPipe::Send(const void* data,
-                                                size_t size,
-                                                int timeout_ms) {
+SenderPipe::Result SenderPipe::Send(const void* data,
+                                    size_t size,
+                                    int timeout_ms) {
   // The pipe is nonblocking. However, to ensure that messages on different
   // threads are serialized and in order:
   //   1) We grab a global lock.
   //   2) We attempt to synchronously write, but with a timeout. On timeout
-  //   or error, the MemlogSenderPipe is shut down.
+  //   or error, the SenderPipe is shut down.
   base::AutoLock lock(lock_);
 
   // This can happen if Close() was called on another thread, while this thread
-  // was already waiting to call MemlogSenderPipe::Send().
+  // was already waiting to call SenderPipe::Send().
   if (!file_.IsValid())
     return Result::kError;
 
@@ -168,7 +167,7 @@ MemlogSenderPipe::Result MemlogSenderPipe::Send(const void* data,
   }
 }
 
-void MemlogSenderPipe::Close() {
+void SenderPipe::Close() {
   base::AutoLock lock(lock_);
   file_.Close();
 }
