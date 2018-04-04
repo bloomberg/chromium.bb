@@ -27,29 +27,21 @@ namespace win {
 
 namespace {
 
-// Default ShellExecuteEx flags used with the "openas" verb.
+// Default ShellExecuteEx flags used with "openas", "explore", and default
+// verbs.
 //
 // SEE_MASK_NOASYNC is specified so that ShellExecuteEx can be invoked from a
 // thread whose message loop may not wait around long enough for the
 // asynchronous tasks initiated by ShellExecuteEx to complete. Using this flag
 // causes ShellExecuteEx() to block until these tasks complete.
-const DWORD kDefaultOpenAsFlags = SEE_MASK_NOASYNC;
-
-// Default ShellExecuteEx flags used with the "explore", "open" or default verb.
-//
-// See kDefaultOpenFlags for description SEE_MASK_NOASYNC flag.
-// SEE_MASK_FLAG_NO_UI is used to suppress any error message boxes that might be
-// displayed if there is an error in opening the file. Failure in invoking the
-// "open" actions result in invocation of the "saveas" verb, making the error
-// dialog superfluous.
-const DWORD kDefaultOpenFlags = SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI;
+const DWORD kDefaultShellExecuteFlags = SEE_MASK_NOASYNC;
 
 // Invokes ShellExecuteExW() with the given parameters.
-DWORD InvokeShellExecute(const base::string16 path,
-                         const base::string16 working_directory,
-                         const base::string16 args,
-                         const base::string16 verb,
-                         DWORD mask) {
+bool InvokeShellExecute(const base::string16 path,
+                        const base::string16 working_directory,
+                        const base::string16 args,
+                        const base::string16 verb,
+                        DWORD mask) {
   base::AssertBlockingAllowed();
   SHELLEXECUTEINFO sei = {sizeof(sei)};
   sei.fMask = mask;
@@ -59,7 +51,7 @@ DWORD InvokeShellExecute(const base::string16 path,
   sei.lpDirectory =
       (working_directory.empty() ? nullptr : working_directory.c_str());
   sei.lpParameters = (args.empty() ? nullptr : args.c_str());
-  return ::ShellExecuteExW(&sei) ? ERROR_SUCCESS : ::GetLastError();
+  return ::ShellExecuteExW(&sei);
 }
 
 }  // namespace
@@ -68,32 +60,22 @@ bool OpenAnyViaShell(const base::string16& full_path,
                      const base::string16& directory,
                      const base::string16& args,
                      DWORD mask) {
-  DWORD open_result =
-      InvokeShellExecute(full_path, directory, args, base::string16(), mask);
-  if (open_result == ERROR_SUCCESS)
-    return true;
-  // Show the Windows "Open With" dialog box to ask the user to pick an app to
-  // open the file with. Note that we are not forwarding |args| for the "openas"
-  // call since the target application is nolonger known at this point.
-  if (open_result == ERROR_NO_ASSOCIATION)
-    return InvokeShellExecute(full_path, directory, base::string16(), L"openas",
-                              kDefaultOpenAsFlags) == ERROR_SUCCESS;
-  return false;
+  return InvokeShellExecute(full_path, directory, args, base::string16(), mask);
 }
 
 bool OpenFileViaShell(const base::FilePath& full_path) {
-  return OpenAnyViaShell(full_path.value(), full_path.DirName().value(),
-                         base::string16(), kDefaultOpenFlags);
+  // Invoke the default verb on the file with no arguments.
+  return InvokeShellExecute(full_path.value(), full_path.DirName().value(),
+                            base::string16(), base::string16(),
+                            kDefaultShellExecuteFlags);
 }
 
 bool OpenFolderViaShell(const base::FilePath& full_path) {
   // The "explore" verb causes the folder at |full_path| to be displayed in a
-  // file browser. This will fail if |full_path| is not a directory. The
-  // resulting error does not cause UI due to the SEE_MASK_FLAG_NO_UI flag in
-  // kDefaultOpenFlags.
+  // file browser. This will fail if |full_path| is not a directory.
   return InvokeShellExecute(full_path.value(), full_path.value(),
                             base::string16(), L"explore",
-                            kDefaultOpenFlags) == ERROR_SUCCESS;
+                            kDefaultShellExecuteFlags);
 }
 
 bool PreventWindowFromPinning(HWND hwnd) {

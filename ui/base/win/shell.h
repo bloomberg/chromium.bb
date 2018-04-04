@@ -17,8 +17,8 @@ class FilePath;
 namespace ui {
 namespace win {
 
-// Open the folder at |full_path| via the Windows shell. Does nothing if
-// |full_path| is not a folder.
+// Open the folder at |full_path| via the Windows shell. It is an error if
+// |full_path| does not refer to a folder.
 //
 // Note: Must be called on a thread that allows blocking.
 UI_BASE_EXPORT bool OpenFolderViaShell(const base::FilePath& full_path);
