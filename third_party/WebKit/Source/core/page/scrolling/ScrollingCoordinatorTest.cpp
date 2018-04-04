@@ -43,6 +43,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/TouchAction.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
@@ -1161,6 +1162,39 @@ TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
 
   ForceFullCompositingUpdate();
   EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
+}
+
+TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
+  HistogramTester histogram_tester;
+  LoadHTML(R"HTML(
+    <div id='bg' style='background: blue;'></div>
+    <div id='scroller' style='overflow: scroll; width: 10px; height: 10px;'>
+      <div id='forcescroll' style='height: 1000px;'></div>
+    </div>
+  )HTML");
+
+  // The initial count should be zero.
+  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 0);
+
+  // After an initial compositing update, we should have one scrolling update.
+  ForceFullCompositingUpdate();
+  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
+
+  // An update with no scrolling changes should not cause a scrolling update.
+  ForceFullCompositingUpdate();
+  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
+
+  // A change to background color should not cause a scrolling update.
+  auto* background = GetFrame()->GetDocument()->getElementById("bg");
+  background->removeAttribute(HTMLNames::styleAttr);
+  ForceFullCompositingUpdate();
+  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
+
+  // Removing a scrollable area should cause a scrolling update.
+  auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
+  scroller->removeAttribute(HTMLNames::styleAttr);
+  ForceFullCompositingUpdate();
+  histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 2);
 }
 
 class NonCompositedMainThreadScrollingReasonTest

@@ -44,6 +44,7 @@
 #include "core/page/scrolling/ScrollingCoordinatorContext.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
+#include "platform/Histogram.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/exported/WebScrollbarImpl.h"
@@ -171,10 +172,24 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   LocalFrame* frame = &frame_view->GetFrame();
   DCHECK(frame->IsLocalRoot());
 
+  bool scroll_gesture_region_dirty =
+      frame_view->GetScrollingContext()->ScrollGestureRegionIsDirty();
+  bool touch_event_rects_dirty =
+      frame_view->GetScrollingContext()->TouchEventTargetRectsAreDirty();
+  bool should_scroll_on_main_thread_dirty =
+      frame_view->GetScrollingContext()->ShouldScrollOnMainThreadIsDirty();
+  bool frame_scroller_dirty = FrameScrollerIsDirty(frame_view);
+
+  if (!(scroll_gesture_region_dirty || touch_event_rects_dirty ||
+        should_scroll_on_main_thread_dirty || frame_scroller_dirty)) {
+    return;
+  }
+
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.ScrollingCoordinator.UpdateTime");
   TRACE_EVENT0("input",
                "ScrollingCoordinator::updateAfterCompositingChangeIfNeeded");
 
-  if (frame_view->GetScrollingContext()->ScrollGestureRegionIsDirty()) {
+  if (scroll_gesture_region_dirty) {
     // Compute the region of the page where we can't handle scroll gestures and
     // mousewheel events
     // on the impl thread. This currently includes:
@@ -191,18 +206,17 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
     frame_view->GetScrollingContext()->SetScrollGestureRegionIsDirty(false);
   }
 
-  if (!(frame_view->GetScrollingContext()->TouchEventTargetRectsAreDirty() ||
-        frame_view->GetScrollingContext()->ShouldScrollOnMainThreadIsDirty() ||
-        FrameScrollerIsDirty(frame_view))) {
+  if (!(touch_event_rects_dirty || should_scroll_on_main_thread_dirty ||
+        frame_scroller_dirty)) {
     return;
   }
 
-  if (frame_view->GetScrollingContext()->TouchEventTargetRectsAreDirty()) {
+  if (touch_event_rects_dirty) {
     UpdateTouchEventTargetRectsIfNeeded(frame);
     frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(false);
   }
 
-  if (frame_view->GetScrollingContext()->ShouldScrollOnMainThreadIsDirty() ||
+  if (should_scroll_on_main_thread_dirty ||
       frame_view->FrameIsScrollableDidChange()) {
     SetShouldUpdateScrollLayerPositionOnMainThread(
         frame, frame_view->GetMainThreadScrollingReasons());
