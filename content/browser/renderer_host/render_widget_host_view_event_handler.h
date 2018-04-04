@@ -258,12 +258,6 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // object.
   ui::MotionEventAura pointer_state_;
 
-#if defined(OS_WIN)
-  // Contains a copy of the last context menu request parameters. Only set when
-  // we receive a request to show the context menu on a long press.
-  std::unique_ptr<ContextMenuParams> last_context_menu_params_;
-#endif  // defined(OS_WIN)
-
   // The following are not owned. They should outlive |this|
   RenderWidgetHostImpl* const host_;
   // Should create |this| and own it.

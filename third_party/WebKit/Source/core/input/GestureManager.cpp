@@ -350,6 +350,12 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
     mouse_event_manager_->FocusDocumentView();
   }
 
+  if (frame_->GetSettings() &&
+      frame_->GetSettings()->GetShowContextMenuOnMouseUp()) {
+    long_tap_should_invoke_context_menu_ = true;
+    return WebInputEventResult::kNotHandled;
+  }
+
   return SendContextMenuEventForGesture(targeted_event);
 }
 
@@ -358,9 +364,6 @@ WebInputEventResult GestureManager::HandleGestureLongTap(
 #if !defined(OS_ANDROID)
   if (long_tap_should_invoke_context_menu_) {
     long_tap_should_invoke_context_menu_ = false;
-    Node* inner_node = targeted_event.GetHitTestResult().InnerNode();
-    if (inner_node && inner_node->GetLayoutObject())
-      selection_controller_->HandleGestureLongTap(targeted_event);
     return SendContextMenuEventForGesture(targeted_event);
   }
 #endif

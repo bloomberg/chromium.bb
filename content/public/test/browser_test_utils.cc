@@ -915,7 +915,7 @@ void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point) {
       ->OnTouchEvent(&touch);
 }
 
-void SimulateLongPressAt(WebContents* web_contents, const gfx::Point& point) {
+void SimulateLongTapAt(WebContents* web_contents, const gfx::Point& point) {
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
 
@@ -941,6 +941,12 @@ void SimulateLongPressAt(WebContents* web_contents, const gfx::Point& point) {
       ui::ET_TOUCH_RELEASED, point, base::TimeTicks(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   rwhva->OnTouchEvent(&touch_end);
+
+  ui::GestureEventDetails long_tap_details(ui::ET_GESTURE_LONG_TAP);
+  long_tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent long_tap(point.x(), point.y(), 0, ui::EventTimeForNow(),
+                            long_tap_details, touch_end.unique_event_id());
+  rwhva->OnGestureEvent(&long_tap);
 }
 #endif
 

@@ -1558,9 +1558,14 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, MAYBE_LongPressSelection) {
   ASSERT_TRUE(embedder_web_contents());
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
+  blink::WebInputEvent::Type context_menu_gesture_event_type =
+      blink::WebInputEvent::kGestureLongPress;
+#if defined(OS_WIN)
+  context_menu_gesture_event_type = blink::WebInputEvent::kGestureLongTap;
+#endif
   auto filter = std::make_unique<content::InputMsgWatcher>(
       guest_web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureLongPress);
+      context_menu_gesture_event_type);
 
   // Wait for guest to load (without this the events never reach the guest).
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
@@ -1580,8 +1585,7 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, MAYBE_LongPressSelection) {
                                 blink::WebMouseEvent::Button::kLeft,
                                 guest_rect.CenterPoint());
 
-  content::SimulateLongPressAt(embedder_web_contents(),
-                               guest_rect.CenterPoint());
+  content::SimulateLongTapAt(embedder_web_contents(), guest_rect.CenterPoint());
   EXPECT_EQ(content::INPUT_EVENT_ACK_STATE_CONSUMED,
             filter->GetAckStateWaitIfNecessary());
 
