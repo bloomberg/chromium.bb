@@ -14,20 +14,14 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/history_notice_utils.h"
-#include "components/history/core/browser/browsing_history_driver.h"
-#include "components/history/core/browser/browsing_history_service.h"
-#include "components/keyed_service/core/service_access_type.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
@@ -41,7 +35,6 @@
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
-#include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #include "ios/chrome/browser/ui/history/legacy_history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -80,12 +73,7 @@ const CGFloat kSeparatorInset = 10;
 @interface LegacyHistoryCollectionViewController ()<
     HistoryEntriesStatusItemDelegate,
     HistoryEntryInserterDelegate,
-    HistoryEntryItemDelegate,
-    BrowsingHistoryDriverDelegate> {
-  // Abstraction to communicate with HistoryService and WebHistoryService.
-  std::unique_ptr<BrowsingHistoryService> _browsingHistoryService;
-  // Provides dependencies and funnels callbacks from BrowsingHistoryService.
-  std::unique_ptr<IOSBrowsingHistoryDriver> _browsingHistoryDriver;
+    HistoryEntryItemDelegate> {
   // The main browser state. Not owned by HistoryCollectionViewController.
   ios::ChromeBrowserState* _browserState;
   // Backing ivar for delegate property.
@@ -166,6 +154,7 @@ const CGFloat kSeparatorInset = 10;
 @synthesize loading = _loading;
 @synthesize finishedLoading = _finishedLoading;
 @synthesize filterQueryResult = _filterQueryResult;
+@synthesize historyService = _historyService;
 
 - (instancetype)
 initWithLoader:(id<UrlLoader>)loader
@@ -175,13 +164,6 @@ initWithLoader:(id<UrlLoader>)loader
   self =
       [super initWithLayout:layout style:CollectionViewControllerStyleDefault];
   if (self) {
-    _browsingHistoryDriver =
-        std::make_unique<IOSBrowsingHistoryDriver>(browserState, self);
-    _browsingHistoryService = std::make_unique<BrowsingHistoryService>(
-        _browsingHistoryDriver.get(),
-        ios::HistoryServiceFactory::GetForBrowserState(
-            browserState, ServiceAccessType::EXPLICIT_ACCESS),
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState));
     _browserState = browserState;
     _delegate = delegate;
     _URLLoader = loader;
@@ -196,13 +178,13 @@ initWithLoader:(id<UrlLoader>)loader
         [[HistoryEntryInserter alloc] initWithModel:self.collectionViewModel];
     _entryInserter.delegate = self;
     _empty = YES;
-    [self showHistoryMatchingQuery:nil];
   }
   return self;
 }
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  [self showHistoryMatchingQuery:nil];
   self.styler.cellLayoutType = MDCCollectionViewCellLayoutTypeList;
   self.styler.separatorInset =
       UIEdgeInsetsMake(0, kSeparatorInset, 0, kSeparatorInset);
@@ -272,7 +254,7 @@ initWithLoader:(id<UrlLoader>)loader
     entry.all_timestamps.insert(object.timestamp.ToInternalValue());
     entries.push_back(entry);
   }
-  _browsingHistoryService->RemoveVisits(entries);
+  self.historyService->RemoveVisits(entries);
   [self removeSelectedItemsFromCollection];
 }
 
@@ -365,14 +347,15 @@ initWithLoader:(id<UrlLoader>)loader
   }
 }
 
-#pragma mark - BrowsingHistoryDriverDelegate
+#pragma mark - HistoryConsumer
 
-- (void)onQueryCompleteWithResults:
+- (void)historyQueryWasCompletedWithResults:
             (const std::vector<BrowsingHistoryService::HistoryEntry>&)results
-                  queryResultsInfo:
-                      (const BrowsingHistoryService::QueryResultsInfo&)
-                          queryResultsInfo
-               continuationClosure:(base::OnceClosure)continuationClosure {
+                           queryResultsInfo:
+                               (const BrowsingHistoryService::QueryResultsInfo&)
+                                   queryResultsInfo
+                        continuationClosure:
+                            (base::OnceClosure)continuationClosure {
   self.loading = NO;
   _query_history_continuation = std::move(continuationClosure);
 
@@ -472,8 +455,7 @@ initWithLoader:(id<UrlLoader>)loader
   }
 }
 
-- (void)shouldShowNoticeAboutOtherFormsOfBrowsingHistory:
-    (BOOL)shouldShowNotice {
+- (void)showNoticeAboutOtherFormsOfBrowsingHistory:(BOOL)shouldShowNotice {
   self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory = shouldShowNotice;
   // Update the history entries status message if there is no query in progress.
   if (!self.isLoading) {
@@ -481,7 +463,7 @@ initWithLoader:(id<UrlLoader>)loader
   }
 }
 
-- (void)didObserverHistoryDeletion {
+- (void)historyWasDeleted {
   // If history has been deleted, reload history filtering for the current
   // results. This only observes local changes to history, i.e. removing
   // history via the clear browsing data page.
@@ -648,7 +630,7 @@ initWithLoader:(id<UrlLoader>)loader
     options.max_count = kMaxFetchCount;
     options.matching_algorithm =
         query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH;
-    _browsingHistoryService->QueryHistory(queryString, options);
+    self.historyService->QueryHistory(queryString, options);
   }
 }
 
