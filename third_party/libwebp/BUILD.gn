@@ -179,9 +179,6 @@ static_library("libwebp_dsp") {
   ]
   if (is_android) {
     deps += [ "//third_party/android_tools:cpu_features" ]
-
-    configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
-    configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
   }
   if (current_cpu == "x86" || current_cpu == "x64") {
     defines = [
@@ -275,11 +272,6 @@ if (use_dsp_neon) {
     } else if (current_cpu == "arm64" && !is_clang) {
       # avoid an ICE with gcc-4.9: b/15574841
       cflags = [ "-frename-registers" ]
-    }
-
-    if (is_android) {
-      configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
-      configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
     }
   }
 }  # use_dsp_neon

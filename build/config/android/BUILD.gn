@@ -201,27 +201,10 @@ config("lld_pack_relocations") {
   ldflags = [ "-Wl,--pack-dyn-relocs=android" ]
 }
 
-# Instrumentation -------------------------------------------------------------
-#
-# The BUILDCONFIG file sets the "default_cygprofile_instrumentation" config on
-# targets by default. You can override whether the cygprofile instrumentation is
-# used on a per-target basis:
-#
-# configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
-# configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
-
+# Used for instrumented build to generate the orderfile.
 config("default_cygprofile_instrumentation") {
   if (use_order_profiling) {
-    configs = [ ":cygprofile_instrumentation" ]
-  } else {
-    configs = [ ":no_cygprofile_instrumentation" ]
+    defines = [ "CYGPROFILE_INSTRUMENTATION=1" ]
+    cflags = [ "-finstrument-function-entry-bare" ]
   }
-}
-
-config("cygprofile_instrumentation") {
-  defines = [ "CYGPROFILE_INSTRUMENTATION=1" ]
-  cflags = [ "-finstrument-function-entry-bare" ]
-}
-
-config("no_cygprofile_instrumentation") {
 }

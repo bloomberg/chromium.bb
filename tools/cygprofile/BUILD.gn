@@ -14,9 +14,6 @@ if (target_cpu == "arm") {
     deps = [
       "//base",
     ]
-
-    configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
-    configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
   }
 
   executable("cygprofile_perftests") {
@@ -25,9 +22,6 @@ if (target_cpu == "arm") {
     sources = [
       "lightweight_cygprofile_perftest.cc",
     ]
-
-    configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
-    configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
 
     deps = [
       ":cygprofile",
