@@ -1023,7 +1023,8 @@ class DeviceTestRunner(TestRunner):
         logs_dir,
       ])
     except subprocess.CalledProcessError:
-      raise TestDataExtractionError()
+      # TODO(crbug.com/828951): Raise the exception when the bug is fixed.
+      print 'Warning: Failed to retrieve crash reports from the device.'
 
   def tear_down(self):
     """Performs cleanup actions which must occur after every test launch."""
