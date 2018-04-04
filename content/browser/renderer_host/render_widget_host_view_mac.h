@@ -291,6 +291,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const blink::WebMouseEvent& web_event) override;
   void OnNSViewForwardWheelEvent(
       const blink::WebMouseWheelEvent& web_event) override;
+  void OnNSViewGestureBegin(blink::WebGestureEvent begin_event) override;
+  void OnNSViewGestureUpdate(blink::WebGestureEvent update_event) override;
+  void OnNSViewGestureEnd(blink::WebGestureEvent end_event) override;
+  void OnNSViewSmartMagnify(
+      const blink::WebGestureEvent& smart_magnify_event) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
@@ -431,6 +436,26 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
+
+  // When a gesture starts, the system does not inform the view of which type
+  // of gesture is happening (magnify, rotate, etc), rather, it just informs
+  // the view that some as-yet-undefined gesture is starting. Capture the
+  // information about the gesture's beginning event here. It will be used to
+  // create a specific gesture begin event later.
+  std::unique_ptr<blink::WebGestureEvent> gesture_begin_event_;
+
+  // This is set if a GesturePinchBegin event has been sent in the lifetime of
+  // |gesture_begin_event__|. If set, a GesturePinchEnd will be sent when the
+  // gesture ends.
+  bool gesture_begin_pinch_sent_ = false;
+
+  // To avoid accidental pinches, require that a certain zoom threshold be
+  // reached before forwarding it to the browser. Use |pinch_unused_amount_| to
+  // hold this value. If the user reaches this value, don't re-require the
+  // threshold be reached until the page has been zoomed back to page scale of
+  // one.
+  bool pinch_has_reached_zoom_threshold_ = false;
+  float pinch_unused_amount_ = 1.f;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
