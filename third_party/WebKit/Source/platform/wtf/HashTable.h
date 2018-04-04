@@ -1932,15 +1932,6 @@ void HashTable<Key,
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   HashTableStatsPtr<Allocator>::swap(stats_, other.stats_);
 #endif
-
-  if (table_) {
-    ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(
-        table_, table_size_);
-  }
-  if (other.table_) {
-    ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(
-        other.table_, other.table_size_);
-  }
 }
 
 template <typename Key,

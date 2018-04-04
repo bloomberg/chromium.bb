@@ -545,14 +545,6 @@ class VectorBuffer<T, 0, Allocator>
     Allocator::BackingWriteBarrier(other.buffer_);
     std::swap(capacity_, other.capacity_);
     std::swap(size_, other.size_);
-    if (buffer_) {
-      ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(buffer_,
-                                                                        size_);
-    }
-    if (other.buffer_) {
-      ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
-          other.buffer_, other.size_);
-    }
   }
 
   using Base::AllocateBuffer;
@@ -700,14 +692,6 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       Allocator::BackingWriteBarrier(other.buffer_);
       std::swap(capacity_, other.capacity_);
       std::swap(size_, other.size_);
-      if (buffer_) {
-        ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
-            buffer_, size_);
-      }
-      if (other.buffer_) {
-        ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
-            other.buffer_, other.size_);
-      }
       return;
     }
 
