@@ -64,34 +64,10 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     return nodes.IsEmpty() ? nullptr : nodes.back().Get();
   }
 
-  Node* FirstDistributedNode() const {
-    DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-    DCHECK(SupportsAssignment());
-    return distributed_nodes_.IsEmpty() ? nullptr
-                                        : distributed_nodes_.front().Get();
-  }
-  Node* LastDistributedNode() const {
-    DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-    DCHECK(SupportsAssignment());
-    return distributed_nodes_.IsEmpty() ? nullptr
-                                        : distributed_nodes_.back().Get();
-  }
-
   Node* AssignedNodeNextTo(const Node&) const;
   Node* AssignedNodePreviousTo(const Node&) const;
 
-  Node* DistributedNodeNextTo(const Node&) const;
-  Node* DistributedNodePreviousTo(const Node&) const;
-
   void AppendAssignedNode(Node&);
-
-  void RecalcDistributedNodes();
-  void AppendDistributedNode(Node&);
-  void AppendDistributedNodesFrom(const HTMLSlotElement& other);
-
-  void UpdateDistributedNodesWithFallback();
-
-  void LazyReattachDistributedNodesIfNeeded();
 
   void AttachLayoutTree(AttachContext&) final;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
@@ -108,9 +84,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   bool HasAssignedNodesSlow() const;
   bool FindHostChildWithSameSlotName() const;
 
-  void ClearDistribution();
-  void SaveAndClearDistribution();
-
   bool SupportsAssignment() const { return IsInV1ShadowTree(); }
 
   void CheckFallbackAfterInsertedIntoShadowTree();
@@ -122,10 +95,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void DispatchSlotChangeEvent();
   void ClearSlotChangeEventEnqueued() { slotchange_event_enqueued_ = false; }
 
-  // For Incremental Shadow DOM
-  void ClearAssignedNodes();
-  void RecalcFlatTreeChildren();
-
   static AtomicString NormalizeSlotName(const AtomicString&);
 
   // For User-Agent Shadow DOM
@@ -133,6 +102,34 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   static const AtomicString& UserAgentDefaultSlotName();
 
   virtual void Trace(blink::Visitor*);
+
+  // For Incremental Shadow DOM
+  void ClearAssignedNodes();
+  void RecalcFlatTreeChildren();
+
+  // For Non-Incremental Shadow DOM
+  void RecalcDistributedNodes();
+  void AppendDistributedNode(Node&);
+  void AppendDistributedNodesFrom(const HTMLSlotElement& other);
+  void UpdateDistributedNodesWithFallback();
+  void LazyReattachDistributedNodesIfNeeded();
+  void ClearDistribution();
+  void SaveAndClearDistribution();
+  Node* DistributedNodeNextTo(const Node&) const;
+  Node* DistributedNodePreviousTo(const Node&) const;
+
+  Node* FirstDistributedNode() const {
+    DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+    DCHECK(SupportsAssignment());
+    return distributed_nodes_.IsEmpty() ? nullptr
+                                        : distributed_nodes_.front().Get();
+  }
+  Node* LastDistributedNode() const {
+    DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+    DCHECK(SupportsAssignment());
+    return distributed_nodes_.IsEmpty() ? nullptr
+                                        : distributed_nodes_.back().Get();
+  }
 
  private:
   HTMLSlotElement(Document&);
@@ -160,7 +157,10 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   const HeapVector<Member<Node>>& GetDistributedNodes();
 
+  void ClearAssignedNodesAndFlatTreeChildren();
+
   HeapVector<Member<Node>> assigned_nodes_;
+  bool slotchange_event_enqueued_ = false;
 
   // For IncrementalShadowDOM
   HeapVector<Member<Node>> flat_tree_children_;
@@ -169,8 +169,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   HeapVector<Member<Node>> distributed_nodes_;
   HeapVector<Member<Node>> old_distributed_nodes_;
   HeapHashMap<Member<const Node>, size_t> distributed_indices_;
-
-  bool slotchange_event_enqueued_ = false;
 
   // TODO(hayato): Move this to more appropriate directory (e.g. platform/wtf)
   // if there are more than one usages.

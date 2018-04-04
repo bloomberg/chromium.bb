@@ -201,6 +201,7 @@ void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
 }
 
 void HTMLSlotElement::RecalcDistributedNodes() {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   for (auto& node : assigned_nodes_) {
     DCHECK(node->IsSlotable());
     if (HTMLSlotElement* slot =
@@ -216,12 +217,14 @@ void HTMLSlotElement::RecalcDistributedNodes() {
 }
 
 void HTMLSlotElement::AppendDistributedNode(Node& node) {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   size_t size = distributed_nodes_.size();
   distributed_nodes_.push_back(&node);
   distributed_indices_.Set(&node, size);
 }
 
 void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   size_t index = distributed_nodes_.size();
   distributed_nodes_.AppendVector(other.distributed_nodes_);
   for (const auto& node : other.distributed_nodes_)
@@ -231,6 +234,12 @@ void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
 void HTMLSlotElement::ClearAssignedNodes() {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   assigned_nodes_.clear();
+}
+
+void HTMLSlotElement::ClearAssignedNodesAndFlatTreeChildren() {
+  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+  assigned_nodes_.clear();
+  flat_tree_children_.clear();
 }
 
 void HTMLSlotElement::RecalcFlatTreeChildren() {
@@ -252,12 +261,14 @@ void HTMLSlotElement::RecalcFlatTreeChildren() {
 }
 
 void HTMLSlotElement::ClearDistribution() {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   assigned_nodes_.clear();
   distributed_nodes_.clear();
   distributed_indices_.clear();
 }
 
 void HTMLSlotElement::SaveAndClearDistribution() {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   old_distributed_nodes_.swap(distributed_nodes_);
   ClearDistribution();
 }
@@ -449,7 +460,11 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
     // This slot was in a shadow tree and got disconnected from the shadow tree
     insertion_point->ContainingShadowRoot()->GetSlotAssignment().DidRemoveSlot(
         *this);
-    ClearDistribution();
+    if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+      ClearAssignedNodesAndFlatTreeChildren();
+    } else {
+      ClearDistribution();
+    }
   }
 
   HTMLElement::RemovedFrom(insertion_point);
@@ -484,6 +499,7 @@ void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
 }
 
 void HTMLSlotElement::UpdateDistributedNodesWithFallback() {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   if (!distributed_nodes_.IsEmpty())
     return;
   for (auto& child : NodeTraversal::ChildrenOf(*this)) {
@@ -536,6 +552,7 @@ void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
 }
 
 void HTMLSlotElement::LazyReattachDistributedNodesIfNeeded() {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   // TODO(hayato): Move this probe to a better place.
   probe::didPerformSlotDistribution(this);
 
