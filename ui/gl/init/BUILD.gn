@@ -38,7 +38,7 @@ jumbo_component("init") {
       "gl_factory_android.cc",
       "gl_initializer_android.cc",
     ]
-  } else if (is_win) {
+  } else if (is_win && !use_ozone) {
     sources += [
       "gl_factory_win.cc",
       "gl_initializer_win.cc",

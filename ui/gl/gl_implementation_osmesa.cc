@@ -33,7 +33,14 @@ bool InitializeStaticGLBindingsOSMesaGL() {
   }
 #endif  // !defined(OS_FUCHSIA)
 
-  base::FilePath library_path = module_path.Append("libosmesa.so");
+#if defined(OS_WIN)
+  base::FilePath library_path =
+      module_path.Append(FILE_PATH_LITERAL("osmesa.dll"));
+#else
+  base::FilePath library_path =
+      module_path.Append(FILE_PATH_LITERAL("libosmesa.so"));
+#endif
+
   base::NativeLibrary library = LoadLibraryAndPrintError(library_path);
   if (!library)
     return false;
