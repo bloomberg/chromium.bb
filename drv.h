@@ -37,6 +37,8 @@ extern "C" {
 #define BO_USE_CAMERA_READ		(1ull << 14)
 #define BO_USE_RENDERSCRIPT		(1ull << 16)
 #define BO_USE_TEXTURE			(1ull << 17)
+#define BO_USE_HW_VIDEO_DECODER		(1ull << 18)
+
 
 /* Map flags */
 #define BO_MAP_NONE 0
