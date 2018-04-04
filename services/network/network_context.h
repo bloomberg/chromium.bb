@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -39,6 +41,7 @@ namespace network {
 class NetworkService;
 class ResourceScheduler;
 class ResourceSchedulerClient;
+class URLLoaderFactory;
 class URLRequestContextBuilderMojo;
 class WebSocketFactory;
 
@@ -162,6 +165,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       net::NetworkQualityEstimator* network_quality_estimator,
       net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
 
+  // Destroys the specified URLLoaderFactory.  Called by the URLLoaderFactory
+  // itself when it has not open pipes.
+  void DestroyURLLoaderFactory(URLLoaderFactory* url_loader_factory);
+
  private:
   // Constructor only used in tests.
   explicit NetworkContext(mojom::NetworkContextParamsPtr params);
@@ -187,10 +194,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
-  // Put it below |url_request_context_| so that it outlives all the
-  // NetworkServiceURLLoaderFactory instances.
-  mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
-
   mojom::NetworkContextParamsPtr params_;
 
   mojo::Binding<mojom::NetworkContext> binding_;
@@ -204,6 +207,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #endif  // !defined(OS_IOS)
 
   std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
+
+  // This must be below |url_request_context_| so that the URLRequestContext
+  // outlives all the URLLoaderFactories and URLLoaders that depend on it.
+  std::set<std::unique_ptr<URLLoaderFactory>, base::UniquePtrComparator>
+      url_loader_factories_;
 
   int current_resource_scheduler_client_id_ = 0;
 
