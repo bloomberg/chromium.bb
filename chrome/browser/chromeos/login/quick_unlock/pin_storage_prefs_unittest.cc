@@ -16,10 +16,10 @@
 namespace chromeos {
 namespace {
 
-class PinStorageUnitTest : public testing::Test {
+class PinStoragePrefsUnitTest : public testing::Test {
  protected:
-  PinStorageUnitTest() : profile_(std::make_unique<TestingProfile>()) {}
-  ~PinStorageUnitTest() override {}
+  PinStoragePrefsUnitTest() : profile_(std::make_unique<TestingProfile>()) {}
+  ~PinStoragePrefsUnitTest() override = default;
 
   // testing::Test:
   void SetUp() override {
@@ -29,16 +29,16 @@ class PinStorageUnitTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(PinStorageUnitTest);
+  DISALLOW_COPY_AND_ASSIGN(PinStoragePrefsUnitTest);
 };
 
 }  // namespace
 
-// Provides test-only PinStorage APIs.
-class PinStorageTestApi {
+// Provides test-only PinStoragePrefs APIs.
+class PinStoragePrefsTestApi {
  public:
   // Does *not* take ownership over |pin_storage|.
-  explicit PinStorageTestApi(quick_unlock::PinStorage* pin_storage)
+  explicit PinStoragePrefsTestApi(quick_unlock::PinStoragePrefs* pin_storage)
       : pin_storage_(pin_storage) {}
 
   std::string PinSalt() const { return pin_storage_->PinSalt(); }
@@ -53,25 +53,25 @@ class PinStorageTestApi {
   }
 
  private:
-  quick_unlock::PinStorage* pin_storage_;
+  quick_unlock::PinStoragePrefs* pin_storage_;
 
-  DISALLOW_COPY_AND_ASSIGN(PinStorageTestApi);
+  DISALLOW_COPY_AND_ASSIGN(PinStoragePrefsTestApi);
 };
 
 // Verifies that:
 // 1. Prefs are initially empty
 // 2. Setting a PIN will update the pref system.
 // 3. Removing a PIN clears prefs.
-TEST_F(PinStorageUnitTest, PinStorageWritesToPrefs) {
+TEST_F(PinStoragePrefsUnitTest, PinStorageWritesToPrefs) {
   PrefService* prefs = profile_->GetPrefs();
 
   EXPECT_EQ("", prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
   EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSecret));
 
-  quick_unlock::PinStorage* pin_storage =
+  quick_unlock::PinStoragePrefs* pin_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage();
-  PinStorageTestApi pin_storage_test(pin_storage);
+          ->pin_storage_prefs();
+  PinStoragePrefsTestApi pin_storage_test(pin_storage);
 
   pin_storage->SetPin("1111");
   EXPECT_TRUE(pin_storage->IsPinSet());
@@ -92,10 +92,10 @@ TEST_F(PinStorageUnitTest, PinStorageWritesToPrefs) {
 // 1. Initial unlock attempt count is zero.
 // 2. Attempting unlock attempts correctly increases unlock attempt count.
 // 3. Resetting unlock attempt count correctly sets attempt count to 0.
-TEST_F(PinStorageUnitTest, UnlockAttemptCount) {
-  quick_unlock::PinStorage* pin_storage =
+TEST_F(PinStoragePrefsUnitTest, UnlockAttemptCount) {
+  quick_unlock::PinStoragePrefs* pin_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage();
+          ->pin_storage_prefs();
 
   EXPECT_EQ(0, pin_storage->unlock_attempt_count());
 
@@ -109,11 +109,11 @@ TEST_F(PinStorageUnitTest, UnlockAttemptCount) {
 }
 
 // Verifies that the correct pin can be used to authenticate.
-TEST_F(PinStorageUnitTest, AuthenticationSucceedsWithRightPin) {
-  quick_unlock::PinStorage* pin_storage =
+TEST_F(PinStoragePrefsUnitTest, AuthenticationSucceedsWithRightPin) {
+  quick_unlock::PinStoragePrefs* pin_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage();
-  PinStorageTestApi pin_storage_test(pin_storage);
+          ->pin_storage_prefs();
+  PinStoragePrefsTestApi pin_storage_test(pin_storage);
 
   pin_storage->SetPin("1111");
 
@@ -123,17 +123,18 @@ TEST_F(PinStorageUnitTest, AuthenticationSucceedsWithRightPin) {
 
 // Verifies that the correct pin will fail to authenticate if too many
 // authentication attempts have been made.
-TEST_F(PinStorageUnitTest, AuthenticationFailsFromTooManyAttempts) {
-  quick_unlock::PinStorage* pin_storage =
+TEST_F(PinStoragePrefsUnitTest, AuthenticationFailsFromTooManyAttempts) {
+  quick_unlock::PinStoragePrefs* pin_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage();
-  PinStorageTestApi pin_storage_test(pin_storage);
+          ->pin_storage_prefs();
+  PinStoragePrefsTestApi pin_storage_test(pin_storage);
 
   pin_storage->SetPin("1111");
 
   // Use up all of the authentication attempts so authentication fails.
   EXPECT_TRUE(pin_storage_test.IsPinAuthenticationAvailable());
-  for (int i = 0; i < quick_unlock::PinStorage::kMaximumUnlockAttempts; ++i)
+  for (int i = 0; i < quick_unlock::PinStoragePrefs::kMaximumUnlockAttempts;
+       ++i)
     EXPECT_FALSE(pin_storage_test.TryAuthenticatePin(
         "foobar", Key::KEY_TYPE_PASSWORD_PLAIN));
 
@@ -144,11 +145,11 @@ TEST_F(PinStorageUnitTest, AuthenticationFailsFromTooManyAttempts) {
 }
 
 // Verifies that hashed pin can be used to authenticate.
-TEST_F(PinStorageUnitTest, AuthenticationWithHashedPin) {
-  quick_unlock::PinStorage* pin_storage =
+TEST_F(PinStoragePrefsUnitTest, AuthenticationWithHashedPin) {
+  quick_unlock::PinStoragePrefs* pin_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage();
-  PinStorageTestApi pin_storage_test(pin_storage);
+          ->pin_storage_prefs();
+  PinStoragePrefsTestApi pin_storage_test(pin_storage);
 
   pin_storage->SetPin("1111");
   std::string hashed_pin = pin_storage_test.PinSecret();

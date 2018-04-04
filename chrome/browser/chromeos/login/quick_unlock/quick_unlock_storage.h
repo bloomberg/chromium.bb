@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -70,7 +70,7 @@ class QuickUnlockStorage : public KeyedService {
   FingerprintStorage* fingerprint_storage() {
     return fingerprint_storage_.get();
   }
-  PinStorage* pin_storage() { return pin_storage_.get(); }
+  PinStoragePrefs* pin_storage_prefs() { return pin_storage_prefs_.get(); }
 
  private:
   friend class chromeos::QuickUnlockStorageTestApi;
@@ -82,7 +82,7 @@ class QuickUnlockStorage : public KeyedService {
   PrefService* pref_service_;
   base::TimeTicks last_strong_auth_;
   std::unique_ptr<FingerprintStorage> fingerprint_storage_;
-  std::unique_ptr<PinStorage> pin_storage_;
+  std::unique_ptr<PinStoragePrefs> pin_storage_prefs_;
   std::unique_ptr<AuthToken> auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockStorage);

@@ -17,7 +17,7 @@ namespace quick_unlock {
 QuickUnlockStorage::QuickUnlockStorage(PrefService* pref_service)
     : pref_service_(pref_service) {
   fingerprint_storage_ = std::make_unique<FingerprintStorage>(pref_service);
-  pin_storage_ = std::make_unique<PinStorage>(pref_service);
+  pin_storage_prefs_ = std::make_unique<PinStoragePrefs>(pref_service);
 }
 
 QuickUnlockStorage::~QuickUnlockStorage() {}
@@ -25,7 +25,7 @@ QuickUnlockStorage::~QuickUnlockStorage() {}
 void QuickUnlockStorage::MarkStrongAuth() {
   last_strong_auth_ = base::TimeTicks::Now();
   fingerprint_storage()->ResetUnlockAttemptCount();
-  pin_storage()->ResetUnlockAttemptCount();
+  pin_storage_prefs()->ResetUnlockAttemptCount();
 }
 
 bool QuickUnlockStorage::HasStrongAuth() const {
@@ -53,12 +53,13 @@ bool QuickUnlockStorage::IsFingerprintAuthenticationAvailable() const {
 }
 
 bool QuickUnlockStorage::IsPinAuthenticationAvailable() const {
-  return HasStrongAuth() && pin_storage_->IsPinAuthenticationAvailable();
+  return HasStrongAuth() && pin_storage_prefs_->IsPinAuthenticationAvailable();
 }
 
 bool QuickUnlockStorage::TryAuthenticatePin(const std::string& pin,
                                             Key::KeyType key_type) {
-  return HasStrongAuth() && pin_storage()->TryAuthenticatePin(pin, key_type);
+  return HasStrongAuth() &&
+         pin_storage_prefs()->TryAuthenticatePin(pin, key_type);
 }
 
 std::string QuickUnlockStorage::CreateAuthToken(
@@ -80,7 +81,7 @@ std::string QuickUnlockStorage::GetAuthToken() {
 
 void QuickUnlockStorage::Shutdown() {
   fingerprint_storage_.reset();
-  pin_storage_.reset();
+  pin_storage_prefs_.reset();
 }
 
 }  // namespace quick_unlock

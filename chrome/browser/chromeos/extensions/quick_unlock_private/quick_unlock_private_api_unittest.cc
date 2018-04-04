@@ -511,7 +511,7 @@ TEST_F(QuickUnlockPrivateUnitTest, ModeChangeEventOnlyRaisedWhenModesChange) {
 }
 
 // Ensures that quick unlock can be enabled and disabled by checking the result
-// of quickUnlockPrivate.GetActiveModes and PinStorage::IsPinSet.
+// of quickUnlockPrivate.GetActiveModes and PinStoragePrefs::IsPinSet.
 TEST_F(QuickUnlockPrivateUnitTest, SetModesAndGetActiveModes) {
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile());
@@ -523,13 +523,13 @@ TEST_F(QuickUnlockPrivateUnitTest, SetModesAndGetActiveModes) {
               {"111111"});
   EXPECT_EQ(GetActiveModes(),
             QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN});
-  EXPECT_TRUE(quick_unlock_storage->pin_storage()->IsPinSet());
+  EXPECT_TRUE(quick_unlock_storage->pin_storage_prefs()->IsPinSet());
 
   // SetModes can be used to turn off a quick unlock mode.
   ExpectModesChanged(QuickUnlockModeList{});
   RunSetModes(QuickUnlockModeList{}, CredentialList{});
   EXPECT_EQ(GetActiveModes(), QuickUnlockModeList{});
-  EXPECT_FALSE(quick_unlock_storage->pin_storage()->IsPinSet());
+  EXPECT_FALSE(quick_unlock_storage->pin_storage_prefs()->IsPinSet());
 }
 
 // Verifies that enabling PIN quick unlock actually talks to the PIN subsystem.
@@ -538,14 +538,14 @@ TEST_F(QuickUnlockPrivateUnitTest, VerifyAuthenticationAgainstPIN) {
       quick_unlock::QuickUnlockFactory::GetForProfile(profile());
 
   RunSetModes(QuickUnlockModeList{}, CredentialList{});
-  EXPECT_FALSE(quick_unlock_storage->pin_storage()->IsPinSet());
+  EXPECT_FALSE(quick_unlock_storage->pin_storage_prefs()->IsPinSet());
 
   RunSetModes(QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN},
               {"111111"});
-  EXPECT_TRUE(quick_unlock_storage->pin_storage()->IsPinSet());
+  EXPECT_TRUE(quick_unlock_storage->pin_storage_prefs()->IsPinSet());
 
   quick_unlock_storage->MarkStrongAuth();
-  quick_unlock_storage->pin_storage()->ResetUnlockAttemptCount();
+  quick_unlock_storage->pin_storage_prefs()->ResetUnlockAttemptCount();
   EXPECT_TRUE(quick_unlock_storage->TryAuthenticatePin(
       "111111", Key::KEY_TYPE_PASSWORD_PLAIN));
   EXPECT_FALSE(quick_unlock_storage->TryAuthenticatePin(

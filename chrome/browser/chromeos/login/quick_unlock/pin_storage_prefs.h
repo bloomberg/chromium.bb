@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_PREFS_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_PREFS_H_
 
 #include <string>
 
@@ -16,22 +16,23 @@ class PrefService;
 
 namespace chromeos {
 
-class PinStorageTestApi;
+class PinStoragePrefsTestApi;
 
 namespace quick_unlock {
 
 class QuickUnlockStorage;
 
-class PinStorage {
+class PinStoragePrefs {
  public:
-  // TODO(sammiequon): Pull this value in from policy. See crbug.com/612271.
+  // TODO(sammiequon): Pull this value in from policy. See
+  // https://crbug.com/612271.
   static const int kMaximumUnlockAttempts = 3;
 
   // Registers profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  explicit PinStorage(PrefService* pref_service);
-  ~PinStorage();
+  explicit PinStoragePrefs(PrefService* pref_service);
+  ~PinStoragePrefs();
 
   // Add a PIN unlock attempt count.
   void AddUnlockAttempt();
@@ -48,7 +49,7 @@ class PinStorage {
   void RemovePin();
 
  private:
-  friend class chromeos::PinStorageTestApi;
+  friend class chromeos::PinStoragePrefsTestApi;
   friend class QuickUnlockStorage;
 
   // Is PIN entry currently available?
@@ -65,10 +66,10 @@ class PinStorage {
   PrefService* pref_service_;
   int unlock_attempt_count_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(PinStorage);
+  DISALLOW_COPY_AND_ASSIGN(PinStoragePrefs);
 };
 
 }  // namespace quick_unlock
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_PREFS_H_
