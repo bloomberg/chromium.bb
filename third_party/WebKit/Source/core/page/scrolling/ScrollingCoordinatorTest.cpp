@@ -1132,6 +1132,37 @@ TEST_P(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
             scroll_layer->MainThreadScrollingReasons());
 }
 
+// LocalFrameView::FrameIsScrollableDidChange is used as a dirty bit and is
+// set to clean in ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded.
+// This test ensures that the dirty bit is set and unset properly.
+TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
+  LoadHTML(R"HTML(
+    <div id='bg' style='background: red; width: 10px; height: 10px;'></div>
+    <div id='forcescroll' style='height: 5000px;'></div>
+  )HTML");
+
+  // Initially there is a change but that goes away after a compositing update.
+  EXPECT_TRUE(GetFrame()->View()->FrameIsScrollableDidChange());
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
+
+  // A change to background color should not change the frame's scrollability.
+  auto* background = GetFrame()->GetDocument()->getElementById("bg");
+  background->removeAttribute(HTMLNames::styleAttr);
+  EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
+
+  ForceFullCompositingUpdate();
+
+  // Making the frame not scroll should change the frame's scrollability.
+  auto* forcescroll = GetFrame()->GetDocument()->getElementById("forcescroll");
+  forcescroll->removeAttribute(HTMLNames::styleAttr);
+  GetFrame()->View()->UpdateLifecycleToLayoutClean();
+  EXPECT_TRUE(GetFrame()->View()->FrameIsScrollableDidChange());
+
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
+}
+
 class NonCompositedMainThreadScrollingReasonTest
     : public ScrollingCoordinatorTest {
   static const uint32_t kLCDTextRelatedReasons =
