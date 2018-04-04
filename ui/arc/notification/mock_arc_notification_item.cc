@@ -36,10 +36,6 @@ const std::string& MockArcNotificationItem::GetNotificationId() const {
   return notification_id_;
 }
 
-bool MockArcNotificationItem::IsOpeningSettingsSupported() const {
-  return true;
-}
-
 mojom::ArcNotificationType MockArcNotificationItem::GetNotificationType()
     const {
   return mojom::ArcNotificationType::SIMPLE;
@@ -57,10 +53,6 @@ mojom::ArcNotificationShownContents MockArcNotificationItem::GetShownContents()
 
 gfx::Rect MockArcNotificationItem::GetSwipeInputRect() const {
   return gfx::Rect();
-}
-
-const base::string16& MockArcNotificationItem::GetAccessibleName() const {
-  return base::EmptyString16();
 }
 
 bool MockArcNotificationItem::IsManuallyExpandedOrCollapsed() const {

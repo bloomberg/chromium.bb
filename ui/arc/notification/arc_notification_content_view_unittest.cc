@@ -113,7 +113,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   void PressCloseButton() {
     DummyEvent dummy_event;
     auto* control_buttons_view =
-        GetArcNotificationContentView()->control_buttons_view_;
+        &GetArcNotificationContentView()->control_buttons_view_;
     ASSERT_TRUE(control_buttons_view);
     views::Button* close_button = control_buttons_view->close_button();
     ASSERT_NE(nullptr, close_button);
@@ -136,8 +136,8 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
         static_cast<ArcNotificationView*>(
             message_center::MessageViewFactory::Create(notification, true)));
     notification_view->set_owned_by_client();
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
 
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = ash::Shell::GetPrimaryRootWindow();
     auto wrapper_widget = std::make_unique<views::Widget>();
@@ -171,6 +171,9 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   }
 
   Notification CreateNotification(MockArcNotificationItem* notification_item) {
+    message_center::RichNotificationData optional_fields;
+    optional_fields.settings_button_handler =
+        message_center::SettingsButtonHandler::DELEGATE;
     return Notification(
         message_center::NOTIFICATION_TYPE_CUSTOM,
         notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
@@ -178,7 +181,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
         GURL(),
         message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                    "ARC_NOTIFICATION"),
-        message_center::RichNotificationData(),
+        optional_fields,
         new ArcNotificationDelegate(notification_item->GetWeakPtr()));
   }
 
@@ -192,8 +195,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const {
     DCHECK(GetArcNotificationContentView());
-    DCHECK(GetArcNotificationContentView()->control_buttons_view_);
-    return GetArcNotificationContentView()->control_buttons_view_;
+    return &GetArcNotificationContentView()->control_buttons_view_;
   }
   views::Widget* GetControlButtonsWidget() const {
     DCHECK(GetControlButtonsView()->GetWidget());
@@ -201,9 +203,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   }
 
   ArcNotificationContentView* GetArcNotificationContentView() const {
-    views::View* view = notification_view_->contents_view_;
-    EXPECT_EQ(ArcNotificationContentView::kViewClassName, view->GetClassName());
-    return static_cast<ArcNotificationContentView*>(view);
+    return notification_view_->content_view_;
   }
   void ActivateArcNotification() {
     GetArcNotificationContentView()->Activate();

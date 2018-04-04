@@ -791,7 +791,7 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
   EXPECT_FALSE(notification_view()->settings_row_->visible());
   gfx::Point settings_cursor_location(1, 1);
   views::View::ConvertPointToScreen(
-      notification_view()->control_buttons_view_.get()->settings_button(),
+      notification_view()->control_buttons_view_->settings_button(),
       &settings_cursor_location);
   ui::test::EventGenerator generator(widget()->GetNativeWindow());
   generator.MoveMouseTo(settings_cursor_location);

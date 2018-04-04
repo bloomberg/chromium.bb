@@ -78,15 +78,10 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   rich_data.priority = ConvertAndroidPriority(data->priority);
   if (data->small_icon)
     rich_data.small_image = gfx::Image::CreateFrom1xBitmap(*data->small_icon);
-  if (data->accessible_name.has_value()) {
-    accessible_name_ = base::UTF8ToUTF16(*data->accessible_name);
-  } else {
-    accessible_name_ = base::JoinString(
-        {base::UTF8ToUTF16(data->title), base::UTF8ToUTF16(data->message)},
-        base::ASCIIToUTF16("\n"));
-  }
-  rich_data.accessible_name = accessible_name_;
-  if (IsOpeningSettingsSupported()) {
+
+  rich_data.accessible_name = base::UTF8ToUTF16(
+      data->accessible_name.value_or(data->title + "\n" + data->message));
+  if (manager_->IsOpeningSettingsSupported()) {
     rich_data.settings_button_handler =
         message_center::SettingsButtonHandler::DELEGATE;
   }
@@ -131,9 +126,6 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
         gfx::ImageSkiaRep(*data->snapshot_image, data->snapshot_image_scale));
   }
 
-  for (auto& observer : observers_)
-    observer.OnItemUpdated();
-
   message_center_->AddNotification(std::move(notification));
 }
 
@@ -160,10 +152,6 @@ void ArcNotificationItemImpl::Click() {
 
 void ArcNotificationItemImpl::OpenSettings() {
   manager_->OpenNotificationSettings(notification_key_);
-}
-
-bool ArcNotificationItemImpl::IsOpeningSettingsSupported() const {
-  return manager_->IsOpeningSettingsSupported();
 }
 
 void ArcNotificationItemImpl::ToggleExpansion() {
@@ -240,10 +228,6 @@ const std::string& ArcNotificationItemImpl::GetNotificationKey() const {
 
 const std::string& ArcNotificationItemImpl::GetNotificationId() const {
   return notification_id_;
-}
-
-const base::string16& ArcNotificationItemImpl::GetAccessibleName() const {
-  return accessible_name_;
 }
 
 }  // namespace arc
