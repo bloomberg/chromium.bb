@@ -6,6 +6,7 @@
 
 set -e -o pipefail
 
+CYGWIN=false
 MYPATH=$(dirname "${BASH_SOURCE[0]}")
 
 : ${CIPD_CLIENT_VER:=`cat $MYPATH/cipd_client_version`}
@@ -16,7 +17,11 @@ case $UNAME in
   linux)
     PLAT=linux
     ;;
-  cygwin*|msys*|mingw*)
+  cygwin*)
+    PLAT=windows
+    CYGWIN=true
+    ;;
+  msys*|mingw*)
     PLAT=windows
     ;;
   darwin)
@@ -104,6 +109,22 @@ if ! "$CLIENT" selfupdate -version "$CIPD_CLIENT_VER" ; then
   echo -n "[31;1mselfupdate failed:[0;1m " 1>&2
   echo "run \`CIPD_HTTP_USER_AGENT_PREFIX=$USER_AGENT/manual $CLIENT selfupdate -version '$CIPD_CLIENT_VER'\` to diagnose" 1>&2
   echo "[0m" 1>&2
+fi
+
+# CygWin requires changing absolute paths to Windows form. Relative paths
+# are typically okay as Windows generally accepts both forward and back
+# slashes. This could possibly be constrained to only /tmp/ and /cygdrive/.
+if $CYGWIN; then
+  args=("$@")
+  for i in `seq 2 $#`; do
+    arg="${@:$i:1}"
+    if [ "${arg:0:1}" == "/" ]; then
+      last=$((i-1))
+      next=$((i+1))
+      set -- "${@:1:$last}" `cygpath -w "$arg"` "${@:$next}"
+    fi
+  done
+  echo "$CLIENT" "${@}"
 fi
 
 exec "$CLIENT" "${@}"
