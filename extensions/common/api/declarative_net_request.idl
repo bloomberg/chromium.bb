@@ -117,15 +117,24 @@ namespace declarativeNetRequest {
     // Adds |page_patterns| to the set of whitelisted pages. Requests from these
     // pages are not intercepted by the extension. These are persisted across
     // browser sessions.
+    // Note: MAX_NUMBER_OF_WHITELISTED_PAGES is the maximum number of
+    // whitelisted page an extension can add. Also, adding page patterns is
+    // atomic. In case of an error, no page pattern is added.
     // |page_patterns| : Array of match patterns which are to be added to the
     // whitelist.
     // |callback|: Called after the |page_patterns| have been added.
+    // chrome.runtime.lastError will be set in case of an error, for example if
+    // an invalid page pattern is specified or the extension exceeded the
+    // maximum page patterns limit.
     static void addWhitelistedPages(DOMString[] page_patterns, optional EmptyCallback callback);
 
     // Removes |page_patterns| from the set of whitelisted pages.
+    // Note: Removing page patterns is atomic. In case of an error, no page
+    // pattern is removed.
     // |page_patterns| : Array of match patterns which are to be removed from
     // the whitelist.
     // |callback|: Called after the |page_patterns| have been removed.
+    // chrome.runtime.lastError will be set in case of an error.
     static void removeWhitelistedPages(DOMString[] page_patterns, optional EmptyCallback callback);
 
     // Returns the current set of whitelisted pages.
@@ -133,4 +142,8 @@ namespace declarativeNetRequest {
     static void getWhitelistedPages(GetWhitelistedPagesCallback callback);
   };
 
+  interface Properties {
+    // The maximum number of whitelisted pages that an extension can add.
+    [value=100] static long MAX_NUMBER_OF_WHITELISTED_PAGES();
+  };
 };

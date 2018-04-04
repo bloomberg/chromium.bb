@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
@@ -74,8 +75,12 @@ DeclarativeNetRequestUpdateWhitelistedPagesFunction::UpdateWhitelistedPages(
       break;
   }
 
-  // TODO(crbug.com/811460): Impost a limit on the number of patterns that can
-  // be whitelisted by an extension.
+  if (static_cast<int>(new_set.size()) >
+      api::declarative_net_request::MAX_NUMBER_OF_WHITELISTED_PAGES) {
+    return RespondNow(Error(base::StringPrintf(
+        "The number of whitelisted page patterns can't exceed %d",
+        api::declarative_net_request::MAX_NUMBER_OF_WHITELISTED_PAGES)));
+  }
 
   // Persist |new_set| as part of preferences.
   prefs->SetDNRWhitelistedPages(extension_id(), new_set);

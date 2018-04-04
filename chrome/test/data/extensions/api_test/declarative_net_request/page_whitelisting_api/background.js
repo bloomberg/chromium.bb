@@ -17,7 +17,11 @@ var checkUnordererArrayEquality = function(expected, actual) {
 
 chrome.test.runTests([
   function addWhitelistedPages() {
-    var toAdd = ['https://www.google.com/', 'https://www.yahoo.com/'];
+    // Any duplicates in arguments will be filtered out.
+    var toAdd = [
+      'https://www.google.com/', 'https://www.google.com/',
+      'https://www.yahoo.com/'
+    ];
     chrome.declarativeNetRequest.addWhitelistedPages(
         toAdd, callbackPass(function() {}));
   },
@@ -69,6 +73,66 @@ chrome.test.runTests([
     chrome.declarativeNetRequest.getWhitelistedPages(
         callbackPass(function(patterns) {
           checkUnordererArrayEquality(['https://www.yahoo.com/'], patterns);
+        }));
+  },
+
+  function reachMaximumPatternLimit() {
+    var toAdd = [];
+    var numPatterns = 1;  // The extension already has one whitelisted pattern.
+    while (numPatterns <
+           chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES) {
+      toAdd.push('https://' + numPatterns + '.com/');
+      numPatterns++;
+    }
+
+    chrome.declarativeNetRequest.addWhitelistedPages(
+        toAdd, callbackPass(function() {}));
+  },
+
+  function errorOnExceedingMaximumPatternLimit() {
+    chrome.declarativeNetRequest.addWhitelistedPages(
+        ['https://example.com/'],
+        callbackFail(
+            'The number of whitelisted page patterns can\'t exceed ' +
+            chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES));
+  },
+
+  function addingDuplicatePatternSucceeds() {
+    // Adding a duplicate pattern should still succeed since the final set of
+    // whitelisted patterns is still at the limit.
+    chrome.declarativeNetRequest.addWhitelistedPages(
+        ['https://www.yahoo.com/'], callbackPass(function() {}));
+  },
+
+  function verifyPatterns() {
+    chrome.declarativeNetRequest.getWhitelistedPages(
+        callbackPass(function(patterns) {
+          chrome.test.assertTrue(patterns.includes('https://www.yahoo.com/'));
+          chrome.test.assertEq(
+              chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES,
+              patterns.length, 'Incorrect number of patterns observed.');
+        }));
+  },
+
+  function removePattern() {
+    chrome.declarativeNetRequest.removeWhitelistedPages(
+        ['https://www.yahoo.com/'], callbackPass(function() {}));
+  },
+
+  function addPattern() {
+    // Adding a pattern should now succeed since removing the pattern caused us
+    // to go under the limit.
+    chrome.declarativeNetRequest.addWhitelistedPages(
+        ['https://www.example.com/'], callbackPass(function() {}));
+  },
+
+  function verifyPatterns() {
+    chrome.declarativeNetRequest.getWhitelistedPages(
+        callbackPass(function(patterns) {
+          chrome.test.assertTrue(patterns.includes('https://www.example.com/'));
+          chrome.test.assertEq(
+              chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES,
+              patterns.length, 'Incorrect number of patterns observed.');
         }));
   }
 ]);
