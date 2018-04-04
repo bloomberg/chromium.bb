@@ -135,6 +135,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 }
 
 bool UiScene::UpdateTextures() {
+  TRACE_EVENT0("gpu", "UiScene::UpdateTextures");
   bool needs_redraw = false;
   // Update textures and sizes.
   for (auto& element : *root_element_) {

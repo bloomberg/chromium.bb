@@ -111,7 +111,6 @@ class UiTest : public testing::Test {
   Model* model_ = nullptr;
   UiScene* scene_ = nullptr;
 
- private:
   base::TimeTicks current_time_;
 };
 
