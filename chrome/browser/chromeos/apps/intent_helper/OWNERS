@@ -1,3 +1,4 @@
-# For ARC++ related code
+# For ARC related code
 djacobo@chromium.org
-yusukes@chromium.org
+# For ARC related code, backup reviewers
+file://chrome/browser/chromeos/arc/OWNERS
