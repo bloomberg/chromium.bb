@@ -358,7 +358,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   bool TilePriorityViolatesMemoryPolicy(const TilePriority& priority);
   bool AreRequiredTilesReadyToDraw(RasterTilePriorityQueue::Type type) const;
   void CheckIfMoreTilesNeedToBePrepared();
-  void CheckAndIssueSignals();
   void MarkTilesOutOfMemory(
       std::unique_ptr<RasterTilePriorityQueue> queue) const;
 
@@ -391,7 +390,9 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   bool UsePartialRaster() const;
 
-  void CheckPendingGpuWorkTiles(bool issue_signals);
+  void FlushAndIssueSignals();
+  void CheckPendingGpuWorkAndIssueSignals();
+  void IssueSignals();
 
   TileManagerClient* client_;
   base::SequencedTaskRunner* task_runner_;
@@ -434,7 +435,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   uint64_t pending_required_for_activation_callback_id_ = 0;
   uint64_t pending_required_for_draw_callback_id_ = 0;
   // If true, we should re-compute tile requirements in
-  // CheckPendingGpuWorkTiles.
+  // CheckPendingGpuWorkAndIssueSignals.
   bool pending_tile_requirements_dirty_ = false;
 
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
