@@ -1550,7 +1550,7 @@ bool AXObject::SupportsARIAActiveDescendant() const {
 }
 
 bool AXObject::SupportsARIAExpanded() const {
-  switch (AriaRoleAttribute()) {
+  switch (RoleValue()) {
     case kAlertDialogRole:
     case kAlertRole:
     case kArticleRole:

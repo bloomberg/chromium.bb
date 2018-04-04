@@ -15,7 +15,7 @@ ROLE_SYSTEM_DOCUMENT name='Action verbs' READONLY FOCUSABLE
 ++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE IA2_STATE_CHECKABLE checkable:true default_action='check' action_name='check'
 ++IA2_ROLE_TOGGLE_BUTTON name='ARIA Switch' FOCUSABLE IA2_STATE_CHECKABLE checkable:true default_action='check' action_name='check'
 ++ROLE_SYSTEM_GROUPING
-++++ROLE_SYSTEM_PUSHBUTTON name='Summary' FOCUSABLE default_action='press' action_name='press'
+++++ROLE_SYSTEM_PUSHBUTTON name='Summary' COLLAPSED FOCUSABLE default_action='press' action_name='press'
 ++++++ROLE_SYSTEM_STATICTEXT name='Summary'
 ++ROLE_SYSTEM_COMBOBOX COLLAPSED FOCUSABLE HASPOPUP default_action='open' action_name='open'
 ++++ROLE_SYSTEM_LIST INVISIBLE
