@@ -30,7 +30,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "third_party/WebKit/public/public_features.h"
+#include "third_party/WebKit/public/public_buildflags.h"
 
 using content::BrowserThread;
 

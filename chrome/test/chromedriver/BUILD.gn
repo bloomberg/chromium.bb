@@ -182,7 +182,7 @@ source_set("automation_client_lib") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
     "//third_party/zlib:minizip",
     "//third_party/zlib/google:zip",
     "//ui/accessibility:ax_enums_mojo",

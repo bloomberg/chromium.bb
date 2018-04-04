@@ -101,7 +101,7 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
-#include "public/public_features.h"
+#include "public/public_buildflags.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDateTimeChooserCompletion.h"

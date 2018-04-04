@@ -113,7 +113,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/proxy_config_mojom_traits.h"
 #include "services/network/url_request_context_builder_mojo.h"
-#include "third_party/WebKit/public/public_features.h"
+#include "third_party/WebKit/public/public_buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_protocols.h"

@@ -1062,7 +1062,7 @@ split_static_library("ui") {
     "//skia",
     "//storage/browser",
     "//storage/common",
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
     "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public/common",
     "//third_party/adobe/flash:flapper_version_h",

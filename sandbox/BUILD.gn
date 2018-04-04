@@ -33,8 +33,8 @@ group("sandbox") {
   }
 }
 
-buildflag_header("sandbox_features") {
-  header = "sandbox_features.h"
+buildflag_header("sandbox_buildflags") {
+  header = "sandbox_buildflags.h"
   flags = [ "USE_SECCOMP_BPF=$use_seccomp_bpf" ]
 }
 

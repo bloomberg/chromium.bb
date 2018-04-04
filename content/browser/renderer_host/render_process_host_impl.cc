@@ -208,7 +208,7 @@
 #include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/WebKit/public/common/page/launching_process_state.h"
-#include "third_party/WebKit/public/public_features.h"
+#include "third_party/WebKit/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"

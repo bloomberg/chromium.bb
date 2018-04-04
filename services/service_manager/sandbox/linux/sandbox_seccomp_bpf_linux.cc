@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
-#include "sandbox/sandbox_features.h"
+#include "sandbox/sandbox_buildflags.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 

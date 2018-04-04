@@ -42,7 +42,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
-#include "sandbox/sandbox_features.h"
+#include "sandbox/sandbox_buildflags.h"
 #include "services/service_manager/sandbox/linux/bpf_broker_policy_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"

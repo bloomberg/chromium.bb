@@ -120,7 +120,7 @@ target(link_target_type, "child") {
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink_headers",
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
     "//third_party/WebKit/public:mojo_bindings",
     "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:scaled_resources",

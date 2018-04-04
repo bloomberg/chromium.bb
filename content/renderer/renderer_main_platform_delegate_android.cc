@@ -9,7 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/seccomp_sandbox_status_android.h"
 #include "sandbox/linux/seccomp-bpf-helpers/seccomp_starter_android.h"
-#include "sandbox/sandbox_features.h"
+#include "sandbox/sandbox_buildflags.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 #include "base/memory/ptr_util.h"

@@ -18,7 +18,7 @@
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "public/public_features.h"
+#include "public/public_buildflags.h"
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
 #include "core/editing/FrameSelection.h"

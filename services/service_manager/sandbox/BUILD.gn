@@ -24,7 +24,7 @@ component("sandbox") {
     "//services/service_manager/embedder:embedder_switches",
   ]
   deps = [
-    ":sanitizer_flags",
+    ":sanitizer_buildflags",
     "//base",
   ]
   if (is_linux) {
@@ -59,7 +59,7 @@ component("sandbox") {
       "linux/sandbox_seccomp_bpf_linux.h",
     ]
     deps += [
-      "//sandbox:sandbox_features",
+      "//sandbox:sandbox_buildflags",
       "//sandbox/linux:sandbox_services",
       "//sandbox/linux:seccomp_bpf",
       "//sandbox/linux:suid_sandbox_client",
@@ -91,7 +91,7 @@ component("sandbox") {
   }
 }
 
-buildflag_header("sanitizer_flags") {
-  header = "sanitizer_flags.h"
+buildflag_header("sanitizer_buildflags") {
+  header = "sanitizer_buildflags.h"
   flags = [ "USING_SANITIZER=$using_sanitizer" ]
 }

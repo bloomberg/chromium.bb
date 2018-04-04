@@ -9,7 +9,7 @@
 #define RuntimeCallStats_h
 
 #include "platform/PlatformExport.h"
-#include "platform/bindings/runtime_call_stats_count_everything.h"
+#include "platform/bindings/runtime_call_stats_count_everything_buildflags.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/runtime_enabled_features.h"

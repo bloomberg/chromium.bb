@@ -20,8 +20,8 @@ declare_args() {
   enable_blink_heap_verification = enable_blink_heap_incremental_marking
 }
 
-buildflag_header("blink_heap_flags") {
-  header = "heap_flags.h"
+buildflag_header("blink_heap_buildflags") {
+  header = "heap_buildflags.h"
   header_dir = "blink/platform/heap"
 
   flags = [
@@ -80,7 +80,7 @@ blink_platform_sources("heap") {
   ]
 
   deps = [
-    ":blink_heap_flags",
+    ":blink_heap_buildflags",
     "//base",
     "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/heap/asm",

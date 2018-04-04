@@ -123,7 +123,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/WebKit/public/public_features.h"
+#include "third_party/WebKit/public/public_buildflags.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"

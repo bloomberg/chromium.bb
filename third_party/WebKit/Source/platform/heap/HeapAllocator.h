@@ -10,7 +10,7 @@
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/Persistent.h"
 #include "platform/heap/TraceTraits.h"
-#include "platform/heap/heap_flags.h"
+#include "platform/heap/heap_buildflags.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/ConstructTraits.h"
