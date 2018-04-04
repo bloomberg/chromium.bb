@@ -21,6 +21,15 @@ class DirectAudioSource {
  public:
   using RenderingDelay = MediaPipelineBackend::AudioDecoder::RenderingDelay;
 
+  // Returns the sample rate of audio provided by the source, in samples per
+  // second.
+  virtual int GetSampleRate() = 0;
+
+  // Returns the number of audio channels provided by the source. This is the
+  // number of channels that will be requested when FillAudioPlaybackFrames()
+  // is called.
+  virtual int GetNumChannels() = 0;
+
   // Returns the desired playback buffer size in frames. This is the desired
   // value for |num_frames| when FillAudioPlaybackFrames(); it affects the
   // playback latency (larger value = higher latency). The backend may choose a

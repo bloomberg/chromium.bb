@@ -62,6 +62,9 @@ bool FilterGroup::CanProcessInput(const std::string& input_device_id) {
 
 void FilterGroup::AddInput(MixerInput* input) {
   active_inputs_.insert(input);
+  if (mixed_) {
+    AddTempBuffer(input->num_channels(), mixed_->frames());
+  }
 }
 
 void FilterGroup::RemoveInput(MixerInput* input) {
@@ -114,10 +117,18 @@ float FilterGroup::MixAndFilter(
   // Mix InputQueues
   mixed_->ZeroFramesPartial(0, num_frames);
   for (MixerInput* input : active_inputs_) {
-    int filled = input->FillAudioData(num_frames, rendering_delay, temp_.get());
-    for (int c = 0; c < num_channels_; ++c) {
-      input->VolumeScaleAccumulate(c != 0, temp_->channel(c), filled,
-                                   mixed_->channel(c));
+    DCHECK_LT(input->num_channels(), static_cast<int>(temp_buffers_.size()));
+    DCHECK(temp_buffers_[input->num_channels()]);
+    ::media::AudioBus* temp = temp_buffers_[input->num_channels()].get();
+    int filled = input->FillAudioData(num_frames, rendering_delay, temp);
+    int in_c = 0;
+    for (int out_c = 0; out_c < num_channels_; ++out_c) {
+      input->VolumeScaleAccumulate(out_c != 0, temp->channel(in_c), filled,
+                                   mixed_->channel(out_c));
+      ++in_c;
+      if (in_c >= input->num_channels()) {
+        in_c = 0;
+      }
     }
     volume = std::max(volume, input->InstantaneousVolume());
     content_type = std::max(content_type, input->content_type());
@@ -197,11 +208,24 @@ bool FilterGroup::ResizeBuffersIfNecessary(int num_frames) {
     return false;
   }
   mixed_ = ::media::AudioBus::Create(num_channels_, num_frames);
-  temp_ = ::media::AudioBus::Create(num_channels_, num_frames);
+  temp_buffers_.clear();
+  for (MixerInput* input : active_inputs_) {
+    AddTempBuffer(input->num_channels(), num_frames);
+  }
   interleaved_.reset(static_cast<float*>(
       base::AlignedAlloc(num_frames * num_channels_ * sizeof(float),
                          ::media::AudioBus::kChannelAlignment)));
   return true;
+}
+
+void FilterGroup::AddTempBuffer(int num_channels, int num_frames) {
+  if (static_cast<int>(temp_buffers_.size()) <= num_channels) {
+    temp_buffers_.resize(num_channels + 1);
+  }
+  if (!temp_buffers_[num_channels]) {
+    temp_buffers_[num_channels] =
+        ::media::AudioBus::Create(num_channels, num_frames);
+  }
 }
 
 void FilterGroup::SetPostProcessorConfig(const std::string& name,

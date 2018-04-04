@@ -145,7 +145,6 @@ class CHROMECAST_EXPORT CastMediaShlib {
   static DirectAudioSourceToken* AddDirectAudioSource(
       DirectAudioSource* source,
       const MediaPipelineDeviceParams& params,
-      int source_sample_rate,
       int playout_channel) __attribute__((__weak__));
 
   // Removes a direct audio source, given the |token| that was returned by
