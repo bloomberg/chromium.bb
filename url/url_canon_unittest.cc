@@ -1433,7 +1433,8 @@ TEST(URLCanonTest, CanonicalizeStandardURL) {
     std::string out_str;
     StdStringCanonOutput output(&out_str);
     bool success = CanonicalizeStandardURL(
-        cases[i].input, url_len, parsed, NULL, &output, &out_parsed);
+        cases[i].input, url_len, parsed,
+        SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION, NULL, &output, &out_parsed);
     output.Complete();
 
     EXPECT_EQ(cases[i].expected_success, success);
@@ -1479,8 +1480,9 @@ TEST(URLCanonTest, ReplaceStandardURL) {
     std::string out_str;
     StdStringCanonOutput output(&out_str);
     Parsed out_parsed;
-    ReplaceStandardURL(replace_cases[i].base, parsed, r, NULL, &output,
-                       &out_parsed);
+    ReplaceStandardURL(replace_cases[i].base, parsed, r,
+                       SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION, NULL,
+                       &output, &out_parsed);
     output.Complete();
 
     EXPECT_EQ(replace_cases[i].expected, out_str);
@@ -1501,7 +1503,9 @@ TEST(URLCanonTest, ReplaceStandardURL) {
     std::string out_str1;
     StdStringCanonOutput output1(&out_str1);
     Parsed new_parsed;
-    ReplaceStandardURL(src, parsed, r, NULL, &output1, &new_parsed);
+    ReplaceStandardURL(src, parsed, r,
+                       SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION, NULL,
+                       &output1, &new_parsed);
     output1.Complete();
     EXPECT_STREQ("http://www.google.com/", out_str1.c_str());
 
@@ -1509,7 +1513,9 @@ TEST(URLCanonTest, ReplaceStandardURL) {
     r.SetPath(reinterpret_cast<char*>(0x00000001), Component());
     std::string out_str2;
     StdStringCanonOutput output2(&out_str2);
-    ReplaceStandardURL(src, parsed, r, NULL, &output2, &new_parsed);
+    ReplaceStandardURL(src, parsed, r,
+                       SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION, NULL,
+                       &output2, &new_parsed);
     output2.Complete();
     EXPECT_STREQ("http://www.google.com/", out_str2.c_str());
   }
@@ -1564,24 +1570,39 @@ TEST(URLCanonTest, ReplaceFileURL) {
 TEST(URLCanonTest, ReplaceFileSystemURL) {
   ReplaceCase replace_cases[] = {
       // Replace everything in the outer URL.
-    {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL, NULL, "/foo", "b", "c", "filesystem:file:///temporary/foo?b#c"},
+      {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL,
+       NULL, "/foo", "b", "c", "filesystem:file:///temporary/foo?b#c"},
       // Replace nothing
-    {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "filesystem:file:///temporary/gaba?query#ref"},
+      {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL,
+       NULL, NULL, NULL, NULL, "filesystem:file:///temporary/gaba?query#ref"},
       // Clear non-path components (common)
-    {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL, NULL, NULL, kDeleteComp, kDeleteComp, "filesystem:file:///temporary/gaba"},
+      {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL,
+       NULL, NULL, kDeleteComp, kDeleteComp,
+       "filesystem:file:///temporary/gaba"},
       // Replace path with something that doesn't begin with a slash and make
       // sure it gets added properly.
-    {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL, NULL, "interesting/", NULL, NULL, "filesystem:file:///temporary/interesting/?query#ref"},
-      // Replace scheme -- shouldn't do anything.
-    {"filesystem:http://u:p@bar.com/t/gaba?query#ref", "http", NULL, NULL, NULL, NULL, NULL, NULL, NULL, "filesystem:http://u:p@bar.com/t/gaba?query#ref"},
-      // Replace username -- shouldn't do anything.
-    {"filesystem:http://u:p@bar.com/t/gaba?query#ref", NULL, "u2", NULL, NULL, NULL, NULL, NULL, NULL, "filesystem:http://u:p@bar.com/t/gaba?query#ref"},
-      // Replace password -- shouldn't do anything.
-    {"filesystem:http://u:p@bar.com/t/gaba?query#ref", NULL, NULL, "pw2", NULL, NULL, NULL, NULL, NULL, "filesystem:http://u:p@bar.com/t/gaba?query#ref"},
-      // Replace host -- shouldn't do anything.
-    {"filesystem:http://u:p@bar.com/t/gaba?query#ref", NULL, NULL, NULL, "foo.com", NULL, NULL, NULL, NULL, "filesystem:http://u:p@bar.com/t/gaba?query#ref"},
-      // Replace port -- shouldn't do anything.
-    {"filesystem:http://u:p@bar.com:40/t/gaba?query#ref", NULL, NULL, NULL, NULL, "41", NULL, NULL, NULL, "filesystem:http://u:p@bar.com:40/t/gaba?query#ref"},
+      {"filesystem:file:///temporary/gaba?query#ref", NULL, NULL, NULL, NULL,
+       NULL, "interesting/", NULL, NULL,
+       "filesystem:file:///temporary/interesting/?query#ref"},
+      // Replace scheme -- shouldn't do anything except canonicalize.
+      {"filesystem:http://u:p@bar.com/t/gaba?query#ref", "http", NULL, NULL,
+       NULL, NULL, NULL, NULL, NULL,
+       "filesystem:http://bar.com/t/gaba?query#ref"},
+      // Replace username -- shouldn't do anything except canonicalize.
+      {"filesystem:http://u:p@bar.com/t/gaba?query#ref", NULL, "u2", NULL, NULL,
+       NULL, NULL, NULL, NULL, "filesystem:http://bar.com/t/gaba?query#ref"},
+      // Replace password -- shouldn't do anything except canonicalize.
+      {"filesystem:http://u:p@bar.com/t/gaba?query#ref", NULL, NULL, "pw2",
+       NULL, NULL, NULL, NULL, NULL,
+       "filesystem:http://bar.com/t/gaba?query#ref"},
+      // Replace host -- shouldn't do anything except canonicalize.
+      {"filesystem:http://u:p@bar.com:80/t/gaba?query#ref", NULL, NULL, NULL,
+       "foo.com", NULL, NULL, NULL, NULL,
+       "filesystem:http://bar.com/t/gaba?query#ref"},
+      // Replace port -- shouldn't do anything except canonicalize.
+      {"filesystem:http://u:p@bar.com:40/t/gaba?query#ref", NULL, NULL, NULL,
+       NULL, "41", NULL, NULL, NULL,
+       "filesystem:http://bar.com:40/t/gaba?query#ref"},
   };
 
   for (size_t i = 0; i < arraysize(replace_cases); i++) {

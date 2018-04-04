@@ -12,6 +12,7 @@
 #include "url/url_constants.h"
 #include "url/url_file.h"
 #include "url/url_parse_internal.h"
+#include "url/url_util.h"
 #include "url/url_util_internal.h"
 
 namespace url {
@@ -407,7 +408,13 @@ bool DoResolveRelativeHost(const char* base_url,
   output->ReserveSizeIfNeeded(
       replacements.components().Length() +
       base_parsed.CountCharactersBefore(Parsed::USERNAME, false));
-  return ReplaceStandardURL(base_url, base_parsed, replacements,
+  SchemeType scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
+  if (!GetStandardSchemeType(base_url, base_parsed.scheme, &scheme_type)) {
+    // A path with an authority section gets canonicalized under standard URL
+    // rules, even though the base was not known to be standard.
+    scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
+  }
+  return ReplaceStandardURL(base_url, base_parsed, replacements, scheme_type,
                             query_converter, output, out_parsed);
 }
 

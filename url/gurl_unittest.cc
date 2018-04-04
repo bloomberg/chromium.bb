@@ -197,7 +197,7 @@ TEST(GURLTest, CopyFileSystem) {
   GURL url2(url);
   EXPECT_TRUE(url2.is_valid());
 
-  EXPECT_EQ("filesystem:https://user:pass@google.com:99/t/foo;bar?q=a#ref", url2.spec());
+  EXPECT_EQ("filesystem:https://google.com:99/t/foo;bar?q=a#ref", url2.spec());
   EXPECT_EQ("filesystem", url2.scheme());
   EXPECT_EQ("", url2.username());
   EXPECT_EQ("", url2.password());
@@ -211,8 +211,8 @@ TEST(GURLTest, CopyFileSystem) {
   const GURL* inner = url2.inner_url();
   ASSERT_TRUE(inner);
   EXPECT_EQ("https", inner->scheme());
-  EXPECT_EQ("user", inner->username());
-  EXPECT_EQ("pass", inner->password());
+  EXPECT_EQ("", inner->username());
+  EXPECT_EQ("", inner->password());
   EXPECT_EQ("google.com", inner->host());
   EXPECT_EQ("99", inner->port());
   EXPECT_EQ(99, inner->IntPort());
