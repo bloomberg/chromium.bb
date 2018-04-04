@@ -200,7 +200,8 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
   DCHECK(process_control->IsConnected());
   GetCloudPrintProxy().EnableCloudPrintProxyWithRobot(
       robot_auth_code, robot_email, user_email,
-      user_preferences->CreateDeepCopy());
+      std::move(*user_preferences->CreateDeepCopy()));
+
   // Assume the IPC worked.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, user_email);
 }
