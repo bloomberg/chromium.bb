@@ -156,10 +156,20 @@ class MODULES_EXPORT RTCPeerConnection final
 
   String id(ScriptState*) const;
 
+  // Calls one of the below versions (or rejects with an exception) depending on
+  // type, see RTCPeerConnection.idl.
+  ScriptPromise getStats(ScriptState*, blink::ScriptValue callback_or_selector);
+  // Calls LegacyCallbackBasedGetStats().
   ScriptPromise getStats(ScriptState*,
                          V8RTCStatsCallback* success_callback,
                          MediaStreamTrack* selector = nullptr);
-  ScriptPromise getStats(ScriptState*);
+  // Calls PromiseBasedGetStats().
+  ScriptPromise getStats(ScriptState*, MediaStreamTrack* selector = nullptr);
+  ScriptPromise LegacyCallbackBasedGetStats(
+      ScriptState*,
+      V8RTCStatsCallback* success_callback,
+      MediaStreamTrack* selector);
+  ScriptPromise PromiseBasedGetStats(ScriptState*, MediaStreamTrack* selector);
 
   const HeapVector<Member<RTCRtpSender>>& getSenders() const;
   const HeapVector<Member<RTCRtpReceiver>>& getReceivers() const;
