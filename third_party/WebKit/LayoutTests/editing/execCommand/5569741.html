@@ -1,11 +1,26 @@
-<p>This tests for a bug where hitting return inside an empty paragraph in a non-empty list item would remove it.</p>
-<div id="div" contenteditable="true">
-<ul><li id="li">foo<br><br></li></ul>
-</div>
-
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-li = document.getElementById("li");
-sel = window.getSelection();
-sel.collapse(li, li.childNodes.length);
-document.execCommand("InsertParagraph");
+// This tests for a bug where hitting return inside an empty paragraph in a
+// non-empty list item would remove it.
+selection_test(
+  [
+    '<div contenteditable>',
+      '<ul>',
+        '<li>foo<br><br>|</li>',
+      '</ul>',
+    '</div>',
+  ],
+  'insertParagraph',
+  [
+    '<div contenteditable>',
+      '<ul>',
+        '<li>foo<br><br></li>',
+        '<li>|<br></li>',
+      '</ul>',
+    '</div>',
+  ],
+  'insertParagraph at empty paragraph in list item');
 </script>
