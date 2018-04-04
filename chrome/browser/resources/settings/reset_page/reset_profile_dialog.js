@@ -65,7 +65,7 @@ Polymer({
       return loadTimeData.getStringF(
           'triggeredResetPageTitle', this.triggeredResetToolName_);
     }
-    return loadTimeData.getStringF('resetTrigger');
+    return loadTimeData.getStringF('resetDialogCommit');
   },
 
   /** @override */

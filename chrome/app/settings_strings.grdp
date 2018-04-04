@@ -2302,11 +2302,11 @@
   <message name="IDS_SETTINGS_RESET" desc="Title for an item in the 'Reset and clean up' section of Chrome Settings. If the user clicks this option, browser settings will be returned to their default values, after a confirmation by the user." meaning="Chrome Cleanup feature. Try to use the same translation for 'Reset' in 'Reset and cleanup' string.">
     Reset settings
   </message>
+  <message name="IDS_SETTINGS_RESET_SETTINGS_TRIGGER" desc="The label describing the 'reset profile setting' feature">
+    Restore settings to their original defaults
+  </message>
   <message name="IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE" desc="The title of the dialog informing the user that automated resetting of some settings occurred.">
     Some settings were reset
-  </message>
-  <message name="IDS_SETTINGS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="The label describing the 'reset profile setting' feature">
-    Restore settings to their original defaults
   </message>
   <message name="IDS_SETTINGS_RESET_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that some settings have been tampered with and were reset to factory defaults.">
     Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.
