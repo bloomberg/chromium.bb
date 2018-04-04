@@ -57,6 +57,7 @@ def getInfoVMTest():
     ret.append(config_lib.VMTestConfig(
         constants.VM_SUITE_TEST_TYPE,
         test_suite=suite,
+        warn_only=True,
         timeout=12 * 60 * 60))
   return ret
 
