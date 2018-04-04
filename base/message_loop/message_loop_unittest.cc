@@ -1257,10 +1257,7 @@ namespace {
 
 void FuncThatPumps(TaskList* order, int cookie) {
   order->RecordStart(PUMPS, cookie);
-  {
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    RunLoop().RunUntilIdle();
-  }
+  RunLoop(RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   order->RecordEnd(PUMPS, cookie);
 }
 
