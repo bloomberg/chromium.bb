@@ -140,6 +140,52 @@ component("services") {
   }
 }
 
+service("media") {
+  testonly = true
+
+  sources = [
+    "main.cc",
+  ]
+
+  public_deps = [
+    "//base",
+    "//media",
+  ]
+
+  deps = [
+    ":services",
+    "//mojo/public/c/system",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
+service_test("media_service_unittests") {
+  testonly = true
+
+  sources = [
+    "media_service_unittest.cc",
+  ]
+
+  catalog = ":media_service_unittests_catalog"
+
+  deps = [
+    ":services",
+    "//base",
+    "//media:test_support",
+    "//media/mojo/clients",
+    "//media/mojo/common",
+    "//media/mojo/interfaces",
+    "//media/mojo/interfaces:constants",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  data_deps = [
+    ":media",
+  ]
+}
+
 service_manifest("cdm_manifest") {
   name = "cdm"
   source = "cdm_manifest.json"
@@ -150,7 +196,39 @@ service_manifest("media_manifest") {
   source = "media_manifest.json"
 }
 
-# Unit Tests
+service_manifest("test_manifest") {
+  name = "media_service_unittests"
+  source = "test_manifest.json"
+}
+
+service_test("media_pipeline_integration_unittests") {
+  testonly = true
+
+  catalog = ":media_pipeline_integration_unittests_catalog"
+
+  deps = [
+    "//media/test:mojo_pipeline_integration_tests",
+  ]
+
+  data_deps = [
+    ":media",
+  ]
+}
+
+service_manifest("pipeline_test_manifest") {
+  name = "media_pipeline_integration_unittests"
+  source = "pipeline_test_manifest.json"
+}
+
+catalog("media_service_unittests_catalog") {
+  embedded_services = [ ":test_manifest" ]
+  standalone_services = [ ":media_manifest" ]
+}
+
+catalog("media_pipeline_integration_unittests_catalog") {
+  embedded_services = [ ":pipeline_test_manifest" ]
+  standalone_services = [ ":media_manifest" ]
+}
 
 source_set("unit_tests") {
   testonly = true
@@ -188,115 +266,4 @@ source_set("unit_tests") {
 
     deps += [ "//media/cdm:cdm_api" ]
   }
-}
-
-# Service Tests
-
-# MediaService is tested by using a standalone "media" service, which runs the
-# service out-of-process. While CdmService is tested as a packaged service,
-# which runs the service in-process.
-
-service("media") {
-  testonly = true
-
-  sources = [
-    "main.cc",
-  ]
-
-  public_deps = [
-    "//base",
-    "//media",
-  ]
-
-  deps = [
-    ":services",
-    "//mojo/public/c/system",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
-service_test("media_service_unittests") {
-  testonly = true
-
-  sources = [
-    "media_service_unittest.cc",
-  ]
-
-  if (enable_library_cdms) {
-    sources += [ "cdm_service_unittest.cc" ]
-  }
-
-  catalog = ":service_tests_catalog"
-
-  deps = [
-    ":services",
-    "//base",
-    "//media:test_support",
-    "//media/mojo/clients",
-    "//media/mojo/common",
-    "//media/mojo/interfaces",
-    "//media/mojo/interfaces:constants",
-    "//services/service_manager/public/cpp:service_test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-
-  data_deps = [
-    ":media",
-  ]
-}
-
-service_manifest("media_service_unittest_manifest") {
-  name = "media_service_unittests"
-  source = "test_manifest.json"
-}
-
-catalog("media_service_unittest_catalog") {
-  testonly = true
-  embedded_services = [ ":media_service_unittest_manifest" ]
-  standalone_services = [ ":media_manifest" ]
-}
-
-service_manifest("cdm_service_unittest_manifest") {
-  name = "cdm_service_unittest"
-  source = "cdm_service_unittest_manifest.json"
-  packaged_services = [ ":cdm_manifest" ]
-}
-
-catalog("cdm_service_unittest_catalog") {
-  testonly = true
-  embedded_services = [ ":cdm_service_unittest_manifest" ]
-}
-
-catalog("service_tests_catalog") {
-  testonly = true
-  catalog_deps = [
-    ":cdm_service_unittest_catalog",
-    ":media_service_unittest_catalog",
-  ]
-}
-
-# media_pipeline_integration_unittests is out of date and disabled by default.
-service_test("media_pipeline_integration_unittests") {
-  testonly = true
-
-  catalog = ":media_pipeline_integration_unittests_catalog"
-
-  deps = [
-    "//media/test:mojo_pipeline_integration_tests",
-  ]
-
-  data_deps = [
-    ":media",
-  ]
-}
-
-service_manifest("pipeline_test_manifest") {
-  name = "media_pipeline_integration_unittests"
-  source = "pipeline_test_manifest.json"
-}
-
-catalog("media_pipeline_integration_unittests_catalog") {
-  embedded_services = [ ":pipeline_test_manifest" ]
-  standalone_services = [ ":media_manifest" ]
 }
