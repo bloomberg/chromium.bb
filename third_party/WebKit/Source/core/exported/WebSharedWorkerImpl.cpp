@@ -91,14 +91,14 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   asked_to_terminate_ = true;
   if (shadow_page_ && !shadow_page_->WasInitialized()) {
     client_->WorkerScriptLoadFailed();
-    delete this;
+    // |this| is deleted at this point.
     return;
   }
   if (main_script_loader_) {
     main_script_loader_->Cancel();
     main_script_loader_ = nullptr;
     client_->WorkerScriptLoadFailed();
-    delete this;
+    // |this| is deleted at this point.
     return;
   }
   if (worker_thread_)
@@ -175,8 +175,7 @@ void WebSharedWorkerImpl::DidCloseWorkerGlobalScope() {
 void WebSharedWorkerImpl::DidTerminateWorkerThread() {
   DCHECK(IsMainThread());
   client_->WorkerContextDestroyed();
-  // The lifetime of this proxy is controlled by the worker context.
-  delete this;
+  // |this| is deleted at this point.
 }
 
 void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
@@ -252,10 +251,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   if (main_script_loader_->Failed()) {
     main_script_loader_->Cancel();
     client_->WorkerScriptLoadFailed();
-
-    // The SharedWorker was unable to load the initial script, so
-    // shut it down right here.
-    delete this;
+    // |this| is deleted at this point.
     return;
   }
 
@@ -362,8 +358,9 @@ void WebSharedWorkerImpl::BindDevToolsAgent(
       std::move(devtools_agent_request)));
 }
 
-WebSharedWorker* WebSharedWorker::Create(WebSharedWorkerClient* client) {
-  return new WebSharedWorkerImpl(client);
+std::unique_ptr<WebSharedWorker> WebSharedWorker::Create(
+    WebSharedWorkerClient* client) {
+  return base::WrapUnique(new WebSharedWorkerImpl(client));
 }
 
 }  // namespace blink
