@@ -67,15 +67,6 @@ URLRequestPostInterceptor::URLRequestPostInterceptor(
 
 URLRequestPostInterceptor::~URLRequestPostInterceptor() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  ClearExpectations();
-}
-
-void URLRequestPostInterceptor::ClearExpectations() {
-  while (!expectations_.empty()) {
-    Expectation expectation(expectations_.front());
-    delete expectation.first;
-    expectations_.pop();
-  }
 }
 
 GURL URLRequestPostInterceptor::GetUrl() const {
@@ -83,29 +74,27 @@ GURL URLRequestPostInterceptor::GetUrl() const {
 }
 
 bool URLRequestPostInterceptor::ExpectRequest(
-    class RequestMatcher* request_matcher) {
-  expectations_.push(std::make_pair(request_matcher,
-                                    ExpectationResponse(kResponseCode200, "")));
-  return true;
+    std::unique_ptr<RequestMatcher> request_matcher) {
+  return ExpectRequest(std::move(request_matcher), kResponseCode200);
 }
 
 bool URLRequestPostInterceptor::ExpectRequest(
-    class RequestMatcher* request_matcher,
+    std::unique_ptr<RequestMatcher> request_matcher,
     int response_code) {
   expectations_.push(
-      std::make_pair(request_matcher, ExpectationResponse(response_code, "")));
+      {std::move(request_matcher), ExpectationResponse(response_code, "")});
   return true;
 }
 
 bool URLRequestPostInterceptor::ExpectRequest(
-    class RequestMatcher* request_matcher,
+    std::unique_ptr<RequestMatcher> request_matcher,
     const base::FilePath& filepath) {
   std::string response;
   if (filepath.empty() || !base::ReadFileToString(filepath, &response))
     return false;
 
-  expectations_.push(std::make_pair(
-      request_matcher, ExpectationResponse(kResponseCode200, response)));
+  expectations_.push({std::move(request_matcher),
+                      ExpectationResponse(kResponseCode200, response)});
   return true;
 }
 
@@ -146,7 +135,7 @@ void URLRequestPostInterceptor::Reset() {
   base::AutoLock auto_lock(interceptor_lock_);
   hit_count_ = 0;
   requests_.clear();
-  ClearExpectations();
+  base::queue<Expectation>().swap(expectations_);
 }
 
 class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
@@ -164,16 +153,15 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
 
   void Unregister() {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-    for (InterceptorMap::iterator it = interceptors_.begin();
-         it != interceptors_.end(); ++it)
-      delete (*it).second;
+    interceptors_.clear();
     net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(scheme_,
                                                                 hostname_);
   }
 
-  void OnCreateInterceptor(URLRequestPostInterceptor* interceptor) {
+  void OnCreateInterceptor(
+      scoped_refptr<URLRequestPostInterceptor> interceptor) {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-    DCHECK(interceptors_.find(interceptor->GetUrl()) == interceptors_.end());
+    DCHECK_EQ(0u, interceptors_.count(interceptor->GetUrl()));
 
     interceptors_.insert(std::make_pair(interceptor->GetUrl(), interceptor));
   }
@@ -197,7 +185,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
       url = url.ReplaceComponents(replacements);
     }
 
-    InterceptorMap::const_iterator it(interceptors_.find(url));
+    const auto it = interceptors_.find(url);
     if (it == interceptors_.end())
       return nullptr;
 
@@ -205,7 +193,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
     // check the existing expectations, and handle the matching case by
     // popping the expectation off the queue, counting the match, and
     // returning a mock object to serve the canned response.
-    URLRequestPostInterceptor* interceptor(it->second);
+    auto interceptor = it->second;
 
     const net::UploadDataStream* stream = request->get_upload();
     const net::UploadBytesElementReader* reader =
@@ -220,15 +208,12 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
           {request_body, request->extra_request_headers()});
       if (interceptor->expectations_.empty())
         return nullptr;
-      const URLRequestPostInterceptor::Expectation& expectation(
-          interceptor->expectations_.front());
+      const auto& expectation = interceptor->expectations_.front();
       if (expectation.first->Match(request_body)) {
         const int response_code(expectation.second.response_code);
         const std::string response_body(expectation.second.response_body);
-        delete expectation.first;
         interceptor->expectations_.pop();
         ++interceptor->hit_count_;
-
         return new URLRequestMockJob(request, network_delegate, response_code,
                                      response_body);
       }
@@ -237,7 +222,8 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
     return nullptr;
   }
 
-  typedef std::map<GURL, URLRequestPostInterceptor*> InterceptorMap;
+  using InterceptorMap =
+      std::map<GURL, scoped_refptr<URLRequestPostInterceptor>>;
   InterceptorMap interceptors_;
 
   const std::string scheme_;
@@ -269,24 +255,19 @@ URLRequestPostInterceptorFactory::~URLRequestPostInterceptorFactory() {
                      base::Unretained(delegate_)));
 }
 
-URLRequestPostInterceptor* URLRequestPostInterceptorFactory::CreateInterceptor(
+scoped_refptr<URLRequestPostInterceptor>
+URLRequestPostInterceptorFactory::CreateInterceptor(
     const base::FilePath& filepath) {
   const GURL base_url(
       base::StringPrintf("%s://%s", scheme_.c_str(), hostname_.c_str()));
   GURL absolute_url(base_url.Resolve(filepath.MaybeAsASCII()));
-  URLRequestPostInterceptor* interceptor(
+  auto interceptor = scoped_refptr<URLRequestPostInterceptor>(
       new URLRequestPostInterceptor(absolute_url, io_task_runner_));
   bool res = io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&URLRequestPostInterceptor::Delegate::OnCreateInterceptor,
-                     base::Unretained(delegate_),
-                     base::Unretained(interceptor)));
-  if (!res) {
-    delete interceptor;
-    return nullptr;
-  }
-
-  return interceptor;
+                     base::Unretained(delegate_), interceptor));
+  return res ? interceptor : nullptr;
 }
 
 bool PartialMatch::Match(const std::string& actual) const {
@@ -306,12 +287,13 @@ InterceptorFactory::InterceptorFactory(
 InterceptorFactory::~InterceptorFactory() {
 }
 
-URLRequestPostInterceptor* InterceptorFactory::CreateInterceptor() {
+scoped_refptr<URLRequestPostInterceptor>
+InterceptorFactory::CreateInterceptor() {
   return CreateInterceptorForPath(POST_INTERCEPT_PATH);
 }
 
-URLRequestPostInterceptor* InterceptorFactory::CreateInterceptorForPath(
-    const char* url_path) {
+scoped_refptr<URLRequestPostInterceptor>
+InterceptorFactory::CreateInterceptorForPath(const char* url_path) {
   return URLRequestPostInterceptorFactory::CreateInterceptor(
       base::FilePath::FromUTF8Unsafe(url_path));
 }

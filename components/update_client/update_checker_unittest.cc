@@ -129,8 +129,7 @@ class UpdateCheckerTest : public testing::Test,
   std::unique_ptr<UpdateChecker> update_checker_;
 
   std::unique_ptr<InterceptorFactory> interceptor_factory_;
-  URLRequestPostInterceptor* post_interceptor_ =
-      nullptr;  // Owned by the factory.
+  scoped_refptr<URLRequestPostInterceptor> post_interceptor_;
 
   int error_ = 0;
   int retry_after_sec_ = 0;
@@ -229,7 +228,8 @@ std::unique_ptr<Component> UpdateCheckerTest::MakeComponent() const {
 // This test is parameterized for |is_foreground|.
 TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_context_->is_foreground = GetParam();
@@ -313,7 +313,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
 // Tests that an invalid "ap" is not serialized.
 TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
@@ -343,7 +344,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
 
 TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
 
   config_->SetBrand("TOOLONG");   // Sets an invalid brand code.
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
@@ -370,8 +372,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
 
 // Simulates a 403 server response error.
 TEST_F(UpdateCheckerTest, UpdateCheckError) {
-  EXPECT_TRUE(
-      post_interceptor_->ExpectRequest(new PartialMatch("updatecheck"), 403));
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      std::make_unique<PartialMatch>("updatecheck"), 403));
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
@@ -398,7 +400,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
 
 TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
 
   config_->SetDownloadPreference(string("cacheable"));
 
@@ -425,7 +428,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
 // A proper CUP test requires network mocks, which are not available now.
 TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
 
   config_->SetEnabledCupSigning(true);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
@@ -491,9 +495,11 @@ TEST_F(UpdateCheckerTest, UpdateCheckRequiresEncryptionError) {
 // the elapsed_days value.
 TEST_F(UpdateCheckerTest, UpdateCheckLastRollCall) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_4.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_4.xml")));
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_4.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_4.xml")));
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
@@ -529,11 +535,14 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastRollCall) {
 
 TEST_F(UpdateCheckerTest, UpdateCheckLastActive) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_4.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_4.xml")));
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_4.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_4.xml")));
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_4.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_4.xml")));
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
@@ -596,7 +605,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   auto& crx_component = const_cast<CrxComponent&>(component->crx_component());
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -609,7 +619,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
 
   update_context_->is_foreground = true;
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -623,7 +634,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   update_context_->is_foreground = false;
   crx_component.install_source = "webstore";
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -637,7 +649,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   update_context_->is_foreground = true;
   crx_component.install_source = "sideload";
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -659,7 +672,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   auto& crx_component = const_cast<CrxComponent&>(component->crx_component());
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -674,7 +688,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   crx_component.disabled_reasons = std::vector<int>();
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -688,7 +703,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
 
   crx_component.disabled_reasons = std::vector<int>({0});
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -703,7 +719,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   crx_component.disabled_reasons = std::vector<int>({1});
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -718,7 +735,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   crx_component.disabled_reasons = std::vector<int>({4, 8, 16});
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -737,7 +755,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   crx_component.disabled_reasons = std::vector<int>({0, 4, 8, 16});
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -774,7 +793,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       component->crx_component_.supports_group_policy_enable_component_updates);
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -794,7 +814,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       true;
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", false,
@@ -814,7 +835,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       false;
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", true,
@@ -834,7 +856,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       true;
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       update_context_->session_id, std::vector<std::string>{kUpdateItemId},
       components, "", true,
@@ -849,7 +872,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
 
 TEST_F(UpdateCheckerTest, NoUpdateActionRun) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"),
+      std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_noupdate.xml")));
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
