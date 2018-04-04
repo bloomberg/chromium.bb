@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_allocation_register.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
@@ -38,6 +39,35 @@ using base::trace_event::AllocationContextTracker;
 using CaptureMode = base::trace_event::AllocationContextTracker::CaptureMode;
 
 namespace profiling {
+
+namespace {
+
+// In the very unlikely scenario where a thread has grabbed the SendBuffer lock,
+// and then performs a heap allocation/free, ignore the allocation. Failing to
+// do so will cause non-deterministic deadlock, depending on whether the
+// allocation is dispatched to the same SendBuffer.
+//
+// On macOS, this flag is also used to prevent double-counting during sampling.
+// The implementation of libmalloc will sometimes call malloc [from
+// one zone to another] - without this flag, the allocation would get two
+// chances of being sampled.
+base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_prevent_reentrancy =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+// This class is friended by ThreadLocalStorage.
+class MemlogAllocatorShimInternal {
+ public:
+  static bool ShouldLogAllocationOnCurrentThread() {
+    // Thread is being destroyed and TLS is no longer available.
+    if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
+      return false;
+
+    // Prevent re-entrancy.
+    return !g_prevent_reentrancy.Pointer()->Get();
+  }
+};
 
 namespace {
 
@@ -71,18 +101,6 @@ constexpr int kTimeoutMs = 10000;
 // It will be null in the browser process.
 SetGCAllocHookFunction g_hook_gc_alloc = nullptr;
 SetGCFreeHookFunction g_hook_gc_free = nullptr;
-
-// In the very unlikely scenario where a thread has grabbed the SendBuffer lock,
-// and then performs a heap allocation/free, ignore the allocation. Failing to
-// do so will cause non-deterministic deadlock, depending on whether the
-// allocation is dispatched to the same SendBuffer.
-//
-// On macOS, this flag is also used to prevent double-counting during sampling.
-// The implementation of libmalloc will sometimes call malloc [from
-// one zone to another] - without this flag, the allocation would get two
-// chances of being sampled.
-base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_prevent_reentrancy =
-    LAZY_INSTANCE_INITIALIZER;
 
 // The allocator shim needs to retain some additional state for each thread.
 struct ShimState {
@@ -124,6 +142,10 @@ void DestructShimState(void* shim_state) {
   delete static_cast<ShimState*>(shim_state);
 }
 
+// Technically, this code could be called after Thread destruction and we would
+// need to guard this with ThreadLocalStorage::HasBeenDestroyed(), but all calls
+// to this are guarded behind ShouldLogAllocationOnCurrentThread, which already
+// makes the check.
 base::ThreadLocalStorage::Slot& ShimStateTLS() {
   static base::NoDestructor<base::ThreadLocalStorage::Slot> shim_state_tls(
       &DestructShimState);
@@ -276,13 +298,14 @@ void* HookAlloc(const AllocatorDispatch* self, size_t size, void* context) {
   const AllocatorDispatch* const next = self->next;
 
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   void* ptr = next->alloc_function(next, size, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
     g_prevent_reentrancy.Pointer()->Set(false);
   }
@@ -297,13 +320,14 @@ void* HookZeroInitAlloc(const AllocatorDispatch* self,
   const AllocatorDispatch* const next = self->next;
 
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   void* ptr = next->alloc_zero_initialized_function(next, n, size, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, n * size, nullptr);
     g_prevent_reentrancy.Pointer()->Set(false);
   }
@@ -317,13 +341,14 @@ void* HookAllocAligned(const AllocatorDispatch* self,
   const AllocatorDispatch* const next = self->next;
 
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   void* ptr = next->alloc_aligned_function(next, alignment, size, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
     g_prevent_reentrancy.Pointer()->Set(false);
   }
@@ -337,13 +362,14 @@ void* HookRealloc(const AllocatorDispatch* self,
   const AllocatorDispatch* const next = self->next;
 
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   void* ptr = next->realloc_function(next, address, size, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     AllocatorShimLogFree(address);
     if (size > 0)  // realloc(size == 0) means free()
       AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
@@ -355,14 +381,15 @@ void* HookRealloc(const AllocatorDispatch* self,
 
 void HookFree(const AllocatorDispatch* self, void* address, void* context) {
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   const AllocatorDispatch* const next = self->next;
   next->free_function(next, address, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     AllocatorShimLogFree(address);
     g_prevent_reentrancy.Pointer()->Set(false);
   }
@@ -381,15 +408,16 @@ unsigned HookBatchMalloc(const AllocatorDispatch* self,
                          unsigned num_requested,
                          void* context) {
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   const AllocatorDispatch* const next = self->next;
   unsigned count =
       next->batch_malloc_function(next, size, results, num_requested, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     for (unsigned i = 0; i < count; ++i)
       AllocatorShimLogAlloc(AllocatorType::kMalloc, results[i], size, nullptr);
     g_prevent_reentrancy.Pointer()->Set(false);
@@ -402,14 +430,15 @@ void HookBatchFree(const AllocatorDispatch* self,
                    unsigned num_to_be_freed,
                    void* context) {
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   const AllocatorDispatch* const next = self->next;
   next->batch_free_function(next, to_be_freed, num_to_be_freed, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     for (unsigned i = 0; i < num_to_be_freed; ++i)
       AllocatorShimLogFree(to_be_freed[i]);
     g_prevent_reentrancy.Pointer()->Set(false);
@@ -421,14 +450,15 @@ void HookFreeDefiniteSize(const AllocatorDispatch* self,
                           size_t size,
                           void* context) {
   // If this is our first time passing through, set the reentrancy bit.
-  bool reentering = g_prevent_reentrancy.Pointer()->Get();
-  if (LIKELY(!reentering))
+  bool should_log =
+      MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread();
+  if (LIKELY(should_log))
     g_prevent_reentrancy.Pointer()->Set(true);
 
   const AllocatorDispatch* const next = self->next;
   next->free_definite_size_function(next, ptr, size, context);
 
-  if (LIKELY(!reentering)) {
+  if (LIKELY(should_log)) {
     AllocatorShimLogFree(ptr);
     g_prevent_reentrancy.Pointer()->Set(false);
   }
@@ -450,7 +480,8 @@ AllocatorDispatch g_memlog_hooks = {
 
 void HookPartitionAlloc(void* address, size_t size, const char* type) {
   // If this is our first time passing through, set the reentrancy bit.
-  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+  if (LIKELY(
+          MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread())) {
     g_prevent_reentrancy.Pointer()->Set(true);
     AllocatorShimLogAlloc(AllocatorType::kPartitionAlloc, address, size, type);
     g_prevent_reentrancy.Pointer()->Set(false);
@@ -459,7 +490,8 @@ void HookPartitionAlloc(void* address, size_t size, const char* type) {
 
 void HookPartitionFree(void* address) {
   // If this is our first time passing through, set the reentrancy bit.
-  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+  if (LIKELY(
+          MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread())) {
     g_prevent_reentrancy.Pointer()->Set(true);
     AllocatorShimLogFree(address);
     g_prevent_reentrancy.Pointer()->Set(false);
@@ -467,7 +499,8 @@ void HookPartitionFree(void* address) {
 }
 
 void HookGCAlloc(uint8_t* address, size_t size, const char* type) {
-  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+  if (LIKELY(
+          MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread())) {
     g_prevent_reentrancy.Pointer()->Set(true);
     AllocatorShimLogAlloc(AllocatorType::kOilpan, address, size, type);
     g_prevent_reentrancy.Pointer()->Set(false);
@@ -475,7 +508,8 @@ void HookGCAlloc(uint8_t* address, size_t size, const char* type) {
 }
 
 void HookGCFree(uint8_t* address) {
-  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+  if (LIKELY(
+          MemlogAllocatorShimInternal::ShouldLogAllocationOnCurrentThread())) {
     g_prevent_reentrancy.Pointer()->Set(true);
     AllocatorShimLogFree(address);
     g_prevent_reentrancy.Pointer()->Set(false);
