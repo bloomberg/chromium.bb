@@ -353,8 +353,13 @@ void OmniboxResultView::SetAnswerImage(const gfx::ImageSkia& image) {
   SchedulePaint();
 }
 
-void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
-  model_->OpenMatch(model_index_, disposition);
+////////////////////////////////////////////////////////////////////////////////
+// views::ButtonListener overrides:
+
+// |button| is the tab switch button.
+void OmniboxResultView::ButtonPressed(views::Button* button,
+                                      const ui::Event& event) {
+  OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -522,6 +527,10 @@ void OmniboxResultView::SetHovered(bool hovered) {
 
 bool OmniboxResultView::IsSelected() const {
   return model_->IsSelectedIndex(model_index_);
+}
+
+void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
+  model_->OpenMatch(model_index_, disposition);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

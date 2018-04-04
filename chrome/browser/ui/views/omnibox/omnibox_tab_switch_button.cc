@@ -15,7 +15,7 @@
 
 OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view,
                                                int text_height)
-    : MdTextButton(this, views::style::CONTEXT_BUTTON_MD),
+    : MdTextButton(result_view, views::style::CONTEXT_BUTTON_MD),
       text_height_(text_height),
       result_view_(result_view) {
   // TODO(krb): SetTooltipText(text);
@@ -44,14 +44,11 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
     SetBgColorOverride(GetBackgroundColor());
     // If used to be pressed, transer ownership.
     if (old_state == STATE_PRESSED)
-      SetMouseHandler(result_view_);
+      SetMouseHandler(parent());
   }
   if (state() == STATE_HOVERED) {
     if (old_state == STATE_NORMAL) {
       SetBgColorOverride(GetBackgroundColor());
-    } else {
-      // The button was released.
-      result_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
     }
   }
   if (state() == STATE_PRESSED)

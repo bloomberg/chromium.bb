@@ -9,16 +9,12 @@
 
 class OmniboxResultView;
 
-class OmniboxTabSwitchButton : public views::MdTextButton,
-                               public views::ButtonListener {
+class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
   OmniboxTabSwitchButton(OmniboxResultView* result_view, int text_height);
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
-
-  // views::ButtonListener
-  void ButtonPressed(Button* sender, const ui::Event& event) override {}
 
   // views::Button
   void StateChanged(ButtonState old_state) override;

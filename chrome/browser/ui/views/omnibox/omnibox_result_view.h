@@ -18,6 +18,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
@@ -37,7 +38,8 @@ class OmniboxTabSwitchButton;
 class OmniboxTextView;
 
 class OmniboxResultView : public views::View,
-                          private gfx::AnimationDelegate {
+                          private gfx::AnimationDelegate,
+                          public views::ButtonListener {
  public:
   OmniboxResultView(OmniboxPopupContentsView* model,
                     int model_index,
@@ -68,8 +70,10 @@ class OmniboxResultView : public views::View,
   // Stores the image in a local data member and schedules a repaint.
   void SetAnswerImage(const gfx::ImageSkia& image);
 
-  // Allow other classes to trigger navigation.
-  void OpenMatch(WindowOpenDisposition disposition);
+  // views::ButtonListener:
+
+  // Called when tab switch button pressed, due to being a listener.
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -102,6 +106,9 @@ class OmniboxResultView : public views::View,
 
   // Whether |this| matches the model's selected index.
   bool IsSelected() const;
+
+  // Call model's OpenMatch() with the selected index and provided disposition.
+  void OpenMatch(WindowOpenDisposition disposition);
 
   // views::View:
   void Layout() override;
