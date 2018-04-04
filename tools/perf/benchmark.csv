@@ -44,6 +44,8 @@ power.idle_platform,"charliea@chromium.org, rnephew@chromium.org",
 power.typical_10_mobile,perezju@chromium.org,
 rasterize_and_record_micro.partial_invalidation,"vmpstr@chromium.org, wkorman@chromium.org",Internals>Compositing>Rasterization
 rasterize_and_record_micro.top_25,"vmpstr@chromium.org, wkorman@chromium.org",Internals>Compositing>Rasterization
+rendering.desktop,"sadrul@chromium.org, vmiura@chromium.org",
+rendering.mobile,"sadrul@chromium.org, vmiura@chromium.org",
 resource_sizes,"agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org",
 scheduler.tough_scheduling_cases,"skyostil@chromium.org, brianderson@chromium.org",
 sizes (linux),thestig@chromium.org,

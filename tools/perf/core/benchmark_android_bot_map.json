@@ -55,12 +55,14 @@
   },
   "16": {
     "benchmarks": [
-      "smoothness.top_25_smooth"
+      "smoothness.top_25_smooth",
+      "rendering.mobile"
     ]
   },
   "17": {
     "benchmarks": [
-      "smoothness.tough_ad_cases"
+      "smoothness.tough_ad_cases",
+      "rendering.desktop"
     ]
   },
   "18": {
