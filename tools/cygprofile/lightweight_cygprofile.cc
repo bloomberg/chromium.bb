@@ -22,6 +22,9 @@
 #error Only supported on ARM.
 #endif  // !defined(ARCH_CPU_ARMEL)
 
+// Must be applied to all functions within this file.
+#define NO_INSTRUMENT_FUNCTION __attribute__((no_instrument_function))
+
 namespace cygprofile {
 namespace {
 
@@ -63,10 +66,11 @@ std::atomic<int> g_data_index;
 // - Some insertions at the end of collection may be lost.
 
 // Records that |address| has been reached, if recording is enabled.
-// To avoid any risk of infinite recursion, this *must* *never* call any
-// instrumented function.
+// To avoid infinite recursion, this *must* *never* call any instrumented
+// function, unless |Disable()| is called first.
 template <bool for_testing>
-void RecordAddress(size_t address) {
+__attribute__((always_inline, no_instrument_function)) void RecordAddress(
+    size_t address) {
   int index = g_data_index.load(std::memory_order_relaxed);
   if (index >= kPhases)
     return;
@@ -119,7 +123,8 @@ void RecordAddress(size_t address) {
   ordered_offsets[insertion_index].store(offset, std::memory_order_relaxed);
 }
 
-void DumpToFile(const base::FilePath& path, const LogData& data) {
+NO_INSTRUMENT_FUNCTION void DumpToFile(const base::FilePath& path,
+                                       const LogData& data) {
   auto file =
       base::File(path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   if (!file.IsValid()) {
@@ -143,7 +148,8 @@ void DumpToFile(const base::FilePath& path, const LogData& data) {
 }
 
 // Stops recording, and outputs the data to |path|.
-void StopAndDumpToFile(int pid, uint64_t start_ns_since_epoch) {
+NO_INSTRUMENT_FUNCTION void StopAndDumpToFile(int pid,
+                                              uint64_t start_ns_since_epoch) {
   Disable();
 
   for (int phase = 0; phase < kPhases; phase++) {
@@ -157,18 +163,20 @@ void StopAndDumpToFile(int pid, uint64_t start_ns_since_epoch) {
 
 }  // namespace
 
-void Disable() {
+NO_INSTRUMENT_FUNCTION void Disable() {
   g_data_index.store(kPhases, std::memory_order_relaxed);
   std::atomic_thread_fence(std::memory_order_seq_cst);
 }
 
-void SanityChecks() {
+NO_INSTRUMENT_FUNCTION void SanityChecks() {
   CHECK_LT(base::android::kEndOfText - base::android::kStartOfText,
            kMaxTextSizeInBytes);
   CHECK(base::android::IsOrderingSane());
 }
 
-bool SwitchToNextPhaseOrDump(int pid, uint64_t start_ns_since_epoch) {
+NO_INSTRUMENT_FUNCTION bool SwitchToNextPhaseOrDump(
+    int pid,
+    uint64_t start_ns_since_epoch) {
   int before = g_data_index.fetch_add(1, std::memory_order_relaxed);
   if (before + 1 == kPhases) {
     StopAndDumpToFile(pid, start_ns_since_epoch);
@@ -177,7 +185,7 @@ bool SwitchToNextPhaseOrDump(int pid, uint64_t start_ns_since_epoch) {
   return false;
 }
 
-void ResetForTesting() {
+NO_INSTRUMENT_FUNCTION void ResetForTesting() {
   Disable();
   g_data_index = 0;
   for (int i = 0; i < kPhases; i++) {
@@ -189,11 +197,11 @@ void ResetForTesting() {
   }
 }
 
-void RecordAddressForTesting(size_t address) {
+NO_INSTRUMENT_FUNCTION void RecordAddressForTesting(size_t address) {
   return RecordAddress<true>(address);
 }
 
-std::vector<size_t> GetOrderedOffsetsForTesting() {
+NO_INSTRUMENT_FUNCTION std::vector<size_t> GetOrderedOffsetsForTesting() {
   std::vector<size_t> result;
   size_t max_index = g_data[0].index.load(std::memory_order_relaxed);
   for (size_t i = 0; i < max_index; ++i) {
@@ -208,21 +216,9 @@ std::vector<size_t> GetOrderedOffsetsForTesting() {
 
 extern "C" {
 
-// Since this function relies on the return address, if it's not inlined and
-// __cyg_profile_func_enter() is called below, then the return address will
-// be inside __cyg_profile_func_enter(). To prevent that, force inlining.
-// We cannot use ALWAYS_INLINE from src/base/compiler_specific.h, as it doesn't
-// always map to always_inline, for instance when NDEBUG is not defined.
-__attribute__((__always_inline__)) void __cyg_profile_func_enter_bare() {
+NO_INSTRUMENT_FUNCTION void __cyg_profile_func_enter_bare() {
   cygprofile::RecordAddress<false>(
       reinterpret_cast<size_t>(__builtin_return_address(0)));
 }
-
-void __cyg_profile_func_enter(void* unused1, void* unused2) {
-  // Requires __always_inline__ on __cyg_profile_func_enter_bare(), see above.
-  __cyg_profile_func_enter_bare();
-}
-
-void __cyg_profile_func_exit(void* unused1, void* unused2) {}
 
 }  // extern "C"
