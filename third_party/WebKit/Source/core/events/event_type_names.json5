@@ -116,6 +116,7 @@
     "focusin",
     "focusout",
     "foreignfetch",
+    "formdata",
     "freeze",
     "fullscreenchange",
     "fullscreenerror",

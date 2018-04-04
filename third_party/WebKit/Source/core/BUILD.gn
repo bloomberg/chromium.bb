@@ -383,6 +383,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/TransitionEvent.idl",
     "events/UIEvent.idl",
     "events/WheelEvent.idl",
+    "html/forms/FormDataEvent.idl",
     "html/track/TrackEvent.idl",
     "mojo/test/MojoInterfaceRequestEvent.idl",
   ]

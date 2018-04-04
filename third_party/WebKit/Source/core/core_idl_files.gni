@@ -257,6 +257,7 @@ core_idl_files =
                     "html/canvas/TextMetrics.idl",
                     "html/custom/CustomElementRegistry.idl",
                     "html/forms/FormData.idl",
+                    "html/forms/FormDataEvent.idl",
                     "html/forms/HTMLButtonElement.idl",
                     "html/forms/HTMLDataListElement.idl",
                     "html/forms/HTMLFieldSetElement.idl",
