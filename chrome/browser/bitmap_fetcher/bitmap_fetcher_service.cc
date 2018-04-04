@@ -84,16 +84,18 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
     const GURL& url,
     Observer* observer,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+  // Reject invalid URLs and limit number of simultaneous in-flight requests.
+  if (!url.is_valid() || requests_.size() > kMaxRequests) {
+    delete observer;
+    return REQUEST_ID_INVALID;
+  }
+
   // Create a new request, assigning next available request ID.
   ++current_request_id_;
   if (current_request_id_ == REQUEST_ID_INVALID)
     ++current_request_id_;
   int request_id = current_request_id_;
   auto request = std::make_unique<BitmapFetcherRequest>(request_id, observer);
-
-  // Reject invalid URLs.
-  if (!url.is_valid())
-    return REQUEST_ID_INVALID;
 
   // Check for existing images first.
   auto iter = cache_.Get(url);
@@ -105,16 +107,12 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
     return REQUEST_ID_INVALID;
   }
 
-  // Limit number of simultaneous in-flight requests.
-  if (requests_.size() > kMaxRequests)
-    return REQUEST_ID_INVALID;
-
   // Make sure there's a fetcher for this URL and attach to request.
   const BitmapFetcher* fetcher = EnsureFetcherForUrl(url, traffic_annotation);
   request->set_fetcher(fetcher);
 
   requests_.push_back(std::move(request));
-  return requests_.back()->request_id();
+  return request_id;
 }
 
 void BitmapFetcherService::Prefetch(
