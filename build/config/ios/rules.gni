@@ -1390,11 +1390,25 @@ template("ios_framework_bundle") {
 
       _copy_public_headers_target = _target_name + "_copy_public_headers"
       copy(_copy_public_headers_target) {
+        forward_variables_from(invoker,
+                               [
+                                 "testonly",
+                                 "deps",
+                               ])
         visibility = [ ":$_framework_headers_target" ]
         sources = _public_headers
         outputs = [
           "$_framework_root/Headers/{{source_file_part}}",
         ]
+
+        # Do not use forward_variables_from for "public_deps" as
+        # we do not want to forward those dependencies.
+        if (defined(invoker.public_deps)) {
+          if (!defined(deps)) {
+            deps = []
+          }
+          deps += invoker.public_deps
+        }
       }
 
       group(_framework_headers_target) {
