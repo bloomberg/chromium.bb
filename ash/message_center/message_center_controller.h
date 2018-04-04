@@ -12,7 +12,7 @@
 #include "ash/system/web_notification/session_state_notification_blocker.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace message_center {
 struct NotifierId;
@@ -44,6 +44,7 @@ class ASH_EXPORT MessageCenterController
                           const gfx::ImageSkia& icon) override;
   void NotifierEnabledChanged(const message_center::NotifierId& notifier_id,
                               bool enabled) override;
+  void GetActiveNotifications(GetActiveNotificationsCallback callback) override;
 
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {
@@ -82,7 +83,7 @@ class ASH_EXPORT MessageCenterController
 
   NotifierSettingsListener* notifier_id_ = nullptr;
 
-  mojo::Binding<mojom::AshMessageCenterController> binding_;
+  mojo::BindingSet<mojom::AshMessageCenterController> binding_set_;
 
   mojom::AshMessageCenterClientAssociatedPtr client_;
 

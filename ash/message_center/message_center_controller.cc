@@ -85,7 +85,7 @@ class AshClientNotificationDelegate
 
 }  // namespace
 
-MessageCenterController::MessageCenterController() : binding_(this) {
+MessageCenterController::MessageCenterController() {
   message_center::MessageCenter::Initialize();
 
   fullscreen_notification_blocker_ =
@@ -129,7 +129,7 @@ MessageCenterController::~MessageCenterController() {
 
 void MessageCenterController::BindRequest(
     mojom::AshMessageCenterControllerRequest request) {
-  binding_.Bind(std::move(request));
+  binding_set_.AddBinding(this, std::move(request));
 }
 
 void MessageCenterController::SetNotifierEnabled(const NotifierId& notifier_id,
@@ -168,6 +168,18 @@ void MessageCenterController::NotifierEnabledChanged(
     bool enabled) {
   if (!enabled)
     MessageCenter::Get()->RemoveNotificationsForNotifierId(notifier_id);
+}
+
+void MessageCenterController::GetActiveNotifications(
+    GetActiveNotificationsCallback callback) {
+  message_center::NotificationList::Notifications notification_set =
+      MessageCenter::Get()->GetVisibleNotifications();
+  std::vector<message_center::Notification> notification_vector;
+  notification_vector.reserve(notification_set.size());
+  for (auto* notification : notification_set) {
+    notification_vector.emplace_back(*notification);
+  }
+  std::move(callback).Run(notification_vector);
 }
 
 void MessageCenterController::SetNotifierSettingsListener(

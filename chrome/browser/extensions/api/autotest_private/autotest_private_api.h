@@ -13,8 +13,13 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #endif
+
+namespace message_center {
+class Notification;
+}
 
 namespace extensions {
 
@@ -184,11 +189,18 @@ class AutotestPrivateGetVisibleNotificationsFunction
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getVisibleNotifications",
                              AUTOTESTPRIVATE_GETVISIBLENOTIFICATIONS)
 
- private:
-  static std::string ConvertToString(message_center::NotificationType type);
+  AutotestPrivateGetVisibleNotificationsFunction();
 
-  ~AutotestPrivateGetVisibleNotificationsFunction() override {}
+ private:
+  ~AutotestPrivateGetVisibleNotificationsFunction() override;
   ResponseAction Run() override;
+
+#if defined(OS_CHROMEOS)
+  void OnGotNotifications(
+      const std::vector<message_center::Notification>& notifications);
+
+  ash::mojom::AshMessageCenterControllerPtr controller_;
+#endif
 };
 
 class AutotestPrivateGetPlayStoreStateFunction
