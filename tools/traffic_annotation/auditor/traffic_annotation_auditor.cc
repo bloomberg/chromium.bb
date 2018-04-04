@@ -77,6 +77,10 @@ const base::FilePath kRunToolScript =
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("run_tool.py"));
 
+const std::string kClangToolSwitches[] = {
+    "-Wno-comment", "-Wno-tautological-unsigned-enum-zero-compare",
+    "-Wno-tautological-constant-compare", "-Wno-error=unknown-warning-option"};
+
 // Checks if the list of |path_filters| include the given |file_path|, or there
 // are path filters which are a folder (don't have a '.' in their name), and
 // match the file name.
@@ -159,14 +163,13 @@ bool TrafficAnnotationAuditor::RunClangTool(
       options_file,
       "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
       "--tool-path=%s "
-      "--tool-arg=--extra-arg=-resource-dir=%s "
-      "--tool-arg=--extra-arg=-Wno-comment "
-      "--tool-arg=--extra-arg=-Wno-tautological-unsigned-enum-zero-compare "
-      "--tool-arg=--extra-arg=-Wno-tautological-constant-compare ",
+      "--tool-arg=--extra-arg=-resource-dir=%s ",
       build_path_.MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
 
+  for (const std::string& item : kClangToolSwitches)
+    fprintf(options_file, "--tool-arg=--extra-arg=%s ", item.c_str());
   if (use_compile_commands)
     fprintf(options_file, "--all ");
 
