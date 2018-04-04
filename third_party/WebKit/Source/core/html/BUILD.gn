@@ -351,6 +351,8 @@ blink_core_sources("html") {
     "forms/FormController.h",
     "forms/FormData.cpp",
     "forms/FormData.h",
+    "forms/FormDataEvent.cpp",
+    "forms/FormDataEvent.h",
     "forms/HTMLButtonElement.cpp",
     "forms/HTMLButtonElement.h",
     "forms/HTMLDataListElement.cpp",
