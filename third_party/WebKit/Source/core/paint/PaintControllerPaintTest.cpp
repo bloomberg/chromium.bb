@@ -121,9 +121,9 @@ TEST_P(PaintControllerPaintTestForNonSPv1, ChunkIdClientCacheFlag) {
   EXPECT_FALSE(div.Layer()->IsJustCreated());
   // Client used by only paint chunks and non-cachaeable display items but not
   // by any cacheable display items won't be marked as validly cached.
-  EXPECT_TRUE(RootPaintController().ClientCacheIsValid(*div.Layer()));
-  EXPECT_FALSE(RootPaintController().ClientCacheIsValid(div));
-  EXPECT_TRUE(RootPaintController().ClientCacheIsValid(sub_div));
+  EXPECT_TRUE(ClientCacheIsValid(*div.Layer()));
+  EXPECT_FALSE(ClientCacheIsValid(div));
+  EXPECT_TRUE(ClientCacheIsValid(sub_div));
 }
 
 TEST_P(PaintControllerPaintTestForNonSPv1, CompositingNoFold) {

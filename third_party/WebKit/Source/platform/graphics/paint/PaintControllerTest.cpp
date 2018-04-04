@@ -645,8 +645,8 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(first, kBackgroundType),
                       TestDisplayItem(second, kBackgroundType));
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(first));
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(second));
+  EXPECT_TRUE(ClientCacheIsValid(first));
+  EXPECT_TRUE(ClientCacheIsValid(second));
   sk_sp<const PaintRecord> first_paint_record =
       static_cast<const DrawingDisplayItem&>(
           GetPaintController().GetDisplayItemList()[0])
@@ -657,8 +657,8 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
           .GetPaintRecord();
 
   first.SetDisplayItemsUncached();
-  EXPECT_FALSE(GetPaintController().ClientCacheIsValid(first));
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(second));
+  EXPECT_FALSE(ClientCacheIsValid(first));
+  EXPECT_TRUE(ClientCacheIsValid(second));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     InitRootChunk();
@@ -682,12 +682,12 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
                   GetPaintController().GetDisplayItemList()[1])
                   .GetPaintRecord());
   }
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(first));
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(second));
+  EXPECT_TRUE(ClientCacheIsValid(first));
+  EXPECT_TRUE(ClientCacheIsValid(second));
 
   InvalidateAll();
-  EXPECT_FALSE(GetPaintController().ClientCacheIsValid(first));
-  EXPECT_FALSE(GetPaintController().ClientCacheIsValid(second));
+  EXPECT_FALSE(ClientCacheIsValid(first));
+  EXPECT_FALSE(ClientCacheIsValid(second));
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
@@ -1653,7 +1653,7 @@ TEST_P(PaintControllerTest, SkipCache) {
   }
 
   // Draw again with nothing invalidated.
-  EXPECT_TRUE(GetPaintController().ClientCacheIsValid(multicol));
+  EXPECT_TRUE(ClientCacheIsValid(multicol));
   DrawRect(context, multicol, kBackgroundType, FloatRect(100, 200, 100, 100));
 
   GetPaintController().BeginSkippingCache();
@@ -1762,7 +1762,7 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
   EXPECT_NE(record1, record2);
 
   // Content's cache is invalid because it has display items skipped cache.
-  EXPECT_FALSE(GetPaintController().ClientCacheIsValid(content));
+  EXPECT_FALSE(ClientCacheIsValid(content));
   EXPECT_EQ(PaintInvalidationReason::kFull,
             content.GetPaintInvalidationReason());
 
@@ -2046,6 +2046,8 @@ class PaintControllerUnderInvalidationTest
     DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
+
+    InitRootChunk();
     first.SetVisualRect(LayoutRect(200, 200, 300, 300));
     DrawRect(context, first, kBackgroundType, FloatRect(200, 200, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
@@ -2059,6 +2061,8 @@ class PaintControllerUnderInvalidationTest
     InitRootChunk();
     DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
+
+    InitRootChunk();
     DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
@@ -2072,6 +2076,7 @@ class PaintControllerUnderInvalidationTest
     DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
+
     InitRootChunk();
     DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
@@ -2084,7 +2089,6 @@ class PaintControllerUnderInvalidationTest
     GraphicsContext context(GetPaintController());
 
     InitRootChunk();
-
     {
       SubsequenceRecorder r(context, container);
       DrawRect(context, container, kBackgroundType,
@@ -2093,7 +2097,6 @@ class PaintControllerUnderInvalidationTest
     GetPaintController().CommitNewDisplayItems();
 
     InitRootChunk();
-
     EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container));
     {
@@ -2119,6 +2122,7 @@ class PaintControllerUnderInvalidationTest
   void TestChangeDrawingInSubsequence() {
     FakeDisplayItemClient first("first");
     GraphicsContext context(GetPaintController());
+    InitRootChunk();
     {
       SubsequenceRecorder r(context, first);
       first.SetVisualRect(LayoutRect(100, 100, 300, 300));
@@ -2126,6 +2130,8 @@ class PaintControllerUnderInvalidationTest
       DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
+
+    InitRootChunk();
     {
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
@@ -2141,12 +2147,14 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient first("first");
     GraphicsContext context(GetPaintController());
 
+    InitRootChunk();
     {
       SubsequenceRecorder r(context, first);
       DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
 
+    InitRootChunk();
     {
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
@@ -2161,6 +2169,7 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient first("first");
     GraphicsContext context(GetPaintController());
 
+    InitRootChunk();
     {
       SubsequenceRecorder r(context, first);
       DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
@@ -2168,6 +2177,7 @@ class PaintControllerUnderInvalidationTest
     }
     GetPaintController().CommitNewDisplayItems();
 
+    InitRootChunk();
     {
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
@@ -2182,6 +2192,7 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient content("content");
     GraphicsContext context(GetPaintController());
 
+    InitRootChunk();
     {
       SubsequenceRecorder r(context, container);
       { ClipPathRecorder clip_path_recorder(context, container, Path()); }
@@ -2191,6 +2202,7 @@ class PaintControllerUnderInvalidationTest
     }
     GetPaintController().CommitNewDisplayItems();
 
+    InitRootChunk();
     {
       EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
           context, container));
@@ -2233,12 +2245,14 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient target("target");
     GraphicsContext context(GetPaintController());
 
+    InitRootChunk();
     {
       SubsequenceRecorder r(context, target);
       DrawRect(context, target, kBackgroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
 
+    InitRootChunk();
     {
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, target));
@@ -2249,18 +2263,18 @@ class PaintControllerUnderInvalidationTest
 };
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing) {
-  EXPECT_DEATH(TestChangeDrawing(), "");
+  EXPECT_DEATH(TestChangeDrawing(), "under-invalidation: display item changed");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, MoreDrawing) {
-  EXPECT_DEATH(TestMoreDrawing(), "");
+  // We don't detect under-invalidation in this case, and PaintController can
+  // also handle the case gracefully.
+  TestMoreDrawing();
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, LessDrawing) {
   // We don't detect under-invalidation in this case, and PaintController can
-  // also handle the case gracefully. However, less drawing at one time often
-  // means more-drawing at another time, so eventually we'll detect such
-  // under-invalidations.
+  // also handle the case gracefully.
   TestLessDrawing();
 }
 
@@ -2270,23 +2284,28 @@ TEST_F(PaintControllerUnderInvalidationTest, NoopPairsInSubsequence) {
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawingInSubsequence) {
-  EXPECT_DEATH(TestChangeDrawingInSubsequence(), "");
+  EXPECT_DEATH(TestChangeDrawingInSubsequence(),
+               "In cached subsequence for first.*"
+               "under-invalidation: display item changed");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, MoreDrawingInSubsequence) {
-  EXPECT_DEATH(TestMoreDrawingInSubsequence(), "");
+  // TODO(wangxianzhu): Detect more drawings at the end of a subsequence.
+  TestMoreDrawingInSubsequence();
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, LessDrawingInSubsequence) {
-  // We allow invalidated display item clients as long as they would produce the
-  // same display items. The cases of changed display items are tested by other
-  // test cases.
-  EXPECT_DEATH(TestLessDrawingInSubsequence(), "");
+  EXPECT_DEATH(TestLessDrawingInSubsequence(),
+               "In cached subsequence for first.*"
+               "under-invalidation: new subsequence wrong length");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeNonDrawingInSubsequence) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    EXPECT_DEATH(TestChangeNonDrawingInSubsequence(), "");
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+  EXPECT_DEATH(TestChangeNonDrawingInSubsequence(),
+               "In cached subsequence for first.*"
+               "under-invalidation: new subsequence wrong length");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
@@ -2297,7 +2316,9 @@ TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, SubsequenceBecomesEmpty) {
-  EXPECT_DEATH(TestSubsequenceBecomesEmpty(), "");
+  EXPECT_DEATH(TestSubsequenceBecomesEmpty(),
+               "In cached subsequence for target.*"
+               "under-invalidation: new subsequence wrong length");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, SkipCacheInSubsequence) {

@@ -173,8 +173,6 @@ class PLATFORM_EXPORT PaintController {
     return GetPaintArtifact().PaintChunks();
   }
 
-  bool ClientCacheIsValid(const DisplayItemClient&) const;
-
   // For micro benchmarking of record time.
   bool DisplayItemConstructionIsDisabled() const {
     return construction_disabled_;
@@ -248,6 +246,18 @@ class PLATFORM_EXPORT PaintController {
  private:
   friend class PaintControllerTestBase;
   friend class PaintControllerPaintTestBase;
+
+  // True if all display items associated with the client are validly cached.
+  // However, the current algorithm allows the following situations even if
+  // ClientCacheIsValid() is true for a client during painting:
+  // 1. The client paints a new display item that is not cached:
+  //    UseCachedDrawingIfPossible() returns false for the display item and the
+  //    newly painted display item will be added into the cache. This situation
+  //    has slight performance hit (see FindOutOfOrderCachedItemForward()) so we
+  //    print a warning in the situation and should keep it rare.
+  // 2. the client no longer paints a display item that is cached: the cached
+  //    display item will be removed. This doesn't affect performance.
+  bool ClientCacheIsValid(const DisplayItemClient&) const;
 
   void InvalidateAllForTesting() { InvalidateAllInternal(); }
   void InvalidateAllInternal();
