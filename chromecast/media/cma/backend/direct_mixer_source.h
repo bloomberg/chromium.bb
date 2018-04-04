@@ -35,7 +35,6 @@ class DirectMixerSource : public MixerInput::Source,
 
   DirectMixerSource(DirectAudioSource* direct_source,
                     const MediaPipelineDeviceParams& params,
-                    int source_sample_rate,
                     int playout_channel);
 
   // Sets the volume multiplier for this stream. If |multiplier| < 0, sets the

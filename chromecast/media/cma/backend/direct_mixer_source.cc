@@ -15,8 +15,6 @@ namespace media {
 
 namespace {
 
-const int kNumOutputChannels = 2;
-
 std::string AudioContentTypeToString(media::AudioContentType type) {
   switch (type) {
     case media::AudioContentType::kAlarm:
@@ -34,11 +32,9 @@ std::string AudioContentTypeToString(media::AudioContentType type) {
 DirectAudioSourceToken* CastMediaShlib::AddDirectAudioSource(
     DirectAudioSource* source,
     const MediaPipelineDeviceParams& params,
-    int source_sample_rate,
     int playout_channel) {
   DCHECK(source);
-  return new DirectMixerSource(source, params, source_sample_rate,
-                               playout_channel);
+  return new DirectMixerSource(source, params, playout_channel);
 }
 
 // static
@@ -49,11 +45,10 @@ void CastMediaShlib::RemoveDirectAudioSource(DirectAudioSourceToken* token) {
 
 DirectMixerSource::DirectMixerSource(DirectAudioSource* direct_source,
                                      const MediaPipelineDeviceParams& params,
-                                     int source_sample_rate,
                                      int playout_channel)
     : source_(direct_source),
-      num_channels_(kNumOutputChannels),
-      input_samples_per_second_(source_sample_rate),
+      num_channels_(source_->GetNumChannels()),
+      input_samples_per_second_(source_->GetSampleRate()),
       primary_(params.audio_type !=
                MediaPipelineDeviceParams::kAudioStreamSoundEffects),
       device_id_(params.device_id),
@@ -61,7 +56,6 @@ DirectMixerSource::DirectMixerSource(DirectAudioSource* direct_source,
       playout_channel_(playout_channel),
       mixer_(StreamMixer::Get()),
       channel_vector_(num_channels_) {
-  DCHECK(source_);
   LOG(INFO) << "Create " << device_id_ << " (" << this
             << "), content type = " << AudioContentTypeToString(content_type_);
   DCHECK(source_);

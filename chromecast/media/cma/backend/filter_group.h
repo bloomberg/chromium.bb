@@ -120,6 +120,7 @@ class FilterGroup {
   // Resizes temp_ and mixed_ if they are too small to hold |num_frames| frames.
   // Returns |true| if |num_frames| is larger than all previous |num_frames|.
   bool ResizeBuffersIfNecessary(int num_frames);
+  void AddTempBuffer(int num_channels, int num_frames);
 
   const int num_channels_;
   const GroupType type_;
@@ -139,7 +140,7 @@ class FilterGroup {
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and
   // allocations.
-  std::unique_ptr<::media::AudioBus> temp_;
+  std::vector<std::unique_ptr<::media::AudioBus>> temp_buffers_;
   std::unique_ptr<::media::AudioBus> mixed_;
 
   // Interleaved data must be aligned to 16 bytes.
