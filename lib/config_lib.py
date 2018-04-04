@@ -346,18 +346,21 @@ class VMTestConfig(object):
     retry: Whether we should retry tests that fail in a suite run.
     max_retries: Integer, maximum job retries allowed at suite level.
                  None for no max.
+    forgiving: Boolean, forgive the test if it is set to True.
   """
   DEFAULT_TEST_TIMEOUT = 90 * 60
 
   def __init__(self, test_type, test_suite=None,
                timeout=DEFAULT_TEST_TIMEOUT, retry=False,
-               max_retries=constants.VM_TEST_MAX_RETRIES):
+               max_retries=constants.VM_TEST_MAX_RETRIES,
+               forgiving=False):
     """Constructor -- see members above."""
     self.test_type = test_type
     self.test_suite = test_suite
     self.timeout = timeout
     self.retry = retry
     self.max_retries = max_retries
+    self.forgiving = forgiving
 
 
   def __eq__(self, other):
