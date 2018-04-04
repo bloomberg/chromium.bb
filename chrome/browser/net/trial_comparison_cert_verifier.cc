@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -160,14 +161,37 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
 
   void CompareTrialResults(int trial_result_error) {
     cert_verifier_ = nullptr;
-    bool trial_success = trial_result_error == primary_error_ &&
-                         CertVerifyResultEqual(trial_result_, primary_result_);
+    bool errors_equal = trial_result_error == primary_error_;
+    bool details_equal = CertVerifyResultEqual(trial_result_, primary_result_);
+    bool trial_success = errors_equal && details_equal;
 
     net_log_.EndEvent(net::NetLogEventType::TRIAL_CERT_VERIFIER_JOB,
                       base::BindRepeating(&TrialVerificationJobResultCallback,
                                           trial_success));
+
+    TrialComparisonResult result_code = kInvalid;
+    if (trial_success) {
+      result_code = kEqual;
+    } else if (errors_equal) {
+      if (primary_error_ == net::OK)
+        result_code = kBothValidDifferentDetails;
+      else
+        result_code = kBothErrorDifferentDetails;
+    } else if (primary_error_ == net::OK) {
+      result_code = kPrimaryValidSecondaryError;
+    } else {
+      result_code = kPrimaryErrorSecondaryValid;
+    }
+    UMA_HISTOGRAM_ENUMERATION("Net.CertVerifier_TrialComparisonResult",
+                              result_code);
+
     if (trial_success)
       return;
+
+    if (base::GetFieldTrialParamByFeatureAsBool(
+            features::kCertDualVerificationTrialFeature, "uma_only", false)) {
+      return;
+    }
 
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
         ->PostTask(FROM_HERE, base::BindOnce(&SendReport, profile_id_, params_,

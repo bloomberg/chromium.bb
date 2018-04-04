@@ -296,6 +296,7 @@ TEST_F(TrialComparisonCertVerifierTest, NotOptedIn) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, NotScoutOptIn) {
@@ -337,6 +338,7 @@ TEST_F(TrialComparisonCertVerifierTest, NotScoutOptIn) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, FeatureDisabled) {
@@ -375,6 +377,7 @@ TEST_F(TrialComparisonCertVerifierTest, FeatureDisabled) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, SameResult) {
@@ -411,6 +414,8 @@ TEST_F(TrialComparisonCertVerifierTest, SameResult) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
+  histograms_.ExpectUniqueSample("Net.CertVerifier_TrialComparisonResult",
+                                 TrialComparisonCertVerifier::kEqual, 1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, Incognito) {
@@ -444,6 +449,7 @@ TEST_F(TrialComparisonCertVerifierTest, Incognito) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
@@ -510,6 +516,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kPrimaryErrorSecondaryValid, 1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
@@ -576,6 +585,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kPrimaryValidSecondaryError, 1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest,
@@ -640,6 +652,9 @@ TEST_F(TrialComparisonCertVerifierTest,
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kBothValidDifferentDetails, 1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
@@ -719,6 +734,9 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kBothValidDifferentDetails, 1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
@@ -804,6 +822,9 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
   // Only one verification should be done by secondary verifier.
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kPrimaryErrorSecondaryValid, 1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
@@ -874,6 +895,9 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kPrimaryErrorSecondaryValid, 1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
@@ -917,6 +941,7 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialVerification) {
@@ -971,4 +996,61 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialVerification) {
   // Histograms for trial verifier should not be recorded.
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
+}
+
+TEST_F(TrialComparisonCertVerifierTest,
+       PrimaryVerifierOkSecondaryErrorUmaOnly) {
+  // Enable feature with uma_only flag.
+  scoped_feature_.reset();
+  scoped_feature_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_->InitAndEnableFeatureWithParameters(
+      features::kCertDualVerificationTrialFeature, {{"uma_only", "true"}});
+
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = cert_chain_1_;
+  scoped_refptr<MockCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<MockCertVerifyProc>(net::OK, primary_result);
+
+  // Trial verifier returns an error status.
+  net::CertVerifyResult secondary_result;
+  secondary_result.cert_status = net::CERT_STATUS_REVOKED;
+  secondary_result.verified_cert = cert_chain_1_;
+  scoped_refptr<MockCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+                                               secondary_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::OK));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Wait for any tasks to finish.
+  content::RunAllTasksUntilIdle();
+
+  // Expect no report.
+  reporting_service_test_helper()->ExpectNoRequests(service());
+
+  // Should still have UMA logs.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kPrimaryValidSecondaryError, 1);
 }
