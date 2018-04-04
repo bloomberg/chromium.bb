@@ -804,6 +804,12 @@ const char kHistoryRequiresUserGestureDescription[] =
 const char kHyperlinkAuditingName[] = "Hyperlink auditing";
 const char kHyperlinkAuditingDescription[] = "Sends hyperlink auditing pings.";
 
+const char kHorizontalTabSwitcherAndroidName[] =
+    "Enable horizontal tab switcher";
+const char kHorizontalTabSwitcherAndroidDescription[] =
+    "Changes the layout of the Android tab switcher so tabs scroll "
+    "horizontally instead of vertically.";
+
 const char kHostedAppQuitNotificationName[] =
     "Quit notification for hosted apps";
 const char kHostedAppQuitNotificationDescription[] =

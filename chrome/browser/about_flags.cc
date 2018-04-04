@@ -3798,6 +3798,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(features::kSupervisedUserCommittedInterstitials)},
 
+#if defined(OS_ANDROID)
+    {"enable-horizontal-tab-switcher",
+     flag_descriptions::kHorizontalTabSwitcherAndroidName,
+     flag_descriptions::kHorizontalTabSwitcherAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kHorizontalTabSwitcherAndroid)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

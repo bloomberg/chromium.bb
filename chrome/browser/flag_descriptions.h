@@ -501,6 +501,9 @@ extern const char kGoogleProfileInfoDescription[];
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
 
+extern const char kHorizontalTabSwitcherAndroidName[];
+extern const char kHorizontalTabSwitcherAndroidDescription[];
+
 extern const char kViewsCastDialogName[];
 extern const char kViewsCastDialogDescription[];
 
