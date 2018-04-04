@@ -1419,6 +1419,25 @@
             ]
         }
     ],
+    "GCMTokenInvalidAfterDays": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win",
+                "chromeos",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GCMTokenInvalidAfterDays"
+                    ]
+                }
+            ]
+        }
+    ],
     "GaiaPasswordReuse": [
         {
             "platforms": [
