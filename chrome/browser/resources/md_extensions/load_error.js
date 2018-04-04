@@ -33,11 +33,11 @@ cr.define('extensions', function() {
     ],
 
     show: function() {
-      /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
+      this.$$('dialog').showModal();
     },
 
     close: function() {
-      /** @type {!CrDialogElement} */ (this.$.dialog).close();
+      this.$$('dialog').close();
     },
 
     /** @private */

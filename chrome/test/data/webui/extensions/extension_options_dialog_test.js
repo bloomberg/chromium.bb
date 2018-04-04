@@ -31,7 +31,7 @@ cr.define('extension_options_dialog_tests', function() {
     });
 
     function isDialogVisible() {
-      var dialogElement = optionsDialog.$.dialog.getNative();
+      var dialogElement = optionsDialog.$$('dialog');
       var rect = dialogElement.getBoundingClientRect();
       return rect.width * rect.height > 0;
     }

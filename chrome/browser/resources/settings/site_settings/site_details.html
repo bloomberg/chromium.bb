@@ -36,7 +36,7 @@
       }
     </style>
     <!-- Confirm Delete dialog -->
-    <cr-dialog id="confirmDeleteDialog" close-text="$i18n{close}">
+    <dialog is="cr-dialog" id="confirmDeleteDialog" close-text="$i18n{close}">
       <div slot="title">
         $i18n{siteSettingsSiteResetDialogTitle}
       </div>
@@ -51,7 +51,7 @@
           $i18n{siteSettingsSiteResetAll}
         </paper-button>
       </div>
-    </cr-dialog>
+    </dialog>
 
     <template is="dom-if" if="[[enableSiteSettings_]]">
       <div id="usage">

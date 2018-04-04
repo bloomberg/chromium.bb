@@ -14,7 +14,7 @@
   <style include="print-preview-shared search-dialog button cr-hidden-style">
   </style>
   <template>
-    <cr-dialog id="dialog" on-close="onCloseOrCancel_">
+    <dialog is="cr-dialog" id="dialog" on-close="onCloseOrCancel_">
       <div slot="title">
         <div>[[i18n('advancedSettingsDialogTitle', destination.displayName)]]
         </div>
@@ -41,7 +41,7 @@
           $i18n{advancedSettingsDialogConfirm}
         </button>
       </div>
-    </cr-dialog>
+    </dialog>
   </template>
   <script src="advanced_settings_dialog.js"></script>
 </dom-module>

@@ -21,7 +21,7 @@
         width: 104px;  /* Magic number from the specs. */
       }
     </style>
-    <cr-dialog id="dialog" close-text="$i18n{close}">
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{loadErrorHeading}</div>
       <div slot="body">
         <div id="info">
@@ -48,7 +48,7 @@
           $i18n{loadErrorRetry}
         </paper-button>
       </div>
-    </cr-dialog>
+    </dialog>
   </template>
   <script src="load_error.js"></script>
 </dom-module>
