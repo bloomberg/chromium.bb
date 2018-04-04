@@ -749,7 +749,7 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   return res;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void AutocompleteMatch::Validate() const {
   ValidateClassifications(contents, contents_class);
   ValidateClassifications(description, description_class);
@@ -786,4 +786,4 @@ void AutocompleteMatch::ValidateClassifications(
     last_offset = i->offset;
   }
 }
-#endif
+#endif  // DCHECK_IS_ON()

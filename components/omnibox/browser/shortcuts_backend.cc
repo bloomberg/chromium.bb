@@ -121,6 +121,9 @@ void ShortcutsBackend::RemoveObserver(ShortcutsBackendObserver* obs) {
 
 void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
                                            const AutocompleteMatch& match) {
+#if DCHECK_IS_ON()
+  match.Validate();
+#endif  // DCHECK_IS_ON()
   // TODO(crbug.com/46623): Let's think twice about saving these.
   if (match.type == AutocompleteMatchType::TAB_SEARCH)
     return;
