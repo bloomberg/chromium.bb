@@ -84,7 +84,18 @@ PermissionsData::AccessType GetMinimumAccessType(
 // modified/canceled by extensions, e.g. because it is targeted to the webstore
 // to check for updates, extension blacklisting, etc.
 bool IsSensitiveURL(const GURL& url,
-                    bool is_request_from_browser_or_webui_renderer) {
+                    bool is_request_from_browser,
+                    bool is_request_from_webui_renderer) {
+  const bool is_request_from_sensitive_source =
+      is_request_from_browser || is_request_from_webui_renderer;
+
+  // WebUI renderers should never be making network requests. We assert that
+  // here just to be sure.
+  const bool is_network_request =
+      url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS();
+  DCHECK(!is_network_request || !is_request_from_webui_renderer)
+      << "Unsupported network request from WebUI for " << url.spec();
+
   // TODO(battre) Merge this, CanExtensionAccessURL and
   // PermissionsData::CanAccessPage into one function.
   bool sensitive_chrome_url = false;
@@ -103,7 +114,7 @@ bool IsSensitiveURL(const GURL& url,
     // These URLs are only protected for requests from the browser and webui
     // renderers, not for requests from common renderers, because
     // clients*.google.com are also used by websites.
-    if (is_request_from_browser_or_webui_renderer) {
+    if (is_request_from_sensitive_source) {
       base::StringPiece::size_type pos = host.rfind(kClient);
       if (pos != base::StringPiece::npos) {
         bool match = true;
@@ -132,7 +143,7 @@ bool IsSensitiveURL(const GURL& url,
                                              base::CompareCase::SENSITIVE));
   }
 
-  if (is_request_from_browser_or_webui_renderer) {
+  if (is_request_from_sensitive_source) {
     sensitive_chrome_url =
         sensitive_chrome_url ||
         extensions::ExtensionsAPIClient::Get()->ShouldHideBrowserNetworkRequest(
@@ -185,8 +196,8 @@ bool WebRequestPermissions::HideRequest(
             request.render_process_id);
   }
 
-  return IsSensitiveURL(request.url, is_request_from_browser ||
-                                         is_request_from_webui_renderer) ||
+  return IsSensitiveURL(request.url, is_request_from_browser,
+                        is_request_from_webui_renderer) ||
          !HasWebRequestScheme(request.url);
 }
 
