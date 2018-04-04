@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_OBSERVER_H_
 
 #include <memory>
+#include <set>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace net {
 class SSLCertRequestInfo;
@@ -28,18 +26,18 @@ class ClientCertificateDelegate;
 // ClientCertificateDelegate. It links client certificate selection dialogs
 // attached to the same BrowserContext. When CertificateSelected is called via
 // one of them, the rest simulate the same action.
-class SSLClientAuthObserver : public content::NotificationObserver {
+class SSLClientAuthObserver {
  public:
   SSLClientAuthObserver(
       const content::BrowserContext* browser_context,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
       std::unique_ptr<content::ClientCertificateDelegate> delegate);
-  ~SSLClientAuthObserver() override;
+  virtual ~SSLClientAuthObserver();
 
   // UI should implement this to close the dialog.
   virtual void OnCertSelectedByNotification() = 0;
 
-  // Continues the request with a certificate. Can also call with NULL to
+  // Continues the request with a certificate. Can also call with nullptr to
   // continue with no certificate. Derived classes must use this instead of
   // caching the delegate and calling it directly.
   void CertificateSelected(net::X509Certificate* cert,
@@ -63,15 +61,17 @@ class SSLClientAuthObserver : public content::NotificationObserver {
   }
 
  private:
-  // content::NotificationObserver implementation:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void CertificateSelectedWithOtherObserver(
+      const content::BrowserContext* browser_context,
+      net::SSLCertRequestInfo* cert_request_info,
+      net::X509Certificate* certificate,
+      net::SSLPrivateKey* private_key);
+
+  static std::set<SSLClientAuthObserver*>& GetActiveObservers();
 
   const content::BrowserContext* browser_context_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   std::unique_ptr<content::ClientCertificateDelegate> delegate_;
-  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthObserver);
 };
