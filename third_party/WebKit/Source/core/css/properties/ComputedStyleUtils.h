@@ -102,7 +102,7 @@ class ComputedStyleUtils {
   static CSSValueList* ValueForFontFamily(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontSize(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontStretch(const ComputedStyle&);
-  static CSSIdentifierValue* ValueForFontStyle(const ComputedStyle&);
+  static CSSValue* ValueForFontStyle(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontWeight(const ComputedStyle&);
   static CSSIdentifierValue* ValueForFontVariantCaps(const ComputedStyle&);
   static CSSValue* ValueForFontVariantLigatures(const ComputedStyle&);

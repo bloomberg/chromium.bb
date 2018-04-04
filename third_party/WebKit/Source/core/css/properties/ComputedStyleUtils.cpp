@@ -11,6 +11,7 @@
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFamilyValue.h"
+#include "core/css/CSSFontStyleRangeValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSInitialValue.h"
@@ -745,8 +746,7 @@ CSSPrimitiveValue* ComputedStyleUtils::ValueForFontStretch(
                                    CSSPrimitiveValue::UnitType::kPercentage);
 }
 
-CSSIdentifierValue* ComputedStyleUtils::ValueForFontStyle(
-    const ComputedStyle& style) {
+CSSValue* ComputedStyleUtils::ValueForFontStyle(const ComputedStyle& style) {
   FontSelectionValue angle = style.GetFontDescription().Style();
   if (angle == NormalSlopeValue()) {
     return CSSIdentifierValue::Create(CSSValueNormal);
@@ -756,8 +756,14 @@ CSSIdentifierValue* ComputedStyleUtils::ValueForFontStyle(
     return CSSIdentifierValue::Create(CSSValueItalic);
   }
 
-  NOTREACHED();
-  return CSSIdentifierValue::Create(CSSValueNormal);
+  // The spec says: 'The lack of a number represents an angle of
+  // "20deg"', but since we compute that to 'italic' (handled above),
+  // we don't perform any special treatment of that value here.
+  CSSValueList* oblique_values = CSSValueList::CreateSpaceSeparated();
+  oblique_values->Append(
+      *CSSPrimitiveValue::Create(angle, CSSPrimitiveValue::UnitType::kDegrees));
+  return CSSFontStyleRangeValue::Create(
+      *CSSIdentifierValue::Create(CSSValueOblique), *oblique_values);
 }
 
 CSSPrimitiveValue* ComputedStyleUtils::ValueForFontWeight(
