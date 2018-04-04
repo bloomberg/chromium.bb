@@ -95,8 +95,6 @@ std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
     return nullptr;
   }
 
-  result->font_data_size = font_file_size_32;
-
   // Font loading used to call ATSFontGetContainer() and used that as font id.
   // ATS is deprecated. CoreText offers up the ATSFontRef typeface ID via
   // CTFontGetPlatformFont.
@@ -112,15 +110,12 @@ std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
 void ReplyOnUIThread(FontLoader::LoadedCallback callback,
                      std::unique_ptr<FontLoader::ResultInternal> result) {
   if (!result) {
-    std::move(callback).Run(0, mojo::ScopedSharedBufferHandle(), 0);
+    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
     return;
   }
 
-  DCHECK_NE(0u, result->font_data_size);
   DCHECK_NE(0u, result->font_id);
-
-  std::move(callback).Run(result->font_data_size, std::move(result->font_data),
-                          result->font_id);
+  std::move(callback).Run(std::move(result->font_data), result->font_id);
 }
 
 }  // namespace

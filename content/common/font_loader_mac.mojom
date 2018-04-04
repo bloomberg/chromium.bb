@@ -10,5 +10,5 @@ interface FontLoaderMac {
   // Request the browser to load a font into shared memory for us.
   [Sync]
   LoadFont(mojo_base.mojom.String16 font_name, float font_point_size)
-      => (uint32 buffer_size, handle<shared_buffer>? font_data, uint32 font_id);
+      => (handle<shared_buffer>? font_data, uint32 font_id);
 };

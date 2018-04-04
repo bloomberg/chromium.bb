@@ -112,16 +112,19 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
 
   std::unique_ptr<FontLoader::ResultInternal> result =
       FontLoader::LoadFontForTesting(base::ASCIIToUTF16("Geeza Pro"), 16);
-  EXPECT_GT(result->font_data_size, 0U);
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(result->font_data.is_valid());
+  uint64_t font_data_size = result->font_data->GetSize();
+  EXPECT_GT(font_data_size, 0U);
   EXPECT_GT(result->font_id, 0U);
 
   mojo::ScopedSharedBufferMapping mapping =
-      result->font_data->Map(result->font_data_size);
+      result->font_data->Map(font_data_size);
   ASSERT_TRUE(mapping);
 
   base::WriteFileDescriptor(fileno(temp_file),
                             static_cast<const char*>(mapping.get()),
-                            result->font_data_size);
+                            font_data_size);
 
   ASSERT_TRUE(RunTestInSandbox(service_manager::SANDBOX_TYPE_RENDERER,
                                "FontLoadingTestCase",

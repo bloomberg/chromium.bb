@@ -5,10 +5,10 @@
 #ifndef CONTENT_COMMON_MAC_FONT_LOADER_H_
 #define CONTENT_COMMON_MAC_FONT_LOADER_H_
 
-#include <memory>
-
 #include <CoreGraphics/CoreGraphics.h>
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
@@ -27,19 +27,18 @@ class FontLoader {
   struct CONTENT_EXPORT ResultInternal {
     ResultInternal();
     ~ResultInternal();
-    uint32_t font_data_size = 0;
+
     mojo::ScopedSharedBufferHandle font_data;
     uint32_t font_id = 0;
   };
 
   // Callback for the reporting result of LoadFont().
-  // - The first argument is the data size.
   // - The ScopedSharedBufferHandle points to a shared memory buffer containing
   //   the raw data for the font file.
   // - The last argument is the font_id: a unique identifier for the on-disk
   //   file we load for the font.
-  using LoadedCallback = base::OnceCallback<
-      void(uint32_t, mojo::ScopedSharedBufferHandle, uint32_t)>;
+  using LoadedCallback =
+      base::OnceCallback<void(mojo::ScopedSharedBufferHandle, uint32_t)>;
 
   // Load a font specified by |font| into a shared memory buffer suitable for
   // sending over IPC. On failure, zeroes and an invalid handle are reported
