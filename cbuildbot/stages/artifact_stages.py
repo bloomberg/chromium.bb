@@ -802,21 +802,11 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
   """Generate and upload the warnings files for the board."""
 
   CLANG_TIDY_TAR = 'clang_tidy_warnings.tar.xz'
-  GS_URL = 'gs://chromeos-clang-tidy-artifacts/clang-tidy-1/'
+  GS_URL = 'gs://chromeos-clang-tidy-artifacts/clang-tidy-1'
 
   def __init__(self, *args, **kwargs):
     super(GenerateTidyWarningsStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
-
-  def _GetListOfFilesToProcess(self):
-    """Find the list of build log files that contain clang tidy warnings"""
-    logs_dir = '/tmp/clang-tidy-logs/%s' % self._current_board
-    cmd = ['find', logs_dir, '-name', '"*.log"']
-    file_list = cros_build_lib.RunCommand(cmd, cwd=self._build_root,
-                                          enter_chroot=True,
-                                          capture_output=True)
-    files = file_list.split('\n')
-    return files
 
   def _UploadTidyWarnings(self, path, tar_file):
     """Upload the warnings tarball to the clang-tidy gs bucket."""
@@ -841,17 +831,18 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
   def _GenerateTidyWarnings(self):
     """Generate and upload the tidy warnings files for the board."""
     assert self.archive_path.startswith(self._build_root)
-    files = self._GetListOfFilesToProcess()
+    logs_dir = os.path.join('/tmp', 'clang-tidy-logs', self._current_board)
     timestamp = datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d')
     clang_tidy_tarball = "%s.%s.%s" % (self._current_board, timestamp,
                                        self.CLANG_TIDY_TAR)
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
+    out_chroot_path = os.path.abspath(
+        os.path.join(self._build_root, 'chroot', self.archive_path))
     cmd = ['cros_generate_tidy_warnings', '--out-file', clang_tidy_tarball,
            '--out-dir', in_chroot_path, '--board', self._current_board,
-           '--files',
-           ' '.join(files)]
+           '--logs-dir', logs_dir]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
-    self._UploadTidyWarnings(in_chroot_path, clang_tidy_tarball)
+    self._UploadTidyWarnings(out_chroot_path, clang_tidy_tarball)
     self._upload_queue.put([clang_tidy_tarball])
 
   def PerformStage(self):

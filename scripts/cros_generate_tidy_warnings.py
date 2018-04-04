@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import shutil
 
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
@@ -25,8 +26,9 @@ def ParseCommandLine(argv):
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--board', required=True,
                       help=('The board to generate the sysroot for.'))
-  parser.add_argument('--files', required=True,
-                      help=('The files to generate warnings files for.'))
+  parser.add_argument('--logs-dir', required=True,
+                      help=('The directory containg the logs files to '
+                            'be parsed.'))
   parser.add_argument('--out-dir', type='path', required=True,
                       help='Directory to place the generated tarball.')
   parser.add_argument('--out-file', default=DEFAULT_NAME,
@@ -50,11 +52,24 @@ class GenerateTidyWarnings(object):
     self.warnings_dir = warnings_dir
     self.options = options
 
+  def _FindLogFiles(self, logs_dir):
+    files = []
+    filelist = os.listdir(logs_dir)
+    for f in filelist:
+      logfile = os.path.join(logs_dir, f)
+      files.append(logfile)
+    return files
+
   def _ParseLogFiles(self):
-    log_files = self.options.files
+    log_files = self._FindLogFiles(self.options.logs_dir)
     for f in log_files:
       cmd = [PARSING_SCRIPT, '--log_file', f, '--output_dir', self.warnings_dir]
       cros_build_lib.RunCommand(cmd, cwd=WORKING_DIR, enter_chroot=True)
+      # Copy log file to output directory.  We want the log files in the
+      # tarball, for now, in case we ever need to re-process them. (A
+      # possibility, since the final dashboard details have not been worked out
+      # yet.)
+      shutil.copy2(f, self.warnings_dir)
 
   def _CreateTarball(self):
     target = os.path.join(self.options.out_dir, self.options.out_file)
