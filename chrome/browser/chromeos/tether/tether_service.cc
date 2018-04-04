@@ -145,8 +145,7 @@ TetherService::TetherService(
               cryptauth_service->GetCryptAuthDeviceManager(),
               cryptauth_service->GetAccountId(),
               cryptauth_service->GetCryptAuthEnrollmentManager()
-                  ->GetUserPrivateKey(),
-              cryptauth_service)),
+                  ->GetUserPrivateKey())),
       tether_host_fetcher_(
           chromeos::tether::TetherHostFetcherImpl::Factory::NewInstance(
               remote_device_provider_.get())),

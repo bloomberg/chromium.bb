@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/secure_message_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace identity {
@@ -29,8 +28,6 @@ class CryptAuthEnrollerFactoryImpl
  public:
   CryptAuthEnrollerFactoryImpl(
       identity::IdentityManager* identity_manager,
-      cryptauth::SecureMessageDelegate::Factory*
-          secure_message_delegate_factory,
       scoped_refptr<net::URLRequestContextGetter> url_request_context,
       const cryptauth::DeviceClassifier& device_classifier);
   ~CryptAuthEnrollerFactoryImpl() override;
@@ -40,7 +37,6 @@ class CryptAuthEnrollerFactoryImpl
 
  private:
   identity::IdentityManager* identity_manager_;
-  cryptauth::SecureMessageDelegate::Factory* secure_message_delegate_factory_;
   const scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   const cryptauth::DeviceClassifier device_classifier_;
 };

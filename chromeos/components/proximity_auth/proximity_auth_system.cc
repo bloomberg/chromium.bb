@@ -127,7 +127,7 @@ std::unique_ptr<RemoteDeviceLifeCycle>
 ProximityAuthSystem::CreateRemoteDeviceLifeCycle(
     const cryptauth::RemoteDevice& remote_device) {
   return std::unique_ptr<RemoteDeviceLifeCycle>(
-      new RemoteDeviceLifeCycleImpl(remote_device, proximity_auth_client_));
+      new RemoteDeviceLifeCycleImpl(remote_device));
 }
 
 void ProximityAuthSystem::OnLifeCycleStateChanged(

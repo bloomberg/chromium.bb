@@ -18,14 +18,6 @@ namespace cryptauth {
 // implementation on ChromeOS communicates with a daemon process over IPC.
 class SecureMessageDelegate {
  public:
-  class Factory {
-   public:
-    virtual std::unique_ptr<SecureMessageDelegate>
-    CreateSecureMessageDelegate() = 0;
-
-    virtual ~Factory() = default;
-  };
-
   // Fields specifying how to create a SecureMessage.
   struct CreateOptions {
     CreateOptions();

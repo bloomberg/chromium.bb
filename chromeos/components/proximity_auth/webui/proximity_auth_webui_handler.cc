@@ -25,7 +25,7 @@
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_context.h"
-#include "components/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -370,7 +370,7 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
           std::vector<cryptauth::ExternalDeviceInfo>(1, unlock_key),
           proximity_auth_client_->GetAccountId(),
           enrollment_manager->GetUserPrivateKey(),
-          proximity_auth_client_->CreateSecureMessageDelegate()));
+          cryptauth::SecureMessageDelegateImpl::Factory::NewInstance()));
       remote_device_loader_->Load(
           true /* should_load_beacon_seeds */,
           base::Bind(&ProximityAuthWebUIHandler::OnRemoteDevicesLoaded,
@@ -513,8 +513,7 @@ void ProximityAuthWebUIHandler::OnRemoteDevicesLoaded(
   }
 
   selected_remote_device_ = remote_devices[0];
-  life_cycle_.reset(new RemoteDeviceLifeCycleImpl(selected_remote_device_,
-                                                  proximity_auth_client_));
+  life_cycle_.reset(new RemoteDeviceLifeCycleImpl(selected_remote_device_));
   life_cycle_->AddObserver(this);
   life_cycle_->Start();
 }

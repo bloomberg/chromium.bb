@@ -81,6 +81,8 @@ static_library("cryptauth") {
     "secure_context.h",
     "secure_message_delegate.cc",
     "secure_message_delegate.h",
+    "secure_message_delegate_impl.cc",
+    "secure_message_delegate_impl.h",
     "session_keys.cc",
     "session_keys.h",
     "switches.cc",
@@ -95,6 +97,7 @@ static_library("cryptauth") {
 
   deps = [
     "//base",
+    "//chromeos",
     "//chromeos/components/proximity_auth/logging",
     "//components/cryptauth/ble",
     "//components/gcm_driver",

@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_signin_chromeos.h"
-#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -25,7 +24,6 @@
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/local_device_data_provider.h"
-#include "components/cryptauth/secure_message_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -91,14 +89,6 @@ ChromeProximityAuthClient::GetPrefManager() {
   if (service)
     return service->GetProximityAuthPrefManager();
   return nullptr;
-}
-
-std::unique_ptr<cryptauth::SecureMessageDelegate>
-ChromeProximityAuthClient::CreateSecureMessageDelegate() {
-  // Note: Although CryptAuthService::CreateSecureMessageDelegate() exists, we
-  // don't use it here (as opposed to other methods in this class) because the
-  // CryptAuthService is not available on the ChromeOS login screen.
-  return std::make_unique<SecureMessageDelegateChromeOS>();
 }
 
 std::unique_ptr<cryptauth::CryptAuthClientFactory>

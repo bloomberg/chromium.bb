@@ -923,8 +923,6 @@ source_set("chromeos") {
     "login/easy_unlock/easy_unlock_types.h",
     "login/easy_unlock/easy_unlock_user_login_flow.cc",
     "login/easy_unlock/easy_unlock_user_login_flow.h",
-    "login/easy_unlock/secure_message_delegate_chromeos.cc",
-    "login/easy_unlock/secure_message_delegate_chromeos.h",
     "login/easy_unlock/short_lived_user_context.cc",
     "login/easy_unlock/short_lived_user_context.h",
     "login/enrollment/auto_enrollment_check_screen.cc",

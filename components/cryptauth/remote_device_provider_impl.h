@@ -7,7 +7,6 @@
 
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/remote_device_provider.h"
-#include "components/cryptauth/secure_message_delegate.h"
 
 namespace cryptauth {
 
@@ -22,8 +21,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
     static std::unique_ptr<RemoteDeviceProvider> NewInstance(
         CryptAuthDeviceManager* device_manager,
         const std::string& user_id,
-        const std::string& user_private_key,
-        SecureMessageDelegate::Factory* secure_message_delegate_factory);
+        const std::string& user_private_key);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -31,18 +29,15 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
     virtual std::unique_ptr<RemoteDeviceProvider> BuildInstance(
         CryptAuthDeviceManager* device_manager,
         const std::string& user_id,
-        const std::string& user_private_key,
-        SecureMessageDelegate::Factory* secure_message_delegate_factory);
+        const std::string& user_private_key);
 
    private:
     static Factory* factory_instance_;
   };
 
-  RemoteDeviceProviderImpl(
-      CryptAuthDeviceManager* device_manager,
-      const std::string& user_id,
-      const std::string& user_private_key,
-      SecureMessageDelegate::Factory* secure_message_delegate_factory);
+  RemoteDeviceProviderImpl(CryptAuthDeviceManager* device_manager,
+                           const std::string& user_id,
+                           const std::string& user_private_key);
 
   ~RemoteDeviceProviderImpl() override;
 
@@ -66,7 +61,6 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
   // The private key used to generate RemoteDevices.
   const std::string user_private_key_;
 
-  SecureMessageDelegate::Factory* secure_message_delegate_factory_;
   std::unique_ptr<RemoteDeviceLoader> remote_device_loader_;
   RemoteDeviceList synced_remote_devices_;
   base::WeakPtrFactory<RemoteDeviceProviderImpl> weak_ptr_factory_;

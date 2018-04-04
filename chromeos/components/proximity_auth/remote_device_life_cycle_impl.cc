@@ -15,12 +15,11 @@
 #include "chromeos/components/proximity_auth/bluetooth_low_energy_connection_finder.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger_impl.h"
-#include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/switches.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/device_to_device_authenticator.h"
 #include "components/cryptauth/secure_context.h"
-#include "components/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 
 namespace proximity_auth {
 
@@ -33,10 +32,8 @@ const int kAuthenticationRecoveryTimeSeconds = 10;
 }  // namespace
 
 RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
-    const cryptauth::RemoteDevice& remote_device,
-    ProximityAuthClient* proximity_auth_client)
+    const cryptauth::RemoteDevice& remote_device)
     : remote_device_(remote_device),
-      proximity_auth_client_(proximity_auth_client),
       state_(RemoteDeviceLifeCycle::State::STOPPED),
       weak_ptr_factory_(this) {}
 
@@ -86,7 +83,7 @@ std::unique_ptr<cryptauth::Authenticator>
 RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
   return std::make_unique<cryptauth::DeviceToDeviceAuthenticator>(
       connection_.get(), remote_device_.user_id,
-      proximity_auth_client_->CreateSecureMessageDelegate());
+      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
 }
 
 void RemoteDeviceLifeCycleImpl::TransitionToState(

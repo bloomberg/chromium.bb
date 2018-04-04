@@ -48,10 +48,6 @@ class ChromeCryptAuthService
   std::unique_ptr<cryptauth::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
 
-  // cryptauth::SecureMessageDelegate::Factory:
-  std::unique_ptr<cryptauth::SecureMessageDelegate>
-  CreateSecureMessageDelegate() override;
-
   // cryptauth::CryptAuthEnrollmentManager::Observer:
   void OnEnrollmentFinished(bool success) override;
 

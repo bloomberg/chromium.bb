@@ -131,7 +131,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
  public:
   TestableRemoteDeviceLifeCycleImpl(
       const cryptauth::RemoteDevice& remote_device)
-      : RemoteDeviceLifeCycleImpl(remote_device, nullptr),
+      : RemoteDeviceLifeCycleImpl(remote_device),
         remote_device_(remote_device) {}
 
   ~TestableRemoteDeviceLifeCycleImpl() override {}

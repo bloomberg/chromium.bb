@@ -14,7 +14,6 @@
 #include "components/cryptauth/device_to_device_authenticator.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/secure_context.h"
-#include "components/cryptauth/secure_message_delegate.h"
 
 namespace cryptauth {
 

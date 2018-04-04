@@ -16,7 +16,6 @@ namespace cryptauth {
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class CryptAuthEnrollmentManager;
-class SecureMessageDelegate;
 
 // Service which provides access to various CryptAuth singletons.
 class FakeCryptAuthService : public CryptAuthService {
@@ -47,7 +46,6 @@ class FakeCryptAuthService : public CryptAuthService {
   CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager() override;
   DeviceClassifier GetDeviceClassifier() override;
   std::string GetAccountId() override;
-  std::unique_ptr<SecureMessageDelegate> CreateSecureMessageDelegate() override;
   std::unique_ptr<CryptAuthClientFactory> CreateCryptAuthClientFactory()
       override;
 
