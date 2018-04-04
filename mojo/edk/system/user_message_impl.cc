@@ -33,7 +33,7 @@ namespace {
 // The minimum amount of memory to allocate for a new serialized message buffer.
 // This should be sufficiently large such that most seiralized messages do not
 // incur any reallocations as they're expanded to full size.
-const uint32_t kMinimumPayloadBufferSize = 4096;
+const uint32_t kMinimumPayloadBufferSize = 128;
 
 // Indicates whether handle serialization failure should be emulated in testing.
 bool g_always_fail_handle_serialization = false;

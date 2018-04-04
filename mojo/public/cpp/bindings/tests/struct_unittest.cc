@@ -82,7 +82,8 @@ U SerializeAndDeserialize(T input) {
   void* subsequent_area = message.payload_buffer()->AllocateAndGet(32);
   memset(subsequent_area, 0xAA, 32);
 
-  OutputDataType output_data = reinterpret_cast<OutputDataType>(data);
+  OutputDataType output_data =
+      reinterpret_cast<OutputDataType>(message.mutable_payload());
 
   U output;
   mojo::internal::Deserialize<OutputMojomType>(output_data, &output, &context);
