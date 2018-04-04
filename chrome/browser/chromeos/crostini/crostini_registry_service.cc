@@ -6,10 +6,13 @@
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+
+using vm_tools::apps::App;
 
 namespace chromeos {
 
@@ -57,17 +60,38 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
                                         name->GetString());
 }
 
-void CrostiniRegistryService::SetRegistration(
-    const Registration& registration) {
-  base::Value pref_registration(base::Value::Type::DICTIONARY);
-  pref_registration.SetKey(kAppDesktopFileIdKey,
-                           base::Value(registration.desktop_file_id));
-  pref_registration.SetKey(kAppNameKey, base::Value(registration.name));
-
+void CrostiniRegistryService::UpdateApplicationList(
+    const vm_tools::apps::ApplicationList& app_list) {
   DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
   base::DictionaryValue* apps = update.Get();
-  apps->SetKey(GenerateAppId(registration.desktop_file_id),
-               std::move(pref_registration));
+  apps->Clear();
+
+  for (const App& app : app_list.apps()) {
+    if (app.desktop_file_id().empty()) {
+      LOG(WARNING) << "Received app with missing desktop file id";
+      continue;
+    }
+
+    std::string default_name;
+    for (const App::LocaleString::Entry& localized_name : app.name().values()) {
+      if (localized_name.locale().empty()) {
+        default_name = localized_name.value();
+        break;
+      }
+    }
+    if (default_name.empty()) {
+      LOG(WARNING) << "Received app '" << app.desktop_file_id()
+                   << "' with missing unlocalized name";
+      continue;
+    }
+
+    base::Value pref_registration(base::Value::Type::DICTIONARY);
+    pref_registration.SetKey(kAppDesktopFileIdKey,
+                             base::Value(app.desktop_file_id()));
+    pref_registration.SetKey(kAppNameKey, base::Value(default_name));
+    apps->SetKey(GenerateAppId(app.desktop_file_id()),
+                 std::move(pref_registration));
+  }
 }
 
 // static

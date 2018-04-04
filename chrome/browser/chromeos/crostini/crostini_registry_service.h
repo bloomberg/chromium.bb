@@ -15,6 +15,12 @@ class Profile;
 class PrefRegistrySimple;
 class PrefService;
 
+namespace vm_tools {
+namespace apps {
+class ApplicationList;
+}  // namespace apps
+}  // namespace vm_tools
+
 namespace chromeos {
 
 // The CrostiniRegistryService stores information about Desktop Entries (apps)
@@ -46,9 +52,8 @@ class CrostiniRegistryService : public KeyedService {
   std::unique_ptr<CrostiniRegistryService::Registration> GetRegistration(
       const std::string& app_id) const;
 
-  // If an app has already been registered for the given desktop file id, it
-  // will be overriden.
-  void SetRegistration(const Registration& registration);
+  // The existing list of apps is replaced by |application_list|.
+  void UpdateApplicationList(const vm_tools::apps::ApplicationList& app_list);
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
