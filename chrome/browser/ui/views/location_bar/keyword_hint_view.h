@@ -14,10 +14,6 @@
 
 class Profile;
 
-namespace gfx {
-class FontList;
-}
-
 namespace views {
 class Label;
 }
@@ -35,8 +31,6 @@ class KeywordHintView : public views::Button {
  public:
   KeywordHintView(views::ButtonListener* listener,
                   Profile* profile,
-                  const gfx::FontList& font_list,
-                  const gfx::FontList& chip_font_list,
                   SkColor text_color,
                   SkColor background_color);
   ~KeywordHintView() override;
@@ -50,11 +44,13 @@ class KeywordHintView : public views::Button {
   const char* GetClassName() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
-  views::Label* CreateLabel(const gfx::FontList& font_list,
-                            SkColor text_color,
-                            SkColor background_color);
+  // Creates a label for non-chip text.
+  views::Label* CreateLabel(SkColor text_color, SkColor background_color);
+
+  int GetCornerRadius() const;
 
   Profile* profile_;
 
