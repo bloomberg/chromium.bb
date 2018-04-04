@@ -1092,24 +1092,11 @@ template("chrome_public_apk_tmpl_shared") {
   }
 }
 
-# Unwind tables are added to only official builds (public_apk(s)) so that
-# developer builds are not affected. In monochrome we add the asset file to both
-# 32 and 64 bit versions so that the resources.arsc is same, as workaround for
-# https://crbug.com/828528. The extract script assigns different names for these
-# versions.
-_add_unwind_tables_in_chrome_public_apk =
-    can_unwind_with_cfi_table && is_official_build
-_add_unwind_tables_in_monochrome_public_apk = is_official_build
-
 chrome_public_apk_tmpl_shared("chrome_public_apk") {
   android_manifest = chrome_public_android_manifest
   android_manifest_dep = ":chrome_public_android_manifest"
   apk_name = "ChromePublic"
   shared_libraries = [ ":libchrome" ]
-  add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-  if (_add_unwind_tables_in_chrome_public_apk) {
-    shared_library_for_unwind_asset = "chrome"
-  }
 }
 
 chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
@@ -1118,10 +1105,6 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
   android_manifest_dep = ":chrome_public_android_manifest"
   apk_name = "ChromePublicForTest"
   shared_libraries = [ ":libchromefortest" ]
-  add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-  if (_add_unwind_tables_in_chrome_public_apk) {
-    shared_library_for_unwind_asset = "chromefortest"
-  }
   deps = [
     "//chrome/browser/profiling_host:profiling_host_java_test_support",
   ]
@@ -1132,10 +1115,6 @@ chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
   android_manifest_dep = ":chrome_modern_public_android_manifest"
   apk_name = "ChromeModernPublic"
   shared_libraries = [ ":libchrome" ]
-  add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-  if (_add_unwind_tables_in_chrome_public_apk) {
-    shared_library_for_unwind_asset = "chrome"
-  }
 
   if (!is_java_debug) {
     png_to_webp = true
@@ -1176,11 +1155,6 @@ monochrome_public_apk_tmpl("monochrome_public_apk") {
     "//chrome/android:chrome_java",
     "//chrome/android:class_register_java",
   ]
-
-  add_unwind_tables_in_apk = _add_unwind_tables_in_monochrome_public_apk
-  if (_add_unwind_tables_in_monochrome_public_apk && can_unwind_with_cfi_table) {
-    shared_library_for_unwind_asset = "monochrome"
-  }
 }
 
 chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {

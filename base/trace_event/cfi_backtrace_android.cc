@@ -137,7 +137,7 @@ void CFIBacktraceAndroid::Initialize() {
   executable_start_addr_ = reinterpret_cast<uintptr_t>(&__executable_start);
 
   // This file name is defined by extract_unwind_tables.gni.
-  static constexpr char kCfiFileName[] = "assets/unwind_cfi_32";
+  static constexpr char kCfiFileName[] = "assets/unwind_cfi";
   MemoryMappedFile::Region cfi_region;
   int fd = base::android::OpenApkAsset(kCfiFileName, &cfi_region);
   if (fd < 0)
