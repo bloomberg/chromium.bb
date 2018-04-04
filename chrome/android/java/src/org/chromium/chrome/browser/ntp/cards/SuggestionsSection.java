@@ -673,7 +673,7 @@ public class SuggestionsSection extends InnerNode {
         return mMoreButton;
     }
 
-    SectionHeader getHeaderItemForTesting() {
+    public SectionHeader getHeaderItemForTesting() {
         return mHeader;
     }
 

@@ -4,11 +4,16 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
 import android.graphics.Canvas;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -38,10 +43,16 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.cards.SuggestionsSection;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
@@ -60,6 +71,7 @@ import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
@@ -569,6 +581,67 @@ public class NewTabPageTest {
                 mNtp.getManagerForTesting().getSuggestionsSource().areRemoteSuggestionsEnabled());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"NewTabPage"})
+    @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
+    public void testArticleExpandableHeaderOnMultipleTabs() throws Exception {
+        // Open a new tab.
+        SuggestionsSection firstSection = getArticleSectionOnNewTab();
+        SectionHeader firstHeader = firstSection.getHeaderItemForTesting();
+        int firstTabId = mActivityTestRule.getActivity().getActivityTab().getId();
+        // Check header is expanded.
+        Assert.assertTrue(firstHeader.isExpandable() && firstHeader.isExpanded());
+        Assert.assertTrue(firstSection.getItemCount() > 1);
+        Assert.assertTrue(getPreferenceForExpandableHeader());
+        // Toggle header on the current tab.
+        onView(withId(R.id.header_title)).perform(click());
+        // Check header is collapsed.
+        Assert.assertTrue(firstHeader.isExpandable() && !firstHeader.isExpanded());
+        Assert.assertEquals(1, firstSection.getItemCount());
+        Assert.assertFalse(getPreferenceForExpandableHeader());
+
+        // Open a second new tab.
+        SuggestionsSection secondSection = getArticleSectionOnNewTab();
+        SectionHeader secondHeader = secondSection.getHeaderItemForTesting();
+        // Check header on the second tab is collapsed.
+        Assert.assertTrue(secondHeader.isExpandable() && !secondHeader.isExpanded());
+        Assert.assertEquals(1, secondSection.getItemCount());
+        Assert.assertFalse(getPreferenceForExpandableHeader());
+
+        // Toggle header on the second tab.
+        onView(withId(R.id.header_title)).perform(click());
+        // Check header on the second tab is expanded.
+        Assert.assertTrue(secondHeader.isExpandable() && secondHeader.isExpanded());
+        Assert.assertTrue(secondSection.getItemCount() > 1);
+        Assert.assertTrue(getPreferenceForExpandableHeader());
+        // Go back to the first tab and check header is expanded.
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), firstTabId);
+        Assert.assertTrue(firstHeader.isExpandable() && firstHeader.isExpanded());
+        Assert.assertTrue(firstSection.getItemCount() > 1);
+        Assert.assertTrue(getPreferenceForExpandableHeader());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"NewTabPage", "RenderTest"})
+    @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
+    public void testArticleExpandableHeaderAppearance() throws Exception {
+        NewTabPage ntp =
+                (NewTabPage) mActivityTestRule.getActivity().getActivityTab().getNativePage();
+        RecyclerView recyclerView = ntp.getNewTabPageView().getRecyclerView();
+        NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
+        View view = recyclerView.findViewHolderForAdapterPosition(
+                adapter.getFirstHeaderPosition()).itemView;
+
+        // Check header is expanded.
+        mRenderTestRule.render(view, "expandable_header_expanded");
+        // Toggle header on the current tab.
+        onView(withId(R.id.header_title)).perform(click());
+        // Check header is collapsed.
+        mRenderTestRule.render(view, "expandable_header_collapsed");
+    }
+
     private void assertThumbnailInvalidAndRecapture() {
         Assert.assertTrue(mNtp.shouldCaptureThumbnail());
         captureThumbnail();
@@ -694,5 +767,18 @@ public class NewTabPageTest {
             Assert.assertFalse(
                     mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
         }
+    }
+
+    private SuggestionsSection getArticleSectionOnNewTab() throws Exception {
+        Tab tab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        NewTabPage ntp = (NewTabPage) tab.getNativePage();
+        NewTabPageAdapter adapter =
+                (NewTabPageAdapter) ntp.getNewTabPageView().getRecyclerView().getAdapter();
+        return adapter.getSectionListForTesting().getSection(KnownCategories.ARTICLES);
+    }
+
+    private boolean getPreferenceForExpandableHeader() throws Exception {
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
     }
 }
