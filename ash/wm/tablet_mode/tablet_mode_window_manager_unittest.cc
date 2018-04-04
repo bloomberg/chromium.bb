@@ -1683,6 +1683,7 @@ class TestObserver : public wm::WindowStateObserver {
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override {
     post_count_++;
+    post_layer_visibility_ = window_state->window()->layer()->visible();
     EXPECT_EQ(last_old_state_, old_type);
   }
 
@@ -1698,6 +1699,12 @@ class TestObserver : public wm::WindowStateObserver {
     return r;
   }
 
+  bool GetPostLayerVisibilityAndReset() {
+    bool r = post_layer_visibility_;
+    post_layer_visibility_ = false;
+    return r;
+  }
+
   mojom::WindowStateType GetLastOldStateAndReset() {
     mojom::WindowStateType r = last_old_state_;
     last_old_state_ = mojom::WindowStateType::DEFAULT;
@@ -1707,6 +1714,7 @@ class TestObserver : public wm::WindowStateObserver {
  private:
   int pre_count_ = 0;
   int post_count_ = 0;
+  bool post_layer_visibility_ = false;
   mojom::WindowStateType last_old_state_ = mojom::WindowStateType::DEFAULT;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
@@ -1762,6 +1770,7 @@ TEST_F(TabletModeWindowManagerTest, StateTypeChange) {
   EXPECT_EQ(1, observer.GetPostCountAndReset());
   EXPECT_EQ(mojom::WindowStateType::MINIMIZED,
             observer.GetLastOldStateAndReset());
+  EXPECT_EQ(true, observer.GetPostLayerVisibilityAndReset());
 
   window_state->RemoveObserver(&observer);
 

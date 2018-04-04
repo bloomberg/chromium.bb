@@ -341,6 +341,14 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
     UpdateBounds(window_state, animated);
   }
 
+  if ((window_state->window()->layer()->GetTargetVisibility() ||
+       old_state_type == mojom::WindowStateType::MINIMIZED) &&
+      !window_state->window()->layer()->visible()) {
+    // The layer may be hidden if the window was previously minimized. Make
+    // sure it's visible.
+    window_state->window()->Show();
+  }
+
   window_state->NotifyPostStateTypeChange(old_state_type);
 
   if (old_state_type == mojom::WindowStateType::PINNED ||
@@ -349,14 +357,6 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
       target_state == mojom::WindowStateType::TRUSTED_PINNED) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
         window_state->window());
-  }
-
-  if ((window_state->window()->layer()->GetTargetVisibility() ||
-       old_state_type == mojom::WindowStateType::MINIMIZED) &&
-      !window_state->window()->layer()->visible()) {
-    // The layer may be hidden if the window was previously minimized. Make
-    // sure it's visible.
-    window_state->window()->Show();
   }
 }
 
