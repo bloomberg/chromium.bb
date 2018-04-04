@@ -453,17 +453,16 @@ def _CalculatePadding(raw_symbols):
 
   Symbols must already be sorted by |address|.
   """
-  seen_sections = []
+  seen_sections = set()
   for i, symbol in enumerate(raw_symbols[1:]):
     prev_symbol = raw_symbols[i]
     if symbol.IsOverhead():
       # Overhead symbols are not actionable so should be padding-only.
       symbol.padding = symbol.size
-      continue
     if prev_symbol.section_name != symbol.section_name:
       assert symbol.section_name not in seen_sections, (
           'Input symbols must be sorted by section, then address.')
-      seen_sections.append(symbol.section_name)
+      seen_sections.add(symbol.section_name)
       continue
     if (symbol.address <= 0 or prev_symbol.address <= 0 or
         not symbol.IsNative() or not prev_symbol.IsNative()):
@@ -768,7 +767,7 @@ def _ParsePakSymbols(
   # Attribute excess to translations since only those are compressed.
   raw_symbols.append(models.Symbol(
       models.SECTION_PAK_TRANSLATIONS, int(round(raw_total - int_total)),
-      full_name='Pak compression leftover artifacts'))
+      full_name='Overhead: Pak compression artifacts'))
 
   for symbol in raw_symbols:
     prev = section_sizes.setdefault(symbol.section_name, 0)
