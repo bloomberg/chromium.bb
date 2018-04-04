@@ -333,16 +333,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   pending_handler_ = content_settings->pending_protocol_handler();
   previous_handler_ = content_settings->previous_protocol_handler();
 
-  base::string16 protocol;
-  if (pending_handler_.protocol() == "mailto") {
-    protocol =
-        l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
-  } else if (pending_handler_.protocol() == "webcal") {
-    protocol =
-        l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
-  } else {
-    protocol = base::UTF8ToUTF16(pending_handler_.protocol());
-  }
+  base::string16 protocol = pending_handler_.GetProtocolDisplayName();
 
   // Note that we ignore the |title| parameter.
   if (previous_handler_.IsEmpty()) {

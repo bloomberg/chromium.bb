@@ -19,6 +19,7 @@ suite('ProtocolHandlers', function() {
       handlers: [{
         host: 'www.google.com',
         protocol: 'mailto',
+        protocol_name: 'email',
         spec: 'http://www.google.com/%s',
         is_default: true
       }],
@@ -29,12 +30,14 @@ suite('ProtocolHandlers', function() {
         {
           host: 'www.google1.com',
           protocol: 'webcal',
+          protocol_name: 'web calendar',
           spec: 'http://www.google1.com/%s',
           is_default: true
         },
         {
           host: 'www.google2.com',
           protocol: 'webcal',
+          protocol_name: 'web calendar',
           spec: 'http://www.google2.com/%s',
           is_default: false
         }
@@ -50,6 +53,7 @@ suite('ProtocolHandlers', function() {
   const ignoredProtocols = [{
     host: 'www.google.com',
     protocol: 'web+ignored',
+    protocol_name: 'web+ignored',
     spec: 'https://www.google.com/search?q=ignored+%s',
     is_default: false
   }];
