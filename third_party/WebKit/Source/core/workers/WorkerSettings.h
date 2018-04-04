@@ -14,6 +14,7 @@ namespace blink {
 class CORE_EXPORT WorkerSettings {
  public:
   explicit WorkerSettings(Settings*);
+  static std::unique_ptr<WorkerSettings> Copy(WorkerSettings*);
 
   bool DisableReadingFromCanvas() const { return disable_reading_from_canvas_; }
   bool GetStrictMixedContentChecking() const {

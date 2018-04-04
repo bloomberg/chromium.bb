@@ -20,6 +20,7 @@
 #include "core/workers/WorkerClassicScriptLoader.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerContentSettingsClient.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerModuleFetchCoordinator.h"
 #include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
 #include "platform/bindings/ScriptState.h"
@@ -37,10 +38,10 @@ namespace {
 
 service_manager::mojom::blink::InterfaceProviderPtrInfo
 ConnectToWorkerInterfaceProvider(
-    Document* document,
+    ExecutionContext* execution_context,
     scoped_refptr<const SecurityOrigin> script_origin) {
   mojom::blink::DedicatedWorkerFactoryPtr worker_factory;
-  document->GetInterfaceProvider()->GetInterface(&worker_factory);
+  execution_context->GetInterfaceProvider()->GetInterface(&worker_factory);
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_ptr;
   worker_factory->CreateDedicatedWorker(
@@ -54,10 +55,9 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
                                          const String& url,
                                          const WorkerOptions& options,
                                          ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-  Document* document = ToDocument(context);
+  DCHECK(context->IsContextThread());
   UseCounter::Count(context, WebFeature::kWorkerStart);
-  if (!document->GetPage()) {
+  if (context->IsContextDestroyed()) {
     exception_state.ThrowDOMException(kInvalidAccessError,
                                       "The context provided is invalid.");
     return nullptr;
@@ -82,6 +82,9 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
     return nullptr;
   }
 
+  if (context->IsWorkerGlobalScope())
+    ToWorkerGlobalScope(context)->EnsureFetcher();
+
   DedicatedWorker* worker = new DedicatedWorker(context, script_url, options);
   worker->Start();
   return worker;
@@ -94,15 +97,15 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
       script_url_(script_url),
       options_(options),
       context_proxy_(new DedicatedWorkerMessagingProxy(context, this)),
-      module_fetch_coordinator_(WorkerModuleFetchCoordinator::Create(
-          ToDocument(context)->Fetcher())) {
-  DCHECK(IsMainThread());
+      module_fetch_coordinator_(
+          WorkerModuleFetchCoordinator::Create(context->Fetcher())) {
+  DCHECK(context->IsContextThread());
   DCHECK(script_url_.IsValid());
   DCHECK(context_proxy_);
 }
 
 DedicatedWorker::~DedicatedWorker() {
-  DCHECK(IsMainThread());
+  DCHECK(!GetExecutionContext() || GetExecutionContext()->IsContextThread());
   context_proxy_->ParentObjectDestroyed();
 }
 
@@ -110,24 +113,25 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                   scoped_refptr<SerializedScriptValue> message,
                                   const MessagePortArray& ports,
                                   ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   // Disentangle the port in preparation for sending it to the remote context.
   auto channels = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
   v8_inspector::V8StackTraceId stack_id =
-      MainThreadDebugger::Instance()->StoreCurrentStackTrace(
-          "Worker.postMessage");
+      ThreadDebugger::From(script_state->GetIsolate())
+          ->StoreCurrentStackTrace("Worker.postMessage");
   context_proxy_->PostMessageToWorkerGlobalScope(std::move(message),
                                                  std::move(channels), stack_id);
 }
 
 void DedicatedWorker::Start() {
-  DCHECK(IsMainThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
 
   v8_inspector::V8StackTraceId stack_id =
-      MainThreadDebugger::Instance()->StoreCurrentStackTrace("Worker Created");
+      ThreadDebugger::From(ToIsolate(GetExecutionContext()))
+          ->StoreCurrentStackTrace("Worker Created");
 
   if (options_.type() == "classic") {
     network::mojom::FetchRequestMode fetch_request_mode =
@@ -162,12 +166,12 @@ void DedicatedWorker::Start() {
 }
 
 void DedicatedWorker::terminate() {
-  DCHECK(IsMainThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   context_proxy_->TerminateGlobalScope();
 }
 
 void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
-  DCHECK(IsMainThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_)
     classic_script_loader_->Cancel();
   module_fetch_coordinator_->Dispose();
@@ -175,36 +179,40 @@ void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
 }
 
 bool DedicatedWorker::HasPendingActivity() const {
-  DCHECK(IsMainThread());
+  DCHECK(!GetExecutionContext() || GetExecutionContext()->IsContextThread());
   // The worker context does not exist while loading, so we must ensure that the
   // worker object is not collected, nor are its event listeners.
   return context_proxy_->HasPendingActivity() || classic_script_loader_;
 }
 
 WorkerClients* DedicatedWorker::CreateWorkerClients() {
-  Document* document = ToDocument(GetExecutionContext());
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(document->GetFrame());
-
   WorkerClients* worker_clients = WorkerClients::Create();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
       *worker_clients);
   CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(
       *worker_clients);
-  ProvideContentSettingsClientToWorker(
-      worker_clients, web_frame->Client()->CreateWorkerContentSettingsClient());
 
+  std::unique_ptr<WebContentSettingsClient> client;
+  if (GetExecutionContext()->IsDocument()) {
+    WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(
+        ToDocument(GetExecutionContext())->GetFrame());
+    client = web_frame->Client()->CreateWorkerContentSettingsClient();
+  }
+  // TODO(japhet): WorkerContentsSettingsClient should be cloned between
+  // worker threads for nested workers.
+
+  ProvideContentSettingsClientToWorker(worker_clients, std::move(client));
   return worker_clients;
 }
 
 void DedicatedWorker::OnResponse() {
-  DCHECK(IsMainThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   probe::didReceiveScriptResponse(GetExecutionContext(),
                                   classic_script_loader_->Identifier());
 }
 
 void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(IsMainThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_->Canceled()) {
     // Do nothing.
   } else if (classic_script_loader_->Failed()) {
@@ -231,20 +239,31 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
 
 std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams() {
-  Document* document = ToDocument(GetExecutionContext());
-  const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
-  base::UnguessableToken devtools_worker_token =
-      document->GetFrame() ? document->GetFrame()->GetDevToolsFrameToken()
-                           : base::UnguessableToken::Create();
+  base::UnguessableToken devtools_worker_token;
+  std::unique_ptr<WorkerSettings> settings;
+  if (GetExecutionContext()->IsDocument()) {
+    Document* document = ToDocument(GetExecutionContext());
+    devtools_worker_token = document->GetFrame()
+                                ? document->GetFrame()->GetDevToolsFrameToken()
+                                : base::UnguessableToken::Create();
+    settings = std::make_unique<WorkerSettings>(document->GetSettings());
+  } else {
+    WorkerGlobalScope* worker_global_scope =
+        ToWorkerGlobalScope(GetExecutionContext());
+    devtools_worker_token = worker_global_scope->GetParentDevToolsToken();
+    settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
+  }
+
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, GetExecutionContext()->UserAgent(),
-      document->GetContentSecurityPolicy()->Headers().get(),
-      kReferrerPolicyDefault, starter_origin, document->IsSecureContext(),
-      CreateWorkerClients(), document->AddressSpace(),
-      OriginTrialContext::GetTokens(document).get(), devtools_worker_token,
-      std::make_unique<WorkerSettings>(document->GetSettings()),
-      kV8CacheOptionsDefault, module_fetch_coordinator_.Get(),
-      ConnectToWorkerInterfaceProvider(document,
+      GetExecutionContext()->GetContentSecurityPolicy()->Headers().get(),
+      kReferrerPolicyDefault, GetExecutionContext()->GetSecurityOrigin(),
+      GetExecutionContext()->IsSecureContext(), CreateWorkerClients(),
+      GetExecutionContext()->GetSecurityContext().AddressSpace(),
+      OriginTrialContext::GetTokens(GetExecutionContext()).get(),
+      devtools_worker_token, std::move(settings), kV8CacheOptionsDefault,
+      module_fetch_coordinator_.Get(),
+      ConnectToWorkerInterfaceProvider(GetExecutionContext(),
                                        SecurityOrigin::Create(script_url_)));
 }
 
