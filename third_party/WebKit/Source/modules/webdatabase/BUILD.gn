@@ -84,7 +84,7 @@ blink_modules_sources("webdatabase") {
 
   if (is_win) {
     sources += [ "sqlite/SQLiteFileSystemWin.cpp" ]
-  } else if (is_posix) {
+  } else if (is_posix || is_fuchsia) {
     sources += [ "sqlite/SQLiteFileSystemPosix.cpp" ]
   }
 
