@@ -1,5 +1,6 @@
 include_rules = [
   "+components/data_use_measurement/core",
+  "+components/leveldb_proto",
   "+components/variations",
   "+components/version_info",
   "+net/base",
