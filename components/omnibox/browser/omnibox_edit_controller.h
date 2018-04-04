@@ -20,12 +20,12 @@ class OmniboxEditController {
                                     ui::PageTransition transition,
                                     AutocompleteMatchType::Type match_type);
 
-  virtual void OnInputInProgress(bool in_progress) = 0;
+  virtual void OnInputInProgress(bool in_progress);
 
   // Called when anything has changed that might affect the layout or contents
   // of the views around the edit, including the text of the edit and the
   // status of any keyword- or hint-related state.
-  virtual void OnChanged() = 0;
+  virtual void OnChanged();
 
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;

@@ -25,11 +25,11 @@ class ChromeOmniboxEditController : public OmniboxEditController {
   void OnInputInProgress(bool in_progress) override;
 
   // Returns the WebContents of the currently active tab.
-  virtual content::WebContents* GetWebContents() = 0;
+  virtual content::WebContents* GetWebContents();
 
   // Called when the the controller should update itself without restoring any
   // tab state.
-  virtual void UpdateWithoutTabRestore() = 0;
+  virtual void UpdateWithoutTabRestore();
 
   CommandUpdater* command_updater() { return command_updater_; }
   const CommandUpdater* command_updater() const { return command_updater_; }

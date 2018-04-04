@@ -39,6 +39,12 @@ void ChromeOmniboxEditController::OnInputInProgress(bool in_progress) {
   UpdateWithoutTabRestore();
 }
 
+content::WebContents* ChromeOmniboxEditController::GetWebContents() {
+  return nullptr;
+}
+
+void ChromeOmniboxEditController::UpdateWithoutTabRestore() {}
+
 ChromeOmniboxEditController::ChromeOmniboxEditController(
     CommandUpdater* command_updater)
     : command_updater_(command_updater) {}
