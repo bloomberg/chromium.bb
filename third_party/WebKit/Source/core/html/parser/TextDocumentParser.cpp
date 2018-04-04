@@ -40,6 +40,9 @@ TextDocumentParser::TextDocumentParser(HTMLDocument& document,
 TextDocumentParser::~TextDocumentParser() = default;
 
 void TextDocumentParser::AppendBytes(const char* data, size_t length) {
+  if (!length || IsStopped())
+    return;
+
   if (!have_inserted_fake_pre_element_)
     InsertFakePreElement();
   HTMLDocumentParser::AppendBytes(data, length);
