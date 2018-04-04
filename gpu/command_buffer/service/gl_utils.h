@@ -41,6 +41,7 @@ namespace gles2 {
 class ErrorState;
 class FeatureInfo;
 class Logger;
+enum class CopyTextureMethod;
 
 struct CALayerSharedState {
   float opacity;
@@ -103,6 +104,25 @@ bool GetCompressedTexSizeInBytes(const char* function_name,
                                  GLenum format,
                                  GLsizei* size_in_bytes,
                                  ErrorState* error_state);
+
+bool ValidateCopyTexFormatHelper(const FeatureInfo* feature_info,
+                                 GLenum internal_format,
+                                 GLenum read_format,
+                                 GLenum read_type,
+                                 std::string* output_error_msg);
+
+CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
+                                               GLenum source_target,
+                                               GLint source_level,
+                                               GLenum source_internal_format,
+                                               GLenum source_type,
+                                               GLenum dest_target,
+                                               GLint dest_level,
+                                               GLenum dest_internal_format,
+                                               bool flip_y,
+                                               bool premultiply_alpha,
+                                               bool unpremultiply_alpha,
+                                               bool dither);
 
 }  // namespace gles2
 }  // namespace gpu

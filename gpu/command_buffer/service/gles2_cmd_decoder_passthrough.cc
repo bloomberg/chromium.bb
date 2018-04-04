@@ -1488,6 +1488,11 @@ void GLES2DecoderPassthroughImpl::OnDebugMessage(GLenum source,
   }
 }
 
+void GLES2DecoderPassthroughImpl::SetCopyTextureResourceManagerForTest(
+    CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager) {
+  NOTIMPLEMENTED();
+}
+
 const char* GLES2DecoderPassthroughImpl::GetCommandName(
     unsigned int command_id) const {
   if (command_id >= kFirstGLES2Command && command_id < kNumCommands) {

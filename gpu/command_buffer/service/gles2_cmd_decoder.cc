@@ -740,6 +740,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   PathManager* path_manager() { return group_->path_manager(); }
 
+  void SetCopyTextureResourceManagerForTest(
+      CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager)
+      override {
+    copy_texture_chromium_.reset(copy_texture_resource_manager);
+  }
+
  private:
   friend class ScopedFramebufferBinder;
   friend class ScopedResolvedFramebufferBinder;
@@ -982,10 +988,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       const void* data,
       ContextState::Dimension dimension);
 
-  bool ValidateCopyTexFormatHelper(GLenum internal_format,
-                                   GLenum read_format,
-                                   GLenum read_type,
-                                   std::string* output_error_msg);
   // Validate if |format| is valid for CopyTex{Sub}Image functions.
   // If not, generate a GL error and return false.
   bool ValidateCopyTexFormat(const char* func_name, GLenum internal_format,
@@ -2176,17 +2178,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool ValidateCopyTextureCHROMIUMInternalFormats(const char* function_name,
                                                   GLenum source_internal_format,
                                                   GLenum dest_internal_format);
-  CopyTextureMethod getCopyTextureCHROMIUMMethod(GLenum source_target,
-                                                 GLint source_level,
-                                                 GLenum source_internal_format,
-                                                 GLenum source_type,
-                                                 GLenum dest_target,
-                                                 GLint dest_level,
-                                                 GLenum dest_internal_format,
-                                                 bool flip_y,
-                                                 bool premultiply_alpha,
-                                                 bool unpremultiply_alpha,
-                                                 bool dither);
   bool ValidateCompressedCopyTextureCHROMIUM(const char* function_name,
                                              TextureRef* source_texture_ref,
                                              TextureRef* dest_texture_ref);
@@ -2563,7 +2554,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   std::unique_ptr<ApplyFramebufferAttachmentCMAAINTELResourceManager>
       apply_framebuffer_attachment_cmaa_intel_;
   std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
-  std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
+  std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_chromium_;
   std::unique_ptr<SRGBConverter> srgb_converter_;
   std::unique_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
 
@@ -5020,9 +5011,9 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       copy_tex_image_blit_.reset();
     }
 
-    if (copy_texture_CHROMIUM_.get()) {
-      copy_texture_CHROMIUM_->Destroy();
-      copy_texture_CHROMIUM_.reset();
+    if (copy_texture_chromium_.get()) {
+      copy_texture_chromium_->Destroy();
+      copy_texture_chromium_.reset();
     }
 
     if (srgb_converter_.get()) {
@@ -5133,7 +5124,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   apply_framebuffer_attachment_cmaa_intel_.reset();
   copy_tex_image_blit_.reset();
-  copy_texture_CHROMIUM_.reset();
+  copy_texture_chromium_.reset();
   srgb_converter_.reset();
   clear_framebuffer_blit_.reset();
   transfer_cache_.reset();
@@ -14554,79 +14545,13 @@ error::Error GLES2DecoderImpl::DoCompressedTexSubImage(
   return error::kNoError;
 }
 
-bool GLES2DecoderImpl::ValidateCopyTexFormatHelper(
-    GLenum internal_format,
-    GLenum read_format,
-    GLenum read_type,
-    std::string* output_error_msg) {
-  DCHECK(output_error_msg);
-  if (read_format == 0) {
-    *output_error_msg = std::string("no valid color image");
-    return false;
-  }
-  // Check we have compatible formats.
-  uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
-  uint32_t channels_needed = GLES2Util::GetChannelsForFormat(internal_format);
-  if (!channels_needed ||
-      (channels_needed & channels_exist) != channels_needed) {
-    *output_error_msg = std::string("incompatible format");
-    return false;
-  }
-  if (feature_info_->IsWebGL2OrES3Context()) {
-    GLint color_encoding =
-        GLES2Util::GetColorEncodingFromInternalFormat(read_format);
-    bool float_mismatch = feature_info_->ext_color_buffer_float_available() ?
-        (GLES2Util::IsIntegerFormat(internal_format) !=
-         GLES2Util::IsIntegerFormat(read_format)) :
-        GLES2Util::IsFloatFormat(internal_format);
-    if (color_encoding !=
-            GLES2Util::GetColorEncodingFromInternalFormat(internal_format) ||
-        float_mismatch || (GLES2Util::IsSignedIntegerFormat(internal_format) !=
-                           GLES2Util::IsSignedIntegerFormat(read_format)) ||
-        (GLES2Util::IsUnsignedIntegerFormat(internal_format) !=
-         GLES2Util::IsUnsignedIntegerFormat(read_format))) {
-      *output_error_msg = std::string("incompatible format");
-      return false;
-    }
-  }
-  if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
-    *output_error_msg =
-        std::string("can not be used with depth or stencil textures");
-    return false;
-  }
-  if (feature_info_->IsWebGL2OrES3Context() ||
-      (feature_info_->feature_flags().chromium_color_buffer_float_rgb &&
-       internal_format == GL_RGB32F) ||
-      (feature_info_->feature_flags().chromium_color_buffer_float_rgba &&
-       internal_format == GL_RGBA32F)) {
-    if (GLES2Util::IsSizedColorFormat(internal_format)) {
-      int sr, sg, sb, sa;
-      GLES2Util::GetColorFormatComponentSizes(
-          read_format, read_type, &sr, &sg, &sb, &sa);
-      DCHECK(sr > 0 || sg > 0 || sb > 0 || sa > 0);
-      int dr, dg, db, da;
-      GLES2Util::GetColorFormatComponentSizes(
-          internal_format, 0, &dr, &dg, &db, &da);
-      DCHECK(dr > 0 || dg > 0 || db > 0 || da > 0);
-      if ((dr > 0 && sr != dr) ||
-          (dg > 0 && sg != dg) ||
-          (db > 0 && sb != db) ||
-          (da > 0 && sa != da)) {
-        *output_error_msg = std::string("incompatible color component sizes");
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
 bool GLES2DecoderImpl::ValidateCopyTexFormat(const char* func_name,
                                              GLenum internal_format,
                                              GLenum read_format,
                                              GLenum read_type) {
   std::string output_error_msg;
-  if (!ValidateCopyTexFormatHelper(internal_format, read_format, read_type,
-                                   &output_error_msg)) {
+  if (!ValidateCopyTexFormatHelper(GetFeatureInfo(), internal_format,
+                                   read_format, read_type, &output_error_msg)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
                        output_error_msg.c_str());
     return false;
@@ -17075,89 +17000,6 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
   return true;
 }
 
-CopyTextureMethod GLES2DecoderImpl::getCopyTextureCHROMIUMMethod(
-    GLenum source_target,
-    GLint source_level,
-    GLenum source_internal_format,
-    GLenum source_type,
-    GLenum dest_target,
-    GLint dest_level,
-    GLenum dest_internal_format,
-    bool flip_y,
-    bool premultiply_alpha,
-    bool unpremultiply_alpha,
-    bool dither) {
-  bool premultiply_alpha_change = premultiply_alpha ^ unpremultiply_alpha;
-  bool source_format_color_renderable =
-      Texture::ColorRenderable(GetFeatureInfo(), source_internal_format, false);
-  bool dest_format_color_renderable =
-      Texture::ColorRenderable(GetFeatureInfo(), dest_internal_format, false);
-  std::string output_error_msg;
-
-  switch (dest_internal_format) {
-#if defined(OS_MACOSX)
-    // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
-    case GL_RGB5_A1:
-      return DRAW_AND_READBACK;
-#endif
-    // RGB9_E5 isn't accepted by glCopyTexImage2D if underlying context is ES.
-    case GL_RGB9_E5:
-      if (gl_version_info().is_es)
-        return DRAW_AND_READBACK;
-      break;
-    // SRGB format has color-space conversion issue. WebGL spec doesn't define
-    // clearly if linear-to-srgb color space conversion is required or not when
-    // uploading DOM elements to SRGB textures. WebGL conformance test expects
-    // no linear-to-srgb conversion, while current GPU path for
-    // CopyTextureCHROMIUM does the conversion. Do a fallback path before the
-    // issue is resolved. see https://github.com/KhronosGroup/WebGL/issues/2165.
-    // TODO(qiankun.miao@intel.com): revisit this once the above issue is
-    // resolved.
-    case GL_SRGB_EXT:
-    case GL_SRGB_ALPHA_EXT:
-    case GL_SRGB8:
-    case GL_SRGB8_ALPHA8:
-      if (feature_info_->IsWebGLContext())
-        return DRAW_AND_READBACK;
-      break;
-    default:
-      break;
-  }
-
-  // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
-  // GL_BGRA8_EXT. crbug.com/663086.
-  bool copy_tex_image_format_valid =
-      source_internal_format != GL_BGRA_EXT &&
-      dest_internal_format != GL_BGRA_EXT &&
-      source_internal_format != GL_BGRA8_EXT &&
-      dest_internal_format != GL_BGRA8_EXT &&
-      ValidateCopyTexFormatHelper(dest_internal_format, source_internal_format,
-                                  source_type, &output_error_msg);
-
-  // TODO(qiankun.miao@intel.com): for WebGL 2.0 or OpenGL ES 3.0, both
-  // DIRECT_DRAW path for dest_level > 0 and DIRECT_COPY path for source_level >
-  // 0 are not available due to a framebuffer completeness bug:
-  // crbug.com/678526. Once the bug is fixed, the limitation for WebGL 2.0 and
-  // OpenGL ES 3.0 can be lifted.
-  // For WebGL 1.0 or OpenGL ES 2.0, DIRECT_DRAW path isn't available for
-  // dest_level > 0 due to level > 0 isn't supported by glFramebufferTexture2D
-  // in ES2 context. DIRECT_DRAW path isn't available for cube map dest texture
-  // either due to it may be cube map incomplete. Go to DRAW_AND_COPY path in
-  // these cases.
-  if (source_target == GL_TEXTURE_2D &&
-      (dest_target == GL_TEXTURE_2D || dest_target == GL_TEXTURE_CUBE_MAP) &&
-      source_format_color_renderable && copy_tex_image_format_valid &&
-      source_level == 0 && !flip_y && !premultiply_alpha_change && !dither)
-    return DIRECT_COPY;
-  if (dest_format_color_renderable && dest_level == 0 &&
-      dest_target != GL_TEXTURE_CUBE_MAP)
-    return DIRECT_DRAW;
-
-  // Draw to a fbo attaching level 0 of an intermediate texture,
-  // then copy from the fbo to dest texture level with glCopyTexImage2D.
-  return DRAW_AND_COPY;
-}
-
 bool GLES2DecoderImpl::ValidateCompressedCopyTextureCHROMIUM(
     const char* function_name,
     TextureRef* source_texture_ref,
@@ -17375,7 +17217,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
                                                        source_level)) {
       GLfloat transform_matrix[16];
       image->GetTextureMatrix(transform_matrix);
-      copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
+      copy_texture_chromium_->DoCopyTextureWithTransform(
           this, source_target, source_texture->service_id(), source_level,
           source_internal_format, dest_target, dest_texture->service_id(),
           dest_level, internal_format, source_width, source_height,
@@ -17386,12 +17228,12 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     }
   }
 
-  CopyTextureMethod method = getCopyTextureCHROMIUMMethod(
-      source_target, source_level, source_internal_format, source_type,
-      dest_binding_target, dest_level, internal_format,
+  CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
+      GetFeatureInfo(), source_target, source_level, source_internal_format,
+      source_type, dest_binding_target, dest_level, internal_format,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
       unpack_unmultiply_alpha == GL_TRUE, false /* dither */);
-  copy_texture_CHROMIUM_->DoCopyTexture(
+  copy_texture_chromium_->DoCopyTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),
       dest_level, internal_format, source_width, source_height,
@@ -17588,7 +17430,7 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
                                                        source_level)) {
       GLfloat transform_matrix[16];
       image->GetTextureMatrix(transform_matrix);
-      copy_texture_CHROMIUM_->DoCopySubTextureWithTransform(
+      copy_texture_chromium_->DoCopySubTextureWithTransform(
           this, source_target, source_texture->service_id(), source_level,
           source_internal_format, dest_target, dest_texture->service_id(),
           dest_level, dest_internal_format, xoffset, yoffset, x, y, width,
@@ -17600,9 +17442,9 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
     }
   }
 
-  CopyTextureMethod method = getCopyTextureCHROMIUMMethod(
-      source_target, source_level, source_internal_format, source_type,
-      dest_binding_target, dest_level, dest_internal_format,
+  CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
+      GetFeatureInfo(), source_target, source_level, source_internal_format,
+      source_type, dest_binding_target, dest_level, dest_internal_format,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
       unpack_unmultiply_alpha == GL_TRUE, dither == GL_TRUE);
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
@@ -17613,12 +17455,12 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
   // https://crbug.com/535198.
   if (Texture::ColorRenderable(GetFeatureInfo(), dest_internal_format,
                                dest_texture->IsImmutable()) &&
-      method == DIRECT_COPY) {
-    method = DIRECT_DRAW;
+      method == CopyTextureMethod::DIRECT_COPY) {
+    method = CopyTextureMethod::DIRECT_DRAW;
   }
 #endif
 
-  copy_texture_CHROMIUM_->DoCopySubTexture(
+  copy_texture_chromium_->DoCopySubTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),
       dest_level, dest_internal_format, xoffset, yoffset, x, y, width, height,
@@ -17668,10 +17510,10 @@ bool GLES2DecoderImpl::InitializeCopyTextureCHROMIUM(
     const char* function_name) {
   // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
   // needed because it takes 10s of milliseconds to initialize.
-  if (!copy_texture_CHROMIUM_.get()) {
+  if (!copy_texture_chromium_.get()) {
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name);
-    copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
-    copy_texture_CHROMIUM_->Initialize(this, features());
+    copy_texture_chromium_.reset(CopyTextureCHROMIUMResourceManager::Create());
+    copy_texture_chromium_->Initialize(this, features());
     if (LOCAL_PEEK_GL_ERROR(function_name) != GL_NO_ERROR)
       return false;
 
@@ -17833,11 +17675,12 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       source_height, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
       gfx::Rect(source_width, source_height));
 
-  copy_texture_CHROMIUM_->DoCopyTexture(
+  copy_texture_chromium_->DoCopyTexture(
       this, source_texture->target(), source_texture->service_id(), 0,
       source_internal_format, dest_texture->target(),
       dest_texture->service_id(), 0, GL_RGBA, source_width, source_height,
-      false, false, false, false, DIRECT_DRAW, copy_tex_image_blit_.get());
+      false, false, false, false, CopyTextureMethod::DIRECT_DRAW,
+      copy_tex_image_blit_.get());
 }
 
 void GLES2DecoderImpl::TexStorageImpl(GLenum target,
@@ -18250,7 +18093,7 @@ void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
 
     apply_framebuffer_attachment_cmaa_intel_
         ->ApplyFramebufferAttachmentCMAAINTEL(this, bound_framebuffer,
-                                              copy_texture_CHROMIUM_.get(),
+                                              copy_texture_chromium_.get(),
                                               texture_manager());
   }
 }
