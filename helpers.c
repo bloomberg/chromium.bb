@@ -18,37 +18,75 @@
 #include "helpers.h"
 #include "util.h"
 
-static uint32_t subsample_stride(uint32_t stride, uint32_t format, size_t plane)
+struct planar_layout {
+	size_t num_planes;
+	int horizontal_subsampling[DRV_MAX_PLANES];
+	int vertical_subsampling[DRV_MAX_PLANES];
+	int bytes_per_pixel[DRV_MAX_PLANES];
+};
+
+// clang-format off
+
+static const struct planar_layout packed_1bpp_layout = {
+	.num_planes = 1,
+	.horizontal_subsampling = { 1 },
+	.vertical_subsampling = { 1 },
+	.bytes_per_pixel = { 1 }
+};
+
+static const struct planar_layout packed_2bpp_layout = {
+	.num_planes = 1,
+	.horizontal_subsampling = { 1 },
+	.vertical_subsampling = { 1 },
+	.bytes_per_pixel = { 2 }
+};
+
+static const struct planar_layout packed_3bpp_layout = {
+	.num_planes = 1,
+	.horizontal_subsampling = { 1 },
+	.vertical_subsampling = { 1 },
+	.bytes_per_pixel = { 3 }
+};
+
+static const struct planar_layout packed_4bpp_layout = {
+	.num_planes = 1,
+	.horizontal_subsampling = { 1 },
+	.vertical_subsampling = { 1 },
+	.bytes_per_pixel = { 4 }
+};
+
+static const struct planar_layout biplanar_yuv_420_layout = {
+	.num_planes = 2,
+	.horizontal_subsampling = { 1, 2 },
+	.vertical_subsampling = { 1, 2 },
+	.bytes_per_pixel = { 1, 2 }
+};
+
+static const struct planar_layout triplanar_yuv_420_layout = {
+	.num_planes = 3,
+	.horizontal_subsampling = { 1, 2, 2 },
+	.vertical_subsampling = { 1, 2, 2 },
+	.bytes_per_pixel = { 1, 1, 1 }
+};
+
+// clang-format on
+
+static const struct planar_layout *layout_from_format(uint32_t format)
 {
-
-	if (plane != 0) {
-		switch (format) {
-		case DRM_FORMAT_YVU420:
-		case DRM_FORMAT_YVU420_ANDROID:
-			stride = DIV_ROUND_UP(stride, 2);
-			break;
-		}
-	}
-
-	return stride;
-}
-
-static uint32_t bpp_from_format(uint32_t format, size_t plane)
-{
-	assert(plane < drv_num_planes_from_format(format));
-
 	switch (format) {
 	case DRM_FORMAT_BGR233:
 	case DRM_FORMAT_C8:
 	case DRM_FORMAT_R8:
 	case DRM_FORMAT_RGB332:
+		return &packed_1bpp_layout;
+
 	case DRM_FORMAT_YVU420:
 	case DRM_FORMAT_YVU420_ANDROID:
-		return 8;
+		return &triplanar_yuv_420_layout;
 
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
-		return (plane == 0) ? 8 : 4;
+		return &biplanar_yuv_420_layout;
 
 	case DRM_FORMAT_ABGR1555:
 	case DRM_FORMAT_ABGR4444:
@@ -74,11 +112,11 @@ static uint32_t bpp_from_format(uint32_t format, size_t plane)
 	case DRM_FORMAT_XRGB4444:
 	case DRM_FORMAT_YUYV:
 	case DRM_FORMAT_YVYU:
-		return 16;
+		return &packed_2bpp_layout;
 
 	case DRM_FORMAT_BGR888:
 	case DRM_FORMAT_RGB888:
-		return 24;
+		return &packed_3bpp_layout;
 
 	case DRM_FORMAT_ABGR2101010:
 	case DRM_FORMAT_ABGR8888:
@@ -97,16 +135,49 @@ static uint32_t bpp_from_format(uint32_t format, size_t plane)
 	case DRM_FORMAT_XBGR8888:
 	case DRM_FORMAT_XRGB2101010:
 	case DRM_FORMAT_XRGB8888:
-		return 32;
-	}
+		return &packed_4bpp_layout;
 
-	drv_log("UNKNOWN FORMAT %d\n", format);
-	return 0;
+	default:
+		drv_log("UNKNOWN FORMAT %d\n", format);
+		return NULL;
+	}
+}
+
+size_t drv_num_planes_from_format(uint32_t format)
+{
+	const struct planar_layout *layout = layout_from_format(format);
+
+	/*
+	 * drv_bo_new calls this function early to query number of planes and
+	 * considers 0 planes to mean unknown format, so we have to support
+	 * that.  All other layout_from_format() queries can assume that the
+	 * format is supported and that the return value is non-NULL.
+	 */
+
+	return layout ? layout->num_planes : 0;
+}
+
+uint32_t drv_height_from_format(uint32_t format, uint32_t height, size_t plane)
+{
+	const struct planar_layout *layout = layout_from_format(format);
+
+	assert(plane < layout->num_planes);
+
+	return DIV_ROUND_UP(height, layout->vertical_subsampling[plane]);
+}
+
+uint32_t drv_bytes_per_pixel_from_format(uint32_t format, size_t plane)
+{
+	const struct planar_layout *layout = layout_from_format(format);
+
+	assert(plane < layout->num_planes);
+
+	return layout->bytes_per_pixel[plane];
 }
 
 uint32_t drv_bo_get_stride_in_pixels(struct bo *bo)
 {
-	uint32_t bytes_per_pixel = DIV_ROUND_UP(bpp_from_format(bo->format, 0), 8);
+	uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(bo->format, 0);
 	return DIV_ROUND_UP(bo->strides[0], bytes_per_pixel);
 }
 
@@ -115,7 +186,12 @@ uint32_t drv_bo_get_stride_in_pixels(struct bo *bo)
  */
 uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 {
-	uint32_t stride = DIV_ROUND_UP(width * bpp_from_format(format, plane), 8);
+	const struct planar_layout *layout = layout_from_format(format);
+	assert(plane < layout->num_planes);
+
+	uint32_t plane_width =
+		DIV_ROUND_UP(width, layout->horizontal_subsampling[plane]);
+	uint32_t stride = plane_width * layout->bytes_per_pixel[plane];
 
 	/*
 	 * The stride of Android YV12 buffers is required to be aligned to 16 bytes
@@ -129,20 +205,21 @@ uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 
 uint32_t drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height, size_t plane)
 {
-	assert(plane < drv_num_planes_from_format(format));
-	uint32_t vertical_subsampling;
+	return stride * drv_height_from_format(format, height, plane);
+}
 
-	switch (format) {
-	case DRM_FORMAT_NV12:
-	case DRM_FORMAT_YVU420:
-	case DRM_FORMAT_YVU420_ANDROID:
-		vertical_subsampling = (plane == 0) ? 1 : 2;
-		break;
-	default:
-		vertical_subsampling = 1;
+static uint32_t subsample_stride(uint32_t stride, uint32_t format, size_t plane)
+{
+	if (plane != 0) {
+		switch (format) {
+		case DRM_FORMAT_YVU420:
+		case DRM_FORMAT_YVU420_ANDROID:
+			stride = DIV_ROUND_UP(stride, 2);
+			break;
+		}
 	}
 
-	return stride * DIV_ROUND_UP(height, vertical_subsampling);
+	return stride;
 }
 
 /*
@@ -206,7 +283,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 	memset(&create_dumb, 0, sizeof(create_dumb));
 	create_dumb.height = aligned_height;
 	create_dumb.width = aligned_width;
-	create_dumb.bpp = bpp_from_format(format, 0);
+	create_dumb.bpp = layout_from_format(format)->bytes_per_pixel[0] * 8;
 	create_dumb.flags = 0;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
