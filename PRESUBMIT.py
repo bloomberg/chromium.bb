@@ -1589,7 +1589,8 @@ def _CheckUniquePtr(input_api, output_api):
       r'(=|\breturn|^)\s*std::unique_ptr<.*?(?<!])>\(([^)]|$)')
   null_construct_pattern = input_api.re.compile(
       r'\b(?<!<)std::unique_ptr<[^>]*>([^(<]*>)?\(\)')
-  errors = []
+  problems_constructor = []
+  problems_nullptr = []
   for f in input_api.AffectedSourceFiles(sources):
     for line_number, line in f.ChangedContents():
       # Disallow:
@@ -1598,17 +1599,26 @@ def _CheckUniquePtr(input_api, output_api):
       # But allow:
       # return std::unique_ptr<T[]>(foo);
       # bar = std::unique_ptr<T[]>(foo);
+      local_path = f.LocalPath()
       if return_construct_pattern.search(line):
-        errors.append(output_api.PresubmitError(
-          ('%s:%d uses explicit std::unique_ptr constructor. ' +
-           'Use std::make_unique<T>() instead.') %
-          (f.LocalPath(), line_number)))
+        problems_constructor.append(
+          '%s:%d\n    %s' % (local_path, line_number, line.strip()))
       # Disallow:
       # std::unique_ptr<T>()
       if null_construct_pattern.search(line):
-        errors.append(output_api.PresubmitError(
-          '%s:%d uses std::unique_ptr<T>(). Use nullptr instead.' %
-          (f.LocalPath(), line_number)))
+        problems_nullptr.append(
+          '%s:%d\n    %s' % (local_path, line_number, line.strip()))
+
+  errors = []
+  if problems_constructor:
+    errors.append(output_api.PresubmitError(
+        'The following files use std::unique_ptr<T>(). Use nullptr instead.',
+        problems_constructor))
+  if problems_nullptr:
+    errors.append(output_api.PresubmitError(
+        'The following files use explicit std::unique_ptr constructor.'
+        'Use std::make_unique<T>() instead.',
+        problems_nullptr))
   return errors
 
 
