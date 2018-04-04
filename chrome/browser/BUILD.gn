@@ -3723,6 +3723,8 @@ jumbo_split_static_library("browser") {
       "offline_pages/prefetch/prefetch_service_factory.h",
       "offline_pages/prefetch/prefetched_pages_notifier.cc",
       "offline_pages/prefetch/prefetched_pages_notifier.h",
+      "offline_pages/prefetch/thumbnail_fetcher_impl.cc",
+      "offline_pages/prefetch/thumbnail_fetcher_impl.h",
       "offline_pages/recent_tab_helper.cc",
       "offline_pages/recent_tab_helper.h",
       "offline_pages/request_coordinator_factory.h",

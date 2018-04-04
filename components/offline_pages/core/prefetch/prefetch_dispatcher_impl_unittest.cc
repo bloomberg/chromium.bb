@@ -12,6 +12,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
+#include "components/offline_pages/core/prefetch/mock_thumbnail_fetcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_configuration.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
@@ -23,10 +24,13 @@
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
+#include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/version_info/channel.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -35,11 +39,19 @@ using testing::Contains;
 namespace offline_pages {
 
 namespace {
+using testing::_;
 
-const std::string kTestNamespace = "TestPrefetchClientNamespace";
-const std::string kTestID = "id";
+const char kTestNamespace[] = "TestPrefetchClientNamespace";
+const char kTestID[] = "id";
 const GURL kTestURL("https://www.chromium.org");
 const GURL kTestURL2("https://www.chromium.org/2");
+const int64_t kTestOfflineID = 1111;
+const char kClientID1[] = "client-id-1";
+
+class MockOfflinePageModel : public StubOfflinePageModel {
+ public:
+  MOCK_METHOD1(StoreThumbnail, void(const OfflinePageThumbnail& thumb));
+};
 
 class TestPrefetchBackgroundTask : public PrefetchBackgroundTask {
  public:
@@ -113,7 +125,27 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
     return reschedule_type_;
   }
 
+  void ExpectFetchThumbnail(const std::string& thumbnail_data) {
+    EXPECT_CALL(*thumbnail_fetcher_,
+                FetchSuggestionImageData_(
+                    ClientId(kSuggestedArticlesNamespace, kClientID1), _))
+        .WillOnce(
+            testing::Invoke(testing::CallbackToFunctor(base::BindRepeating(
+                [](const std::string& thumbnail_data,
+                   scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
+                   const ClientId& id,
+                   ThumbnailFetcher::ImageDataFetchedCallback* callback) {
+                  task_runner->PostTask(
+                      FROM_HERE,
+                      base::BindOnce(std::move(*callback), thumbnail_data));
+                },
+                thumbnail_data, task_runner()))));
+  }
+
  protected:
+  // Owned by |taco_|.
+  MockOfflinePageModel* offline_model_;
+
   std::vector<PrefetchURL> test_urls_;
 
  private:
@@ -125,6 +157,8 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   PrefetchDispatcherImpl* dispatcher_;
   // Owned by |taco_|.
   TestPrefetchNetworkRequestFactory* network_request_factory_;
+  // Owned by |taco_|.
+  MockThumbnailFetcher* thumbnail_fetcher_;
 
   bool reschedule_called_ = false;
   PrefetchBackgroundTaskRescheduleType reschedule_type_ =
@@ -144,6 +178,12 @@ void PrefetchDispatcherTest::SetUp() {
       base::WrapUnique(network_request_factory_));
   taco_->SetPrefetchConfiguration(
       std::make_unique<TestPrefetchConfiguration>());
+  auto thumbnail_fetcher = std::make_unique<MockThumbnailFetcher>();
+  thumbnail_fetcher_ = thumbnail_fetcher.get();
+  taco_->SetThumbnailFetcher(std::move(thumbnail_fetcher));
+  auto model = std::make_unique<MockOfflinePageModel>();
+  offline_model_ = model.get();
+  taco_->SetOfflinePageModel(std::move(model));
   taco_->CreatePrefetchService();
 
   ASSERT_TRUE(test_urls_.empty());
@@ -168,6 +208,10 @@ void PrefetchDispatcherTest::BeginBackgroundTask() {
       base::BindRepeating(&PrefetchDispatcherTest::SetReschedule,
                           base::Unretained(this))));
 }
+
+MATCHER(ValidThumbnail, "") {
+  return arg.offline_id == kTestOfflineID && !arg.thumbnail.empty();
+};
 
 TEST_F(PrefetchDispatcherTest, DispatcherDoesNotCrash) {
   // TODO(https://crbug.com/735254): Ensure that Dispatcher unit test keep up
@@ -406,6 +450,30 @@ TEST_F(PrefetchDispatcherTest, NoNetworkRequestsAfterNewURLs) {
 
   // We should not have started GPB
   EXPECT_EQ(nullptr, GetRunningFetcher());
+}
+
+TEST_F(PrefetchDispatcherTest, ThumbnailFetchFailure) {
+  ExpectFetchThumbnail("");
+  EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
+  prefetch_dispatcher()->ItemDownloaded(
+      kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID1));
+}
+
+TEST_F(PrefetchDispatcherTest, ThumbnailFetchSuccess) {
+  std::string kThumbnailData =
+      std::string(PrefetchDispatcherImpl::kMaxThumbnailSize, 'x');
+  EXPECT_CALL(*offline_model_, StoreThumbnail(ValidThumbnail()));
+  ExpectFetchThumbnail(kThumbnailData);
+  prefetch_dispatcher()->ItemDownloaded(
+      kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID1));
+}
+
+TEST_F(PrefetchDispatcherTest, ThumbnailFetchTooBig) {
+  ExpectFetchThumbnail(
+      std::string(PrefetchDispatcherImpl::kMaxThumbnailSize + 1, 'x'));
+  EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
+  prefetch_dispatcher()->ItemDownloaded(
+      kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID1));
 }
 
 }  // namespace offline_pages

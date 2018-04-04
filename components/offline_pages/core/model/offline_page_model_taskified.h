@@ -125,10 +125,14 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       int64_t file_size,
       const std::string& digest,
       const SingleOfflinePageItemCallback& callback) override;
-
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
+  void StoreThumbnail(const OfflinePageThumbnail& thumb) override;
+  void GetThumbnailByOfflineId(
+      int64_t offline_id,
+      base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback)
+      override;
 
   const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;
@@ -189,6 +193,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       const DeletePageCallback& callback,
       DeletePageResult result,
       const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
+
+  void OnStoreThumbnailDone(const OfflinePageThumbnail& thumbnail,
+                            bool success);
 
   // Methods for clearing temporary pages and performing consistency checks. The
   // latter are executed only once per Chrome session.

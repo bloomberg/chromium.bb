@@ -67,7 +67,7 @@ void MockContentSuggestionsProvider::FetchSuggestionImage(
 void MockContentSuggestionsProvider::FetchSuggestionImageData(
     const ContentSuggestion::ID& id,
     ImageDataFetchedCallback callback) {
-  FetchSuggestionImageDataMock(id, callback);
+  FetchSuggestionImageDataMock(id, &callback);
 }
 
 void MockContentSuggestionsProvider::FireSuggestionsChanged(

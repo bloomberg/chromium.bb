@@ -64,6 +64,11 @@ void TestPrefetchDispatcher::DownloadCompleted(
   download_results.push_back(download_result);
 }
 
+void TestPrefetchDispatcher::ItemDownloaded(int64_t offline_id,
+                                            const ClientId& client_id) {
+  item_downloaded_results.push_back(std::make_pair(offline_id, client_id));
+}
+
 void TestPrefetchDispatcher::ArchiveImported(int64_t offline_id, bool success) {
   import_results.push_back(std::make_pair(offline_id, success));
 }

@@ -24,6 +24,10 @@ class PrefetchService;
 class PrefetchDispatcherImpl : public PrefetchDispatcher,
                                public TaskQueue::Delegate {
  public:
+  // Thumbnails larger than 200KB are not retained. Thumbnails are typically
+  // around 10KB.
+  static constexpr int64_t kMaxThumbnailSize = 200000;
+
   PrefetchDispatcherImpl();
   ~PrefetchDispatcherImpl() override;
 
@@ -47,6 +51,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
           success_downloads) override;
   void DownloadCompleted(
       const PrefetchDownloadResult& download_result) override;
+  void ItemDownloaded(int64_t offline_id, const ClientId& client_id) override;
   void ArchiveImported(int64_t offline_id, bool success) override;
 
   // TaskQueue::Delegate implementation:

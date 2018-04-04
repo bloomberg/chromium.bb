@@ -17,6 +17,7 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
+#include "components/offline_pages/core/offline_page_thumbnail.h"
 #include "components/offline_pages/core/offline_page_types.h"
 
 class GURL;
@@ -105,6 +106,10 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
 
     // Invoked when an offline copy related to |offline_id| was deleted.
     virtual void OfflinePageDeleted(const DeletedPageInfo& page_info) = 0;
+
+    // Invoked when a thumbnail for an offline page is added.
+    virtual void ThumbnailAdded(OfflinePageModel* model,
+                                const OfflinePageThumbnail& added_thumbnail) {}
 
    protected:
     virtual ~Observer() = default;
@@ -211,6 +216,14 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   virtual void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) = 0;
+
+  // Stores a new page thumbnail in the page_thumbnails table.
+  virtual void StoreThumbnail(const OfflinePageThumbnail& thumb) = 0;
+
+  // Reads a thumbnail from the page_thumbnails table. Calls callback
+  // with nullptr if the thumbnail was not found.
+  virtual void GetThumbnailByOfflineId(int64_t offline_id,
+                                       GetThumbnailCallback callback) = 0;
 
   // Publishes an offline page from the internal offline page directory.  This
   // includes putting it in a public directory, updating the system download

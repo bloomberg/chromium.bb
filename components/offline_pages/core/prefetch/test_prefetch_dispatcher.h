@@ -41,6 +41,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
           success_downloads) override;
   void DownloadCompleted(
       const PrefetchDownloadResult& download_result) override;
+  void ItemDownloaded(int64_t offline_id, const ClientId& client_id) override;
   void ArchiveImported(int64_t offline_id, bool success) override;
 
   std::string latest_name_space;
@@ -48,6 +49,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   std::unique_ptr<ClientId> last_removed_client_id;
   std::vector<std::string> operation_list;
   std::vector<PrefetchDownloadResult> download_results;
+  std::vector<std::pair<int64_t, ClientId>> item_downloaded_results;
   std::vector<std::pair<int64_t, bool>> import_results;
 
   int cleanup_downloads_count = 0;

@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/prefetch/mock_thumbnail_fetcher.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_configuration.h"
@@ -25,6 +27,7 @@
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
+#include "components/offline_pages/core/stub_offline_page_model.h"
 
 namespace offline_pages {
 
@@ -80,6 +83,8 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   prefetch_background_task_handler_ =
       std::make_unique<StubPrefetchBackgroundTaskHandler>();
   prefetch_configuration_ = std::make_unique<StubPrefetchConfiguration>();
+  offline_page_model_ = std::make_unique<StubOfflinePageModel>();
+  thumbnail_fetcher_ = std::make_unique<MockThumbnailFetcher>();
 }
 
 PrefetchServiceTestTaco::~PrefetchServiceTestTaco() = default;
@@ -146,6 +151,18 @@ void PrefetchServiceTestTaco::SetPrefetchConfiguration(
   prefetch_configuration_ = std::move(prefetch_configuration);
 }
 
+void PrefetchServiceTestTaco::SetThumbnailFetcher(
+    std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher) {
+  CHECK(!prefetch_service_);
+  thumbnail_fetcher_ = std::move(thumbnail_fetcher);
+}
+
+void PrefetchServiceTestTaco::SetOfflinePageModel(
+    std::unique_ptr<OfflinePageModel> offline_page_model) {
+  CHECK(!prefetch_service_);
+  offline_page_model_ = std::move(offline_page_model);
+}
+
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   CHECK(metrics_collector_ && dispatcher_ && gcm_handler_ &&
         network_request_factory_ && prefetch_store_ &&
@@ -154,10 +171,11 @@ void PrefetchServiceTestTaco::CreatePrefetchService() {
   prefetch_service_ = std::make_unique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
       std::move(gcm_handler_), std::move(network_request_factory_),
-      std::move(prefetch_store_), std::move(suggested_articles_observer_),
-      std::move(prefetch_downloader_), std::move(prefetch_importer_),
+      offline_page_model_.get(), std::move(prefetch_store_),
+      std::move(suggested_articles_observer_), std::move(prefetch_downloader_),
+      std::move(prefetch_importer_),
       std::move(prefetch_background_task_handler_),
-      std::move(prefetch_configuration_));
+      std::move(prefetch_configuration_), std::move(thumbnail_fetcher_));
 }
 
 std::unique_ptr<PrefetchService>

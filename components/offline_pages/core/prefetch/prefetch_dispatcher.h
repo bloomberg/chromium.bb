@@ -108,6 +108,11 @@ class PrefetchDispatcher {
   virtual void DownloadCompleted(
       const PrefetchDownloadResult& download_result) = 0;
 
+  // Called when an item's state has been set to
+  // |PrefetchItemState::DOWNLOADED|, just after a download is completed.
+  virtual void ItemDownloaded(int64_t offline_id,
+                              const ClientId& client_id) = 0;
+
   // Called when an archive is imported successfully or fails.
   virtual void ArchiveImported(int64_t offline_id, bool success) = 0;
 };

@@ -52,10 +52,9 @@ class StubOfflinePageModel : public OfflinePageModel {
   void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) override;
-  void GetPagesByURL(
-      const GURL& url,
-      URLSearchMode url_search_mode,
-      const MultipleOfflinePageItemCallback& callback) override;
+  void GetPagesByURL(const GURL& url,
+                     URLSearchMode url_search_mode,
+                     const MultipleOfflinePageItemCallback& callback) override;
   void GetPagesByRequestOrigin(
       const std::string& origin,
       const MultipleOfflinePageItemCallback& callback) override;
@@ -70,6 +69,9 @@ class StubOfflinePageModel : public OfflinePageModel {
       const MultipleOfflinePageItemCallback& callback) override;
   void GetPagesSupportedByDownloads(
       const MultipleOfflinePageItemCallback& callback) override;
+  void StoreThumbnail(const OfflinePageThumbnail& thumb) override;
+  void GetThumbnailByOfflineId(int64_t offline_id,
+                               GetThumbnailCallback callback) override;
   void PublishInternalArchive(
       const OfflinePageItem& offline_page,
       std::unique_ptr<OfflinePageArchiver> archiver,
