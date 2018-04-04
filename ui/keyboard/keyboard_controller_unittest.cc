@@ -385,45 +385,6 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
   VerifyKeyboardWindowSize(container, keyboard);
 }
 
-// Flaky on Windows. See http://crbug.com/757044
-#if defined(OS_WIN)
-#define MAYBE_KeyboardSizeMultiRootWindow DISABLED_KeyboardSizeMultiRootWindow
-#else
-#define MAYBE_KeyboardSizeMultiRootWindow KeyboardSizeMultiRootWindow
-#endif
-
-TEST_F(KeyboardControllerTest, MAYBE_KeyboardSizeMultiRootWindow) {
-  aura::Window* container(controller()->GetContainerWindow());
-  aura::Window* keyboard(ui()->GetContentsWindow());
-  gfx::Rect screen_bounds = root_window()->bounds();
-  root_window()->AddChild(container);
-  container->AddChild(keyboard);
-  const gfx::Rect& initial_bounds = container->bounds();
-  // The container should be positioned at the bottom of screen and has 0
-  // height.
-  ASSERT_EQ(0, initial_bounds.height());
-  ASSERT_EQ(screen_bounds.height(), initial_bounds.y());
-  VerifyKeyboardWindowSize(container, keyboard);
-
-  // Adding new root window.
-  std::unique_ptr<aura::WindowTreeHost> secondary_tree_host =
-      base::WrapUnique<aura::WindowTreeHost>(
-          aura::WindowTreeHost::Create(gfx::Rect(0, 0, 1000, 500)));
-  secondary_tree_host->InitHost();
-  EXPECT_EQ(1000, secondary_tree_host->window()->bounds().width());
-  EXPECT_EQ(500, secondary_tree_host->window()->bounds().height());
-
-  // Move the keyboard into the secondary root window.
-  controller()->HideKeyboard(
-      KeyboardController::HideReason::HIDE_REASON_AUTOMATIC);
-  root_window()->RemoveChild(container);
-  secondary_tree_host->window()->AddChild(container);
-
-  const gfx::Rect& new_bounds = container->bounds();
-  EXPECT_EQ(500, new_bounds.y());
-  VerifyKeyboardWindowSize(container, keyboard);
-}
-
 // Tests that tapping/clicking inside the keyboard does not give it focus.
 TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
