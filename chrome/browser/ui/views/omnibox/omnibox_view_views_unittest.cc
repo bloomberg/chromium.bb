@@ -163,13 +163,10 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
 
  private:
   // ChromeOmniboxEditController:
-  void UpdateWithoutTabRestore() override {}
-  void OnChanged() override {}
   ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
   const ToolbarModel* GetToolbarModel() const override {
     return toolbar_model_;
   }
-  content::WebContents* GetWebContents() override { return nullptr; }
 
   ToolbarModel* toolbar_model_;
 
