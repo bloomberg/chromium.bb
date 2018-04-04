@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/payments/credit_card_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_method_selection_coordinator.h"
-#include "ios/chrome/browser/ui/payments/payment_request_error_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/payments/shipping_address_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/shipping_option_selection_coordinator.h"
@@ -64,10 +63,6 @@ class PaymentShippingOption;
           didSelectShippingOption:
               (const payments::PaymentShippingOption&)shippingOption;
 
-// Notifies the delegate that the presenting view controller is dismissed.
-- (void)paymentRequestCoordinatorDidStop:
-    (PaymentRequestCoordinator*)coordinator;
-
 @end
 
 // Coordinator responsible for creating and presenting the PaymentRequest view
@@ -80,7 +75,6 @@ class PaymentShippingOption;
                         CreditCardEditCoordinatorDelegate,
                         PaymentItemsDisplayCoordinatorDelegate,
                         PaymentMethodSelectionCoordinatorDelegate,
-                        PaymentRequestErrorCoordinatorDelegate,
                         PaymentRequestViewControllerDelegate,
                         ShippingAddressSelectionCoordinatorDelegate,
                         ShippingOptionSelectionCoordinatorDelegate>
@@ -133,8 +127,8 @@ requestFullCreditCard:(const autofill::CreditCard&)card
 // Updates the payment details of the PaymentRequest and updates the UI.
 - (void)updatePaymentDetails:(payments::PaymentDetails)paymentDetails;
 
-// Displays an error message. Invokes |callback| when the message is dismissed.
-- (void)displayErrorWithCallback:(ProceduralBlock)callback;
+// Dismisses the payment request UI. Invokes |completion| when UI is dismissed.
+- (void)stopWithCompletion:(ProceduralBlock)completion;
 
 @end
 
