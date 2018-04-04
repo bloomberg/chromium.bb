@@ -98,6 +98,7 @@ template("chrome_public_apk_tmpl") {
           !use_lld && (use_chromium_linker || requires_sdk_api_level_23)
     }
     command_line_flags_file = "chrome-command-line"
+    product_version_resources_dep = "//chrome/android:product_version_resources"
   }
 }
 
