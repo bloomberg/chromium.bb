@@ -9,6 +9,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/download/public/background_service/test/test_download_service.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
@@ -19,13 +20,11 @@
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace offline_pages {
 namespace {
 const version_info::Channel kTestChannel = version_info::Channel::UNKNOWN;
 const base::FilePath kTestFilePath(FILE_PATH_LITERAL("foo"));
 const int64_t kTestFileSize = 88888;
-}  // namespace
-
-namespace offline_pages {
 
 // Tests the interaction between prefetch service and download service to
 // validate the whole prefetch download flow regardless which service is up
@@ -49,6 +48,7 @@ class PrefetchDownloadFlowTest : public PrefetchTaskTestBase {
     prefetch_service_taco_->SetPrefetchStore(store_util()->ReleaseStore());
     prefetch_service_taco_->SetPrefetchDownloader(std::move(downloader));
     prefetch_service_taco_->CreatePrefetchService();
+    item_generator()->set_client_namespace(kSuggestedArticlesNamespace);
   }
 
   void TearDown() override {
@@ -195,4 +195,5 @@ TEST_F(PrefetchDownloadFlowTest, DelayRunningDownloadCleanupTask) {
   EXPECT_EQ(PrefetchItemState::IMPORTING, found_item->state);
 }
 
+}  // namespace
 }  // namespace offline_pages

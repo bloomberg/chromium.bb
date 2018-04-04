@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -122,6 +123,9 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
                         const OfflinePageItem& added_page) override;
   void OfflinePageDeleted(
       const OfflinePageModel::DeletedPageInfo& page_info) override;
+  MOCK_METHOD2(ThumbnailAdded,
+               void(OfflinePageModel* model,
+                    const OfflinePageThumbnail& added_thumbnail));
 
   // OfflinePageTestArchiver::Observer implementation.
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
@@ -185,6 +189,20 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
     return model_->last_maintenance_tasks_schedule_time_;
   }
 
+  std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id) {
+    bool called = false;
+    std::unique_ptr<OfflinePageThumbnail> result;
+    auto callback = base::BindLambdaForTesting(
+        [&](std::unique_ptr<OfflinePageThumbnail> thumbnail) {
+          called = true;
+          result = std::move(thumbnail);
+        });
+    model_->GetThumbnailByOfflineId(offline_id, callback);
+    PumpLoop();
+    EXPECT_TRUE(called);
+    return result;
+  }
+
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -224,6 +242,7 @@ void OfflinePageModelTaskifiedTest::SetUp() {
 }
 
 void OfflinePageModelTaskifiedTest::TearDown() {
+  SCOPED_TRACE("in TearDown");
   CheckTaskQueueIdle();
   store_test_util_.DeleteStore();
   if (temporary_dir_.IsValid()) {
@@ -1466,6 +1485,16 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_ConsistencyCheckExecuted) {
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
+  // Add a thumbnail that will be cleaned up by RunMaintenanceTasks.
+  // TODO(harringtond): Replace thumbnail checks with UMA after UMA is added.
+  const int64_t kThumbnailOfflineID = 95912912;  // Does not match any items.
+  OfflinePageThumbnail thumbnail;
+  thumbnail.offline_id = kThumbnailOfflineID;
+  thumbnail.expiration = task_runner()->Now() - base::TimeDelta::FromDays(1);
+  thumbnail.thumbnail = "page1";
+  model()->StoreThumbnail(thumbnail);
+  EXPECT_CALL(*this, ThumbnailAdded(_, thumbnail));
+
   // The ClearStorage task should not be executed based on time delays after
   // launch (aka the model being built).
   task_runner()->FastForwardBy(base::TimeDelta::FromDays(1));
@@ -1491,6 +1520,22 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   task_runner()->FastForwardBy(run_delay);
   PumpLoop();
   EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
+  // Check that CleanupThumbnailsTask ran.
+  bool called = false;
+  model()->GetThumbnailByOfflineId(
+      kThumbnailOfflineID,
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<OfflinePageThumbnail> thumbnail) {
+            EXPECT_FALSE(thumbnail);
+            called = true;
+          }));
+  PumpLoop();
+  EXPECT_TRUE(called);
+
+  // Add thumbnail again, it should not be deleted because CleanupThumbnailsTask
+  // is only called on first run.
+  model()->StoreThumbnail(thumbnail);
+  EXPECT_CALL(*this, ThumbnailAdded(_, thumbnail));
 
   // Calling GetAllPages after only half of the enforced interval between
   // ClearStorage runs should not schedule ClearStorage.
@@ -1523,6 +1568,19 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   task_runner()->FastForwardBy(run_delay);
   PumpLoop();
   EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
+
+  // Check that CleanupThumbnailsTask did not run again.
+  called = false;
+  model()->GetThumbnailByOfflineId(
+      kThumbnailOfflineID,
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<OfflinePageThumbnail> thumbnail) {
+            EXPECT_TRUE(thumbnail);
+            called = true;
+          }));
+  PumpLoop();
+  EXPECT_TRUE(called);
+
   // Confirm that two runs happened.
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.ClearTemporaryPages.Result",
@@ -1558,6 +1616,25 @@ TEST_F(OfflinePageModelTaskifiedTest, MaintenanceTasksAreDisabled) {
       "OfflinePages.ConsistencyCheck.Temporary.Result", 0);
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ConsistencyCheck.Persistent.Result", 0);
+}
+
+TEST_F(OfflinePageModelTaskifiedTest, StoreAndGetThumbnail) {
+  OfflinePageThumbnail thumb;
+  thumb.offline_id = 1;
+  thumb.expiration = base::Time::Now();
+  thumb.thumbnail = "abc123";
+  model()->StoreThumbnail(thumb);
+  EXPECT_CALL(*this, ThumbnailAdded(_, thumb));
+  PumpLoop();
+
+  std::unique_ptr<OfflinePageThumbnail> result_thumbnail;
+  auto callback = base::BindLambdaForTesting(
+      [&](std::unique_ptr<OfflinePageThumbnail> result) {
+        result_thumbnail = std::move(result);
+      });
+  model()->GetThumbnailByOfflineId(thumb.offline_id, callback);
+  PumpLoop();
+  EXPECT_EQ(thumb, *result_thumbnail);
 }
 
 }  // namespace offline_pages

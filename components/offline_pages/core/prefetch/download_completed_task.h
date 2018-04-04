@@ -24,11 +24,18 @@ class DownloadCompletedTask : public Task {
 
   void Run() override;
 
+  struct UpdateInfo {
+    // True if the row was updated.
+    bool success = false;
+    int64_t offline_id = 0;
+    ClientId client_id;
+  };
+
  private:
-  void OnPrefetchItemUpdated(bool successful_download, bool row_was_updated);
+  void OnPrefetchItemUpdated(bool successful_download, UpdateInfo update_info);
 
   PrefetchDispatcher* prefetch_dispatcher_;  // Outlives this class.
-  PrefetchStore* prefetch_store_;  // Outlives this class.
+  PrefetchStore* prefetch_store_;            // Outlives this class.
   PrefetchDownloadResult download_result_;
 
   base::WeakPtrFactory<DownloadCompletedTask> weak_ptr_factory_;

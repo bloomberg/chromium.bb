@@ -22,11 +22,14 @@
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/add_page_task.h"
+#include "components/offline_pages/core/model/cleanup_thumbnails_task.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
+#include "components/offline_pages/core/model/get_thumbnail_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
+#include "components/offline_pages/core/model/store_thumbnail_task.h"
 #include "components/offline_pages/core/model/update_file_path_task.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
@@ -385,6 +388,21 @@ void OfflinePageModelTaskified::GetOfflineIdsForClientId(
   task_queue_.AddTask(std::move(task));
 }
 
+void OfflinePageModelTaskified::StoreThumbnail(
+    const OfflinePageThumbnail& thumb) {
+  task_queue_.AddTask(std::make_unique<StoreThumbnailTask>(
+      store_.get(), thumb,
+      base::BindOnce(&OfflinePageModelTaskified::OnStoreThumbnailDone,
+                     weak_ptr_factory_.GetWeakPtr(), thumb)));
+}
+
+void OfflinePageModelTaskified::GetThumbnailByOfflineId(
+    int64_t offline_id,
+    base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback) {
+  task_queue_.AddTask(std::make_unique<GetThumbnailTask>(
+      store_.get(), offline_id, std::move(callback)));
+}
+
 const base::FilePath& OfflinePageModelTaskified::GetInternalArchiveDirectory(
     const std::string& name_space) const {
   if (policy_controller_->IsRemovedOnCacheReset(name_space))
@@ -622,6 +640,15 @@ void OfflinePageModelTaskified::OnDeleteDone(
     callback.Run(result);
 }
 
+void OfflinePageModelTaskified::OnStoreThumbnailDone(
+    const OfflinePageThumbnail& thumbnail,
+    bool success) {
+  if (success) {
+    for (Observer& observer : observers_)
+      observer.ThumbnailAdded(this, thumbnail);
+  }
+}
+
 void OfflinePageModelTaskified::RemoveFromDownloadManager(
     SystemDownloadManager* download_manager,
     const std::vector<int64_t>& system_download_ids) {
@@ -656,6 +683,9 @@ void OfflinePageModelTaskified::RunMaintenanceTasks(const base::Time now,
   if (first_run) {
     task_queue_.AddTask(std::make_unique<StartupMaintenanceTask>(
         store_.get(), archive_manager_.get(), policy_controller_.get()));
+
+    task_queue_.AddTask(std::make_unique<CleanupThumbnailsTask>(
+        store_.get(), GetCurrentTime(), base::DoNothing()));
   }
 
   task_queue_.AddTask(std::make_unique<ClearStorageTask>(

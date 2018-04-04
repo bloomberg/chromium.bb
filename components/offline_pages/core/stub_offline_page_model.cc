@@ -64,6 +64,10 @@ void StubOfflinePageModel::GetPagesByNamespace(
     const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesSupportedByDownloads(
     const MultipleOfflinePageItemCallback& callback) {}
+void StubOfflinePageModel::StoreThumbnail(const OfflinePageThumbnail& thumb) {}
+void StubOfflinePageModel::GetThumbnailByOfflineId(
+    int64_t offline_id,
+    GetThumbnailCallback callback) {}
 void StubOfflinePageModel::PublishInternalArchive(
     const OfflinePageItem& offline_page,
     std::unique_ptr<OfflinePageArchiver> archiver,

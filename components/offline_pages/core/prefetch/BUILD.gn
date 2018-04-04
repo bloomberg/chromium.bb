@@ -88,6 +88,7 @@ static_library("prefetch") {
     "store/prefetch_store_utils.h",
     "suggested_articles_observer.cc",
     "suggested_articles_observer.h",
+    "thumbnail_fetcher.h",
   ]
 
   public_deps = [
@@ -117,6 +118,8 @@ static_library("test_support") {
   sources = [
     "mock_prefetch_item_generator.cc",
     "mock_prefetch_item_generator.h",
+    "mock_thumbnail_fetcher.cc",
+    "mock_thumbnail_fetcher.h",
     "prefetch_item.cc",
     "prefetch_item.h",
     "prefetch_request_test_base.cc",
@@ -153,6 +156,7 @@ static_library("test_support") {
     "//components/version_info:channel",
     "//net:test_support",
     "//sql:sql",
+    "//testing/gmock",
     "//url",
   ]
 }

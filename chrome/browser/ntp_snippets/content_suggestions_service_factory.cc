@@ -177,14 +177,12 @@ void RegisterRecentTabProviderIfEnabled(ContentSuggestionsService* service,
   service->RegisterProvider(std::move(provider));
 }
 
-void RegisterPrefetchingObserver(ContentSuggestionsService* service,
-                                 Profile* profile) {
-  // The observer is always there, but the Prefetch Dispatcher will do nothing
-  // if the feature (or preference) is off.
-  offline_pages::SuggestedArticlesObserver* observer =
-      offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile)
-          ->GetSuggestedArticlesObserver();
-  observer->SetContentSuggestionsServiceAndObserve(service);
+void RegisterWithPrefetching(ContentSuggestionsService* service,
+                             Profile* profile) {
+  // There's a circular dependency between ContentSuggestionsService and
+  // PrefetchService. This closes the circle.
+  offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile)
+      ->SetContentSuggestionsService(service);
 }
 
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -525,7 +523,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   RegisterRecentTabProviderIfEnabled(service, profile, offline_page_model);
-  RegisterPrefetchingObserver(service, profile);
+  RegisterWithPrefetching(service, profile);
 #endif
 
   return service;
