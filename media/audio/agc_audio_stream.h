@@ -89,6 +89,13 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
     if (!agc_is_enabled_ || timer_.IsRunning())
       return;
 
+    max_volume_ = static_cast<AudioInterface*>(this)->GetMaxVolume();
+    if (max_volume_ <= 0) {
+      DLOG(WARNING) << "Failed to get max volume from hardware. Won't provide "
+                    << "normalized volume.";
+      return;
+    }
+
     // Query and cache the volume to avoid sending 0 as volume to AGC at the
     // beginning of the audio stream, otherwise AGC will try to raise the
     // volume from 0.
@@ -159,18 +166,13 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
   // thread and it leads to a more stable capture performance.
   void QueryAndStoreNewMicrophoneVolume() {
     DCHECK(thread_checker_.CalledOnValidThread());
-
-    // Cach the maximum volume if this is the first time we ask for it.
-    if (max_volume_ == 0.0)
-      max_volume_ = static_cast<AudioInterface*>(this)->GetMaxVolume();
+    DCHECK_GT(max_volume_, 0.0);
 
     // Retrieve the current volume level by asking the audio hardware.
     // Range is normalized to [0.0,1.0] or [0.0, 1.5] on Linux.
-    if (max_volume_ != 0.0) {
-      double normalized_volume =
-          static_cast<AudioInterface*>(this)->GetVolume() / max_volume_;
-      normalized_volume_.store(normalized_volume, std::memory_order_relaxed);
-    }
+    double normalized_volume =
+        static_cast<AudioInterface*>(this)->GetVolume() / max_volume_;
+    normalized_volume_.store(normalized_volume, std::memory_order_relaxed);
   }
 
   // Ensures that this class is created and destroyed on the same thread.
