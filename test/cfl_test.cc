@@ -450,4 +450,12 @@ INSTANTIATE_TEST_CASE_P(NEON, CFLSubsampleTest,
                         ::testing::ValuesIn(subsample_sizes_neon));
 
 #endif
+
+#if HAVE_VSX
+const sub_avg_param sub_avg_sizes_vsx[] = { ALL_CFL_TX_SIZES(
+    get_subtract_average_fn_vsx) };
+
+INSTANTIATE_TEST_CASE_P(VSX, CFLSubAvgTest,
+                        ::testing::ValuesIn(sub_avg_sizes_vsx));
+#endif
 }  // namespace
