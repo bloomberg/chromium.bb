@@ -85,7 +85,7 @@
     },
 
     'chromium.chromedriver': {
-      'Win7': 'release_bot_x86_minimal_symbols',
+      'Win7': 'release_bot_x86',
       'Mac 10.6': 'release_bot',
       'Linux': 'release_bot',
       'Linux32': 'release_bot_x86',
