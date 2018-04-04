@@ -4,7 +4,7 @@
 
 module cloud_print.mojom;
 
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 // An interface for controlling cloud print running in a service process.
 interface CloudPrint {
@@ -14,7 +14,7 @@ interface CloudPrint {
       string robot_auth_code,
       string robot_email,
       string user_email,
-      mojo.common.mojom.DictionaryValue user_settings);
+      mojo_base.mojom.DictionaryValue user_settings);
 
   // Tell the service process to disable the cloud proxy.
   DisableCloudPrintProxy();

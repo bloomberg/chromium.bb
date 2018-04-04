@@ -11,10 +11,6 @@
 #include "chrome/common/cloud_print.mojom.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace cloud_print {
 
 // Handles IPC messages for Cloud Print. Lives on the main thread.
@@ -28,11 +24,10 @@ class CloudPrintMessageHandler : public cloud_print::mojom::CloudPrint {
 
  private:
   // cloud_print::mojom::CloudPrintProxy.
-  void EnableCloudPrintProxyWithRobot(
-      const std::string& robot_auth_code,
-      const std::string& robot_email,
-      const std::string& user_email,
-      std::unique_ptr<base::DictionaryValue> user_settings) override;
+  void EnableCloudPrintProxyWithRobot(const std::string& robot_auth_code,
+                                      const std::string& robot_email,
+                                      const std::string& user_email,
+                                      base::Value user_settings) override;
   void GetCloudPrintProxyInfo(GetCloudPrintProxyInfoCallback callback) override;
   void GetPrinters(GetPrintersCallback callback) override;
   void DisableCloudPrintProxy() override;

@@ -129,11 +129,10 @@ class MockCloudPrintProxy : public cloud_print::mojom::CloudPrint {
   void GetPrinters(GetPrintersCallback callback) override { NOTREACHED(); }
   void DisableCloudPrintProxy() override { disabled_ = true; }
 
-  void EnableCloudPrintProxyWithRobot(
-      const std::string& robot_auth_code,
-      const std::string& robot_email,
-      const std::string& user_email,
-      std::unique_ptr<base::DictionaryValue> user_settings) override {
+  void EnableCloudPrintProxyWithRobot(const std::string& robot_auth_code,
+                                      const std::string& robot_email,
+                                      const std::string& user_email,
+                                      base::Value user_settings) override {
     enabled_ = true;
   }
 

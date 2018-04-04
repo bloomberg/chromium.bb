@@ -32,9 +32,12 @@ void CloudPrintMessageHandler::EnableCloudPrintProxyWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
     const std::string& user_email,
-    std::unique_ptr<base::DictionaryValue> user_settings) {
+    base::Value user_settings) {
+  std::unique_ptr<base::DictionaryValue> user_settings_dict =
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(std::move(user_settings)));
   proxy_provider_->GetCloudPrintProxy()->EnableForUserWithRobot(
-      robot_auth_code, robot_email, user_email, *user_settings);
+      robot_auth_code, robot_email, user_email, *user_settings_dict);
 }
 
 void CloudPrintMessageHandler::GetCloudPrintProxyInfo(

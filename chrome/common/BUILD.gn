@@ -755,7 +755,7 @@ if (enable_print_preview && !is_chromeos) {
       "service_process.mojom",
     ]
     public_deps = [
-      "//mojo/common:common_custom_types",
+      "//mojo/public/mojom/base",
     ]
   }
 }
