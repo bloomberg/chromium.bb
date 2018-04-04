@@ -5507,6 +5507,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return [self headerHeightForTab:tab];
 }
 
+- (CGFloat)tabFooterHeightForTab:(Tab*)tab {
+  return self.secondaryToolbarHeightConstraint.constant;
+}
+
 #pragma mark - TabHistoryPresentation
 
 - (UIView*)viewForTabHistoryPresentation {

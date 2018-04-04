@@ -21,9 +21,14 @@
 - (CRWWebViewProxyImpl*)contentViewProxyForContainerView:
         (CRWWebControllerContainerView*)containerView;
 
-// Returns the height for any toolbars that overlap the top |containerView|.
-- (CGFloat)headerHeightForContainerView:
-        (CRWWebControllerContainerView*)containerView;
+// Returns the height for any toolbars that overlap the top native content.
+- (CGFloat)nativeContentHeaderHeightForContainerView:
+    (CRWWebControllerContainerView*)containerView;
+
+// Returns the footers for any toolbars that overlap the bottom of native
+// content.
+- (CGFloat)nativeContentFooterHeightForContainerView:
+    (CRWWebControllerContainerView*)containerView;
 
 @end
 

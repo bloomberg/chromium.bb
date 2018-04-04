@@ -510,12 +510,13 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   return NO;
 }
 
-- (CGFloat)headerHeightForWebController:(CRWWebController*)webController {
+- (CGFloat)nativeContentHeaderHeightForWebController:
+    (CRWWebController*)webController {
   DCHECK(webState_);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  SEL selector = @selector(headerHeightForWebController:);
+  SEL selector = @selector(nativeContentHeaderHeightForWebController:);
   if ([tab respondsToSelector:selector]) {
-    return [tab headerHeightForWebController:webController];
+    return [tab nativeContentHeaderHeightForWebController:webController];
   }
   return 0;
 }
