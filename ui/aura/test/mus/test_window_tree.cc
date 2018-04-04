@@ -4,6 +4,8 @@
 
 #include "ui/aura/test/mus/test_window_tree.h"
 
+#include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
@@ -53,6 +55,31 @@ void TestWindowTree::NotifyClientAboutAcceleratedWidgets(
     window_manager_->WmOnAcceleratedWidgetForDisplay(display.id(), widget);
     ++synth_accelerated_widget;
   }
+}
+
+void TestWindowTree::AddScheduledEmbedToken(
+    const base::UnguessableToken& token) {
+  DCHECK_NE(token, scheduled_embed_);
+  scheduled_embed_ = token;
+}
+
+void TestWindowTree::AddEmbedRootForToken(const base::UnguessableToken& token) {
+  DCHECK_EQ(token, scheduled_embed_);
+  scheduled_embed_ = base::UnguessableToken();
+
+  ui::mojom::WindowDataPtr embedder_window_data = ui::mojom::WindowData::New();
+  const uint64_t kFakeEmbedderClientId = 1u;
+  const uint64_t kFakeEmbedderWindowId = 1u;
+  embedder_window_data->window_id =
+      (kFakeEmbedderClientId << 32) | kFakeEmbedderWindowId;
+  embedder_window_data->bounds = gfx::Rect(320, 240);
+
+  client_->OnEmbedFromToken(token, std::move(embedder_window_data), 0,
+                            base::nullopt);
+}
+
+void TestWindowTree::RemoveEmbedderWindow(ui::Id embedder_window_id) {
+  client_->OnUnembed(embedder_window_id);
 }
 
 void TestWindowTree::AckAllChanges() {
@@ -278,11 +305,36 @@ void TestWindowTree::ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
 void TestWindowTree::EmbedUsingToken(ui::Id window_id,
                                      const base::UnguessableToken& token,
                                      uint32_t embed_flags,
-                                     EmbedUsingTokenCallback callback) {}
+                                     EmbedUsingTokenCallback callback) {
+  if (token != scheduled_embed_) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  scheduled_embed_ = base::UnguessableToken();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](EmbedUsingTokenCallback callback) {
+                       std::move(callback).Run(true);
+                     },
+                     std::move(callback)));
+}
 
 void TestWindowTree::ScheduleEmbedForExistingClient(
     ui::ClientSpecificId window_id,
-    ScheduleEmbedForExistingClientCallback callback) {}
+    ScheduleEmbedForExistingClientCallback callback) {
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  DCHECK_NE(token, scheduled_embed_);
+
+  scheduled_embed_ = token;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](ScheduleEmbedForExistingClientCallback callback,
+                        const base::UnguessableToken& token) {
+                       std::move(callback).Run(token);
+                     },
+                     std::move(callback), token));
+}
 
 void TestWindowTree::SetFocus(uint32_t change_id, ui::Id window_id) {
   OnChangeReceived(change_id, WindowTreeChangeType::FOCUS);
