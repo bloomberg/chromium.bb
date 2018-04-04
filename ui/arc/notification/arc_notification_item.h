@@ -18,9 +18,6 @@ class ArcNotificationItem {
     // Invoked when the notification data for this item has changed.
     virtual void OnItemDestroying() = 0;
 
-    // Invoked when the notification data for the item is updated.
-    virtual void OnItemUpdated() = 0;
-
    protected:
     virtual ~Observer() = default;
   };
@@ -48,10 +45,6 @@ class ArcNotificationItem {
   // Called when the user wants to toggle expansio of notification. This is
   // called from ArcNotificationContentView.
   virtual void ToggleExpansion() = 0;
-  // Returns true if this notification has an intrinsic setting which shown
-  // inside the notification content area. This is called from
-  // ArcNotificationContentView.
-  virtual bool IsOpeningSettingsSupported() const = 0;
 
   // Adds an observer.
   virtual void AddObserver(Observer* observer) = 0;
@@ -84,8 +77,6 @@ class ArcNotificationItem {
   virtual const std::string& GetNotificationKey() const = 0;
   // Returns the notification ID used in the Chrome message center.
   virtual const std::string& GetNotificationId() const = 0;
-  // Returnes the accessible name of the notification.
-  virtual const base::string16& GetAccessibleName() const = 0;
 };
 
 }  // namespace arc

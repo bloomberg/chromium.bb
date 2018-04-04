@@ -9,13 +9,14 @@
 #include <string>
 
 #include "base/macros.h"
-#include "ui/arc/notification/arc_notification_content_view_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/controls/native/native_view_host.h"
 
 namespace message_center {
+class Notification;
 class NotificationControlButtonsView;
 }
 
@@ -42,19 +43,26 @@ class ArcNotificationContentView
  public:
   static const char kViewClassName[];
 
-  explicit ArcNotificationContentView(ArcNotificationItem* item);
+  ArcNotificationContentView(ArcNotificationItem* item,
+                             const message_center::Notification& notification,
+                             message_center::MessageView* message_view);
   ~ArcNotificationContentView() override;
 
   // views::View overrides:
   const char* GetClassName() const override;
 
-  std::unique_ptr<ArcNotificationContentViewDelegate>
-  CreateContentViewDelegate();
+  void Update(message_center::MessageView* message_view,
+              const message_center::Notification& notification);
+  message_center::NotificationControlButtonsView* GetControlButtonsView();
+  void UpdateControlButtonsVisibility();
+  void RequestFocusOnCloseButton();
+  void OnSlideChanged();
+  void OnContainerAnimationStarted();
+  void OnContainerAnimationEnded();
 
  private:
   friend class ArcNotificationContentViewTest;
 
-  class ContentViewDelegate;
   class EventForwarder;
   class MouseEnterExitHandler;
   class SettingsButton;
@@ -65,17 +73,13 @@ class ArcNotificationContentView
   void MaybeCreateFloatingControlButtons();
   void SetSurface(ArcNotificationSurface* surface);
   void UpdatePreferredSize();
-  void UpdateControlButtonsVisibility();
   void UpdateSnapshot();
   void AttachSurface();
   void Activate();
-  void UpdateAccessibleName();
   void SetExpanded(bool expanded);
   bool IsExpanded() const;
   void SetManuallyExpandedOrCollapsed(bool value);
   bool IsManuallyExpandedOrCollapsed() const;
-  void OnContainerAnimationStarted();
-  void OnContainerAnimationEnded();
 
   void ShowCopiedSurface();
   void HideCopiedSurface();
@@ -102,7 +106,6 @@ class ArcNotificationContentView
 
   // ArcNotificationItem::Observer
   void OnItemDestroying() override;
-  void OnItemUpdated() override;
 
   // ArcNotificationSurfaceManager::Observer:
   void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;
@@ -139,8 +142,8 @@ class ArcNotificationContentView
   // it.
   std::unique_ptr<views::Widget> floating_control_buttons_widget_;
 
-  message_center::NotificationControlButtonsView* control_buttons_view_ =
-      nullptr;
+  // This view is owned by client (this).
+  message_center::NotificationControlButtonsView control_buttons_view_;
 
   // Protects from call loops between Layout and OnWindowBoundsChanged.
   bool in_layout_ = false;

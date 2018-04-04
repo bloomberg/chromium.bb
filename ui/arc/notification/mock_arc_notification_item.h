@@ -37,12 +37,10 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void RemoveObserver(Observer* observer) override {}
   void IncrementWindowRefCount() override {}
   void DecrementWindowRefCount() override {}
-  bool IsOpeningSettingsSupported() const override;
   mojom::ArcNotificationType GetNotificationType() const override;
   mojom::ArcNotificationExpandState GetExpandState() const override;
   mojom::ArcNotificationShownContents GetShownContents() const override;
   gfx::Rect GetSwipeInputRect() const override;
-  const base::string16& GetAccessibleName() const override;
 
   void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
                             const std::string& app_id) override {}

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/arc/notification/arc_notification_content_view_delegate.h"
+#include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/ime/dummy_text_input_client.h"
@@ -24,6 +24,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/message_view_factory.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
@@ -36,59 +37,6 @@ namespace arc {
 namespace {
 
 constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
-const SkColor kBackgroundColor = SK_ColorGREEN;
-
-class TestNotificationContentsView : public views::View {
- public:
-  TestNotificationContentsView() {
-    SetFocusBehavior(FocusBehavior::ALWAYS);
-    SetBackground(views::CreateSolidBackground(kBackgroundColor));
-    SetPreferredSize(gfx::Size(100, 100));
-  }
-  ~TestNotificationContentsView() override = default;
-
-  void Reset() {
-    mouse_event_count_ = 0;
-    keyboard_event_count_ = 0;
-  }
-
-  // views::View
-  bool OnMousePressed(const ui::MouseEvent& event) override {
-    ++mouse_event_count_;
-    return true;
-  }
-  void OnMouseMoved(const ui::MouseEvent& event) override {
-    ++mouse_event_count_;
-  }
-  void OnMouseReleased(const ui::MouseEvent& event) override {
-    ++mouse_event_count_;
-  }
-  bool OnKeyPressed(const ui::KeyEvent& event) override {
-    ++keyboard_event_count_;
-    return false;
-  }
-
-  int mouse_event_count() const { return mouse_event_count_; }
-  int keyboard_event_count() const { return keyboard_event_count_; }
-
- private:
-  int mouse_event_count_ = 0;
-  int keyboard_event_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNotificationContentsView);
-};
-
-class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
- public:
-  void UpdateControlButtonsVisibility() override {}
-  void OnSlideChanged() override {}
-  message_center::NotificationControlButtonsView* GetControlButtonsView()
-      const override {
-    return nullptr;
-  }
-  void OnContainerAnimationStarted() override {}
-  void OnContainerAnimationEnded() override {}
-};
 
 class MockArcNotificationItem : public ArcNotificationItem {
  public:
@@ -115,7 +63,6 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void RemoveObserver(Observer* observer) override {}
   void IncrementWindowRefCount() override {}
   void DecrementWindowRefCount() override {}
-  bool IsOpeningSettingsSupported() const override { return true; }
   mojom::ArcNotificationType GetNotificationType() const override {
     return mojom::ArcNotificationType::SIMPLE;
   }
@@ -126,9 +73,6 @@ class MockArcNotificationItem : public ArcNotificationItem {
     return mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
   }
   gfx::Rect GetSwipeInputRect() const override { return gfx::Rect(); }
-  const base::string16& GetAccessibleName() const override {
-    return base::EmptyString16();
-  }
   void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
                             const std::string& app_id) override {}
   bool IsManuallyExpandedOrCollapsed() const override { return false; }
@@ -140,14 +84,6 @@ class MockArcNotificationItem : public ArcNotificationItem {
 
   DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
 };
-
-std::unique_ptr<message_center::MessageView> CreateCustomMessageViewForTest(
-    ArcNotificationItem* item,
-    const Notification& notification) {
-  return std::make_unique<ArcNotificationView>(
-      item, std::make_unique<TestNotificationContentsView>(),
-      std::make_unique<TestContentViewDelegate>(), notification);
-}
 
 class TestTextInputClient : public ui::DummyTextInputClient {
  public:
@@ -177,7 +113,9 @@ class ArcNotificationViewTest : public ash::AshTestBase {
     const std::string notification_id("notification id");
     item_ = std::make_unique<MockArcNotificationItem>(notification_id);
     message_center::MessageViewFactory::SetCustomNotificationViewFactory(
-        base::BindRepeating(&CreateCustomMessageViewForTest, item_.get()));
+        base::BindRepeating(
+            &ArcNotificationViewTest::CreateCustomMessageViewForTest,
+            base::Unretained(this), item_.get()));
 
     notification_ = std::make_unique<Notification>(
         message_center::NOTIFICATION_TYPE_CUSTOM, notification_id,
@@ -213,10 +151,6 @@ class ArcNotificationViewTest : public ash::AshTestBase {
     ash::AshTestBase::TearDown();
   }
 
-  SkColor GetBackgroundColor() const {
-    return notification_view_->background_view()->background()->get_color();
-  }
-
   void PerformClick(const gfx::Point& point) {
     ui::MouseEvent pressed_event = ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, point, point, ui::EventTimeForNow(),
@@ -233,11 +167,6 @@ class ArcNotificationViewTest : public ash::AshTestBase {
     widget()->OnKeyEvent(&event1);
     ui::KeyEvent event2 = ui::KeyEvent(ui::ET_KEY_RELEASED, code, ui::EF_NONE);
     widget()->OnKeyEvent(&event2);
-  }
-
-  void KeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
-    widget()->OnKeyEvent(&event);
   }
 
   void UpdateNotificationViews() {
@@ -276,14 +205,22 @@ class ArcNotificationViewTest : public ash::AshTestBase {
   }
 
   Notification* notification() { return notification_.get(); }
-  TestNotificationContentsView* contents_view() {
-    return static_cast<TestNotificationContentsView*>(
-        notification_view_->contents_view_);
+  ArcNotificationContentView* content_view() {
+    return notification_view_->content_view_;
   }
   views::Widget* widget() { return notification_view_->GetWidget(); }
   ArcNotificationView* notification_view() { return notification_view_.get(); }
 
  private:
+  std::unique_ptr<message_center::MessageView> CreateCustomMessageViewForTest(
+      ArcNotificationItem* item,
+      const Notification& notification) {
+    auto message_view =
+        std::make_unique<ArcNotificationView>(item, notification);
+    message_view->content_view_->SetPreferredSize(gfx::Size(100, 100));
+    return message_view;
+  }
+
   std::unique_ptr<Notification> notification_;
   std::unique_ptr<ArcNotificationView> notification_view_;
 
@@ -292,28 +229,20 @@ class ArcNotificationViewTest : public ash::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationViewTest);
 };
 
-TEST_F(ArcNotificationViewTest, Background) {
-  EXPECT_EQ(kBackgroundColor, GetBackgroundColor());
-}
-
 TEST_F(ArcNotificationViewTest, Events) {
   widget()->Show();
-  contents_view()->RequestFocus();
 
-  EXPECT_EQ(0, contents_view()->mouse_event_count());
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToWidget(contents_view(), &cursor_location);
-  PerformClick(cursor_location);
-  EXPECT_EQ(2, contents_view()->mouse_event_count());
+  views::View::ConvertPointToWidget(content_view(), &cursor_location);
+  EXPECT_EQ(content_view(),
+            widget()->GetRootView()->GetEventHandlerForPoint(cursor_location));
 
-  ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
-                      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  widget()->OnMouseEvent(&move);
-  EXPECT_EQ(3, contents_view()->mouse_event_count());
-
-  EXPECT_EQ(0, contents_view()->keyboard_event_count());
-  KeyPress(ui::VKEY_A);
-  EXPECT_EQ(1, contents_view()->keyboard_event_count());
+  content_view()->RequestFocus();
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  EXPECT_EQ(content_view(),
+            static_cast<ui::EventTargeter*>(
+                widget()->GetRootView()->GetEffectiveViewTargeter())
+                ->FindTargetForEvent(widget()->GetRootView(), &key_event));
 }
 
 TEST_F(ArcNotificationViewTest, SlideOut) {
@@ -391,9 +320,9 @@ TEST_F(ArcNotificationViewTest, SlideOutPinned) {
 
 TEST_F(ArcNotificationViewTest, PressBackspaceKey) {
   std::string notification_id = notification()->id();
-  contents_view()->RequestFocus();
+  content_view()->RequestFocus();
 
-  ui::InputMethod* input_method = contents_view()->GetInputMethod();
+  ui::InputMethod* input_method = content_view()->GetInputMethod();
   ASSERT_TRUE(input_method);
   TestTextInputClient text_input_client;
   input_method->SetFocusedTextInputClient(&text_input_client);
@@ -408,9 +337,9 @@ TEST_F(ArcNotificationViewTest, PressBackspaceKey) {
 
 TEST_F(ArcNotificationViewTest, PressBackspaceKeyOnEditBox) {
   std::string notification_id = notification()->id();
-  contents_view()->RequestFocus();
+  content_view()->RequestFocus();
 
-  ui::InputMethod* input_method = contents_view()->GetInputMethod();
+  ui::InputMethod* input_method = content_view()->GetInputMethod();
   ASSERT_TRUE(input_method);
   TestTextInputClient text_input_client;
   input_method->SetFocusedTextInputClient(&text_input_client);
@@ -432,13 +361,13 @@ TEST_F(ArcNotificationViewTest, ChangeContentHeight) {
   EXPECT_EQ("360x100", size.ToString());
 
   // Allow small notifications.
-  contents_view()->SetPreferredSize(gfx::Size(10, 10));
+  content_view()->SetPreferredSize(gfx::Size(10, 10));
   size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x10", size.ToString());
 
   // The long notification.
-  contents_view()->SetPreferredSize(gfx::Size(1000, 1000));
+  content_view()->SetPreferredSize(gfx::Size(1000, 1000));
   size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x1000", size.ToString());

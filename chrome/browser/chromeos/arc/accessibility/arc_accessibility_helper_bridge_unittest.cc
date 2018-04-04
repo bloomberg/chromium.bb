@@ -19,7 +19,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/arc/notification/arc_notification_content_view.h"
-#include "ui/arc/notification/arc_notification_content_view_delegate.h"
 #include "ui/arc/notification/arc_notification_surface.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/arc/notification/arc_notification_view.h"
@@ -105,20 +104,6 @@ class ArcAccessibilityHelperBridgeTest : public views::ViewsTestBase {
    private:
     std::map<std::string, ArcNotificationSurface*> surfaces_;
     base::ObserverList<Observer> observers_;
-  };
-
-  class FakeArcNotificationContentViewDelegate
-      : public ArcNotificationContentViewDelegate {
-   public:
-    // ArcNotificationContentViewDelegate overrides.
-    void UpdateControlButtonsVisibility() override {}
-    void OnSlideChanged() override {}
-    message_center::NotificationControlButtonsView* GetControlButtonsView()
-        const override {
-      return nullptr;
-    }
-    void OnContainerAnimationStarted() override {}
-    void OnContainerAnimationEnded() override {}
   };
 
   class FakeArcNotificationSurface : public ArcNotificationSurface {
@@ -211,7 +196,7 @@ class ArcAccessibilityHelperBridgeTest : public views::ViewsTestBase {
   }
 
   views::View* GetContentsView(ArcNotificationView* notification_view) {
-    return notification_view->contents_view_;
+    return notification_view->content_view_;
   }
 
   std::unique_ptr<message_center::Notification> CreateNotification() {
@@ -227,10 +212,7 @@ class ArcAccessibilityHelperBridgeTest : public views::ViewsTestBase {
   std::unique_ptr<ArcNotificationView> CreateArcNotificationView(
       ArcNotificationItem* item,
       const message_center::Notification& notification) {
-    return std::make_unique<ArcNotificationView>(
-        item, std::make_unique<ArcNotificationContentView>(item),
-        std::make_unique<FakeArcNotificationContentViewDelegate>(),
-        notification);
+    return std::make_unique<ArcNotificationView>(item, notification);
   }
 
  protected:
