@@ -220,6 +220,7 @@ Tests.testWeekdayRange = function(t) {
   t.expectEquals(true, weekdayRange("MON", "FRI"));
   t.expectEquals(true, weekdayRange("TUE", "FRI"));
   t.expectEquals(true, weekdayRange("TUE", "TUE"));
+  t.expectEquals(true, weekdayRange("SAT", "WED"));
   t.expectEquals(true, weekdayRange("TUE"));
   t.expectEquals(false, weekdayRange("WED", "FRI"));
   t.expectEquals(false, weekdayRange("SUN", "MON"));
@@ -270,20 +271,40 @@ Tests.testDateRange = function(t) {
   // dateRange(day, month, year)
   MockDate.setCurrent("Mar 03 2009");
   t.expectEquals(true, dateRange(3, "MAR", 2009));
-  t.expectEquals(false, dateRange(4, "MAR", 2009));
-  t.expectEquals(false, dateRange(3, "FEB", 2009));
+  // Unclear what this is supposed to mean. Behavior changed with
+  // https://hg.mozilla.org/mozilla-central/rev/cd913073f87c.
+  // See also https://crbug.com/827292
+  t.expectEquals(true, dateRange(4, "MAR", 2009));
+  t.expectEquals(true, dateRange(3, "FEB", 2009));
   MockDate.setCurrent("Mar 03 2014");
-  t.expectEquals(false, dateRange(3, "MAR", 2009));
+  // Unclear what this is supposed to mean. Behavior changed with
+  // https://hg.mozilla.org/mozilla-central/rev/cd913073f87c.
+  // See also https://crbug.com/827292
+  t.expectEquals(true, dateRange(3, "MAR", 2009));
 
   // dateRange(month1, month2)
   MockDate.setCurrent("Mar 03 2009");
   t.expectEquals(true, dateRange("JAN", "MAR"));
+  // The reverse should also work.
+  t.expectEquals(true, dateRange("MAR", "JAN"));
+
+  t.expectEquals(true, dateRange("SEP", "APR"));
+  t.expectEquals(true, dateRange("FEB", "JAN"));
+  t.expectEquals(false, dateRange("SEP", "FEB"));
+
   t.expectEquals(true, dateRange("MAR", "APR"));
   t.expectEquals(false, dateRange("MAY", "SEP"));
 
   // dateRange(day1, month1, day2, month2)
   MockDate.setCurrent("Mar 03 2009");
   t.expectEquals(true, dateRange(1, "JAN", 3, "MAR"));
+  // The reverse should also work.
+  t.expectEquals(true, dateRange(3, "MAR", 1, "JAN"));
+
+  t.expectEquals(true, dateRange(4, "SEP", 3, "APR"));
+  t.expectEquals(true, dateRange(4, "FEB", 3, "JAN"));
+  t.expectEquals(false, dateRange(4, "SEP", 3, "FEB"));
+
   t.expectEquals(true, dateRange(3, "MAR", 4, "SEP"));
   t.expectEquals(false, dateRange(4, "MAR", 4, "SEP"));
 
@@ -319,6 +340,8 @@ Tests.testTimeRange = function(t) {
   // timeRange(hour1, min1, hour2, min2)
   MockDate.setCurrent("Mar 03, 2009 03:34:01");
   t.expectEquals(true, timeRange(1, 0, 3, 34));
+  // The reverse should also work.
+  t.expectEquals(true, timeRange(3, 34, 1, 0));
   t.expectEquals(true, timeRange(1, 0, 3, 35));
   t.expectEquals(true, timeRange(3, 34, 5, 0));
   t.expectEquals(false, timeRange(1, 0, 3, 0));
@@ -351,8 +374,10 @@ TestContext.prototype.failed = function() {
 
 TestContext.prototype.expectEquals = function(expectation, actual) {
   if (!(expectation === actual)) {
+    var callstack = new Error().stack;
     this.numFailures_++;
-    this.log("FAIL: expected: " + expectation + ", actual: " + actual);
+    this.log("FAIL: expected: " + expectation +
+             ", actual: " + actual + "\n" + callstack);
   }
 };
 
