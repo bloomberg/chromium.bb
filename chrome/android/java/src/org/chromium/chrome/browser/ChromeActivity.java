@@ -1192,7 +1192,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     @Override
     public SnackbarManager getSnackbarManager() {
-        return mSnackbarManager;
+        return mBottomSheetController != null
+                        && mBottomSheetController.getBottomSheet().isSheetOpen()
+                ? mBottomSheetController.getSnackbarManager()
+                : mSnackbarManager;
     }
 
     /**
@@ -1269,7 +1272,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
 
             mFadingBackgroundView = (FadingBackgroundView) findViewById(R.id.fading_focus_target);
-            mBottomSheetController = new BottomSheetController(getTabModelSelector(),
+            mBottomSheetController = new BottomSheetController(this, getTabModelSelector(),
                     getCompositorViewHolder().getLayoutManager(), mFadingBackgroundView,
                     mBottomSheet);
 

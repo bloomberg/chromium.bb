@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import android.app.Activity;
 import android.view.ViewGroup;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -27,7 +32,7 @@ import java.util.PriorityQueue;
  * and call {@link #requestShowContent(BottomSheetContent, boolean)} which will return true if the
  * content was actually shown (see full doc on method).
  */
-public class BottomSheetController {
+public class BottomSheetController implements ApplicationStatus.ActivityStateListener {
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
 
@@ -36,6 +41,9 @@ public class BottomSheetController {
 
     /** A handle to the {@link BottomSheet} that this class controls. */
     private final BottomSheet mBottomSheet;
+
+    /** A handle to the {@link SnackbarManager} that manages snackbars inside the bottom sheet. */
+    private final SnackbarManager mSnackbarManager;
 
     /** A queue for content that is waiting to be shown in the {@link BottomSheet}. */
     private PriorityQueue<BottomSheetContent> mContentQueue;
@@ -53,11 +61,15 @@ public class BottomSheetController {
      * @param fadingBackgroundView The scrim that shows when the bottom sheet is opened.
      * @param bottomSheet The bottom sheet that this class will be controlling.
      */
-    public BottomSheetController(final TabModelSelector tabModelSelector,
+    public BottomSheetController(final Activity activity, final TabModelSelector tabModelSelector,
             final LayoutManager layoutManager, final FadingBackgroundView fadingBackgroundView,
             BottomSheet bottomSheet) {
         mBottomSheet = bottomSheet;
         mLayoutManager = layoutManager;
+        mSnackbarManager = new SnackbarManager(
+                activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
+        mSnackbarManager.onStart();
+        ApplicationStatus.registerStateListenerForActivity(this, activity);
 
         // Handle interactions with the scrim.
         fadingBackgroundView.addObserver(new FadingViewObserver() {
@@ -132,6 +144,11 @@ public class BottomSheetController {
                 UiUtils.removeViewFromParent(fadingBackgroundView);
                 parent.addView(fadingBackgroundView, mOriginalScrimIndexInParent);
             }
+
+            @Override
+            public void onSheetOffsetChanged(float heightFraction) {
+                mSnackbarManager.dismissAllSnackbars();
+            }
         });
 
         // Initialize the queue with a comparator that checks content priority.
@@ -144,6 +161,13 @@ public class BottomSheetController {
      */
     public BottomSheet getBottomSheet() {
         return mBottomSheet;
+    }
+
+    /**
+     * @return The {@link SnackbarManager} that manages snackbars inside the bottom sheet.
+     */
+    public SnackbarManager getSnackbarManager() {
+        return mSnackbarManager;
     }
 
     /**
@@ -232,6 +256,17 @@ public class BottomSheetController {
             mIsProcessingHideRequest = true;
             mBottomSheet.addObserver(hiddenSheetObserver);
             mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, animate);
+        }
+    }
+
+    @Override
+    public void onActivityStateChange(Activity activity, int newState) {
+        if (newState == ActivityState.STARTED) {
+            mSnackbarManager.onStart();
+        } else if (newState == ActivityState.STOPPED) {
+            mSnackbarManager.onStop();
+        } else if (newState == ActivityState.DESTROYED) {
+            ApplicationStatus.unregisterActivityStateListener(this);
         }
     }
 
