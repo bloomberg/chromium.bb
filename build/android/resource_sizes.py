@@ -118,11 +118,13 @@ _READELF_SIZES_METRICS = {
   'text': ['.text'],
   'data': ['.data', '.rodata', '.data.rel.ro', '.data.rel.ro.local'],
   'relocations': ['.rel.dyn', '.rel.plt', '.rela.dyn', '.rela.plt'],
-  'unwind': ['.ARM.extab', '.ARM.exidx', '.eh_frame', '.eh_frame_hdr',],
+  'unwind': ['.ARM.extab', '.ARM.exidx', '.eh_frame', '.eh_frame_hdr',
+             '.ARM.exidxsentinel_section_after_text'],
   'symbols': ['.dynsym', '.dynstr', '.dynamic', '.shstrtab', '.got', '.plt',
-              '.got.plt', '.hash'],
+              '.got.plt', '.hash', '.gnu.hash'],
   'bss': ['.bss'],
   'other': ['.init_array', '.fini_array', '.comment', '.note.gnu.gold-version',
+            '.note.crashpad.info', '.note.android.ident',
             '.ARM.attributes', '.note.gnu.build-id', '.gnu.version',
             '.gnu.version_d', '.gnu.version_r', '.interp', '.gcc_except_table']
 }
