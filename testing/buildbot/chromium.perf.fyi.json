@@ -64,8 +64,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build46-b1--device1",
-              "pool": "Chrome-perf-fyi"
+              "id": "build187-b7--device1",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 3600,
@@ -88,8 +88,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build46-b1--device2",
-              "pool": "Chrome-perf-fyi"
+              "id": "build187-b7--device2",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 3600,
@@ -112,8 +112,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build46-b1--device2",
-              "pool": "Chrome-perf-fyi"
+              "id": "build187-b7--device2",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 3600,
@@ -136,8 +136,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build46-b1--device2",
-              "pool": "Chrome-perf-fyi"
+              "id": "build187-b7--device2",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 3600,
@@ -163,8 +163,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build46-b1--device2",
-              "pool": "Chrome-perf-fyi"
+              "id": "build187-b7--device2",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 3600,
@@ -190,8 +190,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build46-b1--device2",
-              "pool": "Chrome-perf-fyi"
+              "id": "build187-b7--device2",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 3600,
