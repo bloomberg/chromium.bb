@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "components/prefs/pref_service.h"
 
 class Profile;
 
@@ -57,7 +58,8 @@ class CupsPrintersManager {
       std::unique_ptr<PrinterDetector> usb_printer_detector,
       std::unique_ptr<PrinterDetector> zeroconf_printer_detector,
       scoped_refptr<PpdProvider> ppd_provider,
-      PrinterEventTracker* event_tracker);
+      PrinterEventTracker* event_tracker,
+      PrefService* pref_service);
 
   // Register the printing preferences with the |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

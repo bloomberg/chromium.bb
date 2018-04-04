@@ -16,6 +16,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
+#include "chrome/common/pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -257,9 +259,14 @@ class CupsPrintersManagerTest : public testing::Test,
     zeroconf_detector_ = zeroconf_detector.get();
     auto usb_detector = std::make_unique<FakePrinterDetector>();
     usb_detector_ = usb_detector.get();
+
+    // Register the pref |UserNativePrintersAllowed|
+    CupsPrintersManager::RegisterProfilePrefs(pref_service_.registry());
+
     manager_ = CupsPrintersManager::Create(
         &synced_printers_manager_, std::move(usb_detector),
-        std::move(zeroconf_detector), ppd_provider_, &event_tracker_);
+        std::move(zeroconf_detector), ppd_provider_, &event_tracker_,
+        &pref_service_);
     manager_->AddObserver(this);
   }
 
@@ -280,6 +287,12 @@ class CupsPrintersManagerTest : public testing::Test,
     ExpectPrinterIdsAre(observed_printers_.at(printer_class), ids);
   }
 
+  void UpdatePolicyValue(const char* name, bool value) {
+    auto value_ptr = std::make_unique<base::Value>(value);
+    // TestingPrefSyncableService assumes ownership of |value_ptr|.
+    pref_service_.SetManagedPref(name, std::move(value_ptr));
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -294,6 +307,10 @@ class CupsPrintersManagerTest : public testing::Test,
 
   // This is unused, it's just here for memory ownership.
   PrinterEventTracker event_tracker_;
+
+  // PrefService used to register the |UserNativePrintersAllowed| pref and
+  // change its value for testing.
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
 
   // The manager being tested.  This must be declared after the fakes, as its
   // initialization must come after that of the fakes.
@@ -472,6 +489,109 @@ TEST_F(CupsPrintersManagerTest, GetPrinter) {
 
   std::unique_ptr<Printer> printer = manager_->GetPrinter("Nope");
   EXPECT_EQ(printer, nullptr);
+}
+
+// Test that if |UserNativePrintersAllowed| pref is set to false, then
+// GetPrinters() will only return printers from
+// |CupsPrintersManager::kEnterprise|.
+TEST_F(CupsPrintersManagerTest, GetPrintersUserNativePrintersDisabled) {
+  synced_printers_manager_.AddConfiguredPrinters({Printer("Configured")});
+  synced_printers_manager_.AddEnterprisePrinters({Printer("Enterprise")});
+  scoped_task_environment_.RunUntilIdle();
+
+  // Disable the use of non-enterprise printers.
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
+
+  // Verify that non-enterprise printers are not returned by GetPrinters()
+  std::vector<Printer> configured_printers =
+      manager_->GetPrinters(CupsPrintersManager::kConfigured);
+  ExpectPrinterIdsAre(configured_printers, {});
+
+  // Verify that enterprise printers are returned by GetPrinters()
+  std::vector<Printer> enterprise_printers =
+      manager_->GetPrinters(CupsPrintersManager::kEnterprise);
+  ExpectPrinterIdsAre(enterprise_printers, {"Enterprise"});
+}
+
+// Test that if |UserNativePrintersAllowed| pref is set to false, then
+// UpdateConfiguredPrinter() will simply do nothing.
+TEST_F(CupsPrintersManagerTest,
+       UpdateConfiguredPrinterUserNativePrintersDisabled) {
+  // Start by installing a configured printer to be used to test than any
+  // changes made to the printer will not be propogated.
+  Printer existing_configured("Configured");
+  synced_printers_manager_.AddConfiguredPrinters({existing_configured});
+  usb_detector_->AddDetections({MakeDiscoveredPrinter("Discovered")});
+  zeroconf_detector_->AddDetections({MakeAutomaticPrinter("Automatic")});
+  scoped_task_environment_.RunUntilIdle();
+
+  // Sanity check that we do, indeed, have one printer in each class.
+  ExpectPrintersInClassAre(CupsPrintersManager::kConfigured, {"Configured"});
+  ExpectPrintersInClassAre(CupsPrintersManager::kAutomatic, {"Automatic"});
+  ExpectPrintersInClassAre(CupsPrintersManager::kDiscovered, {"Discovered"});
+
+  // Disable the use of non-enterprise printers.
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
+
+  // Update the existing configured printer. Verify that the changes did not
+  // progogate.
+  existing_configured.set_display_name("New Display Name");
+  manager_->UpdateConfiguredPrinter(existing_configured);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Reenable user printers in order to do checking.
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, true);
+  ExpectPrintersInClassAre(CupsPrintersManager::kConfigured, {"Configured"});
+  EXPECT_EQ(
+      manager_->GetPrinters(CupsPrintersManager::kConfigured)[0].display_name(),
+      "");
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
+
+  // Attempt to update the Automatic and Discovered printers. In both cases
+  // check that the printers do not move into the configured category.
+  manager_->UpdateConfiguredPrinter(Printer("Automatic"));
+  scoped_task_environment_.RunUntilIdle();
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, true);
+  ExpectPrintersInClassAre(CupsPrintersManager::kAutomatic, {"Automatic"});
+  ExpectPrintersInClassAre(CupsPrintersManager::kConfigured, {"Configured"});
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
+
+  manager_->UpdateConfiguredPrinter(Printer("Discovered"));
+  scoped_task_environment_.RunUntilIdle();
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, true);
+  ExpectPrintersInClassAre(CupsPrintersManager::kDiscovered, {"Discovered"});
+  ExpectPrintersInClassAre(CupsPrintersManager::kConfigured, {"Configured"});
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
+
+  // Attempt to update a printer that we haven't seen before, check that nothing
+  // changed.
+  manager_->UpdateConfiguredPrinter(Printer("NewFangled"));
+  scoped_task_environment_.RunUntilIdle();
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, true);
+  ExpectPrintersInClassAre(CupsPrintersManager::kConfigured, {"Configured"});
+}
+
+// Test that if |UserNativePrintersAllowed| pref is set to false GetPrinter only
+// returns a printer when the given printer id corresponds to an enterprise
+// printer. Otherwise, it returns nothing.
+TEST_F(CupsPrintersManagerTest, GetPrinterUserNativePrintersDisabled) {
+  synced_printers_manager_.AddConfiguredPrinters({Printer("Configured")});
+  synced_printers_manager_.AddEnterprisePrinters({Printer("Enterprise")});
+  scoped_task_environment_.RunUntilIdle();
+
+  // Sanity check that the printers were added.
+  ExpectPrintersInClassAre(CupsPrintersManager::kConfigured, {"Configured"});
+  ExpectPrintersInClassAre(CupsPrintersManager::kEnterprise, {"Enterprise"});
+
+  // Diable the use of non-enterprise printers.
+  UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
+
+  std::unique_ptr<Printer> configured_ptr = manager_->GetPrinter("Configured");
+  EXPECT_EQ(configured_ptr, nullptr);
+
+  std::unique_ptr<Printer> enterprise_ptr = manager_->GetPrinter("Enterprise");
+  ASSERT_NE(enterprise_ptr, nullptr);
+  EXPECT_EQ(enterprise_ptr->id(), "Enterprise");
 }
 
 }  // namespace
