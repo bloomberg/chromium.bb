@@ -115,8 +115,6 @@ class PageInfoUI {
     std::string site_identity;
     // Status of the site's identity.
     PageInfo::SiteIdentityStatus identity_status;
-    // Helper to get security description info to display to the user.
-    std::unique_ptr<SecurityDescription> GetSecurityDescription() const;
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;
@@ -215,6 +213,16 @@ class PageInfoUI {
 
   // Sets site identity information.
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
+
+  // Helper to get security description info to display to the user.
+  std::unique_ptr<PageInfoUI::SecurityDescription> GetSecurityDescription(
+      const IdentityInfo& identity_info) const;
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  // Creates security description for password reuse case.
+  virtual std::unique_ptr<PageInfoUI::SecurityDescription>
+  CreateSecurityDescriptionForPasswordReuse() const = 0;
+#endif
 };
 
 typedef PageInfoUI::CookieInfoList CookieInfoList;

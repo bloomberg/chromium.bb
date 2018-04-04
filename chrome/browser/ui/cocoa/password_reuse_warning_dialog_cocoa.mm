@@ -121,3 +121,7 @@ void PasswordReuseWarningDialogCocoa::Close() {
 void PasswordReuseWarningDialogCocoa::WebContentsDestroyed() {
   Close();
 }
+
+base::string16 PasswordReuseWarningDialogCocoa::GetWarningDetailText() {
+  return service_->GetWarningDetailText();
+}

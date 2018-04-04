@@ -201,6 +201,13 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // in the |ui_|.
   void PresentSiteIdentity();
 
+  // Helper function to get the site identification status and details by
+  // malicious content status.
+  void GetSiteIdentityByMaliciousContentStatus(
+      security_state::MaliciousContentStatus malicious_content_status,
+      PageInfo::SiteIdentityStatus* status,
+      base::string16* details);
+
   // Retrieves all the permissions that are shown in Page Info.
   // Exposed for testing.
   static std::vector<ContentSettingsType> GetAllPermissionsForTesting();

@@ -672,6 +672,25 @@ extensions::MessagingDelegate::PolicyPermission IsNativeMessagingHostAllowed(
 }
 #endif
 
+class MockPasswordProtectionService
+    : public safe_browsing::ChromePasswordProtectionService {
+ public:
+  MockPasswordProtectionService(safe_browsing::SafeBrowsingService* sb_service,
+                                Profile* profile)
+      : safe_browsing::ChromePasswordProtectionService(sb_service, profile) {}
+  ~MockPasswordProtectionService() override {}
+
+  MOCK_CONST_METHOD0(GetSyncAccountType,
+                     safe_browsing::LoginReputationClientRequest::
+                         PasswordReuseEvent::SyncAccountType());
+
+  AccountInfo GetAccountInfo() const override {
+    AccountInfo info;
+    info.email = "user@mycompany.com";
+    return info;
+  }
+};
+
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -4029,83 +4048,341 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   EXPECT_TRUE(task_manager::TaskManagerInterface::IsEndProcessEnabled());
 }
 
-// Test that when password protection warning trigger is set by policy, chrome
-// password protection service gets the correct value.
-IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTrigger) {
+// Test that when password protection warning trigger is set for users who are
+// not signed-into Chrome, Chrome password protection service gets the correct
+// value.
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       PasswordProtectionWarningTriggerNotLoggedIn) {
+  MockPasswordProtectionService mock_service(
+      g_browser_process->safe_browsing_service(), browser()->profile());
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       safe_browsing::kEnterprisePasswordProtectionV1);
-  // Without setting up the enterprise policy,
-  // |GetPasswordProtectionTriggerPref(..) should return |PHISHING_REUSE|.
+
+  // If user is not signed-in, |GetPasswordProtectionTriggerPref(...)| should
+  // always return |PASSWORD_PROTECTION_OFF|.
+  EXPECT_CALL(mock_service, GetSyncAccountType())
+      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
+                                 PasswordReuseEvent::NOT_SIGNED_IN));
   const PrefService* const prefs = browser()->profile()->GetPrefs();
-  const safe_browsing::ChromePasswordProtectionService* const service =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(browser()->profile());
   EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                    ->IsManaged());
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            service->GetPasswordProtectionTriggerPref(
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
                 prefs::kPasswordProtectionWarningTrigger));
-
   // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
   PolicyMap policies;
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(1)), nullptr);
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
+                  ->IsManaged());
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+}
+
+// Test that when password protection warning trigger is set for Gmail users,
+// Chrome password protection service gets the correct
+// value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
+  MockPasswordProtectionService mock_service(
+      g_browser_process->safe_browsing_service(), browser()->profile());
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      safe_browsing::kEnterprisePasswordProtectionV1);
+
+  // If user is a Gmail user, |GetPasswordProtectionTriggerPref(...)| should
+  // return |PHISHING_REUSE| unless specified by policy.
+  EXPECT_CALL(mock_service, GetSyncAccountType())
+      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
+                                 PasswordReuseEvent::GMAIL));
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
+                   ->IsManaged());
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
+  PolicyMap policies;
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
   EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
-            service->GetPasswordProtectionTriggerPref(
+            mock_service.GetPasswordProtectionTriggerPref(
                 prefs::kPasswordProtectionWarningTrigger));
-
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(2)), nullptr);
+               std::make_unique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            service->GetPasswordProtectionTriggerPref(
+            mock_service.GetPasswordProtectionTriggerPref(
                 prefs::kPasswordProtectionWarningTrigger));
 }
 
-// Test that when password protection risk trigger is set by policy, chrome
-// password protection service gets the correct value.
-IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTrigger) {
+// Test that when password protection warning trigger is set for GSuite users,
+// Chrome password protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
+  MockPasswordProtectionService mock_service(
+      g_browser_process->safe_browsing_service(), browser()->profile());
+  EXPECT_CALL(mock_service, GetSyncAccountType())
+      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
+                                 PasswordReuseEvent::GSUITE));
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       safe_browsing::kEnterprisePasswordProtectionV1);
-  // Without setting up the enterprise policy,
-  // |GetPasswordProtectionTriggerPref(..) should return |PHISHING_REUSE|.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  PolicyMap policies;
+
+  // Case 1: No enterprise email domain specified.
+  // |GetPasswordProtectionTriggerPref()| should always return
+  // |PASSWORD_PROTECTION_OFF|.
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+
+  // Case 2: Sync account email doesn't match specified enterprise email domain.
+  // |GetPasswordProtectionTriggerPref()| should always return
+  // |PASSWORD_PROTECTION_OFF|.
+  prefs->SetString(prefs::kPasswordProtectionEnterpriseEmailDomain,
+                   "othercompany.com");
+  policies.Clear();
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+
+  // Case 3: Sync account email matches specified enterprise email domain.
+  // |GetPasswordProtectionTriggerPref()| should return specified trigger level
+  // or |PASSWORD_PROTECTION_OFF| as default.
+  prefs->SetString(prefs::kPasswordProtectionEnterpriseEmailDomain,
+                   "mycompany.com");
+  policies.Clear();
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+}
+
+// Test that when password protection risk trigger is set for users who are not
+// signed-in, Chrome password protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTriggerNotLoggedIn) {
+  MockPasswordProtectionService mock_service(
+      g_browser_process->safe_browsing_service(), browser()->profile());
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      safe_browsing::kEnterprisePasswordProtectionV1);
+
+  // If user is not signed-in, |GetPasswordProtectionTriggerPref(...)| should
+  // always return |PASSWORD_PROTECTION_OFF|.
+  EXPECT_CALL(mock_service, GetSyncAccountType())
+      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
+                                 PasswordReuseEvent::NOT_SIGNED_IN));
   const PrefService* const prefs = browser()->profile()->GetPrefs();
-  const safe_browsing::ChromePasswordProtectionService* const service =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(browser()->profile());
   EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionRiskTrigger)
                    ->IsManaged());
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            service->GetPasswordProtectionTriggerPref(
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
                 prefs::kPasswordProtectionRiskTrigger));
-
   // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
   PolicyMap policies;
   policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(1)), nullptr);
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionRiskTrigger)
+                  ->IsManaged());
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+}
+
+// Test that when password protection risk trigger is set for Gmail user,
+// Chrome password protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTriggerGmail) {
+  MockPasswordProtectionService mock_service(
+      g_browser_process->safe_browsing_service(), browser()->profile());
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      safe_browsing::kEnterprisePasswordProtectionV1);
+  // If user is a Gmail user, |GetPasswordProtectionTriggerPref(...)| should
+  // return |PHISHING_REUSE| unless specified by policy.
+  EXPECT_CALL(mock_service, GetSyncAccountType())
+      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
+                                 PasswordReuseEvent::GMAIL));
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionRiskTrigger)
+                   ->IsManaged());
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
+  PolicyMap policies;
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionRiskTrigger)
                   ->IsManaged());
   EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
-            service->GetPasswordProtectionTriggerPref(
+            mock_service.GetPasswordProtectionTriggerPref(
                 prefs::kPasswordProtectionRiskTrigger));
-
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(2)), nullptr);
+               std::make_unique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            service->GetPasswordProtectionTriggerPref(
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+}
+
+// Test that when password protection risk trigger is set for GSuite users,
+// Chrome password protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTriggerGSuite) {
+  MockPasswordProtectionService mock_service(
+      g_browser_process->safe_browsing_service(), browser()->profile());
+  EXPECT_CALL(mock_service, GetSyncAccountType())
+      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
+                                 PasswordReuseEvent::GSUITE));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      safe_browsing::kEnterprisePasswordProtectionV1);
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  PolicyMap policies;
+
+  // Case 1: No enterprise email domain specified.
+  // |GetPasswordProtectionTriggerPref()| should always return
+  // |PASSWORD_PROTECTION_OFF|.
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+
+  // Case 2: Sync account email doesn't match specified enterprise email domain.
+  // |GetPasswordProtectionTriggerPref()| should always return
+  // |PASSWORD_PROTECTION_OFF|.
+  prefs->SetString(prefs::kPasswordProtectionEnterpriseEmailDomain,
+                   "othercompany.com");
+  policies.Clear();
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+
+  // Case 3: Sync account email matches specified enterprise email domain.
+  // |GetPasswordProtectionTriggerPref()| should return specified trigger level
+  // or |PASSWORD_PROTECTION_OFF| as default.
+  prefs->SetString(prefs::kPasswordProtectionEnterpriseEmailDomain,
+                   "mycompany.com");
+  policies.Clear();
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
+            mock_service.GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            mock_service.GetPasswordProtectionTriggerPref(
                 prefs::kPasswordProtectionRiskTrigger));
 }
 

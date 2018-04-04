@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -40,6 +41,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,6 +50,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -57,6 +61,8 @@ using GaiaPasswordReuse = UserEventSpecifics::GaiaPasswordReuse;
 using PasswordReuseDialogInteraction =
     GaiaPasswordReuse::PasswordReuseDialogInteraction;
 using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
+using PasswordReuseEvent =
+    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
 using SafeBrowsingStatus =
     GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus;
 
@@ -141,6 +147,14 @@ int64_t GetNavigationIDFromPrefsByOrigin(PrefService* prefs,
                                      &navigation_id)
              ? navigation_id
              : 0;
+}
+
+bool AreEmailDomainsSame(const std::string& email,
+                         const std::string& email_domain) {
+  if (email_domain.empty() || email.empty())
+    return false;
+
+  return gaia::ExtractDomainName(email) == email_domain;
 }
 
 }  // namespace
@@ -455,19 +469,19 @@ void ChromePasswordProtectionService::LogPasswordReuseDialogInteraction(
   user_event_service->RecordUserEvent(std::move(specifics));
 }
 
-LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+PasswordReuseEvent::SyncAccountType
 ChromePasswordProtectionService::GetSyncAccountType() const {
   const AccountInfo account_info = GetAccountInfo();
   if (account_info.account_id.empty() || account_info.hosted_domain.empty()) {
-    return LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN;
+    return PasswordReuseEvent::NOT_SIGNED_IN;
   }
 
   // For gmail or googlemail account, the hosted_domain will always be
   // kNoHostedDomainFound.
   return account_info.hosted_domain ==
                  std::string(AccountTrackerService::kNoHostedDomainFound)
-             ? LoginReputationClientRequest::PasswordReuseEvent::GMAIL
-             : LoginReputationClientRequest::PasswordReuseEvent::GSUITE;
+             ? PasswordReuseEvent::GMAIL
+             : PasswordReuseEvent::GSUITE;
 }
 
 std::unique_ptr<UserEventSpecifics>
@@ -842,20 +856,34 @@ MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
 PasswordProtectionTrigger
 ChromePasswordProtectionService::GetPasswordProtectionTriggerPref(
     const std::string& pref_name) const {
-  if (!base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1))
-    return PHISHING_REUSE;
-
-  const PrefService::Preference* warning_trigger =
-      profile_->GetPrefs()->FindPreference(pref_name);
+  DCHECK(pref_name == prefs::kPasswordProtectionWarningTrigger ||
+         pref_name == prefs::kPasswordProtectionRiskTrigger);
   bool is_policy_managed =
-      (warning_trigger && warning_trigger->IsManaged()) ||
-      GetSyncAccountType() ==
-          LoginReputationClientRequest::PasswordReuseEvent::GSUITE;
-  // TODO(jialiul): Remove the special treatment for GSUITE, when password
-  // protection enterprise control is ready.
-  return is_policy_managed ? static_cast<PasswordProtectionTrigger>(
-                                 profile_->GetPrefs()->GetInteger(pref_name))
-                           : PHISHING_REUSE;
+      base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1) &&
+      profile_->GetPrefs()->HasPrefPath(pref_name);
+  PasswordProtectionTrigger trigger_level =
+      static_cast<PasswordProtectionTrigger>(
+          profile_->GetPrefs()->GetInteger(pref_name));
+  PasswordReuseEvent::SyncAccountType account_type = GetSyncAccountType();
+  switch (account_type) {
+    case (PasswordReuseEvent::NOT_SIGNED_IN):
+      return PASSWORD_PROTECTION_OFF;
+    case (PasswordReuseEvent::GMAIL):
+      return is_policy_managed ? trigger_level : PHISHING_REUSE;
+    case (PasswordReuseEvent::GSUITE): {
+      // For GSuite account, we should also check if the current sign-in account
+      // matches the configured enterprise email domain.
+      const AccountInfo account_info = GetAccountInfo();
+      std::string enterprise_email_domain = profile_->GetPrefs()->GetString(
+          prefs::kPasswordProtectionEnterpriseEmailDomain);
+      return is_policy_managed && AreEmailDomainsSame(account_info.email,
+                                                      enterprise_email_domain)
+                 ? trigger_level
+                 : PASSWORD_PROTECTION_OFF;
+    }
+  }
+  NOTREACHED();
+  return PASSWORD_PROTECTION_OFF;
 }
 
 bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
@@ -884,6 +912,27 @@ bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
   }
 
   return false;
+}
+
+base::string16 ChromePasswordProtectionService::GetWarningDetailText() {
+  if (!base::FeatureList::IsEnabled(
+          safe_browsing::kEnterprisePasswordProtectionV1)) {
+    return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+  }
+
+  std::string enterprise_name =
+      profile_->GetPrefs()->GetString(prefs::kPasswordProtectionEnterpriseName);
+  if (enterprise_name.empty() ||
+      GetSyncAccountType() != safe_browsing::LoginReputationClientRequest::
+                                  PasswordReuseEvent::GSUITE) {
+    return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+  }
+
+  // For GSuite password reuses, we need to include their organization name in
+  // the site identity detail text.
+  return l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE,
+      base::UTF8ToUTF16(enterprise_name));
 }
 
 }  // namespace safe_browsing

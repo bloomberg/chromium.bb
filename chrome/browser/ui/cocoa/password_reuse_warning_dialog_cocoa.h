@@ -46,6 +46,9 @@ class PasswordReuseWarningDialogCocoa
   // Closes the dialog.
   void Close();
 
+  // Called by |controller_| to get the detailed warning text.
+  base::string16 GetWarningDetailText();
+
  private:
   // This class observes the |service_| to check if the password reuse
   // status has changed. Weak.
