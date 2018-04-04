@@ -198,6 +198,7 @@ by a child template that "extends" this file.
             <intent-filter>
                 {% block common_view_intent_shared_filter_with_mime_body %}
                 {{ self.common_view_intent_shared_filter_body() }}
+                <data android:scheme="content" />
                 <data android:mimeType="text/html"/>
                 <data android:mimeType="text/plain"/>
                 <data android:mimeType="application/xhtml+xml"/>
