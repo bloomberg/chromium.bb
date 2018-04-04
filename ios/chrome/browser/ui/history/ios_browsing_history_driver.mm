@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_utils.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
+#include "ios/chrome/browser/ui/history/history_consumer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,13 +25,13 @@ using history::BrowsingHistoryService;
 
 IOSBrowsingHistoryDriver::IOSBrowsingHistoryDriver(
     ios::ChromeBrowserState* browser_state,
-    id<BrowsingHistoryDriverDelegate> delegate)
-    : browser_state_(browser_state), delegate_(delegate) {
+    id<HistoryConsumer> consumer)
+    : browser_state_(browser_state), consumer_(consumer) {
   DCHECK(browser_state_);
 }
 
 IOSBrowsingHistoryDriver::~IOSBrowsingHistoryDriver() {
-  delegate_ = nil;
+  consumer_ = nil;
 }
 
 #pragma mark - Private methods
@@ -39,9 +40,10 @@ void IOSBrowsingHistoryDriver::OnQueryComplete(
     const std::vector<BrowsingHistoryService::HistoryEntry>& results,
     const BrowsingHistoryService::QueryResultsInfo& query_results_info,
     base::OnceClosure continuation_closure) {
-  [delegate_ onQueryCompleteWithResults:results
-                       queryResultsInfo:query_results_info
-                    continuationClosure:std::move(continuation_closure)];
+  [consumer_
+      historyQueryWasCompletedWithResults:results
+                         queryResultsInfo:query_results_info
+                      continuationClosure:std::move(continuation_closure)];
 }
 
 void IOSBrowsingHistoryDriver::OnRemoveVisitsComplete() {
@@ -58,13 +60,13 @@ void IOSBrowsingHistoryDriver::OnRemoveVisits(
 }
 
 void IOSBrowsingHistoryDriver::HistoryDeleted() {
-  [delegate_ didObserverHistoryDeletion];
+  [consumer_ historyWasDeleted];
 }
 
 void IOSBrowsingHistoryDriver::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms,
     bool has_synced_results) {
-  [delegate_ shouldShowNoticeAboutOtherFormsOfBrowsingHistory:has_other_forms];
+  [consumer_ showNoticeAboutOtherFormsOfBrowsingHistory:has_other_forms];
 }
 
 bool IOSBrowsingHistoryDriver::AllowHistoryDeletions() {

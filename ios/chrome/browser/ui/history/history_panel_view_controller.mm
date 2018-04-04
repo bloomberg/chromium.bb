@@ -4,14 +4,22 @@
 
 #import "ios/chrome/browser/ui/history/history_panel_view_controller.h"
 
+#include <memory>
+
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/browser_sync/profile_sync_service.h"
+#include "components/history/core/browser/browsing_history_service.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
 #import "ios/chrome/browser/ui/history/history_search_view_controller.h"
+#include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/history/legacy_history_collection_view_controller.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
@@ -57,6 +65,10 @@ CGFloat kShadowOpacity = 0.2f;
   UIBarButtonItem* _rightBarButtonItem;
   // YES if NSLayoutConstraits were added.
   BOOL _addedConstraints;
+  // Provides dependencies and funnels callbacks from BrowsingHistoryService.
+  std::unique_ptr<IOSBrowsingHistoryDriver> _browsingHistoryDriver;
+  // Abstraction to communicate with HistoryService and WebHistoryService.
+  std::unique_ptr<history::BrowsingHistoryService> _browsingHistoryService;
 }
 // Closes history.
 - (void)closeHistory;
@@ -99,6 +111,18 @@ CGFloat kShadowOpacity = 0.2f;
             initWithLoader:loader
               browserState:browserState
                   delegate:self];
+
+    _browsingHistoryDriver = std::make_unique<IOSBrowsingHistoryDriver>(
+        browserState, _historyCollectionController);
+
+    _browsingHistoryService = std::make_unique<history::BrowsingHistoryService>(
+        _browsingHistoryDriver.get(),
+        ios::HistoryServiceFactory::GetForBrowserState(
+            browserState, ServiceAccessType::EXPLICIT_ACCESS),
+        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState));
+
+    _historyCollectionController.historyService = _browsingHistoryService.get();
+
     _dispatcher = dispatcher;
 
     // Configure modal presentation.

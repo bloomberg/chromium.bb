@@ -10,8 +10,11 @@
 #include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
@@ -20,6 +23,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
+#include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/web/public/test/test_web_thread.h"
@@ -65,8 +69,7 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
 
 }  // namespace
 
-@interface LegacyHistoryCollectionViewController (
-    Testing)<BrowsingHistoryDriverDelegate>
+@interface LegacyHistoryCollectionViewController (Testing)<HistoryConsumer>
 - (void)didPressClearBrowsingBar;
 @end
 
@@ -96,6 +99,19 @@ class LegacyHistoryCollectionViewControllerTest : public BlockCleanupTest {
             initWithLoader:mock_url_loader_
               browserState:mock_browser_state_.get()
                   delegate:mock_delegate_];
+
+    _browsingHistoryDriver = std::make_unique<IOSBrowsingHistoryDriver>(
+        mock_browser_state_.get(), history_collection_view_controller_);
+
+    _browsingHistoryService = std::make_unique<history::BrowsingHistoryService>(
+        _browsingHistoryDriver.get(),
+        ios::HistoryServiceFactory::GetForBrowserState(
+            mock_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS),
+        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+            mock_browser_state_.get()));
+
+    history_collection_view_controller_.historyService =
+        _browsingHistoryService.get();
   }
 
   void TearDown() override {
@@ -109,9 +125,9 @@ class LegacyHistoryCollectionViewControllerTest : public BlockCleanupTest {
     BrowsingHistoryService::QueryResultsInfo query_results_info;
     query_results_info.reached_beginning = true;
     [history_collection_view_controller_
-        onQueryCompleteWithResults:results
-                  queryResultsInfo:query_results_info
-               continuationClosure:base::OnceClosure()];
+        historyQueryWasCompletedWithResults:results
+                           queryResultsInfo:query_results_info
+                        continuationClosure:base::OnceClosure()];
   }
 
  protected:
@@ -123,6 +139,8 @@ class LegacyHistoryCollectionViewControllerTest : public BlockCleanupTest {
   bool privacy_settings_opened_;
   SyncSetupServiceMock* sync_setup_service_mock_;
   DISALLOW_COPY_AND_ASSIGN(LegacyHistoryCollectionViewControllerTest);
+  std::unique_ptr<IOSBrowsingHistoryDriver> _browsingHistoryDriver;
+  std::unique_ptr<history::BrowsingHistoryService> _browsingHistoryService;
 };
 
 // Tests that isEmpty property returns NO after entries have been received.

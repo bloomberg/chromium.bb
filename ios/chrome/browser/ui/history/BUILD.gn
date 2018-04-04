@@ -91,6 +91,7 @@ source_set("history") {
 source_set("history_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "history_consumer.h",
     "history_entries_status_item.h",
     "history_entries_status_item.mm",
     "history_entries_status_item_delegate.h",
@@ -140,6 +141,7 @@ source_set("unit_tests") {
     ":resources_unit_tests",
     "//base",
     "//base/test:test_support",
+    "//components/browser_sync",
     "//components/favicon/core",
     "//components/favicon/core/test:test_support",
     "//components/favicon_base",

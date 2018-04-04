@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
 #include "base/ios/block_types.h"
+#include "ios/chrome/browser/ui/history/history_consumer.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -35,7 +36,8 @@ class ChromeBrowserState;
 @end
 
 // View controller for displaying a collection of history entries.
-@interface LegacyHistoryCollectionViewController : CollectionViewController
+@interface LegacyHistoryCollectionViewController
+    : CollectionViewController<HistoryConsumer>
 // YES if the collection view is in editing mode. Setting |editing| turns
 // editing mode on or off accordingly.
 @property(nonatomic, assign, getter=isEditing) BOOL editing;
@@ -45,6 +47,9 @@ class ChromeBrowserState;
 @property(nonatomic, assign, readonly, getter=isEmpty) BOOL empty;
 // YES if the collection view has selected entries while in editing mode.
 @property(nonatomic, assign, readonly) BOOL hasSelectedEntries;
+// Abstraction to communicate with HistoryService and WebHistoryService.
+// Not owned by LegacyHistoryCollectionViewController.
+@property(nonatomic, assign) history::BrowsingHistoryService* historyService;
 
 - (instancetype)
 initWithLoader:(id<UrlLoader>)loader

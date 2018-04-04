@@ -21,35 +21,14 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Defines methods to manage history query results and deletion actions.
-@protocol BrowsingHistoryDriverDelegate<NSObject>
-
-// Notifies the delegate that the result of a history query has been retrieved.
-// Entries in |result| are already sorted.
-- (void)onQueryCompleteWithResults:
-            (const std::vector<history::BrowsingHistoryService::HistoryEntry>&)
-                results
-                  queryResultsInfo:
-                      (const history::BrowsingHistoryService::QueryResultsInfo&)
-                          queryResultsInfo
-               continuationClosure:(base::OnceClosure)continuationClosure;
-
-// Notifies the delegate that history entries have been deleted by a different
-// client and that the UI should be updated.
-- (void)didObserverHistoryDeletion;
-
-// Indicates to the delegate whether to show notice about other forms of
-// browsing history.
-- (void)shouldShowNoticeAboutOtherFormsOfBrowsingHistory:(BOOL)shouldShowNotice;
-
-@end
+@protocol HistoryConsumer;
 
 // A simple implementation of BrowsingHistoryServiceHandler that delegates to
-// objective-c object BrowsingHistoryDriverDelegate for most actions.
+// objective-c object HistoryConsumer for most actions.
 class IOSBrowsingHistoryDriver : public history::BrowsingHistoryDriver {
  public:
   IOSBrowsingHistoryDriver(ios::ChromeBrowserState* browser_state,
-                           id<BrowsingHistoryDriverDelegate> delegate);
+                           id<HistoryConsumer> consumer);
   ~IOSBrowsingHistoryDriver() override;
 
  private:
@@ -77,8 +56,8 @@ class IOSBrowsingHistoryDriver : public history::BrowsingHistoryDriver {
   // The current browser state.
   ios::ChromeBrowserState* browser_state_;  // weak
 
-  // Delegate for IOSBrowsingHistoryDriver. Serves as client for HistoryService.
-  __weak id<BrowsingHistoryDriverDelegate> delegate_;
+  // Consumer for IOSBrowsingHistoryDriver. Serves as client for HistoryService.
+  __weak id<HistoryConsumer> consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSBrowsingHistoryDriver);
 };
