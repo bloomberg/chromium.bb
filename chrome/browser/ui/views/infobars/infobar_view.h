@@ -13,7 +13,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/external_focus_tracker.h"
-#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 class ImageButton;
@@ -27,12 +26,9 @@ class MenuRunner;
 class InfoBarView : public infobars::InfoBar,
                     public views::View,
                     public views::ButtonListener,
-                    public views::ExternalFocusTracker,
-                    public views::ViewTargeterDelegate {
+                    public views::ExternalFocusTracker {
  public:
   explicit InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate);
-
-  const infobars::InfoBarContainer::Delegate* container_delegate() const;
 
  protected:
   using Labels = std::vector<views::Label*>;
@@ -88,7 +84,7 @@ class InfoBarView : public infobars::InfoBar,
   // InfoBar:
   void PlatformSpecificShow(bool animate) override;
   void PlatformSpecificHide(bool animate) override;
-  void PlatformSpecificOnHeightsRecalculated() override;
+  void PlatformSpecificOnHeightRecalculated() override;
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -97,9 +93,6 @@ class InfoBarView : public infobars::InfoBar,
   // views::ExternalFocusTracker:
   void OnWillChangeFocus(View* focused_before, View* focused_now) override;
 
-  // views::ViewTargeterDelegate:
-  bool DoesIntersectRect(const View* target,
-                         const gfx::Rect& rect) const override;
 
   // Returns the current color for the theme property |id|.  Will return the
   // wrong value if no theme provider is available.

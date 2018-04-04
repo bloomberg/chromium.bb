@@ -850,25 +850,6 @@ willPositionSheet:(NSWindow*)sheet
   return [bookmarkBarController_ toolbarDividerOpacity];
 }
 
-- (void)updateInfoBarTipVisibility {
-  // If there's no toolbar then hide the infobar tip.
-  [infoBarContainerController_
-      setShouldSuppressTopInfoBarTip:![self hasToolbar]];
-}
-
-- (NSInteger)infoBarAnchorPointY {
-  LocationBarViewMac* locationBarView = [self locationBarBridge];
-
-  // The point, in window coordinates.
-  NSPoint iconBottom = locationBarView->GetInfoBarAnchorPoint();
-
-  // The toolbar, in window coordinates.
-  NSView* toolbar = [toolbarController_ view];
-  CGFloat toolbarY = NSMinY([toolbar convertRect:[toolbar bounds] toView:nil]);
-
-  return iconBottom.y - toolbarY;
-}
-
 - (void)enterAppKitFullscreen {
   [[self window] toggleFullScreen:nil];
 }
@@ -950,7 +931,6 @@ willPositionSheet:(NSWindow*)sheet
       NSHeight([[bookmarkBarController_ view] bounds])];
 
   [layout setInfoBarHeight:[infoBarContainerController_ heightOfInfoBars]];
-  [layout setInfoBarAnchorPointY:[self infoBarAnchorPointY]];
 
   [layout setHasDownloadShelf:(downloadShelfController_.get() != nil)];
   [layout setDownloadShelfHeight:
@@ -971,10 +951,6 @@ willPositionSheet:(NSWindow*)sheet
 
   // The info bar is never hidden. Sometimes it has zero effective height.
   [[infoBarContainerController_ view] setFrame:output.infoBarFrame];
-  [infoBarContainerController_
-      setMaxTopArrowHeight:output.infoBarMaxTopArrowHeight];
-  [infoBarContainerController_
-      setInfobarArrowX:[self locationBarBridge]->GetInfoBarAnchorPoint().x];
 
   [[downloadShelfController_ view] setFrame:output.downloadShelfFrame];
 

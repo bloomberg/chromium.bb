@@ -27,6 +27,9 @@ class OmniboxEditController {
   // status of any keyword- or hint-related state.
   virtual void OnChanged();
 
+  // Called when the omnibox popup is shown or hidden.
+  virtual void OnPopupVisibilityChanged();
+
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;
 

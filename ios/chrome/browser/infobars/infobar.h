@@ -38,7 +38,7 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarViewDelegate {
 
  private:
   // InfoBar overrides:
-  void PlatformSpecificOnHeightsRecalculated() override;
+  void PlatformSpecificOnHeightRecalculated() override;
 
   // InfoBarViewDelegate:
   void SetInfoBarTargetHeight(int height) override;

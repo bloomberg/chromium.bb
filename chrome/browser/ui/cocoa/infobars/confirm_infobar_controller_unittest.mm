@@ -11,7 +11,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
@@ -38,37 +37,6 @@ using content::WebContents;
 }
 @end
 
-
-@interface InfoBarContainerTest : NSObject<InfoBarContainerControllerBase> {
-  InfoBarController* controller_;
-}
-
-- (id)initWithController:(InfoBarController*)controller;
-
-@end
-
-@implementation InfoBarContainerTest
-
-- (id)initWithController:(InfoBarController*)controller {
-  if ((self = [super init])) {
-    controller_ = controller;
-  }
-  return self;
-}
-
-- (BrowserWindowController*)browserWindowController {
-  return nil;
-}
-
-- (BOOL)shouldSuppressTopInfoBarTip {
-  return NO;
-}
-
-- (CGFloat)infobarArrowX {
-  return 0;
-}
-
-@end
 
 @interface TestConfirmInfoBarController : ConfirmInfoBarController
 - (void)removeSelf;
@@ -102,9 +70,6 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
         initWithInfoBar:infobar_]);
     infobar_->set_controller(controller_);
 
-    container_.reset(
-        [[InfoBarContainerTest alloc] initWithController:controller_]);
-    [controller_ setContainerController:container_];
     [[test_window() contentView] addSubview:[controller_ view]];
     closed_delegate_ok_clicked_ = false;
     closed_delegate_cancel_clicked_ = false;
@@ -125,7 +90,6 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
     return static_cast<MockConfirmInfoBarDelegate*>(infobar_->delegate());
   }
 
-  base::scoped_nsobject<id> container_;
   base::scoped_nsobject<ConfirmInfoBarController> controller_;
   bool closed_delegate_ok_clicked_;
   bool closed_delegate_cancel_clicked_;

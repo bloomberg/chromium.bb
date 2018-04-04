@@ -122,10 +122,6 @@ class LocationBarViewMac : public LocationBar,
   // Get the point in window coordinates for the page info bubble anchor.
   NSPoint GetPageInfoBubblePoint() const;
 
-  // Get the point in window coordinates in the page info icon at which infobar
-  // arrows should point.
-  NSPoint GetInfoBarAnchorPoint() const;
-
   // When any image decorations change, call this to ensure everything is
   // redrawn and laid out if necessary.
   void OnDecorationsChanged();

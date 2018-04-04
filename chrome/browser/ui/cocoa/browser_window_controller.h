@@ -67,10 +67,6 @@ namespace extensions {
 class Command;
 }
 
-namespace {
-class OmniboxPopupModelObserverBridge;
-}
-
 constexpr const gfx::Size kMinCocoaTabbedWindowSize(400, 272);
 constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
@@ -201,10 +197,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   // handle.
   std::unique_ptr<ExtensionKeybindingRegistryCocoa>
       extensionKeybindingRegistry_;
-
-  // Observes whether the omnibox popup is shown or hidden.
-  std::unique_ptr<OmniboxPopupModelObserverBridge>
-      omniboxPopupModelObserverBridge_;
 }
 
 // A convenience class method which returns the |BrowserWindowController| for

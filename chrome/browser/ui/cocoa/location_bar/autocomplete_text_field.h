@@ -169,10 +169,6 @@ class AutocompleteTextFieldObserver {
 // Obtain the bubble anchor point for |decoration| in window coordinates.
 - (NSPoint)bubblePointForDecoration:(LocationBarDecoration*)decoration;
 
-// Returns the anchor point for arrows pointing to |decoration| in window
-// coordinates.
-- (NSPoint)arrowAnchorPointForDecoration:(LocationBarDecoration*)decoration;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_LOCATION_BAR_AUTOCOMPLETE_TEXT_FIELD_H_

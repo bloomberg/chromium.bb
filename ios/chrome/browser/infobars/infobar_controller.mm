@@ -51,7 +51,7 @@
   return _infoBarView;
 }
 
-- (void)onHeightsRecalculated:(int)newHeight {
+- (void)onHeightRecalculated:(int)newHeight {
   [_infoBarView setVisibleHeight:newHeight];
 }
 
