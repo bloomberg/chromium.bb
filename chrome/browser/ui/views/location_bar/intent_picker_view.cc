@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/intent_helper/intent_picker_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -39,7 +40,7 @@ void IntentPickerView::OnExecuting(
     const GURL url = chrome::GetURLToBookmark(
         browser_->tab_strip_model()->GetActiveWebContents());
 
-    arc::ArcNavigationThrottle::AsyncShowIntentPickerBubble(browser_, url);
+    chromeos::AppsNavigationThrottle::ShowIntentPickerBubble(browser_, url);
   } else {
     SetVisible(false);
   }

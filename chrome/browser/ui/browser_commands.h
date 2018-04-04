@@ -17,7 +17,7 @@
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #endif
 
@@ -154,7 +154,7 @@ void OpenInChrome(Browser* browser);
 #if defined(OS_CHROMEOS)
 void QueryAndDisplayArcApps(
     const Browser* browser,
-    const std::vector<arc::ArcNavigationThrottle::AppInfo>& app_info,
+    const std::vector<chromeos::IntentPickerAppInfo>& app_info,
     IntentPickerResponse callback);
 void SetIntentPickerViewVisibility(Browser* browser, bool visible);
 #endif  // defined(OS_CHROMEOS)

@@ -304,6 +304,7 @@ source_set("chromeos") {
     "app_mode/startup_app_launcher_update_checker.h",
     "apps/intent_helper/apps_navigation_throttle.cc",
     "apps/intent_helper/apps_navigation_throttle.h",
+    "apps/intent_helper/apps_navigation_types.cc",
     "apps/intent_helper/apps_navigation_types.h",
     "arc/accessibility/arc_accessibility_helper_bridge.cc",
     "arc/accessibility/arc_accessibility_helper_bridge.h",

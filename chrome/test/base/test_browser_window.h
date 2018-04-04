@@ -16,7 +16,7 @@
 #include "chrome/common/buildflags.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #endif  // defined(OS_CHROMEOS)
 
 class LocationBarTesting;
@@ -99,7 +99,7 @@ class TestBrowserWindow : public BrowserWindow {
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
 #if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
-      std::vector<arc::ArcNavigationThrottle::AppInfo> app_info,
+      const std::vector<chromeos::IntentPickerAppInfo>& app_info,
       IntentPickerResponse callback) override {}
   void SetIntentPickerViewVisibility(bool visible) override {}
 #endif  // defined(OS_CHROMEOS)

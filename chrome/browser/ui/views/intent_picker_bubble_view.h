@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -59,7 +59,7 @@ class IntentPickerLabelButton;
 class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
                                public views::ButtonListener {
  public:
-  using AppInfo = arc::ArcNavigationThrottle::AppInfo;
+  using AppInfo = chromeos::IntentPickerAppInfo;
 
   ~IntentPickerBubbleView() override;
   static views::Widget* ShowBubble(
@@ -124,7 +124,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // Retrieves the IntentPickerLabelButton* contained at position |index| from
   // the internal ScrollView.
   IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
-  void RunCallback(std::string package,
+  void RunCallback(const std::string& launch_name,
                    arc::ArcNavigationThrottle::CloseReason close_reason);
 
   // Accessory for |scroll_view_|'s contents size.

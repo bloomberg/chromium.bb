@@ -47,7 +47,7 @@ bool ShouldOverrideUrlLoading(const GURL& previous_url,
     return false;
   }
 
-  // TODO(dominickn): this was added as a special case for ARC++. Reconsider if
+  // TODO(dominickn): this was added as a special case for ARC. Reconsider if
   // it's necessary for all app platforms.
   if (net::registry_controlled_domains::SameDomainOrHost(
           current_url, previous_url,
@@ -106,6 +106,17 @@ AppsNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
 }
 
 // static
+void AppsNavigationThrottle::ShowIntentPickerBubble(const Browser* browser,
+                                                    const GURL& url) {
+  // TODO(crbug.com/824598): ensure that |browser| is still alive when the
+  // callback is run.
+  arc::ArcNavigationThrottle::QueryArcApps(
+      browser, url,
+      base::BindOnce(&AppsNavigationThrottle::ShowIntentPickerBubbleForApps,
+                     browser, url));
+}
+
+// static
 bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
     const GURL& previous_url,
     const GURL& current_url) {
@@ -150,17 +161,19 @@ AppsNavigationThrottle::WillRedirectRequest() {
   return HandleRequest();
 }
 
-void AppsNavigationThrottle::OnDeferredRequestProcessed(
-    AppsNavigationAction action) {
-  switch (action) {
-    case AppsNavigationAction::CANCEL:
-      CancelNavigation();
-      break;
-    case AppsNavigationAction::RESUME:
-      ui_displayed_ = false;
-      Resume();
-      break;
-  }
+// static
+void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
+    const Browser* browser,
+    const GURL& url,
+    const std::vector<IntentPickerAppInfo>& apps) {
+  if (apps.empty())
+    return;
+
+  // TODO(crbug.com/824598): move the IntentPickerResponse callback and
+  // CloseReason enum/UMA to be in this class.
+  chrome::QueryAndDisplayArcApps(
+      browser, apps,
+      base::Bind(&arc::ArcNavigationThrottle::OnIntentPickerClosed, url));
 }
 
 void AppsNavigationThrottle::CancelNavigation() {
@@ -169,6 +182,26 @@ void AppsNavigationThrottle::CancelNavigation() {
     tab->Close();
   else
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
+}
+
+void AppsNavigationThrottle::OnDeferredRequestProcessed(
+    AppsNavigationAction action,
+    const std::vector<IntentPickerAppInfo>& apps) {
+  if (action == AppsNavigationAction::CANCEL) {
+    // We found a preferred ARC app to open; cancel the navigation and don't do
+    // anything else.
+    CancelNavigation();
+    return;
+  }
+
+  content::NavigationHandle* handle = navigation_handle();
+  ShowIntentPickerBubbleForApps(
+      chrome::FindBrowserWithWebContents(handle->GetWebContents()),
+      handle->GetURL(), apps);
+
+  // We are about to resume the navigation, which will destroy this object.
+  ui_displayed_ = false;
+  Resume();
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -203,10 +236,10 @@ AppsNavigationThrottle::HandleRequest() {
           base::BindOnce(&AppsNavigationThrottle::OnDeferredRequestProcessed,
                          weak_factory_.GetWeakPtr()))) {
     // Handling is now deferred to |arc_throttle_|, which asynchronously queries
-    // ARC++ for apps, and runs OnDeferredRequestProcessed() with an action
-    // based on whether an acceptable app was found and user consent to open
-    // received. We assume the UI is shown or a preferred app was found; reset
-    // to false if we resume the navigation.
+    // ARC for apps, and runs OnDeferredRequestProcessed() with an action based
+    // on whether an acceptable app was found and user consent to open received.
+    // We assume the UI is shown or a preferred app was found; reset to false if
+    // we resume the navigation.
     ui_displayed_ = true;
     return content::NavigationThrottle::DEFER;
   }
