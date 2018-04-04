@@ -34,7 +34,7 @@ Refer to README.md for content description and update process.
  <item id="cast_keep_alive_delegate" hash_code="134755844" type="0" content_hash_code="66118796" os_list="linux,windows" file_path="components/cast_channel/keep_alive_delegate.cc"/>
  <item id="cast_message_handler" hash_code="87558948" type="0" content_hash_code="49684899" os_list="linux,windows" file_path="components/cast_channel/cast_message_handler.cc"/>
  <item id="cast_socket" hash_code="115192205" type="0" content_hash_code="63056899" os_list="linux,windows" file_path="components/cast_channel/cast_socket.cc"/>
- <item id="cast_udp_socket" hash_code="22573197" type="0" content_hash_code="75328301" os_list="linux,windows" file_path="media/cast/net/udp_socket_client.cc"/>
+ <item id="cast_udp_socket" hash_code="22573197" type="0" content_hash_code="75328301" os_list="linux,windows" file_path="components/mirroring/service/udp_socket_client.cc"/>
  <item id="cast_udp_transport" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport_impl.cc"/>
  <item id="certificate_reporting_service_test" hash_code="98123372" type="0" content_hash_code="136253658" os_list="linux,windows" file_path="chrome/browser/safe_browsing/certificate_reporting_service.cc"/>
  <item id="certificate_verifier" hash_code="113553577" type="0" content_hash_code="62346354" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_impl.cc"/>
@@ -57,12 +57,12 @@ Refer to README.md for content description and update process.
  <item id="credenential_avatar" hash_code="53695122" type="0" content_hash_code="113035371" os_list="linux,windows" file_path="chrome/browser/ui/passwords/account_avatar_fetcher.cc"/>
  <item id="cros_recovery_image_download" hash_code="101725581" type="0" content_hash_code="23088027" os_list="linux,windows" file_path="chrome/browser/extensions/api/image_writer_private/write_from_url_operation.cc"/>
  <item id="cryptauth_device_sync_tickle" hash_code="96565489" type="1" second_id="29188932" deprecated="2018-03-15" content_hash_code="115714668" file_path=""/>
- <item id="cryptauth_enrollment_flow_finish" hash_code="54836939" type="1" second_id="29188932" content_hash_code="17060642" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="components/cryptauth/cryptauth_client_impl.cc"/>
- <item id="cryptauth_enrollment_flow_setup" hash_code="84889397" type="1" second_id="29188932" content_hash_code="128348931" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="components/cryptauth/cryptauth_client_impl.cc"/>
- <item id="cryptauth_find_eligible_for_promotion" hash_code="20053290" type="1" second_id="29188932" content_hash_code="93687383" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="components/cryptauth/cryptauth_client_impl.cc"/>
- <item id="cryptauth_find_eligible_unlock_devices" hash_code="120000562" type="1" second_id="29188932" content_hash_code="46773475" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="components/cryptauth/cryptauth_client_impl.cc"/>
- <item id="cryptauth_get_my_devices" hash_code="136498680" type="1" second_id="29188932" content_hash_code="73842435" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="components/cryptauth/cryptauth_device_manager_impl.cc"/>
- <item id="cryptauth_toggle_easyunlock" hash_code="25204343" type="1" second_id="29188932" content_hash_code="13570943" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="components/cryptauth/cryptauth_client_impl.cc"/>
+ <item id="cryptauth_enrollment_flow_finish" hash_code="54836939" type="1" second_id="29188932" deprecated="2018-04-04" content_hash_code="17060642" file_path=""/>
+ <item id="cryptauth_enrollment_flow_setup" hash_code="84889397" type="1" second_id="29188932" deprecated="2018-04-04" content_hash_code="128348931" file_path=""/>
+ <item id="cryptauth_find_eligible_for_promotion" hash_code="20053290" type="1" second_id="29188932" deprecated="2018-04-04" content_hash_code="93687383" file_path=""/>
+ <item id="cryptauth_find_eligible_unlock_devices" hash_code="120000562" type="1" second_id="29188932" deprecated="2018-04-04" content_hash_code="46773475" file_path=""/>
+ <item id="cryptauth_get_my_devices" hash_code="136498680" type="1" second_id="29188932" deprecated="2018-04-04" content_hash_code="73842435" file_path=""/>
+ <item id="cryptauth_toggle_easyunlock" hash_code="25204343" type="1" second_id="29188932" deprecated="2018-04-04" content_hash_code="13570943" file_path=""/>
  <item id="data_reduction_proxy_config" hash_code="485305" type="0" content_hash_code="134075813" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.cc"/>
  <item id="data_reduction_proxy_pingback" hash_code="68561428" type="0" content_hash_code="78407792" os_list="linux,windows" file_path="components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.cc"/>
  <item id="data_reduction_proxy_secure_proxy_check" hash_code="131236802" type="0" content_hash_code="122297136" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/secure_proxy_checker.cc"/>
@@ -87,7 +87,7 @@ Refer to README.md for content description and update process.
  <item id="doodle_fetcher" hash_code="97199008" type="0" deprecated="2017-08-28" content_hash_code="87981692" file_path=""/>
  <item id="doodle_service" hash_code="41154842" type="0" deprecated="2017-08-28" content_hash_code="28273962" file_path=""/>
  <item id="download_internals_webui_source" hash_code="38670228" type="0" content_hash_code="129391056" os_list="linux,windows" file_path="chrome/browser/ui/webui/download_internals/download_internals_ui_message_handler.cc"/>
- <item id="download_manager_resume" hash_code="35380758" type="0" content_hash_code="41227674" os_list="linux,windows" file_path="content/browser/download/download_item_impl.cc"/>
+ <item id="download_manager_resume" hash_code="35380758" type="0" content_hash_code="41227674" os_list="linux,windows" file_path="components/download/internal/common/download_item_impl.cc"/>
  <item id="download_web_contents_frame" hash_code="56351037" type="0" content_hash_code="3657889" os_list="linux,windows" file_path="content/browser/web_contents/web_contents_impl.cc"/>
  <item id="downloads_api_run_async" hash_code="121068967" type="0" content_hash_code="87443585" os_list="linux,windows" file_path="chrome/browser/extensions/api/downloads/downloads_api.cc"/>
  <item id="drag_download_file" hash_code="95910019" type="0" content_hash_code="126492858" os_list="linux,windows" file_path="content/browser/download/drag_download_file.cc"/>
@@ -160,7 +160,7 @@ Refer to README.md for content description and update process.
  <item id="one_google_bar_service" hash_code="78917933" type="0" content_hash_code="46527252" os_list="linux,windows" file_path="chrome/browser/search/one_google_bar/one_google_bar_fetcher_impl.cc"/>
  <item id="open_search" hash_code="107267424" type="0" content_hash_code="25715812" os_list="linux,windows" file_path="components/search_engines/template_url_fetcher.cc"/>
  <item id="p2p_invalidator" hash_code="84201371" type="0" content_hash_code="117416248" os_list="linux,windows" file_path="components/invalidation/impl/p2p_invalidator.cc"/>
- <item id="parallel_download_job" hash_code="135118587" type="0" content_hash_code="105330419" os_list="linux,windows" file_path="content/browser/download/parallel_download_job.cc"/>
+ <item id="parallel_download_job" hash_code="135118587" type="0" content_hash_code="105330419" os_list="linux,windows" file_path="components/download/internal/common/parallel_download_job.cc"/>
  <item id="password_protection_request" hash_code="66322287" type="0" content_hash_code="21270837" os_list="linux,windows" file_path="components/safe_browsing/password_protection/password_protection_request.cc"/>
  <item id="payment_instrument_icon_fetcher" hash_code="73309970" type="0" deprecated="2017-09-16" content_hash_code="84709873" file_path=""/>
  <item id="payment_manifest_downloader" hash_code="84045030" type="0" content_hash_code="19293316" os_list="linux,windows" file_path="components/payments/core/payment_manifest_downloader.cc"/>
@@ -199,7 +199,7 @@ Refer to README.md for content description and update process.
  <item id="rlz_ping" hash_code="99279418" type="0" content_hash_code="102108802" os_list="windows" file_path="rlz/lib/financial_ping.cc"/>
  <item id="safe_browsing_backup_request" hash_code="106980485" type="0" content_hash_code="101760679" os_list="linux,windows" file_path="chrome/browser/safe_browsing/protocol_manager.cc"/>
  <item id="safe_browsing_cache_collector" hash_code="115907811" type="0" content_hash_code="36392362" os_list="linux,windows" file_path="components/safe_browsing/browser/threat_details_cache.cc"/>
- <item id="safe_browsing_certificate_error_reporting" hash_code="66590631" type="0" content_hash_code="50197576" os_list="linux,windows" file_path="components/certificate_reporting/error_reporter.cc"/>
+ <item id="safe_browsing_certificate_error_reporting" hash_code="66590631" type="0" content_hash_code="50197576" os_list="linux,windows" file_path="chrome/browser/ssl/certificate_error_reporter.cc"/>
  <item id="safe_browsing_chunk_backup_request" hash_code="79957943" type="0" content_hash_code="133850277" os_list="linux,windows" file_path="chrome/browser/safe_browsing/protocol_manager.cc"/>
  <item id="safe_browsing_client_side_malware_detector" hash_code="102935425" type="0" content_hash_code="79591279" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
  <item id="safe_browsing_client_side_phishing_detector" hash_code="1313982" type="0" content_hash_code="50199143" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
