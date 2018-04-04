@@ -29,6 +29,10 @@ interface MediaParser {
   CheckMediaFile(mojo_base.mojom.TimeDelta decode_time,
                  mojo_base.mojom.File file)
       => (bool success);
+
+  // Used by tests to validate the right CPU information is set on third-party
+  // libraries.
+  GetCpuInfo() => (int64 libyuv_cpu_flags, int64 ffmpeg_cpu_flags);
 };
 
 interface MediaDataSource {

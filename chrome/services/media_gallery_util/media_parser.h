@@ -29,6 +29,7 @@ class MediaParser : public chrome::mojom::MediaParser {
   void CheckMediaFile(base::TimeDelta decode_time,
                       base::File file,
                       CheckMediaFileCallback callback) override;
+  void GetCpuInfo(GetCpuInfoCallback callback) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 

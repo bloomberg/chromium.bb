@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -27,6 +28,13 @@ source_set("lib") {
     "//chrome/services/media_gallery_util/public/mojom",
     "//services/service_manager/public/cpp",
   ]
+
+  if (media_use_ffmpeg) {
+    deps += [
+      "//third_party/ffmpeg",
+      "//third_party/ffmpeg:ffmpeg_features",
+    ]
+  }
 }
 
 service_manifest("manifest") {
