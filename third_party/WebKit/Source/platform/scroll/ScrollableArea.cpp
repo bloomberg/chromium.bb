@@ -592,6 +592,11 @@ bool ScrollableArea::ScrollbarsHiddenIfOverlay() const {
 }
 
 void ScrollableArea::SetScrollbarsHiddenIfOverlay(bool hidden) {
+  // If scrollable area has been disposed, we can not get the page scrollbar
+  // theme setting. Should early return here.
+  if (HasBeenDisposed())
+    return;
+
   if (!GetPageScrollbarTheme().UsesOverlayScrollbars())
     return;
 

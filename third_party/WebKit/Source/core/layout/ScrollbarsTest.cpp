@@ -1826,6 +1826,48 @@ TEST_P(ScrollbarsTest, AutosizeTest) {
   }
 }
 
+TEST_P(ScrollbarsTest,
+       HideTheOverlayScrollbarNotCrashAfterPLSADisposedPaintLayer) {
+  WebView().Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #div{ height: 100px; overflow-y:scroll; }
+    .big{ height: 2000px; }
+    .hide { display: none; }
+    </style>
+    <div id='div'>
+      <div class='big'>
+      </div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+  Element* div = document.getElementById("div");
+  PaintLayerScrollableArea* scrollable_div =
+      ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+  scrollable_div->SetScrollbarsHiddenIfOverlay(false);
+  ASSERT_TRUE(scrollable_div);
+  ASSERT_TRUE(scrollable_div->GetPageScrollbarTheme().UsesOverlayScrollbars());
+  ASSERT_TRUE(scrollable_div->VerticalScrollbar());
+
+  EXPECT_FALSE(scrollable_div->ScrollbarsHiddenIfOverlay());
+
+  // Set display:none calls Dispose().
+  div->setAttribute(HTMLNames::classAttr, "hide");
+  Compositor().BeginFrame();
+
+  // After paint layer in scrollable dispose, we can still call scrollbar hidden
+  // just not change scrollbar.
+  scrollable_div->SetScrollbarsHiddenIfOverlay(true);
+
+  EXPECT_FALSE(scrollable_div->ScrollbarsHiddenIfOverlay());
+}
+
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {
  public:
   void PrepareTest(const String& track_style) {
