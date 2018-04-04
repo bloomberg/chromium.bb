@@ -56,6 +56,12 @@
 #include "av1/encoder/tokenize.h"
 #include "av1/encoder/tx_prune_model_weights.h"
 
+// Set this macro as 1 to collect data about tx size selection.
+#define COLLECT_TX_SIZE_DATA 0
+#if COLLECT_TX_SIZE_DATA
+static const char av1_tx_size_data_output_file[] = "tx_size_data.txt";
+#endif
+
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
   { 0, 0 }, { 0, 1 }, { 0, 2 }, { 1, 0 }, { 1, 1 },
@@ -3717,6 +3723,11 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   if (cpi->sf.txb_split_cap)
     if (p->eobs[block] == 0) tx_split_prune_flag = 1;
 
+#if COLLECT_TX_SIZE_DATA
+  // Do not skip tx_split when collecting tx size data.
+  tx_split_prune_flag = 0;
+#endif
+
   // TX split
   if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && tx_split_prune_flag == 0) {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
@@ -3863,6 +3874,54 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #endif  // CONFIG_DIST_8X8
     if (this_cost_valid) sum_rd = tmp_rd;
   }
+
+#if COLLECT_TX_SIZE_DATA
+  do {
+    if (tx_size <= TX_4X4 || depth >= MAX_VARTX_DEPTH) break;
+
+#if 0
+    // Randomly select blocks to collect data to reduce output file size.
+    const int rnd_val = rand() % 2;
+    if (rnd_val) break;
+#endif
+
+    const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
+    const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
+    const int within_border =
+        mi_row >= xd->tile.mi_row_start &&
+        (mi_row + mi_size_high[plane_bsize] < xd->tile.mi_row_end) &&
+        mi_col >= xd->tile.mi_col_start &&
+        (mi_col + mi_size_wide[plane_bsize] < xd->tile.mi_col_end);
+    if (!within_border) break;
+
+    FILE *fp = fopen(av1_tx_size_data_output_file, "a");
+    if (!fp) break;
+
+    // Split decision, RD cost, block type(inter/intra), q-index, rdmult,
+    // and block size.
+    const int split_selected = sum_rd < this_rd;
+    const int is_inter = 1;
+    const int txb_w = tx_size_wide[tx_size];
+    const int txb_h = tx_size_high[tx_size];
+    fprintf(fp, "%d,%lld,%lld,%d,%d,%d,%d,%d,", split_selected,
+            (long long)this_rd, (long long)sum_rd, cpi->common.base_qindex,
+            x->rdmult, is_inter, txb_w, txb_h);
+
+    // Residue signal.
+    const int diff_stride = block_size_wide[plane_bsize];
+    const int16_t *src_diff =
+        &p->src_diff[(blk_row * diff_stride + blk_col) * 4];
+    for (int r = 0; r < txb_h; ++r) {
+      for (int c = 0; c < txb_w; ++c) {
+        fprintf(fp, "%d,", src_diff[c]);
+      }
+      src_diff += diff_stride;
+    }
+    fprintf(fp, "\n");
+
+    fclose(fp);
+  } while (0);
+#endif  // COLLECT_TX_SIZE_DATA
 
   if (this_rd < sum_rd) {
     const TX_SIZE tx_size_selected = tx_size;
