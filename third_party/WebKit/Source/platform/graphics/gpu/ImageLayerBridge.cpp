@@ -36,6 +36,9 @@ ImageLayerBridge::~ImageLayerBridge() {
 }
 
 void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
+  if (disposed_)
+    return;
+
   image_ = std::move(image);
   if (image_) {
     if (opacity_mode_ == kNonOpaque) {
@@ -58,6 +61,9 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
 
 void ImageLayerBridge::SetUV(const FloatPoint left_top,
                              const FloatPoint right_bottom) {
+  if (disposed_)
+    return;
+
   layer_->SetUV(WebFloatPoint(left_top.X(), left_top.Y()),
                 WebFloatPoint(right_bottom.X(), right_bottom.Y()));
 }

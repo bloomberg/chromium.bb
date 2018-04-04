@@ -125,12 +125,16 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
   // If the contents need mirroring, indicate that to the drawing buffer.
   if (session->exclusive() && session->outputContext() &&
       session->device()->external()) {
+    mirroring_ = true;
     drawing_buffer_->SetMirrorClient(this);
   }
   UpdateViewports();
 }
 
-XRWebGLLayer::~XRWebGLLayer() {}
+XRWebGLLayer::~XRWebGLLayer() {
+  if (mirroring_)
+    drawing_buffer_->SetMirrorClient(nullptr);
+}
 
 void XRWebGLLayer::getXRWebGLRenderingContext(
     WebGLRenderingContextOrWebGL2RenderingContext& result) const {
