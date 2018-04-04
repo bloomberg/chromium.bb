@@ -554,6 +554,45 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
             user_action_tester.GetActionCount("PasswordManager_LoginPassed"));
 }
 
+// Tests that a UKM metric "Login Passed" is sent when the submitted credentials
+// are already in the store and OnPasswordFormsParsed is called multiple times.
+TEST_F(PasswordManagerTest,
+       SubmissionMetricsIsPassedWhenDontSaveAlreadySavedCredential) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(4);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // The user submits the form.
+  OnPasswordFormSubmitted(form);
+
+  // Another call of OnPasswordFormsParsed happens. In production it happens
+  // because of some DOM updates.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+
+  EXPECT_CALL(client_, HideManualFallbackForSaving());
+  // The call to manual fallback with |form| equal to already saved should close
+  // the fallback, but it should not prevent sending metrics.
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  EXPECT_CALL(*store_, UpdateLogin(_));
+
+  // Simulate successful login. Expect "Login Passed" metric.
+  base::UserActionTester user_action_tester;
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount("PasswordManager_LoginPassed"));
+}
+
 TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
