@@ -77,7 +77,7 @@
     </div>
 
     <!-- Confirm Allow shared proxies dialog -->
-    <cr-dialog id="confirmAllowSharedDialog"
+    <dialog is="cr-dialog" id="confirmAllowSharedDialog"
         close-text="$i18n{close}" on-cancel="onAllowSharedDialogCancel_"
         on-close="onAllowSharedDialogClose_">
       <div slot="title">
@@ -98,7 +98,7 @@
           $i18n{confirm}
         </paper-button>
       </div>
-    </cr-dialog>
+    </dialog>
   </template>
   <script src="network_proxy_section.js"></script>
 </dom-module>

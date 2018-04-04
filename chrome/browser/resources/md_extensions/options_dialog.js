@@ -41,7 +41,7 @@ cr.define('extensions', function() {
     boundResizeListener_: null,
 
     get open() {
-      return /** @type {!CrDialogElement} */ (this.$.dialog).open;
+      return this.$$('dialog').open;
     },
 
     /**
@@ -54,12 +54,8 @@ cr.define('extensions', function() {
     updateDialogSize_: function(width, height) {
       const effectiveHeight = Math.min(window.innerHeight, height);
       const effectiveWidth = Math.min(window.innerWidth, width);
-
-      // Get a reference to the inner native <dialog>.
-      const nativeDialog =
-          /** @type {!CrDialogElement} */ (this.$.dialog).getNative();
-      nativeDialog.style.height = effectiveHeight + 'px';
-      nativeDialog.style.width = effectiveWidth + 'px';
+      this.$.dialog.style.height = effectiveHeight + 'px';
+      this.$.dialog.style.width = effectiveWidth + 'px';
     },
 
     /** @param {chrome.developerPrivate.ExtensionInfo} data */
@@ -75,7 +71,7 @@ cr.define('extensions', function() {
         const onSizeChanged = e => {
           preferredSize = e;
           this.updateDialogSize_(preferredSize.width, preferredSize.height);
-          this.$.dialog.showModal();
+          this.$$('dialog').showModal();
           this.extensionOptions_.onpreferredsizechanged = null;
         };
 
@@ -95,7 +91,7 @@ cr.define('extensions', function() {
     },
 
     close: function() {
-      /** @type {!CrDialogElement} */ (this.$.dialog).close();
+      this.$$('dialog').close();
       this.extensionOptions_.onpreferredsizechanged = null;
     },
 

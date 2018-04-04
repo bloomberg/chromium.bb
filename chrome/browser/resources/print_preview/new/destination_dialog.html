@@ -20,11 +20,7 @@
   <template>
     <style include="print-preview-shared button action-link select cr-hidden-style search-dialog throbber">
       :host #dialog {
-        --cr-dialog-native: {
-          box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
-            0 2px 6px rgba(0, 0, 0, 0.15);
-          width: 640px;
-        }
+        width: 640px;
       }
 
       :host .user-info {
@@ -99,7 +95,7 @@
         -webkit-margin-start: 10px;
       }
     </style>
-    <cr-dialog id="dialog" on-close="onCloseOrCancel_">
+    <dialog is="cr-dialog" id="dialog" on-close="onCloseOrCancel_">
       <div slot="title">
         <div>$i18n{destinationSearchTitle}</div>
         <div class="user-info" hidden$="[[!userInfo.loggedIn]]">
@@ -164,7 +160,7 @@
           </div>
         </div>
       </div>
-    </cr-dialog>
+    </dialog>
   </template>
   <script src="destination_dialog.js"></script>
 </dom-module>

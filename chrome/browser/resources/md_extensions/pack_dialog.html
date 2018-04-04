@@ -28,7 +28,7 @@
         color: var(--google-blue-500);
       }
     </style>
-    <cr-dialog id="dialog" close-text="$i18n{close}">
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{packDialogTitle}</div>
       <div slot="body">
         <div>$i18n{packDialogContent}</div>
@@ -58,7 +58,7 @@
           $i18n{packDialogConfirm}
         </paper-button>
       </div>
-    </cr-dialog>
+    </dialog>
     <template is="dom-if" if="[[lastResponse_]]" restamp>
       <extensions-pack-dialog-alert model="[[lastResponse_]]"
           on-close="onAlertClose_">

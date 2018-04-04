@@ -12,8 +12,8 @@
 <dom-module id="bluetooth-dialog">
   <template>
     <style include="cr-hidden-style iron-flex">
-      cr-dialog {
-        --cr-dialog-native: var(--bluetooth-dialog-style);
+      dialog {
+        @apply --bluetooth-dialog-style;
       }
 
       #pairing {
@@ -73,7 +73,7 @@
       }
     </style>
     <!-- TODO(stevenjb/dschuyler): Find a solution to support i18n{} here -->
-    <cr-dialog id="dialog" no-cancel="[[noCancel]]"
+    <dialog is="cr-dialog" id="dialog" no-cancel="[[noCancel]]"
         close-text="[[i18n('close')]]" on-cancel="onDialogCanceled_"
         on-closed="onDialogCanceled_">
       <div slot="title">[[dialogTitle]]</div>
@@ -136,7 +136,7 @@
           <paper-button  on-tap="close">[[i18n('ok')]]</paper-button>
         </template>
       </div>
-    </cr-dialog>
+    </dialog>
   </template>
   <script src="bluetooth_dialog.js"></script>
 </dom-module>

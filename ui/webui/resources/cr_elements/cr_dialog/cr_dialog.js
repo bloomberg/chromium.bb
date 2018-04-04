@@ -6,29 +6,16 @@
  * @fileoverview 'cr-dialog' is a component for showing a modal dialog. If the
  * dialog is closed via close(), a 'close' event is fired. If the dialog is
  * canceled via cancel(), a 'cancel' event is fired followed by a 'close' event.
- *
- * Additionally clients can get a reference to the internal native <dialog> via
- * calling getNative() and inspecting the |returnValue| property inside
+ * Additionally clients can inspect the dialog's |returnValue| property inside
  * the 'close' event listener to determine whether it was canceled or just
  * closed, where a truthy value means success, and a falsy value means it was
  * canceled.
- *
- * Note that <cr-dialog> wrapper itself always has 0x0 dimensions, and
- * specifying width/height on <cr-dialog> directly will have no effect on the
- * internal native <dialog>. Instead use the --cr-dialog-native mixin to specify
- * width/height (as well as other available mixins to style other parts of the
- * dialog contents).
  */
 Polymer({
   is: 'cr-dialog',
+  extends: 'dialog',
 
   properties: {
-    open: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
-
     /**
      * Alt-text for the dialog close button.
      */
@@ -76,7 +63,7 @@ Polymer({
     // If the active history entry changes (i.e. user clicks back button),
     // all open dialogs should be cancelled.
     window.addEventListener('popstate', function() {
-      if (!this.ignorePopstate && this.$.dialog.open)
+      if (!this.ignorePopstate && this.open)
         this.cancel();
     }.bind(this));
 
@@ -90,7 +77,7 @@ Polymer({
   /** @override */
   attached: function() {
     var mutationObserverCallback = function() {
-      if (this.$.dialog.open)
+      if (this.open)
         this.addIntersectionObserver_();
       else
         this.removeIntersectionObserver_();
@@ -98,7 +85,7 @@ Polymer({
 
     this.mutationObserver_ = new MutationObserver(mutationObserverCallback);
 
-    this.mutationObserver_.observe(this.$.dialog, {
+    this.mutationObserver_.observe(this, {
       attributes: true,
       attributeFilter: ['open'],
     });
@@ -159,20 +146,17 @@ Polymer({
     }
   },
 
-  showModal: function() {
-    this.$.dialog.showModal();
-    this.open = this.$.dialog.open;
-  },
-
   cancel: function() {
     this.fire('cancel');
-    this.$.dialog.close();
-    this.open = this.$.dialog.open;
+    HTMLDialogElement.prototype.close.call(this, '');
   },
 
-  close: function() {
-    this.$.dialog.close('success');
-    this.open = this.$.dialog.open;
+  /**
+   * @param {string=} opt_returnValue
+   * @override
+   */
+  close: function(opt_returnValue) {
+    HTMLDialogElement.prototype.close.call(this, 'success');
   },
 
   /**
@@ -183,16 +167,6 @@ Polymer({
     // Because the dialog may have a default Enter key handler, prevent
     // keypress events from bubbling up from this element.
     e.stopPropagation();
-  },
-
-  /**
-   * Expose the inner native <dialog> for some rare cases where it needs to be
-   * directly accessed (for example to programmatically setheight/width, which
-   * would not work on the wrapper).
-   * @return {!HTMLDialogElement}
-   */
-  getNative: function() {
-    return this.$.dialog;
   },
 
   /** @return {!PaperIconButtonElement} */
@@ -236,7 +210,7 @@ Polymer({
     if (e.button != 0 || e.composedPath()[0].tagName !== 'DIALOG')
       return;
 
-    this.$.dialog.animate(
+    this.animate(
         [
           {transform: 'scale(1)', offset: 0},
           {transform: 'scale(1.02)', offset: 0.4},

@@ -21,11 +21,6 @@ cr.define('settings_people_page_quick_unlock', function() {
       }
 
       element = element.parentElement;
-
-      // cr-dialog itself will always be 0x0. It's the inner native <dialog>
-      // that has actual dimensions.
-      if (element && element.tagName == 'CR-DIALOG')
-        element = element.getNative();
     }
 
     return true;

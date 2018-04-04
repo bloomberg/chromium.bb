@@ -11,11 +11,9 @@
 }
 
 #forgotPasswordDlg {
-  --cr-dialog-native: {
-    color: var(--primary-text-color);
-    font-size: 15px;
-    width: 384px;
-  }
+  color: var(--primary-text-color);
+  font-size: 15px;
+  width: 384px;
 }
 
 /*
