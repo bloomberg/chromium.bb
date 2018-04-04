@@ -122,7 +122,6 @@ test("components_unittests") {
     "//components/password_manager/sync/browser:unit_tests",
     "//components/payments/core:unit_tests",
     "//components/physical_web/data_source:unit_tests",
-    "//components/physical_web/eddystone:unit_tests",
     "//components/prefs:unit_tests",
     "//components/previews/core:unit_tests",
     "//components/proxy_config:unit_tests",
