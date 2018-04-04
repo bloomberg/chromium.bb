@@ -366,22 +366,24 @@ bool LayoutSVGShape::NodeAtFloatPoint(HitTestResult& result,
 bool LayoutSVGShape::NodeAtFloatPointInternal(const HitTestRequest& request,
                                               const FloatPoint& local_point,
                                               PointerEventsHitRules hit_rules) {
-  bool is_visible = (Style()->Visibility() == EVisibility::kVisible);
-  if (is_visible || !hit_rules.require_visible) {
-    const SVGComputedStyle& svg_style = Style()->SvgStyle();
-    WindRule fill_rule = svg_style.FillRule();
-    if (request.SvgClipContent())
-      fill_rule = svg_style.ClipRule();
-    if ((hit_rules.can_hit_bounding_box &&
-         ObjectBoundingBox().Contains(local_point)) ||
-        (hit_rules.can_hit_stroke &&
-         (svg_style.HasStroke() || !hit_rules.require_stroke) &&
-         StrokeContains(local_point, hit_rules.require_stroke)) ||
-        (hit_rules.can_hit_fill &&
-         (svg_style.HasFill() || !hit_rules.require_fill) &&
-         FillContains(local_point, hit_rules.require_fill, fill_rule)))
-      return true;
-  }
+  const ComputedStyle& style = StyleRef();
+  if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
+    return false;
+  if (hit_rules.can_hit_bounding_box &&
+      ObjectBoundingBox().Contains(local_point))
+    return true;
+  const SVGComputedStyle& svg_style = style.SvgStyle();
+  if (hit_rules.can_hit_stroke &&
+      (svg_style.HasStroke() || !hit_rules.require_stroke) &&
+      StrokeContains(local_point, hit_rules.require_stroke))
+    return true;
+  WindRule fill_rule = svg_style.FillRule();
+  if (request.SvgClipContent())
+    fill_rule = svg_style.ClipRule();
+  if (hit_rules.can_hit_fill &&
+      (svg_style.HasFill() || !hit_rules.require_fill) &&
+      FillContains(local_point, hit_rules.require_fill, fill_rule))
+    return true;
   return false;
 }
 

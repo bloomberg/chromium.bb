@@ -283,45 +283,41 @@ bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
   // FIXME: integrate with InlineTextBox::nodeAtPoint better.
   DCHECK(!IsLineBreak());
 
+  auto line_layout_item = LineLayoutSVGInlineText(GetLineLayoutItem());
+  const ComputedStyle& style = line_layout_item.StyleRef();
   PointerEventsHitRules hit_rules(PointerEventsHitRules::SVG_TEXT_HITTESTING,
                                   result.GetHitTestRequest(),
-                                  GetLineLayoutItem().Style()->PointerEvents());
-  bool is_visible =
-      GetLineLayoutItem().Style()->Visibility() == EVisibility::kVisible;
-  if (is_visible || !hit_rules.require_visible) {
-    if (hit_rules.can_hit_bounding_box ||
-        (hit_rules.can_hit_stroke &&
-         (GetLineLayoutItem().Style()->SvgStyle().HasStroke() ||
-          !hit_rules.require_stroke)) ||
-        (hit_rules.can_hit_fill &&
-         (GetLineLayoutItem().Style()->SvgStyle().HasFill() ||
-          !hit_rules.require_fill))) {
-      LayoutRect rect(Location(), Size());
-      rect.MoveBy(accumulated_offset);
-      if (location_in_container.Intersects(rect)) {
-        LineLayoutSVGInlineText line_layout_item =
-            LineLayoutSVGInlineText(GetLineLayoutItem());
-        const SimpleFontData* font_data =
-            line_layout_item.ScaledFont().PrimaryFont();
-        DCHECK(font_data);
-        if (!font_data)
-          return false;
+                                  style.PointerEvents());
+  if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
+    return false;
+  if (hit_rules.can_hit_bounding_box ||
+      (hit_rules.can_hit_stroke &&
+       (style.SvgStyle().HasStroke() || !hit_rules.require_stroke)) ||
+      (hit_rules.can_hit_fill &&
+       (style.SvgStyle().HasFill() || !hit_rules.require_fill))) {
+    LayoutRect rect(Location(), Size());
+    rect.MoveBy(accumulated_offset);
+    if (location_in_container.Intersects(rect)) {
+      const SimpleFontData* font_data =
+          line_layout_item.ScaledFont().PrimaryFont();
+      DCHECK(font_data);
+      if (!font_data)
+        return false;
 
-        DCHECK(line_layout_item.ScalingFactor());
-        float baseline = font_data->GetFontMetrics().FloatAscent() /
-                         line_layout_item.ScalingFactor();
-        FloatPoint float_location = FloatPoint(location_in_container.Point());
-        for (const SVGTextFragment& fragment : text_fragments_) {
-          FloatQuad fragment_quad = fragment.BoundingQuad(baseline);
-          if (fragment_quad.ContainsPoint(float_location)) {
-            line_layout_item.UpdateHitTestResult(
-                result, location_in_container.Point() -
-                            ToLayoutSize(accumulated_offset));
-            if (result.AddNodeToListBasedTestResult(line_layout_item.GetNode(),
-                                                    location_in_container,
-                                                    rect) == kStopHitTesting)
-              return true;
-          }
+      DCHECK(line_layout_item.ScalingFactor());
+      float baseline = font_data->GetFontMetrics().FloatAscent() /
+                       line_layout_item.ScalingFactor();
+      FloatPoint float_location = FloatPoint(location_in_container.Point());
+      for (const SVGTextFragment& fragment : text_fragments_) {
+        FloatQuad fragment_quad = fragment.BoundingQuad(baseline);
+        if (fragment_quad.ContainsPoint(float_location)) {
+          line_layout_item.UpdateHitTestResult(
+              result,
+              location_in_container.Point() - ToLayoutSize(accumulated_offset));
+          if (result.AddNodeToListBasedTestResult(line_layout_item.GetNode(),
+                                                  location_in_container,
+                                                  rect) == kStopHitTesting)
+            return true;
         }
       }
     }
