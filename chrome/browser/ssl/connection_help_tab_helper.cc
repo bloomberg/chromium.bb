@@ -22,11 +22,15 @@ const char kHelpCenterConnectionHelpUrl[] =
 const char kBundledConnectionHelpUrl[] = "chrome://connection-help";
 
 void MaybeRedirectToBundledHelp(content::WebContents* web_contents) {
-  if (base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature)) {
-    web_contents->GetController().LoadURL(
-        GURL(kBundledConnectionHelpUrl), content::Referrer(),
-        ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-  }
+  if (!base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature))
+    return;
+  GURL::Replacements replacements;
+  std::string error_code = web_contents->GetURL().ref();
+  replacements.SetRefStr(error_code);
+  web_contents->GetController().LoadURL(
+      GURL(kBundledConnectionHelpUrl).ReplaceComponents(replacements),
+      content::Referrer(), ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      std::string());
 }
 }  // namespace
 
@@ -35,7 +39,10 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ConnectionHelpTabHelper);
 ConnectionHelpTabHelper::~ConnectionHelpTabHelper() {}
 
 void ConnectionHelpTabHelper::DidAttachInterstitialPage() {
-  if (web_contents()->GetURL() == GetHelpCenterURL()) {
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  if (web_contents()->GetURL().ReplaceComponents(replacements) ==
+      GetHelpCenterURL()) {
     UMA_HISTOGRAM_ENUMERATION(
         "SSL.CertificateErrorHelpCenterVisited",
         ConnectionHelpTabHelper::LearnMoreClickResult::kFailedWithInterstitial,
@@ -46,7 +53,10 @@ void ConnectionHelpTabHelper::DidAttachInterstitialPage() {
 
 void ConnectionHelpTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (web_contents()->GetURL() == GetHelpCenterURL()) {
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  if (web_contents()->GetURL().ReplaceComponents(replacements) ==
+      GetHelpCenterURL()) {
     LearnMoreClickResult histogram_value;
     if (navigation_handle->IsErrorPage()) {
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(

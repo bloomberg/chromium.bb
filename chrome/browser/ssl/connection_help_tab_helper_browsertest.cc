@@ -201,3 +201,89 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest, NetworkErrorOnSupportURL) {
       kHistogramName,
       ConnectionHelpTabHelper::LearnMoreClickResult::kFailedOther, 1);
 }
+
+// Tests that if the help content site is opened with an error code that refers
+// to a certificate error, the certificate error section is automatically
+// expanded.
+IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
+                       CorrectlyExpandsCertErrorSection) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
+
+  GURL expired_url = https_expired_server()->GetURL("/title2.html#-200");
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  SetHelpCenterUrl(browser(), expired_url.ReplaceComponents(replacements));
+
+  // Since ui_test_utils::NavigateToURL uses a TestNavigationObserver to wait
+  // for navigations, and TestNavigationObserver counts interstitials as a
+  // navigation, we need to wait for two navigations (the interstitial, and the
+  // help content) in the non-committed interstitial case. For committed
+  // interstitials, since the redirect happens before the original navigation
+  // finishes, we only need to wait for one.
+  if (AreCommittedInterstitialsEnabled()) {
+    ui_test_utils::NavigateToURL(browser(), expired_url);
+  } else {
+    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                              expired_url, 2);
+  }
+
+  // Check that we got redirected to the offline help content.
+  base::string16 tab_title;
+  ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
+  EXPECT_EQ(base::UTF16ToUTF8(tab_title),
+            l10n_util::GetStringUTF8(IDS_CONNECTION_HELP_TITLE));
+
+  // Check that the cert error details section is not hidden.
+  std::string cert_error_is_hidden_js =
+      "var certSection = document.getElementById('details-certerror'); "
+      "window.domAutomationController.send(certSection.className == 'hidden');";
+  bool cert_error_is_hidden;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      cert_error_is_hidden_js, &cert_error_is_hidden));
+  EXPECT_FALSE(cert_error_is_hidden);
+}
+
+// Tests that if the help content site is opened with an error code that refers
+// to an expired certificate, the clock section is automatically expanded.
+IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
+                       CorrectlyExpandsClockSection) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
+
+  GURL expired_url = https_expired_server()->GetURL("/title2.html#-201");
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  SetHelpCenterUrl(browser(), expired_url.ReplaceComponents(replacements));
+
+  // Since ui_test_utils::NavigateToURL uses a TestNavigationObserver to wait
+  // for navigations, and TestNavigationObserver counts interstitials as a
+  // navigation, we need to wait for two navigations (the interstitial, and the
+  // help content) in the non-committed interstitial case. For committed
+  // interstitials, since the redirect happens before the original navigation
+  // finishes, we only need to wait for one.
+  if (AreCommittedInterstitialsEnabled()) {
+    ui_test_utils::NavigateToURL(browser(), expired_url);
+  } else {
+    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                              expired_url, 2);
+  }
+
+  // Check that we got redirected to the offline help content.
+  base::string16 tab_title;
+  ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
+  EXPECT_EQ(base::UTF16ToUTF8(tab_title),
+            l10n_util::GetStringUTF8(IDS_CONNECTION_HELP_TITLE));
+
+  // Check that the clock details section is not hidden.
+  std::string clock_is_hidden_js =
+      "var clockSection = document.getElementById('details-clock');  "
+      "window.domAutomationController.send(clockSection.className == "
+      "'hidden');";
+  bool clock_is_hidden;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(), clock_is_hidden_js,
+      &clock_is_hidden));
+  EXPECT_FALSE(clock_is_hidden);
+}

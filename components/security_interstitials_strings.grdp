@@ -334,9 +334,6 @@
   <message name="IDS_CONNECTION_HELP_INCORRECT_CLOCK_TITLE" desc="Title for incorrect clock section in chrome://connection-help. Matches the heading for the fifth section in https://support.google.com/chrome/answer/6098869">
     "Your clock is behind" or "Your clock is ahead" or "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"
   </message>
-  <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_TITLE" desc="Title for MITM software section in chrome://connection-help. Matches the heading for the eight section in https://support.google.com/chrome/answer/6098869">
-    "Software on your computer is stopping Chrome from safely connecting to the web" (Windows computers only)
-  </message>
   <message name="IDS_CONNECTION_HELP_CONNECTION_NOT_PRIVATE_DETAILS" desc="Details for your connection is not private section in chrome://connection-help. Matches the third section in https://support.google.com/chrome/answer/6098869">
     &lt;h4&gt;Step 1: Sign in to the portal&lt;/h4&gt;
     &lt;p&gt;Wi-Fi networks at places like cafes or airports need you to sign in. To see the sign-in page, visit a page that uses &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
@@ -364,16 +361,21 @@
     &lt;p&gt;You'll see this error if your computer or mobile device's date and time are inaccurate.&lt;/p&gt;
     &lt;p&gt;To fix the error, open your device's clock. Make sure the time and date are correct.&lt;/p&gt;
   </message>
-  <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_DETAILS" desc="Details for MITM software section in chrome://connection-help. Matches the eight section in https://support.google.com/chrome/answer/6098869">
-    &lt;p&gt;You'll see this error if you have Superfish software on your Windows computer.&lt;/p&gt;
-    &lt;p&gt;Follow these steps to temporarily disable the software so you can get on the web. You'll need administrator privileges.&lt;/p&gt;
-    &lt;ol&gt;
-    &lt;li&gt;Click &lt;strong&gt;Start&lt;/strong&gt;, then search for and select &lt;strong&gt;"View local services"&lt;/strong&gt;
-    &lt;li&gt;Select &lt;strong&gt;VisualDiscovery&lt;/strong&gt;
-    &lt;li&gt;Under &lt;strong&gt;Startup type&lt;/strong&gt;, select &lt;strong&gt;Disabled&lt;/strong&gt;
-    &lt;li&gt;Under &lt;strong&gt;Service status&lt;/strong&gt;, click &lt;strong&gt;Stop&lt;/strong&gt;
-    &lt;li&gt;Click &lt;strong&gt;Apply&lt;/strong&gt;, then click &lt;strong&gt;OK&lt;/strong&gt;
-    &lt;li&gt;Visit the &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome help center&lt;/a&gt; to learn how to permanently remove the software from your computer
-    &lt;/ol&gt;
+  <if expr="is_win">
+    <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_TITLE" desc="Title for MITM software section in chrome://connection-help. Matches the heading for the eighth section in https://support.google.com/chrome/answer/6098869">
+    "Software on your computer is stopping Chrome from safely connecting to the web" (Windows computers only)
   </message>
+    <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_DETAILS" desc="Details for MITM software section in chrome://connection-help. Matches the eighth section in https://support.google.com/chrome/answer/6098869">
+      &lt;p&gt;You'll see this error if you have Superfish software on your Windows computer.&lt;/p&gt;
+      &lt;p&gt;Follow these steps to temporarily disable the software so you can get on the web. You'll need administrator privileges.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Click &lt;strong&gt;Start&lt;/strong&gt;, then search for and select &lt;strong&gt;"View local services"&lt;/strong&gt;
+      &lt;li&gt;Select &lt;strong&gt;VisualDiscovery&lt;/strong&gt;
+      &lt;li&gt;Under &lt;strong&gt;Startup type&lt;/strong&gt;, select &lt;strong&gt;Disabled&lt;/strong&gt;
+      &lt;li&gt;Under &lt;strong&gt;Service status&lt;/strong&gt;, click &lt;strong&gt;Stop&lt;/strong&gt;
+      &lt;li&gt;Click &lt;strong&gt;Apply&lt;/strong&gt;, then click &lt;strong&gt;OK&lt;/strong&gt;
+      &lt;li&gt;Visit the &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome help center&lt;/a&gt; to learn how to permanently remove the software from your computer
+      &lt;/ol&gt;
+    </message>
+  </if>
 </grit-part>

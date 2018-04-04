@@ -14,9 +14,22 @@ function setupEvents() {
   $('details-clock-button').addEventListener('click', function(event) {
     toggleHidden('details-clock', 'details-clock-button');
   });
-  $('details-mitmsoftware-button').addEventListener('click', function(event) {
-    toggleHidden('details-mitmsoftware', 'details-mitmsoftware-button');
-  });
+  if (loadTimeData.getBoolean('isWindows')) {
+    $('windows-only').classList.remove(HIDDEN_CLASS);
+    $('details-mitmsoftware-button').addEventListener('click', function(event) {
+      toggleHidden('details-mitmsoftware', 'details-mitmsoftware-button');
+    });
+  }
+  switch (window.location.hash) {
+    case '#' + loadTimeData.getInteger('certCommonNameInvalid'):
+    case '#' + loadTimeData.getInteger('certAuthorityInvalid'):
+    case '#' + loadTimeData.getInteger('certWeakSignatureAlgorithm'):
+      toggleHidden('details-certerror', 'details-certerror-button');
+      break;
+    case '#' + loadTimeData.getInteger('certExpired'):
+      toggleHidden('details-clock', 'details-clock-button');
+      break;
+  }
 }
 
 function toggleHidden(className, buttonName) {
