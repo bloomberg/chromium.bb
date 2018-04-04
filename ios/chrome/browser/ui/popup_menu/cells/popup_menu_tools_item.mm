@@ -164,7 +164,7 @@ const CGFloat kTopMarginBadge = 14;
 
 - (void)setBadgeNumber:(NSInteger)badgeNumber {
   BOOL wasHidden = self.numberBadgeView.hidden;
-  [self.numberBadgeView setNumber:badgeNumber animated:YES];
+  [self.numberBadgeView setNumber:badgeNumber animated:NO];
   // If the number badge is shown, then the text badge must be hidden.
   if (!self.numberBadgeView.hidden && !self.textBadgeView.hidden) {
     [self setBadgeText:nil];

@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -51,6 +53,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 @interface PopupMenuMediator ()<CRWWebStateObserver,
                                 PopupMenuTableViewControllerCommand,
+                                ReadingListMenuNotificationDelegate,
                                 WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
@@ -69,12 +72,16 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // Whether the popup menu is presented in incognito or not.
 @property(nonatomic, assign) BOOL isIncognito;
 
+// Items notifying this items of changes happening to the ReadingList model.
+@property(nonatomic, strong) ReadingListMenuNotifier* readingListMenuNotifier;
+
 #pragma mark*** Specific Items ***
 
 @property(nonatomic, strong) PopupMenuToolsItem* reloadStop;
 @property(nonatomic, strong) PopupMenuToolsItem* readLater;
 @property(nonatomic, strong) PopupMenuToolsItem* findInPage;
 @property(nonatomic, strong) PopupMenuToolsItem* siteInformation;
+@property(nonatomic, strong) PopupMenuToolsItem* readingList;
 // Array containing all the nonnull items/
 @property(nonatomic, strong) NSArray<TableViewItem*>* specificItems;
 
@@ -86,6 +93,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @synthesize isIncognito = _isIncognito;
 @synthesize popupMenu = _popupMenu;
 @synthesize dispatcher = _dispatcher;
+@synthesize readingListMenuNotifier = _readingListMenuNotifier;
 @synthesize type = _type;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
@@ -93,15 +101,20 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @synthesize readLater = _readLater;
 @synthesize findInPage = _findInPage;
 @synthesize siteInformation = _siteInformation;
+@synthesize readingList = _readingList;
 @synthesize specificItems = _specificItems;
 
 #pragma mark - Public
 
-- (instancetype)initWithType:(PopupMenuType)type isIncognito:(BOOL)isIncognito {
+- (instancetype)initWithType:(PopupMenuType)type
+                 isIncognito:(BOOL)isIncognito
+            readingListModel:(ReadingListModel*)readingListModel {
   self = [super init];
   if (self) {
     _isIncognito = isIncognito;
     _type = type;
+    _readingListMenuNotifier =
+        [[ReadingListMenuNotifier alloc] initWithReadingList:readingListModel];
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
@@ -255,6 +268,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       [specificItems addObject:self.findInPage];
     if (self.siteInformation)
       [specificItems addObject:self.siteInformation];
+    if (self.readingList)
+      [specificItems addObject:self.readingList];
     self.specificItems = specificItems;
   }
   return _items;
@@ -279,6 +294,21 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
         [[ReadingListAddCommand alloc] initWithURL:pageURL title:title];
     [weakDispatcher addToReadingList:command];
   });
+}
+
+#pragma mark - ReadingListMenuNotificationDelegate Implementation
+
+- (void)unreadCountChanged:(NSInteger)unreadCount {
+  if (!self.readingList)
+    return;
+
+  self.readingList.badgeNumber = unreadCount;
+  [self.popupMenu reconfigureCellsForItems:@[ self.readingList ]];
+}
+
+- (void)unseenStateChanged:(BOOL)unseenItemsExist {
+  // TODO(crbug.com/828367): Implement this once the "unseen items effect" is
+  // defined.
 }
 
 #pragma mark - Popup updates (Private)
@@ -446,9 +476,13 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       @"popup_menu_bookmarks", kToolsMenuBookmarksId);
 
   // Reading List.
-  TableViewItem* readingList = CreateTableViewItem(
+  self.readingList = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_READING_LIST, PopupMenuActionReadingList,
       @"popup_menu_reading_list", kToolsMenuReadingListId);
+  self.readingList.badgeNumber =
+      [self.readingListMenuNotifier readingListUnreadCount];
+  // TODO(crbug.com/828367): Once the "unseen items effect" is defined,
+  // implement it.
 
   // Recent Tabs.
   TableViewItem* recentTabs = CreateTableViewItem(
@@ -465,7 +499,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_SETTINGS, PopupMenuActionSettings,
                           @"popup_menu_settings", kToolsMenuSettingsId);
 
-  return @[ bookmarks, readingList, recentTabs, history, settings ];
+  return @[ bookmarks, self.readingList, recentTabs, history, settings ];
 }
 
 // Returns the UserAgentType currently in use.

@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
@@ -93,8 +94,10 @@
   tableViewController.baseViewController = self.baseViewController;
 
   self.mediator = [[PopupMenuMediator alloc]
-      initWithType:PopupMenuTypeToolsMenu
-       isIncognito:self.browserState->IsOffTheRecord()];
+          initWithType:PopupMenuTypeToolsMenu
+           isIncognito:self.browserState->IsOffTheRecord()
+      readingListModel:ReadingListModelFactory::GetForBrowserState(
+                           self.browserState)];
   self.mediator.webStateList = self.webStateList;
   self.mediator.popupMenu = tableViewController;
   self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
@@ -112,8 +115,10 @@
   tableViewController.baseViewController = self.baseViewController;
 
   self.mediator = [[PopupMenuMediator alloc]
-      initWithType:PopupMenuTypeTabGrid
-       isIncognito:self.browserState->IsOffTheRecord()];
+          initWithType:PopupMenuTypeTabGrid
+           isIncognito:self.browserState->IsOffTheRecord()
+      readingListModel:ReadingListModelFactory::GetForBrowserState(
+                           self.browserState)];
   self.mediator.webStateList = self.webStateList;
   self.mediator.popupMenu = tableViewController;
 
