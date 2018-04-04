@@ -577,11 +577,11 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_data_reduction_proxy_preview) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_load_capping) {
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_automation) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_automation) {
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_load_capping) {
   ShowAndVerifyUi();
 }
 

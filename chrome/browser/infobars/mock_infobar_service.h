@@ -13,11 +13,15 @@
 // infobars.
 class MockInfoBarService : public InfoBarService {
  public:
-  explicit MockInfoBarService(content::WebContents* web_contents);
-  ~MockInfoBarService() override;
+  // Creates a MockInfoBarService and attaches it as the InfoBarService for
+  // |web_contents|.
+  static void CreateForWebContents(content::WebContents* web_contents);
 
   std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
+
+ private:
+  explicit MockInfoBarService(content::WebContents* web_contents);
 };
 
 #endif  // CHROME_BROWSER_INFOBARS_MOCK_INFOBAR_SERVICE_H_

@@ -18,7 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -117,7 +117,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(cert_);
 
     TabSpecificContentSettings::CreateForWebContents(web_contents());
-    InfoBarService::CreateForWebContents(web_contents());
+    MockInfoBarService::CreateForWebContents(web_contents());
 
     // Setup mock ui.
     ResetMockUI();

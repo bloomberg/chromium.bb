@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -52,7 +52,7 @@ class PreviewsInfoBarTabHelperUnitTest
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
     offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents());
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-    InfoBarService::CreateForWebContents(web_contents());
+    MockInfoBarService::CreateForWebContents(web_contents());
     PreviewsInfoBarTabHelper::CreateForWebContents(web_contents());
     test_handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
         GURL(kTestUrl), main_rfh());
@@ -137,6 +137,10 @@ class PreviewsInfoBarTabHelperUnitTest
         ->SetNavigationData(test_handle_.get(), std::move(navigation_data));
   }
 
+  InfoBarService* infobar_service() {
+    return InfoBarService::FromWebContents(web_contents());
+  }
+
  protected:
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
@@ -155,9 +159,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest,
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EXPECT_EQ(1U, infobar_service()->infobar_count());
   EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
 
   // Navigate to reset the displayed state.
@@ -177,9 +179,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest,
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EXPECT_EQ(1U, infobar_service()->infobar_count());
   EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
 
   // Navigate to reset the displayed state.
@@ -199,9 +199,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest,
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  EXPECT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 }
 
@@ -263,9 +261,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
 
   CallDidFinishNavigation();
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EXPECT_EQ(1U, infobar_service()->infobar_count());
   EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
 
   // Navigate to reset the displayed state.

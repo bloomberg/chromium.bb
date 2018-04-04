@@ -25,7 +25,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
@@ -160,7 +160,7 @@ class PreviewsInfoBarDelegateUnitTest
 
   void SetUp() override {
     PageLoadMetricsObserverTestHarness::SetUp();
-    InfoBarService::CreateForWebContents(web_contents());
+    MockInfoBarService::CreateForWebContents(web_contents());
     PreviewsInfoBarTabHelper::CreateForWebContents(web_contents());
     TestPreviewsWebContentsObserver::CreateForWebContents(web_contents());
 
@@ -220,12 +220,10 @@ class PreviewsInfoBarDelegateUnitTest
                    base::Unretained(this)),
         previews_ui_service_.get());
 
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents());
-    EXPECT_EQ(1U, infobar_service->infobar_count());
+    EXPECT_EQ(1U, infobar_service()->infobar_count());
 
     return static_cast<PreviewsInfoBarDelegate*>(
-        infobar_service->infobar_at(0)->delegate());
+        infobar_service()->infobar_at(0)->delegate());
   }
 
   void EnableStalePreviewsTimestamp(
@@ -261,7 +259,7 @@ class PreviewsInfoBarDelegateUnitTest
     tester_->ExpectBucketCount(kUMAPreviewsInfoBarTimestamp, expected_bucket,
                                1);
     // Dismiss the infobar.
-    InfoBarService::FromWebContents(web_contents())->RemoveAllInfoBars(false);
+    infobar_service()->RemoveAllInfoBars(false);
     PreviewsInfoBarTabHelper::FromWebContents(web_contents())
         ->set_displayed_preview_infobar(false);
   }
