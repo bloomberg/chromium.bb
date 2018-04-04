@@ -270,20 +270,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
   EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1, consent2, testEvent3}));
 }
 
-// Test that events that are logged before sync is enabled.
+// Test that events that are logged before sync is enabled don't get lost.
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, LoggedBeforeSyncSetup) {
   const UserEventSpecifics consent1 = CreateUserConsent(1);
   const UserEventSpecifics consent2 = CreateUserConsent(2);
   ASSERT_TRUE(SetupClients());
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
-  auto bridge = event_service->GetSyncBridge();
-  // Wait for UserEventSyncBridge to be ready to receive events.
-  // TODO(crbug.com/761485): Remove when the store is initialized instantly.
-  while (!bridge->change_processor()->IsTrackingMetadata())
-    base::RunLoop().RunUntilIdle();
   event_service->RecordUserEvent(consent1);
+  EXPECT_TRUE(ExpectUserEvents({}));
   ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(ExpectUserEvents({consent1}));
   event_service->RecordUserEvent(consent2);
   EXPECT_TRUE(ExpectUserEvents({consent1, consent2}));
 }

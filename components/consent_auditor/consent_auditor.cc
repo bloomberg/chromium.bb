@@ -105,26 +105,6 @@ void ConsentAuditor::RecordGaiaConsent(
 
   std::unique_ptr<sync_pb::UserEventSpecifics> specifics = ConstructUserConsent(
       feature, description_grd_ids, confirmation_grd_id, status);
-  // UserEventSyncBridge initializes asynchronously. Currently, instantiating
-  // UserEventService early in the Profile lifetime bootstraps
-  // the initialization so that it should be ready in practice, but this is
-  // not certain. Exit if it is not the case. Record a histogram to measure
-  // how often that happens.
-  // TODO(crbug.com/709094, crbug.com/761485): Remove this check and histogram
-  // when the store initializes synchronously and is instantly ready to receive
-  // data.
-  bool event_service_ready = !user_event_service_->GetSyncBridge() ||
-                             user_event_service_->GetSyncBridge()
-                                 ->change_processor()
-                                 ->IsTrackingMetadata();
-  UMA_HISTOGRAM_BOOLEAN("Privacy.ConsentAuditor.UserEventServiceReady",
-                        event_service_ready);
-  if (!event_service_ready) {
-    VLOG(1) << "Consent recording failed. The UserEventService has not been "
-               "initialized.";
-    return;
-  }
-
   user_event_service_->RecordUserEvent(std::move(specifics));
 }
 

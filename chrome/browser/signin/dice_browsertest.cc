@@ -440,19 +440,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     // stable state.
     reconcilor->AbortReconcile();
     reconcilor->AddObserver(this);
-
-    // TODO(crbug.com/709094, crbug.com/761485): This browsertest exercises
-    // the Sync confirmation dialog and thus triggers consent recording. For
-    // that to happen successfully, UserEventSyncBridge must be ready to
-    // receive events. UserEventSyncBridge initializes asynchronously which
-    // is not a problem for regular usage, but in this browsertest, we must
-    // give it enough time to do so.
-    while (!browser_sync::UserEventServiceFactory::GetForProfile(
-                browser()->profile())
-                ->GetSyncBridge()
-                ->change_processor()
-                ->IsTrackingMetadata())
-      base::RunLoop().RunUntilIdle();
   }
 
   void TearDownOnMainThread() override {

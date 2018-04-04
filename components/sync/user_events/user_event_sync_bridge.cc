@@ -81,7 +81,10 @@ UserEventSyncBridge::UserEventSyncBridge(
       &UserEventSyncBridge::HandleGlobalIdChange, base::AsWeakPtr(this)));
 }
 
-UserEventSyncBridge::~UserEventSyncBridge() {}
+UserEventSyncBridge::~UserEventSyncBridge() {
+  if (!deferred_user_events_while_initializing_.empty())
+    LOG(ERROR) << "Non-empty event queue at shutdown!";
+}
 
 std::unique_ptr<MetadataChangeList>
 UserEventSyncBridge::CreateMetadataChangeList() {
@@ -147,27 +150,28 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
 
 void UserEventSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
+  // Sync can only be disabled after initialization.
+  DCHECK(deferred_user_events_while_initializing_.empty());
   // No data should be retained through sign out.
   store_->DeleteAllDataAndMetadata(base::DoNothing());
 }
 
 void UserEventSyncBridge::RecordUserEvent(
     std::unique_ptr<UserEventSpecifics> specifics) {
-  // TODO(skym): Remove this when ModelTypeStore synchronously returns a
-  // partially initialized reference, see crbug.com/709094.
-  if (!store_) {
+  if (change_processor()->IsTrackingMetadata()) {
+    RecordUserEventImpl(std::move(specifics));
     return;
   }
-  // TODO(skym): Remove this when the processor can handle Put() calls before
-  // being given metadata, see crbug.com/761485. Dropping data on the floor here
-  // is better than just writing to the store, because it will be lost if sent
-  // to just the store, and bloat persistent storage indefinitely.
-  if (!change_processor()->IsTrackingMetadata()) {
-    return;
-  }
+  if (specifics->has_user_consent())
+    deferred_user_events_while_initializing_.push_back(std::move(specifics));
+}
+
+void UserEventSyncBridge::RecordUserEventImpl(
+    std::unique_ptr<UserEventSpecifics> specifics) {
+  DCHECK(store_);
+  DCHECK(change_processor()->IsTrackingMetadata());
 
   std::string storage_key = GetStorageKeyFromSpecifics(*specifics);
-
   // There are two scenarios we need to guard against here. First, the given
   // user even may have been read from an old global_id timestamp off of a
   // navigation, which has already been re-written. In this case, we should be
@@ -195,6 +199,15 @@ void UserEventSyncBridge::RecordUserEvent(
       base::Bind(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
 }
 
+void UserEventSyncBridge::ProcessQueuedEvents() {
+  DCHECK(change_processor()->IsTrackingMetadata());
+  for (std::unique_ptr<sync_pb::UserEventSpecifics>& event :
+       deferred_user_events_while_initializing_) {
+    RecordUserEventImpl(std::move(event));
+  }
+  deferred_user_events_while_initializing_.clear();
+}
+
 void UserEventSyncBridge::OnStoreCreated(
     const base::Optional<ModelError>& error,
     std::unique_ptr<ModelTypeStore> store) {
@@ -215,6 +228,8 @@ void UserEventSyncBridge::OnReadAllMetadata(
     change_processor()->ReportError(*error);
   } else {
     change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
+    DCHECK(change_processor()->IsTrackingMetadata());
+    ProcessQueuedEvents();
   }
 }
 
