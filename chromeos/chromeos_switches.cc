@@ -512,6 +512,9 @@ const char kOobeTimerInterval[] = "oobe-timer-interval";
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
 
+// The rlz ping delay (in seconds) that overwrites the default value.
+const char kRlzPingDelay[] = "rlz-ping-delay";
+
 // Overrides network stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
 // comma separated (no spaces). Note: all options are in the format 'foo=x'.
