@@ -275,6 +275,23 @@ std::vector<ProvidedFileSystemInfo> Service::GetProvidedFileSystemInfoList() {
   return result;
 }
 
+std::vector<ProvidedFileSystemInfo> Service::GetProvidedFileSystemInfoList(
+    const ProviderId& provider_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const std::vector<ProvidedFileSystemInfo> full_list =
+      GetProvidedFileSystemInfoList();
+  std::vector<ProvidedFileSystemInfo> filtered_list;
+
+  for (const auto& file_system : full_list) {
+    if (file_system.provider_id() == provider_id) {
+      filtered_list.push_back(file_system);
+    }
+  }
+
+  return filtered_list;
+}
+
 ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
     const ProviderId& provider_id,
     const std::string& file_system_id) {

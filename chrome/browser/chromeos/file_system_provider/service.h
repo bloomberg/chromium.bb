@@ -111,6 +111,11 @@ class Service : public KeyedService,
   // items are copied.
   std::vector<ProvidedFileSystemInfo> GetProvidedFileSystemInfoList();
 
+  // Returns a list of information of the currently provided file systems for
+  // |provider_id|. All items are copied.
+  std::vector<ProvidedFileSystemInfo> GetProvidedFileSystemInfoList(
+      const ProviderId& provider_id);
+
   // Returns an immutable map of all registered providers.
   const ProviderMap& GetProviders() const;
 
