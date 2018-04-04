@@ -17,6 +17,7 @@
 
 class AppListClientImpl;
 class AppListControllerDelegateImpl;
+class AppListViewDelegate;
 
 namespace app_list {
 class SearchModel;
@@ -33,6 +34,11 @@ class AppListServiceImpl : public AppListService {
   ~AppListServiceImpl() override;
 
   static AppListServiceImpl* GetInstance();
+
+  AppListViewDelegate* GetViewDelegate();
+
+  void RecordAppListLaunch();
+  static void RecordAppListAppLaunch();
 
   // AppListService overrides:
   Profile* GetCurrentAppListProfile() override;
@@ -61,7 +67,6 @@ class AppListServiceImpl : public AppListService {
 
   // Returns a pointer to control the app list views in ash.
   ash::mojom::AppListController* GetAppListController();
-  AppListClientImpl* GetAppListClient();
 
   // TODO(hejq): Search model migration is not done yet. Chrome still accesses
   //             it directly in non-mus+ash mode.
@@ -74,6 +79,7 @@ class AppListServiceImpl : public AppListService {
   std::string GetProfileName();
 
   PrefService* local_state_;
+  std::unique_ptr<AppListViewDelegate> view_delegate_;
 
   AppListControllerDelegateImpl controller_delegate_;
   ash::mojom::AppListController* app_list_controller_ = nullptr;

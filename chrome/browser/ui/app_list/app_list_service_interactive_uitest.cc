@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_service.h"
 
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -14,12 +15,13 @@ using AppListServiceInteractiveTest = InProcessBrowserTest;
 
 // Show the app list, then dismiss it.
 IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest, ShowAndDismiss) {
+  AppListClientImpl app_list_client;
   AppListService* service = AppListService::Get();
   ASSERT_FALSE(service->IsAppListVisible());
   service->Show();
-  service->FlushForTesting();
+  app_list_client.FlushMojoForTesting();
   ASSERT_TRUE(service->IsAppListVisible());
   service->DismissAppList();
-  service->FlushForTesting();
+  app_list_client.FlushMojoForTesting();
   ASSERT_FALSE(service->IsAppListVisible());
 }
