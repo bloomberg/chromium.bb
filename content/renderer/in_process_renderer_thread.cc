@@ -47,7 +47,7 @@ void InProcessRendererThread::Init() {
   CHECK(!render_process_);
 #endif
   render_process_ = RenderProcessImpl::Create();
-  RenderThreadImpl::Create(params_);
+  RenderThreadImpl::Create(params_, message_loop());
 }
 
 void InProcessRendererThread::CleanUp() {

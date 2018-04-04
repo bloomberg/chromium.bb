@@ -181,7 +181,8 @@ class CONTENT_EXPORT RenderThreadImpl
       public viz::mojom::CompositingModeWatcher,
       public CompositorDependencies {
  public:
-  static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
+  static RenderThreadImpl* Create(const InProcessChildThreadParams& params,
+                                  base::MessageLoop* unowned_message_loop);
   static RenderThreadImpl* Create(
       std::unique_ptr<base::MessageLoop> main_message_loop,
       std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler);
@@ -534,7 +535,8 @@ class CONTENT_EXPORT RenderThreadImpl
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
       std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
-      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
+      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
+      base::MessageLoop* unowned_message_loop);
   RenderThreadImpl(
       std::unique_ptr<base::MessageLoop> main_message_loop,
       std::unique_ptr<blink::scheduler::RendererScheduler> scheduler);
@@ -707,7 +709,11 @@ class CONTENT_EXPORT RenderThreadImpl
   // The message loop of the renderer main thread.
   // This message loop should be destructed before the RenderThreadImpl
   // shuts down Blink.
-  std::unique_ptr<base::MessageLoop> main_message_loop_;
+  // Some test users (e.g. InProcessRenderThread) own the MessageLoop used by
+  // their RenderThreadImpls. |main_message_loop_| is always non-nulll,
+  // |owned_message_loop_| is non-null if handed in at creation.
+  const std::unique_ptr<base::MessageLoop> owned_message_loop_;
+  base::MessageLoop* const main_message_loop_;
 
   // May be null if overridden by ContentRendererClient.
   std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;

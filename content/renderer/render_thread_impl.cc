@@ -670,13 +670,14 @@ bool RenderThreadImpl::HistogramCustomizer::IsAlexaTop10NonGoogleSite(
 
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
-    const InProcessChildThreadParams& params) {
+    const InProcessChildThreadParams& params,
+    base::MessageLoop* unowned_message_loop) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
       blink::scheduler::RendererScheduler::Create();
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
-  return new RenderThreadImpl(
-      params, std::move(renderer_scheduler), test_task_counter);
+  return new RenderThreadImpl(params, std::move(renderer_scheduler),
+                              test_task_counter, unowned_message_loop);
 }
 
 // static
@@ -733,7 +734,8 @@ RenderThreadImpl::DeprecatedGetMainTaskRunner() {
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
-    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
+    base::MessageLoop* unowned_message_loop)
     : ChildThreadImpl(
           Options::Builder()
               .InBrowserProcess(params)
@@ -742,6 +744,7 @@ RenderThreadImpl::RenderThreadImpl(
               .IPCTaskRunner(scheduler ? scheduler->IPCTaskRunner() : nullptr)
               .Build()),
       renderer_scheduler_(std::move(scheduler)),
+      main_message_loop_(unowned_message_loop),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this),
       client_id_(1),
@@ -753,7 +756,7 @@ RenderThreadImpl::RenderThreadImpl(
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
 RenderThreadImpl::RenderThreadImpl(
-    std::unique_ptr<base::MessageLoop> main_message_loop,
+    std::unique_ptr<base::MessageLoop> owned_message_loop,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler)
     : ChildThreadImpl(
           Options::Builder()
@@ -762,7 +765,8 @@ RenderThreadImpl::RenderThreadImpl(
               .IPCTaskRunner(scheduler ? scheduler->IPCTaskRunner() : nullptr)
               .Build()),
       renderer_scheduler_(std::move(scheduler)),
-      main_message_loop_(std::move(main_message_loop)),
+      owned_message_loop_(std::move(owned_message_loop)),
+      main_message_loop_(owned_message_loop_.get()),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       is_scroll_animator_enabled_(false),
       renderer_binding_(this),
@@ -781,6 +785,10 @@ void RenderThreadImpl::Init(
     const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
 
+  // Whether owned or unowned, |main_message_loop_| needs to be initialized in
+  // all constructors.
+  DCHECK(main_message_loop_);
+
   GetContentClient()->renderer()->PostIOThreadCreated(GetIOTaskRunner().get());
 
   base::trace_event::TraceLog::GetInstance()->SetThreadSortIndex(
@@ -793,7 +801,7 @@ void RenderThreadImpl::Init(
 #endif
 
   lazy_tls.Pointer()->Set(this);
-  g_main_task_runner.Get() = base::MessageLoop::current()->task_runner();
+  g_main_task_runner.Get() = main_message_loop_->task_runner();
 
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
@@ -1828,7 +1836,7 @@ void RenderThreadImpl::SetProcessBackgrounded(bool backgrounded) {
   base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
   if (backgrounded)
     timer_slack = base::TIMER_SLACK_MAXIMUM;
-  base::MessageLoop::current()->SetTimerSlack(timer_slack);
+  main_message_loop_->SetTimerSlack(timer_slack);
 
   renderer_scheduler_->SetRendererBackgrounded(backgrounded);
   if (backgrounded) {

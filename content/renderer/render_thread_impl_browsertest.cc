@@ -6,17 +6,22 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/discardable_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -128,8 +133,12 @@ class RenderThreadImplForTest : public RenderThreadImpl {
   RenderThreadImplForTest(
       const InProcessChildThreadParams& params,
       std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
-      scoped_refptr<base::SingleThreadTaskRunner>& test_task_counter)
-      : RenderThreadImpl(params, std::move(scheduler), test_task_counter) {}
+      scoped_refptr<base::SingleThreadTaskRunner>& test_task_counter,
+      base::MessageLoop* unowned_message_loop)
+      : RenderThreadImpl(params,
+                         std::move(scheduler),
+                         test_task_counter,
+                         unowned_message_loop) {}
 
   ~RenderThreadImplForTest() override {}
 };
@@ -166,12 +175,34 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
 
 class RenderThreadImplBrowserTest : public testing::Test {
  public:
+  // Managing our own main MessageLoop also forces us to manage our own
+  // TaskScheduler. This ensures a basic TaskScheduler is in scope during this
+  // test.
+  class TestTaskScheduler {
+   public:
+    TestTaskScheduler() {
+      base::TaskScheduler::CreateAndStartWithDefaultParams(
+          "RenderThreadImplBrowserTest");
+    }
+
+    ~TestTaskScheduler() {
+      base::TaskScheduler::GetInstance()->Shutdown();
+      base::TaskScheduler::GetInstance()->JoinForTesting();
+      base::TaskScheduler::SetInstance(nullptr);
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestTaskScheduler);
+  };
+
   RenderThreadImplBrowserTest() : field_trial_list_(nullptr) {}
 
   void SetUp() override {
     content_renderer_client_.reset(new ContentRendererClient());
     SetRendererClientForTesting(content_renderer_client_.get());
 
+    main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+    test_task_scheduler_.reset(new TestTaskScheduler);
     browser_threads_.reset(
         new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
@@ -227,7 +258,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
     thread_ = new RenderThreadImplForTest(
         InProcessChildThreadParams(io_task_runner, &invitation,
                                    child_connection_->service_token()),
-        std::move(renderer_scheduler), test_task_counter);
+        std::move(renderer_scheduler), test_task_counter,
+        main_message_loop_.get());
     cmd->InitFromArgv(old_argv);
 
     run_loop_ = std::make_unique<base::RunLoop>();
@@ -247,12 +279,15 @@ class RenderThreadImplBrowserTest : public testing::Test {
     }
   }
 
+ protected:
   IPC::Sender* sender() { return channel_.get(); }
 
   scoped_refptr<TestTaskCounter> test_task_counter_;
   TestContentClientInitializer content_client_initializer_;
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
 
+  std::unique_ptr<base::MessageLoop> main_message_loop_;
+  std::unique_ptr<TestTaskScheduler> test_task_scheduler_;
   std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
   std::unique_ptr<ChildConnection> child_connection_;
@@ -266,6 +301,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
   base::FieldTrialList field_trial_list_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderThreadImplBrowserTest);
 };
 
 class RenderThreadImplMojoInputMessagesDisabledBrowserTest
