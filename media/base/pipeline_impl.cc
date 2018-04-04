@@ -229,6 +229,9 @@ void PipelineImpl::RendererWrapper::Start(
   DCHECK(state_ == kCreated || state_ == kStopped)
       << "Received start in unexpected state: " << state_;
 
+  // Tracking down http://crbug.com/827990
+  CHECK(renderer);
+
   SetState(kStarting);
 
   DCHECK(!demuxer_);
@@ -399,6 +402,9 @@ void PipelineImpl::RendererWrapper::Suspend() {
 void PipelineImpl::RendererWrapper::Resume(std::unique_ptr<Renderer> renderer,
                                            base::TimeDelta timestamp) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  // Tracking down http://crbug.com/827990
+  CHECK(renderer);
 
   // Suppress resuming if we're not suspended.
   if (state_ != kSuspended) {
