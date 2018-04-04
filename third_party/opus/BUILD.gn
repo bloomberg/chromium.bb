@@ -258,14 +258,12 @@ static_library("opus") {
     ]
   }
 
-  if (is_posix && !is_android) {
-    # Suppress a warning given by opus_decoder.c that tells us
-    # optimizations are turned off.
-    cflags += [ "-Wno-#pragma-messages" ]
+  if (is_debug) {
+    # Turn off a warning in opus_decoder.c when compiling without optimization.
+    defines += [ "OPUS_WILL_BE_SLOW" ]
   }
 
-  if (!is_debug && is_posix &&
-      (current_cpu == "arm" || current_cpu == "arm64")) {
+  if (!is_debug && (current_cpu == "arm" || current_cpu == "arm64")) {
     configs -= [ "//build/config/compiler:default_optimization" ]
 
     # TODO(crbug.com/621335) Rework this so that we don't have the confusion
@@ -498,7 +496,7 @@ config("test_opus_decode_config") {
   # marked as requiring a non-null value by the nonnull function attribute,
   # and expects opus_decode() to fail. Disable the -Wnonnull option to avoid
   # a compilation error if -Werror is specified.
-  if (is_posix) {
+  if (is_clang) {
     cflags = [ "-Wno-nonnull" ]
   }
 }
