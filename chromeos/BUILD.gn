@@ -29,6 +29,7 @@ component("chromeos") {
     ":media_perception_proto",
     ":power_manager_proto",
     ":smbprovider_proto",
+    ":vm_applications_apps_proto",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
@@ -270,6 +271,8 @@ component("chromeos") {
     "dbus/services/proxy_resolution_service_provider.h",
     "dbus/services/virtual_file_request_service_provider.cc",
     "dbus/services/virtual_file_request_service_provider.h",
+    "dbus/services/vm_applications_service_provider.cc",
+    "dbus/services/vm_applications_service_provider.h",
     "dbus/session_manager_client.cc",
     "dbus/session_manager_client.h",
     "dbus/shill_client_helper.cc",
@@ -542,6 +545,7 @@ copy("dbus_service_files") {
     "dbus/services/org.chromium.LivenessService.conf",
     "dbus/services/org.chromium.NetworkProxyService.conf",
     "dbus/services/org.chromium.VirtualFileRequestService.conf",
+    "dbus/services/org.chromium.VmApplicationsService.conf",
   ]
   outputs = [
     "$root_out_dir/dbus/{{source_file_part}}",
@@ -872,4 +876,12 @@ proto_library("concierge_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/concierge"
+}
+
+proto_library("vm_applications_apps_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_applications/apps.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/vm_applications"
 }

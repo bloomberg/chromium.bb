@@ -8,9 +8,13 @@
 
 #include "base/macros.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using vm_tools::apps::App;
+using vm_tools::apps::ApplicationList;
 
 namespace chromeos {
 
@@ -45,8 +49,15 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   std::string app_id = GenerateAppId(desktop_file_id);
   EXPECT_EQ(nullptr, service()->GetRegistration(app_id));
 
-  CrostiniRegistryService::Registration registration(desktop_file_id, name);
-  service()->SetRegistration(registration);
+  ApplicationList app_list;
+  App* app = app_list.add_apps();
+  app->set_desktop_file_id(desktop_file_id);
+  App::LocaleString::Entry* name_with_locale =
+      app->mutable_name()->add_values();
+  name_with_locale->set_locale("");
+  name_with_locale->set_value(name);
+
+  service()->UpdateApplicationList(app_list);
   auto result = service()->GetRegistration(app_id);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(result->desktop_file_id, desktop_file_id);
