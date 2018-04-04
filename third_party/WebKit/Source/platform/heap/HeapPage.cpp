@@ -609,6 +609,10 @@ void NormalPageArena::Verify() {
 
 void NormalPageArena::VerifyMarking() {
 #if DCHECK_IS_ON()
+  // We cannot rely on other marking phases to clear the allocation area as
+  // for incremental marking the application is running between steps and
+  // might set up a new area.
+  SetAllocationPoint(nullptr, 0);
   for (NormalPage* page = static_cast<NormalPage*>(first_page_); page;
        page = static_cast<NormalPage*>(page->Next()))
     page->VerifyMarking();
