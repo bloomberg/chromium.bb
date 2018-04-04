@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.widget.FrameLayout;
 
@@ -63,6 +64,50 @@ class CastWebContentsSurfaceHelper {
 
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
     private boolean mTouchInputEnabled = false;
+
+    public static class StartParams {
+        public final Uri uri;
+        public final WebContents webContents;
+        public final boolean touchInputEnabled;
+
+        public StartParams(Uri uri, WebContents webContents, boolean touchInputEnabled) {
+            this.uri = uri;
+            this.webContents = webContents;
+            this.touchInputEnabled = touchInputEnabled;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof StartParams) {
+                StartParams that = (StartParams) other;
+                return this.uri.equals(that.uri) && this.webContents.equals(that.webContents)
+                        && this.touchInputEnabled == that.touchInputEnabled;
+            }
+            return false;
+        }
+
+        public static StartParams fromBundle(Bundle bundle) {
+            final String uriString = CastWebContentsIntentUtils.getUriString(bundle);
+            if (uriString == null) {
+                Log.i(TAG, "Intent without uri received!");
+                return null;
+            }
+            final Uri uri = Uri.parse(uriString);
+            if (uri == null) {
+                Log.i(TAG, "Invalid URI string: %s", uriString);
+                return null;
+            }
+            bundle.setClassLoader(WebContents.class.getClassLoader());
+            final WebContents webContents = CastWebContentsIntentUtils.getWebContents(bundle);
+            if (webContents == null) {
+                Log.e(TAG, "Received null WebContents in bundle.");
+                return null;
+            }
+
+            final boolean touchInputEnabled = CastWebContentsIntentUtils.isTouchable(bundle);
+            return new StartParams(uri, webContents, touchInputEnabled);
+        }
+    }
 
     /**
      * @param hostActivity Activity hosts the view showing WebContents
@@ -133,19 +178,11 @@ class CastWebContentsSurfaceHelper {
         });
     }
 
-    void onNewWebContents(
-            final Uri uri, final WebContents webContents, final boolean touchInputEnabled) {
-        if (webContents == null) {
-            Log.e(TAG, "Received null WebContents in bundle.");
-            maybeFinishLater();
-            return;
-        }
-
-        mTouchInputEnabled = touchInputEnabled;
-
-        Log.d(TAG, "content_uri=" + uri);
-        mUri = uri;
-        mInstanceId = uri.getPath();
+    void onNewStartParams(final StartParams params) {
+        mTouchInputEnabled = params.touchInputEnabled;
+        Log.d(TAG, "content_uri=" + params.uri);
+        mUri = params.uri;
+        mInstanceId = params.uri.getPath();
 
         // Whenever our app is visible, volume controls should modify the music stream.
         // For more information read:
@@ -154,7 +191,7 @@ class CastWebContentsSurfaceHelper {
 
         mHasUriState.set(mUri);
 
-        showWebContents(webContents);
+        showWebContents(params.webContents);
     }
 
     // Closes this activity if a new WebContents is not being displayed.

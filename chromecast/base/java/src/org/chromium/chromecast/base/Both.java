@@ -67,4 +67,11 @@ public class Both<A, B> {
     public static <A, B> Consumer<Both<A, B>> adapt(BiConsumer<A, B> consumer) {
         return (Both<A, B> data) -> consumer.accept(data.first, data.second);
     }
+
+    /**
+     * Turns a predicate of two arguments into a predicate of a single Both argument.
+     */
+    public static <A, B> Predicate<Both<A, B>> adapt(BiPredicate<A, B> predicate) {
+        return (Both<A, B> data) -> predicate.test(data.first, data.second);
+    }
 }

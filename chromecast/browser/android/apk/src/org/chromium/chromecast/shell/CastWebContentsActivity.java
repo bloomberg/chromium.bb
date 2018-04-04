@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -24,7 +23,6 @@ import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Observable;
 import org.chromium.chromecast.base.ScopeFactories;
 import org.chromium.chromecast.base.Unit;
-import org.chromium.content_public.browser.WebContents;
 
 /**
  * Activity for displaying a WebContents in CastShell.
@@ -110,7 +108,10 @@ public class CastWebContentsActivity extends Activity {
                 }));
 
         // Handle each new Intent.
-        hasIntentState.watch(ScopeFactories.onEnter(this ::handleIntent));
+        hasIntentState.map(Intent::getExtras)
+                .map(CastWebContentsSurfaceHelper.StartParams::fromBundle)
+                .unique((previous, current) -> previous.uri.equals(current.uri))
+                .watch(ScopeFactories.onEnter(this ::notifyNewWebContents));
 
         mIsFinishingState.watch(ScopeFactories.onEnter((String reason) -> {
             if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
@@ -135,32 +136,8 @@ public class CastWebContentsActivity extends Activity {
         mGotIntentState.set(getIntent());
     }
 
-    private void handleIntent(Intent intent) {
-        final Bundle bundle = intent.getExtras();
-        if (bundle == null) {
-            Log.i(TAG, "Intent without bundle received!");
-            return;
-        }
-        final String uriString = CastWebContentsIntentUtils.getUriString(intent);
-        if (uriString == null) {
-            Log.i(TAG, "Intent without uri received!");
-            return;
-        }
-        final Uri uri = Uri.parse(uriString);
-
-        // Do not load the WebContents if we are simply bringing the same
-        // activity to the foreground.
-        if (mSurfaceHelper.getInstanceId() != null
-                && mSurfaceHelper.getInstanceId().equals(uri.getPath())) {
-            Log.i(TAG, "Duplicated intent received!");
-            return;
-        }
-
-        bundle.setClassLoader(WebContents.class.getClassLoader());
-        final WebContents webContents = CastWebContentsIntentUtils.getWebContents(intent);
-
-        final boolean touchInputEnabled = CastWebContentsIntentUtils.isTouchable(intent);
-        mSurfaceHelper.onNewWebContents(uri, webContents, touchInputEnabled);
+    private void notifyNewWebContents(CastWebContentsSurfaceHelper.StartParams params) {
+        if (mSurfaceHelper != null) mSurfaceHelper.onNewStartParams(params);
     }
 
     @Override
@@ -293,5 +270,10 @@ public class CastWebContentsActivity extends Activity {
     @RemovableInRelease
     public void setAudioManagerForTesting(CastAudioManager audioManager) {
         mAudioManagerState.set(audioManager);
+    }
+
+    @RemovableInRelease
+    public void setSurfaceHelperForTesting(CastWebContentsSurfaceHelper surfaceHelper) {
+        mSurfaceHelper = surfaceHelper;
     }
 }
