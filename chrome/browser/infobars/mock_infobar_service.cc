@@ -7,16 +7,20 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 
-MockInfoBarService::MockInfoBarService(content::WebContents* web_contents)
-    : InfoBarService(web_contents) {
+// static
+void MockInfoBarService::CreateForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
   void* user_data_key = UserDataKey();
   DCHECK(!web_contents->GetUserData(user_data_key));
-  web_contents->SetUserData(user_data_key, base::WrapUnique(this));
+  web_contents->SetUserData(
+      user_data_key, base::WrapUnique(new MockInfoBarService(web_contents)));
 }
-
-MockInfoBarService::~MockInfoBarService() = default;
 
 std::unique_ptr<infobars::InfoBar> MockInfoBarService::CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
   return std::make_unique<infobars::InfoBar>(std::move(delegate));
 }
+
+MockInfoBarService::MockInfoBarService(content::WebContents* web_contents)
+    : InfoBarService(web_contents) {}

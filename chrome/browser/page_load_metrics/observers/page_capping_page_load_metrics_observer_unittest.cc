@@ -31,16 +31,9 @@ class PageCappingObserverTest
     NavigateAndCommit(GURL(kTestURL));
   }
 
-  size_t InfoBarCount() {
-    // Don't show multiple infobars.
-    return infobar_service() ? infobar_service()->infobar_count() : 0;
-  }
+  size_t InfoBarCount() { return infobar_service()->infobar_count(); }
 
-  void RemoveAllInfoBars() {
-    // Don't show multiple infobars.
-    if (infobar_service())
-      infobar_service()->RemoveAllInfoBars(false);
-  }
+  void RemoveAllInfoBars() { infobar_service()->RemoveAllInfoBars(false); }
 
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());

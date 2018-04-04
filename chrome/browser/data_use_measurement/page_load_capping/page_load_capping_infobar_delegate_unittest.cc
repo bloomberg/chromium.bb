@@ -26,10 +26,7 @@ class PageLoadCappingInfoBarDelegateTest
   ~PageLoadCappingInfoBarDelegateTest() override = default;
 
   void SetUpTest() {
-    InfoBarService* mock_infobar_service =
-        new MockInfoBarService(web_contents());
-    ASSERT_EQ(infobar_service(), mock_infobar_service);
-    ASSERT_TRUE(infobar_service());
+    MockInfoBarService::CreateForWebContents(web_contents());
     NavigateAndCommit(GURL(kTestURL));
   }
 
