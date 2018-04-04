@@ -43,6 +43,7 @@ namespace gpu {
 namespace gles2 {
 class ImageManager;
 class MemoryTracker;
+class MockCopyTextureResourceManager;
 }  // namespace gles2
 
 namespace raster {
@@ -134,6 +135,10 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
     memory_tracker_ = memory_tracker;
   }
 
+  void AddExpectationsForVertexAttribManager();
+  void AddExpectationsForBindVertexArrayOES();
+  void AddExpectationsForRestoreAttribState(GLuint attrib);
+
   void InitDecoderWithWorkarounds(
       std::initializer_list<std::string> extensions);
 
@@ -199,9 +204,11 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
  protected:
   static const GLint kMaxTextureSize = 2048;
   static const GLint kNumTextureUnits = 8;
+  static const GLint kNumVertexAttribs = 16;
 
   static const GLuint kServiceBufferId = 301;
   static const GLuint kServiceTextureId = 304;
+  static const GLuint kServiceVertexArrayId = 310;
 
   static const size_t kSharedBufferSize = 2048;
   static const uint32_t kSharedMemoryOffset = 132;
@@ -245,6 +252,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   ServiceDiscardableManager discardable_manager_;
   scoped_refptr<gles2::ContextGroup> group_;
   base::MessageLoop message_loop_;
+  gles2::MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
 };
 
 }  // namespace raster
