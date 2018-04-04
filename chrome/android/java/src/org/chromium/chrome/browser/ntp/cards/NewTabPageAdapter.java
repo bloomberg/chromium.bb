@@ -407,7 +407,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         return RecyclerView.NO_POSITION;
     }
 
-    SectionList getSectionListForTesting() {
+    public SectionList getSectionListForTesting() {
         return mSections;
     }
 

@@ -394,6 +394,27 @@ public class SectionListTest {
     @Test
     @Feature({"Ntp"})
     @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
+    public void testArticlesHeaderExpandableWithOtherSections() {
+        registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
+        registerCategory(mSuggestionSource, CATEGORY1, 1);
+
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
+
+        // Check article header is expandable.
+        SuggestionsSection articles = sectionList.getSection(KnownCategories.ARTICLES);
+        assertTrue(articles.getHeaderItemForTesting().isVisible());
+        assertTrue(articles.getHeaderItemForTesting().isExpandable());
+
+        // Check header of other section is not expandable.
+        SuggestionsSection otherSection = sectionList.getSection(CATEGORY1);
+        assertTrue(otherSection.getHeaderItemForTesting().isVisible());
+        assertFalse(otherSection.getHeaderItemForTesting().isExpandable());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
     public void testSuggestionsVisibilityOnPreferenceChanged() {
         when(mPrefServiceBridge.getBoolean(ARTICLES_SECTION_ENABLED_PREF)).thenReturn(true);
         when(mPrefServiceBridge.getBoolean(EXPANDABLE_HEADER_PREF)).thenReturn(true);
