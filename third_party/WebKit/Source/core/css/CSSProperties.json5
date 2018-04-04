@@ -355,6 +355,8 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      typedom_types: ["Time"],
+      separator: ",",
     },
     {
       name: "animation-direction",
@@ -364,6 +366,7 @@
       separator: ",",
       custom_apply_functions_all: true,
       priority: "Animation",
+      separator: ",",
     },
     {
       name: "animation-duration",
@@ -371,12 +374,17 @@
       separator: ",",
       custom_apply_functions_all: true,
       priority: "Animation",
+      typedom_types: ["Time"],
+      separator: ",",
     },
     {
       name: "animation-fill-mode",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      keywords: ["none", "forwards", "backwards", "both"],
+      typedom_types: ["Keyword"],
+      separator: ",",
     },
     {
       name: "animation-iteration-count",
@@ -385,6 +393,9 @@
       separator: ",",
       custom_apply_functions_all: true,
       priority: "Animation",
+      keywords: ["infinite"],
+      typedom_types: ["Keyword", "Number"],
+      separator: ",",
     },
     {
       name: "animation-name",
@@ -397,18 +408,26 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      keywords: ["running", "paused"],
+      typedom_types: ["Keyword"],
+      separator: ",",
     },
     {
       name: "animation-timing-function",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
+      typedom_types: ["Keyword"],
+      separator: ",",
     },
     {
       name: "transition-delay",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      typedom_types: ["Time"],
+      separator: ",",
     },
     {
       name: "transition-duration",
@@ -429,6 +448,9 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
+      typedom_types: ["Keyword"],
+      separator: ",",
     },
 
     // High Priority and all other font properties.
