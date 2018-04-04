@@ -13,8 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -90,31 +90,44 @@ class MockProxyResolver : public ProxyResolver {
 
 // A mock synchronous ProxyResolver which can be set to block upon reaching
 // GetProxyForURL().
-// TODO(eroman): WaitUntilBlocked() *must* be called before calling Unblock(),
-//               otherwise there will be a race on |should_block_| since it is
-//               read without any synchronization.
 class BlockableProxyResolver : public MockProxyResolver {
  public:
-  BlockableProxyResolver()
-      : should_block_(false),
-        unblocked_(base::WaitableEvent::ResetPolicy::MANUAL,
-                   base::WaitableEvent::InitialState::SIGNALED),
-        blocked_(base::WaitableEvent::ResetPolicy::MANUAL,
-                 base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  enum class State {
+    NONE,
+    BLOCKED,
+    WILL_BLOCK,
+  };
 
+  BlockableProxyResolver() : state_(State::NONE), condition_(&lock_) {}
+
+  ~BlockableProxyResolver() override {
+    base::AutoLock lock(lock_);
+    EXPECT_NE(State::BLOCKED, state_);
+  }
+
+  // Causes the next call into GetProxyForURL() to block. Must be followed by
+  // a call to Unblock().
   void Block() {
-    should_block_ = true;
-    unblocked_.Reset();
+    base::AutoLock lock(lock_);
+    EXPECT_EQ(State::NONE, state_);
+    state_ = State::WILL_BLOCK;
+    condition_.Broadcast();
   }
 
+  // Unblocks the ProxyResolver. The ProxyResolver must already be in a
+  // blocked state prior to calling.
   void Unblock() {
-    should_block_ = false;
-    blocked_.Reset();
-    unblocked_.Signal();
+    base::AutoLock lock(lock_);
+    EXPECT_EQ(State::BLOCKED, state_);
+    state_ = State::NONE;
+    condition_.Broadcast();
   }
 
+  // Waits until the proxy resolver is blocked within GetProxyForURL().
   void WaitUntilBlocked() {
-    blocked_.Wait();
+    base::AutoLock lock(lock_);
+    while (state_ != State::BLOCKED)
+      condition_.Wait();
   }
 
   int GetProxyForURL(const GURL& query_url,
@@ -122,9 +135,18 @@ class BlockableProxyResolver : public MockProxyResolver {
                      const CompletionCallback& callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override {
-    if (should_block_) {
-      blocked_.Signal();
-      unblocked_.Wait();
+    {
+      base::AutoLock lock(lock_);
+
+      EXPECT_NE(State::BLOCKED, state_);
+
+      if (state_ == State::WILL_BLOCK) {
+        state_ = State::BLOCKED;
+        condition_.Broadcast();
+
+        while (state_ == State::BLOCKED)
+          condition_.Wait();
+      }
     }
 
     return MockProxyResolver::GetProxyForURL(
@@ -132,9 +154,11 @@ class BlockableProxyResolver : public MockProxyResolver {
   }
 
  private:
-  bool should_block_;
-  base::WaitableEvent unblocked_;
-  base::WaitableEvent blocked_;
+  State state_;
+  base::Lock lock_;
+  base::ConditionVariable condition_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlockableProxyResolver);
 };
 
 // This factory returns new instances of BlockableProxyResolver.
