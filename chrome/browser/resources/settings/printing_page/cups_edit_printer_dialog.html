@@ -99,7 +99,9 @@
             <div class="label">$i18n{selectDriver}</div>
             <div class="secondary">
               <paper-input class="browse-file-input" no-label-float readonly
-                  value="[[getBaseName_(activePrinter.printerPPDPath)]]">
+                  value="[[getBaseName_(activePrinter.printerPPDPath)]]"
+                  error-message="$i18n{selectDriverErrorMessage}"
+                  invalid="[[invalidPPD]]">
                 <paper-button class="browse-button" slot="suffix"
                     on-click="onBrowseFile_">
                   $i18n{selectDriverButtonText}
@@ -114,7 +116,8 @@
             on-click="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-click="onSaveTap_">
+        <paper-button class="action-button" on-click="onSaveTap_"
+            disabled="[[invalidPPD]]">
           $i18n{editPrinterButtonText}
         </paper-button>
       </div>
