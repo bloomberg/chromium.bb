@@ -915,4 +915,15 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
             position_rect);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), visible_position_rect);
 };
+
+TEST_P(ParameterizedLocalCaretRectTest,
+       UnicodeBidiPlaintextWithDifferentBlockDirection) {
+  LoadAhem();
+  InsertStyleElement("div { font: 10px/10px Ahem; unicode-bidi: plaintext }");
+  const Position position = SetCaretTextToBody("<div dir='rtl'>|abc</div>");
+  const LayoutRect caret_rect =
+      LocalCaretRectOfPosition(PositionWithAffinity(position)).rect;
+  EXPECT_EQ(LayoutRect(0, 0, 1, 10), caret_rect);
+}
+
 }  // namespace blink
