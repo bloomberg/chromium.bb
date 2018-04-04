@@ -4051,7 +4051,7 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
 
 bool LocalFrameView::FrameIsScrollableDidChange() {
   DCHECK(GetFrame().IsLocalRoot());
-  return GetScrollingContext()->WasScrollable() ==
+  return GetScrollingContext()->WasScrollable() !=
          LayoutViewportScrollableArea()->IsScrollable();
 }
 
