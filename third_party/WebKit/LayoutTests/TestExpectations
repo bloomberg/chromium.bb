@@ -1643,6 +1643,8 @@ crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
+crbug.com/626703 external/wpt/html/editing/focus/focus-01.html [ Timeout ]
 crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/DataTransfer-types-manual.html [ Skip ]
 crbug.com/626703 external/wpt/webvr/idlharness.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/geometry/interfaces.worker.html [ Timeout ]
