@@ -8,7 +8,8 @@
       "DaydreamSetupComplete": true,
       "VrDeviceParams": "CgZHb29nbGUSCUNhcmRib2FyZB0J-SA9JQHegj0qEAAAcEIAAHBCAABwQgAAcEI1KVwPPToIV_GrPmKxDT9QAFgAYAM",
       "UseAutomatedController": false,
-      "GvrPlatformLibraryPref": false
+      "GvrPlatformLibraryPref": false,
+      "EnableVrCoreHeadTracking": true
     }
   }
 ]

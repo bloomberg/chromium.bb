@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import story
 from contrib.vr_benchmarks.vr_sample_page import VrSamplePage
+from contrib.vr_benchmarks.vr_story_set import VrStorySet
 
 
 class WebVrSamplePage(VrSamplePage):
@@ -25,11 +25,12 @@ class WebVrSamplePage(VrSamplePage):
     action_runner.Navigate("about:blank")
 
 
-class WebVrSamplePageSet(story.StorySet):
+class WebVrSamplePageSet(VrStorySet):
   """A page set using the official WebVR sample with settings tweaked."""
 
-  def __init__(self):
-    super(WebVrSamplePageSet, self).__init__()
+  def __init__(self, use_fake_pose_tracker=True):
+    super(WebVrSamplePageSet, self).__init__(
+        use_fake_pose_tracker=use_fake_pose_tracker)
 
     # Test cases that use the synthetic cube field page
     cube_test_cases = [
