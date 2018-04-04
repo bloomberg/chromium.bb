@@ -243,9 +243,8 @@ static int get_eob_cost(int eob, const LV_MAP_EOB_COST *txb_eob_costs,
 static INLINE int get_sign_bit_cost(tran_low_t qc, int coeff_idx,
                                     const int (*dc_sign_cost)[2],
                                     int dc_sign_ctx) {
-  const int sign = (qc < 0) ? 1 : 0;
-  // sign bit cost
   if (coeff_idx == 0) {
+    const int sign = (qc < 0) ? 1 : 0;
     return dc_sign_cost[dc_sign_ctx][sign];
   }
   return av1_cost_literal(1);
