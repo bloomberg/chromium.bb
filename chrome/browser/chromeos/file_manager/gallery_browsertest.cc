@@ -170,14 +170,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DISABLED_RenameImageOnDownloads) {
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_RenameImageOnDownloads DISABLED_RenameImageOnDownloads
-#else
-#define MAYBE_RenameImageOnDownloads RenameImageOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       MAYBE_RenameImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, RenameImageOnDownloads) {
   set_test_case_name("renameImageOnDownloads");
   StartTest();
 }
@@ -233,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       MAYBE_CheckAvailabilityOfShareButtonOnDownloads) {
+                       CheckAvailabilityOfShareButtonOnDownloads) {
   set_test_case_name("checkAvailabilityOfShareButtonOnDownloads");
   StartTest();
 }
@@ -343,8 +336,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ResizeImageOnDownloads) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       MAYBE_ResizeImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, ResizeImageOnDownloads) {
   set_test_case_name("resizeImageOnDownloads");
   StartTest();
 }
