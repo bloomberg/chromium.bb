@@ -71,8 +71,8 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
  protected:
   bool LaunchApprtcInstanceOnLocalhost(const std::string& port) {
     base::FilePath appengine_dev_appserver =
-        GetSourceDir().Append(
-            FILE_PATH_LITERAL("../google_appengine/dev_appserver.py"));
+        GetSourceDir().Append(FILE_PATH_LITERAL(
+            "out/apprtc/temp/google-cloud-sdk/bin/dev_appserver.py"));
     if (!base::PathExists(appengine_dev_appserver)) {
       LOG(ERROR) << "Missing appengine sdk at " <<
           appengine_dev_appserver.value() << ".\n" <<
@@ -88,10 +88,9 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
       return false;
     }
     if (!base::PathExists(apprtc_dir.Append(FILE_PATH_LITERAL("app.yaml")))) {
-      LOG(ERROR) << "The AppRTC AppEngine app at " <<
-          apprtc_dir.value() << " appears to have not been built." <<
-          "This should have been done by webrtc.DEPS scripts which invoke " <<
-          "'grunt build' on AppRTC.";
+      LOG(ERROR) << "The AppRTC AppEngine app at " << apprtc_dir.value()
+                 << " appears to have not been built."
+                 << "This should have been done by webrtc.DEPS scripts.";
       return false;
     }
 
@@ -116,10 +115,10 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     // runhooks stage when webrtc.DEPS/build_apprtc_collider.py runs.
 #if defined(OS_WIN)
     base::FilePath collider_server = GetSourceDir().Append(
-        FILE_PATH_LITERAL("out/go-workspace/bin/collidermain.exe"));
+        FILE_PATH_LITERAL("out/collider/collidermain.exe"));
 #else
-    base::FilePath collider_server = GetSourceDir().Append(
-        FILE_PATH_LITERAL("out/go-workspace/bin/collidermain"));
+    base::FilePath collider_server =
+        GetSourceDir().Append(FILE_PATH_LITERAL("out/collider/collidermain"));
 #endif
     if (!base::PathExists(collider_server)) {
       LOG(ERROR) << "Missing Collider server binary at " <<
