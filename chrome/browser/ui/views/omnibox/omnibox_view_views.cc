@@ -922,6 +922,13 @@ void OmniboxViewViews::OnBlur() {
   // Save the user's existing selection to restore it later.
   saved_selection_for_focus_change_ = GetSelectedRange();
 
+  // Revert the URL if the user has not made any changes. If steady-state
+  // elisions is on, this will also re-elide the URL.
+  if (model()->user_input_in_progress() &&
+      text() == model()->GetCurrentPermanentUrlText()) {
+    RevertAll();
+  }
+
   views::Textfield::OnBlur();
   model()->OnWillKillFocus();
 
