@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 
 /**
  * The coordinator for the contextual suggestions UI component. Manages communication with other
@@ -64,13 +65,45 @@ public class ContextualSuggestionsCoordinator {
     }
 
     /**
-     * Preload the contextual suggestions in the {@link BottomSheet}; content won't actually be
-     * shown until {@link #showSuggestions()} is called.
+     * Preload the contextual suggestions content in the {@link BottomSheet}; the sheet won't
+     * actually be shown until {@link #showContentInSheet()} is called.
+     */
+    void preloadContentInSheet() {
+        mToolbarCoordinator =
+                new ToolbarCoordinator(mActivity, mBottomSheetController.getBottomSheet(), mModel);
+        mContentCoordinator =
+                new ContentCoordinator(mActivity, mBottomSheetController.getBottomSheet());
+        mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
+                mContentCoordinator, mToolbarCoordinator);
+        // TODO(twellington): Handle the case where preload returns false.
+        mBottomSheetController.requestContentPreload(mBottomSheetContent);
+    }
+
+    /**
+     * Show the contextual suggestions content in the {@link BottomSheet}.
+     * {@link #preloadContentInSheet()} must be called prior to calling this method.
+     *
+     * Only the views needed for peeking the bottom sheet will be constructed. Another
+     * call to {@link #displaySuggestions()} is needed to finish inflating views for the
+     * suggestions cards.
+     */
+    void showContentInSheet() {
+        // #preloadContentInSheet will always be called before this method, regardless of
+        // whether content was actually put in the sheet (meaning mBottomSheetContent should never
+        // be null). If content is not successfully preloaded
+        // BottomSheetController#requestContentPreload will return false.
+        assert mBottomSheetContent != null;
+        mBottomSheetController.requestShowContent(mBottomSheetContent, false);
+    }
+
+    /**
+     * Finish showing the contextual suggestions in the {@link BottomSheet}.
+     * {@link #showContentInSheet()} must be called prior to calling this method.
      *
      * @param suggestionsSource The {@link SuggestionsSource} used to retrieve additional things
      *                          needed to display suggestions (e.g. favicons, thumbnails).
      */
-    void preloadSuggestionsInSheet(SuggestionsSource suggestionsSource) {
+    void showSuggestions(SuggestionsSource suggestionsSource) {
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegateImpl(
                 mActivity, mProfile, mBottomSheetController.getBottomSheet(), mTabModelSelector);
         SuggestionsUiDelegateImpl uiDelegate =
@@ -79,31 +112,24 @@ public class ContextualSuggestionsCoordinator {
                         mActivity.getChromeApplication().getReferencePool(),
                         mActivity.getSnackbarManager());
 
-        // TODO(twellington): Introduce another method that creates bottom sheet content with only
-        // a toolbar view when suggestions are fist available, and use this method to construct the
-        // content view when the sheet is opened.
-        mToolbarCoordinator =
-                new ToolbarCoordinator(mActivity, mBottomSheetController.getBottomSheet(), mModel);
-        mContentCoordinator = new ContentCoordinator(mActivity,
-                mBottomSheetController.getBottomSheet(), mProfile, uiDelegate, mModel,
+        mContentCoordinator.showSuggestions(mActivity, mProfile, uiDelegate, mModel,
                 mActivity.getWindowAndroid(), mActivity::closeContextMenu);
-        mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
-                mContentCoordinator, mToolbarCoordinator);
-        // TODO(twellington): Handle the case where preload returns false.
-        mBottomSheetController.requestContentPreload(mBottomSheetContent);
     }
 
     /**
-     * Show the contextual suggestions in the {@link BottomSheet}.
-     * {@link #preloadSuggestionsInSheet()} must be called prior to calling this method.
+     * Add an observer to the {@link BottomSheet}.
+     * @param observer The observer to add.
      */
-    void showSuggestions() {
-        // #preloadSuggestionsInSheet will always be called before this method, regardless of
-        // whether content was actually put in the sheet (meaning mBottomSheetContent should never
-        // be null). If content is not successfully preloaded
-        // BottomSheetController#requestContentPreload will return false.
-        assert mBottomSheetContent != null;
-        mBottomSheetController.requestShowContent(mBottomSheetContent, false);
+    void addBottomSheetObserver(BottomSheetObserver observer) {
+        mBottomSheetController.getBottomSheet().addObserver(observer);
+    }
+
+    /**
+     * Remove an observer to the {@link BottomSheet}.
+     * @param observer The observer to remove.
+     */
+    void removeBottomSheetObserver(BottomSheetObserver observer) {
+        mBottomSheetController.getBottomSheet().removeObserver(observer);
     }
 
     /** Removes contextual suggestions from the {@link BottomSheet}. */

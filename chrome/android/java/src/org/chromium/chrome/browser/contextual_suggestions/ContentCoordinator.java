@@ -27,11 +27,11 @@ import org.chromium.ui.base.WindowAndroid;
  * {@link ContextualSuggestionsCoordinator} and lifecycle of sub-component objects.
  */
 class ContentCoordinator {
-    private final ContextualSuggestionsModel mModel;
-    private final WindowAndroid mWindowAndroid;
-    private final ContextMenuManager mContextMenuManager;
+    private final SuggestionsRecyclerView mRecyclerView;
 
-    private SuggestionsRecyclerView mRecyclerView;
+    private ContextualSuggestionsModel mModel;
+    private WindowAndroid mWindowAndroid;
+    private ContextMenuManager mContextMenuManager;
     private RecyclerViewModelChangeProcessor<ClusterListObservable, NewTabPageViewHolder>
             mModelChangeProcessor;
 
@@ -39,6 +39,26 @@ class ContentCoordinator {
      * Construct a new {@link ContentCoordinator}.
      * @param context The {@link Context} used to retrieve resources.
      * @param parentView The parent {@link View} to which the content will eventually be attached.
+     */
+    ContentCoordinator(Context context, ViewGroup parentView) {
+        mRecyclerView = (SuggestionsRecyclerView) LayoutInflater.from(context).inflate(
+                R.layout.contextual_suggestions_layout, parentView, false);
+    }
+
+    /** @return The content {@link View}. */
+    View getView() {
+        return mRecyclerView;
+    }
+
+    /** @return The vertical scroll offset of the content view. */
+    int getVerticalScrollOffset() {
+        return mRecyclerView.computeVerticalScrollOffset();
+    }
+
+    /**
+     * Show suggestions, retrieved from the model, in the content view.
+     *
+     * @param context The {@link Context} used to retrieve resources.
      * @param profile The regular {@link Profile}.
      * @param uiDelegate The {@link SuggestionsUiDelegate} used to help construct items in the
      *                   content view.
@@ -46,14 +66,11 @@ class ContentCoordinator {
      * @param windowAndroid The {@link WindowAndroid} for attaching a context menu listener.
      * @param closeContextMenuCallback The callback when a context menu is closed.
      */
-    ContentCoordinator(Context context, ViewGroup parentView, Profile profile,
-            SuggestionsUiDelegate uiDelegate, ContextualSuggestionsModel model,
-            WindowAndroid windowAndroid, Runnable closeContextMenuCallback) {
+    void showSuggestions(Context context, Profile profile, SuggestionsUiDelegate uiDelegate,
+            ContextualSuggestionsModel model, WindowAndroid windowAndroid,
+            Runnable closeContextMenuCallback) {
         mModel = model;
         mWindowAndroid = windowAndroid;
-
-        mRecyclerView = (SuggestionsRecyclerView) LayoutInflater.from(context).inflate(
-                R.layout.contextual_suggestions_layout, parentView, false);
 
         mContextMenuManager = new ContextMenuManager(uiDelegate.getNavigationDelegate(),
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback);
@@ -76,21 +93,15 @@ class ContentCoordinator {
         });
     }
 
-    /** @return The content {@link View}. */
-    View getView() {
-        return mRecyclerView;
-    }
-
-    /** @return The vertical scroll offset of the content view. */
-    int getVerticalScrollOffset() {
-        return mRecyclerView.computeVerticalScrollOffset();
-    }
-
     /** Destroy the content component. */
     void destroy() {
         // The model outlives the content sub-component. Remove the observer so that this object
         // can be garbage collected.
-        mModel.mClusterListObservable.removeObserver(mModelChangeProcessor);
-        mWindowAndroid.removeContextMenuCloseListener(mContextMenuManager);
+        if (mModelChangeProcessor != null) {
+            mModel.mClusterListObservable.removeObserver(mModelChangeProcessor);
+        }
+        if (mWindowAndroid != null) {
+            mWindowAndroid.removeContextMenuCloseListener(mContextMenuManager);
+        }
     }
 }
