@@ -36,6 +36,11 @@
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
+#endif
+
 ChromeRLZTrackerDelegate::ChromeRLZTrackerDelegate() {}
 
 ChromeRLZTrackerDelegate::~ChromeRLZTrackerDelegate() {}
@@ -44,11 +49,23 @@ ChromeRLZTrackerDelegate::~ChromeRLZTrackerDelegate() {}
 void ChromeRLZTrackerDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if BUILDFLAG(ENABLE_RLZ)
+  int rlz_ping_delay_seconds = 90;
 #if defined(OS_CHROMEOS)
-  registry->RegisterIntegerPref(prefs::kRlzPingDelaySeconds, 24 * 3600);
-#else
-  registry->RegisterIntegerPref(prefs::kRlzPingDelaySeconds, 90);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kRlzPingDelay)) {
+    // Use a switch for overwriting the default delay because it doesn't seem
+    // possible to manually override the Preferences file on Chrome OS: the file
+    // is already loaded into memory by the time you modify it and any changes
+    // made get overwritten by Chrome.
+    rlz_ping_delay_seconds =
+        std::stoi(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            chromeos::switches::kRlzPingDelay));
+  } else {
+    rlz_ping_delay_seconds = 24 * 3600;
+  }
 #endif
+  registry->RegisterIntegerPref(prefs::kRlzPingDelaySeconds,
+                                rlz_ping_delay_seconds);
 #endif
 }
 
