@@ -53,6 +53,12 @@ class CHROMEOS_EXPORT SmbProviderClient
   virtual void Mount(const base::FilePath& share_path,
                      MountCallback callback) = 0;
 
+  // Calls Remount. This attempts to remount the share at |share_path| with its
+  // original |mount_id|.
+  virtual void Remount(const base::FilePath& share_path,
+                       int32_t mount_id,
+                       StatusCallback callback) = 0;
+
   // Calls Unmount. This removes the corresponding mount of |mount_id| from
   // the list of valid mounts. Subsequent operations on |mount_id| will fail.
   virtual void Unmount(int32_t mount_id, StatusCallback callback) = 0;

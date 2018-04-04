@@ -70,6 +70,15 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &SmbProviderClientImpl::HandleMountCallback, &callback);
   }
 
+  void Remount(const base::FilePath& share_path,
+               int32_t mount_id,
+               StatusCallback callback) override {
+    smbprovider::RemountOptionsProto options;
+    options.set_path(share_path.value());
+    options.set_mount_id(mount_id);
+    CallDefaultMethod(smbprovider::kRemountMethod, options, &callback);
+  }
+
   void Unmount(int32_t mount_id, StatusCallback callback) override {
     smbprovider::UnmountOptionsProto options;
     options.set_mount_id(mount_id);
