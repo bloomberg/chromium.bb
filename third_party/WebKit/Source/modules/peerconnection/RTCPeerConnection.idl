@@ -101,14 +101,35 @@ enum RTCIceConnectionState {
     [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
     [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidFunction successCallback, RTCPeerConnectionErrorCallback failureCallback);
 
-    // TODO(guidou): The selector argument should the first (nullable,
-    // non-optional) argument, and there should be a third failureCallback
-    // argument.
-    [CallWith=ScriptState, LegacyInterfaceTypeChecking] Promise<void> getStats(RTCStatsCallback successCallback, optional MediaStreamTrack? selector);
-    // TODO(hbos): The spec has an optional |selector| argument that is not
-    // supported yet. There is a discussion about what to do with it (clarify
-    // spec, remove it or change it?): https://github.com/w3c/webrtc-stats/issues/116
-    [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
+    // Legacy getStats() API. The returned metrics are a completely different
+    // set of metrics than the standard compliant version, presented in a
+    // different format. They are undocumented, implementation-specific and
+    // should go away but it is still heavily used. The selector argument can
+    // optionally be used to filter the results only to return metrics relevant
+    // for the selector.
+    // TODO(hbos): Deprecate and remove this API. https://crbug.com/822696
+    [CallWith=ScriptState, LegacyInterfaceTypeChecking] Promise<void> getStats(RTCStatsCallback successCallback, MediaStreamTrack? selector);
+    // Due to a limitation of generated V8 bindings (https://crbug.com/828401),
+    // it is not possible to express both legacy and spec-compliant versions of
+    // getStats() in IDL. This version implements two different APIs with custom
+    // bindings to resolve which one to call in RTCPeerConnection.cpp:
+    //
+    // 1. Promise<void> getStats(RTCStatsCallback successCallback, optional MediaStreamTrack? selector);
+    //    This is the legacy getStats() API handling the case when the selector
+    //    argument is missing, for more details on the legacy API and the IDL
+    //    for when the selector is present, see above.
+    //
+    // 2. Promise<RTCStatsReport> getStats(optional MediaStreamTrack? selector = null);
+    //    This is the spec-compliant version of getStats(). Spec for API:
+    //    https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getstats
+    //    Spec for metrics: https://w3c.github.io/webrtc-stats/
+    //    List of implemented stats:
+    //    https://cs.chromium.org/chromium/src/third_party/webrtc/api/stats/rtcstats_objects.h
+    //    See also RTCRtpSender.getStats() and RTCRtpReceiver.getStats().
+    //
+    //    Note: The version of 2) that takes a |selector| is behind flag
+    //    RuntimeEnabled=RTCPeerConnectionGetStatsSelector.
+    [CallWith=ScriptState] Promise<any> getStats(optional any callbackOrSelector);
 
     // RTP Media API
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getsenders
