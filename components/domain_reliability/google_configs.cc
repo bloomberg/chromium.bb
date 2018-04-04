@@ -351,6 +351,7 @@ const GoogleConfigParams kGoogleConfigs[] = {
     {"googletagmanager.com", true, false, false},
     {"googletagservices.com", true, false, false},
     {"googleusercontent.com", true, false, false},
+    {"googlezip.net", true, false, false},
     {"gstatic.cn", true, false, false},
     {"gstatic.com", true, false, false},
     {"gvt3.com", true, false, false},
