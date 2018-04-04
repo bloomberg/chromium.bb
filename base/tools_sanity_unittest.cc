@@ -221,11 +221,13 @@ TEST(ToolsSanityTest, AsanHeapUseAfterFree) {
 }
 
 #if defined(OS_WIN)
-TEST(ToolsSanityTest, AsanCorruptHeapBlock) {
+// The ASAN runtime doesn't detect heap corruption, this needs fixing before
+// ASAN builds can ship to the wild. See https://crbug.com/818747.
+TEST(ToolsSanityTest, DISABLED_AsanCorruptHeapBlock) {
   HARMFUL_ACCESS(debug::AsanCorruptHeapBlock(), "");
 }
 
-TEST(ToolsSanityTest, AsanCorruptHeap) {
+TEST(ToolsSanityTest, DISABLED_AsanCorruptHeap) {
   // This test will kill the process by raising an exception, there's no
   // particular string to look for in the stack trace.
   EXPECT_DEATH(debug::AsanCorruptHeap(), "");
