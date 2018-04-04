@@ -15,6 +15,7 @@ namespace gpu {
 class DecoderClient;
 
 namespace gles2 {
+class CopyTextureCHROMIUMResourceManager;
 class GLES2Util;
 class ImageManager;
 class Logger;
@@ -67,6 +68,10 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
   // Set to true to LOG every command.
   void set_log_commands(bool log_commands) { log_commands_ = log_commands; }
   bool log_commands() const { return log_commands_; }
+
+  virtual void SetCopyTextureResourceManagerForTest(
+      gles2::CopyTextureCHROMIUMResourceManager*
+          copy_texture_resource_manager) = 0;
 
  protected:
   RasterDecoder(CommandBufferServiceBase* command_buffer_service);

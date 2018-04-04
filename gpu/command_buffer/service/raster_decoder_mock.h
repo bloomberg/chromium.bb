@@ -141,6 +141,9 @@ class MockRasterDecoder : public RasterDecoder {
                     int width,
                     int height,
                     int depth));
+  MOCK_METHOD1(SetCopyTextureResourceManagerForTest,
+               void(gles2::CopyTextureCHROMIUMResourceManager*
+                        copy_texture_resource_manager));
 
  private:
   base::WeakPtrFactory<MockRasterDecoder> weak_ptr_factory_;

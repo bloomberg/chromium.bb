@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -30,12 +31,17 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
+#include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_cmd_validation.h"
+#include "gpu/command_buffer/service/vertex_array_manager.h"
+#include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
@@ -327,6 +333,9 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
   ImageManager* GetImageManagerForTest() override;
+  void SetCopyTextureResourceManagerForTest(
+      CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager)
+      override;
 
  private:
   std::unordered_map<GLuint, TextureMetadata> texture_metadata_;
@@ -351,6 +360,17 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   }
 
   MemoryTracker* memory_tracker() { return group_->memory_tracker(); }
+
+  VertexArrayManager* vertex_array_manager() {
+    return vertex_array_manager_.get();
+  }
+
+  // Gets the vertex attrib manager for the given vertex array.
+  VertexAttribManager* GetVertexAttribManager(GLuint client_id) {
+    VertexAttribManager* info =
+        vertex_array_manager()->GetVertexAttribManager(client_id);
+    return info;
+  }
 
   BufferManager* buffer_manager() { return group_->buffer_manager(); }
 
@@ -394,6 +414,16 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void UnbindTexture(TextureRef* texture_ref) {
     // Unbind texture_ref from texture_ref units.
     state_.UnbindTexture(texture_ref);
+  }
+
+  // Creates a vertex attrib manager for the given vertex array.
+  scoped_refptr<VertexAttribManager> CreateVertexAttribManager(
+      GLuint client_id,
+      GLuint service_id,
+      bool client_visible) {
+    return vertex_array_manager()->CreateVertexAttribManager(
+        client_id, service_id, group_->max_vertex_attribs(), client_visible,
+        feature_info_->IsWebGL2OrES3Context());
   }
 
   // Set remaining commands to process to 0 to force DoCommands to return
@@ -456,6 +486,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                       GLint levels,
                       GLsizei width,
                       GLsizei height);
+  bool InitializeCopyTexImageBlitter();
+  bool InitializeCopyTextureCHROMIUM();
   void DoCopySubTexture(GLuint source_id,
                         GLuint dest_id,
                         GLint xoffset,
@@ -463,14 +495,18 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                         GLint x,
                         GLint y,
                         GLsizei width,
-                        GLsizei height) {
-    NOTIMPLEMENTED();
-  }
+                        GLsizei height);
+  // If the texture has an image but that image is not bound or copied to the
+  // texture, this will first attempt to bind it, and if that fails
+  // CopyTexImage on it. texture_unit is the texture unit it should be bound
+  // to, or 0 if it doesn't matter - setting it to 0 will cause the previous
+  // binding to be restored after the operation. This returns true if a copy
+  // or bind happened and the caller needs to restore the previous texture
+  // binding.
+  bool DoBindOrCopyTexImageIfNeeded(Texture* texture,
+                                    GLenum textarget,
+                                    GLuint texture_unit);
   void DoCompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) {
-    NOTIMPLEMENTED();
-  }
-  void DoProduceTextureDirectCHROMIUM(GLuint texture,
-                                      const volatile GLbyte* key) {
     NOTIMPLEMENTED();
   }
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
@@ -506,6 +542,9 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                                             GLsizei height) {
     NOTIMPLEMENTED();
   }
+  void DoBindVertexArrayOES(GLuint array);
+  void EmulateVertexArrayState();
+  void RestoreStateForAttrib(GLuint attrib, bool restore_array_binding);
 
 #if defined(NDEBUG)
   void LogClientServiceMapping(const char* /* function_name */,
@@ -586,6 +625,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   std::unique_ptr<QueryManager> query_manager_;
 
+  std::unique_ptr<VertexArrayManager> vertex_array_manager_;
+
   // All the state for this context.
   gles2::ContextState state_;
 
@@ -599,6 +640,9 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   // Log extra info.
   bool service_logging_;
+
+  std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
+  std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_chromium_;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -723,6 +767,24 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   }
   CHECK_GL_ERROR();
 
+  state_.InitGenericAttribs(group_->max_vertex_attribs());
+  vertex_array_manager_.reset(new VertexArrayManager());
+
+  GLuint default_vertex_attrib_service_id = 0;
+  if (features().native_vertex_array_object) {
+    api()->glGenVertexArraysOESFn(1, &default_vertex_attrib_service_id);
+    api()->glBindVertexArrayOESFn(default_vertex_attrib_service_id);
+  }
+
+  state_.default_vertex_attrib_manager =
+      CreateVertexAttribManager(0, default_vertex_attrib_service_id, false);
+
+  state_.default_vertex_attrib_manager->Initialize(
+      group_->max_vertex_attribs(), workarounds().init_vertex_attributes);
+
+  // vertex_attrib_manager is set to default_vertex_attrib_manager by this call
+  DoBindVertexArrayOES(0);
+
   query_manager_.reset(new QueryManager());
 
   state_.texture_units.resize(group_->max_texture_units());
@@ -746,9 +808,45 @@ const gles2::ContextState* RasterDecoderImpl::GetContextState() {
 }
 
 void RasterDecoderImpl::Destroy(bool have_context) {
+  if (!initialized())
+    return;
+
+  DCHECK(!have_context || context_->IsCurrent(nullptr));
+
+  if (have_context) {
+    if (copy_tex_image_blit_.get()) {
+      copy_tex_image_blit_->Destroy();
+    }
+
+    if (copy_texture_chromium_.get()) {
+      copy_texture_chromium_->Destroy();
+    }
+
+    if (group_ && group_->texture_manager()) {
+      group_->texture_manager()->MarkContextLost();
+    }
+    state_.MarkContextLost();
+  }
+
+  // Unbind everything.
+  state_.vertex_attrib_manager = nullptr;
+  state_.default_vertex_attrib_manager = nullptr;
+  state_.texture_units.clear();
+  state_.sampler_units.clear();
+  state_.bound_pixel_pack_buffer = nullptr;
+  state_.bound_pixel_unpack_buffer = nullptr;
+
+  copy_tex_image_blit_.reset();
+  copy_texture_chromium_.reset();
+
   if (query_manager_.get()) {
     query_manager_->Destroy(have_context);
     query_manager_.reset();
+  }
+
+  if (vertex_array_manager_.get()) {
+    vertex_array_manager_->Destroy(have_context);
+    vertex_array_manager_.reset();
   }
 
   if (group_.get()) {
@@ -806,6 +904,10 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.texture_storage_image =
       feature_info_->feature_flags().chromium_texture_storage_image;
   caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
+
+  // TODO(backer): If this feature is not turned on, CPU raster gives us random
+  // junk, which is a bug (https://crbug.com/828578).
+  caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
   return caps;
 }
 
@@ -1009,6 +1111,11 @@ void RasterDecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
 
 ImageManager* RasterDecoderImpl::GetImageManagerForTest() {
   return group_->image_manager();
+}
+
+void RasterDecoderImpl::SetCopyTextureResourceManagerForTest(
+    CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager) {
+  copy_texture_chromium_.reset(copy_texture_resource_manager);
 }
 
 void RasterDecoderImpl::BeginDecoding() {
@@ -1982,6 +2089,389 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
   }
 
   texture->SetImmutable(true);
+}
+
+bool RasterDecoderImpl::InitializeCopyTexImageBlitter() {
+  if (!copy_tex_image_blit_.get()) {
+    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
+    copy_tex_image_blit_.reset(
+        new CopyTexImageResourceManager(feature_info_.get()));
+    copy_tex_image_blit_->Initialize(this);
+    if (LOCAL_PEEK_GL_ERROR("glCopySubTexture") != GL_NO_ERROR)
+      return false;
+  }
+  return true;
+}
+
+bool RasterDecoderImpl::InitializeCopyTextureCHROMIUM() {
+  // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
+  // needed because it takes 10s of milliseconds to initialize.
+  if (!copy_texture_chromium_.get()) {
+    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
+    copy_texture_chromium_.reset(CopyTextureCHROMIUMResourceManager::Create());
+    copy_texture_chromium_->Initialize(this, features());
+    if (LOCAL_PEEK_GL_ERROR("glCopySubTexture") != GL_NO_ERROR)
+      return false;
+
+    // On the desktop core profile this also needs emulation of
+    // CopyTex{Sub}Image2D for luminance, alpha, and luminance_alpha
+    // textures.
+    if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
+            feature_info_.get(), GL_LUMINANCE)) {
+      if (!InitializeCopyTexImageBlitter())
+        return false;
+    }
+  }
+  return true;
+}
+
+void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
+                                         GLuint dest_id,
+                                         GLint xoffset,
+                                         GLint yoffset,
+                                         GLint x,
+                                         GLint y,
+                                         GLsizei width,
+                                         GLsizei height) {
+  TextureRef* source_texture_ref = GetTexture(source_id);
+  TextureRef* dest_texture_ref = GetTexture(dest_id);
+  if (!source_texture_ref || !dest_texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "unknown texture id");
+    return;
+  }
+
+  Texture* source_texture = source_texture_ref->texture();
+  Texture* dest_texture = dest_texture_ref->texture();
+  if (source_texture == dest_texture) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
+                       "source and destination textures are the same");
+    return;
+  }
+
+  TextureMetadata* source_texture_metadata = GetTextureMetadata(source_id);
+  if (!source_texture_metadata) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown texture");
+    return;
+  }
+
+  TextureMetadata* dest_texture_metadata = GetTextureMetadata(dest_id);
+  if (!dest_texture_metadata) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown texture");
+    return;
+  }
+
+  GLenum source_target = source_texture_metadata->target();
+  GLint source_level = 0;
+  GLenum dest_target = dest_texture_metadata->target();
+  GLint dest_level = 0;
+
+  ScopedTextureBinder binder(&state_, texture_manager(), dest_texture_ref,
+                             dest_target);
+
+  int source_width = 0;
+  int source_height = 0;
+  gl::GLImage* image =
+      source_texture->GetLevelImage(source_target, 0 /* level */);
+  if (image) {
+    gfx::Size size = image->GetSize();
+    source_width = size.width();
+    source_height = size.height();
+    if (source_width <= 0 || source_height <= 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "invalid image size");
+      return;
+    }
+
+    // Ideally we should not need to check that the sub-texture copy rectangle
+    // is valid in two different ways, here and below. However currently there
+    // is no guarantee that a texture backed by a GLImage will have sensible
+    // level info. If this synchronization were to be enforced then this and
+    // other functions in this file could be cleaned up.
+    // See: https://crbug.com/586476
+    int32_t max_x;
+    int32_t max_y;
+    if (!SafeAddInt32(x, width, &max_x) || !SafeAddInt32(y, height, &max_y) ||
+        x < 0 || y < 0 || max_x > source_width || max_y > source_height) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "source texture bad dimensions");
+      return;
+    }
+  } else {
+    if (!source_texture->GetLevelSize(source_target, 0 /* level */,
+                                      &source_width, &source_height, nullptr)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "source texture has no data for level");
+      return;
+    }
+
+    // Check that this type of texture is allowed.
+    if (!texture_manager()->ValidForTarget(source_target, 0 /* level */,
+                                           source_width, source_height, 1)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "source texture bad dimensions");
+      return;
+    }
+
+    if (!source_texture->ValidForTexture(source_target, 0 /* level */, x, y, 0,
+                                         width, height, 1)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "source texture bad dimensions.");
+      return;
+    }
+  }
+
+  GLenum source_type = 0;
+  GLenum source_internal_format = 0;
+  source_texture->GetLevelType(source_target, 0 /* level */, &source_type,
+                               &source_internal_format);
+
+  GLenum dest_type = 0;
+  GLenum dest_internal_format = 0;
+  bool dest_level_defined = dest_texture->GetLevelType(
+      dest_target, 0 /* level */, &dest_type, &dest_internal_format);
+  if (!dest_level_defined) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
+                       "destination texture is not defined");
+    return;
+  }
+  if (!dest_texture->ValidForTexture(dest_target, 0 /* level */, xoffset,
+                                     yoffset, 0, width, height, 1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "destination texture bad dimensions.");
+    return;
+  }
+
+  if (feature_info_->feature_flags().desktop_srgb_support) {
+    bool enable_framebuffer_srgb =
+        GLES2Util::GetColorEncodingFromInternalFormat(source_internal_format) ==
+            GL_SRGB ||
+        GLES2Util::GetColorEncodingFromInternalFormat(dest_internal_format) ==
+            GL_SRGB;
+    state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
+  }
+
+  // Clear the source texture if necessary.
+  if (!texture_manager()->ClearTextureLevel(this, source_texture_ref,
+                                            source_target, 0 /* level */)) {
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTexture",
+                       "source texture dimensions too big");
+    return;
+  }
+
+  int dest_width = 0;
+  int dest_height = 0;
+  bool ok = dest_texture->GetLevelSize(dest_target, dest_level, &dest_width,
+                                       &dest_height, nullptr);
+  DCHECK(ok);
+  if (xoffset != 0 || yoffset != 0 || width != dest_width ||
+      height != dest_height) {
+    gfx::Rect cleared_rect;
+    if (TextureManager::CombineAdjacentRects(
+            dest_texture->GetLevelClearedRect(dest_target, dest_level),
+            gfx::Rect(xoffset, yoffset, width, height), &cleared_rect)) {
+      DCHECK_GE(cleared_rect.size().GetArea(),
+                dest_texture->GetLevelClearedRect(dest_target, dest_level)
+                    .size()
+                    .GetArea());
+      texture_manager()->SetLevelClearedRect(dest_texture_ref, dest_target,
+                                             dest_level, cleared_rect);
+    } else {
+      // Otherwise clear part of texture level that is not already cleared.
+      if (!texture_manager()->ClearTextureLevel(this, dest_texture_ref,
+                                                dest_target, dest_level)) {
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTexture",
+                           "destination texture dimensions too big");
+        return;
+      }
+    }
+  } else {
+    texture_manager()->SetLevelCleared(dest_texture_ref, dest_target,
+                                       dest_level, true);
+  }
+
+  // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexSubImage.
+  if (image && dest_internal_format == source_internal_format &&
+      dest_level == 0) {
+    if (image->CopyTexSubImage(dest_target, gfx::Point(xoffset, yoffset),
+                               gfx::Rect(x, y, width, height))) {
+      return;
+    }
+  }
+
+  if (!InitializeCopyTextureCHROMIUM())
+    return;
+
+  DoBindOrCopyTexImageIfNeeded(source_texture, source_target, 0);
+
+  // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
+  // before presenting.
+  if (source_target == GL_TEXTURE_EXTERNAL_OES) {
+    if (GLStreamTextureImage* image =
+            source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
+                                                       source_level)) {
+      GLfloat transform_matrix[16];
+      image->GetTextureMatrix(transform_matrix);
+      copy_texture_chromium_->DoCopySubTextureWithTransform(
+          this, source_target, source_texture->service_id(), source_level,
+          source_internal_format, dest_target, dest_texture->service_id(),
+          dest_level, dest_internal_format, xoffset, yoffset, x, y, width,
+          height, dest_width, dest_height, source_width, source_height,
+          false /* unpack_flip_y */, false /* unpack_premultiply_alpha */,
+          false /* unpack_unmultiply_alpha */, false /* dither */,
+          transform_matrix, copy_tex_image_blit_.get());
+      return;
+    }
+  }
+
+  CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
+      GetFeatureInfo(), source_target, source_level, source_internal_format,
+      source_type, dest_target, dest_level, dest_internal_format,
+      false /* unpack_flip_y */, false /* unpack_premultiply_alpha */,
+      false /* unpack_unmultiply_alpha */, false /* dither */);
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
+  // although opposite in Android.
+  // TODO(dshwang): After Mesa fixes this issue, remove this hack.
+  // https://bugs.freedesktop.org/show_bug.cgi?id=98478,
+  // https://crbug.com/535198.
+  if (Texture::ColorRenderable(GetFeatureInfo(), dest_internal_format,
+                               dest_texture->IsImmutable()) &&
+      method == CopyTextureMethod::DIRECT_COPY) {
+    method = CopyTextureMethod::DIRECT_DRAW;
+  }
+#endif
+
+  copy_texture_chromium_->DoCopySubTexture(
+      this, source_target, source_texture->service_id(), source_level,
+      source_internal_format, dest_target, dest_texture->service_id(),
+      dest_level, dest_internal_format, xoffset, yoffset, x, y, width, height,
+      dest_width, dest_height, source_width, source_height,
+      false /* unpack_flip_y */, false /* unpack_premultiply_alpha */,
+      false /* unpack_unmultiply_alpha */, false /* dither */, method,
+      copy_tex_image_blit_.get());
+}
+
+bool RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
+                                                     GLenum textarget,
+                                                     GLuint texture_unit) {
+  // Image is already in use if texture is attached to a framebuffer.
+  if (texture && !texture->IsAttachedToFramebuffer()) {
+    Texture::ImageState image_state;
+    gl::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
+    if (image && image_state == Texture::UNBOUND) {
+      ScopedGLErrorSuppressor suppressor(
+          "RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded", GetErrorState());
+      if (texture_unit)
+        api()->glActiveTextureFn(texture_unit);
+      api()->glBindTextureFn(textarget, texture->service_id());
+      if (!image->BindTexImage(textarget)) {
+        // Note: We update the state to COPIED prior to calling CopyTexImage()
+        // as that allows the GLImage implemenatation to set it back to UNBOUND
+        // and ensure that CopyTexImage() is called each time the texture is
+        // used.
+        texture->SetLevelImageState(textarget, 0, Texture::COPIED);
+        bool rv = image->CopyTexImage(textarget);
+        DCHECK(rv) << "CopyTexImage() failed";
+      }
+      if (!texture_unit) {
+        RestoreCurrentTextureBindings(&state_, textarget,
+                                      state_.active_texture_unit);
+        return false;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+void RasterDecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
+  VertexAttribManager* vao = nullptr;
+  if (client_id != 0) {
+    vao = GetVertexAttribManager(client_id);
+    if (!vao) {
+      // Unlike most Bind* methods, the spec explicitly states that VertexArray
+      // only allows names that have been previously generated. As such, we do
+      // not generate new names here.
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindVertexArrayOES",
+                         "bad vertex array id.");
+      current_decoder_error_ = error::kNoError;
+      return;
+    }
+  } else {
+    vao = state_.default_vertex_attrib_manager.get();
+  }
+
+  // Only set the VAO state if it's changed
+  if (state_.vertex_attrib_manager.get() != vao) {
+    if (state_.vertex_attrib_manager)
+      state_.vertex_attrib_manager->SetIsBound(false);
+    state_.vertex_attrib_manager = vao;
+    if (vao)
+      vao->SetIsBound(true);
+    if (!features().native_vertex_array_object) {
+      EmulateVertexArrayState();
+    } else {
+      GLuint service_id = vao->service_id();
+      api()->glBindVertexArrayOESFn(service_id);
+    }
+  }
+}
+
+// Used when OES_vertex_array_object isn't natively supported
+void RasterDecoderImpl::EmulateVertexArrayState() {
+  // Setup the Vertex attribute state
+  for (uint32_t vv = 0; vv < group_->max_vertex_attribs(); ++vv) {
+    RestoreStateForAttrib(vv, true);
+  }
+
+  // Setup the element buffer
+  gles2::Buffer* element_array_buffer =
+      state_.vertex_attrib_manager->element_array_buffer();
+  api()->glBindBufferFn(
+      GL_ELEMENT_ARRAY_BUFFER,
+      element_array_buffer ? element_array_buffer->service_id() : 0);
+}
+
+void RasterDecoderImpl::RestoreStateForAttrib(GLuint attrib_index,
+                                              bool restore_array_binding) {
+  const VertexAttrib* attrib =
+      state_.vertex_attrib_manager->GetVertexAttrib(attrib_index);
+  if (restore_array_binding) {
+    const void* ptr = reinterpret_cast<const void*>(attrib->offset());
+    gles2::Buffer* buffer = attrib->buffer();
+    api()->glBindBufferFn(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
+    api()->glVertexAttribPointerFn(attrib_index, attrib->size(), attrib->type(),
+                                   attrib->normalized(), attrib->gl_stride(),
+                                   ptr);
+  }
+
+  // Attrib divisors should only be non-zero when the ANGLE_instanced_arrays
+  // extension is available
+  DCHECK(attrib->divisor() == 0 ||
+         feature_info_->feature_flags().angle_instanced_arrays);
+
+  if (feature_info_->feature_flags().angle_instanced_arrays)
+    api()->glVertexAttribDivisorANGLEFn(attrib_index, attrib->divisor());
+  api()->glBindBufferFn(GL_ARRAY_BUFFER,
+                        state_.bound_array_buffer.get()
+                            ? state_.bound_array_buffer->service_id()
+                            : 0);
+
+  // Never touch vertex attribute 0's state (in particular, never disable it)
+  // when running on desktop GL with compatibility profile because it will
+  // never be re-enabled.
+  if (attrib_index != 0 || gl_version_info().BehavesLikeGLES()) {
+    // Restore the vertex attrib array enable-state according to
+    // the VertexAttrib enabled_in_driver value (which really represents the
+    // state of the virtual context - not the driver - notably, above the
+    // vertex array object emulation layer).
+    if (attrib->enabled_in_driver()) {
+      api()->glEnableVertexAttribArrayFn(attrib_index);
+    } else {
+      api()->glDisableVertexAttribArrayFn(attrib_index);
+    }
+  }
 }
 
 // Include the auto-generated part of this file. We split this because it means

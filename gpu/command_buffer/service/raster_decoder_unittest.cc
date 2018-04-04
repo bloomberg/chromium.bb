@@ -20,6 +20,7 @@
 
 using ::testing::_;
 using ::testing::Return;
+using ::testing::SetArgPointee;
 
 using namespace gpu::raster::cmds;
 
@@ -400,8 +401,53 @@ TEST_P(RasterDecoderTest, ReleaseTexImage2DCHROMIUM) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == nullptr);
 }
 
-// TODO(backer): Port CopyTexSubImage2DTwiceClearsUnclearedTexture) after
-// CopyTexSubImage implemented.
+TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
+  // Create uninitialized source texture.
+  GLuint source_texture_id = kNewClientId;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  cmds::CreateTexture cmd;
+  cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
+           viz::ResourceFormat::RGBA_8888, source_texture_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  // Set dimensions on source and dest textures.
+  DoTexStorage2D(source_texture_id, 1 /* levels */, 2, 2);
+  DoTexStorage2D(client_texture_id_, 1 /* levels */, 2, 2);
+
+  // This will initialize the top half of destination.
+  {
+    // Source is undefined, so first call to CopySubTexture will clear the
+    // source.
+    SetupClearTextureExpectations(kNewServiceId, kServiceTextureId,
+                                  GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
+                                  GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
+    SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+    CopySubTexture cmd;
+    cmd.Init(source_texture_id, client_texture_id_, 0, 0, 0, 0, 2, 1);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+
+  // This will initialize bottom right corner of the destination.
+  // CopySubTexture will clear the bottom half of the destination because a
+  // single rectangle is insufficient to keep track of the initialized area.
+  {
+    SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
+                                  GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
+                                  GL_UNSIGNED_BYTE, 0, 1, 2, 1, 0);
+    SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+    CopySubTexture cmd;
+    cmd.Init(source_texture_id, client_texture_id_, 1, 1, 0, 0, 1, 1);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+
+  gles2::TextureManager* manager = group().texture_manager();
+  gles2::TextureRef* texture_ref = manager->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != NULL);
+  gles2::Texture* texture = texture_ref->texture();
+  EXPECT_TRUE(texture->SafeToRenderFrom());
+}
 
 TEST_P(RasterDecoderTest, GLImageAttachedAfterClearLevel) {
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
