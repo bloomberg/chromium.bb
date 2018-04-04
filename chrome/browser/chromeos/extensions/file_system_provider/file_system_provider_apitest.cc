@@ -67,7 +67,7 @@ class NotificationButtonClicker : public RequestManager::Observer {
         NotificationDisplayServiceTester::Get()->GetNotification(
             file_system_info_.mount_path().value());
     if (notification)
-      notification->delegate()->ButtonClick(0);
+      notification->delegate()->Click(0, base::nullopt);
   }
 
   ProvidedFileSystemInfo file_system_info_;

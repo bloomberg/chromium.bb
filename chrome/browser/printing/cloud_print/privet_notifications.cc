@@ -382,12 +382,17 @@ PrivetNotificationDelegate::PrivetNotificationDelegate(Profile* profile)
 PrivetNotificationDelegate::~PrivetNotificationDelegate() {
 }
 
-void PrivetNotificationDelegate::ButtonClick(int button_index) {
-  if (button_index == 0) {
+void PrivetNotificationDelegate::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  if (!button_index)
+    return;
+
+  if (*button_index == 0) {
     ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CLICKED);
     OpenTab(GURL(kPrivetNotificationOriginUrl));
   } else {
-    DCHECK_EQ(1, button_index);
+    DCHECK_EQ(1, *button_index);
     ReportPrivetUmaEvent(PRIVET_DISABLE_NOTIFICATIONS_CLICKED);
     DisableNotifications();
   }

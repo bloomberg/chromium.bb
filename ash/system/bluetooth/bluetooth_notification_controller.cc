@@ -63,7 +63,8 @@ class BluetoothPairingNotificationDelegate
 
   // message_center::NotificationDelegate overrides.
   void Close(bool by_user) override;
-  void ButtonClick(int button_index) override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
  private:
   // Buttons that appear in notifications.
@@ -100,13 +101,18 @@ void BluetoothPairingNotificationDelegate::Close(bool by_user) {
     device->CancelPairing();
 }
 
-void BluetoothPairingNotificationDelegate::ButtonClick(int button_index) {
-  VLOG(1) << "Pairing notification, button click: " << button_index;
+void BluetoothPairingNotificationDelegate::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  if (!button_index)
+    return;
+
+  VLOG(1) << "Pairing notification, button click: " << *button_index;
   // If the device object still exists, send the appropriate response either
   // confirming or rejecting the pairing.
   BluetoothDevice* device = adapter_->GetDevice(address_);
   if (device) {
-    switch (button_index) {
+    switch (*button_index) {
       case BUTTON_ACCEPT:
         device->ConfirmPairing();
         break;

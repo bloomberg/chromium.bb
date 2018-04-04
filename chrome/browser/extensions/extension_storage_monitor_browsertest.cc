@@ -319,7 +319,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UserDisabledNotifications) {
   // Fake clicking the notification button to disable notifications.
   display_service_->GetNotification(GetNotificationId(extension->id()))
       ->delegate()
-      ->ButtonClick(ExtensionStorageMonitor::BUTTON_DISABLE_NOTIFICATION);
+      ->Click(ExtensionStorageMonitor::BUTTON_DISABLE_NOTIFICATION,
+              base::nullopt);
 
   EXPECT_FALSE(IsStorageNotificationEnabled(extension->id()));
 
@@ -424,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
                                          extension->id());
   display_service_->GetNotification(GetNotificationId(extension->id()))
       ->delegate()
-      ->ButtonClick(ExtensionStorageMonitor::BUTTON_UNINSTALL);
+      ->Click(ExtensionStorageMonitor::BUTTON_UNINSTALL, base::nullopt);
   observer.WaitForExtensionUninstalled();
 }
 

@@ -76,42 +76,6 @@ const char kDriveOfflineSupportUrl[] =
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// DriveOfflineNotificationDelegate
-
-// NotificationDelegate for the notification that is displayed when Drive
-// offline mode is enabled automatically. Clicking on the notification button
-// will open the Drive settings page.
-class DriveOfflineNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  explicit DriveOfflineNotificationDelegate(Profile* profile)
-      : profile_(profile) {}
-
-  // message_center::NotificationDelegate overrides:
-  void ButtonClick(int button_index) override;
-
- protected:
-  ~DriveOfflineNotificationDelegate() override {}
-
- private:
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(DriveOfflineNotificationDelegate);
-};
-
-void DriveOfflineNotificationDelegate::ButtonClick(int button_index) {
-  DCHECK_EQ(0, button_index);
-
-  // The support page will be localized based on the user's GAIA account.
-  const GURL url = GURL(kDriveOfflineSupportUrl);
-
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-  ShowSingletonTabOverwritingNTP(
-      displayer.browser(),
-      GetSingletonTabNavigateParams(displayer.browser(), url));
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DriveWebContentsManager
 
 // Manages web contents that initializes Google Drive offline mode. We create
@@ -460,6 +424,28 @@ void DriveFirstRunController::ShowNotification() {
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_BUTTON)));
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+
+  // Clicking on the notification button will open the Drive settings page.
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(
+              [](Profile* profile, base::Optional<int> button_index) {
+                if (!button_index)
+                  return;
+
+                DCHECK_EQ(0, *button_index);
+
+                // The support page will be localized based on the user's GAIA
+                // account.
+                const GURL url = GURL(kDriveOfflineSupportUrl);
+
+                chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+                ShowSingletonTabOverwritingNTP(
+                    displayer.browser(),
+                    GetSingletonTabNavigateParams(displayer.browser(), url));
+              },
+              profile_));
+
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kDriveOfflineNotificationId,
       base::string16(),  // title
@@ -468,7 +454,7 @@ void DriveFirstRunController::ShowNotification() {
       base::UTF8ToUTF16(extension->name()), GURL(),
       message_center::NotifierId(message_center::NotifierId::APPLICATION,
                                  kDriveHostedAppId),
-      data, new DriveOfflineNotificationDelegate(profile_));
+      data, std::move(delegate));
   notification.set_priority(message_center::LOW_PRIORITY);
   NotificationDisplayService::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, notification);

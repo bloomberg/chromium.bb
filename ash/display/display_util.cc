@@ -41,27 +41,6 @@ namespace {
 const char kDisplayErrorNotificationId[] = "chrome://settings/display/error";
 const char kNotifierDisplayError[] = "ash.display.error";
 
-// A notification delegate that will start the feedback app when the notication
-// is clicked.
-class DisplayErrorNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  DisplayErrorNotificationDelegate() = default;
-
-  // message_center::NotificationDelegate:
-  void ButtonClick(int index) override {
-    DCHECK_EQ(0, index);
-    Shell::Get()->new_window_controller()->OpenFeedbackPage();
-  }
-
- private:
-  // Private destructor since NotificationDelegate is ref-counted.
-  ~DisplayErrorNotificationDelegate() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayErrorNotificationDelegate);
-};
-
-
 void ConvertPointFromScreenToNative(aura::WindowTreeHost* host,
                                     gfx::Point* point) {
   ::wm::ConvertPointFromScreen(host->window(), point);
@@ -182,7 +161,12 @@ void ShowDisplayErrorNotification(const base::string16& message,
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierDisplayError),
-          data, new DisplayErrorNotificationDelegate,
+          data,
+          base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+              base::BindRepeating([](base::Optional<int> button_index) {
+                if (button_index)
+                  Shell::Get()->new_window_controller()->OpenFeedbackPage();
+              })),
           kNotificationMonitorWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
   notification->set_priority(message_center::SYSTEM_PRIORITY);

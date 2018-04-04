@@ -71,11 +71,11 @@ TEST_F(EasyUnlockNotificationControllerTest,
 
   // Clicking notification button should launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->ButtonClick(0);
+  notification->delegate()->Click(0, base::nullopt);
 
   // Clicking the notification itself should also launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
 }
 
 TEST_F(EasyUnlockNotificationControllerTest,
@@ -91,14 +91,14 @@ TEST_F(EasyUnlockNotificationControllerTest,
 
   // Clicking 1st notification button should lock screen settings.
   EXPECT_CALL(*notification_controller_, LockScreen());
-  notification->ButtonClick(0);
+  notification->delegate()->Click(0, base::nullopt);
 
   // Clicking 2nd notification button should launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->ButtonClick(1);
+  notification->delegate()->Click(1, base::nullopt);
 
   // Clicking the notification itself should do nothing.
-  notification->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
 }
 
 TEST_F(EasyUnlockNotificationControllerTest,
@@ -119,11 +119,11 @@ TEST_F(EasyUnlockNotificationControllerTest,
 
   // Clicking notification button should launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->ButtonClick(0);
+  notification->delegate()->Click(0, base::nullopt);
 
   // Clicking the notification itself should also launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
 }
 
 TEST_F(EasyUnlockNotificationControllerTest,
@@ -152,11 +152,11 @@ TEST_F(EasyUnlockNotificationControllerTest, TestShowPromotionNotification) {
 
   // Clicking notification button should launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->ButtonClick(0);
+  notification->delegate()->Click(0, base::nullopt);
 
   // Clicking the notification itself should also launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
 }
 
 }  // namespace

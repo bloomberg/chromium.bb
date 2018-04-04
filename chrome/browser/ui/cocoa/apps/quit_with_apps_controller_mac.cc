@@ -92,14 +92,15 @@ void QuitWithAppsController::Close(bool by_user) {
     suppress_for_session_ = !hosted_app_quit_notification_;
 }
 
-void QuitWithAppsController::Click() {
-  CloseNotification(notification_profile_);
-}
-
-void QuitWithAppsController::ButtonClick(int button_index) {
+void QuitWithAppsController::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   CloseNotification(notification_profile_);
 
-  if (button_index == kQuitAllAppsButtonIndex) {
+  if (!button_index)
+    return;
+
+  if (*button_index == kQuitAllAppsButtonIndex) {
     if (hosted_app_quit_notification_) {
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
@@ -108,7 +109,7 @@ void QuitWithAppsController::ButtonClick(int button_index) {
       chrome::CloseAllBrowsers();
     }
     AppWindowRegistryUtil::CloseAllAppWindows();
-  } else if (button_index == kDontShowAgainButtonIndex &&
+  } else if (*button_index == kDontShowAgainButtonIndex &&
              !hosted_app_quit_notification_) {
     g_browser_process->local_state()->SetBoolean(
         prefs::kNotifyWhenAppsKeepChromeAlive, false);

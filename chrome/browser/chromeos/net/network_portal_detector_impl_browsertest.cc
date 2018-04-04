@@ -242,7 +242,9 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
       ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
   EXPECT_TRUE(action_checker.Check());
 
-  display_service_->GetNotification(kNotificationId)->delegate()->Click();
+  display_service_->GetNotification(kNotificationId)
+      ->delegate()
+      ->Click(base::nullopt, base::nullopt);
 
   content::RunAllPendingInMessageLoop();
 

@@ -57,29 +57,12 @@ class PassThroughDelegate : public message_center::NotificationDelegate {
             by_user);
   }
 
-  void Click() override {
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {
     NotificationDisplayServiceImpl::GetForProfile(profile_)
         ->ProcessNotificationOperation(
             NotificationCommon::CLICK, notification_type_,
-            notification_.origin_url(), notification_.id(),
-            base::nullopt /* action_index */, base::nullopt /* reply */,
-            base::nullopt /* by_user */);
-  }
-
-  void ButtonClick(int action_index) override {
-    NotificationDisplayServiceImpl::GetForProfile(profile_)
-        ->ProcessNotificationOperation(
-            NotificationCommon::CLICK, notification_type_,
-            notification_.origin_url(), notification_.id(), action_index,
-            base::nullopt /* reply */, base::nullopt /* by_user */);
-  }
-
-  void ButtonClickWithReply(int action_index,
-                            const base::string16& reply) override {
-    NotificationDisplayServiceImpl::GetForProfile(profile_)
-        ->ProcessNotificationOperation(
-            NotificationCommon::CLICK, notification_type_,
-            notification_.origin_url(), notification_.id(), action_index, reply,
+            notification_.origin_url(), notification_.id(), button_index, reply,
             base::nullopt /* by_user */);
   }
 

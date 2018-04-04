@@ -82,9 +82,14 @@ void CupsPrintJobNotification::Close(bool by_user) {
   }
 }
 
-void CupsPrintJobNotification::ButtonClick(int button_index) {
-  DCHECK(button_index >= 0 &&
-         static_cast<size_t>(button_index) < button_commands_.size());
+void CupsPrintJobNotification::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  if (!button_index)
+    return;
+
+  DCHECK(*button_index >= 0 &&
+         static_cast<size_t>(*button_index) < button_commands_.size());
 
   CupsPrintJobManager* print_job_manager =
       CupsPrintJobManagerFactory::GetForBrowserContext(profile_);
@@ -92,7 +97,7 @@ void CupsPrintJobNotification::ButtonClick(int button_index) {
   if (!print_job_)
     return;
 
-  switch (button_commands_[button_index]) {
+  switch (button_commands_[*button_index]) {
     case ButtonCommand::CANCEL_PRINTING:
       print_job_manager->CancelPrintJob(print_job_.get());
       // print_job_ was deleted in CancelPrintJob.  Forget the pointer.

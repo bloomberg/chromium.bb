@@ -37,7 +37,7 @@ TEST_F(NotificationDelegateTest, ClickDelegate) {
       base::Bind(&NotificationDelegateTest::BodyClickCallback,
                  base::Unretained(this)));
 
-  delegate->Click();
+  delegate->Click(base::nullopt, base::nullopt);
   EXPECT_EQ(1, callback_count_);
 }
 
@@ -45,7 +45,7 @@ TEST_F(NotificationDelegateTest, NullClickDelegate) {
   auto delegate =
       base::MakeRefCounted<HandleNotificationClickDelegate>(base::Closure());
 
-  delegate->Click();
+  delegate->Click(base::nullopt, base::nullopt);
   EXPECT_EQ(0, callback_count_);
 }
 
@@ -54,11 +54,11 @@ TEST_F(NotificationDelegateTest, ButtonClickDelegate) {
       base::Bind(&NotificationDelegateTest::ButtonClickCallback,
                  base::Unretained(this)));
 
-  delegate->Click();
+  delegate->Click(base::nullopt, base::nullopt);
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(base::nullopt, last_button_index_);
 
-  delegate->ButtonClick(3);
+  delegate->Click(3, base::nullopt);
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(3, *last_button_index_);
 }

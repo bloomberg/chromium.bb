@@ -47,8 +47,8 @@ class EasyUnlockNotificationController
                              notification_controller);
 
     // message_center::NotificationDelegate:
-    void Click() override;
-    void ButtonClick(int button_index) override;
+    void Click(const base::Optional<int>& button_index,
+               const base::Optional<base::string16>& reply) override;
 
    private:
     ~NotificationDelegate() override;

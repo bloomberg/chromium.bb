@@ -37,50 +37,19 @@ constexpr char kSuccessNotificationId[] = "arc_fs_migration/success";
 constexpr base::TimeDelta kSuccessNotificationDelay =
     base::TimeDelta::FromSeconds(3);
 
-class ArcMigrationGuideNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  ArcMigrationGuideNotificationDelegate() = default;
-
-  // message_center::NotificationDelegate
-  void ButtonClick(int button_index) override { chrome::AttemptUserExit(); }
-  void Click() override { chrome::AttemptUserExit(); }
-
- private:
-  ~ArcMigrationGuideNotificationDelegate() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcMigrationGuideNotificationDelegate);
-};
-
-class ArcMigrationCompletedNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  explicit ArcMigrationCompletedNotificationDelegate(Profile* profile)
-      : profile_(profile) {}
-
-  // message_center::NotificationDelegate
-  void ButtonClick(int button_index) override {
-    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
-  }
-
-  void Click() override {
-    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
-  }
-
- private:
-  ~ArcMigrationCompletedNotificationDelegate() override = default;
-
-  // Unowned pointer.
-  Profile* const profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcMigrationCompletedNotificationDelegate);
-};
-
 void DoShowArcMigrationSuccessNotification(Profile* profile) {
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
+
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(
+              [](Profile* profile) {
+                arc::SetArcPlayStoreEnabledForProfile(profile, true);
+              },
+              profile));
 
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
@@ -88,9 +57,7 @@ void DoShowArcMigrationSuccessNotification(Profile* profile) {
           l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
           l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
           gfx::Image(), base::string16(), GURL(), notifier_id,
-          message_center::RichNotificationData(),
-          scoped_refptr<message_center::NotificationDelegate>(
-              new ArcMigrationCompletedNotificationDelegate(profile)),
+          message_center::RichNotificationData(), std::move(delegate),
           ash::kNotificationSettingsIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
@@ -124,15 +91,17 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           : l10n_util::GetStringUTF16(
                 IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);
 
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(&chrome::AttemptUserExit));
+
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
           l10n_util::GetStringUTF16(
               IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
           message, gfx::Image(), base::string16(), GURL(), notifier_id,
-          message_center::RichNotificationData(),
-          scoped_refptr<message_center::NotificationDelegate>(
-              new ArcMigrationGuideNotificationDelegate()),
+          message_center::RichNotificationData(), std::move(delegate),
           ash::kNotificationSettingsIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 

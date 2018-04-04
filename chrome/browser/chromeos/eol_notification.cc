@@ -46,8 +46,12 @@ class EolNotificationDelegate : public message_center::NotificationDelegate {
   ~EolNotificationDelegate() override = default;
 
   // NotificationDelegate overrides:
-  void ButtonClick(int button_index) override {
-    switch (button_index) {
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {
+    if (!button_index)
+      return;
+
+    switch (*button_index) {
       case BUTTON_MORE_INFO: {
         // show eol link
         NavigateParams params(profile_, GURL(chrome::kEolNotificationURL),

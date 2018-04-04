@@ -156,13 +156,9 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   return true;
 }
 
-// message_center::NotificationDelegate override:
-void HatsNotificationController::Click() {
-  ButtonClick(0 /* unused */);
-}
-
-// message_center::NotificationDelegate override:
-void HatsNotificationController::ButtonClick(int /* button_index */) {
+void HatsNotificationController::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   UpdateLastInteractionTime();
 
   // The dialog deletes itslef on close.

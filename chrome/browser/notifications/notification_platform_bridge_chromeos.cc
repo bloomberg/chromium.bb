@@ -102,7 +102,8 @@ void NotificationPlatformBridgeChromeOs::HandleNotificationClicked(
     const std::string& id) {
   ProfileNotification* notification = GetProfileNotification(id);
   if (notification->type() == NotificationHandler::Type::TRANSIENT) {
-    notification->notification().delegate()->Click();
+    notification->notification().delegate()->Click(base::nullopt,
+                                                   base::nullopt);
   } else {
     NotificationDisplayServiceImpl::GetForProfile(notification->profile())
         ->ProcessNotificationOperation(
@@ -119,12 +120,7 @@ void NotificationPlatformBridgeChromeOs::HandleNotificationButtonClicked(
     const base::Optional<base::string16>& reply) {
   ProfileNotification* notification = GetProfileNotification(id);
   if (notification->type() == NotificationHandler::Type::TRANSIENT) {
-    if (reply) {
-      notification->notification().delegate()->ButtonClickWithReply(
-          button_index, *reply);
-    } else {
-      notification->notification().delegate()->ButtonClick(button_index);
-    }
+    notification->notification().delegate()->Click(button_index, reply);
   } else {
     NotificationDisplayServiceImpl::GetForProfile(notification->profile())
         ->ProcessNotificationOperation(

@@ -37,26 +37,23 @@ class NotificationTestDelegate : public NotificationDelegate {
  public:
   NotificationTestDelegate() = default;
 
-  void ButtonClick(int button_index) override {
-    if (!expecting_button_click_)
-      ADD_FAILURE() << "ClickOnNotificationButton should not be invoked.";
-    clicked_button_index_ = button_index;
-  }
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {
+    if (!button_index)
+      return;
 
-  void ButtonClickWithReply(int button_index,
-                            const base::string16& reply) override {
-    if (!expecting_reply_submission_) {
-      ADD_FAILURE()
-          << "ClickOnNotificationButtonWithReply should not be invoked.";
-    }
+    if (!reply && !expecting_button_click_)
+      ADD_FAILURE() << "Click should not be invoked with a button index.";
+    if (reply && !expecting_reply_submission_)
+      ADD_FAILURE() << "Click should not be invoked with a reply.";
 
-    clicked_button_index_ = button_index;
-    submitted_reply_string_ = reply;
+    clicked_button_index_ = *button_index;
+    submitted_reply_string_ = reply.value_or(base::string16());
   }
 
   void Reset() {
     clicked_button_index_ = -1;
-    submitted_reply_string_ = base::EmptyString16();
+    submitted_reply_string_.clear();
   }
 
   void DisableNotification() override { disable_notification_called_ = true; }

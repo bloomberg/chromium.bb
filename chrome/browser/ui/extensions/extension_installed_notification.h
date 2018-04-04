@@ -20,7 +20,8 @@ class ExtensionInstalledNotification
                                  Profile* profile);
 
   // NotificationDelegate override:
-  void Click() override;
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
 
  protected:
   // This class is ref-counted.

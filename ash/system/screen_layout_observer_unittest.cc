@@ -85,7 +85,7 @@ void ScreenLayoutObserverTest::CloseNotification() {
 
 void ScreenLayoutObserverTest::ClickNotification() {
   const message_center::Notification* notification = GetDisplayNotification();
-  notification->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
 }
 
 base::string16 ScreenLayoutObserverTest::GetDisplayNotificationText() const {

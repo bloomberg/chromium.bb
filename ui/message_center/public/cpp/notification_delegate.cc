@@ -20,21 +20,11 @@ void ThunkNotificationDelegate::Close(bool by_user) {
     impl_->Close(by_user);
 }
 
-void ThunkNotificationDelegate::Click() {
+void ThunkNotificationDelegate::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   if (impl_)
-    impl_->Click();
-}
-
-void ThunkNotificationDelegate::ButtonClick(int button_index) {
-  if (impl_)
-    impl_->ButtonClick(button_index);
-}
-
-void ThunkNotificationDelegate::ButtonClickWithReply(
-    int button_index,
-    const base::string16& reply) {
-  if (impl_)
-    impl_->ButtonClickWithReply(button_index, reply);
+    impl_->Click(button_index, reply);
 }
 
 void ThunkNotificationDelegate::SettingsClick() {
@@ -72,12 +62,9 @@ HandleNotificationClickDelegate::HandleNotificationClickDelegate(
 
 HandleNotificationClickDelegate::~HandleNotificationClickDelegate() {}
 
-void HandleNotificationClickDelegate::Click() {
-  if (!callback_.is_null())
-    callback_.Run(base::nullopt);
-}
-
-void HandleNotificationClickDelegate::ButtonClick(int button_index) {
+void HandleNotificationClickDelegate::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   if (!callback_.is_null())
     callback_.Run(button_index);
 }

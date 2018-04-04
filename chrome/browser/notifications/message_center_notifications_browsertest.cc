@@ -83,12 +83,15 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
       log_ += "Close_";
       log_ += (by_user ? "by_user_" : "programmatically_");
     }
-    void Click() override { log_ += "Click_"; }
-    void ButtonClick(int button_index) override {
-      log_ += "ButtonClick_";
-      log_ += base::IntToString(button_index) + "_";
+    void Click(const base::Optional<int>& button_index,
+               const base::Optional<base::string16>& reply) override {
+      if (button_index) {
+        log_ += "ButtonClick_";
+        log_ += base::IntToString(*button_index) + "_";
+      } else {
+        log_ += "Click_";
+      }
     }
-
     const std::string& log() { return log_; }
 
    private:

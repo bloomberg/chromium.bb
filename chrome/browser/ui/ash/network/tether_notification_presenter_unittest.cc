@@ -234,7 +234,7 @@ TEST_F(TetherNotificationPresenterTest,
 
   // Tap the notification.
   ASSERT_TRUE(notification->delegate());
-  notification->delegate()->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetActiveHostNotificationId()));
@@ -280,7 +280,7 @@ TEST_F(TetherNotificationPresenterTest,
 
   // Tap the notification.
   ASSERT_TRUE(notification->delegate());
-  notification->delegate()->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetSetupRequiredNotificationId()));
@@ -326,7 +326,7 @@ TEST_F(TetherNotificationPresenterTest,
 
   // Tap the notification.
   ASSERT_TRUE(notification->delegate());
-  notification->delegate()->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetPotentialHotspotNotificationId()));
@@ -352,7 +352,7 @@ TEST_F(TetherNotificationPresenterTest,
 
   // Tap the notification's button.
   ASSERT_TRUE(notification->delegate());
-  notification->delegate()->ButtonClick(0);
+  notification->delegate()->Click(0, base::nullopt);
   EXPECT_FALSE(
       display_service_->GetNotification(GetPotentialHotspotNotificationId()));
 
@@ -398,7 +398,7 @@ TEST_F(TetherNotificationPresenterTest,
 
   // Tap the notification.
   ASSERT_TRUE(notification->delegate());
-  notification->delegate()->Click();
+  notification->delegate()->Click(base::nullopt, base::nullopt);
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetPotentialHotspotNotificationId()));
@@ -466,7 +466,7 @@ TEST_F(TetherNotificationPresenterTest,
                 SINGLE_HOTSPOT_NEARBY_SHOWN);
   display_service_->GetNotification(GetPotentialHotspotNotificationId())
       ->delegate()
-      ->Click();
+      ->Click(base::nullopt, base::nullopt);
   EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
             NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN);
@@ -479,7 +479,7 @@ TEST_F(TetherNotificationPresenterTest,
                 SINGLE_HOTSPOT_NEARBY_SHOWN);
   display_service_->GetNotification(GetPotentialHotspotNotificationId())
       ->delegate()
-      ->ButtonClick(0);
+      ->Click(0, base::nullopt);
   EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
             NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN);
@@ -512,7 +512,7 @@ TEST_F(TetherNotificationPresenterTest,
                 MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   display_service_->GetNotification(GetPotentialHotspotNotificationId())
       ->delegate()
-      ->Click();
+      ->Click(base::nullopt, base::nullopt);
   EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
             NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN);

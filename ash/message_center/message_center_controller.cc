@@ -51,19 +51,14 @@ class AshClientNotificationDelegate
     client_->HandleNotificationClosed(notification_id_, by_user);
   }
 
-  void Click() override {
-    client_->HandleNotificationClicked(notification_id_);
-  }
-
-  void ButtonClick(int button_index) override {
-    client_->HandleNotificationButtonClicked(notification_id_, button_index,
-                                             base::nullopt);
-  }
-
-  void ButtonClickWithReply(int button_index,
-                            const base::string16& reply) override {
-    client_->HandleNotificationButtonClicked(notification_id_, button_index,
-                                             reply);
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {
+    if (button_index) {
+      client_->HandleNotificationButtonClicked(notification_id_, *button_index,
+                                               reply);
+    } else {
+      client_->HandleNotificationClicked(notification_id_);
+    }
   }
 
   void SettingsClick() override {

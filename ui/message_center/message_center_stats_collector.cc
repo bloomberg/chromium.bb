@@ -92,24 +92,17 @@ void MessageCenterStatsCollector::OnNotificationUpdated(
 }
 
 void MessageCenterStatsCollector::OnNotificationClicked(
-    const std::string& notification_id) {
-  StatsCollection::iterator iter = stats_.find(notification_id);
-  if (iter == stats_.end())
-    return;
-  NotificationStats& notification_stat = iter->second;
-
-  notification_stat.CollectAction(NOTIFICATION_ACTION_CLICK);
-}
-
-void MessageCenterStatsCollector::OnNotificationButtonClicked(
     const std::string& notification_id,
-    int button_index) {
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   StatsCollection::iterator iter = stats_.find(notification_id);
   if (iter == stats_.end())
     return;
   NotificationStats& notification_stat = iter->second;
 
-  notification_stat.CollectAction(NOTIFICATION_ACTION_BUTTON_CLICK);
+  notification_stat.CollectAction(button_index
+                                      ? NOTIFICATION_ACTION_BUTTON_CLICK
+                                      : NOTIFICATION_ACTION_CLICK);
 }
 
 void MessageCenterStatsCollector::OnNotificationSettingsClicked(bool handled) {

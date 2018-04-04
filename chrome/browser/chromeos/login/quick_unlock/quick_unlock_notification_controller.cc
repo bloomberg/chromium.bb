@@ -186,7 +186,9 @@ void QuickUnlockNotificationController::Close(bool by_user) {
 }
 
 // message_center::NotificationDelegate override:
-void QuickUnlockNotificationController::Click() {
+void QuickUnlockNotificationController::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   NavigateParams params(profile_, params_.url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.window_action = NavigateParams::SHOW_WINDOW;
