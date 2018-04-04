@@ -1638,7 +1638,7 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_DOWNLOAD_MORE_ACTIONS"
                desc="Tooltip of a button on the downloads page that shows a menu with actions like 'Open downloads folder' or 'Clear all'">
-        More actions...
+        More actions
       </message>
       <message name="IDS_DOWNLOAD_BY_EXTENSION_URL"
                desc="Indicates which extension downloaded this file by name and URL.">

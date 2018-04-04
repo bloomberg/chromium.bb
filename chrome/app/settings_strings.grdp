@@ -10,7 +10,7 @@
 
   <!-- Shared across multiple pages -->
   <message name="IDS_SETTINGS_MORE_ACTIONS" desc="Tooltip text (shows on hover or for screenreaders) for a button that shows a menu with more actions when clicked or tapped">
-    More actions...
+    More actions
   </message>
 
   <!-- About Page -->
