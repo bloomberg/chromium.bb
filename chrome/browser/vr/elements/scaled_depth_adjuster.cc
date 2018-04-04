@@ -45,6 +45,7 @@ bool ScaledDepthAdjuster::OnBeginFrame(const base::TimeTicks& time,
   float z = -o.z() + delta_z_;
   transform_.Scale3d(z, z, z);
   transform_.Translate3d(0, 0, -1);
+  set_world_space_transform_dirty();
   return true;
 }
 

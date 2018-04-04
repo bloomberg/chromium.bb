@@ -65,9 +65,12 @@ void Repositioner::SetEnabled(bool enabled) {
 
 void Repositioner::Reset() {
   transform_.MakeIdentity();
+  set_world_space_transform_dirty();
 }
 
 void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
+  set_world_space_transform_dirty();
+
   gfx::Vector3dF head_up = vr::GetUpVector(head_pose);
   gfx::Vector3dF head_forward = vr::GetForwardVector(head_pose);
 

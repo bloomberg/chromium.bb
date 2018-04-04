@@ -302,15 +302,29 @@ void UiElement::SetLayoutOffset(float x, float y) {
   } else if (y_centering() == BOTTOM) {
     y += size_.height() / 2;
   }
+
+  if (x == layout_offset_.at(0).translate.x &&
+      y == layout_offset_.at(0).translate.y &&
+      !IsAnimatingProperty(LAYOUT_OFFSET)) {
+    return;
+  }
+
   cc::TransformOperations operations = layout_offset_;
   cc::TransformOperation& op = operations.at(0);
   op.translate = {x, y, 0};
   op.Bake();
   animation_.TransitionTransformOperationsTo(last_frame_time_, LAYOUT_OFFSET,
-                                             transform_operations_, operations);
+                                             layout_offset_, operations);
 }
 
 void UiElement::SetTranslate(float x, float y, float z) {
+  if (x == transform_operations_.at(kTranslateIndex).translate.x &&
+      y == transform_operations_.at(kTranslateIndex).translate.y &&
+      z == transform_operations_.at(kTranslateIndex).translate.z &&
+      !IsAnimatingProperty(TRANSFORM)) {
+    return;
+  }
+
   cc::TransformOperations operations = transform_operations_;
   cc::TransformOperation& op = operations.at(kTranslateIndex);
   op.translate = {x, y, z};
@@ -320,16 +334,33 @@ void UiElement::SetTranslate(float x, float y, float z) {
 }
 
 void UiElement::SetRotate(float x, float y, float z, float radians) {
+  float degrees = gfx::RadToDeg(radians);
+
+  if (x == transform_operations_.at(kRotateIndex).rotate.axis.x &&
+      y == transform_operations_.at(kRotateIndex).rotate.axis.y &&
+      z == transform_operations_.at(kRotateIndex).rotate.axis.z &&
+      degrees == transform_operations_.at(kRotateIndex).rotate.angle &&
+      !IsAnimatingProperty(TRANSFORM)) {
+    return;
+  }
+
   cc::TransformOperations operations = transform_operations_;
   cc::TransformOperation& op = operations.at(kRotateIndex);
   op.rotate.axis = {x, y, z};
-  op.rotate.angle = gfx::RadToDeg(radians);
+  op.rotate.angle = degrees;
   op.Bake();
   animation_.TransitionTransformOperationsTo(last_frame_time_, TRANSFORM,
                                              transform_operations_, operations);
 }
 
 void UiElement::SetScale(float x, float y, float z) {
+  if (x == transform_operations_.at(kScaleIndex).scale.x &&
+      y == transform_operations_.at(kScaleIndex).scale.y &&
+      z == transform_operations_.at(kScaleIndex).scale.z &&
+      !IsAnimatingProperty(TRANSFORM)) {
+    return;
+  }
+
   cc::TransformOperations operations = transform_operations_;
   cc::TransformOperation& op = operations.at(kScaleIndex);
   op.scale = {x, y, z};
@@ -654,12 +685,17 @@ void UiElement::NotifyClientTransformOperationsAnimated(
   } else {
     NOTREACHED();
   }
+  local_transform_ = layout_offset_.Apply() * transform_operations_.Apply();
+  world_space_transform_dirty_ = true;
 }
 
 void UiElement::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                          int target_property_id,
                                          cc::KeyframeModel* keyframe_model) {
+  if (size_ == size)
+    return;
   size_ = size;
+  world_space_transform_dirty_ = true;
 }
 
 void UiElement::SetTransitionedProperties(
@@ -747,7 +783,10 @@ void UiElement::DoLayOutChildren() {
   bounds.Inset(-left_padding_, -bottom_padding_, -right_padding_,
                -top_padding_);
   bounds.set_origin(bounds.CenterPoint());
-  local_origin_ = bounds.origin();
+  if (local_origin_ != bounds.origin()) {
+    world_space_transform_dirty_ = true;
+    local_origin_ = bounds.origin();
+  }
   if (bounds.size() == GetTargetSize())
     return;
 
@@ -801,35 +840,40 @@ void UiElement::UpdateComputedOpacity() {
   updated_visibility_this_frame_ = IsVisible() != was_visible;
 }
 
-void UiElement::UpdateWorldSpaceTransformRecursive() {
-  gfx::Transform transform;
-  transform.Translate(local_origin_.x(), local_origin_.y());
-  if (!size_.IsEmpty()) {
-    transform.Scale(size_.width(), size_.height());
+void UiElement::UpdateWorldSpaceTransformRecursive(bool parent_changed) {
+  bool changed = false;
+  if (ShouldUpdateWorldSpaceTransform(parent_changed)) {
+    gfx::Transform transform;
+    transform.Translate(local_origin_.x(), local_origin_.y());
+
+    if (!size_.IsEmpty()) {
+      transform.Scale(size_.width(), size_.height());
+    }
+
+    // Compute an inheritable transformation that can be applied to this
+    // element, and it's children, if applicable.
+    gfx::Transform inheritable = LocalTransform();
+
+    if (parent_) {
+      inheritable.ConcatTransform(parent_->inheritable_transform());
+    }
+
+    transform.ConcatTransform(inheritable);
+    set_world_space_transform(transform);
+    set_inheritable_transform(inheritable);
+    changed = true;
   }
 
-  // Compute an inheritable transformation that can be applied to this element,
-  // and it's children, if applicable.
-  gfx::Transform inheritable = LocalTransform();
-
-  if (parent_) {
-    inheritable.ConcatTransform(parent_->inheritable_transform());
-  }
-
-  transform.ConcatTransform(inheritable);
-  set_world_space_transform(transform);
-  set_inheritable_transform(inheritable);
   set_update_phase(kUpdatedWorldSpaceTransform);
-
   for (auto& child : children_) {
-    child->UpdateWorldSpaceTransformRecursive();
+    child->UpdateWorldSpaceTransformRecursive(changed);
   }
 
   OnUpdatedWorldSpaceTransform();
 }
 
 gfx::Transform UiElement::LocalTransform() const {
-  return layout_offset_.Apply() * transform_operations_.Apply();
+  return local_transform_;
 }
 
 gfx::Transform UiElement::GetTargetLocalTransform() const {
@@ -838,6 +882,11 @@ gfx::Transform UiElement::GetTargetLocalTransform() const {
 
 const Sounds& UiElement::GetSounds() const {
   return sounds_;
+}
+
+bool UiElement::ShouldUpdateWorldSpaceTransform(
+    bool parent_transform_changed) const {
+  return parent_transform_changed || world_space_transform_dirty_;
 }
 
 }  // namespace vr

@@ -21,6 +21,7 @@ class Controller : public UiElement {
 
   void set_local_transform(const gfx::Transform& transform) {
     local_transform_ = transform;
+    set_world_space_transform_dirty();
   }
 
   class Renderer : public BaseRenderer {

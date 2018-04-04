@@ -49,6 +49,8 @@ class Reticle : public UiElement {
               const CameraModel& model) const final;
   gfx::Transform LocalTransform() const final;
   gfx::Transform GetTargetLocalTransform() const final;
+  bool ShouldUpdateWorldSpaceTransform(
+      bool parent_transform_changed) const final;
 
   gfx::Point3F origin_;
   gfx::Point3F target_;

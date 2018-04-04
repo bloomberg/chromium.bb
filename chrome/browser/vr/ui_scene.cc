@@ -128,7 +128,8 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
     // Now that we have finalized our local values, we can safely update our
     // final, baked transform.
-    root_element_->UpdateWorldSpaceTransformRecursive();
+    const bool parent_transform_changed = false;
+    root_element_->UpdateWorldSpaceTransformRecursive(parent_transform_changed);
   }
 
   return scene_dirty;
