@@ -75,10 +75,10 @@ bool CheckTrialEligibility(void* profile_id,
   return allowed;
 }
 
-void SendReport(void* profile_id,
-                const net::CertVerifier::RequestParams& params,
-                const net::CertVerifyResult& primary_result,
-                const net::CertVerifyResult& trial_result) {
+void SendTrialVerificationReport(void* profile_id,
+                                 const net::CertVerifier::RequestParams& params,
+                                 const net::CertVerifyResult& primary_result,
+                                 const net::CertVerifyResult& trial_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile_id))
     return;
@@ -194,8 +194,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     }
 
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-        ->PostTask(FROM_HERE, base::BindOnce(&SendReport, profile_id_, params_,
-                                             primary_result_, trial_result_));
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&SendTrialVerificationReport, profile_id_,
+                                  params_, primary_result_, trial_result_));
   }
 
   void OnJobCompleted(int trial_result_error) {
