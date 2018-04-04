@@ -38,8 +38,10 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
   // "-Embedding" flag to the command line. If this flag is not found, the
   // process should exit immediately.
   // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683844.aspx
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("embedding"))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("embedding")) {
+    persistent_histogram_storage.Disable();
     return 0;
+  }
 
   install_static::InitializeProductDetailsForPrimaryModule();
 
