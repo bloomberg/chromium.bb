@@ -28,7 +28,6 @@ class Thread;
 }  // namespace base
 
 namespace content {
-class BrowserMessageFilter;
 class BrowserChildProcessHostImpl;
 class InProcessChildThreadParams;
 class UtilityProcessHostClient;
@@ -87,9 +86,6 @@ class CONTENT_EXPORT UtilityProcessHost
 
   // Sets the name of the process to appear in the task manager.
   void SetName(const base::string16& name);
-
-  // Adds an IPC message filter.
-  void AddFilter(BrowserMessageFilter* filter);
 
   void set_child_flags(int flags) { child_flags_ = flags; }
 
