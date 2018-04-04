@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/account_image"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@null"/>
+    <TextView
+        android:id="@+id/account_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@+id/account_selection_mark"
+        android:layout_toEndOf="@id/account_image"
+        android:gravity="center_vertical"
+        android:minHeight="20dp"
+        android:textAppearance="@style/BlackBodyDefault"
+        tools:text="John Doe"/>
+    <TextView
+        android:id="@+id/account_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/account_name"
+        android:layout_toStartOf="@+id/account_selection_mark"
+        android:layout_toEndOf="@id/account_image"
+        android:gravity="center_vertical"
+        android:minHeight="20dp"
+        android:textAppearance="@style/BlackCaption"
+        tools:text="john.doe@example.com"/>
+    <!-- TODO(https://crbug.com/828841): Use animated drawable for checkmark. -->
+    <ImageView
+        android:id="@+id/account_selection_mark"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_check_googblue_24dp"/>
+</RelativeLayout>

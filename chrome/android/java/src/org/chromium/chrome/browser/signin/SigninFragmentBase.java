@@ -9,6 +9,7 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -40,13 +41,16 @@ import java.util.concurrent.TimeUnit;
  * features. Configuration for this fragment is provided by overriding {@link #getSigninArguments}
  * derived classes.
  */
-public abstract class SigninFragmentBase extends Fragment {
+public abstract class SigninFragmentBase
+        extends Fragment implements AccountPickerDialogFragment.Callback {
     private static final String TAG = "SigninFragmentBase";
 
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
     private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
+    public static final String ACCOUNT_PICKER_DIALOG_TAG =
+            "SigninFragmentBase.AccountPickerDialogFragment";
 
     private @SigninAccessPoint int mSigninAccessPoint;
     // TODO(https://crbug.com/814728): Pass this as Fragment argument.
@@ -154,6 +158,8 @@ public abstract class SigninFragmentBase extends Fragment {
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = (SigninView) inflater.inflate(R.layout.signin_view, container, false);
 
+        mView.getAccountPickerView().setOnClickListener(view -> onAccountPickerClicked());
+
         mView.getAcceptButton().setVisibility(View.GONE);
         mView.getMoreButton().setVisibility(View.VISIBLE);
         mView.getMoreButton().setOnClickListener(view -> {
@@ -226,6 +232,11 @@ public abstract class SigninFragmentBase extends Fragment {
         mView.getRefuseButton().setEnabled(enabled);
     }
 
+    private void onAccountPickerClicked() {
+        // TODO(https://crbug.com/814728): Ignore clicks if GMS reported an error.
+        showAccountPicker();
+    }
+
     /**
      * Records the Sync consent.
      * @param confirmationView The view that the user clicked when consenting.
@@ -233,6 +244,22 @@ public abstract class SigninFragmentBase extends Fragment {
     private void recordConsent(TextView confirmationView) {
         mConsentTextTracker.recordConsent(
                 ConsentAuditorFeature.CHROME_SYNC, confirmationView, mView);
+    }
+
+    private void showAccountPicker() {
+        // Account picker is already shown
+        if (getChildFragmentManager().findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) return;
+
+        AccountPickerDialogFragment dialog =
+                AccountPickerDialogFragment.create(mSelectedAccountName);
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.add(dialog, ACCOUNT_PICKER_DIALOG_TAG);
+        transaction.commit();
+    }
+
+    @Override
+    public void onAccountSelected(String accountName, boolean isDefaultAccount) {
+        selectAccount(accountName, isDefaultAccount);
     }
 
     @Override
@@ -258,7 +285,12 @@ public abstract class SigninFragmentBase extends Fragment {
         mProfileDataCache.update(Collections.singletonList(mSelectedAccountName));
         updateProfileData();
 
-        // TODO(https://crbug.com/814728): Update selected account in account picker.
+        AccountPickerDialogFragment accountPickerFragment =
+                (AccountPickerDialogFragment) getChildFragmentManager().findFragmentByTag(
+                        ACCOUNT_PICKER_DIALOG_TAG);
+        if (accountPickerFragment != null) {
+            accountPickerFragment.updateSelectedAccount(accountName);
+        }
     }
 
     private void triggerUpdateAccounts() {
@@ -293,7 +325,7 @@ public abstract class SigninFragmentBase extends Fragment {
         // TODO(https://crbug.com/814728): Cancel ConfirmSyncDataStateMachine.
 
         selectAccount(mAccountNames.get(0), true);
-        // TODO(https://crbug.com/814728): Show account picker.
+        showAccountPicker(); // Show account picker so user can confirm the account selection.
     }
 
     @Nullable
