@@ -98,7 +98,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1887786770086287077">L'accés a la ubicació està desactivat en aquest dispositiu. Activa'l a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> s'obrirà a Chrome. En continuar, acceptes les <ph name="BEGIN_LINK1" />condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="189172778771606813">Tanca el tauler de navegació</translation>
-<translation id="1897409700584096124">El lloc web està emetent</translation>
 <translation id="1919345977826869612">Anuncis</translation>
 <translation id="1933845786846280168">Pestanya seleccionada</translation>
 <translation id="1938981467853765413">Què et sembla?</translation>
@@ -246,7 +245,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="32895400574683172">Es permeten les notificacions</translation>
 <translation id="3295602654194328831">Amaga la informació</translation>
 <translation id="3303414029551471755">Voleu baixar el contingut?</translation>
-<translation id="3321222012623826478">Aquest servei ha d'enviar anònimament l'adreça d'aquest lloc web als servidors de Google per verificar-la.</translation>
 <translation id="3328801116991980348">Informació del lloc</translation>
 <translation id="3341058695485821946">Consulta la quantitat de dades que has estalviat</translation>
 <translation id="3350687908700087792">Tanca totes les pestanyes d'incògnit</translation>
@@ -593,7 +591,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6475951671322991020">Baixa el vídeo</translation>
 <translation id="6482749332252372425">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè falta espai d'emmagatzematge.</translation>
 <translation id="6496823230996795692">Per utilitzar <ph name="APP_NAME" /> per primera vegada, connecta't a Internet.</translation>
-<translation id="6508332297647760142">Ús compartit del Web físic</translation>
 <translation id="6527303717912515753">Comparteix</translation>
 <translation id="6534565668554028783">Google ha tardat massa a respondre</translation>
 <translation id="6538442820324228105">S'han baixat <ph name="GBS" /> GB</translation>

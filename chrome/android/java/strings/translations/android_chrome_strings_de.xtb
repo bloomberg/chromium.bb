@@ -98,7 +98,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1887786770086287077">Der Standortzugriff ist für dieses Gerät deaktiviert. Sie können ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> wird in Chrome geöffnet. Wenn Sie fortfahren, stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="189172778771606813">Navigationsleiste schließen</translation>
-<translation id="1897409700584096124">Website überträgt</translation>
 <translation id="1919345977826869612">Werbung</translation>
 <translation id="1933845786846280168">Ausgewählter Tab</translation>
 <translation id="1938981467853765413">Feedback geben</translation>
@@ -246,7 +245,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="32895400574683172">Benachrichtigungen sind erlaubt</translation>
 <translation id="3295602654194328831">Informationen ausblenden</translation>
 <translation id="3303414029551471755">Inhalt herunterladen?</translation>
-<translation id="3321222012623826478">Dieser Dienst muss die Adresse dieser Website zur Überprüfung anonym an Google-Server senden.</translation>
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3341058695485821946">Sie können sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
 <translation id="3350687908700087792">Alle Inkognitotabs schließen</translation>
@@ -594,7 +592,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6475951671322991020">Video herunterladen</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, weil nicht genügend Speicherplatz vorhanden ist.</translation>
 <translation id="6496823230996795692">Wenn Sie <ph name="APP_NAME" /> zum ersten Mal nutzen, stellen Sie bitte eine Verbindung zum Internet her.</translation>
-<translation id="6508332297647760142">Freigabe im Physical Web</translation>
 <translation id="6527303717912515753">Teilen</translation>
 <translation id="6534565668554028783">Die Antwort von Google hat zu lange gedauert</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB heruntergeladen</translation>

@@ -513,7 +513,7 @@
 <translation id="2529700525201305165">Membatasi pengguna yang diizinkan untuk masuk ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Mengonfigurasi daftar aplikasi dan ekstensi yang dipasang secara paksa</translation>
 <translation id="253135976343875019">Menunda peringatan waktu menganggur saat menggunakan daya AC</translation>
-<translation id="2536283449105918306">Mengaktifkan perlindungan terhadap tab-under</translation>
+<translation id="2536283449105918306">Mengaktifkan perlindungan terhadap tab pop up.</translation>
 <translation id="2552966063069741410">Zona Waktu</translation>
 <translation id="2562339630163277285">Menentukan URL mesin telusur yang digunakan untuk memberikan hasil instan. URL harus berisi string <ph name="SEARCH_TERM_MARKER" />, yang akan diganti pada waktu kueri dengan teks yang telah dimasukkan oleh pengguna sejauh ini.
 
@@ -2559,11 +2559,11 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="9096086085182305205">Daftar putih server autentikasi</translation>
 <translation id="9098553063150791878">Kebijakan untuk autentikasi HTTP</translation>
 <translation id="9105265795073104888">Hanya bagian dari opsi konfigurasi proxy yang disediakan untuk aplikasi Android. Aplikasi Android dapat memilih untuk menggunakan proxy secara sukarela. Anda tidak dapat memaksakan aplikasi Android agar menggunakan proxy.</translation>
-<translation id="9110615239151047025">Aktifkan perlindungan terhadap tab-under, yang memblokir navigasi yang terdeteksi sebagai tab-under.
+<translation id="9110615239151047025">Aktifkan perlindungan terhadap tab pop up, yang memblokir navigasi yang terdeteksi sebagai tab pop up.
 
-      Untuk penjelasan mengenai tab-under, lihat https://www.chromestatus.com/features/5675755719622656.
-      Jika kebijakan disetel ke True, navigasi yang dideteksi oleh <ph name="PRODUCT_NAME" /> sebagai tab-under akan diblokir.
-      Jika kebijakan disetel ke False, <ph name="PRODUCT_NAME" /> akan mengizinkan situs untuk melakukan navigasi tab-under.
+      Untuk penjelasan mengenai tab pop up, lihat https://www.chromestatus.com/features/5675755719622656.
+      Jika kebijakan disetel ke True, navigasi yang dideteksi oleh <ph name="PRODUCT_NAME" /> sebagai tab pop up akan diblokir.
+      Jika kebijakan disetel ke False, <ph name="PRODUCT_NAME" /> akan mengizinkan situs untuk melakukan navigasi tab pop up.
       Secara default, kebijakan ini disetel ke True.</translation>
 <translation id="9112727953998243860">File konfigurasi untuk printer perusahaan</translation>
 <translation id="9112897538922695510">Memungkinkan Anda mendaftarkan daftar penangan protokol. Ini hanya dapat menjadi kebijakan yang disarankan. Properti |protokol| sebaiknya disetel ke skema seperti 'mailto' dan properti |url| sebaiknya disetel ke pola URL aplikasi yang menangani skema. Pola tersebut dapat berisi '%s', yang apabila disajikan akan menggantikan URL yang ditangani.

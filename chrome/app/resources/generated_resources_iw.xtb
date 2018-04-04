@@ -681,7 +681,7 @@
 <translation id="2071393345806050157">אין קובץ יומן מקומי.</translation>
 <translation id="2074527029802029717">בטל הצמדה של כרטיסייה</translation>
 <translation id="2075474481720804517">%<ph name="BATTERY_PERCENTAGE" /> סוללה</translation>
-<translation id="2075959085554270910">מאפשר לך להפעיל/להשבית את תכונות הנגיעה הקלה וההקשה לגרירה</translation>
+<translation id="2075959085554270910">הגדרות אלה מאפשרות להפעיל או להשבית את תכונות הנגיעה הקלה וההקשה לגרירה</translation>
 <translation id="2076269580855484719">הסתר פלאגין זה</translation>
 <translation id="2076672359661571384">בינוני (מומלץ)</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
@@ -4191,7 +4191,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7629827748548208700">כרטיסייה: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;פתח תמיד קבצים מסוג זה</translation>
 <translation id="7632948528260659758">עדכון יישומי הקיוסק הבאים נכשל:</translation>
-<translation id="7634373849852678655">לחץ על לחצן האפליקציה כדי לצאת מהמסך המלא</translation>
+<translation id="7634373849852678655">כדי לצאת מהמסך המלא יש ללחוץ על לחצן האפליקציה</translation>
 <translation id="7639178625568735185">הבנתי</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> מכניס אותך באופן אוטומטי לאתרים כשירים באמצעות סיסמאות ששמרת.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (בעלים)</translation>

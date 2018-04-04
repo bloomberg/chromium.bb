@@ -98,7 +98,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="1887786770086287077">Piekļuve šīs ierīces atrašanās vietai ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Lietotne <ph name="APP_NAME" /> tiks atvērta pārlūkā Chrome. Turpinot jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Aizvērt navigācijas atvilktni</translation>
-<translation id="1897409700584096124">Vietne tiek apraidīta</translation>
 <translation id="1919345977826869612">Reklāmas</translation>
 <translation id="1933845786846280168">Atlasītā cilne</translation>
 <translation id="1938981467853765413">Sniegt atsauksmes</translation>
@@ -246,7 +245,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="32895400574683172">Paziņojumi ir atļauti.</translation>
 <translation id="3295602654194328831">Slēpt informāciju</translation>
 <translation id="3303414029551471755">Vai turpināt ar satura lejupielādi?</translation>
-<translation id="3321222012623826478">Šim pakalpojumam ir anonīmi jānosūta šī vietnes adrese Google serveriem verifikācijai.</translation>
 <translation id="3328801116991980348">Vietnes informācija</translation>
 <translation id="3341058695485821946">Uzziniet ietaupīto datu apjomu</translation>
 <translation id="3350687908700087792">Aizvērt visas inkognito režīma cilnes</translation>
@@ -593,7 +591,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6475951671322991020">Lejupielādēt videoklipu</translation>
 <translation id="6482749332252372425">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo krātuvē nav pietiekami daudz vietas.</translation>
 <translation id="6496823230996795692">Lai pirmo reizi izmantotu lietotni <ph name="APP_NAME" />, lūdzu, izveidojiet savienojumu ar internetu.</translation>
-<translation id="6508332297647760142">Kopīgošana fiziskajā tīmeklī</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="6534565668554028783">Google pārāk ilgi nereaģēja</translation>
 <translation id="6538442820324228105">Lejupielādēts: <ph name="GBS" /> GB</translation>

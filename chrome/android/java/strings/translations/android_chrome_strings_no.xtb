@@ -98,7 +98,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1887786770086287077">Posisjonstilgang er slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Lukk uttrekksmenyen</translation>
-<translation id="1897409700584096124">Nettstedet kringkastes</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
 <translation id="1938981467853765413">Gi tilbakemelding</translation>
@@ -246,7 +245,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="32895400574683172">Varsler er tillatt</translation>
 <translation id="3295602654194328831">Skjul informasjonen</translation>
 <translation id="3303414029551471755">Vil du gå videre med å laste ned innholdet?</translation>
-<translation id="3321222012623826478">Denne tjenesten må sende dette nettstedets adresse til Google anonymt for bekreftelse.</translation>
 <translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="3341058695485821946">Se hvor mye data du har spart</translation>
 <translation id="3350687908700087792">Lukk alle inkognitofaner</translation>
@@ -593,7 +591,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6475951671322991020">Last ned videoen</translation>
 <translation id="6482749332252372425">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av mangel på lagringsplass.</translation>
 <translation id="6496823230996795692">For å bruke <ph name="APP_NAME" /> for første gang, koble til Internett.</translation>
-<translation id="6508332297647760142">Deling på det fysiske nettet</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="6534565668554028783">Google brukte for lang tid på å svare</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB er lastet ned</translation>
@@ -688,6 +685,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
+<translation id="7400730245189251663">Mer om <ph name="TOPIC" /></translation>
 <translation id="7403691278183511381">Førsteinntrykk ved bruk av Chrome</translation>
 <translation id="7423098979219808738">Spør først.</translation>
 <translation id="7423538860840206698">Blokkert fra å lese utklippstavlen</translation>

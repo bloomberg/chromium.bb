@@ -98,7 +98,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1887786770086287077">Sijainti on poissa käytöstä tällä laitteella. Voit ottaa sen käyttöön <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> avautuu Chromessa. Jatkamalla hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Sulje navigoinnin vetopaneeli</translation>
-<translation id="1897409700584096124">Verkkosivustoa lähetetään</translation>
 <translation id="1919345977826869612">Mainokset</translation>
 <translation id="1933845786846280168">Valittu välilehti</translation>
 <translation id="1938981467853765413">Anna palautetta</translation>
@@ -246,7 +245,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="32895400574683172">Ilmoitukset sallitaan</translation>
 <translation id="3295602654194328831">Piilota tiedot</translation>
 <translation id="3303414029551471755">Jatketaanko sisällön lataamiseen?</translation>
-<translation id="3321222012623826478">Palvelun on lähetettävä tämä verkko-osoite nimettömänä Googlen palvelimille vahvistusta varten.</translation>
 <translation id="3328801116991980348">Tietoja sivustosta</translation>
 <translation id="3341058695485821946">Katso, kuinka paljon dataa olet säästänyt</translation>
 <translation id="3350687908700087792">Sulje kaikki incognito-välilehdet.</translation>
@@ -593,7 +591,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6475951671322991020">Lataa video</translation>
 <translation id="6482749332252372425">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui, koska tallennustila ei riitä.</translation>
 <translation id="6496823230996795692">Muodosta internetyhteys, ennen kuin <ph name="APP_NAME" /> on käytössäsi ensimmäisen kerran.</translation>
-<translation id="6508332297647760142">Fyysisen webin jakaminen</translation>
 <translation id="6527303717912515753">Jaa</translation>
 <translation id="6534565668554028783">Google ei vastannut riittävän nopeasti.</translation>
 <translation id="6538442820324228105">Ladattu: <ph name="GBS" /> Gt</translation>

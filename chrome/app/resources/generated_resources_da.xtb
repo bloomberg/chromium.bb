@@ -1377,7 +1377,7 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Slip for at installere</translation>
 <translation id="3084771660770137092">Chrome løb tør for hukommelse, eller processen for websiden blev afbrudt af en anden grund. Genindlæs eller gå til en anden side for at fortsætte.</translation>
-<translation id="3085412380278336437">Websitet anvender muligvis dit kamera</translation>
+<translation id="3085412380278336437">Websitet kan anvende dit kamera</translation>
 <translation id="3085752524577180175">SOCKS-host</translation>
 <translation id="3088325635286126843">&amp;Omdøb...</translation>
 <translation id="3089231390674410424">Det ser ud til, at der er et problem med dine loginoplysninger. Sørg for, at du er logget ind på korrekt vis, og prøv igen.</translation>
@@ -3578,7 +3578,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="661719348160586794">Dine gemte adgangskoder vises her.</translation>
 <translation id="6618097958368085618">Behold alligevel</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
-<translation id="661907246513853610">Websitet sporer muligvis din placering</translation>
+<translation id="661907246513853610">Websitet kan spore din placering</translation>
 <translation id="6619801788773578757">Tilføj terminalapp</translation>
 <translation id="6619990499523117484">Bekræft din pinkode</translation>
 <translation id="662080504995468778">Bliv her</translation>
@@ -4223,7 +4223,7 @@ Installationen af <ph name="APP_NAME" /> downloader <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7665369617277396874">Tilføj konto</translation>
 <translation id="7671130400130574146">Brug systemets titellinje og rammer</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> på <ph name="PAGE_TITLE" />.</translation>
-<translation id="7681095912841365527">Websitet anvender muligvis Bluetooth</translation>
+<translation id="7681095912841365527">Websitet kan anvende Bluetooth</translation>
 <translation id="7683373461016844951">Hvis du vil fortsætte, skal du klikke på Tilføj person for at oprette en ny profil til din mailadresse på <ph name="DOMAIN" />.</translation>
 <translation id="7684212569183643648">Installeret af din administrator</translation>
 <translation id="7684559058815332124">Gå til loginsiden for captive portal</translation>
@@ -5045,7 +5045,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8986362086234534611">Glem</translation>
 <translation id="8986494364107987395">Send automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="8987927404178983737">Måned</translation>
-<translation id="8991520179165052608">Websitet anvender muligvis din mikrofon</translation>
+<translation id="8991520179165052608">Websitet kan anvende din mikrofon</translation>
 <translation id="899403249577094719">Webadresse for Netscape-certifikatbase</translation>
 <translation id="8995603266996330174">Administreres af <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Tilføj konto...</translation>
@@ -5169,7 +5169,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9174212595744391062">Dette rydder cookies og cachen for alle websites, f.eks.</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> – en Bluetooth-enhed er forbundet</translation>
 <translation id="9177499212658576372">Du har i øjeblikket forbindelse til netværket <ph name="NETWORK_TYPE" />.</translation>
-<translation id="9180380851667544951">Websitet deler muligvis din skærm</translation>
+<translation id="9180380851667544951">Websitet kan dele din skærm</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> fra <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9187210477874601037">Enheden kunne ikke knyttes til domænet. Dette kan skyldes utilstrækkelige privilegier for din konto på serveren.</translation>
 <translation id="9188441292293901223">Opdater din telefon til en nyere version af Android for at låse denne <ph name="DEVICE_TYPE" /> op.</translation>

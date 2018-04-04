@@ -2547,7 +2547,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="9105265795073104888">Aplikacje na Androida mają dostęp tylko do niektórych opcji konfiguracji serwera proxy. Nie można wymusić, by używały serwera proxy. Mogą go używać dobrowolnie.</translation>
 <translation id="9110615239151047025">Włącza ochronę przed ukrywaniem karty pod nowym oknem, czyli blokowanie wykrytych elementów nawigacyjnych stosujących ten mechanizm.
 
-      Aby dowiedzieć się, czym jest ukrywanie karty pod nowym oknem, zobacz https://www.chromestatus.com/features/5675755719622656.
+      Aby dowiedzieć się, czym jest ukrywanie karty pod nowym oknem, otwórz https://www.chromestatus.com/features/5675755719622656.
       Jeśli ta zasada jest włączona, wykryte przez <ph name="PRODUCT_NAME" /> elementy nawigacyjne stosujące ukrywanie karty pod nowym oknem są blokowane.
       Jeśli ta zasada jest wyłączona, <ph name="PRODUCT_NAME" /> pozwoli używać takich elementów nawigacyjnych na stronach.
       Domyślnie ta zasada jest włączona.</translation>

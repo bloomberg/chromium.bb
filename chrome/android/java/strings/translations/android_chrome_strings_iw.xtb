@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">‏הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
-<translation id="1897409700584096124">האתר משדר</translation>
 <translation id="1919345977826869612">מודעות</translation>
 <translation id="1933845786846280168">הכרטיסייה שנבחרה</translation>
 <translation id="1938981467853765413"> שליחת משוב</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">יש הרשאה להצגת הודעות</translation>
 <translation id="3295602654194328831">הסתר פרטים</translation>
 <translation id="3303414029551471755">האם להוריד את התוכן?</translation>
-<translation id="3321222012623826478">‏שירות זה צריך לשלוח את כתובת האתר לשרתי Google באופן אנונימי כדי לאמת אותה.</translation>
 <translation id="3328801116991980348">פרטי אתר</translation>
 <translation id="3341058695485821946">בדיקת החיסכון בצריכת נתונים</translation>
 <translation id="3350687908700087792">סגור את כל כרטיסיות הגלישה בסתר</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">הורד סרטון</translation>
 <translation id="6482749332252372425">הורדת <ph name="FILE_NAME" /> נכשלה מאחר שחסר מקום אחסון.</translation>
 <translation id="6496823230996795692">כדי להשתמש באפליקציה <ph name="APP_NAME" /> בפעם הראשונה יש להתחבר לאינטרנט.</translation>
-<translation id="6508332297647760142">שיתוף האינטרנט הווירטופיזי</translation>
 <translation id="6527303717912515753">שתף</translation>
 <translation id="6534565668554028783">‏ל-Google נדרש זמן רב מדי להגיב</translation>
 <translation id="6538442820324228105">‏בוצעה הורדה של GB <ph name="GBS" /></translation>

@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">इस डिवाइस के लिए स्थान एक्सेस बंद है. उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome में खुलेगा. जारी रखकर, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> से सहमत होते हैं.</translation>
 <translation id="189172778771606813">मार्गदर्शक ड्रॉवर बंद करें</translation>
-<translation id="1897409700584096124">वेबसाइट प्रसारित हो रही है</translation>
 <translation id="1919345977826869612">विज्ञापन</translation>
 <translation id="1933845786846280168">चयनित टैब</translation>
 <translation id="1938981467853765413">फ़ीडबैक दें</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">सूचनाओं की अनुमति है</translation>
 <translation id="3295602654194328831">जानकारी छिपाएं</translation>
 <translation id="3303414029551471755">सामग्री डाउनलोड करने के लिए आगे बढ़ें?</translation>
-<translation id="3321222012623826478">इस सेवा को इस वेबसाइट के पते की पुष्टि करने के लिए, पते को अनाम रूप से Google के सर्वर पर भेजना होगा.</translation>
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3341058695485821946">देखें कि आपने कितना डेटा बचाया है</translation>
 <translation id="3350687908700087792">सभी गुप्त टैब बंद करें</translation>
@@ -320,7 +318,7 @@
 <translation id="4042870126885713738">किसी वेब पते का समाधान ना होने या कनेक्शन ना हो सकने पर सुझाव दिखाएं</translation>
 <translation id="4046123991198612571">अगला ट्रैक</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4062305924942672200">वैधानिक जानकारी</translation>
+<translation id="4062305924942672200">कानूनी जानकारी</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB डाउनलोड किया गया</translation>
 <translation id="4089831646916293264">यह सुविधा आपके वाहक द्वारा प्रदान की जाने वाली प्रीमियम डेटा सुविधाओं की ऐक्‍सेस में हस्तक्षेप कर सकती है.</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">वीडियो डाउनलोड करें</translation>
 <translation id="6482749332252372425">मेमोरी स्‍थान कम होने के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="6496823230996795692">पहली बार <ph name="APP_NAME" /> का उपयोग करने के लिए, कृपया इंटरनेट चालू करें.</translation>
-<translation id="6508332297647760142">जीता-जागता वेब साझा करना</translation>
 <translation id="6527303717912515753">साझा करें</translation>
 <translation id="6534565668554028783">Google को प्रतिक्रिया देने में बहुत अधिक समय लगा</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> जीबी डाउनलोड किया गया</translation>

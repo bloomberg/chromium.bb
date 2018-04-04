@@ -98,7 +98,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1887786770086287077">A helyhozzáférés ki van kapcsolva ennél az eszköznél. A funkciót az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" /> tudja bekapcsolni.</translation>
 <translation id="1891331835972267886">A(z) <ph name="APP_NAME" /> a Chrome-ban nyílik meg. A folytatással elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />Adatvédelmi közleményét<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Navigációs fiók bezárása</translation>
-<translation id="1897409700584096124">A webhely sugároz</translation>
 <translation id="1919345977826869612">Hirdetések</translation>
 <translation id="1933845786846280168">Kiválasztott lap</translation>
 <translation id="1938981467853765413">Visszajelzés küldése</translation>
@@ -246,7 +245,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="32895400574683172">Értesítések engedélyezve</translation>
 <translation id="3295602654194328831">Információk elrejtése…</translation>
 <translation id="3303414029551471755">Biztosan letölti a tartalmat?</translation>
-<translation id="3321222012623826478">A szolgáltatásnak ellenőrzés céljából névtelenül el kell küldenie a webhely címét a Google szervereinek.</translation>
 <translation id="3328801116991980348">Webhelyadatok</translation>
 <translation id="3341058695485821946">Megnézheti, mennyi adatot takarított meg</translation>
 <translation id="3350687908700087792">Az összes inkognitólap bezárása</translation>
@@ -593,7 +591,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6475951671322991020">Videó letöltése</translation>
 <translation id="6482749332252372425">A következő fájl letöltése tárhelyhiány miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
 <translation id="6496823230996795692">A(z) <ph name="APP_NAME" /> első használatakor internetkapcsolatra van szükség.</translation>
-<translation id="6508332297647760142">Fizikai web megosztása</translation>
 <translation id="6527303717912515753">Megosztás</translation>
 <translation id="6534565668554028783">A Google túl hosszú ideje nem válaszol</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB letöltve</translation>

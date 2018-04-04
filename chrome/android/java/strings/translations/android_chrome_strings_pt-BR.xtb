@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">O acesso ao local está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">O app <ph name="APP_NAME" /> será aberto no Chrome. Ao continuar, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
-<translation id="1897409700584096124">O website está transmitindo</translation>
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1933845786846280168">Guia selecionada</translation>
 <translation id="1938981467853765413">Enviar feedback</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">Notificações são permitidas</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
 <translation id="3303414029551471755">Continuar com o download do conteúdo?</translation>
-<translation id="3321222012623826478">Esse serviço precisa enviar o endereço desse website anonimamente aos servidores do Google para verificação.</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3341058695485821946">Veja a quantidade de dados que você salvou</translation>
 <translation id="3350687908700087792">Fechar todas as guias anônimas</translation>
@@ -592,7 +590,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6475951671322991020">Fazer o download do vídeo</translation>
 <translation id="6482749332252372425">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de espaço de armazenamento.</translation>
 <translation id="6496823230996795692">Para usar o app <ph name="APP_NAME" /> pela primeira vez, conecte-se à Internet</translation>
-<translation id="6508332297647760142">Compartilhamento da Web física</translation>
 <translation id="6527303717912515753">Compartilhar</translation>
 <translation id="6534565668554028783">O Google demorou muito para responder</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB transferido(s) por download</translation>

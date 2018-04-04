@@ -98,7 +98,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1887786770086287077">Placeringsadgang er deaktiveret for denne enhed. Aktivér det under <ph name="BEGIN_LINK" />indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
-<translation id="1897409700584096124">Websitet sender</translation>
 <translation id="1919345977826869612">Annoncer</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
 <translation id="1938981467853765413">Giv feedback</translation>
@@ -246,7 +245,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="32895400574683172">Underretninger er tilladt</translation>
 <translation id="3295602654194328831">Skjul oplysninger</translation>
 <translation id="3303414029551471755">Vil du fortsætte og downloade indholdet?</translation>
-<translation id="3321222012623826478">Denne tjeneste skal sende denne websiteadresse anonymt til bekræftelse på Googles servere.</translation>
 <translation id="3328801116991980348">Webstedoplysninger</translation>
 <translation id="3341058695485821946">Se, hvor meget data du har gemt</translation>
 <translation id="3350687908700087792">Luk alle inkognitofaner</translation>
@@ -593,7 +591,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6482749332252372425">Download af <ph name="FILE_NAME" /> mislykkedes, fordi der ikke er nok lagerplads.</translation>
 <translation id="6496823230996795692">Opret forbindelse til internettet, første gang du bruger <ph name="APP_NAME" />.</translation>
-<translation id="6508332297647760142">Fysisk web-deling</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="6534565668554028783">Google var for lang tid om at svare</translation>
 <translation id="6538442820324228105">Der er downloadet <ph name="GBS" /> GB</translation>

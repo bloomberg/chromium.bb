@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">이 기기의 위치 액세스가 사용 중지되었습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 사용 설정하세요.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" />이(가) Chrome에서 열립니다. 계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="189172778771606813">탐색 창 닫기</translation>
-<translation id="1897409700584096124">웹사이트에서 브로드캐스트 중입니다.</translation>
 <translation id="1919345977826869612">광고</translation>
 <translation id="1933845786846280168">선택된 탭</translation>
 <translation id="1938981467853765413">의견 보내기</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">알림이 허용되었습니다</translation>
 <translation id="3295602654194328831">정보 숨기기</translation>
 <translation id="3303414029551471755">콘텐츠를 다운로드하시겠습니까?</translation>
-<translation id="3321222012623826478">이 서비스에서는 확인을 위해 웹사이트 주소를 Google 서버에 익명으로 전송해야 합니다.</translation>
 <translation id="3328801116991980348">사이트 정보</translation>
 <translation id="3341058695485821946">저장한 데이터의 양 보기</translation>
 <translation id="3350687908700087792">모든 시크릿 탭 닫기</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">동영상 다운로드</translation>
 <translation id="6482749332252372425">저장공간이 부족하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="6496823230996795692">처음으로 <ph name="APP_NAME" />을(를) 사용하는 경우 인터넷에 연결하세요.</translation>
-<translation id="6508332297647760142">피지컬 웹 공유</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6534565668554028783">Google에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>
 <translation id="6538442820324228105"><ph name="GBS" />GB 다운로드됨</translation>

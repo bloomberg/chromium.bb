@@ -98,7 +98,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1887786770086287077">O acesso à localização está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">A aplicação <ph name="APP_NAME" /> será aberta no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="189172778771606813">Fechar a gaveta de navegação</translation>
-<translation id="1897409700584096124">O Website está a transmitir</translation>
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1933845786846280168">Separador selecionado</translation>
 <translation id="1938981467853765413">Fornecer comentário</translation>
@@ -246,7 +245,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="32895400574683172">As notificações são permitidas.</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
 <translation id="3303414029551471755">Pretende transferir o conteúdo?</translation>
-<translation id="3321222012623826478">Este serviço precisa de enviar o endereço deste Website anonimamente para os servidores da Google para validação.</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3341058695485821946">Veja a quantidade de dados que poupou.</translation>
 <translation id="3350687908700087792">Fechar todos os separadores de navegação anónima</translation>
@@ -593,7 +591,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6475951671322991020">Transferir vídeo</translation>
 <translation id="6482749332252372425">A transferência de <ph name="FILE_NAME" /> falhou devido à falta de espaço de armazenamento.</translation>
 <translation id="6496823230996795692">Para utilizar a aplicação <ph name="APP_NAME" /> pela primeira vez, ligue-se à Internet.</translation>
-<translation id="6508332297647760142">Partilha da Web física</translation>
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="6534565668554028783">A Google demorou demasiado tempo a responder</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB transferido(s)</translation>

@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">此设备的位置信息使用权已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="189172778771606813">关闭抽屉式导航栏</translation>
-<translation id="1897409700584096124">网站正在广播</translation>
 <translation id="1919345977826869612">广告</translation>
 <translation id="1933845786846280168">所选的标签页</translation>
 <translation id="1938981467853765413">提供反馈</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">允许显示通知</translation>
 <translation id="3295602654194328831">隐藏信息</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
-<translation id="3321222012623826478">该服务需要以匿名方式将此网址发送到 Google 服务器进行验证。</translation>
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3341058695485821946">查看您已节省多少数据流量</translation>
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">下载视频</translation>
 <translation id="6482749332252372425">未能成功下载 <ph name="FILE_NAME" />，因为存储空间不足。</translation>
 <translation id="6496823230996795692">如果您是首次使用<ph name="APP_NAME" />，则需连接到互联网。</translation>
-<translation id="6508332297647760142">实物网共享</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6534565668554028783">Google 的响应速度太慢</translation>
 <translation id="6538442820324228105">已下载 <ph name="GBS" /> GB</translation>

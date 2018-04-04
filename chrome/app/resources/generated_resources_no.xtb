@@ -259,6 +259,7 @@
 <translation id="1395730723686586365">Oppdatereringsprogrammet er startet</translation>
 <translation id="1396139853388185343">Feil ved konfigurasjonen av skriveren</translation>
 <translation id="1396963298126346194">Brukernavnet og passordet du skrev inn, stemmer ikke overens</translation>
+<translation id="1397854323885047133">Synkronisering og personlig tilpasning</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="140250605646987970">Telefonen din er funnet, men Smart Lock fungerer bare på enheter med Android 5.0 og nyere. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (administrert)</translation>
@@ -449,6 +450,7 @@
 <translation id="1665611772925418501">Kunne ikke endre filen.</translation>
 <translation id="1670399744444387456">Enkle</translation>
 <translation id="1673103856845176271">Filen kunne ikke åpnes av sikkerhetsårsaker.</translation>
+<translation id="1673137583248014546"><ph name="URL" /> ber om å se merket og modellen til sikkerhetsnøkkelen din</translation>
 <translation id="167832068858235403">redusert lydstyrke</translation>
 <translation id="1679068421605151609">Utviklerverktøy</translation>
 <translation id="16815041330799488">Ikke la nettsteder se tekst og bilder som er kopiert til utklippstavlen</translation>
@@ -679,6 +681,7 @@
 <translation id="2071393345806050157">Ingen lokal loggfil.</translation>
 <translation id="2074527029802029717">Løsne fanen</translation>
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
+<translation id="2075959085554270910">Lar deg slå på og av berøringsklikk og trykk-og-dra</translation>
 <translation id="2076269580855484719">Skjul dette programtillegget</translation>
 <translation id="2076672359661571384">Middels (anbefalt)</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
@@ -711,6 +714,7 @@
 <translation id="2114896190328250491">Bildet er tatt av <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Send til telefon</translation>
 <translation id="2115946962706216358">Kunne ikke knytte maskinen til domenet. Årsaken kan være at det maksimale antallet tillate tilknyttede maskiner for kontoen din på tjeneren er overskredet.</translation>
+<translation id="2119349053129246860">Åpne i <ph name="APP" /></translation>
 <translation id="2121825465123208577">Endre størrelse</translation>
 <translation id="2124930039827422115">{1,plural, =1{Vurdert som <ph name="AVERAGE_RATING" /> av 1 bruker.}other{Vurdert som <ph name="AVERAGE_RATING" /> av # brukere.}}</translation>
 <translation id="2126167708562367080">Administratoren din har slått av synkronisering.</translation>
@@ -1369,6 +1373,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Slipp for å installere</translation>
 <translation id="3084771660770137092">Chrome gikk tom for minne, eller prosessen for nettsiden ble avsluttet av andre årsaker. Hvis du vil fortsette, laster du inn siden på nytt, eller går til en annen side.</translation>
+<translation id="3085412380278336437">Nettstedet kan bruke kameraet ditt</translation>
 <translation id="3085752524577180175">SOCKS-vert</translation>
 <translation id="3088325635286126843">&amp;Gi nytt navn</translation>
 <translation id="3089231390674410424">Det ser ut til å være et problem med legitimasjonen din. Sjekk at du er logget på riktig, og prøv på nytt.</translation>
@@ -1377,6 +1382,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» er tilkoblet</translation>
 <translation id="3100609564180505575">Moduler (<ph name="TOTAL_COUNT" />) – Kjente konflikter: <ph name="BAD_COUNT" />, mistenkte: <ph name="SUSPICIOUS_COUNT" /></translation>
 <translation id="3101709781009526431">Dato og klokkeslett</translation>
+<translation id="310671807099593501">Nettstedet bruker Bluetooth</translation>
 <translation id="3108967419958202225">Velg</translation>
 <translation id="3115128645424181617">Finner ikke telefonen. Sørg for at den er i nærheten, og at Bluetooth er slått på.</translation>
 <translation id="3115147772012638511">Venter på buffer...</translation>
@@ -1789,6 +1795,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3752582316358263300">OK</translation>
 <translation id="3752673729237782832">Mine enheter</translation>
 <translation id="3755411799582650620">Du kan nå også låse opp <ph name="DEVICE_TYPE" /> med <ph name="PHONE_NAME" />.</translation>
+<translation id="375636864092143889">Nettstedet bruker mikrofonen din</translation>
 <translation id="3758201569871381925">Sjekk at Hotrod-enheten din er slått på og tilkoblet en TV.</translation>
 <translation id="375841316537350618">Laster ned mellomtjenerskript ...</translation>
 <translation id="3758842566811519622">Informasjonskapsler er angitt</translation>
@@ -2184,6 +2191,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="444134486829715816">Utvid</translation>
 <translation id="4441548209689510310">Vis alternativer for stavekontroll</translation>
 <translation id="4442424173763614572">DNS-søk mislyktes</translation>
+<translation id="4442498890824221158">Konfigurering av flere enheter</translation>
 <translation id="444267095790823769">Unntak for beskyttet innhold</translation>
 <translation id="4443536555189480885">&amp;Hjelp</translation>
 <translation id="4444304522807523469">Få tilgang til dokumentskannere som er tilkoblet via USB eller på det lokale nettverket</translation>
@@ -3234,6 +3242,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6105158702728922449">bruke kameraet og mikrofonen din</translation>
 <translation id="6105877918873366097">Sist åpnet</translation>
 <translation id="6107012941649240045">Utstedt til</translation>
+<translation id="6112294629795967147">Trykk for å endre størrelsen</translation>
 <translation id="6112952769866305444">Endre personen <ph name="PROFILE_NAME" /> (<ph name="USERNAME" />)</translation>
 <translation id="6115424132962100663">Trykk på |<ph name="SHORTCUT" />| for å gå tilbake</translation>
 <translation id="6116338172782435947">Se tekst og bilder som er kopiert til utklippstavlen</translation>
@@ -3559,6 +3568,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="661719348160586794">Dine lagrede passord vises her.</translation>
 <translation id="6618097958368085618">Behold likevel</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
+<translation id="661907246513853610">Nettstedet kan spore posisjonen din</translation>
 <translation id="6619801788773578757">Legg til kioskapp</translation>
 <translation id="6619990499523117484">Bekreft PIN-koden din</translation>
 <translation id="662080504995468778">Bli her</translation>
@@ -3618,6 +3628,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6718273304615422081">Zipper ...</translation>
 <translation id="671928215901716392">Lås skjerm</translation>
 <translation id="67211069045302358">Vil du tilbakestille innstillingene for dette nettstedet?</translation>
+<translation id="6721678857435001674">se merket og modellen til sikkerhetsnøkkelen din</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
 <translation id="672213144943476270">Du må låse opp profilen din før du kan surfe som gjest.</translation>
 <translation id="6723354935081862304">Skriv ut til Google Dokumenter og andre destinasjoner i nettskyen. <ph name="BEGIN_LINK" />Logg på<ph name="END_LINK" /> for å skrive ut med Google Cloud Print.</translation>
@@ -3945,6 +3956,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7254951428499890870">Er du sikker på at du ønsker å starte <ph name="APP_NAME" /> i diagnostikkmodus?</translation>
 <translation id="7255220508626648026">Caster <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Bruk</translation>
+<translation id="7256069762010468647">Nettstedet bruker kameraet ditt</translation>
 <translation id="7256405249507348194">Ukjent feil: <ph name="DESC" /></translation>
 <translation id="7256710573727326513">Åpne i en fane</translation>
 <translation id="7257666756905341374">lese data du kopierer og limer inn</translation>
@@ -3994,6 +4006,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7339785458027436441">Kontroller staving mens du skriver</translation>
 <translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kjører nå i full skjerm.</translation>
+<translation id="7340650977506865820">Nettstedet deler skjermen din</translation>
 <translation id="7345706641791090287">Bekreft passordet</translation>
 <translation id="7346909386216857016">Greit</translation>
 <translation id="7347751611463936647">For å bruke denne utvidelsen, skriver du «<ph name="EXTENSION_KEYWORD" />» , trykker på TAB, og skriver kommandoordet eller søkeordet.</translation>
@@ -4172,6 +4185,7 @@ Når du installerer <ph name="APP_NAME" />, blir det lastet ned <ph name="DOWNLO
 <translation id="7629827748548208700">Fane: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">Åpne &amp;alltid filer av denne typen</translation>
 <translation id="7632948528260659758">Kunne ikke oppdatere de følgende kioskappene:</translation>
+<translation id="7634373849852678655">Trykk på appknappen for å avslutte fullskjermvisningen</translation>
 <translation id="7639178625568735185">Skjønner!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> logger deg på kvalifiserte nettsteder automatisk med passord du har lagret.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
@@ -4191,6 +4205,7 @@ Når du installerer <ph name="APP_NAME" />, blir det lastet ned <ph name="DOWNLO
 <translation id="7665369617277396874">Legg til konto</translation>
 <translation id="7671130400130574146">Bruk systemets tittellinje og kantlinjer</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> på <ph name="PAGE_TITLE" />.</translation>
+<translation id="7681095912841365527">Nettstedet kan bruke Bluetooth</translation>
 <translation id="7683373461016844951">For å fortsette, klikk på OK. Klikk deretter på Legg til person for å opprette en ny profil for <ph name="DOMAIN" />-e-postadressen din.</translation>
 <translation id="7684212569183643648">Installert av administratoren din</translation>
 <translation id="7684559058815332124">Besøk Captive Portal-påloggingssiden</translation>
@@ -4963,6 +4978,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="8908902564709148335">Advarsel: Du har aktivert --scripts-require-action-flagget på denne datamaskinen. Dette begrenser funksjonaliteten til denne utvidelsen. Andre enheter støtter kanskje ikke dette flagget, eventuelt er det ikke aktivert på dem. På disse enhetene kan denne utvidelsen også:</translation>
 <translation id="8909233240676134608">Kan ikke knytte maskinen til domenet. Tjeneren støtter ikke de angitte Kerberos-krypteringstypene. Du finner innstillinger for kryptering under «Flere alternativer».</translation>
+<translation id="8909833622202089127">Nettstedet sporer posisjonen din</translation>
 <translation id="8910146161325739742">Del skjermen</translation>
 <translation id="8910222113987937043">Endringer i bokmerkene, loggen, passordene og andre innstillinger du har, blir ikke lenger synkronisert med Google-kontoen din. Data som allerede er lagret i Google-kontoen din, blir imidlertid værende og kan administreres ved hjelp av <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
 <translation id="8912793549644936705">Strekk ut</translation>
@@ -5011,6 +5027,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8986362086234534611">Glem</translation>
 <translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>
 <translation id="8987927404178983737">Måned</translation>
+<translation id="8991520179165052608">Nettstedet kan bruke mikrofonen din</translation>
 <translation id="899403249577094719">Primære nettadresse for Netscape-sertifikat</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Legg til konto</translation>
@@ -5134,6 +5151,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="9174212595744391062">Dette sletter alle informasjonskapslene og bufferne for alle nettsteder, deriblant</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> – en Bluetooth-enhet er tilkoblet</translation>
 <translation id="9177499212658576372">Du er for øyeblikket tilkoblet nettverket <ph name="NETWORK_TYPE" />.</translation>
+<translation id="9180380851667544951">Nettstedet kan dele skjermen din</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> fra <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9187210477874601037">Kunne ikke knytte maskinen til domenet. Dette kan skyldes at kontoen din ikke har tilstrekkelige rettigheter på tjeneren.</translation>
 <translation id="9188441292293901223">Du må oppdatere telefonen til en nyere versjon av Android for å låse opp <ph name="DEVICE_TYPE" />.</translation>

@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">ตอนนี้ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> จะเปิดขึ้นใน Chrome การดำเนินการต่อแสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="189172778771606813">ปิดลิ้นชักการนำทาง</translation>
-<translation id="1897409700584096124">เว็บไซต์กำลังออกอากาศ</translation>
 <translation id="1919345977826869612">โฆษณา</translation>
 <translation id="1933845786846280168">แท็บที่เลือก</translation>
 <translation id="1938981467853765413">แสดงความคิดเห็น</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">อนุญาตให้แสดงการแจ้งเตือน</translation>
 <translation id="3295602654194328831">ซ่อนข้อมูล</translation>
 <translation id="3303414029551471755">ต้องการดำเนินการดาวน์โหลดเนื้อหานี้ไหม</translation>
-<translation id="3321222012623826478">บริการนี้ต้องส่งที่อยู่เว็บไซต์นี้แบบไม่ระบุตัวตนไปยังเซิร์ฟเวอร์ของ Google เพื่อการยืนยัน</translation>
 <translation id="3328801116991980348">ข้อมูลไซต์</translation>
 <translation id="3341058695485821946">ดูปริมาณอินเทอร์เน็ตที่คุณประหยัดไปได้</translation>
 <translation id="3350687908700087792">ปิดแท็บไม่ระบุตัวตนทั้งหมด</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">ดาวน์โหลดวิดีโอ</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
 <translation id="6496823230996795692">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อใช้ <ph name="APP_NAME" /> เป็นครั้งแรก</translation>
-<translation id="6508332297647760142">การแชร์ Physical Web</translation>
 <translation id="6527303717912515753">แชร์</translation>
 <translation id="6534565668554028783">Google ใช้เวลาตอบกลับนานเกินไป</translation>
 <translation id="6538442820324228105">ดาวน์โหลดแล้ว <ph name="GBS" /> GB</translation>

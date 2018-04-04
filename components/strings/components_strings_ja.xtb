@@ -149,7 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 件の候補}other{# 件の候補}}</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
-<translation id="2084558088529668945"><ph name="ORG_NAME" /> の管理していないサイトでパスワードを入力しました。アカウントを保護するには、他のアプリやサイトでパスワードを再使用しないでください。</translation>
+<translation id="2084558088529668945"><ph name="ORG_NAME" /> が管理していないサイトでパスワードを入力しました。アカウントを保護するには、他のアプリやサイトでパスワードを再使用しないでください。</translation>
 <translation id="2091887806945687916">音声</translation>
 <translation id="2094505752054353250">ドメインが一致しません</translation>
 <translation id="2096368010154057602">県</translation>

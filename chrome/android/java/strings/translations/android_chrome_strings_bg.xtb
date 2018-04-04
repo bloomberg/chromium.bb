@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">Достъпът до местоположението е изключен за това устройство. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на браузъра.</translation>
 <translation id="189172778771606813">Затваряне на слоя за навигация</translation>
-<translation id="1897409700584096124">Уебсайтът се излъчва</translation>
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1933845786846280168">Избран раздел</translation>
 <translation id="1938981467853765413">Изпратете отзив</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">Известията са разрешени</translation>
 <translation id="3295602654194328831">Скриване на информацията</translation>
 <translation id="3303414029551471755">Искате ли да продължите с изтеглянето на съдържанието?</translation>
-<translation id="3321222012623826478">Тази услуга трябва анонимно да изпрати за потвърждение до сървърите на Google адреса на този уебсайт.</translation>
 <translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="3341058695485821946">Вижте колко данни сте спестили</translation>
 <translation id="3350687908700087792">Затваряне на всички раздели в режим „инкогнито“</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">Изтегляне на видеоклипа</translation>
 <translation id="6482749332252372425">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради липса на място в хранилището.</translation>
 <translation id="6496823230996795692">За да използвате <ph name="APP_NAME" /> за първи път, моля, свържете се с интернет.</translation>
-<translation id="6508332297647760142">Споделяне във Физическата мрежа</translation>
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="6534565668554028783">Google не отговаря твърде дълго време</translation>
 <translation id="6538442820324228105">Изтеглено: <ph name="GBS" /> ГБ</translation>

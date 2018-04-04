@@ -98,7 +98,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1887786770086287077">En este dispositivo, el acceso a la ubicación está desactivado. Actívalo en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> se abrirá en Chrome. Al continuar, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="189172778771606813">Cerrar panel lateral de navegación</translation>
-<translation id="1897409700584096124">El sitio web está transmitiendo</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1933845786846280168">Pestaña seleccionada</translation>
 <translation id="1938981467853765413">Hacer comentarios</translation>
@@ -246,7 +245,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="32895400574683172">Las notificaciones están habilitadas</translation>
 <translation id="3295602654194328831">Ocultar información</translation>
 <translation id="3303414029551471755">¿Deseas descargar el contenido?</translation>
-<translation id="3321222012623826478">Este servicio necesita enviar la dirección de este sitio web de forma anónima a los servidores de Google para verificarla.</translation>
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="3341058695485821946">Consulta cuántos datos redujiste</translation>
 <translation id="3350687908700087792">Cerrar todas las pestañas de incógnito</translation>
@@ -593,7 +591,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6475951671322991020">Descargar video</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> no se pudo descargar debido a la falta de espacio de almacenamiento.</translation>
 <translation id="6496823230996795692">Para usar <ph name="APP_NAME" /> por primera vez, conéctate a Internet.</translation>
-<translation id="6508332297647760142">Uso compartido de la Web física</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6534565668554028783">Google tardó demasiado en responder</translation>
 <translation id="6538442820324228105">Se descargaron <ph name="GBS" /> GB</translation>

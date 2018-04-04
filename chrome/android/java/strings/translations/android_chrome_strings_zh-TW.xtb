@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">這部裝置的位置資訊存取權已關閉。請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中予以開啟。</translation>
 <translation id="1891331835972267886">「<ph name="APP_NAME" />」將在 Chrome 中開啟。繼續操作即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="189172778771606813">關閉導覽匣</translation>
-<translation id="1897409700584096124">網站正在播送</translation>
 <translation id="1919345977826869612">廣告</translation>
 <translation id="1933845786846280168">選取的分頁</translation>
 <translation id="1938981467853765413">提供意見</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">允許顯示通知</translation>
 <translation id="3295602654194328831">隱藏資訊</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
-<translation id="3321222012623826478">這項服務需要匿名傳送這個網址到 Google 伺服器，加以驗證。</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3341058695485821946">查看節省的數據用量</translation>
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">下載影片</translation>
 <translation id="6482749332252372425">儲存空間不足，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="6496823230996795692">初次使用「<ph name="APP_NAME" />」時請連線至網際網路。</translation>
-<translation id="6508332297647760142">實體化網路共用</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6534565668554028783">Google 的回應時間過長</translation>
 <translation id="6538442820324228105">已下載 <ph name="GBS" /> GB</translation>

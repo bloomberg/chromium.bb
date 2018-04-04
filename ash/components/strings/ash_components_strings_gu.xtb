@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="104962181688258143">Files ઍપ ખોલો</translation>
+<translation id="1122869341872663659"><ph name="QUERY" /> માટે <ph name="N" /> શોધ પરિણામો ડિસ્પ્લે કરી રહ્યાં છીએ</translation>
 <translation id="1134347825771908369">વૉલ્યૂમ મ્યૂટ કરો</translation>
 <translation id="1195667586424773550">ટૅબના ઍડ્રેસ બારમાં લિંકને ખેંચો</translation>
 <translation id="1204450209689312104">છૂપા મોડમાં એક નવી વિંડો ખોલો</translation>
@@ -158,6 +159,7 @@
 <translation id="9052808072970550123">આગલા વપરાશકર્તા પર સ્વિચ કરો</translation>
 <translation id="906458777597946297">વિંડો મોટી કરો</translation>
 <translation id="9106898733795143799">પેજ અને વેબ બ્રાઉઝર</translation>
+<translation id="9162942292291287644"><ph name="QUERY" /> માટે કોઈ શોધ પરિણામ નથી</translation>
 <translation id="9179672198516322668">લોકપ્રિય શૉર્ટકટ</translation>
 <translation id="93603345341560814"><ph name="SHIFT" />ને દબાવો અને લિંકને ક્લિક કરો</translation>
 <translation id="945383118875625837">લિંકને બુકમાર્ક બાર પર ખેંચો</translation>

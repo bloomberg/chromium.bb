@@ -2668,9 +2668,9 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="9110615239151047025">Hiermee wordt bescherming tegen tab-unders ingeschakeld, waardoor navigaties worden geblokkeerd wanneer deze als onderliggende tabbladen worden gedetecteerd.
 
       Voor een uitleg van tab-unders, ga je naar https://www.chromestatus.com/features/5675755719622656.
-      Als dit beleid is ingesteld op Waar, worden navigaties geblokkeerd waarvan <ph name="PRODUCT_NAME" /> detecteert dat het tab-unders betreft.
-      Als dit beleid is ingesteld op Onwaar, <ph name="PRODUCT_NAME" /> kunnen sites tab-under-navigaties uitvoeren.
-      Dit beleid is standaard ingesteld op Waar.</translation>
+      Als dit beleid is ingesteld op True (waar), worden navigaties geblokkeerd waarvan <ph name="PRODUCT_NAME" /> detecteert dat het tab-unders betreft.
+      Als dit beleid is ingesteld op False (onwaar), <ph name="PRODUCT_NAME" /> kunnen sites tab-under-navigaties uitvoeren.
+      Dit beleid is standaard ingesteld op True (waar).</translation>
 <translation id="9112727953998243860">Configuratiebestand voor bedrijfsprinters</translation>
 <translation id="9112897538922695510">Hiermee kun je een lijst met protocolhandlers registreren. Dit kan alleen een aanbevolen beleid zijn. De eigenschap |protocol| moet worden ingesteld op het schema, zoals 'mailto', en de eigenschap |url| moet worden ingesteld op het URL-patroon van de app die het schema verwerkt. Het patroon kan een '%s' bevatten, die indien aanwezig wordt vervangen door de verwerkte URL.
 

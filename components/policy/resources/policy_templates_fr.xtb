@@ -2704,7 +2704,7 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9098553063150791878">Règles pour l'authentification HTTP</translation>
 <translation id="9105265795073104888">Les applications Android n'ont accès qu'à un sous-ensemble d'options de configuration du proxy. Elles peuvent avoir été volontairement conçues pour utiliser le proxy, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
-<translation id="9110615239151047025">Active la protection contre le tab-under, ce qui bloque la navigation si cette pratique est détectée.
+<translation id="9110615239151047025">Active la protection contre le tab-under, ce qui bloque l'ouverture ou l'affichage de pages ou d'onglets tiers lorsque l'utilisateur accède au contenu qu'il consultait initialement.
 
       Pour en savoir plus sur le tab-under, consultez la page https://www.chromestatus.com/features/5675755719622656.
       Si cette règle est définie sur "True", la navigation est bloquée si <ph name="PRODUCT_NAME" /> détecte un cas de tab-under.

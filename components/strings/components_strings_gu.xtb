@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">વિગતવાર</translation>
 <translation id="1978555033938440688">ફર્મવેયર સંસ્કરણ</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{અને 1 વધુ}one{અને # વધુ}other{અને # વધુ}}</translation>
+<translation id="2003709556000175978">તમારો પાસવર્ડ હમણાં જ રીસેટ કરો</translation>
 <translation id="2025186561304664664">પ્રોક્સી સ્વતઃ ગોઠવાયેલી પર સેટ છે.</translation>
 <translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK" /> છે?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />પ્રોક્સી અને ફાયરવોલ તપાસીને<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 સૂચન}one{# સૂચન}other{# સૂચન}}</translation>
 <translation id="2079545284768500474">પૂર્વવત કરો</translation>
 <translation id="20817612488360358">સિસ્ટમ પ્રોક્સી સેટિંગ્સ ઉપયોગમાં લેવા માટે સેટ છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી પણ ઉલ્લેખિત કરેલી છે.</translation>
+<translation id="2084558088529668945">તમે એવી સાઇટ પર તમારો પાસવર્ડ દાખલ કર્યો કે જે <ph name="ORG_NAME" /> દ્વારા મેનેજ કરવામાં આવતી નથી. તમારા એકાઉન્ટને સુરક્ષિત કરવા માટે, અન્ય ઍપ અને સાઇટ પર તમારા પાસવર્ડનો ફરી ઉપયોગ કરશો નહીં.</translation>
 <translation id="2091887806945687916">ધ્વનિ</translation>
 <translation id="2094505752054353250">ડોમેન મેળ ખાતું નથી</translation>
 <translation id="2096368010154057602">વિભાગ</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">ખોટી ચકાસણી સહી</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{વધુ <ph name="ITEM_COUNT" /> આઇટમ}one{વધુ <ph name="ITEM_COUNT" /> આઇટમ}other{વધુ <ph name="ITEM_COUNT" /> આઇટમ}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">જો તમે અન્ય સાઇટ પર <ph name="ORG_NAME" /> પાસવર્ડનો ફરી ઉપયોગ કર્યો હોય, તો Chrome તેને રીસેટ કરવાની ભલામણ કરે છે.</translation>
 <translation id="4196861286325780578">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ફાયરવોલ અને એન્ટીવાઇરસ ગોઠવણી તપાસીને<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">ક્રેશેસ</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">તમારા વ્યવસ્થાપક દ્વારા મંજૂર</translation>
 <translation id="4269787794583293679">(કોઇ વપરાશકર્તાનામ નથી)</translation>
 <translation id="4275830172053184480">તમારું ઉપકરણ પુનઃપ્રારંભ કરો</translation>
+<translation id="4277028893293644418">પાસવર્ડ રીસેટ કરો</translation>
 <translation id="4280429058323657511">, સમાપ્તિ તારીખ <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">અવરોધિત કરો (ડિફૉલ્ટ)</translation>
 <translation id="4325863107915753736">લેખ શોધવામાં નિષ્ફળ થયાં</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="5893752035575986141">ક્રેડિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
+<translation id="5898382028489516745">જો તમે અન્ય સાઇટ પર <ph name="ORG_NAME" /> પાસવર્ડનો ફરી ઉપયોગ કર્યો હોય, તો Chromium તેને રીસેટ કરવાની ભલામણ કરે છે.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (સમન્વયિત)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 ઉપયોગમાં છે}one{# ઉપયોગમાં છે}other{# ઉપયોગમાં છે}}</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">ઉપકરણ નીતિઓ</translation>
 <translation id="6477321094435799029">Chrome ને આ પૃષ્ઠ પર અસામાન્ય કોડ મળ્યો અને તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ, ફોન નંબર્સ અને ક્રેડિટ કાર્ડ્સ)ની સુરક્ષા કરવા માટે તેને અવરોધિત કરેલ છે.</translation>
 <translation id="6489534406876378309">ક્રેશ અપલોડ કરવાનું શરૂ કરો</translation>
+<translation id="6499038740797743453">પાસવર્ડ રીસેટ કરીએ?</translation>
 <translation id="6507833130742554667">ક્રેડિટ અને ડેબિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="6508722015517270189">Chrome ને પુનઃપ્રારંભ કરો</translation>
 <translation id="6529602333819889595">&amp;કાઢી નાખવું ફરી કરો</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">આ વેબપૃષ્ઠને તે ડેટાની જરૂર છે જે તમે પહેલા બરાબર રીતે પ્રદર્શિત થાય તે માટે દાખલ કર્યો હતો. તમે આ ડેટા ફરીથી મોકલી શકો છો, પણ આમ કરીને તમે કોઈપણ ક્રિયા કે જે પૃષ્ઠ પહેલા જ કરી ચુક્યું છે તેનું પુનરાવર્તન કરશો.</translation>
 <translation id="7552846755917812628">નીચેની ટિપને અજમાવો:</translation>
 <translation id="7554791636758816595">નવું ટૅબ</translation>
+<translation id="7564049878696755256">તમે તમારા <ph name="ORG_NAME" /> એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chrome તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
 <translation id="7567204685887185387">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર કપટપૂર્વક રજૂ કરવામાં આવેલ હોઈ શકે છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="7568593326407688803">આ પૃષ્ઠ<ph name="ORIGINAL_LANGUAGE" />માં છે શું તમે તેને અનુવાદિત કરવા માંગો છો?</translation>
 <translation id="7569952961197462199">Chrome માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />હાનિકારક પ્રોગ્રામ્સ મળ્યાં<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ઉપકરણ</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>
+<translation id="8792621596287649091">તમે તમારા <ph name="ORG_NAME" /> એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chromium તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
 <translation id="8800988563907321413">તમારા નજીકના સૂચનો અહીં દેખાય છે</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>

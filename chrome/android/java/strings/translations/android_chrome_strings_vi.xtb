@@ -98,7 +98,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1887786770086287077">Đã tắt quyền truy cập vị trí đối với thiết bị này. Hãy bật trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
-<translation id="1897409700584096124">Trang web đang phát</translation>
 <translation id="1919345977826869612">Quảng cáo</translation>
 <translation id="1933845786846280168">Tab được chọn</translation>
 <translation id="1938981467853765413">Cung cấp phản hồi</translation>
@@ -246,7 +245,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="32895400574683172">Cho phép thông báo</translation>
 <translation id="3295602654194328831">Ẩn thông tin</translation>
 <translation id="3303414029551471755">Tiếp tục tải xuống nội dung?</translation>
-<translation id="3321222012623826478">Dịch vụ này cần gửi ẩn danh địa chỉ trang web này đến máy chủ của Google để xác minh.</translation>
 <translation id="3328801116991980348">Thông tin về trang web</translation>
 <translation id="3341058695485821946">Xem lượng dữ liệu bạn đã tiết kiệm được</translation>
 <translation id="3350687908700087792">Đóng tất cả các tab ẩn danh</translation>
@@ -593,7 +591,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6475951671322991020">Tải video xuống</translation>
 <translation id="6482749332252372425">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu dung lượng bộ nhớ.</translation>
 <translation id="6496823230996795692">Để sử dụng <ph name="APP_NAME" /> lần đầu tiên, vui lòng kết nối Internet.</translation>
-<translation id="6508332297647760142">Chia sẻ Web trong cuộc sống</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
 <translation id="6534565668554028783">Google mất quá nhiều thời gian để phản hồi</translation>
 <translation id="6538442820324228105">Đã tải xuống <ph name="GBS" /> GB</translation>

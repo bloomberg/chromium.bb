@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">位置情報へのアクセスが端末でオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="1891331835972267886">Chrome で <ph name="APP_NAME" /> を開きます。続行すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
 <translation id="189172778771606813">操作パネルを閉じる</translation>
-<translation id="1897409700584096124">ウェブサイトが発信されています</translation>
 <translation id="1919345977826869612">広告</translation>
 <translation id="1933845786846280168">選択したタブ</translation>
 <translation id="1938981467853765413">フィードバックを送信</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">通知が許可されています</translation>
 <translation id="3295602654194328831">情報を表示しない</translation>
 <translation id="3303414029551471755">コンテンツのダウンロードに進みますか？</translation>
-<translation id="3321222012623826478">このサービスでは、このウェブサイトのアドレスを Google サーバーに匿名で送信し、確認を行うことが必要になります。</translation>
 <translation id="3328801116991980348">サイト情報</translation>
 <translation id="3341058695485821946">データ削減量を確認できます</translation>
 <translation id="3350687908700087792">すべてのシークレット タブを閉じます</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">動画をダウンロード</translation>
 <translation id="6482749332252372425">ストレージの空き容量が不足しているため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> を初めて使用する場合は、インターネットに接続してください。</translation>
-<translation id="6508332297647760142">フィジカル ウェブの共有</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="6534565668554028783">Google からの応答に時間がかかりすぎています</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB をダウンロード済み</translation>

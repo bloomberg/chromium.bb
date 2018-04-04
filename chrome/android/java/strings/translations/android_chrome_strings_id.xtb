@@ -98,7 +98,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1887786770086287077">Akses lokasi dinonaktifkan untuk perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> akan terbuka di Chrome. Dengan melanjutkan, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Tutup panel samping navigasi</translation>
-<translation id="1897409700584096124">Situs sedang ditampilkan</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1933845786846280168">Tab yang Dipilih</translation>
 <translation id="1938981467853765413">Berikan masukan</translation>
@@ -246,7 +245,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="32895400574683172">Notifikasi diizinkan</translation>
 <translation id="3295602654194328831">Sembunyikan Info</translation>
 <translation id="3303414029551471755">Lanjutkan untuk mendownload konten?</translation>
-<translation id="3321222012623826478">Layanan ini perlu mengirimkan alamat situs ini secara anonim ke server Google untuk verifikasi.</translation>
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="3341058695485821946">Lihat berapa banyak data yang dihemat</translation>
 <translation id="3350687908700087792">Tutup semua jendela penyamaran</translation>
@@ -593,7 +591,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6482749332252372425">Download <ph name="FILE_NAME" /> gagal karena ruang penyimpanan tidak cukup.</translation>
 <translation id="6496823230996795692">Untuk menggunakan <ph name="APP_NAME" /> pertama kali, harap hubungkan ke internet.</translation>
-<translation id="6508332297647760142">Berbagi Web Fisik</translation>
 <translation id="6527303717912515753">Bagikan</translation>
 <translation id="6534565668554028783">Google membutuhkan waktu terlalu lama untuk merespons</translation>
 <translation id="6538442820324228105">Terdownload <ph name="GBS" /> GB</translation>

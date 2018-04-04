@@ -98,7 +98,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1887786770086287077">Accesul la locație este dezactivat pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> se va deschide în Chrome. Continuând, ești de acord cu <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Închide panoul de navigare</translation>
-<translation id="1897409700584096124">Site-ul difuzează</translation>
 <translation id="1919345977826869612">Anunțuri</translation>
 <translation id="1933845786846280168">Fila selectată</translation>
 <translation id="1938981467853765413">Trimite feedback</translation>
@@ -246,7 +245,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="32895400574683172">Notificările sunt permise</translation>
 <translation id="3295602654194328831">Ascunde informațiile</translation>
 <translation id="3303414029551471755">Continui pentru descărcarea conținutului?</translation>
-<translation id="3321222012623826478">Acest serviciu trebuie să trimită anonim adresa site-ului la serverele Google pentru verificare.</translation>
 <translation id="3328801116991980348">Informații despre site</translation>
 <translation id="3341058695485821946">Vezi ce volum de date ai economisit</translation>
 <translation id="3350687908700087792">Închide toate filele incognito</translation>
@@ -593,7 +591,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6475951671322991020">Descarcă videoclipul</translation>
 <translation id="6482749332252372425">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza spațiului de stocare insuficient.</translation>
 <translation id="6496823230996795692">Ca să folosești <ph name="APP_NAME" /> pentru prima dată, conectează-te la internet.</translation>
-<translation id="6508332297647760142">Permiterea accesului la Webul material</translation>
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="6534565668554028783">Google a răspuns prea târziu</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB descărcați</translation>
