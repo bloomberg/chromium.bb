@@ -111,6 +111,17 @@ static INLINE __m128i dc_sum_64(const uint8_t *ref) {
   return _mm_add_epi16(x0, high);
 }
 
+#define DC_MULTIPLIER_1X2 0x5556
+#define DC_MULTIPLIER_1X4 0x3334
+
+#define DC_SHIFT2 16
+
+static INLINE int divide_using_multiply_shift(int num, int shift1,
+                                              int multiplier) {
+  const int interm = num >> shift1;
+  return interm * multiplier >> DC_SHIFT2;
+}
+
 // -----------------------------------------------------------------------------
 // DC_PRED
 
@@ -122,7 +133,7 @@ void aom_dc_predictor_4x8_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 6;
-  sum /= 12;
+  sum = divide_using_multiply_shift(sum, 2, DC_MULTIPLIER_1X2);
 
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   const uint32_t pred = _mm_cvtsi128_si32(row);
@@ -137,7 +148,7 @@ void aom_dc_predictor_4x16_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 10;
-  sum /= 20;
+  sum = divide_using_multiply_shift(sum, 2, DC_MULTIPLIER_1X4);
 
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   const uint32_t pred = _mm_cvtsi128_si32(row);
@@ -152,7 +163,7 @@ void aom_dc_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 6;
-  sum /= 12;
+  sum = divide_using_multiply_shift(sum, 2, DC_MULTIPLIER_1X2);
 
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_8xh(&row, 4, dst, stride);
@@ -166,7 +177,7 @@ void aom_dc_predictor_8x16_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 12;
-  sum /= 24;
+  sum = divide_using_multiply_shift(sum, 3, DC_MULTIPLIER_1X2);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_8xh(&row, 16, dst, stride);
 }
@@ -179,7 +190,7 @@ void aom_dc_predictor_8x32_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 20;
-  sum /= 40;
+  sum = divide_using_multiply_shift(sum, 3, DC_MULTIPLIER_1X4);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_8xh(&row, 32, dst, stride);
 }
@@ -192,7 +203,7 @@ void aom_dc_predictor_16x4_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 10;
-  sum /= 20;
+  sum = divide_using_multiply_shift(sum, 2, DC_MULTIPLIER_1X4);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_16xh(&row, 4, dst, stride);
 }
@@ -205,7 +216,7 @@ void aom_dc_predictor_16x8_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 12;
-  sum /= 24;
+  sum = divide_using_multiply_shift(sum, 3, DC_MULTIPLIER_1X2);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_16xh(&row, 8, dst, stride);
 }
@@ -218,7 +229,7 @@ void aom_dc_predictor_16x32_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 24;
-  sum /= 48;
+  sum = divide_using_multiply_shift(sum, 4, DC_MULTIPLIER_1X2);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_16xh(&row, 32, dst, stride);
 }
@@ -231,7 +242,7 @@ void aom_dc_predictor_16x64_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 40;
-  sum /= 80;
+  sum = divide_using_multiply_shift(sum, 4, DC_MULTIPLIER_1X4);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_16xh(&row, 64, dst, stride);
 }
@@ -244,7 +255,7 @@ void aom_dc_predictor_32x8_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 20;
-  sum /= 40;
+  sum = divide_using_multiply_shift(sum, 3, DC_MULTIPLIER_1X4);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_32xh(&row, 8, dst, stride);
 }
@@ -257,7 +268,7 @@ void aom_dc_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 24;
-  sum /= 48;
+  sum = divide_using_multiply_shift(sum, 4, DC_MULTIPLIER_1X2);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_32xh(&row, 16, dst, stride);
 }
@@ -270,7 +281,7 @@ void aom_dc_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 48;
-  sum /= 96;
+  sum = divide_using_multiply_shift(sum, 5, DC_MULTIPLIER_1X2);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_32xh(&row, 64, dst, stride);
 }
@@ -296,7 +307,7 @@ void aom_dc_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 48;
-  sum /= 96;
+  sum = divide_using_multiply_shift(sum, 5, DC_MULTIPLIER_1X2);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_64xh(&row, 32, dst, stride);
 }
@@ -309,7 +320,7 @@ void aom_dc_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
 
   uint32_t sum = _mm_cvtsi128_si32(sum_above);
   sum += 40;
-  sum /= 80;
+  sum = divide_using_multiply_shift(sum, 4, DC_MULTIPLIER_1X4);
   const __m128i row = _mm_set1_epi8((uint8_t)sum);
   dc_store_64xh(&row, 16, dst, stride);
 }
