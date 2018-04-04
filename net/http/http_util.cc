@@ -22,6 +22,7 @@
 namespace net {
 
 namespace {
+
 template <typename ConstIterator>
 void TrimLWSImplementation(ConstIterator* begin, ConstIterator* end) {
   // leading whitespace
@@ -33,23 +34,6 @@ void TrimLWSImplementation(ConstIterator* begin, ConstIterator* end) {
     --(*end);
 }
 
-// Helpers --------------------------------------------------------------------
-
-// Returns the index of the closing quote of the string, if any.  |start| points
-// at the opening quote.
-size_t FindStringEnd(const std::string& line, size_t start, char delim) {
-  DCHECK_LT(start, line.length());
-  DCHECK_EQ(line[start], delim);
-  DCHECK((delim == '"') || (delim == '\''));
-
-  const char set[] = { delim, '\\', '\0' };
-  for (size_t end = line.find_first_of(set, start + 1);
-       end != std::string::npos; end = line.find_first_of(set, end + 2)) {
-    if (line[end] != '\\')
-      return end;
-  }
-  return line.length();
-}
 }  // namespace
 
 // HttpUtil -------------------------------------------------------------------
@@ -79,65 +63,111 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
   if (type_end == std::string::npos)
     type_end = content_type_str.length();
 
-  size_t charset_val = 0;
-  size_t charset_end = 0;
+  std::string charset_value;
   bool type_has_charset = false;
 
-  // Iterate over parameters
-  size_t param_start = content_type_str.find_first_of(';', type_end);
-  if (param_start != std::string::npos) {
-    base::StringTokenizer tokenizer(begin + param_start, content_type_str.end(),
-                                    ";");
-    tokenizer.set_quote_chars("\"");
-    while (tokenizer.GetNext()) {
-      std::string::const_iterator equals_sign =
-          std::find(tokenizer.token_begin(), tokenizer.token_end(), '=');
-      if (equals_sign == tokenizer.token_end())
-        continue;
+  // Iterate over parameters. Can't split the string around semicolons
+  // preemptively because quoted strings may include semicolons. Matches logic
+  // in https://mimesniff.spec.whatwg.org/.
+  std::string::size_type offset = content_type_str.find_first_of(';', type_end);
+  while (offset < content_type_str.size()) {
+    DCHECK_EQ(';', content_type_str[offset]);
+    // Trim off the semicolon.
+    ++offset;
 
-      std::string::const_iterator param_name_begin = tokenizer.token_begin();
-      std::string::const_iterator param_name_end = equals_sign;
-      std::string::const_iterator param_value_begin = equals_sign + 1;
-      std::string::const_iterator param_value_end = tokenizer.token_end();
-      DCHECK(param_value_begin <= tokenizer.token_end());
+    // Trim off any following spaces.
+    offset = content_type_str.find_first_not_of(HTTP_LWS, offset);
+    std::string::size_type param_name_start = offset;
 
-      // From parameter name, only trim leading whitespace.
-      // From parameter value, only trim trailing whitespace.
-      // See https://crbug.com/772834.
-      TrimLWS(&param_name_begin, &param_value_end);
+    // Extend parameter name until run into a semicolon or equals sign.  Per
+    // spec, trailing spaces are not removed.
+    offset = content_type_str.find_first_of(";=", offset);
 
-      if (base::LowerCaseEqualsASCII(
-              base::StringPiece(param_name_begin, param_name_end), "charset")) {
-        // TODO(abarth): Refactor this function to consistently use iterators.
-        charset_val = param_value_begin - begin;
-        charset_end = param_value_end - begin;
-        type_has_charset = true;
-      } else if (base::LowerCaseEqualsASCII(
-                     base::StringPiece(param_name_begin, param_name_end),
-                     "boundary")) {
-        if (boundary)
-          boundary->assign(param_value_begin, param_value_end);
+    // Nothing more to do if at end of string, or if there's no parameter
+    // value, since names without values aren't allowed.
+    if (offset == std::string::npos || content_type_str[offset] == ';')
+      continue;
+
+    base::StringPiece param_name(content_type_str.begin() + param_name_start,
+                                 content_type_str.begin() + offset);
+
+    // Now parse the value.
+    DCHECK_EQ('=', content_type_str[offset]);
+    // Trim off the '='.
+    offset++;
+
+    // Remove leading spaces. This violates the spec, though it matches
+    // pre-existing behavior.
+    //
+    // TODO(mmenke): Consider doing this (only?) after parsing quotes, which
+    // seems to align more with the spec - not the content-type spec, but the
+    // GET spec's way of getting an encoding, and the spec for handling
+    // boundary values as well.
+    // See https://encoding.spec.whatwg.org/#names-and-labels.
+    offset = content_type_str.find_first_not_of(HTTP_LWS, offset);
+
+    std::string param_value;
+    if (offset == std::string::npos) {
+      // Nothing to do here - an unquoted string of only whitespace is
+      // considered to have an empty value.
+    } else if (content_type_str[offset] != '"') {
+      // If the first character is not a quotation mark, copy data directly.
+      std::string::size_type value_start = offset;
+      offset = content_type_str.find_first_of(';', offset);
+      std::string::size_type value_end = offset;
+
+      // Remove terminal whitespace. If ran off the end of the string, have to
+      // update |value_end| first.
+      if (value_end == std::string::npos)
+        value_end = content_type_str.size();
+      while (value_end > value_start &&
+             IsLWS(content_type_str[value_end - 1])) {
+        --value_end;
       }
-    }
-  }
 
-  if (type_has_charset) {
-    // Trim leading whitespace from charset_val.
-    charset_val = content_type_str.find_first_not_of(HTTP_LWS, charset_val);
-    charset_val = std::min(charset_val, charset_end);
-    char first_char = content_type_str[charset_val];
-    // RFC 7231 Section 3.1.1.1 allows double quotes around charset.
-    if (first_char == '"') {
-      charset_end = FindStringEnd(content_type_str, charset_val, first_char);
-      ++charset_val;
-      DCHECK(charset_end >= charset_val);
+      param_value =
+          content_type_str.substr(value_start, value_end - value_start);
     } else {
-      // Ignore the part after '('.  This is not in the standard, but may occur
-      // in rare cases.
+      // Otherwise, append data, with special handling for backslashes, until
+      // a close quote.
+
+      // Skip open quote.
+      DCHECK_EQ('"', content_type_str[offset]);
+      ++offset;
+
+      while (offset < content_type_str.size() &&
+             content_type_str[offset] != '"') {
+        // Skip over backslash and append the next character, when not at
+        // the end of the string. Otherwise, copy the next character (Which may
+        // be a backslash).
+        if (content_type_str[offset] == '\\' &&
+            offset + 1 < content_type_str.size()) {
+          ++offset;
+        }
+        param_value += content_type_str[offset];
+        ++offset;
+      }
+
+      offset = content_type_str.find_first_of(';', offset);
+    }
+
+    // 0-length parameter values are not considered valid.
+    if (!param_value.size())
+      continue;
+
+    // TODO(mmenke): Take first, rather than last, value in the case of
+    // duplicates.
+    // TODO(mmenke): Check that name has only valid characters.
+    if (base::LowerCaseEqualsASCII(param_name, "charset")) {
+      // Ignore the part after '('.  This is not in the standard, but may
+      // occur in rare cases.
       // TODO(bnc): Do not ignore the part after '('.
       // See https://crbug.com/772343.
-      charset_end = std::min(content_type_str.find_first_of("(", charset_val),
-                             charset_end);
+      charset_value = param_value.substr(0, param_value.find("("));
+      type_has_charset = true;
+    } else if (base::LowerCaseEqualsASCII(param_name, "boundary")) {
+      if (boundary)
+        boundary->assign(std::move(param_value));
     }
   }
 
@@ -164,8 +194,7 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
   }
   if ((!eq && *had_charset) || type_has_charset) {
     *had_charset = true;
-    *charset = base::ToLowerASCII(
-        base::StringPiece(begin + charset_val, begin + charset_end));
+    *charset = base::ToLowerASCII(charset_value);
   }
 }
 
