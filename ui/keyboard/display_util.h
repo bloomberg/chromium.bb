@@ -6,6 +6,7 @@
 #define UI_KEYBOARD_DISPLAY_UTIL_H_
 
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
 
 namespace keyboard {
 
@@ -15,6 +16,7 @@ class DisplayUtil {
   DisplayUtil();
 
   int64_t GetNearestDisplayIdToWindow(aura::Window* window) const;
+  display::Display GetNearestDisplayToWindow(aura::Window* window) const;
 };
 
 }  // namespace keyboard

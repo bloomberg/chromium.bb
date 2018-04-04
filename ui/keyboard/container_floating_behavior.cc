@@ -115,20 +115,20 @@ gfx::Rect ContainerFloatingBehavior::ContainKeyboardToScreenBounds(
   int bottom = keyboard_bounds.bottom();
 
   // Prevent keyboard from appearing off screen or overlapping with the edge.
-  if (left < 0) {
-    left = 0;
-    right = keyboard_bounds.width();
+  if (left < display_bounds.x()) {
+    left = display_bounds.x();
+    right = left + keyboard_bounds.width();
   }
-  if (right >= display_bounds.width()) {
-    right = display_bounds.width();
+  if (right >= display_bounds.right()) {
+    right = display_bounds.right();
     left = right - keyboard_bounds.width();
   }
-  if (top < 0) {
-    top = 0;
-    bottom = keyboard_bounds.height();
+  if (top < display_bounds.y()) {
+    top = display_bounds.y();
+    bottom = top + keyboard_bounds.height();
   }
-  if (bottom >= display_bounds.height()) {
-    bottom = display_bounds.height();
+  if (bottom >= display_bounds.bottom()) {
+    bottom = display_bounds.bottom();
     top = bottom - keyboard_bounds.height();
   }
 
@@ -162,7 +162,11 @@ gfx::Point ContainerFloatingBehavior::GetPositionForShowingKeyboard(
 
   // Make sure that this location is valid according to the current size of the
   // screen.
-  gfx::Rect keyboard_bounds = gfx::Rect(top_left_offset, keyboard_size);
+  gfx::Rect keyboard_bounds =
+      gfx::Rect(top_left_offset.x() + display_bounds.x(),
+                top_left_offset.y() + display_bounds.y(), keyboard_size.width(),
+                keyboard_size.height());
+
   gfx::Rect valid_keyboard_bounds =
       ContainKeyboardToScreenBounds(keyboard_bounds, display_bounds);
 
