@@ -138,7 +138,7 @@ class ThreadTimesKeyNoOpCases(_ThreadTimes):
     return 'per_frame' not in name and 'mean_frame' not in name
 
 
-@benchmark.Owner(emails=['tdresser@chromium.org'])
+@benchmark.Owner(emails=['bokan@chromium.org', 'nzolghadr@chromium.org'])
 class ThreadTimesToughScrollingCases(_ThreadTimes):
   """Measure timeline metrics while performing smoothness action on tough
   scrolling cases."""

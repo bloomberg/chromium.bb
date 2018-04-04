@@ -113,7 +113,8 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
     return 'smoothness.key_desktop_move_cases'
 
 
-@benchmark.Owner(emails=['vmiura@chromium.org', 'tdresser@chromium.org'])
+@benchmark.Owner(emails=['bokan@chromium.org', 'nzolghadr@chromium.org',
+                         'vmiura@chromium.org'])
 class SmoothnessKeyMobileSites(_Smoothness):
   """Measures rendering statistics while scrolling down the key mobile sites.
 
@@ -209,7 +210,8 @@ class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
     return 'smoothness.gpu_rasterization.tough_filters_cases'
 
 
-@benchmark.Owner(emails=['tdresser@chromium.org', 'rbyers@chromium.org'])
+@benchmark.Owner(emails=['bokan@chromium.org', 'nzolghadr@chromium.org',
+                         'rbyers@chromium.org'])
 class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
   """Measures rendering statistics for the key mobile sites with synchronous
   (main thread) scrolling.
