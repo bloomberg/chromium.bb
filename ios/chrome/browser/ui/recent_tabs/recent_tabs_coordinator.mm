@@ -65,9 +65,9 @@
   // longer than its associated VC.
   if (!self.mediator) {
     self.mediator = [[RecentTabsMediator alloc] init];
+    self.mediator.browserState = self.browserState;
     [self.mediator initObservers];
   }
-  self.mediator.browserState = self.browserState;
   self.mediator.consumer = recentTabsTableViewController;
   [self.mediator reloadSessions];
 
