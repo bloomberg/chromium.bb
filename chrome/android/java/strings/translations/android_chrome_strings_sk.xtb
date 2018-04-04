@@ -98,7 +98,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1887786770086287077">Prístup k polohe je v tomto zariadení vypnutý. Zapnite ho v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> sa otvorí v Chrome. Pokračovaním vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozornením o ochrane súkromia<ph name="END_LINK2" /> Chromu.</translation>
 <translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
-<translation id="1897409700584096124">Na webe prebieha vysielanie</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1933845786846280168">Vybratá karta</translation>
 <translation id="1938981467853765413">Poskytnúť spätnú väzbu</translation>
@@ -246,7 +245,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="32895400574683172">Upozornenia sú povolené</translation>
 <translation id="3295602654194328831">Skryť informácie</translation>
 <translation id="3303414029551471755">Pokračovať a stiahnuť obsah?</translation>
-<translation id="3321222012623826478">Táto služba vyžaduje na účely overenia anonymné odoslanie webovej adresy na servery Google.</translation>
 <translation id="3328801116991980348">Informácie o stránkach</translation>
 <translation id="3341058695485821946">Zistite, koľko dát ste ušetrili</translation>
 <translation id="3350687908700087792">Zavrieť všetky karty inkognito</translation>
@@ -593,7 +591,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6475951671322991020">Stiahnuť video</translation>
 <translation id="6482749332252372425">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu nedostatku voľného miesta v úložisku.</translation>
 <translation id="6496823230996795692">Prvé spustenie aplikácie <ph name="APP_NAME" /> vyžaduje pripojenie k internetu.</translation>
-<translation id="6508332297647760142">Zdieľanie fyzického webu</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
 <translation id="6534565668554028783">Odpoveď Googlu trvala príliš dlho</translation>
 <translation id="6538442820324228105">Stiahnuté: <ph name="GBS" /> GB</translation>

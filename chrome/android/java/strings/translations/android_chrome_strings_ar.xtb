@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">‏سيتم فتح <ph name="APP_NAME" /> في Chrome. بالمتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> في Chrome.</translation>
 <translation id="189172778771606813">إغلاق لائحة التنقل</translation>
-<translation id="1897409700584096124">يتم بث موقع الويب</translation>
 <translation id="1919345977826869612">إعلانات</translation>
 <translation id="1933845786846280168">علامة تبويب محددة</translation>
 <translation id="1938981467853765413">تقديم تعليقات</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">مسموح بالإشعارات</translation>
 <translation id="3295602654194328831">إخفاء المعلومات</translation>
 <translation id="3303414029551471755">هل ترغب في الاستمرار في تنزيل المحتوى؟</translation>
-<translation id="3321222012623826478">‏تحتاج هذه الخدمة إلى إرسال عنوان موقع الويب هذا بدون الكشف عن الهوية إلى خوادم Google للتحقق.</translation>
 <translation id="3328801116991980348">معلومات موقع الويب</translation>
 <translation id="3341058695485821946">الاطّلاع على مقدار البيانات التي حفظتها</translation>
 <translation id="3350687908700087792">إغلاق كافة علامات تبويب التصفح المتخفي</translation>
@@ -594,7 +592,6 @@
 <translation id="6475951671322991020">تنزيل الفيديو</translation>
 <translation id="6482749332252372425">تعذّر تنزيل الملف <ph name="FILE_NAME" /> لعدم توفر مساحة لتخزين.</translation>
 <translation id="6496823230996795692">لاستخدام <ph name="APP_NAME" /> للمرة الأولى، يُرجى الاتصال بالإنترنت.</translation>
-<translation id="6508332297647760142">مشاركة الشبكة المادية</translation>
 <translation id="6527303717912515753">مشاركة</translation>
 <translation id="6534565668554028783">‏استغرقت Google وقتًا أطول مما يجب للاستجابة</translation>
 <translation id="6538442820324228105">تم التنزيل بحجم <ph name="GBS" /> غيغابايت</translation>

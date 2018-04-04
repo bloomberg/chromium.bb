@@ -98,7 +98,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1887786770086287077">Vietos prieiga išjungta šiame įrenginyje. Įjunkite ją skiltyje <ph name="BEGIN_LINK" />„Android“ nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Programa „<ph name="APP_NAME" />“ bus atidaryta naršyklėje „Chrome“. Tęsdami sutinkate su „Chrome“ <ph name="BEGIN_LINK1" />paslaugų teikimo sąlygomis<ph name="END_LINK1" /> ir <ph name="BEGIN_LINK2" />privatumo pranešimu<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Uždaryti naršymo skydelį</translation>
-<translation id="1897409700584096124">Svetainė transliuoja</translation>
 <translation id="1919345977826869612">Skelbimai</translation>
 <translation id="1933845786846280168">Pasirinktas skirtukas</translation>
 <translation id="1938981467853765413">Pateikti atsiliepimą</translation>
@@ -246,7 +245,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="32895400574683172">Pranešimai leidžiami</translation>
 <translation id="3295602654194328831">Slėpti informaciją</translation>
 <translation id="3303414029551471755">Tęsti turinio atsisiuntimo procesą?</translation>
-<translation id="3321222012623826478">Šiai paslaugai reikia anonimiškai išsiųsti šios svetainės adresą į „Google“ serverius, kad būtų galima patvirtinti.</translation>
 <translation id="3328801116991980348">Svetainės informacija</translation>
 <translation id="3341058695485821946">Žr., kiek duomenų sutaupėte</translation>
 <translation id="3350687908700087792">Uždaryti visus inkognito skirtukų lapus</translation>
@@ -593,7 +591,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6475951671322991020">Atsisiųsti vaizdo įrašą</translation>
 <translation id="6482749332252372425">Nepavyko atsisiųsti „<ph name="FILE_NAME" />“ dėl trūkstamos vietos saugykloje.</translation>
 <translation id="6496823230996795692">Jei „<ph name="APP_NAME" />“ norite naudoti pirmą kartą, prisijunkite prie interneto.</translation>
-<translation id="6508332297647760142">Fizinio žiniatinklio bendrinimas</translation>
 <translation id="6527303717912515753">Bendrinti</translation>
 <translation id="6534565668554028783">Per ilgai laukta „Google“ atsako</translation>
 <translation id="6538442820324228105">Atsisiųsta <ph name="GBS" /> GB</translation>

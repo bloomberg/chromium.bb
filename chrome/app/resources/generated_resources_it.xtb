@@ -717,7 +717,7 @@
 <translation id="2114896190328250491">Foto di <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Invia al telefono</translation>
 <translation id="2115946962706216358">Aggiunta della macchina al dominio non riuscita. Ciò potrebbe essere dovuto al superamento del numero massimo di aggiunte delle macchine consentito per il tuo account sul server.</translation>
-<translation id="2119349053129246860">Apri nell'app <ph name="APP" /></translation>
+<translation id="2119349053129246860">Apri in <ph name="APP" /></translation>
 <translation id="2121825465123208577">Ridimensiona</translation>
 <translation id="2124930039827422115">{1,plural, =1{Un utente ha dato una valutazione di <ph name="AVERAGE_RATING" />.}other{# utenti hanno dato una valutazione di <ph name="AVERAGE_RATING" />.}}</translation>
 <translation id="2126167708562367080">La sincronizzazione è stata disattivata dall'amministratore.</translation>

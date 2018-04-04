@@ -98,7 +98,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1887786770086287077">Přístup k poloze je v tomto zařízení vypnut. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
-<translation id="1897409700584096124">Web vysílá</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1933845786846280168">Vybraná karta</translation>
 <translation id="1938981467853765413">Odeslat zpětnou vazbu</translation>
@@ -246,7 +245,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="32895400574683172">Oznámení jsou povolena</translation>
 <translation id="3295602654194328831">Skrýt informace</translation>
 <translation id="3303414029551471755">Chcete pokračovat ke stažení obsahu?</translation>
-<translation id="3321222012623826478">Tato služba potřebuje odeslat adresu tohoto webu anonymně do Googlu k ověření.</translation>
 <translation id="3328801116991980348">Informace o stránkách</translation>
 <translation id="3341058695485821946">Podívejte se, kolik dat jste ušetřili</translation>
 <translation id="3350687908700087792">Zavřít všechny anonymní karty</translation>
@@ -593,7 +591,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6475951671322991020">Stáhnout video</translation>
 <translation id="6482749332252372425">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu nedostatku místa v úložišti.</translation>
 <translation id="6496823230996795692">Chcete-li poprvé použít aplikaci <ph name="APP_NAME" />, připojte se k internetu.</translation>
-<translation id="6508332297647760142">Sdílení fyzického webu</translation>
 <translation id="6527303717912515753">Sdílet</translation>
 <translation id="6534565668554028783">Odpověď Googlu trvala příliš dlouho</translation>
 <translation id="6538442820324228105">Staženo: <ph name="GBS" /> GB</translation>

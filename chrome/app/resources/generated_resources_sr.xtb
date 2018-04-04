@@ -714,7 +714,7 @@
 <translation id="2114896190328250491">Аутор слике: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Пошаљи на телефон</translation>
 <translation id="2115946962706216358">Придруживање уређаја домену није успело. Можда сте премашили максималан број дозвољених придруживања уређаја за налог на серверу.</translation>
-<translation id="2119349053129246860">Отвори у апликацији <ph name="APP" /></translation>
+<translation id="2119349053129246860">Отвори у <ph name="APP" /></translation>
 <translation id="2121825465123208577">Промени величину</translation>
 <translation id="2124930039827422115">{1,plural, =1{Један корисник је оценио са <ph name="AVERAGE_RATING" />.}one{# корисник је оценио са <ph name="AVERAGE_RATING" />.}few{# корисника су оценила са <ph name="AVERAGE_RATING" />.}other{# корисника је оценило са <ph name="AVERAGE_RATING" />.}}</translation>
 <translation id="2126167708562367080">Администратор је онемогућио синхронизацију.</translation>

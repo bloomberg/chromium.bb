@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">На цьому пристрої вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Закрити панель навігації</translation>
-<translation id="1897409700584096124">Транслюється веб-сайт</translation>
 <translation id="1919345977826869612">Оголошення</translation>
 <translation id="1933845786846280168">Вибрана вкладка</translation>
 <translation id="1938981467853765413">Надіслати відгук</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">Сповіщення дозволено</translation>
 <translation id="3295602654194328831">Сховати інформацію</translation>
 <translation id="3303414029551471755">Завантажити вміст?</translation>
-<translation id="3321222012623826478">Цій службі потрібно анонімно надіслати адресу цього веб-сайту на сервери Google для перевірки.</translation>
 <translation id="3328801116991980348">Інформація про сайт</translation>
 <translation id="3341058695485821946">Перевірте обсяг збережених даних</translation>
 <translation id="3350687908700087792">Закрити всі анонімні вікна</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">Завантажити відео</translation>
 <translation id="6482749332252372425">Не вдалося завантажити файл <ph name="FILE_NAME" />. Замало місця.</translation>
 <translation id="6496823230996795692">Щоб запустити додаток <ph name="APP_NAME" /> уперше, під’єднайте пристрій до Інтернету.</translation>
-<translation id="6508332297647760142">Доступ до даних Інтернету навколо нас</translation>
 <translation id="6527303717912515753">Надіслати</translation>
 <translation id="6534565668554028783">Google довго не відповідає</translation>
 <translation id="6538442820324228105">Завантажено <ph name="GBS" /> ГБ</translation>

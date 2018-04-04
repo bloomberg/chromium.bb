@@ -523,6 +523,7 @@
 <translation id="2529700525201305165">Begrens hvilke brukere som kan logge seg på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
+<translation id="2536283449105918306">Aktiverer beskyttelse mot at nettsteder både kan navigere til andre sider og åpne nye faner eller vinduer</translation>
 <translation id="2552966063069741410">Tidssone</translation>
 <translation id="2562339630163277285">Spesifiserer nettadressen for søkemotoren som brukes, for å gi umiddelbare resultater. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med teksten brukeren har skrevet inn hittil, når søket utføres.
 
@@ -2630,6 +2631,12 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
 <translation id="9105265795073104888">Bare en undergruppe av konfigurasjonsalternativer for proxy-tjenere er gjort tilgjengelig for Android-apper. Android-apper kan velge å bruke proxy-tjeneren frivillig. Du kan ikke tvinge dem til å bruke proxy-tjenere.</translation>
+<translation id="9110615239151047025">Aktiverer beskyttelse mot at nettsteder både kan navigere til andre sider og åpne nye faner eller vinduer. Dette blokkerer slik navigering.
+
+      Du finner en forklaring på hva dette betyr, på https://www.chromestatus.com/features/5675755719622656.
+      Hvis denne regelen er satt til «True» (sann), blokkeres navigering som <ph name="PRODUCT_NAME" /> oppdager som å innebære både navigering til andre sider og åpning av nye faner eller vinduer.
+      Hvis denne regelen er satt til «False» (usann), tillater <ph name="PRODUCT_NAME" /> at nettsteder både kan navigere til andre sider og åpne nye faner eller vinduer.
+      Som standard er denne regelen satt til «True» (sann).</translation>
 <translation id="9112727953998243860">Konfigurasjonsfil for bedriftsskriver</translation>
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
 

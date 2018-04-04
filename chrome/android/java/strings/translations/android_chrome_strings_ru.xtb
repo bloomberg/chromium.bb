@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">Для устройства отключено определение местоположения. Включите эту функцию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Приложение "<ph name="APP_NAME" />" откроется в Chrome. Продолжая, вы соглашаетесь с <ph name="BEGIN_LINK1" />Условиями использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечанием о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Закрыть панель навигации</translation>
-<translation id="1897409700584096124">Идет трансляция с сайта</translation>
 <translation id="1919345977826869612">Реклама</translation>
 <translation id="1933845786846280168">Выбранная вкладка</translation>
 <translation id="1938981467853765413">Оставить отзыв</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">Может отправлять уведомления</translation>
 <translation id="3295602654194328831">Скрыть информацию</translation>
 <translation id="3303414029551471755">Скачать?</translation>
-<translation id="3321222012623826478">Этот сервис должен анонимно отправить данный веб-адрес на серверы Google для проверки.</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="3341058695485821946">Узнайте, сколько трафика вы сэкономили</translation>
 <translation id="3350687908700087792">Закрыть все вкладки инкогнито</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">Скачать видео</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
 <translation id="6496823230996795692">При первом запуске приложения "<ph name="APP_NAME" />" требуется подключение к Интернету.</translation>
-<translation id="6508332297647760142">Интернет вокруг нас</translation>
 <translation id="6527303717912515753">Поделиться</translation>
 <translation id="6534565668554028783">Превышено время ожидания ответа от Google</translation>
 <translation id="6538442820324228105">Скачано <ph name="GBS" /> ГБ</translation>

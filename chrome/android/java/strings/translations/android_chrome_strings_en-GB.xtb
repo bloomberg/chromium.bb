@@ -98,7 +98,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1887786770086287077">Location access is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Close navigation drawer</translation>
-<translation id="1897409700584096124">Website is broadcasting</translation>
 <translation id="1919345977826869612">Ads</translation>
 <translation id="1933845786846280168">Selected Tab</translation>
 <translation id="1938981467853765413">Provide feedback</translation>
@@ -246,7 +245,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="32895400574683172">Notifications are allowed</translation>
 <translation id="3295602654194328831">Hide info</translation>
 <translation id="3303414029551471755">Proceed to download the content?</translation>
-<translation id="3321222012623826478">This service needs to anonymously send this website address to Google servers for verification.</translation>
 <translation id="3328801116991980348">Site information</translation>
 <translation id="3341058695485821946">See how much data that you've saved</translation>
 <translation id="3350687908700087792">Close all incognito tabs</translation>
@@ -593,7 +591,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
 <translation id="6496823230996795692">To use <ph name="APP_NAME" /> for the first time, please connect to the Internet.</translation>
-<translation id="6508332297647760142">Physical Web Sharing</translation>
 <translation id="6527303717912515753">Share</translation>
 <translation id="6534565668554028783">Google took too long to respond</translation>
 <translation id="6538442820324228105">Downloaded <ph name="GBS" /> GB</translation>

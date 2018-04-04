@@ -98,7 +98,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1887786770086287077">L'accès à la position est désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> va s'ouvrir dans Chrome. En continuant, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="189172778771606813">Fermer le panneau de navigation</translation>
-<translation id="1897409700584096124">Le site Web est bien diffusé</translation>
 <translation id="1919345977826869612">Annonces</translation>
 <translation id="1933845786846280168">Onglet sélectionné</translation>
 <translation id="1938981467853765413">Envoyer des commentaires</translation>
@@ -246,7 +245,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="32895400574683172">Les notifications sont autorisées</translation>
 <translation id="3295602654194328831">Masquer les informations</translation>
 <translation id="3303414029551471755">Poursuivre et télécharger le contenu ?</translation>
-<translation id="3321222012623826478">Ce service doit envoyer de façon anonyme l'adresse de ce site Web aux serveurs Google pour vérification.</translation>
 <translation id="3328801116991980348">Informations sur le site</translation>
 <translation id="3341058695485821946">Découvrez la quantité de données économisées</translation>
 <translation id="3350687908700087792">Fermer tous les onglets de navigation privée</translation>
@@ -593,7 +591,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6475951671322991020">Télécharger la vidéo</translation>
 <translation id="6482749332252372425">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage insuffisant.</translation>
 <translation id="6496823230996795692">Pour utiliser <ph name="APP_NAME" /> pour la première fois, veuillez vous connecter à Internet.</translation>
-<translation id="6508332297647760142">Partage du Web physique</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="6534565668554028783">Google a mis trop de temps à répondre</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> Go téléchargé(s)</translation>

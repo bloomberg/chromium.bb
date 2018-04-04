@@ -844,7 +844,7 @@
 <translation id="7549584377607005141">Esta página web necesita los datos introducidos anteriormente para mostrarse correctamente. Puedes volver a enviar los datos, pero se repetirán las acciones que haya realizado la página.</translation>
 <translation id="7552846755917812628">Prueba los siguientes consejos:</translation>
 <translation id="7554791636758816595">Nueva pestaña</translation>
-<translation id="7564049878696755256">Podrías perder el acceso a tu cuenta de <ph name="ORG_NAME" /> o tener problemas de suplantación de identidad. Chrome te recomienda que cambies tu contraseña.</translation>
+<translation id="7564049878696755256">Podrías perder el acceso a tu cuenta de <ph name="ORG_NAME" /> o tener problemas de suplantación de identidad. Chrome te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="7567204685887185387">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, su certificado de seguridad podría haberse emitido de forma fraudulenta. El problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="7568593326407688803">Esta página está escrita en<ph name="ORIGINAL_LANGUAGE" />¿Quieres traducirla?</translation>
 <translation id="7569952961197462199">¿Eliminar tarjeta de crédito de Chrome?</translation>
@@ -1000,7 +1000,7 @@
 <translation id="8761567432415473239">La función de Navegación Segura de Google <ph name="BEGIN_LINK" />encontró programas dañinos<ph name="END_LINK" /> recientemente en el sitio <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>
 <translation id="8790007591277257123">&amp;Rehacer eliminación</translation>
-<translation id="8792621596287649091">Podrías perder el acceso a tu cuenta de <ph name="ORG_NAME" /> o tener problemas de suplantación de identidad. Chromium te recomienda que cambies tu contraseña.</translation>
+<translation id="8792621596287649091">Podrías perder el acceso a tu cuenta de <ph name="ORG_NAME" /> o tener problemas de suplantación de identidad. Chromium te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="8800988563907321413">Las sugerencias de la sección Cercanas aparecen aquí</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883848425547221593">Otros marcadores</translation>

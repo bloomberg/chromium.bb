@@ -98,7 +98,6 @@
 <translation id="1887786770086287077">የአካባቢ መዳረሻ ለዚህ መሣሪያ ጠፍቷል። በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> በChrome ውስጥ ይከፈታል። በመቀጠልዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" /> ተስማምተዋል።</translation>
 <translation id="189172778771606813">የአሰሳ መሳቢያ ዝጋ</translation>
-<translation id="1897409700584096124">ድር ጣቢያ በማሠራጨት ላይ ነው</translation>
 <translation id="1919345977826869612">ማስታወቂያዎች</translation>
 <translation id="1933845786846280168">የተመረጠው ትር</translation>
 <translation id="1938981467853765413">ግብረ መልሰ ይስጡ</translation>
@@ -246,7 +245,6 @@
 <translation id="32895400574683172">ማሳወቂያዎች ይፈቀዳሉ</translation>
 <translation id="3295602654194328831">መረጃ ደብቅ</translation>
 <translation id="3303414029551471755">ይዘቱን ማውረድ ይቀጥል?</translation>
-<translation id="3321222012623826478">ይህ አገልግሎት የዚህም ድር ጣቢያ አድራሻ ለማረጋገጥ ስም-አልባ ሆኖ ወደ Google መላክ አለበት።</translation>
 <translation id="3328801116991980348">የጣቢያ መረጃ</translation>
 <translation id="3341058695485821946">ምን ያህል ውሂብ እንዳስቀመጡ ይመልከቱ</translation>
 <translation id="3350687908700087792">ሁሉንም ማንነት የማያሳውቅ ትሮችን ይዝጉ</translation>
@@ -593,7 +591,6 @@
 <translation id="6475951671322991020">ቪድዮ አውርድ</translation>
 <translation id="6482749332252372425">በማከማቻ ቦታ ጥበት ምክንያት <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" />ን ለመጀመሪያ ጊዜ ለመጠቀም እባክዎ ከበይነመረብ ጋር ይገናኙ።</translation>
-<translation id="6508332297647760142">አካላዊ የድር ማጋራት</translation>
 <translation id="6527303717912515753">አጋራ</translation>
 <translation id="6534565668554028783">Google ምላሽ ለመስጠት ከልክ በላይ ረዥም ጊዜ ወስዷል</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> ጊባ ወርዷል</translation>

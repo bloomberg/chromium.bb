@@ -98,7 +98,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1887786770086287077">Platsåtkomst har inaktiverats på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
-<translation id="1897409700584096124">Webbplatsen sänds</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1933845786846280168">Vald flik</translation>
 <translation id="1938981467853765413">Ge feedback</translation>
@@ -246,7 +245,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="32895400574683172">Aviseringar tillåts</translation>
 <translation id="3295602654194328831">Dölj info</translation>
 <translation id="3303414029551471755">Vill du ladda ned innehållet?</translation>
-<translation id="3321222012623826478">Den här webbadressen måste skickas anonymt till Google-servrar för att verifieras i tjänsten.</translation>
 <translation id="3328801116991980348">Platsinformation</translation>
 <translation id="3341058695485821946">Se hur mycket data du har sparat</translation>
 <translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
@@ -593,7 +591,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6475951671322991020">Ladda ned video</translation>
 <translation id="6482749332252372425">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte finns tillräckligt med lagringsutrymme.</translation>
 <translation id="6496823230996795692">Du behöver vara ansluten till internet när du använder <ph name="APP_NAME" /> för första gången.</translation>
-<translation id="6508332297647760142">Physical Web-delning</translation>
 <translation id="6527303717912515753">Dela</translation>
 <translation id="6534565668554028783">Google tog för lång tid på sig att svara</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB har laddats ned</translation>

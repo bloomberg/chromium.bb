@@ -495,7 +495,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2529700525201305165">Limita gli utenti autorizzati ad accedere a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configura l'elenco di estensioni e app con installazione imposta</translation>
 <translation id="253135976343875019">Ritardo avviso inattività in caso di utilizzo di CA</translation>
-<translation id="2536283449105918306">Attiva la protezione tab-under</translation>
+<translation id="2536283449105918306">Attiva la protezione contro le schede secondarie</translation>
 <translation id="2552966063069741410">Fuso orario</translation>
 <translation id="2562339630163277285">Consente di specificare l'URL del motore di ricerca utilizzato per fornire risultati immediati. L'URL deve contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che verrà sostituita in fase di query dal testo inserito dall'utente fino a quel momento.
 
@@ -2485,12 +2485,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9096086085182305205">Whitelist server di autenticazione</translation>
 <translation id="9098553063150791878">Norme relative all'autenticazione HTTP</translation>
 <translation id="9105265795073104888">Solo un sottoinsieme di opzioni di configurazione del proxy viene reso disponibile alle app Android, che decidono volontariamente se rispettarlo o meno. Non puoi forzarle a utilizzare un proxy.</translation>
-<translation id="9110615239151047025">Consente di attivare la protezione tab-under, che blocca le navigazioni rilevate come tab-under.
+<translation id="9110615239151047025">Consente di attivare la protezione contro le schede secondarie, che blocca le navigazioni per le schede rilevate come secondarie.
 
-      Visita la pagina https://www.chromestatus.com/features/5675755719622656 per sapere cosa sono i tab-under.
-      Se questa norma viene impostata su True, le navigazioni rilevate come tab-under in <ph name="PRODUCT_NAME" /> verranno bloccate.
-      Se la norma viene impostata su False, <ph name="PRODUCT_NAME" /> consentirà ai siti di eseguire navigazioni tab-under.
-      Per impostazione predefinita, questa norma è impostata su True.</translation>
+      Visita la pagina https://www.chromestatus.com/features/5675755719622656 per sapere cosa sono le schede secondarie.
+      Se questa norma viene impostata su True, le navigazioni per le schede rilevate come secondarie in <ph name="PRODUCT_NAME" /> verranno bloccate.
+      Se la norma viene impostata su False, <ph name="PRODUCT_NAME" /> i siti potranno eseguire navigazioni tramite schede secondarie.
+      Per impostazione predefinita, la norma è impostata su True.</translation>
 <translation id="9112727953998243860">File di configurazione delle stampanti aziendali</translation>
 <translation id="9112897538922695510">Ti consente di registrare un elenco di gestori di protocolli. Questa può essere soltanto una norma consigliata. Per la proprietà |protocol| dovrebbe essere impostato lo schema, ad esempio "mailto", e per la proprietà |url| dovrebbe essere impostato il pattern URL dell'applicazione che gestisce lo schema. Il pattern può includere "%s" che, se presente, verrà sostituito dall'URL gestito.
 

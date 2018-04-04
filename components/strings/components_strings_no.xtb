@@ -141,6 +141,7 @@
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1978555033938440688">Fastvareversjon</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{og 1 til}other{og # til}}</translation>
+<translation id="2003709556000175978">Tilbakestill passordet ditt nå</translation>
 <translation id="2025186561304664664">Mellomtjeneren er innstilt på automatisk konfigurasjon.</translation>
 <translation id="2030481566774242610">Mener du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Sjekk proxy-tjeneren og brannmuren<ph name="END_LINK" /></translation>
@@ -148,6 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 forslag}other{# forslag}}</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="20817612488360358">Innstillinger for systemmellomtjener er stilt inn på å brukes, men en uttrykkelig mellomtjenerkonfigurasjon er også angitt.</translation>
+<translation id="2084558088529668945">Du har skrevet inn passordet ditt på et nettsted som ikke administreres av <ph name="ORG_NAME" />. For å beskytte kontoen din må du ikke bruke det samme passordet i andre apper og på andre nettsteder.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2094505752054353250">Domenene samsvarer ikke</translation>
 <translation id="2096368010154057602">Avdeling</translation>
@@ -443,6 +445,7 @@
 <translation id="4171400957073367226">Ugyldig bekreftelsessignatur</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> element til}other{<ph name="ITEM_COUNT" /> elementer til}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Chrome anbefaler at du tilbakestiller passordet ditt for <ph name="ORG_NAME" /> hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sjekk brannmur- og antiviruskonfigurasjonen<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kræsj</translation>
@@ -456,6 +459,7 @@
 <translation id="4265872034478892965">Tillatt av administratoren din</translation>
 <translation id="4269787794583293679">(Uten brukernavn)</translation>
 <translation id="4275830172053184480">Start enheten din på nytt</translation>
+<translation id="4277028893293644418">Tilbakestill passordet</translation>
 <translation id="4280429058323657511">, utløper <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Blokkér (standard)</translation>
 <translation id="4325863107915753736">Artikkelen ble ikke funnet</translation>
@@ -652,6 +656,7 @@
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5893752035575986141">Kredittkort godtas.</translation>
+<translation id="5898382028489516745">Chromium anbefaler at du tilbakestiller passordet ditt for <ph name="ORG_NAME" /> hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronisert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}}</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
@@ -723,6 +728,7 @@
 <translation id="647261751007945333">Enhetsinnstillinger</translation>
 <translation id="6477321094435799029">Chrome har oppdaget uvanlig kode på denne siden og blokkert den for å beskytte personopplysningene dine (for eksempel passord, telefonnumre og kredittkortinformasjon).</translation>
 <translation id="6489534406876378309">Start opplastingen av krasj</translation>
+<translation id="6499038740797743453">Vil du tilbakestille passordet?</translation>
 <translation id="6507833130742554667">Kreditt- og debetkort godtas.</translation>
 <translation id="6508722015517270189">Start Chrome på nytt</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
@@ -838,6 +844,7 @@
 <translation id="7549584377607005141">Denne nettsiden krever data som du har skrevet inn tidligere for å vises korrekt. Du kan sende inn dataene på nytt, men hvis du gjør det, gjentas eventuelle handlinger denne siden utførte.</translation>
 <translation id="7552846755917812628">Prøv følgende tips:</translation>
 <translation id="7554791636758816595">Ny fane</translation>
+<translation id="7564049878696755256">Du kan miste tilgangen til <ph name="ORG_NAME" />-kontoen din eller bli utsatt for identitetstyveri. Chrome anbefaler at du endrer passordet ditt nå.</translation>
 <translation id="7567204685887185387">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan ha blitt utstedt på uredelig vis. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="7568593326407688803">Denne siden er på<ph name="ORIGINAL_LANGUAGE" />Vil du ha den oversatt?</translation>
 <translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>
@@ -993,6 +1000,7 @@
 <translation id="8761567432415473239">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
+<translation id="8792621596287649091">Du kan miste tilgangen til <ph name="ORG_NAME" />-kontoen din eller bli utsatt for identitetstyveri. Chromium anbefaler at du endrer passordet ditt nå.</translation>
 <translation id="8800988563907321413">Forslagene dine om ting like ved vises her</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="883848425547221593">Andre bokmerker</translation>

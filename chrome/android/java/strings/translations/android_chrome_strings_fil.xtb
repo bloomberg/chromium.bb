@@ -98,7 +98,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1887786770086287077">Naka-off ang access sa lokasyon para sa device na ito. I-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Bubukas ang <ph name="APP_NAME" /> sa Chrome. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
 <translation id="189172778771606813">Isara ang navigation drawer</translation>
-<translation id="1897409700584096124">Nagbo-broadcast ang website</translation>
 <translation id="1919345977826869612">Mga Ad</translation>
 <translation id="1933845786846280168">Napiling Tab</translation>
 <translation id="1938981467853765413">Magbigay ng feedback</translation>
@@ -246,7 +245,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="32895400574683172">Pinapayagan ang mga notification</translation>
 <translation id="3295602654194328831">Itago ang Impormasyon</translation>
 <translation id="3303414029551471755">Magpatuloy na i-download ang content?</translation>
-<translation id="3321222012623826478">Kailangang ipadala nang anonymous ng serbisyong ito ang address ng website na ito sa mga server ng Google para sa pag-verify.</translation>
 <translation id="3328801116991980348">Impormasyon ng site</translation>
 <translation id="3341058695485821946">Tingnan kung gaano karaming data ang iyong natipid</translation>
 <translation id="3350687908700087792">Isara ang lahat ng incognito na tab</translation>
@@ -593,7 +591,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6475951671322991020">I-download ang video</translation>
 <translation id="6482749332252372425">Hindi na-download ang <ph name="FILE_NAME" /> dahil kulang ang espasyo sa storage.</translation>
 <translation id="6496823230996795692">Upang magamit ang <ph name="APP_NAME" /> sa unang pagkakataon, kumonekta sa internet.</translation>
-<translation id="6508332297647760142">Pagbabahagi sa Pisikal na Web</translation>
 <translation id="6527303717912515753">Ibahagi</translation>
 <translation id="6534565668554028783">Masyadong matagal bago nakatugon ang Google</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB ang na-download</translation>

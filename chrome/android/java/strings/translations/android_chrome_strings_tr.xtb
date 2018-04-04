@@ -98,7 +98,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1887786770086287077">Konum erişimi bu cihaz için kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
 <translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
-<translation id="1897409700584096124">Web sitesi yayında</translation>
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1933845786846280168">Seçili Sekme</translation>
 <translation id="1938981467853765413">Geri bildirim gönder</translation>
@@ -246,7 +245,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="32895400574683172">Bildirimlere izin veriliyor</translation>
 <translation id="3295602654194328831">Bilgileri Gizle</translation>
 <translation id="3303414029551471755">İçeriği indirme işlemine başlansın mı?</translation>
-<translation id="3321222012623826478">Bu hizmetin bu web sitesi adresini doğrulama için anonim olarak Google sunucularına göndermesi gerekir.</translation>
 <translation id="3328801116991980348">Site bilgileri</translation>
 <translation id="3341058695485821946">Ne kadar veri tasarrufu sağladığınıza bakın</translation>
 <translation id="3350687908700087792">Tüm gizli sekmeleri kapatın.</translation>
@@ -593,7 +591,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6475951671322991020">Videoyu indir</translation>
 <translation id="6482749332252372425">Depolama alanı yetersiz olduğu için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> uygulamasını ilk kez kullanmak için lütfen internete bağlanın.</translation>
-<translation id="6508332297647760142">Fiziksel Web Paylaşımı</translation>
 <translation id="6527303717912515753">Paylaş</translation>
 <translation id="6534565668554028783">Google çok geç yanıt verdi</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB indirildi</translation>

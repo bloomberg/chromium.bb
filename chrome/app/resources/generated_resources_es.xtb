@@ -684,7 +684,7 @@
 <translation id="2071393345806050157">No hay ningún archivo de registro local.</translation>
 <translation id="2074527029802029717">No fijar pestaña</translation>
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" />% de batería</translation>
-<translation id="2075959085554270910">Te permite habilitar o inhabilitar las funciones tocar para hacer clic y Tocar y arrastrar</translation>
+<translation id="2075959085554270910">Te permite habilitar o inhabilitar las funciones tocar para hacer clic y tocar y arrastrar</translation>
 <translation id="2076269580855484719">Ocultar este complemento</translation>
 <translation id="2076672359661571384">Medio (recomendado)</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
@@ -1800,7 +1800,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3752582316358263300">Aceptar...</translation>
 <translation id="3752673729237782832">Mis dispositivos</translation>
 <translation id="3755411799582650620">Tu <ph name="PHONE_NAME" /> ya puede desbloquear este <ph name="DEVICE_TYPE" /> también.</translation>
-<translation id="375636864092143889">El sitio web está usando el micrófono</translation>
+<translation id="375636864092143889">El sitio web está usando tu micrófono</translation>
 <translation id="3758201569871381925">Asegúrate de que el dispositivo Hotrod esté encendido y conectado a un televisor.</translation>
 <translation id="375841316537350618">Descargando secuencia de comandos proxy...</translation>
 <translation id="3758842566811519622">Cookies establecidas</translation>
@@ -2197,7 +2197,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="444134486829715816">Ampliar...</translation>
 <translation id="4441548209689510310">Mostrar opciones de revisión ortográfica</translation>
 <translation id="4442424173763614572">Error al buscar DNS</translation>
-<translation id="4442498890824221158">Configuración de la función de varios dispositivos</translation>
+<translation id="4442498890824221158">Configuración multidispositivo</translation>
 <translation id="444267095790823769">Excepciones de contenido protegido</translation>
 <translation id="4443536555189480885">&amp;Ayuda</translation>
 <translation id="4444304522807523469">Acceder a escáneres de documentos conectados a través de USB o en la red local</translation>
@@ -3962,7 +3962,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7254951428499890870">¿Seguro que quieres iniciar <ph name="APP_NAME" /> en modo de diagnóstico?</translation>
 <translation id="7255220508626648026">Enviando: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Aplicar</translation>
-<translation id="7256069762010468647">El sitio web está usando la cámara</translation>
+<translation id="7256069762010468647">El sitio web está usando tu cámara</translation>
 <translation id="7256405249507348194">Error no reconocido: <ph name="DESC" /></translation>
 <translation id="7256710573727326513">Abrir en una pestaña</translation>
 <translation id="7257666756905341374">Leer los datos que copias y pegas</translation>
@@ -4012,7 +4012,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7339785458027436441">Comprobar ortografía al escribir</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> se muestra ahora en pantalla completa.</translation>
-<translation id="7340650977506865820">El sitio web está compartiendo la pantalla</translation>
+<translation id="7340650977506865820">El sitio web está compartiendo tu pantalla</translation>
 <translation id="7345706641791090287">Confirma tu contraseña</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="7347751611463936647">Para utilizar esta extensión, escribe "<ph name="EXTENSION_KEYWORD" />", pulsa el tabulador e introduce el comando o la búsqueda que desees.</translation>
@@ -5040,7 +5040,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8986362086234534611">Dejar de recordar</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987927404178983737">Mes</translation>
-<translation id="8991520179165052608">El sitio web puede usar el micrófono</translation>
+<translation id="8991520179165052608">El sitio web puede usar tu micrófono</translation>
 <translation id="899403249577094719">URL base de certificado de Netscape</translation>
 <translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Añadir cuenta...</translation>
@@ -5164,7 +5164,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9174212595744391062">Se borrarán las cookies y la caché de todos los sitios web, incluidos</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" />: dispositivo Bluetooth conectado</translation>
 <translation id="9177499212658576372">Actualmente estás conectado a la red <ph name="NETWORK_TYPE" />.</translation>
-<translation id="9180380851667544951">El sitio web puede compartir la pantalla</translation>
+<translation id="9180380851667544951">El sitio web puede compartir tu pantalla</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9187210477874601037">No se ha podido vincular la máquina con el dominio. Esto podría deberse a que la cuenta no tiene suficientes privilegios en el servidor.</translation>
 <translation id="9188441292293901223">Instala una versión más reciente de Android en el teléfono para desbloquear este <ph name="DEVICE_TYPE" />.</translation>

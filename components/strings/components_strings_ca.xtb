@@ -492,7 +492,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat conté errors. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="4690462567478992370">Deixa de fer servir un certificat no vàlid</translation>
-<translation id="4690954380545377795">Podries perdre l'accés al compte de Google o o tenir problemes de suplantació d'identitat. Chrome et recomana que canviïs la contrasenya ara.</translation>
+<translation id="4690954380545377795">Podries perdre l'accés al compte de Google o tenir problemes de suplantació d'identitat. Chrome et recomana que canviïs la contrasenya ara.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">La connexió s'ha interromput</translation>
 <translation id="471880041731876836">No tens permís per visitar aquest lloc web</translation>

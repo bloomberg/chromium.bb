@@ -98,7 +98,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1887786770086287077">L'accesso alla posizione è disattivato per questo dispositivo. Attivalo nelle <ph name="BEGIN_LINK" /> Impostazioni Android <ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">L'app <ph name="APP_NAME" /> verrà aperta in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla Privacy<ph name="END_LINK2" /> di Chrome.</translation>
 <translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
-<translation id="1897409700584096124">Trasmissione del sito web in corso</translation>
 <translation id="1919345977826869612">Annunci</translation>
 <translation id="1933845786846280168">Scheda selezionata</translation>
 <translation id="1938981467853765413">Fornisci feedback</translation>
@@ -246,7 +245,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="32895400574683172">Le notifiche sono consentite</translation>
 <translation id="3295602654194328831">Nascondi informazioni</translation>
 <translation id="3303414029551471755">Procedere al download dei contenuti?</translation>
-<translation id="3321222012623826478">Il servizio invierà l'indirizzo del sito web ai server di Google in forma anonima per la verifica.</translation>
 <translation id="3328801116991980348">Informazioni sito</translation>
 <translation id="3341058695485821946">Scopri la quantità di dati risparmiata</translation>
 <translation id="3350687908700087792">Chiudi tutte le schede di navigazione in incognito</translation>
@@ -593,7 +591,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6475951671322991020">Scarica video</translation>
 <translation id="6482749332252372425">Download di <ph name="FILE_NAME" /> non riuscito a causa dello spazio di archiviazione insufficiente.</translation>
 <translation id="6496823230996795692">Connettiti a Internet per usare <ph name="APP_NAME" /> per la prima volta.</translation>
-<translation id="6508332297647760142">Condivisione Physical Web</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="6534565668554028783">Google ha impiegato troppo tempo a rispondere</translation>
 <translation id="6538442820324228105">Sono stati scaricati <ph name="GBS" /> GB</translation>

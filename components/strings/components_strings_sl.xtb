@@ -141,7 +141,7 @@
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1978555033938440688">Različica vdelane programske opreme</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{in še 1}one{in še #}two{in še #}few{in še #}other{in še #}}</translation>
-<translation id="2003709556000175978">Ponastavitev gesla</translation>
+<translation id="2003709556000175978">Ponastavite geslo</translation>
 <translation id="2025186561304664664">Strežnik proxy je nastavljen na samodejno konfiguriranje.</translation>
 <translation id="2030481566774242610">Ali ste mislili <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />preveriti strežnik proxy in požarni zid<ph name="END_LINK" /></translation>
@@ -459,7 +459,7 @@
 <translation id="4265872034478892965">Omogočil skrbnik</translation>
 <translation id="4269787794583293679">(Ni uporabniškega imena)</translation>
 <translation id="4275830172053184480">Znova zaženite napravo.</translation>
-<translation id="4277028893293644418">Ponastavitev gesla</translation>
+<translation id="4277028893293644418">Ponastavi geslo</translation>
 <translation id="4280429058323657511">, datum poteka veljavnosti: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4312866146174492540">Blokira (privzeto)</translation>
 <translation id="4325863107915753736">Članka ni bilo mogoče najti</translation>
@@ -656,7 +656,7 @@
 <translation id="5869405914158311789">Tega spletnega mesta ni mogoče doseči</translation>
 <translation id="5869522115854928033">Shranjena gesla</translation>
 <translation id="5893752035575986141">Sprejema kreditne kartice.</translation>
-<translation id="5898382028489516745">Chromium priporoča, da ponastavite geslo za <ph name="ORG_NAME" />, če ste ga uporabljali na drugih spletnih mestih.</translation>
+<translation id="5898382028489516745">Chromium priporoča, da ponastavite geslo za <ph name="ORG_NAME" />, če ste ga uporabljali tudi na drugih spletnih mestih.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinhronizirano)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 v uporabi}one{# v uporabi}two{# v uporabi}few{# v uporabi}other{# v uporabi}}</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
