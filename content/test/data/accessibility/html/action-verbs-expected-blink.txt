@@ -18,7 +18,7 @@ rootWebArea name='Action verbs'
 ++radioButton defaultActionVerb=check checkedState=false
 ++switch name='ARIA Switch' defaultActionVerb=check checkedState=false
 ++details
-++++disclosureTriangle name='Summary' defaultActionVerb=press
+++++disclosureTriangle collapsed name='Summary' defaultActionVerb=press
 ++++++staticText name='Summary'
 ++++++++inlineTextBox name='Summary'
 ++popUpButton collapsed haspopup defaultActionVerb=open

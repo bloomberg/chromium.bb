@@ -31,7 +31,15 @@ Tests name sources in details and summary.
       }
     ]
   },
-  "properties": [],
+  "properties": [
+    {
+      "name": "expanded",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": false
+      }
+    }
+  ],
   "domNode": "summary#summary2"
 }
 {
@@ -75,7 +83,15 @@ Tests name sources in details and summary.
     "type": "computedString",
     "value": "summary3-title"
   },
-  "properties": [],
+  "properties": [
+    {
+      "name": "expanded",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": false
+      }
+    }
+  ],
   "domNode": "summary#summary3"
 }
 {
@@ -128,7 +144,15 @@ Tests name sources in details and summary.
     "type": "computedString",
     "value": "summary4-contents"
   },
-  "properties": [],
+  "properties": [
+    {
+      "name": "expanded",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": false
+      }
+    }
+  ],
   "domNode": "summary#summary4"
 }
 {
@@ -198,6 +222,13 @@ Tests name sources in details and summary.
     "value": "summary5-contents"
   },
   "properties": [
+    {
+      "name": "expanded",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": false
+      }
+    },
     {
       "name": "labelledby",
       "value": {
