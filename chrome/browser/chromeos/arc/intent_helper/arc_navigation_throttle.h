@@ -13,13 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 class Browser;
 
 namespace content {
 class NavigationHandle;
+class WebContents;
 }  // namespace content
 
 namespace arc {
@@ -64,23 +64,11 @@ class ArcNavigationThrottle {
     SIZE,
   };
 
-  // Restricts the amount of apps displayed to the user without the need of a
-  // ScrollView.
-  enum { kMaxAppResults = 3 };
-
-  struct AppInfo {
-    AppInfo(gfx::Image img, std::string package, std::string activity)
-        : icon(img), package_name(package), activity_name(activity) {}
-    gfx::Image icon;
-    std::string package_name;
-    std::string activity_name;
-  };
-
   ArcNavigationThrottle();
   ~ArcNavigationThrottle();
 
   // Returns true if the navigation request represented by |handle| should be
-  // deferred while ARC++ is queried for apps, and if so, |callback| will be run
+  // deferred while ARC is queried for apps, and if so, |callback| will be run
   // asynchronously with the action for the navigation. |callback| will not be
   // run if false is returned.
   bool ShouldDeferRequest(content::NavigationHandle* handle,
@@ -114,8 +102,13 @@ class ArcNavigationThrottle {
       const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
   static size_t FindPreferredAppForTesting(
       const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
-  static void AsyncShowIntentPickerBubble(const Browser* browser,
-                                          const GURL& url);
+  static void QueryArcApps(const Browser* browser,
+                           const GURL& url,
+                           chromeos::QueryAppsCallback callback);
+  static void OnIntentPickerClosed(
+      const GURL& url,
+      const std::string& package_name,
+      arc::ArcNavigationThrottle::CloseReason close_reason);
 
  private:
   // Determines whether we should open a preferred app or show the intent
@@ -126,29 +119,34 @@ class ArcNavigationThrottle {
       content::NavigationHandle* handle,
       chromeos::AppsNavigationCallback callback,
       std::vector<mojom::IntentHandlerInfoPtr> app_candidates);
-  // Receives the array of app candidates to handle this URL and decides whether
-  // a preferred app should be triggered right away or ask the browser to
-  // display the intent picker.
-  bool FoundPreferredOrVerifiedArcApp(
-      content::NavigationHandle* handle,
-      std::vector<mojom::IntentHandlerInfoPtr> app_candidates);
-  void OnAppIconsReceived(
-      std::vector<mojom::IntentHandlerInfoPtr> app_candidates,
-      std::unique_ptr<ArcIntentHelperBridge::ActivityToIconsMap> icons);
-  void DisplayArcApps() const;
+
+  // Returns true if an app in |app_candidates| is preferred for handling the
+  // navigation represented by |handle|, and we are successfully able to launch
+  // it.
+  bool DidLaunchPreferredArcApp(
+      const GURL& url,
+      content::WebContents* web_contents,
+      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
+
+  // Queries the ArcIntentHelperBridge for ARC app icons for the apps in
+  // |app_candidates|. Calls OnAppIconsReceived() when finished.
+  void ArcAppIconQuery(const GURL& url,
+                       content::WebContents* web_contents,
+                       std::vector<mojom::IntentHandlerInfoPtr> app_candidates,
+                       chromeos::QueryAppsCallback callback);
+
   static void AsyncOnAppCandidatesReceived(
       const Browser* browser,
       const GURL& url,
+      chromeos::QueryAppsCallback callback,
       std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates);
-  static void AsyncOnAppIconsReceived(
+
+  static void OnAppIconsReceived(
       const Browser* browser,
       std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates,
       const GURL& url,
+      chromeos::QueryAppsCallback callback,
       std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons);
-  static void AsyncOnIntentPickerClosed(
-      const GURL& url,
-      const std::string& package_name,
-      arc::ArcNavigationThrottle::CloseReason close_reason);
 
   // This has to be the last member of the class.
   base::WeakPtrFactory<ArcNavigationThrottle> weak_ptr_factory_;

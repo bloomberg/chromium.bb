@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -350,16 +351,16 @@ void OnAppIconsReceived(
     std::unique_ptr<ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  using AppInfo = ArcNavigationThrottle::AppInfo;
+  using AppInfo = chromeos::IntentPickerAppInfo;
   std::vector<AppInfo> app_info;
 
   for (const auto& handler : handlers) {
     const ArcIntentHelperBridge::ActivityName activity(handler->package_name,
                                                        handler->activity_name);
     const auto it = icons->find(activity);
-    app_info.emplace_back(
-        AppInfo(it != icons->end() ? it->second.icon16 : gfx::Image(),
-                handler->package_name, handler->name));
+    app_info.emplace_back(chromeos::AppType::ARC,
+                          it != icons->end() ? it->second.icon16 : gfx::Image(),
+                          handler->package_name, handler->name);
   }
 
   auto show_bubble_cb = base::Bind(ShowIntentPickerBubble());

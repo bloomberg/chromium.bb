@@ -20,6 +20,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "url/gurl.h"
 #endif  // OS_CHROMEOS
@@ -329,7 +330,7 @@ using IntentPickerResponse =
 using BubbleShowPtr =
     views::Widget* (*)(views::View*,
                        content::WebContents*,
-                       const std::vector<arc::ArcNavigationThrottle::AppInfo>&,
+                       const std::vector<chromeos::IntentPickerAppInfo>&,
                        bool disable_display_in_chrome,
                        const IntentPickerResponse&);
 

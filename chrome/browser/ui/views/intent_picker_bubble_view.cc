@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -35,7 +36,8 @@ namespace {
 // TODO(djacobo): Replace this limit to correctly reflect the UI mocks, which
 // now instead of limiting the results to 3.5 will allow whatever fits in 256pt.
 // Using |kMaxAppResults| as a measure of how many apps we want to show.
-constexpr size_t kMaxAppResults = arc::ArcNavigationThrottle::kMaxAppResults;
+constexpr size_t kMaxAppResults =
+    chromeos::AppsNavigationThrottle::kMaxAppResults;
 // Main components sizes
 constexpr int kTitlePadding = 16;
 constexpr int kRowHeight = 32;
@@ -46,7 +48,7 @@ constexpr SkColor kSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 // UI position wrt the Top Container
 constexpr int kTopContainerMerge = 3;
 
-constexpr char kInvalidPackageName[] = "";
+constexpr char kInvalidLaunchName[] = "";
 
 bool IsKeyboardCodeArrow(ui::KeyboardCode key_code) {
   return key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
@@ -69,11 +71,11 @@ class IntentPickerLabelButton : public views::LabelButton {
  public:
   IntentPickerLabelButton(views::ButtonListener* listener,
                           gfx::Image* icon,
-                          const std::string& package_name,
-                          const std::string& activity_name)
+                          const std::string& launch_name,
+                          const std::string& display_name)
       : LabelButton(listener,
-                    base::UTF8ToUTF16(base::StringPiece(activity_name))),
-        package_name_(package_name) {
+                    base::UTF8ToUTF16(base::StringPiece(display_name))),
+        launch_name_(launch_name) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
     SetMinSize(gfx::Size(kMaxWidth, kRowHeight));
     SetInkDropMode(InkDropMode::ON);
@@ -99,7 +101,7 @@ class IntentPickerLabelButton : public views::LabelButton {
   }
 
  private:
-  std::string package_name_;
+  std::string launch_name_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentPickerLabelButton);
 };
@@ -122,7 +124,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   }
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser || !BrowserView::GetBrowserViewForBrowser(browser)) {
-    intent_picker_cb.Run(kInvalidPackageName,
+    intent_picker_cb.Run(kInvalidLaunchName,
                          arc::ArcNavigationThrottle::CloseReason::ERROR);
     return nullptr;
   }
@@ -184,7 +186,7 @@ void IntentPickerBubbleView::CloseBubble() {
 
 bool IntentPickerBubbleView::Accept() {
   RunCallback(
-      app_info_[selected_app_tag_].package_name,
+      app_info_[selected_app_tag_].launch_name,
       remember_selection_checkbox_->checked()
           ? arc::ArcNavigationThrottle::CloseReason::ARC_APP_PREFERRED_PRESSED
           : arc::ArcNavigationThrottle::CloseReason::ARC_APP_PRESSED);
@@ -203,7 +205,7 @@ bool IntentPickerBubbleView::Cancel() {
 bool IntentPickerBubbleView::Close() {
   // Whenever closing the bubble without pressing |Just once| or |Always| we
   // need to report back that the user didn't select anything.
-  RunCallback(kInvalidPackageName,
+  RunCallback(kInvalidLaunchName,
               arc::ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED);
   return true;
 }
@@ -225,12 +227,12 @@ void IntentPickerBubbleView::Init() {
   size_t to_erase = app_info_.size();
   for (AppInfo app_info : app_info_) {
     if (arc::ArcIntentHelperBridge::IsIntentHelperPackage(
-            app_info.package_name)) {
+            app_info.launch_name)) {
       to_erase = i;
       continue;
     }
     IntentPickerLabelButton* app_button = new IntentPickerLabelButton(
-        this, &app_info.icon, app_info.package_name, app_info.activity_name);
+        this, &app_info.icon, app_info.launch_name, app_info.display_name);
     app_button->set_tag(i);
     scrollable_view->AddChildViewAt(app_button, i++);
   }
@@ -324,7 +326,7 @@ IntentPickerBubbleView::~IntentPickerBubbleView() {
 // If the widget gets closed without an app being selected we still need to use
 // the callback so the caller can Resume the navigation.
 void IntentPickerBubbleView::OnWidgetDestroying(views::Widget* widget) {
-  RunCallback(kInvalidPackageName,
+  RunCallback(kInvalidLaunchName,
               arc::ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED);
 }
 
@@ -374,7 +376,7 @@ IntentPickerLabelButton* IntentPickerBubbleView::GetIntentPickerLabelButtonAt(
 }
 
 void IntentPickerBubbleView::RunCallback(
-    std::string package,
+    const std::string& launch_name,
     arc::ArcNavigationThrottle::CloseReason close_reason) {
   if (!intent_picker_cb_.is_null()) {
     // We must ensure |intent_picker_cb_| is only Run() once, this is why we
@@ -382,7 +384,7 @@ void IntentPickerBubbleView::RunCallback(
     // to null and still report back to whoever started the UI.
     auto callback = intent_picker_cb_;
     intent_picker_cb_.Reset();
-    callback.Run(package, close_reason);
+    callback.Run(launch_name, close_reason);
   }
 
   intent_picker_bubble_ = nullptr;

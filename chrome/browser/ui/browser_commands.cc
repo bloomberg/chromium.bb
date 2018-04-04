@@ -1232,7 +1232,7 @@ bool CanCreateBookmarkApp(const Browser* browser) {
 #if defined(OS_CHROMEOS)
 void QueryAndDisplayArcApps(
     const Browser* browser,
-    const std::vector<arc::ArcNavigationThrottle::AppInfo>& app_info,
+    const std::vector<chromeos::IntentPickerAppInfo>& app_info,
     IntentPickerResponse callback) {
   browser->window()->ShowIntentPickerBubble(app_info, callback);
 }
