@@ -682,6 +682,7 @@ class TestConnection : public QuicConnection {
     next_effective_peer_addr_ = QuicMakeUnique<QuicSocketAddress>(addr);
   }
 
+  using QuicConnection::IsCurrentPacketConnectivityProbing;
   using QuicConnection::SelectMutualVersion;
   using QuicConnection::SendProbingRetransmissions;
   using QuicConnection::set_defer_send_in_response_to_packets;
@@ -1477,6 +1478,8 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
       clock_.Now()));
 
   ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
+
+  EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
@@ -1594,6 +1597,8 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
       clock_.Now()));
 
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
+
+  EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
@@ -1714,6 +1719,7 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
       clock_.Now()));
   ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
 
+  EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
@@ -1765,6 +1771,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
       clock_.Now()));
   ProcessReceivedPacket(kNewSelfAddress, kPeerAddress, *received);
 
+  EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
