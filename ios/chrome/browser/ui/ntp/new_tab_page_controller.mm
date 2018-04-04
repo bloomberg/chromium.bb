@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -372,10 +373,13 @@ using base::UserMetricsAction;
 }
 
 - (CGFloat)toolbarHeight {
+  BOOL isRegularXRegular =
+      content_suggestions::IsRegularXRegularSizeClass(self.view);
   // If the google landing controller is nil, there is no toolbar visible in the
   // native content view, finally there is no toolbar on iPad.
-  return self.headerController && !IsIPadIdiom() ? ntp_header::ToolbarHeight()
-                                                 : 0.0;
+  return self.headerController && !isRegularXRegular
+             ? ntp_header::ToolbarHeight()
+             : 0.0;
 }
 
 #pragma mark - NewTabPagePanelControllerDelegate

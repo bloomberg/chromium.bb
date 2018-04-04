@@ -205,6 +205,14 @@ bool IsCompactHeight();
 // Whether the |environment| has a compact vertical size class.
 bool IsCompactHeight(id<UITraitEnvironment> environment);
 
+// Whether the the main application window's rootViewController has a regular
+// vertical and regular horizontal size class.
+bool IsRegularXRegularSizeClass();
+
+// Whether the |environment| has a regular vertical and regular horizontal
+// size class. the main application window's rootViewController
+bool IsRegularXRegularSizeClass(id<UITraitEnvironment> environment);
+
 // Returns whether the toolbar is split between top and bottom toolbar or if it
 // is displayed as only one toolbar.
 bool IsSplitToolbarMode();

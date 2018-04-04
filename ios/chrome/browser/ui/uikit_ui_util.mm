@@ -554,6 +554,17 @@ bool IsCompactHeight(id<UITraitEnvironment> environment) {
          UIUserInterfaceSizeClassCompact;
 }
 
+bool IsRegularXRegularSizeClass() {
+  UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
+  return IsRegularXRegularSizeClass(keyWindow);
+}
+
+bool IsRegularXRegularSizeClass(id<UITraitEnvironment> environment) {
+  UITraitCollection* traitCollection = environment.traitCollection;
+  return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
+         traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
+}
+
 bool IsSplitToolbarMode() {
   return IsCompactWidth() && !IsCompactHeight();
 }

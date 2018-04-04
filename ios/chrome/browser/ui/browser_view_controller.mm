@@ -1800,6 +1800,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
   [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
+
+  // Update the toolbar visibility.
+  [self updateToolbar];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -2444,19 +2447,21 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                        shouldFocus:[_findBarController isFocused]];
   }
 
-  // Hide the toolbar if displaying phone NTP.
-  if (!IsIPadIdiom()) {
-    web::NavigationItem* item = [tab navigationManager]->GetVisibleItem();
-    BOOL hideToolbar = NO;
-    if (item) {
-      GURL url = item->GetURL();
-      BOOL isNTP = url.GetOrigin() == kChromeUINewTabURL;
-      hideToolbar = isNTP && !_isOffTheRecord &&
-                    ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
-                    ![self.primaryToolbarCoordinator showingOmniboxPopup];
-    }
-    [self.primaryToolbarCoordinator.viewController.view setHidden:hideToolbar];
+  // Hide the toolbar if displaying the compact NTP.
+  web::NavigationItem* item = [tab navigationManager]->GetVisibleItem();
+  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
+                               ? IsRegularXRegularSizeClass(self)
+                               : IsIPadIdiom();
+  BOOL hideToolbar = NO;
+  if (item) {
+    GURL url = item->GetURL();
+    BOOL isNTP = url.GetOrigin() == kChromeUINewTabURL;
+    hideToolbar = isNTP && !_isOffTheRecord &&
+                  ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
+                  ![self.primaryToolbarCoordinator showingOmniboxPopup] &&
+                  !isRegularXRegular;
   }
+  [self.primaryToolbarCoordinator.viewController.view setHidden:hideToolbar];
 }
 
 - (void)updateBroadcastState {
@@ -2504,10 +2509,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (CGFloat)headerHeightForTab:(Tab*)tab {
+  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
+                               ? IsRegularXRegularSizeClass(self)
+                               : IsIPadIdiom();
   id nativeController = [self nativeControllerForTab:tab];
   if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
       [nativeController respondsToSelector:@selector(toolbarHeight)] &&
-      [nativeController toolbarHeight] > 0.0 && !IsIPadIdiom()) {
+      [nativeController toolbarHeight] > 0.0 && !isRegularXRegular) {
     // On iPhone, don't add any header height for ToolbarOwner native
     // controllers when they're displaying their own toolbar.
     return 0;
@@ -5482,8 +5490,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 #pragma mark - TabHeadersDelegate
 
 - (CGFloat)tabHeaderHeightForTab:(Tab*)tab {
+  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
+                               ? IsRegularXRegularSizeClass(self)
+                               : IsIPadIdiom();
   if (IsUIRefreshPhase1Enabled() && tab &&
-      tab.webState->GetVisibleURL() == kChromeUINewTabURL && !IsIPadIdiom()) {
+      tab.webState->GetVisibleURL() == kChromeUINewTabURL &&
+      !isRegularXRegular) {
     // Also subtract the top safe area so the view will appear as full screen.
     // TODO(crbug.com/826369) Remove this once NTP is out of native content.
     if (@available(iOS 11, *)) {

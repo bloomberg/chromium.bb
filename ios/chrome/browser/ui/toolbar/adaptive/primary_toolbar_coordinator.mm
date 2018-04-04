@@ -140,16 +140,15 @@
 }
 
 - (void)onFakeboxBlur {
-  DCHECK(!IsIPadIdiom());
   // Hide the toolbar if the NTP is currently displayed.
   web::WebState* webState = self.webStateList->GetActiveWebState();
   if (webState && IsVisibleUrlNewTabPage(webState)) {
-    self.viewController.view.hidden = YES;
+    self.viewController.view.hidden =
+        !IsRegularXRegularSizeClass(self.viewController);
   }
 }
 
 - (void)onFakeboxAnimationComplete {
-  DCHECK(!IsIPadIdiom());
   self.viewController.view.hidden = NO;
 }
 

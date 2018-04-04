@@ -204,7 +204,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testOmniboxWidthRotationBehindSettings {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
-  if (IsIPadIdiom()) {
+  if (content_suggestions::IsRegularXRegularSizeClass()) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -246,7 +246,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testOmniboxPinnedWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
-  if (IsIPadIdiom()) {
+  if (content_suggestions::IsRegularXRegularSizeClass()) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
 
@@ -386,7 +386,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testTapFakeOmnibox {
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
   // grey_typeText works on iOS 11.
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS11OrLater()) {
+  if (content_suggestions::IsRegularXRegularSizeClass() &&
+      base::ios::IsRunningOnIOS11OrLater()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
   }
   // Setup the server.
@@ -435,7 +436,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // It is important for ranking algorithm of omnibox that requests from the
 // search button and real omnibox are marked appropriately.
 - (void)testTapOmniboxSearchButtonLogsCorrectly {
-  if (IsIPadIdiom() || !IsUIRefreshPhase1Enabled()) {
+  if (!IsUIRefreshPhase1Enabled() ||
+      content_suggestions::IsRegularXRegularSizeClass()) {
     // This logging only happens on iPhone, since on iPad there's no secondary
     // toolbar.
     return;
