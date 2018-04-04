@@ -620,11 +620,17 @@ public class OfflinePageUtils {
      * @param tab The tab to be reloaded.
      */
     public static void reload(Tab tab) {
-        // If current page is an offline page, reload it with custom behavior defined in extra
-        // header respected.
-        LoadUrlParams params =
-                new LoadUrlParams(tab.getOriginalUrl(), PageTransition.RELOAD);
-        params.setVerbatimHeaders(getOfflinePageHeaderForReload(tab));
+        OfflinePageItem offlinePage = getOfflinePage(tab);
+        if (isShowingTrustedOfflinePage(tab) || offlinePage == null) {
+            // If current page is an offline page, reload it with custom behavior defined in extra
+            // header respected.
+            LoadUrlParams params = new LoadUrlParams(tab.getOriginalUrl(), PageTransition.RELOAD);
+            params.setVerbatimHeaders(getOfflinePageHeaderForReload(tab));
+            tab.loadUrl(params);
+            return;
+        }
+
+        LoadUrlParams params = new LoadUrlParams(offlinePage.getUrl(), PageTransition.RELOAD);
         tab.loadUrl(params);
     }
 
