@@ -51,6 +51,7 @@ const char kUnsupportedFloatingPointValue[] =
     "Floating point numbers are not supported.";
 const char kOutOfRangeIntegerValue[] =
     "Integer values must be between INT64_MIN and INT64_MAX.";
+const char kUnknownError[] = "An unknown error occured.";
 
 }  // namespace
 
@@ -88,15 +89,16 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
   base::Optional<CBORValue> decoded_cbor =
       reader.DecodeCompleteDataItem(max_nesting_level);
 
+  auto error_code = reader.GetErrorCode();
+  const bool failed = !decoded_cbor.has_value();
+
+  // An error code must be set iff parsing failed.
+  DCHECK_EQ(failed, error_code != DecoderError::CBOR_NO_ERROR);
+
   if (error_code_out)
-    *error_code_out = reader.GetErrorCode();
+    *error_code_out = error_code;
 
-  if (reader.GetErrorCode() != DecoderError::CBOR_NO_ERROR) {
-    *num_bytes_consumed = 0;
-    return base::nullopt;
-  }
-
-  *num_bytes_consumed = reader.num_bytes_consumed();
+  *num_bytes_consumed = failed ? 0 : reader.num_bytes_consumed();
   return decoded_cbor;
 }
 
@@ -395,6 +397,8 @@ const char* CBORReader::ErrorCodeToString(DecoderError error) {
       return kUnsupportedFloatingPointValue;
     case DecoderError::OUT_OF_RANGE_INTEGER_VALUE:
       return kOutOfRangeIntegerValue;
+    case DecoderError::UNKNOWN_ERROR:
+      return kUnknownError;
     default:
       NOTREACHED();
       return "Unknown error code.";
