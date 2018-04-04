@@ -64,7 +64,8 @@ std::vector<content::IndexedDBIndexKeys> ConvertWebIndexKeys(
 
 class WebIDBDatabaseImpl::IOThreadHelper {
  public:
-  IOThreadHelper();
+  explicit IOThreadHelper(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~IOThreadHelper();
 
   void Bind(DatabaseAssociatedPtrInfo database_info);
@@ -158,6 +159,7 @@ class WebIDBDatabaseImpl::IOThreadHelper {
       std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
 
   indexed_db::mojom::DatabaseAssociatedPtr database_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
 };
@@ -166,7 +168,7 @@ WebIDBDatabaseImpl::WebIDBDatabaseImpl(
     DatabaseAssociatedPtrInfo database_info,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
-    : helper_(new IOThreadHelper()),
+    : helper_(new IOThreadHelper(io_runner)),
       io_runner_(std::move(io_runner)),
       callback_runner_(std::move(callback_runner)) {
   io_runner_->PostTask(FROM_HERE, base::BindOnce(&IOThreadHelper::Bind,
@@ -525,13 +527,15 @@ void WebIDBDatabaseImpl::Commit(long long transaction_id) {
                                 base::Unretained(helper_), transaction_id));
 }
 
-WebIDBDatabaseImpl::IOThreadHelper::IOThreadHelper() {}
+WebIDBDatabaseImpl::IOThreadHelper::IOThreadHelper(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {}
 
 WebIDBDatabaseImpl::IOThreadHelper::~IOThreadHelper() {}
 
 void WebIDBDatabaseImpl::IOThreadHelper::Bind(
     DatabaseAssociatedPtrInfo database_info) {
-  database_.Bind(std::move(database_info));
+  database_.Bind(std::move(database_info), task_runner_);
 }
 
 void WebIDBDatabaseImpl::IOThreadHelper::CreateObjectStore(

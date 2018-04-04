@@ -28,7 +28,8 @@ namespace content {
 
 class WebIDBCursorImpl::IOThreadHelper {
  public:
-  IOThreadHelper();
+  explicit IOThreadHelper(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~IOThreadHelper();
 
   void Bind(CursorAssociatedPtrInfo cursor_info);
@@ -46,6 +47,7 @@ class WebIDBCursorImpl::IOThreadHelper {
       std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
 
   indexed_db::mojom::CursorAssociatedPtr cursor_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
 };
@@ -56,7 +58,7 @@ WebIDBCursorImpl::WebIDBCursorImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
     : transaction_id_(transaction_id),
-      helper_(new IOThreadHelper()),
+      helper_(new IOThreadHelper(io_runner)),
       io_runner_(std::move(io_runner)),
       callback_runner_(std::move(callback_runner)),
       continue_count_(0),
@@ -250,13 +252,15 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   pending_onsuccess_callbacks_ = 0;
 }
 
-WebIDBCursorImpl::IOThreadHelper::IOThreadHelper() {}
+WebIDBCursorImpl::IOThreadHelper::IOThreadHelper(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {}
 
 WebIDBCursorImpl::IOThreadHelper::~IOThreadHelper() {}
 
 void WebIDBCursorImpl::IOThreadHelper::Bind(
     CursorAssociatedPtrInfo cursor_info) {
-  cursor_.Bind(std::move(cursor_info));
+  cursor_.Bind(std::move(cursor_info), task_runner_);
 }
 
 void WebIDBCursorImpl::IOThreadHelper::Advance(
