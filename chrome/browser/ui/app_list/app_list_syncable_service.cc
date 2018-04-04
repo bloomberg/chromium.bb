@@ -445,7 +445,6 @@ void AppListSyncableService::SetOemFolderName(const std::string& name) {
 }
 
 AppListModelUpdater* AppListSyncableService::GetModelUpdater() {
-  DCHECK(IsInitialized());
   return model_updater_.get();
 }
 
