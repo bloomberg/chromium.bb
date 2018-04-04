@@ -458,7 +458,7 @@ void PaintLayerClipper::CalculateClipRects(const ClipRectsContext& context,
         FloatPoint(), &context.root_layer->GetLayoutObject()));
     if (context.respect_overflow_clip == kIgnoreOverflowClipAndScroll &&
         context.root_layer->ScrollsOverflow() &&
-        layer_.ScrollsWithRespectTo(context.root_layer)) {
+        layer_.IsAffectedByScrollOf(context.root_layer)) {
       offset.Move(LayoutSize(
           context.root_layer->GetScrollableArea()->GetScrollOffset()));
     }

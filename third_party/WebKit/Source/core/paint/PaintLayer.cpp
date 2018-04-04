@@ -402,6 +402,27 @@ bool PaintLayer::ScrollsWithRespectTo(const PaintLayer* other) const {
   return AncestorScrollingLayer() != other->AncestorScrollingLayer();
 }
 
+bool PaintLayer::IsAffectedByScrollOf(const PaintLayer* ancestor) const {
+  if (this == ancestor)
+    return false;
+
+  const PaintLayer* current_layer = this;
+  while (current_layer && current_layer != ancestor) {
+    bool ancestor_escaped = false;
+    const PaintLayer* container =
+        current_layer->ContainingLayer(ancestor, &ancestor_escaped);
+    if (ancestor_escaped)
+      return false;
+    // Workaround the bug that LayoutView is mistakenly considered
+    // a fixed-pos container.
+    if (current_layer->GetLayoutObject().IsFixedPositioned() &&
+        container->IsRootLayer())
+      return false;
+    current_layer = container;
+  }
+  return current_layer == ancestor;
+}
+
 void PaintLayer::UpdateLayerPositionsAfterOverflowScroll() {
   if (IsRootLayer()) {
     // The root PaintLayer (i.e. the LayoutView) is special, in that scroll
