@@ -107,7 +107,7 @@ const base::Feature kExpensiveBackgroundTimerThrottling{
 
 // Enables exposing back/forward mouse buttons to the renderer and the web.
 const base::Feature kExtendedMouseButtons{"ExtendedMouseButtons",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables a blink::FontCache optimization that reuses a font to serve different
 // size of font.
