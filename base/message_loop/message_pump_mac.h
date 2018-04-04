@@ -376,7 +376,7 @@ class BASE_EXPORT MessagePumpMac {
   //
   // Otherwise creates an instance of MessagePumpNSApplication using a
   // default NSApplication.
-  static MessagePump* Create();
+  static std::unique_ptr<MessagePump> Create();
 
 #if !defined(OS_IOS)
   // If a pump is created before the required CrAppProtocol is
