@@ -24,6 +24,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -323,11 +324,16 @@ public class FeatureUtilities {
         return sIsChromeModernDesignEnabled;
     }
 
-    /** @return Whether the contextual suggestions bottom sheet is enabled. */
-    public static boolean isContextualSuggestionsBottomSheetEnabled() {
-        // TODO(twellington): Also check for enterprise users and users with history sync enabled
-        // without encryption.
-        return !DeviceFormFactor.isTablet() && isChromeModernDesignEnabled()
+    /**
+     * @param isTablet Whether the containing Activity is being displayed on a tablet-sized screen.
+     * @return Whether the contextual suggestions bottom sheet is enabled.
+     */
+    public static boolean isContextualSuggestionsBottomSheetEnabled(boolean isTablet) {
+        boolean hasSeenSearchEnginePromo =
+                LocaleManager.getInstance().hasCompletedSearchEnginePromo()
+                || LocaleManager.getInstance().hasShownSearchEnginePromoThisSession();
+
+        return !isTablet && !hasSeenSearchEnginePromo && isChromeModernDesignEnabled()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET);
     }

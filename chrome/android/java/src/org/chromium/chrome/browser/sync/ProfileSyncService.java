@@ -12,6 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.UploadState;
 
 import java.util.HashSet;
 import java.util.List;
@@ -408,6 +409,15 @@ public class ProfileSyncService {
     }
 
     /**
+     * @return Whether {@code modelType} is being uploaded to Google. This is useful for features
+     *         that depend on user consent for uploading data (e.g. history) to Google.
+     */
+    @UploadState
+    public int getUploadToGoogleState(@ModelType int modelType) {
+        return nativeGetUploadToGoogleState(mNativeProfileSyncServiceAndroid, modelType);
+    }
+
+    /**
      * Called when the state of the native sync engine has changed, so various
      * UI elements can update themselves.
      */
@@ -574,6 +584,8 @@ public class ProfileSyncService {
     private native boolean nativeIsSyncActive(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
+    private native int nativeGetUploadToGoogleState(
+            long nativeProfileSyncServiceAndroid, int modelType);
     private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);
     private native void nativeSetPassphrasePrompted(long nativeProfileSyncServiceAndroid,
                                                     boolean prompted);
