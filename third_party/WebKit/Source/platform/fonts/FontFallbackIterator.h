@@ -15,8 +15,6 @@
 
 namespace blink {
 
-using namespace WTF;
-
 class FontDescription;
 class FontFallbackList;
 class SimpleFontData;

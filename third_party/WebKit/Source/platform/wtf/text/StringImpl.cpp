@@ -44,8 +44,6 @@ using std::numeric_limits;
 
 namespace WTF {
 
-using namespace Unicode;
-
 // As of Jan 2017, StringImpl needs 2 * sizeof(int) + 29 bits of data, and
 // sizeof(ThreadRestrictionVerifier) is 16 bytes. Thus, in DCHECK mode the
 // class may be padded to 32 bytes.
@@ -1058,7 +1056,7 @@ bool DeprecatedEqualIgnoringCase(const UChar* a,
                                  const LChar* b,
                                  unsigned length) {
   while (length--) {
-    if (FoldCase(*a++) != StringImpl::kLatin1CaseFoldTable[*b++])
+    if (Unicode::FoldCase(*a++) != StringImpl::kLatin1CaseFoldTable[*b++])
       return false;
   }
   return true;
@@ -2001,7 +1999,7 @@ UChar32 ToUpper(UChar32 c, const AtomicString& locale_identifier) {
     }
   }
 
-  return ToUpper(c);
+  return Unicode::ToUpper(c);
 }
 
 }  // namespace WTF

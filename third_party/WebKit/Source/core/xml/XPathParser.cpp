@@ -39,8 +39,6 @@
 
 namespace blink {
 
-using namespace WTF;
-using namespace Unicode;
 using namespace XPath;
 
 Parser* Parser::current_parser_ = nullptr;
@@ -57,12 +55,16 @@ static XMLCat CharCat(UChar a_char) {
 
   if (a_char == '.' || a_char == '-')
     return kNameCont;
-  CharCategory category = Unicode::Category(a_char);
-  if (category & (kLetter_Uppercase | kLetter_Lowercase | kLetter_Other |
-                  kLetter_Titlecase | kNumber_Letter))
+  WTF::Unicode::CharCategory category = WTF::Unicode::Category(a_char);
+  if (category &
+      (WTF::Unicode::kLetter_Uppercase | WTF::Unicode::kLetter_Lowercase |
+       WTF::Unicode::kLetter_Other | WTF::Unicode::kLetter_Titlecase |
+       WTF::Unicode::kNumber_Letter))
     return kNameStart;
-  if (category & (kMark_NonSpacing | kMark_SpacingCombining | kMark_Enclosing |
-                  kLetter_Modifier | kNumber_DecimalDigit))
+  if (category &
+      (WTF::Unicode::kMark_NonSpacing | WTF::Unicode::kMark_SpacingCombining |
+       WTF::Unicode::kMark_Enclosing | WTF::Unicode::kLetter_Modifier |
+       WTF::Unicode::kNumber_DecimalDigit))
     return kNameCont;
   return kNotPartOfName;
 }

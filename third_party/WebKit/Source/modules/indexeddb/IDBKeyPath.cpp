@@ -36,24 +36,26 @@ namespace blink {
 
 namespace {
 
-using namespace WTF::Unicode;
-
 // The following correspond to grammar in ECMA-262.
-const uint32_t kUnicodeLetter = kLetter_Uppercase | kLetter_Lowercase |
-                                kLetter_Titlecase | kLetter_Modifier |
-                                kLetter_Other | kNumber_Letter;
+const uint32_t kUnicodeLetter =
+    WTF::Unicode::kLetter_Uppercase | WTF::Unicode::kLetter_Lowercase |
+    WTF::Unicode::kLetter_Titlecase | WTF::Unicode::kLetter_Modifier |
+    WTF::Unicode::kLetter_Other | WTF::Unicode::kNumber_Letter;
 const uint32_t kUnicodeCombiningMark =
-    kMark_NonSpacing | kMark_SpacingCombining;
-const uint32_t kUnicodeDigit = kNumber_DecimalDigit;
-const uint32_t kUnicodeConnectorPunctuation = kPunctuation_Connector;
+    WTF::Unicode::kMark_NonSpacing | WTF::Unicode::kMark_SpacingCombining;
+const uint32_t kUnicodeDigit = WTF::Unicode::kNumber_DecimalDigit;
+const uint32_t kUnicodeConnectorPunctuation =
+    WTF::Unicode::kPunctuation_Connector;
 
 static inline bool IsIdentifierStartCharacter(UChar c) {
-  return (Category(c) & kUnicodeLetter) || (c == '$') || (c == '_');
+  return (WTF::Unicode::Category(c) & kUnicodeLetter) || (c == '$') ||
+         (c == '_');
 }
 
 static inline bool IsIdentifierCharacter(UChar c) {
-  return (Category(c) & (kUnicodeLetter | kUnicodeCombiningMark |
-                         kUnicodeDigit | kUnicodeConnectorPunctuation)) ||
+  return (WTF::Unicode::Category(c) &
+          (kUnicodeLetter | kUnicodeCombiningMark | kUnicodeDigit |
+           kUnicodeConnectorPunctuation)) ||
          (c == '$') || (c == '_') || (c == kZeroWidthNonJoinerCharacter) ||
          (c == kZeroWidthJoinerCharacter);
 }

@@ -9,8 +9,6 @@
 
 namespace WTF {
 
-using namespace Unicode;
-
 AtomicStringTable::AtomicStringTable() {
   for (StringImpl* string : StringImpl::AllStaticStrings().Values())
     Add(string);
@@ -90,14 +88,14 @@ struct HashAndUTF8CharactersTranslator {
     if (buffer.utf16_length != buffer.length) {
       if (string->Is8Bit()) {
         const LChar* characters8 = string->Characters8();
-        return EqualLatin1WithUTF8(characters8, characters8 + string->length(),
-                                   buffer.characters,
-                                   buffer.characters + buffer.length);
+        return Unicode::EqualLatin1WithUTF8(
+            characters8, characters8 + string->length(), buffer.characters,
+            buffer.characters + buffer.length);
       }
       const UChar* characters16 = string->Characters16();
-      return EqualUTF16WithUTF8(characters16, characters16 + string->length(),
-                                buffer.characters,
-                                buffer.characters + buffer.length);
+      return Unicode::EqualUTF16WithUTF8(
+          characters16, characters16 + string->length(), buffer.characters,
+          buffer.characters + buffer.length);
     }
 
     if (string->Is8Bit()) {
@@ -132,9 +130,9 @@ struct HashAndUTF8CharactersTranslator {
 
     bool is_all_ascii;
     const char* source = buffer.characters;
-    if (ConvertUTF8ToUTF16(&source, source + buffer.length, &target,
-                           target + buffer.utf16_length,
-                           &is_all_ascii) != kConversionOK)
+    if (Unicode::ConvertUTF8ToUTF16(&source, source + buffer.length, &target,
+                                    target + buffer.utf16_length,
+                                    &is_all_ascii) != Unicode::kConversionOK)
       NOTREACHED();
 
     if (is_all_ascii)
@@ -210,7 +208,7 @@ scoped_refptr<StringImpl> AtomicStringTable::AddUTF8(
     const char* characters_end) {
   HashAndUTF8Characters buffer;
   buffer.characters = characters_start;
-  buffer.hash = CalculateStringHashAndLengthFromUTF8MaskingTop8Bits(
+  buffer.hash = Unicode::CalculateStringHashAndLengthFromUTF8MaskingTop8Bits(
       characters_start, characters_end, buffer.length, buffer.utf16_length);
 
   if (!buffer.hash)

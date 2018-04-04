@@ -18,8 +18,6 @@ namespace blink {
 
 namespace {
 
-using namespace WTF;
-
 void ReportAllocation(void* address, size_t size, const char* type_name) {
   PartitionAllocMemoryDumpProvider::Instance()->insert(address, size,
                                                        type_name);
@@ -161,7 +159,8 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
       &partition_stats_dumper);
 
   base::trace_event::MemoryAllocatorDump* allocated_objects_dump =
-      memory_dump->CreateAllocatorDump(Partitions::kAllocatedObjectPoolName);
+      memory_dump->CreateAllocatorDump(
+          WTF::Partitions::kAllocatedObjectPoolName);
   allocated_objects_dump->AddScalar("size", "bytes",
                                     partition_stats_dumper.TotalActiveBytes());
   memory_dump->AddOwnershipEdge(allocated_objects_dump->guid(),
