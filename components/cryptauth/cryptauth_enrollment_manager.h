@@ -25,11 +25,11 @@ class CryptAuthEnrollmentManager {
   class Observer {
    public:
     // Called when an enrollment attempt is started.
-    virtual void OnEnrollmentStarted() = 0;
+    virtual void OnEnrollmentStarted() {}
 
     // Called when an enrollment attempt finishes with the |success| of the
     // attempt.
-    virtual void OnEnrollmentFinished(bool success) = 0;
+    virtual void OnEnrollmentFinished(bool success) {}
 
     virtual ~Observer() = default;
   };
