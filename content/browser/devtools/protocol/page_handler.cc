@@ -230,6 +230,7 @@ void PageHandler::DidRunJavaScriptDialog(const GURL& url,
                                          const base::string16& message,
                                          const base::string16& default_prompt,
                                          JavaScriptDialogType dialog_type,
+                                         bool has_non_devtools_handlers,
                                          JavaScriptDialogCallback callback) {
   if (!enabled_)
     return;
@@ -241,10 +242,12 @@ void PageHandler::DidRunJavaScriptDialog(const GURL& url,
   if (dialog_type == JAVASCRIPT_DIALOG_TYPE_PROMPT)
     type = Page::DialogTypeEnum::Prompt;
   frontend_->JavascriptDialogOpening(url.spec(), base::UTF16ToUTF8(message),
-                                     type, base::UTF16ToUTF8(default_prompt));
+                                     type, has_non_devtools_handlers,
+                                     base::UTF16ToUTF8(default_prompt));
 }
 
 void PageHandler::DidRunBeforeUnloadConfirm(const GURL& url,
+                                            bool has_non_devtools_handlers,
                                             JavaScriptDialogCallback callback) {
   if (!enabled_)
     return;
@@ -252,7 +255,7 @@ void PageHandler::DidRunBeforeUnloadConfirm(const GURL& url,
   pending_dialog_ = std::move(callback);
   frontend_->JavascriptDialogOpening(url.spec(), std::string(),
                                      Page::DialogTypeEnum::Beforeunload,
-                                     std::string());
+                                     has_non_devtools_handlers, std::string());
 }
 
 void PageHandler::DidCloseJavaScriptDialog(bool success,

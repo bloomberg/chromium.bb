@@ -4777,7 +4777,8 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
   // want the hidden page's dialogs to interfere with the interstitial.
   bool should_suppress = ShowingInterstitialPage() ||
                          (delegate_ && delegate_->ShouldSuppressDialogs(this));
-  bool has_handlers = page_handlers.size() || (delegate_ && dialog_manager_);
+  bool has_non_devtools_handlers = delegate_ && dialog_manager_;
+  bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
   bool suppress_this_message = should_suppress || !has_handlers;
 
   if (suppress_this_message) {
@@ -4793,7 +4794,7 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
   for (auto* handler : page_handlers) {
     handler->DidRunJavaScriptDialog(
         render_frame_host->GetLastCommittedURL(), message, default_prompt,
-        dialog_type,
+        dialog_type, has_non_devtools_handlers,
         base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 
@@ -4848,7 +4849,8 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
   bool should_suppress = ShowingInterstitialPage() || !rfhi->is_active() ||
                          (delegate_ && delegate_->ShouldSuppressDialogs(this));
-  bool has_handlers = page_handlers.size() || (delegate_ && dialog_manager_);
+  bool has_non_devtools_handlers = delegate_ && dialog_manager_;
+  bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
   if (should_suppress || !has_handlers) {
     std::move(callback).Run(false, true, base::string16());
     return;
@@ -4862,7 +4864,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   GURL frame_url = rfhi->GetLastCommittedURL();
   for (auto* handler : page_handlers) {
     handler->DidRunBeforeUnloadConfirm(
-        frame_url,
+        frame_url, has_non_devtools_handlers,
         base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 
