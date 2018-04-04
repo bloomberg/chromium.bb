@@ -162,9 +162,14 @@ def GetNmPath(tool_prefix):
 
 def GetApkAnalyzerPath(output_directory):
   build_vars = _LoadBuildVars(output_directory)
-  return os.path.normpath(os.path.join(
+  sdk_analyzer = os.path.normpath(os.path.join(
       output_directory, build_vars['android_sdk_root'], 'tools', 'bin',
       'apkanalyzer'))
+  if os.path.exists(sdk_analyzer):
+    return sdk_analyzer
+  # Older SDKs do not contain the tool, so fall back to the one we know exists.
+  return os.path.join(SRC_ROOT, 'third_party', 'android_tools', 'sdk',
+                      'tools', 'bin', 'apkanalyzer')
 
 
 def GetObjDumpPath(tool_prefix):
