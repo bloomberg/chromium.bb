@@ -45916,6 +45916,24 @@ Full version information for the fingerprint enum values:
   <int value="12" label="RequestDenied"/>
 </enum>
 
+<enum name="VRSessionStartAction">
+  <int value="1" label="Headset Activation">
+    The user activated a headset. For example, inserted phone in Daydream, or
+    put on an Occulus or Vive.
+  </int>
+  <int value="2" label="Presentation Requested">
+    The user triggered a presentation request on a page, probably by clicking an
+    enter VR button.
+  </int>
+  <int value="3" label="Deep Linked App">
+    The user launched a deep linked app, probably from Daydream home.
+  </int>
+  <int value="4" label="Intent Launch">
+    Chrome VR was started by an intent from another app. Most likely the user
+    clicked the icon in Daydream home.
+  </int>
+</enum>
+
 <enum name="VRSuppressedElement">
   <int value="0" label="File chooser was suppressed in VR"/>
   <int value="1" label="Bluetooth picker was suppressed in VR"/>

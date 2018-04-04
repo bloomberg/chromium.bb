@@ -288,8 +288,8 @@ public class VrShellDelegate
                 // If we didn't request WebVR then we're not coming from a request present call.
                 // If we didn't set mEnterVrOnStartup this isn't an intent from another app.
                 // Therefore we can assume this was triggered by NFC.
-                sInstance.nativeRecordVrStartAction(sInstance.mNativeVrShellDelegate,
-                        PageSessionStartAction.HEADSET_ACTIVATION);
+                sInstance.nativeRecordVrStartAction(
+                        sInstance.mNativeVrShellDelegate, VrStartAction.HEADSET_ACTIVATION);
             }
 
             // We add a black overlay view so that we can show black while the VR UI is loading.
@@ -1236,7 +1236,7 @@ public class VrShellDelegate
         mDonSucceeded = true;
         mInVrAtChromeLaunch = true;
 
-        nativeRecordVrStartAction(mNativeVrShellDelegate, PageSessionStartAction.INTENT_LAUNCH);
+        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
 
         if (!mPaused) enterVrAfterDon();
     }
@@ -1252,7 +1252,7 @@ public class VrShellDelegate
         mDonSucceeded = true;
         mInVrAtChromeLaunch = true;
 
-        nativeRecordVrStartAction(mNativeVrShellDelegate, PageSessionStartAction.DEEP_LINKED_APP);
+        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.DEEP_LINKED_APP);
     }
 
     private void onEnterVrUnsupported() {

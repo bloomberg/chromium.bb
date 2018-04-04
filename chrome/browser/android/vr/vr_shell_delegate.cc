@@ -133,13 +133,11 @@ void VrShellDelegate::RecordVrStartAction(
     const base::android::JavaParamRef<jobject>& obj,
     jint start_action) {
   if (!vr_shell_) {
-    pending_vr_start_action_ =
-        static_cast<PageSessionStartAction>(start_action);
+    pending_vr_start_action_ = static_cast<VrStartAction>(start_action);
     return;
   }
 
-  vr_shell_->RecordVrStartAction(
-      static_cast<PageSessionStartAction>(start_action));
+  vr_shell_->RecordVrStartAction(static_cast<VrStartAction>(start_action));
 }
 
 void VrShellDelegate::OnPresentResult(
