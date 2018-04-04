@@ -1,31 +1,23 @@
-<html>
-<head>
-<script type="text/javascript">
-
-function selectAndJustify()
-{
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    var elem = document.getElementById("test");
-    var selection = window.getSelection();
-    selection.setBaseAndExtent(elem, 2, elem, 6);
-    document.execCommand('JustifyCenter', false, null);
-}
-
-</script>
-</head>
-
-<body>
-    <span id="test" contenteditable="true" >
-        Line 1.
-        <br>
-        <b>Select all text in this line and use justify command.</b>
-        <br>
-        Line 3.
-    </span>
-</body>
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-selectAndJustify();
+selection_test(
+  [
+    '<span contenteditable>',
+      'ab<br>',
+      '^<b>CD</b><br>|',
+      'de',
+    '</span>'
+  ],
+  'justifyCenter',
+  [
+    '<span contenteditable>',
+      'ab<br>',
+      '<div style="text-align: center;"><b>^CD</b></div>',
+      '<div style="text-align: center;">|de</div>',
+    '</span>',
+  ],
+  'justifyCenter in SPAN');
 </script>
-</html>
