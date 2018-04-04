@@ -153,7 +153,7 @@ void SpaceSplitString::ReplaceAt(size_t index, const AtomicString& token) {
 }
 
 AtomicString SpaceSplitString::SerializeToString() const {
-  size_t size = data_->size();
+  size_t size = this->size();
   if (size == 0)
     return g_empty_atom;
   if (size == 1)
