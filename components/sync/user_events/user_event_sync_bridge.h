@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -46,6 +47,10 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   void RecordUserEvent(std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
 
  private:
+  void RecordUserEventImpl(
+      std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
+  void ProcessQueuedEvents();
+
   void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
   void OnReadAllMetadata(const base::Optional<ModelError>& error,
@@ -64,6 +69,11 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   // Persistent storage for in flight events. Should remain quite small, as we
   // delete upon commit confirmation.
   std::unique_ptr<ModelTypeStore> store_;
+
+  // Used to store important events while the store or change processor are not
+  // ready. This currently only handles user consents.
+  std::vector<std::unique_ptr<sync_pb::UserEventSpecifics>>
+      deferred_user_events_while_initializing_;
 
   // The key is the global_id of the navigation the event is linked to.
   std::multimap<int64_t, sync_pb::UserEventSpecifics>

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -319,6 +320,59 @@ TEST_F(UserEventSyncBridgeTest, RecordBeforeMetadataLoads) {
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 2u, 3u));
   EXPECT_THAT(GetAllData(), IsEmpty());
+}
+
+// User consents should be buffered if the bridge is not fully initialized.
+// Other events should get dropped.
+TEST_F(UserEventSyncBridgeTest, RecordWithLateInitializedStore) {
+  // Wait until bridge() is ready to avoid interference with processor() mock.
+  base::RunLoop().RunUntilIdle();
+
+  UserEventSpecifics consent1 = CreateSpecifics(1u, 1u, 1u);
+  consent1.mutable_user_consent();
+  UserEventSpecifics consent2 = CreateSpecifics(2u, 2u, 2u);
+  consent2.mutable_user_consent();
+  UserEventSpecifics specifics1 = CreateSpecifics(3u, 3u, 3u);
+  UserEventSpecifics specifics2 = CreateSpecifics(4u, 4u, 4u);
+
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
+  ModelType store_init_type;
+  ModelTypeStore::InitCallback store_init_callback;
+  UserEventSyncBridge late_init_bridge(
+      base::BindLambdaForTesting(
+          [&](ModelType type, ModelTypeStore::InitCallback callback) {
+            store_init_type = type;
+            store_init_callback = std::move(callback);
+          }),
+      processor()->CreateForwardingProcessor(), mapper());
+
+  // Record events before the store is created. Only the consent will be
+  // buffered, the other event is dropped.
+  late_init_bridge.RecordUserEvent(
+      std::make_unique<UserEventSpecifics>(consent1));
+  late_init_bridge.RecordUserEvent(
+      std::make_unique<UserEventSpecifics>(specifics1));
+
+  // Initialize the store.
+  EXPECT_CALL(*processor(), DoModelReadyToSync(&late_init_bridge, NotNull()));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  std::move(store_init_callback)
+      .Run(base::nullopt,
+           ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type));
+
+  // Record events after metadata is ready.
+  late_init_bridge.RecordUserEvent(
+      std::make_unique<UserEventSpecifics>(consent2));
+  late_init_bridge.RecordUserEvent(
+      std::make_unique<UserEventSpecifics>(specifics2));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(GetStorageKey(consent1), MatchesUserEvent(consent1)),
+          Pair(GetStorageKey(consent2), MatchesUserEvent(consent2)),
+          Pair(GetStorageKey(specifics2), MatchesUserEvent(specifics2))));
 }
 
 }  // namespace
