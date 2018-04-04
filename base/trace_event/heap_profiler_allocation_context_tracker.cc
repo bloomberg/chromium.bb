@@ -15,11 +15,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
-#include "build/build_config.h"
-
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
-#include "base/trace_event/cfi_backtrace_android.h"
-#endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <sys/prctl.h>
@@ -219,26 +214,20 @@ bool AllocationContextTracker::GetContextSnapshot(AllocationContext* ctx) {
 // kMaxFrameCount + 1 frames, so that we know if there are more frames
 // than our backtrace capacity.
 #if !defined(OS_NACL)  // We don't build base/debug/stack_trace.cc for NaCl.
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
-        const void* frames[Backtrace::kMaxFrameCount + 1];
-        static_assert(arraysize(frames) >= Backtrace::kMaxFrameCount,
-                      "not requesting enough frames to fill Backtrace");
-        size_t frame_count = CFIBacktraceAndroid::GetInstance()->Unwind(
-            frames, arraysize(frames));
-#elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+#if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
         const void* frames[Backtrace::kMaxFrameCount + 1];
         static_assert(arraysize(frames) >= Backtrace::kMaxFrameCount,
                       "not requesting enough frames to fill Backtrace");
         size_t frame_count = debug::TraceStackFramePointers(
             frames, arraysize(frames),
             1 /* exclude this function from the trace */);
-#else
+#else   // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
         // Fall-back to capturing the stack with base::debug::StackTrace,
         // which is likely slower, but more reliable.
         base::debug::StackTrace stack_trace(Backtrace::kMaxFrameCount + 1);
         size_t frame_count = 0u;
         const void* const* frames = stack_trace.Addresses(&frame_count);
-#endif
+#endif  // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 
         // If there are too many frames, keep the ones furthest from main().
         size_t backtrace_capacity = backtrace_end - backtrace;

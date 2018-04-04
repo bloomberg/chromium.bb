@@ -3,19 +3,10 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
-import("//build/config/compiler/compiler.gni")
 
 template("unwind_table_asset") {
   _unwind_action = "${target_name}__extract"
-
-  # Monochrome 64 bit apk needs to include an empty unwind file with different
-  # name so that the resource table matches when merging monochrome apk.
-  if (can_unwind_with_cfi_table) {
-    assert(current_cpu == "arm")
-    _asset_path = "${target_gen_dir}/${target_name}/unwind_cfi_32"
-  } else {
-    _asset_path = "${target_gen_dir}/${target_name}/unwind_cfi_empty"
-  }
+  _asset_path = "${target_gen_dir}/${target_name}/unwind_cfi"
 
   action(_unwind_action) {
     if (defined(invoker.testonly)) {
@@ -26,32 +17,25 @@ template("unwind_table_asset") {
     outputs = [
       _asset_path,
     ]
+    inputs = [
+      "$root_out_dir/lib.unstripped/$shlib_prefix${invoker.library_target}$shlib_extension",
+    ]
 
     args = [
+      "--input_path",
+      rebase_path(
+          "$root_out_dir/lib.unstripped/$shlib_prefix${invoker.library_target}$shlib_extension",
+          root_build_dir),
       "--output_path",
       rebase_path(_asset_path, root_build_dir),
       "--dump_syms_path",
       rebase_path("$root_out_dir/dump_syms", root_build_dir),
     ]
-
-    if (can_unwind_with_cfi_table) {
-      _input_lib = "$root_out_dir/lib.unstripped/$shlib_prefix${invoker.library_target}$shlib_extension"
-      inputs = [
-        _input_lib,
-      ]
-
-      args += [
-        "--input_path",
-        rebase_path(_input_lib, root_build_dir),
-      ]
-    } else {
-      args += [ "--generate-empty-tables" ]
-    }
-
-    deps = invoker.deps
-    deps += [ "//third_party/breakpad:dump_syms" ]
+    deps = [
+      ":${invoker.library_target}",
+      "//third_party/breakpad:dump_syms",
+    ]
   }
-
   android_assets(target_name) {
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly

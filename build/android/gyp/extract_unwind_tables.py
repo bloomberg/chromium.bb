@@ -57,9 +57,6 @@ C4: Some functions do not have unwind information defined in dwarf info. These
 Usage:
   extract_unwind_tables.py --input_path [root path to unstripped chrome.so]
       --output_path [output path] --dump_syms_path [path to dump_syms binary]
-  [OR]
-  extract_unwind_tables.py --generate-empty-tables
-      --output_path [output path] --dump_syms_path [path to dump_syms binary]
 """
 
 import argparse
@@ -268,27 +265,16 @@ def _ParseCfiData(sym_file, output_path):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
+      '--input_path', required=True,
+      help='The input path of the unstripped binary')
+  parser.add_argument(
       '--output_path', required=True,
       help='The path of the output file')
   parser.add_argument(
       '--dump_syms_path', required=True,
       help='The path of the dump_syms binary')
 
-  group = parser.add_mutually_exclusive_group(required=True)
-  group.add_argument(
-      '--input_path', required=False,
-      help='The input path of the unstripped binary')
-  group.add_argument(
-      '--generate-empty-tables', required=False,
-      help='Generates an empty valid unwind table file.',
-      action="store_true")
-
   args = parser.parse_args()
-
-  if args.generate_empty_tables:
-    with open(args.output_path, 'wb') as out_file:
-      _WriteCfiData({}, out_file)
-    return 0
 
   with tempfile.NamedTemporaryFile() as sym_file:
     out = subprocess.call(
