@@ -547,31 +547,23 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   gfx::Range caret_range(0, 0);
   ViewHostMsg_SelectionBounds_Params params;
 
-  NSRect rect;
-  NSRange actual_range;
+  gfx::Rect rect;
+  gfx::Range actual_range;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
   params.anchor_rect = params.focus_rect = caret_rect;
   params.anchor_dir = params.focus_dir = blink::kWebTextDirectionLeftToRight;
   rwhv_mac_->SelectionBoundsChanged(params);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        caret_range.ToNSRange(),
-        &rect,
-        &actual_range));
-  EXPECT_EQ(caret_rect, gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(caret_range, &rect,
+                                                             &actual_range));
+  EXPECT_EQ(caret_rect, rect);
   EXPECT_EQ(caret_range, gfx::Range(actual_range));
 
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(0, 1).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(0, 1), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(1, 1).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(1, 1), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(2, 3).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(2, 3), &rect, &actual_range));
 
   // Caret moved.
   caret_rect = gfx::Rect(20, 11, 0, 10);
@@ -579,25 +571,17 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   params.anchor_rect = params.focus_rect = caret_rect;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
   rwhv_mac_->SelectionBoundsChanged(params);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        caret_range.ToNSRange(),
-        &rect,
-        &actual_range));
-  EXPECT_EQ(caret_rect, gfx::Rect(NSRectToCGRect(rect)));
-  EXPECT_EQ(caret_range, gfx::Range(actual_range));
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(caret_range, &rect,
+                                                             &actual_range));
+  EXPECT_EQ(caret_rect, rect);
+  EXPECT_EQ(caret_range, actual_range);
 
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(0, 0).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(0, 0), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(1, 2).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(1, 2), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(2, 3).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(2, 3), &rect, &actual_range));
 
   // No caret.
   caret_range = gfx::Range(1, 2);
@@ -606,25 +590,15 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   params.focus_rect = gfx::Rect(30, 11, 0, 10);
   rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(0, 0).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(0, 0), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(0, 1).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(0, 1), &rect, &actual_range));
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(1, 1).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(1, 1), &rect, &actual_range));
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(1, 2).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(1, 2), &rect, &actual_range));
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-        gfx::Range(2, 2).ToNSRange(),
-        &rect,
-        &actual_range));
+      gfx::Range(2, 2), &rect, &actual_range));
 }
 
 TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
@@ -632,41 +606,31 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
   const gfx::Point kOrigin(10, 11);
   const gfx::Size kBoundsUnit(10, 20);
 
-  NSRect rect;
+  gfx::Rect rect;
   // Make sure not crashing by passing nullptr pointer instead of
   // |actual_range|.
-  EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(0, 0).ToNSRange(), &rect, nullptr));
+  EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(gfx::Range(0, 0),
+                                                              &rect, nullptr));
 
   // If there are no update from renderer, always returned caret position.
-  NSRange actual_range;
+  gfx::Range actual_range;
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(0, 0).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(0, 0), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(0, 1).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(0, 1), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(1, 0).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(1, 0), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(1, 1).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(1, 1), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(1, 2).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(1, 2), &rect, &actual_range));
 
   // If the firstRectForCharacterRange is failed in renderer, empty rect vector
   // is sent. Make sure this does not crash.
   rwhv_mac_->ImeCompositionRangeChanged(gfx::Range(10, 12),
                                         std::vector<gfx::Rect>());
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(10, 11).ToNSRange(), &rect, nullptr));
+      gfx::Range(10, 11), &rect, nullptr));
 
   const int kCompositionLength = 10;
   std::vector<gfx::Rect> composition_bounds;
@@ -682,29 +646,17 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
 
   // Out of range requests will return caret position.
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(0, 0).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(0, 0), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(1, 1).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(1, 1), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(1, 2).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(1, 2), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(2, 2).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(2, 2), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(13, 14).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(13, 14), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(14, 15).ToNSRange(),
-      &rect,
-      &actual_range));
+      gfx::Range(14, 15), &rect, &actual_range));
 
   for (int i = 0; i <= kCompositionLength; ++i) {
     for (int j = 0; j <= kCompositionLength - i; ++j) {
@@ -713,15 +665,14 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
                                                       kBoundsUnit,
                                                       range,
                                                       0);
-      const NSRange request_range = gfx::Range(
-          kCompositionStart + range.start(),
-          kCompositionStart + range.end()).ToNSRange();
+      const gfx::Range request_range = gfx::Range(
+          kCompositionStart + range.start(), kCompositionStart + range.end());
       EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
             request_range,
             &rect,
             &actual_range));
-      EXPECT_EQ(gfx::Range(request_range), gfx::Range(actual_range));
-      EXPECT_EQ(expected_rect, gfx::Rect(NSRectToCGRect(rect)));
+      EXPECT_EQ(request_range, actual_range);
+      EXPECT_EQ(expected_rect, rect);
 
       // Make sure not crashing by passing nullptr pointer instead of
       // |actual_range|.
@@ -735,7 +686,7 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionMultilineCase) {
   ActivateViewWithTextInputManager(rwhv_mac_, ui::TEXT_INPUT_TYPE_TEXT);
   const gfx::Point kOrigin(10, 11);
   const gfx::Size kBoundsUnit(10, 20);
-  NSRect rect;
+  gfx::Rect rect;
 
   const int kCompositionLength = 30;
   std::vector<gfx::Rect> composition_bounds;
@@ -754,112 +705,76 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionMultilineCase) {
   // Range doesn't contain line breaking point.
   gfx::Range range;
   range = gfx::Range(5, 8);
-  NSRange actual_range;
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  gfx::Range actual_range;
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(range, gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, range, 0),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(range, actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, range, 0), rect);
   range = gfx::Range(15, 18);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(range, gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 8), 1),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(range, actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 8), 1), rect);
   range = gfx::Range(25, 28);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(range, gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 8), 2),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(range, actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 8), 2), rect);
 
   // Range contains line breaking point.
   range = gfx::Range(8, 12);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(8, 10), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(8, 10), 0),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(8, 10), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(8, 10), 0), rect);
   range = gfx::Range(18, 22);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(18, 20), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(8, 10), 1),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(18, 20), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(8, 10), 1), rect);
 
   // Start point is line breaking point.
   range = gfx::Range(10, 12);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(10, 12), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 2), 1),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(10, 12), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 2), 1), rect);
   range = gfx::Range(20, 22);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(20, 22), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 2), 2),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(20, 22), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 2), 2), rect);
 
   // End point is line breaking point.
   range = gfx::Range(5, 10);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(5, 10), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 10), 0),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(5, 10), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 10), 0), rect);
   range = gfx::Range(15, 20);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(15, 20), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 10), 1),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(15, 20), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(5, 10), 1), rect);
 
   // Start and end point are same line breaking point.
   range = gfx::Range(10, 10);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(10, 10), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 0), 1),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(10, 10), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 0), 1), rect);
   range = gfx::Range(20, 20);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(20, 20), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 0), 2),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(20, 20), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 0), 2), rect);
 
   // Start and end point are different line breaking point.
   range = gfx::Range(10, 20);
-  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range.ToNSRange(),
-                                                             &rect,
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(range, &rect,
                                                              &actual_range));
-  EXPECT_EQ(gfx::Range(10, 20), gfx::Range(actual_range));
-  EXPECT_EQ(
-      GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 10), 1),
-      gfx::Rect(NSRectToCGRect(rect)));
+  EXPECT_EQ(gfx::Range(10, 20), actual_range);
+  EXPECT_EQ(GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 10), 1), rect);
 }
 
 // Check that events coming from AppKit via -[NSTextInputClient

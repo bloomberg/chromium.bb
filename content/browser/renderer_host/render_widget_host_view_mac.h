@@ -216,7 +216,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // requested |range| is already cached, otherwise returns false.
   // Exposed for testing.
   CONTENT_EXPORT bool GetCachedFirstRectForCharacterRange(
-      NSRange range, NSRect* rect, NSRange* actual_range);
+      const gfx::Range& requested_range,
+      gfx::Rect* rect,
+      gfx::Range* actual_range);
 
   // Returns true if there is line break in |range| and stores line breaking
   // point to |line_breaking_point|. The |line_break_point| is valid only if

@@ -52,38 +52,25 @@ void TextInputClientMessageFilter::OnGotStringAtPoint(
     const mac::AttributedStringCoder::EncodedString& encoded_string,
     const gfx::Point& point) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
-  NSAttributedString* string =
-      mac::AttributedStringCoder::Decode(&encoded_string);
-  service->GetStringAtPointReply(string, NSPointFromCGPoint(point.ToCGPoint()));
+  service->GetStringAtPointReply(encoded_string, point);
 }
 
 void TextInputClientMessageFilter::OnGotCharacterIndexForPoint(uint32_t index) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
-  // |index| could be WTF::notFound (-1) and its value is different from
-  // NSNotFound so we need to convert it.
-  size_t char_index;
-  if (index == UINT32_MAX) {
-    char_index = NSNotFound;
-  } else {
-    char_index = index;
-  }
-  service->SetCharacterIndexAndSignal(char_index);
+  service->SetCharacterIndexAndSignal(index);
 }
 
 void TextInputClientMessageFilter::OnGotFirstRectForRange(
     const gfx::Rect& rect) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
-  service->SetFirstRectAndSignal(NSRectFromCGRect(rect.ToCGRect()));
+  service->SetFirstRectAndSignal(rect);
 }
 
 void TextInputClientMessageFilter::OnGotStringFromRange(
     const mac::AttributedStringCoder::EncodedString& encoded_string,
     const gfx::Point& point) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
-  NSAttributedString* string =
-      mac::AttributedStringCoder::Decode(&encoded_string);
-  service->GetStringFromRangeReply(
-      string, NSPointFromCGPoint(point.ToCGPoint()));
+  service->GetStringFromRangeReply(encoded_string, point);
 }
 
 }  // namespace content

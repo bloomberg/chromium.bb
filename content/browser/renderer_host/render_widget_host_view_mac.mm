@@ -835,9 +835,9 @@ WebContents* RenderWidgetHostViewMac::GetWebContents() {
 }
 
 bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
-    NSRange range,
-    NSRect* rect,
-    NSRange* actual_range) {
+    const gfx::Range& requested_range,
+    gfx::Rect* rect,
+    gfx::Range* actual_range) {
   if (!GetTextInputManager())
     return false;
 
@@ -850,16 +850,14 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   if (!selection)
     return false;
 
-  const gfx::Range requested_range(range);
   // If requested range is same as caret location, we can just return it.
   if (selection->range().is_empty() && requested_range == selection->range()) {
     DCHECK(GetFocusedWidget());
     if (actual_range)
-      *actual_range = range;
-    *rect =
-        NSRectFromCGRect(GetTextInputManager()
-                             ->GetSelectionRegion(GetFocusedWidget()->GetView())
-                             ->caret_rect.ToCGRect());
+      *actual_range = requested_range;
+    *rect = GetTextInputManager()
+                ->GetSelectionRegion(GetFocusedWidget()->GetView())
+                ->caret_rect;
     return true;
   }
 
@@ -870,11 +868,10 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
       return false;
     DCHECK(GetFocusedWidget());
     if (actual_range)
-      *actual_range = selection->range().ToNSRange();
-    *rect =
-        NSRectFromCGRect(GetTextInputManager()
-                             ->GetSelectionRegion(GetFocusedWidget()->GetView())
-                             ->first_selection_rect.ToCGRect());
+      *actual_range = selection->range();
+    *rect = GetTextInputManager()
+                ->GetSelectionRegion(GetFocusedWidget()->GetView())
+                ->first_selection_rect;
     return true;
   }
 
@@ -891,14 +888,12 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
             composition_info->range.length());
 
   gfx::Range ui_actual_range;
-  *rect = NSRectFromCGRect(GetFirstRectForCompositionRange(
-                               request_range_in_composition,
-                               &ui_actual_range).ToCGRect());
+  *rect = GetFirstRectForCompositionRange(request_range_in_composition,
+                                          &ui_actual_range);
   if (actual_range) {
     *actual_range =
         gfx::Range(composition_info->range.start() + ui_actual_range.start(),
-                   composition_info->range.start() + ui_actual_range.end())
-            .ToNSRange();
+                   composition_info->range.start() + ui_actual_range.end());
   }
   return true;
 }
