@@ -183,4 +183,9 @@ gfx::Transform Reticle::GetTargetLocalTransform() const {
   return LocalTransform();
 }
 
+bool Reticle::ShouldUpdateWorldSpaceTransform(
+    bool parent_transform_changed) const {
+  return true;
+}
+
 }  // namespace vr

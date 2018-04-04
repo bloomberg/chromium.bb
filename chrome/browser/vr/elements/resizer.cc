@@ -56,6 +56,7 @@ void Resizer::SetEnabled(bool enabled) {
 
 void Resizer::Reset() {
   transform_.MakeIdentity();
+  set_world_space_transform_dirty();
   t_ = initial_t_ = kDefaultFraction;
 }
 
@@ -66,6 +67,7 @@ void Resizer::UpdateTransform(const gfx::Transform& head_pose) {
       gfx::Tween::FloatValueBetween(t_, kMinResizerScale, kMaxResizerScale);
   transform_.MakeIdentity();
   transform_.Scale(scale, scale);
+  set_world_space_transform_dirty();
 }
 
 bool Resizer::OnBeginFrame(const base::TimeTicks& time,

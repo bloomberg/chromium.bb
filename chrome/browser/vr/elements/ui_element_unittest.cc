@@ -115,7 +115,7 @@ TEST(UiElement, IgnoringAsymmetricPadding) {
   a->AddChild(std::move(b));
   a->DoLayOutChildren();
 
-  a->UpdateWorldSpaceTransformRecursive();
+  a->UpdateWorldSpaceTransformRecursive(false);
 
   gfx::Point3F p;
   a->world_space_transform().TransformPoint(&p);

@@ -337,6 +337,7 @@ class UiElement : public cc::AnimationTarget {
   const gfx::Transform& world_space_transform() const;
   void set_world_space_transform(const gfx::Transform& transform) {
     world_space_transform_ = transform;
+    world_space_transform_dirty_ = false;
   }
 
   gfx::Transform ComputeTargetWorldSpaceTransform() const;
@@ -413,7 +414,7 @@ class UiElement : public cc::AnimationTarget {
   virtual gfx::Transform GetTargetLocalTransform() const;
 
   void UpdateComputedOpacity();
-  void UpdateWorldSpaceTransformRecursive();
+  void UpdateWorldSpaceTransformRecursive(bool parent_changed);
 
   std::vector<std::unique_ptr<UiElement>>& children() { return children_; }
   const std::vector<std::unique_ptr<UiElement>>& children() const {
@@ -491,6 +492,13 @@ class UiElement : public cc::AnimationTarget {
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
 
   virtual const Sounds& GetSounds() const;
+
+  virtual bool ShouldUpdateWorldSpaceTransform(
+      bool parent_transform_changed) const;
+
+  void set_world_space_transform_dirty() {
+    world_space_transform_dirty_ = true;
+  }
 
   EventHandlers event_handlers_;
 
@@ -601,12 +609,16 @@ class UiElement : public cc::AnimationTarget {
   // the translation, but leave the rotation and scale in tact).
   cc::TransformOperations transform_operations_;
 
+  // This is a cached version of the local transform.
+  gfx::Transform local_transform_;
+
   // This is set by the parent and is combined into LocalTransform()
   cc::TransformOperations layout_offset_;
 
   // This is the combined, local to world transform. It includes
   // |inheritable_transform_|, |transform_|, and anchoring adjustments.
   gfx::Transform world_space_transform_;
+  bool world_space_transform_dirty_ = false;
 
   UiElement* parent_ = nullptr;
   std::vector<std::unique_ptr<UiElement>> children_;
