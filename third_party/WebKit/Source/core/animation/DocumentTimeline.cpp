@@ -117,12 +117,24 @@ Animation* DocumentTimeline::Play(AnimationEffect* child) {
 }
 
 HeapVector<Member<Animation>> DocumentTimeline::getAnimations() {
+  // This method implements the Document::getAnimations method defined in the
+  // web-animations-1 spec.
+  // https://drafts.csswg.org/web-animations-1/#dom-document-getanimations
   document_->UpdateStyleAndLayoutTree();
   HeapVector<Member<Animation>> animations;
   for (const auto& animation : animations_) {
-    if (animation->effect() &&
-        (animation->effect()->IsCurrent() || animation->effect()->IsInEffect()))
-      animations.push_back(animation);
+    if (!animation->effect() || (!animation->effect()->IsCurrent() &&
+                                 !animation->effect()->IsInEffect())) {
+      continue;
+    }
+    if (animation->effect()->IsKeyframeEffect()) {
+      Element* target = ToKeyframeEffect(animation->effect())->target();
+      if (!target || !target->isConnected() ||
+          document_ != target->GetDocument()) {
+        continue;
+      }
+    }
+    animations.push_back(animation);
   }
   std::sort(animations.begin(), animations.end(), CompareAnimations);
   return animations;
