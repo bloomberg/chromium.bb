@@ -441,7 +441,7 @@ FileWriterDelegate::FileWriterDelegate(std::unique_ptr<base::File> file)
 
 FileWriterDelegate::~FileWriterDelegate() {
   if (!file_->SetLength(file_length_)) {
-    DPLOG(ERROR) << "Failed updating length of written file";
+    DVPLOG(1) << "Failed updating length of written file";
   }
 }
 
