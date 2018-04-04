@@ -23,7 +23,7 @@
 
 namespace base {
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 namespace internal {
 
@@ -37,7 +37,7 @@ class ThreadLocalStorageTestInternal {
 
 }  // namespace internal
 
-#endif
+#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 namespace {
 
@@ -96,7 +96,7 @@ void ThreadLocalStorageCleanup(void *value) {
   TLSSlot().Set(value);
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 constexpr intptr_t kDummyValue = 0xABCD;
 constexpr size_t kKeyCount = 20;
 
@@ -185,7 +185,7 @@ class UseTLSDuringDestructionThread : public SimpleThread {
 
 base::ThreadLocalStorage::Slot UseTLSDuringDestructionThread::slot_;
 
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 }  // namespace
 
@@ -249,7 +249,7 @@ TEST(ThreadLocalStorageTest, TLSReclaim) {
   }
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 // Unlike POSIX, Windows does not iterate through the OS TLS to cleanup any
 // values there. Instead a per-module thread destruction function is called.
 // However, it is not possible to perform a check after this point (as the code
@@ -260,6 +260,6 @@ TEST(ThreadLocalStorageTest, UseTLSDuringDestruction) {
   thread.Join();
   EXPECT_TRUE(thread.teardown_works_correctly());
 }
-#endif
+#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 }  // namespace base
