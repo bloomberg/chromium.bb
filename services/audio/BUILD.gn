@@ -32,6 +32,9 @@ source_set("lib") {
   sources = [
     "debug_recording.cc",
     "debug_recording.h",
+    "group_coordinator.cc",
+    "group_coordinator.h",
+    "group_member.h",
     "in_process_audio_manager_accessor.cc",
     "in_process_audio_manager_accessor.h",
     "output_stream.cc",
@@ -61,6 +64,7 @@ source_set("tests") {
 
   sources = [
     "debug_recording_unittest.cc",
+    "group_coordinator_unittest.cc",
     "output_stream_unittest.cc",
     "test/audio_system_to_service_adapter_test.cc",
     "test/debug_recording_session_unittest.cc",
