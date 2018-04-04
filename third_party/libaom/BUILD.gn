@@ -50,7 +50,8 @@ if (enable_av1_decoder) {
     # aom_config.asm
     if (is_ios && current_cpu == "arm") {
       os_category = current_os
-    } else if (is_posix) {  # Should cover linux, mac, and the ios simulator.
+    } else if (is_posix || is_fuchsia) {
+      # Should cover linux, fuchsia, mac, and the ios simulator.
       os_category = "linux"
     } else {  # This should only match windows.
       os_category = current_os
