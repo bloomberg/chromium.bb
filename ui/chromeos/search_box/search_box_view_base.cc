@@ -227,15 +227,6 @@ bool SearchBoxViewBase::HasSearch() const {
   return !search_box_->text().empty();
 }
 
-void SearchBoxViewBase::ClearSearch() {
-  search_box_->SetText(base::string16());
-  UpdateCloseButtonVisisbility();
-  // Updates model and fires query changed manually because SetText() above
-  // does not generate ContentsChanged() notification.
-  UpdateModel(false);
-  NotifyQueryChanged();
-}
-
 gfx::Rect SearchBoxViewBase::GetViewBoundsForSearchBoxContentsBounds(
     const gfx::Rect& rect) const {
   gfx::Rect view_bounds = rect;
@@ -284,22 +275,6 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active) {
 
   content_container_->Layout();
   SchedulePaint();
-}
-
-void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
-  if (located_event->type() == ui::ET_MOUSE_PRESSED ||
-      located_event->type() == ui::ET_GESTURE_TAP) {
-    bool event_is_in_searchbox_bounds =
-        GetWidget()->GetWindowBoundsInScreen().Contains(
-            located_event->root_location());
-    if (is_search_box_active_ || !event_is_in_searchbox_bounds ||
-        !search_box_->text().empty())
-      return;
-    // If the event was within the searchbox bounds and in an inactive empty
-    // search box, enable the search box.
-    SetSearchBoxActive(true);
-  }
-  located_event->SetHandled();
 }
 
 bool SearchBoxViewBase::OnTextfieldEvent() {
@@ -366,10 +341,6 @@ void SearchBoxViewBase::OnTabletModeChanged(bool started) {
   UpdateKeyboardVisibility();
 }
 
-views::View* SearchBoxViewBase::GetSelectedViewInContentsView() {
-  return nullptr;
-}
-
 void SearchBoxViewBase::OnOnSearchBoxFocusedChanged() {
   UpdateSearchBoxBorder();
   Layout();
@@ -381,6 +352,19 @@ bool SearchBoxViewBase::IsSearchBoxTrimmedQueryEmpty() const {
   base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
                        &trimmed_query);
   return trimmed_query.empty();
+}
+
+void SearchBoxViewBase::ClearSearch() {
+  search_box_->SetText(base::string16());
+  UpdateCloseButtonVisisbility();
+  // Updates model and fires query changed manually because SetText() above
+  // does not generate ContentsChanged() notification.
+  UpdateModel(false);
+  NotifyQueryChanged();
+}
+
+views::View* SearchBoxViewBase::GetSelectedViewInContentsView() {
+  return nullptr;
 }
 
 void SearchBoxViewBase::NotifyQueryChanged() {
@@ -405,14 +389,6 @@ void SearchBoxViewBase::SetBackgroundColor(SkColor light_vibrant) {
 void SearchBoxViewBase::SetSearchBoxColor(SkColor color) {
   search_box_color_ =
       SK_ColorTRANSPARENT == color ? kDefaultSearchboxColor : color;
-}
-
-// TODO(crbug.com/755219): Unify this with SetBackgroundColor.
-void SearchBoxViewBase::UpdateBackgroundColor(SkColor color) {
-  if (is_search_box_active_)
-    color = kSearchBoxBackgroundDefault;
-  GetSearchBoxBackground()->set_color(color);
-  search_box_->SetBackgroundColor(color);
 }
 
 void SearchBoxViewBase::UpdateCloseButtonVisisbility() {
@@ -456,6 +432,30 @@ void SearchBoxViewBase::SetSearchBoxBackgroundColor(SkColor color) {
 
 void SearchBoxViewBase::SetSearchIconImage(gfx::ImageSkia image) {
   search_icon_->SetImage(image);
+}
+
+void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
+  if (located_event->type() == ui::ET_MOUSE_PRESSED ||
+      located_event->type() == ui::ET_GESTURE_TAP) {
+    bool event_is_in_searchbox_bounds =
+        GetWidget()->GetWindowBoundsInScreen().Contains(
+            located_event->root_location());
+    if (is_search_box_active_ || !event_is_in_searchbox_bounds ||
+        !search_box_->text().empty())
+      return;
+    // If the event was within the searchbox bounds and in an inactive empty
+    // search box, enable the search box.
+    SetSearchBoxActive(true);
+  }
+  located_event->SetHandled();
+}
+
+// TODO(crbug.com/755219): Unify this with SetBackgroundColor.
+void SearchBoxViewBase::UpdateBackgroundColor(SkColor color) {
+  if (is_search_box_active_)
+    color = kSearchBoxBackgroundDefault;
+  GetSearchBoxBackground()->set_color(color);
+  search_box_->SetBackgroundColor(color);
 }
 
 SearchBoxBackground* SearchBoxViewBase::GetSearchBoxBackground() const {
