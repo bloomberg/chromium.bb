@@ -117,11 +117,8 @@ bool CheckSecurityRequirementsBeforeRequest(
   // execution context is valid, it must have a responsible browsing context.
   SECURITY_CHECK(resolver->GetFrame());
 
-  String error_message;
-  if (!resolver->GetExecutionContext()->IsSecureContext(error_message)) {
-    resolver->Reject(DOMException::Create(kSecurityError, error_message));
-    return false;
-  }
+  // The API is not exposed in non-secure context.
+  SECURITY_CHECK(resolver->GetExecutionContext()->IsSecureContext());
 
   if (required_origin_type == RequiredOriginType::kSecureAndSameWithAncestors &&
       !IsSameOriginWithAncestors(resolver->GetFrame())) {
