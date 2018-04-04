@@ -5,10 +5,14 @@
 #import "ios/chrome/browser/itunes_links/itunes_links_handler_tab_helper.h"
 
 #import <Foundation/Foundation.h>
+#import <StoreKit/StoreKit.h>
+
+#include <vector>
 
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/web/public/navigation_item.h"
@@ -16,6 +20,7 @@
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,6 +45,22 @@ bool IsITunesProductUrl(const GURL& url) {
   size_t prefix_length = strlen(kITunesProductIdPrefix);
   return (file_name.length() > prefix_length &&
           file_name.substr(0, prefix_length) == kITunesProductIdPrefix);
+}
+
+// Extracts iTunes product parameters from the given |url| to be used with the
+// StoreKit launcher.
+NSDictionary* ExtractITunesProductParameters(const GURL& url) {
+  NSMutableDictionary<NSString*, NSString*>* params_dictionary =
+      [[NSMutableDictionary alloc] init];
+  std::string product_id =
+      url.ExtractFileName().substr(strlen(kITunesProductIdPrefix));
+  params_dictionary[SKStoreProductParameterITunesItemIdentifier] =
+      base::SysUTF8ToNSString(product_id);
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    params_dictionary[base::SysUTF8ToNSString(it.GetKey())] =
+        base::SysUTF8ToNSString(it.GetValue());
+  }
+  return params_dictionary;
 }
 
 // This class handles requests & responses that involve iTunes product links.
@@ -96,13 +117,11 @@ void ITunesLinksHandlerTabHelper::DidFinishNavigation(
     // If the url is iTunes product url, then this navigation should not be
     // committed, as the policy decider's ShouldAllowResponse will return false.
     DCHECK(!navigation_context->HasCommitted());
-    std::string product_id =
-        url.ExtractFileName().substr(strlen(kITunesProductIdPrefix));
     StoreKitTabHelper* tab_helper = StoreKitTabHelper::FromWebState(web_state);
     if (tab_helper) {
       base::RecordAction(
           base::UserMetricsAction("ITunesLinksHandler_StoreKitLaunched"));
-      tab_helper->OpenAppStore(base::SysUTF8ToNSString(product_id));
+      tab_helper->OpenAppStore(ExtractITunesProductParameters(url));
     }
   }
 }

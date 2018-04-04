@@ -34,11 +34,37 @@ class StoreKitCoordinatorTest : public PlatformTest {
   ScopedKeyWindow scoped_key_window_;
 };
 
-// Tests that StoreKitCoordinator presents SKStoreProductViewController.
-TEST_F(StoreKitCoordinatorTest, PresentingViewController) {
+// Tests that StoreKitCoordinator presents SKStoreProductViewController when
+// openAppStoreWithParameters is called.
+TEST_F(StoreKitCoordinatorTest, OpenStoreWithParamsPresentViewController) {
+  NSDictionary* product_params = @{
+    SKStoreProductParameterITunesItemIdentifier : @"TestITunesItemIdentifier",
+    SKStoreProductParameterAffiliateToken : @"TestToken"
+  };
+  [coordinator_ openAppStoreWithParameters:product_params];
+  EXPECT_NSEQ(product_params, coordinator_.iTunesProductParameters);
+
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    return [base_view_controller_.presentedViewController class] ==
+           [SKStoreProductViewController class];
+  }));
+
+  [coordinator_ stop];
+
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    return base_view_controller_.presentedViewController == nil;
+  }));
+}
+
+// Tests that StoreKitCoordinator presents SKStoreProductViewController when
+// openAppStore is called.
+TEST_F(StoreKitCoordinatorTest, OpenStorePresentViewController) {
   NSString* kTestITunesItemIdentifier = @"TestITunesItemIdentifier";
+  NSDictionary* product_params = @{
+    SKStoreProductParameterITunesItemIdentifier : kTestITunesItemIdentifier,
+  };
   [coordinator_ openAppStore:kTestITunesItemIdentifier];
-  EXPECT_NSEQ(kTestITunesItemIdentifier, coordinator_.iTunesItemIdentifier);
+  EXPECT_NSEQ(product_params, coordinator_.iTunesProductParameters);
 
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     return [base_view_controller_.presentedViewController class] ==

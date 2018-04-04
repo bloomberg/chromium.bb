@@ -10,9 +10,14 @@
 
 @implementation FakeStoreKitLauncher
 @synthesize launchedProductID = _launchedProductID;
+@synthesize launchedProductParams = _launchedProductParams;
 
 #pragma mark - StoreKitLauncher
 - (void)openAppStore:(NSString*)productID {
   _launchedProductID = [productID copy];
+}
+
+- (void)openAppStoreWithParameters:(NSDictionary*)productParameters {
+  _launchedProductParams = [productParameters copy];
 }
 @end

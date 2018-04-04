@@ -19,19 +19,18 @@
 @end
 
 @implementation StoreKitCoordinator
-@synthesize iTunesItemIdentifier = _iTunesItemIdentifier;
+@synthesize iTunesProductParameters = _iTunesProductParameters;
 
 #pragma mark - Public
 
 - (void)start {
-  DCHECK(self.iTunesItemIdentifier.length);
+  DCHECK(self.iTunesProductParameters
+             [SKStoreProductParameterITunesItemIdentifier]);
   DCHECK(!_viewController);
   _viewController = [[SKStoreProductViewController alloc] init];
   _viewController.delegate = self;
-  NSDictionary* product = @{
-    SKStoreProductParameterITunesItemIdentifier : self.iTunesItemIdentifier,
-  };
-  [_viewController loadProductWithParameters:product completionBlock:nil];
+  [_viewController loadProductWithParameters:self.iTunesProductParameters
+                             completionBlock:nil];
   [self.baseViewController presentViewController:_viewController
                                         animated:YES
                                       completion:nil];
@@ -45,7 +44,13 @@
 #pragma mark - StoreKitLauncher
 
 - (void)openAppStore:(NSString*)iTunesItemIdentifier {
-  self.iTunesItemIdentifier = iTunesItemIdentifier;
+  [self openAppStoreWithParameters:@{
+    SKStoreProductParameterITunesItemIdentifier : iTunesItemIdentifier
+  }];
+}
+
+- (void)openAppStoreWithParameters:(NSDictionary*)productParameters {
+  self.iTunesProductParameters = productParameters;
   [self start];
 }
 
