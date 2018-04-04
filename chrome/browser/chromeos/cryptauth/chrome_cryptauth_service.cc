@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
+#include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 #include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,29 +45,6 @@
 namespace chromeos {
 
 namespace {
-
-cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
-  cryptauth::GcmDeviceInfo device_info;
-  device_info.set_long_device_id(
-      cryptauth::CryptAuthDeviceIdProviderImpl::GetInstance()->GetDeviceId());
-  device_info.set_device_type(cryptauth::CHROME);
-  device_info.set_device_software_version(version_info::GetVersionNumber());
-  google::protobuf::int64 software_version_code =
-      cryptauth::HashStringToInt64(version_info::GetLastChange());
-  device_info.set_device_software_version_code(software_version_code);
-  ChromeContentBrowserClient chrome_content_browser_client;
-  device_info.set_locale(chrome_content_browser_client.GetApplicationLocale());
-  device_info.set_device_model(base::SysInfo::GetLsbReleaseBoard());
-  device_info.set_device_os_version(base::GetLinuxDistro());
-  // The Chrome OS version tracks the Chrome version, so fill in the same value
-  // as |device_software_version_code|.
-  device_info.set_device_os_version_code(software_version_code);
-  // |device_display_diagonal_mils| is unused because it only applies to
-  // phones/tablets, but it must be set due to server API verification.
-  device_info.set_device_display_diagonal_mils(0);
-
-  return device_info;
-}
 
 std::unique_ptr<cryptauth::CryptAuthClientFactory>
 CreateCryptAuthClientFactoryImpl(Profile* profile) {
@@ -117,7 +95,8 @@ std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
       cryptauth::CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
           base::DefaultClock::GetInstance(),
           std::make_unique<CryptAuthEnrollerFactoryImpl>(profile),
-          CreateSecureMessageDelegateImpl(), GetGcmDeviceInfo(),
+          CreateSecureMessageDelegateImpl(),
+          GcmDeviceInfoProviderImpl::GetInstance()->GetGcmDeviceInfo(),
           gcm_manager.get(), profile->GetPrefs());
 
   // Note: ChromeCryptAuthServiceFactory DependsOn(OAuth2TokenServiceFactory),
