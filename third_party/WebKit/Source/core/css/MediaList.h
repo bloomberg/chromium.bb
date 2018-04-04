@@ -86,7 +86,7 @@ class MediaList final : public ScriptWrappable {
   unsigned length() const { return media_queries_->QueryVector().size(); }
   String item(unsigned index) const;
   void deleteMedium(const String& old_medium, ExceptionState&);
-  void appendMedium(const String& new_medium, ExceptionState&);
+  void appendMedium(const String& new_medium);
 
   String mediaText() const { return media_queries_->MediaText(); }
   void setMediaText(const String&);
