@@ -449,6 +449,31 @@
              "--enable-slimming-paint-v175"]
   },
   {
+    "prefix": "layout_ng_experimental",
+    "base": "external/wpt/css/css-multicol",
+    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "fast/multicol",
+    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "fast/pagination",
+    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "fragmentation",
+    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "printing",
+    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
+  },
+  {
     "prefix": "print_browser",
     "base": "print_testharness",
     "args": ["--enable-print-browser"]
