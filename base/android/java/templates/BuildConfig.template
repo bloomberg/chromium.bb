@@ -57,4 +57,14 @@ public class BuildConfig {
 #else
     public static MAYBE_FINAL String[] UNCOMPRESSED_LOCALES = {};
 #endif
+
+    // The ID of the android string resource that stores the product version.
+    // This layer of indirection is necessary to make the resource dependency
+    // optional for android_apk targets/base_java (ex. for cronet).
+#if defined(_RESOURCES_VERSION_VARIABLE)
+    public static MAYBE_FINAL int R_STRING_PRODUCT_VERSION = _RESOURCES_VERSION_VARIABLE;
+#else
+    // Default value, do not use.
+    public static MAYBE_FINAL int R_STRING_PRODUCT_VERSION = 0;
+#endif
 }

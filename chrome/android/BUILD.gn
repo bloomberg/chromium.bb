@@ -722,6 +722,26 @@ android_resources("chrome_public_apk_resources") {
   ]
 }
 
+version_resource_dir = "$target_gen_dir/templates/chrome_version_xml/res"
+verson_resource_file = "$version_resource_dir/values/strings.xml"
+process_version("version_xml") {
+  template_file = "java/version_strings.xml.template"
+  sources = [
+    "//chrome/VERSION",
+  ]
+  output = verson_resource_file
+}
+
+android_resources("product_version_resources") {
+  resource_dirs = []
+  generated_resource_dirs = [ version_resource_dir ]
+  generated_resource_files = [ verson_resource_file ]
+  custom_package = "org.chromium.base"
+  deps = [
+    ":version_xml",
+  ]
+}
+
 java_group("chrome_public_non_pak_assets") {
   deps = [
     "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
