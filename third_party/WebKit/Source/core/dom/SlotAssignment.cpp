@@ -213,7 +213,7 @@ void SlotAssignment::SetNeedsAssignmentRecalc() {
   }
 }
 
-void SlotAssignment::RecalcAssignmentNg() {
+void SlotAssignment::RecalcAssignment() {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
 
   if (!needs_assignment_recalc_)
@@ -265,7 +265,7 @@ void SlotAssignment::RecalcAssignmentNg() {
     slot->RecalcFlatTreeChildren();
 }
 
-void SlotAssignment::RecalcAssignment() {
+void SlotAssignment::RecalcAssignmentForDistribution() {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
 
   for (Member<HTMLSlotElement> slot : Slots())
@@ -309,7 +309,7 @@ void SlotAssignment::RecalcAssignment() {
 void SlotAssignment::RecalcDistribution() {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
 
-  RecalcAssignment();
+  RecalcAssignmentForDistribution();
   const HeapVector<Member<HTMLSlotElement>>& slots = Slots();
 
   for (auto slot : slots)

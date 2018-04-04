@@ -44,9 +44,9 @@ void SlotAssignmentEngine::RecalcSlotAssignments() {
        HeapHashSet<WeakMember<ShadowRoot>>(shadow_roots_needing_recalc_)) {
     DCHECK(shadow_root->isConnected());
     DCHECK(shadow_root->NeedsSlotAssignmentRecalc());
-    // SlotAssignment::RecalcAssignmentNg() will remove its shadow root from
+    // SlotAssignment::RecalcAssignment() will remove its shadow root from
     // shadow_roots_needing_recalc_.
-    shadow_root->GetSlotAssignment().RecalcAssignmentNg();
+    shadow_root->GetSlotAssignment().RecalcAssignment();
   }
   DCHECK(shadow_roots_needing_recalc_.IsEmpty());
 }
