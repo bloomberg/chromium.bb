@@ -963,50 +963,29 @@ float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
 
 void WindowSelectorItem::HandlePressEvent(
     const gfx::Point& location_in_screen) {
-  // We allow switching finger while dragging, but do not allow dragging two or more items.
-  if (window_selector_->window_drag_controller() &&
-      window_selector_->window_drag_controller()->item()) {
-    return;
-  }
-
   StartDrag();
   window_selector_->InitiateDrag(this, location_in_screen);
 }
 
 void WindowSelectorItem::HandleReleaseEvent(
     const gfx::Point& location_in_screen) {
-  if (!IsDragItem())
-    return;
-
   EndDrag();
   window_selector_->CompleteDrag(this, location_in_screen);
 }
 
 void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
-  if (!IsDragItem())
-    return;
-
   window_selector_->Drag(this, location_in_screen);
 }
 
 void WindowSelectorItem::ActivateDraggedWindow() {
-  if (!IsDragItem())
-    return;
-
+  DCHECK_EQ(this, window_selector_->window_drag_controller()->item());
   window_selector_->ActivateDraggedWindow();
 }
 
 void WindowSelectorItem::ResetDraggedWindowGesture() {
   OnSelectorItemDragEnded();
-  if (!IsDragItem())
-    return;
-
+  DCHECK_EQ(this, window_selector_->window_drag_controller()->item());
   window_selector_->ResetDraggedWindowGesture();
-}
-
-bool WindowSelectorItem::IsDragItem() {
-  return window_selector_->window_drag_controller() &&
-         window_selector_->window_drag_controller()->item() == this;
 }
 
 void WindowSelectorItem::SetShadowBounds(
