@@ -219,8 +219,9 @@ class LocalDeviceInstrumentationTestRun(
       @trace_event.traced
       def edit_shared_prefs(dev):
         for setting in self._test_instance.edit_shared_prefs:
-          shared_pref = shared_prefs.SharedPrefs(dev, setting['package'],
-                                                 setting['filename'])
+          shared_pref = shared_prefs.SharedPrefs(
+              dev, setting['package'], setting['filename'],
+              use_encrypted_path=setting.get('supports_encrypted_path', False))
           shared_preference_utils.ApplySharedPreferenceSetting(
               shared_pref, setting)
 

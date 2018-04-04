@@ -52,6 +52,7 @@ def ApplySharedPreferenceSetting(shared_pref, setting):
   {
     "package": "com.example.package",
     "filename": "AppSettingsFile.xml",
+    "supports_encrypted_path": true,
     "set": {
       "SomeBoolToSet": true,
       "SomeStringToSet": "StringValue",
