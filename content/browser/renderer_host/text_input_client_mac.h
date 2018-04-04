@@ -13,12 +13,18 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
+#include "content/common/mac/attributed_string_coder.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
+
+namespace gfx {
+class Range;
+}
 
 namespace content {
 class RenderWidgetHost;
@@ -56,17 +62,23 @@ class CONTENT_EXPORT TextInputClientMac {
   // this service and signal the condition to allow the Get*() methods to
   // unlock and return that stored value.
   //
-  // Returns NSNotFound if the request times out or is not completed.
-  NSUInteger GetCharacterIndexAtPoint(RenderWidgetHost* rwh, gfx::Point point);
+  // Returns UINT32_MAX if the request times out or is not completed.
+  uint32_t GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
+                                    const gfx::Point& point);
   // Returns NSZeroRect if the request times out or is not completed. The result
   // is in WebKit coordinates.
-  NSRect GetFirstRectForRange(RenderWidgetHost* rwh, NSRange range);
+  gfx::Rect GetFirstRectForRange(RenderWidgetHost* rwh,
+                                 const gfx::Range& range);
 
   // When the renderer sends the ViewHostMsg reply, the RenderMessageFilter will
   // call the corresponding method on the IO thread to unlock the condition and
   // allow the Get*() methods to continue/return.
-  void SetCharacterIndexAndSignal(NSUInteger index);
-  void SetFirstRectAndSignal(NSRect first_rect);
+  void SetCharacterIndexAndSignal(uint32_t index);
+  void SetFirstRectAndSignal(const gfx::Rect& first_rect);
+
+  typedef base::OnceCallback<
+      void(const mac::AttributedStringCoder::EncodedString&, gfx::Point)>
+      GetStringCallback;
 
   // This async method is invoked from RenderWidgetHostViewCocoa's
   // -quickLookWithEvent:, when the user taps a word using 3 fingers.
@@ -75,12 +87,14 @@ class CONTENT_EXPORT TextInputClientMac {
   // The callback parameters provide the attributed word under the point and
   // the lower left baseline point of the text.
   void GetStringAtPoint(RenderWidgetHost* rwh,
-                        gfx::Point point,
-                        void (^reply_handler)(NSAttributedString*, NSPoint));
+                        const gfx::Point& point,
+                        GetStringCallback callback);
 
   // This is called on the IO thread when we get the renderer's reply for
   // GetStringAtPoint.
-  void GetStringAtPointReply(NSAttributedString* string, NSPoint point);
+  void GetStringAtPointReply(
+      const mac::AttributedStringCoder::EncodedString& string,
+      const gfx::Point& point);
 
   // This async method is invoked when browser tries to retreive the text for
   // certain range and doesn't want to wait for the reply from blink.
@@ -89,12 +103,14 @@ class CONTENT_EXPORT TextInputClientMac {
   // The callback parameters provide the attributed word under the point and
   // the lower left baseline point of the text.
   void GetStringFromRange(RenderWidgetHost* rwh,
-                          NSRange range,
-                          void (^reply_handler)(NSAttributedString*, NSPoint));
+                          const gfx::Range& range,
+                          GetStringCallback callback);
 
   // This is called on the IO thread when we get the renderer's reply for
   // GetStringFromRange.
-  void GetStringFromRangeReply(NSAttributedString* string, NSPoint point);
+  void GetStringFromRangeReply(
+      const mac::AttributedStringCoder::EncodedString& string,
+      const gfx::Point& point);
 
  private:
   friend struct base::DefaultSingletonTraits<TextInputClientMac>;
@@ -110,19 +126,17 @@ class CONTENT_EXPORT TextInputClientMac {
   // condition.
   void AfterRequest();
 
-  NSUInteger character_index_;
-  NSRect first_rect_;
+  uint32_t character_index_;
+  gfx::Rect first_rect_;
 
   base::Lock lock_;
   base::ConditionVariable condition_;
 
   // The callback when received IPC TextInputClientReplyMsg_GotStringAtPoint.
-  base::mac::ScopedBlock<void(^)(NSAttributedString*, NSPoint)>
-      replyForPointHandler_;
+  GetStringCallback replyForPointHandler_;
 
   // The callback when received IPC TextInputClientReplyMsg_GotStringForRange.
-  base::mac::ScopedBlock<void(^)(NSAttributedString*, NSPoint)>
-      replyForRangeHandler_;
+  GetStringCallback replyForRangeHandler_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMac);
 };

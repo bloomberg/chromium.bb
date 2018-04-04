@@ -72,6 +72,12 @@ AttributedStringCoder::EncodedString::EncodedString()
     : string_() {
 }
 
+AttributedStringCoder::EncodedString::EncodedString(
+    const EncodedString& other) = default;
+
+AttributedStringCoder::EncodedString& AttributedStringCoder::EncodedString::
+operator=(const EncodedString& other) = default;
+
 AttributedStringCoder::EncodedString::~EncodedString() {
 }
 

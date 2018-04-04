@@ -72,6 +72,8 @@ class CONTENT_EXPORT AttributedStringCoder {
    public:
     explicit EncodedString(base::string16 string);
     EncodedString();
+    EncodedString(const EncodedString& other);
+    EncodedString& operator=(const EncodedString& other);
     ~EncodedString();
 
     // Accessors:

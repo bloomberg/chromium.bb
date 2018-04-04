@@ -159,12 +159,12 @@ TEST_F(TextInputClientMacTest, GetCharacterIndex) {
 }
 
 TEST_F(TextInputClientMacTest, TimeoutCharacterIndex) {
-  NSUInteger index = service()->GetCharacterIndexAtPoint(
-      widget(), gfx::Point(2, 2));
+  uint32_t index =
+      service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
   EXPECT_EQ(1U, ipc_sink().message_count());
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_CharacterIndexForPoint::ID));
-  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), index);
+  EXPECT_EQ(UINT32_MAX, index);
 }
 
 TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
@@ -187,11 +187,11 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
            base::Bind(&CallOnMessageReceived, filter, *message),
            base::TimeDelta::FromMilliseconds(kTaskDelayMs) * 2);
 
-  NSUInteger index = service()->GetCharacterIndexAtPoint(
-      widget(), gfx::Point(2, 2));
+  uint32_t index =
+      service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
   EXPECT_EQ(kPreviousValue, index);
   index = service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
-  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), index);
+  EXPECT_EQ(UINT32_MAX, index);
 
   EXPECT_EQ(2U, ipc_sink().message_count());
   for (size_t i = 0; i < ipc_sink().message_count(); ++i) {
@@ -203,25 +203,27 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
 
 TEST_F(TextInputClientMacTest, GetRectForRange) {
   ScopedTestingThread thread(this);
-  const NSRect kSuccessValue = NSMakeRect(42, 43, 44, 45);
+  const gfx::Rect kSuccessValue(42, 43, 44, 45);
 
   PostTask(FROM_HERE,
            base::Bind(&TextInputClientMac::SetFirstRectAndSignal,
                       base::Unretained(service()), kSuccessValue));
-  NSRect rect = service()->GetFirstRectForRange(widget(), NSMakeRange(0, 32));
+  gfx::Rect rect =
+      service()->GetFirstRectForRange(widget(), gfx::Range(NSMakeRange(0, 32)));
 
   EXPECT_EQ(1U, ipc_sink().message_count());
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_FirstRectForCharacterRange::ID));
-  EXPECT_NSEQ(kSuccessValue, rect);
+  EXPECT_EQ(kSuccessValue, rect);
 }
 
 TEST_F(TextInputClientMacTest, TimeoutRectForRange) {
-  NSRect rect = service()->GetFirstRectForRange(widget(), NSMakeRange(0, 32));
+  gfx::Rect rect =
+      service()->GetFirstRectForRange(widget(), gfx::Range(NSMakeRange(0, 32)));
   EXPECT_EQ(1U, ipc_sink().message_count());
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_FirstRectForCharacterRange::ID));
-  EXPECT_NSEQ(NSZeroRect, rect);
+  EXPECT_EQ(gfx::Rect(), rect);
 }
 
 }  // namespace content

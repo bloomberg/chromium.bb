@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/debug/crash_logging.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
@@ -145,8 +146,9 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
-- (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*)string
-                              baselinePoint:(NSPoint)baselinePoint
+- (void)showLookUpDictionaryOverlayInternal:
+            (mac::AttributedStringCoder::EncodedString)encodedString
+                              baselinePoint:(gfx::Point)baselinePoint
                                  targetView:(NSView*)view;
 - (void)sendViewBoundsInWindowToClient;
 - (void)sendWindowFrameInScreenToClient;
@@ -882,9 +884,12 @@ void ExtractUnderlines(NSAttributedString* string,
   client_->OnNSViewSmartMagnify(smartMagnifyEvent);
 }
 
-- (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*)string
-                              baselinePoint:(NSPoint)baselinePoint
+- (void)showLookUpDictionaryOverlayInternal:
+            (mac::AttributedStringCoder::EncodedString)encodedString
+                              baselinePoint:(gfx::Point)baselinePoint
                                  targetView:(NSView*)view {
+  NSAttributedString* string =
+      mac::AttributedStringCoder::Decode(&encodedString);
   if ([string length] == 0) {
     // The PDF plugin does not support getting the attributed string at point.
     // Until it does, use NSPerformService(), which opens Dictionary.app.
@@ -904,7 +909,7 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
   }
   NSPoint flippedBaselinePoint = {
-      baselinePoint.x, [view frame].size.height - baselinePoint.y,
+      baselinePoint.x(), [view frame].size.height - baselinePoint.y(),
   };
   [view showDefinitionForAttributedString:string atPoint:flippedBaselinePoint];
 }
@@ -924,24 +929,22 @@ void ExtractUnderlines(NSAttributedString* string,
   int32_t targetWidgetProcessId = widgetHost->GetProcess()->GetID();
   int32_t targetWidgetRoutingId = widgetHost->GetRoutingID();
   TextInputClientMac::GetInstance()->GetStringFromRange(
-      widgetHost, range, ^(NSAttributedString* string, NSPoint baselinePoint) {
+      widgetHost, gfx::Range(range),
+      base::BindBlock(^(
+          const mac::AttributedStringCoder::EncodedString& encodedString,
+          gfx::Point baselinePoint) {
         if (!content::RenderWidgetHost::FromID(targetWidgetProcessId,
                                                targetWidgetRoutingId)) {
           // By the time we get here |widgetHost| might have been destroyed.
           // (See https://crbug.com/737032).
           return;
         }
-
-        if (auto* rwhv = widgetHost->GetView()) {
-          gfx::Point pointInRootView = rwhv->TransformPointToRootCoordSpace(
-              gfx::Point(baselinePoint.x, baselinePoint.y));
-          baselinePoint.x = pointInRootView.x();
-          baselinePoint.y = pointInRootView.y();
-        }
-        [self showLookUpDictionaryOverlayInternal:string
+        if (auto* rwhv = widgetHost->GetView())
+          baselinePoint = rwhv->TransformPointToRootCoordSpace(baselinePoint);
+        [self showLookUpDictionaryOverlayInternal:encodedString
                                     baselinePoint:baselinePoint
                                        targetView:targetView];
-      });
+      }));
 }
 
 - (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point {
@@ -965,24 +968,21 @@ void ExtractUnderlines(NSAttributedString* string,
   int32_t targetWidgetRoutingId = widgetHost->GetRoutingID();
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       widgetHost, gfx::ToFlooredPoint(transformedPoint),
-      ^(NSAttributedString* string, NSPoint baselinePoint) {
+      base::BindBlock(^(
+          const mac::AttributedStringCoder::EncodedString& encodedString,
+          gfx::Point baselinePoint) {
         if (!content::RenderWidgetHost::FromID(targetWidgetProcessId,
                                                targetWidgetRoutingId)) {
           // By the time we get here |widgetHost| might have been destroyed.
           // (See https://crbug.com/737032).
           return;
         }
-
-        if (auto* rwhv = widgetHost->GetView()) {
-          gfx::Point pointInRootView = rwhv->TransformPointToRootCoordSpace(
-              gfx::Point(baselinePoint.x, baselinePoint.y));
-          baselinePoint.x = pointInRootView.x();
-          baselinePoint.y = pointInRootView.y();
-        }
-        [self showLookUpDictionaryOverlayInternal:string
+        if (auto* rwhv = widgetHost->GetView())
+          baselinePoint = rwhv->TransformPointToRootCoordSpace(baselinePoint);
+        [self showLookUpDictionaryOverlayInternal:encodedString
                                     baselinePoint:baselinePoint
                                        targetView:self];
-      });
+      }));
 }
 
 // This is invoked only on 10.8 or newer when the user taps a word using
@@ -1513,30 +1513,41 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   if (!widgetHost)
     return NSNotFound;
 
-  NSUInteger index =
-      TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
-          widgetHost, gfx::ToFlooredPoint(transformedPoint));
-  return index;
+  uint32_t index = TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
+      widgetHost, gfx::ToFlooredPoint(transformedPoint));
+  // |index| could be WTF::notFound (-1) and its value is different from
+  // NSNotFound so we need to convert it.
+  if (index == UINT32_MAX)
+    return NSNotFound;
+  size_t char_index = index;
+  return NSUInteger(char_index);
 }
 
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
                              actualRange:(NSRangePointer)actualRange {
-  NSRect rect;
+  gfx::Rect rect;
+  gfx::Range range;
+  if (actualRange)
+    range = gfx::Range(*actualRange);
   if (!renderWidgetHostView_->GetCachedFirstRectForCharacterRange(
-          theRange, &rect, actualRange)) {
+          gfx::Range(theRange), &rect, &range)) {
     rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
-        renderWidgetHostView_->GetFocusedWidget(), theRange);
+        renderWidgetHostView_->GetFocusedWidget(), gfx::Range(theRange));
 
     // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
     if (actualRange)
       *actualRange = theRange;
+  } else {
+    if (actualRange)
+      *actualRange = range.ToNSRange();
   }
 
   // The returned rectangle is in WebKit coordinates (upper left origin), so
   // flip the coordinate system.
   NSRect viewFrame = [self frame];
-  rect.origin.y = NSHeight(viewFrame) - NSMaxY(rect);
-  return rect;
+  NSRect flippedRect = NSRectFromCGRect(rect.ToCGRect());
+  flippedRect.origin.y = NSHeight(viewFrame) - NSMaxY(flippedRect);
+  return flippedRect;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)theRange

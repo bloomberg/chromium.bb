@@ -10,8 +10,10 @@
 #include <memory>
 
 #include "base/lazy_instance.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/text_input_client_mac.h"
@@ -120,10 +122,14 @@ void GetStringAtPointForRenderWidget(
     base::Callback<void(const std::string&, const gfx::Point&)>
         result_callback) {
   TextInputClientMac::GetInstance()->GetStringAtPoint(
-      rwh, point, ^(NSAttributedString* string, NSPoint baselinePoint) {
-        result_callback.Run([[string string] UTF8String],
-                            gfx::Point(baselinePoint.x, baselinePoint.y));
-      });
+      rwh, point,
+      base::BindBlock(
+          ^(const mac::AttributedStringCoder::EncodedString& encoded_string,
+            gfx::Point baseline_point) {
+            std::string string = base::SysNSStringToUTF8(
+                [mac::AttributedStringCoder::Decode(&encoded_string) string]);
+            result_callback.Run(string, baseline_point);
+          }));
 }
 
 void GetStringFromRangeForRenderWidget(
@@ -132,11 +138,14 @@ void GetStringFromRangeForRenderWidget(
     base::Callback<void(const std::string&, const gfx::Point&)>
         result_callback) {
   TextInputClientMac::GetInstance()->GetStringFromRange(
-      rwh, range.ToNSRange(),
-      ^(NSAttributedString* string, NSPoint baselinePoint) {
-        result_callback.Run([[string string] UTF8String],
-                            gfx::Point(baselinePoint.x, baselinePoint.y));
-      });
+      rwh, range,
+      base::BindBlock(
+          ^(const mac::AttributedStringCoder::EncodedString& encoded_string,
+            gfx::Point baseline_point) {
+            std::string string = base::SysNSStringToUTF8(
+                [mac::AttributedStringCoder::Decode(&encoded_string) string]);
+            result_callback.Run(string, baseline_point);
+          }));
 }
 
 }  // namespace content
