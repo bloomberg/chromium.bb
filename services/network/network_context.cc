@@ -173,10 +173,9 @@ void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     uint32_t process_id,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
-  loader_factory_bindings_.AddBinding(
-      std::make_unique<URLLoaderFactory>(this, process_id,
-                                         std::move(resource_scheduler_client)),
-      std::move(request));
+  url_loader_factories_.emplace(std::make_unique<URLLoaderFactory>(
+      this, process_id, std::move(resource_scheduler_client),
+      std::move(request)));
 }
 
 void NetworkContext::CreateURLLoaderFactory(
@@ -454,6 +453,13 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
       }));
   return URLRequestContextOwner(std::move(pref_service), builder->Build());
+}
+
+void NetworkContext::DestroyURLLoaderFactory(
+    URLLoaderFactory* url_loader_factory) {
+  auto it = url_loader_factories_.find(url_loader_factory);
+  DCHECK(it != url_loader_factories_.end());
+  url_loader_factories_.erase(it);
 }
 
 void NetworkContext::ClearNetworkingHistorySince(

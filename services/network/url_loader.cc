@@ -263,6 +263,7 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 URLLoader::URLLoader(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     mojom::NetworkServiceClient* network_service_client,
+    DeleteCallback delete_callback,
     mojom::URLLoaderRequest url_loader_request,
     int32_t options,
     const ResourceRequest& request,
@@ -275,6 +276,7 @@ URLLoader::URLLoader(
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder)
     : url_request_context_getter_(url_request_context_getter),
       network_service_client_(network_service_client),
+      delete_callback_(std::move(delete_callback)),
       options_(options),
       resource_type_(request.resource_type),
       is_load_timing_enabled_(request.enable_load_timing),
@@ -296,6 +298,7 @@ URLLoader::URLLoader(
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       first_auth_attempt_(true),
       weak_ptr_factory_(this) {
+  DCHECK(delete_callback_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     CHECK(!url_loader_client_.internal_state()
                     ->handle()
@@ -309,7 +312,6 @@ URLLoader::URLLoader(
     options_ |= mojom::kURLLoadOptionSendSSLInfoWithResponse |
                 mojom::kURLLoadOptionSendSSLInfoForCertificateError;
   }
-  url_request_context_getter_->AddObserver(this);
   binding_.set_connection_error_handler(
       base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
 
@@ -377,7 +379,6 @@ URLLoader::URLLoader(
 
 URLLoader::~URLLoader() {
   RecordBodyReadFromNetBeforePausedIfNeeded();
-  url_request_context_getter_->RemoveObserver(this);
 
   if (keepalive_ && keepalive_statistics_recorder_)
     keepalive_statistics_recorder_->OnLoadFinished(process_id_);
@@ -690,20 +691,10 @@ void URLLoader::OnReadCompleted(net::URLRequest* url_request, int bytes_read) {
   // |this| may have been deleted.
 }
 
-void URLLoader::OnContextShuttingDown() {
-  // The associated network context is going away and we have to destroy
-  // net::URLRequest held by this loader.
-  delete this;
-}
-
 net::LoadState URLLoader::GetLoadStateForTesting() const {
   if (!url_request_)
     return net::LOAD_STATE_IDLE;
   return url_request_->GetLoadState().state;
-}
-
-base::WeakPtr<URLLoader> URLLoader::GetWeakPtrForTests() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void URLLoader::NotifyCompleted(int error_code) {
@@ -780,7 +771,7 @@ void URLLoader::CloseResponseBodyStreamProducer() {
 
 void URLLoader::DeleteIfNeeded() {
   if (!connected_ && !HasDataPipe())
-    delete this;
+    std::move(delete_callback_).Run(this);
 }
 
 void URLLoader::SendResponseToClient() {

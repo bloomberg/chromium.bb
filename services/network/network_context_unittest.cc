@@ -43,6 +43,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
@@ -53,6 +54,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "services/network/udp_socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -120,6 +122,47 @@ class NetworkContextTest : public testing::Test {
   // message loop must be spun for that to happen.
   mojom::NetworkContextPtr network_context_ptr_;
 };
+
+TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ResourceRequest request;
+  request.url = test_server.GetURL("/hung-after-headers");
+
+  mojom::URLLoaderFactoryPtr loader_factory;
+  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                          0);
+
+  mojom::URLLoaderPtr loader;
+  TestURLLoaderClient client;
+  loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+      0 /* options */, request, client.CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  client.RunUntilResponseReceived();
+  EXPECT_TRUE(client.has_received_response());
+  EXPECT_FALSE(client.has_received_completion());
+
+  // Destroying the loader factory should not delete the URLLoader.
+  loader_factory.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(client.has_received_completion());
+
+  // Destroying the NetworkContext should result in destroying the loader and
+  // the client receiving a connection error.
+  network_context.reset();
+
+  client.RunUntilConnectionError();
+  EXPECT_FALSE(client.has_received_completion());
+  EXPECT_EQ(0u, client.download_data_length());
+}
 
 TEST_F(NetworkContextTest, DisableQuic) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableQuic);
