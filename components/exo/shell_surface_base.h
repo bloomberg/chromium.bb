@@ -121,6 +121,14 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set the application ID for the surface.
   void SetApplicationId(const std::string& application_id);
 
+  // Sets the startup ID for the window. The startup ID identifies the
+  // application using startup notification protocol.
+  static void SetStartupId(aura::Window* window, const std::string& id);
+  static const std::string* GetStartupId(aura::Window* window);
+
+  // Set the startup ID for the surface.
+  void SetStartupId(const char* startup_id);
+
   // Signal a request to close the window. It is up to the implementation to
   // actually decide to do so though.
   void Close();
@@ -165,6 +173,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnSetFrame(SurfaceFrameType type) override;
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
   void OnSetParent(Surface* parent, const gfx::Point& position) override;
+  void OnSetStartupId(const char* startup_id) override;
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -338,6 +347,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   SkColor inactive_frame_color_ = SK_ColorBLACK;
   bool pending_show_widget_ = false;
   std::string application_id_;
+  std::string startup_id_;
   gfx::Rect geometry_;
   gfx::Rect pending_geometry_;
   base::RepeatingClosure close_callback_;

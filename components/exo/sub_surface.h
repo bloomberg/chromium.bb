@@ -56,6 +56,7 @@ class SubSurface : public SurfaceDelegate, public SurfaceObserver {
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override {
   }
   void OnSetParent(Surface* parent, const gfx::Point& position) override {}
+  void OnSetStartupId(const char* startup_id) override {}
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

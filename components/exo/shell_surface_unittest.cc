@@ -252,6 +252,24 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   EXPECT_EQ("test", *ShellSurface::GetApplicationId(window));
 }
 
+TEST_F(ShellSurfaceTest, SetStartupId) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  EXPECT_FALSE(shell_surface->GetWidget());
+  shell_surface->SetStartupId("pre-widget-id");
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_EQ("pre-widget-id", *ShellSurface::GetStartupId(window));
+  shell_surface->SetStartupId("test");
+  EXPECT_EQ("test", *ShellSurface::GetStartupId(window));
+}
+
 TEST_F(ShellSurfaceTest, Move) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));

@@ -2708,6 +2708,11 @@ class AuraSurface : public SurfaceObserver {
       surface_->SetParent(parent ? parent->surface_ : nullptr, position);
   }
 
+  void SetStartupId(const char* startup_id) {
+    if (surface_)
+      surface_->SetStartupId(startup_id);
+  }
+
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override {
     surface->RemoveSurfaceObserver(this);
@@ -2757,9 +2762,15 @@ void aura_surface_set_frame_colors(wl_client* client,
                                                        inactive_color);
 }
 
+void aura_surface_set_startup_id(wl_client* client,
+                                 wl_resource* resource,
+                                 const char* startup_id) {
+  GetUserDataAs<AuraSurface>(resource)->SetStartupId(startup_id);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame, aura_surface_set_parent,
-    aura_surface_set_frame_colors};
+    aura_surface_set_frame_colors, aura_surface_set_startup_id};
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
@@ -2850,7 +2861,7 @@ void aura_shell_get_aura_output(wl_client* client,
 const struct zaura_shell_interface aura_shell_implementation = {
     aura_shell_get_aura_surface, aura_shell_get_aura_output};
 
-const uint32_t aura_shell_version = 3;
+const uint32_t aura_shell_version = 4;
 
 void bind_aura_shell(wl_client* client,
                      void* data,

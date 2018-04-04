@@ -224,6 +224,15 @@ struct zaura_surface_interface {
 				 struct wl_resource *resource,
 				 uint32_t active_color,
 				 uint32_t inactive_color);
+        /**
+         * set the startup ID of this surface
+         *
+         * Set the startup ID.
+         * @since 4
+         */
+        void (*set_startup_id)(struct wl_client* client,
+                               struct wl_resource* resource,
+                               const char* startup_id);
 };
 
 
@@ -239,6 +248,10 @@ struct zaura_surface_interface {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_FRAME_COLORS_SINCE_VERSION 3
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_STARTUP_ID_SINCE_VERSION 4
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
 #define ZAURA_OUTPUT_SCALE_PROPERTY_ENUM

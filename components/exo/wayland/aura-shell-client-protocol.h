@@ -218,7 +218,7 @@ enum zaura_surface_frame_type {
 #define ZAURA_SURFACE_SET_FRAME 0
 #define ZAURA_SURFACE_SET_PARENT 1
 #define ZAURA_SURFACE_SET_FRAME_COLORS 2
-
+#define ZAURA_SURFACE_SET_STARTUP_ID 3
 
 /**
  * @ingroup iface_zaura_surface
@@ -232,6 +232,10 @@ enum zaura_surface_frame_type {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_FRAME_COLORS_SINCE_VERSION 3
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_STARTUP_ID_SINCE_VERSION 4
 
 /** @ingroup iface_zaura_surface */
 static inline void
@@ -295,6 +299,18 @@ zaura_surface_set_frame_colors(struct zaura_surface *zaura_surface, uint32_t act
 {
 	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
 			 ZAURA_SURFACE_SET_FRAME_COLORS, active_color, inactive_color);
+}
+
+/**
+ * @ingroup iface_zaura_surface
+ *
+ * Set the startup ID.
+ */
+static inline void zaura_surface_set_startup_id(
+    struct zaura_surface* zaura_surface,
+    const char* startup_id) {
+  wl_proxy_marshal((struct wl_proxy*)zaura_surface,
+                   ZAURA_SURFACE_SET_STARTUP_ID, startup_id);
 }
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
