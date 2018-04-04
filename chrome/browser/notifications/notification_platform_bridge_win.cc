@@ -4,26 +4,19 @@
 
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 
-#include <NotificationActivationCallback.h>
-#include <activation.h>
-#include <wrl.h>
+#include <memory>
+
 #include <wrl/client.h>
 #include <wrl/event.h>
-#include <wrl/wrappers/corewrappers.h>
-#include <memory>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/hash.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -46,13 +39,10 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
-#include "components/version_info/channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace mswr = Microsoft::WRL;
-namespace mswrw = Microsoft::WRL::Wrappers;
-
 namespace winfoundtn = ABI::Windows::Foundation;
 namespace winui = ABI::Windows::UI;
 namespace winxml = ABI::Windows::Data::Xml;
@@ -73,7 +63,7 @@ namespace {
 
 // This string needs to be max 16 characters to work on Windows 10 prior to
 // applying Creators Update (build 15063).
-const wchar_t kGroup[] = L"Notifications";
+constexpr wchar_t kGroup[] = L"Notifications";
 
 typedef winfoundtn::ITypedEventHandler<
     winui::Notifications::ToastNotification*,
@@ -511,8 +501,9 @@ class NotificationPlatformBridgeWinImpl
         continue;
       }
       if (launch_id.profile_id() != profile_id ||
-          launch_id.incognito() != incognito)
+          launch_id.incognito() != incognito) {
         continue;
+      }
       LogGetDisplayedLaunchIdStatus(GetDisplayedLaunchIdStatus::SUCCESS);
       displayed_notifications->insert(launch_id.notification_id());
     }
@@ -593,9 +584,9 @@ class NotificationPlatformBridgeWinImpl
 
     ScopedHString arguments_scoped(arguments);
     NotificationLaunchId launch_id(arguments_scoped.GetAsUTF8());
-    if (!launch_id.is_valid() || launch_id.button_index() < 0)
-      return base::nullopt;
-    return launch_id.button_index();
+    return (launch_id.is_valid() && launch_id.button_index() >= 0)
+               ? base::Optional<int>(launch_id.button_index())
+               : base::nullopt;
   }
 
   void ForwardHandleEventForTesting(
@@ -879,9 +870,11 @@ bool NotificationPlatformBridgeWin::HandleActivation(
 std::string NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
     const base::string16& launch_id_str) {
   NotificationLaunchId launch_id(base::UTF16ToUTF8(launch_id_str));
-  if (!launch_id.is_valid())
+  if (!launch_id.is_valid()) {
     LogActivationStatus(ActivationStatus::GET_PROFILE_ID_INVALID_LAUNCH_ID);
-  return launch_id.is_valid() ? launch_id.profile_id() : std::string();
+    return std::string();
+  }
+  return launch_id.profile_id();
 }
 
 // static

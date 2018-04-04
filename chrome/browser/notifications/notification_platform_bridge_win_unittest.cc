@@ -4,13 +4,14 @@
 
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 
+#include <memory>
+
 #include <windows.ui.notifications.h>
 #include <wrl/client.h>
-#include <wrl/wrappers/corewrappers.h>
-#include <memory>
 
 #include "base/hash.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,10 +35,11 @@ using message_center::Notification;
 
 namespace {
 
-const char kLaunchId[] = "0|0|Default|0|https://example.com/|notification_id";
-const char kOrigin[] = "https://www.google.com/";
-const char kNotificationId[] = "id";
-const char kProfileId[] = "Default";
+constexpr char kLaunchId[] =
+    "0|0|Default|0|https://example.com/|notification_id";
+constexpr char kOrigin[] = "https://www.google.com/";
+constexpr char kNotificationId[] = "id";
+constexpr char kProfileId[] = "Default";
 
 }  // namespace
 

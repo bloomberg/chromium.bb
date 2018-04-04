@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
@@ -181,12 +182,11 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
   run_loop.Run();
 
   // Validate the click values.
-  base::Optional<int> action_index = 1;
   EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
-  EXPECT_EQ(action_index, last_action_index_);
+  EXPECT_EQ(base::Optional<int>(1), last_action_index_);
   EXPECT_EQ(base::nullopt, last_reply_);
   EXPECT_EQ(base::nullopt, last_by_user_);
 }
@@ -211,12 +211,11 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleActivation) {
   run_loop.Run();
 
   // Validate the values.
-  base::Optional<int> action_index = 1;
   EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
-  EXPECT_EQ(action_index, last_action_index_);
+  EXPECT_EQ(base::Optional<int>(1), last_action_index_);
   EXPECT_EQ(base::nullopt, last_reply_);
   EXPECT_EQ(true, last_by_user_);
 }
