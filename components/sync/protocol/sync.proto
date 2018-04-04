@@ -618,8 +618,11 @@ message GetUpdatesMessage {
   optional int64 from_timestamp = 1;
 
   // Indicates the reason for the GetUpdatesMessage.
-  // Deprecated in M29.  We should eventually rely on GetUpdatesOrigin instead.
-  // Newer clients will support both systems during the transition period.
+  // This was *mostly* deprecated in M29.  GetUpdatesOrigin is the new way to
+  // encode the reason for the GetUpdates request, but some parts of the server
+  // still rely on this field.  It also still contains the
+  // "notifications_enabled" flag which needs to be moved elsewhere before this
+  // can be fully removed. See https://crbug.com/510165.
   optional GetUpdatesCallerInfo caller_info = 2;
 
   // Indicates whether related folders should be fetched.
@@ -704,8 +707,6 @@ message ClearServerDataResponse {
   // No result fields necessary. Success/failure is indicated in
   // ClientToServerResponse.
 };
-
-message DeprecatedMessage {};
 
 // The client must preserve, store, and resend the chip bag with
 // every request.  The server depends on the chip bag in order

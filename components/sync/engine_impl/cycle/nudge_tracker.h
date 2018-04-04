@@ -125,7 +125,12 @@ class NudgeTracker {
   // performing a sync.
   //
   // See the implementation for important information about the coalesce logic.
+  // TODO(crbug.com/510165): Remove this once the server doesn't depend on the
+  // legacy source anymore.
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource GetLegacySource() const;
+
+  // Returns the 'origin' of the GetUpdate request.
+  sync_pb::SyncEnums::GetUpdatesOrigin GetOrigin() const;
 
   // Fills a GetUpdatesTrigger message for the next GetUpdates request.  This is
   // used by the DownloadUpdatesCommand to dump lots of useful per-type state

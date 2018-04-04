@@ -23,24 +23,28 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
-using sync_pb::GetUpdatesCallerInfo;
 
 namespace syncer {
 
 namespace {
 
-bool IsConfigRelatedUpdateSourceValue(
-    GetUpdatesCallerInfo::GetUpdatesSource source) {
-  switch (source) {
-    case GetUpdatesCallerInfo::RECONFIGURATION:
-    case GetUpdatesCallerInfo::MIGRATION:
-    case GetUpdatesCallerInfo::NEW_CLIENT:
-    case GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
-    case GetUpdatesCallerInfo::PROGRAMMATIC:
+bool IsConfigRelatedUpdateOriginValue(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin) {
+  switch (origin) {
+    case sync_pb::SyncEnums::RECONFIGURATION:
+    case sync_pb::SyncEnums::MIGRATION:
+    case sync_pb::SyncEnums::NEW_CLIENT:
+    case sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE:
+    case sync_pb::SyncEnums::PROGRAMMATIC:
       return true;
-    default:
+    case sync_pb::SyncEnums::UNKNOWN_ORIGIN:
+    case sync_pb::SyncEnums::PERIODIC:
+    case sync_pb::SyncEnums::GU_TRIGGER:
+    case sync_pb::SyncEnums::RETRY:
       return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
@@ -94,13 +98,13 @@ void RunAndReset(base::Closure* task) {
 }  // namespace
 
 ConfigurationParams::ConfigurationParams()
-    : source(GetUpdatesCallerInfo::UNKNOWN) {}
+    : origin(sync_pb::SyncEnums::UNKNOWN_ORIGIN) {}
 ConfigurationParams::ConfigurationParams(
-    const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
+    sync_pb::SyncEnums::GetUpdatesOrigin origin,
     ModelTypeSet types_to_download,
     const base::Closure& ready_task,
     const base::Closure& retry_task)
-    : source(source),
+    : origin(origin),
       types_to_download(types_to_download),
       ready_task(ready_task),
       retry_task(retry_task) {
@@ -254,7 +258,7 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
 void SyncSchedulerImpl::ScheduleConfiguration(
     const ConfigurationParams& params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConfigRelatedUpdateSourceValue(params.source));
+  DCHECK(IsConfigRelatedUpdateOriginValue(params.origin));
   DCHECK_EQ(CONFIGURATION_MODE, mode_);
   DCHECK(!params.ready_task.is_null());
   DCHECK(started_) << "Scheduler must be running to configure.";
@@ -473,7 +477,7 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
   SyncCycle cycle(cycle_context_, this);
   bool success =
       syncer_->ConfigureSyncShare(pending_configure_params_->types_to_download,
-                                  pending_configure_params_->source, &cycle);
+                                  pending_configure_params_->origin, &cycle);
 
   if (success) {
     SDVLOG(2) << "Configure succeeded.";

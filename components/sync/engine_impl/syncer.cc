@@ -60,7 +60,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
     if (!DownloadAndApplyUpdates(&request_types, cycle,
                                  NormalGetUpdatesDelegate(*nudge_tracker),
                                  kCreateMobileBookmarksFolder)) {
-      return HandleCycleEnd(cycle, nudge_tracker->GetLegacySource());
+      return HandleCycleEnd(cycle, nudge_tracker->GetOrigin());
     }
   }
 
@@ -70,13 +70,12 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                                                   cycle, &commit_processor);
   cycle->mutable_status_controller()->set_commit_result(commit_result);
 
-  return HandleCycleEnd(cycle, nudge_tracker->GetLegacySource());
+  return HandleCycleEnd(cycle, nudge_tracker->GetOrigin());
 }
 
-bool Syncer::ConfigureSyncShare(
-    const ModelTypeSet& request_types,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    SyncCycle* cycle) {
+bool Syncer::ConfigureSyncShare(const ModelTypeSet& request_types,
+                                sync_pb::SyncEnums::GetUpdatesOrigin origin,
+                                SyncCycle* cycle) {
   base::AutoReset<bool> is_syncing(&is_syncing_, true);
 
   // It is possible during configuration that datatypes get unregistered from
@@ -90,9 +89,9 @@ bool Syncer::ConfigureSyncShare(
   VLOG(1) << "Configuring types " << ModelTypeSetToString(still_enabled_types);
   HandleCycleBegin(cycle);
   DownloadAndApplyUpdates(&still_enabled_types, cycle,
-                          ConfigureGetUpdatesDelegate(source),
+                          ConfigureGetUpdatesDelegate(origin),
                           kCreateMobileBookmarksFolder);
-  return HandleCycleEnd(cycle, source);
+  return HandleCycleEnd(cycle, origin);
 }
 
 bool Syncer::PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle) {
@@ -101,7 +100,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle) {
   HandleCycleBegin(cycle);
   DownloadAndApplyUpdates(&request_types, cycle, PollGetUpdatesDelegate(),
                           kCreateMobileBookmarksFolder);
-  return HandleCycleEnd(cycle, sync_pb::GetUpdatesCallerInfo::PERIODIC);
+  return HandleCycleEnd(cycle, sync_pb::SyncEnums::PERIODIC);
 }
 
 bool Syncer::PostClearServerData(SyncCycle* cycle) {
@@ -196,16 +195,15 @@ bool Syncer::ExitRequested() {
   return cancelation_signal_->IsSignalled();
 }
 
-bool Syncer::HandleCycleEnd(
-    SyncCycle* cycle,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
+bool Syncer::HandleCycleEnd(SyncCycle* cycle,
+                            sync_pb::SyncEnums::GetUpdatesOrigin origin) {
   if (ExitRequested())
     return false;
 
-  cycle->SendSyncCycleEndEventNotification(source);
+  cycle->SendSyncCycleEndEventNotification(origin);
   bool success =
       !HasSyncerError(cycle->status_controller().model_neutral_state());
-  if (success && source == sync_pb::GetUpdatesCallerInfo::PERIODIC) {
+  if (success && origin == sync_pb::SyncEnums::PERIODIC) {
     cycle->mutable_status_controller()->UpdatePollTime();
   }
 

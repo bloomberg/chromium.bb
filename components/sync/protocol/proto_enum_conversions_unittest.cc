@@ -54,6 +54,18 @@ TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {
                          sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MAX);
 }
 
+TEST_F(ProtoEnumConversionsTest, GetUpdatesOriginString) {
+  // This enum has rather scattered values, so we need multiple ranges.
+  TestEnumStringFunction(sync_pb::SyncEnums::GetUpdatesOrigin_MIN,
+                         sync_pb::SyncEnums::UNKNOWN_ORIGIN);
+  TestEnumStringFunction(sync_pb::SyncEnums::PERIODIC,
+                         sync_pb::SyncEnums::PERIODIC);
+  TestEnumStringFunction(sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE,
+                         sync_pb::SyncEnums::RECONFIGURATION);
+  TestEnumStringFunction(sync_pb::SyncEnums::GU_TRIGGER,
+                         sync_pb::SyncEnums::GetUpdatesOrigin_MAX);
+}
+
 TEST_F(ProtoEnumConversionsTest, GetResponseTypeString) {
   TestEnumStringFunction(sync_pb::CommitResponse::ResponseType_MIN,
                          sync_pb::CommitResponse::ResponseType_MAX);

@@ -49,7 +49,6 @@
 
 
 using base::TimeDelta;
-using sync_pb::GetUpdatesCallerInfo;
 
 class GURL;
 
@@ -61,25 +60,25 @@ using syncable::UNIQUE_POSITION;
 
 namespace {
 
-GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
+sync_pb::SyncEnums::GetUpdatesOrigin GetOriginFromReason(
     ConfigureReason reason) {
   switch (reason) {
     case CONFIGURE_REASON_RECONFIGURATION:
-      return GetUpdatesCallerInfo::RECONFIGURATION;
+      return sync_pb::SyncEnums::RECONFIGURATION;
     case CONFIGURE_REASON_MIGRATION:
-      return GetUpdatesCallerInfo::MIGRATION;
+      return sync_pb::SyncEnums::MIGRATION;
     case CONFIGURE_REASON_NEW_CLIENT:
-      return GetUpdatesCallerInfo::NEW_CLIENT;
+      return sync_pb::SyncEnums::NEW_CLIENT;
     case CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
     case CONFIGURE_REASON_CRYPTO:
     case CONFIGURE_REASON_CATCH_UP:
-      return GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
+      return sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE;
     case CONFIGURE_REASON_PROGRAMMATIC:
-      return GetUpdatesCallerInfo::PROGRAMMATIC;
+      return sync_pb::SyncEnums::PROGRAMMATIC;
     case CONFIGURE_REASON_UNKNOWN:
       NOTREACHED();
   }
-  return GetUpdatesCallerInfo::UNKNOWN;
+  return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
 }
 
 }  // namespace
@@ -190,7 +189,7 @@ void SyncManagerImpl::ConfigureSyncer(
   DVLOG(1) << "Configuring -"
            << "\n\t"
            << "types to download: " << ModelTypeSetToString(to_download);
-  ConfigurationParams params(GetSourceFromReason(reason), to_download,
+  ConfigurationParams params(GetOriginFromReason(reason), to_download,
                              ready_task, retry_task);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());

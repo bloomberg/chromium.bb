@@ -93,13 +93,12 @@ class SyncCycle {
 
   // Builds a thread-safe and read-only copy of the current cycle state.
   SyncCycleSnapshot TakeSnapshot() const;
-  SyncCycleSnapshot TakeSnapshotWithSource(
-      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source)
-      const;
+  SyncCycleSnapshot TakeSnapshotWithOrigin(
+      sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin) const;
 
   // Builds and sends a snapshot to the cycle context's listeners.
   void SendSyncCycleEndEventNotification(
-      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
+      sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin);
   void SendEventNotification(SyncCycleEvent::EventCause cause);
 
   void SendProtocolEvent(const ProtocolEvent& event);

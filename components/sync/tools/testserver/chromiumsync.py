@@ -33,7 +33,6 @@ import autofill_specifics_pb2
 import bookmark_specifics_pb2
 import client_commands_pb2
 import dictionary_specifics_pb2
-import get_updates_caller_info_pb2
 import extension_setting_specifics_pb2
 import extension_specifics_pb2
 import favicon_image_specifics_pb2
@@ -302,11 +301,10 @@ def SyncTypeToString(data_type):
   return SYNC_TYPE_TO_DESCRIPTOR[data_type].name
 
 
-def CallerInfoToString(caller_info_source):
-  """Formats a GetUpdatesSource enum value to a readable string."""
-  return get_updates_caller_info_pb2.GetUpdatesCallerInfo \
-      .DESCRIPTOR.enum_types_by_name['GetUpdatesSource'] \
-      .values_by_number[caller_info_source].name
+def GetUpdatesOriginToString(origin):
+  """Formats a GetUpdatesOrigin enum value to a readable string."""
+  return sync_enums_pb2.SyncEnums.DESCRIPTOR \
+      .enum_types_by_name['GetUpdatesOrigin'].values_by_number[origin].name
 
 
 def ShortDatatypeListSummary(data_types):
@@ -1581,7 +1579,7 @@ class TestServer(object):
     update_response.SetInParent()
     update_sieve = UpdateSieve(update_request, self.account.migration_history)
 
-    print CallerInfoToString(update_request.caller_info.source),
+    print GetUpdatesOriginToString(update_request.get_updates_origin),
     print update_sieve.SummarizeRequest()
 
     update_sieve.CheckMigrationState()

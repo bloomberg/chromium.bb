@@ -9,9 +9,11 @@ option optimize_for = LITE_RUNTIME;
 package sync_pb;
 
 message GetUpdatesCallerInfo {
-  // This message was deprecated in M28.  The preferred represenation of this
+  // This enum was deprecated in M28.  The preferred represenation of this
   // information is now the GetUpdatesOrigin enum, which is defined in
   // sync_enums.proto.
+  // TODO(crbug.com/510165): Remove all values except for UNKNOWN and stop
+  // filling the field once the server doesn't depend on it anymore.
   enum GetUpdatesSource {
     UNKNOWN = 0;       // The source was not set by the caller.
     FIRST_UPDATE = 1;  // First request after browser restart.  Not to
@@ -46,8 +48,10 @@ message GetUpdatesCallerInfo {
                         // a type, typically for error handling purposes.
   }
 
-  required GetUpdatesSource source = 1;
+  required GetUpdatesSource source = 1 [deprecated = true];
 
   // True only if notifications were enabled for this GetUpdateMessage.
+  // TODO(crbug.com/510165): Move this bool out of GetUpdatesCallerInfo so that
+  // GetUpdatesCallerInfo can eventually be removed.
   optional bool notifications_enabled = 2;
 };

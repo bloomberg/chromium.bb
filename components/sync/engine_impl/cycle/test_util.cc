@@ -7,29 +7,26 @@
 namespace syncer {
 namespace test_util {
 
-void SimulateGetEncryptionKeyFailed(
-    ModelTypeSet requsted_types,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    SyncCycle* cycle) {
+void SimulateGetEncryptionKeyFailed(ModelTypeSet requsted_types,
+                                    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+                                    SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(
       SERVER_RESPONSE_VALIDATION_FAILED);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateConfigureSuccess(
-    ModelTypeSet requsted_types,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    SyncCycle* cycle) {
+void SimulateConfigureSuccess(ModelTypeSet requsted_types,
+                              sync_pb::SyncEnums::GetUpdatesOrigin origin,
+                              SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateConfigureFailed(
-    ModelTypeSet requsted_types,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    SyncCycle* cycle) {
+void SimulateConfigureFailed(ModelTypeSet requsted_types,
+                             sync_pb::SyncEnums::GetUpdatesOrigin origin,
+                             SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
@@ -37,7 +34,7 @@ void SimulateConfigureFailed(
 
 void SimulateConfigureConnectionFailure(
     ModelTypeSet requsted_types,
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sync_pb::SyncEnums::GetUpdatesOrigin origin,
     SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   cycle->mutable_status_controller()->set_last_download_updates_result(
