@@ -22,7 +22,8 @@
       "benchmarks": [
         "blink_perf.image_decoder",
         "blink_perf.owp_storage",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build13-b1--device4": {
@@ -168,6 +169,7 @@
       "benchmarks": [
         "blink_perf.paint",
         "kraken",
+        "rendering.mobile",
         "smoothness.key_mobile_sites_smooth",
         "tracing.tracing_with_background_memory_infra"
       ]
@@ -199,7 +201,8 @@
       "benchmarks": [
         "blink_perf.image_decoder",
         "blink_perf.owp_storage",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build73-b1--device4": {
@@ -345,6 +348,7 @@
       "benchmarks": [
         "blink_perf.paint",
         "kraken",
+        "rendering.mobile",
         "smoothness.key_mobile_sites_smooth",
         "tracing.tracing_with_background_memory_infra"
       ]
@@ -379,7 +383,8 @@
         "blink_perf.image_decoder",
         "blink_perf.owp_storage",
         "system_health.common_desktop",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build164-b1--device4": {
@@ -478,6 +483,7 @@
     "build166-b1--device1": {
       "benchmarks": [
         "kraken",
+        "rendering.mobile",
         "loading.mobile",
         "media.mobile",
         "smoothness.tough_filters_cases"
@@ -553,7 +559,8 @@
       "benchmarks": [
         "blink_perf.image_decoder",
         "blink_perf.owp_storage",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build15-b1--device4": {
@@ -699,6 +706,7 @@
       "benchmarks": [
         "blink_perf.paint",
         "kraken",
+        "rendering.mobile",
         "smoothness.key_mobile_sites_smooth",
         "tracing.tracing_with_background_memory_infra"
       ]
@@ -731,7 +739,8 @@
         "blink_perf.image_decoder",
         "blink_perf.owp_storage",
         "system_health.common_desktop",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build112-b1--device4": {
@@ -832,6 +841,7 @@
     "build114-b1--device1": {
       "benchmarks": [
         "kraken",
+        "rendering.mobile",
         "loading.mobile",
         "media.mobile",
         "smoothness.tough_filters_cases"
@@ -919,7 +929,8 @@
         "smoothness.image_decoding_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.tough_pinch_zoom_cases",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build10-b1--device4": {
@@ -1007,6 +1018,7 @@
       "benchmarks": [
         "blink_perf.paint",
         "kraken",
+        "rendering.mobile",
         "smoothness.key_mobile_sites_smooth",
         "tracing.tracing_with_background_memory_infra"
       ]
@@ -1084,7 +1096,8 @@
       "benchmarks": [
         "blink_perf.image_decoder",
         "blink_perf.owp_storage",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build17-b1--device4": {
@@ -1113,6 +1126,7 @@
     "build17-b1--device7": {
       "benchmarks": [
         "kraken",
+        "rendering.mobile",
         "power.idle_platform"
       ]
     },
@@ -1262,7 +1276,8 @@
         "blink_perf.owp_storage",
         "speedometer-future",
         "speedometer2-future",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build245-m4--device4": {
@@ -1406,6 +1421,7 @@
       "benchmarks": [
         "blink_perf.paint",
         "kraken",
+        "rendering.mobile",
         "smoothness.key_mobile_sites_smooth",
         "tracing.tracing_with_background_memory_infra"
       ]
@@ -1485,7 +1501,8 @@
         "thread_times.tough_compositor_cases",
         "v8.browsing_desktop-future",
         "v8.browsing_mobile-future",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build30-a9": {
@@ -1516,6 +1533,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -1598,7 +1616,8 @@
         "thread_times.tough_compositor_cases",
         "v8.browsing_desktop-future",
         "v8.browsing_mobile-future",
-        "wasm"
+        "wasm",
+	"rendering.desktop"
       ]
     },
     "build105-b1": {
@@ -1630,6 +1649,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -1698,6 +1718,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -1744,6 +1765,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -1811,6 +1833,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -1858,6 +1881,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -1927,6 +1951,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -1972,6 +1997,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2001,6 +2027,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2047,6 +2074,7 @@
         "octane",
         "oortonline_tbmv2",
         "power.idle_platform",
+	"rendering.desktop",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -2162,6 +2190,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2208,6 +2237,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2277,6 +2307,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+        "rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2323,6 +2354,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2389,6 +2421,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2436,6 +2469,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2504,6 +2538,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2550,6 +2585,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2618,6 +2654,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2664,6 +2701,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2732,6 +2770,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2778,6 +2817,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2846,6 +2886,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2892,6 +2933,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2960,6 +3002,7 @@
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
+	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -3006,6 +3049,7 @@
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "rasterize_and_record_micro.partial_invalidation",
+        "rendering.mobile",
         "smoothness.desktop_tough_pinch_zoom_cases",
         "smoothness.gpu_rasterization.tough_path_rendering_cases",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -3058,6 +3102,8 @@
     "power.typical_10_mobile",
     "rasterize_and_record_micro.partial_invalidation",
     "rasterize_and_record_micro.top_25",
+    "rendering.desktop",
+    "rendering.mobile",
     "scheduler.tough_scheduling_cases",
     "smoothness.desktop_tough_pinch_zoom_cases",
     "smoothness.gpu_rasterization.polymer",
