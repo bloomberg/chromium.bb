@@ -349,4 +349,47 @@ TEST_P(DataTransferTest, NodeImageInOffsetStackingContext) {
   }
 }
 
+TEST_P(DataTransferTest, NodeImageWithLargerPositionedDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      #drag {
+        position: absolute;
+        top: 100px;
+        left: 0;
+        height: 1px;
+        width: 1px;
+        background: #00f;
+      }
+      #child {
+        position: absolute;
+        top: -1px;
+        left: 0;
+        height: 3px;
+        width: 1px;
+        background: #0f0;
+      }
+    </style>
+    <div id="drag" draggable="true">
+      <div id="child"></div>
+    </div>
+  )HTML");
+  Element& drag = *GetDocument().getElementById("drag");
+  const auto image = DataTransfer::NodeImage(GetFrame(), drag);
+
+  // The positioned #child should expand the dragged image's size.
+  constexpr int drag_width = 1;
+  constexpr int drag_height = 3;
+  EXPECT_EQ(IntSize(drag_width, drag_height), image->Size());
+
+  // The dragged image should be (drag_width x drag_height) and fully green
+  // which is the color of the #child which fully covers the dragged element.
+  Color green = 0xFF00FF00;
+  const SkBitmap& bitmap = image->Bitmap();
+  for (int x = 0; x < drag_width; ++x) {
+    for (int y = 0; y < drag_height; ++y)
+      EXPECT_EQ(green, bitmap.getColor(x, y));
+  }
+}
+
 }  // namespace blink
