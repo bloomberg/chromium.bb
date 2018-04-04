@@ -2262,9 +2262,9 @@ crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-m
 crbug.com/666993 external/wpt/requestidlecallback/callback-idle-periods.html [ Timeout ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
-crbug.com/828748 external/wpt/css/css-fonts/variations/font-shorthand.html [ Pass Crash Failure ]
-crbug.com/828748 external/wpt/css/css-fonts/variations/font-style-interpolation.html [ Pass Crash ]
-crbug.com/828748 external/wpt/css/css-fonts/variations/font-weight-lighter-bolder.html [ Pass Crash Failure ]
+crbug.com/828746 external/wpt/css/css-fonts/variations/font-shorthand.html [ Pass Crash Failure ]
+crbug.com/828746 external/wpt/css/css-fonts/variations/font-style-interpolation.html [ Pass Crash Timeout ]
+crbug.com/828747 external/wpt/css/css-fonts/variations/font-weight-lighter-bolder.html [ Pass Crash Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-011.html [ Failure Crash Pass ]
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
