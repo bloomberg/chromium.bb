@@ -617,7 +617,6 @@ void BlobBuilderFromStream::DidWriteToExtendedFile(
 }
 
 void BlobBuilderFromStream::OnError(Result result) {
-  RecordResult(result);
   if (pending_quota_task_)
     pending_quota_task_->Cancel();
 
@@ -626,6 +625,7 @@ void BlobBuilderFromStream::OnError(Result result) {
 
   if (!callback_)
     return;
+  RecordResult(result);
   std::move(callback_).Run(this, nullptr);
 }
 
