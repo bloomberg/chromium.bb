@@ -278,6 +278,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/chrome_content_browser_client_chromeos_part.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -947,6 +948,10 @@ ChromeContentBrowserClient::ChromeContentBrowserClient()
   TtsExtensionEngine* tts_extension_engine = TtsExtensionEngine::GetInstance();
   TtsController::GetInstance()->SetTtsEngineDelegate(tts_extension_engine);
 #endif
+
+#if defined(OS_CHROMEOS)
+  extra_parts_.push_back(new ChromeContentBrowserClientChromeOsPart);
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extra_parts_.push_back(new ChromeContentBrowserClientExtensionsPart);

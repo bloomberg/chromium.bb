@@ -496,6 +496,8 @@ source_set("chromeos") {
     "certificate_provider/thread_safe_certificate_map.h",
     "chrome_browser_main_chromeos.cc",
     "chrome_browser_main_chromeos.h",
+    "chrome_content_browser_client_chromeos_part.cc",
+    "chrome_content_browser_client_chromeos_part.h",
     "chrome_service_name.cc",
     "chrome_service_name.h",
     "crostini/crostini_manager.cc",
