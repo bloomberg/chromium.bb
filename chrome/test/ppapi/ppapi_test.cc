@@ -74,14 +74,13 @@ void PPAPITestMessageHandler::Reset() {
 PPAPITestBase::InfoBarObserver::InfoBarObserver(PPAPITestBase* test_base)
     : test_base_(test_base),
       expecting_infobar_(false),
-      should_accept_(false) {
-  GetInfoBarService()->AddObserver(this);
+      should_accept_(false),
+      infobar_observer_(this) {
+  infobar_observer_.Add(GetInfoBarService());
 }
 
 PPAPITestBase::InfoBarObserver::~InfoBarObserver() {
   EXPECT_FALSE(expecting_infobar_) << "Missing an expected infobar";
-
-  GetInfoBarService()->RemoveObserver(this);
 }
 
 void PPAPITestBase::InfoBarObserver::ExpectInfoBarAndAccept(
@@ -99,6 +98,11 @@ void PPAPITestBase::InfoBarObserver::OnInfoBarAdded(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&InfoBarObserver::VerifyInfoBarState, base::Unretained(this)));
+}
+
+void PPAPITestBase::InfoBarObserver::OnManagerShuttingDown(
+    infobars::InfoBarManager* manager) {
+  infobar_observer_.Remove(manager);
 }
 
 void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {

@@ -194,6 +194,11 @@ void HungPluginTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
   }
 }
 
+void HungPluginTabHelper::OnManagerShuttingDown(
+    infobars::InfoBarManager* manager) {
+  infobar_observer_.Remove(manager);
+}
+
 void HungPluginTabHelper::KillPlugin(int child_id) {
   PluginStateMap::iterator found = hung_plugins_.find(child_id);
   DCHECK(found != hung_plugins_.end());
