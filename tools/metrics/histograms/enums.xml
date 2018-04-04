@@ -4766,6 +4766,15 @@ histogram as enum -->
   <int value="4" label="FAILED_INCLUSION_PROOF_MALFORMED"/>
 </enum>
 
+<enum name="CertVerifierTrialComparisonResult">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="Equal"/>
+  <int value="2" label="Primary Valid, Secondary Error"/>
+  <int value="3" label="Primary Error, Secondary Valid"/>
+  <int value="4" label="Both Valid, Different Details"/>
+  <int value="5" label="Both Error, Different Details"/>
+</enum>
+
 <enum name="ChannelLayout">
   <int value="0" label="CHANNEL_LAYOUT_NONE"/>
   <int value="1" label="CHANNEL_LAYOUT_UNSUPPORTED"/>

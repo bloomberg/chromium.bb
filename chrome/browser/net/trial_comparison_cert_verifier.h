@@ -19,6 +19,18 @@ class CertVerifyProc;
 
 class NET_EXPORT TrialComparisonCertVerifier : public net::CertVerifier {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum TrialComparisonResult {
+    kInvalid = 0,
+    kEqual = 1,
+    kPrimaryValidSecondaryError = 2,
+    kPrimaryErrorSecondaryValid = 3,
+    kBothValidDifferentDetails = 4,
+    kBothErrorDifferentDetails = 5,
+    kMaxValue = kBothErrorDifferentDetails
+  };
+
   TrialComparisonCertVerifier(
       void* profile_id,
       scoped_refptr<net::CertVerifyProc> primary_verify_proc,
