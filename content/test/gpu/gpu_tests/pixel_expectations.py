@@ -112,6 +112,20 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
               ['linux', 'mac', 'win'], bug=744658)
 
+    # TODO(liyuqian): Prepare for Skia's AA rebaseline
+    self.Fail('Pixel_OffscreenCanvasAccelerated2D',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+
     # TODO(enne): temporarily suppress these tests until rebaselined.
     self.Fail('Pixel_2DCanvasWebGL', ['android'], bug=972546)
     self.Fail('Pixel_Canvas2DRedBox', ['android'], bug=972546)
