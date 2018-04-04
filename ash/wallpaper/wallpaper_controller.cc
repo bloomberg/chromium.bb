@@ -754,21 +754,6 @@ void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
   }
 }
 
-std::string WallpaperController::GetActiveUserWallpaperLocation() {
-  // The currently active user has index 0.
-  const mojom::UserSession* const active_user_session =
-      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
-  if (!active_user_session)
-    return std::string();
-
-  WallpaperInfo info;
-  if (!GetUserWallpaperInfo(active_user_session->user_info->account_id, &info,
-                            active_user_session->user_info->is_ephemeral)) {
-    return std::string();
-  }
-  return info.location;
-}
-
 void WallpaperController::OnDisplayConfigurationChanged() {
   gfx::Size max_display_size = GetMaxDisplaySizeInNative();
   if (current_max_display_size_ != max_display_size) {
@@ -1369,6 +1354,11 @@ void WallpaperController::IsActiveUserWallpaperControlledByPolicy(
   std::move(callback).Run(IsActiveUserWallpaperControlledByPolicyImpl());
 }
 
+void WallpaperController::GetActiveUserWallpaperLocation(
+    GetActiveUserWallpaperLocationCallback callback) {
+  std::move(callback).Run(GetActiveUserWallpaperLocationImpl());
+}
+
 void WallpaperController::ShouldShowWallpaperSetting(
     ShouldShowWallpaperSettingCallback callback) {
   std::move(callback).Run(ShouldShowWallpaperSettingImpl());
@@ -1882,7 +1872,7 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
   }
 }
 
-bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() {
+bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() const {
   // The currently active user has index 0.
   const mojom::UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
@@ -1892,7 +1882,22 @@ bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() {
                             active_user_session->user_info->is_ephemeral);
 }
 
-bool WallpaperController::ShouldShowWallpaperSettingImpl() {
+std::string WallpaperController::GetActiveUserWallpaperLocationImpl() const {
+  // The currently active user has index 0.
+  const mojom::UserSession* const active_user_session =
+      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+  if (!active_user_session)
+    return std::string();
+
+  WallpaperInfo info;
+  if (!GetUserWallpaperInfo(active_user_session->user_info->account_id, &info,
+                            active_user_session->user_info->is_ephemeral)) {
+    return std::string();
+  }
+  return info.location;
+}
+
+bool WallpaperController::ShouldShowWallpaperSettingImpl() const {
   // The currently active user has index 0.
   const mojom::UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);

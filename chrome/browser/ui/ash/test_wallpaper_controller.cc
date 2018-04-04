@@ -159,6 +159,12 @@ void TestWallpaperController::IsActiveUserWallpaperControlledByPolicy(
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::GetActiveUserWallpaperLocation(
+    ash::mojom::WallpaperController::GetActiveUserWallpaperLocationCallback
+        callback) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::ShouldShowWallpaperSetting(
     ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
         callback) {
