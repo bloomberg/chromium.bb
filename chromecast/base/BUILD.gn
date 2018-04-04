@@ -281,6 +281,7 @@ if (is_android) {
     java_files = [
       "$java_src_dir/org/chromium/chromecast/base/BiConsumer.java",
       "$java_src_dir/org/chromium/chromecast/base/BiFunction.java",
+      "$java_src_dir/org/chromium/chromecast/base/BiPredicate.java",
       "$java_src_dir/org/chromium/chromecast/base/Both.java",
       "$java_src_dir/org/chromium/chromecast/base/CircularBuffer.java",
       "$java_src_dir/org/chromium/chromecast/base/Controller.java",

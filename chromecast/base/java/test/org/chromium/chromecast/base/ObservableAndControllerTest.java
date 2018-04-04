@@ -262,6 +262,72 @@ public class ObservableAndControllerTest {
     }
 
     @Test
+    public void testFirst() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        a.first().watch(report(result, "first"));
+        a.set("first");
+        a.set("second");
+        assertThat(result, contains("enter first: first", "exit first"));
+    }
+
+    @Test
+    public void testChanges() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        a.changes().watch(report(result, "changes"));
+        a.set("first");
+        a.set("second");
+        a.set("third");
+        assertThat(result,
+                contains("enter changes: first, second", "exit changes",
+                        "enter changes: second, third"));
+    }
+
+    @Test
+    public void testChangesIsResetWhenSourceIsReset() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        a.changes().watch(report(result, "changes"));
+        a.set("first");
+        a.set("second");
+        a.reset();
+        assertThat(result, contains("enter changes: first, second", "exit changes"));
+    }
+
+    @Test
+    public void testUniqueDefault() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        a.unique().watch(report(result, "unique"));
+        a.set("hi");
+        a.set("ho");
+        a.set("hey");
+        a.set("hey");
+        a.set("hey");
+        a.set("hi");
+        assertThat(result,
+                contains("enter unique: hi", "exit unique", "enter unique: ho", "exit unique",
+                        "enter unique: hey", "exit unique", "enter unique: hi"));
+    }
+
+    @Test
+    public void testUniqueWithCustomPredicate() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        a.unique((p, s) -> p.equalsIgnoreCase(s)).watch(report(result, "unique ignore case"));
+        a.set("kale");
+        a.set("KALE");
+        a.set("steamed kale");
+        a.set("STEAMED");
+        a.set("sTeAmEd");
+        assertThat(result,
+                contains("enter unique ignore case: kale", "exit unique ignore case",
+                        "enter unique ignore case: steamed kale", "exit unique ignore case",
+                        "enter unique ignore case: STEAMED", "exit unique ignore case"));
+    }
+
+    @Test
     public void testMap() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();

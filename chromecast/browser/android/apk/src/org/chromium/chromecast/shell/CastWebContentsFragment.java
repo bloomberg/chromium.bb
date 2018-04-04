@@ -7,7 +7,6 @@ package org.chromium.chromecast.shell;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.content_public.browser.WebContents;
 
 /**
  * Fragment for displaying a WebContents in CastShell.
@@ -93,27 +91,15 @@ public class CastWebContentsFragment extends Fragment {
                     (FrameLayout) getView().findViewById(R.id.web_contents_container),
                     true /* showInFragment */);
         Bundle bundle = getArguments();
+        CastWebContentsSurfaceHelper.StartParams params =
+                CastWebContentsSurfaceHelper.StartParams.fromBundle(bundle);
+        if (params == null) return;
 
-        String uriString = CastWebContentsIntentUtils.getUriString(bundle);
-        if (uriString == null) {
-            return;
-        }
-        Uri uri = Uri.parse(uriString);
-
-        WebContents webContents = CastWebContentsIntentUtils.getWebContents(bundle);
         mAppId = CastWebContentsIntentUtils.getAppId(bundle);
         mInitialVisiblityPriority = CastWebContentsIntentUtils.getVisibilityPriority(bundle);
-        boolean touchInputEnabled = CastWebContentsIntentUtils.isTouchable(bundle);
-
-        mSurfaceHelper.onNewWebContents(uri, webContents, touchInputEnabled);
+        mSurfaceHelper.onNewStartParams(params);
         sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(mSurfaceHelper.getInstanceId(),
                 CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN));
-    }
-
-    @Override
-    public void setArguments(Bundle args) {
-        super.setArguments(args);
-        args.setClassLoader(WebContents.class.getClassLoader());
     }
 
     @Override

@@ -383,7 +383,7 @@ Example:
 }
 ```
 
-### Composing Observables with and()
+### Composing Observables with `and()`
 
 In the motivating example, we wanted to invoke a callback once *two* independent
 states have been activated.
@@ -469,7 +469,7 @@ a cost to readability. The compiler can catch you if you mess up the
 that this much work is required to read the compound data. Some methods for
 alleviating this are described below.
 
-### Imposing order dependency
+### Imposing order dependency with `andThen()`
 
 Every composition of states up to this point has been *time-independent*. For
 example, `stateA.and(stateB)` doesn't care if `stateA` or `stateB` was activated
@@ -501,6 +501,151 @@ Calling `stateA.andThen(stateB)` returns an `Observable` representing the
 `(A and then B)` state from above. The resulting `Observable` will only activate
 on the transition between `(just A)` and `(A and then B)`, and will not activate
 on the transition between `(just B)` and `(B and then A)`.
+
+### One-time callbacks with `first()`
+
+Sometimes you want to ensure that an action is only performed once, even if it's
+triggered by something that might happen more than once. With the `first()`
+method, doing so is a breeze:
+
+```java
+    Controller<Unit> windowFocusState = new Controller<>();
+    windowFocusState.first().watch(ScopeFactories.onEnter(this:: createWindow);
+    windowFocusState.set(Unit.unit()); // Will invoke createWindow()
+    windowFocusState.reset();
+    windowFocusState.set(Unit.unit()); // Does not invoke createWindow()
+```
+
+Note that the `Observable` created by `first()` will be deactivated the first
+time that the source `Observable` is deactivated:
+
+```java
+    Controller<String> messageState = new Controller<>();
+    messageState.first().watch(message -> {
+        Log.d(TAG, "first message: " + message);
+        return () -> Log.d(TAG, "first message discarded");
+    });
+    messageState.set("hello"); // Logs "first message: hello"
+    messageState.reset(); // Logs "first message discarded"
+    messageState.set("hello?"); // Nothing gets logged
+```
+
+### Compare old and new activation values with `changes()`
+
+One drawback of the `watch()` method is that it provides only the activation
+data with no other context. This is usually a good thing in that it helps with
+encapsulation, but there are a number of applications where information about
+the *previous activation* is useful. For example, say we want to log the delta
+between volume levels:
+
+```java
+    private final Controller<Integer> mVolumeLevel = new Controller<>();
+
+    private void logVolumeChanges(int oldLevel, int newLevel) {
+        if (newLevel > oldLevel) {
+            Log.d(TAG, "Volume increased by " + (newLevel - oldLevel));
+        } else if (newLevel < oldLevel) {
+            Log.d(TAG, "Volume decreased by " + (oldLevel - newLevel));
+        }
+    }
+
+    {
+        // How do we react to mVolumeLevel with logVolumeChanges()?
+        mVolumeLevel.set(0);
+    }
+
+    public void setVolume(int volume) {
+        mVolumeLevel.set(volume);
+    }
+```
+
+The problem here is that if you `watch()` `mVolumeLevel`, you will know the new
+volume, but not the old volume, so a stateless lambda will not know enough to
+call `logVolumeChanges()`.
+
+If you tried, you'd probably have to end up creating a custom `ScopeFactory`
+implementation that stores some internal state that is changed when activated.
+
+But fortunately, an easier way is provided that doesn't force you to put state
+into your `ScopeFactory`: the `changes()` method.
+
+When you call `changes()` on an `Observable`, the resulting `Observable` will
+be activated with a `Both` object containing the previous and new activation
+data. Here's how you would use it in the above example:
+
+```java
+    {
+        Observable<Both<Integer, Integer>> volumeChanges =
+                mVolumeLevel.changes()
+        volumeChanges.watch(ScopeFactories.onEnter((oldLevel, newLevel) -> {
+            logVolumeChanges(oldLevel, newLevel);
+        }));
+    }
+```
+
+Note: the above is using the `BiConsumer` version of `ScopeFactories.onEnter()`,
+so it creates a `ScopeFactory<Both<Integer, Integer>>`, which is just the type
+that we need. More info is given in the section on `ScopeFactories`.
+
+### Ignore duplicates with `unique()`
+
+Consider this:
+
+```java
+    Controller<Intege> volumeLevel = new Controller<>();
+    volumeLevel.watch(ScopeFactories.onEnter(level -> {
+        Log.d(TAG, "New volume level: " + level);
+    }));
+    volumeLevel.set(3); // Logs "New volume level: 3"
+    volumeLevel.set(3); // Logs "New volume level: 3"... again
+    volumeLevel.set(3); // Logs "New volume level: 3"... yet again
+    volumeLevel.set(4); // Logs "New volume level: 4"... finally something new!
+```
+
+What if we only care about *changes* to the volume? Well, we could modify the
+above section on `changes()` a bit, but it means we'd have to work with
+two-argument functions when we really only care about one.
+
+Fortunately, the `unique()` method is here to help:
+
+```java
+    Controller<Intege> volumeLevel = new Controller<>();
+    Observable<Integer> uniqueVolumeLevel = volumeLevel.unique();
+    uniqueVolumeLevel.watch(ScopeFactories.onEnter(level -> {
+        Log.d(TAG, "New volume level: " + level);
+    }));
+    volumeLevel.set(3); // Logs "New volume level: 3"
+    volumeLevel.set(3); // Does not log.
+    volumeLevel.set(3); // Does not log.
+    volumeLevel.set(4); // Logs "New volume level: 4"
+```
+
+The `unique()` method returns an `Observable` that is only activated when the
+source `Observable` gets *fresh* activation data, and ignores duplicate
+activations.
+
+By default `unique()` filters objects using the `equals()` method, but you can
+optionally supply a custom `BiPredicate<T, T>`, a function that compares two
+instances of `T` and returns `true` if, for your purposes, they should be
+considered "equal".
+
+For example, let's say we want to log *severe* volume changes, such as changes
+by more than 10 steps at a time:
+
+```java
+    Controller<Intege> volumeLevel = new Controller<>();
+    Observable<Integer> similarVolumeLevels = volumeLevel.unique(
+            (oldLevel, newLevel) -> {
+                return Math.abs(oldLevel - newLevel) < 10;
+            });
+    similarVolumeLevels.watch(ScopeFactories.onEnter(level -> {
+        Log.d(TAG, "Radically new volume level: " + level);
+    }));
+    volumeLevel.set(3); // Logs "Radically new volume level: 3"
+    volumeLevel.set(4); // Does not log.
+    volumeLevel.set(5); // Does not log.
+    volumeLevel.set(30); // Logs "Radically new volume level: 30"
+```
 
 ### Increase readability for ScopeFactories with wrapper methods
 

@@ -6,7 +6,9 @@ package org.chromium.chromecast.base;
 
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +69,14 @@ public class BothTest {
     @Test
     public void testAdaptBiConsumer() {
         List<String> result = new ArrayList<>();
-        Both.adapt((String a, String b) -> result.add(a + b)).apply(Both.both("A", "B"));
+        Both.adapt((String a, String b) -> { result.add(a + b); }).accept(Both.both("A", "B"));
         assertThat(result, contains("AB"));
+    }
+
+    @Test
+    public void testAdaptBiPredicate() {
+        Predicate<Both<String, String>> p = Both.adapt(String::equals);
+        assertTrue(p.test(Both.both("a", "a")));
+        assertFalse(p.test(Both.both("a", "b")));
     }
 }
