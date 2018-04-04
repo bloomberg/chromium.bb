@@ -50,7 +50,7 @@ def _ExtractImportantEnvironment(output_of_set):
           # path. Add the path to this python here so that if it's not in the
           # path when ninja is run later, python will still be found.
           setting = os.path.dirname(sys.executable) + os.pathsep + setting
-        env[var.upper()] = setting.lower()
+        env[var.upper()] = setting
         break
   if sys.platform in ('win32', 'cygwin'):
     for required in ('SYSTEMROOT', 'TEMP', 'TMP'):
@@ -117,8 +117,10 @@ def _LoadToolchainEnv(cpu, sdk_dir, target_store):
     # Check that the json file contained the same environment as the .cmd file.
     if sys.platform in ('win32', 'cygwin'):
       script = os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.cmd'))
-      assert _ExtractImportantEnvironment(variables) == \
-             _ExtractImportantEnvironment(_LoadEnvFromBat([script, '/' + cpu]))
+      arg = '/' + cpu
+      json_env = _ExtractImportantEnvironment(variables)
+      cmd_env = _ExtractImportantEnvironment(_LoadEnvFromBat([script, arg]))
+      assert _LowercaseDict(json_env) == _LowercaseDict(cmd_env)
   else:
     if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = _DetectVisualStudioPath()
@@ -165,6 +167,18 @@ def _FormatAsEnvironmentBlock(envvar_dict):
     block += key + '=' + value + nul
   block += nul
   return block
+
+
+def _LowercaseDict(d):
+  """Returns a copy of `d` with both key and values lowercased.
+
+  Args:
+    d: dict to lowercase (e.g. {'A': 'BcD'}).
+
+  Returns:
+    A dict with both keys and values lowercased (e.g.: {'a': 'bcd'}).
+  """
+  return {k.lower(): d[k].lower() for k in d}
 
 
 def main():
