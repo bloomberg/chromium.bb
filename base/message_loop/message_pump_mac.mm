@@ -918,13 +918,13 @@ bool MessagePumpMac::IsHandlingSendEvent() {
 #endif  // !defined(OS_IOS)
 
 // static
-MessagePump* MessagePumpMac::Create() {
+std::unique_ptr<MessagePump> MessagePumpMac::Create() {
   if ([NSThread isMainThread]) {
 #if defined(OS_IOS)
-    return new MessagePumpUIApplication;
+    return std::make_unique<MessagePumpUIApplication>();
 #else
     if ([NSApp conformsToProtocol:@protocol(CrAppProtocol)])
-      return new MessagePumpCrApplication;
+      return std::make_unique<MessagePumpCrApplication>();
 
     // The main-thread MessagePump implementations REQUIRE an NSApp.
     // Executables which have specific requirements for their
@@ -932,11 +932,11 @@ MessagePump* MessagePumpMac::Create() {
     // creating an event loop.
     [NSApplication sharedApplication];
     g_not_using_cr_app = true;
-    return new MessagePumpNSApplication;
+    return std::make_unique<MessagePumpNSApplication>();
 #endif
   }
 
-  return new MessagePumpNSRunLoop;
+  return std::make_unique<MessagePumpNSRunLoop>();
 }
 
 }  // namespace base

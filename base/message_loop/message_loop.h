@@ -17,6 +17,7 @@
 #include "base/message_loop/incoming_task_queue.h"
 #include "base/message_loop/message_loop_task_runner.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"
@@ -25,17 +26,6 @@
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-
-// TODO(sky): these includes should not be necessary. Nuke them.
-#if defined(OS_WIN)
-#include "base/message_loop/message_pump_win.h"
-#elif defined(OS_FUCHSIA)
-#include "base/message_loop/message_pump_fuchsia.h"
-#elif defined(OS_IOS)
-#include "base/message_loop/message_pump_io_ios.h"
-#elif defined(OS_POSIX)
-#include "base/message_loop/message_pump_libevent.h"
-#endif
 
 namespace base {
 

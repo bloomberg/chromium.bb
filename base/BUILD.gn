@@ -559,6 +559,8 @@ jumbo_component("base") {
     "message_loop/message_pump_android.h",
     "message_loop/message_pump_default.cc",
     "message_loop/message_pump_default.h",
+    "message_loop/message_pump_for_io.h",
+    "message_loop/message_pump_for_ui.h",
     "message_loop/message_pump_glib.cc",
     "message_loop/message_pump_glib.h",
     "message_loop/message_pump_io_ios.cc",
