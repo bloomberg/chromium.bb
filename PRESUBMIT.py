@@ -2711,6 +2711,27 @@ def _CheckWATCHLISTS(input_api, output_api):
   return []
 
 
+def _CheckNoLayoutTestChanges(input_api, output_api):
+  changed_layout_test_files = []
+  layout_tests_pattern = input_api.re.compile(
+      r'^third_party[\\\/]WebKit[\\\/]LayoutTests[\\\/].*')
+  for f in input_api.AffectedFiles(include_deletes=True):
+    local_path = f.LocalPath()
+    if input_api.re.match(layout_tests_pattern, local_path):
+      changed_layout_test_files.append(local_path)
+  if changed_layout_test_files == []:
+    return []
+  return [output_api.PresubmitError(
+      'Layout test changes are temporarily disabled by thomasanderson@.\n'
+      'They will be allowed once again when CL [1] lands.\n'
+      'If CL [1] does not land by 9pm PST, please feel free to revert the CL\n'
+      'that adds this PRESUBMIT check (CL [2]).\n'
+      '[1] https://chromium-review.googlesource.com/c/chromium/src/+/976083\n'
+      '[2] https://chromium-review.googlesource.com/c/chromium/src/+/996633\n'
+      'Changed layout test files:\n' +
+      '\n'.join(changed_layout_test_files))]
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
@@ -2786,6 +2807,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckWATCHLISTS(input_api, output_api))
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
+  results.extend(_CheckNoLayoutTestChanges(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())
