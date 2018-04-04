@@ -39,10 +39,11 @@ class KEYBOARD_EXPORT ContainerBehavior {
 
   // Used by the layout manager to intercept any bounds setting request to
   // adjust the request to different bounds, if necessary. This method gets
-  // called at any time during the keyboard's life cycle.
+  // called at any time during the keyboard's life cycle. The bounds are in
+  // global screen coordinates.
   virtual const gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
-      const gfx::Rect& requested_bounds) = 0;
+      const gfx::Rect& requested_bounds_in_screen_coords) = 0;
 
   // Used to set the bounds to the default location. This is generally called
   // during initialization, but may also be have identical behavior to

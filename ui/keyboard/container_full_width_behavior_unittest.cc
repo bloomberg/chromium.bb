@@ -18,20 +18,22 @@ class ContainerFullWidthBehaviorTest : public testing::Test {
 TEST(ContainerFullWidthBehaviorTest, AdjustSetBoundsRequest) {
   ContainerFullWidthBehavior full_width_behavior(nullptr);
 
-  gfx::Rect workspace(0, 0, 300, 200);
+  // workspace is not always necessarily positioned at the origin (e.g.
+  // secondary display).
+  gfx::Rect workspace(20, -30, 300, 200);
   gfx::Rect requested_bounds(0, 0, 10, 10);
   gfx::Rect result;
 
   // Ignore width. Stretch the bounds across the bottom of the screen.
   result =
       full_width_behavior.AdjustSetBoundsRequest(workspace, requested_bounds);
-  ASSERT_EQ(gfx::Rect(0, 190, 300, 10), result);
+  ASSERT_EQ(gfx::Rect(20, 160, 300, 10), result);
 
   // Even if the coordinates are non-zero, ignore them. Only use height.
   requested_bounds = gfx::Rect(30, 80, 20, 100);
   result =
       full_width_behavior.AdjustSetBoundsRequest(workspace, requested_bounds);
-  ASSERT_EQ(gfx::Rect(0, 100, 300, 100), result);
+  ASSERT_EQ(gfx::Rect(20, 70, 300, 100), result);
 }
 
 }  // namespace keyboard

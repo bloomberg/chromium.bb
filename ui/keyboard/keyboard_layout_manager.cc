@@ -5,6 +5,7 @@
 #include "ui/keyboard/keyboard_layout_manager.h"
 
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -36,20 +37,29 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   // resized and covers the container window. Note the contents' bound is only
   // set in OnWindowResized.
 
-  const aura::Window* root_window =
+  aura::Window* root_window =
       controller_->GetContainerWindow()->GetRootWindow();
 
   // If the keyboard has been deactivated, this reference will be null.
   if (!root_window)
     return;
 
-  const gfx::Rect new_bounds = controller_->AdjustSetBoundsRequest(
-      root_window->bounds(), requested_bounds);
+  DisplayUtil display_util;
+  const display::Display& display =
+      display_util.GetNearestDisplayToWindow(root_window);
+  const gfx::Vector2d display_offset =
+      display.bounds().origin().OffsetFromOrigin();
+
+  const gfx::Rect new_bounds =
+      controller_->AdjustSetBoundsRequest(display.bounds(),
+                                          requested_bounds + display_offset) -
+      display_offset;
 
   // Containar bounds should only be reset when the contents window bounds
   // actually change. Otherwise it interrupts the initial animation of showing
   // the keyboard. Described in crbug.com/356753.
   gfx::Rect old_bounds = contents_window_->GetTargetBounds();
+
   aura::Window::ConvertRectToTarget(contents_window_, root_window, &old_bounds);
   if (new_bounds == old_bounds)
     return;

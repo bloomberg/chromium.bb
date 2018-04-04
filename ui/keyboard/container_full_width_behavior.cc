@@ -58,19 +58,19 @@ void ContainerFullWidthBehavior::InitializeShowAnimationStartingState(
 
 const gfx::Rect ContainerFullWidthBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
-    const gfx::Rect& requested_bounds) {
+    const gfx::Rect& requested_bounds_in_screen_coords) {
   gfx::Rect new_bounds;
 
   // Honors only the height of the request bounds
-  const int keyboard_height = requested_bounds.height();
+  const int keyboard_height = requested_bounds_in_screen_coords.height();
 
-  new_bounds.set_y(display_bounds.height() - keyboard_height);
+  new_bounds.set_y(display_bounds.bottom() - keyboard_height);
   new_bounds.set_height(keyboard_height);
 
   // If shelf is positioned on the left side of screen, x is not 0. In
   // FULL_WIDTH mode, the virtual keyboard should always align with the left
-  // edge of the screen. So manually set x to 0 here.
-  new_bounds.set_x(0);
+  // edge of the screen. So manually set x to the left side of the screen.
+  new_bounds.set_x(display_bounds.x());
   new_bounds.set_width(display_bounds.width());
 
   return new_bounds;

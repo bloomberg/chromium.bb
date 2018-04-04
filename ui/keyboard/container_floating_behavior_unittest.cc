@@ -48,6 +48,13 @@ TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequest) {
                       workspace.height() - keyboard_height, keyboard_width,
                       keyboard_height),
             result);
+
+  // Try to move the keyboard to the center of the primary display while it's
+  // in a secondary display.
+  gfx::Rect secondary_display(1000, -200, 1200, 800);
+  result = floating_behavior.AdjustSetBoundsRequest(secondary_display, center);
+  // It gets clipped to the far left of this display
+  ASSERT_EQ(gfx::Rect(1000, 100, keyboard_width, keyboard_height), result);
 }
 
 TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequestVariousSides) {
