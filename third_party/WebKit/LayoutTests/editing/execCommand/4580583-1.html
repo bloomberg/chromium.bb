@@ -1,31 +1,72 @@
-<html>
-<head>
-    <style>
-    blockquote {
-        color: blue;
-        border-left: 2px solid blue;
-        margin-left: 2px;
-    }
-    </style>
-</head>
-<body>
-    <p>This tests to make sure that breaking a quoted list doesn't renumber the list.  You should see a list broken in two below, the list items numbered 1, 2, 3, 4.</p>
-    <div contenteditable="true">
-        <blockquote type="cite">
-            <ol>
-                <li>One</li>
-                <li id="two">Two</li>
-                <li>Three</li>
-                <li>Four</li>
-            </ol>
-        </blockquote>
-    </div>
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+selection_test(
+ [
+   '<div contenteditable>',
+      '<blockquote type="cite">',
+        '<ol>',
+          '<li>One</li>',
+          '<li>Two|</li>',
+          '<li>Three</li>',
+          '<li>Four</li>',
+        '</ol>',
+      '</blockquote>',
+   '</div>',
+ ],
+ 'InsertNewlineInQuotedContent',
+ [
+   '<div contenteditable>',
+      '<blockquote type="cite">',
+        '<ol>',
+          '<li>One</li>',
+          '<li>Two</li>',
+        '</ol>',
+      '</blockquote>|',
+      '<br>',
+      '<blockquote type="cite">',
+        '<ol start="3">',
+          '<li>Three</li>',
+          '<li>Four</li>',
+        '</ol>',
+      '</blockquote>',
+   '</div>',
+ ],
+ '1. InsertNewlineInQuotedContent to insert newline at end of list item');
 
-    <script>
-    li = document.getElementById("two");
-    selection = window.getSelection();
-    selection.collapse(li, li.childNodes.length);
-    document.execCommand("InsertNewlineInQuotedContent");
-    </script>
-</body>
-</html>
+selection_test(
+ [
+   '<div contenteditable>',
+      '<blockquote type="cite">',
+        '<ol>',
+          '<li>One</li>',
+          '<li>Two</li>',
+          '<li>Thr|ee</li>',
+          '<li>Four</li>',
+        '</ol>',
+      '</blockquote>',
+   '</div>',
+ ],
+ 'InsertNewlineInQuotedContent',
+ [
+   '<div contenteditable>',
+      '<blockquote type="cite">',
+        '<ol>',
+          '<li>One</li>',
+          '<li>Two</li>',
+          '<li>Thr</li>',
+        '</ol>',
+      '</blockquote>',
+      '|<br>',
+      '<blockquote type="cite">',
+        '<ol start="3">',
+          '<li>ee</li>',
+          '<li>Four</li>',
+        '</ol>',
+      '</blockquote>',
+   '</div>',
+ ],
+ '2. InsertNewlineInQuotedContent into middle of list item');
+</script>
