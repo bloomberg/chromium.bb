@@ -145,15 +145,15 @@ class SafeBrowsingURLRequestContext;
 
 namespace {
 
-net::CertVerifier* g_cert_verifier_for_testing = nullptr;
+net::CertVerifier* g_cert_verifier_for_io_thread_testing = nullptr;
 
-// A CertVerifier that forwards all requests to |g_cert_verifier_for_testing|.
-// This is used to allow IOThread to have its own
-// std::unique_ptr<net::CertVerifier> while forwarding calls to the static
-// verifier.
-class WrappedTestingCertVerifier : public net::CertVerifier {
+// A CertVerifier that forwards all requests to
+// |g_cert_verifier_for_io_thread_testing|. This is used to allow IOThread to
+// have its own std::unique_ptr<net::CertVerifier> while forwarding calls to the
+// static verifier.
+class WrappedCertVerifierForIOThreadTesting : public net::CertVerifier {
  public:
-  ~WrappedTestingCertVerifier() override = default;
+  ~WrappedCertVerifierForIOThreadTesting() override = default;
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
@@ -163,15 +163,15 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
              std::unique_ptr<Request>* out_req,
              const net::NetLogWithSource& net_log) override {
     verify_result->Reset();
-    if (!g_cert_verifier_for_testing)
+    if (!g_cert_verifier_for_io_thread_testing)
       return net::ERR_FAILED;
-    return g_cert_verifier_for_testing->Verify(params, crl_set, verify_result,
-                                               callback, out_req, net_log);
+    return g_cert_verifier_for_io_thread_testing->Verify(
+        params, crl_set, verify_result, callback, out_req, net_log);
   }
   bool SupportsOCSPStapling() override {
-    if (!g_cert_verifier_for_testing)
+    if (!g_cert_verifier_for_io_thread_testing)
       return false;
-    return g_cert_verifier_for_testing->SupportsOCSPStapling();
+    return g_cert_verifier_for_io_thread_testing->SupportsOCSPStapling();
   }
 };
 
@@ -628,7 +628,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void IOThread::SetCertVerifierForTesting(net::CertVerifier* cert_verifier) {
-  g_cert_verifier_for_testing = cert_verifier;
+  g_cert_verifier_for_io_thread_testing = cert_verifier;
 }
 
 void IOThread::UpdateServerWhitelist() {
@@ -796,8 +796,8 @@ void IOThread::ConstructSystemRequestContext() {
   builder->set_host_resolver(std::move(host_resolver));
 
   std::unique_ptr<net::CertVerifier> cert_verifier;
-  if (g_cert_verifier_for_testing) {
-    cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
+  if (g_cert_verifier_for_io_thread_testing) {
+    cert_verifier = std::make_unique<WrappedCertVerifierForIOThreadTesting>();
   } else {
 #if defined(OS_CHROMEOS)
     // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
