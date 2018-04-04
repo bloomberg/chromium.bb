@@ -47,6 +47,7 @@ namespace gpu {
 namespace gles2 {
 
 class MemoryTracker;
+class MockCopyTextureResourceManager;
 
 class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
                              public DecoderClient {
@@ -797,6 +798,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;
   base::MessageLoop message_loop_;
+
+  MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
 };
 
 class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {

@@ -43,6 +43,7 @@ class ServiceTransferCache;
 namespace gles2 {
 
 class ContextGroup;
+class CopyTextureCHROMIUMResourceManager;
 class FramebufferManager;
 class GLES2Util;
 class ImageManager;
@@ -184,6 +185,9 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
 
   virtual scoped_refptr<ShaderTranslatorInterface> GetTranslator(
       unsigned int type) = 0;
+
+  virtual void SetCopyTextureResourceManagerForTest(
+      CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager) = 0;
 
  protected:
   GLES2Decoder(CommandBufferServiceBase* command_buffer_service,

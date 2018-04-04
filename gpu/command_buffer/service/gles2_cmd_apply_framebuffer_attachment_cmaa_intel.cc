@@ -244,7 +244,7 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
         ApplyCMAAEffectTexture(source_texture, rgba8_texture_, do_copy);
 
         // Source format for DoCopySubTexture is always GL_RGBA8.
-        CopyTextureMethod method = DIRECT_COPY;
+        CopyTextureMethod method = CopyTextureMethod::DIRECT_COPY;
         bool copy_tex_image_format_valid =
             !GLES2Util::IsIntegerFormat(internal_format) &&
             GLES2Util::GetColorEncodingFromInternalFormat(internal_format) !=
@@ -260,7 +260,7 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
           }
         }
         if (!copy_tex_image_format_valid)
-          method = DIRECT_DRAW;
+          method = CopyTextureMethod::DIRECT_DRAW;
         bool color_renderable =
             Texture::ColorRenderable(decoder->GetFeatureInfo(), internal_format,
                                      texture->texture()->IsImmutable());
@@ -270,10 +270,10 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
         // TODO(dshwang): After Mesa fixes this issue, remove this hack.
         // https://bugs.freedesktop.org/show_bug.cgi?id=98478, crbug.com/535198.
         if (color_renderable)
-          method = DIRECT_DRAW;
+          method = CopyTextureMethod::DIRECT_DRAW;
 #endif
-        if (method == DIRECT_DRAW && !color_renderable)
-          method = DRAW_AND_COPY;
+        if (method == CopyTextureMethod::DIRECT_DRAW && !color_renderable)
+          method = CopyTextureMethod::DRAW_AND_COPY;
 
         // LUMINANCE, LUMINANCE_ALPHA and ALPHA textures aren't
         // renderable, so we don't need to pass in the luma emulation

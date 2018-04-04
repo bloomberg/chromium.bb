@@ -10,7 +10,9 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/logger.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -489,6 +491,155 @@ bool GetCompressedTexSizeInBytes(const char* function_name,
 
   *size_in_bytes = bytes_required.ValueOrDefault(0);
   return true;
+}
+
+bool ValidateCopyTexFormatHelper(const FeatureInfo* feature_info,
+                                 GLenum internal_format,
+                                 GLenum read_format,
+                                 GLenum read_type,
+                                 std::string* output_error_msg) {
+  DCHECK(output_error_msg);
+  if (read_format == 0) {
+    *output_error_msg = std::string("no valid color image");
+    return false;
+  }
+  // Check we have compatible formats.
+  uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
+  uint32_t channels_needed = GLES2Util::GetChannelsForFormat(internal_format);
+  if (!channels_needed ||
+      (channels_needed & channels_exist) != channels_needed) {
+    *output_error_msg = std::string("incompatible format");
+    return false;
+  }
+  if (feature_info->IsWebGL2OrES3Context()) {
+    GLint color_encoding =
+        GLES2Util::GetColorEncodingFromInternalFormat(read_format);
+    bool float_mismatch = feature_info->ext_color_buffer_float_available()
+                              ? (GLES2Util::IsIntegerFormat(internal_format) !=
+                                 GLES2Util::IsIntegerFormat(read_format))
+                              : GLES2Util::IsFloatFormat(internal_format);
+    if (color_encoding !=
+            GLES2Util::GetColorEncodingFromInternalFormat(internal_format) ||
+        float_mismatch ||
+        (GLES2Util::IsSignedIntegerFormat(internal_format) !=
+         GLES2Util::IsSignedIntegerFormat(read_format)) ||
+        (GLES2Util::IsUnsignedIntegerFormat(internal_format) !=
+         GLES2Util::IsUnsignedIntegerFormat(read_format))) {
+      *output_error_msg = std::string("incompatible format");
+      return false;
+    }
+  }
+  if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
+    *output_error_msg =
+        std::string("can not be used with depth or stencil textures");
+    return false;
+  }
+  if (feature_info->IsWebGL2OrES3Context() ||
+      (feature_info->feature_flags().chromium_color_buffer_float_rgb &&
+       internal_format == GL_RGB32F) ||
+      (feature_info->feature_flags().chromium_color_buffer_float_rgba &&
+       internal_format == GL_RGBA32F)) {
+    if (GLES2Util::IsSizedColorFormat(internal_format)) {
+      int sr, sg, sb, sa;
+      GLES2Util::GetColorFormatComponentSizes(read_format, read_type, &sr, &sg,
+                                              &sb, &sa);
+      DCHECK(sr > 0 || sg > 0 || sb > 0 || sa > 0);
+      int dr, dg, db, da;
+      GLES2Util::GetColorFormatComponentSizes(internal_format, 0, &dr, &dg, &db,
+                                              &da);
+      DCHECK(dr > 0 || dg > 0 || db > 0 || da > 0);
+      if ((dr > 0 && sr != dr) || (dg > 0 && sg != dg) ||
+          (db > 0 && sb != db) || (da > 0 && sa != da)) {
+        *output_error_msg = std::string("incompatible color component sizes");
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
+                                               GLenum source_target,
+                                               GLint source_level,
+                                               GLenum source_internal_format,
+                                               GLenum source_type,
+                                               GLenum dest_target,
+                                               GLint dest_level,
+                                               GLenum dest_internal_format,
+                                               bool flip_y,
+                                               bool premultiply_alpha,
+                                               bool unpremultiply_alpha,
+                                               bool dither) {
+  bool premultiply_alpha_change = premultiply_alpha ^ unpremultiply_alpha;
+  bool source_format_color_renderable =
+      Texture::ColorRenderable(feature_info, source_internal_format, false);
+  bool dest_format_color_renderable =
+      Texture::ColorRenderable(feature_info, dest_internal_format, false);
+  std::string output_error_msg;
+
+  switch (dest_internal_format) {
+#if defined(OS_MACOSX)
+    // RGB5_A1 is not color-renderable on NVIDIA Mac, see
+    // https://crbug.com/676209.
+    case GL_RGB5_A1:
+      return CopyTextureMethod::DRAW_AND_READBACK;
+#endif
+    // RGB9_E5 isn't accepted by glCopyTexImage2D if underlying context is ES.
+    case GL_RGB9_E5:
+      if (feature_info->gl_version_info().is_es)
+        return CopyTextureMethod::DRAW_AND_READBACK;
+      break;
+    // SRGB format has color-space conversion issue. WebGL spec doesn't define
+    // clearly if linear-to-srgb color space conversion is required or not when
+    // uploading DOM elements to SRGB textures. WebGL conformance test expects
+    // no linear-to-srgb conversion, while current GPU path for
+    // CopyTextureCHROMIUM does the conversion. Do a fallback path before the
+    // issue is resolved. see https://github.com/KhronosGroup/WebGL/issues/2165.
+    // TODO(qiankun.miao@intel.com): revisit this once the above issue is
+    // resolved.
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+    case GL_SRGB8:
+    case GL_SRGB8_ALPHA8:
+      if (feature_info->IsWebGLContext())
+        return CopyTextureMethod::DRAW_AND_READBACK;
+      break;
+    default:
+      break;
+  }
+
+  // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
+  // GL_BGRA8_EXT. https://crbug.com/663086.
+  bool copy_tex_image_format_valid =
+      source_internal_format != GL_BGRA_EXT &&
+      dest_internal_format != GL_BGRA_EXT &&
+      source_internal_format != GL_BGRA8_EXT &&
+      dest_internal_format != GL_BGRA8_EXT &&
+      ValidateCopyTexFormatHelper(feature_info, dest_internal_format,
+                                  source_internal_format, source_type,
+                                  &output_error_msg);
+
+  // TODO(qiankun.miao@intel.com): for WebGL 2.0 or OpenGL ES 3.0, both
+  // DIRECT_DRAW path for dest_level > 0 and DIRECT_COPY path for source_level >
+  // 0 are not available due to a framebuffer completeness bug:
+  // https://crbug.com/678526. Once the bug is fixed, the limitation for WebGL
+  // 2.0 and OpenGL ES 3.0 can be lifted. For WebGL 1.0 or OpenGL ES 2.0,
+  // DIRECT_DRAW path isn't available for dest_level > 0 due to level > 0 isn't
+  // supported by glFramebufferTexture2D in ES2 context. DIRECT_DRAW path isn't
+  // available for cube map dest texture either due to it may be cube map
+  // incomplete. Go to DRAW_AND_COPY path in these cases.
+  if (source_target == GL_TEXTURE_2D &&
+      (dest_target == GL_TEXTURE_2D || dest_target == GL_TEXTURE_CUBE_MAP) &&
+      source_format_color_renderable && copy_tex_image_format_valid &&
+      source_level == 0 && !flip_y && !premultiply_alpha_change && !dither)
+    return CopyTextureMethod::DIRECT_COPY;
+  if (dest_format_color_renderable && dest_level == 0 &&
+      dest_target != GL_TEXTURE_CUBE_MAP)
+    return CopyTextureMethod::DIRECT_DRAW;
+
+  // Draw to a fbo attaching level 0 of an intermediate texture,
+  // then copy from the fbo to dest texture level with glCopyTexImage2D.
+  return CopyTextureMethod::DRAW_AND_COPY;
 }
 
 }  // namespace gles2

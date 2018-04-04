@@ -10,7 +10,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
@@ -21,7 +20,7 @@ namespace gles2 {
 
 class CopyTexImageResourceManager;
 
-enum CopyTextureMethod {
+enum class CopyTextureMethod {
   // Use CopyTex{Sub}Image2D to copy from the source to the destination.
   DIRECT_COPY,
   // Draw from the source to the destination texture.
@@ -48,58 +47,63 @@ enum CopyTextureMethod {
 // The target of |dest_id| texture must be GL_TEXTURE_2D.
 class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
  public:
-  CopyTextureCHROMIUMResourceManager();
-  ~CopyTextureCHROMIUMResourceManager();
+  virtual ~CopyTextureCHROMIUMResourceManager();
 
-  void Initialize(const DecoderContext* decoder,
-                  const gles2::FeatureInfo::FeatureFlags& feature_flags);
-  void Destroy();
+  // Factory generating a real implementation.
+  static CopyTextureCHROMIUMResourceManager* Create();
 
-  void DoCopyTexture(const DecoderContext* decoder,
-                     GLenum source_target,
-                     GLuint source_id,
-                     GLint source_level,
-                     GLenum source_internal_format,
-                     GLenum dest_target,
-                     GLuint dest_id,
-                     GLint dest_level,
-                     GLenum dest_internal_format,
-                     GLsizei width,
-                     GLsizei height,
-                     bool flip_y,
-                     bool premultiply_alpha,
-                     bool unpremultiply_alpha,
-                     bool dither,
-                     CopyTextureMethod method,
-                     CopyTexImageResourceManager* luma_emulation_blitter);
+  virtual void Initialize(
+      const DecoderContext* decoder,
+      const gles2::FeatureInfo::FeatureFlags& feature_flags) = 0;
+  virtual void Destroy() = 0;
 
-  void DoCopySubTexture(const DecoderContext* decoder,
-                        GLenum source_target,
-                        GLuint source_id,
-                        GLint source_level,
-                        GLenum source_internal_format,
-                        GLenum dest_target,
-                        GLuint dest_id,
-                        GLint dest_level,
-                        GLenum dest_internal_format,
-                        GLint xoffset,
-                        GLint yoffset,
-                        GLint x,
-                        GLint y,
-                        GLsizei width,
-                        GLsizei height,
-                        GLsizei dest_width,
-                        GLsizei dest_height,
-                        GLsizei source_width,
-                        GLsizei source_height,
-                        bool flip_y,
-                        bool premultiply_alpha,
-                        bool unpremultiply_alpha,
-                        bool dither,
-                        CopyTextureMethod method,
-                        CopyTexImageResourceManager* luma_emulation_blitter);
+  virtual void DoCopyTexture(
+      const DecoderContext* decoder,
+      GLenum source_target,
+      GLuint source_id,
+      GLint source_level,
+      GLenum source_internal_format,
+      GLenum dest_target,
+      GLuint dest_id,
+      GLint dest_level,
+      GLenum dest_internal_format,
+      GLsizei width,
+      GLsizei height,
+      bool flip_y,
+      bool premultiply_alpha,
+      bool unpremultiply_alpha,
+      bool dither,
+      CopyTextureMethod method,
+      CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
-  void DoCopySubTextureWithTransform(
+  virtual void DoCopySubTexture(
+      const DecoderContext* decoder,
+      GLenum source_target,
+      GLuint source_id,
+      GLint source_level,
+      GLenum source_internal_format,
+      GLenum dest_target,
+      GLuint dest_id,
+      GLint dest_level,
+      GLenum dest_internal_format,
+      GLint xoffset,
+      GLint yoffset,
+      GLint x,
+      GLint y,
+      GLsizei width,
+      GLsizei height,
+      GLsizei dest_width,
+      GLsizei dest_height,
+      GLsizei source_width,
+      GLsizei source_height,
+      bool flip_y,
+      bool premultiply_alpha,
+      bool unpremultiply_alpha,
+      bool dither,
+      CopyTextureMethod method,
+      CopyTexImageResourceManager* luma_emulation_blitter) = 0;
+
+  virtual void DoCopySubTextureWithTransform(
       const DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
@@ -124,13 +128,13 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool unpremultiply_alpha,
       bool dither,
       const GLfloat transform_matrix[16],
-      CopyTexImageResourceManager* luma_emulation_blitter);
+      CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
   // This will apply a transform on the texture coordinates before sampling
   // the source texture and copying to the destination texture. The transform
   // matrix should be given in column-major form, so it can be passed
   // directly to GL.
-  void DoCopyTextureWithTransform(
+  virtual void DoCopyTextureWithTransform(
       const DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
@@ -147,77 +151,15 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool unpremultiply_alpha,
       bool dither,
       const GLfloat transform_matrix[16],
-      CopyTexImageResourceManager* luma_emulation_blitter);
+      CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
 
+ protected:
+  CopyTextureCHROMIUMResourceManager();
+
  private:
-  struct ProgramInfo {
-    ProgramInfo()
-        : program(0u),
-          vertex_dest_mult_handle(0u),
-          vertex_dest_add_handle(0u),
-          vertex_source_mult_handle(0u),
-          vertex_source_add_handle(0u),
-          tex_coord_transform_handle(0u),
-          sampler_handle(0u) {}
-
-    GLuint program;
-
-    // Transformations that map from the original quad coordinates [-1, 1] into
-    // the destination texture's quad coordinates.
-    GLuint vertex_dest_mult_handle;
-    GLuint vertex_dest_add_handle;
-
-    // Transformations that map from the original quad coordinates [-1, 1] into
-    // the source texture's texture coordinates.
-    GLuint vertex_source_mult_handle;
-    GLuint vertex_source_add_handle;
-
-    GLuint tex_coord_transform_handle;
-    GLuint sampler_handle;
-  };
-
-  void DoCopyTextureInternal(
-      const DecoderContext* decoder,
-      GLenum source_target,
-      GLuint source_id,
-      GLint source_level,
-      GLenum source_format,
-      GLenum dest_target,
-      GLuint dest_id,
-      GLint dest_level,
-      GLenum dest_format,
-      GLint xoffset,
-      GLint yoffset,
-      GLint x,
-      GLint y,
-      GLsizei width,
-      GLsizei height,
-      GLsizei dest_width,
-      GLsizei dest_height,
-      GLsizei source_width,
-      GLsizei source_height,
-      bool flip_y,
-      bool premultiply_alpha,
-      bool unpremultiply_alpha,
-      bool dither,
-      const GLfloat transform_matrix[16],
-      CopyTexImageResourceManager* luma_emulation_blitter);
-
-  bool initialized_;
-  bool nv_egl_stream_consumer_external_;
-  typedef std::vector<GLuint> ShaderVector;
-  ShaderVector vertex_shaders_;
-  ShaderVector fragment_shaders_;
-  typedef int ProgramMapKey;
-  typedef base::hash_map<ProgramMapKey, ProgramInfo> ProgramMap;
-  ProgramMap programs_;
-  GLuint vertex_array_object_id_;
-  GLuint buffer_id_;
-  GLuint framebuffer_;
-
   DISALLOW_COPY_AND_ASSIGN(CopyTextureCHROMIUMResourceManager);
 };
 
