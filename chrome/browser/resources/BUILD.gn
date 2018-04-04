@@ -7,6 +7,15 @@ import("//tools/grit/grit_rule.gni")
 
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
+if (closure_compile) {
+  group("closure_compile") {
+    deps = [
+      "engagement:closure_compile",
+      "md_bookmarks:closure_compile",
+    ]
+  }
+}
+
 grit("invalidations_resources") {
   source = "invalidations_resources.grd"
   defines = chrome_grit_defines

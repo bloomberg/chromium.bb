@@ -26,7 +26,6 @@
         '<(DEPTH)/chrome/browser/resources/cryptotoken/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/download_internals/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/extensions/compiled_resources2.gyp:*',
-        '<(DEPTH)/chrome/browser/resources/md_bookmarks/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_downloads/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_extensions/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_history/compiled_resources2.gyp:*',
