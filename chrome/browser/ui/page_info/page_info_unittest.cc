@@ -29,6 +29,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
@@ -45,6 +46,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
@@ -93,6 +95,20 @@ class MockPageInfoUI : public PageInfoUI {
                                         std::move(chosen_object_info_list));
     }
   }
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  std::unique_ptr<PageInfoUI::SecurityDescription>
+  CreateSecurityDescriptionForPasswordReuse() const override {
+    std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
+        new PageInfoUI::SecurityDescription());
+    security_description->summary_style = SecuritySummaryColor::RED;
+    security_description->summary =
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER);
+    security_description->details =
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+    return security_description;
+  }
+#endif
 
   base::Callback<void(const PermissionInfoList& permission_info_list,
                       ChosenObjectInfoList chosen_object_info_list)>

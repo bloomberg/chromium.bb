@@ -85,7 +85,7 @@ void PageInfoPopupAndroid::RecordPageInfoAction(
 void PageInfoPopupAndroid::SetIdentityInfo(const IdentityInfo& identity_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
-      identity_info.GetSecurityDescription();
+      GetSecurityDescription(identity_info);
 
   Java_PageInfoPopup_setSecurityDescription(
       env, popup_jobject_,

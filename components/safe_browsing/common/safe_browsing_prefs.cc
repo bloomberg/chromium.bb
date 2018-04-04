@@ -180,6 +180,10 @@ const char kSafeBrowsingWhitelistDomains[] =
     "safebrowsing.safe_browsing_whitelist_domains";
 const char kPasswordProtectionChangePasswordURL[] =
     "safebrowsing.password_protection_change_password_url";
+const char kPasswordProtectionEnterpriseName[] =
+    "safebrowsing.password_protection_enterprise_name";
+const char kPasswordProtectionEnterpriseEmailDomain[] =
+    "safebrowsing.password_protection_enterprise_email_domain";
 const char kPasswordProtectionLoginURLs[] =
     "safebrowsing.password_protection_login_urls";
 const char kPasswordProtectionWarningTrigger[] =
@@ -381,6 +385,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
   registry->RegisterListPref(prefs::kSafeBrowsingWhitelistDomains);
   registry->RegisterStringPref(prefs::kPasswordProtectionChangePasswordURL, "");
+  registry->RegisterStringPref(prefs::kPasswordProtectionEnterpriseName, "");
+  registry->RegisterStringPref(prefs::kPasswordProtectionEnterpriseEmailDomain,
+                               "");
   registry->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
                                 PASSWORD_PROTECTION_OFF);

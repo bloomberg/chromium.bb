@@ -75,6 +75,10 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #endif
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#endif
+
 using bubble_anchor_util::GetPageInfoAnchorRect;
 using bubble_anchor_util::GetPageInfoAnchorView;
 using views::GridLayout;
@@ -869,7 +873,7 @@ void PageInfoBubbleView::SetPermissionInfo(
 
 void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
-      identity_info.GetSecurityDescription();
+      GetSecurityDescription(identity_info);
 
   // Set the bubble title, update the title label text, then apply color.
   set_window_title(security_description->summary);
@@ -944,6 +948,25 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   Layout();
   SizeToContents();
 }
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+std::unique_ptr<PageInfoUI::SecurityDescription>
+PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
+  std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
+      new PageInfoUI::SecurityDescription());
+  security_description->summary_style = SecuritySummaryColor::RED;
+  security_description->summary =
+      safe_browsing::PasswordProtectionService::ShouldShowSofterWarning()
+          ? l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER)
+          : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
+  security_description->details =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(profile_)
+              ->GetWarningDetailText();
+  return security_description;
+}
+#endif
 
 views::View* PageInfoBubbleView::CreateSiteSettingsView() {
   views::View* site_settings_view = new views::View();

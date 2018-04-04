@@ -97,9 +97,8 @@ constexpr CGFloat kBaselineAdjust = 1;
   CGFloat textWidth = width - kIconSize - kIconGap;
 
   messageField_.reset([constrained_window::AddTextField(
-      [self view],
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS),
-      chrome_style::kTextFontStyle) retain]);
+      [self view], owner_->GetWarningDetailText(), chrome_style::kTextFontStyle)
+      retain]);
 
   [messageField_
       setFrame:constrained_window::ComputeFrame(

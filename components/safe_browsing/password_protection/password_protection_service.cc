@@ -841,16 +841,12 @@ bool PasswordProtectionService::IsModalWarningShowingInWebContents(
 
 bool PasswordProtectionService::IsWarningEnabled() {
   return base::FeatureList::IsEnabled(kGoogleBrandedPhishingWarning) &&
-         GetSyncAccountType() !=
-             LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN &&
          GetPasswordProtectionTriggerPref(
              prefs::kPasswordProtectionWarningTrigger) == PHISHING_REUSE;
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
   return base::FeatureList::IsEnabled(kGaiaPasswordReuseReporting) &&
-         GetSyncAccountType() !=
-             LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN &&
          GetPasswordProtectionTriggerPref(
              prefs::kPasswordProtectionRiskTrigger) == PHISHING_REUSE;
 }

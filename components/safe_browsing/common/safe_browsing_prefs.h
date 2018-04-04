@@ -65,6 +65,14 @@ extern const char kSafeBrowsingWhitelistDomains[];
 // also captures new password on this page in a change password event.
 extern const char kPasswordProtectionChangePasswordURL[];
 
+// String indicating the organization name that should be include in the
+// password reuse warning text.
+extern const char kPasswordProtectionEnterpriseName[];
+
+// String indicating the enterprise email domain that is covered by password
+// protection.
+extern const char kPasswordProtectionEnterpriseEmailDomain[];
+
 // List of string indicating the URL(s) users use to log in. Password protection
 // service will capture passwords on these URLs.
 // This is managed by enterprise policy and has no effect on users who are not

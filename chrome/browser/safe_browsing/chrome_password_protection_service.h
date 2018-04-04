@@ -139,6 +139,15 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsURLWhitelistedForPasswordEntry(const GURL& url,
                                         RequestOutcome* reason) const override;
 
+  // Gets the type of sync account associated with current profile or
+  // |NOT_SIGNED_IN|.
+  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() const override;
+
+  // Gets the detailed warning text that should show in the modal warning dialog
+  // and page info bubble.
+  base::string16 GetWarningDetailText();
+
  protected:
   // PasswordProtectionService overrides.
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this
@@ -162,9 +171,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) override;
 
-  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() const override;
-
   void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,
       PasswordProtectionService::RequestOutcome outcome,
@@ -181,7 +187,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       const history::URLRows& deleted_rows) override;
 
   // Gets |account_info_| based on |profile_|.
-  AccountInfo GetAccountInfo() const;
+  virtual AccountInfo GetAccountInfo() const;
 
   void HandleUserActionOnModalWarning(
       content::WebContents* web_contents,
