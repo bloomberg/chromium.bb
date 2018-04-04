@@ -251,8 +251,7 @@ bool DocumentWebSocketChannel::Connect(
     return true;
   }
 
-  handle_->Initialize(std::move(socket_ptr));
-  handle_->Connect(url, protocols,
+  handle_->Connect(std::move(socket_ptr), url, protocols,
                    loading_context_->GetFetchContext()->GetSiteForCookies(),
                    loading_context_->GetExecutionContext()->UserAgent(), this,
                    loading_context_->GetExecutionContext()

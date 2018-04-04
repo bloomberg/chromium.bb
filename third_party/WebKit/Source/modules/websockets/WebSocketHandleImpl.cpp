@@ -34,22 +34,17 @@ WebSocketHandleImpl::~WebSocketHandleImpl() {
     websocket_->StartClosingHandshake(kAbnormalShutdownOpCode, g_empty_string);
 }
 
-void WebSocketHandleImpl::Initialize(
-    network::mojom::blink::WebSocketPtr websocket) {
-  NETWORK_DVLOG(1) << this << " initialize(...)";
-
-  DCHECK(!websocket_);
-  websocket_ = std::move(websocket);
-  websocket_.set_connection_error_with_reason_handler(WTF::Bind(
-      &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
-}
-
-void WebSocketHandleImpl::Connect(const KURL& url,
+void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
+                                  const KURL& url,
                                   const Vector<String>& protocols,
                                   const KURL& site_for_cookies,
                                   const String& user_agent_override,
                                   WebSocketHandleClient* client,
                                   base::SingleThreadTaskRunner* task_runner) {
+  DCHECK(!websocket_);
+  websocket_ = std::move(websocket);
+  websocket_.set_connection_error_with_reason_handler(WTF::Bind(
+      &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
   DCHECK(websocket_);
 
   NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ")";
