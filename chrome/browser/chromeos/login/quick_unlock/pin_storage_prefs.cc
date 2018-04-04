@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/base64.h"
@@ -46,31 +46,31 @@ std::string ComputeSecret(const std::string& pin,
 }  // namespace
 
 // static
-void PinStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void PinStoragePrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // Mark it as PUBLIC so ash could access this pref.
   registry->RegisterStringPref(ash::prefs::kQuickUnlockPinSalt, "",
                                PrefRegistry::PUBLIC);
   registry->RegisterStringPref(prefs::kQuickUnlockPinSecret, "");
 }
 
-PinStorage::PinStorage(PrefService* pref_service)
+PinStoragePrefs::PinStoragePrefs(PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-PinStorage::~PinStorage() {}
+PinStoragePrefs::~PinStoragePrefs() {}
 
-void PinStorage::AddUnlockAttempt() {
+void PinStoragePrefs::AddUnlockAttempt() {
   ++unlock_attempt_count_;
 }
 
-void PinStorage::ResetUnlockAttemptCount() {
+void PinStoragePrefs::ResetUnlockAttemptCount() {
   unlock_attempt_count_ = 0;
 }
 
-bool PinStorage::IsPinSet() const {
+bool PinStoragePrefs::IsPinSet() const {
   return !PinSalt().empty() && !PinSecret().empty();
 }
 
-void PinStorage::SetPin(const std::string& pin) {
+void PinStoragePrefs::SetPin(const std::string& pin) {
   const std::string salt = CreateSalt();
   const std::string secret =
       ComputeSecret(pin, salt, Key::KEY_TYPE_PASSWORD_PLAIN);
@@ -79,20 +79,20 @@ void PinStorage::SetPin(const std::string& pin) {
   pref_service_->SetString(prefs::kQuickUnlockPinSecret, secret);
 }
 
-void PinStorage::RemovePin() {
+void PinStoragePrefs::RemovePin() {
   pref_service_->SetString(ash::prefs::kQuickUnlockPinSalt, "");
   pref_service_->SetString(prefs::kQuickUnlockPinSecret, "");
 }
 
-std::string PinStorage::PinSalt() const {
+std::string PinStoragePrefs::PinSalt() const {
   return pref_service_->GetString(ash::prefs::kQuickUnlockPinSalt);
 }
 
-std::string PinStorage::PinSecret() const {
+std::string PinStoragePrefs::PinSecret() const {
   return pref_service_->GetString(prefs::kQuickUnlockPinSecret);
 }
 
-bool PinStorage::IsPinAuthenticationAvailable() const {
+bool PinStoragePrefs::IsPinAuthenticationAvailable() const {
   const bool exceeded_unlock_attempts =
       unlock_attempt_count() >= kMaximumUnlockAttempts;
 
@@ -100,8 +100,8 @@ bool PinStorage::IsPinAuthenticationAvailable() const {
          IsPinSet() && !exceeded_unlock_attempts;
 }
 
-bool PinStorage::TryAuthenticatePin(const std::string& pin,
-                                    Key::KeyType key_type) {
+bool PinStoragePrefs::TryAuthenticatePin(const std::string& pin,
+                                         Key::KeyType key_type) {
   if (!IsPinAuthenticationAvailable())
     return false;
 

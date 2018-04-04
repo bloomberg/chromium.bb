@@ -75,7 +75,8 @@ QuickUnlockModeList ComputeActiveModes(Profile* profile) {
 
   QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-  if (quick_unlock_storage && quick_unlock_storage->pin_storage()->IsPinSet())
+  if (quick_unlock_storage &&
+      quick_unlock_storage->pin_storage_prefs()->IsPinSet())
     modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
 
   return modes;
@@ -496,9 +497,9 @@ void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
         chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
 
     if (pin_credential.empty()) {
-      quick_unlock_storage->pin_storage()->RemovePin();
+      quick_unlock_storage->pin_storage_prefs()->RemovePin();
     } else {
-      quick_unlock_storage->pin_storage()->SetPin(pin_credential);
+      quick_unlock_storage->pin_storage_prefs()->SetPin(pin_credential);
       quick_unlock_storage->MarkStrongAuth();
     }
   }
