@@ -10,15 +10,66 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic.h"
 #include "chromecast/device/bluetooth/le/remote_descriptor.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_descriptor_cast.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_service_cast.h"
+#include "device/bluetooth/cast/bluetooth_utils.h"
 
 namespace device {
 namespace {
+
+BluetoothGattCharacteristic::Permissions ConvertPermissions(
+    chromecast::bluetooth_v2_shlib::Gatt::Permissions input) {
+  BluetoothGattCharacteristic::Permissions output =
+      BluetoothGattCharacteristic::PERMISSION_NONE;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PERMISSION_READ)
+    output |= BluetoothGattCharacteristic::PERMISSION_READ;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PERMISSION_READ_ENCRYPTED)
+    output |= BluetoothGattCharacteristic::PERMISSION_READ_ENCRYPTED;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PERMISSION_WRITE)
+    output |= BluetoothGattCharacteristic::PERMISSION_WRITE;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PERMISSION_WRITE_ENCRYPTED)
+    output |= BluetoothGattCharacteristic::PERMISSION_WRITE_ENCRYPTED;
+
+  // NOTE(slan): Determine the proper mapping for these.
+  // if (input & chromecast::bluetooth_v2_shlib::PERMISSION_READ_ENCRYPTED_MITM)
+  //   output |= BluetoothGattCharacteristic::PERMISSION_READ_ENCRYPTED_MITM;
+  // if (input &
+  // chromecast::bluetooth_v2_shlib::PERMISSION_WRITE_ENCRYPTED_MITM)
+  //   output |= BluetoothGattCharacteristic::PERMISSION_WRITE_ENCRYPTED_MITM;
+  // if (input & chromecast::bluetooth_v2_shlib::PERMISSION_WRITE_SIGNED)
+  //   output |= BluetoothGattCharacteristic::PERMISSION_WRITE_SIGNED;
+  // if (input & chromecast::bluetooth_v2_shlib::PERMISSION_WRITE_SIGNED_MITM)
+  //   output |= BluetoothGattCharacteristic::PERMISSION_WRITE_SIGNED_MITM;
+
+  return output;
+}
+
+BluetoothGattCharacteristic::Properties ConvertProperties(
+    chromecast::bluetooth_v2_shlib::Gatt::Properties input) {
+  BluetoothGattCharacteristic::Properties output =
+      BluetoothGattCharacteristic::PROPERTY_NONE;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_BROADCAST)
+    output |= BluetoothGattCharacteristic::PROPERTY_BROADCAST;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_READ)
+    output |= BluetoothGattCharacteristic::PROPERTY_READ;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_WRITE_NO_RESPONSE)
+    output |= BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_WRITE)
+    output |= BluetoothGattCharacteristic::PROPERTY_WRITE;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_NOTIFY)
+    output |= BluetoothGattCharacteristic::PROPERTY_NOTIFY;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_INDICATE)
+    output |= BluetoothGattCharacteristic::PROPERTY_INDICATE;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_SIGNED_WRITE)
+    output |= BluetoothGattCharacteristic::PROPERTY_AUTHENTICATED_SIGNED_WRITES;
+  if (input & chromecast::bluetooth_v2_shlib::Gatt::PROPERTY_EXTENDED_PROPS)
+    output |= BluetoothGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES;
+
+  return output;
+}
 
 // Called back when subscribing or unsubscribing to a remote characteristic.
 // If |success| is true, run |callback|. Otherwise run |error_callback|.
@@ -52,29 +103,21 @@ BluetoothRemoteGattCharacteristicCast::
     ~BluetoothRemoteGattCharacteristicCast() {}
 
 std::string BluetoothRemoteGattCharacteristicCast::GetIdentifier() const {
-  return chromecast::bluetooth::util::UuidToString(
-      remote_characteristic_->uuid());
+  return GetUUID().canonical_value();
 }
 
 BluetoothUUID BluetoothRemoteGattCharacteristicCast::GetUUID() const {
-  return BluetoothUUID(chromecast::bluetooth::util::UuidToString(
-      remote_characteristic_->uuid()));
+  return UuidToBluetoothUUID(remote_characteristic_->uuid());
 }
 
 BluetoothGattCharacteristic::Properties
 BluetoothRemoteGattCharacteristicCast::GetProperties() const {
-  // TODO(slan): Convert these from
-  // bluetooth_v2_shlib::Characteristic::properties.
-  NOTIMPLEMENTED();
-  return Properties();
+  return ConvertProperties(remote_characteristic_->properties());
 }
 
 BluetoothGattCharacteristic::Permissions
 BluetoothRemoteGattCharacteristicCast::GetPermissions() const {
-  // TODO(slan): Convert these from
-  // bluetooth_v2_shlib::Characteristic::permissions.
-  NOTIMPLEMENTED();
-  return Permissions();
+  return ConvertPermissions(remote_characteristic_->permissions());
 }
 
 const std::vector<uint8_t>& BluetoothRemoteGattCharacteristicCast::GetValue()
@@ -132,9 +175,11 @@ void BluetoothRemoteGattCharacteristicCast::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  DVLOG(2) << __func__ << " " << GetIdentifier();
+
   // |remote_characteristic_| exposes a method which writes the CCCD after
   // subscribing the GATT client to the notification. This is syntactically
-  // nicer and saves us a thread-hop, so we can ignore |ccc_descriptor| for now.
+  // nicer and saves us a thread-hop, so we can ignore |ccc_descriptor|.
   (void)ccc_descriptor;
 
   remote_characteristic_->SetRegisterNotification(
@@ -146,14 +191,14 @@ void BluetoothRemoteGattCharacteristicCast::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  DVLOG(2) << __func__ << " " << GetIdentifier();
+
   // |remote_characteristic_| exposes a method which writes the CCCD after
-  // subscribing the GATT client to the notification. This is syntactically
-  // nicer and saves us a thread-hop, so we can ignore |ccc_descriptor| for now.
+  // unsubscribing the GATT client from the notification. This is syntactically
+  // nicer and saves us a thread-hop, so we can ignore |ccc_descriptor|.
   (void)ccc_descriptor;
 
-  // TODO(slan|bcf): Should we actually be using SetRegisterNotification() here
-  // to unset the CCCD bit on the peripheral? What does the standard say?
-  remote_characteristic_->SetNotification(
+  remote_characteristic_->SetRegisterNotification(
       false,
       base::BindOnce(&OnSubscribeOrUnsubscribe, callback, error_callback));
 }

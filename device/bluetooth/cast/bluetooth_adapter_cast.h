@@ -16,6 +16,7 @@
 #include "chromecast/device/bluetooth/le/gatt_client_manager.h"
 #include "chromecast/device/bluetooth/le/le_scan_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
@@ -31,10 +32,18 @@ class BluetoothDeviceCast;
 // This class is created and called on a single thread. It makes aysnchronous
 // calls to the Cast bluetooth stack, which may live on another thread. Unless
 // noted otherwise, callbacks will always be posted on the calling thread.
-class BluetoothAdapterCast : public BluetoothAdapter,
-                             chromecast::bluetooth::GattClientManager::Observer,
-                             chromecast::bluetooth::LeScanManager::Observer {
+class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
+    : public BluetoothAdapter,
+      chromecast::bluetooth::GattClientManager::Observer,
+      chromecast::bluetooth::LeScanManager::Observer {
  public:
+  // Do not call this constructor directly; use CreateAdapter() instead. Neither
+  // |gatt_client_manager| nor |le_scan_manager| are owned by this class. Both
+  // must outlive |this|.
+  BluetoothAdapterCast(
+      chromecast::bluetooth::GattClientManager* gatt_client_manager,
+      chromecast::bluetooth::LeScanManager* le_scan_manager);
+
   // BluetoothAdapter implementation:
   std::string GetAddress() const override;
   std::string GetName() const override;
@@ -93,16 +102,30 @@ class BluetoothAdapterCast : public BluetoothAdapter,
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
-  // Creates a BluetoothAdapterCast. |callback| will be executed asynchronously
+  // Return a WeakPtr for this class. Must be called on the sequence on which
+  // this class was created.
+  // TODO(slan): Remove this once this class talks to a dedicated Bluetooth
+  // service (b/76155468)
+  base::WeakPtr<BluetoothAdapterCast> GetWeakPtr();
+
+  // |factory_cb| is used to inject a factory method from ChromecastService into
+  // this class. It will be invoked when Create() is called.
+  // TODO(slan): Remove this once this class talks to a dedicated Bluetooth
+  // service (b/76155468)
+  using FactoryCb =
+      base::RepeatingCallback<base::WeakPtr<BluetoothAdapterCast>()>;
+  static void SetFactory(FactoryCb factory_cb);
+
+  // Resets the factory callback for test scenarios.
+  static void ResetFactoryForTest();
+
+  // Creates a BluetoothAdapterCast using the |factory_cb| set in SetFactory().
+  // This method is intended to be called only by the WebBluetooth code in
+  // //device/blutooth/. |callback| will be executed asynchronously
   // on the calling sequence.
   static base::WeakPtr<BluetoothAdapter> Create(InitCallback callback);
 
  private:
-  // Neither |gatt_client_manager| nor |le_scan_manager| are owned by this
-  // class. Both must outlive |this|.
-  BluetoothAdapterCast(
-      chromecast::bluetooth::GattClientManager* gatt_client_manager,
-      chromecast::bluetooth::LeScanManager* le_scan_manager);
   ~BluetoothAdapterCast() override;
 
   // chromecast::bluetooth::GattClientManager::Observer implementation:

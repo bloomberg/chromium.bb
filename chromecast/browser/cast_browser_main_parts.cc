@@ -104,6 +104,10 @@
 #include "extensions/browser/extension_prefs.h"  // nogncheck
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#include "device/bluetooth/cast/bluetooth_adapter_cast.h"
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+
 namespace {
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -469,6 +473,13 @@ int CastBrowserMainParts::PreCreateThreads() {
 void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   memory_pressure_monitor_.reset(new CastMemoryPressureMonitor());
+
+  // base::Unretained() is safe because the browser client will outlive any
+  // component in the browser; this factory method will not be called after
+  // the browser starts to tear down.
+  device::BluetoothAdapterCast::SetFactory(base::BindRepeating(
+      &CastContentBrowserClient::CreateBluetoothAdapter,
+      base::Unretained(cast_browser_process_->browser_client())));
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
   cast_browser_process_->SetNetLog(net_log_.get());

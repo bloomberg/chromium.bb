@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/remote_descriptor.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_characteristic_cast.h"
+#include "device/bluetooth/cast/bluetooth_utils.h"
 
 namespace device {
 
@@ -26,12 +26,11 @@ BluetoothRemoteGattDescriptorCast::BluetoothRemoteGattDescriptorCast(
 BluetoothRemoteGattDescriptorCast::~BluetoothRemoteGattDescriptorCast() {}
 
 std::string BluetoothRemoteGattDescriptorCast::GetIdentifier() const {
-  return chromecast::bluetooth::util::UuidToString(remote_descriptor_->uuid());
+  return GetUUID().canonical_value();
 }
 
 BluetoothUUID BluetoothRemoteGattDescriptorCast::GetUUID() const {
-  return BluetoothUUID(
-      chromecast::bluetooth::util::UuidToString(remote_descriptor_->uuid()));
+  return UuidToBluetoothUUID(remote_descriptor_->uuid());
 }
 
 BluetoothGattCharacteristic::Permissions

@@ -406,6 +406,12 @@ component("bluetooth") {
           "cast/bluetooth_remote_gatt_descriptor_cast.h",
           "cast/bluetooth_remote_gatt_service_cast.cc",
           "cast/bluetooth_remote_gatt_service_cast.h",
+          "cast/bluetooth_utils.cc",
+          "cast/bluetooth_utils.h",
+        ]
+
+        public_deps = [
+          "//chromecast/public",
         ]
 
         deps += [

@@ -23,6 +23,7 @@ include_rules = [
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",
+  "+device/bluetooth",
   "+device/geolocation",
   "+extensions/browser",
   "+extensions/common",

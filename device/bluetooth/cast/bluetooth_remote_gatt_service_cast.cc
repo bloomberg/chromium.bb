@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
 #include "device/bluetooth/cast/bluetooth_device_cast.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_characteristic_cast.h"
+#include "device/bluetooth/cast/bluetooth_utils.h"
 
 namespace device {
 
@@ -34,12 +34,11 @@ BluetoothRemoteGattServiceCast::BluetoothRemoteGattServiceCast(
 BluetoothRemoteGattServiceCast::~BluetoothRemoteGattServiceCast() {}
 
 std::string BluetoothRemoteGattServiceCast::GetIdentifier() const {
-  return chromecast::bluetooth::util::UuidToString(remote_service_->uuid());
+  return GetUUID().canonical_value();
 }
 
 BluetoothUUID BluetoothRemoteGattServiceCast::GetUUID() const {
-  return BluetoothUUID(
-      chromecast::bluetooth::util::UuidToString(remote_service_->uuid()));
+  return UuidToBluetoothUUID(remote_service_->uuid());
 }
 
 bool BluetoothRemoteGattServiceCast::IsPrimary() const {

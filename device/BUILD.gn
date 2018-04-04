@@ -220,9 +220,16 @@ test("device_unittests") {
     deps += [ "//dbus" ]
   }
 
-  # BLE discovery: works on Linux.
   if (is_linux) {
+    # BLE discovery: works on Linux.
     sources += [ "fido/fido_ble_discovery_unittest.cc" ]
+
+    if (is_chromecast) {
+      sources += [
+        "bluetooth/cast/bluetooth_adapter_cast_unittest.cc",
+        "bluetooth/cast/bluetooth_utils_unittest.cc",
+      ]
+    }
   }
 
   if (is_mac) {
