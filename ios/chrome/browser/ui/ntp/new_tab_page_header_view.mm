@@ -102,7 +102,8 @@
   [_shadow setAlpha:0];
 }
 
-- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset {
+- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset
+                         safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   NOTREACHED();
   return 0;
 }

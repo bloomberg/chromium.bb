@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout_handset.h"
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -63,7 +64,13 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
     attributes.zIndex = 1000;
 
     // Prevent the fake omnibox from scrolling up off of the screen.
-    CGFloat minY = headerHeight - ntp_header::kMinHeaderHeight;
+    CGFloat topSafeArea = 0;
+    if (@available(iOS 11, *)) {
+      topSafeArea = self.collectionView.safeAreaInsets.top;
+    } else {
+      topSafeArea = StatusBarHeight();
+    }
+    CGFloat minY = headerHeight - ntp_header::kMinHeaderHeight - topSafeArea;
     if (contentOffset.y > minY)
       origin.y = contentOffset.y - minY;
     attributes.frame = {origin, attributes.frame.size};

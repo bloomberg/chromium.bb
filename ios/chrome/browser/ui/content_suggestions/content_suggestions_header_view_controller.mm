@@ -162,7 +162,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   if (self.headerView.cr_widthSizeClass == REGULAR &&
       self.headerView.cr_heightSizeClass == REGULAR &&
       IsUIRefreshPhase1Enabled()) {
-    CGFloat progress = [self.headerView searchFieldProgressForOffset:offset];
+    CGFloat progress =
+        [self.headerView searchFieldProgressForOffset:offset
+                                       safeAreaInsets:safeAreaInsets];
     [self.toolbarDelegate setScrollProgressForTabletOmnibox:progress];
   }
 
