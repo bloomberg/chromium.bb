@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
+
 source_set("cpp") {
   sources = [
     "safe_audio_video_checker.cc",
@@ -18,4 +20,26 @@ source_set("cpp") {
   public_deps = [
     "//chrome/services/media_gallery_util/public/mojom",
   ]
+}
+
+source_set("browser_tests") {
+  testonly = true
+
+  sources = [
+    "media_gallery_util_browsertest.cc",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    "//base",
+    "//chrome/test:test_support",
+    "//testing/gtest",
+  ]
+
+  if (media_use_ffmpeg) {
+    deps += [
+      "//third_party/ffmpeg",
+      "//third_party/ffmpeg:ffmpeg_features",
+    ]
+  }
 }
