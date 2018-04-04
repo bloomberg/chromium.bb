@@ -307,9 +307,9 @@ void ProviderAsyncFileUtil::EnsureFileExists(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &CreateFileOnUIThread, base::Passed(&context), url,
-          base::Bind(&OnCreateFileForEnsureFileExists, std::move(callback))));
+      base::BindOnce(&CreateFileOnUIThread, base::Passed(&context), url,
+                     base::BindOnce(&OnCreateFileForEnsureFileExists,
+                                    std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CreateDirectory(
@@ -324,7 +324,7 @@ void ProviderAsyncFileUtil::CreateDirectory(
       base::BindOnce(
           &CreateDirectoryOnUIThread, base::Passed(&context), url, exclusive,
           recursive,
-          base::Bind(&OnCreateDirectory, exclusive, std::move(callback))));
+          base::BindOnce(&OnCreateDirectory, exclusive, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::GetFileInfo(
@@ -335,9 +335,9 @@ void ProviderAsyncFileUtil::GetFileInfo(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&GetFileInfoOnUIThread, base::Passed(&context), url,
-                     fields,
-                     base::Bind(&OnGetFileInfo, fields, std::move(callback))));
+      base::BindOnce(
+          &GetFileInfoOnUIThread, base::Passed(&context), url, fields,
+          base::Bind(&OnGetFileInfo, fields, base::Passed(&callback))));
 }
 
 void ProviderAsyncFileUtil::ReadDirectory(
@@ -370,7 +370,7 @@ void ProviderAsyncFileUtil::Truncate(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&TruncateOnUIThread, base::Passed(&context), url, length,
-                     base::Bind(&OnTruncate, std::move(callback))));
+                     base::BindOnce(&OnTruncate, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CopyFileLocal(
@@ -386,7 +386,8 @@ void ProviderAsyncFileUtil::CopyFileLocal(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CopyEntryOnUIThread, base::Passed(&context), src_url,
-                     dest_url, base::Bind(&OnCopyEntry, std::move(callback))));
+                     dest_url,
+                     base::BindOnce(&OnCopyEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::MoveFileLocal(
@@ -401,7 +402,8 @@ void ProviderAsyncFileUtil::MoveFileLocal(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&MoveEntryOnUIThread, base::Passed(&context), src_url,
-                     dest_url, base::Bind(&OnMoveEntry, std::move(callback))));
+                     dest_url,
+                     base::BindOnce(&OnMoveEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CopyInForeignFile(
@@ -422,7 +424,7 @@ void ProviderAsyncFileUtil::DeleteFile(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, base::Passed(&context), url,
                      false,  // recursive
-                     base::Bind(&OnDeleteEntry, std::move(callback))));
+                     base::BindOnce(&OnDeleteEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::DeleteDirectory(
@@ -434,7 +436,7 @@ void ProviderAsyncFileUtil::DeleteDirectory(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, base::Passed(&context), url,
                      false,  // recursive
-                     base::Bind(&OnDeleteEntry, std::move(callback))));
+                     base::BindOnce(&OnDeleteEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::DeleteRecursively(
@@ -446,7 +448,7 @@ void ProviderAsyncFileUtil::DeleteRecursively(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, base::Passed(&context), url,
                      true,  // recursive
-                     base::Bind(&OnDeleteEntry, std::move(callback))));
+                     base::BindOnce(&OnDeleteEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CreateSnapshotFile(

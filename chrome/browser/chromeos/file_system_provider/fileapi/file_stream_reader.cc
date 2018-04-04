@@ -56,7 +56,7 @@ class FileStreamReader::OperationRunner
     file_opener_.reset(new ScopedFileOpener(
         parser.file_system(), parser.file_path(), OPEN_FILE_MODE_READ,
         base::Bind(&OperationRunner::OnOpenFileCompletedOnUIThread, this,
-                   std::move(callback))));
+                   base::Passed(&callback))));
   }
 
   // Requests reading contents of a file. |callback| will always run eventually.

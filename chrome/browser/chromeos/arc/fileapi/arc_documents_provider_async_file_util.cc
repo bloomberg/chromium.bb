@@ -27,12 +27,12 @@ namespace arc {
 namespace {
 
 void OnGetFileInfoOnUIThread(
-    const ArcDocumentsProviderRoot::GetFileInfoCallback& callback,
+    ArcDocumentsProviderRoot::GetFileInfoCallback callback,
     base::File::Error result,
     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, result, info));
+                          base::BindOnce(std::move(callback), result, info));
 }
 
 void OnReadDirectoryOnUIThread(
@@ -58,13 +58,14 @@ void OnReadDirectoryOnUIThread(
 void GetFileInfoOnUIThread(
     const storage::FileSystemURL& url,
     int fields,
-    const ArcDocumentsProviderRoot::GetFileInfoCallback& callback) {
+    ArcDocumentsProviderRoot::GetFileInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =
       ArcDocumentsProviderRootMap::GetForArcBrowserContext();
   if (!roots) {
-    OnGetFileInfoOnUIThread(callback, base::File::FILE_ERROR_SECURITY,
+    OnGetFileInfoOnUIThread(std::move(callback),
+                            base::File::FILE_ERROR_SECURITY,
                             base::File::Info());
     return;
   }
@@ -72,12 +73,14 @@ void GetFileInfoOnUIThread(
   base::FilePath path;
   ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
   if (!root) {
-    OnGetFileInfoOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND,
+    OnGetFileInfoOnUIThread(std::move(callback),
+                            base::File::FILE_ERROR_NOT_FOUND,
                             base::File::Info());
     return;
   }
 
-  root->GetFileInfo(path, base::Bind(&OnGetFileInfoOnUIThread, callback));
+  root->GetFileInfo(
+      path, base::BindOnce(&OnGetFileInfoOnUIThread, std::move(callback)));
 }
 
 void ReadDirectoryOnUIThread(

@@ -104,7 +104,7 @@ TEST_F(ArcContentFileSystemAsyncFileUtilTest, GetFileInfo) {
       std::unique_ptr<storage::FileSystemOperationContext>(),
       ExternalFileURLToFileSystemURL(externalfile_url),
       -1,  // fields
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, base::File::Error error,
              const base::File::Info& info) {
             EXPECT_EQ(base::File::FILE_OK, error);

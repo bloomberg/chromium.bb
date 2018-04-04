@@ -49,27 +49,27 @@ class FileSystemURL;
 //
 class AsyncFileUtil {
  public:
-  using StatusCallback = base::Callback<void(base::File::Error result)>;
+  using StatusCallback = base::OnceCallback<void(base::File::Error result)>;
 
   // |on_close_callback| will be called after the |file| is closed in the
   // child process. |on_close_callback|.is_null() can be true, if no operation
   // is needed on closing the file.
   using CreateOrOpenCallback =
-      base::Callback<void(base::File file,
-                          base::OnceClosure on_close_callback)>;
+      base::OnceCallback<void(base::File file,
+                              base::OnceClosure on_close_callback)>;
 
   using EnsureFileExistsCallback =
-      base::Callback<void(base::File::Error result, bool created)>;
+      base::OnceCallback<void(base::File::Error result, bool created)>;
 
   using GetFileInfoCallback =
-      base::Callback<void(base::File::Error result,
-                          const base::File::Info& file_info)>;
+      base::OnceCallback<void(base::File::Error result,
+                              const base::File::Info& file_info)>;
 
   using EntryList = std::vector<filesystem::mojom::DirectoryEntry>;
   using ReadDirectoryCallback = base::RepeatingCallback<
       void(base::File::Error result, EntryList file_list, bool has_more)>;
 
-  using CreateSnapshotFileCallback = base::Callback<void(
+  using CreateSnapshotFileCallback = base::OnceCallback<void(
       base::File::Error result,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,

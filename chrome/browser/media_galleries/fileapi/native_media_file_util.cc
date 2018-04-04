@@ -135,9 +135,9 @@ void NativeMediaFileUtil::CreateOrOpen(
   scoped_refptr<base::SequencedTaskRunner> task_runner = context->task_runner();
   CreateSnapshotFile(
       std::move(context), url,
-      base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
-                 base::RetainedRef(task_runner), file_flags,
-                 std::move(callback)));
+      base::BindOnce(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
+                     base::RetainedRef(task_runner), file_flags,
+                     std::move(callback)));
 }
 
 void NativeMediaFileUtil::EnsureFileExists(

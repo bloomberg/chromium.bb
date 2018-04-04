@@ -48,7 +48,7 @@ class FileStreamWriter::OperationRunner
     file_opener_.reset(new ScopedFileOpener(
         parser.file_system(), parser.file_path(), OPEN_FILE_MODE_WRITE,
         base::Bind(&OperationRunner::OnOpenFileCompletedOnUIThread, this,
-                   std::move(callback))));
+                   base::Passed(&callback))));
   }
 
   // Requests writing bytes to the file. In case of either success or a failure
@@ -70,8 +70,8 @@ class FileStreamWriter::OperationRunner
 
     abort_callback_ = file_system_->WriteFile(
         file_handle_, buffer.get(), offset, length,
-        base::Bind(&OperationRunner::OnWriteFileCompletedOnUIThread, this,
-                   std::move(callback)));
+        base::BindOnce(&OperationRunner::OnWriteFileCompletedOnUIThread, this,
+                       std::move(callback)));
   }
 
   // Aborts the most recent operation (if exists) and closes a file if opened.

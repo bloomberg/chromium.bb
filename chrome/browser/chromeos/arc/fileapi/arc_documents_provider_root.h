@@ -58,8 +58,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   ~ArcDocumentsProviderRoot() override;
 
   // Queries information of a file just like AsyncFileUtil.GetFileInfo().
-  void GetFileInfo(const base::FilePath& path,
-                   const GetFileInfoCallback& callback);
+  void GetFileInfo(const base::FilePath& path, GetFileInfoCallback callback);
 
   // Queries a list of files under a directory just like
   // AsyncFileUtil.ReadDirectory().
@@ -149,10 +148,10 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
       base::Callback<void(base::File::Error error,
                           const NameToDocumentMap& mapping)>;
 
-  void GetFileInfoWithParentDocumentId(const GetFileInfoCallback& callback,
+  void GetFileInfoWithParentDocumentId(GetFileInfoCallback callback,
                                        const base::FilePath& basename,
                                        const std::string& parent_document_id);
-  void GetFileInfoWithNameToDocumentMap(const GetFileInfoCallback& callback,
+  void GetFileInfoWithNameToDocumentMap(GetFileInfoCallback callback,
                                         const base::FilePath& basename,
                                         base::File::Error error,
                                         const NameToDocumentMap& mapping);
