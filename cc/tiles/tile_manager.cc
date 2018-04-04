@@ -369,7 +369,7 @@ TileManager::TileManager(
           base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
                      base::Unretained(this))),
       signals_check_notifier_(task_runner_,
-                              base::Bind(&TileManager::CheckAndIssueSignals,
+                              base::Bind(&TileManager::FlushAndIssueSignals,
                                          base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
@@ -497,7 +497,7 @@ bool TileManager::PrepareTiles(
 
   // Ensure that we don't schedule any decode work for checkered images until
   // the raster work for visible tiles is complete. This is done in
-  // CheckAndIssueSignals when the ready to activate/draw signals are dispatched
+  // FlushAndIssueSignals when the ready to activate/draw signals are dispatched
   // to the client.
   checker_image_tracker_.SetNoDecodesAllowed();
 
@@ -536,7 +536,7 @@ void TileManager::CheckForCompletedTasks() {
   tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
-  CheckPendingGpuWorkTiles(true /* issue_signals */);
+  CheckPendingGpuWorkAndIssueSignals();
 
   TRACE_EVENT_INSTANT1(
       "cc", "TileManager::CheckForCompletedTasksFinished",
@@ -1352,21 +1352,23 @@ bool TileManager::IsReadyToDraw() const {
              RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
 }
 
-void TileManager::CheckAndIssueSignals() {
-  TRACE_EVENT0("cc", "TileManager::CheckAndIssueSignals");
+void TileManager::FlushAndIssueSignals() {
+  TRACE_EVENT0("cc", "TileManager::FlushAndIssueSignals");
   tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   raster_buffer_provider_->Flush();
-  CheckPendingGpuWorkTiles(false /* issue_signals */);
+  CheckPendingGpuWorkAndIssueSignals();
+}
 
+void TileManager::IssueSignals() {
   // Ready to activate.
   if (signals_.activate_tile_tasks_completed &&
       signals_.activate_gpu_work_completed &&
       !signals_.did_notify_ready_to_activate) {
     if (IsReadyToActivate()) {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                   "TileManager::CheckAndIssueSignals - ready to activate");
+                   "TileManager::IssueSignals - ready to activate");
       signals_.did_notify_ready_to_activate = true;
       client_->NotifyReadyToActivate();
     }
@@ -1377,7 +1379,7 @@ void TileManager::CheckAndIssueSignals() {
       !signals_.did_notify_ready_to_draw) {
     if (IsReadyToDraw()) {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                   "TileManager::CheckAndIssueSignals - ready to draw");
+                   "TileManager::IssueSignals - ready to draw");
       signals_.did_notify_ready_to_draw = true;
       client_->NotifyReadyToDraw();
     }
@@ -1387,9 +1389,8 @@ void TileManager::CheckAndIssueSignals() {
   if (signals_.all_tile_tasks_completed &&
       !signals_.did_notify_all_tile_tasks_completed) {
     if (!has_scheduled_tile_tasks_) {
-      TRACE_EVENT0(
-          TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-          "TileManager::CheckAndIssueSignals - all tile tasks completed");
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                   "TileManager::IssueSignals - all tile tasks completed");
       signals_.did_notify_all_tile_tasks_completed = true;
       client_->NotifyAllTileTasksCompleted();
     }
@@ -1542,8 +1543,8 @@ bool TileManager::UsePartialRaster() const {
          raster_buffer_provider_->CanPartialRasterIntoProvidedResource();
 }
 
-void TileManager::CheckPendingGpuWorkTiles(bool issue_signals) {
-  TRACE_EVENT2("cc", "TileManager::CheckPendingGpuWorkTiles",
+void TileManager::CheckPendingGpuWorkAndIssueSignals() {
+  TRACE_EVENT2("cc", "TileManager::CheckPendingGpuWorkAndIssueSignals",
                "pending_gpu_work_tiles", pending_gpu_work_tiles_.size(),
                "tree_priority",
                TreePriorityToString(global_state_.tree_priority));
@@ -1585,9 +1586,8 @@ void TileManager::CheckPendingGpuWorkTiles(bool issue_signals) {
     pending_required_for_activation_callback_id_ =
         raster_buffer_provider_->SetReadyToDrawCallback(
             required_for_activation,
-            base::Bind(&TileManager::CheckPendingGpuWorkTiles,
-                       ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr(),
-                       true /* issue_signals */),
+            base::Bind(&TileManager::CheckPendingGpuWorkAndIssueSignals,
+                       ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr()),
             pending_required_for_activation_callback_id_);
   }
 
@@ -1597,9 +1597,8 @@ void TileManager::CheckPendingGpuWorkTiles(bool issue_signals) {
     pending_required_for_draw_callback_id_ =
         raster_buffer_provider_->SetReadyToDrawCallback(
             required_for_draw,
-            base::Bind(&TileManager::CheckPendingGpuWorkTiles,
-                       ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr(),
-                       true /* issue_signals */),
+            base::Bind(&TileManager::CheckPendingGpuWorkAndIssueSignals,
+                       ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr()),
             pending_required_for_draw_callback_id_);
   }
 
@@ -1612,15 +1611,7 @@ void TileManager::CheckPendingGpuWorkTiles(bool issue_signals) {
   // We've just updated all pending tile requirements if necessary.
   pending_tile_requirements_dirty_ = false;
 
-  if (!issue_signals)
-    return;
-
-  bool can_activate = signals_.activate_gpu_work_completed &&
-                      signals_.activate_tile_tasks_completed;
-  bool can_draw =
-      signals_.draw_gpu_work_completed && signals_.draw_tile_tasks_completed;
-  if (can_activate || can_draw)
-    signals_check_notifier_.Schedule();
+  IssueSignals();
 }
 
 // Utility function that can be used to create a "Task set finished" task that
