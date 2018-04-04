@@ -201,8 +201,12 @@ ExtensionFunction::ResponseAction FileSystemProviderGetAllFunction::Run() {
                                              file_system_info.file_system_id());
       DCHECK(file_system);
 
-      FillFileSystemInfo(file_system_info, *file_system->GetWatchers(),
+      FillFileSystemInfo(file_system_info,
+                         file_system_info.watchable()
+                             ? *file_system->GetWatchers()
+                             : Watchers(),
                          file_system->GetOpenedFiles(), &item);
+
       items.push_back(std::move(item));
     }
   }
@@ -233,8 +237,10 @@ ExtensionFunction::ResponseAction FileSystemProviderGetFunction::Run() {
 
   FileSystemInfo file_system_info;
   FillFileSystemInfo(file_system->GetFileSystemInfo(),
-                     *file_system->GetWatchers(), file_system->GetOpenedFiles(),
-                     &file_system_info);
+                     file_system->GetFileSystemInfo().watchable()
+                         ? *file_system->GetWatchers()
+                         : Watchers(),
+                     file_system->GetOpenedFiles(), &file_system_info);
   return RespondNow(ArgumentList(
       api::file_system_provider::Get::Results::Create(file_system_info)));
 }
