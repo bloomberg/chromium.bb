@@ -6,6 +6,7 @@
 
 #ifdef DRV_I915
 
+#include <assert.h>
 #include <errno.h>
 #include <i915_drm.h>
 #include <stdbool.h>
@@ -197,13 +198,21 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *strid
 				 uint32_t *aligned_height)
 {
 	struct i915_device *i915 = bo->drv->priv;
-	uint32_t horizontal_alignment = 4;
-	uint32_t vertical_alignment = 4;
+	uint32_t horizontal_alignment;
+	uint32_t vertical_alignment;
 
 	switch (tiling) {
 	default:
 	case I915_TILING_NONE:
+		/*
+		 * The Intel GPU doesn't need any alignment in linear mode,
+		 * but libva requires the allocation stride to be aligned to
+		 * 16 bytes and height to 4 rows. Further, we round up the
+		 * horizontal alignment so that row start on a cache line (64
+		 * bytes).
+		 */
 		horizontal_alignment = 64;
+		vertical_alignment = 4;
 		break;
 
 	case I915_TILING_X:
@@ -219,21 +228,6 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *strid
 			horizontal_alignment = 128;
 			vertical_alignment = 32;
 		}
-		break;
-	}
-
-	/*
-	 * The alignment calculated above is based on the full size luma plane and to have chroma
-	 * planes properly aligned with subsampled formats, we need to multiply luma alignment by
-	 * subsampling factor.
-	 */
-	switch (bo->format) {
-	case DRM_FORMAT_YVU420_ANDROID:
-	case DRM_FORMAT_YVU420:
-		horizontal_alignment *= 2;
-	/* Fall through */
-	case DRM_FORMAT_NV12:
-		vertical_alignment *= 2;
 		break;
 	}
 
@@ -303,12 +297,40 @@ static int i915_init(struct driver *drv)
 	return i915_add_combinations(drv);
 }
 
+static int i915_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, uint32_t format)
+{
+	uint32_t offset;
+	size_t plane;
+	int ret;
+
+	offset = 0;
+	for (plane = 0; plane < drv_num_planes_from_format(format); plane++) {
+		uint32_t stride = drv_stride_from_format(format, width, plane);
+		uint32_t plane_height = drv_height_from_format(format, height, plane);
+
+		if (bo->tiling != I915_TILING_NONE)
+			assert(IS_ALIGNED(offset, 4096));
+
+		ret = i915_align_dimensions(bo, bo->tiling, &stride, &plane_height);
+		if (ret)
+			return ret;
+
+		bo->strides[plane] = stride;
+		bo->sizes[plane] = stride * plane_height;
+		bo->offsets[plane] = offset;
+		offset += bo->sizes[plane];
+	}
+
+	bo->total_size = offset;
+
+	return 0;
+}
+
 static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 				       uint32_t format, uint64_t modifier)
 {
 	int ret;
 	size_t plane;
-	uint32_t stride;
 	struct drm_i915_gem_create gem_create;
 	struct drm_i915_gem_set_tiling gem_set_tiling;
 
@@ -326,19 +348,20 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 
 	bo->format_modifiers[0] = modifier;
 
-	stride = drv_stride_from_format(format, width, 0);
-
-	ret = i915_align_dimensions(bo, bo->tiling, &stride, &height);
-	if (ret)
-		return ret;
-
-	/*
-	 * HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned.
-	 */
-	if (format == DRM_FORMAT_YVU420_ANDROID)
-		height = bo->height;
-
-	drv_bo_from_format(bo, stride, height, format);
+	if (format == DRM_FORMAT_YVU420_ANDROID) {
+		/*
+		 * We only need to be able to use this as a linear texture,
+		 * which doesn't put any HW restrictions on how we lay it
+		 * out. The Android format does require the stride to be a
+		 * multiple of 16 and expects the Cr and Cb stride to be
+		 * ALIGN(Y_stride / 2, 16), which we can make happen by
+		 * aligning to 32 bytes here.
+		 */
+		uint32_t stride = ALIGN(width, 32);
+		drv_bo_from_format(bo, stride, height, format);
+	} else {
+		i915_bo_from_format(bo, width, height, format);
+	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = bo->total_size;
