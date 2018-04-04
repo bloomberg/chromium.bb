@@ -209,7 +209,7 @@ FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_8x8_c, av1_lowbd_fwd_txfm2d_8x8_sse2 },      // TX_8X8
   { av1_fwd_txfm2d_16x16_c, av1_lowbd_fwd_txfm2d_16x16_sse2 },  // TX_16X16
   { av1_fwd_txfm2d_32x32_c, av1_lowbd_fwd_txfm2d_32x32_sse2 },  // TX_32X32
-  { NULL, NULL },                                               // TX_64X64
+  { av1_fwd_txfm2d_64x64_c, NULL },                             // TX_64X64
   { av1_fwd_txfm2d_4x8_c, av1_lowbd_fwd_txfm2d_4x8_sse2 },      // TX_4X8
   { av1_fwd_txfm2d_8x4_c, av1_lowbd_fwd_txfm2d_8x4_sse2 },      // TX_8X4
   { av1_fwd_txfm2d_8x16_c, av1_lowbd_fwd_txfm2d_8x16_sse2 },    // TX_8X16
@@ -222,8 +222,8 @@ FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_16x4_c, av1_lowbd_fwd_txfm2d_16x4_sse2 },    // TX_16X4
   { av1_fwd_txfm2d_8x32_c, av1_lowbd_fwd_txfm2d_8x32_sse2 },    // TX_8X32
   { av1_fwd_txfm2d_32x8_c, av1_lowbd_fwd_txfm2d_32x8_sse2 },    // TX_32X8
-  { NULL, NULL },                                               // TX_16X64
-  { NULL, NULL },                                               // TX_64X16
+  { av1_fwd_txfm2d_16x64_c, av1_lowbd_fwd_txfm2d_16x64_sse2 },  // TX_16X64
+  { av1_fwd_txfm2d_64x16_c, av1_lowbd_fwd_txfm2d_64x16_sse2 },  // TX_64X16
 };
 
 TEST(av1_fwd_txfm2d_sse2, match) {
@@ -241,8 +241,8 @@ TEST(av1_fwd_txfm2d_sse2, match) {
       FwdTxfm2dFunc target_func = fwd_func_sse2_list[tx_size][1];
       if (ref_func != NULL && target_func != NULL) {
         DECLARE_ALIGNED(16, int16_t, input[64 * 64]) = { 0 };
-        DECLARE_ALIGNED(16, int32_t, output[64 * 64]) = { 0 };
-        DECLARE_ALIGNED(16, int32_t, ref_output[64 * 64]) = { 0 };
+        DECLARE_ALIGNED(16, int32_t, output[64 * 64]);
+        DECLARE_ALIGNED(16, int32_t, ref_output[64 * 64]);
         int input_stride = 64;
         ACMRandom rnd(ACMRandom::DeterministicSeed());
         for (int cnt = 0; cnt < 500; ++cnt) {
@@ -261,7 +261,8 @@ TEST(av1_fwd_txfm2d_sse2, match) {
           }
           ref_func(input, ref_output, input_stride, (TX_TYPE)tx_type, bd);
           target_func(input, output, input_stride, (TX_TYPE)tx_type, bd);
-          for (int r = 0; r < rows; ++r) {
+          const int check_rows = rows / ((rows == 64 || cols == 64) ? 2 : 1);
+          for (int r = 0; r < check_rows; ++r) {
             for (int c = 0; c < cols; ++c) {
               ASSERT_EQ(ref_output[r * cols + c], output[r * cols + c])
                   << "[" << r << "," << c << "]"

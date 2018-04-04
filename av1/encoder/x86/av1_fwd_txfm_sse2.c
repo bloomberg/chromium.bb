@@ -1979,6 +1979,20 @@ static INLINE void fidentity8x32_new_sse2(const __m128i *input, __m128i *output,
   }
 }
 
+static INLINE void fidentity8x64_new_sse2(const __m128i *input, __m128i *output,
+                                          int8_t cos_bit) {
+  (void)cos_bit;
+  const __m128i one = _mm_set1_epi16(1);
+
+  for (int i = 0; i < 64; ++i) {
+    const __m128i a_lo = _mm_unpacklo_epi16(input[i], one);
+    const __m128i a_hi = _mm_unpackhi_epi16(input[i], one);
+    const __m128i b_lo = scale_round_sse2(a_lo, 4 * NewSqrt2);
+    const __m128i b_hi = scale_round_sse2(a_hi, 4 * NewSqrt2);
+    output[i] = _mm_packs_epi32(b_lo, b_hi);
+  }
+}
+
 static const transform_1d_sse2 col_txfm4x4_arr[TX_TYPES] = {
   fdct4x4_new_sse2,       // DCT_DCT
   fadst4x4_new_sse2,      // ADST_DCT
@@ -2201,6 +2215,44 @@ static const transform_1d_sse2 row_txfm8x32_arr[TX_TYPES] = {
   fidentity8x32_new_sse2,  // IDTX
   fidentity8x32_new_sse2,  // V_DCT
   fdct8x32_new_sse2,       // H_DCT
+  NULL,                    // V_ADST
+  NULL,                    // H_ADST
+  NULL,                    // V_FLIPADST
+  NULL                     // H_FLIPADST
+};
+
+static const transform_1d_sse2 col_txfm8x64_arr[TX_TYPES] = {
+  fdct8x64_new_sse2,       // DCT_DCT
+  NULL,                    // ADST_DCT
+  NULL,                    // DCT_ADST
+  NULL,                    // ADST_ADST
+  NULL,                    // FLIPADST_DCT
+  NULL,                    // DCT_FLIPADST
+  NULL,                    // FLIPADST_FLIPADST
+  NULL,                    // ADST_FLIPADST
+  NULL,                    // FLIPADST_ADST
+  fidentity8x64_new_sse2,  // IDTX
+  fdct8x64_new_sse2,       // V_DCT
+  fidentity8x64_new_sse2,  // H_DCT
+  NULL,                    // V_ADST
+  NULL,                    // H_ADST
+  NULL,                    // V_FLIPADST
+  NULL                     // H_FLIPADST
+};
+
+static const transform_1d_sse2 row_txfm8x64_arr[TX_TYPES] = {
+  fdct8x64_new_sse2,       // DCT_DCT
+  NULL,                    // ADST_DCT
+  NULL,                    // DCT_ADST
+  NULL,                    // ADST_ADST
+  NULL,                    // FLIPADST_DCT
+  NULL,                    // DCT_FLIPADST
+  NULL,                    // FLIPADST_FLIPADST
+  NULL,                    // ADST_FLIPADST
+  NULL,                    // FLIPADST_ADST
+  fidentity8x64_new_sse2,  // IDTX
+  fidentity8x64_new_sse2,  // V_DCT
+  fdct8x64_new_sse2,       // H_DCT
   NULL,                    // V_ADST
   NULL,                    // H_ADST
   NULL,                    // V_FLIPADST
@@ -2848,6 +2900,110 @@ void av1_lowbd_fwd_txfm2d_32x32_sse2(const int16_t *input, int32_t *output,
     }
   } else {
     av1_fwd_txfm2d_32x32_c(input, output, stride, tx_type, bd);
+  }
+}
+
+void av1_lowbd_fwd_txfm2d_64x16_sse2(const int16_t *input, int32_t *output,
+                                     int stride, TX_TYPE tx_type, int bd) {
+  (void)bd;
+  const TX_SIZE tx_size = TX_64X16;
+  __m128i buf0[64], buf1[128];
+  const int8_t *shift = fwd_txfm_shift_ls[tx_size];
+  const int txw_idx = get_txw_idx(tx_size);
+  const int txh_idx = get_txh_idx(tx_size);
+  const int cos_bit_col = fwd_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  const transform_1d_sse2 col_txfm = col_txfm8x16_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x64_arr[tx_type];
+  const int width_div8 = (width >> 3);
+  const int height_div8 = (height >> 3);
+  int ud_flip, lr_flip;
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+
+  for (int i = 0; i < width_div8; i++) {
+    if (ud_flip) {
+      load_buffer_16bit_to_16bit_flip(input + 8 * i, stride, buf0, height);
+    } else {
+      load_buffer_16bit_to_16bit(input + 8 * i, stride, buf0, height);
+    }
+    round_shift_16bit(buf0, height, shift[0]);
+    col_txfm(buf0, buf0, cos_bit_col);
+    round_shift_16bit(buf0, height, shift[1]);
+    for (int j = 0; j < height_div8; ++j) {
+      transpose_16bit_8x8(buf0 + j * 8, buf1 + j * width + 8 * i);
+    }
+  }
+
+  for (int i = 0; i < height_div8; i++) {
+    __m128i *buf;
+    if (lr_flip) {
+      buf = buf0;
+      flip_buf_sse2(buf1 + width * i, buf, width);
+    } else {
+      buf = buf1 + width * i;
+    }
+    row_txfm(buf, buf, cos_bit_row);
+    round_shift_16bit(buf, width, shift[2]);
+    int32_t *output8 = output + 8 * 32 * i;
+    for (int j = 0; j < 4; ++j) {
+      __m128i *buf8 = buf + 8 * j;
+      transpose_16bit_8x8(buf8, buf8);
+      store_buffer_16bit_to_32bit_w8(buf8, output8 + 8 * j, 32, 8);
+    }
+  }
+}
+
+void av1_lowbd_fwd_txfm2d_16x64_sse2(const int16_t *input, int32_t *output,
+                                     int stride, TX_TYPE tx_type, int bd) {
+  (void)bd;
+  const TX_SIZE tx_size = TX_16X64;
+  __m128i buf0[64], buf1[128];
+  const int8_t *shift = fwd_txfm_shift_ls[tx_size];
+  const int txw_idx = get_txw_idx(tx_size);
+  const int txh_idx = get_txh_idx(tx_size);
+  const int cos_bit_col = fwd_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  const transform_1d_sse2 col_txfm = col_txfm8x64_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x16_arr[tx_type];
+  const int width_div8 = (width >> 3);
+  const int height_div8 = (height >> 3);
+  int ud_flip, lr_flip;
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+
+  for (int i = 0; i < width_div8; i++) {
+    if (ud_flip) {
+      load_buffer_16bit_to_16bit_flip(input + 8 * i, stride, buf0, height);
+    } else {
+      load_buffer_16bit_to_16bit(input + 8 * i, stride, buf0, height);
+    }
+    round_shift_16bit(buf0, height, shift[0]);
+    col_txfm(buf0, buf0, cos_bit_col);
+    round_shift_16bit(buf0, height, shift[1]);
+    for (int j = 0; j < height_div8; ++j) {
+      transpose_16bit_8x8(buf0 + j * 8, buf1 + j * width + 8 * i);
+    }
+  }
+
+  for (int i = 0; i < AOMMIN(4, height_div8); i++) {
+    __m128i *buf;
+    if (lr_flip) {
+      buf = buf0;
+      flip_buf_sse2(buf1 + width * i, buf, width);
+    } else {
+      buf = buf1 + width * i;
+    }
+    row_txfm(buf, buf, cos_bit_row);
+    round_shift_16bit(buf, width, shift[2]);
+    int32_t *output8 = output + 8 * width * i;
+    for (int j = 0; j < width_div8; ++j) {
+      __m128i *buf8 = buf + 8 * j;
+      transpose_16bit_8x8(buf8, buf8);
+      store_buffer_16bit_to_32bit_w8(buf8, output8 + 8 * j, width, 8);
+    }
   }
 }
 
