@@ -562,7 +562,7 @@ def DepsOfType(wanted_type, configs):
 
 def GetAllDepsConfigsInOrder(deps_config_paths):
   def GetDeps(path):
-    return set(GetDepConfig(path)['deps_configs'])
+    return GetDepConfig(path)['deps_configs']
   return build_utils.GetSortedTransitiveDependencies(deps_config_paths, GetDeps)
 
 
