@@ -64,6 +64,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -86,6 +87,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_http_job.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -2085,12 +2087,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
   https_test_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_test_server.Start());
   GURL https_url = https_test_server.GetURL("localhost", "/devtools/image.png");
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          AddHSTSHost,
-          base::RetainedRef(browser()->profile()->GetRequestContext()),
-          https_url.host()));
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            AddHSTSHost,
+            base::RetainedRef(browser()->profile()->GetRequestContext()),
+            https_url.host()));
+  } else {
+    base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+    bool include_subdomains = false;
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    content::StoragePartition* partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    partition->GetNetworkContext()->AddHSTSForTesting(https_url.host(), expiry,
+                                                      include_subdomains);
+  }
   ASSERT_TRUE(embedded_test_server()->Start());
 
   OpenDevToolsWindow(std::string(), false);
