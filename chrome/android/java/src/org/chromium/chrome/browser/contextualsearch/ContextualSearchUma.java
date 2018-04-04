@@ -1369,7 +1369,7 @@ public class ContextualSearchUma {
      */
     static void logRankerFeaturesAvailable(boolean areOutcomes) {
         RecordHistogram.recordBooleanHistogram(
-                "Search.ContextualSearch.Ranker.eaturesAvailable", areOutcomes);
+                "Search.ContextualSearch.Ranker.FeaturesAvailable", areOutcomes);
     }
 
     /**
