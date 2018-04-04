@@ -458,8 +458,15 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Callback from the native code to publish a page.  This will take the page, now in
-     * a public directory, and share it.
+     * Called when publishing is done.  Continues with processing to share.
+     */
+    public static void publishCompleted(OfflinePageItem page, final Activity activity,
+            final Callback<ShareParams> shareCallback) {
+        sharePublishedPage(page, activity, shareCallback);
+    }
+
+    /**
+     * This will take a page in a public directory, and share it.
      */
     public static void sharePublishedPage(OfflinePageItem page, final Activity activity,
             final Callback<ShareParams> shareCallback) {

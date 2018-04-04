@@ -45,6 +45,6 @@ public class PublishPageCallback implements Callback<String> {
 
         // TODO(petewil): Sharing seems out of place here. Move the call to sharing
         // back to OfflinePageUtils.
-        OfflinePageUtils.sharePublishedPage(page, mActivity, mShareCallback);
+        OfflinePageUtils.publishCompleted(page, mActivity, mShareCallback);
     }
 }
