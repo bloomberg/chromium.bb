@@ -764,7 +764,7 @@ void VrShell::LogUnsupportedModeUserMetric(JNIEnv* env,
   LogUnsupportedModeUserMetric((UiUnsupportedMode)mode);
 }
 
-void VrShell::RecordVrStartAction(PageSessionStartAction action) {
+void VrShell::RecordVrStartAction(VrStartAction action) {
   SessionMetricsHelper* metrics_helper =
       SessionMetricsHelper::FromWebContents(web_contents_);
   if (metrics_helper) {

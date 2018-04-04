@@ -186,7 +186,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void ExitPresent();
   void ExitFullscreen();
   void LogUnsupportedModeUserMetric(UiUnsupportedMode mode);
-  void RecordVrStartAction(PageSessionStartAction action);
+  void RecordVrStartAction(VrStartAction action);
   void OnUnsupportedMode(UiUnsupportedMode mode);
   void OnExitVrPromptResult(UiUnsupportedMode reason,
                             ExitVrPromptChoice choice);
