@@ -338,6 +338,35 @@ void PrintTargetsAsOutputs(const std::vector<const Target*>& targets,
   }
 }
 
+#if defined(OS_WIN)
+// Git bash will remove the first "/" in "//" paths
+// This also happens for labels assigned to command line parameters, e.g.
+// --filters
+// Fix "//" paths, but not absolute and relative paths
+inline std::string FixGitBashLabelEdit(const std::string& label) {
+  static std::unique_ptr<base::Environment> git_bash_env;
+  if (!git_bash_env)
+    git_bash_env = base::Environment::Create();
+
+  std::string temp_label(label);
+
+  if (git_bash_env->HasVar(
+          "MSYSTEM") &&        // Only for MinGW based shells like Git Bash
+      temp_label[0] == '/' &&  // Only fix for //foo paths, not /f:oo paths
+      (temp_label.length() < 2 ||
+       (temp_label[1] != '/' &&
+        (temp_label.length() < 3 || temp_label[1] != ':'))))
+    temp_label.insert(0, "/");
+  return temp_label;
+}
+#else
+// Only repair on Windows
+inline std::string FixGitBashLabelEdit(const std::string& label) {
+  return label;
+}
+#endif
+
+
 }  // namespace
 
 CommandInfo::CommandInfo()
@@ -383,22 +412,8 @@ const Target* ResolveTargetFromCommandLineString(
     Setup* setup,
     const std::string& label_string) {
   // Need to resolve the label after we know the default toolchain.
-  std::string temp_label = label_string;
-#if defined(OS_WIN)
-  // Git bash will remove the first "/" in "//" paths
-  // Fix "//" paths, but not absolute and relative paths
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-
-  if (env->HasVar("MSYSTEM") && // Only for MinGW based shells like Git Bash
-      temp_label[0] == '/' && // Only fix for //foo paths, not /f:oo paths
-      (temp_label.length() < 2 ||
-        (temp_label[1] != '/' && (temp_label.length() < 3 ||
-                                  temp_label[1] != ':' ))))
-    temp_label.insert(0, "/");
-#endif
-
   Label default_toolchain = setup->loader()->default_toolchain_label();
-  Value arg_value(nullptr, temp_label);
+  Value arg_value(nullptr, FixGitBashLabelEdit(label_string));
   Err err;
   Label label = Label::Resolve(SourceDirForCurrentDirectory(
                                    setup->build_settings().root_path()),
@@ -485,13 +500,12 @@ bool FilterPatternsFromString(const BuildSettings* build_settings,
                               Err* err) {
   std::vector<std::string> tokens = base::SplitString(
       label_list_string, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  SourceDir root_dir =
-      SourceDirForCurrentDirectory(build_settings->root_path());
+  SourceDir root_dir("//");
 
   filters->reserve(tokens.size());
   for (const std::string& token : tokens) {
-    LabelPattern pattern =
-        LabelPattern::GetPattern(root_dir, Value(nullptr, token), err);
+    LabelPattern pattern = LabelPattern::GetPattern(
+        root_dir, Value(nullptr, FixGitBashLabelEdit(token)), err);
     if (err->has_error())
       return false;
     filters->push_back(pattern);
