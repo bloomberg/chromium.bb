@@ -22,11 +22,8 @@ struct LoadCommittedDetails {
   // if there are no previous items.
   int previous_item_index;
 
-  // The previous URL that the user was on. This may be empty if none.
-  GURL previous_url;
-
   // True if the navigation was in-page. This means that the active item's
-  // URL and the |previous_url| are the same except for reference fragments.
+  // URL and the previous URL are the same except for reference fragments.
   bool is_in_page;
 };
 

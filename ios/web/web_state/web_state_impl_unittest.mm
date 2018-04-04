@@ -462,7 +462,6 @@ TEST_F(WebStateImplTest, ObserverTest) {
       observer->commit_navigation_info()->load_details;
   EXPECT_EQ(details.item, actual_details.item);
   EXPECT_EQ(details.previous_item_index, actual_details.previous_item_index);
-  EXPECT_EQ(details.previous_url, actual_details.previous_url);
   EXPECT_EQ(details.is_in_page, actual_details.is_in_page);
 
   // Test that OnPageLoaded() is called with success when there is no error.
