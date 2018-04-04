@@ -130,16 +130,18 @@ void AsyncFileUtil::CreateOrOpen(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const fileapi_internal::FileSystemGetter getter =
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url);
   PostFileSystemCallback(
       getter,
-      base::Bind(&fileapi_internal::OpenFile,
-                 file_path, file_flags,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&RunCreateOrOpenFileCallback, callback))),
-      base::Bind(&RunCreateOrOpenFileCallbackOnError,
-                 callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::OpenFile, file_path, file_flags,
+                 google_apis::CreateRelayCallback(base::Bind(
+                     &RunCreateOrOpenFileCallback, copyable_callback))),
+      base::Bind(&RunCreateOrOpenFileCallbackOnError, copyable_callback,
+                 base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::EnsureFileExists(
@@ -154,13 +156,16 @@ void AsyncFileUtil::EnsureFileExists(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::CreateFile,
-                 file_path, true /* is_exlusive */,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&RunEnsureFileExistsCallback, callback))),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED, false));
+      base::Bind(&fileapi_internal::CreateFile, file_path,
+                 true /* is_exlusive */,
+                 google_apis::CreateRelayCallback(base::Bind(
+                     &RunEnsureFileExistsCallback, copyable_callback))),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED, false));
 }
 
 void AsyncFileUtil::CreateDirectory(
@@ -177,12 +182,15 @@ void AsyncFileUtil::CreateDirectory(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::CreateDirectory,
-                 file_path, exclusive, recursive,
-                 google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::CreateDirectory, file_path, exclusive,
+                 recursive,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::GetFileInfo(
@@ -199,11 +207,14 @@ void AsyncFileUtil::GetFileInfo(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::GetFileInfo,
-                 file_path, google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED,
+      base::Bind(&fileapi_internal::GetFileInfo, file_path,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED,
                  base::File::Info()));
 }
 
@@ -241,12 +252,15 @@ void AsyncFileUtil::Touch(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::TouchFile,
-                 file_path, last_access_time, last_modified_time,
-                 google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::TouchFile, file_path, last_access_time,
+                 last_modified_time,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::Truncate(
@@ -262,11 +276,14 @@ void AsyncFileUtil::Truncate(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::Truncate,
-                 file_path, length, google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::Truncate, file_path, length,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::CopyFileLocal(
@@ -291,15 +308,16 @@ void AsyncFileUtil::CopyFileLocal(
   // different mount point. Hence, using GetFileSystemFromUrl(dest_url) is safe.
   // This will change after we introduce cross-profile sharing etc., and we
   // need to deal with files from different profiles here.
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
       base::Bind(
-          &fileapi_internal::Copy,
-          src_path,
-          dest_path,
+          &fileapi_internal::Copy, src_path, dest_path,
           option == storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
-          google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+          google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::MoveFileLocal(
@@ -320,12 +338,14 @@ void AsyncFileUtil::MoveFileLocal(
   // TODO(kinaba): see the comment in CopyFileLocal(). |src_url| and |dest_url|
   // always return the same FileSystem by GetFileSystemFromUrl, but we need to
   // change it in order to support cross-profile file sharing etc.
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
-      base::Bind(&fileapi_internal::Move,
-                 src_path, dest_path,
-                 google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::Move, src_path, dest_path,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::CopyInForeignFile(
@@ -341,12 +361,14 @@ void AsyncFileUtil::CopyInForeignFile(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
-      base::Bind(&fileapi_internal::CopyInForeignFile,
-                 src_file_path, dest_path,
-                 google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::CopyInForeignFile, src_file_path, dest_path,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::DeleteFile(
@@ -361,12 +383,15 @@ void AsyncFileUtil::DeleteFile(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::Remove,
-                 file_path, false /* not recursive */,
-                 google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::Remove, file_path,
+                 false /* not recursive */,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::DeleteDirectory(
@@ -381,12 +406,15 @@ void AsyncFileUtil::DeleteDirectory(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::Remove,
-                 file_path, false /* not recursive */,
-                 google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::Remove, file_path,
+                 false /* not recursive */,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::DeleteRecursively(
@@ -401,12 +429,14 @@ void AsyncFileUtil::DeleteRecursively(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::Remove,
-                 file_path, true /* recursive */,
-                 google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED));
+      base::Bind(&fileapi_internal::Remove, file_path, true /* recursive */,
+                 google_apis::CreateRelayCallback(copyable_callback)),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::CreateSnapshotFile(
@@ -423,16 +453,16 @@ void AsyncFileUtil::CreateSnapshotFile(
     return;
   }
 
+  // TODO(tzik): Update PostFileSystemCallback to remove
+  // AdaptCallbackForRepeating here.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-      base::Bind(&fileapi_internal::CreateSnapshotFile,
-                 file_path,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&RunCreateSnapshotFileCallback, callback))),
-      base::Bind(callback,
-                 base::File::FILE_ERROR_FAILED,
-                 base::File::Info(),
-                 base::FilePath(),
+      base::Bind(&fileapi_internal::CreateSnapshotFile, file_path,
+                 google_apis::CreateRelayCallback(base::Bind(
+                     &RunCreateSnapshotFileCallback, copyable_callback))),
+      base::Bind(copyable_callback, base::File::FILE_ERROR_FAILED,
+                 base::File::Info(), base::FilePath(),
                  scoped_refptr<storage::ShareableFileReference>()));
 }
 

@@ -167,12 +167,13 @@ void ProvidedFileSystem::SetNotificationManagerForTesting(
 
 AbortCallback ProvidedFileSystem::RequestUnmount(
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
       REQUEST_UNMOUNT,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::Unmount(event_router_, file_system_info_, callback)));
+      std::make_unique<operations::Unmount>(event_router_, file_system_info_,
+                                            copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -219,13 +220,13 @@ AbortCallback ProvidedFileSystem::ExecuteAction(
     const std::vector<base::FilePath>& entry_paths,
     const std::string& action_id,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      EXECUTE_ACTION,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::ExecuteAction(event_router_, file_system_info_,
-                                        entry_paths, action_id, callback)));
+      EXECUTE_ACTION, std::make_unique<operations::ExecuteAction>(
+                          event_router_, file_system_info_, entry_paths,
+                          action_id, copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -297,15 +298,15 @@ AbortCallback ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
 AbortCallback ProvidedFileSystem::CloseFile(
     int file_handle,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      CLOSE_FILE, std::unique_ptr<RequestManager::HandlerInterface>(
-                      new operations::CloseFile(
-                          event_router_, file_system_info_, file_handle,
-                          base::Bind(&ProvidedFileSystem::OnCloseFileCompleted,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     file_handle, callback))));
+      CLOSE_FILE, std::make_unique<operations::CloseFile>(
+                      event_router_, file_system_info_, file_handle,
+                      base::Bind(&ProvidedFileSystem::OnCloseFileCompleted,
+                                 weak_ptr_factory_.GetWeakPtr(), file_handle,
+                                 copyable_callback)));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -317,13 +318,13 @@ AbortCallback ProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool recursive,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      CREATE_DIRECTORY, std::unique_ptr<RequestManager::HandlerInterface>(
-                            new operations::CreateDirectory(
-                                event_router_, file_system_info_,
-                                directory_path, recursive, callback)));
+      CREATE_DIRECTORY, std::make_unique<operations::CreateDirectory>(
+                            event_router_, file_system_info_, directory_path,
+                            recursive, copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -335,13 +336,13 @@ AbortCallback ProvidedFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      DELETE_ENTRY,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::DeleteEntry(event_router_, file_system_info_,
-                                      entry_path, recursive, callback)));
+      DELETE_ENTRY, std::make_unique<operations::DeleteEntry>(
+                        event_router_, file_system_info_, entry_path, recursive,
+                        copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -352,13 +353,13 @@ AbortCallback ProvidedFileSystem::DeleteEntry(
 AbortCallback ProvidedFileSystem::CreateFile(
     const base::FilePath& file_path,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
       CREATE_FILE,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::CreateFile(event_router_, file_system_info_,
-                                     file_path, callback)));
+      std::make_unique<operations::CreateFile>(event_router_, file_system_info_,
+                                               file_path, copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -370,13 +371,13 @@ AbortCallback ProvidedFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      COPY_ENTRY,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::CopyEntry(event_router_, file_system_info_,
-                                    source_path, target_path, callback)));
+      COPY_ENTRY, std::make_unique<operations::CopyEntry>(
+                      event_router_, file_system_info_, source_path,
+                      target_path, copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -394,14 +395,14 @@ AbortCallback ProvidedFileSystem::WriteFile(
                "ProvidedFileSystem::WriteFile",
                "length",
                length);
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
       WRITE_FILE,
-      base::WrapUnique<RequestManager::HandlerInterface>(
-          new operations::WriteFile(event_router_, file_system_info_,
-                                    file_handle, base::WrapRefCounted(buffer),
-                                    offset, length, callback)));
+      std::make_unique<operations::WriteFile>(
+          event_router_, file_system_info_, file_handle,
+          base::WrapRefCounted(buffer), offset, length, copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -413,13 +414,13 @@ AbortCallback ProvidedFileSystem::MoveEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      MOVE_ENTRY,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::MoveEntry(event_router_, file_system_info_,
-                                    source_path, target_path, callback)));
+      MOVE_ENTRY, std::make_unique<operations::MoveEntry>(
+                      event_router_, file_system_info_, source_path,
+                      target_path, copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -431,12 +432,13 @@ AbortCallback ProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
     int64_t length,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      TRUNCATE, std::unique_ptr<RequestManager::HandlerInterface>(
-                    new operations::Truncate(event_router_, file_system_info_,
-                                             file_path, length, callback)));
+      TRUNCATE, std::make_unique<operations::Truncate>(
+                    event_router_, file_system_info_, file_path, length,
+                    copyable_callback));
   if (!request_id) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 
@@ -520,12 +522,12 @@ void ProvidedFileSystem::Notify(
 
 void ProvidedFileSystem::Configure(
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      CONFIGURE, std::unique_ptr<RequestManager::HandlerInterface>(
-                     new operations::Configure(event_router_, file_system_info_,
-                                               callback)));
+      CONFIGURE, std::make_unique<operations::Configure>(
+                     event_router_, file_system_info_, copyable_callback));
   if (!request_id)
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void ProvidedFileSystem::Abort(int operation_request_id) {
@@ -586,19 +588,20 @@ AbortCallback ProvidedFileSystem::AddWatcherInQueue(
     return AbortCallback();
   }
 
+  auto copyable_callback =
+      base::AdaptCallbackForRepeating(std::move(args.callback));
   const int request_id = request_manager_->CreateRequest(
       ADD_WATCHER,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::AddWatcher(
-              event_router_, file_system_info_, args.entry_path, args.recursive,
-              base::Bind(&ProvidedFileSystem::OnAddWatcherInQueueCompleted,
-                         weak_ptr_factory_.GetWeakPtr(), args.token,
-                         args.entry_path, args.recursive, subscriber,
-                         args.callback))));
+      std::make_unique<operations::AddWatcher>(
+          event_router_, file_system_info_, args.entry_path, args.recursive,
+          base::Bind(&ProvidedFileSystem::OnAddWatcherInQueueCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), args.token,
+                     args.entry_path, args.recursive, subscriber,
+                     copyable_callback)));
 
   if (!request_id) {
     OnAddWatcherInQueueCompleted(args.token, args.entry_path, args.recursive,
-                                 subscriber, args.callback,
+                                 subscriber, copyable_callback,
                                  base::File::FILE_ERROR_SECURITY);
   }
 
@@ -633,12 +636,11 @@ AbortCallback ProvidedFileSystem::RemoveWatcherInQueue(
   // Otherwise, emit an event, and remove the watcher.
   request_manager_->CreateRequest(
       REMOVE_WATCHER,
-      std::unique_ptr<RequestManager::HandlerInterface>(
-          new operations::RemoveWatcher(
-              event_router_, file_system_info_, entry_path, recursive,
-              base::Bind(&ProvidedFileSystem::OnRemoveWatcherInQueueCompleted,
-                         weak_ptr_factory_.GetWeakPtr(), token, origin, key,
-                         std::move(callback), true /* extension_response */))));
+      std::make_unique<operations::RemoveWatcher>(
+          event_router_, file_system_info_, entry_path, recursive,
+          base::Bind(&ProvidedFileSystem::OnRemoveWatcherInQueueCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), token, origin, key,
+                     base::Passed(&callback), true /* extension_response */)));
 
   return AbortCallback();
 }

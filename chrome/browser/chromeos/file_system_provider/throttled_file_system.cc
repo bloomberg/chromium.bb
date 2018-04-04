@@ -90,9 +90,9 @@ AbortCallback ThrottledFileSystem::CloseFile(
     int file_handle,
     storage::AsyncFileUtil::StatusCallback callback) {
   return file_system_->CloseFile(
-      file_handle, base::Bind(&ThrottledFileSystem::OnCloseFileCompleted,
-                              weak_ptr_factory_.GetWeakPtr(), file_handle,
-                              std::move(callback)));
+      file_handle, base::BindOnce(&ThrottledFileSystem::OnCloseFileCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(), file_handle,
+                                  std::move(callback)));
 }
 
 AbortCallback ThrottledFileSystem::CreateDirectory(
