@@ -14,6 +14,7 @@ import android.view.animation.Interpolator;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
@@ -2315,7 +2316,12 @@ public class Stack {
     }
 
     private void updateCurrentMode(int orientation) {
-        mCurrentMode = orientation;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+            mCurrentMode = Orientation.LANDSCAPE;
+        } else {
+            mCurrentMode = orientation;
+        }
+
         mDiscardDirection = getDefaultDiscardDirection();
         setWarpState(true, false);
         final float opaqueTopPadding = mBorderTopPadding - mBorderTransparentTop;

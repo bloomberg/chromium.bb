@@ -15,6 +15,7 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -214,7 +215,7 @@ public abstract class StackLayoutBase
             if (mInputMode == SWIPE_MODE_SEND_TO_STACK) {
                 mStacks.get(getTabStackIndex()).drag(time, x, y, amountX, amountY);
             } else if (mInputMode == SWIPE_MODE_SWITCH_STACK) {
-                scrollStacks(getOrientation() == Orientation.PORTRAIT ? amountX : amountY);
+                scrollStacks(isUsingHorizontalLayout() ? amountY : amountX);
             }
         }
 
@@ -249,10 +250,9 @@ public abstract class StackLayoutBase
             if (mInputMode == SWIPE_MODE_SEND_TO_STACK) {
                 mStacks.get(getTabStackIndex()).fling(time, x, y, vx, vy);
             } else if (mInputMode == SWIPE_MODE_SWITCH_STACK) {
-                final float velocity = getOrientation() == Orientation.PORTRAIT ? vx : vy;
-                final float origin = getOrientation() == Orientation.PORTRAIT ? x : y;
-                final float max =
-                        getOrientation() == Orientation.PORTRAIT ? getWidth() : getHeight();
+                final float velocity = isUsingHorizontalLayout() ? vy : vx;
+                final float origin = isUsingHorizontalLayout() ? y : x;
+                final float max = isUsingHorizontalLayout() ? getHeight() : getWidth();
                 final float predicted = origin + velocity * SWITCH_STACK_FLING_DT;
                 final float delta = MathUtils.clamp(predicted, 0, max) - origin;
                 scrollStacks(delta);
@@ -315,6 +315,15 @@ public abstract class StackLayoutBase
         mStackRects = new ArrayList<RectF>();
         mViewContainer = new FrameLayout(getContext());
         mSceneLayer = new TabListSceneLayer();
+    }
+
+    /**
+     * Whether or not we're currently having the tabs scroll horizontally (as opposed to
+     * vertically).
+     */
+    private boolean isUsingHorizontalLayout() {
+        return getOrientation() == Orientation.LANDSCAPE
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
     }
 
     /**
@@ -808,14 +817,13 @@ public abstract class StackLayoutBase
             }
         }
 
-        if ((mDragDirection == DRAG_DIRECTION_VERTICAL)
-                ^ (getOrientation() == Orientation.LANDSCAPE)) {
+        if ((mDragDirection == DRAG_DIRECTION_VERTICAL) ^ isUsingHorizontalLayout()) {
             return SWIPE_MODE_SEND_TO_STACK;
         }
 
         float relativeX = mLastOnDownX - (x + dx);
         float relativeY = mLastOnDownY - (y + dy);
-        float switchDelta = getOrientation() == Orientation.PORTRAIT ? relativeX : relativeY;
+        float switchDelta = isUsingHorizontalLayout() ? relativeY : relativeX;
 
         // In LTR portrait mode, the first stack can be swiped to the left to switch to the second
         // stack, and the last stack can be swiped to the right to switch to the first stack. We
@@ -826,7 +834,7 @@ public abstract class StackLayoutBase
         // Landscape mode is like LTR portrait mode (increasing the stack index corresponds to a
         // positive switchDelta).
         final boolean isRtlPortraitMode =
-                (getOrientation() == Orientation.PORTRAIT && LocalizationUtils.isLayoutRtl());
+                (!isUsingHorizontalLayout() && LocalizationUtils.isLayoutRtl());
         final boolean onLeftmostStack = (currentIndex == 0 && !isRtlPortraitMode)
                 || (currentIndex == mStacks.size() - 1 && isRtlPortraitMode);
         final boolean onRightmostStack = (currentIndex == 0 && isRtlPortraitMode)
@@ -1008,16 +1016,16 @@ public abstract class StackLayoutBase
     }
 
     private PortraitViewport getViewportParameters() {
-        if (getOrientation() == Orientation.PORTRAIT) {
-            if (mCachedPortraitViewport == null) {
-                mCachedPortraitViewport = new PortraitViewport();
-            }
-            return mCachedPortraitViewport;
-        } else {
+        if (isUsingHorizontalLayout()) {
             if (mCachedLandscapeViewport == null) {
                 mCachedLandscapeViewport = new LandscapeViewport();
             }
             return mCachedLandscapeViewport;
+        } else {
+            if (mCachedPortraitViewport == null) {
+                mCachedPortraitViewport = new PortraitViewport();
+            }
+            return mCachedPortraitViewport;
         }
     }
 
@@ -1032,7 +1040,7 @@ public abstract class StackLayoutBase
         cancelAnimation(this, Property.STACK_SNAP);
         float fullDistance = getFullScrollDistance();
         mScrollIndexOffset += MathUtils.flipSignIf(delta / fullDistance,
-                getOrientation() == Orientation.PORTRAIT && LocalizationUtils.isLayoutRtl());
+                !isUsingHorizontalLayout() && LocalizationUtils.isLayoutRtl());
         mRenderedScrollOffset =
                 MathUtils.clamp(mScrollIndexOffset, 0, getMinRenderedScrollOffset());
         requestStackUpdate();
@@ -1203,8 +1211,7 @@ public abstract class StackLayoutBase
      * @return The distance between two neighboring tab stacks.
      */
     private float getFullScrollDistance() {
-        float distance = getOrientation() == Orientation.PORTRAIT ? getWidth()
-                                                                  : getHeightMinusBrowserControls();
+        float distance = isUsingHorizontalLayout() ? getHeightMinusBrowserControls() : getWidth();
         if (mStacks.size() > 2) {
             return distance - getViewportParameters().getInnerMargin();
         }
