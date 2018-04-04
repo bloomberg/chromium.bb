@@ -20,6 +20,7 @@ import org.chromium.ui.widget.ButtonCompat;
 public class SigninView extends LinearLayout {
     private SigninScrollView mScrollView;
     private TextView mTitle;
+    private View mAccountPicker;
     private ImageView mAccountImage;
     private TextView mAccountName;
     private TextView mAccountEmail;
@@ -42,6 +43,7 @@ public class SigninView extends LinearLayout {
 
         mScrollView = (SigninScrollView) findViewById(R.id.signin_scroll_view);
         mTitle = (TextView) findViewById(R.id.signin_title);
+        mAccountPicker = findViewById(R.id.signin_account_picker);
         mAccountImage = (ImageView) findViewById(R.id.account_image);
         mAccountName = (TextView) findViewById(R.id.account_name);
         mAccountEmail = (TextView) findViewById(R.id.account_email);
@@ -63,6 +65,10 @@ public class SigninView extends LinearLayout {
 
     public TextView getTitleView() {
         return mTitle;
+    }
+
+    public View getAccountPickerView() {
+        return mAccountPicker;
     }
 
     public ImageView getAccountImageView() {

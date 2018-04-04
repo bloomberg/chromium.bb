@@ -2315,6 +2315,9 @@ Google may use your browsing activity, content on some sites you visit, and othe
       <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync and personalization. [CHAR-LIMIT=20]" translateable="false">
         Yes, I'm in
       </message>
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DIALOG_TITLE" desc="The title for the dialog that shows the list of accounts on the device and asks user to select one of these accounts. [CHAR-LIMIT=27]" translateable="false">
+        Choose an account
+      </message>
 
       <!-- Personalized Signin Promos Strings -->
       <message name="IDS_SIGNIN_PROMO_DESCRIPTION_BOOKMARKS" desc="Description string for 'Continue as' signin promo shown in Bookmarks screen.">
