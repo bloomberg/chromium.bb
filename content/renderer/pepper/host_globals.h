@@ -104,6 +104,8 @@ class HostGlobals : public ppapi::PpapiGlobals {
   typedef std::map<PP_Module, PluginModule*> ModuleMap;
   ModuleMap module_map_;
 
+  scoped_refptr<base::TaskRunner> file_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(HostGlobals);
 };
 

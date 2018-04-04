@@ -2464,10 +2464,6 @@ void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
                                 mbytes);
 }
 
-scoped_refptr<base::TaskRunner> RenderThreadImpl::GetFileThreadTaskRunner() {
-  return blink_platform_impl_->BaseFileTaskRunner();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetMediaThreadTaskRunner() {
   DCHECK(message_loop()->task_runner()->BelongsToCurrentThread());

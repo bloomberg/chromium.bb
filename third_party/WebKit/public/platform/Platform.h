@@ -474,9 +474,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // renderer was created with threaded rendering desabled.
   virtual WebThread* CompositorThread() const { return 0; }
 
-  // Returns an interface to the file task runner.
-  base::SingleThreadTaskRunner* FileTaskRunner() const;
-  scoped_refptr<base::SingleThreadTaskRunner> BaseFileTaskRunner() const;
 
   // Returns an interface to the IO task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const {
@@ -494,7 +491,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   CreateNestedMessageLoopRunner() const {
     return nullptr;
   }
-
   // Testing -------------------------------------------------------------
 
   // Gets a pointer to URLLoaderMockFactory for testing. Will not be available
@@ -763,7 +759,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual ~Platform();
 
   WebThread* main_thread_;
-  std::unique_ptr<WebThread> file_thread_;
 };
 
 }  // namespace blink
