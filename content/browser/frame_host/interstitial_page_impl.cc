@@ -58,10 +58,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/page_transition_types.h"
 
-#if defined(OS_ANDROID)
-#include "content/browser/web_contents/web_contents_view_android.h"
-#endif
-
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
 
@@ -796,15 +792,6 @@ void InterstitialPageImpl::CreateNewFullscreenWidget(int32_t render_process_id,
                                                      mojom::WidgetPtr widget) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
-}
-
-void InterstitialPageImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
-                                           const ContextMenuParams& params) {
-#if defined(OS_ANDROID)
-  static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents())->GetView())
-      ->ShowContextMenu(render_frame_host, params);
-#endif
 }
 
 void InterstitialPageImpl::ShowCreatedWindow(int process_id,

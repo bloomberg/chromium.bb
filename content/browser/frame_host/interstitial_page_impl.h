@@ -107,8 +107,6 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
                const NotificationDetails& details) override;
 
   // RenderFrameHostDelegate implementation:
-  void ShowContextMenu(RenderFrameHost* render_frame_host,
-                       const ContextMenuParams& params) override;
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
