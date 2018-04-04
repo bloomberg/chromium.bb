@@ -1639,13 +1639,24 @@ class NoProductionJavaCodeUsingTestOnlyFunctions(unittest.TestCase):
 
 
 class CheckUniquePtr(unittest.TestCase):
-  def testTruePositives(self):
+  def testTruePositivesNullptr(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('dir/java/src/baz.cc', ['std::unique_ptr<T>()']),
+      MockFile('dir/java/src/baz-p.cc', ['std::unique_ptr<T<P>>()']),
+    ]
+
+    results = PRESUBMIT._CheckUniquePtr(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertEqual(2, len(results[0].items))
+    self.assertTrue('baz.cc' in results[0].items[0])
+    self.assertTrue('baz-p.cc' in results[0].items[1])
+
+  def testTruePositivesConstructor(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('dir/java/src/foo.cc', ['return std::unique_ptr<T>(foo);']),
       MockFile('dir/java/src/bar.mm', ['bar = std::unique_ptr<T>(foo)']),
-      MockFile('dir/java/src/baz.cc', ['std::unique_ptr<T>()']),
-      MockFile('dir/java/src/baz-p.cc', ['std::unique_ptr<T<P>>()']),
       MockFile('dir/java/src/mult.cc', [
         'return',
         '    std::unique_ptr<T>(barVeryVeryLongFooSoThatItWouldNotFitAbove);'
@@ -1661,16 +1672,13 @@ class CheckUniquePtr(unittest.TestCase):
     ]
 
     results = PRESUBMIT._CheckUniquePtr(mock_input_api, MockOutputApi())
-    # TODO(crbug.com/827961) Make the check return just one result, listing all
-    # affected files in it.
-    self.assertEqual(7, len(results))
-    self.assertTrue('foo.cc' in results[0].message)
-    self.assertTrue('bar.mm' in results[1].message)
-    self.assertTrue('baz.cc' in results[2].message)
-    self.assertTrue('baz-p.cc' in results[3].message)
-    self.assertTrue('mult.cc' in results[4].message)
-    self.assertTrue('mult2.cc' in results[5].message)
-    self.assertTrue('mult3.cc' in results[6].message)
+    self.assertEqual(1, len(results))
+    self.assertEqual(5, len(results[0].items))
+    self.assertTrue('foo.cc' in results[0].items[0])
+    self.assertTrue('bar.mm' in results[0].items[1])
+    self.assertTrue('mult.cc' in results[0].items[2])
+    self.assertTrue('mult2.cc' in results[0].items[3])
+    self.assertTrue('mult3.cc' in results[0].items[4])
 
   def testFalsePositives(self):
     mock_input_api = MockInputApi()
