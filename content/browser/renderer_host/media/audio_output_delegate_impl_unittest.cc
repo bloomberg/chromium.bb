@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
@@ -593,11 +592,7 @@ class AudioOutputDelegateTest : public testing::Test {
     // New tasks might be posted while we are syncing, but in every iteration at
     // least one task will be run. 20 iterations should be enough for our code.
     for (int i = 0; i < 20; ++i) {
-      {
-        base::MessageLoop::ScopedNestableTaskAllower allower(
-            base::MessageLoop::current());
-        base::RunLoop().RunUntilIdle();
-      }
+      base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
       SyncWith(BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
       SyncWith(audio_manager_->GetWorkerTaskRunner());
     }
