@@ -90,6 +90,7 @@ void OverviewWindowDragController::CompleteDrag(
       SnapWindow(snap_position_);
     }
   }
+  item_ = nullptr;
 }
 
 void OverviewWindowDragController::ActivateDraggedWindow() {
@@ -117,6 +118,9 @@ void OverviewWindowDragController::ResetGesture() {
   window_selector_->PositionWindows(/*animate=*/true);
   window_selector_->SetSplitViewDragIndicatorsIndicatorState(
       IndicatorState::kNone, gfx::Point());
+  // This function gets called on long press, which bypasses CompleteDrag but
+  // stops dragging as well, so reset |item_|.
+  item_ = nullptr;
 }
 
 void OverviewWindowDragController::ResetWindowSelector() {
