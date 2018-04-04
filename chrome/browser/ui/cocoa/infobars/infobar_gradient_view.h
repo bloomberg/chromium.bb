@@ -11,18 +11,7 @@
 #import <Cocoa/Cocoa.h>
 
 // A custom view that draws the background gradient for an infobar.
-@interface InfoBarGradientView : VerticalGradientView {
- @private
-  CGFloat arrowHeight_;
-  CGFloat arrowHalfWidth_;
-  CGFloat arrowX_;
-  BOOL hasTip_;
-}
-
-@property(assign, nonatomic) CGFloat arrowHeight;
-@property(assign, nonatomic) CGFloat arrowHalfWidth;
-@property(assign, nonatomic) CGFloat arrowX;
-@property(assign, nonatomic) BOOL hasTip;
+@interface InfoBarGradientView : VerticalGradientView
 
 // Sets the infobar background color.
 - (void)setInfobarBackgroundColor:(SkColor)color;

@@ -8,14 +8,14 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/infobar_container_delegate.h"
+#include "components/infobars/core/infobar_container.h"
 
 @class InfoBarContainerController;
 
 // The cocoa specific implementation of InfoBarContainer. This mostly serves as
 // a bridge for InfoBarContainerController.
 class InfoBarContainerCocoa : public infobars::InfoBarContainer,
-                              public InfoBarContainerDelegate {
+                              public infobars::InfoBarContainer::Delegate {
  public:
   explicit InfoBarContainerCocoa(InfoBarContainerController* controller);
   ~InfoBarContainerCocoa() override;
@@ -26,9 +26,8 @@ class InfoBarContainerCocoa : public infobars::InfoBarContainer,
                                   size_t position) override;
   void PlatformSpecificRemoveInfoBar(infobars::InfoBar* infobar) override;
 
-  // InfoBarContainerDelegate:
+  // InfoBarContainer::Delegate:
   void InfoBarContainerStateChanged(bool is_animating) override;
-  bool DrawInfoBarArrows(int* x) const override;
 
   InfoBarContainerController* controller_;  // weak, owns us.
 

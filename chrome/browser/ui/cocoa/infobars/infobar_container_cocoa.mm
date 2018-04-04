@@ -33,7 +33,3 @@ void InfoBarContainerCocoa::PlatformSpecificRemoveInfoBar(
 void InfoBarContainerCocoa::InfoBarContainerStateChanged(bool is_animating) {
   [controller_ positionInfoBarsAndRedraw:is_animating];
 }
-
-bool InfoBarContainerCocoa::DrawInfoBarArrows(int* x) const {
-  return false;
-}

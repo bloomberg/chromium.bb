@@ -173,10 +173,6 @@ const CGFloat kLocationBarRightOffset = 35;
   parameters_.infoBarHeight = infoBarHeight;
 }
 
-- (void)setInfoBarAnchorPointY:(CGFloat)infoBarAnchorPointY {
-  parameters_.infoBarAnchorPointY = infoBarAnchorPointY;
-}
-
 - (void)setHasDownloadShelf:(BOOL)hasDownloadShelf {
   parameters_.hasDownloadShelf = hasDownloadShelf;
 }
@@ -345,18 +341,8 @@ const CGFloat kLocationBarRightOffset = 35;
     CGFloat infoBarMaxY = maxY;
     CGFloat infoBarMinY = maxY - parameters_.infoBarHeight;
 
-    // If there's a toolbar, then the frame needs to be high enough to
-    // accomodate the top arrow, which might stretch all the way to the page
-    // info bubble icon.
-    if (parameters_.hasToolbar) {
-      infoBarMaxY =
-          NSMinY(output_.toolbarFrame) + parameters.infoBarAnchorPointY;
-    }
-
     output_.infoBarFrame =
         NSMakeRect(0, infoBarMinY, width, infoBarMaxY - infoBarMinY);
-    output_.infoBarMaxTopArrowHeight =
-        NSHeight(output_.infoBarFrame) - parameters_.infoBarHeight;
     maxY = NSMinY(output_.infoBarFrame);
   } else {
     // The info bar has 0 height, but tests still expect it in the right

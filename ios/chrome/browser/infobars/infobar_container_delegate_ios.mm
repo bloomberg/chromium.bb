@@ -12,31 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-int InfoBarContainerDelegateIOS::ArrowTargetHeightForInfoBar(
-    size_t index,
-    const gfx::SlideAnimation& animation) const {
-  return 0;
-}
-
-void InfoBarContainerDelegateIOS::ComputeInfoBarElementSizes(
-    const gfx::SlideAnimation& animation,
-    int arrow_target_height,
-    int bar_target_height,
-    int* arrow_height,
-    int* arrow_half_width,
-    int* bar_height) const {
-  DCHECK_NE(-1, bar_target_height)
-      << "Infobars don't have a default height on iOS";
-  *arrow_height = 0;
-  *arrow_half_width = 0;
-  *bar_height = animation.CurrentValueBetween(0, bar_target_height);
-}
-
 void InfoBarContainerDelegateIOS::InfoBarContainerStateChanged(
     bool is_animating) {
   [delegate_ infoBarContainerStateDidChangeAnimated:is_animating];
-}
-
-bool InfoBarContainerDelegateIOS::DrawInfoBarArrows(int* x) const {
-  return false;
 }

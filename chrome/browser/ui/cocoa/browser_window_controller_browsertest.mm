@@ -17,7 +17,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,9 +33,7 @@
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
@@ -47,13 +44,10 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/infobars/core/infobar_delegate.h"
-#include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -221,23 +215,6 @@ class ViewExposedChecker {
 
 @end
 
-@interface InfoBarContainerController(TestingAPI)
-- (BOOL)isTopInfoBarAnimationRunning;
-@end
-
-@implementation InfoBarContainerController(TestingAPI)
-- (BOOL)isTopInfoBarAnimationRunning {
-  InfoBarController* infoBarController = [infobarControllers_ objectAtIndex:0];
-  if (infoBarController) {
-    const gfx::SlideAnimation& infobarAnimation =
-        static_cast<const InfoBarCocoa*>(
-            infoBarController.infobar)->animation();
-    return infobarAnimation.is_animating();
-  }
-  return NO;
-}
-@end
-
 class BrowserWindowControllerTest : public InProcessBrowserTest {
  public:
   BrowserWindowControllerTest() : InProcessBrowserTest() {
@@ -251,14 +228,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   BrowserWindowController* controller() const {
     return [BrowserWindowController browserWindowControllerForWindow:
         browser()->window()->GetNativeWindow()];
-  }
-
-  static void ShowInfoBar(Browser* browser) {
-    SimpleAlertInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(
-            browser->tab_strip_model()->GetActiveWebContents()),
-        infobars::InfoBarDelegate::TEST_INFOBAR, nullptr, base::string16(),
-        false);
   }
 
   NSView* GetViewWithID(BrowserViewID view_id) const {
@@ -308,41 +277,11 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     }
   }
 
-  CGFloat GetViewHeight(BrowserViewID viewID) const {
-    CGFloat height = NSHeight([GetViewWithID(viewID) frame]);
-    if (viewID == BROWSER_VIEW_ID_INFO_BAR) {
-      height -= [[controller() infoBarContainerController]
-          overlappingTipHeight];
-    }
-    return height;
-  }
-
-  static void CheckTopInfoBarAnimation(
-      InfoBarContainerController* info_bar_container_controller,
-      const base::Closure& quit_task) {
-    if (![info_bar_container_controller isTopInfoBarAnimationRunning])
-      quit_task.Run();
-  }
-
   static void CheckBookmarkBarAnimation(
       BookmarkBarController* bookmark_bar_controller,
       const base::Closure& quit_task) {
     if (![bookmark_bar_controller isAnimationRunning])
       quit_task.Run();
-  }
-
-  void WaitForTopInfoBarAnimationToFinish() {
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
-
-    base::Timer timer(false, true);
-    timer.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(15),
-        base::Bind(&CheckTopInfoBarAnimation,
-                   [controller() infoBarContainerController],
-                   runner->QuitClosure()));
-    runner->Run();
   }
 
   void WaitForBookmarkBarAnimationToFinish() {
@@ -357,22 +296,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
                    [controller() bookmarkBarController],
                    runner->QuitClosure()));
     runner->Run();
-  }
-
-  NSInteger GetExpectedTopInfoBarTipHeight() {
-    InfoBarContainerController* info_bar_container_controller =
-        [controller() infoBarContainerController];
-    CGFloat overlapping_tip_height =
-        [info_bar_container_controller overlappingTipHeight];
-    LocationBarViewMac* location_bar_view = [controller() locationBarBridge];
-    NSPoint icon_bottom = location_bar_view->GetInfoBarAnchorPoint();
-
-    NSPoint info_bar_top = NSMakePoint(0,
-        NSHeight([info_bar_container_controller view].frame) -
-        overlapping_tip_height);
-    info_bar_top = [[info_bar_container_controller view]
-        convertPoint:info_bar_top toView:nil];
-    return icon_bottom.y - info_bar_top.y;
   }
 
   // Nothing should draw on top of the window controls.
@@ -652,27 +575,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   [nsWindowController close];
 }
 
-// Verify that the info bar tip is hidden when the toolbar is not visible.
-IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       InfoBarTipHiddenForWindowWithoutToolbar) {
-  ShowInfoBar(browser());
-  EXPECT_FALSE(
-      [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
-
-  OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"));
-  Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
-  NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
-  BrowserWindowController* popupController =
-      [BrowserWindowController browserWindowControllerForWindow:popupWindow];
-  EXPECT_FALSE([popupController hasToolbar]);
-
-  // Show infobar for controller.
-  ShowInfoBar(popup_browser);
-  EXPECT_TRUE(
-      [[popupController infoBarContainerController]
-          shouldSuppressTopInfoBarTip]);
-}
-
 // Tests that status bubble's base frame does move when devTools are docked.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        StatusBubblePositioning) {
@@ -687,35 +589,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_NSNE(origin, originWithDevTools);
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
-}
-
-// Tests that top infobar tip is streched when bookmark bar becomes SHOWN/HIDDEN
-IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       InfoBarTipStretchedWhenBookmarkBarStatusChanged) {
-  EXPECT_FALSE([controller() isBookmarkBarVisible]);
-  ShowInfoBar(browser());
-  // The infobar tip is animated during the infobar is being added, wait until
-  // it completes.
-  WaitForTopInfoBarAnimationToFinish();
-
-  EXPECT_FALSE([[controller() infoBarContainerController]
-      shouldSuppressTopInfoBarTip]);
-
-  NSInteger max_tip_height =
-      InfoBarContainerDelegate::kMaximumArrowTargetHeight +
-          InfoBarContainerDelegate::kSeparatorLineHeight;
-
-  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
-  WaitForBookmarkBarAnimationToFinish();
-  EXPECT_TRUE([controller() isBookmarkBarVisible]);
-  EXPECT_EQ(std::min(GetExpectedTopInfoBarTipHeight(), max_tip_height),
-            [[controller() infoBarContainerController] overlappingTipHeight]);
-
-  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
-  WaitForBookmarkBarAnimationToFinish();
-  EXPECT_FALSE([controller() isBookmarkBarVisible]);
-  EXPECT_EQ(std::min(GetExpectedTopInfoBarTipHeight(), max_tip_height),
-            [[controller() infoBarContainerController] overlappingTipHeight]);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, TrafficLightZOrder) {

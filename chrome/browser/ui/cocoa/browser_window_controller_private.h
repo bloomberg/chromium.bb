@@ -108,12 +108,6 @@ enum class FullscreenSource {
 // The opacity for the toolbar divider; 0 means that it shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
 
-// Update visibility of the infobar tip, depending on the state of the window.
-- (void)updateInfoBarTipVisibility;
-
-// The distance from the toolbar bottom to the anchor point for InfoBars.
-- (NSInteger)infoBarAnchorPointY;
-
 // Enter fullscreen by toggling the AppKit Fullscreen API.
 - (void)enterAppKitFullscreen;
 

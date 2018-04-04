@@ -21,20 +21,12 @@ namespace content {
 class WebContents;
 }
 
-// Protocol for basic container methods, as needed by an InfoBarController.
-// This protocol exists to make mocking easier in unittests.
-@protocol InfoBarContainerControllerBase
-- (BOOL)shouldSuppressTopInfoBarTip;
-- (CGFloat)infobarArrowX;
-@end
-
 // Controller for the infobar container view, which is the superview
 // of all the infobar views.  This class owns zero or more
 // InfoBarControllers, which manage the infobar views.  This class
 // also receives tab strip model notifications and handles
 // adding/removing infobars when needed.
-@interface InfoBarContainerController
-    : NSViewController<InfoBarContainerControllerBase> {
+@interface InfoBarContainerController : NSViewController {
  @private
   // Needed to send resize messages when infobars are added or removed.
   id<ViewResizer> resizeDelegate_;  // weak
@@ -48,18 +40,9 @@ class WebContents;
   // The C++ instance that bridges to the cross platform code.
   std::unique_ptr<InfoBarContainerCocoa> containerCocoa_;
 
-  // If YES then the first info bar doesn't draw a tip.
-  BOOL shouldSuppressTopInfoBarTip_;
-
-  // The x-position of the infobar arrow.
-  CGFloat infobarArrowX_;
-
   // If YES then an infobar animation is in progress.
   BOOL isAnimating_;
 }
-
-@property(nonatomic, assign) BOOL shouldSuppressTopInfoBarTip;
-@property(nonatomic, assign) CGFloat infobarArrowX;
 
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate;
 
@@ -70,10 +53,6 @@ class WebContents;
 // Forwarded by BWC. Removes all infobars if |contents| is the current tab
 // contents.
 - (void)tabDetachedWithContents:(content::WebContents*)contents;
-
-// Returns the amount of additional height the container view needs to draw the
-// anti-spoofing tip. This is the total amount of overlap for all infobars.
-- (CGFloat)overlappingTipHeight;
 
 // Adds the given infobar.
 - (void)addInfoBar:(InfoBarCocoa*)infobar
@@ -86,10 +65,7 @@ class WebContents;
 // |browser_controller_| that it needs to resize the container view.
 - (void)positionInfoBarsAndRedraw:(BOOL)isAnimating;
 
-// Set the max arrow height of the top infobar.
-- (void)setMaxTopArrowHeight:(NSInteger)height;
-
-// The height of all the info bars. Does not include the top arrow.
+// The height of all the info bars.
 - (CGFloat)heightOfInfoBars;
 
 @end

@@ -163,8 +163,7 @@ LocationBarView::LocationBarView(Browser* browser,
       browser_(browser),
       delegate_(delegate),
       is_popup_mode_(is_popup_mode),
-      tint_(GetTintForProfile(profile)),
-      popup_observer_(this) {
+      tint_(GetTintForProfile(profile)) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -209,7 +208,6 @@ void LocationBarView::Init() {
   AddChildView(omnibox_view_);
 
   RefreshBackground();
-  popup_observer_.Add(omnibox_view_->model()->popup_model());
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
@@ -367,14 +365,6 @@ void LocationBarView::SetShowFocusRect(bool show) {
 
 void LocationBarView::SelectAll() {
   omnibox_view_->SelectAll(true);
-}
-
-gfx::Point LocationBarView::GetInfoBarAnchorPoint() const {
-  const views::ImageView* image = location_icon_view_->GetImageView();
-  const gfx::Rect image_bounds(image->GetImageBounds());
-  gfx::Point point(image_bounds.CenterPoint().x(), image_bounds.bottom());
-  ConvertPointToTarget(image, this, &point);
-  return point;
 }
 
 views::View* LocationBarView::GetSecurityBubbleAnchorView() {
@@ -1156,6 +1146,10 @@ void LocationBarView::OnChanged() {
   SchedulePaint();
 }
 
+void LocationBarView::OnPopupVisibilityChanged() {
+  RefreshBackground();
+}
+
 const ToolbarModel* LocationBarView::GetToolbarModel() const {
   return delegate_->GetToolbarModel();
 }
@@ -1165,13 +1159,6 @@ const ToolbarModel* LocationBarView::GetToolbarModel() const {
 
 void LocationBarView::SetFocusAndSelection(bool select_all) {
   FocusLocation(select_all);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, private OmniboxPopupModelObserver implementation:
-
-void LocationBarView::OnOmniboxPopupShownOrHidden() {
-  RefreshBackground();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

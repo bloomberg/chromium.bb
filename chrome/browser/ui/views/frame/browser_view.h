@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
-#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
@@ -35,7 +34,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/common/buildflags.h"
-#include "components/omnibox/browser/omnibox_popup_model_observer.h"
+#include "components/infobars/core/infobar_container.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
@@ -95,9 +94,8 @@ class BrowserView : public BrowserWindow,
                     public views::WidgetDelegate,
                     public views::WidgetObserver,
                     public views::ClientView,
-                    public InfoBarContainerDelegate,
+                    public infobars::InfoBarContainer::Delegate,
                     public LoadCompleteListener::Delegate,
-                    public OmniboxPopupModelObserver,
                     public ExclusiveAccessContext,
                     public ExclusiveAccessBubbleViewsContext,
                     public extensions::ExtensionKeybindingRegistry::Delegate {
@@ -444,9 +442,8 @@ class BrowserView : public BrowserWindow,
   int NonClientHitTest(const gfx::Point& point) override;
   gfx::Size GetMinimumSize() const override;
 
-  // InfoBarContainerDelegate:
+  // infobars::InfoBarContainer::Delegate:
   void InfoBarContainerStateChanged(bool is_animating) override;
-  bool DrawInfoBarArrows(int* x) const override;
 
   // Overridden from views::View:
   const char* GetClassName() const override;
@@ -462,9 +459,6 @@ class BrowserView : public BrowserWindow,
 
   // Overridden from ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-
-  // OmniboxPopupModelObserver overrides
-  void OnOmniboxPopupShownOrHidden() override;
 
   // ExclusiveAccessContext overrides
   Profile* GetProfile() override;
@@ -606,9 +600,6 @@ class BrowserView : public BrowserWindow,
   // Shows the next app-modal dialog box, if there is one to be shown, or moves
   // an existing showing one to the front.
   void ActivateAppModalDialog() const;
-
-  // Returns the max top arrow height for infobar.
-  int GetMaxTopInfoBarArrowHeight();
 
   // Retrieves the chrome command id associated with |accelerator|. The function
   // returns false if |accelerator| is unknown. Otherwise |command_id| will be

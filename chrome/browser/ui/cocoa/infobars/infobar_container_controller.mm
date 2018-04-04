@@ -24,9 +24,6 @@
 
 @implementation InfoBarContainerController
 
-@synthesize shouldSuppressTopInfoBarTip = shouldSuppressTopInfoBarTip_;
-@synthesize infobarArrowX = infobarArrowX_;
-
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(resizeDelegate);
   if ((self = [super initWithNibName:nil bundle:nil])) {
@@ -66,20 +63,14 @@
     [self changeWebContents:NULL];
 }
 
-- (CGFloat)overlappingTipHeight {
-  return containerCocoa_->GetVerticalOverlap(NULL);
-}
-
 - (void)addInfoBar:(InfoBarCocoa*)infobar
           position:(NSUInteger)position {
-  InfoBarController* controller = infobar->controller();
-  [controller setContainerController:self];
-  [infobarControllers_ insertObject:controller atIndex:position];
+  [infobarControllers_ insertObject:infobar->controller() atIndex:position];
 
   NSView* relativeView = nil;
   if (position > 0)
     relativeView = [[infobarControllers_ objectAtIndex:position - 1] view];
-  [[self view] addSubview:[controller view]
+  [[self view] addSubview:[infobar->controller() view]
                positioned:NSWindowAbove
                relativeTo:relativeView];
 }
@@ -109,21 +100,13 @@
     frame.origin.x = NSMinX(containerBounds);
     frame.origin.y = minY;
     frame.size.width = NSWidth(containerBounds);
-    frame.size.height = [controller infobar]->total_height();
+    frame.size.height = [controller infobar]->computed_height();
     [[controller view] setFrame:frame];
 
-    minY += NSHeight(frame) - [controller infobar]->arrow_height();
-    [controller layoutArrow];
+    minY += NSHeight(frame);
   }
 
-  [resizeDelegate_ resizeView:[self view] newHeight:[self heightOfInfoBars]];
-}
-
-- (void)setShouldSuppressTopInfoBarTip:(BOOL)flag {
-  if (shouldSuppressTopInfoBarTip_ == flag)
-    return;
-  shouldSuppressTopInfoBarTip_ = flag;
-  [self positionInfoBarsAndRedraw:isAnimating_];
+  [resizeDelegate_ resizeView:[self view] newHeight:minY];
 }
 
 - (void)removeController:(InfoBarController*)controller {
@@ -138,16 +121,10 @@
   [infobarControllers_ removeObject:controller];
 }
 
-- (void)setMaxTopArrowHeight:(NSInteger)height {
-  containerCocoa_->SetMaxTopArrowHeight(height, containerCocoa_.get());
-}
-
 - (CGFloat)heightOfInfoBars {
   CGFloat totalHeight = 0;
-  for (InfoBarController* controller in infobarControllers_.get()) {
-    totalHeight += [controller infobar]->total_height() -
-                   [controller infobar]->arrow_height();
-  }
+  for (InfoBarController* controller in infobarControllers_.get())
+    totalHeight += [controller infobar]->computed_height();
   return totalHeight;
 }
 

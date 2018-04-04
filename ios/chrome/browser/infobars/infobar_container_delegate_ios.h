@@ -10,10 +10,6 @@
 #include "components/infobars/core/infobar_container.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace gfx {
-class SlideAnimation;
-}
-
 @protocol InfobarContainerStateDelegate;
 
 // iOS implementation of InfoBarContainer::Delegate. Most of the method
@@ -28,29 +24,8 @@ class InfoBarContainerDelegateIOS
 
   ~InfoBarContainerDelegateIOS() override {}
 
-  // This method always returns 0 on iOS.
-  int ArrowTargetHeightForInfoBar(
-      size_t index,
-      const gfx::SlideAnimation& animation) const override;
-
-  // This always sets |arrow_height| and |arrow_half_width| to zero, and
-  // interpolates |bar_height| between zero and |bar_target_height| according
-  // to |animation|.
-  // It is a programming error to pass -1 in as the |bar_target_height| on iOS,
-  // signalling that the default infobar height should be used (there is no such
-  // default on iOS).
-  void ComputeInfoBarElementSizes(const gfx::SlideAnimation& animation,
-                                  int arrow_target_height,
-                                  int bar_target_height,
-                                  int* arrow_height,
-                                  int* arrow_half_width,
-                                  int* bar_height) const override;
-
   // Informs |delegate_| that the container state has changed.
   void InfoBarContainerStateChanged(bool is_animating) override;
-
-  // This method always returns false on iOS.
-  bool DrawInfoBarArrows(int* x) const override;
 
  private:
   __weak id<InfobarContainerStateDelegate> delegate_;

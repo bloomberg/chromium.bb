@@ -41,7 +41,7 @@ class InfoBarDelegate;
 - (int)barHeight;
 
 // Adjusts visible portion of this infobar.
-- (void)onHeightsRecalculated:(int)newHeight;
+- (void)onHeightRecalculated:(int)newHeight;
 
 // Removes the view.
 - (void)removeView;

@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "components/infobars/core/infobar_delegate.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/size.h"
@@ -59,10 +58,6 @@ class InfoBar : public gfx::AnimationDelegate {
   // triggering a call to AnimationEnded().
   void Hide(bool animate);
 
-  // Changes the target height of the arrow portion of the infobar.  This has no
-  // effect once the infobar is animating closed.
-  void SetArrowTargetHeight(int height);
-
   // Notifies the infobar that it is no longer owned and should delete itself
   // once it is invisible.
   void CloseSoon();
@@ -71,14 +66,11 @@ class InfoBar : public gfx::AnimationDelegate {
   // unowned.
   void RemoveSelf();
 
-  // Changes the target height of the main ("bar") portion of the infobar.
-  void SetBarTargetHeight(int height);
+  // Changes the target height of the infobar.
+  void SetTargetHeight(int height);
 
   const gfx::SlideAnimation& animation() const { return animation_; }
-  int arrow_height() const { return arrow_height_; }
-  int arrow_target_height() const { return arrow_target_height_; }
-  int arrow_half_width() const { return arrow_half_width_; }
-  int total_height() const { return arrow_height_ + bar_height_; }
+  int computed_height() const { return height_; }
 
  protected:
   // gfx::AnimationDelegate:
@@ -87,8 +79,7 @@ class InfoBar : public gfx::AnimationDelegate {
   const InfoBarContainer* container() const { return container_; }
   InfoBarContainer* container() { return container_; }
   gfx::SlideAnimation* animation() { return &animation_; }
-  int bar_height() const { return bar_height_; }
-  int bar_target_height() const { return bar_target_height_; }
+  int target_height() const { return target_height_; }
 
   // Platforms may optionally override these if they need to do work during
   // processing of the given calls.
@@ -96,17 +87,17 @@ class InfoBar : public gfx::AnimationDelegate {
   virtual void PlatformSpecificShow(bool animate) {}
   virtual void PlatformSpecificHide(bool animate) {}
   virtual void PlatformSpecificOnCloseSoon() {}
-  virtual void PlatformSpecificOnHeightsRecalculated() {}
+  virtual void PlatformSpecificOnHeightRecalculated() {}
 
  private:
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  // Finds the new desired arrow and bar heights, and if they differ from the
-  // current ones, calls PlatformSpecificOnHeightRecalculated().  Informs our
-  // container our state has changed if either the heights have changed or
-  // |force_notify| is set.
-  void RecalculateHeights(bool force_notify);
+  // Finds the new desired height, and if it differs from the current height,
+  // calls PlatformSpecificOnHeightRecalculated().  Informs our container our
+  // state has changed if either the height has changed or |force_notify| is
+  // set.
+  void RecalculateHeight(bool force_notify);
 
   // Checks whether the infobar is unowned and done with all animations.  If so,
   // notifies the container that it should remove this infobar, and deletes
@@ -118,15 +109,9 @@ class InfoBar : public gfx::AnimationDelegate {
   InfoBarContainer* container_;
   gfx::SlideAnimation animation_;
 
-  // The current and target heights of the arrow and bar portions, and half the
-  // current arrow width.  (It's easier to work in half-widths as we draw the
-  // arrow as two halves on either side of a center point.)  All these values
-  // scale in unison to the container delegate's default and maximum values.
-  int arrow_height_;         // Includes both fill and top stroke.
-  int arrow_target_height_;  // Should always be set by the time we read it.
-  int arrow_half_width_;     // Includes only fill.
-  int bar_height_;           // Includes both fill and bottom separator.
-  int bar_target_height_;    // May be left as -1, meaning "use default".
+  // The current and target heights.
+  int height_;  // Includes both fill and bottom separator.
+  int target_height_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };

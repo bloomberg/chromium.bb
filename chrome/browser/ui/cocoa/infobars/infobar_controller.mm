@@ -31,8 +31,6 @@
 
 @implementation InfoBarController
 
-@synthesize containerController = containerController_;
-
 - (id)initWithInfoBar:(InfoBarCocoa*)infobar {
   if ((self = [super initWithNibName:@"InfoBar"
                               bundle:base::mac::FrameworkBundle()])) {
@@ -87,6 +85,9 @@
   [infoBarView_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   cocoa_l10n_util::FlipAllSubviewsIfNecessary(
       base::mac::ObjCCast<NSView>(infoBarView_));
+
+  constexpr int kDefaultBarTargetHeight = 40;
+  infobar_->SetTargetHeight(kDefaultBarTargetHeight);
 }
 
 - (void)dealloc {
@@ -156,17 +157,6 @@
   [cancelButton_ removeFromSuperview];
   cancelButton_ = nil;
   [label_.get() setFrame:labelFrame];
-}
-
-- (void)layoutArrow {
-  [infoBarView_ setArrowHeight:infobar_->arrow_height()];
-  [infoBarView_ setArrowHalfWidth:infobar_->arrow_half_width()];
-  [infoBarView_ setHasTip:![containerController_ shouldSuppressTopInfoBarTip]];
-
-  // Convert from window to view coordinates.
-  NSPoint point = NSMakePoint([containerController_ infobarArrowX], 0);
-  point = [infoBarView_ convertPoint:point fromView:nil];
-  [infoBarView_ setArrowX:point.x];
 }
 
 - (void)disablePopUpMenu:(NSMenu*)menu {

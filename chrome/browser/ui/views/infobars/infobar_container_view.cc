@@ -15,7 +15,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/view_targeter.h"
 
 namespace {
 
@@ -65,17 +64,18 @@ InfoBarContainerView::~InfoBarContainerView() {
 }
 
 gfx::Size InfoBarContainerView::CalculatePreferredSize() const {
-  int total_height;
-  int overlap = GetVerticalOverlap(&total_height);
-  total_height -= overlap;
+  gfx::Size size;
+
+  // Iterate over all infobars; the last child is the content shadow.
+  for (int i = 0; i < child_count() - 1; ++i) {
+    const gfx::Size child_size = child_at(i)->GetPreferredSize();
+    size.Enlarge(0, child_size.height());
+    size.SetToMax(child_size);  // Only affects our width.
+  }
 
   // No need to reserve space for the bottom bar's separator; the shadow is good
   // enough.
-  total_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
-
-  gfx::Size size(0, total_height);
-  for (int i = 0; i < child_count(); ++i)
-    size.SetToMax(gfx::Size(child_at(i)->GetPreferredSize().width(), 0));
+  size.Enlarge(0, -InfoBarContainerDelegate::kSeparatorLineHeight);
 
   // Don't reserve space for the bottom shadow here.  Because the shadow paints
   // to its own layer and this class doesn't, it can paint outside the size
@@ -96,10 +96,10 @@ const char* InfoBarContainerView::GetClassName() const {
 void InfoBarContainerView::Layout() {
   int top = 0;
 
+  // Iterate over all infobars; the last child is the content shadow.
   for (int i = 0; i < child_count() - 1; ++i) {
     InfoBarView* child = static_cast<InfoBarView*>(child_at(i));
-    top -= child->arrow_height();
-    int child_height = child->total_height();
+    int child_height = child->computed_height();
 
     // Trim off the bottom bar's separator; the shadow is good enough.
     // The last infobar is the second to last child overall (followed by
@@ -107,7 +107,7 @@ void InfoBarContainerView::Layout() {
     if (i == child_count() - 2)
       child_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
     child->SetBounds(0, top, width(), child_height);
-    top += child_height;
+    top = child->bounds().bottom();
   }
 
   // The shadow is positioned flush with the bottom infobar, with the separator

@@ -20,6 +20,8 @@ void OmniboxEditController::OnInputInProgress(bool in_progress) {}
 
 void OmniboxEditController::OnChanged() {}
 
+void OmniboxEditController::OnPopupVisibilityChanged() {}
+
 OmniboxEditController::OmniboxEditController()
     : disposition_(WindowOpenDisposition::CURRENT_TAB),
       transition_(ui::PageTransitionFromInt(

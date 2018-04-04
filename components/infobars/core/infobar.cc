@@ -20,11 +20,8 @@ InfoBar::InfoBar(std::unique_ptr<InfoBarDelegate> delegate)
       delegate_(std::move(delegate)),
       container_(nullptr),
       animation_(this),
-      arrow_height_(0),
-      arrow_target_height_(0),
-      arrow_half_width_(0),
-      bar_height_(0),
-      bar_target_height_(-1) {
+      height_(0),
+      target_height_(0) {
   DCHECK(delegate_ != nullptr);
   animation_.SetTweenType(gfx::Tween::LINEAR);
   delegate_->set_infobar(this);
@@ -47,7 +44,7 @@ void InfoBar::Show(bool animate) {
     animation_.Show();
   } else {
     animation_.Reset(1.0);
-    RecalculateHeights(true);
+    RecalculateHeight(true);
   }
 }
 
@@ -65,15 +62,6 @@ void InfoBar::Hide(bool animate) {
   }
 }
 
-void InfoBar::SetArrowTargetHeight(int height) {
-  // Once the closing animation starts, we ignore further requests to change the
-  // target height.
-  if ((arrow_target_height_ != height) && !animation_.IsClosing()) {
-    arrow_target_height_ = height;
-    RecalculateHeights(false);
-  }
-}
-
 void InfoBar::CloseSoon() {
   owner_ = nullptr;
   PlatformSpecificOnCloseSoon();
@@ -85,15 +73,15 @@ void InfoBar::RemoveSelf() {
     owner_->RemoveInfoBar(this);
 }
 
-void InfoBar::SetBarTargetHeight(int height) {
-  if (bar_target_height_ != height) {
-    bar_target_height_ = height;
-    RecalculateHeights(false);
+void InfoBar::SetTargetHeight(int height) {
+  if (target_height_ != height) {
+    target_height_ = height;
+    RecalculateHeight(false);
   }
 }
 
 void InfoBar::AnimationProgressed(const gfx::Animation* animation) {
-  RecalculateHeights(false);
+  RecalculateHeight(false);
 }
 
 void InfoBar::AnimationEnded(const gfx::Animation* animation) {
@@ -101,34 +89,29 @@ void InfoBar::AnimationEnded(const gfx::Animation* animation) {
   // the heights haven't changed, lest it never get an "animation finished"
   // notification.  (If the browser doesn't get this notification, it will not
   // bother to re-layout the content area for the new infobar size.)
-  RecalculateHeights(true);
+  RecalculateHeight(true);
   MaybeDelete();
 }
 
-void InfoBar::RecalculateHeights(bool force_notify) {
-  // If there's no container delegate, there's no way to compute new element
-  // sizes, so return immediately.  We don't need to worry that this might leave
-  // us with bogus sizes, because if we're ever re-added to a container, it will
+void InfoBar::RecalculateHeight(bool force_notify) {
+  // If there's no container delegate, there's no way to compute the new height,
+  // so return immediately.  We don't need to worry that this might leave us
+  // with bogus sizes, because if we're ever re-added to a container, it will
   // call Show(false) while re-adding us, which will compute a correct set of
   // sizes.
   if (!container_ || !container_->delegate())
     return;
 
-  int old_arrow_height = arrow_height_;
-  int old_bar_height = bar_height_;
-
-  container_->delegate()->ComputeInfoBarElementSizes(
-      animation_, arrow_target_height_, bar_target_height_, &arrow_height_,
-      &arrow_half_width_, &bar_height_);
+  int old_height = height_;
+  height_ = animation_.CurrentValueBetween(0, target_height_);
 
   // Don't re-layout if nothing has changed, e.g. because the animation step was
-  // not large enough to actually change the heights by at least a pixel.
-  bool heights_differ =
-      (old_arrow_height != arrow_height_) || (old_bar_height != bar_height_);
-  if (heights_differ)
-    PlatformSpecificOnHeightsRecalculated();
+  // not large enough to actually change the height by at least a pixel.
+  bool height_differs = old_height != height_;
+  if (height_differs)
+    PlatformSpecificOnHeightRecalculated();
 
-  if (heights_differ || force_notify)
+  if (height_differs || force_notify)
     container_->OnInfoBarStateChanged(animation_.is_animating());
 }
 

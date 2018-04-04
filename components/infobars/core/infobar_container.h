@@ -15,10 +15,6 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace gfx {
-class SlideAnimation;
-}
-
 namespace infobars {
 
 class InfoBar;
@@ -38,28 +34,6 @@ class InfoBarContainer : public InfoBarManager::Observer {
     // as well as when it stops animating.
     virtual void InfoBarContainerStateChanged(bool is_animating) = 0;
 
-    // The delegate needs to tell us whether "unspoofable" arrows should be
-    // drawn, and if so, at what |x| coordinate.  |x| may be NULL.
-    virtual bool DrawInfoBarArrows(int* x) const = 0;
-
-    // Computes the target arrow height for infobar number |index|, given its
-    // animation.
-    virtual int ArrowTargetHeightForInfoBar(
-        size_t index,
-        const gfx::SlideAnimation& animation) const = 0;
-
-    // Computes the sizes of the infobar arrow (height and half width) and bar
-    // (height) given the infobar's animation and its target element heights.
-    // |bar_target_height| may be -1, which means "use the default bar target
-    // height".
-    virtual void ComputeInfoBarElementSizes(
-        const gfx::SlideAnimation& animation,
-        int arrow_target_height,
-        int bar_target_height,
-        int* arrow_height,
-        int* arrow_half_width,
-        int* bar_height) const = 0;
-
    protected:
     virtual ~Delegate();
   };
@@ -72,18 +46,6 @@ class InfoBarContainer : public InfoBarManager::Observer {
   // the infobars from |infobar_manager|, and show them all.  |infobar_manager|
   // may be NULL.
   void ChangeInfoBarManager(InfoBarManager* infobar_manager);
-
-  // Returns the amount by which to overlap the toolbar above, and, when
-  // |total_height| is non-NULL, set it to the height of the InfoBarContainer
-  // (including overlap).
-  int GetVerticalOverlap(int* total_height) const;
-
-  // Triggers a recalculation of all infobar arrow heights.
-  //
-  // IMPORTANT: This MUST NOT result in a call back to
-  // Delegate::InfoBarContainerStateChanged() unless it causes an actual
-  // change, lest we infinitely recurse.
-  void UpdateInfoBarArrowTargetHeights();
 
   // Called when a contained infobar has animated or by some other means changed
   // its height, or when it stops animating.  The container is expected to do

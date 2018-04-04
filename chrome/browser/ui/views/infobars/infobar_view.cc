@@ -92,18 +92,11 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
       views::ExternalFocusTracker(this, nullptr) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
   SetBackground(std::make_unique<InfoBarBackground>());
-  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
   // Clip child layers; without this, buttons won't look correct during
   // animation.
   SetPaintToLayer();
   layer()->SetMasksToBounds(true);
-}
-
-const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
-    const {
-  const infobars::InfoBarContainer* infobar_container = container();
-  return infobar_container ? infobar_container->delegate() : NULL;
 }
 
 InfoBarView::~InfoBarView() {
@@ -201,7 +194,7 @@ void InfoBarView::ViewHierarchyChanged(
     const int margin_height = margins ? margins->height() : 0;
     height = std::max(height, child->height() + margin_height);
   }
-  SetBarTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
+  SetTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
 }
 
 void InfoBarView::OnThemeChanged() {
@@ -257,8 +250,8 @@ int InfoBarView::EndX() const {
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
-  return std::max((bar_target_height() - view->height()) / 2, 0) -
-         (bar_target_height() - bar_height());
+  return std::max((target_height() - view->height()) / 2, 0) -
+         (target_height() - height());
 }
 
 // static
@@ -304,7 +297,7 @@ void InfoBarView::PlatformSpecificHide(bool animate) {
     FocusLastFocusedExternalView();
 }
 
-void InfoBarView::PlatformSpecificOnHeightsRecalculated() {
+void InfoBarView::PlatformSpecificOnHeightRecalculated() {
   // Ensure that notifying our container of our size change will result in a
   // re-layout.
   InvalidateLayout();
@@ -330,7 +323,7 @@ gfx::Size InfoBarView::CalculatePreferredSize() const {
 
   return gfx::Size(
       width + GetCloseButtonSpacing().width() + close_button_->width(),
-      total_height());
+      computed_height());
 }
 
 void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
@@ -342,15 +335,6 @@ void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
       Contains(focused_now)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
-}
-
-bool InfoBarView::DoesIntersectRect(const View* target,
-                                    const gfx::Rect& rect) const {
-  DCHECK_EQ(this, target);
-  // Only events that intersect the portion below the arrow are interesting.
-  gfx::Rect non_arrow_bounds = GetLocalBounds();
-  non_arrow_bounds.Inset(0, arrow_height(), 0, 0);
-  return rect.Intersects(non_arrow_bounds);
 }
 
 SkColor InfoBarView::GetColor(int id) const {

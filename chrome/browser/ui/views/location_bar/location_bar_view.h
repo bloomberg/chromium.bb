@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "components/omnibox/browser/omnibox_popup_model_observer.h"
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_event_manager_observer.h"
@@ -43,7 +41,6 @@ class KeywordHintView;
 class LocationIconView;
 class ManagePasswordsIconViews;
 enum class OmniboxPart;
-class OmniboxPopupModel;
 class OmniboxPopupView;
 enum class OmniboxTint;
 class Profile;
@@ -79,8 +76,7 @@ class LocationBarView : public LocationBar,
                         public zoom::ZoomEventManagerObserver,
                         public views::ButtonListener,
                         public ContentSettingImageView::Delegate,
-                        public BubbleIconView::Delegate,
-                        public OmniboxPopupModelObserver {
+                        public BubbleIconView::Delegate {
  public:
   class Delegate {
    public:
@@ -193,10 +189,6 @@ class LocationBarView : public LocationBar,
   SelectedKeywordView* selected_keyword_view() {
     return selected_keyword_view_;
   }
-
-  // Where InfoBar arrows should point. The point will be returned in the
-  // coordinates of the LocationBarView.
-  gfx::Point GetInfoBarAnchorPoint() const;
 
   // The anchor view for security-related bubbles. That is, those anchored to
   // the leading edge of the Omnibox, under the padlock.
@@ -366,13 +358,11 @@ class LocationBarView : public LocationBar,
 
   // ChromeOmniboxEditController:
   void OnChanged() override;
+  void OnPopupVisibilityChanged() override;
   const ToolbarModel* GetToolbarModel() const override;
 
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
-
-  // OmniboxPopupModelObserver:
-  void OnOmniboxPopupShownOrHidden() override;
 
   // Returns the total amount of space reserved above or below the content,
   // which is the vertical edge thickness plus the padding next to it.
@@ -465,8 +455,6 @@ class LocationBarView : public LocationBar,
   // whether to animate security level transitions.
   security_state::SecurityLevel last_update_security_level_ =
       security_state::NONE;
-
-  ScopedObserver<OmniboxPopupModel, LocationBarView> popup_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
