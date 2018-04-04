@@ -957,33 +957,32 @@ BrowserAccessibility::GetTargetForNativeAccessibilityEvent() {
 
 bool BrowserAccessibility::AccessibilityPerformAction(
     const ui::AXActionData& data) {
-  if (data.action == ax::mojom::Action::kDoDefault) {
-    manager_->DoDefaultAction(*this);
-    return true;
+  switch (data.action) {
+    case ax::mojom::Action::kDoDefault:
+      manager_->DoDefaultAction(*this);
+      return true;
+    case ax::mojom::Action::kFocus:
+      manager_->SetFocus(*this);
+      return true;
+    case ax::mojom::Action::kScrollToPoint: {
+      // target_point is in screen coordinates.  We need to convert this to
+      // frame coordinates because that's what BrowserAccessiblity cares about.
+      gfx::Point target =
+          data.target_point -
+          manager_->GetRootManager()->GetViewBounds().OffsetFromOrigin();
+
+      manager_->ScrollToPoint(*this, target);
+      return true;
+    }
+    case ax::mojom::Action::kScrollToMakeVisible:
+      manager_->ScrollToMakeVisible(*this, data.target_rect);
+      return true;
+    case ax::mojom::Action::kSetValue:
+      manager_->SetValue(*this, data.value);
+      return true;
+    default:
+      return false;
   }
-
-  if (data.action == ax::mojom::Action::kFocus) {
-    manager_->SetFocus(*this);
-    return true;
-  }
-
-  if (data.action == ax::mojom::Action::kScrollToPoint) {
-    // target_point is in screen coordinates.  We need to convert this to frame
-    // coordinates because that's what BrowserAccessiblity cares about.
-    gfx::Point target =
-        data.target_point -
-        manager_->GetRootManager()->GetViewBounds().OffsetFromOrigin();
-
-    manager_->ScrollToPoint(*this, target);
-    return true;
-  }
-
-  if (data.action == ax::mojom::Action::kScrollToMakeVisible) {
-    manager_->ScrollToMakeVisible(*this, data.target_rect);
-    return true;
-  }
-
-  return false;
 }
 
 bool BrowserAccessibility::ShouldIgnoreHoveredStateForTesting() {
