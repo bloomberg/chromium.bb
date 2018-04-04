@@ -643,6 +643,15 @@ void PaintInvalidator::InvalidatePaint(
     context.subtree_flags |= PaintInvalidatorContext::kSubtreeVisualRectUpdate;
   }
 
+  if (context.NeedsVisualRectUpdate(object) &&
+      object.ContainsInlineWithOutlineAndContinuation()) {
+    // Force subtree visual rect update and invalidation checking to ensure
+    // invalidation of focus rings when continuation's geometry changes.
+    context.subtree_flags |=
+        PaintInvalidatorContext::kSubtreeVisualRectUpdate |
+        PaintInvalidatorContext::kSubtreeInvalidationChecking;
+  }
+
   // The object is under a frame for WebViewPlugin, SVG images etc. Need to
   // inform the chrome client of the invalidation so that the client will
   // initiate painting of the contents. For SPv1 this is done by

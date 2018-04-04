@@ -3731,28 +3731,10 @@ inline void LayoutObject::MarkAncestorsForPaintInvalidation() {
 }
 
 inline void LayoutObject::SetNeedsPaintOffsetAndVisualRectUpdate() {
-  if (NeedsPaintOffsetAndVisualRectUpdate())
-    return;
   for (auto* object = this;
        object && !object->NeedsPaintOffsetAndVisualRectUpdate();
        object = object->ParentCrossingFrames()) {
     object->bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
-
-    // Focus ring is special because continuations affect shape of focus ring.
-    // Mark the start object for paint invalidation if it has focus ring.
-    if (!object->IsAnonymous() || !object->IsLayoutBlockFlow())
-      continue;
-    auto* block_flow = ToLayoutBlockFlow(object);
-    if (!block_flow->IsAnonymousBlockContinuation())
-      continue;
-    if (auto* inline_element_continuation =
-            block_flow->InlineElementContinuation()) {
-      auto* start_of_continuations =
-          inline_element_continuation->GetNode()->GetLayoutObject();
-      if (start_of_continuations &&
-          start_of_continuations->StyleRef().OutlineStyleIsAuto())
-        start_of_continuations->SetMayNeedPaintInvalidation();
-    }
   }
 }
 

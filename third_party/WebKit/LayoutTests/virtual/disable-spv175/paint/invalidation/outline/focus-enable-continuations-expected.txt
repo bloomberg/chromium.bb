@@ -35,6 +35,10 @@
       "reason": "style change"
     },
     {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "geometry"
     },
