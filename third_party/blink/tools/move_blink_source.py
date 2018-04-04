@@ -102,7 +102,6 @@ class MoveBlinkSource(object):
         """
         _log.info('Planning renaming ...')
         file_pairs = plan_blink_move(self._fs, [])
-        _log.info('Will move %d files', len(file_pairs))
 
         self._create_basename_maps(file_pairs)
         dirs = self._update_file_content(apply_only)
@@ -241,7 +240,6 @@ Bug: 768828
         if apply_only:
             file_pairs = [(src, dest) for (src, dest) in file_pairs
                           if 'third_party/WebKit/' + src.replace('\\', '/') in apply_only]
-            print 'Update file_pairs = ', file_pairs
         _log.info('Will move %d files', len(file_pairs))
 
         git = Git(cwd=self._repo_root)
@@ -363,7 +361,7 @@ Bug: 768828
                 source_header = source_base.replace('.proto', '.pb.h')
                 basename_map[source_header] = dest_base.replace('.proto', '.pb.h')
                 pattern += re.escape(source_header) + '|'
-        _log.info('Rename %d files for snake_case', len(basename_map))
+        _log.debug('Rename %d files for snake_case', len(basename_map))
         self._basename_map = basename_map
         self._basename_re = re.compile(pattern[0:len(pattern) - 1] + ')(?=["\']|$)')
         self._idl_generated_impl_headers = idl_headers
@@ -486,7 +484,7 @@ Bug: 768828
                 content = self._update_owners(content)
             elif file_type == FileType.DEPS:
                 if self._fs.dirname(file_path) == self._repo_root:
-                    _log.info("Skip //DEPS")
+                    _log.debug("Skip //DEPS")
                     continue
                 content = self._update_deps(content)
             elif file_type == FileType.BLINK_DEPS:
@@ -505,9 +503,9 @@ Bug: 768828
             if self._options.run and (not apply_only or file_path.replace('\\', '/') in apply_only):
                 self._fs.write_text_file(file_path, content)
                 self._updated_files.append(file_path)
+                _log.info('Updated %s', self._shorten_path(file_path))
             if file_type == FileType.DEPS:
                 self._append_unless_upper_dir_exists(updated_deps_dirs, self._fs.dirname(file_path))
-            _log.info('Updated %s', self._shorten_path(file_path))
         return updated_deps_dirs
 
     def _update_cpp_includes_in_directories(self, dirs, apply_only):
@@ -534,7 +532,7 @@ Bug: 768828
                 if self._options.run and (not apply_only or posix_file_path in apply_only):
                     self._fs.write_text_file(file_path, content)
                     self._updated_files.append(file_path)
-                _log.info('Updated %s', self._shorten_path(file_path))
+                    _log.info('Updated %s', self._shorten_path(file_path))
 
     def _replace_include_path(self, match):
         include_or_import = match.group(1)
@@ -630,13 +628,13 @@ Bug: 768828
             if should_write:
                 self._fs.write_text_file(full_path, content)
                 self._updated_files.append(full_path)
-            _log.info('Updated %s', file_path)
+                _log.info('Updated %s', file_path)
         else:
             _log.warning('%s does not contain specified source strings.', file_path)
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format='[%(asctime)s %(levelname)s %(name)s] %(message)s',
                         datefmt='%H:%M:%S')
     parser = argparse.ArgumentParser(description='Blink source mover')
