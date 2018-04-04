@@ -36,6 +36,8 @@ TEST(SpaceSplitStringTest, Set) {
 TEST(SpaceSplitStringTest, SerializeToString) {
   SpaceSplitString tokens;
 
+  EXPECT_EQ("", tokens.SerializeToString());
+
   tokens.Set("foo");
   EXPECT_EQ("foo", tokens.SerializeToString());
 
