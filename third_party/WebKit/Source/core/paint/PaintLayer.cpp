@@ -3283,6 +3283,15 @@ void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
       return;
     }
 
+    // For a non-self-painting layer having self-painting descendant, the
+    // descendant will be painted through this layer's Parent() instead of
+    // this layer's Container(), so in addition to the CompositingContainer()
+    // chain, we also need to mark NeedsRepaint for Parent().
+    // TODO(crbug.com/828103): clean up this.
+    if (layer->Parent() && !layer->IsSelfPaintingLayer() &&
+        layer->HasSelfPaintingLayerDescendant())
+      layer->Parent()->SetNeedsRepaint();
+
     PaintLayer* container = layer->CompositingContainer();
     if (!container) {
       auto* owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutObject();
