@@ -2907,6 +2907,61 @@ TEST_F(WindowSelectorTest, ShadowBounds) {
   ToggleOverview();
 }
 
+// Verify that attempting to drag with a secondary finger works as expected.
+TEST_F(WindowSelectorTest, DraggingWithTwoFingers) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  // Dragging is only allowed in tablet mode.
+  RunAllPendingInMessageLoop();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  RunAllPendingInMessageLoop();
+
+  ToggleOverview();
+  RunAllPendingInMessageLoop();
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+
+  const gfx::Rect original_bounds1 = item1->target_bounds();
+  const gfx::Rect original_bounds2 = item2->target_bounds();
+
+  constexpr int kTouchId1 = 1;
+  constexpr int kTouchId2 = 2;
+
+  // Verify that the bounds of the tapped window expand when touched.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(original_bounds1.CenterPoint());
+  generator.PressTouchId(kTouchId1);
+  EXPECT_GT(item1->target_bounds().width(), original_bounds1.width());
+  EXPECT_GT(item1->target_bounds().height(), original_bounds1.height());
+
+  // Verify that attempting to touch the second window with a second finger does
+  // nothing to the second window. The first window remains the window to be
+  // dragged.
+  generator.set_current_location(original_bounds2.CenterPoint());
+  generator.PressTouchId(kTouchId2);
+  EXPECT_GT(item1->target_bounds().width(), original_bounds1.width());
+  EXPECT_GT(item1->target_bounds().height(), original_bounds1.height());
+  EXPECT_EQ(item2->target_bounds(), original_bounds2);
+
+  // Verify the first window moves on drag.
+  gfx::Point last_center_point = item1->target_bounds().CenterPoint();
+  generator.MoveTouchIdBy(kTouchId1, 40, 40);
+  EXPECT_NE(last_center_point, item1->target_bounds().CenterPoint());
+  EXPECT_EQ(original_bounds2.CenterPoint(),
+            item2->target_bounds().CenterPoint());
+
+  // Verify the first window moves on drag, even if we switch to a second
+  // finger.
+  last_center_point = item1->target_bounds().CenterPoint();
+  generator.ReleaseTouchId(kTouchId2);
+  generator.PressTouchId(kTouchId2);
+  generator.MoveTouchIdBy(kTouchId2, 40, 40);
+  EXPECT_NE(last_center_point, item1->target_bounds().CenterPoint());
+  EXPECT_EQ(original_bounds2.CenterPoint(),
+            item2->target_bounds().CenterPoint());
+}
+
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
  public:
   SplitViewWindowSelectorTest() = default;
