@@ -217,6 +217,11 @@ interface WallpaperController {
   // returns false.
   IsActiveUserWallpaperControlledByPolicy() => (bool controlled);
 
+  // Returns the location of the active user's wallpaper (either a url or a file
+  // path, corresponding to |WallpaperInfo.location|). Returns an empty string
+  // if there's no active user.
+  GetActiveUserWallpaperLocation() => (string loaction);
+
   // Returns true if the wallpaper setting (used to open the wallpaper picker)
   // should be visible.
   ShouldShowWallpaperSetting() => (bool show);

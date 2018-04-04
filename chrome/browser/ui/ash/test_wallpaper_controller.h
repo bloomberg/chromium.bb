@@ -95,6 +95,9 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   void IsActiveUserWallpaperControlledByPolicy(
       ash::mojom::WallpaperController::
           IsActiveUserWallpaperControlledByPolicyCallback callback) override;
+  void GetActiveUserWallpaperLocation(
+      ash::mojom::WallpaperController::GetActiveUserWallpaperLocationCallback
+          callback) override;
   void ShouldShowWallpaperSetting(
       ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
           callback) override;

@@ -235,11 +235,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // |locking| is true and remove it otherwise.
   void PrepareWallpaperForLockScreenChange(bool locking);
 
-  // Returns the location of the active user's wallpaper (either an URL or a
-  // file path). Returns an empty string if there's no active user, or the
-  // active user has not set a user wallpaper.
-  std::string GetActiveUserWallpaperLocation();
-
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
@@ -357,6 +352,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
   void IsActiveUserWallpaperControlledByPolicy(
       IsActiveUserWallpaperControlledByPolicyCallback callback) override;
+  void GetActiveUserWallpaperLocation(
+      GetActiveUserWallpaperLocationCallback callback) override;
   void ShouldShowWallpaperSetting(
       ShouldShowWallpaperSettingCallback callback) override;
 
@@ -525,10 +522,13 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void OnDevicePolicyWallpaperDecoded(const gfx::ImageSkia& image);
 
   // Implementation of |IsActiveUserWallpaperControlledByPolicy|.
-  bool IsActiveUserWallpaperControlledByPolicyImpl();
+  bool IsActiveUserWallpaperControlledByPolicyImpl() const;
+
+  // Implementation of |GetActiveUserWallpaperLocation|.
+  std::string GetActiveUserWallpaperLocationImpl() const;
 
   // Implementation of |ShouldShowWallpaperSetting|.
-  bool ShouldShowWallpaperSettingImpl();
+  bool ShouldShowWallpaperSettingImpl() const;
 
   // When wallpaper resizes, we can check which displays will be affected. For
   // simplicity, we only lock the compositor for the internal display.

@@ -73,6 +73,9 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void IsActiveUserWallpaperControlledByPolicy(
       ash::mojom::WallpaperController::
           IsActiveUserWallpaperControlledByPolicyCallback callback);
+  void GetActiveUserWallpaperLocation(
+      ash::mojom::WallpaperController::GetActiveUserWallpaperLocationCallback
+          callback);
   void ShouldShowWallpaperSetting(
       ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
           callback);

@@ -245,15 +245,6 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
-  // TODO(crbug.com/777293, 776464): Make it work under mash (most likely by
-  // creating a mojo callback).
-  dict->SetString("currentWallpaper",
-                  ash::Shell::HasInstance()
-                      ? ash::Shell::Get()
-                            ->wallpaper_controller()
-                            ->GetActiveUserWallpaperLocation()
-                      : std::string());
-
 #if defined(GOOGLE_CHROME_BUILD)
   dict->SetString("manifestBaseURL", kWallpaperManifestBaseURL);
 #endif
@@ -266,7 +257,18 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
                                               ? GetBackdropWallpaperSuffix()
                                               : kHighResolutionSuffix);
 
-  return RespondNow(OneArgument(std::move(dict)));
+  WallpaperControllerClient::Get()->GetActiveUserWallpaperLocation(
+      base::BindOnce(
+          &WallpaperPrivateGetStringsFunction::OnWallpaperLocationReturned,
+          this, std::move(dict)));
+  return RespondLater();
+}
+
+void WallpaperPrivateGetStringsFunction::OnWallpaperLocationReturned(
+    std::unique_ptr<base::DictionaryValue> dict,
+    const std::string& location) {
+  dict->SetString("currentWallpaper", location);
+  Respond(OneArgument(std::move(dict)));
 }
 
 ExtensionFunction::ResponseAction
