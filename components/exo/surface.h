@@ -145,6 +145,9 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should use a specific set of frame colors.
   void SetFrameColors(SkColor active_color, SkColor inactive_color);
 
+  // Request that surface should have a specific startup_id string.
+  void SetStartupId(const char* startup_id);
+
   // Request "parent" for surface.
   void SetParent(Surface* parent, const gfx::Point& position);
 

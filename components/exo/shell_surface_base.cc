@@ -56,6 +56,9 @@ DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
 
+// Application Id set by the client.
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kStartupIdKey, nullptr);
+
 // The accelerator keys used to close ShellSurfaces.
 const struct {
   ui::KeyboardCode keycode;
@@ -524,6 +527,25 @@ void ShellSurfaceBase::SetApplicationId(const std::string& application_id) {
     SetApplicationId(widget_->GetNativeWindow(), application_id);
 }
 
+// static
+void ShellSurfaceBase::SetStartupId(aura::Window* window,
+                                    const std::string& id) {
+  TRACE_EVENT1("exo", "ShellSurfaceBase::SetStartupId", "startup_id", id);
+  window->SetProperty(kStartupIdKey, new std::string(id));
+}
+
+// static
+const std::string* ShellSurfaceBase::GetStartupId(aura::Window* window) {
+  return window->GetProperty(kStartupIdKey);
+}
+
+void ShellSurfaceBase::SetStartupId(const char* startup_id) {
+  // Store the value in |startup_id_| in case the window does not exist yet.
+  startup_id_ = std::string(startup_id);
+  if (widget_ && widget_->GetNativeWindow())
+    SetStartupId(widget_->GetNativeWindow(), startup_id);
+}
+
 void ShellSurfaceBase::Close() {
   if (!close_callback_.is_null())
     close_callback_.Run();
@@ -610,6 +632,12 @@ ShellSurfaceBase::AsTracedValue() const {
 
     if (application_id)
       value->SetString("application_id", *application_id);
+
+    const std::string* startup_id =
+        GetStartupId(GetWidget()->GetNativeWindow());
+
+    if (startup_id)
+      value->SetString("startup_id", *startup_id);
   }
   return value;
 }
@@ -764,6 +792,10 @@ void ShellSurfaceBase::OnSetParent(Surface* parent,
   } else {
     SetParentWindow(nullptr);
   }
+}
+
+void ShellSurfaceBase::OnSetStartupId(const char* startup_id) {
+  SetStartupId(startup_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1120,6 +1152,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   window->SetEventTargeter(base::WrapUnique(
       new CustomWindowTargeter(widget_, client_controlled_move_resize_)));
   SetApplicationId(window, application_id_);
+  SetStartupId(window, startup_id_);
   SetMainSurface(window, root_surface());
 
   // Start tracking changes to window bounds and window state.

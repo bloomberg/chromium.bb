@@ -91,6 +91,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override {
   }
   void OnSetParent(Surface* parent, const gfx::Point& position) override {}
+  void OnSetStartupId(const char* startup_id) override {}
 
   // Overridden from cc::BeginFrameObserverBase:
   bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;

@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="3">
+  <interface name="zaura_shell" version="4">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -68,7 +68,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_surface" version="3">
+  <interface name="zaura_surface" version="4">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -110,6 +110,15 @@
       </description>
       <arg name="active_color" type="uint" summary="32 bit ARGB color value, not premultiplied"/>
       <arg name="inactive_color" type="uint" summary="32 bit ARGB color value, not premultiplied"/>
+    </request>
+
+    <!-- Version 4 additions -->
+
+    <request name="set_startup_id" since="4">
+      <description summary="set the startup ID of this surface">
+	Set the startup ID.
+      </description>
+      <arg name="startup_id" type="string" allow-null="true"/>
     </request>
   </interface>
 
