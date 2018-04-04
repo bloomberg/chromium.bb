@@ -90,30 +90,15 @@ void MediaPlayerBridge::Initialize() {
     return;
   }
 
-  if (url_.SchemeIsFile() || url_.SchemeIs("data")) {
-    ExtractMediaMetadata(url_.spec());
-    return;
-  }
+  if (allow_credentials_) {
+    media::MediaResourceGetter* resource_getter =
+        manager()->GetMediaResourceGetter();
 
-  media::MediaResourceGetter* resource_getter =
-      manager()->GetMediaResourceGetter();
-  if (url_.SchemeIsFileSystem()) {
-    resource_getter->GetPlatformPathFromURL(
-        url_, base::BindOnce(&MediaPlayerBridge::ExtractMediaMetadata,
-                             weak_factory_.GetWeakPtr()));
-    return;
+    resource_getter->GetCookies(
+        url_, site_for_cookies_,
+        base::BindOnce(&MediaPlayerBridge::OnCookiesRetrieved,
+                       weak_factory_.GetWeakPtr()));
   }
-
-  // Start extracting the metadata immediately if the request is anonymous.
-  // Otherwise, wait for user credentials to be retrieved first.
-  if (!allow_credentials_) {
-    ExtractMediaMetadata(url_.spec());
-    return;
-  }
-
-  resource_getter->GetCookies(url_, site_for_cookies_,
-                              base::Bind(&MediaPlayerBridge::OnCookiesRetrieved,
-                                         weak_factory_.GetWeakPtr()));
 }
 
 void MediaPlayerBridge::CreateJavaMediaPlayerBridge() {
@@ -263,42 +248,6 @@ void MediaPlayerBridge::OnAuthCredentialsRetrieved(
       replacements.SetPasswordStr(password);
     url_ = url_.ReplaceComponents(replacements);
   }
-  ExtractMediaMetadata(url_.spec());
-}
-
-void MediaPlayerBridge::ExtractMediaMetadata(const std::string& url) {
-  if (url.empty()) {
-    OnMediaError(MEDIA_ERROR_FORMAT);
-    on_decoder_resources_released_cb_.Run(player_id());
-    return;
-  }
-
-  int fd;
-  int64_t offset;
-  int64_t size;
-  if (InterceptMediaUrl(url, &fd, &offset, &size)) {
-    manager()->GetMediaResourceGetter()->ExtractMediaMetadata(
-        fd, offset, size,
-        base::Bind(&MediaPlayerBridge::OnMediaMetadataExtracted,
-                   weak_factory_.GetWeakPtr()));
-  } else {
-    manager()->GetMediaResourceGetter()->ExtractMediaMetadata(
-        url, cookies_, user_agent_,
-        base::Bind(&MediaPlayerBridge::OnMediaMetadataExtracted,
-                   weak_factory_.GetWeakPtr()));
-  }
-}
-
-void MediaPlayerBridge::OnMediaMetadataExtracted(
-    base::TimeDelta duration, int width, int height, bool success) {
-  if (success) {
-    duration_ = duration;
-    width_ = width;
-    height_ = height;
-  }
-  manager()->OnMediaMetadataChanged(
-      player_id(), duration_, width_, height_, success);
-  on_decoder_resources_released_cb_.Run(player_id());
 }
 
 void MediaPlayerBridge::Start() {
