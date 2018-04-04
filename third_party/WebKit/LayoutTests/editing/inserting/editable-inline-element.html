@@ -1,10 +1,11 @@
-<p>This tests InsertParagraph inside an editable inline element.</p>
-<div style="border: 1px solid red;"><span id="span" contenteditable="true">foo</span></div>
-
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-var sel = window.getSelection();
-var span = document.getElementById("span");
-
-sel.collapse(span, 0);
-document.execCommand("InsertParagraph");
+selection_test(
+  '<span contenteditable>|foo</span>',
+  'insertParagraph',
+  '<span contenteditable><br>|foo</span>',
+  'InsertParagraph in inline element');
 </script>
