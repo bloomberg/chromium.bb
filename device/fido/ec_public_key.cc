@@ -13,11 +13,12 @@ namespace device {
 
 namespace {
 // The key is located after the first byte of the response
-// (which is a reserved byte).
-// The uncompressed form consists of 65 bytes:
-// - a constant 0x04 prefix
+// (which is a reserved byte). It's in X9.62 format:
+// - a constant 0x04 prefix to indicate an uncompressed key
 // - the 32-byte x coordinate
 // - the 32-byte y coordinate.
+constexpr size_t kKeyCompressionTypeOffset = 1;
+constexpr size_t kUncompressedKey = 0x04;
 constexpr size_t kHeaderLength = 2;  // Account for reserved byte and prefix.
 constexpr size_t kKeyLength = 32;
 }  // namespace
@@ -26,6 +27,10 @@ constexpr size_t kKeyLength = 32;
 std::unique_ptr<ECPublicKey> ECPublicKey::ExtractFromU2fRegistrationResponse(
     std::string algorithm,
     base::span<const uint8_t> u2f_data) {
+  if (u2f_data.size() < kHeaderLength ||
+      u2f_data[kKeyCompressionTypeOffset] != kUncompressedKey)
+    return nullptr;
+
   std::vector<uint8_t> x =
       u2f_parsing_utils::Extract(u2f_data, kHeaderLength, kKeyLength);
 

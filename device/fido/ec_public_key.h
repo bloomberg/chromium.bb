@@ -41,6 +41,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ECPublicKey : public PublicKey {
   std::vector<uint8_t> EncodeAsCOSEKey() const override;
 
  private:
+  // Note that these values might not be minimal and might not be on the curve.
   const std::vector<uint8_t> x_coordinate_;
   const std::vector<uint8_t> y_coordinate_;
 
