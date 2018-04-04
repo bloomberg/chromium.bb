@@ -2488,6 +2488,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'gale',
       'glados',
+      'grunt',
       'guado_moblab',
       'hana',
       'kahlee',
@@ -2544,7 +2545,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty-arcnext',
       'bettyvirgl',
       'eve-campfire', # contact:yueherngl@
-      'grunt',
       'nami',
       'octopus',
       'tael',
