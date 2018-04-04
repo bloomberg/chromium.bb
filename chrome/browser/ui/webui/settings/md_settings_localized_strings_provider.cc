@@ -924,14 +924,12 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
 #else
     {"resetPageTitle", IDS_SETTINGS_RESET},
 #endif
-    {"resetTrigger", IDS_SETTINGS_RESET},
-    {"resetTriggerDescription",
-     IDS_SETTINGS_RESET_PROFILE_SETTINGS_DESCRIPTION},
+    {"resetTrigger", IDS_SETTINGS_RESET_SETTINGS_TRIGGER},
     {"resetPageExplanation", IDS_RESET_PROFILE_SETTINGS_EXPLANATION},
     {"triggeredResetPageExplanation",
      IDS_TRIGGERED_RESET_PROFILE_SETTINGS_EXPLANATION},
     {"triggeredResetPageTitle", IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE},
-    {"resetPageCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON},
+    {"resetDialogCommit", IDS_SETTINGS_RESET},
     {"resetPageFeedback", IDS_SETTINGS_RESET_PROFILE_FEEDBACK},
 #if defined(OS_CHROMEOS)
     {"powerwashTitle", IDS_SETTINGS_FACTORY_RESET},

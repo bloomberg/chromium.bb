@@ -25,17 +25,12 @@
     <style include="settings-shared"></style>
     <settings-animated-pages id="reset-pages" section="reset">
       <neon-animatable route-path="default">
-        <div class="settings-box first two-line" id="resetProfile"
+        <div class="settings-box first" id="resetProfile"
             on-click="onShowResetProfileDialog_" actionable>
-          <div class="start">
-            $i18n{resetTrigger}
-            <div class="secondary" id="resetProfileSecondary">
-              $i18n{resetTriggerDescription}
-            </div>
-          </div>
+          <div id="resetProfileTrigger" class="start">$i18n{resetTrigger}</div>
           <paper-icon-button-light class="subpage-arrow">
             <button id="resetProfileArrow" aria-label="$i18n{resetTrigger}"
-                aria-describedby="resetProfileSecondary"></button>
+                aria-describedby="resetProfileTrigger"></button>
           </paper-icon-button-light>
         </div>
         <!-- Keep a single instance of reset-profile-dialog on purpose, to
