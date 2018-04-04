@@ -6349,12 +6349,12 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
   for (cur_mask_type = 0; cur_mask_type < DIFFWTD_MASK_TYPES; cur_mask_type++) {
     // build mask and inverse
     if (hbd)
-      build_compound_diffwtd_mask_highbd(
+      av1_build_compound_diffwtd_mask_highbd(
           xd->seg_mask, cur_mask_type, CONVERT_TO_BYTEPTR(p0), bw,
-          CONVERT_TO_BYTEPTR(p1), bw, bsize, bh, bw, xd->bd);
+          CONVERT_TO_BYTEPTR(p1), bw, bh, bw, xd->bd);
     else
-      build_compound_diffwtd_mask(xd->seg_mask, cur_mask_type, p0, bw, p1, bw,
-                                  bsize, bh, bw);
+      av1_build_compound_diffwtd_mask(xd->seg_mask, cur_mask_type, p0, bw, p1,
+                                      bw, bh, bw);
 
     // compute rd for mask
     sse = av1_wedge_sse_from_residuals(r1, d10, xd->seg_mask, N);
@@ -6372,12 +6372,12 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
   // make final mask
   mbmi->mask_type = best_mask_type;
   if (hbd)
-    build_compound_diffwtd_mask_highbd(
+    av1_build_compound_diffwtd_mask_highbd(
         xd->seg_mask, mbmi->mask_type, CONVERT_TO_BYTEPTR(p0), bw,
-        CONVERT_TO_BYTEPTR(p1), bw, bsize, bh, bw, xd->bd);
+        CONVERT_TO_BYTEPTR(p1), bw, bh, bw, xd->bd);
   else
-    build_compound_diffwtd_mask(xd->seg_mask, mbmi->mask_type, p0, bw, p1, bw,
-                                bsize, bh, bw);
+    av1_build_compound_diffwtd_mask(xd->seg_mask, mbmi->mask_type, p0, bw, p1,
+                                    bw, bh, bw);
 
   return best_rd;
 }

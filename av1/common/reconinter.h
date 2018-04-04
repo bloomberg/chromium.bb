@@ -176,17 +176,6 @@ static INLINE int get_interintra_wedge_bits(BLOCK_SIZE sb_type) {
   return wedge_params_lookup[sb_type].bits;
 }
 
-void build_compound_diffwtd_mask(uint8_t *mask, DIFFWTD_MASK_TYPE mask_type,
-                                 const uint8_t *src0, int src0_stride,
-                                 const uint8_t *src1, int src1_stride,
-                                 BLOCK_SIZE sb_type, int h, int w);
-void build_compound_diffwtd_mask_highbd(uint8_t *mask,
-                                        DIFFWTD_MASK_TYPE mask_type,
-                                        const uint8_t *src0, int src0_stride,
-                                        const uint8_t *src1, int src1_stride,
-                                        BLOCK_SIZE sb_type, int h, int w,
-                                        int bd);
-
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
