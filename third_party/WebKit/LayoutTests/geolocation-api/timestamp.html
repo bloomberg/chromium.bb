@@ -37,6 +37,10 @@ function checkPosition(p) {
         debug("  t = " + t);
     }
     shouldBeTrue('t <= then + 1'); // Avoid rounding errors
+    if (t > then + 1) {
+        debug("  t = " + t);
+        debug("  then + 1 = " + (then + 1));
+    }
     finishJSTest();
 }
 

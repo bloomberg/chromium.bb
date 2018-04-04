@@ -92,10 +92,10 @@ class GeolocationMock {
     // device.mojom.Geoposition represents the value of microseconds since the
     // Windows FILETIME epoch (1601-01-01 00:00:00 UTC). So add the delta when
     // sets the |internalValue|. See more info in //base/time/time.h.
-    const windowsEpoch = new Date(1601,1,1,0,0,0,0);
-    const unixEpoch = new Date(1970,1,1,0,0,0,0);
+    const windowsEpoch = Date.UTC(1601,0,1,0,0,0,0);
+    const unixEpoch = Date.UTC(1970,0,1,0,0,0,0);
     // |epochDeltaInMs| equals to base::Time::kTimeTToMicrosecondsOffset.
-    const epochDeltaInMs = unixEpoch.getTime() - windowsEpoch.getTime();
+    const epochDeltaInMs = unixEpoch - windowsEpoch;
 
     this.geoposition_.timestamp.internalValue =
         (new Date().getTime() + epochDeltaInMs)  * 1000;
