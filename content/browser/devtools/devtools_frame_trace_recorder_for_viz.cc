@@ -34,6 +34,7 @@ void DevToolsFrameTraceRecorderForViz::StartCapture() {
                                             false);
   video_capturer_->SetMinCapturePeriod(base::TimeDelta::FromMilliseconds(10));
   video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
+  video_capturer_->SetAutoThrottlingEnabled(false);
   viz::mojom::FrameSinkVideoConsumerPtr consumer;
   binding_.Bind(mojo::MakeRequest(&consumer));
   video_capturer_->ChangeTarget(frame_sink_id_);
