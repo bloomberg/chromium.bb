@@ -22,6 +22,54 @@
 namespace blink {
 namespace incremental_marking_test {
 
+// Visitor that expects every directly reachable object from a given backing
+// store to be in the set of provided objects.
+template <typename T>
+class BackingVisitor : public Visitor {
+ public:
+  explicit BackingVisitor(ThreadState* state, std::vector<T*>* objects)
+      : Visitor(state), objects_(objects) {}
+  virtual ~BackingVisitor() {}
+
+  void ProcessBackingStore(HeapObjectHeader* header) {
+    EXPECT_TRUE(header->IsValid());
+    EXPECT_TRUE(header->IsMarked());
+    header->Unmark();
+    ThreadHeap::GcInfo(header->GcInfoIndex())->trace_(this, header->Payload());
+  }
+
+  void Visit(void* obj, TraceDescriptor desc) final {
+    EXPECT_TRUE(obj);
+    auto pos = std::find(objects_->begin(), objects_->end(), obj);
+    if (objects_->end() != pos)
+      objects_->erase(pos);
+    // The garbage collector will find those objects so we can mark them.
+    HeapObjectHeader* const header =
+        HeapObjectHeader::FromPayload(desc.base_object_payload);
+    if (!header->IsMarked())
+      header->Mark();
+  }
+
+  // Unused overrides.
+  void VisitWeak(void* object,
+                 void** object_slot,
+                 TraceDescriptor desc,
+                 WeakCallback callback) final {}
+  void VisitBackingStoreStrongly(void* object,
+                                 void** object_slot,
+                                 TraceDescriptor desc) final {}
+  void VisitBackingStoreWeakly(void* object,
+                               void** object_slot,
+                               TraceDescriptor desc) final {}
+  void RegisterBackingStoreCallback(void* backing_store,
+                                    MovingObjectCallback,
+                                    void* callback_data) final {}
+  void RegisterWeakCallback(void* closure, WeakCallback) final {}
+
+ private:
+  std::vector<T*>* objects_;
+};
+
 // Base class for initializing worklists.
 class IncrementalMarkingScopeBase {
  public:
@@ -102,31 +150,28 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
 
   ~ExpectWriteBarrierFires() {
     EXPECT_FALSE(marking_worklist_->IsGlobalEmpty());
-    // All headers of objects watched should be marked.
-    for (HeapObjectHeader* header : headers_) {
-      EXPECT_TRUE(header->IsMarked());
-      header->Unmark();
-    }
     MarkingItem item;
     // All objects watched should be on the marking stack.
     while (marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
       T* obj = reinterpret_cast<T*>(item.object);
-      // Ignore the backing object.
+      // Inspect backing stores to allow specifying objects that are only
+      // reachable through a backing store.
       if (!ThreadHeap::IsNormalArenaIndex(
               PageFromObject(obj)->Arena()->ArenaIndex())) {
-        HeapObjectHeader::FromPayload(obj)->Unmark();
+        BackingVisitor<T> visitor(thread_state_, &objects_);
+        visitor.ProcessBackingStore(HeapObjectHeader::FromPayload(obj));
         continue;
       }
       auto pos = std::find(objects_.begin(), objects_.end(), obj);
-      // The following check makes sure that there are no unexpected objects on
-      // the marking stack. If it fails then the write barrier fired for an
-      // unexpected object.
-      EXPECT_NE(objects_.end(), pos);
-      // Avoid crashing.
       if (objects_.end() != pos)
         objects_.erase(pos);
     }
     EXPECT_TRUE(objects_.empty());
+    // All headers of objects watched should be marked at this point.
+    for (HeapObjectHeader* header : headers_) {
+      EXPECT_TRUE(header->IsMarked());
+      header->Unmark();
+    }
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
   }
 
