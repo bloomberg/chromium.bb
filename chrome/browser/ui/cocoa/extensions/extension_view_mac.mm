@@ -63,7 +63,9 @@ void ExtensionViewMac::RenderViewCreated(content::RenderViewHost* host) {
                        ExtensionViewMac::kMinHeight);
     gfx::Size max_size(ExtensionViewMac::kMaxWidth,
                        ExtensionViewMac::kMaxHeight);
-    render_view_host()->EnableAutoResize(min_size, max_size);
+    extension_host_->host_contents()
+        ->GetRenderWidgetHostView()
+        ->EnableAutoResize(min_size, max_size);
   }
 }
 

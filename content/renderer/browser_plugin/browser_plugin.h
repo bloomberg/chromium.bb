@@ -16,6 +16,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "content/common/frame_resize_params.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
@@ -163,8 +164,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   ~BrowserPlugin() override;
 
-  const gfx::Rect& frame_rect() const {
-    return pending_resize_params_.frame_rect;
+  const gfx::Rect& screen_space_rect() const {
+    return pending_resize_params_.screen_space_rect;
   }
   gfx::Rect FrameRectInPixels() const;
   float GetDeviceScaleFactor() const;
@@ -174,7 +175,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   }
 
   uint64_t auto_size_sequence_number() const {
-    return pending_resize_params_.sequence_number;
+    return pending_resize_params_.auto_resize_sequence_number;
   }
 
   void UpdateInternalInstanceId();
@@ -193,6 +194,10 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   void OnGuestReady(int instance_id, const viz::FrameSinkId& frame_sink_id);
   void OnResizeDueToAutoResize(int browser_plugin_instance_id,
                                uint64_t sequence_number);
+  void OnEnableAutoResize(int browser_plugin_instance_id,
+                          const gfx::Size& min_size,
+                          const gfx::Size& max_size);
+  void OnDisableAutoResize(int browser_plugin_instance_id);
   void OnSetChildFrameSurface(int instance_id,
                               const viz::SurfaceInfo& surface_info);
   void OnSetContentsOpaque(int instance_id, bool opaque);
@@ -252,19 +257,12 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   bool enable_surface_synchronization_ = false;
 
-  // TODO(fsamuel): We might want to unify this with content::ResizeParams.
-  struct ResizeParams {
-    gfx::Rect frame_rect;
-    ScreenInfo screen_info;
-    uint64_t sequence_number = 0lu;
-  };
-
   // The last ResizeParams sent to the browser process, if any.
-  base::Optional<ResizeParams> sent_resize_params_;
+  base::Optional<FrameResizeParams> sent_resize_params_;
 
   // The current set of ResizeParams. This may or may not match
   // |sent_resize_params_|.
-  ResizeParams pending_resize_params_;
+  FrameResizeParams pending_resize_params_;
 
   // We call lifetime managing methods on |delegate_|, but we do not directly
   // own this. The delegate destroys itself.

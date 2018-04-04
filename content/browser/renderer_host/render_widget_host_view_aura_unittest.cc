@@ -2360,7 +2360,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   viz::LocalSurfaceId local_surface_id1(view_->GetLocalSurfaceId());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
-  widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+  view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
   sink_->ClearMessages();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
@@ -2427,7 +2427,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   viz::LocalSurfaceId local_surface_id1(view_->GetLocalSurfaceId());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
-  widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+  view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
   sink_->ClearMessages();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);

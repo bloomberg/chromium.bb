@@ -125,8 +125,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  root->current_frame_host()->render_view_host()->EnableAutoResize(
-      gfx::Size(0, 0), gfx::Size(100, 100));
+  root->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->GetView()
+      ->EnableAutoResize(gfx::Size(0, 0), gfx::Size(100, 100));
 
   RenderWidgetHostView* rwhv =
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost()->GetView();

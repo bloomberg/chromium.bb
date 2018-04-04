@@ -127,6 +127,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   viz::mojom::FrameSinkVideoCapturerPtr CreateVideoCapturer() override;
   void FocusedNodeTouched(bool editable) override;
   void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void EnableAutoResize(const gfx::Size& min_size,
+                        const gfx::Size& max_size) override;
+  void DisableAutoResize(const gfx::Size& new_size) override;
   bool IsScrollOffsetAtTop() const override;
   float GetDeviceScaleFactor() const final;
   TouchSelectionControllerClientManager*

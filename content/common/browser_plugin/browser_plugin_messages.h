@@ -15,6 +15,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
+#include "content/common/frame_resize_params.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
 #include "ipc/ipc_channel_handle.h"
@@ -155,12 +156,10 @@ IPC_MESSAGE_CONTROL1(BrowserPluginHostMsg_UnlockMouse_ACK,
                      int /* browser_plugin_instance_id */)
 
 // Sent when plugin's position has changed.
-IPC_MESSAGE_CONTROL5(BrowserPluginHostMsg_UpdateResizeParams,
+IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_UpdateResizeParams,
                      int /* browser_plugin_instance_id */,
-                     gfx::Rect /* frame_rect */,
-                     content::ScreenInfo /* screen_info */,
-                     uint64_t /* sequence_number */,
-                     viz::LocalSurfaceId /* local_surface_id */)
+                     viz::LocalSurfaceId /* local_surface_id */,
+                     content::FrameResizeParams /* resize_params */)
 
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
@@ -193,6 +192,18 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ResizeDueToAutoResize,
                      int /* browser_plugin_instance_id */,
                      uint64_t /* sequence_number */)
+
+// Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent
+// renderer.
+IPC_MESSAGE_CONTROL3(BrowserPluginMsg_EnableAutoResize,
+                     int /* browser_plugin_instance_id */,
+                     gfx::Size /* min_size */,
+                     gfx::Size /* max_size */)
+
+// Requests a viz::LocalSurfaceId to disable auto-resize-mode from the parent
+// renderer.
+IPC_MESSAGE_CONTROL1(BrowserPluginMsg_DisableAutoResize,
+                     int /* browser_plugin_instance_id */)
 
 // When the guest starts/stops listening to touch events, it needs to notify the
 // plugin in the embedder about it.

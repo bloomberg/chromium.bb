@@ -30,6 +30,7 @@ namespace content {
 class RenderWidgetHostViewBase;
 class RenderWidgetHostViewChildFrame;
 class WebCursor;
+struct FrameResizeParams;
 
 //
 // FrameConnectorDelegate
@@ -72,11 +73,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const blink::WebIntrinsicSizingInfo&) {}
 
   // Sends new resize parameters to the sub-frame's renderer.
-  void UpdateResizeParams(const gfx::Rect& screen_space_rect,
-                          const gfx::Size& local_frame_size,
-                          const ScreenInfo& screen_info,
-                          uint64_t sequence_number,
-                          const viz::SurfaceId& surface_id);
+  void UpdateResizeParams(const viz::SurfaceId& surface_id,
+                          const FrameResizeParams& resize_params);
 
   // Return the size of the CompositorFrame to use in the child renderer.
   const gfx::Size& local_frame_size_in_pixels() {
@@ -183,6 +181,14 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   void SetScreenInfoForTesting(const ScreenInfo& screen_info) {
     screen_info_ = screen_info;
   }
+
+  // Informs the parent the child will enter auto-resize mode, automatically
+  // resizing itself to the provided |min_size| and |max_size| constraints.
+  virtual void EnableAutoResize(const gfx::Size& min_size,
+                                const gfx::Size& max_size);
+
+  // Turns off auto-resize mode.
+  virtual void DisableAutoResize();
 
   // Determines whether the current view's content is inert, either because
   // an HTMLDialogElement is being modally displayed in a higher-level frame,

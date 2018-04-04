@@ -694,6 +694,17 @@ void RenderWidgetHostViewGuest::GetScreenInfo(ScreenInfo* screen_info) const {
     RenderWidgetHostViewBase::GetScreenInfo(screen_info);
 }
 
+void RenderWidgetHostViewGuest::EnableAutoResize(const gfx::Size& min_size,
+                                                 const gfx::Size& max_size) {
+  if (guest_)
+    guest_->EnableAutoResize(min_size, max_size);
+}
+
+void RenderWidgetHostViewGuest::DisableAutoResize(const gfx::Size& new_size) {
+  if (guest_)
+    guest_->DisableAutoResize();
+}
+
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewGuest::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     uint64_t sequence_number) {

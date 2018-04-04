@@ -271,15 +271,12 @@ void CrossProcessFrameConnector::UnlockMouse() {
 }
 
 void CrossProcessFrameConnector::OnUpdateResizeParams(
-    const gfx::Rect& screen_space_rect,
-    const gfx::Size& local_frame_size,
-    const ScreenInfo& screen_info,
-    uint64_t sequence_number,
-    const viz::SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id,
+    const FrameResizeParams& resize_params) {
   // If the |screen_space_rect| or |screen_info| of the frame has changed, then
   // the viz::LocalSurfaceId must also change.
-  if ((last_received_local_frame_size_ != local_frame_size ||
-       screen_info_ != screen_info) &&
+  if ((last_received_local_frame_size_ != resize_params.local_frame_size ||
+       screen_info_ != resize_params.screen_info) &&
       local_surface_id_ == surface_id.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),
@@ -287,9 +284,8 @@ void CrossProcessFrameConnector::OnUpdateResizeParams(
     return;
   }
 
-  last_received_local_frame_size_ = local_frame_size;
-  UpdateResizeParams(screen_space_rect, local_frame_size, screen_info,
-                     sequence_number, surface_id);
+  last_received_local_frame_size_ = resize_params.local_frame_size;
+  UpdateResizeParams(surface_id, resize_params);
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
@@ -371,6 +367,17 @@ CrossProcessFrameConnector::GetParentRenderWidgetHostView() {
   }
 
   return nullptr;
+}
+
+void CrossProcessFrameConnector::EnableAutoResize(const gfx::Size& min_size,
+                                                  const gfx::Size& max_size) {
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_EnableAutoResize(
+      frame_proxy_in_parent_renderer_->GetRoutingID(), min_size, max_size));
+}
+
+void CrossProcessFrameConnector::DisableAutoResize() {
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_DisableAutoResize(
+      frame_proxy_in_parent_renderer_->GetRoutingID()));
 }
 
 bool CrossProcessFrameConnector::IsInert() const {

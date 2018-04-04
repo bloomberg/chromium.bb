@@ -28,6 +28,7 @@
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/frame_resize_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_features.h"
@@ -351,9 +352,11 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
 
   process->sink().ClearMessages();
 
-  test_frame_connector_->UpdateResizeParams(screen_space_rect,
-                                            compositor_viewport_pixel_size,
-                                            ScreenInfo(), 1u, surface_id);
+  FrameResizeParams resize_params;
+  resize_params.screen_space_rect = screen_space_rect;
+  resize_params.local_frame_size = compositor_viewport_pixel_size;
+  resize_params.auto_resize_sequence_number = 1u;
+  test_frame_connector_->UpdateResizeParams(surface_id, resize_params);
 
   ASSERT_EQ(1u, process->sink().message_count());
 

@@ -95,14 +95,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // threshold.
   virtual void DisableScrollbarsForThreshold(const gfx::Size& size) = 0;
 
-  // Instructs the RenderView to automatically resize and send back updates
-  // for the new size.
-  virtual void EnableAutoResize(const gfx::Size& min_size,
-                                const gfx::Size& max_size) = 0;
-
-  // Turns off auto-resize and gives a new size that the view should be.
-  virtual void DisableAutoResize(const gfx::Size& new_size) = 0;
-
   // Instructs the RenderView to send back updates to the preferred size.
   virtual void EnablePreferredSizeMode() = 0;
 

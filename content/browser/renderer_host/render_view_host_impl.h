@@ -92,9 +92,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       int request_id,
       const std::vector<base::FilePath>& files) override;
   void DisableScrollbarsForThreshold(const gfx::Size& size) override;
-  void EnableAutoResize(const gfx::Size& min_size,
-                        const gfx::Size& max_size) override;
-  void DisableAutoResize(const gfx::Size& new_size) override;
   void EnablePreferredSizeMode() override;
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,

@@ -36,6 +36,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
+#include "content/common/frame_resize_params.h"
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
@@ -162,6 +163,17 @@ int BrowserPluginGuest::LoadURLWithParams(
     const NavigationController::LoadURLParams& load_params) {
   GetWebContents()->GetController().LoadURLWithParams(load_params);
   return GetGuestProxyRoutingID();
+}
+
+void BrowserPluginGuest::EnableAutoResize(const gfx::Size& min_size,
+                                          const gfx::Size& max_size) {
+  SendMessageToEmbedder(std::make_unique<BrowserPluginMsg_EnableAutoResize>(
+      browser_plugin_instance_id_, min_size, max_size));
+}
+
+void BrowserPluginGuest::DisableAutoResize() {
+  SendMessageToEmbedder(std::make_unique<BrowserPluginMsg_DisableAutoResize>(
+      browser_plugin_instance_id_));
 }
 
 void BrowserPluginGuest::ResizeDueToAutoResize(const gfx::Size& new_size,
@@ -1031,13 +1043,11 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
 
 void BrowserPluginGuest::OnUpdateResizeParams(
     int browser_plugin_instance_id,
-    const gfx::Rect& frame_rect,
-    const ScreenInfo& screen_info,
-    uint64_t sequence_number,
-    const viz::LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceId& local_surface_id,
+    const FrameResizeParams& resize_params) {
   if (local_surface_id_ > local_surface_id ||
-      ((frame_rect_.size() != frame_rect.size() ||
-        screen_info_ != screen_info) &&
+      ((frame_rect_.size() != resize_params.screen_space_rect.size() ||
+        screen_info_ != resize_params.screen_info) &&
        local_surface_id_ == local_surface_id)) {
     SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
     bad_message::ReceivedBadMessage(
@@ -1046,8 +1056,8 @@ void BrowserPluginGuest::OnUpdateResizeParams(
     return;
   }
 
-  screen_info_ = screen_info;
-  frame_rect_ = frame_rect;
+  screen_info_ = resize_params.screen_info;
+  frame_rect_ = resize_params.screen_space_rect;
   GetWebContents()->SendScreenRects();
   local_surface_id_ = local_surface_id;
 
@@ -1059,8 +1069,13 @@ void BrowserPluginGuest::OnUpdateResizeParams(
       RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
   DCHECK(render_widget_host);
 
+  render_widget_host->SetAutoResize(resize_params.auto_resize_enabled,
+                                    resize_params.min_size_for_auto_resize,
+                                    resize_params.max_size_for_auto_resize);
+
   if (render_widget_host->auto_resize_enabled()) {
-    render_widget_host->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
+    render_widget_host->DidAllocateLocalSurfaceIdForAutoResize(
+        resize_params.auto_resize_sequence_number);
     return;
   }
 

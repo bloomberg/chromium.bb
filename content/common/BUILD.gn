@@ -138,6 +138,8 @@ source_set("common") {
     "frame_owner_properties.h",
     "frame_replication_state.cc",
     "frame_replication_state.h",
+    "frame_resize_params.cc",
+    "frame_resize_params.h",
     "gin_java_bridge_messages.h",
     "in_process_child_thread_params.cc",
     "in_process_child_thread_params.h",

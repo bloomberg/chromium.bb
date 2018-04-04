@@ -299,10 +299,12 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
   enable_auto_size &= !min_auto_size_.IsEmpty() && !max_auto_size_.IsEmpty() &&
                       IsAutoSizeSupported();
 
-  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+  content::RenderWidgetHostView* rwhv =
+      web_contents()->GetRenderWidgetHostView();
   if (enable_auto_size) {
     // Autosize is being enabled.
-    rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
+    if (rwhv)
+      rwhv->EnableAutoResize(min_auto_size_, max_auto_size_);
     normal_size_.SetSize(0, 0);
   } else {
     // Autosize is being disabled.
@@ -324,7 +326,8 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
     bool changed_due_to_auto_resize = false;
     if (auto_size_enabled_) {
       // Autosize was previously enabled.
-      rvh->DisableAutoResize(new_size);
+      if (rwhv)
+        rwhv->DisableAutoResize(new_size);
       changed_due_to_auto_resize = true;
     } else {
       // Autosize was already disabled.

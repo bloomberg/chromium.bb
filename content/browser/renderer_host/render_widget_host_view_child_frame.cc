@@ -1012,6 +1012,21 @@ void RenderWidgetHostViewChildFrame::GetScreenInfo(
     DisplayUtil::GetDefaultScreenInfo(screen_info);
 }
 
+void RenderWidgetHostViewChildFrame::EnableAutoResize(
+    const gfx::Size& min_size,
+    const gfx::Size& max_size) {
+  if (frame_connector_)
+    frame_connector_->EnableAutoResize(min_size, max_size);
+}
+
+void RenderWidgetHostViewChildFrame::DisableAutoResize(
+    const gfx::Size& new_size) {
+  // For child frames, the size comes from the parent when auto-resize is
+  // disabled so we ignore |new_size| here.
+  if (frame_connector_)
+    frame_connector_->DisableAutoResize();
+}
+
 viz::ScopedSurfaceIdAllocator
 RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(
     const gfx::Size& new_size,
