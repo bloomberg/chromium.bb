@@ -20,6 +20,7 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using ::testing::IsEmpty;
 
 namespace net {
 namespace {
@@ -347,11 +348,11 @@ TEST_F(ProxyResolverV8Test, JavascriptLibrary) {
 
   // If the javascript side of this unit-test fails, it will throw a javascript
   // exception. Otherwise it will return "PROXY success:80".
-  EXPECT_THAT(result, IsOk());
-  EXPECT_EQ("success:80", proxy_info.proxy_server().ToURI());
+  EXPECT_THAT(bindings()->alerts, IsEmpty());
+  EXPECT_THAT(bindings()->errors, IsEmpty());
 
-  EXPECT_EQ(0U, bindings()->alerts.size());
-  EXPECT_EQ(0U, bindings()->errors.size());
+  ASSERT_THAT(result, IsOk());
+  EXPECT_EQ("success:80", proxy_info.proxy_server().ToURI());
 }
 
 // Test marshalling/un-marshalling of values between C++/V8.
