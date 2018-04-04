@@ -1,12 +1,11 @@
-<p>This tests for a bug when replacing the contents of a list.  The list shouldn't be removed, just its contents.</p>
-<div contenteditable="true"><ul><li id="li">You shouldn't see this.</li></ul></div>
-
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-var r = document.createRange();
-var li = document.getElementById("li");
-r.setStart(li, 0);
-r.setEnd(li, li.childNodes.length);
-var selection = window.getSelection();
-selection.addRange(r);
-document.execCommand("InsertHTML", false, "This should be in a list item.")
+selection_test(
+  '<div contenteditable><ul><li>^ab|</li></ul></div>',
+  'insertHTML CD',
+  '<div contenteditable><ul><li>CD|</li></ul></div>',
+  'InsertHTML to replace content of list item');
 </script>
