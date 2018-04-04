@@ -91,13 +91,23 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	size_t num_planes;
 	uint32_t resolved_format;
 	uint32_t bytes_per_pixel;
+	uint64_t use_flags;
 
 	struct bo *bo;
 	struct cros_gralloc_handle *hnd;
 
 	resolved_format = drv_resolve_format(drv_, descriptor->drm_format, descriptor->use_flags);
+	use_flags = descriptor->use_flags;
+	/*
+	 * TODO(b/79682290): ARC++ assumes NV12 is always linear and doesn't
+	 * send modifiers across Wayland protocol, so we or in the
+	 * BO_USE_LINEAR flag here. We need to fix ARC++ to allocate and work
+	 * with tiled buffers.
+	 */
+	if (resolved_format == DRM_FORMAT_NV12)
+		use_flags |= BO_USE_LINEAR;
 	bo = drv_bo_create(drv_, descriptor->width, descriptor->height, resolved_format,
-			   descriptor->use_flags);
+			   use_flags);
 	if (!bo) {
 		drv_log("Failed to create bo.\n");
 		return -ENOMEM;

@@ -265,6 +265,10 @@ enum gbm_bo_flags {
    GBM_BO_USE_SW_READ_RARELY = (1 << 10),
    GBM_BO_USE_SW_WRITE_OFTEN = (1 << 11),
    GBM_BO_USE_SW_WRITE_RARELY = (1 << 12),
+   /**
+    * The buffer will be written by a video decode accelerator.
+    */
+   GBM_BO_USE_HW_VIDEO_DECODER = (1 << 13),
 };
 
 int
