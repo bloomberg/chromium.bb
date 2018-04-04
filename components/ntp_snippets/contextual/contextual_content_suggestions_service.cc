@@ -17,6 +17,10 @@
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
+namespace {
+static const char kSamplePeekText[] = "Peek text";
+static const char kSampleClusterTitle[] = "Cluster title filler";
+}  // namespace
 
 ContextualContentSuggestionsService::Cluster::Cluster() = default;
 
@@ -106,17 +110,12 @@ void ContextualContentSuggestionsService::
         ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions) {
   std::vector<Cluster> clusters;
   if (fetched_suggestions.has_value()) {
-    clusters.emplace_back();
-    Cluster& cluster = clusters.back();
-    for (const std::unique_ptr<ContextualSuggestion>& suggestion :
-         fetched_suggestions.value()) {
-      cluster.suggestions.emplace_back(suggestion->ToContentSuggestion());
-      ContentSuggestion::ID id = cluster.suggestions.back().id();
-      GURL image_url = suggestion->salient_image_url();
-      image_url_by_id_[id.id_within_category()] = image_url;
-    }
+    Cluster cluster;
+    cluster.title = kSampleClusterTitle;
+    cluster.suggestions = std::move(fetched_suggestions.value());
+    clusters.push_back(std::move(cluster));
   }
-  std::move(callback).Run(std::move(clusters));
+  std::move(callback).Run(kSamplePeekText, std::move(clusters));
 }
 
 }  // namespace ntp_snippets

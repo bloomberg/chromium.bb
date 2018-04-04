@@ -66,6 +66,7 @@ class ContextualSuggestionsBridge {
 
   void OnSuggestionsAvailable(
       base::android::ScopedJavaGlobalRef<jobject> j_callback,
+      std::string peek_text,
       std::vector<ntp_snippets::ContextualContentSuggestionsService::Cluster>
           clusters);
 

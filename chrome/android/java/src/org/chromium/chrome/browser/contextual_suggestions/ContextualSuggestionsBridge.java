@@ -24,6 +24,26 @@ import java.util.List;
 public class ContextualSuggestionsBridge {
     private long mNativeContextualSuggestionsBridge;
 
+    /** Result of fetching contextual suggestions. */
+    public static class ContextualSuggestionsResult {
+        private String mPeekText;
+        private List<ContextualSuggestionsCluster> mClusters = new ArrayList<>();
+
+        ContextualSuggestionsResult(String peekText) {
+            mPeekText = peekText;
+        }
+
+        /** Peek text to show in UI. */
+        public String getPeekText() {
+            return mPeekText;
+        }
+
+        /** Clusters of suggestions. */
+        public List<ContextualSuggestionsCluster> getClusters() {
+            return mClusters;
+        }
+    }
+
     /**
      * Creates a ContextualSuggestionsBridge for getting snippet data for the current user.
      *
@@ -45,8 +65,7 @@ public class ContextualSuggestionsBridge {
      * @param url URL for which to fetch suggestions.
      * @param callback Callback used to return suggestions for a given URL.
      */
-    public void fetchSuggestions(
-            String url, Callback<List<ContextualSuggestionsCluster>> callback) {
+    public void fetchSuggestions(String url, Callback<ContextualSuggestionsResult> callback) {
         assert mNativeContextualSuggestionsBridge != 0;
         nativeFetchSuggestions(mNativeContextualSuggestionsBridge, url, callback);
     }
@@ -85,32 +104,30 @@ public class ContextualSuggestionsBridge {
     }
 
     @CalledByNative
-    private static List<ContextualSuggestionsCluster> createContextualSuggestionsClusterList() {
-        return new ArrayList<>();
+    private static ContextualSuggestionsResult createContextualSuggestionsResult(String peekText) {
+        return new ContextualSuggestionsResult(peekText);
     }
 
     @CalledByNative
-    private static void addNewClusterToList(
-            List<ContextualSuggestionsCluster> clusters, String title) {
-        clusters.add(new ContextualSuggestionsCluster(title));
+    private static void addNewClusterToResult(ContextualSuggestionsResult result, String title) {
+        result.getClusters().add(new ContextualSuggestionsCluster(title));
     }
 
     @CalledByNative
     private static void addSuggestionToLastCluster(List<ContextualSuggestionsCluster> clusters,
-            String id, String title, String publisher, String url, long timestamp, float score,
-            long fetchTime, boolean isVideoSuggestion, int thumbnailDominantColor) {
+            String id, String title, String publisher, String url) {
         assert clusters.size() > 0;
         clusters.get(clusters.size() - 1)
                 .getSuggestions()
                 .add(new SnippetArticle(KnownCategories.CONTEXTUAL, id, title, publisher, url,
-                        timestamp, score, fetchTime, isVideoSuggestion,
-                        thumbnailDominantColor == 0 ? null : thumbnailDominantColor));
+                        /*publishTimestamp=*/0, /*score=*/0f, /*fetchTimestamp=*/0,
+                        /*isVideoSuggestion=*/false, /*thumbnailDominantColor=*/0));
     }
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeContextualSuggestionsBridge);
     private native void nativeFetchSuggestions(long nativeContextualSuggestionsBridge, String url,
-            Callback<List<ContextualSuggestionsCluster>> callback);
+            Callback<ContextualSuggestionsResult> callback);
     private native void nativeFetchSuggestionImage(
             long nativeContextualSuggestionsBridge, String suggestionId, Callback<Bitmap> callback);
     private native void nativeFetchSuggestionFavicon(
