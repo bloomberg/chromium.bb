@@ -67,14 +67,6 @@ crbug.com/821547 [ Linux ] virtual/threaded/animations/composition/backdrop-filt
 crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/backdrop-filter-interpolation.html [ Pass Leak ]
 crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/filter-interpolation-003.html [ Pass Leak ]
 
-# -----------------------------------------------------------------
-# Not revert suspected CL as ahaas@ request, expected to be fixed soon.
-# TODO(ahaas): Enable these tests again.
-# -----------------------------------------------------------------
-crbug.com/825741 external/wpt/IndexedDB/wasm-module-value.html [ Pass Leak ]
-crbug.com/825741 external/wpt/wasm/wasm_local_iframe_test.html [ Pass Leak ]
-crbug.com/825741 fast/workers/worker-shared-asm-buffer.html [ Pass Leak ]
-
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
