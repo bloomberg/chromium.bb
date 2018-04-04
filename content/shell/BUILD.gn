@@ -283,7 +283,7 @@ static_library("content_shell_lib") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:test_support",

@@ -363,7 +363,7 @@ source_set("common") {
     "//net",
     "//ppapi/buildflags",
     "//sandbox",
-    "//sandbox:sandbox_features",
+    "//sandbox:sandbox_buildflags",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",

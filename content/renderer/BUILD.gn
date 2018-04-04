@@ -580,7 +580,7 @@ target(link_target_type, "renderer") {
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink",
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
     "//third_party/WebKit/public:media_devices_mojo_bindings",
     "//third_party/WebKit/public:mojo_bindings",
     "//third_party/WebKit/public/common",
@@ -1095,7 +1095,7 @@ target(link_target_type, "renderer") {
   }
 
   if (is_linux || is_android) {
-    deps += [ "//sandbox:sandbox_features" ]
+    deps += [ "//sandbox:sandbox_buildflags" ]
   }
 
   if (use_ozone) {

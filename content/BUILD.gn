@@ -101,7 +101,7 @@ if (is_component_build) {
     deps = [
       "//base",
       "//media:media_buildflags",
-      "//sandbox:sandbox_features",
+      "//sandbox:sandbox_buildflags",
       "//sandbox/linux:sandbox",
       "//services/service_manager/sandbox",
     ]

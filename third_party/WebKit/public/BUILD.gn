@@ -61,8 +61,8 @@ config("blink_headers_config") {
 }
 
 # Public feature flags used outside of Blink.
-buildflag_header("features") {
-  header = "public_features.h"
+buildflag_header("buildflags") {
+  header = "public_buildflags.h"
   flags = [
     "DEBUG_DEVTOOLS=$debug_devtools",
     "USE_DEFAULT_RENDER_THEME=$use_default_render_theme",

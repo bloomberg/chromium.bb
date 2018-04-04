@@ -38,6 +38,6 @@ blink_core_sources("input") {
     "TouchList.h",
   ]
   deps = [
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
   ]
 }

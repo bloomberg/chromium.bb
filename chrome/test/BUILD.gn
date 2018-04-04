@@ -368,7 +368,7 @@ test("browser_tests") {
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//rlz/buildflags",
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
   ]
 
   data_deps = [

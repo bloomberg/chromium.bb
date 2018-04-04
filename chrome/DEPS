@@ -35,7 +35,7 @@ include_rules = [
 
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/public/platform",
-  "+third_party/WebKit/public/public_features.h",
+  "+third_party/WebKit/public/public_buildflags.h",
   "+third_party/WebKit/public/web",
 
   # Allow inclusion of third-party code:

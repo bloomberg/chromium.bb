@@ -289,7 +289,7 @@ if (is_android) {
 
     deps = [
       "//base",
-      "//sandbox:sandbox_features",
+      "//sandbox:sandbox_buildflags",
     ]
 
     if (use_seccomp_bpf) {

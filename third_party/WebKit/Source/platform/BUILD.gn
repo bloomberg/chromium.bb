@@ -187,7 +187,7 @@ group("blink_platform_public_deps") {
   visibility = [ "//third_party/WebKit/Source/platform/*" ]
   public_deps = [
     ":make_platform_generated",
-    ":rcs_count_everything",
+    ":rcs_count_everything_buildflags",
     "//base",
     "//cc",
     "//cc/animation",
@@ -207,7 +207,7 @@ group("blink_platform_public_deps") {
     "//services/service_manager/public/mojom:mojom_blink",
     "//skia",
     "//third_party:jpeg",
-    "//third_party/WebKit/Source/platform/heap:blink_heap_flags",
+    "//third_party/WebKit/Source/platform/heap:blink_heap_buildflags",
     "//third_party/WebKit/Source/platform/network:make_generated",
     "//third_party/WebKit/Source/platform/wtf",
     "//third_party/WebKit/public:blink_headers",
@@ -228,8 +228,8 @@ declare_args() {
   runtime_call_stats_count_everything = false
 }
 
-buildflag_header("rcs_count_everything") {
-  header = "runtime_call_stats_count_everything.h"
+buildflag_header("rcs_count_everything_buildflags") {
+  header = "runtime_call_stats_count_everything_buildflags.h"
 
   header_dir = "blink/platform/bindings"
 

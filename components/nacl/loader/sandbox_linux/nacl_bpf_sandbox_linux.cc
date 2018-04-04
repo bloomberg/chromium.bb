@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "sandbox/sandbox_features.h"
+#include "sandbox/sandbox_buildflags.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 

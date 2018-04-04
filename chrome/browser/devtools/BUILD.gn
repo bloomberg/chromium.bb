@@ -118,7 +118,7 @@ static_library("devtools") {
     "//content/public/browser",
     "//net",
     "//services/viz/privileged/interfaces/compositing",
-    "//third_party/WebKit/public:features",
+    "//third_party/WebKit/public:buildflags",
     "//ui/events:dom_keycode_converter",
   ]
 

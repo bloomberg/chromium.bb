@@ -21,7 +21,7 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGestureDevice.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/public_features.h"
+#include "third_party/WebKit/public/public_buildflags.h"
 #include "ui/base/layout.h"
 
 #if BUILDFLAG(USE_DEFAULT_RENDER_THEME)

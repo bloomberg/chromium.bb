@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "jni/DecoderService_jni.h"
 #include "sandbox/linux/seccomp-bpf-helpers/seccomp_starter_android.h"
-#include "sandbox/sandbox_features.h"
+#include "sandbox/sandbox_buildflags.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy_android.h"

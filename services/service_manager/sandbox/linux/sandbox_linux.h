@@ -17,7 +17,7 @@
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/sanitizer_flags.h"
+#include "services/service_manager/sandbox/sanitizer_buildflags.h"
 
 #if BUILDFLAG(USING_SANITIZER)
 #include <sanitizer/common_interface_defs.h>

@@ -14,7 +14,7 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/TraceTraits.h"
 #include "platform/heap/Visitor.h"
-#include "platform/heap/heap_flags.h"
+#include "platform/heap/heap_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)

@@ -25,7 +25,7 @@ source_set("sandbox_linux") {
     "//crypto",
     "//ipc",
     "//sandbox",
-    "//sandbox:sandbox_features",
+    "//sandbox:sandbox_buildflags",
     "//sandbox/linux:sandbox_services_headers",
   ]
 

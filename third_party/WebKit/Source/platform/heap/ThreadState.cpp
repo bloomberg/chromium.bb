@@ -51,7 +51,7 @@
 #include "platform/heap/PagePool.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/Visitor.h"
-#include "platform/heap/heap_flags.h"
+#include "platform/heap/heap_buildflags.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
