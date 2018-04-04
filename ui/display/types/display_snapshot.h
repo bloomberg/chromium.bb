@@ -61,6 +61,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
     return has_color_correction_matrix_;
   }
   const gfx::ColorSpace& color_space() const { return color_space_; }
+  void reset_color_space() { color_space_ = gfx::ColorSpace(); }
   const std::string& display_name() const { return display_name_; }
   const base::FilePath& sys_path() const { return sys_path_; }
   const DisplayModeList& modes() const { return modes_; }
@@ -104,7 +105,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   // Whether this display has advanced color correction available.
   const bool has_color_correction_matrix_;
 
-  const gfx::ColorSpace color_space_;
+  gfx::ColorSpace color_space_;
 
   const std::string display_name_;
 

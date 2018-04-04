@@ -172,14 +172,11 @@ DisplayColorManager::~DisplayColorManager() {
 void DisplayColorManager::OnDisplayModeChanged(
     const display::DisplayConfigurator::DisplayStateList& display_states) {
   for (const display::DisplaySnapshot* state : display_states) {
-    const bool display_has_valid_color_space = state->color_space().IsValid();
     UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidDisplayColorSpace",
-                          display_has_valid_color_space);
-    // If |state| has a valid color space, skip retrieving/loading the ICC.
-    if (display_has_valid_color_space)
-      continue;
+                          state->color_space().IsValid());
 
-    // Ensure we always reset the configuration before setting a new one.
+    // Always reset the configuration before setting a new one, because some
+    // drivers hold on to it across screen changes, http://crrev.com/1914343003.
     configurator_->SetColorCorrection(
         state->display_id(), std::vector<display::GammaRampRGBEntry>(),
         std::vector<display::GammaRampRGBEntry>(), std::vector<float>());
@@ -207,8 +204,9 @@ void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
     ColorCalibrationData* data = calibration_map_[product_id].get();
     if (!configurator_->SetColorCorrection(display_id, data->degamma_lut,
                                            data->gamma_lut,
-                                           data->correction_matrix))
+                                           data->correction_matrix)) {
       LOG(WARNING) << "Error applying color correction data";
+    }
   }
 }
 

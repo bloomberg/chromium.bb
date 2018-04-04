@@ -849,10 +849,19 @@ bool DisplayConfigurator::SetColorCorrection(
     const std::vector<GammaRampRGBEntry>& degamma_lut,
     const std::vector<GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
-  for (const DisplaySnapshot* display : cached_displays_) {
-    if (display->display_id() == display_id)
-      return native_display_delegate_->SetColorCorrection(
-          *display, degamma_lut, gamma_lut, correction_matrix);
+  for (DisplaySnapshot* display : cached_displays_) {
+    if (display->display_id() != display_id)
+      continue;
+
+    const bool success = native_display_delegate_->SetColorCorrection(
+        *display, degamma_lut, gamma_lut, correction_matrix);
+    // Nullify the |display|s ColorSpace to avoid correcting colors twice, if
+    // we have successfully configured something.
+    if (success && (!degamma_lut.empty() || !gamma_lut.empty() ||
+                    !correction_matrix.empty())) {
+      display->reset_color_space();
+    }
+    return success;
   }
 
   return false;
