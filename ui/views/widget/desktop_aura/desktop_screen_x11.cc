@@ -330,7 +330,7 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   if (xrandr_version_ >= 105) {
     void* xrandr_lib = dlopen(NULL, RTLD_NOW);
     if (xrandr_lib) {
-      typedef XRRMonitorInfo* (*XRRGetMonitors_type)(Display*, Window, bool,
+      typedef XRRMonitorInfo* (*XRRGetMonitors_type)(::Display*, Window, bool,
                                                      int*);
       typedef void (*XRRFreeMonitors_type)(XRRMonitorInfo*);
       XRRGetMonitors_type XRRGetMonitors_ptr =
