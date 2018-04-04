@@ -386,7 +386,8 @@ void V4L2VideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
     VLOGF(1) << "Flush failed: there is a pending flush, "
              << "or VEA is not in kEncoding state";
     NOTIFY_ERROR(kIllegalStateError);
-    std::move(flush_callback).Run(false);
+    child_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(flush_callback), false));
     return;
   }
   flush_callback_ = std::move(flush_callback);
@@ -628,7 +629,8 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
       // nothing left to process, so we can return flush success back to the
       // client.
       if (!input_streamon_) {
-        std::move(flush_callback_).Run(true);
+        child_task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(std::move(flush_callback_), true));
         return;
       }
       struct v4l2_encoder_cmd cmd;
@@ -637,7 +639,8 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
       if (device_->Ioctl(VIDIOC_ENCODER_CMD, &cmd) != 0) {
         VPLOGF(1) << "ioctl() failed: VIDIOC_ENCODER_CMD";
         NOTIFY_ERROR(kPlatformFailureError);
-        std::move(flush_callback_).Run(false);
+        child_task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(std::move(flush_callback_), false));
         return;
       }
       encoder_state_ = kFlushing;
