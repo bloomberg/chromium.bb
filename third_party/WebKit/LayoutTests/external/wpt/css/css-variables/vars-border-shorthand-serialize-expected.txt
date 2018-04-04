@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL border-color should serialize to the empty string when border references a variable assert_equals: expected "" but got "var(--border)"
-FAIL border-style should serialize to the empty string when border references a variable assert_equals: expected "" but got "var(--border)"
-FAIL border-width should serialize to the empty string when border references a variable assert_equals: expected "" but got "var(--border)"
-Harness: the test ran to completion.
-

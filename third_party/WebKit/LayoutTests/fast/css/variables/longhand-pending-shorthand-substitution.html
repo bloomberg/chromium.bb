@@ -38,11 +38,11 @@ test(function() {
 
 test(function() {
   var style = testElem3.style;
-  assert_equals(style.cssText, '--b1: 1px solid grey; --b2: 2px dashed green; border-top: var(--b1); border-bottom: var(--b1); border-left: var(--b1); border-image: var(--b1); border-right: var(--b2);')
+  assert_equals(style.cssText, '--b1: 1px solid grey; --b2: 2px dashed green; border-top-color: ; border-top-style: ; border-top-width: ; border-bottom-color: ; border-bottom-style: ; border-bottom-width: ; border-left-color: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-right: var(--b2);')
   assert_equals(style.border, '');
-  assert_equals(style.borderLeft, 'var(--b1)');
-  assert_equals(style.borderTop, 'var(--b1)');
-  assert_equals(style.borderBottom, 'var(--b1)');
+  assert_equals(style.borderLeft, '');
+  assert_equals(style.borderTop, '');
+  assert_equals(style.borderBottom, '');
   assert_equals(style.borderRight, 'var(--b2)');
 }, "Test serialization for shorthands within shorthands.");
 

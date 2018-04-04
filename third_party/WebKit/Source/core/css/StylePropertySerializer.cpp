@@ -376,10 +376,13 @@ String StylePropertySerializer::CommonShorthandChecks(
       }
     }
     if (success) {
-      if (longhands[0]->IsPendingSubstitutionValue())
-        return ToCSSPendingSubstitutionValue(longhands[0])
-            ->ShorthandValue()
-            ->CssText();
+      if (longhands[0]->IsPendingSubstitutionValue()) {
+        const CSSPendingSubstitutionValue* substitution_value =
+            ToCSSPendingSubstitutionValue(longhands[0]);
+        if (substitution_value->ShorthandPropertyId() != shorthand.id())
+          return g_empty_string;
+        return substitution_value->ShorthandValue()->CssText();
+      }
       return longhands[0]->CssText();
     }
   }
