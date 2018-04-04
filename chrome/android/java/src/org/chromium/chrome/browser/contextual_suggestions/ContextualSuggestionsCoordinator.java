@@ -110,7 +110,7 @@ public class ContextualSuggestionsCoordinator {
                 new SuggestionsUiDelegateImpl(suggestionsSource, new DummyEventReporter(),
                         navigationDelegate, mProfile, mBottomSheetController.getBottomSheet(),
                         mActivity.getChromeApplication().getReferencePool(),
-                        mActivity.getSnackbarManager());
+                        mBottomSheetController.getSnackbarManager());
 
         mContentCoordinator.showSuggestions(mActivity, mProfile, uiDelegate, mModel,
                 mActivity.getWindowAndroid(), mActivity::closeContextMenu);
