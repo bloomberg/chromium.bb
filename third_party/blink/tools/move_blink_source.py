@@ -519,6 +519,8 @@ Bug: 768828
                      '.h.tmpl', 'xpath_grammar.y', '.gperf')))
             for file_path in files:
                 posix_file_path = file_path.replace('\\', '/')
+                if '/third_party/WebKit/Source/bindings/tests/results/' in posix_file_path:
+                    continue
                 original_content = self._fs.read_text_file(file_path)
 
                 content = self._update_cpp_includes(original_content)
