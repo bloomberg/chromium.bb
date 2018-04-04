@@ -43,7 +43,11 @@ void FakeBluetooth::SimulateCentral(mojom::CentralState state,
 
 void FakeBluetooth::AllResponsesConsumed(
     AllResponsesConsumedCallback callback) {
-  std::move(callback).Run(fake_central_->AllResponsesConsumed());
+  if (fake_central_) {
+    std::move(callback).Run(fake_central_->AllResponsesConsumed());
+    return;
+  }
+  std::move(callback).Run(true);
 }
 
 }  // namespace bluetooth
