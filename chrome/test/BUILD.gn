@@ -1122,6 +1122,7 @@ test("browser_tests") {
 
     if (enable_extensions) {
       sources += [
+        "../browser/accessibility/accessibility_extension_api_browsertest.cc",
         "../browser/apps/app_browsertest_util.cc",
         "../browser/apps/app_browsertest_util.h",
         "../browser/extensions/active_tab_apitest.cc",
