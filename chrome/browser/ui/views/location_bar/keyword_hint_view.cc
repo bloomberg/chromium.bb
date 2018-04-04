@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -28,23 +29,25 @@
 
 KeywordHintView::KeywordHintView(views::ButtonListener* listener,
                                  Profile* profile,
-                                 const gfx::FontList& font_list,
-                                 const gfx::FontList& bubble_font_list,
                                  SkColor text_color,
                                  SkColor background_color)
     : Button(listener),
       profile_(profile),
       leading_label_(nullptr),
       chip_container_(new views::View()),
-      chip_label_(new views::Label(base::string16(), {bubble_font_list})),
+      chip_label_(
+          new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)),
       trailing_label_(nullptr) {
-  leading_label_ =
-      CreateLabel(font_list, text_color, background_color);
+  leading_label_ = CreateLabel(text_color, background_color);
 
   constexpr int kPaddingInsideBorder = 5;
-  // Even though the border is 1 px thick visibly, it takes 1 DIP logically.
+  // Even though the border is 1 px thick visibly, it takes 1 DIP logically for
+  // the non-rounded style.
+  const int horizontal_padding = BackgroundWith1PxBorder::IsRounded()
+                                     ? GetCornerRadius()
+                                     : kPaddingInsideBorder + 1;
   chip_label_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(0, kPaddingInsideBorder + 1)));
+      views::CreateEmptyBorder(gfx::Insets(0, horizontal_padding)));
   chip_label_->SetEnabledColor(text_color);
   bool inverted = color_utils::IsDark(background_color);
   SkColor tab_bg_color =
@@ -60,8 +63,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
   chip_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(chip_container_);
 
-  trailing_label_ =
-      CreateLabel(font_list, text_color, background_color);
+  trailing_label_ = CreateLabel(text_color, background_color);
 
   SetFocusBehavior(FocusBehavior::NEVER);
 
@@ -131,14 +133,15 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
 
 gfx::Insets KeywordHintView::GetInsets() const {
   if (!BackgroundWith1PxBorder::IsRounded())
-    return gfx::Insets();
+    return gfx::Insets(0,
+                       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING));
 
   // The location bar and keyword hint view chip have rounded ends. Ensure the
   // chip label's corner with the furthest extent from its midpoint is still at
   // least kMinDistanceFromBorder DIPs away from the location bar rounded end.
-  constexpr float kMinDistanceFromBorder = 1;
-  const int radius = GetLayoutConstant(LOCATION_BAR_HEIGHT) / 2;
-  const int hypotenuse = radius - kMinDistanceFromBorder;
+  constexpr float kMinDistanceFromBorder = 6.f;
+  const float radius = GetLayoutConstant(LOCATION_BAR_HEIGHT) / 2.f;
+  const float hypotenuse = radius - kMinDistanceFromBorder;
   const float chip_midpoint = chip_container_->height() / 2.f;
   const float extent = std::max(chip_midpoint - chip_label_->y(),
                                 chip_label_->bounds().bottom() - chip_midpoint);
@@ -146,8 +149,13 @@ gfx::Insets KeywordHintView::GetInsets() const {
       << "LOCATION_BAR_HEIGHT must be tall enough to contain the chip.";
   const float subsumed_width =
       std::sqrt(hypotenuse * hypotenuse - extent * extent);
-  const int end_margin = gfx::ToCeiledInt(radius - subsumed_width);
-  return gfx::Insets(0, 0, 0, end_margin);
+  const int horizontal_margin = gfx::ToCeiledInt(radius - subsumed_width);
+  // This ensures the end of the KeywordHintView doesn't touch the edge of the
+  // omnibox, but the padding should be symmetrical, so use it on both sides,
+  // collapsing into the horizontal padding used by the previous View.
+  const int left_margin =
+      horizontal_margin - GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
+  return gfx::Insets(0, std::max(0, left_margin), 0, horizontal_margin);
 }
 
 gfx::Size KeywordHintView::GetMinimumSize() const {
@@ -165,10 +173,15 @@ void KeywordHintView::Layout() {
   int chip_width = chip_container_->GetPreferredSize().width();
   bool show_labels = width() - GetInsets().width() > chip_width;
   gfx::Size leading_size(leading_label_->GetPreferredSize());
-  leading_label_->SetBounds(0, 0, show_labels ? leading_size.width() : 0,
-                            height());
-  chip_container_->SetBounds(leading_label_->bounds().right(), 0, chip_width,
-                             height());
+  leading_label_->SetBounds(GetInsets().left(), 0,
+                            show_labels ? leading_size.width() : 0, height());
+  const int chip_height = BackgroundWith1PxBorder::IsRounded()
+                              ? GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
+                                    chip_container_->GetInsets().height()
+                              : height();
+  const int chip_vertical_padding = std::max(0, height() - chip_height) / 2;
+  chip_container_->SetBounds(leading_label_->bounds().right(),
+                             chip_vertical_padding, chip_width, chip_height);
   gfx::Size trailing_size(trailing_label_->GetPreferredSize());
   trailing_label_->SetBounds(chip_container_->bounds().right(), 0,
                              show_labels ? trailing_size.width() : 0, height());
@@ -179,16 +192,33 @@ gfx::Size KeywordHintView::CalculatePreferredSize() const {
   return gfx::Size(leading_label_->GetPreferredSize().width() +
                        chip_container_->GetPreferredSize().width() +
                        trailing_label_->GetPreferredSize().width() +
-                       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING),
+                       GetInsets().width(),
                    0);
 }
 
-views::Label* KeywordHintView::CreateLabel(const gfx::FontList& font_list,
-                                           SkColor text_color,
+void KeywordHintView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (!BackgroundWith1PxBorder::IsRounded())
+    return;
+  const int chip_corner_radius = GetCornerRadius();
+  chip_label_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetInsets().top(), chip_corner_radius, GetInsets().bottom(),
+                  chip_corner_radius)));
+}
+
+views::Label* KeywordHintView::CreateLabel(SkColor text_color,
                                            SkColor background_color) {
-  views::Label* label = new views::Label(base::string16(), {font_list});
+  views::Label* label =
+      new views::Label(base::string16(), BackgroundWith1PxBorder::IsRounded()
+                                             ? CONTEXT_OMNIBOX_DECORATION
+                                             : CONTEXT_OMNIBOX_PRIMARY);
   label->SetEnabledColor(text_color);
   label->SetBackgroundColor(background_color);
   AddChildView(label);
   return label;
+}
+
+int KeywordHintView::GetCornerRadius() const {
+  if (!BackgroundWith1PxBorder::IsRounded())
+    return GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS);
+  return chip_container_->height() / 2;
 }

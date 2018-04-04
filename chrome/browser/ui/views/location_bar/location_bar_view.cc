@@ -225,11 +225,9 @@ void LocationBarView::Init() {
   selected_keyword_view_ = new SelectedKeywordView(this, font_list, profile());
   AddChildView(selected_keyword_view_);
 
-  const gfx::FontList& bubble_font_list = views::style::GetFont(
-      CONTEXT_OMNIBOX_DECORATION, views::style::STYLE_PRIMARY);
   keyword_hint_view_ = new KeywordHintView(
-      this, profile(), font_list, bubble_font_list,
-      GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED), background_color);
+      this, profile(), GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
+      background_color);
   AddChildView(keyword_hint_view_);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
