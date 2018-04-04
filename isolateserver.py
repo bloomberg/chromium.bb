@@ -1763,7 +1763,8 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
           duration = time.time() - last_update
           if duration > DELAY_BETWEEN_UPDATES_IN_SECS:
             msg = '%d files remaining...' % len(remaining)
-            print msg
+            sys.stdout.write(msg + '\n')
+            sys.stdout.flush()
             logging.info(msg)
             last_update = time.time()
 
