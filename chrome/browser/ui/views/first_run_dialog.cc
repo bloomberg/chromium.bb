@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -59,9 +58,7 @@ void FirstRunDialog::Show(Profile* profile) {
   FirstRunDialog* dialog = new FirstRunDialog(profile);
   views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
 
-  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-  base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   dialog->quit_runloop_ = run_loop.QuitClosure();
   run_loop.Run();
 }
