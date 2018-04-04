@@ -77,6 +77,8 @@ static void GetHandlersAsListValue(
   for (handler = handlers.begin(); handler != handlers.end(); ++handler) {
     std::unique_ptr<base::DictionaryValue> handler_value(
         new base::DictionaryValue());
+    handler_value->SetString("protocol_display_name",
+                             handler->GetProtocolDisplayName());
     handler_value->SetString("protocol", handler->protocol());
     handler_value->SetString("spec", handler->url().spec());
     handler_value->SetString("host", handler->url().host());
@@ -89,6 +91,8 @@ void ProtocolHandlersHandler::GetHandlersForProtocol(
     const std::string& protocol,
     base::DictionaryValue* handlers_value) {
   ProtocolHandlerRegistry* registry = GetProtocolHandlerRegistry();
+  handlers_value->SetString("protocol_display_name",
+                            ProtocolHandler::GetProtocolDisplayName(protocol));
   handlers_value->SetString("protocol", protocol);
 
   auto handlers_list = std::make_unique<base::ListValue>();

@@ -21,13 +21,15 @@ const MenuActions = {
  * @typedef {{host: string,
  *            is_default: boolean,
  *            protocol: string,
+ *            protocol_display_name: string,
  *            spec: string}}
  */
 let HandlerEntry;
 
 /**
  * @typedef {{handlers: !Array<!HandlerEntry>,
- *            protocol: string}}
+ *            protocol: string,
+ *            protocol_display_name: string}}
  */
 let ProtocolEntry;
 

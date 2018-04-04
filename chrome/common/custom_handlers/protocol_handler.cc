@@ -7,8 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/generated_resources.h"
 #include "net/base/escape.h"
-
+#include "ui/base/l10n/l10n_util.h"
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
                                  const GURL& url)
@@ -65,6 +66,19 @@ std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
   d->SetString("protocol", protocol_);
   d->SetString("url", url_.spec());
   return d;
+}
+
+base::string16 ProtocolHandler::GetProtocolDisplayName(
+    const std::string& protocol) {
+  if (protocol == "mailto")
+    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
+  if (protocol == "webcal")
+    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
+  return base::UTF8ToUTF16(protocol);
+}
+
+base::string16 ProtocolHandler::GetProtocolDisplayName() const {
+  return GetProtocolDisplayName(protocol_);
 }
 
 #if !defined(NDEBUG)
