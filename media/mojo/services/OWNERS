@@ -1,6 +1,9 @@
 per-file cdm_manifest.json=set noparent
 per-file cdm_manifest.json=file://ipc/SECURITY_OWNERS
 
+per-file cdm_service_unittest_manifest.json=set noparent
+per-file cdm_service_unittest_manifest.json=file://ipc/SECURITY_OWNERS
+
 per-file media_manifest.json=set noparent
 per-file media_manifest.json=file://ipc/SECURITY_OWNERS
 
