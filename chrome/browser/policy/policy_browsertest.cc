@@ -4416,11 +4416,10 @@ class ComponentUpdaterPolicyTest : public PolicyTest {
   std::unique_ptr<update_client::URLRequestPostInterceptorFactory>
       interceptor_factory_;
 
-  // This member is owned by the |interceptor_factory_|.
-  update_client::URLRequestPostInterceptor* post_interceptor_ = nullptr;
+  scoped_refptr<update_client::URLRequestPostInterceptor> post_interceptor_;
 
   // This member is owned by g_browser_process;
-  component_updater::ComponentUpdateService* cus_;
+  component_updater::ComponentUpdateService* cus_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentUpdaterPolicyTest);
 };
@@ -4489,7 +4488,7 @@ void ComponentUpdaterPolicyTest::UpdateComponent(
     const update_client::CrxComponent& crx_component) {
   post_interceptor_->Reset();
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new update_client::PartialMatch("updatecheck"), 200));
+      std::make_unique<update_client::PartialMatch>("updatecheck")));
   EXPECT_TRUE(cus_->RegisterComponent(crx_component));
   cus_->GetOnDemandUpdater().OnDemandUpdate(
       component_id_, base::Bind(&ComponentUpdaterPolicyTest::OnDemandComplete,
@@ -4530,6 +4529,7 @@ void ComponentUpdaterPolicyTest::BeginTest() {
 }
 
 void ComponentUpdaterPolicyTest::EndTest() {
+  post_interceptor_ = nullptr;
   interceptor_factory_ = nullptr;
   cus_ = nullptr;
 

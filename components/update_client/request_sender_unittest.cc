@@ -65,9 +65,8 @@ class RequestSenderTest : public testing::Test,
   std::unique_ptr<RequestSender> request_sender_;
   std::unique_ptr<InterceptorFactory> interceptor_factory_;
 
-  // Owned by the factory.
-  URLRequestPostInterceptor* post_interceptor_1_ = nullptr;
-  URLRequestPostInterceptor* post_interceptor_2_ = nullptr;
+  scoped_refptr<URLRequestPostInterceptor> post_interceptor_1_;
+  scoped_refptr<URLRequestPostInterceptor> post_interceptor_2_;
 
   int error_ = 0;
   std::string response_;
@@ -88,6 +87,8 @@ RequestSenderTest::~RequestSenderTest() {}
 
 void RequestSenderTest::SetUp() {
   config_ = base::MakeRefCounted<TestConfigurator>();
+  request_sender_ = std::make_unique<RequestSender>(config_);
+
   interceptor_factory_ =
       std::make_unique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());
   post_interceptor_1_ =
@@ -96,8 +97,6 @@ void RequestSenderTest::SetUp() {
       interceptor_factory_->CreateInterceptorForPath(kUrlPath2);
   EXPECT_TRUE(post_interceptor_1_);
   EXPECT_TRUE(post_interceptor_2_);
-
-  request_sender_ = nullptr;
 }
 
 void RequestSenderTest::TearDown() {
@@ -137,15 +136,15 @@ void RequestSenderTest::RequestSenderComplete(int error,
 // Tests that when a request to the first url succeeds, the subsequent urls are
 // not tried.
 TEST_P(RequestSenderTest, RequestSendSuccess) {
-  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(
-      new PartialMatch("test"), test_file("updatecheck_reply_1.xml")));
+  EXPECT_TRUE(
+      post_interceptor_1_->ExpectRequest(std::make_unique<PartialMatch>("test"),
+                                         test_file("updatecheck_reply_1.xml")));
 
-  const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
   const bool is_foreground = GetParam();
-  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      urls, {{"X-Goog-Update-Interactivity", is_foreground ? "fg" : "bg"}},
-      "test", false,
+      {GURL(kUrl1), GURL(kUrl2)},
+      {{"X-Goog-Update-Interactivity", is_foreground ? "fg" : "bg"}}, "test",
+      false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -177,21 +176,18 @@ TEST_P(RequestSenderTest, RequestSendSuccess) {
   std::string header;
   extra_request_headers.GetHeader("X-Goog-Update-Interactivity", &header);
   EXPECT_STREQ(is_foreground ? "fg" : "bg", header.c_str());
-
-  interceptor_factory_ = nullptr;
 }
 
 // Tests that the request succeeds using the second url after the first url
 // has failed.
 TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
-  EXPECT_TRUE(
-      post_interceptor_1_->ExpectRequest(new PartialMatch("test"), 403));
-  EXPECT_TRUE(post_interceptor_2_->ExpectRequest(new PartialMatch("test")));
+  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(
+      std::make_unique<PartialMatch>("test"), 403));
+  EXPECT_TRUE(post_interceptor_2_->ExpectRequest(
+      std::make_unique<PartialMatch>("test")));
 
-  const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
-  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      urls, {}, "test", false,
+      {GURL(kUrl1), GURL(kUrl2)}, {}, "test", false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -212,10 +208,10 @@ TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
 
 // Tests that the request fails when both urls have failed.
 TEST_F(RequestSenderTest, RequestSendFailed) {
-  EXPECT_TRUE(
-      post_interceptor_1_->ExpectRequest(new PartialMatch("test"), 403));
-  EXPECT_TRUE(
-      post_interceptor_2_->ExpectRequest(new PartialMatch("test"), 403));
+  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(
+      std::make_unique<PartialMatch>("test"), 403));
+  EXPECT_TRUE(post_interceptor_2_->ExpectRequest(
+      std::make_unique<PartialMatch>("test"), 403));
 
   const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
   request_sender_ = std::make_unique<RequestSender>(config_);
@@ -254,8 +250,9 @@ TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
 
 // Tests that a CUP request fails if the response is not signed.
 TEST_F(RequestSenderTest, RequestSendCupError) {
-  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(
-      new PartialMatch("test"), test_file("updatecheck_reply_1.xml")));
+  EXPECT_TRUE(
+      post_interceptor_1_->ExpectRequest(std::make_unique<PartialMatch>("test"),
+                                         test_file("updatecheck_reply_1.xml")));
 
   const std::vector<GURL> urls = {GURL(kUrl1)};
   request_sender_ = std::make_unique<RequestSender>(config_);

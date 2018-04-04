@@ -106,7 +106,7 @@ scoped_refptr<UpdateContext> PingManagerTest::MakeMockUpdateContext() const {
 TEST_F(PingManagerTest, SendPing) {
   auto interceptor_factory =
       std::make_unique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());
-  auto* interceptor = interceptor_factory->CreateInterceptor();
+  auto interceptor = interceptor_factory->CreateInterceptor();
   EXPECT_TRUE(interceptor);
 
   // Test eventresult="1" is sent for successful updates.
@@ -120,7 +120,7 @@ TEST_F(PingManagerTest, SendPing) {
     component.next_version_ = base::Version("2.0");
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
 
-    EXPECT_TRUE(interceptor->ExpectRequest(new AnyMatch));
+    EXPECT_TRUE(interceptor->ExpectRequest(std::make_unique<AnyMatch>()));
     ping_manager_->SendPing(component, MakePingCallback());
     RunThreads();
 
@@ -153,7 +153,7 @@ TEST_F(PingManagerTest, SendPing) {
     component.next_version_ = base::Version("2.0");
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
 
-    EXPECT_TRUE(interceptor->ExpectRequest(new AnyMatch));
+    EXPECT_TRUE(interceptor->ExpectRequest(std::make_unique<AnyMatch>()));
     ping_manager_->SendPing(component, MakePingCallback());
     RunThreads();
 
@@ -185,7 +185,7 @@ TEST_F(PingManagerTest, SendPing) {
     component.crx_diffurls_.push_back(GURL("http://host/path"));
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
 
-    EXPECT_TRUE(interceptor->ExpectRequest(new AnyMatch));
+    EXPECT_TRUE(interceptor->ExpectRequest(std::make_unique<AnyMatch>()));
     ping_manager_->SendPing(component, MakePingCallback());
     RunThreads();
 
@@ -212,7 +212,7 @@ TEST_F(PingManagerTest, SendPing) {
 
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
 
-    EXPECT_TRUE(interceptor->ExpectRequest(new AnyMatch));
+    EXPECT_TRUE(interceptor->ExpectRequest(std::make_unique<AnyMatch>()));
     ping_manager_->SendPing(component, MakePingCallback());
     RunThreads();
 
@@ -232,7 +232,7 @@ TEST_F(PingManagerTest, SendPing) {
     component.Uninstall(base::Version("1.2.3.4"), 0);
     component.AppendEvent(BuildUninstalledEventElement(component));
 
-    EXPECT_TRUE(interceptor->ExpectRequest(new AnyMatch));
+    EXPECT_TRUE(interceptor->ExpectRequest(std::make_unique<AnyMatch>()));
     ping_manager_->SendPing(component, MakePingCallback());
     RunThreads();
 
@@ -274,7 +274,7 @@ TEST_F(PingManagerTest, SendPing) {
     component.AppendEvent(
         BuildDownloadCompleteEventElement(component, download_metrics));
 
-    EXPECT_TRUE(interceptor->ExpectRequest(new AnyMatch));
+    EXPECT_TRUE(interceptor->ExpectRequest(std::make_unique<AnyMatch>()));
     ping_manager_->SendPing(component, MakePingCallback());
     RunThreads();
 
