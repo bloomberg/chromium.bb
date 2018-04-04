@@ -406,7 +406,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
   ASSERT_EQ(view, document_interaction_controller.presentedOpenInMenu.view);
   ASSERT_TRUE(document_interaction_controller.presentedOpenInMenu.animated);
 
-  // Complete the download to log Download.IOSDownloadFileResult.
+  // Complete the download to log UMA.
   task->SetDone(true);
 
   // Download task is destroyed without opening the file.
@@ -420,6 +420,11 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
       "Download.IOSDownloadedFileAction",
       static_cast<base::HistogramBase::Sample>(
           DownloadedFileAction::NoActionOrOpenedViaExtension),
+      1);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadedFileAction",
+      static_cast<base::HistogramBase::Sample>(
+          DownloadFileInBackground::SucceededWithoutBackgrounding),
       1);
 }
 
@@ -758,8 +763,72 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadFileResult",
       static_cast<base::HistogramBase::Sample>(DownloadFileResult::Failure), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileInBackground",
+      static_cast<base::HistogramBase::Sample>(
+          DownloadFileInBackground::FailedWithoutBackgrounding),
+      1);
   ASSERT_EQ(1,
             user_action_tester_.GetActionCount("MobileDownloadRetryDownload"));
+}
+
+// Tests download failure in background.
+TEST_F(DownloadManagerCoordinatorTest, FailingInBackground) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  // Start and immediately fail the download.
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+  task.SetPerformedBackgroundDownload(true);
+  task.SetErrorCode(net::ERR_INTERNET_DISCONNECTED);
+  task.SetDone(true);
+
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileResult",
+      static_cast<base::HistogramBase::Sample>(DownloadFileResult::Failure), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileInBackground",
+      static_cast<base::HistogramBase::Sample>(
+          DownloadFileInBackground::FailedWithBackgrounding),
+      1);
+}
+
+// Tests successful download in background.
+TEST_F(DownloadManagerCoordinatorTest, SucceedingInBackground) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Start the download.
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+
+  // Complete the download to log UMA.
+  task.SetPerformedBackgroundDownload(true);
+  task.SetDone(true);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileInBackground",
+      static_cast<base::HistogramBase::Sample>(
+          DownloadFileInBackground::SucceededWithBackgrounding),
+      1);
 }
 
 // Tests that viewController returns correct view controller if coordinator is

@@ -9986,6 +9986,30 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="No action or opened via extension"/>
 </enum>
 
+<enum name="DownloadFileInBackground">
+  <int value="0" label="FailedWithoutBackgrounding">
+    The download failed. This task was running when the app was active.
+  </int>
+  <int value="1" label="FailedWithBackgrounding">
+    The download failed. This task was fully or partially running when the app
+    was not active.
+  </int>
+  <int value="2" label="SucceededWithoutBackgrounding">
+    The download successfully completed. This task was running when the app was
+    active.
+  </int>
+  <int value="3" label="SucceededWithBackgrounding">
+    The download successfully completed. This task was fully or partially
+    running when the app was not active.
+  </int>
+  <int value="4" label="CanceledAfterAppQuit">
+    The download was cancelled, because the app was quit by the user. Some of
+    these downloads can be salvaged by supporting
+    application:handleEventsForBackgroundURLSession:completionHandler:
+    AppDelegate callback.
+  </int>
+</enum>
+
 <enum name="DownloadFilePickerResult">
   <int value="0" label="SAME"/>
   <int value="1" label="DIFFERENT_DIR"/>

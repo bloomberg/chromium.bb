@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_METRIC_NAMES_H_
 #define IOS_CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_METRIC_NAMES_H_
 
-// Values of the UMA Download.IOSDownloadedFileAction histogram. This enum is
-// append only.
+// Values of the UMA Download.IOSDownloadedFileAction histogram. These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
 enum class DownloadedFileAction {
   // Downloaded file was uploaded to Google Drive.
   OpenedInDrive = 0,
@@ -16,11 +17,12 @@ enum class DownloadedFileAction {
   // manager UI) or opened via Extension (Chrome is not notified if the download
   // was open in the extension).
   NoActionOrOpenedViaExtension = 2,
-  Count,
+  Count
 };
 
-// Values of the UMA Download.IOSDownloadFileResult histogram. This action is
-// reported only for started downloads.
+// Values of the UMA Download.IOSDownloadFileResult histogram. This histogram is
+// reported only for started downloads. These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
 enum class DownloadFileResult {
   // Download has successfully completed.
   Completed = 0,
@@ -33,6 +35,30 @@ enum class DownloadFileResult {
   Other = 3,
   // The user closed Download Manager UI without starting the download.
   NotStarted = 4,
+  Count
+};
+
+// Values of Download.IOSDownloadFileInBackground histogram. This histogram can
+// help to understand the value of background downloads. These values are
+// persisted to logs. Entries should not be renumbered and numeric values should
+// never be reused.
+enum class DownloadFileInBackground {
+  // The download failed. This task was running when the app was active.
+  FailedWithoutBackgrounding = 0,
+  // The download failed. This task was fully or partially running when the app
+  // was not active.
+  FailedWithBackgrounding = 1,
+  // The download successfully completed. This task was running when the app was
+  // active.
+  SucceededWithoutBackgrounding = 2,
+  // The download successfully completed. This task was fully or partially
+  // running when the app was not active.
+  SucceededWithBackgrounding = 3,
+  // The download was cancelled, because the app was quit by the user. Some of
+  // these downloads can be salvaged by supporting
+  // application:handleEventsForBackgroundURLSession:completionHandler:
+  // AppDelegate callback.
+  CanceledAfterAppQuit = 4,
   Count
 };
 
