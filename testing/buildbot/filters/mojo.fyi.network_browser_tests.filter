@@ -175,7 +175,6 @@
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
 -ExtensionWebRequestApiTest.WebRequestBlocking
--ExtensionWebRequestApiTest.WebRequestClientsGoogleComProtection
 -ExtensionWebRequestApiTest.WebRequestDeclarative2
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes

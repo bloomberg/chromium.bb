@@ -6,6 +6,6 @@ window.webRequestCount = 0;
 
 chrome.webRequest.onBeforeRequest.addListener(function(details) {
   ++window.webRequestCount;
-}, {urls: ['https://clients1.google.com/']});
+}, {urls: ['http://clients1.google.com/']});
 
 chrome.test.sendMessage('ready');
