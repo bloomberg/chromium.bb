@@ -8,18 +8,18 @@ var FilesMetadataBox = Polymer({
   properties: {
     key: {
       type: String,
-      reflectToAttribtue: true,
+      reflectToAttribute: true,
     },
 
     // If |value| is empty, the entire entry will be hidden.
     value: {
       type: String,
-      reflectToAttribtue: true,
+      reflectToAttribute: true,
     },
 
     loading: {
       type: Boolean,
-      reflectToAttribtue: true,
+      reflectToAttribute: true,
       value: false,
     },
   },
