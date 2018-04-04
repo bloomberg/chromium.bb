@@ -25,6 +25,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace {
@@ -94,7 +96,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
                           std::unique_ptr<PrinterDetector> usb_detector,
                           std::unique_ptr<PrinterDetector> zeroconf_detector,
                           scoped_refptr<PpdProvider> ppd_provider,
-                          PrinterEventTracker* event_tracker)
+                          PrinterEventTracker* event_tracker,
+                          PrefService* pref_service)
       : synced_printers_manager_(synced_printers_manager),
         synced_printers_manager_observer_(this),
         usb_detector_(std::move(usb_detector)),
@@ -120,6 +123,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         std::make_unique<PrinterDetectorObserverProxy>(
             this, kZeroconfDetector, zeroconf_detector_.get());
     OnPrintersFound(kZeroconfDetector, zeroconf_detector_->GetPrinters());
+
+    native_printers_allowed_.Init(prefs::kUserNativePrintersAllowed,
+                                  pref_service);
   }
 
   ~CupsPrintersManagerImpl() override = default;
@@ -127,6 +133,12 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Public API function.
   std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    if (!native_printers_allowed_.GetValue() && printer_class != kEnterprise) {
+      // If native printers are disabled then simply return an empty vector.
+      LOG(WARNING) << "Attempting to retrieve native printers when "
+                      "UserNativePrintersAllowed is set to false";
+      return {};
+    }
     return printers_.at(printer_class);
   }
 
@@ -142,6 +154,11 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Public API function.
   void UpdateConfiguredPrinter(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    if (!native_printers_allowed_.GetValue()) {
+      LOG(WARNING) << "UpdateConfiguredPrinter() called when "
+                      "UserNativePrintersAllowed is set to false";
+      return;
+    }
     // If this is an 'add' instead of just an update, record the event.
     MaybeRecordInstallation(printer);
     synced_printers_manager_->UpdateConfiguredPrinter(printer);
@@ -176,6 +193,11 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Public API function.
   void PrinterInstalled(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    if (!native_printers_allowed_.GetValue()) {
+      LOG(WARNING) << "PrinterInstalled() called when "
+                      "UserNativePrintersAllowed is  set to false";
+      return;
+    }
     MaybeRecordInstallation(printer);
     synced_printers_manager_->PrinterInstalled(printer);
   }
@@ -192,6 +214,12 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // more than just this function.
   std::unique_ptr<Printer> GetPrinter(const std::string& id) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    if (!native_printers_allowed_.GetValue()) {
+      LOG(WARNING) << "UserNativePrintersAllowed is disabled - only searching "
+                      "enterprise printers";
+      return GetEnterprisePrinter(id);
+    }
+
     for (const auto& printer_list : printers_) {
       for (const auto& printer : printer_list) {
         if (printer.id() == id) {
@@ -246,6 +274,15 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
  private:
+  std::unique_ptr<Printer> GetEnterprisePrinter(const std::string& id) const {
+    for (const auto& printer : printers_[kEnterprise]) {
+      if (printer.id() == id) {
+        return std::make_unique<Printer>(printer);
+      }
+    }
+    return nullptr;
+  }
+
   // Notify observers on the given classes the the relevant lists have changed.
   void NotifyObservers(
       const std::vector<CupsPrintersManager::PrinterClass>& printer_classes) {
@@ -508,6 +545,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   base::ObserverList<CupsPrintersManager::Observer> observer_list_;
 
+  // Holds the current value of the pref |UserNativePrintersAllowed|.
+  BooleanPrefMember native_printers_allowed_;
+
   base::WeakPtrFactory<CupsPrintersManagerImpl> weak_ptr_factory_;
 };
 
@@ -527,7 +567,8 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
           profile),
       UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(),
       CreatePpdProvider(profile),
-      PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile));
+      PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile),
+      profile->GetPrefs());
 }
 
 // static
@@ -536,10 +577,12 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
     std::unique_ptr<PrinterDetector> usb_detector,
     std::unique_ptr<PrinterDetector> zeroconf_detector,
     scoped_refptr<PpdProvider> ppd_provider,
-    PrinterEventTracker* event_tracker) {
+    PrinterEventTracker* event_tracker,
+    PrefService* pref_service) {
   return std::make_unique<CupsPrintersManagerImpl>(
       synced_printers_manager, std::move(usb_detector),
-      std::move(zeroconf_detector), std::move(ppd_provider), event_tracker);
+      std::move(zeroconf_detector), std::move(ppd_provider), event_tracker,
+      pref_service);
 }
 
 // static
