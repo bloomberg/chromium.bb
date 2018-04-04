@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/profiling/memlog_sender_pipe.h"
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 
 #include <vector>
 
@@ -17,18 +17,18 @@
 namespace profiling {
 namespace {
 
-using Result = MemlogSenderPipe::Result;
+using Result = SenderPipe::Result;
 
-class MemlogSenderPipeTest : public testing::Test {
+class SenderPipeTest : public testing::Test {
  public:
   void SetUp() override {
     mojo::edk::ScopedPlatformHandle write_handle;
 
-    MemlogSenderPipe::PipePair pipes;
+    SenderPipe::PipePair pipes;
     read_handle_ = pipes.PassReceiver();
 
     base::ScopedPlatformFile file(pipes.PassSender().release().handle);
-    sender_pipe_.reset(new MemlogSenderPipe(std::move(file)));
+    sender_pipe_.reset(new SenderPipe(std::move(file)));
 
     // A large buffer for both writing and reading.
     buffer_.resize(64 * 1024);
@@ -53,11 +53,11 @@ class MemlogSenderPipeTest : public testing::Test {
 
  private:
   mojo::edk::ScopedPlatformHandle read_handle_;
-  std::unique_ptr<MemlogSenderPipe> sender_pipe_;
+  std::unique_ptr<SenderPipe> sender_pipe_;
   std::vector<char> buffer_;
 };
 
-TEST_F(MemlogSenderPipeTest, TimeoutNoRead) {
+TEST_F(SenderPipeTest, TimeoutNoRead) {
   // Writing 64k should not time out.
   Result result = Write(64 * 1024);
   ASSERT_EQ(Result::kSuccess, result);
@@ -67,7 +67,7 @@ TEST_F(MemlogSenderPipeTest, TimeoutNoRead) {
   ASSERT_EQ(Result::kTimeout, result);
 }
 
-TEST_F(MemlogSenderPipeTest, TimeoutSmallRead) {
+TEST_F(SenderPipeTest, TimeoutSmallRead) {
   // Writing 64k should not time out.
   Result result = Write(64 * 1024);
   ASSERT_EQ(Result::kSuccess, result);
@@ -81,7 +81,7 @@ TEST_F(MemlogSenderPipeTest, TimeoutSmallRead) {
   ASSERT_EQ(Result::kTimeout, result);
 }
 
-TEST_F(MemlogSenderPipeTest, NoTimeout) {
+TEST_F(SenderPipeTest, NoTimeout) {
   // Writing 64k should not time out.
   Result result = Write(64 * 1024);
   ASSERT_EQ(Result::kSuccess, result);

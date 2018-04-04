@@ -5,8 +5,8 @@
 // We use a custom stream format for performance, since we're potentially
 // sending a packet for every malloc and free.
 
-#ifndef CHROME_COMMON_PROFILING_MEMLOG_STREAM_H_
-#define CHROME_COMMON_PROFILING_MEMLOG_STREAM_H_
+#ifndef COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_STREAM_H_
+#define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_STREAM_H_
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@
 namespace profiling {
 
 // These values should be kept in sync with
-// chrome/profiling/memlog_stream_fuzzer.dict to ensure efficient fuzzer
+// chrome/profiling/stream_fuzzer.dict to ensure efficient fuzzer
 // coverage of the stream parser.
 constexpr uint32_t kStreamSignature = 0xF6103B71;
 
@@ -89,4 +89,4 @@ struct StringMappingPacket {
 
 }  // namespace profiling
 
-#endif  // CHROME_COMMON_PROFILING_MEMLOG_STREAM_H_
+#endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_STREAM_H_

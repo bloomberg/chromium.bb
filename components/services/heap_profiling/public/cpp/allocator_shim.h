@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PROFILING_MEMLOG_ALLOCATOR_SHIM_H_
-#define CHROME_COMMON_PROFILING_MEMLOG_ALLOCATOR_SHIM_H_
+#ifndef COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_ALLOCATOR_SHIM_H_
+#define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_ALLOCATOR_SHIM_H_
 
-#include "chrome/common/profiling/memlog_sender_pipe.h"
-#include "chrome/common/profiling/memlog_stream.h"
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 
 namespace profiling {
@@ -17,7 +17,7 @@ namespace profiling {
 void InitTLSSlot();
 
 // Begin profiling all allocations in the process.
-void InitAllocatorShim(MemlogSenderPipe* sender_pipe,
+void InitAllocatorShim(SenderPipe* sender_pipe,
                        mojom::ProfilingParamsPtr params);
 
 // Stop profiling allocations by dropping shim callbacks. There is no way to
@@ -63,4 +63,4 @@ void SetOnInitAllocatorShimCallbackForTesting(
 
 }  // namespace profiling
 
-#endif  // CHROME_COMMON_PROFILING_MEMLOG_ALLOCATOR_SHIM_H_
+#endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_ALLOCATOR_SHIM_H_

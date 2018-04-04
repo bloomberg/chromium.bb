@@ -9,9 +9,9 @@
 #include <map>
 #include <unordered_set>
 
-#include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/profiling/address.h"
 #include "chrome/profiling/backtrace_storage.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 namespace profiling {
 

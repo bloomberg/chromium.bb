@@ -8,9 +8,9 @@
 
 #include "base/containers/stack_container.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/profiling/address.h"
 #include "chrome/profiling/backtrace.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 namespace profiling {
 

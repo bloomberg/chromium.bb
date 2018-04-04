@@ -1,0 +1,39 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("cpp") {
+  sources = [
+    "allocator_shim.cc",
+    "allocator_shim.h",
+    "client.cc",
+    "client.h",
+    "sender_pipe.h",
+    "sender_pipe_posix.cc",
+    "sender_pipe_win.cc",
+    "stream.h",
+  ]
+
+  public_deps = [
+    "//components/services/heap_profiling/public/mojom",
+  ]
+  deps = [
+    "//base",
+    "//base:debugging_buildflags",
+    "//base/allocator:buildflags",
+    "//mojo/edk",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "sender_pipe_unittest.cc",
+  ]
+  deps = [
+    ":cpp",
+    "//base",
+    "//mojo/edk",
+    "//testing/gtest",
+  ]
+}

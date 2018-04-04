@@ -4,11 +4,11 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
-    "mojom/constants.mojom",
-    "mojom/heap_profiling_client.mojom",
-    "mojom/heap_profiling_service.mojom",
+    "constants.mojom",
+    "heap_profiling_client.mojom",
+    "heap_profiling_service.mojom",
   ]
   deps = [
     "//mojo/common:common_custom_types",

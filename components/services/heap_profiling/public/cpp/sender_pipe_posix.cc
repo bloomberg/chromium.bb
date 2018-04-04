@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/profiling/memlog_sender_pipe.h"
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 
 #include <fcntl.h>
 #include <poll.h>
@@ -13,11 +13,11 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "chrome/common/profiling/memlog_stream.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 namespace profiling {
 
-MemlogSenderPipe::PipePair::PipePair() {
+SenderPipe::PipePair::PipePair() {
   // We create a pipe() rather than a socketpair(). On macOS, this causes writes
   // to be much more performant. On Linux, this causes slight improvements.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=776435
@@ -35,20 +35,20 @@ MemlogSenderPipe::PipePair::PipePair() {
   sender_.reset(mojo::edk::PlatformHandle(fds[1]));
 }
 
-MemlogSenderPipe::PipePair::PipePair(PipePair&& other) = default;
+SenderPipe::PipePair::PipePair(PipePair&& other) = default;
 
-MemlogSenderPipe::MemlogSenderPipe(base::ScopedPlatformFile file)
+SenderPipe::SenderPipe(base::ScopedPlatformFile file)
     : file_(std::move(file)) {}
 
-MemlogSenderPipe::~MemlogSenderPipe() = default;
+SenderPipe::~SenderPipe() = default;
 
-MemlogSenderPipe::Result MemlogSenderPipe::Send(const void* data,
-                                                size_t sz,
-                                                int timeout_ms) {
+SenderPipe::Result SenderPipe::Send(const void* data,
+                                    size_t sz,
+                                    int timeout_ms) {
   base::AutoLock lock(lock_);
 
   // This can happen if Close() was called on another thread, while this thread
-  // was already waiting to call MemlogSenderPipe::Send().
+  // was already waiting to call SenderPipe::Send().
   if (!file_.is_valid())
     return Result::kError;
 
@@ -100,7 +100,7 @@ MemlogSenderPipe::Result MemlogSenderPipe::Send(const void* data,
   return Result::kSuccess;
 }
 
-void MemlogSenderPipe::Close() {
+void SenderPipe::Close() {
   base::AutoLock lock(lock_);
   file_.reset();
 }

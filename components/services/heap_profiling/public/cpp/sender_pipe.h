@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PROFILING_MEMLOG_SENDER_PIPE_H_
-#define CHROME_COMMON_PROFILING_MEMLOG_SENDER_PIPE_H_
+#ifndef COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_SENDER_PIPE_H_
+#define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_SENDER_PIPE_H_
 
 #include "build/build_config.h"
 
@@ -14,7 +14,7 @@
 
 namespace profiling {
 
-class MemlogSenderPipe {
+class SenderPipe {
  public:
   // 64k is a convenient pipe buffer size.
   // On macOS, the default pipe buffer size is 16 * 1024, but grows to 64 * 1024
@@ -43,8 +43,8 @@ class MemlogSenderPipe {
     DISALLOW_COPY_AND_ASSIGN(PipePair);
   };
 
-  explicit MemlogSenderPipe(base::ScopedPlatformFile file);
-  ~MemlogSenderPipe();
+  explicit SenderPipe(base::ScopedPlatformFile file);
+  ~SenderPipe();
 
   enum class Result { kSuccess, kTimeout, kError };
 
@@ -63,9 +63,9 @@ class MemlogSenderPipe {
   // On Windows, ::WriteFile() is not thread-safe.
   base::Lock lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemlogSenderPipe);
+  DISALLOW_COPY_AND_ASSIGN(SenderPipe);
 };
 
 }  // namespace profiling
 
-#endif  // CHROME_COMMON_PROFILING_MEMLOG_SENDER_PIPE_H_
+#endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_SENDER_PIPE_H_

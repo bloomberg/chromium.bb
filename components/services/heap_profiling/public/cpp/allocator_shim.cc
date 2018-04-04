@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/profiling/memlog_allocator_shim.h"
+#include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
@@ -24,7 +24,7 @@
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "chrome/common/profiling/memlog_stream.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 #if defined(OS_POSIX)
 #include <limits.h>
@@ -77,7 +77,7 @@ base::LazyInstance<base::OnceClosure>::Leaky g_on_init_allocator_shim_callback_;
 base::LazyInstance<scoped_refptr<base::TaskRunner>>::Leaky
     g_on_init_allocator_shim_task_runner_;
 
-MemlogSenderPipe* g_sender_pipe = nullptr;
+SenderPipe* g_sender_pipe = nullptr;
 
 // In NATIVE stack mode, whether to insert stack names into the backtraces.
 bool g_include_thread_names = false;
@@ -93,7 +93,7 @@ uint32_t g_sampling_rate = 0;
 // to provide sufficient parallelism to avoid lock overhead in ad-hoc testing.
 constexpr int kNumSendBuffers = 17;
 
-// If writing to the MemlogSenderPipe ever takes longer than 10s, just give up.
+// If writing to the SenderPipe ever takes longer than 10s, just give up.
 constexpr int kTimeoutMs = 10000;
 
 // Functions set by a callback if the GC heap exists in the current process.
@@ -218,13 +218,13 @@ const char* GetOrSetThreadName() {
 
 class SendBuffer {
  public:
-  SendBuffer() : buffer_(new char[MemlogSenderPipe::kPipeSize]) {}
+  SendBuffer() : buffer_(new char[SenderPipe::kPipeSize]) {}
   ~SendBuffer() { delete[] buffer_; }
 
   void Send(const void* data, size_t sz) {
     base::AutoLock lock(lock_);
 
-    if (used_ + sz > MemlogSenderPipe::kPipeSize)
+    if (used_ + sz > SenderPipe::kPipeSize)
       SendCurrentBuffer();
 
     memcpy(&buffer_[used_], data, sz);
@@ -239,12 +239,11 @@ class SendBuffer {
 
  private:
   void SendCurrentBuffer() {
-    MemlogSenderPipe::Result result =
-        g_sender_pipe->Send(buffer_, used_, kTimeoutMs);
+    SenderPipe::Result result = g_sender_pipe->Send(buffer_, used_, kTimeoutMs);
     used_ = 0;
-    if (result == MemlogSenderPipe::Result::kError)
+    if (result == SenderPipe::Result::kError)
       StopAllocatorShimDangerous();
-    if (result == MemlogSenderPipe::Result::kTimeout) {
+    if (result == SenderPipe::Result::kTimeout) {
       StopAllocatorShimDangerous();
       // TODO(erikchen): Emit a histogram. https://crbug.com/777546.
     }
@@ -464,7 +463,7 @@ void HookFreeDefiniteSize(const AllocatorDispatch* self,
   }
 }
 
-AllocatorDispatch g_memlog_hooks = {
+AllocatorDispatch g_hooks = {
     &HookAlloc,             // alloc_function
     &HookZeroInitAlloc,     // alloc_zero_initialized_function
     &HookAllocAligned,      // alloc_aligned_function
@@ -643,7 +642,7 @@ void EnableTraceEventFiltering() {
       filtering_trace_config, base::trace_event::TraceLog::FILTERING_MODE);
 }
 
-void InitAllocatorShim(MemlogSenderPipe* sender_pipe,
+void InitAllocatorShim(SenderPipe* sender_pipe,
                        mojom::ProfilingParamsPtr params) {
   // Must be done before hooking any functions that make stack traces.
   base::debug::EnableInProcessStackDumping();
@@ -677,7 +676,7 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe,
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   // Normal malloc allocator shim.
-  base::allocator::InsertAllocatorDispatch(&g_memlog_hooks);
+  base::allocator::InsertAllocatorDispatch(&g_hooks);
 #endif
 
   // PartitionAlloc allocator shim.
@@ -769,14 +768,14 @@ void AllocatorShimLogAlloc(AllocatorType type,
 
     shim_state->interval_to_next_sample -= sz;
 
-    // When |interval_to_next_sample|  underflows, we record a sample.
+    // When |interval_to_next_sample| underflows, we record a sample.
     if (LIKELY(shim_state->interval_to_next_sample > 0)) {
       return;
     }
 
     // Very occasionally, when sampling, we'll want to take more than 1 sample
     // from the same object. Ideally, we'd have a "count" or "weight" associated
-    // with the allocation in question. Since the memlog stream format does not
+    // with the allocation in question. Since the stream format does not
     // support that, just use |sz| as a proxy.
     int sz_multiplier = 0;
     while (shim_state->interval_to_next_sample <= 0) {
@@ -792,7 +791,7 @@ void AllocatorShimLogAlloc(AllocatorType type,
     constexpr size_t max_message_size = sizeof(AllocPacket) +
                                         kMaxStackEntries * sizeof(uint64_t) +
                                         kMaxContextLen;
-    static_assert(max_message_size < MemlogSenderPipe::kPipeSize,
+    static_assert(max_message_size < SenderPipe::kPipeSize,
                   "We can't have a message size that exceeds the pipe write "
                   "buffer size.");
     char message[max_message_size];
@@ -855,9 +854,9 @@ void AllocatorShimFlushPipe(uint32_t barrier_id) {
 
   BarrierPacket barrier;
   barrier.barrier_id = barrier_id;
-  MemlogSenderPipe::Result result =
+  SenderPipe::Result result =
       g_sender_pipe->Send(&barrier, sizeof(barrier), kTimeoutMs);
-  if (result != MemlogSenderPipe::Result::kSuccess) {
+  if (result != SenderPipe::Result::kSuccess) {
     StopAllocatorShimDangerous();
     // TODO(erikchen): Emit a histogram. https://crbug.com/777546.
   }
@@ -869,7 +868,7 @@ void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,
   g_hook_gc_free = hook_free;
 
   if (g_sender_pipe) {
-    // If starting the memlog pipe beat Blink initialization, hook the
+    // If starting the pipe beat Blink initialization, hook the
     // functions now.
     g_hook_gc_alloc(&HookGCAlloc);
     g_hook_gc_free(&HookGCFree);
