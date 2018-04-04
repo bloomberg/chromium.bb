@@ -480,7 +480,7 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
 #endif
     // Ensure our paint invalidation tests don't trigger the less performant
     // situation which should be rare.
-    LOG(WARNING) << "Can't find cached display item: " << id.client.DebugName()
+    CHECK(false) << "Can't find cached display item: " << id.client.DebugName()
                  << " " << id.ToString();
   }
   return kNotFound;
