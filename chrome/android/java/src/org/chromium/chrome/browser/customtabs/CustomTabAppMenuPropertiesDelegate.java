@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MINIMAL_UI_WEBAPP;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_OFFLINE_PAGE;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_READER_MODE;
 
@@ -116,6 +117,12 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 addToHomeScreenVisible = false;
                 downloadItemVisible = false;
                 bookmarkItemVisible = false;
+            } else if (mUiType == CUSTOM_TABS_UI_TYPE_OFFLINE_PAGE) {
+                openInChromeItemVisible = false;
+                bookmarkItemVisible = true;
+                downloadItemVisible = false;
+                addToHomeScreenVisible = false;
+                requestDesktopSiteVisible = true;
             }
 
             if (!FirstRunStatus.getFirstRunFlowComplete()) {
@@ -181,7 +188,12 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
 
     @Override
     public int getFooterResourceId() {
-        return mUiType == CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER ? 0 : R.layout.powered_by_chrome_footer;
+        // Avoid showing the branded menu footer for media and offline pages.
+        if (mUiType == CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER
+                || mUiType == CUSTOM_TABS_UI_TYPE_OFFLINE_PAGE) {
+            return 0;
+        }
+        return R.layout.powered_by_chrome_footer;
     }
 
     /**
