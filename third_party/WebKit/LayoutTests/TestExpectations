@@ -1624,9 +1624,21 @@ crbug.com/803558 external/wpt/websockets/Create-Secure-extensions-empty.htm [ Ti
 crbug.com/803558 external/wpt/websockets/constructor/014.html?wss [ Timeout ]
 crbug.com/803558 external/wpt/websockets/keeping-connection-open/001.html?wss [ Timeout ]
 crbug.com/803558 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
+crbug.com/803358 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.htm [ Timeout ]
+crbug.com/803558 virtual/off-main-thread-websocket/external/wpt/websockets/constructor/014.html?wss [ Timeout ]
+crbug.com/803558 virtual/off-main-thread-websocket/external/wpt/websockets/keeping-connection-open/001.html?wss [ Timeout ]
+crbug.com/803558 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
 # Cannot be rebaselined because the output contains a timestamp and a random number.
 crbug.com/803200 external/wpt/websockets/cookies/006.html?wss [ Failure ]
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
+crbug.com/803200 virtual/off-main-thread-websocket/external/wpt/websockets/cookies/006.html?wss [ Failure ]
+crbug.com/803200 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
+# These tests are failing because of experimental off-main-thread WebSocket
+# implementation.
+crbug.com/825740 virtual/off-main-thread-websocket/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Failure ]
+crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/multiple-connections-throttled.html [ Timeout ]
+crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/close-code-and-reason.html [ Failure ]
+crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/close.html [ Failure ]
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
@@ -3356,14 +3368,3 @@ crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.ht
 crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-passing.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass Timeout ]
-
-crbug.com/825740 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.htm [ Timeout ]
-crbug.com/825740 virtual/off-main-thread-websocket/external/wpt/websockets/constructor/014.html?wss [ Timeout ]
-crbug.com/825740 virtual/off-main-thread-websocket/external/wpt/websockets/cookies/006.html?wss [ Failure ]
-crbug.com/825740 virtual/off-main-thread-websocket/external/wpt/websockets/keeping-connection-open/001.html?wss [ Timeout ]
-crbug.com/825740 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
-crbug.com/825740 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/005.html?wss [ Failure ]
-crbug.com/825740 virtual/off-main-thread-websocket/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Failure ]
-crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/multiple-connections-throttled.html [ Timeout ]
-crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/close-code-and-reason.html [ Failure ]
-crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/close.html [ Failure ]
