@@ -234,13 +234,13 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
 
   int modifiers = 0;
   if (key_data->modifiers.get()) {
-    if (key_data->modifiers->ctrl)
+    if (key_data->modifiers->ctrl && *key_data->modifiers->ctrl)
       modifiers |= ui::EF_CONTROL_DOWN;
-    if (key_data->modifiers->alt)
+    if (key_data->modifiers->alt && *key_data->modifiers->alt)
       modifiers |= ui::EF_ALT_DOWN;
-    if (key_data->modifiers->search)
+    if (key_data->modifiers->search && *key_data->modifiers->search)
       modifiers |= ui::EF_COMMAND_DOWN;
-    if (key_data->modifiers->shift)
+    if (key_data->modifiers->shift && *key_data->modifiers->shift)
       modifiers |= ui::EF_SHIFT_DOWN;
   }
 
