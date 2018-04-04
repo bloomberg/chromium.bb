@@ -38,8 +38,12 @@ Polymer({
    * @private
    */
   onInputFocus_: function(event) {
-    /** @type {!PaperInputElement} */ (Polymer.dom(event).localTarget)
-        .inputElement.select();
+    const inputElement =
+        /** @type {!PaperInputElement} */ (Polymer.dom(event).localTarget)
+            .inputElement;
+    inputElement.setSelectionRange(0, 0);
+    inputElement.focus();
+    inputElement.select();
   }
 });
 })();
