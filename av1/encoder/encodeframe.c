@@ -4625,8 +4625,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int num_planes = av1_num_planes(cm);
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO **mi_8x8 = xd->mi;
-  MB_MODE_INFO *mbmi = mi_8x8[0];
+  MB_MODE_INFO **mi_4x4 = xd->mi;
+  MB_MODE_INFO *mbmi = mi_4x4[0];
   const int seg_skip =
       segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
   const int mis = cm->mi_stride;
@@ -4749,7 +4749,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       for (j = 0; j < mi_height; j++)
         for (i = 0; i < mi_width; i++)
           if (mi_col + i < cm->mi_cols && mi_row + j < cm->mi_rows)
-            mi_8x8[mis * j + i]->tx_size = intra_tx_size;
+            mi_4x4[mis * j + i]->tx_size = intra_tx_size;
 
       if (intra_tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
     }

@@ -685,16 +685,16 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
 
 static void update_reference_segmentation_map(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  MB_MODE_INFO **mi_8x8_ptr = cm->mi_grid_visible;
+  MB_MODE_INFO **mi_4x4_ptr = cm->mi_grid_visible;
   uint8_t *cache_ptr = cm->current_frame_seg_map;
   int row, col;
 
   for (row = 0; row < cm->mi_rows; row++) {
-    MB_MODE_INFO **mi_8x8 = mi_8x8_ptr;
+    MB_MODE_INFO **mi_4x4 = mi_4x4_ptr;
     uint8_t *cache = cache_ptr;
-    for (col = 0; col < cm->mi_cols; col++, mi_8x8++, cache++)
-      cache[0] = mi_8x8[0]->segment_id;
-    mi_8x8_ptr += cm->mi_stride;
+    for (col = 0; col < cm->mi_cols; col++, mi_4x4++, cache++)
+      cache[0] = mi_4x4[0]->segment_id;
+    mi_4x4_ptr += cm->mi_stride;
     cache_ptr += cm->mi_cols;
   }
 }
