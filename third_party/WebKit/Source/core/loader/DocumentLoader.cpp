@@ -473,7 +473,7 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
 
   application_cache_host_->FinishedLoadingMainResource();
   if (parser_) {
-    if (is_parser_blocked_) {
+    if (parser_blocked_count_) {
       finished_loading_ = true;
     } else {
       parser_->Finish();
@@ -727,7 +727,7 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
   if (length)
     data_received_ = true;
 
-  if (is_parser_blocked_) {
+  if (parser_blocked_count_) {
     if (!committed_data_buffer_)
       committed_data_buffer_ = SharedBuffer::Create();
     committed_data_buffer_->Append(bytes, length);
@@ -1152,13 +1152,15 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
 }
 
 void DocumentLoader::BlockParser() {
-  DCHECK(!is_parser_blocked_);
-  is_parser_blocked_ = true;
+  parser_blocked_count_++;
 }
 
 void DocumentLoader::ResumeParser() {
-  DCHECK(is_parser_blocked_);
-  is_parser_blocked_ = false;
+  parser_blocked_count_--;
+  DCHECK_GE(parser_blocked_count_, 0);
+
+  if (parser_blocked_count_ != 0)
+    return;
 
   if (committed_data_buffer_ && !committed_data_buffer_->IsEmpty()) {
     // Don't recursively process data.

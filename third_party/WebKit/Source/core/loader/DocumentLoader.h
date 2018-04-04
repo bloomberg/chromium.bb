@@ -244,7 +244,9 @@ class CORE_EXPORT DocumentLoader
     return devtools_navigation_token_;
   }
 
-  // Can be used to block the parser.
+  // Can be used to temporarily suspend feeding the parser with new data. The
+  // parser will be allowed to read new data when ResumeParser() is called the
+  // same number of time than BlockParser().
   void BlockParser();
   void ResumeParser();
 
@@ -387,7 +389,7 @@ class CORE_EXPORT DocumentLoader
   State state_;
 
   // Used to block the parser.
-  bool is_parser_blocked_ = false;
+  int parser_blocked_count_ = 0;
   bool finished_loading_ = false;
   scoped_refptr<SharedBuffer> committed_data_buffer_;
 
