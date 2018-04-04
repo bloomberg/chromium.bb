@@ -166,7 +166,7 @@ def GetSecondaryAbi(apk_zipfile, shared_library):
 def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   # Expected files to copy from 32- to 64-bit APK together with whether to
   # compress within the .apk.
-  expected_files = {'snapshot_blob_32.bin': False}
+  expected_files = {'snapshot_blob_32.bin': False, 'unwind_cfi_32': False}
   if args.shared_library:
     expected_files[args.shared_library] = not args.uncompress_shared_libraries
 
