@@ -254,8 +254,8 @@ void WaylandConnection::Capabilities(void* data,
         return;
       }
       connection->pointer_ = std::make_unique<WaylandPointer>(
-          pointer, base::Bind(&WaylandConnection::DispatchUiEvent,
-                              base::Unretained(connection)));
+          pointer, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
+                                       base::Unretained(connection)));
       connection->pointer_->set_connection(connection);
     }
   } else if (connection->pointer_) {
@@ -269,8 +269,8 @@ void WaylandConnection::Capabilities(void* data,
         return;
       }
       connection->keyboard_ = std::make_unique<WaylandKeyboard>(
-          keyboard, base::Bind(&WaylandConnection::DispatchUiEvent,
-                               base::Unretained(connection)));
+          keyboard, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
+                                        base::Unretained(connection)));
       connection->keyboard_->set_connection(connection);
     }
   } else if (connection->keyboard_) {
@@ -284,8 +284,8 @@ void WaylandConnection::Capabilities(void* data,
         return;
       }
       connection->touch_ = std::make_unique<WaylandTouch>(
-          touch, base::Bind(&WaylandConnection::DispatchUiEvent,
-                            base::Unretained(connection)));
+          touch, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
+                                     base::Unretained(connection)));
       connection->touch_->set_connection(connection);
     }
   } else if (connection->touch_) {
