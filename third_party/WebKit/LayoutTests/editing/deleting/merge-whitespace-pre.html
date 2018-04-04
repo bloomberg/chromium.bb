@@ -1,13 +1,21 @@
-<p>This test places the caret before the 'b' in 'bar' and Delete.  Afterword, 'foobar' should be in the first paragraph and 'baz' should be in the second.</p>
-<div contenteditable="true">
-<div>foo</div>
-<pre id="test">bar
-baz</pre>
-</div>
-
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-var s = window.getSelection();
-var e = document.getElementById("test");
-s.collapse(e, 0);
-document.execCommand("Delete");
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>foo</div>',
+       '<pre>|bar\nbaz</pre>',
+    '</div>',
+  ],
+  'Delete',
+  [
+    '<div contenteditable>',
+      '<div>foo|bar</div>',
+       '<pre>baz</pre>',
+    '</div>',
+  ],
+  'Delete to merge whitespaces');
 </script>
