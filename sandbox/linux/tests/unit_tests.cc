@@ -177,6 +177,18 @@ void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
     struct rlimit no_core = {0};
     setrlimit(RLIMIT_CORE, &no_core);
 
+#if defined(OS_ANDROID)
+    // On Android Oreo and higher, the system applies a seccomp filter to all
+    // processes. It has its own SIGSYS handler that is un-hooked here in the
+    // test child process, so that the Chromium handler can be used. This
+    // is performed by SeccompStarterAndroid in normal builds.
+    signal(SIGSYS, SIG_DFL);
+    // In addition, libsigchain will install a SEGV handler that is normally
+    // used for JVM fault handling. Reset it so that the test SEGV failures
+    // are interpreted correctly.
+    signal(SIGSEGV, SIG_DFL);
+#endif
+
     test_runner->Run();
     if (test_runner->ShouldCheckForLeaks()) {
 #if defined(LEAK_SANITIZER)
