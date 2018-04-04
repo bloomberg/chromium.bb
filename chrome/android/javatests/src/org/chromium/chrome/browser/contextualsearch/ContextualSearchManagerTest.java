@@ -2197,6 +2197,7 @@ public class ContextualSearchManagerTest {
      * of selection bounds, so this helps prevent a regression with that.
      */
     @Test
+    @DisabledTest(message = "crbug.com/828780")
     @LargeTest
     @Feature({"ContextualSearch"})
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/818897")
@@ -2212,6 +2213,7 @@ public class ContextualSearchManagerTest {
      * thread instead of the UI thread for some wait sequences.
      */
     @Test
+    @DisabledTest(message = "crbug.com/828780")
     @LargeTest
     @Feature({"ContextualSearch"})
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/818897")
