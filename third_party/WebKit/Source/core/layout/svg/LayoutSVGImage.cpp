@@ -155,27 +155,27 @@ bool LayoutSVGImage::NodeAtFloatPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
+  const ComputedStyle& style = StyleRef();
   PointerEventsHitRules hit_rules(PointerEventsHitRules::SVG_IMAGE_HITTESTING,
                                   result.GetHitTestRequest(),
-                                  Style()->PointerEvents());
-  bool is_visible = (Style()->Visibility() == EVisibility::kVisible);
-  if (is_visible || !hit_rules.require_visible) {
-    FloatPoint local_point;
-    if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-            *this, LocalToSVGParentTransform(), point_in_parent, local_point))
-      return false;
+                                  style.PointerEvents());
+  if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
+    return false;
 
-    if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {
-      if (object_bounding_box_.Contains(local_point)) {
-        const LayoutPoint& local_layout_point = LayoutPoint(local_point);
-        UpdateHitTestResult(result, local_layout_point);
-        if (result.AddNodeToListBasedTestResult(
-                GetElement(), local_layout_point) == kStopHitTesting)
-          return true;
-      }
+  FloatPoint local_point;
+  if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+          *this, LocalToSVGParentTransform(), point_in_parent, local_point))
+    return false;
+
+  if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {
+    if (object_bounding_box_.Contains(local_point)) {
+      const LayoutPoint& local_layout_point = LayoutPoint(local_point);
+      UpdateHitTestResult(result, local_layout_point);
+      if (result.AddNodeToListBasedTestResult(
+              GetElement(), local_layout_point) == kStopHitTesting)
+        return true;
     }
   }
-
   return false;
 }
 
