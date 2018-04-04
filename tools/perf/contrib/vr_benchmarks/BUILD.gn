@@ -15,6 +15,7 @@ group("vr_perf_tests") {
     "./vr_benchmarks.py",
     "./vr_browsing_mode_pages.py",
     "./vr_sample_page.py",
+    "./vr_story_set.py",
     "./webvr_sample_pages.py",
     "./webvr_wpr_pages.py",
     "//chrome/android/shared_preference_files/test/",
