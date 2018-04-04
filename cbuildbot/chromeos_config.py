@@ -1285,6 +1285,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.default_hw_tests_override,
       site_config.templates.full,
       site_config.templates.no_hwtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       profile='fuzzer',
       chrome_sdk=False,
       # Run fuzzer builder specific stages.
