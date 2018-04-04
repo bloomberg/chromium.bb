@@ -170,6 +170,7 @@ source_set("unit_tests") {
     "model/start_offline_page_upgrade_task_unittest.cc",
     "model/startup_maintenance_task_unittest.cc",
     "model/store_thumbnail_task_unittest.cc",
+    "model/update_file_path_task_unittest.cc",
     "offline_event_logger_unittest.cc",
     "offline_page_archiver_unittest.cc",
     "offline_page_feature_unittest.cc",
