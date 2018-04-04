@@ -23,7 +23,7 @@
 
 namespace base {
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 
 namespace internal {
 
@@ -37,7 +37,7 @@ class ThreadLocalStorageTestInternal {
 
 }  // namespace internal
 
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 namespace {
 
@@ -96,20 +96,21 @@ void ThreadLocalStorageCleanup(void *value) {
   TLSSlot().Set(value);
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 constexpr intptr_t kDummyValue = 0xABCD;
 constexpr size_t kKeyCount = 20;
 
-// The order in which pthread keys are destructed is non-deterministic.
-// Hopefully, of the 20 keys we create, some of them should be destroyed
-class UseTLSDuringDestructionThread : public SimpleThread {
+// The order in which pthread keys are destructed is not specified by the POSIX
+// specification. Hopefully, of the 20 keys we create, some of them should be
+// destroyed after the TLS key is destroyed.
+class UseTLSDuringDestructionRunner {
  public:
-  UseTLSDuringDestructionThread() : SimpleThread("prefix") {}
+  UseTLSDuringDestructionRunner() = default;
 
   // The order in which pthread_key destructors are called is not well defined.
   // Hopefully, by creating 10 both before and after initializing TLS on the
   // thread, at least 1 will be called after TLS destruction.
-  void Run() override {
+  void Run() {
     ASSERT_FALSE(internal::ThreadLocalStorageTestInternal::HasBeenDestroyed());
 
     // Create 10 pthread keys before initializing TLS on the thread.
@@ -169,7 +170,7 @@ class UseTLSDuringDestructionThread : public SimpleThread {
     tls_states_[index].teardown_works_correctly = &teardown_works_correctly_;
     int result = pthread_key_create(
         &(tls_states_[index].key),
-        UseTLSDuringDestructionThread::ThreadLocalDestructor);
+        UseTLSDuringDestructionRunner::ThreadLocalDestructor);
     ASSERT_EQ(result, 0);
 
     result = pthread_setspecific(tls_states_[index].key, &tls_states_[index]);
@@ -180,12 +181,19 @@ class UseTLSDuringDestructionThread : public SimpleThread {
   bool teardown_works_correctly_ = false;
   TLSState tls_states_[kKeyCount];
 
-  DISALLOW_COPY_AND_ASSIGN(UseTLSDuringDestructionThread);
+  DISALLOW_COPY_AND_ASSIGN(UseTLSDuringDestructionRunner);
 };
 
-base::ThreadLocalStorage::Slot UseTLSDuringDestructionThread::slot_;
+base::ThreadLocalStorage::Slot UseTLSDuringDestructionRunner::slot_;
 
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+void* UseTLSTestThreadRun(void* input) {
+  UseTLSDuringDestructionRunner* runner =
+      static_cast<UseTLSDuringDestructionRunner*>(input);
+  runner->Run();
+  return nullptr;
+}
+
+#endif  // defined(OS_POSIX)
 
 }  // namespace
 
@@ -249,17 +257,22 @@ TEST(ThreadLocalStorageTest, TLSReclaim) {
   }
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 // Unlike POSIX, Windows does not iterate through the OS TLS to cleanup any
 // values there. Instead a per-module thread destruction function is called.
 // However, it is not possible to perform a check after this point (as the code
 // is detached from the thread), so this check remains POSIX only.
 TEST(ThreadLocalStorageTest, UseTLSDuringDestruction) {
-  UseTLSDuringDestructionThread thread;
-  thread.Start();
-  thread.Join();
-  EXPECT_TRUE(thread.teardown_works_correctly());
+  UseTLSDuringDestructionRunner runner;
+  pthread_t thread;
+  int result = pthread_create(&thread, nullptr, UseTLSTestThreadRun, &runner);
+  ASSERT_EQ(result, 0);
+
+  result = pthread_join(thread, nullptr);
+  ASSERT_EQ(result, 0);
+
+  EXPECT_TRUE(runner.teardown_works_correctly());
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 }  // namespace base
