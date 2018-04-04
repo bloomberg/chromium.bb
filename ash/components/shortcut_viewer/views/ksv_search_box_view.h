@@ -33,8 +33,8 @@ class KSVSearchBoxView : public search_box::SearchBoxViewBase {
 
  private:
   // search_box::SearchBoxViewBase:
-  void ModelChanged() override {}
   void UpdateBackgroundColor(SkColor color) override;
+  void ModelChanged() override {}
   void UpdateKeyboardVisibility() override {}
   void UpdateModel(bool initiated_by_user) override {}
   void UpdateSearchIcon() override {}

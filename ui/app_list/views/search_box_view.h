@@ -38,10 +38,16 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   ~SearchBoxView() override;
 
   // Overridden from search_box::SearchBoxViewBase:
-  void ModelChanged() override;
   void ClearSearch() override;
-  void UpdateKeyboardVisibility() override;
+  views::View* GetSelectedViewInContentsView() override;
   void HandleSearchBoxEvent(ui::LocatedEvent* located_event) override;
+  void ModelChanged() override;
+  void UpdateKeyboardVisibility() override;
+  void UpdateModel(bool initiated_by_user) override;
+  void UpdateSearchIcon() override;
+  void UpdateSearchBoxBorder() override;
+  void SetupCloseButton() override;
+  void SetupBackButton() override;
 
   // Overridden from views::View:
   void OnKeyEvent(ui::KeyEvent* evetn) override;
@@ -66,14 +72,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Updates the opacity of the searchbox.
   void UpdateOpacity();
 
-  // Overridden from search_box::SearchBoxViewBase:
-  views::View* GetSelectedViewInContentsView() override;
-
  private:
-  // Overridden from search_box::SearchBoxViewBase:
-  void UpdateModel(bool initiated_by_user) override;
-  void UpdateSearchIcon() override;
-
   // Gets the wallpaper prominent colors.
   void GetWallpaperProminentColors(
       AppListViewDelegate::GetWallpaperProminentColorsCallback callback);
@@ -99,11 +98,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Overridden from AppListViewDelegateObserver:
   void OnWallpaperColorsChanged() override;
-
-  // Overridden from search_box::SearchBoxViewBase:
-  void UpdateSearchBoxBorder() override;
-  void SetupBackButton() override;
-  void SetupCloseButton() override;
 
   AppListViewDelegate* view_delegate_;  // Not owned.
   SearchModel* search_model_ = nullptr;  // Owned by the profile-keyed service.

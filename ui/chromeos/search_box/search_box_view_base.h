@@ -48,9 +48,7 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   void Init();
 
-  virtual void ModelChanged() = 0;
   bool HasSearch() const;
-  virtual void ClearSearch();
 
   // Returns the bounds to use for the view (including the shadow) given the
   // desired bounds of the search box contents.
@@ -73,13 +71,6 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   // search box inactive center aligns the placeholder text, sets the color, and
   // disables cursor blink.
   void SetSearchBoxActive(bool active);
-
-  // Shows/hides the virtual keyboard if the search box is active.
-  virtual void UpdateKeyboardVisibility() = 0;
-
-  // Detects |ET_MOUSE_PRESSED| and |ET_GESTURE_TAP| events on the white
-  // background of the search box.
-  virtual void HandleSearchBoxEvent(ui::LocatedEvent* located_event);
 
   // Handles Gesture and Mouse Events sent from |search_box_|.
   bool OnTextfieldEvent();
@@ -108,13 +99,15 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   // Whether the search box is active.
   bool is_search_box_active() const { return is_search_box_active_; }
 
-  // Returns selected view in contents view.
-  virtual views::View* GetSelectedViewInContentsView();
-
   void OnOnSearchBoxFocusedChanged();
 
   // Whether the trimmed query in the search box is empty.
   bool IsSearchBoxTrimmedQueryEmpty() const;
+
+  virtual void ClearSearch();
+
+  // Returns selected view in contents view.
+  virtual views::View* GetSelectedViewInContentsView();
 
  protected:
   // Fires query change notification.
@@ -130,9 +123,6 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   // Sets the search box color.
   void SetSearchBoxColor(SkColor color);
   SkColor search_box_color() const { return search_box_color_; }
-
-  // Updates the search box's background color.
-  virtual void UpdateBackgroundColor(SkColor color);
 
   // Updates the visibility of close button.
   void UpdateCloseButtonVisisbility();
@@ -159,15 +149,24 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   void SetSearchIconImage(gfx::ImageSkia image);
 
+  // Detects |ET_MOUSE_PRESSED| and |ET_GESTURE_TAP| events on the white
+  // background of the search box.
+  virtual void HandleSearchBoxEvent(ui::LocatedEvent* located_event);
+
+  // Updates the search box's background color.
+  virtual void UpdateBackgroundColor(SkColor color);
+
  private:
+  virtual void ModelChanged() = 0;
+
+  // Shows/hides the virtual keyboard if the search box is active.
+  virtual void UpdateKeyboardVisibility() = 0;
+
   // Updates model text and selection model with current Textfield info.
   virtual void UpdateModel(bool initiated_by_user) = 0;
 
   // Updates the search icon.
   virtual void UpdateSearchIcon() = 0;
-
-  // Gets the search box background.
-  SearchBoxBackground* GetSearchBoxBackground() const;
 
   // Update search box border based on whether the search box is activated.
   virtual void UpdateSearchBoxBorder() = 0;
@@ -175,6 +174,9 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   // Setup button's image, accessible name, and tooltip text etc.
   virtual void SetupCloseButton() = 0;
   virtual void SetupBackButton() = 0;
+
+  // Gets the search box background.
+  SearchBoxBackground* GetSearchBoxBackground() const;
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
 
