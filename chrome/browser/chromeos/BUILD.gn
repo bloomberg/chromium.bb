@@ -509,6 +509,8 @@ source_set("chromeos") {
     "cryptauth/chrome_cryptauth_service_factory.h",
     "cryptauth/cryptauth_device_id_provider_impl.cc",
     "cryptauth/cryptauth_device_id_provider_impl.h",
+    "cryptauth/gcm_device_info_provider_impl.cc",
+    "cryptauth/gcm_device_info_provider_impl.h",
     "customization/customization_document.cc",
     "customization/customization_document.h",
     "customization/customization_wallpaper_downloader.cc",
