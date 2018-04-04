@@ -453,8 +453,8 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();
 
-  EXPECT_FALSE(service()->IsManaged());
-  EXPECT_TRUE(service()->IsSyncActive());
+  ASSERT_FALSE(service()->IsManaged());
+  ASSERT_TRUE(service()->IsSyncActive());
 
   prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
                           std::make_unique<base::Value>(true));
@@ -471,7 +471,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 
   IssueTestTokens();
   InitializeForNthSync();
-  EXPECT_FALSE(service()->IsSyncActive());
+  ASSERT_FALSE(service()->IsSyncActive());
 
   ShutdownAndDeleteService();
 }
@@ -505,8 +505,8 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();
 
-  EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(prefs()->GetBoolean(syncer::prefs::kSyncSuppressStart));
+  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_FALSE(prefs()->GetBoolean(syncer::prefs::kSyncSuppressStart));
 
   testing::Mock::VerifyAndClearExpectations(component_factory());
 
@@ -551,10 +551,10 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   // Initial status.
   ProfileSyncService::SyncTokenStatus token_status =
       service()->GetSyncTokenStatus();
-  EXPECT_EQ(syncer::CONNECTION_NOT_ATTEMPTED, token_status.connection_status);
-  EXPECT_TRUE(token_status.connection_status_update_time.is_null());
-  EXPECT_TRUE(token_status.token_request_time.is_null());
-  EXPECT_TRUE(token_status.token_receive_time.is_null());
+  ASSERT_EQ(syncer::CONNECTION_NOT_ATTEMPTED, token_status.connection_status);
+  ASSERT_TRUE(token_status.connection_status_update_time.is_null());
+  ASSERT_TRUE(token_status.token_request_time.is_null());
+  ASSERT_TRUE(token_status.token_receive_time.is_null());
 
   // Simulate an auth error.
   service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
@@ -584,13 +584,13 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();
-  EXPECT_TRUE(service()->IsSyncActive());
+  ASSERT_TRUE(service()->IsSyncActive());
 
   std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
   auth_service()->LoadCredentials(primary_account_id);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
+  ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
 
   std::string secondary_account_gaiaid = "1234567";
   std::string secondary_account_name = "test_user2@gmail.com";
@@ -634,10 +634,10 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();
-  EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
+  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
             base::TimeDelta::FromMinutes(1));
-  EXPECT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 
   // Sign out.
   service()->RequestStop(ProfileSyncService::CLEAR_DATA);
@@ -745,16 +745,16 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();
 
-  EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(prefs()->GetBoolean(syncer::prefs::kSyncSuppressStart));
+  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_FALSE(prefs()->GetBoolean(syncer::prefs::kSyncSuppressStart));
 
   testing::Mock::VerifyAndClearExpectations(component_factory());
 
   syncer::SyncPrefs sync_prefs(service()->GetSyncClient()->GetPrefService());
 
-  EXPECT_EQ(prefs()->GetInteger(syncer::prefs::kSyncMemoryPressureWarningCount),
+  ASSERT_EQ(prefs()->GetInteger(syncer::prefs::kSyncMemoryPressureWarningCount),
             0);
-  EXPECT_FALSE(sync_prefs.DidSyncShutdownCleanly());
+  ASSERT_FALSE(sync_prefs.DidSyncShutdownCleanly());
 
   // Simulate memory pressure notification.
   base::MemoryPressureListener::NotifyMemoryPressure(
@@ -797,9 +797,9 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
   ExpectDataTypeManagerCreation(
       1, GetRecordingConfigureCalledCallback(&configure_reason));
   InitializeForNthSync();
-  EXPECT_TRUE(service()->IsSyncActive());
+  ASSERT_TRUE(service()->IsSyncActive());
   testing::Mock::VerifyAndClearExpectations(component_factory());
-  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
+  ASSERT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
   syncer::DataTypeManager::ConfigureResult result;
   result.status = syncer::DataTypeManager::OK;
   service()->OnConfigureDone(result);
@@ -846,7 +846,7 @@ TEST_F(ProfileSyncServiceTest,
       1, GetRecordingConfigureCalledCallback(&configure_reason));
   InitializeForNthSync();
   testing::Mock::VerifyAndClearExpectations(component_factory());
-  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
+  ASSERT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
   syncer::DataTypeManager::ConfigureResult result;
   result.status = syncer::DataTypeManager::OK;
   service()->OnConfigureDone(result);
@@ -956,7 +956,7 @@ TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {
   InitializeForNthSync();
 
   syncer::SyncPrefs sync_prefs(service()->GetSyncClient()->GetPrefService());
-  EXPECT_EQ(PRODUCT_VERSION, sync_prefs.GetLastRunVersion());
+  ASSERT_EQ(PRODUCT_VERSION, sync_prefs.GetLastRunVersion());
 
   sync_prefs.SetPassphrasePrompted(true);
 
@@ -1002,10 +1002,10 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();
 
-  EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
+  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
             base::TimeDelta::FromMinutes(1));
-  EXPECT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 
   syncer::SyncProtocolError client_cmd;
   client_cmd.action = syncer::DISABLE_SYNC_ON_CLIENT;
