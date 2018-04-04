@@ -34,10 +34,11 @@ const CGFloat kSearchIconLeftMargin = 9;
 
 @interface ContentSuggestionsHeaderView ()<ToolbarSnapshotProviding>
 
-// Layout constraints for fake omnibox background image.
+// Layout constraints for fake omnibox background image and blur.
 @property(nonatomic, strong) NSLayoutConstraint* backgroundHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* backgroundLeadingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* backgroundTrailingConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* blurTopConstraint;
 
 @end
 
@@ -46,6 +47,7 @@ const CGFloat kSearchIconLeftMargin = 9;
 @synthesize backgroundHeightConstraint = _backgroundHeightConstraint;
 @synthesize backgroundLeadingConstraint = _backgroundLeadingConstraint;
 @synthesize backgroundTrailingConstraint = _backgroundTrailingConstraint;
+@synthesize blurTopConstraint = _blurTopConstraint;
 @synthesize toolBarView = _toolBarView;
 
 #pragma mark - Public
@@ -91,7 +93,14 @@ const CGFloat kSearchIconLeftMargin = 9;
   blur.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
   [searchField insertSubview:blur atIndex:0];
   blur.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(blur, searchField);
+  self.blurTopConstraint =
+      [blur.topAnchor constraintEqualToAnchor:searchField.topAnchor];
+  [NSLayoutConstraint activateConstraints:@[
+    [blur.leadingAnchor constraintEqualToAnchor:searchField.leadingAnchor],
+    [blur.trailingAnchor constraintEqualToAnchor:searchField.trailingAnchor],
+    self.blurTopConstraint,
+    [blur.bottomAnchor constraintEqualToAnchor:searchField.bottomAnchor]
+  ]];
 
   UIVisualEffect* vibrancy = [buttonFactory.toolbarConfiguration
       vibrancyEffectForBlurEffect:blurEffect];
@@ -136,10 +145,11 @@ const CGFloat kSearchIconLeftMargin = 9;
   ]];
 }
 
-- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset {
+- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset
+                         safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   // The scroll offset at which point searchField's frame should stop growing.
-  CGFloat maxScaleOffset =
-      self.frame.size.height - ntp_header::kMinHeaderHeight;
+  CGFloat maxScaleOffset = self.frame.size.height -
+                           ntp_header::kMinHeaderHeight - safeAreaInsets.top;
   // The scroll offset at which point searchField's frame should start
   // growing.
   CGFloat startScaleOffset = maxScaleOffset - ntp_header::kAnimationDistance;
@@ -168,7 +178,8 @@ const CGFloat kSearchIconLeftMargin = 9;
   CGFloat searchFieldNormalWidth =
       content_suggestions::searchFieldWidth(contentWidth);
 
-  CGFloat percent = [self searchFieldProgressForOffset:offset];
+  CGFloat percent =
+      [self searchFieldProgressForOffset:offset safeAreaInsets:safeAreaInsets];
   if (self.cr_widthSizeClass == REGULAR && self.cr_heightSizeClass == REGULAR) {
     self.alpha = 1 - percent;
     widthConstraint.constant = searchFieldNormalWidth;
@@ -178,6 +189,9 @@ const CGFloat kSearchIconLeftMargin = 9;
     hintLabelWidthConstraint.active = YES;
     self.alpha = 1;
   }
+
+  // Grow the blur to cover the safeArea top.
+  self.blurTopConstraint.constant = -safeAreaInsets.top * percent;
 
   // Calculate the amount to grow the width and height of searchField so that
   // its frame covers the entire toolbar area.

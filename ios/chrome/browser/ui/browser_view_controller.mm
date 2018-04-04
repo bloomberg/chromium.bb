@@ -1665,9 +1665,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
-  // Gate this behind iPhone X, since it's currently the only device that
-  // needs layout updates here after startup.
-  if (IsIPhoneX()) {
+  if (IsIPhoneX() || IsUIRefreshPhase1Enabled()) {
     [self setUpViewLayout:NO];
   }
   // Update the heights of the toolbars to account for the new insets.
@@ -5484,6 +5482,16 @@ bubblePresenterForFeature:(const base::Feature&)feature
 #pragma mark - TabHeadersDelegate
 
 - (CGFloat)tabHeaderHeightForTab:(Tab*)tab {
+  if (IsUIRefreshPhase1Enabled() && tab &&
+      tab.webState->GetVisibleURL() == kChromeUINewTabURL && !IsIPadIdiom()) {
+    // Also subtract the top safe area so the view will appear as full screen.
+    // TODO(crbug.com/826369) Remove this once NTP is out of native content.
+    if (@available(iOS 11, *)) {
+      return -self.view.safeAreaInsets.top;
+    } else {
+      return -self.topLayoutGuide.length;
+    }
+  }
   return [self headerHeightForTab:tab];
 }
 

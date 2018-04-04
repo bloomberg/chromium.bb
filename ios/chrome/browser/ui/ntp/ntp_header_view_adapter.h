@@ -20,7 +20,8 @@ class ReadingListModel;
 
 // Return the progress of the search field position along
 // |ntp_header::kAnimationDistance| as the offset changes.
-- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset;
+- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset
+                         safeAreaInsets:(UIEdgeInsets)safeAreaInsets;
 
 // Changes the constraints of searchField based on its initialFrame and the
 // scroll view's y |offset|. Also adjust the alpha values for |_searchBoxBorder|
