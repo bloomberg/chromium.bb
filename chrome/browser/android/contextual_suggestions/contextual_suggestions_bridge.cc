@@ -79,7 +79,7 @@ void ContextualSuggestionsBridge::FetchSuggestions(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jobject>& j_callback) {
-  if (contextual_content_suggestions_service_ == nullptr)
+  if (!contextual_content_suggestions_service_)
     return;
 
   GURL url(ConvertJavaStringToUTF8(env, j_url));
@@ -94,7 +94,7 @@ void ContextualSuggestionsBridge::FetchSuggestionImage(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_suggestion_id,
     const JavaParamRef<jobject>& j_callback) {
-  if (contextual_content_suggestions_service_ == nullptr)
+  if (!contextual_content_suggestions_service_)
     return;
 
   contextual_content_suggestions_service_->FetchContextualSuggestionImage(
@@ -144,28 +144,24 @@ void ContextualSuggestionsBridge::ReportEvent(
 
 void ContextualSuggestionsBridge::OnSuggestionsAvailable(
     ScopedJavaGlobalRef<jobject> j_callback,
+    std::string peek_text,
     std::vector<Cluster> clusters) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_clusters =
-      Java_ContextualSuggestionsBridge_createContextualSuggestionsClusterList(
-          env);
+  ScopedJavaLocalRef<jobject> j_result =
+      Java_ContextualSuggestionsBridge_createContextualSuggestionsResult(
+          env, ConvertUTF8ToJavaString(env, peek_text));
   for (auto& cluster : clusters) {
-    Java_ContextualSuggestionsBridge_addNewClusterToList(
-        env, j_clusters, ConvertUTF8ToJavaString(env, cluster.title));
+    Java_ContextualSuggestionsBridge_addNewClusterToResult(
+        env, j_result, ConvertUTF8ToJavaString(env, cluster.title));
     for (auto& suggestion : cluster.suggestions) {
       Java_ContextualSuggestionsBridge_addSuggestionToLastCluster(
-          env, j_clusters,
-          ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
-          ConvertUTF16ToJavaString(env, suggestion.title()),
-          ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
-          ConvertUTF8ToJavaString(env, suggestion.url().spec()),
-          suggestion.publish_date().ToJavaTime(), suggestion.score(),
-          suggestion.fetch_date().ToJavaTime(),
-          suggestion.is_video_suggestion(),
-          suggestion.optional_image_dominant_color().value_or(0));
+          env, j_result, ConvertUTF8ToJavaString(env, suggestion->id()),
+          ConvertUTF8ToJavaString(env, suggestion->title()),
+          ConvertUTF8ToJavaString(env, suggestion->publisher_name()),
+          ConvertUTF8ToJavaString(env, suggestion->url().spec()));
     }
   }
-  RunCallbackAndroid(j_callback, j_clusters);
+  RunCallbackAndroid(j_callback, j_result);
 }
 
 void ContextualSuggestionsBridge::OnImageFetched(

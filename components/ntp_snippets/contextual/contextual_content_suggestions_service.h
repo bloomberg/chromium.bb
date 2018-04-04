@@ -36,7 +36,7 @@ class ContextualContentSuggestionsService : public KeyedService {
     ~Cluster();
 
     std::string title;
-    std::vector<ContentSuggestion> suggestions;
+    ContextualSuggestion::PtrVector suggestions;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Cluster);
@@ -56,7 +56,8 @@ class ContextualContentSuggestionsService : public KeyedService {
                               std::vector<ContentSuggestion> suggestions)>;
 
   using FetchContextualSuggestionClustersCallback =
-      base::OnceCallback<void(std::vector<Cluster> clusters)>;
+      base::OnceCallback<void(std::string peek_text,
+                              std::vector<Cluster> clusters)>;
 
   // Asynchronously fetches contextual suggestions for the given URL.
   void FetchContextualSuggestions(const GURL& url,
