@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
-#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -31,7 +30,7 @@
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
 #include "components/cryptauth/device_classifier_util.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -55,11 +54,6 @@ CreateCryptAuthClientFactoryImpl(Profile* profile) {
       cryptauth::device_classifier_util::GetDeviceClassifier());
 }
 
-std::unique_ptr<cryptauth::SecureMessageDelegate>
-CreateSecureMessageDelegateImpl() {
-  return std::make_unique<chromeos::SecureMessageDelegateChromeOS>();
-}
-
 class CryptAuthEnrollerFactoryImpl
     : public cryptauth::CryptAuthEnrollerFactory {
  public:
@@ -68,7 +62,7 @@ class CryptAuthEnrollerFactoryImpl
   std::unique_ptr<cryptauth::CryptAuthEnroller> CreateInstance() override {
     return std::make_unique<cryptauth::CryptAuthEnrollerImpl>(
         CreateCryptAuthClientFactoryImpl(profile_),
-        CreateSecureMessageDelegateImpl());
+        cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
   }
 
  private:
@@ -95,7 +89,7 @@ std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
       cryptauth::CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
           base::DefaultClock::GetInstance(),
           std::make_unique<CryptAuthEnrollerFactoryImpl>(profile),
-          CreateSecureMessageDelegateImpl(),
+          cryptauth::SecureMessageDelegateImpl::Factory::NewInstance(),
           GcmDeviceInfoProviderImpl::GetInstance()->GetGcmDeviceInfo(),
           gcm_manager.get(), profile->GetPrefs());
 
@@ -186,11 +180,6 @@ cryptauth::DeviceClassifier ChromeCryptAuthService::GetDeviceClassifier() {
 
 std::string ChromeCryptAuthService::GetAccountId() {
   return signin_manager_->GetAuthenticatedAccountId();
-}
-
-std::unique_ptr<cryptauth::SecureMessageDelegate>
-ChromeCryptAuthService::CreateSecureMessageDelegate() {
-  return CreateSecureMessageDelegateImpl();
 }
 
 std::unique_ptr<cryptauth::CryptAuthClientFactory>

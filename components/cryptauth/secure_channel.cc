@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_service.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/cryptauth/wire_message.h"
 
 namespace cryptauth {
@@ -246,7 +247,7 @@ void SecureChannel::Authenticate() {
 
   authenticator_ = DeviceToDeviceAuthenticator::Factory::NewInstance(
       connection_.get(), connection_->remote_device().user_id,
-      cryptauth_service_->CreateSecureMessageDelegate());
+      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
   authenticator_->Authenticate(
       base::Bind(&SecureChannel::OnAuthenticationResult,
                  weak_ptr_factory_.GetWeakPtr()));

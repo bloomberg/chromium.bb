@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/cryptauth/remote_device_loader.h"
-#include "components/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 
 namespace cryptauth {
 
@@ -20,14 +20,12 @@ std::unique_ptr<RemoteDeviceProvider>
 RemoteDeviceProviderImpl::Factory::NewInstance(
     CryptAuthDeviceManager* device_manager,
     const std::string& user_id,
-    const std::string& user_private_key,
-    SecureMessageDelegate::Factory* secure_message_delegate_factory) {
+    const std::string& user_private_key) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(device_manager, user_id,
-                                          user_private_key,
-                                          secure_message_delegate_factory);
+                                          user_private_key);
 }
 
 // static
@@ -40,27 +38,23 @@ std::unique_ptr<RemoteDeviceProvider>
 RemoteDeviceProviderImpl::Factory::BuildInstance(
     CryptAuthDeviceManager* device_manager,
     const std::string& user_id,
-    const std::string& user_private_key,
-    SecureMessageDelegate::Factory* secure_message_delegate_factory) {
+    const std::string& user_private_key) {
   return base::WrapUnique(
-      new RemoteDeviceProviderImpl(device_manager, user_id, user_private_key,
-                                   secure_message_delegate_factory));
+      new RemoteDeviceProviderImpl(device_manager, user_id, user_private_key));
 }
 
 RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
     CryptAuthDeviceManager* device_manager,
     const std::string& user_id,
-    const std::string& user_private_key,
-    SecureMessageDelegate::Factory* secure_message_delegate_factory)
+    const std::string& user_private_key)
     : device_manager_(device_manager),
       user_id_(user_id),
       user_private_key_(user_private_key),
-      secure_message_delegate_factory_(secure_message_delegate_factory),
       weak_ptr_factory_(this) {
   device_manager_->AddObserver(this);
   remote_device_loader_ = cryptauth::RemoteDeviceLoader::Factory::NewInstance(
       device_manager->GetSyncedDevices(), user_id, user_private_key,
-      secure_message_delegate_factory->CreateSecureMessageDelegate());
+      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
   remote_device_loader_->Load(
       false /* should_load_beacon_seeds */,
       base::Bind(&RemoteDeviceProviderImpl::OnRemoteDevicesLoaded,
@@ -79,7 +73,7 @@ void RemoteDeviceProviderImpl::OnSyncFinished(
           CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
     remote_device_loader_ = cryptauth::RemoteDeviceLoader::Factory::NewInstance(
         device_manager_->GetSyncedDevices(), user_id_, user_private_key_,
-        secure_message_delegate_factory_->CreateSecureMessageDelegate());
+        cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
 
     remote_device_loader_->Load(
         false /* should_load_beacon_seeds */,

@@ -51,7 +51,7 @@
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_device_loader.h"
-#include "components/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -124,7 +124,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
       GetCryptAuthDeviceManager()->GetUnlockKeys(),
       proximity_auth_client()->GetAccountId(),
       GetCryptAuthEnrollmentManager()->GetUserPrivateKey(),
-      proximity_auth_client()->CreateSecureMessageDelegate()));
+      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance()));
   remote_device_loader_->Load(
       true /* should_load_beacon_seeds */,
       base::Bind(&EasyUnlockServiceRegular::OnRemoteDevicesLoaded,

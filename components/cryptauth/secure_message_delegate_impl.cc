@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/easy_unlock_client.h"
@@ -12,7 +14,7 @@
 
 using cryptauth::SecureMessageDelegate;
 
-namespace chromeos {
+namespace cryptauth {
 namespace {
 
 // Converts encryption type to a string representation used by EasyUnlock dbus
@@ -71,25 +73,51 @@ void HandleKeyPairResult(
 
 }  // namespace
 
-SecureMessageDelegateChromeOS::SecureMessageDelegateChromeOS()
-    : dbus_client_(DBusThreadManager::Get()->GetEasyUnlockClient()) {}
+// static
+SecureMessageDelegateImpl::Factory*
+    SecureMessageDelegateImpl::Factory::test_factory_instance_ = nullptr;
 
-SecureMessageDelegateChromeOS::~SecureMessageDelegateChromeOS() {}
+// static
+std::unique_ptr<SecureMessageDelegate>
+SecureMessageDelegateImpl::Factory::NewInstance() {
+  if (test_factory_instance_)
+    return test_factory_instance_->BuildInstance();
 
-void SecureMessageDelegateChromeOS::GenerateKeyPair(
+  static base::NoDestructor<SecureMessageDelegateImpl::Factory> factory;
+  return factory->BuildInstance();
+}
+
+// static
+void SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    Factory* test_factory) {
+  test_factory_instance_ = test_factory;
+}
+
+SecureMessageDelegateImpl::Factory::~Factory() = default;
+
+std::unique_ptr<SecureMessageDelegate>
+SecureMessageDelegateImpl::Factory::BuildInstance() {
+  return base::WrapUnique(new SecureMessageDelegateImpl());
+}
+
+SecureMessageDelegateImpl::SecureMessageDelegateImpl()
+    : dbus_client_(chromeos::DBusThreadManager::Get()->GetEasyUnlockClient()) {}
+
+SecureMessageDelegateImpl::~SecureMessageDelegateImpl() {}
+
+void SecureMessageDelegateImpl::GenerateKeyPair(
     const GenerateKeyPairCallback& callback) {
   dbus_client_->GenerateEcP256KeyPair(
       base::Bind(HandleKeyPairResult, callback));
 }
 
-void SecureMessageDelegateChromeOS::DeriveKey(
-    const std::string& private_key,
-    const std::string& public_key,
-    const DeriveKeyCallback& callback) {
+void SecureMessageDelegateImpl::DeriveKey(const std::string& private_key,
+                                          const std::string& public_key,
+                                          const DeriveKeyCallback& callback) {
   dbus_client_->PerformECDHKeyAgreement(private_key, public_key, callback);
 }
 
-void SecureMessageDelegateChromeOS::CreateSecureMessage(
+void SecureMessageDelegateImpl::CreateSecureMessage(
     const std::string& payload,
     const std::string& key,
     const CreateOptions& create_options,
@@ -101,7 +129,7 @@ void SecureMessageDelegateChromeOS::CreateSecureMessage(
     return;
   }
 
-  EasyUnlockClient::CreateSecureMessageOptions options;
+  chromeos::EasyUnlockClient::CreateSecureMessageOptions options;
   options.key.assign(key);
 
   if (!create_options.associated_data.empty())
@@ -122,7 +150,7 @@ void SecureMessageDelegateChromeOS::CreateSecureMessage(
   dbus_client_->CreateSecureMessage(payload, options, callback);
 }
 
-void SecureMessageDelegateChromeOS::UnwrapSecureMessage(
+void SecureMessageDelegateImpl::UnwrapSecureMessage(
     const std::string& serialized_message,
     const std::string& key,
     const UnwrapOptions& unwrap_options,
@@ -134,7 +162,7 @@ void SecureMessageDelegateChromeOS::UnwrapSecureMessage(
     return;
   }
 
-  EasyUnlockClient::UnwrapSecureMessageOptions options;
+  chromeos::EasyUnlockClient::UnwrapSecureMessageOptions options;
   options.key.assign(key);
 
   if (!unwrap_options.associated_data.empty())
@@ -147,4 +175,4 @@ void SecureMessageDelegateChromeOS::UnwrapSecureMessage(
                                     base::Bind(&HandleUnwrapResult, callback));
 }
 
-}  // namespace chromeos
+}  // namespace cryptauth

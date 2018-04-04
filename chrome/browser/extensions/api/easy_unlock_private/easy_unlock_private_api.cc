@@ -44,7 +44,7 @@
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -673,7 +673,8 @@ bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
       easy_unlock_service->proximity_auth_client();
 
   permit_id_ = "permit://google.com/easyunlock/v1/" + client->GetAccountId();
-  secure_message_delegate_ = client->CreateSecureMessageDelegate();
+  secure_message_delegate_ =
+      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance();
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys = GetUnlockKeys();
   expected_devices_count_ = unlock_keys.size();
 

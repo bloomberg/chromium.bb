@@ -2,21 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_SECURE_MESSAGE_DELEGATE_CHROMEOS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_SECURE_MESSAGE_DELEGATE_CHROMEOS_H_
+#ifndef COMPONENTS_CRYPTAUTH_SECURE_MESSAGE_DELEGATE_IMPL_H_
+#define COMPONENTS_CRYPTAUTH_SECURE_MESSAGE_DELEGATE_IMPL_H_
 
 #include "base/macros.h"
 #include "components/cryptauth/secure_message_delegate.h"
 
 namespace chromeos {
-
 class EasyUnlockClient;
+}  // namespace chromeos
 
-// SecureMessageDelegate implementation for ChromeOS.
-class SecureMessageDelegateChromeOS : public cryptauth::SecureMessageDelegate {
+namespace cryptauth {
+
+// Concrete SecureMessageDelegate implementation.
+class SecureMessageDelegateImpl : public SecureMessageDelegate {
  public:
-  SecureMessageDelegateChromeOS();
-  ~SecureMessageDelegateChromeOS() override;
+  class Factory {
+   public:
+    static std::unique_ptr<SecureMessageDelegate> NewInstance();
+    static void SetInstanceForTesting(Factory* test_factory);
+
+    virtual ~Factory();
+    virtual std::unique_ptr<SecureMessageDelegate> BuildInstance();
+
+   private:
+    static Factory* test_factory_instance_;
+  };
+
+  ~SecureMessageDelegateImpl() override;
 
   // SecureMessageDelegate:
   void GenerateKeyPair(const GenerateKeyPairCallback& callback) override;
@@ -35,11 +48,14 @@ class SecureMessageDelegateChromeOS : public cryptauth::SecureMessageDelegate {
       const UnwrapSecureMessageCallback& callback) override;
 
  private:
-  EasyUnlockClient* dbus_client_;
+  SecureMessageDelegateImpl();
 
-  DISALLOW_COPY_AND_ASSIGN(SecureMessageDelegateChromeOS);
+  // Not owned by this instance.
+  chromeos::EasyUnlockClient* dbus_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecureMessageDelegateImpl);
 };
 
-}  // namespace chromeos
+}  // namespace cryptauth
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_SECURE_MESSAGE_DELEGATE_CHROMEOS_H_
+#endif  // COMPONENTS_CRYPTAUTH_SECURE_MESSAGE_DELEGATE_IMPL_H_

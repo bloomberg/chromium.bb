@@ -16,6 +16,7 @@
 #include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/remote_device_test_util.h"
+#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +42,15 @@ struct ReceivedMessage {
 
   std::string feature;
   std::string payload;
+};
+
+class FakeSecureMessageDelegateFactory
+    : public cryptauth::SecureMessageDelegateImpl::Factory {
+ public:
+  // cryptauth::SecureMessageDelegateImpl::Factory:
+  std::unique_ptr<cryptauth::SecureMessageDelegate> BuildInstance() override {
+    return std::make_unique<FakeSecureMessageDelegate>();
+  }
 };
 
 class TestObserver final : public SecureChannel::Observer {
@@ -170,6 +180,11 @@ class CryptAuthSecureChannelTest : public testing::Test {
     DeviceToDeviceAuthenticator::Factory::SetInstanceForTesting(
         test_authenticator_factory_.get());
 
+    fake_secure_message_delegate_factory_ =
+        std::make_unique<FakeSecureMessageDelegateFactory>();
+    cryptauth::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+        fake_secure_message_delegate_factory_.get());
+
     fake_secure_context_ = nullptr;
 
     fake_cryptauth_service_ = std::make_unique<FakeCryptAuthService>();
@@ -201,6 +216,9 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
     if (!has_verified_gatt_services_event_)
       EXPECT_EQ(0, test_observer_->num_gatt_services_unavailable_events());
+
+    cryptauth::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+        nullptr);
   }
 
   void VerifyConnectionStateChanges(
@@ -355,6 +373,9 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
   // Owned by secure_channel_.
   FakeConnection* fake_connection_;
+
+  std::unique_ptr<FakeSecureMessageDelegateFactory>
+      fake_secure_message_delegate_factory_;
 
   std::unique_ptr<FakeCryptAuthService> fake_cryptauth_service_;
 

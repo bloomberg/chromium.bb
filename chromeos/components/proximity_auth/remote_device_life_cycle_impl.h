@@ -25,7 +25,6 @@ class SecureContext;
 namespace proximity_auth {
 
 class Messenger;
-class ProximityAuthClient;
 
 // Implementation of RemoteDeviceLifeCycle.
 class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
@@ -33,8 +32,8 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
  public:
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
-  RemoteDeviceLifeCycleImpl(const cryptauth::RemoteDevice& remote_device,
-                            ProximityAuthClient* proximity_auth_client);
+  explicit RemoteDeviceLifeCycleImpl(
+      const cryptauth::RemoteDevice& remote_device);
   ~RemoteDeviceLifeCycleImpl() override;
 
   // RemoteDeviceLifeCycle:
@@ -80,9 +79,6 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // The remote device being controlled.
   const cryptauth::RemoteDevice remote_device_;
-
-  // Used to grab dependencies in chrome. Not owned.
-  ProximityAuthClient* proximity_auth_client_;
 
   // The current state in the life cycle.
   RemoteDeviceLifeCycle::State state_;

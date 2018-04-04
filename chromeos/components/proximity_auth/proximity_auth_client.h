@@ -17,7 +17,6 @@ namespace cryptauth {
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class CryptAuthEnrollmentManager;
-class SecureMessageDelegate;
 }  // namespace cryptauth
 
 namespace proximity_auth {
@@ -58,10 +57,6 @@ class ProximityAuthClient {
 
   // Returns the manager responsible for EasyUnlock preferences.
   virtual ProximityAuthPrefManager* GetPrefManager() = 0;
-
-  // Returns the SecureMessageDelegate used by the system.
-  virtual std::unique_ptr<cryptauth::SecureMessageDelegate>
-  CreateSecureMessageDelegate() = 0;
 
   // Constructs the CryptAuthClientFactory that can be used for API requests.
   virtual std::unique_ptr<cryptauth::CryptAuthClientFactory>

@@ -13,7 +13,6 @@
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/cryptauth/secure_message_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace proximity_auth {
@@ -43,15 +42,11 @@ class MockProximityAuthClient : public ProximityAuthClient {
                cryptauth::CryptAuthEnrollmentManager*(void));
   MOCK_METHOD0(GetCryptAuthDeviceManager,
                cryptauth::CryptAuthDeviceManager*(void));
-  std::unique_ptr<cryptauth::SecureMessageDelegate>
-  CreateSecureMessageDelegate() override;
   std::unique_ptr<cryptauth::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
   MOCK_METHOD0(GetLocalDevicePublicKey, std::string(void));
 
   // Proxy mock methods because implementation requires returning scoped_ptr.
-  MOCK_METHOD0(CreateSecureMessageDelegatePtr,
-               cryptauth::SecureMessageDelegate*(void));
   MOCK_METHOD0(CreateCryptAuthClientFactoryPtr,
                cryptauth::CryptAuthClientFactory*(void));
 
