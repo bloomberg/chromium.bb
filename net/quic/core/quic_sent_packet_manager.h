@@ -82,7 +82,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
     // Called with the path may be degrading. Note that the path may only be
     // temporarily degrading.
-    // TODO(wangyix): remove this once
+    // TODO(b/76462761): remove this once
     // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
     virtual void OnPathDegrading() = 0;
 
@@ -496,15 +496,13 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   QuicAckFrame last_ack_frame_;
 
   // Record whether RTT gets updated by last largest acked. This is only used
-  // when quic_reloadable_flag_quic_use_incremental_ack_processing2 is true.
+  // when quic_reloadable_flag_quic_use_incremental_ack_processing3 is true.
   bool rtt_updated_;
 
-  // Packets that have been acked. This interval set only stores packets above
-  // least_unacked. This is only used when
-  // quic_reloadable_flag_quic_use_incremental_ack_processing2 is true.
-  // TODO(fayang): This is redundant with packets in last_ack_frame_. Remove
-  // this once we use optimized QuicIntervalSet in last_ack_frame.
-  QuicIntervalSet<QuicPacketNumber> all_packets_acked_;
+  // A reverse iterator of last_ack_frame_.packets. This is reset in
+  // OnAckRangeStart, and gradually moves in OnAckRange. This is only used
+  // when quic_reloadable_flag_quic_use_incremental_ack_processing3 is true.
+  PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
 
   // Latched value of
   // quic_reloadable_flag_quic_path_degrading_alarm

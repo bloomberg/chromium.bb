@@ -3995,7 +3995,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
 
   QuicConnectionId connection_id = kConnectionId;
   std::unique_ptr<QuicEncryptedPacket> data(
-      framer_.BuildVersionNegotiationPacket(connection_id,
+      framer_.BuildVersionNegotiationPacket(connection_id, false,
                                             SupportedVersions(GetParam())));
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),

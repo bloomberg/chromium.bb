@@ -309,8 +309,10 @@ void QuicPacketGenerator::SetMaxPacketLength(QuicByteCount length) {
 
 std::unique_ptr<QuicEncryptedPacket>
 QuicPacketGenerator::SerializeVersionNegotiationPacket(
+    bool ietf_quic,
     const ParsedQuicVersionVector& supported_versions) {
-  return packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
+  return packet_creator_.SerializeVersionNegotiationPacket(ietf_quic,
+                                                           supported_versions);
 }
 
 OwningSerializedPacketPointer

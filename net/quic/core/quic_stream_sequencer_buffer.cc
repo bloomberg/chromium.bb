@@ -103,7 +103,40 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     RecordInternalErrorLocation(QUIC_STREAM_SEQUENCER_BUFFER);
     return QUIC_INTERNAL_ERROR;
   }
-
+  if (GetQuicReloadableFlag(quic_fast_path_on_stream_data) &&
+      (bytes_received_.Empty() ||
+       starting_offset >= bytes_received_.rbegin()->max() ||
+       bytes_received_.IsDisjoint(Interval<QuicStreamOffset>(
+           starting_offset, starting_offset + size)))) {
+    // Optimization for the typical case, when all data is newly received.
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_path_on_stream_data);
+    if (!bytes_received_.Empty() &&
+        starting_offset == bytes_received_.rbegin()->max()) {
+      // Extend the right edge of last interval.
+      // TODO(fayang): Encapsulate this into a future version of QuicIntervalSet
+      // if this is more efficient than Add.
+      const_cast<Interval<QuicPacketNumber>*>(&(*bytes_received_.rbegin()))
+          ->SetMax(starting_offset + size);
+    } else {
+      bytes_received_.Add(starting_offset, starting_offset + size);
+      if (bytes_received_.Size() >= kMaxNumDataIntervalsAllowed) {
+        // This frame is going to create more intervals than allowed. Stop
+        // processing.
+        *error_details = "Too many data intervals received for this stream.";
+        return QUIC_TOO_MANY_STREAM_DATA_INTERVALS;
+      }
+    }
+    size_t bytes_copy = 0;
+    if (!CopyStreamData(starting_offset, data, &bytes_copy, error_details)) {
+      return QUIC_STREAM_SEQUENCER_INVALID_STATE;
+    }
+    *bytes_buffered += bytes_copy;
+    frame_arrival_time_map_.insert(
+        std::make_pair(starting_offset, FrameInfo(size, timestamp)));
+    num_bytes_buffered_ += *bytes_buffered;
+    return QUIC_NO_ERROR;
+  }
+  // Slow path, received data overlaps with received data.
   QuicIntervalSet<QuicStreamOffset> newly_received(starting_offset,
                                                    starting_offset + size);
   newly_received.Difference(bytes_received_);

@@ -502,7 +502,8 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   // wait list manager.
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, connection_id))
       .Times(1);
-  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _, _, _))
       .Times(0);
   ProcessPacket(client_address, connection_id, true, "data");
 }
@@ -518,7 +519,8 @@ TEST_F(QuicDispatcherTest, NoVersionPacketToTimeWaitListManager) {
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, connection_id))
       .Times(1);
-  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _, _, _))
       .Times(1);
   ProcessPacket(client_address, connection_id, false, SerializeCHLO());
 }
@@ -534,7 +536,8 @@ TEST_F(QuicDispatcherTest, ProcessPacketWithZeroPort) {
               CreateQuicSession(1, client_address, QuicStringPiece("hq")))
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _, _, _))
       .Times(0);
   ProcessPacket(client_address, 1, true, SerializeCHLO());
 }
@@ -579,7 +582,8 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, 1)).Times(1);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, 2)).Times(1);
-  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _, _, _))
       .Times(2);
   // A packet whose packet number is one to large to be allowed to start a
   // connection.
@@ -1119,7 +1123,8 @@ TEST_F(QuicDispatcherTestStrayPacketConnectionId,
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, connection_id))
       .Times(0);
-  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _, _, _))
       .Times(0);
   ProcessPacket(client_address, connection_id, true, "data",
                 PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER);
@@ -2033,7 +2038,7 @@ TEST_F(AsyncGetProofTest, BasicReject) {
     InSequence s;
     EXPECT_CALL(check, Call(1));
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id, _, true, _));
+                AddConnectionIdToTimeWait(conn_id, _, _, true, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id));
 
@@ -2161,7 +2166,7 @@ TEST_F(AsyncGetProofTest, MultipleReject) {
     EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id_2, client_addr_, _))
         .Times(0);
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id_2, _, true, _));
+                AddConnectionIdToTimeWait(conn_id_2, _, _, true, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id_2));
 
@@ -2175,7 +2180,7 @@ TEST_F(AsyncGetProofTest, MultipleReject) {
 
     EXPECT_CALL(check, Call(4));
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id_1, _, true, _));
+                AddConnectionIdToTimeWait(conn_id_1, _, _, true, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id_1));
   }
@@ -2235,7 +2240,7 @@ TEST_F(AsyncGetProofTest, MultipleIdenticalReject) {
                 CreateQuicSession(conn_id_1, client_addr_, QuicStringPiece()))
         .Times(0);
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id_1, _, true, _));
+                AddConnectionIdToTimeWait(conn_id_1, _, _, true, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id_1));
   }

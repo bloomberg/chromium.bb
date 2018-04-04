@@ -69,6 +69,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   virtual void AddConnectionIdToTimeWait(
       QuicConnectionId connection_id,
       ParsedQuicVersion version,
+      bool ietf_quic,
       bool connection_rejected_statelessly,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets);
 
@@ -111,6 +112,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // for |supported_versions| to |client_address| from |server_address|.
   virtual void SendVersionNegotiationPacket(
       QuicConnectionId connection_id,
+      bool ietf_quic,
       const ParsedQuicVersionVector& supported_versions,
       const QuicSocketAddress& server_address,
       const QuicSocketAddress& client_address);
@@ -161,9 +163,10 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // received after the termination of the connection bound to the
   // connection_id.
   struct ConnectionIdData {
-    ConnectionIdData(int num_packets_,
-                     ParsedQuicVersion version_,
-                     QuicTime time_added_,
+    ConnectionIdData(int num_packets,
+                     ParsedQuicVersion version,
+                     bool ietf_quic,
+                     QuicTime time_added,
                      bool connection_rejected_statelessly);
 
     ConnectionIdData(const ConnectionIdData& other) = delete;
@@ -173,6 +176,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
     int num_packets;
     ParsedQuicVersion version;
+    bool ietf_quic;
     QuicTime time_added;
     // These packets may contain CONNECTION_CLOSE frames, or SREJ messages.
     std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;

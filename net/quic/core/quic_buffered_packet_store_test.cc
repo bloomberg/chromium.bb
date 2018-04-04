@@ -69,8 +69,8 @@ class QuicBufferedPacketStoreTest : public QuicTest {
 
 TEST_F(QuicBufferedPacketStoreTest, SimpleEnqueueAndDeliverPacket) {
   QuicConnectionId connection_id = 1;
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       false, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, false, "");
   EXPECT_TRUE(store_.HasBufferedPackets(connection_id));
   auto packets = store_.DeliverPackets(connection_id);
   const std::list<BufferedPacket>& queue = packets.buffered_packets;
@@ -90,9 +90,9 @@ TEST_F(QuicBufferedPacketStoreTest, SimpleEnqueueAndDeliverPacket) {
 TEST_F(QuicBufferedPacketStoreTest, DifferentPacketAddressOnOneConnection) {
   QuicSocketAddress addr_with_new_port(QuicIpAddress::Any4(), 256);
   QuicConnectionId connection_id = 1;
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       false, "");
-  store_.EnqueuePacket(connection_id, packet_, server_address_,
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, false, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
                        addr_with_new_port, false, "");
   std::list<BufferedPacket> queue =
       store_.DeliverPackets(connection_id).buffered_packets;
@@ -107,9 +107,9 @@ TEST_F(QuicBufferedPacketStoreTest,
   size_t num_connections = 10;
   for (QuicConnectionId connection_id = 1; connection_id <= num_connections;
        ++connection_id) {
-    store_.EnqueuePacket(connection_id, packet_, server_address_,
+    store_.EnqueuePacket(connection_id, false, packet_, server_address_,
                          client_address_, false, "");
-    store_.EnqueuePacket(connection_id, packet_, server_address_,
+    store_.EnqueuePacket(connection_id, false, packet_, server_address_,
                          client_address_, false, "");
   }
 
@@ -131,12 +131,13 @@ TEST_F(QuicBufferedPacketStoreTest,
   // Arrived CHLO packet shouldn't affect how many non-CHLO pacekts store can
   // keep.
   EXPECT_EQ(QuicBufferedPacketStore::SUCCESS,
-            store_.EnqueuePacket(connection_id, packet_, server_address_,
+            store_.EnqueuePacket(connection_id, false, packet_, server_address_,
                                  client_address_, true, ""));
   for (size_t i = 1; i <= num_packets; ++i) {
     // Only first |kDefaultMaxUndecryptablePackets packets| will be buffered.
-    EnqueuePacketResult result = store_.EnqueuePacket(
-        connection_id, packet_, server_address_, client_address_, false, "");
+    EnqueuePacketResult result =
+        store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                             client_address_, false, "");
     if (i <= kDefaultMaxUndecryptablePackets) {
       EXPECT_EQ(EnqueuePacketResult::SUCCESS, result);
     } else {
@@ -156,8 +157,9 @@ TEST_F(QuicBufferedPacketStoreTest, ReachNonChloConnectionUpperLimit) {
   const size_t kNumConnections = kMaxConnectionsWithoutCHLO + 1;
   for (size_t connection_id = 1; connection_id <= kNumConnections;
        ++connection_id) {
-    EnqueuePacketResult result = store_.EnqueuePacket(
-        connection_id, packet_, server_address_, client_address_, false, "");
+    EnqueuePacketResult result =
+        store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                             client_address_, false, "");
     if (connection_id <= kMaxConnectionsWithoutCHLO) {
       EXPECT_EQ(EnqueuePacketResult::SUCCESS, result);
     } else {
@@ -185,8 +187,8 @@ TEST_F(QuicBufferedPacketStoreTest,
       kDefaultMaxConnectionsInStore - kMaxConnectionsWithoutCHLO + 1;
   for (size_t connection_id = 1; connection_id <= num_chlos; ++connection_id) {
     EXPECT_EQ(EnqueuePacketResult::SUCCESS,
-              store_.EnqueuePacket(connection_id, packet_, server_address_,
-                                   client_address_, true, ""));
+              store_.EnqueuePacket(connection_id, false, packet_,
+                                   server_address_, client_address_, true, ""));
   }
 
   // Send data packets on another |kMaxConnectionsWithoutCHLO| connections.
@@ -194,7 +196,7 @@ TEST_F(QuicBufferedPacketStoreTest,
   for (size_t conn_id = num_chlos + 1;
        conn_id <= (kDefaultMaxConnectionsInStore + 1); ++conn_id) {
     EnqueuePacketResult result = store_.EnqueuePacket(
-        conn_id, packet_, server_address_, client_address_, true, "");
+        conn_id, false, packet_, server_address_, client_address_, true, "");
     if (conn_id <= kDefaultMaxConnectionsInStore) {
       EXPECT_EQ(EnqueuePacketResult::SUCCESS, result);
     } else {
@@ -208,7 +210,7 @@ TEST_F(QuicBufferedPacketStoreTest, EnqueueChloOnTooManyDifferentConnections) {
   for (QuicConnectionId conn_id = 1; conn_id <= kMaxConnectionsWithoutCHLO;
        ++conn_id) {
     EXPECT_EQ(EnqueuePacketResult::SUCCESS,
-              store_.EnqueuePacket(conn_id, packet_, server_address_,
+              store_.EnqueuePacket(conn_id, false, packet_, server_address_,
                                    client_address_, false, ""));
   }
 
@@ -216,8 +218,8 @@ TEST_F(QuicBufferedPacketStoreTest, EnqueueChloOnTooManyDifferentConnections) {
   for (size_t i = kMaxConnectionsWithoutCHLO + 1;
        i <= kDefaultMaxConnectionsInStore + 1; ++i) {
     EnqueuePacketResult rs = store_.EnqueuePacket(
-        /*connection_id=*/i, packet_, server_address_, client_address_, true,
-        "");
+        /*connection_id=*/i, false, packet_, server_address_, client_address_,
+        true, "");
     if (i <= kDefaultMaxConnectionsInStore) {
       EXPECT_EQ(EnqueuePacketResult::SUCCESS, rs);
       EXPECT_TRUE(store_.HasChloForConnection(/*connection_id=*/i));
@@ -232,8 +234,8 @@ TEST_F(QuicBufferedPacketStoreTest, EnqueueChloOnTooManyDifferentConnections) {
   // buffered in the store should success. This is the connection should be
   // delivered at last.
   EXPECT_EQ(EnqueuePacketResult::SUCCESS,
-            store_.EnqueuePacket(/*connection_id=*/1, packet_, server_address_,
-                                 client_address_, true, ""));
+            store_.EnqueuePacket(/*connection_id=*/1, false, packet_,
+                                 server_address_, client_address_, true, ""));
   EXPECT_TRUE(store_.HasChloForConnection(/*connection_id=*/1));
 
   QuicConnectionId delivered_conn_id;
@@ -258,15 +260,15 @@ TEST_F(QuicBufferedPacketStoreTest, EnqueueChloOnTooManyDifferentConnections) {
 // connections both with and without CHLOs.
 TEST_F(QuicBufferedPacketStoreTest, PacketQueueExpiredBeforeDelivery) {
   QuicConnectionId connection_id = 1;
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       false, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, false, "");
   EXPECT_EQ(EnqueuePacketResult::SUCCESS,
-            store_.EnqueuePacket(connection_id, packet_, server_address_,
+            store_.EnqueuePacket(connection_id, false, packet_, server_address_,
                                  client_address_, true, ""));
   QuicConnectionId connection_id2 = 2;
   EXPECT_EQ(EnqueuePacketResult::SUCCESS,
-            store_.EnqueuePacket(connection_id2, packet_, server_address_,
-                                 client_address_, false, ""));
+            store_.EnqueuePacket(connection_id2, false, packet_,
+                                 server_address_, client_address_, false, ""));
 
   // CHLO on connection 3 arrives 1ms later.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
@@ -274,7 +276,7 @@ TEST_F(QuicBufferedPacketStoreTest, PacketQueueExpiredBeforeDelivery) {
   // Use different client address to differetiate packets from different
   // connections.
   QuicSocketAddress another_client_address(QuicIpAddress::Any4(), 255);
-  store_.EnqueuePacket(connection_id3, packet_, server_address_,
+  store_.EnqueuePacket(connection_id3, false, packet_, server_address_,
                        another_client_address, true, "");
 
   // Advance clock to the time when connection 1 and 2 expires.
@@ -306,9 +308,9 @@ TEST_F(QuicBufferedPacketStoreTest, PacketQueueExpiredBeforeDelivery) {
   // Test the alarm is reset by enqueueing 2 packets for 4th connection and wait
   // for them to expire.
   QuicConnectionId connection_id4 = 4;
-  store_.EnqueuePacket(connection_id4, packet_, server_address_,
+  store_.EnqueuePacket(connection_id4, false, packet_, server_address_,
                        client_address_, false, "");
-  store_.EnqueuePacket(connection_id4, packet_, server_address_,
+  store_.EnqueuePacket(connection_id4, false, packet_, server_address_,
                        client_address_, false, "");
   clock_.AdvanceTime(
       QuicBufferedPacketStorePeer::expiration_alarm(&store_)->deadline() -
@@ -323,10 +325,10 @@ TEST_F(QuicBufferedPacketStoreTest, SimpleDiscardPackets) {
   QuicConnectionId connection_id = 1;
 
   // Enqueue some packets
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       false, "");
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       false, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, false, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, false, "");
   EXPECT_TRUE(store_.HasBufferedPackets(connection_id));
   EXPECT_FALSE(store_.HasChlosBuffered());
 
@@ -349,12 +351,12 @@ TEST_F(QuicBufferedPacketStoreTest, DiscardWithCHLOs) {
   QuicConnectionId connection_id = 1;
 
   // Enqueue some packets, which include a CHLO
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       false, "");
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       true, "");
-  store_.EnqueuePacket(connection_id, packet_, server_address_, client_address_,
-                       false, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, false, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, true, "");
+  store_.EnqueuePacket(connection_id, false, packet_, server_address_,
+                       client_address_, false, "");
   EXPECT_TRUE(store_.HasBufferedPackets(connection_id));
   EXPECT_TRUE(store_.HasChlosBuffered());
 
@@ -378,11 +380,11 @@ TEST_F(QuicBufferedPacketStoreTest, MultipleDiscardPackets) {
   QuicConnectionId connection_id_2 = 2;
 
   // Enqueue some packets for two connection IDs
-  store_.EnqueuePacket(connection_id_1, packet_, server_address_,
+  store_.EnqueuePacket(connection_id_1, false, packet_, server_address_,
                        client_address_, false, "");
-  store_.EnqueuePacket(connection_id_1, packet_, server_address_,
+  store_.EnqueuePacket(connection_id_1, false, packet_, server_address_,
                        client_address_, false, "");
-  store_.EnqueuePacket(connection_id_2, packet_, server_address_,
+  store_.EnqueuePacket(connection_id_2, false, packet_, server_address_,
                        client_address_, true, "h3");
   EXPECT_TRUE(store_.HasBufferedPackets(connection_id_1));
   EXPECT_TRUE(store_.HasBufferedPackets(connection_id_2));

@@ -24,18 +24,6 @@ SimpleSessionNotifier::~SimpleSessionNotifier() {
   }
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const SimpleSessionNotifier::StreamState& s) {
-  os << "bytes_total: " << s.bytes_total << " bytes_sent: " << s.bytes_sent
-     << " bytes_acked " << s.bytes_acked
-     << " pending_retransmissions: " << s.pending_retransmissions
-     << " fin_buffered: " << s.fin_buffered << " fin_sent: " << s.fin_sent
-     << " fin_outstanding: " << s.fin_outstanding
-     << " fin_lost: " << s.fin_lost;
-
-  return os;
-}
-
 SimpleSessionNotifier::StreamState::StreamState()
     : bytes_total(0),
       bytes_sent(0),
@@ -477,7 +465,7 @@ bool SimpleSessionNotifier::RetransmitLostStreamData() {
         }
         if (length > consumed.bytes_consumed ||
             (can_bundle_fin && !consumed.fin_consumed)) {
-          DLOG(INFO) << "Connection is write blocked";
+          DVLOG(1) << "Connection is write blocked";
           break;
         }
       }

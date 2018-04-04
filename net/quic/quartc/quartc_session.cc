@@ -284,6 +284,11 @@ void QuartcSession::SetDelegate(
   DCHECK(session_delegate_);
 }
 
+void QuartcSession::SetSessionVisitor(QuartcSessionVisitor* debug_visitor) {
+  debug_visitor->SetQuicConnection(connection_.get());
+  connection_->set_debug_visitor(debug_visitor->GetConnectionVisitor());
+}
+
 void QuartcSession::OnTransportCanWrite() {
   connection()->writer()->SetWritable();
   if (HasDataToWrite()) {

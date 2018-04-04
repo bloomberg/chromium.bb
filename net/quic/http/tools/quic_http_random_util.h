@@ -16,15 +16,10 @@ namespace test {
 // Returns a random integer in the range [lo, hi).
 size_t GenerateUniformInRange(size_t lo, size_t hi, QuicTestRandomBase* rng);
 
-// Generate a std::string with the allowed character set for HTTP/2 /
-// HPQUIC_HTTP_ACK header names.
-QuicString GenerateQuicHttpHeaderName(size_t len, QuicTestRandomBase* rng);
-
-// Generate a std::string with the web-safe std::string character set of
-// specified len.
+// Generate a string with the web-safe string character set of specified len.
 QuicString GenerateWebSafeString(size_t len, QuicTestRandomBase* rng);
 
-// Generate a std::string with the web-safe std::string character set of length
+// Generate a string with the web-safe string character set of length
 // [lo, hi).
 QuicString GenerateWebSafeString(size_t lo, size_t hi, QuicTestRandomBase* rng);
 

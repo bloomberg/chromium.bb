@@ -54,7 +54,8 @@ BufferedPacket& BufferedPacket::operator=(BufferedPacket&& other) = default;
 
 BufferedPacket::~BufferedPacket() {}
 
-BufferedPacketList::BufferedPacketList() : creation_time(QuicTime::Zero()) {}
+BufferedPacketList::BufferedPacketList()
+    : creation_time(QuicTime::Zero()), ietf_quic(false) {}
 
 BufferedPacketList::BufferedPacketList(BufferedPacketList&& other) = default;
 
@@ -78,6 +79,7 @@ QuicBufferedPacketStore::~QuicBufferedPacketStore() {}
 
 EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     QuicConnectionId connection_id,
+    bool ietf_quic,
     const QuicReceivedPacket& packet,
     QuicSocketAddress server_address,
     QuicSocketAddress client_address,
@@ -98,6 +100,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
   } else if (!QuicContainsKey(undecryptable_packets_, connection_id)) {
     undecryptable_packets_.emplace(
         std::make_pair(connection_id, BufferedPacketList()));
+    undecryptable_packets_.back().second.ietf_quic = ietf_quic;
   }
   CHECK(QuicContainsKey(undecryptable_packets_, connection_id));
   BufferedPacketList& queue =

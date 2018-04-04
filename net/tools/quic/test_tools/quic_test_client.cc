@@ -857,5 +857,20 @@ void QuicTestClient::ClearPerConnectionState() {
   latest_created_stream_ = nullptr;
 }
 
+void QuicTestClient::WaitForDelayedAcks() {
+  // kWaitDuration is a period of time that is long enough for all delayed
+  // acks to be sent and received on the other end.
+  const QuicTime::Delta kWaitDuration =
+      4 * QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs);
+
+  const QuicClock* clock = client()->client_session()->connection()->clock();
+
+  QuicTime wait_until = clock->ApproximateNow() + kWaitDuration;
+  while (clock->ApproximateNow() < wait_until) {
+    // This waits for up to 50 ms.
+    client()->WaitForEvents();
+  }
+}
+
 }  // namespace test
 }  // namespace net

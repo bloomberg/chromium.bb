@@ -173,6 +173,7 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       largest_packet_number_(0),
       last_serialized_connection_id_(0),
       last_version_label_(0),
+      last_packet_is_ietf_quic_(false),
       version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
       supported_versions_(supported_versions),
       decrypter_level_(ENCRYPTION_NONE),
@@ -184,9 +185,9 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       last_timestamp_(QuicTime::Delta::Zero()),
       data_producer_(nullptr),
       use_incremental_ack_processing_(
-          GetQuicReloadableFlag(quic_use_incremental_ack_processing2)) {
+          GetQuicReloadableFlag(quic_use_incremental_ack_processing3)) {
   if (use_incremental_ack_processing_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_incremental_ack_processing2);
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_incremental_ack_processing3);
   }
   DCHECK(!supported_versions.empty());
   version_ = supported_versions_[0];
@@ -558,6 +559,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
 // static
 std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildVersionNegotiationPacket(
     QuicConnectionId connection_id,
+    bool ietf_quic,
     const ParsedQuicVersionVector& versions) {
   DCHECK(!versions.empty());
   size_t len = GetVersionNegotiationPacketSize(versions.size());
@@ -593,6 +595,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildVersionNegotiationPacket(
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   QuicDataReader reader(packet.data(), packet.length(), endianness());
 
+  last_packet_is_ietf_quic_ = false;
   visitor_->OnPacket();
 
   QuicPacketHeader header;
@@ -1092,7 +1095,7 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
            ((frame_type & kQuicFrameTypeSpecialMask) ==
             kQuicFrameTypeAckMask))) {
         // TODO(fayang): Remove frame when deprecating
-        // quic_reloadable_flag_quic_use_incremental_ack_processing2.
+        // quic_reloadable_flag_quic_use_incremental_ack_processing3.
         QuicAckFrame frame;
         if (!ProcessAckFrame(reader, frame_type, &frame)) {
           return RaiseError(QUIC_INVALID_ACK_DATA);
@@ -1342,25 +1345,17 @@ bool QuicFramer::ProcessIetfStreamFrame(QuicDataReader* reader,
                                         uint8_t frame_type,
                                         QuicStreamFrame* frame) {
   // Read stream id from the frame. It's always present.
-  QuicIetfStreamId streamid;
-  if (!reader->ReadVarInt62(&streamid)) {
+  if (!reader->ReadVarIntStreamId(&frame->stream_id)) {
     set_detailed_error("Unable to read stream_id.");
     return false;
   }
-  if (streamid > 0xffffffff) {
-    set_detailed_error("stream_id is too large.");
-    return false;
-  }
-  frame->stream_id = static_cast<QuicStreamId>(streamid);
 
   // If we have a data offset, read it. If not, set to 0.
   if (frame_type & IETF_STREAM_FRAME_OFF_BIT) {
-    QuicStreamOffset offset;
-    if (!reader->ReadVarInt62(&offset)) {
+    if (!reader->ReadVarInt62(&frame->offset)) {
       set_detailed_error("Unable to read stream data offset.");
       return false;
     }
-    frame->offset = offset;
   } else {
     // no offset in the frame, ensure it's 0 in the Frame.
     frame->offset = 0;
@@ -1374,7 +1369,7 @@ bool QuicFramer::ProcessIetfStreamFrame(QuicDataReader* reader,
       return false;
     }
     if (length > 0xffff) {
-      set_detailed_error("stream data offset is too large.");
+      set_detailed_error("Stream data length is too large.");
       return false;
     }
     frame->data_length = length;
@@ -2862,14 +2857,6 @@ bool QuicFramer::AppendIetfConnectionCloseFrame(
                               frame.error_details, writer);
 }
 
-bool QuicFramer::AppendIetfConnectionCloseFrame(
-    const QuicIetfTransportErrorCodes code,
-    const QuicString& phrase,
-    QuicDataWriter* writer) {
-  return AppendIetfCloseFrame(
-      IETF_CONNECTION_CLOSE, static_cast<const uint16_t>(code), phrase, writer);
-}
-
 bool QuicFramer::AppendIetfApplicationCloseFrame(
     const QuicConnectionCloseFrame& frame,
     QuicDataWriter* writer) {
@@ -2877,11 +2864,7 @@ bool QuicFramer::AppendIetfApplicationCloseFrame(
                               static_cast<const uint16_t>(frame.error_code),
                               frame.error_details, writer);
 }
-bool QuicFramer::AppendIetfApplicationCloseFrame(const uint16_t code,
-                                                 const QuicString& phrase,
-                                                 QuicDataWriter* writer) {
-  return AppendIetfCloseFrame(IETF_APPLICATION_CLOSE, code, phrase, writer);
-}
+
 // Generate either an IETF-Connection- or IETF-Application-close frame.
 // General format is
 //    type-byte
@@ -2927,12 +2910,14 @@ bool QuicFramer::ProcessIetfConnectionCloseFrame(
     QuicConnectionCloseFrame* frame) {
   return ProcessIetfCloseFrame(reader, frame_type, frame);
 }
+
 bool QuicFramer::ProcessIetfApplicationCloseFrame(
     QuicDataReader* reader,
     const uint8_t frame_type,
     QuicConnectionCloseFrame* frame) {
   return ProcessIetfCloseFrame(reader, frame_type, frame);
 }
+
 bool QuicFramer::ProcessIetfCloseFrame(QuicDataReader* reader,
                                        const uint8_t frame_type,
                                        QuicConnectionCloseFrame* frame) {
@@ -2973,6 +2958,7 @@ bool QuicFramer::AppendIetfPaddingFrame(const QuicPaddingFrame& frame,
   }
   return AppendPaddingFrame(frame, writer);
 }
+
 // Read the padding. Has to do it one byte at a time, stopping
 // when we either A) reach the end of the buffer or B) reach a
 // non-0x00 byte.
@@ -2991,6 +2977,7 @@ bool QuicFramer::ProcessIetfPathChallengeFrame(QuicDataReader* reader,
   }
   return true;
 }
+
 bool QuicFramer::ProcessIetfPathResponseFrame(QuicDataReader* reader,
                                               QuicPathResponseFrame* frame) {
   if (!reader->ReadBytes(frame->data_buffer.data(), kQuicPathFrameBufferSize)) {

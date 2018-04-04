@@ -9,6 +9,10 @@ namespace net {
 QuicConnectionCloseFrame::QuicConnectionCloseFrame()
     : error_code(QUIC_NO_ERROR) {}
 
+QuicConnectionCloseFrame::QuicConnectionCloseFrame(QuicErrorCode error_code,
+                                                   QuicString error_details)
+    : error_code(error_code), error_details(error_details) {}
+
 std::ostream& operator<<(
     std::ostream& os,
     const QuicConnectionCloseFrame& connection_close_frame) {

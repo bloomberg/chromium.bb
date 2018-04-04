@@ -668,7 +668,7 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   ParsedQuicVersionVector versions;
   versions.push_back(test::QuicVersionMax());
   std::unique_ptr<QuicEncryptedPacket> encrypted(
-      creator_.SerializeVersionNegotiationPacket(versions));
+      creator_.SerializeVersionNegotiationPacket(false, versions));
 
   {
     InSequence s;

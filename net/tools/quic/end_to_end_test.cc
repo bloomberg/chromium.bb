@@ -576,23 +576,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         *client_->client()->client_session(), n);
   }
 
-  void WaitForDelayedAcks() {
-    // kWaitDuration is a period of time that is long enough for all delayed
-    // acks to be sent and received on the other end.
-    const QuicTime::Delta kWaitDuration =
-        4 * QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs);
-
-    const QuicClock* clock =
-        client_->client()->client_session()->connection()->clock();
-
-    QuicTime wait_until = clock->ApproximateNow() + kWaitDuration;
-    while (clock->ApproximateNow() < wait_until) {
-      QUIC_LOG_EVERY_N_SEC(INFO, 0.01) << "Waiting for delayed acks...";
-      // This waits for up to 50 ms.
-      client_->client()->WaitForEvents();
-    }
-  }
-
   bool initialized_;
   QuicSocketAddress server_address_;
   QuicString server_hostname_;
@@ -2076,7 +2059,7 @@ TEST_P(EndToEndTestWithTls,
   QuicConnectionId incorrect_connection_id =
       client_->client()->client_session()->connection()->connection_id() + 1;
   std::unique_ptr<QuicEncryptedPacket> packet(
-      QuicFramer::BuildVersionNegotiationPacket(incorrect_connection_id,
+      QuicFramer::BuildVersionNegotiationPacket(incorrect_connection_id, false,
                                                 server_supported_versions_));
   testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
   client_->client()->client_session()->connection()->set_debug_visitor(
@@ -3045,7 +3028,7 @@ TEST_P(EndToEndTest, LastPacketSentIsConnectivityProbing) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Wait for the client's ACK (of the response) to be received by the server.
-  WaitForDelayedAcks();
+  client_->WaitForDelayedAcks();
 
   // We are sending a connectivity probing packet from an unchanged client
   // address, so the server will not respond to us with a connectivity probing
@@ -3053,7 +3036,7 @@ TEST_P(EndToEndTest, LastPacketSentIsConnectivityProbing) {
   client_->SendConnectivityProbing();
 
   // Wait for the server's last ACK to be received by the client.
-  WaitForDelayedAcks();
+  client_->WaitForDelayedAcks();
 }
 
 class EndToEndBufferedPacketsTest : public EndToEndTest {

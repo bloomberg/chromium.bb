@@ -303,7 +303,7 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
   QuicSocketAddress client_address(TestPeerIPAddress(), kTestPort);
 
   EXPECT_CALL(*connection_, ProcessUdpPacket(server_address, client_address, _))
-      .WillRepeatedly(Invoke(implicit_cast<MockQuicConnection*>(connection_),
+      .WillRepeatedly(Invoke(static_cast<MockQuicConnection*>(connection_),
                              &MockQuicConnection::ReallyProcessUdpPacket));
   EXPECT_CALL(*connection_, OnCanWrite()).Times(AnyNumber());
   EXPECT_CALL(*connection_, OnError(_)).Times(1);
@@ -341,7 +341,7 @@ TEST_P(QuicSpdyClientSessionTest, InvalidFramedPacketReceived) {
   QuicSocketAddress client_address(TestPeerIPAddress(), kTestPort);
 
   EXPECT_CALL(*connection_, ProcessUdpPacket(server_address, client_address, _))
-      .WillRepeatedly(Invoke(implicit_cast<MockQuicConnection*>(connection_),
+      .WillRepeatedly(Invoke(static_cast<MockQuicConnection*>(connection_),
                              &MockQuicConnection::ReallyProcessUdpPacket));
   EXPECT_CALL(*connection_, OnError(_)).Times(1);
 

@@ -63,9 +63,7 @@ QuicSession::QuicSession(QuicConnection* connection,
       currently_writing_stream_id_(0),
       goaway_sent_(false),
       goaway_received_(false),
-      control_frame_manager_(this),
-      session_unblocks_stream_(
-          GetQuicReloadableFlag(quic_streams_unblocked_by_session2)) {
+      control_frame_manager_(this) {
   if (register_streams_early()) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_register_streams_early2);
   }

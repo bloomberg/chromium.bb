@@ -31,9 +31,6 @@ class SimpleSessionNotifier : public SessionNotifierInterface {
                               QuicRstStreamErrorCode error,
                               QuicStreamOffset bytes_written);
 
-  // Called when |frame| is sent.
-  void OnControlFrameSent(const QuicFrame& frame);
-
   // Neuters unencrypted data of crypto stream.
   void NeuterUnencryptedData();
 

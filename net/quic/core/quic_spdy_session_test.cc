@@ -917,22 +917,11 @@ TEST_P(QuicSpdySessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
   EXPECT_TRUE(session_.IsConnectionFlowControlBlocked());
   EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
 
-  if (!session_.session_unblocks_stream()) {
-    // The handshake message will call OnCanWrite, so the stream can resume
-    // writing.
-    EXPECT_CALL(*stream2, OnCanWrite());
-  }
   // Now complete the crypto handshake, resulting in an increased flow control
   // send window.
   CryptoHandshakeMessage msg;
   session_.GetMutableCryptoStream()->OnHandshakeMessage(msg);
-  if (session_.session_unblocks_stream()) {
-    EXPECT_TRUE(
-        QuicSessionPeer::IsStreamWriteBlocked(&session_, stream2->id()));
-  } else {
-    EXPECT_FALSE(
-        QuicSessionPeer::IsStreamWriteBlocked(&session_, stream2->id()));
-  }
+  EXPECT_TRUE(QuicSessionPeer::IsStreamWriteBlocked(&session_, stream2->id()));
   // Stream is now unblocked.
   EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
@@ -975,22 +964,12 @@ TEST_P(QuicSpdySessionTestServer,
   EXPECT_FALSE(session_.HasDataToWrite());
   EXPECT_TRUE(crypto_stream->HasBufferedData());
 
-  if (!session_.session_unblocks_stream()) {
-    // The handshake message will call OnCanWrite, so the stream can
-    // resume writing.
-    EXPECT_CALL(*crypto_stream, OnCanWrite());
-  }
   // Now complete the crypto handshake, resulting in an increased flow control
   // send window.
   CryptoHandshakeMessage msg;
   session_.GetMutableCryptoStream()->OnHandshakeMessage(msg);
-  if (session_.session_unblocks_stream()) {
-    EXPECT_TRUE(
-        QuicSessionPeer::IsStreamWriteBlocked(&session_, kCryptoStreamId));
-  } else {
-    EXPECT_FALSE(
-        QuicSessionPeer::IsStreamWriteBlocked(&session_, kCryptoStreamId));
-  }
+  EXPECT_TRUE(
+      QuicSessionPeer::IsStreamWriteBlocked(&session_, kCryptoStreamId));
   // Stream is now unblocked and will no longer have buffered data.
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
@@ -1050,15 +1029,9 @@ TEST_P(QuicSpdySessionTestServer,
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  if (session_.session_unblocks_stream()) {
-    EXPECT_TRUE(headers_stream->HasBufferedData());
-    EXPECT_TRUE(
-        QuicSessionPeer::IsStreamWriteBlocked(&session_, kHeadersStreamId));
-  } else {
-    EXPECT_FALSE(headers_stream->HasBufferedData());
-    EXPECT_FALSE(
-        QuicSessionPeer::IsStreamWriteBlocked(&session_, kHeadersStreamId));
-  }
+  EXPECT_TRUE(headers_stream->HasBufferedData());
+  EXPECT_TRUE(
+      QuicSessionPeer::IsStreamWriteBlocked(&session_, kHeadersStreamId));
 }
 #endif  // !defined(OS_IOS)
 
