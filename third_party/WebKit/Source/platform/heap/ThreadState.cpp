@@ -37,6 +37,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/atomicops.h"
 #include "base/location.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
@@ -1233,6 +1234,21 @@ void ThreadState::InvokePreFinalizers() {
   }
 }
 
+// static
+base::subtle::AtomicWord ThreadState::incremental_marking_counter_ = 0;
+
+void ThreadState::EnableIncrementalMarkingBarrier() {
+  CHECK(!IsIncrementalMarking());
+  base::subtle::Barrier_AtomicIncrement(&incremental_marking_counter_, 1);
+  SetIncrementalMarking(true);
+}
+
+void ThreadState::DisableIncrementalMarkingBarrier() {
+  CHECK(IsIncrementalMarking());
+  base::subtle::Barrier_AtomicIncrement(&incremental_marking_counter_, -1);
+  SetIncrementalMarking(false);
+}
+
 void ThreadState::IncrementalMarkingStart() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Start";
@@ -1243,7 +1259,7 @@ void ThreadState::IncrementalMarkingStart() {
   MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
                     BlinkGC::kIncrementalMarking, BlinkGC::kIdleGC);
   MarkPhaseVisitRoots();
-  Heap().EnableIncrementalMarkingBarrier();
+  EnableIncrementalMarkingBarrier();
   ScheduleIncrementalMarkingStep();
   DCHECK(IsMarkingInProgress());
 }
@@ -1268,6 +1284,7 @@ void ThreadState::IncrementalMarkingFinalize() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Finalize";
   SetGCState(kNoGCScheduled);
+  DisableIncrementalMarkingBarrier();
   AtomicPauseScope atomic_pause_scope(this);
   DCHECK(IsMarkingInProgress());
   RecursiveMutexLocker persistent_lock(
@@ -1276,7 +1293,6 @@ void ThreadState::IncrementalMarkingFinalize() {
   bool complete =
       MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity());
   CHECK(complete);
-  Heap().DisableIncrementalMarkingBarrier();
   MarkPhaseEpilogue(current_gc_data_.marking_type);
   PreSweep(current_gc_data_.marking_type, BlinkGC::kLazySweeping);
   DCHECK(IsSweepingInProgress());

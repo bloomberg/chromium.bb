@@ -472,11 +472,6 @@ class PLATFORM_EXPORT ThreadHeap {
   enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
   void TakeSnapshot(SnapshotType);
 
-  // Enables or disables the incremental marking barrier that intercepts
-  // writes to Member<T> objects.
-  void EnableIncrementalMarkingBarrier();
-  void DisableIncrementalMarkingBarrier();
-
   // Write barrier used after adding an object to the graph.
   void WriteBarrier(const void* value);
 

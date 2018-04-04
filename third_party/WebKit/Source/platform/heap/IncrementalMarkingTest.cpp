@@ -51,7 +51,7 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
     ThreadState::AtomicPauseScope atomic_pause_scope_(thread_state_);
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
-    heap_.EnableIncrementalMarkingBarrier();
+    thread_state->EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor =
         MarkingVisitor::Create(thread_state, MarkingVisitor::kGlobalMarking);
   }
@@ -59,7 +59,7 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
   ~IncrementalMarkingScope() {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
-    heap_.DisableIncrementalMarkingBarrier();
+    thread_state_->DisableIncrementalMarkingBarrier();
     // Need to clear out unused worklists that might have been polluted during
     // test.
     heap_.GetPostMarkingWorklist()->Clear();
@@ -193,14 +193,11 @@ class Object : public GarbageCollected<Object> {
 TEST(IncrementalMarkingTest, EnableDisableBarrier) {
   Object* object = Object::Create();
   BasePage* page = PageFromObject(object);
-  ThreadHeap& heap = ThreadState::Current()->Heap();
-  EXPECT_FALSE(page->IsIncrementalMarking());
   EXPECT_FALSE(ThreadState::Current()->IsIncrementalMarking());
-  heap.EnableIncrementalMarkingBarrier();
-  EXPECT_TRUE(page->IsIncrementalMarking());
+  ThreadState::Current()->EnableIncrementalMarkingBarrier();
   EXPECT_TRUE(ThreadState::Current()->IsIncrementalMarking());
-  heap.DisableIncrementalMarkingBarrier();
-  EXPECT_FALSE(page->IsIncrementalMarking());
+  EXPECT_TRUE(ThreadState::IsAnyIncrementalMarking());
+  ThreadState::Current()->DisableIncrementalMarkingBarrier();
   EXPECT_FALSE(ThreadState::Current()->IsIncrementalMarking());
 }
 

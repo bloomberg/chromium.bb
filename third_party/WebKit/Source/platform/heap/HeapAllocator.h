@@ -130,7 +130,7 @@ class PLATFORM_EXPORT HeapAllocator {
 
   static void BackingWriteBarrier(void* address) {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-    if (!address)
+    if (!address || !ThreadState::IsAnyIncrementalMarking())
       return;
     ThreadState* state = PageFromObject(address)->Arena()->GetThreadState();
     state->Heap().WriteBarrier(address);
@@ -214,6 +214,8 @@ class PLATFORM_EXPORT HeapAllocator {
   template <typename T, typename Traits>
   static void NotifyNewObject(T* object) {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+    if (!ThreadState::IsAnyIncrementalMarking())
+      return;
     // The object may have been in-place constructed as part of a large object.
     // It is not safe to retrieve the page from the object here.
     ThreadState* const thread_state = ThreadState::Current();
@@ -239,6 +241,8 @@ class PLATFORM_EXPORT HeapAllocator {
   template <typename T, typename Traits>
   static void NotifyNewObjects(T* array, size_t len) {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+    if (!ThreadState::IsAnyIncrementalMarking())
+      return;
     // The object may have been in-place constructed as part of a large object.
     // It is not safe to retrieve the page from the object here.
     ThreadState* const thread_state = ThreadState::Current();
