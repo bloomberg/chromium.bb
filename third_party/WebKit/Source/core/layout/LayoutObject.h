@@ -1954,6 +1954,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void InvalidateIfControlStateChanged(ControlState);
 
+  bool ContainsInlineWithOutlineAndContinuation() const {
+    return bitfields_.ContainsInlineWithOutlineAndContinuation();
+  }
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
@@ -2123,9 +2127,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // LayoutFlowThread.
   void RemoveFromLayoutFlowThread();
 
-  bool ContainsInlineWithOutlineAndContinuation() const {
-    return bitfields_.ContainsInlineWithOutlineAndContinuation();
-  }
   void SetContainsInlineWithOutlineAndContinuation(bool b) {
     bitfields_.SetContainsInlineWithOutlineAndContinuation(b);
   }

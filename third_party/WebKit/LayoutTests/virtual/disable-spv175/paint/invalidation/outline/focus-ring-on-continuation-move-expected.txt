@@ -46,6 +46,10 @@
       "reason": "outline"
     },
     {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
       "reason": "geometry"
     }
