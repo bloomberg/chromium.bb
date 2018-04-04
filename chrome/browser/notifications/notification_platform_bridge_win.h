@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_WIN_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_WIN_H_
 
-#include <windows.ui.notifications.h>
-
 #include <string>
+
+#include <windows.ui.notifications.h>
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
 namespace base {
