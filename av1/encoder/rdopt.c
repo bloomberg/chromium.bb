@@ -8299,6 +8299,15 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
                                       int above_stride, const uint8_t *left,
                                       int left_stride);
 
+static const int ref_frame_flag_list[REF_FRAMES] = { 0,
+                                                     AOM_LAST_FLAG,
+                                                     AOM_LAST2_FLAG,
+                                                     AOM_LAST3_FLAG,
+                                                     AOM_GOLD_FLAG,
+                                                     AOM_BWD_FLAG,
+                                                     AOM_ALT2_FLAG,
+                                                     AOM_ALT_FLAG };
+
 static void estimate_skip_mode_rdcost(
     const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
     BLOCK_SIZE bsize, int mi_row, int mi_col,
@@ -8311,14 +8320,6 @@ static void estimate_skip_mode_rdcost(
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
 
   int *mode_map = tile_data->mode_map[bsize];
-  static const int flag_list[REF_FRAMES] = { 0,
-                                             AOM_LAST_FLAG,
-                                             AOM_LAST2_FLAG,
-                                             AOM_LAST3_FLAG,
-                                             AOM_GOLD_FLAG,
-                                             AOM_BWD_FLAG,
-                                             AOM_ALT2_FLAG,
-                                             AOM_ALT_FLAG };
   int i;
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
@@ -8335,8 +8336,9 @@ static void estimate_skip_mode_rdcost(
 
     const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
 
-    if (!(cpi->ref_frame_flags & flag_list[ref_frame])) continue;
-    if (comp_pred && !(cpi->ref_frame_flags & flag_list[second_ref_frame]))
+    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) continue;
+    if (comp_pred &&
+        !(cpi->ref_frame_flags & ref_frame_flag_list[second_ref_frame]))
       continue;
     // Check whether current refs/mode align with skip_mode
     if (!(ref_frame == (LAST_FRAME + cm->ref_frame_idx_0) &&
@@ -8536,15 +8538,6 @@ static void set_params_rd_pick_inter_mode(
   const struct segmentation *const seg = &cm->seg;
   const SPEED_FEATURES *const sf = &cpi->sf;
   unsigned char segment_id = mbmi->segment_id;
-  static const int flag_list[REF_FRAMES] = { 0,
-                                             AOM_LAST_FLAG,
-                                             AOM_LAST2_FLAG,
-                                             AOM_LAST3_FLAG,
-                                             AOM_GOLD_FLAG,
-                                             AOM_BWD_FLAG,
-                                             AOM_ALT2_FLAG,
-                                             AOM_ALT_FLAG };
-
   int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
                                    MAX_SB_SIZE >> 1 };
@@ -8586,7 +8579,7 @@ static void set_params_rd_pick_inter_mode(
     x->pred_mv_sad[ref_frame] = INT_MAX;
     x->mbmi_ext->mode_context[ref_frame] = 0;
     x->mbmi_ext->compound_mode_context[ref_frame] = 0;
-    if (cpi->ref_frame_flags & flag_list[ref_frame]) {
+    if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
       assert(get_ref_frame_buffer(cpi, ref_frame) != NULL);
       setup_buffer_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
                          frame_mv[NEARESTMV], frame_mv[NEARMV], yv12_mb);
@@ -8637,7 +8630,7 @@ static void set_params_rd_pick_inter_mode(
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame)
     min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    if (!(cpi->ref_frame_flags & flag_list[ref_frame])) {
+    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) {
       // Skip checking missing references in both single and compound reference
       // modes. Note that a mode will be skipped iff both reference frames
       // are masked out.
@@ -8693,7 +8686,7 @@ static void set_params_rd_pick_inter_mode(
 
   if (cpi->rc.is_src_frame_alt_ref) {
     if (sf->alt_ref_search_fp) {
-      assert(cpi->ref_frame_flags & flag_list[ALTREF_FRAME]);
+      assert(cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
       mode_skip_mask[ALTREF_FRAME] = 0;
       ref_frame_skip_mask[0] = ~(1 << ALTREF_FRAME);
       ref_frame_skip_mask[1] = SECOND_REF_FRAME_MASK;
@@ -8834,6 +8827,97 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
       search_state->modelled_rd[i][ref_frame] = INT64_MAX;
 }
 
+static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
+                                                    const MACROBLOCK *x,
+                                                    BLOCK_SIZE bsize,
+                                                    int mode_index) {
+  const SPEED_FEATURES *const sf = &cpi->sf;
+  const AV1_COMMON *const cm = &cpi->common;
+  const struct segmentation *const seg = &cm->seg;
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const unsigned char segment_id = mbmi->segment_id;
+  const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
+  const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
+
+  if (ref_frame[0] > INTRA_FRAME && ref_frame[1] == INTRA_FRAME) {
+    // Mode must by compatible
+    if (!is_interintra_allowed_mode(this_mode)) return 1;
+    if (!is_interintra_allowed_bsize(bsize)) return 1;
+  }
+
+  // This is only used in motion vector unit test.
+  if (cpi->oxcf.motion_vector_unit_test && ref_frame[0] == INTRA_FRAME)
+    return 1;
+
+  if (ref_frame[0] == INTRA_FRAME) {
+    if (this_mode != DC_PRED) {
+      // Disable intra modes other than DC_PRED for blocks with low variance
+      // Threshold for intra skipping based on source variance
+      // TODO(debargha): Specialize the threshold for super block sizes
+      const unsigned int skip_intra_var_thresh = 64;
+      if ((sf->mode_search_skip_flags & FLAG_SKIP_INTRA_LOWVAR) &&
+          x->source_variance < skip_intra_var_thresh)
+        return 1;
+    }
+  } else {
+    if (!is_comp_ref_allowed(bsize) && ref_frame[1] > INTRA_FRAME) return 1;
+  }
+
+  const int comp_pred = ref_frame[1] > INTRA_FRAME;
+  if (comp_pred) {
+    if (!cpi->allow_comp_inter_inter) return 1;
+
+    // Skip compound inter modes if ARF is not available.
+    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame[1]])) return 1;
+
+    // Do not allow compound prediction if the segment level reference frame
+    // feature is in use as in this case there can only be one reference.
+    if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) return 1;
+  }
+
+  if (sf->selective_ref_frame) {
+    if (sf->selective_ref_frame == 2 || x->cb_partition_scan) {
+      if (ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME)
+        if (get_relative_dist(
+                cm, cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME],
+                cm->frame_offset) < 0)
+          return 1;
+      if (ref_frame[0] == BWDREF_FRAME || ref_frame[1] == BWDREF_FRAME)
+        if (get_relative_dist(
+                cm, cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME],
+                cm->frame_offset) < 0)
+          return 1;
+    }
+    if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME)
+      if (get_relative_dist(
+              cm, cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME],
+              cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+        return 1;
+    if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME)
+      if (get_relative_dist(
+              cm, cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME],
+              cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+        return 1;
+  }
+
+  // One-sided compound is used only when all reference frames are one-sided.
+  if (sf->selective_ref_frame && comp_pred && !cpi->all_one_sided_refs) {
+    unsigned int ref_offsets[2];
+    for (int i = 0; i < 2; ++i) {
+      const int buf_idx = cm->frame_refs[ref_frame[i] - LAST_FRAME].idx;
+      assert(buf_idx >= 0);
+      ref_offsets[i] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+    }
+    if ((get_relative_dist(cm, ref_offsets[0], cm->frame_offset) <= 0 &&
+         get_relative_dist(cm, ref_offsets[1], cm->frame_offset) <= 0) ||
+        (get_relative_dist(cm, ref_offsets[0], cm->frame_offset) > 0 &&
+         get_relative_dist(cm, ref_offsets[1], cm->frame_offset) > 0))
+      return 1;
+  }
+  return 0;
+}
+
 void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
                                RD_STATS *rd_cost, BLOCK_SIZE bsize,
@@ -8853,14 +8937,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned char segment_id = mbmi->segment_id;
   int i, k;
   struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE];
-  static const int flag_list[REF_FRAMES] = { 0,
-                                             AOM_LAST_FLAG,
-                                             AOM_LAST2_FLAG,
-                                             AOM_LAST3_FLAG,
-                                             AOM_GOLD_FLAG,
-                                             AOM_BWD_FLAG,
-                                             AOM_ALT2_FLAG,
-                                             AOM_ALT_FLAG };
   const int skip_ctx = av1_get_skip_context(xd);
   const int rate_skip0 = x->skip_cost[skip_ctx][0];
   const int rate_skip1 = x->skip_cost[skip_ctx][1];
@@ -8896,7 +8972,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       ref_costs_single, ref_costs_comp, yv12_mb);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
-    int mode_index;
+    int mode_index = mode_map[midx];
+    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index))
+      continue;
+
     int64_t this_rd = INT64_MAX;
     int disable_skip = 0;
     int compmode_cost = 0;
@@ -8907,7 +8986,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     int64_t total_sse = INT64_MAX;
     uint8_t ref_frame_type;
 
-    mode_index = mode_map[midx];
     x->skip_mode_index_candidate = mode_index;
     this_mode = av1_mode_order[mode_index].mode;
     ref_frame = av1_mode_order[mode_index].ref_frame[0];
@@ -8931,12 +9009,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
     }
 
-    if (ref_frame > INTRA_FRAME && second_ref_frame == INTRA_FRAME) {
-      // Mode must by compatible
-      if (!is_interintra_allowed_mode(this_mode)) continue;
-      if (!is_interintra_allowed_bsize(bsize)) continue;
-    }
-
     if (is_inter_compound_mode(this_mode)) {
       search_state.frame_mv[this_mode][ref_frame].as_int =
           search_state.frame_mv[compound_ref0_mode(this_mode)][ref_frame]
@@ -8956,20 +9028,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (search_state.best_rd < search_state.mode_threshold[mode_index])
       continue;
 
-    // This is only used in motion vector unit test.
-    if (cpi->oxcf.motion_vector_unit_test && ref_frame == INTRA_FRAME) continue;
-
     const int comp_pred = second_ref_frame > INTRA_FRAME;
     if (comp_pred) {
-      if (!cpi->allow_comp_inter_inter) continue;
-
-      // Skip compound inter modes if ARF is not available.
-      if (!(cpi->ref_frame_flags & flag_list[second_ref_frame])) continue;
-
-      // Do not allow compound prediction if the segment level reference frame
-      // feature is in use as in this case there can only be one reference.
-      if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) continue;
-
       if ((sf->mode_search_skip_flags & FLAG_SKIP_COMP_BESTINTRA) &&
           search_state.best_mode_index >= 0 &&
           search_state.best_mbmode.ref_frame[0] == INTRA_FRAME)
@@ -8983,13 +9043,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           continue;
 
       if (this_mode != DC_PRED) {
-        // Disable intra modes other than DC_PRED for blocks with low variance
-        // Threshold for intra skipping based on source variance
-        // TODO(debargha): Specialize the threshold for super block sizes
-        const unsigned int skip_intra_var_thresh = 64;
-        if ((sf->mode_search_skip_flags & FLAG_SKIP_INTRA_LOWVAR) &&
-            x->source_variance < skip_intra_var_thresh)
-          continue;
         // Only search the oblique modes if the best so far is
         // one of the neighboring directional modes
         if ((sf->mode_search_skip_flags & FLAG_SKIP_INTRA_BESTINTER) &&
@@ -9038,54 +9091,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
-
-    if (sf->selective_ref_frame) {
-      if (sf->selective_ref_frame == 2 || x->cb_partition_scan) {
-        if (mbmi->ref_frame[0] == ALTREF2_FRAME ||
-            mbmi->ref_frame[1] == ALTREF2_FRAME)
-          if (get_relative_dist(
-                  cm,
-                  cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME],
-                  cm->frame_offset) < 0)
-            continue;
-        if (mbmi->ref_frame[0] == BWDREF_FRAME ||
-            mbmi->ref_frame[1] == BWDREF_FRAME)
-          if (get_relative_dist(
-                  cm,
-                  cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME],
-                  cm->frame_offset) < 0)
-            continue;
-      }
-      if (mbmi->ref_frame[0] == LAST3_FRAME ||
-          mbmi->ref_frame[1] == LAST3_FRAME)
-        if (get_relative_dist(
-                cm, cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME],
-                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
-            0)
-          continue;
-      if (mbmi->ref_frame[0] == LAST2_FRAME ||
-          mbmi->ref_frame[1] == LAST2_FRAME)
-        if (get_relative_dist(
-                cm, cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME],
-                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
-            0)
-          continue;
-    }
-
-    // One-sided compound is used only when all reference frames are one-sided.
-    if (sf->selective_ref_frame && comp_pred && !cpi->all_one_sided_refs) {
-      unsigned int ref_offsets[2];
-      for (i = 0; i < 2; ++i) {
-        const int buf_idx = cm->frame_refs[mbmi->ref_frame[i] - LAST_FRAME].idx;
-        assert(buf_idx >= 0);
-        ref_offsets[i] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
-      }
-      if ((get_relative_dist(cm, ref_offsets[0], cm->frame_offset) <= 0 &&
-           get_relative_dist(cm, ref_offsets[1], cm->frame_offset) <= 0) ||
-          (get_relative_dist(cm, ref_offsets[0], cm->frame_offset) > 0 &&
-           get_relative_dist(cm, ref_offsets[1], cm->frame_offset) > 0))
-        continue;
-    }
 
     if (ref_frame == INTRA_FRAME) {
       RD_STATS rd_stats_y;
@@ -9230,9 +9235,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       distortion2 = distortion_y + distortion_uv;
     } else {
       int_mv backup_ref_mv[2];
-
-      if (!is_comp_ref_allowed(bsize) && mbmi->ref_frame[1] > INTRA_FRAME)
-        continue;
 
       backup_ref_mv[0] = mbmi_ext->ref_mvs[ref_frame][0];
       if (comp_pred) backup_ref_mv[1] = mbmi_ext->ref_mvs[second_ref_frame][0];
