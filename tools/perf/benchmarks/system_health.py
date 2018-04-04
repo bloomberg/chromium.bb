@@ -72,7 +72,8 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
     return 'system_health.common_desktop'
 
 
-@benchmark.Owner(emails=['charliea@chromium.org', 'nednguyen@chromium.org'])
+@benchmark.Owner(emails=['charliea@chromium.org', 'nednguyen@chromium.org',
+                         'perezju@chromium.org'])
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Mobile Chrome Energy System Health Benchmark."""
   PLATFORM = 'mobile'
