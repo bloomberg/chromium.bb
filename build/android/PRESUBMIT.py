@@ -58,6 +58,7 @@ def CommonChecks(input_api, output_api):
       output_api,
       unit_tests=[
           J('.', 'emma_coverage_stats_test.py'),
+          J('gyp', 'util', 'build_utils_test.py'),
           J('gyp', 'util', 'md5_check_test.py'),
           J('play_services', 'update_test.py'),
           J('pylib', 'gtest', 'gtest_test_instance_test.py'),

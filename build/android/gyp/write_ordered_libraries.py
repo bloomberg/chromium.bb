@@ -48,11 +48,11 @@ def CallReadElf(library_or_executable):
 
 def GetDependencies(library_or_executable):
   elf = CallReadElf(library_or_executable)
-  deps = set()
+  deps = []
   for l in _library_re.findall(elf):
     p = _library_path_map.get(l)
     if p is not None:
-      deps.add(p)
+      deps.append(p)
   return deps
 
 
