@@ -148,27 +148,6 @@ struct DidOverscrollParams;
   // Event monitor for scroll wheel end event.
   id endWheelMonitor_;
 
-  // When a gesture starts, the system does not inform the view of which type
-  // of gesture is happening (magnify, rotate, etc), rather, it just informs
-  // the view that some as-yet-undefined gesture is starting. Capture the
-  // information about the gesture's beginning event here. It will be used to
-  // create a specific gesture begin event later.
-  std::unique_ptr<blink::WebGestureEvent> gestureBeginEvent_;
-
-  // To avoid accidental pinches, require that a certain zoom threshold be
-  // reached before forwarding it to the browser. Use |pinchUnusedAmount_| to
-  // hold this value. If the user reaches this value, don't re-require the
-  // threshold be reached until the page has been zoomed back to page scale of
-  // one.
-  bool pinchHasReachedZoomThreshold_;
-  float pinchUnusedAmount_;
-  NSTimeInterval pinchLastGestureTimestamp_;
-
-  // This is set if a GesturePinchBegin event has been sent in the lifetime of
-  // |gestureBeginEvent_|. If set, a GesturePinchEnd will be sent when the
-  // gesture ends.
-  BOOL gestureBeginPinchSent_;
-
   // This is used to indicate if a stylus is currently in the proximity of the
   // tablet.
   bool isStylusEnteringProximity_;

@@ -1345,6 +1345,67 @@ void RenderWidgetHostViewMac::OnNSViewForwardWheelEvent(
   }
 }
 
+void RenderWidgetHostViewMac::OnNSViewGestureBegin(
+    blink::WebGestureEvent begin_event) {
+  gesture_begin_event_.reset(new WebGestureEvent(begin_event));
+
+  // If the page is at the minimum zoom level, require a threshold be reached
+  // before the pinch has an effect.
+  if (page_at_minimum_scale_) {
+    pinch_has_reached_zoom_threshold_ = false;
+    pinch_unused_amount_ = 1;
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewGestureUpdate(
+    blink::WebGestureEvent update_event) {
+  // If, due to nesting of multiple gestures (e.g, from multiple touch
+  // devices), the beginning of the gesture has been lost, skip the remainder
+  // of the gesture.
+  if (!gesture_begin_event_)
+    return;
+
+  if (!pinch_has_reached_zoom_threshold_) {
+    pinch_unused_amount_ *= update_event.data.pinch_update.scale;
+    if (pinch_unused_amount_ < 0.667 || pinch_unused_amount_ > 1.5)
+      pinch_has_reached_zoom_threshold_ = true;
+  }
+
+  // Send a GesturePinchBegin event if none has been sent yet.
+  if (!gesture_begin_pinch_sent_) {
+    if (wheel_scroll_latching_enabled()) {
+      // Before starting a pinch sequence, send the pending wheel end event to
+      // finish scrolling.
+      mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
+    }
+    WebGestureEvent begin_event(*gesture_begin_event_);
+    begin_event.SetType(WebInputEvent::kGesturePinchBegin);
+    begin_event.SetSourceDevice(
+        blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+    SendGesturePinchEvent(&begin_event);
+    gesture_begin_pinch_sent_ = YES;
+  }
+
+  // Send a GesturePinchUpdate event.
+  update_event.data.pinch_update.zoom_disabled =
+      !pinch_has_reached_zoom_threshold_;
+  SendGesturePinchEvent(&update_event);
+}
+
+void RenderWidgetHostViewMac::OnNSViewGestureEnd(
+    blink::WebGestureEvent end_event) {
+  gesture_begin_event_.reset();
+  if (gesture_begin_pinch_sent_) {
+    SendGesturePinchEvent(&end_event);
+    gesture_begin_pinch_sent_ = false;
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewSmartMagnify(
+    const blink::WebGestureEvent& smart_magnify_event) {
+  host()->ForwardGestureEvent(smart_magnify_event);
+}
+
 Class GetRenderWidgetHostViewCocoaClassForTesting() {
   return [RenderWidgetHostViewCocoa class];
 }

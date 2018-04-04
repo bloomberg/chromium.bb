@@ -166,7 +166,6 @@ void ExtractUnderlines(NSAttributedString* string,
     client_ = std::move(client);
     renderWidgetHostView_ = client_->GetRenderWidgetHostViewMac();
     canBeKeyView_ = YES;
-    pinchHasReachedZoomThreshold_ = false;
     isStylusEnteringProximity_ = false;
   }
   return self;
@@ -804,38 +803,28 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (void)handleBeginGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ beginGestureWithEvent:event];
-  gestureBeginEvent_.reset(
-      new WebGestureEvent(WebGestureEventBuilder::Build(event, self)));
 
-  // If the page is at the minimum zoom level, require a threshold be reached
-  // before the pinch has an effect.
-  if (renderWidgetHostView_->page_at_minimum_scale_) {
-    pinchHasReachedZoomThreshold_ = false;
-    pinchUnusedAmount_ = 1;
-  }
+  WebGestureEvent gestureBeginEvent(WebGestureEventBuilder::Build(event, self));
+
+  client_->OnNSViewGestureBegin(gestureBeginEvent);
 }
 
 - (void)handleEndGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ endGestureWithEvent:event];
+
+  if (clientWasDestroyed_)
+    return;
 
   // On macOS 10.11+, the end event has type = NSEventTypeMagnify and phase =
   // NSEventPhaseEnded. On macOS 10.10 and older, the event has type =
   // NSEventTypeEndGesture.
   if ([event type] == NSEventTypeMagnify ||
       [event type] == NSEventTypeEndGesture) {
-    gestureBeginEvent_.reset();
-
-    if (!renderWidgetHostView_->host())
-      return;
-
-    if (gestureBeginPinchSent_) {
-      WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
-      endEvent.SetType(WebInputEvent::kGesturePinchEnd);
-      endEvent.SetSourceDevice(
-          blink::WebGestureDevice::kWebGestureDeviceTouchpad);
-      renderWidgetHostView_->SendGesturePinchEvent(&endEvent);
-      gestureBeginPinchSent_ = NO;
-    }
+    WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
+    endEvent.SetType(WebInputEvent::kGesturePinchEnd);
+    endEvent.SetSourceDevice(
+        blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+    client_->OnNSViewGestureEnd(endEvent);
   }
 }
 
@@ -890,9 +879,7 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)smartMagnifyWithEvent:(NSEvent*)event {
   const WebGestureEvent& smartMagnifyEvent =
       WebGestureEventBuilder::Build(event, self);
-  if (renderWidgetHostView_ && renderWidgetHostView_->host()) {
-    renderWidgetHostView_->host()->ForwardGestureEvent(smartMagnifyEvent);
-  }
+  client_->OnNSViewSmartMagnify(smartMagnifyEvent);
 }
 
 - (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*)string
@@ -1079,7 +1066,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
 // Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
-  if (!renderWidgetHostView_->host())
+  if (clientWasDestroyed_)
     return;
 
 #if defined(MAC_OS_X_VERSION_10_11) && \
@@ -1109,38 +1096,8 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
   }
 
-  // If, due to nesting of multiple gestures (e.g, from multiple touch
-  // devices), the beginning of the gesture has been lost, skip the remainder
-  // of the gesture.
-  if (!gestureBeginEvent_)
-    return;
-
-  if (!pinchHasReachedZoomThreshold_) {
-    pinchUnusedAmount_ *= (1 + [event magnification]);
-    if (pinchUnusedAmount_ < 0.667 || pinchUnusedAmount_ > 1.5)
-      pinchHasReachedZoomThreshold_ = true;
-  }
-
-  // Send a GesturePinchBegin event if none has been sent yet.
-  if (!gestureBeginPinchSent_) {
-    if (renderWidgetHostView_->wheel_scroll_latching_enabled()) {
-      // Before starting a pinch sequence, send the pending wheel end event to
-      // finish scrolling.
-      renderWidgetHostView_->mouse_wheel_phase_handler_
-          .DispatchPendingWheelEndEvent();
-    }
-    WebGestureEvent beginEvent(*gestureBeginEvent_);
-    beginEvent.SetType(WebInputEvent::kGesturePinchBegin);
-    beginEvent.SetSourceDevice(
-        blink::WebGestureDevice::kWebGestureDeviceTouchpad);
-    renderWidgetHostView_->SendGesturePinchEvent(&beginEvent);
-    gestureBeginPinchSent_ = YES;
-  }
-
-  // Send a GesturePinchUpdate event.
   WebGestureEvent updateEvent = WebGestureEventBuilder::Build(event, self);
-  updateEvent.data.pinch_update.zoom_disabled = !pinchHasReachedZoomThreshold_;
-  renderWidgetHostView_->SendGesturePinchEvent(&updateEvent);
+  client_->OnNSViewGestureUpdate(updateEvent);
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
