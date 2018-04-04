@@ -299,12 +299,15 @@ void AppListItemView::OnContextMenuModelReceived(
   context_menu_items_ = std::move(menu);
 
   UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.AppGrid", source_type,
-                            ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+                            ui::MENU_SOURCE_TYPE_LAST);
 
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
-  int run_types = views::MenuRunner::HAS_MNEMONICS |
-                  views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
+  int run_types = views::MenuRunner::HAS_MNEMONICS;
+
+  if (source_type == ui::MENU_SOURCE_TOUCH)
+    run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
+
   views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
 
@@ -313,7 +316,7 @@ void AppListItemView::OnContextMenuModelReceived(
                  views::MenuRunner::FIXED_ANCHOR |
                  views::MenuRunner::CONTEXT_MENU;
     anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
-    if (source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
+    if (source_type == ui::MENU_SOURCE_TOUCH) {
       // When a context menu is shown by touch, the app icon is temporarily
       // enlarged, so use the ideal bounds instead of the current bounds for the
       // anchor rect.
@@ -340,8 +343,6 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
       item_weak_->id(),
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
                      weak_ptr_factory_.GetWeakPtr(), point, source_type));
-
-  source->RequestFocus();
 }
 
 bool AppListItemView::IsCommandIdChecked(int command_id) const {
