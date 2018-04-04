@@ -10,7 +10,10 @@
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -22,6 +25,21 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+namespace {
+
+// The manager currently doesn't exist on all platforms, which means the
+// tab load tracker will not either.
+// TODO(chrisha): Make the tab manager exist everywhere. It's going to start
+// making scheduling decisions that apply to mobile devices as well, so there's
+// no longer any reason for it to be mobile only.
+resource_coordinator::TabLoadTracker* GetTabLoadTracker() {
+  if (auto* manager = g_browser_process->GetTabManager())
+    return &(manager->tab_load_tracker());
+  return nullptr;
+}
+
+}  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ResourceCoordinatorWebContentsObserver);
 
@@ -52,6 +70,9 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
     page_signal_receiver->AssociateCoordinationUnitIDWithWebContents(
         page_resource_coordinator_->id(), web_contents);
   }
+
+  if (auto* tracker = GetTabLoadTracker())
+    tracker->StartTracking(web_contents);
 }
 
 ResourceCoordinatorWebContentsObserver::
@@ -66,10 +87,29 @@ bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
 
 void ResourceCoordinatorWebContentsObserver::DidStartLoading() {
   page_resource_coordinator_->SetIsLoading(true);
+
+  if (auto* tracker = GetTabLoadTracker())
+    tracker->DidStartLoading(web_contents());
+}
+
+void ResourceCoordinatorWebContentsObserver::DidReceiveResponse() {
+  if (auto* tracker = GetTabLoadTracker())
+    tracker->DidReceiveResponse(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::DidStopLoading() {
   page_resource_coordinator_->SetIsLoading(false);
+  if (auto* tracker = GetTabLoadTracker())
+    tracker->DidStopLoading(web_contents());
+}
+
+void ResourceCoordinatorWebContentsObserver::DidFailLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    int error_code,
+    const base::string16& error_description) {
+  if (auto* tracker = GetTabLoadTracker())
+    tracker->DidFailLoad(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::OnVisibilityChanged(
@@ -87,6 +127,8 @@ void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {
     page_signal_receiver->RemoveCoordinationUnitID(
         page_resource_coordinator_->id());
   }
+  if (auto* tracker = GetTabLoadTracker())
+    tracker->StopTracking(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(

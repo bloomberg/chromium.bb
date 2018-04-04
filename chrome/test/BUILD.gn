@@ -2907,6 +2907,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/tab_activity_watcher_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_source_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_unittest.cc",
+      "../browser/resource_coordinator/tab_load_tracker_unittest.cc",
       "../browser/resource_coordinator/tab_manager_delegate_chromeos_unittest.cc",
       "../browser/resource_coordinator/tab_manager_features_unittest.cc",
       "../browser/resource_coordinator/tab_manager_stats_collector_unittest.cc",

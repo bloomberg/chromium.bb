@@ -1254,6 +1254,8 @@ jumbo_split_static_library("browser") {
     "resource_coordinator/resource_coordinator_render_process_probe.h",
     "resource_coordinator/resource_coordinator_web_contents_observer.cc",
     "resource_coordinator/resource_coordinator_web_contents_observer.h",
+    "resource_coordinator/tab_load_tracker.cc",
+    "resource_coordinator/tab_load_tracker.h",
     "resources_util.cc",
     "resources_util.h",
     "safe_search_api/safe_search_url_checker.cc",

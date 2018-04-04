@@ -35,7 +35,12 @@ class ResourceCoordinatorWebContentsObserver
 
   // WebContentsObserver implementation.
   void DidStartLoading() override;
+  void DidReceiveResponse() override;
   void DidStopLoading() override;
+  void DidFailLoad(content::RenderFrameHost* render_frame_host,
+                   const GURL& validated_url,
+                   int error_code,
+                   const base::string16& error_description) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
   void DidFinishNavigation(

@@ -6,10 +6,29 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 
 namespace resource_coordinator {
+
+namespace {
+
+TabLoadTracker& GetTabLoadTracker() {
+  return g_browser_process->GetTabManager()->tab_load_tracker();
+}
+
+}  // namespace
+
+// A helper class for accessing TabLoadTracker. TabLoadTracker can't directly
+// friend TabManager::ResourceCoordinatorSignalObserver as it's a nested class
+// and can't be forward declared.
+class TabManagerResourceCoordinatorSignalObserverHelper {
+ public:
+  static void OnPageAlmostIdle(content::WebContents* web_contents) {
+    GetTabLoadTracker().OnPageAlmostIdle(web_contents);
+  }
+};
 
 TabManager::ResourceCoordinatorSignalObserver::
     ResourceCoordinatorSignalObserver() {
@@ -25,6 +44,8 @@ TabManager::ResourceCoordinatorSignalObserver::
 
 void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdle(
     content::WebContents* web_contents) {
+  TabManagerResourceCoordinatorSignalObserverHelper::OnPageAlmostIdle(
+      web_contents);
   auto* web_contents_data =
       TabManager::WebContentsData::FromWebContents(web_contents);
   if (!web_contents_data)

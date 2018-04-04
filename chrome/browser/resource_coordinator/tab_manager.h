@@ -25,6 +25,7 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -204,6 +205,11 @@ class TabManager : public LifecycleUnitObserver,
   // Returns the number of restored tabs during session restore. This is
   // non-zero only during session restore.
   int restored_tab_count() const;
+
+  // Accessor for the tab load tracker. This lets interested external classes
+  // add themselves as observers.
+  TabLoadTracker& tab_load_tracker() { return tab_load_tracker_; }
+  const TabLoadTracker& tab_load_tracker() const { return tab_load_tracker_; }
 
   // Duration during which a tab cannot be automatically discarded after having
   // been active.
@@ -471,6 +477,10 @@ class TabManager : public LifecycleUnitObserver,
   // Records UMAs for tab and system-related events and properties during
   // session restore.
   std::unique_ptr<TabManagerStatsCollector> stats_collector_;
+
+  // Tracks tab loads, taking into account PageAlmostIdle, NavigationThrottles
+  // and other complications.
+  TabLoadTracker tab_load_tracker_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;
