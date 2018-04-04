@@ -50,6 +50,8 @@ FrameScheduler* GetFrameScheduler(ThreadableLoadingContext* loading_context) {
   // |loading_context| can be null in unittests.
   if (!loading_context)
     return nullptr;
+  if (!loading_context->GetExecutionContext()->IsDocument())
+    return nullptr;
   return ToDocument(loading_context->GetExecutionContext())
       ->GetFrame()
       ->GetFrameScheduler();

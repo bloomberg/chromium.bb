@@ -11,7 +11,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/fetch/Request.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/MainThreadDebugger.h"
+#include "core/inspector/ThreadDebugger.h"
 #include "core/workers/DedicatedWorker.h"
 #include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
@@ -135,12 +135,14 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerObject(
   if (!worker_object_ || AskedToTerminate())
     return;
 
+  ThreadDebugger* debugger =
+      ThreadDebugger::From(ToIsolate(GetExecutionContext()));
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(channels));
-  MainThreadDebugger::Instance()->ExternalAsyncTaskStarted(stack_id);
+  debugger->ExternalAsyncTaskStarted(stack_id);
   worker_object_->DispatchEvent(
       MessageEvent::Create(ports, std::move(message)));
-  MainThreadDebugger::Instance()->ExternalAsyncTaskFinished(stack_id);
+  debugger->ExternalAsyncTaskFinished(stack_id);
 }
 
 void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
