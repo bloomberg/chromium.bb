@@ -4186,6 +4186,25 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, ProceedLinkOverridable) {
   ASSERT_NO_FATAL_FAILURE(CheckProceedLinkExists(tab));
 }
 
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestLearnMoreLinkContainsErrorCode) {
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  // Navigate to a site that causes an interstitial.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
+  WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
+
+  // Simulate clicking the learn more link.
+  SendInterstitialCommand(browser()->tab_strip_model()->GetActiveWebContents(),
+                          security_interstitials::CMD_OPEN_HELP_CENTER);
+  EXPECT_EQ(browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetVisibleURL()
+                .ref(),
+            std::to_string(net::ERR_CERT_DATE_INVALID));
+}
+
 // Verifies that an overridable committed interstitial has a proceed link.
 IN_PROC_BROWSER_TEST_P(SSLUITestCommitted, ProceedLinkOverridable) {
   ASSERT_TRUE(https_server_expired_.Start());

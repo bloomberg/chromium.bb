@@ -4,6 +4,7 @@
 
 #include "components/security_interstitials/content/connection_help_ui.h"
 
+#include "build/build_config.h"
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/content/urls.h"
 #include "components/strings/grit/components_strings.h"
@@ -11,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace security_interstitials {
@@ -19,6 +21,15 @@ ConnectionHelpUI::ConnectionHelpUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(kChromeUIConnectionHelpHost);
+
+  // JS code needs these constants to decide which section to expand.
+  html_source->AddInteger("certCommonNameInvalid",
+                          net::ERR_CERT_COMMON_NAME_INVALID);
+  html_source->AddInteger("certExpired", net::ERR_CERT_DATE_INVALID);
+  html_source->AddInteger("certAuthorityInvalid",
+                          net::ERR_CERT_AUTHORITY_INVALID);
+  html_source->AddInteger("certWeakSignatureAlgorithm",
+                          net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM);
 
   html_source->AddLocalizedString("connectionHelpTitle",
                                   IDS_CONNECTION_HELP_TITLE);
@@ -43,10 +54,20 @@ ConnectionHelpUI::ConnectionHelpUI(content::WebUI* web_ui)
                                   IDS_CONNECTION_HELP_INCORRECT_CLOCK_TITLE);
   html_source->AddLocalizedString("connectionHelpIncorrectClockDetails",
                                   IDS_CONNECTION_HELP_INCORRECT_CLOCK_DETAILS);
+
+// The superfish section should only be added on Windows.
+#if defined(OS_WIN)
+  html_source->AddBoolean("isWindows", true);
   html_source->AddLocalizedString("connectionHelpMitmSoftwareTitle",
                                   IDS_CONNECTION_HELP_MITM_SOFTWARE_TITLE);
   html_source->AddLocalizedString("connectionHelpMitmSoftwareDetails",
                                   IDS_CONNECTION_HELP_MITM_SOFTWARE_DETAILS);
+#else
+  html_source->AddBoolean("isWindows", false);
+  html_source->AddString("connectionHelpMitmSoftwareTitle", "");
+  html_source->AddString("connectionHelpMitmSoftwareDetails", "");
+#endif
+
   html_source->AddLocalizedString("connectionHelpShowMore",
                                   IDS_CONNECTION_HELP_SHOW_MORE);
   html_source->AddLocalizedString("connectionHelpShowLess",
