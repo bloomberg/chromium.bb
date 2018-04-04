@@ -29,8 +29,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/about_sync_util.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/syncable/read_transaction.h"
 #include "content/public/browser/browser_thread.h"
@@ -363,6 +365,15 @@ jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->HasUnrecoverableError();
+}
+
+jint ProfileSyncServiceAndroid::GetUploadToGoogleState(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&,
+    jint model_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return static_cast<int>(syncer::GetUploadToGoogleState(
+      sync_service_, static_cast<syncer::ModelType>(model_type)));
 }
 
 jint ProfileSyncServiceAndroid::GetProtocolErrorClientAction(

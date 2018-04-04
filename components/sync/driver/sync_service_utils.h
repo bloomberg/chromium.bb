@@ -20,6 +20,8 @@ bool IsTabSyncEnabledAndUnencrypted(SyncService* sync_service,
 
 // Indicates whether uploading of data to Google is enabled, i.e. the user has
 // given consent to upload this data.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.sync
 enum class UploadState {
   // Syncing is enabled in principle, but the sync service is still
   // initializing, so e.g. we don't know about any auth errors yet.
