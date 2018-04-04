@@ -231,8 +231,8 @@ public class NetworkChangeNotifierTest {
         // Dummy implementations to avoid NullPointerExceptions in default implementations:
 
         @Override
-        public long getDefaultNetId() {
-            return NetId.INVALID;
+        public Network getDefaultNetwork() {
+            return null;
         }
 
         @Override
@@ -710,8 +710,12 @@ public class NetworkChangeNotifierTest {
     public void testConnectivityManagerDelegateDoesNotCrash() {
         ConnectivityManagerDelegate delegate =
                 new ConnectivityManagerDelegate(InstrumentationRegistry.getTargetContext());
-        delegate.getNetworkState(
-                new WifiManagerDelegate(InstrumentationRegistry.getTargetContext()));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            delegate.getNetworkState(null);
+        } else {
+            delegate.getNetworkState(
+                    new WifiManagerDelegate(InstrumentationRegistry.getTargetContext()));
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // getConnectionType(Network) doesn't crash upon invalid Network argument.
             Network invalidNetwork = Helper.netIdToNetwork(NetId.INVALID);
@@ -723,7 +727,7 @@ public class NetworkChangeNotifierTest {
             if (networks.length >= 1) {
                 delegate.getConnectionType(networks[0]);
             }
-            delegate.getDefaultNetId();
+            delegate.getDefaultNetwork();
             NetworkCallback networkCallback = new NetworkCallback();
             NetworkRequest networkRequest = new NetworkRequest.Builder().build();
             delegate.registerNetworkCallback(networkRequest, networkCallback);
@@ -786,8 +790,8 @@ public class NetworkChangeNotifierTest {
             }
 
             @Override
-            long getDefaultNetId() {
-                return Integer.parseInt(mNetworks[1].toString());
+            Network getDefaultNetwork() {
+                return mNetworks[1];
             }
 
             @Override
@@ -803,7 +807,7 @@ public class NetworkChangeNotifierTest {
 
         // Verify that the mock delegate connectivity manager is being used
         // by the network change notifier auto-detector.
-        Assert.assertEquals(333, ncn.getDefaultNetId());
+        Assert.assertEquals(333, demungeNetId(ncn.getDefaultNetId()));
 
         // The api {@link NetworkChangeNotifierAutoDetect#getNetworksAndTypes()}
         // returns an array of a repeated sequence of: (NetID, ConnectionType).
