@@ -506,7 +506,7 @@
 <translation id="2529700525201305165">Restricció dels usuaris que poden iniciar la sessió a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
-<translation id="2536283449105918306">Activa la protecció contra la redirecció de pestanyes</translation>
+<translation id="2536283449105918306">Impedeix que les pàgines redirigeixin a llocs web i obrin pestanyes o finestres noves simultàniament</translation>
 <translation id="2552966063069741410">Zona horària</translation>
 <translation id="2562339630163277285">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats immediats. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà, en el moment de fer la consulta, pel text que l'usuari hagi introduït fins al moment.
 
@@ -2516,11 +2516,11 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
 <translation id="9105265795073104888">Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari. No pots forçar-les a utilitzar un servidor intermediari, sinó que és decisió d'elles.</translation>
-<translation id="9110615239151047025">Activa la protecció contra la redirecció de pestanyes i bloqueja aquests tipus de navegacions.
+<translation id="9110615239151047025">Bloqueja les navegacions en les quals les pàgines redirigeixen a llocs web i obren pestanyes o finestres noves simultàniament.
 
-      Per obtenir més informació sobre la redirecció de pestanyes, consulta la pàgina https://www.chromestatus.com/features/5675755719622656.
-      Si aquesta política es defineix com a "true", <ph name="PRODUCT_NAME" /> bloquejarà les accions de navegació que consideri redireccions de pestanyes.
-      Si aquesta política es defineix com a "false", <ph name="PRODUCT_NAME" /> permetrà que els llocs web facin redireccions de pestanyes.
+      Per obtenir més informació sobre aquest tipus de navegacions, consulta la pàgina https://www.chromestatus.com/features/5675755719622656.
+      Si aquesta política es defineix com a "true", <ph name="PRODUCT_NAME" /> bloquejarà aquestes navegacions.
+      Si aquesta política es defineix com a "false", <ph name="PRODUCT_NAME" /> permetrà que els llocs web facin aquest tipus de navegacions.
       De manera predeterminada, aquesta política es defineix com a "true".</translation>
 <translation id="9112727953998243860">Fitxer de configuració de la impressora d'empresa</translation>
 <translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara "mailto" i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure "%s" i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
