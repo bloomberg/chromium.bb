@@ -10,6 +10,7 @@ script will always roll to the tip of to origin/master.
 """
 
 import argparse
+import collections
 import gclient_eval
 import os
 import re
@@ -127,7 +128,18 @@ def calculate_roll(full_dir, dependency, gclient_dict, roll_to):
   """Calculates the roll for a dependency by processing gclient_dict, and
   fetching the dependency via git.
   """
-  _, _, head = gclient_dict['deps'][dependency].partition('@')
+  if dependency not in gclient_dict['deps']:
+    raise Error('%s is not in the "deps" section of the DEPS file.')
+
+  head = None
+  if isinstance(gclient_dict['deps'][dependency], basestring):
+    _, _, head = gclient_dict['deps'][dependency].partition('@')
+  elif (isinstance(gclient_dict['deps'][dependency], collections.Mapping)
+        and 'url' in gclient_dict['deps'][dependency]):
+    _, _, head = gclient_dict['deps'][dependency]['url'].partition('@')
+  else:
+    raise Error('%s is not a valid git dependency.')
+
   if not head:
     raise Error('%s is unpinned.' % dependency)
   check_call(['git', 'fetch', 'origin', '--quiet'], cwd=full_dir)
