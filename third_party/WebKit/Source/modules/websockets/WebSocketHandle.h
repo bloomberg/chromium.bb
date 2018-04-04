@@ -60,8 +60,8 @@ class WebSocketHandle {
 
   virtual ~WebSocketHandle() = default;
 
-  virtual void Initialize(network::mojom::blink::WebSocketPtr) = 0;
-  virtual void Connect(const KURL&,
+  virtual void Connect(network::mojom::blink::WebSocketPtr,
+                       const KURL&,
                        const Vector<String>& protocols,
                        const KURL& site_for_cookies,
                        const String& user_agent_override,
