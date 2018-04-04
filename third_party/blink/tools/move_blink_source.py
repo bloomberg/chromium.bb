@@ -68,8 +68,19 @@ class FileType(object):
                 return FileType.NONE
             return FileType.BUILD
         if basename.endswith('.html') and re.search(
-                r'third_party/WebKit/LayoutTests/(geolocation-api|installedapp|' +
-                r'media/mediasession|payments|presentation|webshare)', slash_dir):
+                r'third_party/WebKit/LayoutTests/('
+                r'fast/dom/shadow|'
+                r'fast/forms/color|'
+                r'geolocation-api|'
+                r'http/tests/budget|'
+                r'http/tests/credentialmanager|'
+                r'http/tests/security/powerfulFeatureRestrictions|'
+                r'installedapp|'
+                r'media/mediasession|'
+                r'payments|'
+                r'presentation|'
+                r'reporting-observer|'
+                r'webshare)', slash_dir):
             return FileType.LAYOUT_TESTS_WITH_MOJOM
         return FileType.NONE
 
@@ -451,7 +462,8 @@ Bug: 768828
         return self._update_basename(content)
 
     def _update_layout_tests(self, content):
-        return content.replace('file:///gen/third_party/WebKit/', 'file:///gen/third_party/blink/renderer/')
+        return content.replace('file:///gen/third_party/WebKit/public/',
+                               'file:///gen/third_party/blink/public/')
 
     def _update_basename(self, content):
         return self._basename_re.sub(lambda match: self._basename_map[match.group(1)], content)
