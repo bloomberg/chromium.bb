@@ -51,7 +51,6 @@ ReasonForClose BluetoothLowEnergyWeavePacketReceiver::GetReasonForClose() {
 }
 
 ReasonForClose BluetoothLowEnergyWeavePacketReceiver::GetReasonToClose() {
-  DCHECK(state_ == State::ERROR_DETECTED);
   return reason_to_close_;
 }
 
