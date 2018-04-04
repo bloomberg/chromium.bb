@@ -164,11 +164,6 @@ void Platform::Initialize(Platform* platform) {
         base::ThreadTaskRunnerHandle::Get());
   }
 
-  // Pre-create the File thread so multiple threads can call FileTaskRunner() in
-  // a non racy way later.
-  g_platform->file_thread_ = g_platform->CreateThread(
-      WebThreadCreationParams(WebThreadType::kFileThread));
-
   if (BlinkResourceCoordinatorBase::IsEnabled())
     RendererResourceCoordinator::Initialize();
 }
@@ -185,15 +180,6 @@ Platform* Platform::Current() {
 
 WebThread* Platform::MainThread() const {
   return main_thread_;
-}
-
-base::SingleThreadTaskRunner* Platform::FileTaskRunner() const {
-  return file_thread_ ? file_thread_->GetTaskRunner().get() : nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> Platform::BaseFileTaskRunner()
-    const {
-  return file_thread_ ? file_thread_->GetTaskRunner() : nullptr;
 }
 
 service_manager::Connector* Platform::GetConnector() {

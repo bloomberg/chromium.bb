@@ -404,11 +404,6 @@ class CONTENT_EXPORT RenderThreadImpl
   gpu::GpuChannelHost* GetGpuChannel();
 
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
-  // of the thread on which file operations should be run. Must be called
-  // on the renderer's main thread.
-  scoped_refptr<base::TaskRunner> GetFileThreadTaskRunner();
-
-  // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which media operations should be run. Must be called
   // on the renderer's main thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();

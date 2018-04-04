@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -190,7 +191,9 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
 }
 
 base::TaskRunner* HostGlobals::GetFileTaskRunner() {
-  return RenderThreadImpl::current()->GetFileThreadTaskRunner().get();
+  if (!file_task_runner_)
+    file_task_runner_ = base::CreateTaskRunnerWithTraits({base::MayBlock()});
+  return file_task_runner_.get();
 }
 
 ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {
