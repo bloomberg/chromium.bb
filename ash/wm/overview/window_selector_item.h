@@ -185,6 +185,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
 
+  // Checks if this item is current being dragged.
+  bool IsDragItem();
+
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
   // the shadow is hidden.
   void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
