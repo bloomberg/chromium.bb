@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "rlz/lib/rlz_value_store.h"
 
@@ -28,6 +29,9 @@ class RlzValueStoreChromeOS : public RlzValueStore {
   // Ignore |kRlzEmbargoEndDateKey| if it's more than this many days in the
   // future.
   static const int kRlzEmbargoEndDateGarbageDateThresholdDays;
+
+  // The maximum retry times allowed for |SetRlzPingSent|.
+  static const int kMaxRetryCount;
 
   // Creates new instance and synchronously reads data from file.
   explicit RlzValueStoreChromeOS(const base::FilePath& store_path);
@@ -73,6 +77,13 @@ class RlzValueStoreChromeOS : public RlzValueStore {
   bool RemoveValueFromList(const std::string& list_name,
                            const base::Value& value);
 
+  // Set |should_send_rlz_ping| to 0 in RW_VPD. This is a wrapper of
+  // |DebugDaemonClient::SetRlzPingSent|.
+  void SetRlzPingSent();
+
+  // Callback of |SetRlzPingSent|.
+  void OnSetRlzPingSent(bool success);
+
   // In-memory store with RLZ data.
   std::unique_ptr<base::DictionaryValue> rlz_store_;
 
@@ -80,7 +91,12 @@ class RlzValueStoreChromeOS : public RlzValueStore {
 
   bool read_only_;
 
+  // The number of attempts of |SetRlzPingSent| so far.
+  int set_rlz_ping_sent_attempts_;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<RlzValueStoreChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RlzValueStoreChromeOS);
 };

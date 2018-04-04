@@ -284,6 +284,9 @@ void RlzLibTest::SetUp() {
       std::make_unique<chromeos::system::FakeStatisticsProvider>();
   chromeos::system::StatisticsProvider::SetTestProvider(
       statistics_provider_.get());
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueTrue);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -1022,6 +1025,42 @@ TEST_F(RlzLibTest, ClearRlzState) {
 
   RLZTracker::ClearRlzState();
 
+  ExpectEventRecorded(OmniboxFirstSearch(), false);
+}
+
+TEST_F(RlzLibTest, DoNotRecordEventUnlessShouldSendRlzPingKeyIsTrue) {
+  // Verify the event is recorded when |kShouldSendRlzPingKey| is true.
+  std::string should_send_rlz_ping_value;
+  ASSERT_TRUE(statistics_provider_->GetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey, &should_send_rlz_ping_value));
+  ASSERT_EQ(should_send_rlz_ping_value,
+            chromeos::system::kShouldSendRlzPingValueTrue);
+  RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::ChromeOmnibox(),
+                                 rlz_lib::FIRST_SEARCH);
+  ExpectEventRecorded(OmniboxFirstSearch(), true);
+
+  // Verify the event is not recorded when |kShouldSendRlzPingKey| is false.
+  RLZTracker::ClearRlzState();
+  ExpectEventRecorded(OmniboxFirstSearch(), false);
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueFalse);
+  ASSERT_TRUE(statistics_provider_->GetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey, &should_send_rlz_ping_value));
+  ASSERT_EQ(should_send_rlz_ping_value,
+            chromeos::system::kShouldSendRlzPingValueFalse);
+  RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::ChromeOmnibox(),
+                                 rlz_lib::FIRST_SEARCH);
+  ExpectEventRecorded(OmniboxFirstSearch(), false);
+
+  // Verify the event is not recorded when |kShouldSendRlzPingKey| does not
+  // exist.
+  statistics_provider_->ClearMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey);
+  ASSERT_FALSE(statistics_provider_->GetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey, &should_send_rlz_ping_value));
+  RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::ChromeOmnibox(),
+                                 rlz_lib::FIRST_SEARCH);
   ExpectEventRecorded(OmniboxFirstSearch(), false);
 }
 #endif  // defined(OS_CHROMEOS)

@@ -268,4 +268,9 @@ void FakeDebugDaemonClient::StopVmConcierge(VmConciergeCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeDebugDaemonClient::SetRlzPingSent(SetRlzPingSentCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 }  // namespace chromeos
