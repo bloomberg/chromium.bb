@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.not;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_OFFLINE_PAGE;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_READER_MODE;
 
 import android.app.Activity;
@@ -46,6 +47,7 @@ import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -636,6 +638,42 @@ public class CustomTabActivityTest {
         Assert.assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
         Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
         Assert.assertTrue(menu.findItem(R.id.reader_mode_prefs_id).isVisible());
+    }
+
+    /**
+     * Test the entries in app menu for media viewer.
+     */
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testAppMenuForOfflinePage() throws InterruptedException {
+        Intent intent = createMinimalCustomTabIntent();
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_OFFLINE_PAGE);
+        IntentHandler.addTrustedIntentExtras(intent);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        openAppMenuAndAssertMenuShown();
+        Menu menu =
+                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        final int expectedMenuSize = 3;
+
+        Assert.assertNotNull("App menu is not initialized: ", menu);
+        Assert.assertEquals(expectedMenuSize, getActualMenuSize(menu));
+        Assert.assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
+        Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
+        Assert.assertNotNull(menu.findItem(R.id.request_desktop_site_row_menu_id));
+
+        MenuItem icon_row = menu.findItem(R.id.icon_row_menu_id);
+        Assert.assertNotNull(icon_row);
+        Assert.assertNotNull(icon_row.hasSubMenu());
+        SubMenu icon_row_menu = icon_row.getSubMenu();
+        final int expectedIconMenuSize = 4;
+        Assert.assertEquals(expectedIconMenuSize, getVisibleMenuSize(icon_row_menu));
+        Assert.assertNotNull(icon_row_menu.findItem(R.id.forward_menu_id));
+        Assert.assertNotNull(icon_row_menu.findItem(R.id.bookmark_this_page_id));
+        Assert.assertNotNull(icon_row_menu.findItem(R.id.info_menu_id));
+        Assert.assertNotNull(icon_row_menu.findItem(R.id.reload_menu_id));
     }
 
     /**
