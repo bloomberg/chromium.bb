@@ -1663,6 +1663,22 @@ void WebContentsImpl::DidChangeVisibleSecurityState() {
   }
 }
 
+void WebContentsImpl::NotifyPreferencesChanged() {
+  std::set<RenderViewHost*> render_view_host_set;
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    RenderWidgetHost* render_widget_host =
+        node->current_frame_host()->GetRenderWidgetHost();
+    if (!render_widget_host)
+      continue;
+    RenderViewHost* render_view_host = RenderViewHost::From(render_widget_host);
+    if (!render_view_host)
+      continue;
+    render_view_host_set.insert(render_view_host);
+  }
+  for (RenderViewHost* render_view_host : render_view_host_set)
+    render_view_host->OnWebkitPreferencesChanged();
+}
+
 void WebContentsImpl::Stop() {
   for (FrameTreeNode* node : frame_tree_.Nodes())
     node->StopLoading();
@@ -6232,22 +6248,6 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
 
 bool WebContentsImpl::IsShowingContextMenuOnPage() const {
   return showing_context_menu_;
-}
-
-void WebContentsImpl::NotifyPreferencesChanged() {
-  std::set<RenderViewHost*> render_view_host_set;
-  for (FrameTreeNode* node : frame_tree_.Nodes()) {
-    RenderWidgetHost* render_widget_host =
-        node->current_frame_host()->GetRenderWidgetHost();
-    if (!render_widget_host)
-      continue;
-    RenderViewHost* render_view_host = RenderViewHost::From(render_widget_host);
-    if (!render_view_host)
-      continue;
-    render_view_host_set.insert(render_view_host);
-  }
-  for (RenderViewHost* render_view_host : render_view_host_set)
-    render_view_host->OnWebkitPreferencesChanged();
 }
 
 download::DownloadUrlParameters::RequestHeadersType

@@ -480,6 +480,10 @@ class WebContents : public PageNavigator,
   // Invoked when visible security state changes.
   virtual void DidChangeVisibleSecurityState() = 0;
 
+  // Notify this WebContents that the preferences have changed. This will send
+  // an IPC to all the renderer processes associated with this WebContents.
+  virtual void NotifyPreferencesChanged() = 0;
+
   // Commands ------------------------------------------------------------------
 
   // Stop any pending navigation.

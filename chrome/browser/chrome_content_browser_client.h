@@ -78,6 +78,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // update our I/O thread cache of this value.
   static void SetApplicationLocale(const std::string& locale);
 
+  // content::ContentBrowserClient:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   void PostAfterStartupTask(const base::Location& from_here,
@@ -132,7 +133,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldStayInParentProcessForNTP(
       const GURL& url,
       content::SiteInstance* parent_site_instance) override;
-
   bool IsSuitableHost(content::RenderProcessHost* process_host,
                       const GURL& site_url) override;
   bool MayReuseHost(content::RenderProcessHost* process_host) override;
@@ -220,7 +220,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback) override;
-
   void AllowCertificateError(
       content::WebContents* web_contents,
       int cert_error,
@@ -298,7 +297,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OverridePageVisibilityState(
       content::RenderFrameHost* render_frame_host,
       blink::mojom::PageVisibilityState* visibility_state) override;
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
@@ -358,13 +356,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::MemoryCoordinatorDelegate>
   GetMemoryCoordinatorDelegate() override;
   ::rappor::RapporService* GetRapporService() override;
-
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,
                           media::mojom::RemotingSourcePtr source,
                           media::mojom::RemoterRequest request) final;
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
-
   std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
       override;
   base::FilePath GetLoggingFileName(
@@ -391,7 +387,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
-
   bool AllowRenderingMhtmlOverHttp(
       content::NavigationUIData* navigation_ui_data) override;
   bool ShouldForceDownloadResource(const GURL& url,
