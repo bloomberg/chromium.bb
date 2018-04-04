@@ -39,6 +39,9 @@ PersistentHistogramStorage::~PersistentHistogramStorage() {
   PersistentHistogramAllocator* allocator = GlobalHistogramAllocator::Get();
   allocator->UpdateTrackingHistograms();
 
+  if (disabled_)
+    return;
+
   // Stop if the storage base directory has not been properly set.
   if (storage_base_dir_.empty()) {
     LOG(ERROR)
@@ -50,22 +53,28 @@ PersistentHistogramStorage::~PersistentHistogramStorage() {
 
   FilePath storage_dir = storage_base_dir_.AppendASCII(allocator->Name());
 
-  if (storage_dir_create_action_ == StorageDirCreation::kEnable) {
-    // Stop if |storage_dir| does not exist and cannot be created after an
-    // attempt.
-    if (!CreateDirectory(storage_dir)) {
-      LOG(ERROR) << "Could not write \"" << allocator->Name()
-                 << "\" persistent histograms to file as the storage directory "
-                    "cannot be created.";
-      return;
-    }
-  } else if (!DirectoryExists(storage_dir)) {
-    // Stop if |storage_dir| does not exist. That can happen if the product
-    // hasn't been installed yet or if it has been uninstalled.
-    // TODO(chengx): Investigate if there is a need to update setup_main.cc or
-    // test_installer.py so that a LOG(ERROR) statement can be added here
-    // without breaking the test.
-    return;
+  switch (storage_dir_create_action_) {
+    case StorageDirCreation::kEnable:
+      if (!CreateDirectory(storage_dir)) {
+        LOG(ERROR)
+            << "Could not write \"" << allocator->Name()
+            << "\" persistent histograms to file as the storage directory "
+               "cannot be created.";
+        return;
+      }
+      break;
+    case StorageDirCreation::kDisable:
+      if (!DirectoryExists(storage_dir)) {
+        // When the consumer of this class disables storage directory creation
+        // by the class instance, it should ensure the directory's existence if
+        // it's essential.
+        LOG(ERROR)
+            << "Could not write \"" << allocator->Name()
+            << "\" persistent histograms to file as the storage directory "
+               "does not exist.";
+        return;
+      }
+      break;
   }
 
   // Save data using the current time as the filename. The actual filename

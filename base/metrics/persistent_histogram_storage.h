@@ -31,7 +31,8 @@ class BASE_EXPORT PersistentHistogramStorage {
   // well as the leaf directory name for the file to which the histograms are
   // persisted. The string must be ASCII.
   // |storage_dir_create_action| determines that if this instance is
-  // responsible for creating the storage directory.
+  // responsible for creating the storage directory. If kDisable is supplied,
+  // it's the consumer's responsibility to create the storage directory.
   PersistentHistogramStorage(StringPiece allocator_name,
                              StorageDirCreation storage_dir_create_action);
 
@@ -44,6 +45,9 @@ class BASE_EXPORT PersistentHistogramStorage {
     storage_base_dir_ = storage_base_dir;
   }
 
+  // Disables histogram storage.
+  void Disable() { disabled_ = true; }
+
  private:
   // Metrics files are written into directory
   // |storage_base_dir_|/|allocator_name| (see the ctor for allocator_name).
@@ -52,6 +56,11 @@ class BASE_EXPORT PersistentHistogramStorage {
   // A flag indicating if the class instance is responsible for creating the
   // storage directory.
   const StorageDirCreation storage_dir_create_action_;
+
+  // A flag indicating if histogram storage is disabled. It starts with false,
+  // but can be set to true by the caller who decides to throw away its
+  // histogram data.
+  bool disabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentHistogramStorage);
 };

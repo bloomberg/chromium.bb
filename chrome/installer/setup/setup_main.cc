@@ -1306,6 +1306,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
           switches::kProcessType);
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    persistent_histogram_storage.Disable();
     return crash_reporter::RunAsCrashpadHandler(
         *base::CommandLine::ForCurrentProcess(), base::FilePath(),
         switches::kProcessType, switches::kUserDataDir);
@@ -1349,6 +1350,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   base::win::SetupCRT(cmd_line);
 
   const bool is_uninstall = cmd_line.HasSwitch(installer::switches::kUninstall);
+
+  // Disable histogram storage during uninstall since there's neither a
+  // directory in which to write them nor a browser to subsequently upload them.
+  if (is_uninstall)
+    persistent_histogram_storage.Disable();
 
   // Check to make sure current system is Win7 or later. If not, log
   // error message and get out.
