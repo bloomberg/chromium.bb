@@ -174,7 +174,9 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   UnpackApk(args.apk_64bit, tmp_dir_64)
   UnpackApk(args.apk_32bit, tmp_dir_32)
 
-  ignores = ['META-INF', 'AndroidManifest.xml']
+  # TODO(ssid): unwind file should be included in monochrome apk once all the
+  # official builds start including the file. https://crbug.com/819888.
+  ignores = ['META-INF', 'AndroidManifest.xml', 'unwind_cfi']
   if args.ignore_classes_dex:
     ignores += ['classes.dex', 'classes2.dex']
   if args.debug:
