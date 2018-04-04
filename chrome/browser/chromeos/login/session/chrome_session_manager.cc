@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -164,6 +165,9 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     TetherService* tether_service = TetherService::Get(user_profile);
     if (tether_service)
       tether_service->StartTetherIfPossible();
+
+    // Associates AppListClient with the current active profile.
+    AppListServiceImpl::GetInstance()->GetAppListClient();
   }
 
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);

@@ -7,8 +7,10 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -81,7 +83,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
@@ -1961,6 +1964,9 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     profile->GetPrefs()->ClearPref(prefs::kShowSyncSettingsOnSessionStart);
     chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
   }
+
+  // Associates AppListClient with the current active profile.
+  AppListServiceImpl::GetInstance()->GetAppListClient();
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(

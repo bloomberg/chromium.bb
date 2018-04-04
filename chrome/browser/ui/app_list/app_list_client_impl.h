@@ -5,16 +5,33 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_CLIENT_IMPL_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_CLIENT_IMPL_H_
 
+#include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "ash/public/interfaces/app_list.mojom.h"
-#include "ash/public/interfaces/shelf.mojom.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service_observer.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class AppListViewDelegate;
+namespace app_list {
+class SearchController;
+class SearchResourceManager;
+}  // namespace app_list
 
-class AppListClientImpl : public ash::mojom::AppListClient {
+class AppListControllerDelegate;
+class AppListModelUpdater;
+class AppSyncUIStateWatcher;
+class Profile;
+
+class AppListClientImpl : public ash::mojom::AppListClient,
+                          public TemplateURLServiceObserver {
  public:
   AppListClientImpl();
   ~AppListClientImpl() override;
@@ -43,14 +60,47 @@ class AppListClientImpl : public ash::mojom::AppListClient {
   void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
 
+  // Associates this client with the current active user, called when this
+  // client is accessed.
+  void UpdateProfile();
+
+  void set_controller_delegate(AppListControllerDelegate* controller_delegate) {
+    controller_delegate_ = controller_delegate;
+  }
+
   // Flushes all pending mojo call to Ash for testing.
   void FlushMojoForTesting();
 
  private:
-  AppListViewDelegate* GetViewDelegate();
+  // Overridden from TemplateURLServiceObserver:
+  void OnTemplateURLServiceChanged() override;
+
+  // Configures the AppList for the given |profile|.
+  void SetProfile(Profile* profile);
+
+  // Updates the speech webview and start page for the current |profile_|.
+  void SetUpSearchUI();
+
+  // Unowned pointer to the controller delegate.
+  AppListControllerDelegate* controller_delegate_ = nullptr;
+  // Unowned pointer to the associated profile. May change if SetProfile is
+  // called.
+  Profile* profile_ = nullptr;
+  // Unowned pointer to the model updater owned by AppListSyncableService.
+  // Will change if |profile_| changes.
+  AppListModelUpdater* model_updater_ = nullptr;
+
+  std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
+  std::unique_ptr<app_list::SearchController> search_controller_;
+  std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
+
+  ScopedObserver<TemplateURLService, AppListClientImpl>
+      template_url_service_observer_;
 
   mojo::Binding<ash::mojom::AppListClient> binding_;
   ash::mojom::AppListControllerPtr app_list_controller_;
+
+  base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListClientImpl);
 };
