@@ -85,7 +85,7 @@ source_set("freetype_source") {
   # While Chromium itself avoids using this code, any build of Chromium which
   # depends on //third_party/fontconfig:fontconfig with use_bundled_fontconfig
   # will make heavy use of these implementations, so use the best available.
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     sources += [ "src/builds/unix/ftsystem.c" ]
 
     # builds/unix/ftsystem.c directly includes <ftconfig.h> instead of using
