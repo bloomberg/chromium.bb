@@ -10788,6 +10788,28 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Lock screen enabled, trust agent enabled"/>
 </enum>
 
+<enum name="EasyUnlockSetupProgress">
+  <int value="0" label="Showed promo"/>
+  <int value="1" label="Clicked promo"/>
+  <int value="2" label="Dismissed promo"/>
+  <int value="3" label="Launched setup app"/>
+  <int value="4" label="Clicked find phone"/>
+  <int value="5" label="Find phone error"/>
+  <int value="6" label="Server returned eligible devices"/>
+  <int value="7" label="Remote device connected"/>
+  <int value="8" label="Missing secure lock screen"/>
+  <int value="9" label="Clicked check again after missing secure lock screen"/>
+  <int value="10" label="Clicked pair phone"/>
+  <int value="11" label="Pairing error"/>
+  <int value="12" label="Clicked restart setup after paring error"/>
+  <int value="13" label="Pairing complete"/>
+  <int value="14" label="Showed SmartLock for Android promo"/>
+  <int value="15" label="Acknowledged SmartLock for Android promo"/>
+  <int value="16" label="Showed pairing complete"/>
+  <int value="17" label="Clicked try it out"/>
+  <int value="18" label="Clicked done"/>
+</enum>
+
 <enum name="EasyUnlockSetupState">
   <int value="0" label="Success"/>
   <int value="1" label="Scan (initial)"/>
