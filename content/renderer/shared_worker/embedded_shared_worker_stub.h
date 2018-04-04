@@ -42,14 +42,13 @@ class WebApplicationCacheHostImpl;
 
 // A stub class to receive IPC from browser process and talk to
 // blink::WebSharedWorker. Implements blink::WebSharedWorkerClient.
-// This class is self-destruct (no one explicitly owns this), and
-// deletes itself (via private Shutdown() method) when either one of
-// following methods is called by blink::WebSharedWorker:
-// - workerScriptLoadFailed() or
-// - workerContextDestroyed()
+// This class is self-destructed (no one explicitly owns this). It deletes
+// itself when either one of following methods is called by
+// blink::WebSharedWorker:
+// - WorkerScriptLoadFailed() or
+// - WorkerContextDestroyed()
 //
-// In either case the corresponding blink::WebSharedWorker also deletes
-// itself.
+// This class owns blink::WebSharedWorker.
 class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
                                  public mojom::SharedWorker {
  public:
@@ -80,8 +79,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::WebServiceWorkerNetworkProvider*) override;
 
  private:
-  void Shutdown();
-
   // WebSharedWorker will own |channel|.
   void ConnectToChannel(int connection_request_id,
                         blink::MessagePortChannel channel);
@@ -98,7 +95,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   const std::string name_;
   bool running_ = false;
   GURL url_;
-  blink::WebSharedWorker* impl_ = nullptr;
+  std::unique_ptr<blink::WebSharedWorker> impl_;
 
   using PendingChannel =
       std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
@@ -106,6 +103,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   ScopedChildProcessReference process_ref_;
   WebApplicationCacheHostImpl* app_cache_host_ = nullptr;  // Not owned.
+
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };
 

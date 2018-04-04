@@ -34,6 +34,7 @@
 #include "public/web/WebSharedWorker.h"
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/exported/WorkerShadowPage.h"
@@ -61,10 +62,13 @@ class WorkerInspectorProxy;
 // implementation. This is basically accessed on the main thread, but some
 // methods must be called from a worker thread. Such methods are suffixed with
 // *OnWorkerThread or have header comments.
+//
+// Owned by WebSharedWorkerClient.
 class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
                                               public WorkerShadowPage::Client {
  public:
   explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
+  ~WebSharedWorkerImpl() override;
 
   // WorkerShadowPage::Client overrides.
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
@@ -99,8 +103,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void DidTerminateWorkerThread();
 
  private:
-  ~WebSharedWorkerImpl() override;
-
   WorkerThread* GetWorkerThread() { return worker_thread_.get(); }
 
   // Shuts down the worker thread.
@@ -124,6 +126,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   std::unique_ptr<WorkerThread> worker_thread_;
   mojom::blink::WorkerContentSettingsProxyPtrInfo content_settings_info_;
 
+  // |client_| owns |this|.
   WebSharedWorkerClient* client_;
 
   bool asked_to_terminate_ = false;

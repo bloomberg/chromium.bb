@@ -45,9 +45,10 @@ class WebServiceWorkerNetworkProvider;
 // Provides an interface back to the in-page script object for a worker.
 // All functions are expected to be called back on the thread that created
 // the Worker object, unless noted.
-// An instance of this class must outlive or must have the identical lifetime
-// as WebSharedWorker (i.e. must be kept alive until workerScriptLoadFailed()
-// or workerContextDestroyed() is called).
+//
+// An instance of this class must outlive WebSharedWorker (i.e. must be kept
+// alive until WorkerScriptLoadFailed() or WorkerContextDestroyed() is
+// called).
 class WebSharedWorkerClient {
  public:
   virtual void CountFeature(mojom::WebFeature) = 0;

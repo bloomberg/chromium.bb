@@ -31,6 +31,8 @@
 #ifndef WebSharedWorker_h
 #define WebSharedWorker_h
 
+#include <memory>
+
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -48,10 +50,11 @@ class WebURL;
 // This is the interface to a SharedWorker thread.
 class BLINK_EXPORT WebSharedWorker {
  public:
+  virtual ~WebSharedWorker() {}
+
   // Instantiate a WebSharedWorker that interacts with the shared worker.
-  // WebSharedWorkerClient given here must outlive or have the identical
-  // lifetime as this instance.
-  static WebSharedWorker* Create(WebSharedWorkerClient*);
+  // WebSharedWorkerClient given here should own this instance.
+  static std::unique_ptr<WebSharedWorker> Create(WebSharedWorkerClient*);
 
   virtual void StartWorkerContext(
       const WebURL& script_url,

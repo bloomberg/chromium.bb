@@ -156,7 +156,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
-  DCHECK(!impl_);
+  // Destruction closes our connection to the host, triggering the host to
+  // cleanup and notify clients of this worker going away.
 }
 
 void EmbeddedSharedWorkerStub::WorkerReadyForInspection() {
@@ -175,7 +176,7 @@ void EmbeddedSharedWorkerStub::WorkerScriptLoaded() {
 void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
   host_->OnScriptLoadFailed();
   pending_channels_.clear();
-  Shutdown();
+  delete this;
 }
 
 void EmbeddedSharedWorkerStub::CountFeature(blink::mojom::WebFeature feature) {
@@ -187,7 +188,7 @@ void EmbeddedSharedWorkerStub::WorkerContextClosed() {
 }
 
 void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
-  Shutdown();
+  delete this;
 }
 
 void EmbeddedSharedWorkerStub::SelectAppCacheID(long long app_cache_id) {
@@ -288,16 +289,6 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
         web_network_provider->HasControllerServiceWorker());
   }
   return std::move(worker_fetch_context);
-}
-
-void EmbeddedSharedWorkerStub::Shutdown() {
-  // WebSharedWorker must be already deleted in the blink side
-  // when this is called.
-  impl_ = nullptr;
-
-  // This closes our connection to the host, triggering the host to cleanup and
-  // notify clients of this worker going away.
-  delete this;
 }
 
 void EmbeddedSharedWorkerStub::ConnectToChannel(
