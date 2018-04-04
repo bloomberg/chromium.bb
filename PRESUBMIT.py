@@ -1586,7 +1586,7 @@ def _CheckUniquePtr(input_api, output_api):
                   input_api.DEFAULT_BLACK_LIST),
       white_list=(file_inclusion_pattern,))
   return_construct_pattern = input_api.re.compile(
-      r'(=|\breturn)\s*std::unique_ptr<.*?(?<!])>\([^)]+\)')
+      r'(=|\breturn|^)\s*std::unique_ptr<.*?(?<!])>\(([^)]|$)')
   null_construct_pattern = input_api.re.compile(
       r'\b(?<!<)std::unique_ptr<[^>]*>([^(<]*>)?\(\)')
   errors = []
