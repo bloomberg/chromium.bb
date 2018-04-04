@@ -982,8 +982,8 @@ static int prune_two_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
   if (dct_idtx) {
     av1_subtract_plane(x, bsize, 0);
     const struct macroblock_plane *const p = &x->plane[0];
-    const int bw = 4 << (mi_size_wide_log2[bsize]);
-    const int bh = 4 << (mi_size_high_log2[bsize]);
+    const int bw = block_size_wide[bsize];
+    const int bh = block_size_high[bsize];
     prune |= dct_vs_idtx(p->src_diff, bw, bw, bh);
   }
 

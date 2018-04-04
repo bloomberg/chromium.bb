@@ -1911,8 +1911,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
     return this_sad;
   }
 
-  const int bw = 4 << mi_size_wide_log2[bsize];
-  const int bh = 4 << mi_size_high_log2[bsize];
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
   const int search_width = bw << 1;
   const int search_height = bh << 1;
   const int norm_factor = 3 + (bw >> 5);
