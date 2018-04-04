@@ -201,6 +201,15 @@ void MediaControlTimelineElement::RenderBarSegments() {
   }
 
   double current_position = current_time / duration;
+  MediaControlSliderElement::Position before_segment(0, 0);
+  MediaControlSliderElement::Position after_segment(0, 0);
+
+  // The before segment (i.e. what has been played) should be purely be based on
+  // the current time in the modern controls.
+  if (MediaControlsImpl::IsModern())
+    before_segment.width = current_position;
+
+  // Calculate the size of the after segment (i.e. what has been buffered).
   for (unsigned i = 0; i < buffered_time_ranges->length(); ++i) {
     float start = buffered_time_ranges->start(i, ASSERT_NO_EXCEPTION);
     float end = buffered_time_ranges->end(i, ASSERT_NO_EXCEPTION);
@@ -221,34 +230,31 @@ void MediaControlTimelineElement::RenderBarSegments() {
     double end_position = end / duration;
 
     if (MediaControlsImpl::IsModern()) {
-      // Draw highlight to show what we have played.
-      SetBeforeSegmentPosition(MediaControlSliderElement::Position(
-          start_position, current_position - start_position));
-
       // Draw dark grey highlight to show what we have loaded.
-      SetAfterSegmentPosition(MediaControlSliderElement::Position(
-          current_position, end_position - current_position));
+      after_segment.left = current_position;
+      after_segment.width = end_position - current_position;
     } else {
       // Draw highlight to show what we have played.
       if (current_position > start_position) {
-        SetAfterSegmentPosition(MediaControlSliderElement::Position(
-            start_position, current_position - start_position));
+        after_segment.left = start_position;
+        after_segment.width = current_position - start_position;
       }
 
       // Draw dark grey highlight to show what we have loaded.
       if (end_position > current_position) {
-        SetBeforeSegmentPosition(MediaControlSliderElement::Position(
-            current_position, end_position - current_position));
+        before_segment.left = current_position;
+        before_segment.width = end_position - current_position;
       }
     }
 
-    // Return since we've drawn the only buffered range we're going to draw.
-    return;
+    // Break out of the loop since we've drawn the only buffered range
+    // we're going to draw.
+    break;
   }
 
-  // Reset the widths to hide the segments.
-  SetBeforeSegmentPosition(MediaControlSliderElement::Position(0, 0));
-  SetAfterSegmentPosition(MediaControlSliderElement::Position(0, 0));
+  // Update the positions of the segments.
+  SetBeforeSegmentPosition(before_segment);
+  SetAfterSegmentPosition(after_segment);
 }
 
 void MediaControlTimelineElement::Trace(blink::Visitor* visitor) {
