@@ -48,10 +48,22 @@ class GURL;
     shouldOpenExternalURL:(const GURL&)URL;
 
 // Called to retrieve the height of any header that is overlaying on top of the
-// web view. This can be used to implement, for e.g. a toolbar that changes
-// height dynamically. Returning a non-zero height affects the visible frame
-// shown by the CRWWebController. 0.0 is assumed if not implemented.
-- (CGFloat)headerHeightForWebController:(CRWWebController*)webController;
+// native content. This can be used to implement, for e.g. a toolbar that
+// changes height dynamically. Returning a non-zero height affects the visible
+// frame shown by the CRWWebController. 0.0 is assumed if not implemented.
+// TODO(crbug.com/674991) These should be removed when native content is
+// removed.
+- (CGFloat)nativeContentHeaderHeightForWebController:
+    (CRWWebController*)webController;
+
+// Called to retrieve the height of any footer that is overlaying the bottom of
+// the native content. This can be used to implement, for e.g. a toolbar that
+// changes height dynamically. Returning a non-zero height affects the visible
+// frame shown by the CRWWebController. 0.0 is assumed if not implemented.
+// TODO(crbug.com/674991) These should be removed when native content is
+// removed.
+- (CGFloat)nativeContentFooterHeightForWebController:
+    (CRWWebController*)webController;
 
 @end
 

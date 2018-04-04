@@ -106,11 +106,11 @@
 // Convenience getter for the proxy object.
 @property(nonatomic, weak, readonly) CRWWebViewProxyImpl* contentViewProxy;
 
-// Returns |self.bounds| after being inset at the top by the header height
-// returned by the delegate.  This is only used to lay out native controllers,
-// as the header height is already accounted for in the scroll view content
-// insets for other CRWContentViews.
-@property(nonatomic, readonly) CGRect visibleFrame;
+// Returns |self.bounds| after being inset at the top and bottom by the header
+// and footer heights returned by the delegate.  This is only used to lay out
+// native controllers, as the header height is already accounted for in the
+// scroll view content insets for other CRWContentViews.
+@property(nonatomic, readonly) CGRect nativeContentVisibleFrame;
 
 @end
 
@@ -191,10 +191,13 @@
   return [_delegate contentViewProxyForContainerView:self];
 }
 
-- (CGRect)visibleFrame {
-  CGFloat headerHeight = [_delegate headerHeightForContainerView:self];
-  return UIEdgeInsetsInsetRect(self.bounds,
-                               UIEdgeInsetsMake(headerHeight, 0, 0, 0));
+- (CGRect)nativeContentVisibleFrame {
+  CGFloat headerHeight =
+      [_delegate nativeContentHeaderHeightForContainerView:self];
+  CGFloat footerHeight =
+      [_delegate nativeContentFooterHeightForContainerView:self];
+  return UIEdgeInsetsInsetRect(
+      self.bounds, UIEdgeInsetsMake(headerHeight, 0, footerHeight, 0));
 }
 
 #pragma mark Layout
@@ -214,7 +217,7 @@
       [self addSubview:nativeView];
       [nativeView setNeedsUpdateConstraints];
     }
-    nativeView.frame = self.visibleFrame;
+    nativeView.frame = self.nativeContentVisibleFrame;
   }
 
   // transientContentView layout.

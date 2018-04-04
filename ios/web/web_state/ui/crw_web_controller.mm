@@ -2171,9 +2171,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return _webViewProxy;
 }
 
-- (CGFloat)headerHeightForContainerView:
-        (CRWWebControllerContainerView*)containerView {
+- (CGFloat)nativeContentHeaderHeightForContainerView:
+    (CRWWebControllerContainerView*)containerView {
   return [self headerHeight];
+}
+
+- (CGFloat)nativeContentFooterHeightForContainerView:
+    (CRWWebControllerContainerView*)containerView {
+  if (![_delegate respondsToSelector:@selector
+                  (nativeContentFooterHeightForWebController:)])
+    return 0.0f;
+  return [_delegate nativeContentFooterHeightForWebController:self];
 }
 
 #pragma mark -
@@ -3632,9 +3640,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (CGFloat)headerHeight {
-  if (![_delegate respondsToSelector:@selector(headerHeightForWebController:)])
+  if (![_delegate respondsToSelector:@selector
+                  (nativeContentHeaderHeightForWebController:)])
     return 0.0f;
-  return [_delegate headerHeightForWebController:self];
+  return [_delegate nativeContentHeaderHeightForWebController:self];
 }
 
 - (void)updateSSLStatusForCurrentNavigationItem {

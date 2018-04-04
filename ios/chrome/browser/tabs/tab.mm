@@ -525,8 +525,14 @@ NSString* const kTabUrlKey = @"url";
   return YES;
 }
 
-- (CGFloat)headerHeightForWebController:(CRWWebController*)webController {
+- (CGFloat)nativeContentHeaderHeightForWebController:
+    (CRWWebController*)webController {
   return [self.tabHeadersDelegate tabHeaderHeightForTab:self];
+}
+
+- (CGFloat)nativeContentFooterHeightForWebController:
+    (CRWWebController*)webController {
+  return [self.tabHeadersDelegate tabFooterHeightForTab:self];
 }
 
 #pragma mark - Private methods

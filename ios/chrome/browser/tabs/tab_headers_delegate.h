@@ -14,6 +14,9 @@
 // Called to retrieve the height of the header view above |tab|.
 - (CGFloat)tabHeaderHeightForTab:(Tab*)tab;
 
+// Called to retrieve the height of the footer view below |tab|.
+- (CGFloat)tabFooterHeightForTab:(Tab*)tab;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_HEADERS_DELEGATE_H_
