@@ -35,6 +35,7 @@ class InfoBarObserver : public infobars::InfoBarManager::Observer {
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
   void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                          infobars::InfoBar* new_infobar) override;
+  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
 
   void OnNotified(Type type);
 

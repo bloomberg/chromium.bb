@@ -32,6 +32,12 @@ void InfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   OnNotified(Type::kInfoBarReplaced);
 }
 
+void InfoBarObserver::OnManagerShuttingDown(infobars::InfoBarManager* manager) {
+  if (run_loop_.running())
+    run_loop_.Quit();
+  infobar_observer_.Remove(manager);
+}
+
 void InfoBarObserver::OnNotified(Type type) {
   if (type == type_)
     run_loop_.Quit();
