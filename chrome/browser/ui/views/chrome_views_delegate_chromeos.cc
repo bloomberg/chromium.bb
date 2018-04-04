@@ -75,6 +75,12 @@ ChromeViewsDelegate::GetOpacityForInitParams(
 views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
     views::Widget::InitParams* params,
     views::internal::NativeWidgetDelegate* delegate) {
+  // The context should be associated with a root window. If the context has a
+  // null root window (e.g. the context window has no parent) it will trigger
+  // the fallback case below. https://crbug.com/828626 https://crrev.com/230793
+  if (params->context)
+    params->context = params->context->GetRootWindow();
+
   // Classic ash requires a parent or a context that it can use to look up a
   // root window to find a WindowParentingClient. Mash handles window parenting
   // inside ash, see ash::CreateAndParentTopLevelWindow().
