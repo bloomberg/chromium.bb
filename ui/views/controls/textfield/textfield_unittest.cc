@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -31,6 +32,7 @@
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
@@ -711,6 +713,8 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* LOOK UP */));
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
     }
+    EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* EMOJI */));
+    EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
 #endif
 
     EXPECT_EQ(can_undo, menu->IsEnabledAt(menu_index++ /* UNDO */));
@@ -1545,6 +1549,9 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
 
 TEST_F(TextfieldTest, ContextMenuDisplayTest) {
   InitTextfield();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
+
   EXPECT_TRUE(textfield_->context_menu_controller());
   textfield_->SetText(ASCIIToUTF16("hello world"));
   ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);

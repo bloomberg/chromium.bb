@@ -500,6 +500,9 @@ need to be translated for each locale.-->
           Select &amp;All
         </message>
       </if>
+      <message name="IDS_CONTENT_CONTEXT_EMOJI" desc="The context menu item to display the OS-provided emoji picker.">
+        Emoji
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_APP_OK" desc="Used for Ok on buttons">
