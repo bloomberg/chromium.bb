@@ -185,12 +185,6 @@ uint32_t drv_bytes_per_pixel_from_format(uint32_t format, size_t plane)
 	return layout->bytes_per_pixel[plane];
 }
 
-uint32_t drv_bo_get_stride_in_pixels(struct bo *bo)
-{
-	uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(bo->format, 0);
-	return DIV_ROUND_UP(bo->strides[0], bytes_per_pixel);
-}
-
 /*
  * This function returns the stride for a given format, width and plane.
  */

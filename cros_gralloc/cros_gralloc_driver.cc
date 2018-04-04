@@ -90,6 +90,7 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	uint64_t mod;
 	size_t num_planes;
 	uint32_t resolved_format;
+	uint32_t bytes_per_pixel;
 
 	struct bo *bo;
 	struct cros_gralloc_handle *hnd;
@@ -135,7 +136,8 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	hnd->format = drv_bo_get_format(bo);
 	hnd->use_flags[0] = static_cast<uint32_t>(descriptor->use_flags >> 32);
 	hnd->use_flags[1] = static_cast<uint32_t>(descriptor->use_flags);
-	hnd->pixel_stride = drv_bo_get_stride_in_pixels(bo);
+	bytes_per_pixel = drv_bytes_per_pixel_from_format(hnd->format, 0);
+	hnd->pixel_stride = DIV_ROUND_UP(hnd->strides[0], bytes_per_pixel);
 	hnd->magic = cros_gralloc_magic;
 	hnd->droid_format = descriptor->droid_format;
 	hnd->usage = descriptor->producer_usage;
