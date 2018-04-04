@@ -60,6 +60,7 @@ bool IsValidInput(const base::StringPiece& scheme,
     return false;
 
   switch (scheme_type) {
+    case SCHEME_WITH_HOST_AND_PORT:
     case SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION:
       // A URL with |scheme| is required to have the host and port (may be
       // omitted in a serialization if it's the same as the default value).

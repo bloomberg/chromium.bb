@@ -220,6 +220,31 @@ class URL_EXPORT CharsetConverter {
                                 CanonOutput* output) = 0;
 };
 
+// Schemes --------------------------------------------------------------------
+
+// Types of a scheme representing the requirements on the data represented by
+// the authority component of a URL with the scheme.
+enum SchemeType {
+  // The authority component of a URL with the scheme has the form
+  // "username:password@host:port". The username and password entries are
+  // optional; the host may not be empty. The default value of the port can be
+  // omitted in serialization. This type occurs with network schemes like http,
+  // https, and ftp.
+  SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION,
+  // The authority component of a URL with the scheme has the form "host:port",
+  // and does not include username or password. The default value of the port
+  // can be omitted in serialization. Used by inner URLs of filesystem URLs of
+  // origins with network hosts, from which the username and password are
+  // stripped.
+  SCHEME_WITH_HOST_AND_PORT,
+  // The authority component of an URL with the scheme has the form "host", and
+  // does not include port, username, or password. Used when the hosts are not
+  // network addresses; for example, schemes used internally by the browser.
+  SCHEME_WITH_HOST,
+  // A URL with the scheme doesn't have the authority component.
+  SCHEME_WITHOUT_AUTHORITY,
+};
+
 // Whitespace -----------------------------------------------------------------
 
 // Searches for whitespace that should be removed from the middle of URLs, and
@@ -549,12 +574,14 @@ URL_EXPORT void CanonicalizeRef(const base::char16* spec,
 URL_EXPORT bool CanonicalizeStandardURL(const char* spec,
                                         int spec_len,
                                         const Parsed& parsed,
+                                        SchemeType scheme_type,
                                         CharsetConverter* query_converter,
                                         CanonOutput* output,
                                         Parsed* new_parsed);
 URL_EXPORT bool CanonicalizeStandardURL(const base::char16* spec,
                                         int spec_len,
                                         const Parsed& parsed,
+                                        SchemeType scheme_type,
                                         CharsetConverter* query_converter,
                                         CanonOutput* output,
                                         Parsed* new_parsed);
@@ -802,6 +829,7 @@ class Replacements {
 URL_EXPORT bool ReplaceStandardURL(const char* base,
                                    const Parsed& base_parsed,
                                    const Replacements<char>& replacements,
+                                   SchemeType scheme_type,
                                    CharsetConverter* query_converter,
                                    CanonOutput* output,
                                    Parsed* new_parsed);
@@ -809,6 +837,7 @@ URL_EXPORT bool ReplaceStandardURL(
     const char* base,
     const Parsed& base_parsed,
     const Replacements<base::char16>& replacements,
+    SchemeType scheme_type,
     CharsetConverter* query_converter,
     CanonOutput* output,
     Parsed* new_parsed);

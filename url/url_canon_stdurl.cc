@@ -13,9 +13,10 @@ namespace url {
 
 namespace {
 
-template<typename CHAR, typename UCHAR>
+template <typename CHAR, typename UCHAR>
 bool DoCanonicalizeStandardURL(const URLComponentSource<CHAR>& source,
                                const Parsed& parsed,
+                               SchemeType scheme_type,
                                CharsetConverter* query_converter,
                                CanonOutput* output,
                                Parsed* new_parsed) {
@@ -23,10 +24,18 @@ bool DoCanonicalizeStandardURL(const URLComponentSource<CHAR>& source,
   bool success = CanonicalizeScheme(source.scheme, parsed.scheme,
                                     output, &new_parsed->scheme);
 
+  bool scheme_supports_user_info =
+      (scheme_type == SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION);
+  bool scheme_supports_ports =
+      (scheme_type == SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION ||
+       scheme_type == SCHEME_WITH_HOST_AND_PORT);
+
   // Authority (username, password, host, port)
   bool have_authority;
-  if (parsed.username.is_valid() || parsed.password.is_valid() ||
-      parsed.host.is_nonempty() || parsed.port.is_valid()) {
+  if ((scheme_supports_user_info &&
+       (parsed.username.is_valid() || parsed.password.is_valid())) ||
+      parsed.host.is_nonempty() ||
+      (scheme_supports_ports && parsed.port.is_valid())) {
     have_authority = true;
 
     // Only write the authority separators when we have a scheme.
@@ -36,11 +45,14 @@ bool DoCanonicalizeStandardURL(const URLComponentSource<CHAR>& source,
     }
 
     // User info: the canonicalizer will handle the : and @.
-    success &= CanonicalizeUserInfo(source.username, parsed.username,
-                                    source.password, parsed.password,
-                                    output,
-                                    &new_parsed->username,
-                                    &new_parsed->password);
+    if (scheme_supports_user_info) {
+      success &= CanonicalizeUserInfo(
+          source.username, parsed.username, source.password, parsed.password,
+          output, &new_parsed->username, &new_parsed->password);
+    } else {
+      new_parsed->username.reset();
+      new_parsed->password.reset();
+    }
 
     success &= CanonicalizeHost(source.host, parsed.host,
                                 output, &new_parsed->host);
@@ -50,10 +62,14 @@ bool DoCanonicalizeStandardURL(const URLComponentSource<CHAR>& source,
       success = false;
 
     // Port: the port canonicalizer will handle the colon.
-    int default_port = DefaultPortForScheme(
-        &output->data()[new_parsed->scheme.begin], new_parsed->scheme.len);
-    success &= CanonicalizePort(source.port, parsed.port, default_port,
-                                output, &new_parsed->port);
+    if (scheme_supports_ports) {
+      int default_port = DefaultPortForScheme(
+          &output->data()[new_parsed->scheme.begin], new_parsed->scheme.len);
+      success &= CanonicalizePort(source.port, parsed.port, default_port,
+                                  output, &new_parsed->port);
+    } else {
+      new_parsed->port.reset();
+    }
   } else {
     // No authority, clear the components.
     have_authority = false;
@@ -127,23 +143,25 @@ int DefaultPortForScheme(const char* scheme, int scheme_len) {
 bool CanonicalizeStandardURL(const char* spec,
                              int spec_len,
                              const Parsed& parsed,
+                             SchemeType scheme_type,
                              CharsetConverter* query_converter,
                              CanonOutput* output,
                              Parsed* new_parsed) {
   return DoCanonicalizeStandardURL<char, unsigned char>(
-      URLComponentSource<char>(spec), parsed, query_converter,
+      URLComponentSource<char>(spec), parsed, scheme_type, query_converter,
       output, new_parsed);
 }
 
 bool CanonicalizeStandardURL(const base::char16* spec,
                              int spec_len,
                              const Parsed& parsed,
+                             SchemeType scheme_type,
                              CharsetConverter* query_converter,
                              CanonOutput* output,
                              Parsed* new_parsed) {
   return DoCanonicalizeStandardURL<base::char16, base::char16>(
-      URLComponentSource<base::char16>(spec), parsed, query_converter,
-      output, new_parsed);
+      URLComponentSource<base::char16>(spec), parsed, scheme_type,
+      query_converter, output, new_parsed);
 }
 
 // It might be nice in the future to optimize this so unchanged components don't
@@ -158,6 +176,7 @@ bool CanonicalizeStandardURL(const base::char16* spec,
 bool ReplaceStandardURL(const char* base,
                         const Parsed& base_parsed,
                         const Replacements<char>& replacements,
+                        SchemeType scheme_type,
                         CharsetConverter* query_converter,
                         CanonOutput* output,
                         Parsed* new_parsed) {
@@ -165,7 +184,7 @@ bool ReplaceStandardURL(const char* base,
   Parsed parsed(base_parsed);
   SetupOverrideComponents(base, replacements, &source, &parsed);
   return DoCanonicalizeStandardURL<char, unsigned char>(
-      source, parsed, query_converter, output, new_parsed);
+      source, parsed, scheme_type, query_converter, output, new_parsed);
 }
 
 // For 16-bit replacements, we turn all the replacements into UTF-8 so the
@@ -173,6 +192,7 @@ bool ReplaceStandardURL(const char* base,
 bool ReplaceStandardURL(const char* base,
                         const Parsed& base_parsed,
                         const Replacements<base::char16>& replacements,
+                        SchemeType scheme_type,
                         CharsetConverter* query_converter,
                         CanonOutput* output,
                         Parsed* new_parsed) {
@@ -181,7 +201,7 @@ bool ReplaceStandardURL(const char* base,
   Parsed parsed(base_parsed);
   SetupUTF16OverrideComponents(base, replacements, &utf8, &source, &parsed);
   return DoCanonicalizeStandardURL<char, unsigned char>(
-      source, parsed, query_converter, output, new_parsed);
+      source, parsed, scheme_type, query_converter, output, new_parsed);
 }
 
 }  // namespace url

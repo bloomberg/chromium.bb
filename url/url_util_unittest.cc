@@ -309,50 +309,54 @@ TEST_F(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
     const char* out;
   } resolve_non_standard_cases[] = {
       // Resolving a relative path against a non-hierarchical URL should fail.
-    {"scheme:opaque_data", "/path", false, ""},
+      {"scheme:opaque_data", "/path", false, ""},
       // Resolving a relative path against a non-standard authority-based base
       // URL doesn't alter the authority section.
-    {"scheme://Authority/", "../path", true, "scheme://Authority/path"},
+      {"scheme://Authority/", "../path", true, "scheme://Authority/path"},
       // A non-standard hierarchical base is resolved with path URL
       // canonicalization rules.
-    {"data:/Blah:Blah/", "file.html", true, "data:/Blah:Blah/file.html"},
-    {"data:/Path/../part/part2", "file.html", true,
-      "data:/Path/../part/file.html"},
+      {"data:/Blah:Blah/", "file.html", true, "data:/Blah:Blah/file.html"},
+      {"data:/Path/../part/part2", "file.html", true,
+       "data:/Path/../part/file.html"},
+      {"data://text/html,payload", "//user:pass@host:33////payload22", true,
+       "data://user:pass@host:33////payload22"},
       // Path URL canonicalization rules also apply to non-standard authority-
       // based URLs.
-    {"custom://Authority/", "file.html", true,
-      "custom://Authority/file.html"},
-    {"custom://Authority/", "other://Auth/", true, "other://Auth/"},
-    {"custom://Authority/", "../../file.html", true,
-      "custom://Authority/file.html"},
-    {"custom://Authority/path/", "file.html", true,
-      "custom://Authority/path/file.html"},
-    {"custom://Authority:NoCanon/path/", "file.html", true,
-      "custom://Authority:NoCanon/path/file.html"},
+      {"custom://Authority/", "file.html", true,
+       "custom://Authority/file.html"},
+      {"custom://Authority/", "other://Auth/", true, "other://Auth/"},
+      {"custom://Authority/", "../../file.html", true,
+       "custom://Authority/file.html"},
+      {"custom://Authority/path/", "file.html", true,
+       "custom://Authority/path/file.html"},
+      {"custom://Authority:NoCanon/path/", "file.html", true,
+       "custom://Authority:NoCanon/path/file.html"},
       // It's still possible to get an invalid path URL.
-    {"custom://Invalid:!#Auth/", "file.html", false, ""},
+      {"custom://Invalid:!#Auth/", "file.html", false, ""},
       // A path with an authority section gets canonicalized under standard URL
       // rules, even though the base was non-standard.
-    {"content://content.Provider/", "//other.Provider", true,
-      "content://other.provider/"},
+      {"content://content.Provider/", "//other.Provider", true,
+       "content://other.provider/"},
+
       // Resolving an absolute URL doesn't cause canonicalization of the
       // result.
-    {"about:blank", "custom://Authority", true, "custom://Authority"},
+      {"about:blank", "custom://Authority", true, "custom://Authority"},
       // Fragment URLs can be resolved against a non-standard base.
-    {"scheme://Authority/path", "#fragment", true,
-      "scheme://Authority/path#fragment"},
-    {"scheme://Authority/", "#fragment", true, "scheme://Authority/#fragment"},
+      {"scheme://Authority/path", "#fragment", true,
+       "scheme://Authority/path#fragment"},
+      {"scheme://Authority/", "#fragment", true,
+       "scheme://Authority/#fragment"},
       // Resolving should fail if the base URL is authority-based but is
       // missing a path component (the '/' at the end).
-    {"scheme://Authority", "path", false, ""},
+      {"scheme://Authority", "path", false, ""},
       // Test resolving a fragment (only) against any kind of base-URL.
-    {"about:blank", "#id42", true, "about:blank#id42" },
-    {"about:blank", " #id42", true, "about:blank#id42" },
-    {"about:blank#oldfrag", "#newfrag", true, "about:blank#newfrag" },
+      {"about:blank", "#id42", true, "about:blank#id42"},
+      {"about:blank", " #id42", true, "about:blank#id42"},
+      {"about:blank#oldfrag", "#newfrag", true, "about:blank#newfrag"},
       // A surprising side effect of allowing fragments to resolve against
       // any URL scheme is we might break javascript: URLs by doing so...
-    {"javascript:alert('foo#bar')", "#badfrag", true,
-      "javascript:alert('foo#badfrag" },
+      {"javascript:alert('foo#bar')", "#badfrag", true,
+       "javascript:alert('foo#badfrag"},
       // In this case, the backslashes will not be canonicalized because it's a
       // non-standard URL, but they will be treated as a path separators,
       // giving the base URL here a path of "\".
@@ -361,8 +365,7 @@ TEST_F(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
       // either "aaa://a\" or "aaa://a/" since the path is being replaced with
       // the "current directory". But in the context of resolving on data URLs,
       // adding the requested dot doesn't seem wrong either.
-    {"aaa://a\\", "aaa:.", true, "aaa://a\\." }
-  };
+      {"aaa://a\\", "aaa:.", true, "aaa://a\\."}};
 
   for (size_t i = 0; i < arraysize(resolve_non_standard_cases); i++) {
     const ResolveRelativeCase& test_data = resolve_non_standard_cases[i];

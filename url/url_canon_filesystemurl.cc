@@ -43,16 +43,22 @@ bool DoCanonicalizeFileSystemURL(const CHAR* spec,
     return false;
 
   bool success = true;
+  SchemeType inner_scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
   if (CompareSchemeComponent(spec, inner_parsed->scheme, url::kFileScheme)) {
     new_inner_parsed.scheme.begin = output->length();
     output->Append("file://", 7);
     new_inner_parsed.scheme.len = 4;
     success &= CanonicalizePath(spec, inner_parsed->path, output,
                                 &new_inner_parsed.path);
-  } else if (IsStandard(spec, inner_parsed->scheme)) {
-    success = CanonicalizeStandardURL(spec, parsed.inner_parsed()->Length(),
-                                      *parsed.inner_parsed(), charset_converter,
-                                      output, &new_inner_parsed);
+  } else if (GetStandardSchemeType(spec, inner_parsed->scheme,
+                                   &inner_scheme_type)) {
+    if (inner_scheme_type == SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION) {
+      // Strip out the user information from the inner URL, if any.
+      inner_scheme_type = SCHEME_WITH_HOST_AND_PORT;
+    }
+    success = CanonicalizeStandardURL(
+        spec, parsed.inner_parsed()->Length(), *parsed.inner_parsed(),
+        inner_scheme_type, charset_converter, output, &new_inner_parsed);
   } else {
     // TODO(ericu): The URL is wrong, but should we try to output more of what
     // we were given?  Echoing back filesystem:mailto etc. doesn't seem all that

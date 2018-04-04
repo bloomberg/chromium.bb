@@ -31,7 +31,7 @@ const SchemeWithType kStandardURLSchemes[] = {
     {kHttpScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
     // Yes, file URLs can have a hostname, so file URLs should be handled as
     // "standard". File URLs never have a port as specified by the SchemeType
-    // field. Unlike other SCHEME_WITH_HOST schemes, the 'host' in a file
+    // field.  Unlike other SCHEME_WITH_HOST schemes, the 'host' in a file
     // URL may be empty, a behavior which is special-cased during
     // canonicalization.
     {kFileScheme, SCHEME_WITH_HOST},
@@ -244,7 +244,7 @@ bool DoCanonicalize(const CHAR* spec,
   // This is the parsed version of the input URL, we have to canonicalize it
   // before storing it in our object.
   bool success;
-  SchemeType unused_scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
+  SchemeType scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
   if (DoCompareSchemeComponent(spec, scheme, url::kFileScheme)) {
     // File URLs are special.
     ParseFileURL(spec, spec_len, &parsed_input);
@@ -257,10 +257,10 @@ bool DoCanonicalize(const CHAR* spec,
                                         charset_converter, output,
                                         output_parsed);
 
-  } else if (DoIsStandard(spec, scheme, &unused_scheme_type)) {
+  } else if (DoIsStandard(spec, scheme, &scheme_type)) {
     // All "normal" URLs.
     ParseStandardURL(spec, spec_len, &parsed_input);
-    success = CanonicalizeStandardURL(spec, spec_len, parsed_input,
+    success = CanonicalizeStandardURL(spec, spec_len, parsed_input, scheme_type,
                                       charset_converter, output, output_parsed);
 
   } else if (DoCompareSchemeComponent(spec, scheme, url::kMailToScheme)) {
@@ -442,10 +442,10 @@ bool DoReplaceComponents(const char* spec,
     return ReplaceFileSystemURL(spec, parsed, replacements, charset_converter,
                                 output, out_parsed);
   }
-  SchemeType unused_scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
-  if (DoIsStandard(spec, parsed.scheme, &unused_scheme_type)) {
-    return ReplaceStandardURL(spec, parsed, replacements, charset_converter,
-                              output, out_parsed);
+  SchemeType scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
+  if (DoIsStandard(spec, parsed.scheme, &scheme_type)) {
+    return ReplaceStandardURL(spec, parsed, replacements, scheme_type,
+                              charset_converter, output, out_parsed);
   }
   if (DoCompareSchemeComponent(spec, parsed.scheme, url::kMailToScheme)) {
     return ReplaceMailtoURL(spec, parsed, replacements, output, out_parsed);
@@ -641,6 +641,12 @@ bool IsStandard(const char* spec, const Component& scheme) {
 }
 
 bool GetStandardSchemeType(const char* spec,
+                           const Component& scheme,
+                           SchemeType* type) {
+  return DoIsStandard(spec, scheme, type);
+}
+
+bool GetStandardSchemeType(const base::char16* spec,
                            const Component& scheme,
                            SchemeType* type) {
   return DoIsStandard(spec, scheme, type);
