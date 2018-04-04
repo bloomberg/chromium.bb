@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -213,7 +214,8 @@ class TranslateManagerRenderViewHostTest
   TranslateManagerRenderViewHostTest()
       : pref_callback_(
             base::Bind(&TranslateManagerRenderViewHostTest::OnPreferenceChanged,
-                       base::Unretained(this))) {}
+                       base::Unretained(this))),
+        infobar_observer_(this) {}
 
 #if !defined(USE_AURA)
   // Ensure that we are testing under the bubble UI.
@@ -450,6 +452,10 @@ class TranslateManagerRenderViewHostTest
     removed_infobars_.insert(infobar->delegate());
   }
 
+  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override {
+    infobar_observer_.Remove(manager);
+  }
+
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
 
  protected:
@@ -476,11 +482,11 @@ class TranslateManagerRenderViewHostTest
         ->translate_driver()
         .set_translate_max_reload_attempts(0);
 
-    infobar_service()->AddObserver(this);
+    infobar_observer_.Add(infobar_service());
   }
 
   virtual void TearDown() {
-    infobar_service()->RemoveObserver(this);
+    infobar_observer_.Remove(infobar_service());
 
     ChromeRenderViewHostTestHarness::TearDown();
     TranslateService::ShutdownForTesting();
@@ -541,6 +547,9 @@ class TranslateManagerRenderViewHostTest
 
   std::unique_ptr<MockTranslateBubbleFactory> bubble_factory_;
   FakePageImpl fake_page_;
+
+  ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
+      infobar_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostTest);
 };

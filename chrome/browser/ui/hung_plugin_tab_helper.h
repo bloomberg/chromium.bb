@@ -49,6 +49,7 @@ class HungPluginTabHelper
 
   // infobars::InfoBarManager::Observer:
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
+  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
 
   // Called by an infobar when the user selects to kill the plugin.
   void KillPlugin(int child_id);

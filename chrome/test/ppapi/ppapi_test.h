@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/test/javascript_test_observer.h"
@@ -66,6 +67,7 @@ class PPAPITestBase : public InProcessBrowserTest {
    private:
     // infobars::InfoBarManager::Observer:
     void OnInfoBarAdded(infobars::InfoBar* infobar) override;
+    void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
 
     InfoBarService* GetInfoBarService();
 
@@ -74,6 +76,9 @@ class PPAPITestBase : public InProcessBrowserTest {
     PPAPITestBase* test_base_;
     bool expecting_infobar_;
     bool should_accept_;
+
+    ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
+        infobar_observer_;
   };
 
   // Runs the test for a tab given the tab that's already navigated to the
