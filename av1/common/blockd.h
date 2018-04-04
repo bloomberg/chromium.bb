@@ -35,21 +35,12 @@ extern "C" {
 
 #define MAX_MB_PLANE 3
 
-// Set COMPOUND_DIFFWTD_TYPE to one of the three
-// 0: Uniform
-// 1: Difference weighted
-#define COMPOUND_DIFFWTD_TYPE 1
 #define MAX_DIFFWTD_MASK_BITS 1
 
 // DIFFWTD_MASK_TYPES should not surpass 1 << MAX_DIFFWTD_MASK_BITS
 typedef enum {
-#if COMPOUND_DIFFWTD_TYPE == 0
-  UNIFORM_45 = 0,
-  UNIFORM_45_INV,
-#elif COMPOUND_DIFFWTD_TYPE == 1
   DIFFWTD_38 = 0,
   DIFFWTD_38_INV,
-#endif  // COMPOUND_DIFFWTD_TYPE
   DIFFWTD_MASK_TYPES,
 } DIFFWTD_MASK_TYPE;
 

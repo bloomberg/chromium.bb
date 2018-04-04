@@ -301,52 +301,6 @@ const uint8_t *av1_get_compound_type_mask(
   }
 }
 
-#if COMPOUND_DIFFWTD_TYPE == 0
-static void uniform_mask(uint8_t *mask, int which_inverse, BLOCK_SIZE sb_type,
-                         int h, int w, int mask_val) {
-  int i, j;
-  int block_stride = block_size_wide[sb_type];
-  for (i = 0; i < h; ++i)
-    for (j = 0; j < w; ++j) {
-      mask[i * block_stride + j] =
-          which_inverse ? AOM_BLEND_A64_MAX_ALPHA - mask_val : mask_val;
-    }
-}
-
-void build_compound_diffwtd_mask(uint8_t *mask, DIFFWTD_MASK_TYPE mask_type,
-                                 const uint8_t *src0, int src0_stride,
-                                 const uint8_t *src1, int src1_stride,
-                                 BLOCK_SIZE sb_type, int h, int w) {
-  (void)src0;
-  (void)src1;
-  (void)src0_stride;
-  (void)src1_stride;
-  switch (mask_type) {
-    case UNIFORM_45: uniform_mask(mask, 0, sb_type, h, w, 45); break;
-    case UNIFORM_45_INV: uniform_mask(mask, 1, sb_type, h, w, 45); break;
-    default: assert(0);
-  }
-}
-
-void build_compound_diffwtd_mask_highbd(uint8_t *mask,
-                                        DIFFWTD_MASK_TYPE mask_type,
-                                        const uint8_t *src0, int src0_stride,
-                                        const uint8_t *src1, int src1_stride,
-                                        BLOCK_SIZE sb_type, int h, int w,
-                                        int bd) {
-  (void)src0;
-  (void)src1;
-  (void)src0_stride;
-  (void)src1_stride;
-  (void)bd;
-  switch (mask_type) {
-    case UNIFORM_45: uniform_mask(mask, 0, sb_type, h, w, 45); break;
-    case UNIFORM_45_INV: uniform_mask(mask, 1, sb_type, h, w, 45); break;
-    default: assert(0);
-  }
-}
-
-#elif COMPOUND_DIFFWTD_TYPE == 1
 #define DIFF_FACTOR 16
 
 static void diffwtd_mask_d32(uint8_t *mask, int which_inverse, int mask_base,
@@ -458,7 +412,6 @@ void build_compound_diffwtd_mask_highbd(uint8_t *mask,
     default: assert(0);
   }
 }
-#endif  // COMPOUND_DIFFWTD_TYPE
 
 static void init_wedge_master_masks() {
   int i, j;
