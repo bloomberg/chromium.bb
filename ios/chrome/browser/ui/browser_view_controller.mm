@@ -1021,11 +1021,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _snackbarCoordinator.dispatcher = _dispatcher;
     [_snackbarCoordinator start];
 
-    _downloadManagerCoordinator =
-        [[DownloadManagerCoordinator alloc] initWithBaseViewController:self];
-    _downloadManagerCoordinator.presenter =
-        [[VerticalAnimationContainer alloc] init];
-
     _storeKitCoordinator =
         [[StoreKitCoordinator alloc] initWithBaseViewController:self];
 
@@ -1560,6 +1555,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.primaryToolbarCoordinator = nil;
   [self.secondaryToolbarCoordinator stop];
   self.secondaryToolbarCoordinator = nil;
+  [_downloadManagerCoordinator stop];
+  _downloadManagerCoordinator = nil;
   self.toolbarInterface = nil;
   self.tabStripView = nil;
   _infoBarContainer = nil;
@@ -2236,6 +2233,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _qrScannerCoordinator.loadProvider =
       [self.primaryToolbarCoordinator QRScannerResultLoader];
   _qrScannerCoordinator.presentationProvider = self;
+
+  _downloadManagerCoordinator =
+      [[DownloadManagerCoordinator alloc] initWithBaseViewController:self];
+  _downloadManagerCoordinator.webStateList = [_model webStateList];
+  _downloadManagerCoordinator.presenter =
+      [[VerticalAnimationContainer alloc] init];
 
   if (IsUIRefreshPhase1Enabled()) {
     self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
