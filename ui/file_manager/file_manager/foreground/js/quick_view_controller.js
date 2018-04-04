@@ -458,6 +458,8 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
         });
         params.browsable = browsable;
         params.contentUrl = browsable ? URL.createObjectURL(file) : '';
+        if (params.subtype == 'PDF')
+          params.contentUrl += '#view=Fit';
         return params;
       }.bind(this))
       .catch(function(e) {
