@@ -4986,29 +4986,6 @@ TEST_P(ParameterizedWebFrameTest, GetContentAsPlainText) {
   EXPECT_EQ("Hello world", text.Utf8());
 }
 
-// Verifies that ChromeRenderFrameObserver::CapturePageText can get page text
-// with WebFrameContentDumper::DeprecatedDumpFrameTreeAsText() in dirty layout.
-TEST_P(ParameterizedWebFrameTest, CapturePageTextWithDirtyLayout) {
-  FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank");
-
-  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
-  Document* document = frame->GetDocument();
-  Element* body = document->body();
-
-  // Change the document innerHTML, which dirties layout.
-  const char* new_html = "<div>Foo bar</div><div></div>baz";
-  body->SetInnerHTMLFromString(new_html);
-
-  // Verifies that text capturing works on dirty layout.
-  // Note that we must call the deprecated function here to simulate the
-  // behavior of ChromeRenderFrameObserver::CapturePageText().
-  EXPECT_TRUE(document->NeedsLayoutTreeUpdate());
-  EXPECT_EQ(
-      "Foo barbaz",
-      WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(frame, 12).Utf8());
-}
-
 TEST_P(ParameterizedWebFrameTest, GetFullHtmlOfPage) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("about:blank");
