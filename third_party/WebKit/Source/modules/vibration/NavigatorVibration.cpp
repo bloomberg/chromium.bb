@@ -23,6 +23,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
+#include "core/frame/Intervention.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -81,7 +82,6 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 
   if (!frame->HasBeenActivated()) {
     String message;
-    MessageLevel level = kErrorMessageLevel;
     if (frame->IsCrossOriginSubframe()) {
       message =
           "Blocked call to navigator.vibrate inside a cross-origin "
@@ -94,11 +94,8 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
           "https://www.chromestatus.com/feature/5644273861001216.";
     }
 
-    if (level == kErrorMessageLevel) {
-      frame->DomWindow()->GetFrameConsole()->AddMessage(
-          ConsoleMessage::Create(kInterventionMessageSource, level, message));
-      return false;
-    }
+    Intervention::GenerateReport(frame, message);
+    return false;
   }
 
   return NavigatorVibration::From(navigator).Controller(*frame)->Vibrate(
