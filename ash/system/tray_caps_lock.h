@@ -9,8 +9,6 @@
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 
-class PrefRegistrySimple;
-
 namespace views {
 class View;
 }
@@ -23,9 +21,6 @@ class TrayCapsLock : public TrayImageItem, public ImeController::Observer {
  public:
   explicit TrayCapsLock(SystemTray* system_tray);
   ~TrayCapsLock() override;
-
-  // See Shell::RegisterProfilePrefs().
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   // Overridden from ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override;
@@ -40,7 +35,6 @@ class TrayCapsLock : public TrayImageItem, public ImeController::Observer {
   CapsLockDefaultView* default_;
 
   bool caps_lock_enabled_;
-  bool message_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayCapsLock);
 };

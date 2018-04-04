@@ -81,6 +81,7 @@
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
+#include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_notification_controller.h"
@@ -395,7 +396,7 @@ void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry, for_test);
-  TrayCapsLock::RegisterProfilePrefs(registry, for_test);
+  CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -783,6 +784,7 @@ Shell::~Shell() {
 
   screen_pinning_controller_.reset();
 
+  caps_lock_notification_controller_.reset();
   resolution_notification_controller_.reset();
   screen_security_notification_controller_.reset();
   screenshot_controller_.reset();
@@ -893,6 +895,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
     night_light_controller_ = std::make_unique<NightLightController>();
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
+  caps_lock_notification_controller_ =
+      std::make_unique<CapsLockNotificationController>();
   detachable_base_handler_ = std::make_unique<DetachableBaseHandler>(this);
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
