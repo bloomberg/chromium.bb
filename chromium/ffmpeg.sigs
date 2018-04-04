@@ -60,6 +60,7 @@ int av_image_check_size(unsigned int w, unsigned int h, int log_offset, void *lo
 AVBufferRef *av_buffer_create(uint8_t *data, int size, AVFreeOperation free, void *opaque, int flags);
 void *av_buffer_get_opaque(const AVBufferRef *buf);
 int av_get_cpu_flags(void);
+void av_force_cpu_flags(int flags);
 void av_max_alloc(size_t max);
 int av_strerror(int errnum, char *errbuf, size_t errbuf_size);
 AVFrame *av_frame_clone(const AVFrame *src);
