@@ -64,7 +64,7 @@ public interface VrShell extends VrDialogManager, VrToastManager {
     /**
      * Requests to exit VR.
      */
-    void requestToExitVr(@UiUnsupportedMode int reason);
+    void requestToExitVr(@UiUnsupportedMode int reason, boolean showExitPromptBeforeDoff);
 
     /**
      *  Triggers VrShell to navigate forward.

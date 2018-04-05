@@ -184,6 +184,7 @@ public class VrShellDelegate
     // Listener to be called once we exited VR due to to an unsupported mode, e.g. the user clicked
     // the URL bar security icon.
     private OnExitVrRequestListener mOnExitVrRequestListener;
+    private Runnable mPendingExitVrRequest;
     private boolean mExitedDueToUnsupportedMode;
     private boolean mExitingCct;
     private boolean mPaused;
@@ -365,6 +366,11 @@ public class VrShellDelegate
         sVrModeObservers.remove(observer);
     }
 
+    public static void forceExitVrImmediately() {
+        if (sInstance == null) return;
+        sInstance.shutdownVr(true, true);
+    }
+
     /**
      * See {@link Activity#onActivityResult}.
      */
@@ -521,6 +527,35 @@ public class VrShellDelegate
         }
     }
 
+    public static void requestToExitVrForSearchEnginePromoDialog(
+            OnExitVrRequestListener listener, Activity activity) {
+        // When call site requests to exit VR, depend on the timing, Chrome may not in VR yet
+        // (Chrome only enter VR after onNewIntentWithNative is called in the cold start case).
+        // While not in VR, calling requestToExitVr would immediately notify listener that exit VR
+        // succeed (without showing DOFF screen). If call site decide to show 2D UI when exit VR
+        // succeeded, it leads to case that 2D UI is showing on top of VR when Chrome eventually
+        // enters VR. To prevent this from happening, we set mPendingExitVrRequest which should be
+        // executed at runPendingExitVrTask. runPendingExitVrTask is called after it is safe to
+        // request exit VR.
+        if (isInVr()) {
+            sInstance.requestToExitVrInternal(
+                    listener, UiUnsupportedMode.SEARCH_ENGINE_PROMO, false);
+        } else {
+            // Making sure that we response to this request as it is very important that search
+            // engine promo dialog isn't ignored due to VR.
+            assert VrIntentUtils.isVrIntent(activity.getIntent());
+            VrShellDelegate instance = getInstance();
+            if (instance == null) {
+                listener.onDenied();
+                return;
+            }
+            sInstance.mPendingExitVrRequest = () -> {
+                sInstance.requestToExitVrInternal(
+                        listener, UiUnsupportedMode.SEARCH_ENGINE_PROMO, false);
+            };
+        }
+    }
+
     public static void requestToExitVr(OnExitVrRequestListener listener) {
         requestToExitVr(listener, UiUnsupportedMode.GENERIC_UNSUPPORTED_FEATURE);
     }
@@ -544,7 +579,7 @@ public class VrShellDelegate
             listener.onSucceeded();
             return;
         }
-        sInstance.requestToExitVrInternal(listener, reason);
+        sInstance.requestToExitVrInternal(listener, reason, true);
     }
 
     /**
@@ -1350,6 +1385,20 @@ public class VrShellDelegate
                 }
             }
         }
+        // If canceling entry animation started, the activity is paused first and then expect a
+        // onResume is called next. We don't want to disrupt this process by calling
+        // runPendingExitVrTask which will show DOFF sceeen. DOFF might trigger onStop before
+        // onResume which will crash Chrome. So if we know that we are canceling animation, we don't
+        // call runPendingExitVrTask.
+        if (!mCancellingEntryAnimation) {
+            runPendingExitVrTask();
+        }
+    }
+
+    private void runPendingExitVrTask() {
+        if (mPendingExitVrRequest == null) return;
+        mPendingExitVrRequest.run();
+        mPendingExitVrRequest = null;
     }
 
     @Override
@@ -1490,8 +1539,8 @@ public class VrShellDelegate
         return ENTER_VR_REQUESTED;
     }
 
-    private void requestToExitVrInternal(
-            OnExitVrRequestListener listener, @UiUnsupportedMode int reason) {
+    private void requestToExitVrInternal(OnExitVrRequestListener listener,
+            @UiUnsupportedMode int reason, boolean showExitPromptBeforeDoff) {
         assert listener != null;
         // If we are currently processing another request, deny the request.
         if (mOnExitVrRequestListener != null) {
@@ -1499,8 +1548,8 @@ public class VrShellDelegate
             return;
         }
         mOnExitVrRequestListener = listener;
-        mShowingExitVrPrompt = true;
-        mVrShell.requestToExitVr(reason);
+        mShowingExitVrPrompt = showExitPromptBeforeDoff;
+        mVrShell.requestToExitVr(reason, showExitPromptBeforeDoff);
     }
 
     private void exitWebVRAndClearState() {
@@ -1606,7 +1655,12 @@ public class VrShellDelegate
             });
         }
 
-        mCancellingEntryAnimation = false;
+        if (mCancellingEntryAnimation) {
+            // If we know this onResume is called after cancel animation finished, it is safe to
+            // request exit VR and show DOFF.
+            runPendingExitVrTask();
+            mCancellingEntryAnimation = false;
+        }
 
         if (mEnterVrOnStartup) {
             // This means that Chrome was started with a VR intent, so we should enter VR.

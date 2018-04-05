@@ -839,6 +839,9 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
       Java_VrShellImpl_onNeedsKeyboardUpdate(env, j_vr_shell_);
       return;
     }
+    // kSearchEnginePromo should directly DOFF without showing a promo. So it
+    // should never be used from VR ui thread.
+    case UiUnsupportedMode::kSearchEnginePromo:
     case UiUnsupportedMode::kCount:
       NOTREACHED();  // Should never be used as a mode.
       return;
