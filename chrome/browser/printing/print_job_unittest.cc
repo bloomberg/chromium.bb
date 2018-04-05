@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -91,12 +90,11 @@ TEST(PrintJobTest, SimplePrint) {
   // Test the multi-threaded nature of PrintJob to make sure we can use it with
   // known lifetime.
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  content::NotificationRegistrar registrar_;
+  content::TestBrowserThreadBundle thread_bundle;
+  content::NotificationRegistrar registrar;
   TestPrintNotificationObserver observer;
-  registrar_.Add(&observer,
-                 content::NOTIFICATION_ALL,
-                 content::NotificationService::AllSources());
+  registrar.Add(&observer, content::NOTIFICATION_ALL,
+                content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
   EXPECT_TRUE(job->RunsTasksInCurrentSequence());
@@ -116,7 +114,7 @@ TEST(PrintJobTest, SimplePrint) {
 
 TEST(PrintJobTest, SimplePrintLateInit) {
   volatile bool check = false;
-  base::MessageLoop current;
+  content::TestBrowserThreadBundle thread_bundle;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
   job = nullptr;
   EXPECT_TRUE(check);
