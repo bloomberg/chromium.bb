@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.content.Context;
 import android.net.http.HttpResponseCache;
 import android.support.annotation.VisibleForTesting;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.URL;
@@ -27,6 +28,8 @@ import javax.net.ssl.HttpsURLConnection;
  * using {@link Builder}.
  */
 public abstract class CronetEngine {
+    private static final String TAG = CronetEngine.class.getSimpleName();
+
     /**
      * A builder for {@link CronetEngine}s, which allows runtime configuration of
      * {@code CronetEngine}. Configuration options are set on the builder and
@@ -320,7 +323,13 @@ public abstract class CronetEngine {
         private static ICronetEngineBuilder createBuilderDelegate(Context context) {
             List<CronetProvider> providerList =
                     getEnabledCronetProviders(context, CronetProvider.getAllProviders(context));
-            return providerList.get(0).createBuilder().mBuilderDelegate;
+            CronetProvider provider = providerList.get(0);
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG,
+                        String.format("Using '%s' provider for creating CronetEngine.Builder.",
+                                provider));
+            }
+            return provider.createBuilder().mBuilderDelegate;
         }
 
         /**
