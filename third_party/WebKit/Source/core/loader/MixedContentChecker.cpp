@@ -143,6 +143,38 @@ const char* RequestContextName(WebURLRequest::RequestContext context) {
   return "resource";
 }
 
+// TODO(nhiroki): Consider adding interfaces for Settings/WorkerSettings and
+// ContentSettingsClient/WorkerContentSettingsClient to avoid using C++
+// template.
+template <typename SettingsType, typename SettingsClientType>
+bool IsWebSocketAllowedImpl(ExecutionContext* execution_context,
+                            SecurityContext* security_context,
+                            const SecurityOrigin* security_origin,
+                            SettingsType* settings,
+                            SettingsClientType* settings_client,
+                            const KURL& url) {
+  UseCounter::Count(execution_context, WebFeature::kMixedContentPresent);
+  UseCounter::Count(execution_context, WebFeature::kMixedContentWebSocket);
+  if (ContentSecurityPolicy* policy =
+          security_context->GetContentSecurityPolicy()) {
+    policy->ReportMixedContent(url,
+                               ResourceRequest::RedirectStatus::kNoRedirect);
+  }
+
+  // If we're in strict mode, we'll automagically fail everything, and
+  // intentionally skip the client checks in order to prevent degrading the
+  // site's security UI.
+  bool strict_mode =
+      security_context->GetInsecureRequestPolicy() & kBlockAllMixedContent ||
+      settings->GetStrictMixedContentChecking();
+  if (strict_mode)
+    return false;
+  bool allowed_per_settings =
+      settings && settings->GetAllowRunningOfInsecureContent();
+  return settings_client->AllowRunningInsecureContent(allowed_per_settings,
+                                                      security_origin, url);
+}
+
 }  // namespace
 
 static void MeasureStricterVersionOfIsMixedContent(Frame& frame,
@@ -484,7 +516,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
 
 // static
 void MixedContentChecker::LogToConsoleAboutWebSocket(
-    LocalFrame* frame,
+    ExecutionContext* execution_context,
     const KURL& main_resource_url,
     const KURL& url,
     bool allowed) {
@@ -499,60 +531,65 @@ void MixedContentChecker::LogToConsoleAboutWebSocket(
                 "available over WSS.");
   MessageLevel message_level =
       allowed ? kWarningMessageLevel : kErrorMessageLevel;
-  frame->GetDocument()->AddConsoleMessage(
+  execution_context->AddConsoleMessage(
       ConsoleMessage::Create(kSecurityMessageSource, message_level, message));
 }
 
 // static
-bool MixedContentChecker::ShouldBlockWebSocket(
-    LocalFrame* frame,
-    const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) {
+bool MixedContentChecker::IsWebSocketAllowed(LocalFrame* frame,
+                                             const KURL& url) {
   Frame* mixed_frame = InWhichFrameIsContentMixed(
       frame, network::mojom::RequestContextFrameType::kNone, url, frame);
   if (!mixed_frame)
-    return false;
-
-  UseCounter::Count(frame, WebFeature::kMixedContentPresent);
-  UseCounter::Count(frame, WebFeature::kMixedContentWebSocket);
-  if (ContentSecurityPolicy* policy =
-          frame->GetSecurityContext()->GetContentSecurityPolicy()) {
-    policy->ReportMixedContent(url,
-                               ResourceRequest::RedirectStatus::kNoRedirect);
-  }
+    return true;
 
   Settings* settings = mixed_frame->GetSettings();
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
   ContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
-  LocalFrameClient* client = frame->Client();
-  const SecurityOrigin* security_origin =
-      mixed_frame->GetSecurityContext()->GetSecurityOrigin();
-  bool allowed = false;
+  SecurityContext* security_context = mixed_frame->GetSecurityContext();
+  const SecurityOrigin* security_origin = security_context->GetSecurityOrigin();
 
-  // If we're in strict mode, we'll automagically fail everything, and
-  // intentionally skip the client checks in order to prevent degrading the
-  // site's security UI.
-  bool strict_mode =
-      mixed_frame->GetSecurityContext()->GetInsecureRequestPolicy() &
-          kBlockAllMixedContent ||
-      settings->GetStrictMixedContentChecking();
-  if (!strict_mode) {
-    bool allowed_per_settings =
-        settings && settings->GetAllowRunningOfInsecureContent();
-    allowed = content_settings_client->AllowRunningInsecureContent(
-        allowed_per_settings, security_origin, url);
-  }
-
+  bool allowed = IsWebSocketAllowedImpl(frame->GetDocument(), security_context,
+                                        security_origin, settings,
+                                        content_settings_client, url);
   if (allowed)
-    client->DidRunInsecureContent(security_origin, url);
+    frame->Client()->DidRunInsecureContent(security_origin, url);
 
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    LogToConsoleAboutWebSocket(frame, MainResourceUrlForFrame(mixed_frame), url,
-                               allowed);
+  LogToConsoleAboutWebSocket(
+      frame->GetDocument(), MainResourceUrlForFrame(mixed_frame), url, allowed);
+
+  return allowed;
+}
+
+// static
+bool MixedContentChecker::IsWebSocketAllowed(
+    WorkerGlobalScope* global_scope,
+    WebWorkerFetchContext* worker_fetch_context,
+    const KURL& url) {
+  if (!MixedContentChecker::IsMixedContent(global_scope->GetSecurityOrigin(),
+                                           url)) {
+    return true;
   }
-  return !allowed;
+
+  WorkerSettings* settings = global_scope->GetWorkerSettings();
+  WorkerContentSettingsClient* content_settings_client =
+      WorkerContentSettingsClient::From(*global_scope);
+  SecurityContext* security_context = &global_scope->GetSecurityContext();
+  const SecurityOrigin* security_origin = global_scope->GetSecurityOrigin();
+
+  bool allowed =
+      IsWebSocketAllowedImpl(global_scope, security_context, security_origin,
+                             settings, content_settings_client, url);
+  if (allowed) {
+    worker_fetch_context->DidRunInsecureContent(
+        WebSecurityOrigin(security_origin), url);
+  }
+
+  LogToConsoleAboutWebSocket(global_scope, global_scope->Url(), url, allowed);
+
+  return allowed;
 }
 
 bool MixedContentChecker::IsMixedFormAction(

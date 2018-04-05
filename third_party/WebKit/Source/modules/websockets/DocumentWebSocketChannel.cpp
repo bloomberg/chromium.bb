@@ -206,15 +206,17 @@ bool DocumentWebSocketChannel::Connect(
   if (!handle_)
     return false;
 
+  if (loading_context_->GetFetchContext()
+          ->ShouldBlockWebSocketByMixedContentCheck(url)) {
+    return false;
+  }
+
   // TODO(nhiroki): Remove dependencies on LocalFrame.
   // (https://crbug.com/825740)
   LocalFrame* frame = nullptr;
   if (GetExecutionContext()->IsDocument())
     frame = ToDocument(GetExecutionContext())->GetFrame();
-
   if (frame) {
-    if (MixedContentChecker::ShouldBlockWebSocket(frame, url))
-      return false;
     connection_handle_for_scheduler_ =
         frame->GetFrameScheduler()->OnActiveConnectionCreated();
   }

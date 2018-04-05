@@ -210,6 +210,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
   void CountDeprecation(WebFeature) const override;
+  bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const override;
   bool ShouldBlockFetchByMixedContentCheck(
       WebURLRequest::RequestContext,
       network::mojom::RequestContextFrameType,

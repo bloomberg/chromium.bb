@@ -59,6 +59,9 @@ class MockBaseFetchContext final : public BaseFetchContext {
   bool IsSVGImageChromeClient() const override { return false; }
   void CountUsage(WebFeature) const override {}
   void CountDeprecation(WebFeature) const override {}
+  bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const override {
+    return false;
+  }
   bool ShouldBlockFetchByMixedContentCheck(
       WebURLRequest::RequestContext,
       network::mojom::RequestContextFrameType,

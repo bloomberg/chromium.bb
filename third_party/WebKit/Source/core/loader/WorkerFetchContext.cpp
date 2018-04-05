@@ -157,6 +157,14 @@ void WorkerFetchContext::CountDeprecation(WebFeature feature) const {
   Deprecation::CountDeprecation(global_scope_, feature);
 }
 
+bool WorkerFetchContext::ShouldBlockWebSocketByMixedContentCheck(
+    const KURL& url) const {
+  // Worklets don't support WebSocket.
+  DCHECK(global_scope_->IsWorkerGlobalScope());
+  return !MixedContentChecker::IsWebSocketAllowed(
+      ToWorkerGlobalScope(global_scope_), web_context_.get(), url);
+}
+
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     WebURLRequest::RequestContext request_context,
     network::mojom::RequestContextFrameType frame_type,
