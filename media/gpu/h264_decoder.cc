@@ -110,53 +110,9 @@ bool H264Decoder::InitNonexistingPicture(scoped_refptr<H264Picture> pic,
 }
 
 bool H264Decoder::InitCurrPicture(const H264SliceHeader* slice_hdr) {
-  DCHECK(curr_pic_.get());
-
-  curr_pic_->idr = slice_hdr->idr_pic_flag;
-  if (curr_pic_->idr)
-    curr_pic_->idr_pic_id = slice_hdr->idr_pic_id;
-
-  if (slice_hdr->field_pic_flag) {
-    curr_pic_->field = slice_hdr->bottom_field_flag ? H264Picture::FIELD_BOTTOM
-                                                    : H264Picture::FIELD_TOP;
-  } else {
-    curr_pic_->field = H264Picture::FIELD_NONE;
-  }
-
-  if (curr_pic_->field != H264Picture::FIELD_NONE) {
-    DVLOG(1) << "Interlaced video not supported.";
+  if (!FillH264PictureFromSliceHeader(parser_.GetSPS(curr_sps_id_), *slice_hdr,
+                                      curr_pic_.get())) {
     return false;
-  }
-
-  curr_pic_->nal_ref_idc = slice_hdr->nal_ref_idc;
-  curr_pic_->ref = slice_hdr->nal_ref_idc != 0;
-  // This assumes non-interlaced stream.
-  curr_pic_->frame_num = curr_pic_->pic_num = slice_hdr->frame_num;
-
-  DCHECK_NE(curr_sps_id_, -1);
-  const H264SPS* sps = parser_.GetSPS(curr_sps_id_);
-  if (!sps)
-    return false;
-
-  curr_pic_->pic_order_cnt_type = sps->pic_order_cnt_type;
-  switch (curr_pic_->pic_order_cnt_type) {
-    case 0:
-      curr_pic_->pic_order_cnt_lsb = slice_hdr->pic_order_cnt_lsb;
-      curr_pic_->delta_pic_order_cnt_bottom =
-          slice_hdr->delta_pic_order_cnt_bottom;
-      break;
-
-    case 1:
-      curr_pic_->delta_pic_order_cnt0 = slice_hdr->delta_pic_order_cnt0;
-      curr_pic_->delta_pic_order_cnt1 = slice_hdr->delta_pic_order_cnt1;
-      break;
-
-    case 2:
-      break;
-
-    default:
-      NOTREACHED();
-      return false;
   }
 
   if (!CalculatePicOrderCounts(curr_pic_))
@@ -1200,53 +1156,12 @@ bool H264Decoder::HandleFrameNumGap(int frame_num) {
   return true;
 }
 
-bool H264Decoder::IsNewPrimaryCodedPicture(
-    const H264SliceHeader* slice_hdr) const {
-  if (!curr_pic_)
-    return true;
-
-  // 7.4.1.2.4, assumes non-interlaced.
-  if (slice_hdr->frame_num != curr_pic_->frame_num ||
-      slice_hdr->pic_parameter_set_id != curr_pps_id_ ||
-      slice_hdr->nal_ref_idc != curr_pic_->nal_ref_idc ||
-      slice_hdr->idr_pic_flag != curr_pic_->idr ||
-      (slice_hdr->idr_pic_flag &&
-       (slice_hdr->idr_pic_id != curr_pic_->idr_pic_id ||
-        // If we have two consecutive IDR slices, and the second one has
-        // first_mb_in_slice == 0, treat it as a new picture.
-        // Per spec, idr_pic_id should not be equal in this case (and we should
-        // have hit the condition above instead, see spec 7.4.3 on idr_pic_id),
-        // but some encoders neglect changing idr_pic_id for two consecutive
-        // IDRs. Work around this by checking if the next slice contains the
-        // zeroth macroblock, i.e. data that belongs to the next picture.
-        slice_hdr->first_mb_in_slice == 0)))
-    return true;
-
-  const H264SPS* sps = parser_.GetSPS(curr_sps_id_);
-  if (!sps)
-    return false;
-
-  if (sps->pic_order_cnt_type == curr_pic_->pic_order_cnt_type) {
-    if (curr_pic_->pic_order_cnt_type == 0) {
-      if (slice_hdr->pic_order_cnt_lsb != curr_pic_->pic_order_cnt_lsb ||
-          slice_hdr->delta_pic_order_cnt_bottom !=
-              curr_pic_->delta_pic_order_cnt_bottom)
-        return true;
-    } else if (curr_pic_->pic_order_cnt_type == 1) {
-      if (slice_hdr->delta_pic_order_cnt0 != curr_pic_->delta_pic_order_cnt0 ||
-          slice_hdr->delta_pic_order_cnt1 != curr_pic_->delta_pic_order_cnt1)
-        return true;
-    }
-  }
-
-  return false;
-}
-
 bool H264Decoder::PreprocessCurrentSlice() {
   const H264SliceHeader* slice_hdr = curr_slice_hdr_.get();
   DCHECK(slice_hdr);
 
-  if (IsNewPrimaryCodedPicture(slice_hdr)) {
+  if (IsNewPrimaryCodedPicture(curr_pic_.get(), curr_pps_id_,
+                               parser_.GetSPS(curr_sps_id_), *slice_hdr)) {
     // New picture, so first finish the previous one before processing it.
     if (!FinishPrevFrameIfPresent())
       return false;
@@ -1456,6 +1371,103 @@ gfx::Size H264Decoder::GetPicSize() const {
 
 size_t H264Decoder::GetRequiredNumOfPictures() const {
   return dpb_.max_num_pics() + kPicsInPipeline;
+}
+
+// static
+bool H264Decoder::FillH264PictureFromSliceHeader(
+    const H264SPS* sps,
+    const H264SliceHeader& slice_hdr,
+    H264Picture* pic) {
+  DCHECK(pic);
+
+  pic->idr = slice_hdr.idr_pic_flag;
+  if (pic->idr)
+    pic->idr_pic_id = slice_hdr.idr_pic_id;
+
+  if (slice_hdr.field_pic_flag) {
+    pic->field = slice_hdr.bottom_field_flag ? H264Picture::FIELD_BOTTOM
+                                             : H264Picture::FIELD_TOP;
+  } else {
+    pic->field = H264Picture::FIELD_NONE;
+  }
+
+  if (pic->field != H264Picture::FIELD_NONE) {
+    DVLOG(1) << "Interlaced video not supported.";
+    return false;
+  }
+
+  pic->nal_ref_idc = slice_hdr.nal_ref_idc;
+  pic->ref = slice_hdr.nal_ref_idc != 0;
+  // This assumes non-interlaced stream.
+  pic->frame_num = pic->pic_num = slice_hdr.frame_num;
+
+  if (!sps)
+    return false;
+
+  pic->pic_order_cnt_type = sps->pic_order_cnt_type;
+  switch (pic->pic_order_cnt_type) {
+    case 0:
+      pic->pic_order_cnt_lsb = slice_hdr.pic_order_cnt_lsb;
+      pic->delta_pic_order_cnt_bottom = slice_hdr.delta_pic_order_cnt_bottom;
+      break;
+
+    case 1:
+      pic->delta_pic_order_cnt0 = slice_hdr.delta_pic_order_cnt0;
+      pic->delta_pic_order_cnt1 = slice_hdr.delta_pic_order_cnt1;
+      break;
+
+    case 2:
+      break;
+
+    default:
+      NOTREACHED();
+      return false;
+  }
+  return true;
+}
+
+// static
+bool H264Decoder::IsNewPrimaryCodedPicture(const H264Picture* curr_pic,
+                                           int curr_pps_id,
+                                           const H264SPS* sps,
+                                           const H264SliceHeader& slice_hdr) {
+  if (!curr_pic)
+    return true;
+
+  // 7.4.1.2.4, assumes non-interlaced.
+  if (slice_hdr.frame_num != curr_pic->frame_num ||
+      slice_hdr.pic_parameter_set_id != curr_pps_id ||
+      slice_hdr.nal_ref_idc != curr_pic->nal_ref_idc ||
+      slice_hdr.idr_pic_flag != curr_pic->idr ||
+      (slice_hdr.idr_pic_flag &&
+       (slice_hdr.idr_pic_id != curr_pic->idr_pic_id ||
+        // If we have two consecutive IDR slices, and the second one has
+        // first_mb_in_slice == 0, treat it as a new picture.
+        // Per spec, idr_pic_id should not be equal in this case (and we should
+        // have hit the condition above instead, see spec 7.4.3 on idr_pic_id),
+        // but some encoders neglect changing idr_pic_id for two consecutive
+        // IDRs. Work around this by checking if the next slice contains the
+        // zeroth macroblock, i.e. data that belongs to the next picture.
+        slice_hdr.first_mb_in_slice == 0)))
+    return true;
+
+  if (!sps)
+    return false;
+
+  if (sps->pic_order_cnt_type == curr_pic->pic_order_cnt_type) {
+    if (curr_pic->pic_order_cnt_type == 0) {
+      if (slice_hdr.pic_order_cnt_lsb != curr_pic->pic_order_cnt_lsb ||
+          slice_hdr.delta_pic_order_cnt_bottom !=
+              curr_pic->delta_pic_order_cnt_bottom)
+        return true;
+    } else if (curr_pic->pic_order_cnt_type == 1) {
+      if (slice_hdr.delta_pic_order_cnt0 != curr_pic->delta_pic_order_cnt0 ||
+          slice_hdr.delta_pic_order_cnt1 != curr_pic->delta_pic_order_cnt1)
+        return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace media
