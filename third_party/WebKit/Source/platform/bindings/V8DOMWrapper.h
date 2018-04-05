@@ -51,7 +51,7 @@ class V8DOMWrapper {
   STATIC_ONLY(V8DOMWrapper);
 
  public:
-  static v8::Local<v8::Object> CreateWrapper(
+  PLATFORM_EXPORT static v8::Local<v8::Object> CreateWrapper(
       v8::Isolate*,
       v8::Local<v8::Object> creation_context,
       const WrapperTypeInfo*);
@@ -61,11 +61,11 @@ class V8DOMWrapper {
   // ScriptWrappable is not yet associated with any wrapper.  Returns the
   // wrapper already associated or |wrapper| if not yet associated.
   // The caller should always use the returned value rather than |wrapper|.
-  WARN_UNUSED_RESULT static v8::Local<v8::Object> AssociateObjectWithWrapper(
-      v8::Isolate*,
-      ScriptWrappable*,
-      const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper);
+  PLATFORM_EXPORT WARN_UNUSED_RESULT static v8::Local<v8::Object>
+  AssociateObjectWithWrapper(v8::Isolate*,
+                             ScriptWrappable*,
+                             const WrapperTypeInfo*,
+                             v8::Local<v8::Object> wrapper);
   static void SetNativeInfo(v8::Isolate*,
                             v8::Local<v8::Object>,
                             const WrapperTypeInfo*,
