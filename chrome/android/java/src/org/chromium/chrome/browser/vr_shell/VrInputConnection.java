@@ -43,7 +43,7 @@ public class VrInputConnection {
     public void requestTextState() {
         if (DEBUG_LOGS) Log.i(TAG, "requestTextState");
         InputConnection ic = mImeAdapter.getActiveInputConnection();
-        assert ic != null;
+        if (ic == null) return;
         if (mImeThreadResponseHandler == null) {
             mImeThreadResponseHandler = new Handler();
         }
