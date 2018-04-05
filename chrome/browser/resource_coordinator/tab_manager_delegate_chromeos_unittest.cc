@@ -50,6 +50,9 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
   }
   SortKey GetSortKey() const override { return SortKey(last_focused_time_); }
   State GetState() const override { return State::LOADED; }
+  content::Visibility GetVisibility() const override {
+    return content::Visibility::VISIBLE;
+  }
   bool Freeze() override { return false; }
   int GetEstimatedMemoryFreedOnDiscardKB() const override { return 0; }
   bool CanPurge() const override { return false; }
