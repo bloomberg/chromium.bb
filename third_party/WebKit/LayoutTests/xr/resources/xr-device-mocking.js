@@ -36,11 +36,6 @@ function getSubmitFrameCount() {
   return mockVRService.mockVRDisplays_[0].getSubmitFrameCount();
 }
 
-// Returns the missing (not submitted) frame count for the first display
-function getMissingFrameCount() {
-  return mockVRService.mockVRDisplays_[0].getMissingFrameCount();
-}
-
 function addInputSource(input_source) {
   return mockVRService.mockVRDisplays_[0].addInputSource(input_source);
 }
@@ -298,10 +293,6 @@ class MockDevice {
     return this.presentation_provider_.submit_frame_count_;
   }
 
-  getMissingFrameCount() {
-    return this.presentation_provider_.missing_frame_count_;
-  }
-
   forceActivate(reason) {
     this.displayClient_.onActivate(reason);
   }
@@ -338,7 +329,6 @@ class MockVRPresentationProvider {
     this.pose_ = null;
     this.next_frame_id_ = 0;
     this.submit_frame_count_ = 0;
-    this.missing_frame_count_ = 0;
 
     this.input_sources_ = [];
     this.next_input_source_index_ = 1;
@@ -348,10 +338,6 @@ class MockVRPresentationProvider {
     this.submitFrameClient_ = client;
     this.binding_.close();
     this.binding_.bind(request);
-  }
-
-  submitFrameMissing(frameId, mailboxHolder, timeWaited) {
-    this.missing_frame_count_++;
   }
 
   submitFrame(frameId, mailboxHolder, timeWaited) {

@@ -254,19 +254,17 @@ void XRWebGLLayer::OnFrameStart() {
 
 void XRWebGLLayer::OnFrameEnd() {
   framebuffer_->MarkOpaqueBufferComplete(false);
+  // Exit early if the framebuffer contents have not changed.
+  if (!framebuffer_->HaveContentsChanged())
+    return;
 
   // Submit the frame to the XR compositor.
   if (session()->exclusive()) {
-    // Always call submit, but notify if the contents were changed or not.
-    session()->device()->frameProvider()->SubmitWebGLLayer(
-        this, framebuffer_->HaveContentsChanged());
+    session()->device()->frameProvider()->SubmitWebGLLayer(this);
   } else if (session()->outputContext()) {
-    // Nothing to do if the framebuffer contents have not changed.
-    if (framebuffer_->HaveContentsChanged()) {
-      ImageBitmap* image_bitmap =
-          ImageBitmap::Create(TransferToStaticBitmapImage(nullptr));
-      session()->outputContext()->SetImage(image_bitmap);
-    }
+    ImageBitmap* image_bitmap =
+        ImageBitmap::Create(TransferToStaticBitmapImage(nullptr));
+    session()->outputContext()->SetImage(image_bitmap);
   }
 }
 

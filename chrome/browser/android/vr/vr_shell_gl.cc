@@ -390,7 +390,9 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
   }
 }
 
-bool VrShellGl::IsSubmitFrameExpected(int16_t frame_index) {
+void VrShellGl::SubmitFrame(int16_t frame_index,
+                            const gpu::MailboxHolder& mailbox,
+                            base::TimeDelta time_waited) {
   TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
 
   // submit_client_ could be null when we exit presentation, if there were
@@ -398,39 +400,15 @@ bool VrShellGl::IsSubmitFrameExpected(int16_t frame_index) {
   // will clean up state in blink, so it doesn't wait for
   // OnSubmitFrameTransferred or OnSubmitFrameRendered.
   if (!submit_client_.get())
-    return false;
+    return;
 
   if (frame_index < 0 ||
       !webvr_frame_oustanding_[frame_index % kPoseRingBufferSize]) {
     mojo::ReportBadMessage("SubmitFrame called with an invalid frame_index");
     binding_.Close();
-    return false;
+    return;
   }
 
-  // Frame looks valid.
-  return true;
-}
-
-void VrShellGl::SubmitFrameMissing(int16_t frame_index,
-                                   const gpu::SyncToken& sync_token) {
-  if (!IsSubmitFrameExpected(frame_index))
-    return;
-
-  // Renderer didn't submit a frame. Wait for the sync token to ensure
-  // that any mailbox_bridge_ operations for the next frame happen after
-  // whatever drawing the Renderer may have done before exiting.
-  if (mailbox_bridge_ready_)
-    mailbox_bridge_->WaitSyncToken(sync_token);
-
-  DVLOG(2) << __FUNCTION__ << ": recycle unused animating frame";
-  webvr_frame_oustanding_[frame_index % kPoseRingBufferSize] = false;
-}
-
-void VrShellGl::SubmitFrame(int16_t frame_index,
-                            const gpu::MailboxHolder& mailbox,
-                            base::TimeDelta time_waited) {
-  if (!IsSubmitFrameExpected(frame_index))
-    return;
 
   // The JavaScript wait time is supplied externally and not trustworthy. Clamp
   // to a reasonable range to avoid math errors.
