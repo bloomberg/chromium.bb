@@ -10,22 +10,23 @@ enum PaymentComplete {
     "unknown"
 };
 
-// https://w3c.github.io/browser-payment-api/#paymentresponse-interface
+// https://w3c.github.io/payment-request/#dom-paymentresponse
 
 [
     RuntimeEnabled=PaymentRequest,
+    SecureContext,
     Exposed=Window
 ] interface PaymentResponse {
     serializer = {attribute};
 
     readonly attribute DOMString requestId;
     readonly attribute DOMString methodName;
-    readonly attribute DOMString? payerName;
-    readonly attribute DOMString? payerEmail;
-    readonly attribute DOMString? payerPhone;
     [CallWith=ScriptState, RaisesException] readonly attribute object details;
     readonly attribute PaymentAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;
+    readonly attribute DOMString? payerName;
+    readonly attribute DOMString? payerEmail;
+    readonly attribute DOMString? payerPhone;
 
     [CallWith=ScriptState] Promise<void> complete(optional PaymentComplete paymentResult = "unknown");
 };

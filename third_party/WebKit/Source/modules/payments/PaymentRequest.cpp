@@ -1005,10 +1005,7 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &PaymentRequest::OnCompleteTimeout) {
-  if (!GetExecutionContext()->IsSecureContext()) {
-    exception_state.ThrowSecurityError("Must be in a secure context");
-    return;
-  }
+  DCHECK(GetExecutionContext()->IsSecureContext());
 
   if (!AllowedToUsePaymentRequest(GetFrame())) {
     exception_state.ThrowSecurityError(

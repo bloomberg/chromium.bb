@@ -14,19 +14,6 @@
 namespace blink {
 namespace {
 
-TEST(PaymentRequestTest, SecureContextRequired) {
-  V8TestingScope scope;
-  scope.GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("http://www.example.com/")));
-
-  PaymentRequest::Create(
-      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-
-  EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSecurityError, scope.GetExceptionState().Code());
-}
-
 TEST(PaymentRequestTest, NoExceptionWithValidData) {
   V8TestingScope scope;
   MakePaymentRequestOriginSecure(scope.GetDocument());
