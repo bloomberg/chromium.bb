@@ -99,44 +99,77 @@ def ToolPath(tool, toolchain_info=None):
                       toolchain_subdir,
                       toolchain_prefix + "-" + tool)
 
-def GetAapt():
+# Used by _GetAaptPath() to cache its result.
+_cached_aapt_path = None
+
+def _GetAaptPath():
   """Returns the path to aapt.
+
+  If the environment variable SDK_HOME is defined, this will use the
+  'aapt' binary from the most recent build-tools directory in it. Otherwise,
+  it just uses the default binary from constants.ANDROID_SDK_TOOLS.
 
   Args:
     None
 
   Returns:
     the pathname of the 'aapt' executable.
+
+  Raises:
+    Exception if the file cannot be found.
   """
-  sdk_home = os.path.join('third_party', 'android_tools', 'sdk')
-  sdk_home = os.environ.get('SDK_HOME', sdk_home)
-  aapt_exe = glob.glob(os.path.join(sdk_home, 'build-tools', '*', 'aapt'))
+  global _cached_aapt_path
+  if _cached_aapt_path:
+    return _cached_aapt_path
+
+  # TODO(digit): Do we need to keep SDK_HOME use here?
+  env_sdk_home = os.environ.get('SDK_HOME', None)
+  if not env_sdk_home:
+    aapt_exe = os.path.join(constants.ANDROID_SDK_TOOLS, 'aapt')
+  else:
+    aapt_exe = None
+    aapt_exe_list = glob.glob(
+        os.path.join(env_sdk_home, 'build-tools', '*', 'aapt'))
+    if aapt_exe_list:
+      aapt_exe = sorted(aapt_exe_list, key=os.path.getmtime, reverse=True)[0]
+
   if not aapt_exe:
-    return None
-  return sorted(aapt_exe, key=os.path.getmtime, reverse=True)[0]
+    raise Exception('Could not find path to \'aapt\' program')
+  if not os.path.exists(aapt_exe):
+    raise Exception('Missing binary: ' + aapt_exe)
 
-def ApkMatchPackageName(aapt, apk_path, package_name):
-  """Returns true the APK's package name matches package_name.
+  logging.debug('Using AAPT path: %s', aapt_exe)
+  _cached_aapt_path = aapt_exe
 
-  Args:
-    aapt: pathname for the 'aapt' executable.
-    apk_path: pathname of the APK file.
-    package_name: package name to match.
+  return aapt_exe
 
-  Returns:
-    True if the package name matches or aapt is None, False otherwise.
-  """
-  if not aapt:
-    # Allow false positives
-    return True
+
+# Used by _GetApkPackageName() to extract package name from aapt dump output.
+_PACKAGE_NAME_RE = re.compile(r'package: .*name=\'(\S*)\'')
+
+# Used to speed up _GetApkPackageName() because the latter is called far too
+# often at the moment. Maps APK file paths to the corresponding package name.
+_package_name_cache = {}
+
+def _GetApkPackageName(apk_path):
+  """Return the package name of a given apk."""
+  package_name = _package_name_cache.get(apk_path, None)
+  if package_name:
+    return package_name
+
+  aapt_path = _GetAaptPath()
   aapt_output = subprocess.check_output(
-      [aapt, 'dump', 'badging', apk_path]).split('\n')
-  package_name_re = re.compile(r'package: .*name=\'(\S*)\'')
+      [aapt_path, 'dump', 'badging', apk_path]).split('\n')
   for line in aapt_output:
-    match = package_name_re.match(line)
+    match = _PACKAGE_NAME_RE.match(line)
     if match:
-      return package_name == match.group(1)
-  return False
+      package_name = match.group(1)
+      _package_name_cache[apk_path] = package_name
+      logging.debug('Package name %s for %s', package_name, apk_path)
+      return package_name
+
+  return None
+
 
 def PathListJoin(prefix_list, suffix_list):
    """Returns each prefix in prefix_list joined with each suffix in suffix list.
@@ -179,17 +212,28 @@ def GetCandidates(dirs, filepart, candidate_fun):
   candidates.sort(key=os.path.getmtime, reverse=True)
   return candidates
 
-def GetCandidateApks():
+
+# Used by _GetCandidateApks() to speed up its result.
+_cached_candidate_apks = None
+
+def _GetCandidateApks():
   """Returns a list of APKs which could contain the library.
 
   Args:
     None
 
   Returns:
-    list of APK filename which could contain the library.
+    list of APK file paths which could contain the library.
   """
+  global _cached_candidate_apks
+  if _cached_candidate_apks is not None:
+    return _cached_candidate_apks
+
   dirs = PathListJoin(_GetChromeOutputDirCandidates(), ['apks'])
-  return GetCandidates(dirs, '*.apk', glob.glob)
+  candidates = GetCandidates(dirs, '*.apk', glob.glob)
+  _cached_candidate_apks = candidates
+  return candidates
+
 
 def GetCrazyLib(apk_filename):
   """Returns the name of the first crazy library from this APK.
@@ -212,19 +256,19 @@ def GetApkFromLibrary(device_library_path):
     return None
   return match.group(1)
 
+
 def GetMatchingApks(package_name):
   """Find any APKs which match the package indicated by the device_apk_name.
 
   Args:
-     device_apk_name: name of the APK on the device.
+     package_name: package name of the APK on the device.
 
   Returns:
      A list of APK filenames which could contain the desired library.
   """
-  return filter(
-      lambda candidate_apk:
-          ApkMatchPackageName(GetAapt(), candidate_apk, package_name),
-      GetCandidateApks())
+  return [apk_path for apk_path in _GetCandidateApks() if (
+      _GetApkPackageName(apk_path) == package_name)]
+
 
 def MapDeviceApkToLibrary(device_apk_name):
   """Provide a library name which corresponds with device_apk_name.
@@ -373,7 +417,7 @@ def FindToolchain():
   else:
     known_toolchains = []
 
-  logging.debug('FindToolcahin: known_toolchains=%s' % known_toolchains)
+  logging.debug('FindToolchain: known_toolchains=%s' % known_toolchains)
   # Look for addr2line to check for valid toolchain path.
   for (label, platform, target) in known_toolchains:
     toolchain_info = (label, platform, target);
