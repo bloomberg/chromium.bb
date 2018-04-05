@@ -26,6 +26,8 @@ class OfflinePageNotificationBridge : public OfflinePageDownloadNotifier {
   void NotifyDownloadPaused(const OfflineItem& item) override;
   void NotifyDownloadInterrupted(const OfflineItem& item) override;
   void NotifyDownloadCanceled(const OfflineItem& item) override;
+  bool MaybeSuppressNotification(const std::string& origin,
+                                 const OfflineItem& item) override;
 
   void ShowDownloadingToast();
 };

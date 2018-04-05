@@ -313,6 +313,14 @@ public abstract class AppHooks {
     }
 
     /**
+     * @return A list of whitelisted app package names whose completed notifications
+     * we should suppress.
+     */
+    public List<String> getOfflinePagesSuppressNotificationPackages() {
+        return Collections.emptyList();
+    }
+
+    /**
      * @return An iterator of partner bookmarks.
      */
     @Nullable

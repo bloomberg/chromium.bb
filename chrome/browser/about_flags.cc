@@ -2625,6 +2625,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"offline-pages-ct-v2", flag_descriptions::kOfflinePagesCtV2Name,
      flag_descriptions::kOfflinePagesCtV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTV2Feature)},
+    {"offline-pages-ct-suppress-completed-notification",
+     flag_descriptions::kOfflinePagesCTSuppressNotificationsName,
+     flag_descriptions::kOfflinePagesCTSuppressNotificationsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kOfflinePagesCTSuppressNotificationsFeature)},
 #endif  // OS_ANDROID
     {"protect-sync-credential", flag_descriptions::kProtectSyncCredentialName,
      flag_descriptions::kProtectSyncCredentialDescription, kOsAll,

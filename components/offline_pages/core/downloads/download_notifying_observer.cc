@@ -80,18 +80,22 @@ void DownloadNotifyingObserver::OnCompleted(
   DCHECK(notifier_.get());
   if (!IsVisibleInUI(request.client_id()))
     return;
-  if (status == RequestCoordinator::BackgroundSavePageResult::SUCCESS)
-    notifier_->NotifyDownloadSuccessful(
-        OfflineItemConversions::CreateOfflineItem(request));
-  else if (status ==
-               RequestCoordinator::BackgroundSavePageResult::USER_CANCELED ||
-           status ==
-               RequestCoordinator::BackgroundSavePageResult::DOWNLOAD_THROTTLED)
+  if (status == RequestCoordinator::BackgroundSavePageResult::SUCCESS) {
+    // Suppress notifications for certin downloads resulting from CCT.
+    OfflineItem item = OfflineItemConversions::CreateOfflineItem(request);
+    if (!notifier_->MaybeSuppressNotification(request.request_origin(), item)) {
+      notifier_->NotifyDownloadSuccessful(item);
+    }
+  } else if (status ==
+                 RequestCoordinator::BackgroundSavePageResult::USER_CANCELED ||
+             status == RequestCoordinator::BackgroundSavePageResult::
+                           DOWNLOAD_THROTTLED) {
     notifier_->NotifyDownloadCanceled(
         OfflineItemConversions::CreateOfflineItem(request));
-  else
+  } else {
     notifier_->NotifyDownloadFailed(
         OfflineItemConversions::CreateOfflineItem(request));
+  }
 }
 
 bool DownloadNotifyingObserver::IsVisibleInUI(const ClientId& page) {

@@ -5,6 +5,8 @@
 #include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 
 #include "base/android/jni_string.h"
+#include "components/offline_pages/core/offline_page_feature.h"
+
 #include "jni/OfflinePageNotificationBridge_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -78,6 +80,18 @@ void OfflinePageNotificationBridge::NotifyDownloadCanceled(
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadCanceled(
       env, ConvertUTF8ToJavaString(env, item.id.id));
+}
+
+bool OfflinePageNotificationBridge::MaybeSuppressNotification(
+    const std::string& origin,
+    const OfflineItem& item) {
+  // Do not suppress notification if chrome.
+  if (origin == "" || !IsOfflinePagesSuppressNotificationsEnabled())
+    return false;
+  JNIEnv* env = AttachCurrentThread();
+  return Java_OfflinePageNotificationBridge_maybeSuppressNotification(
+      env, ConvertUTF8ToJavaString(env, origin),
+      ConvertUTF8ToJavaString(env, item.id.id));
 }
 
 void OfflinePageNotificationBridge::ShowDownloadingToast() {
