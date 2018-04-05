@@ -4160,6 +4160,25 @@
             ]
         }
     ],
+    "VideoSurfaceLayer": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win",
+                "chromeos",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseSurfaceLayerForVideo"
+                    ]
+                }
+            ]
+        }
+    ],
     "ViewsSimplifiedFullscreenUI": [
         {
             "platforms": [
