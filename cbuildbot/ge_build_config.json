@@ -1865,21 +1865,6 @@
       ]
     },
     {
-      "name": "kahlee",
-      "reference_board_name": "kahlee",
-      "arch": "X86_INTERNAL",
-      "builder": "RELEASE",
-      "experimental": false,
-      "models": [
-        {
-          "board_name": "kahlee",
-          "name": "kahlee",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        }
-      ]
-    },
-    {
       "name": "nami",
       "reference_board_name": "nami",
       "arch": "X86_INTERNAL",
