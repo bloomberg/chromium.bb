@@ -33,12 +33,12 @@ std::unique_ptr<net::ProofSource> CreateProofSource(
 }
 
 int main(int argc, char* argv[]) {
-  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_server");
   base::AtExitManager exit_manager;
-  base::MessageLoopForIO message_loop;
-
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
+
+  base::MessageLoopForIO message_loop;
+  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_server");
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
