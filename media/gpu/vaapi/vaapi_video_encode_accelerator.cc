@@ -640,6 +640,14 @@ void VaapiVideoEncodeAccelerator::EncodeFrameTask() {
   if (state_ != kEncoding || encoder_input_queue_.empty())
     return;
 
+  // Pass the nullptr to the next queue |submitted_encode_jobs_|.
+  if (encoder_input_queue_.front() == nullptr) {
+    encoder_input_queue_.pop();
+    submitted_encode_jobs_.push(nullptr);
+    TryToReturnBitstreamBuffer();
+    return;
+  }
+
   if (!PrepareNextJob(encoder_input_queue_.front()->frame->timestamp())) {
     DVLOGF(4) << "Not ready for next frame yet";
     return;
@@ -783,8 +791,8 @@ void VaapiVideoEncodeAccelerator::FlushTask() {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   // Insert an null job to indicate a flush command.
-  submitted_encode_jobs_.push(nullptr);
-  TryToReturnBitstreamBuffer();
+  encoder_input_queue_.push(std::unique_ptr<InputFrameRef>(nullptr));
+  EncodeFrameTask();
 }
 
 void VaapiVideoEncodeAccelerator::Destroy() {
