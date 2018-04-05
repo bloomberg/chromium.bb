@@ -107,7 +107,9 @@ void AudioDecoderWrapper::GetStatistics(Statistics* statistics) {
 }
 
 bool AudioDecoderWrapper::RequiresDecryption() {
-  return decoder_.IsUsingSoftwareDecoder();
+  return (MediaPipelineBackend::AudioDecoder::RequiresDecryption &&
+          MediaPipelineBackend::AudioDecoder::RequiresDecryption()) ||
+         decoder_.IsUsingSoftwareDecoder();
 }
 
 }  // namespace media
