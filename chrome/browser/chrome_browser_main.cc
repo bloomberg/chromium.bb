@@ -715,7 +715,7 @@ const char kMissingLocaleDataMessage[] =
 #if !defined(OS_ANDROID)
 // A TaskRunner that defers tasks until the real task runner is up and running.
 // This is used during early initialization, before the real task runner has
-// been created. DeferredTaskRunner has the following states.
+// been created. DeferringTaskRunner has the following states.
 //
 // . kInstalled: the initial state. Tasks are added to |deferred_runner_|. In
 //   this state this is installed as the active ThreadTaskRunnerHandle.

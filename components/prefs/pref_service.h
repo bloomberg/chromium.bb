@@ -358,7 +358,8 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // Pref Stores and profile that we passed to the PrefValueStore.
   const scoped_refptr<PersistentPrefStore> user_pref_store_;
 
-  // Callback to call when a read error occurs.
+  // Callback to call when a read error occurs. Always invoked on the sequence
+  // this PrefService was created own.
   const base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
       read_error_callback_;
 

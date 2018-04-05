@@ -52,8 +52,9 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
     recommended_prefs_.swap(prefs);
   }
 
-  // Sets up error callback for the PrefService.  A do-nothing default
-  // is provided if this is not called.
+  // Sets up error callback for the PrefService.  A do-nothing default is
+  // provided if this is not called. This callback is always invoked (async or
+  // not) on the sequence on which Create is invoked.
   void set_read_error_callback(
       base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback) {
