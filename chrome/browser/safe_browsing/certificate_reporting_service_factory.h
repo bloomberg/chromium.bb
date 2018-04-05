@@ -7,6 +7,7 @@
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {
 class Clock;
@@ -36,6 +37,8 @@ class CertificateReportingServiceFactory
   void SetMaxQueuedReportCountForTesting(size_t max_report_count);
   void SetServiceResetCallbackForTesting(
       const base::Callback<void()>& service_reset_callback);
+  void SetURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
 
  private:
   friend struct base::DefaultSingletonTraits<
@@ -58,6 +61,7 @@ class CertificateReportingServiceFactory
   base::TimeDelta queued_report_ttl_;
   size_t max_queued_report_count_;
   base::Callback<void()> service_reset_callback_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceFactory);
 };

@@ -36,7 +36,6 @@ Refer to README.md for content description and update process.
  <item id="cast_socket" hash_code="115192205" type="0" content_hash_code="63056899" os_list="linux,windows" file_path="components/cast_channel/cast_socket.cc"/>
  <item id="cast_udp_socket" hash_code="22573197" type="0" content_hash_code="75328301" os_list="linux,windows" file_path="components/mirroring/service/udp_socket_client.cc"/>
  <item id="cast_udp_transport" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport_impl.cc"/>
- <item id="certificate_reporting_service_test" hash_code="98123372" type="0" content_hash_code="136253658" os_list="linux,windows" file_path="chrome/browser/safe_browsing/certificate_reporting_service.cc"/>
  <item id="certificate_verifier" hash_code="113553577" type="0" content_hash_code="62346354" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_impl.cc"/>
  <item id="chrome_apps_socket_api" hash_code="8591273" type="0" content_hash_code="70868355" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
  <item id="chrome_cleaner" hash_code="27071967" type="0" content_hash_code="111240292" os_list="windows" file_path="chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.cc"/>

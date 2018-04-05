@@ -17,6 +17,7 @@
 #include "net/base/network_delegate_impl.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace net {
 class NetworkDelegate;
@@ -139,51 +140,6 @@ class DelayableCertReportURLRequestJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(DelayableCertReportURLRequestJob);
 };
 
-// A job interceptor that returns a failed, succesful or delayed request job.
-// Used to simulate report uploads that fail, succeed or hang.
-// The caller is responsible for guaranteeing that |this| is kept alive for
-// all posted tasks and URLRequestJob objects.
-class CertReportJobInterceptor : public net::URLRequestInterceptor {
- public:
-  CertReportJobInterceptor(ReportSendingResult expected_report_result,
-                           const uint8_t* server_private_key);
-  ~CertReportJobInterceptor() override;
-
-  // net::URLRequestInterceptor method:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override;
-
-  // Sets the failure mode for reports. Must be called on the UI thread.
-  void SetFailureMode(ReportSendingResult expected_report_result);
-  // Resumes any hanging URL request and runs callback when the request
-  // is resumed (i.e. response starts). Must be called on the UI thread.
-  void Resume();
-
-  RequestObserver* request_created_observer() const;
-  RequestObserver* request_destroyed_observer() const;
-
- private:
-  void SetFailureModeOnIOThread(ReportSendingResult expected_report_result);
-  void ResumeOnIOThread();
-  void RequestCreated(const std::string& serialized_report,
-                      ReportSendingResult expected_report_result) const;
-  void RequestDestructed(const std::string& serialized_report,
-                         ReportSendingResult expected_report_result) const;
-
-  ReportSendingResult expected_report_result_;
-
-  // Private key to decrypt certificate reports.
-  const uint8_t* server_private_key_;
-
-  mutable RequestObserver request_created_observer_;
-  mutable RequestObserver request_destroyed_observer_;
-
-  mutable base::WeakPtr<DelayableCertReportURLRequestJob> delayed_request_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertReportJobInterceptor);
-};
-
 // Class to wait for the CertificateReportingService to reset.
 class CertificateReportingServiceObserver {
  public:
@@ -204,14 +160,11 @@ class CertificateReportingServiceObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
-// Base class for CertificateReportingService tests. Sets up an interceptor to
-// keep track of reports that are being sent.
-class CertificateReportingServiceTestHelper {
+// Base class for CertificateReportingService tests.
+class CertificateReportingServiceTestHelper
+    : public network::SharedURLLoaderFactory {
  public:
   CertificateReportingServiceTestHelper();
-  ~CertificateReportingServiceTestHelper();
-
-  void SetUpInterceptor();
 
   // Changes the behavior of report uploads to fail, succeed or hang.
   void SetFailureMode(ReportSendingResult expected_report_result);
@@ -235,10 +188,30 @@ class CertificateReportingServiceTestHelper {
   uint32_t server_public_key_version() const;
 
  private:
-  CertReportJobInterceptor* interceptor() { return url_request_interceptor_; }
-  void SetUpInterceptorOnIOThread();
+  friend class base::RefCounted<CertificateReportingServiceTestHelper>;
+  ~CertificateReportingServiceTestHelper() override;
 
-  CertReportJobInterceptor* url_request_interceptor_;
+  void SendResponse(network::mojom::URLLoaderClientPtr client, bool fail);
+
+  // network::SharedURLLoaderFactory
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override;
+
+  ReportSendingResult expected_report_result_;
+
+  network::mojom::URLLoaderClientPtr delayed_client_;
+  std::string delayed_report_;
+  ReportSendingResult delayed_result_;
+
+  RequestObserver request_created_observer_;
+  RequestObserver request_destroyed_observer_;
 
   uint8_t server_public_key_[32];
   uint8_t server_private_key_[32];

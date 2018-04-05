@@ -13,11 +13,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "net/url_request/report_sender.h"
+#include "base/memory/ref_counted.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContext;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 // Provides functionality for sending reports about invalid SSL
@@ -25,19 +25,19 @@ class URLRequestContext;
 class CertificateErrorReporter {
  public:
   // Creates a certificate error reporter that will send certificate
-  // error reports to |upload_url|, using |request_context| as the
+  // error reports to |upload_url|, using |url_loader_factory| as the
   // context for the reports.
-  CertificateErrorReporter(net::URLRequestContext* request_context,
-                           const GURL& upload_url);
-
-  // Allows tests to use a server public key with known private key and
-  // a mock ReportSender. |server_public_key| must outlive
-  // the ErrorReporter.
   CertificateErrorReporter(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const GURL& upload_url);
+
+  // Allows tests to use a server public key with known private key.
+  // |server_public_key| must outlive the ErrorReporter.
+  CertificateErrorReporter(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const GURL& upload_url,
       const uint8_t server_public_key[/* 32 */],
-      const uint32_t server_public_key_version,
-      std::unique_ptr<net::ReportSender> certificate_report_sender);
+      const uint32_t server_public_key_version);
 
   virtual ~CertificateErrorReporter();
 
@@ -63,16 +63,14 @@ class CertificateErrorReporter {
   // net error and HTTP response code parameters.
   virtual void SendExtendedReportingReport(
       const std::string& serialized_report,
-      const base::Callback<void()>& success_callback,
-      const base::Callback<void(const GURL&,
-                                int /* net_error */,
-                                int /* http_response_code */)>& error_callback);
+      base::OnceCallback<void()> success_callback,
+      base::OnceCallback<void(int /* net_error */,
+                              int /* http_response_code */)> error_callback);
 
   void set_upload_url_for_testing(const GURL& url) { upload_url_ = url; }
 
  private:
-  std::unique_ptr<net::ReportSender> certificate_report_sender_;
-
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   GURL upload_url_;
 
   const uint8_t* server_public_key_;

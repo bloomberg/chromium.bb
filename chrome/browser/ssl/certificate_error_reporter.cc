@@ -13,10 +13,12 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "chrome/browser/net/chrome_report_sender.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -72,26 +74,22 @@ constexpr net::NetworkTrafficAnnotationTag
 }  // namespace
 
 CertificateErrorReporter::CertificateErrorReporter(
-    net::URLRequestContext* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const GURL& upload_url)
-    : CertificateErrorReporter(
-          upload_url,
-          kServerPublicKey,
-          kServerPublicKeyVersion,
-          std::make_unique<net::ReportSender>(
-              request_context,
-              kSafeBrowsingCertificateErrorReportingTrafficAnnotation)) {}
+    : CertificateErrorReporter(url_loader_factory,
+                               upload_url,
+                               kServerPublicKey,
+                               kServerPublicKeyVersion) {}
 
 CertificateErrorReporter::CertificateErrorReporter(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const GURL& upload_url,
     const uint8_t server_public_key[/* 32 */],
-    const uint32_t server_public_key_version,
-    std::unique_ptr<net::ReportSender> certificate_report_sender)
-    : certificate_report_sender_(std::move(certificate_report_sender)),
+    const uint32_t server_public_key_version)
+    : url_loader_factory_(url_loader_factory),
       upload_url_(upload_url),
       server_public_key_(server_public_key),
       server_public_key_version_(server_public_key_version) {
-  DCHECK(certificate_report_sender_);
   DCHECK(!upload_url.is_empty());
 }
 
@@ -99,31 +97,32 @@ CertificateErrorReporter::~CertificateErrorReporter() {}
 
 void CertificateErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report,
-    const base::Callback<void()>& success_callback,
-    const base::Callback<void(const GURL&, int, int)>& error_callback) {
-  if (upload_url_.SchemeIsCryptographic()) {
-    certificate_report_sender_->Send(upload_url_, "application/octet-stream",
-                                     serialized_report, success_callback,
-                                     error_callback);
-    return;
-  }
-  encrypted_messages::EncryptedMessage encrypted_report;
-  // By mistake, the HKDF label here ends up with an extra null byte on
-  // the end, due to using sizeof(kHkdfLabel) in the StringPiece
-  // constructor instead of strlen(kHkdfLabel). This has since been changed
-  // to strlen() + 1, but will need to be fixed in future to just be strlen.
-  // TODO(estark): fix this...
-  //  https://crbug.com/517746
-  if (!encrypted_messages::EncryptSerializedMessage(
-          server_public_key_, server_public_key_version_,
-          base::StringPiece(kHkdfLabel, strlen(kHkdfLabel) + 1),
-          serialized_report, &encrypted_report)) {
-    LOG(ERROR) << "Failed to encrypt serialized report.";
-    return;
-  }
+    base::OnceCallback<void()> success_callback,
+    base::OnceCallback<void(int, int)> error_callback) {
   std::string serialized_encrypted_report;
-  encrypted_report.SerializeToString(&serialized_encrypted_report);
-  certificate_report_sender_->Send(upload_url_, "application/octet-stream",
-                                   serialized_encrypted_report,
-                                   success_callback, error_callback);
+  const std::string* string_to_send = &serialized_report;
+  if (!upload_url_.SchemeIsCryptographic()) {
+    encrypted_messages::EncryptedMessage encrypted_report;
+    // By mistake, the HKDF label here ends up with an extra null byte on
+    // the end, due to using sizeof(kHkdfLabel) in the StringPiece
+    // constructor instead of strlen(kHkdfLabel). This has since been changed
+    // to strlen() + 1, but will need to be fixed in future to just be strlen.
+    // TODO(estark): fix this...
+    //  https://crbug.com/517746
+    if (!encrypted_messages::EncryptSerializedMessage(
+            server_public_key_, server_public_key_version_,
+            base::StringPiece(kHkdfLabel, strlen(kHkdfLabel) + 1),
+            serialized_report, &encrypted_report)) {
+      LOG(ERROR) << "Failed to encrypt serialized report.";
+      return;
+    }
+
+    encrypted_report.SerializeToString(&serialized_encrypted_report);
+    string_to_send = &serialized_encrypted_report;
+  }
+
+  SendReport(url_loader_factory_,
+             kSafeBrowsingCertificateErrorReportingTrafficAnnotation,
+             upload_url_, "application/octet-stream", *string_to_send,
+             std::move(success_callback), std::move(error_callback));
 }

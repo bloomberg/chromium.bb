@@ -17,7 +17,7 @@ namespace net {
 class CertVerifyProc;
 }
 
-class NET_EXPORT TrialComparisonCertVerifier : public net::CertVerifier {
+class TrialComparisonCertVerifier : public net::CertVerifier {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
