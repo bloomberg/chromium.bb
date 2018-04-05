@@ -146,7 +146,8 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
   };
 
   for (size_t i = 0; i < arraysize(input); ++i) {
-    toolbar_model()->set_text(base::ASCIIToUTF16(input[i].url_for_editing));
+    toolbar_model()->set_formatted_full_url(
+        base::ASCIIToUTF16(input[i].url_for_editing));
     model()->ResetDisplayUrls();
 
     model()->SetInputInProgress(input[i].is_match_selected_in_popup);
