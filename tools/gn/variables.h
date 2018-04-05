@@ -195,9 +195,9 @@ extern const char kDeps[];
 extern const char kDeps_HelpShort[];
 extern const char kDeps_Help[];
 
-extern const char kXcodeExtraAttributes[];
-extern const char kXcodeExtraAttributes_HelpShort[];
-extern const char kXcodeExtraAttributes_Help[];
+extern const char kFriend[];
+extern const char kFriend_HelpShort[];
+extern const char kFriend_Help[];
 
 extern const char kIncludeDirs[];
 extern const char kIncludeDirs_HelpShort[];
@@ -302,6 +302,10 @@ extern const char kVisibility_Help[];
 extern const char kWriteRuntimeDeps[];
 extern const char kWriteRuntimeDeps_HelpShort[];
 extern const char kWriteRuntimeDeps_Help[];
+
+extern const char kXcodeExtraAttributes[];
+extern const char kXcodeExtraAttributes_HelpShort[];
+extern const char kXcodeExtraAttributes_Help[];
 
 // -----------------------------------------------------------------------------
 

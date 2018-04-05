@@ -1100,17 +1100,67 @@ Details of dependency propagation
   See also "public_deps".
 )";
 
-const char kXcodeExtraAttributes[] = "xcode_extra_attributes";
-const char kXcodeExtraAttributes_HelpShort[] =
-    "xcode_extra_attributes: [scope] Extra attributes for Xcode projects.";
-const char kXcodeExtraAttributes_Help[] =
-    R"(xcode_extra_attributes: [scope] Extra attributes for Xcode projects.
+const char kFriend[] = "friend";
+const char kFriend_HelpShort[] =
+    "friend: [label pattern list] Allow targets to include private headers.";
+const char kFriend_Help[] =
+    R"(friend: Allow targets to include private headers.
 
-  The value defined in this scope will be copied to the EXTRA_ATTRIBUTES
-  property of the generated Xcode project. They are only meaningful when
-  generating with --ide=xcode.
+  A list of label patterns (see "gn help label_pattern") that allow dependent
+  targets to include private headers. Applies to all binary targets.
 
-  See "gn help create_bundle" for more information.
+  Normally if a target lists headers in the "public" list (see "gn help
+  public"), other headers are implicitly marked as private. Private headers
+  can not be included by other targets, even with a public dependency path.
+  The "gn check" function performs this validation.
+
+  A friend declaration allows one or more targets to include private headers.
+  This is useful for things like unit tests that are closely associated with a
+  target and require internal knowledge without opening up all headers to be
+  included by all dependents.
+
+  A friend target does not allow that target to include headers when no
+  dependency exists. A public dependency path must still exist between two
+  targets to include any headers from a destination target. The friend
+  annotation merely allows the use of headers that would otherwise be
+  prohibited because they are private.
+
+  The friend annotation is matched only against the target containing the file
+  with the include directive. Friend annotations are not propagated across
+  public or private dependencies. Friend annotations do not affect visibility.
+
+Example
+
+  static_library("lib") {
+    # This target can include our private headers.
+    friend = [ ":unit_tests" ]
+
+    public = [
+      "public_api.h",  # Normal public API for dependent targets.
+    ]
+
+    # Private API and sources.
+    sources = [
+      "a_source_file.cc",
+
+      # Normal targets that depend on this one won't be able to include this
+      # because this target defines a list of "public" headers. Without the
+      # "public" list, all headers are implicitly public.
+      "private_api.h",
+    ]
+  }
+
+  executable("unit_tests") {
+    sources = [
+      # This can include "private_api.h" from the :lib target because it
+      # depends on that target and because of the friend annotation.
+      "my_test.cc",
+    ]
+
+    deps = [
+      ":lib",  # Required for the include to be allowed.
+    ]
+  }
 )";
 
 const char kIncludeDirs[] = "include_dirs";
@@ -1593,7 +1643,8 @@ const char kPublic_Help[] =
   If no public files are declared, other targets (assuming they have visibility
   to depend on this target) can include any file in the sources list. If this
   variable is defined on a target, dependent targets may only include files on
-  this whitelist.
+  this whitelist unless that target is marked as a friend (see "gn help
+  friend").
 
   Header file permissions are also subject to visibility. A target must be
   visible to another target to include any files from it at all and the public
@@ -1608,6 +1659,11 @@ const char kPublic_Help[] =
   GN only knows about files declared in the "sources" and "public" sections of
   targets. If a file is included that is not known to the build, it will be
   allowed.
+
+  It is common for test targets to need to include private headers for their
+  associated code. In this case, list the test target in the "friend" list of
+  the target that owns the private header to allow the inclusion. See
+  "gn help friend" for more.
 
 Examples
 
@@ -1901,6 +1957,19 @@ const char kWriteRuntimeDeps_Help[] =
   help --runtime-deps-list-file").
 )";
 
+const char kXcodeExtraAttributes[] = "xcode_extra_attributes";
+const char kXcodeExtraAttributes_HelpShort[] =
+    "xcode_extra_attributes: [scope] Extra attributes for Xcode projects.";
+const char kXcodeExtraAttributes_Help[] =
+    R"(xcode_extra_attributes: [scope] Extra attributes for Xcode projects.
+
+  The value defined in this scope will be copied to the EXTRA_ATTRIBUTES
+  property of the generated Xcode project. They are only meaningful when
+  generating with --ide=xcode.
+
+  See "gn help create_bundle" for more information.
+)";
+
 // -----------------------------------------------------------------------------
 
 VariableInfo::VariableInfo()
@@ -1971,7 +2040,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Defines)
     INSERT_VARIABLE(Depfile)
     INSERT_VARIABLE(Deps)
-    INSERT_VARIABLE(XcodeExtraAttributes)
+    INSERT_VARIABLE(Friend)
     INSERT_VARIABLE(IncludeDirs)
     INSERT_VARIABLE(Inputs)
     INSERT_VARIABLE(Ldflags)
@@ -1998,6 +2067,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Testonly)
     INSERT_VARIABLE(Visibility)
     INSERT_VARIABLE(WriteRuntimeDeps)
+    INSERT_VARIABLE(XcodeExtraAttributes)
   }
   return info_map;
 }

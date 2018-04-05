@@ -242,6 +242,16 @@ bool LabelPattern::Matches(const Label& label) const {
   }
 }
 
+// static
+bool LabelPattern::VectorMatches(const std::vector<LabelPattern>& patterns,
+                                 const Label& label) {
+  for (const auto& pattern : patterns) {
+    if (pattern.Matches(label))
+      return true;
+  }
+  return false;
+}
+
 std::string LabelPattern::Describe() const {
   std::string result;
 

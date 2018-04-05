@@ -71,6 +71,8 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, SourceFileForInclude);
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest,
                            SourceFileForInclude_FileNotFound);
+  FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, Friend);
+
   ~HeaderChecker();
 
   struct TargetInfo {
