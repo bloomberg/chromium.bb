@@ -20,12 +20,16 @@ class MethodCall;
 
 namespace chromeos {
 
-// This class exports a "LockScreen" D-Bus methods that the session manager
-// calls to instruct Chrome to lock the screen.
+// This class exports a D-Bus method that the session_manager calls to instruct
+// Chrome to show the lock screen.
 class ScreenLockServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  ScreenLockServiceProvider();
+  // |interface_name| and |method_name| are exposed so the method can be
+  // exported on both org.chromium.LibCrosService and
+  // org.chromium.ScreenLockService: https://crbug.com/827680
+  ScreenLockServiceProvider(const std::string& interface_name,
+                            const std::string& method_name);
   ~ScreenLockServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -39,8 +43,14 @@ class ScreenLockServiceProvider
                   bool success);
 
   // Called on UI thread in response to D-Bus requests.
-  void LockScreen(dbus::MethodCall* method_call,
-                  dbus::ExportedObject::ResponseSender response_sender);
+  void ShowLockScreen(dbus::MethodCall* method_call,
+                      dbus::ExportedObject::ResponseSender response_sender);
+
+  // D-Bus interface and method names.
+  // TODO(derat): Remove once LibCrosService support is unneeded:
+  // https://crbug.com/827680
+  const std::string interface_name_;
+  const std::string method_name_;
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.

@@ -339,18 +339,21 @@ class DBusServices {
           std::make_unique<DisplayPowerServiceProvider>(
               std::make_unique<ChromeDisplayPowerServiceProviderDelegate>()));
     }
-    // TODO(teravest): Remove this provider once all callers are using
-    // |liveness_service_| instead: http://crbug.com/644322
+    // TODO(derat): Remove this provider once all callers are using
+    // |liveness_service_| instead: https://crbug.com/644322
     service_providers.push_back(
         std::make_unique<LivenessServiceProvider>(kLibCrosServiceInterface));
-    service_providers.push_back(std::make_unique<ScreenLockServiceProvider>());
+    // TODO(derat): Remove this provider once session_manager is using
+    // |screen_lock_service_| instead: https://crbug.com/827680
+    service_providers.push_back(std::make_unique<ScreenLockServiceProvider>(
+        kLibCrosServiceInterface, kLockScreen));
 
     display_service_providers.push_back(
         std::make_unique<ConsoleServiceProvider>(
             &console_service_provider_delegate_));
 
-    // TODO(teravest): Remove this provider once all callers are using
-    // |kiosk_info_service_| instead: http://crbug.com/703229
+    // TODO(derat): Remove this provider once all callers are using
+    // |kiosk_info_service_| instead: https://crbug.com/703229
     service_providers.push_back(std::make_unique<KioskInfoService>(
         kLibCrosServiceInterface, kGetKioskAppRequiredPlatforVersion));
     cros_dbus_service_ = CrosDBusService::Create(
@@ -380,6 +383,13 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<LivenessServiceProvider>(
                 kLivenessServiceInterface)));
+
+    screen_lock_service_ = CrosDBusService::Create(
+        kScreenLockServiceName, dbus::ObjectPath(kScreenLockServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<ScreenLockServiceProvider>(
+                kScreenLockServiceInterface,
+                kScreenLockServiceShowLockScreenMethod)));
 
     virtual_file_request_service_ = CrosDBusService::Create(
         kVirtualFileRequestServiceName,
@@ -479,6 +489,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
   std::unique_ptr<CrosDBusService> liveness_service_;
+  std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
   std::unique_ptr<CrosDBusService> finch_features_service_;

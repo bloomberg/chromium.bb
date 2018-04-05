@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, LockScreenWhileAddingUser) {
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  ScreenLocker::HandleLockScreenRequest();
+  ScreenLocker::HandleShowLockScreenRequest();
 }
 
 // Test how locking the screen affects an active fullscreen window.

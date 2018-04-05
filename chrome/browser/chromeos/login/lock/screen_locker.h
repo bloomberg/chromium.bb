@@ -168,8 +168,8 @@ class ScreenLocker : public AuthStatusConsumer,
   static void InitClass();
   static void ShutDownClass();
 
-  // Handles a request from the session manager to lock the screen.
-  static void HandleLockScreenRequest();
+  // Handles a request from the session manager to show the lock screen.
+  static void HandleShowLockScreenRequest();
 
   // Show the screen locker.
   static void Show();
