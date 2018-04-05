@@ -72,6 +72,7 @@ static void SaveToOriginMap(SecurityOrigin* origin, const KURL& url) {
   // that the origin can be retrieved when doing security origin check.
   //
   // See the definition of the origin of a Blob URL in the File API spec.
+  DCHECK(!url.HasFragmentIdentifier());
   if (origin && BlobURL::GetOrigin(url) == "null")
     OriginMap()->insert(url.GetString(), origin);
 }
@@ -86,8 +87,11 @@ BlobOriginMap::BlobOriginMap() {
 }
 
 SecurityOrigin* BlobOriginMap::GetOrigin(const KURL& url) {
-  if (url.ProtocolIs("blob"))
-    return OriginMap()->at(url.GetString());
+  if (url.ProtocolIs("blob")) {
+    KURL url_without_fragment = url;
+    url_without_fragment.RemoveFragmentIdentifier();
+    return OriginMap()->at(url_without_fragment.GetString());
+  }
   return nullptr;
 }
 
