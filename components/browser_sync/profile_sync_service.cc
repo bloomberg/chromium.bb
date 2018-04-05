@@ -338,13 +338,13 @@ void ProfileSyncService::RegisterAuthNotifications() {
   DCHECK(thread_checker_.CalledOnValidThread());
   oauth2_token_service_->AddObserver(this);
   if (signin_)
-    signin_->GetOriginal()->AddObserver(this);
+    signin_->GetSigninManager()->AddObserver(this);
 }
 
 void ProfileSyncService::UnregisterAuthNotifications() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (signin_)
-    signin_->GetOriginal()->RemoveObserver(this);
+    signin_->GetSigninManager()->RemoveObserver(this);
   if (oauth2_token_service_)
     oauth2_token_service_->RemoveObserver(this);
 }
@@ -1116,7 +1116,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // On every platform except ChromeOS, sign out the user after a dashboard
       // clear.
       if (!IsLocalSyncEnabled()) {
-        SigninManager::FromSigninManagerBase(signin_->GetOriginal())
+        SigninManager::FromSigninManagerBase(signin_->GetSigninManager())
             ->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
                       signin_metrics::SignoutDelete::IGNORE_METRIC);
       }

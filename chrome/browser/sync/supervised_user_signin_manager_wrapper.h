@@ -13,6 +13,10 @@
 class Profile;
 class SigninManagerBase;
 
+namespace identity {
+class IdentityManager;
+}
+
 // Some chrome cloud services support supervised users as well as normally
 // authenticated users that sign in through SigninManager.  To facilitate
 // getting the "effective" username and account identifiers, services can
@@ -20,8 +24,10 @@ class SigninManagerBase;
 // information when appropriate.
 class SupervisedUserSigninManagerWrapper : public SigninManagerWrapper {
  public:
-  SupervisedUserSigninManagerWrapper(Profile* profile,
-                                     SigninManagerBase* original);
+  SupervisedUserSigninManagerWrapper(
+      Profile* profile,
+      identity::IdentityManager* identity_manager,
+      SigninManagerBase* signin_manager);
   ~SupervisedUserSigninManagerWrapper() override;
 
   // SigninManagerWrapper implementation

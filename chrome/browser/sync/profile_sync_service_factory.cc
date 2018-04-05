@@ -25,6 +25,7 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -137,6 +138,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(ThemeServiceFactory::GetInstance());
 #endif  // !defined(OS_ANDROID)
   DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
@@ -218,10 +220,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 #endif  // defined(OS_WIN)
 
   if (!local_sync_backend_enabled) {
-    SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-    SigninClient* signin_client =
-        ChromeSigninClientFactory::GetForProfile(profile);
-
     // Always create the GCMProfileService instance such that we can listen to
     // the profile notifications and purge the GCM store when the profile is
     // being signed out.
@@ -232,13 +230,15 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     AboutSigninInternalsFactory::GetForProfile(profile);
 
     init_params.signin_wrapper =
-        std::make_unique<SupervisedUserSigninManagerWrapper>(profile, signin);
+        std::make_unique<SupervisedUserSigninManagerWrapper>(
+            profile, IdentityManagerFactory::GetForProfile(profile),
+            SigninManagerFactory::GetForProfile(profile));
     // Note: base::Unretained(signin_client) is safe because the SigninClient is
     // guaranteed to outlive the PSS, per a DependsOn() above (and because PSS
     // clears the callback in its Shutdown()).
-    init_params.signin_scoped_device_id_callback =
-        base::BindRepeating(&SigninClient::GetSigninScopedDeviceId,
-                            base::Unretained(signin_client));
+    init_params.signin_scoped_device_id_callback = base::BindRepeating(
+        &SigninClient::GetSigninScopedDeviceId,
+        base::Unretained(ChromeSigninClientFactory::GetForProfile(profile)));
     init_params.oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     init_params.gaia_cookie_manager_service =

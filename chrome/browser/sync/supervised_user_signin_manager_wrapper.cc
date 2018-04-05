@@ -15,8 +15,10 @@
 
 SupervisedUserSigninManagerWrapper::SupervisedUserSigninManagerWrapper(
     Profile* profile,
-    SigninManagerBase* original)
-    : SigninManagerWrapper(original), profile_(profile) {}
+    identity::IdentityManager* identity_manager,
+    SigninManagerBase* signin_manager)
+    : SigninManagerWrapper(identity_manager, signin_manager),
+      profile_(profile) {}
 
 SupervisedUserSigninManagerWrapper::~SupervisedUserSigninManagerWrapper() {}
 

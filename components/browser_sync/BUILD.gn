@@ -43,6 +43,7 @@ static_library("browser_sync") {
     "//components/version_info:generate_version_info",
     "//google_apis",
     "//net",
+    "//services/identity/public/cpp",
   ]
 }
 
@@ -126,6 +127,7 @@ static_library("test_support") {
     "//components/sync_sessions:test_support",
     "//google_apis",
     "//net:test_support",
+    "//services/identity/public/cpp",
     "//testing/gmock",
   ]
 }
