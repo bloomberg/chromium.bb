@@ -32,10 +32,7 @@ base::string16 DefaultTabTitle() {
 
 class TabbedPaneTest : public ViewsTestBase {
  public:
-  TabbedPaneTest() = default;
-
-  void SetUp() override {
-    ViewsTestBase::SetUp();
+  TabbedPaneTest() {
     tabbed_pane_ = std::make_unique<TabbedPane>();
     tabbed_pane_->set_owned_by_client();
   }
