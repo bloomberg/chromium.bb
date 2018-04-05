@@ -903,6 +903,15 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     /**
+     * Add a {@link SceneOverlay} to the back of the list. This means the overlay will be drawn
+     * first and therefore behind all other overlays currently in the list.
+     * @param overlay The overlay to be added to the back of the list.
+     */
+    public void addSceneOverlayToBack(SceneOverlay overlay) {
+        mStaticLayout.addSceneOverlayToBack(overlay);
+    }
+
+    /**
      * Clears all content associated with {@code tabId} from the internal caches.
      * @param tabId The id of the tab to clear.
      */

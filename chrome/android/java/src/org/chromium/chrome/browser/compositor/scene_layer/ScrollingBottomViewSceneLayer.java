@@ -35,6 +35,9 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     /** The current offset of the bottom view in px. */
     private int mCurrentOffsetPx;
 
+    /** The {@link ViewResourceFrameLayout} that this scene layer represents. */
+    private ViewResourceFrameLayout mBottomView;
+
     /**
      * Build a composited bottom view layer.
      * @param resourceManager A resource manager for dynamic resource creation.
@@ -43,10 +46,11 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
      */
     public ScrollingBottomViewSceneLayer(ResourceManager resourceManager,
             ViewResourceFrameLayout bottomView, int topShadowHeightPx) {
-        mResourceId = bottomView.getId();
+        mBottomView = bottomView;
+        mResourceId = mBottomView.getId();
         mTopShadowHeightPx = topShadowHeightPx;
         resourceManager.getDynamicResourceLoader().registerResource(
-                mResourceId, bottomView.getResourceAdapter());
+                mResourceId, mBottomView.getResourceAdapter());
     }
 
     /**
@@ -82,7 +86,8 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
 
     @Override
     public boolean isSceneOverlayTreeShowing() {
-        return true;
+        // If the offset is greater than the toolbar's height, don't draw the layer.
+        return mCurrentOffsetPx < mBottomView.getHeight() - mTopShadowHeightPx;
     }
 
     @Override
