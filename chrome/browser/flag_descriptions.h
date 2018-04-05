@@ -1793,6 +1793,9 @@ extern const char kVoiceInputDescription[];
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
+extern const char kEnableHomeLauncherName[];
+extern const char kEnableHomeLauncherDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------

@@ -3820,6 +3820,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kHorizontalTabSwitcherAndroid)},
 #endif  // OS_ANDROID
 
+#if defined(OS_CHROMEOS)
+    {"enable-home-launcher", flag_descriptions::kEnableHomeLauncherName,
+     flag_descriptions::kEnableHomeLauncherDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list::features::kEnableHomeLauncher)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -26667,6 +26667,7 @@ from previous Chrome versions.
   <int value="-174319545" label="BulkPrinters:enabled"/>
   <int value="-171173736" label="VrBrowsingExperimentalFeatures:disabled"/>
   <int value="-170986053" label="EnableManualFallbacksFilling:enabled"/>
+  <int value="-167744090" label="EnableHomeLauncher:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
@@ -26808,6 +26809,7 @@ from previous Chrome versions.
   <int value="191737931" label="enable-mark-http-as"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
+  <int value="195570937" label="EnableHomeLauncher:disabled"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
   <int value="201343576" label="enable-password-change-support:enabled"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>

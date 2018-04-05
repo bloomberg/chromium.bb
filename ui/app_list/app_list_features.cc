@@ -17,6 +17,8 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnablePlayStoreAppSearch{"EnablePlayStoreAppSearch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableHomeLauncher{"EnableHomeLauncher",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -32,6 +34,10 @@ bool IsBackgroundBlurEnabled() {
 bool IsPlayStoreAppSearchEnabled() {
   // Not using local static variable to allow tests to change this value.
   return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
+}
+
+bool IsHomeLauncherEnabled() {
+  return base::FeatureList::IsEnabled(kEnableHomeLauncher);
 }
 
 std::string AnswerServerUrl() {
