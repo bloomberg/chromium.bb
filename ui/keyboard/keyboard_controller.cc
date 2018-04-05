@@ -779,9 +779,9 @@ bool KeyboardController::IsOverscrollAllowed() const {
   return container_behavior_->IsOverscrollAllowed();
 }
 
-void KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
-  container_behavior_->HandlePointerEvent(
-      event, container_->GetRootWindow()->bounds());
+bool KeyboardController::HandlePointerEvent(ui::LocatedEvent* event) {
+  return container_behavior_->HandlePointerEvent(
+      *event, container_->GetRootWindow()->bounds());
 }
 
 void KeyboardController::SetContainerType(
