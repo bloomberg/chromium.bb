@@ -327,37 +327,13 @@ void ForeignSessionHandler::HandleGetForeignSessions(
         current_collapsed_sessions->SetBoolean(session_tag, true);
 
       std::unique_ptr<base::ListValue> window_list(new base::ListValue());
-      const std::string group_name =
-          base::FieldTrialList::FindFullName("TabSyncByRecency");
-      if (group_name != "Enabled") {
-        // Order tabs by visual order within window.
-        for (const auto& window_pair : session->windows) {
-          std::unique_ptr<base::DictionaryValue> window_data(
-              SessionWindowToValue(window_pair.second->wrapped_window));
-          if (window_data.get())
-            window_list->Append(std::move(window_data));
-        }
-      } else {
-        // Order tabs by recency. This involves creating a synthetic singleton
-        // window that contains all the tabs of the session.
-        base::Time modification_time;
-        std::vector<const ::sessions::SessionTab*> tabs;
-        open_tabs->GetForeignSessionTabs(session_tag, &tabs);
-        std::unique_ptr<base::ListValue> tab_values(new base::ListValue());
-        for (const ::sessions::SessionTab* tab : tabs) {
-          std::unique_ptr<base::DictionaryValue> tab_value(
-              SessionTabToValue(*tab));
-          if (tab_value.get()) {
-            modification_time = std::max(modification_time, tab->timestamp);
-            tab_values->Append(std::move(tab_value));
-          }
-        }
-        if (tab_values->GetSize() != 0) {
-          std::unique_ptr<base::DictionaryValue> window_data(
-              BuildWindowData(modification_time, 1));
-          window_data->Set("tabs", std::move(tab_values));
+
+      // Order tabs by visual order within window.
+      for (const auto& window_pair : session->windows) {
+        std::unique_ptr<base::DictionaryValue> window_data(
+            SessionWindowToValue(window_pair.second->wrapped_window));
+        if (window_data)
           window_list->Append(std::move(window_data));
-        }
       }
 
       session_data->Set("windows", std::move(window_list));
