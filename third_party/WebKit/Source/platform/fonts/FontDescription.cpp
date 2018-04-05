@@ -114,22 +114,26 @@ bool FontDescription::operator==(const FontDescription& other) const {
 }
 
 FontSelectionValue FontDescription::LighterWeight(FontSelectionValue weight) {
-  if (weight >= FontSelectionValue(100) && weight <= FontSelectionValue(500))
+  // TODO(fs): Adjust to match table in
+  // https://drafts.csswg.org/css-fonts-4/#font-weight-prop
+  if (weight < FontSelectionValue(501))
     return FontSelectionValue(100);
-  if (weight >= FontSelectionValue(600) && weight <= FontSelectionValue(700))
+  if (weight < FontSelectionValue(701))
     return FontSelectionValue(400);
-  if (weight >= FontSelectionValue(800) && weight <= FontSelectionValue(900))
+  if (weight <= FontSelectionValue(1000))
     return FontSelectionValue(700);
   NOTREACHED();
   return NormalWeightValue();
 }
 
 FontSelectionValue FontDescription::BolderWeight(FontSelectionValue weight) {
-  if (weight >= FontSelectionValue(100) && weight <= FontSelectionValue(300))
+  // TODO(fs): Adjust to match table in
+  // https://drafts.csswg.org/css-fonts-4/#font-weight-prop
+  if (weight < FontSelectionValue(301))
     return FontSelectionValue(400);
-  if (weight >= FontSelectionValue(400) && weight <= FontSelectionValue(500))
+  if (weight < FontSelectionValue(501))
     return FontSelectionValue(700);
-  if (weight >= FontSelectionValue(600) && weight <= FontSelectionValue(900))
+  if (weight <= FontSelectionValue(1000))
     return FontSelectionValue(900);
   NOTREACHED();
   return NormalWeightValue();
