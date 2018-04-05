@@ -32,15 +32,6 @@ function castButton(videoElement) {
     return button;
 }
 
-function pictureInPictureButton(videoElement) {
-    var controlID = '-internal-media-controls-picture-in-picture-button';
-
-    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
-    if (!button)
-        throw 'Failed to find picture in picture button';
-    return button;
-}
-
 function downloadButton(videoElement) {
     var controlID = '-internal-media-controls-download-button';
     var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
@@ -433,17 +424,6 @@ function doubleTouchAtCoordinates(x, y, timeout, callback) {
       ]
     }
   ], callback);
-}
-
-function enablePictureInPictureForTest(t) {
-  var pictureInPictureEnabledValue =
-      internals.runtimeFlags.pictureInPictureEnabled;
-  internals.runtimeFlags.pictureInPictureEnabled = true;
-
-  t.add_cleanup(() => {
-    internals.runtimeFlags.pictureInPictureEnabled =
-        pictureInPictureEnabledValue;
-  });
 }
 
 function traverseNextNode(node, stayWithin) {
