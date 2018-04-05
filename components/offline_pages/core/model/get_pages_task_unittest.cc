@@ -217,6 +217,20 @@ TEST_F(GetPagesTaskTest, GetPageByOfflineId) {
   EXPECT_EQ(item_1, single_page_result());
 }
 
+TEST_F(GetPagesTaskTest, GetPageByGuid) {
+  OfflinePageItem item_1 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_1);
+  OfflinePageItem item_2 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_2);
+  OfflinePageItem item_3 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_3);
+
+  RunTask(GetPagesTask::CreateTaskMatchingGuid(
+      store(), get_single_page_callback(), item_1.client_id.id));
+
+  EXPECT_EQ(item_1, single_page_result());
+}
+
 TEST_F(GetPagesTaskTest, GetPageBySizeAndDigest) {
   static const int64_t kFileSize1 = 123LL;
   static const int64_t kFileSize2 = 999999LL;

@@ -103,6 +103,8 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) override;
+  void GetPageByGuid(const std::string& guid,
+                     const SingleOfflinePageItemCallback& callback) override;
   void GetPagesByClientIds(
       const std::vector<ClientId>& client_ids,
       const MultipleOfflinePageItemCallback& callback) override;

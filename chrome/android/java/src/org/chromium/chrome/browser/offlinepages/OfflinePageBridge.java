@@ -562,19 +562,22 @@ public class OfflinePageBridge {
 
     /**
      * Ask the native code to publish the internal page asychronously.
-     * @param profile Profile for current user.
      * @param offlineId ID of the offline page to publish.
-     * @param title Title of the offline page.
-     * @param url Url of the offline page.
-     * @param filePath Path to the file for the offline page.
-     * @param size Length of the offline page file.
      * @param publishedCallback Function to call when publishing is done.  This will be called
      *        with the new path of the file.
      */
-    public void publishInternalPage(Profile profile, long offlineId, String title, String url,
-            String filePath, long size, Callback<String> publishedCallback) {
-        nativePublishInternalPage(mNativeOfflinePageBridge, profile, offlineId, title, url,
-                filePath, size, publishedCallback);
+    public void publishInternalPageByOfflineId(long offlineId, Callback<String> publishedCallback) {
+        nativePublishInternalPageByOfflineId(
+                mNativeOfflinePageBridge, offlineId, publishedCallback);
+    }
+
+    /**
+     * Ask the native code to publish the internal page asychronously.
+     * @param guid Client ID of the offline page to publish.
+     * @param publishedCallback Function to call when publishing is done.
+     */
+    public void publishInternalPageByGuid(String guid, Callback<String> publishedCallback) {
+        nativePublishInternalPageByGuid(mNativeOfflinePageBridge, guid, publishedCallback);
     }
 
     /**
@@ -857,9 +860,11 @@ public class OfflinePageBridge {
     native void nativeDeletePagesByOfflineId(
             long nativeOfflinePageBridge, long[] offlineIds, Callback<Integer> callback);
     @VisibleForTesting
-    private native void nativePublishInternalPage(long nativeOfflinePageBridge, Profile profile,
-            long offlineId, String title, String url, String filePath, long size,
-            Callback<String> publishedCallback);
+    private native void nativePublishInternalPageByOfflineId(
+            long nativeOfflinePageBridge, long offlineId, Callback<String> publishedCallback);
+    @VisibleForTesting
+    private native void nativePublishInternalPageByGuid(
+            long nativeOfflinePageBridge, String guid, Callback<String> publishedCallback);
 
     private native void nativeSelectPageForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl, int tabId,

@@ -35,6 +35,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemViewHolder;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadItemView;
 import org.chromium.chrome.browser.download.ui.DownloadManagerToolbar;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
@@ -52,6 +53,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -528,7 +530,7 @@ public class DownloadActivityTest {
         // Select an image, download item #6.
         toggleItemSelection(2);
         Intent shareIntent = DownloadUtils.createShareIntent(
-                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems(), null);
         Assert.assertEquals("Incorrect intent action", Intent.ACTION_SEND, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "image/png", shareIntent.getType());
         Assert.assertNotNull(
@@ -543,7 +545,7 @@ public class DownloadActivityTest {
         // Select another image, download item #0.
         toggleItemSelection(9);
         shareIntent = DownloadUtils.createShareIntent(
-                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems(), null);
         Assert.assertEquals(
                 "Incorrect intent action", Intent.ACTION_SEND_MULTIPLE, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "image/*", shareIntent.getType());
@@ -557,7 +559,7 @@ public class DownloadActivityTest {
         // Select non-image item, download item #4.
         toggleItemSelection(6);
         shareIntent = DownloadUtils.createShareIntent(
-                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems(), null);
         Assert.assertEquals(
                 "Incorrect intent action", Intent.ACTION_SEND_MULTIPLE, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
@@ -571,7 +573,7 @@ public class DownloadActivityTest {
         // Select an offline page #3.
         toggleItemSelection(3);
         shareIntent = DownloadUtils.createShareIntent(
-                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems(), null);
         Assert.assertEquals(
                 "Incorrect intent action", Intent.ACTION_SEND_MULTIPLE, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
@@ -597,7 +599,7 @@ public class DownloadActivityTest {
         List<DownloadHistoryItemWrapper> selected_items =
                 mUi.getBackendProvider().getSelectionDelegate().getSelectedItems();
         Assert.assertEquals("There should be only one item selected", 1, selected_items.size());
-        Intent shareIntent = DownloadUtils.createShareIntent(selected_items);
+        Intent shareIntent = DownloadUtils.createShareIntent(selected_items, null);
 
         Assert.assertEquals("Incorrect intent action", Intent.ACTION_SEND, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
@@ -605,6 +607,22 @@ public class DownloadActivityTest {
                 shareIntent.getParcelableExtra(Intent.EXTRA_STREAM));
         Assert.assertEquals("Intent expected to have parcelable Uri",
                 "file:///data/fake_path/Downloads/4",
+                shareIntent.getParcelableExtra(Intent.EXTRA_STREAM).toString());
+        Assert.assertNull("Intent expected to not have any text for offline page",
+                IntentUtils.safeGetStringExtra(shareIntent, Intent.EXTRA_TEXT));
+
+        // Pass a map that contains a new file path.
+        HashMap<String, String> newFilePathMap = new HashMap<String, String>();
+        newFilePathMap.put(((OfflineItemWrapper) selected_items.get(0)).getId(),
+                "/data/new_fake_path/Downloads/4");
+        shareIntent = DownloadUtils.createShareIntent(selected_items, newFilePathMap);
+
+        Assert.assertEquals("Incorrect intent action", Intent.ACTION_SEND, shareIntent.getAction());
+        Assert.assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
+        Assert.assertNotNull("Intent expected to have parcelable ArrayList",
+                shareIntent.getParcelableExtra(Intent.EXTRA_STREAM));
+        Assert.assertEquals("Intent expected to have parcelable Uri",
+                "file:///data/new_fake_path/Downloads/4",
                 shareIntent.getParcelableExtra(Intent.EXTRA_STREAM).toString());
         Assert.assertNull("Intent expected to not have any text for offline page",
                 IntentUtils.safeGetStringExtra(shareIntent, Intent.EXTRA_TEXT));
