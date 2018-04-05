@@ -3452,6 +3452,18 @@ be describing additional metrics about the same event.
       SessionTracker::GetRoundedDurationInSeconds.
     </summary>
   </metric>
+  <metric name="StartAction">
+    <summary>
+      A metric to track specifically how the user got into XR presentation. 0:
+      Other, catch all. 1: RequestFrom2DBrowsing, the page requested
+      presentation while Chrome was in 2D mode. 2: RequestFromVRBrowsing, the
+      page requested presentation while Chrome was in VR browsing mode. 3:
+      HeadsetActivation, the user activated the VR headset while in 2D browsing
+      on the page, which listens for headset activations to request
+      presentation. 4: DeepLinkedApp, The page was launched in Chrome from the
+      VR system home (e.g., Daydream Home) and requested presentation.
+    </summary>
+  </metric>
 </event>
 
 </ukm-configuration>

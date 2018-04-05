@@ -132,12 +132,21 @@ void VrShellDelegate::RecordVrStartAction(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jint start_action) {
+  VrStartAction action = static_cast<VrStartAction>(start_action);
+
+  if (action == VrStartAction::kDeepLinkedApp) {
+    // If this is a deep linked app we expect a DisplayActivate to be coming
+    // down the pipeline shortly.
+    possible_presentation_start_action_ =
+        PresentationStartAction::kDeepLinkedApp;
+  }
+
   if (!vr_shell_) {
-    pending_vr_start_action_ = static_cast<VrStartAction>(start_action);
+    pending_vr_start_action_ = action;
     return;
   }
 
-  vr_shell_->RecordVrStartAction(static_cast<VrStartAction>(start_action));
+  vr_shell_->RecordVrStartAction(action);
 }
 
 void VrShellDelegate::OnPresentResult(
@@ -149,6 +158,7 @@ void VrShellDelegate::OnPresentResult(
     bool success) {
   if (!success) {
     std::move(callback).Run(false, nullptr);
+    possible_presentation_start_action_ = base::nullopt;
     return;
   }
 
@@ -163,6 +173,15 @@ void VrShellDelegate::OnPresentResult(
     return;
   }
 
+  // If possible_presentation_start_action_ is not set at this point, then this
+  // request present probably came from blink, and has already been reported
+  // from there.
+  if (possible_presentation_start_action_) {
+    vr_shell_->RecordPresentationStartAction(
+        *possible_presentation_start_action_);
+    possible_presentation_start_action_ = base::nullopt;
+  }
+
   vr_shell_->ConnectPresentingService(
       std::move(submit_client), std::move(request), std::move(display_info),
       std::move(present_options));
@@ -174,6 +193,16 @@ void VrShellDelegate::DisplayActivate(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   device::GvrDevice* device = static_cast<device::GvrDevice*>(GetDevice());
   if (device) {
+    if (!possible_presentation_start_action_ ||
+        possible_presentation_start_action_ !=
+            PresentationStartAction::kDeepLinkedApp) {
+      // The only possible sources for DisplayActivate are at the moment DLAs
+      // and HeadsetActivations. Therefore if it's not a DLA it must be a
+      // HeadsetActivation.
+      possible_presentation_start_action_ =
+          PresentationStartAction::kHeadsetActivation;
+    }
+
     device->Activate(
         device::mojom::VRDisplayEventReason::MOUNTED,
         base::BindRepeating(&VrShellDelegate::OnActivateDisplayHandled,
@@ -268,6 +297,8 @@ void VrShellDelegate::OnActivateDisplayHandled(bool will_not_present) {
     // WebVR page didn't request presentation in the vrdisplayactivate handler.
     // Tell VrShell that we are in VR Browsing Mode.
     ExitWebVRPresent();
+    // Reset possible_presentation_start_action_ as it may have been set.
+    possible_presentation_start_action_ = base::nullopt;
   }
 }
 

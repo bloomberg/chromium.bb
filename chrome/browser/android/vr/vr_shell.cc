@@ -772,6 +772,13 @@ void VrShell::RecordVrStartAction(VrStartAction action) {
   }
 }
 
+void VrShell::RecordPresentationStartAction(PresentationStartAction action) {
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents_);
+  if (metrics_helper)
+    metrics_helper->RecordPresentationStartAction(action);
+}
+
 void VrShell::ShowSoftInput(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             bool show) {

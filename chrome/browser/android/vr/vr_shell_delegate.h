@@ -99,6 +99,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   base::OnceCallback<void(bool)> on_present_result_callback_;
   bool pending_successful_present_request_ = false;
   base::Optional<VrStartAction> pending_vr_start_action_;
+  base::Optional<PresentationStartAction> possible_presentation_start_action_;
 
   base::CancelableClosure clear_activate_task_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

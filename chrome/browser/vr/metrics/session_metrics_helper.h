@@ -37,6 +37,24 @@ enum class VrStartAction : int {
   kVrStartActionLast = kIntentLaunch,
 };
 
+// The source of a request to enter XR Presentation.
+enum PresentationStartAction {
+  // A catch all for methods of Presentation entry that are not otherwise
+  // logged.
+  kOther = 0,
+  // The user triggered a presentation request on a page in 2D, probably by
+  // clicking an enter VR button.
+  kRequestFrom2dBrowsing = 1,
+  // The user triggered a presentation request on a page in VR browsing,
+  // probably by clicking an enter VR button.
+  kRequestFromVrBrowsing = 2,
+  // The user activated a headset on a page that listens for headset activations
+  // and requests presentation.
+  kHeadsetActivation = 3,
+  // The user opened a deep linked app, probably from the Daydream homescreen.
+  kDeepLinkedApp = 4,
+};
+
 // SessionTimer will monitor the time between calls to StartSession and
 // StopSession.  It will combine multiple segments into a single session if they
 // are sufficiently close in time.  It will also only include segments if they
@@ -142,6 +160,7 @@ class SessionMetricsHelper : public content::WebContentsObserver {
   void RecordUrlRequested(GURL url, NavigationMethod method);
 
   void RecordVrStartAction(VrStartAction action);
+  void RecordPresentationStartAction(PresentationStartAction action);
   void ReportRequestPresent();
 
  private:
@@ -195,6 +214,7 @@ class SessionMetricsHelper : public content::WebContentsObserver {
   NavigationMethod last_url_request_method_;
 
   base::Optional<VrStartAction> pending_page_session_start_action_;
+  base::Optional<PresentationStartAction> pending_presentation_start_action_;
 
   int num_videos_playing_ = 0;
   int num_session_navigation_ = 0;

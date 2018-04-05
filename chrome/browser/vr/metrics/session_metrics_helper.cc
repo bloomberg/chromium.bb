@@ -290,13 +290,26 @@ void SessionMetricsHelper::RecordVrStartAction(VrStartAction action) {
   }
 }
 
+void SessionMetricsHelper::RecordPresentationStartAction(
+    PresentationStartAction action) {
+  if (!presentation_session_tracker_ || mode_ != Mode::kWebXrVrPresentation) {
+    pending_presentation_start_action_ = action;
+  } else {
+    presentation_session_tracker_->ukm_entry()->SetStartAction(action);
+    pending_presentation_start_action_ = base::nullopt;
+  }
+}
+
 void SessionMetricsHelper::ReportRequestPresent() {
   // If we're not in VR, log this as an entry into VR from 2D.
   if (mode_ == Mode::kNoVr) {
     RecordVrStartAction(VrStartAction::kPresentationRequest);
-    // TODO(offenwanger): Record entered presentation from 2D.
+    RecordPresentationStartAction(
+        PresentationStartAction::kRequestFrom2dBrowsing);
+  } else {
+    RecordPresentationStartAction(
+        PresentationStartAction::kRequestFromVrBrowsing);
   }
-  // TODO(offenwanger): Else record entered presentation from VR.
 }
 
 void SessionMetricsHelper::MaybeSetVrStartAction(VrStartAction action) {
@@ -471,6 +484,14 @@ void SessionMetricsHelper::OnEnterPresentation() {
       SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
       std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
           ukm::GetSourceIdForWebContentsDocument(web_contents())));
+
+  if (!pending_presentation_start_action_) {
+    pending_presentation_start_action_ = PresentationStartAction::kOther;
+  }
+
+  presentation_session_tracker_->ukm_entry()->SetStartAction(
+      *pending_presentation_start_action_);
+  pending_presentation_start_action_ = base::nullopt;
 }
 
 void SessionMetricsHelper::OnExitPresentation() {
@@ -617,6 +638,11 @@ void SessionMetricsHelper::DidFinishNavigation(
           SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
           std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
               ukm::GetSourceIdForWebContentsDocument(web_contents())));
+      if (pending_presentation_start_action_) {
+        presentation_session_tracker_->ukm_entry()->SetStartAction(
+            *pending_presentation_start_action_);
+        pending_presentation_start_action_ = base::nullopt;
+      }
     }
 
     num_session_navigation_++;
