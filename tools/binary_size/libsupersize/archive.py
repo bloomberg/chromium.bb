@@ -808,15 +808,15 @@ def _ParseDexSymbols(section_sizes, apk_path, output_directory):
   return symbols
 
 
-def _ParseApkOtherSymbols(section_sizes, apk_path):
+def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path):
   apk_name = os.path.basename(apk_path)
   apk_symbols = []
   zip_info_total = 0
   with zipfile.ZipFile(apk_path) as z:
     for zip_info in z.infolist():
       zip_info_total += zip_info.compress_size
-      # Skip shared library, pak, and dex files as they are accounted for.
-      if (zip_info.filename.endswith('.so')
+      # Skip main shared library, pak, and dex files as they are accounted for.
+      if (zip_info.filename == apk_so_path
           or zip_info.filename.endswith('.dex')
           or zip_info.filename.endswith('.pak')):
         continue
@@ -937,7 +937,8 @@ def CreateSectionSizesAndSymbols(
           section_sizes, metadata, apk_elf_result)
     raw_symbols.extend(
         _ParseDexSymbols(section_sizes, apk_path, output_directory))
-    raw_symbols.extend(_ParseApkOtherSymbols(section_sizes, apk_path))
+    raw_symbols.extend(
+        _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path))
   elif pak_files and pak_info_file:
     pak_symbols_by_id = _FindPakSymbolsFromFiles(
         pak_files, pak_info_file, output_directory)
