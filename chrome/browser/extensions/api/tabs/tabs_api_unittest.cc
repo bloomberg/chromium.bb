@@ -20,26 +20,14 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
+#include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
 
 namespace extensions {
 
+using display::test::ScopedScreenOverride;
+
 namespace {
-
-class ScopedScreenOverride {
- public:
-  ~ScopedScreenOverride() {
-    display::Screen::SetScreenInstance(original_screen_);
-  }
-
-  void SetScreenInstance(display::Screen* instance) {
-    original_screen_ = display::Screen::GetScreen();
-    display::Screen::SetScreenInstance(instance);
-  }
-
- private:
-  display::Screen* original_screen_ = nullptr;
-};
 
 std::unique_ptr<base::ListValue> RunTabsQueryFunction(
     Browser* browser,
@@ -88,14 +76,13 @@ void TabsApiUnitTest::SetUp() {
   params.type = Browser::TYPE_TABBED;
   params.window = browser_window_.get();
   browser_.reset(new Browser(params));
-  scoped_screen_override_.reset(new ScopedScreenOverride);
-  scoped_screen_override_->SetScreenInstance(&test_screen_);
+  scoped_screen_override_ =
+      std::make_unique<ScopedScreenOverride>(&test_screen_);
 }
 
 void TabsApiUnitTest::TearDown() {
   browser_.reset();
   browser_window_.reset();
-  scoped_screen_override_.reset();
   content::BrowserSideNavigationTearDown();
   ExtensionServiceTestBase::TearDown();
 }

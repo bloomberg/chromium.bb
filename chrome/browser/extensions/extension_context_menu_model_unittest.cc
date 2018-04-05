@@ -43,10 +43,13 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
 #include "ui/gfx/image/image.h"
 
 namespace extensions {
+
+using display::test::ScopedScreenOverride;
 
 namespace {
 
@@ -191,6 +194,7 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   std::unique_ptr<TestBrowserWindow> test_window_;
   std::unique_ptr<Browser> browser_;
   display::test::TestScreen test_screen_;
+  std::unique_ptr<ScopedScreenOverride> scoped_screen_override_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModelTest);
 };
@@ -243,7 +247,8 @@ Browser* ExtensionContextMenuModelTest::GetBrowser() {
 void ExtensionContextMenuModelTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
   content::BrowserSideNavigationSetUp();
-  display::Screen::SetScreenInstance(&test_screen_);
+  scoped_screen_override_ =
+      std::make_unique<ScopedScreenOverride>(&test_screen_);
 }
 
 void ExtensionContextMenuModelTest::TearDown() {

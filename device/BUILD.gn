@@ -277,6 +277,7 @@ test("device_unittests") {
       "//device/vr/public/mojom",
       "//services/device/public/cpp/generic_sensor",
       "//ui/display",
+      "//ui/display:test_support",
     ]
   }
 }

@@ -21,12 +21,14 @@
 #include "extensions/test/result_catcher.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/scoped_screen_override.h"
 
 namespace extensions {
 
 using api::system_display::Bounds;
 using api::system_display::DisplayUnitInfo;
 using display::Screen;
+using display::test::ScopedScreenOverride;
 
 class MockScreen : public Screen {
  public:
@@ -216,7 +218,8 @@ class SystemDisplayApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
     ANNOTATE_LEAKING_OBJECT_PTR(display::Screen::GetScreen());
-    display::Screen::SetScreenInstance(screen_.get());
+    scoped_screen_override_ =
+        std::make_unique<ScopedScreenOverride>(screen_.get());
     DisplayInfoProvider::InitializeForTesting(provider_.get());
   }
 
@@ -229,6 +232,7 @@ class SystemDisplayApiTest : public ShellApiTest {
   }
   std::unique_ptr<MockDisplayInfoProvider> provider_;
   std::unique_ptr<display::Screen> screen_;
+  std::unique_ptr<ScopedScreenOverride> scoped_screen_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemDisplayApiTest);
