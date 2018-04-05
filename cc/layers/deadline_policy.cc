@@ -4,6 +4,8 @@
 
 #include "cc/layers/deadline_policy.h"
 
+#include <limits>
+
 namespace cc {
 
 // static
@@ -19,17 +21,18 @@ DeadlinePolicy DeadlinePolicy::UseDefaultDeadline() {
 // static
 DeadlinePolicy DeadlinePolicy::UseSpecifiedDeadline(
     uint32_t deadline_in_frames) {
-  return DeadlinePolicy(deadline_in_frames);
+  return DeadlinePolicy(Type::kUseSpecifiedDeadline, deadline_in_frames);
 }
 
-DeadlinePolicy::DeadlinePolicy(Type policy_type)
-    : policy_type_(policy_type), deadline_in_frames_(base::nullopt) {
-  DCHECK_NE(Type::kUseSpecifiedDeadline, policy_type_);
+// static
+DeadlinePolicy DeadlinePolicy::UseInfiniteDeadline() {
+  return DeadlinePolicy(Type::kUseInfiniteDeadline,
+                        std::numeric_limits<uint32_t>::max());
 }
 
-DeadlinePolicy::DeadlinePolicy(uint32_t deadline_in_frames)
-    : policy_type_(Type::kUseSpecifiedDeadline),
-      deadline_in_frames_(deadline_in_frames) {}
+DeadlinePolicy::DeadlinePolicy(Type policy_type,
+                               base::Optional<uint32_t> deadline_in_frames)
+    : policy_type_(policy_type), deadline_in_frames_(deadline_in_frames) {}
 
 DeadlinePolicy::DeadlinePolicy(const DeadlinePolicy& other) = default;
 

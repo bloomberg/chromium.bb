@@ -86,6 +86,18 @@ TEST_F(SurfaceLayerTest, UseExistingDeadlineForNewSurfaceLayer) {
   EXPECT_EQ(0u, layer->deadline_in_frames());
 }
 
+// This test verifies that if UseInfiniteDeadline() is used on a new
+// SurfaceLayer then the deadline will be max number of frames.
+TEST_F(SurfaceLayerTest, UseInfiniteDeadlineForNewSurfaceLayer) {
+  scoped_refptr<SurfaceLayer> layer = SurfaceLayer::Create();
+  layer_tree_host_->SetRootLayer(layer);
+  viz::SurfaceId primary_id(
+      kArbitraryFrameSinkId,
+      viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
+  layer->SetPrimarySurfaceId(primary_id, DeadlinePolicy::UseInfiniteDeadline());
+  EXPECT_EQ(std::numeric_limits<uint32_t>::max(), layer->deadline_in_frames());
+}
+
 // This test verifies that SurfaceLayer properties are pushed across to
 // SurfaceLayerImpl.
 TEST_F(SurfaceLayerTest, PushProperties) {

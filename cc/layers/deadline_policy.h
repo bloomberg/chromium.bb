@@ -18,7 +18,8 @@ class CC_EXPORT DeadlinePolicy {
   enum Type {
     kUseExistingDeadline,
     kUseDefaultDeadline,
-    kUseSpecifiedDeadline
+    kUseSpecifiedDeadline,
+    kUseInfiniteDeadline
   };
 
   static DeadlinePolicy UseExistingDeadline();
@@ -26,6 +27,8 @@ class CC_EXPORT DeadlinePolicy {
   static DeadlinePolicy UseDefaultDeadline();
 
   static DeadlinePolicy UseSpecifiedDeadline(uint32_t deadline_in_frames);
+
+  static DeadlinePolicy UseInfiniteDeadline();
 
   DeadlinePolicy(const DeadlinePolicy& other);
 
@@ -39,7 +42,8 @@ class CC_EXPORT DeadlinePolicy {
 
   base::Optional<uint32_t> deadline_in_frames() const {
     DCHECK(policy_type_ == Type::kUseDefaultDeadline ||
-           policy_type_ == Type::kUseSpecifiedDeadline);
+           policy_type_ == Type::kUseSpecifiedDeadline ||
+           policy_type_ == Type::kUseInfiniteDeadline);
     return deadline_in_frames_;
   }
 
@@ -55,9 +59,9 @@ class CC_EXPORT DeadlinePolicy {
   }
 
  private:
-  explicit DeadlinePolicy(Type policy_type);
-
-  explicit DeadlinePolicy(uint32_t deadline_in_frames);
+  explicit DeadlinePolicy(
+      Type policy_type,
+      base::Optional<uint32_t> deadline_in_frames = base::nullopt);
 
   Type policy_type_;
   base::Optional<uint32_t> deadline_in_frames_;
