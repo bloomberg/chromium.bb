@@ -7,6 +7,7 @@
 
 #include "WebCommon.h"
 #include "base/time/time.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace blink {
 namespace scheduler {
@@ -25,7 +26,8 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
   // Note simply creating a WebScopedVirtualTimePauser doesn't cause VirtualTime
   // to pause, instead you need to call PauseVirtualTime.
   WebScopedVirtualTimePauser(scheduler::RendererSchedulerImpl*,
-                             VirtualTaskDuration);
+                             VirtualTaskDuration,
+                             const WebString& debug_name);
 
   WebScopedVirtualTimePauser();
   ~WebScopedVirtualTimePauser();
@@ -40,7 +42,8 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
   // Virtual time will be paused if any WebScopedVirtualTimePauser votes to
   // pause it, and only unpaused only if all WebScopedVirtualTimePauser are
   // either destroyed or vote to unpause.
-  void PauseVirtualTime(bool paused);
+  void PauseVirtualTime();
+  void UnpauseVirtualTime();
 
  private:
   void DecrementVirtualTimePauseCount();
@@ -49,6 +52,7 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
   bool paused_ = false;
   VirtualTaskDuration duration_ = VirtualTaskDuration::kInstant;
   scheduler::RendererSchedulerImpl* scheduler_;  // NOT OWNED
+  WebString debug_name_;
   int trace_id_;
 
   static int next_trace_id_;

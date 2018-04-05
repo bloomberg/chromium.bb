@@ -2417,8 +2417,10 @@ void RendererSchedulerImpl::SetRendererProcessType(RendererProcessType type) {
 
 WebScopedVirtualTimePauser
 RendererSchedulerImpl::CreateWebScopedVirtualTimePauser(
+    const char* name,
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
-  return WebScopedVirtualTimePauser(this, duration);
+  return WebScopedVirtualTimePauser(this, duration,
+                                    WebString(WTF::String(name)));
 }
 
 void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {

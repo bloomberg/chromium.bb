@@ -42,6 +42,7 @@ WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       .GetFrame()
       ->GetFrameScheduler()
       ->CreateWebScopedVirtualTimePauser(
+          "PendingScript",
           WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
 }
 }  // namespace
@@ -82,7 +83,7 @@ void PendingScript::WatchForLoad(PendingScriptClient* client) {
   if (IsReady()) {
     client_->PendingScriptFinished(this);
   } else {
-    virtual_time_pauser_.PauseVirtualTime(true);
+    virtual_time_pauser_.PauseVirtualTime();
   }
 }
 
@@ -92,7 +93,7 @@ void PendingScript::StopWatchingForLoad() {
   CheckState();
   DCHECK(IsExternalOrModule());
   client_ = nullptr;
-  virtual_time_pauser_.PauseVirtualTime(false);
+  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 ScriptElementBase* PendingScript::GetElement() const {

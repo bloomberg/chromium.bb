@@ -167,7 +167,11 @@ void ResourceLoader::Restart(const ResourceRequest& request) {
 void ResourceLoader::SetDefersLoading(bool defers) {
   DCHECK(loader_);
   loader_->SetDefersLoading(defers);
-  resource_->VirtualTimePauser().PauseVirtualTime(!defers);
+  if (defers) {
+    resource_->VirtualTimePauser().UnpauseVirtualTime();
+  } else {
+    resource_->VirtualTimePauser().PauseVirtualTime();
+  }
 }
 
 void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
@@ -361,8 +365,9 @@ bool ResourceLoader::WillFollowRedirect(
   if (Context().GetFrameScheduler()) {
     WebScopedVirtualTimePauser virtual_time_pauser =
         Context().GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
+            resource_->Url().GetString(),
             WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-    virtual_time_pauser.PauseVirtualTime(true);
+    virtual_time_pauser.PauseVirtualTime();
     resource_->VirtualTimePauser() = std::move(virtual_time_pauser);
   }
   Context().DispatchWillSendRequest(resource_->Identifier(), *new_request,

@@ -3791,14 +3791,14 @@ TEST_F(RendererSchedulerImplTest, VirtualTimePauser) {
 
   WebScopedVirtualTimePauser pauser =
       scheduler_->CreateWebScopedVirtualTimePauser(
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
+          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
 
   base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->Now();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
-  pauser.PauseVirtualTime(true);
+  pauser.PauseVirtualTime();
   EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  pauser.PauseVirtualTime(false);
+  pauser.UnpauseVirtualTime();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
   base::TimeTicks after = scheduler_->GetVirtualTimeDomain()->Now();
   EXPECT_EQ(after, before);
@@ -3812,11 +3812,11 @@ TEST_F(RendererSchedulerImplTest, VirtualTimePauserNonInstantTask) {
 
   WebScopedVirtualTimePauser pauser =
       scheduler_->CreateWebScopedVirtualTimePauser(
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
 
   base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->Now();
-  pauser.PauseVirtualTime(true);
-  pauser.PauseVirtualTime(false);
+  pauser.PauseVirtualTime();
+  pauser.UnpauseVirtualTime();
   base::TimeTicks after = scheduler_->GetVirtualTimeDomain()->Now();
   EXPECT_GT(after, before);
 }

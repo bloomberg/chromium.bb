@@ -1566,13 +1566,14 @@ void RenderViewImpl::NavigateBackForwardSoon(int offset) {
       RenderThreadImpl::current()
           ->GetWebMainThreadScheduler()
           ->CreateWebScopedVirtualTimePauser(
+              "NavigateBackForwardSoon",
               blink::WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
-  history_navigation_virtual_time_pauser_.PauseVirtualTime(true);
+  history_navigation_virtual_time_pauser_.PauseVirtualTime();
   Send(new ViewHostMsg_GoToEntryAtOffset(GetRoutingID(), offset));
 }
 
 void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
-  history_navigation_virtual_time_pauser_.PauseVirtualTime(false);
+  history_navigation_virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 int RenderViewImpl::HistoryBackListCount() {

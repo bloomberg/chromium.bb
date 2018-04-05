@@ -73,8 +73,9 @@ bool DOMStorageCachedArea::SetItem(int connection_id,
 
   // Ignore mutations to 'key' until OnSetItemComplete.
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
-  virtual_time_pauser.PauseVirtualTime(true);
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser(
+          "DOMStorageCachedArea");
+  virtual_time_pauser.PauseVirtualTime();
   ignore_key_mutations_[key]++;
   proxy_->SetItem(connection_id, key, value, old_value, page_url,
                   base::BindOnce(&DOMStorageCachedArea::OnSetItemComplete,
@@ -100,8 +101,9 @@ void DOMStorageCachedArea::RemoveItem(int connection_id,
 
   // Ignore mutations to 'key' until OnRemoveItemComplete.
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
-  virtual_time_pauser.PauseVirtualTime(true);
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser(
+          "DOMStorageCachedArea");
+  virtual_time_pauser.PauseVirtualTime();
   ignore_key_mutations_[key]++;
   proxy_->RemoveItem(connection_id, key,
                      base::NullableString16(old_value, false), page_url,
@@ -117,8 +119,9 @@ void DOMStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
 
   // Ignore all mutations until OnClearComplete time.
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
-  virtual_time_pauser.PauseVirtualTime(true);
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser(
+          "DOMStorageCachedArea");
+  virtual_time_pauser.PauseVirtualTime();
   ignore_all_mutations_ = true;
   proxy_->ClearArea(connection_id, page_url,
                     base::BindOnce(&DOMStorageCachedArea::OnClearComplete,

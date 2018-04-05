@@ -148,6 +148,7 @@ class FrameScheduler {
   // the WebScopedVirtualTimePauser returned by this method is initially
   // unpaused.
   virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const String& name,
       WebScopedVirtualTimePauser::VirtualTaskDuration) = 0;
 
   // Tells the scheduler that a provisional load has started, the scheduler may

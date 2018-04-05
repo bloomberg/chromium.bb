@@ -394,7 +394,7 @@ void LocalFrameClientImpl::DispatchDidNavigateWithinPage(
         WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type),
         content_initiated);
   }
-  virtual_time_pauser_.PauseVirtualTime(false);
+  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
@@ -412,7 +412,7 @@ void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidStartProvisionalLoad(web_frame_->GetFrame());
-  virtual_time_pauser_.PauseVirtualTime(true);
+  virtual_time_pauser_.PauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
@@ -444,14 +444,14 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
 
-  virtual_time_pauser_.PauseVirtualTime(false);
+  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
     HistoryCommitType commit_type) {
   web_frame_->DidFail(error, true, commit_type);
-  virtual_time_pauser_.PauseVirtualTime(false);
+  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(const ResourceError& error,
