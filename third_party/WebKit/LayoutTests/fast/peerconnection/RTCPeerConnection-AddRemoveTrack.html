@@ -44,25 +44,23 @@ promise_test(function() {
     });
 }, 'addTrack() for a single track and a different stream.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  return createStreams({audio:true, video:false}, 2)
-    .then(function(streams) {
-      let streamA = streams[0];
-      let streamB = streams[1];
-      let track = streamA.getAudioTracks()[0];
-      let exception = null;
-      try {
-        pc.addTrack(track, streamA, streamB);
-      } catch (e) {
-        exception = e;
-      }
-      // The spec supports multiple streams per track but our implementation
-      // doesn't. Fix test when resolving https://crbug.com/webrtc/7932.
-      assert_true(exception != null);
-      assert_equals('NotSupportedError', exception.name);
-    });
-}, 'addTrack() for a single track and two streams throws NotSupportedError.');
+promise_test(async t => {
+  let pc = new RTCPeerConnection({sdpSemantics: "plan-b"});
+  let [streamA, streamB] = await createStreams({audio:true, video:false}, 2);
+  let track = streamA.getAudioTracks()[0];
+  assert_throws('NotSupportedError', () => {
+    pc.addTrack(track, streamA, streamB)
+  });
+}, 'addTrack() for a single track and two streams (Plan B) throws NotSupportedError.');
+
+promise_test(async t => {
+  let pc = new RTCPeerConnection({sdpSemantics: "unified-plan"});
+  let [streamA, streamB] = await createStreams({audio:true, video:false}, 2);
+  let track = streamA.getAudioTracks()[0];
+  let sender =  pc.addTrack(track, streamA, streamB);
+  assert_equals(sender.track, track);
+  assert_array_equals(pc.getLocalStreams(), [ streamA, streamB ]);
+}, 'addTrack() for a single track and two streams (Unified Plan).');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();

@@ -535,7 +535,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
       negotiation_needed_(false),
       stopped_(false),
       closed_(false),
-      has_data_channels_(false) {
+      has_data_channels_(false),
+      sdp_semantics_(configuration.sdp_semantics) {
   Document* document = ToDocument(GetExecutionContext());
 
   // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the
@@ -1424,9 +1425,13 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
   DCHECK(track->Component());
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return nullptr;
-  if (streams.size() >= 2) {
-    // TODO(hbos): Don't throw an exception when this is supported by the lower
-    // layers. https://crbug.com/webrtc/7932
+  // TODO(bugs.webrtc.org/8530): Take out WebRTCSdpSemantics::kDefault check
+  // once default is no longer interpreted as Plan B lower down.
+  if ((sdp_semantics_ == WebRTCSdpSemantics::kPlanB ||
+       sdp_semantics_ == WebRTCSdpSemantics::kDefault) &&
+      streams.size() >= 2) {
+    // TODO(hbos): Update peer_handler_ to call the AddTrack() that returns the
+    // appropriate errors, and let the lower layers handle it.
     exception_state.ThrowDOMException(
         kNotSupportedError,
         "Adding a track to multiple streams is not supported.");

@@ -44,6 +44,7 @@
 #include "platform/heap/HeapAllocator.h"
 #include "platform/scheduler/public/frame_scheduler.h"
 #include "public/platform/WebMediaConstraints.h"
+#include "public/platform/WebRTCConfiguration.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandlerClient.h"
 
@@ -351,6 +352,7 @@ class MODULES_EXPORT RTCPeerConnection final
   String last_answer_;
 
   bool has_data_channels_;  // For RAPPOR metrics
+  WebRTCSdpSemantics sdp_semantics_;
 };
 
 }  // namespace blink
