@@ -6,6 +6,8 @@
 
 #include "build/build_config.h"
 
+#include <limits.h>
+
 #if defined(OS_WIN)
 #include <Windows.h>  // For GetComputerNameW()
 #endif
