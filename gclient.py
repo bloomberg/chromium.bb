@@ -2937,6 +2937,7 @@ def CMDrevinfo(parser, args):
 
 
 def CMDsetdep(parser, args):
+  """Modifies dependency revisions and variable values in a DEPS file"""
   parser.add_option('--var', action='append',
                     dest='vars', metavar='VAR=VAL', default=[],
                     help='Sets a variable to the given value with the format '
@@ -2956,6 +2957,11 @@ def CMDsetdep(parser, args):
                     help='The DEPS file to be edited. Defaults to the DEPS '
                          'file in the current directory.')
   (options, args) = parser.parse_args(args)
+  if args:
+    parser.error('Unused arguments: "%s"' % '" "'.join(args))
+  if not options.revisions and not options.vars:
+    parser.error(
+        'You must specify at least one variable or revision to modify.')
 
   if not os.path.isfile(options.deps_file):
     raise gclient_utils.Error(
@@ -2969,7 +2975,7 @@ def CMDsetdep(parser, args):
   for var in options.vars:
     name, _, value = var.partition('=')
     if not name or not value:
-      raise gclient_utils.Error(
+      parser.error(
           'Wrong var format: %s should be of the form name=value.' % var)
     if name in local_scope['vars']:
       gclient_eval.SetVar(local_scope, name, value)
@@ -2979,12 +2985,12 @@ def CMDsetdep(parser, args):
   for revision in options.revisions:
     name, _, value = revision.partition('@')
     if not name or not value:
-      raise gclient_utils.Error(
+      parser.error(
           'Wrong dep format: %s should be of the form dep@rev.' % revision)
     if ':' in name:
       name, _, package = name.partition(':')
       if not name or not package:
-        raise gclient_utils.Error(
+        parser.error(
             'Wrong CIPD format: %s:%s should be of the form path:pkg@version.'
             % (name, package))
       gclient_eval.SetCIPD(local_scope, name, package, value)
