@@ -30,6 +30,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using testing::ElementsAre;
+
 #define EXPECT_SCOPED(statements) \
   {                               \
     SCOPED_TRACE("");             \
@@ -269,16 +271,25 @@ class CompositorControllerBrowserTest
 // Runs requestAnimationFrame three times without updating display for
 // animations and takes a screenshot.
 class CompositorControllerRafBrowserTest
-    : public CompositorControllerBrowserTest {
+    : public CompositorControllerBrowserTest,
+      public runtime::Observer {
  private:
   void OnFirstBeginFrameComplete() override {
     CompositorControllerBrowserTest::OnFirstBeginFrameComplete();
 
+    devtools_client_->GetRuntime()->AddObserver(this);
+    devtools_client_->GetRuntime()->Enable(
+        base::BindRepeating(&CompositorControllerRafBrowserTest::RuntimeEnabled,
+                            base::Unretained(this)));
+  }
+
+  void RuntimeEnabled() {
     // Request animation frames in the main frame. Each frame changes the body
     // background color.
     devtools_client_->GetRuntime()->Evaluate(
         "window.rafCount = 0;"
         "function onRaf(timestamp) {"
+        "  console.log('rAF timestamp ' + timestamp + 'ms'); "
         "  window.rafCount++;"
         "  document.body.style.backgroundColor = '#' + window.rafCount * 100;"
         "  window.requestAnimationFrame(onRaf);"
@@ -286,6 +297,16 @@ class CompositorControllerRafBrowserTest
         "window.requestAnimationFrame(onRaf);",
         base::BindRepeating(&CompositorControllerRafBrowserTest::OnRafReady,
                             base::Unretained(this)));
+  }
+
+  // runtime::Observer implementation:
+  void OnConsoleAPICalled(
+      const runtime::ConsoleAPICalledParams& params) override {
+    // We expect the arguments always to be a single string.
+    const std::vector<std::unique_ptr<runtime::RemoteObject>>& args =
+        *params.GetArgs();
+    if (args.size() == 1u && args[0]->HasValue())
+      log_.push_back(args[0]->GetValue()->GetString());
   }
 
   void OnRafReady(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -343,10 +364,14 @@ class CompositorControllerRafBrowserTest
       EXPECT_EQ(expected_color, actual_color);
     }
 
+    EXPECT_THAT(log_, ElementsAre("rAF timestamp 16ms", "rAF timestamp 32ms",
+                                  "rAF timestamp 48ms", "rAF timestamp 64ms"));
+
     FinishCompositorControllerTest();
   }
 
   static constexpr int kNumFrames = 3;
+  std::vector<std::string> log_;
 };
 
 /* static */

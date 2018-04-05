@@ -902,17 +902,27 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
   }
 
   base::Time frame_time;
-  base::TimeTicks frame_timeticks;
+  base::TimeTicks frame_time_ticks;
   base::TimeTicks deadline;
   base::TimeDelta interval;
   bool no_display_updates = false;
 
   if (const base::Value* frame_time_value = params->FindKey("frameTime")) {
+    if (params->FindKey("frameTimeTicks")) {
+      callback.Run(CreateErrorResponse(
+          command_id, kErrorServerError,
+          "May only set one of frameTime & frameTimeTicks."));
+      return;
+    }
     frame_time = base::Time::FromJsTime(frame_time_value->GetDouble());
     base::TimeDelta delta = frame_time - base::Time::UnixEpoch();
-    frame_timeticks = base::TimeTicks::UnixEpoch() + delta;
+    frame_time_ticks = base::TimeTicks::UnixEpoch() + delta;
+  } else if (const base::Value* frame_tic_value =
+                 params->FindKey("frameTimeTicks")) {
+    frame_time_ticks = base::TimeTicks() + base::TimeDelta::FromMillisecondsD(
+                                               frame_tic_value->GetDouble());
   } else {
-    frame_timeticks = base::TimeTicks::Now();
+    frame_time_ticks = base::TimeTicks::Now();
   }
 
   if (const base::Value* interval_value = params->FindKey("interval")) {
@@ -928,6 +938,18 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
   }
 
   if (const base::Value* deadline_value = params->FindKey("deadline")) {
+    if (params->FindKey("deadlineTicks")) {
+      callback.Run(
+          CreateErrorResponse(command_id, kErrorServerError,
+                              "May only set one of deadline & deadlineTicks."));
+      return;
+    }
+    if (params->FindKey("frameTimeTicks")) {
+      callback.Run(CreateErrorResponse(
+          command_id, kErrorServerError,
+          "Use deadlineTicks if frameTimeTicks specified."));
+      return;
+    }
     base::TimeDelta delta =
         base::Time::FromDoubleT(deadline_value->GetDouble()) - frame_time;
     if (delta <= base::TimeDelta()) {
@@ -935,9 +957,27 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
                                        "deadline has to be after frameTime"));
       return;
     }
-    deadline = frame_timeticks + delta;
+    deadline = frame_time_ticks + delta;
+  } else if (const base::Value* deadline_value =
+                 params->FindKey("deadlineTicks")) {
+    if (params->FindKey("frameTime")) {
+      callback.Run(CreateErrorResponse(command_id, kErrorServerError,
+                                       "Use deadline if frameTime specified."));
+      return;
+    }
+    base::TimeDelta delta =
+        (base::TimeTicks() +
+         base::TimeDelta::FromMillisecondsD(deadline_value->GetDouble())) -
+        frame_time_ticks;
+    if (delta <= base::TimeDelta()) {
+      callback.Run(
+          CreateErrorResponse(command_id, kErrorInvalidParam,
+                              "deadline has to be after frameTimeTicks"));
+      return;
+    }
+    deadline = frame_time_ticks + delta;
   } else {
-    deadline = frame_timeticks + interval;
+    deadline = frame_time_ticks + interval;
   }
 
   if (const base::Value* no_display_updates_value =
@@ -992,7 +1032,7 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
   }
 
   headless_contents->BeginFrame(
-      frame_timeticks, deadline, interval, no_display_updates,
+      frame_time_ticks, deadline, interval, no_display_updates,
       capture_screenshot,
       base::BindRepeating(&OnBeginFrameFinished, command_id, callback, encoding,
                           quality));

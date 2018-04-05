@@ -93,7 +93,7 @@ class HEADLESS_EXPORT CompositorController
   base::TimeDelta animation_begin_frame_interval_;
   bool update_display_for_animations_;
   bool needs_begin_frames_ = false;
-  base::Time last_begin_frame_time_ = base::Time::UnixEpoch();
+  base::TimeTicks last_begin_frame_time_;
   base::WeakPtrFactory<CompositorController> weak_ptr_factory_;
 };
 
