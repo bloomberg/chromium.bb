@@ -14,6 +14,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bits.h"
+#include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
@@ -97,6 +98,10 @@ const uint32_t kMinPerfFPS = 30;
 const unsigned int kMinFramesForBitrateTests = 300;
 // The percentiles to measure for encode latency.
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
+// Timeout for the flush is completed. The default FPS is 30, so the processing
+// time for 1 frame is about 33 milliseconds. Here we set 10x period of time
+// considering that there might be some pending frames.
+const unsigned int kFlushTimeoutMs = 300;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
@@ -505,14 +510,14 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 };
 
 enum ClientState {
-  CS_CREATED,
-  CS_INITIALIZED,
-  CS_ENCODING,
-  // Encoding has finished.
-  CS_FINISHED,
-  // Encoded frame quality has been validated.
-  CS_VALIDATED,
-  CS_ERROR,
+  CS_CREATED,      // Encoder is created.
+  CS_INITIALIZED,  // Encoder initialization is finished.
+  CS_ENCODING,     // Encoder is encoding.
+  CS_FLUSHING,     // Ask encoder to flush.
+  CS_FINISHED,     // Encoding has finished, all frames are encoded.
+  CS_FLUSHED,      // Encoder notifies the flush is finished.
+  CS_VALIDATED,    // Encoded frame quality has been validated.
+  CS_ERROR,        // Any error occurs.
 };
 
 // Performs basic, codec-specific sanity checks on the stream buffers passed
@@ -1142,6 +1147,35 @@ class VEAClient : public VEAClientBase {
   // and accounting. Returns false once we have collected all frames we needed.
   bool HandleEncodedFrame(bool keyframe);
 
+  // Ask the encoder to flush the frame. We should call Flush() after
+  // calling Encode() on all remaining frames. However, Encode() can be called
+  // from io_thread, while Flush() should be called from the GPU main
+  // thread. To guarantee the order, the calling sequence is:
+  // 1. FlushEncoder() from the same thread as Encode()
+  // 2. FlushEncoderOnVeaClientThread() from encode client thread
+  // 3. encoder.Flush() from encode client thread
+  void FlushEncoder();
+  void FlushEncoderOnVeaClientThread();
+
+  // Callback function of encoder_->Flush(). We add the number of received
+  // frames at BitstreamBufferReady() and verify the number after flush is
+  // completed. Because we posts the logic of BitstreamBufferReady() to encode
+  // client thread, we also need to post the logic of this function to the same
+  // thread. The calling sequence is:
+  // 1. BitstreamBufferReady() from io_thread
+  // 2. BitstreamBufferReadyOnVeaClientThread() from encode client thread
+  // 3. FlushEncoderDone() from encode client thread
+  // 4. FlushEncoderDoneOnIOThread() from io_thread
+  // 5. FlushEncoderDoneOnVeaClientThread() from encode client thread
+  // Then #4 must be called after #1, #5 must be called after #2.
+  void FlushEncoderDone(bool success);
+  void FlushEncoderDoneOnIOThread(bool success);
+  void FlushEncoderDoneOnVeaClientThread(bool success);
+
+  // Timeout function to check the flush callback function is called in the
+  // short period.
+  void FlushTimeout();
+
   // Verify the minimum FPS requirement.
   void VerifyMinFPS();
 
@@ -1218,6 +1252,9 @@ class VEAClient : public VEAClientBase {
   // stream if we need more frames for bitrate tests.
   unsigned int num_frames_to_encode_;
 
+  // Number of frames we've sent to the encoder thus far.
+  size_t num_frames_submitted_to_encoder_;
+
   // Number of encoded frames we've got from the encoder thus far.
   unsigned int num_encoded_frames_;
 
@@ -1288,6 +1325,9 @@ class VEAClient : public VEAClientBase {
   // The timer used to feed the encoder with the input frames.
   std::unique_ptr<base::RepeatingTimer> input_timer_;
 
+  // The FlushTimeout closure. It is cancelled when flush is finished.
+  base::CancelableClosure flush_timeout_;
+
   // The timestamps for each frame in the order of CreateFrame() invocation.
   base::queue<base::TimeDelta> frame_timestamps_;
 
@@ -1333,6 +1373,7 @@ VEAClient::VEAClient(TestStream* test_stream,
       num_required_input_buffers_(0),
       output_buffer_size_(0),
       num_frames_to_encode_(0),
+      num_frames_submitted_to_encoder_(0),
       num_encoded_frames_(0),
       num_frames_since_last_check_(0),
       seen_keyframe_in_this_buffer_(false),
@@ -1637,10 +1678,12 @@ void VEAClient::BitstreamBufferReadyOnVeaClientThread(
   base::SharedMemory* shm = it->second;
   output_buffers_at_client_.erase(it);
 
-  if (state_ == CS_FINISHED || state_ == CS_VALIDATED)
+  if (state_ == CS_FLUSHED || state_ == CS_VALIDATED)
     return;
 
-  if (verify_output_timestamp_) {
+  // When flush is completed, VEA may return an extra empty buffer. Skip
+  // checking the buffer.
+  if (verify_output_timestamp_ && payload_size > 0) {
     VerifyOutputTimestamp(timestamp);
   }
 
@@ -1659,9 +1702,6 @@ void VEAClient::BitstreamBufferReadyOnVeaClientThread(
           reinterpret_cast<const uint8_t*>(shm->memory()),
           static_cast<int>(payload_size)));
       quality_validator_->AddDecodeBuffer(buffer);
-      // Insert EOS buffer to flush the decoder.
-      if (num_encoded_frames_ == num_frames_to_encode_)
-        quality_validator_->Flush();
     }
 
     if (save_to_file_) {
@@ -1770,8 +1810,10 @@ void VEAClient::OnInputTimer() {
 
 void VEAClient::FeedEncoderWithOneInput() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!has_encoder() || state_ != CS_ENCODING)
+  if (!has_encoder() || state_ != CS_ENCODING ||
+      num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
     return;
+  }
 
   size_t bytes_left =
       test_stream_->aligned_in_file_data.size() - pos_in_input_stream_;
@@ -1812,6 +1854,12 @@ void VEAClient::FeedEncoderWithOneInput() {
       FROM_HERE, base::Bind(&VideoEncodeAccelerator::Encode,
                             encoder_weak_factory_->GetWeakPtr(), video_frame,
                             force_keyframe));
+  ++num_frames_submitted_to_encoder_;
+  if (num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
+    encode_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VEAClient::FlushEncoder, base::Unretained(this)));
+  }
 }
 
 void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
@@ -1819,7 +1867,7 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   if (!has_encoder())
     return;
 
-  if (state_ != CS_ENCODING)
+  if (state_ != CS_ENCODING && state_ != CS_FLUSHING)
     return;
 
   base::SharedMemoryHandle dup_handle = shm->handle().Duplicate();
@@ -1893,9 +1941,11 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
     LogPerf();
     VerifyMinFPS();
     VerifyStreamProperties();
+    // We might receive the last frame before calling Flush(). In this case we
+    // set the state to CS_FLUSHING first to bypass the state transition check.
+    if (state_ == CS_ENCODING)
+      SetState(CS_FLUSHING);
     SetState(CS_FINISHED);
-    if (!quality_validator_)
-      SetState(CS_VALIDATED);
     if (verify_output_timestamp_) {
       // There may be some timestamps left because we push extra frames to flush
       // encoder.
@@ -1923,6 +1973,75 @@ void VEAClient::LogPerf() {
           base::StringPrintf("%" PRId64 " us", latency.InMicroseconds()));
     }
   }
+}
+
+void VEAClient::FlushEncoder() {
+  // In order to guarantee the order between encoder.Encode() and
+  // encoder.Flush(), this method should be called from the same thread as
+  // encoder.Encode().
+  ASSERT_TRUE(encode_task_runner_->BelongsToCurrentThread());
+
+  // Call encoder.Flush() from the main thread.
+  vea_client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VEAClient::FlushEncoderOnVeaClientThread,
+                                base::Unretained(this)));
+}
+
+void VEAClient::FlushEncoderOnVeaClientThread() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
+
+  encoder_->Flush(
+      base::BindOnce(&VEAClient::FlushEncoderDone, base::Unretained(this)));
+  // We might receive the last frame before calling Flush(). In this case we set
+  // the state to CS_FLUSHING when receiving the last frame.
+  if (state_ != CS_FINISHED)
+    SetState(CS_FLUSHING);
+
+  flush_timeout_.Reset(
+      base::BindRepeating(&VEAClient::FlushTimeout, base::Unretained(this)));
+  vea_client_task_runner_->PostDelayedTask(
+      FROM_HERE, flush_timeout_.callback(),
+      base::TimeDelta::FromMilliseconds(kFlushTimeoutMs));
+}
+
+void VEAClient::FlushEncoderDone(bool success) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  flush_timeout_.Cancel();
+  encode_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VEAClient::FlushEncoderDoneOnIOThread,
+                                base::Unretained(this), success));
+}
+
+void VEAClient::FlushEncoderDoneOnIOThread(bool success) {
+  ASSERT_TRUE(encode_task_runner_->BelongsToCurrentThread());
+  vea_client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VEAClient::FlushEncoderDoneOnVeaClientThread,
+                                base::Unretained(this), success));
+}
+
+void VEAClient::FlushEncoderDoneOnVeaClientThread(bool success) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
+
+  if (!success || num_encoded_frames_ != num_frames_to_encode_) {
+    SetState(CS_ERROR);
+    return;
+  }
+
+  SetState(CS_FLUSHED);
+  if (!quality_validator_) {
+    SetState(CS_VALIDATED);
+  } else {
+    // Insert EOS buffer to flush the decoder.
+    quality_validator_->Flush();
+  }
+}
+
+void VEAClient::FlushTimeout() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  LOG(ERROR) << "Flush timeout.";
+  SetState(CS_ERROR);
 }
 
 void VEAClient::VerifyMinFPS() {
@@ -2282,7 +2401,8 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
 
   // All encoders must pass through states in this order.
   enum ClientState state_transitions[] = {CS_INITIALIZED, CS_ENCODING,
-                                          CS_FINISHED, CS_VALIDATED};
+                                          CS_FLUSHING,    CS_FINISHED,
+                                          CS_FLUSHED,     CS_VALIDATED};
 
   // Wait for all encoders to go through all states and finish.
   // Do this by waiting for all encoders to advance to state n before checking
