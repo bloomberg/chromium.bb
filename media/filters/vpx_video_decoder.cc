@@ -374,7 +374,7 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
       ->metadata()
       ->SetInteger(VideoFrameMetadata::COLOR_SPACE, color_space);
 
-  if (config_.color_space_info() != VideoColorSpace()) {
+  if (config_.color_space_info().IsSpecified()) {
     // config_.color_space_info() comes from the color tag which is
     // more expressive than the bitstream, so prefer it over the
     // bitstream data below.

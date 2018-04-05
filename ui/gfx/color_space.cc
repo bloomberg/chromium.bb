@@ -923,6 +923,28 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
   }
 }
 
+bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) {
+  if (range_ == RangeID::FULL) {
+    *out = kJPEG_SkYUVColorSpace;
+    return true;
+  }
+  switch (matrix_) {
+    case MatrixID::BT709:
+      *out = kRec709_SkYUVColorSpace;
+      return true;
+
+    case MatrixID::BT470BG:
+    case MatrixID::SMPTE170M:
+    case MatrixID::SMPTE240M:
+      *out = kRec601_SkYUVColorSpace;
+      return true;
+
+    default:
+      break;
+  }
+  return false;
+}
+
 std::ostream& operator<<(std::ostream& out, const ColorSpace& color_space) {
   return out << color_space.ToString();
 }
