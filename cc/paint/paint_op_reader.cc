@@ -17,6 +17,7 @@
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
@@ -33,8 +34,15 @@ struct TypefacesCatalog {
   bool had_null = false;
 };
 
-sk_sp<SkTypeface> ResolveTypeface(uint32_t id, void* ctx) {
+sk_sp<SkTypeface> ResolveTypeface(const void* data, size_t length, void* ctx) {
   TypefacesCatalog* catalog = static_cast<TypefacesCatalog*>(ctx);
+  if (length != 4) {
+    catalog->had_null = true;
+    return nullptr;
+  }
+
+  uint32_t id;
+  memcpy(&id, data, length);
   auto* entry = catalog->transfer_cache
                     ->GetEntryAs<ServicePaintTypefaceTransferCacheEntry>(id);
   // TODO(vmpstr): The !entry->typeface() check is here because not all
@@ -386,24 +394,19 @@ void PaintOpReader::Read(sk_sp<SkColorSpace>* color_space) {
 void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
   size_t data_bytes = 0u;
   ReadSimple(&data_bytes);
-  // Skia expects aligned data size, make sure we don't pass it incorrect data.
-  if (remaining_bytes_ < data_bytes || data_bytes == 0u ||
-      !SkIsAlign4(data_bytes)) {
+  if (remaining_bytes_ < data_bytes || data_bytes == 0u)
     SetInvalid();
-  }
-
   if (!valid_)
     return;
 
-  sk_sp<SkData> data =
-      SkData::MakeWithoutCopy(const_cast<const char*>(memory_), data_bytes);
-  memory_ += data_bytes;
-  remaining_bytes_ -= data_bytes;
-
   TypefacesCatalog catalog;
   catalog.transfer_cache = transfer_cache_;
-  sk_sp<SkTextBlob> blob = SkTextBlob::Deserialize(data->data(), data->size(),
-                                                   &ResolveTypeface, &catalog);
+
+  SkDeserialProcs procs;
+  procs.fTypefaceProc = &ResolveTypeface;
+  procs.fTypefaceCtx = &catalog;
+  sk_sp<SkTextBlob> blob = SkTextBlob::Deserialize(
+      const_cast<const char*>(memory_), data_bytes, procs);
   // TODO(vmpstr): If we couldn't serialize |blob|, we should make |paint_blob|
   // nullptr. However, this causes GL errors right now, because not all
   // typefaces are serialized. Fix this once we serialize everything. For now
@@ -414,6 +417,8 @@ void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
     blob = nullptr;
   *paint_blob = base::MakeRefCounted<PaintTextBlob>(
       std::move(blob), std::vector<PaintTypeface>());
+  memory_ += data_bytes;
+  remaining_bytes_ -= data_bytes;
 }
 
 void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
