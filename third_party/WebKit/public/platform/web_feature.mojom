@@ -1891,6 +1891,8 @@ enum WebFeature {
   kReadableStreamConstructor = 2399,
   kWritableStreamConstructor = 2400,
   kTransformStreamConstructor = 2401,
+  kNegativeBackgroundSize = 2402,
+  kNegativeMaskSize = 2403,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

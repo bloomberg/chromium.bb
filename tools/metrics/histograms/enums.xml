@@ -18132,6 +18132,8 @@ Called by update_net_error_codes.py.-->
   <int value="2399" label="ReadableStreamConstructor"/>
   <int value="2400" label="WritableStreamConstructor"/>
   <int value="2401" label="TransformStreamConstructor"/>
+  <int value="2402" label="NegativeBackgroundSize"/>
+  <int value="2403" label="NegativeMaskSize"/>
 </enum>
 
 <enum name="FeedbackSource">
