@@ -718,6 +718,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   TaskRunnerTimer<WebGLRenderingContextBase> restore_timer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  bool destruction_in_progress_ = false;
   bool marked_canvas_dirty_;
   bool animation_frame_in_progress_;
 

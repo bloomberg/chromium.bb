@@ -1269,6 +1269,15 @@ unsigned WebGLRenderingContextBase::GetWebGLVersion(
 }
 
 WebGLRenderingContextBase::~WebGLRenderingContextBase() {
+  // It's forbidden to refer to other GC'd objects in a GC'd object's
+  // destructor. It's useful for DrawingBuffer to guarantee that it
+  // calls its DrawingBufferClient during its own destruction, but if
+  // the WebGL context is also being destroyed, then it's essential
+  // that the DrawingBufferClient methods not try to touch other
+  // objects like WebGLTextures that were previously hooked into the
+  // context state.
+  destruction_in_progress_ = true;
+
   // Now that the context and context group no longer hold on to the
   // objects they create, and now that the objects are eagerly finalized
   // rather than the context, there is very little useful work that this
@@ -6436,6 +6445,8 @@ bool WebGLRenderingContextBase::DrawingBufferClientIsBoundForDraw() {
 }
 
 void WebGLRenderingContextBase::DrawingBufferClientRestoreScissorTest() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   if (scissor_enabled_)
@@ -6445,6 +6456,8 @@ void WebGLRenderingContextBase::DrawingBufferClientRestoreScissorTest() {
 }
 
 void WebGLRenderingContextBase::DrawingBufferClientRestoreMaskAndClearValues() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   bool color_mask_alpha =
@@ -6462,12 +6475,16 @@ void WebGLRenderingContextBase::DrawingBufferClientRestoreMaskAndClearValues() {
 
 void WebGLRenderingContextBase::
     DrawingBufferClientRestorePixelPackParameters() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   ContextGL()->PixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
 }
 
 void WebGLRenderingContextBase::DrawingBufferClientRestoreTexture2DBinding() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   RestoreCurrentTexture2D();
@@ -6475,6 +6492,8 @@ void WebGLRenderingContextBase::DrawingBufferClientRestoreTexture2DBinding() {
 
 void WebGLRenderingContextBase::
     DrawingBufferClientRestoreRenderbufferBinding() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   ContextGL()->BindRenderbuffer(GL_RENDERBUFFER,
@@ -6482,6 +6501,8 @@ void WebGLRenderingContextBase::
 }
 
 void WebGLRenderingContextBase::DrawingBufferClientRestoreFramebufferBinding() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   RestoreCurrentFramebuffer();
