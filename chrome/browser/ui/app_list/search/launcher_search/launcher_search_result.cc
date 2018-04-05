@@ -40,7 +40,7 @@ LauncherSearchResult::LauncherSearchResult(
             chromeos::launcher_search_provider::kMaxSearchResultScore);
 
   icon_image_loader_.reset(new LauncherSearchIconImageLoaderImpl(
-      icon_url, profile, extension, GetPreferredIconDimension(this),
+      icon_url, profile, extension, GetPreferredIconDimension(display_type()),
       std::move(error_reporter)));
   icon_image_loader_->LoadResources();
 

@@ -58,7 +58,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
   InitAndStartObserving();
   UpdateActions();
 
-  int icon_dimension = GetPreferredIconDimension(this);
+  int icon_dimension = GetPreferredIconDimension(display_type());
   icon_ = gfx::ImageSkia(
       std::make_unique<UrlIconSource>(
           base::Bind(&WebstoreResult::OnIconLoaded, weak_factory_.GetWeakPtr()),

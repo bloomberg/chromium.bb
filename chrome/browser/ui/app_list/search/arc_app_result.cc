@@ -26,8 +26,8 @@ ArcAppResult::ArcAppResult(Profile* profile,
   std::string id = kArcAppPrefix;
   id += app_id;
   set_id(id);
-  icon_loader_.reset(
-      new ArcAppIconLoader(profile, GetPreferredIconDimension(this), this));
+  icon_loader_.reset(new ArcAppIconLoader(
+      profile, GetPreferredIconDimension(display_type()), this));
   icon_loader_->FetchImage(app_id);
 }
 

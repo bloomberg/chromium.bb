@@ -77,10 +77,9 @@ bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
   return true;
 }
 
-int GetPreferredIconDimension(SearchResult* search_result) {
-  switch (search_result->display_type()) {
-    case ash::SearchResultDisplayType::kRecommendation:  // Falls
-                                                         // through.
+int GetPreferredIconDimension(SearchResult::DisplayType display_type) {
+  switch (display_type) {
+    case ash::SearchResultDisplayType::kRecommendation:  // Falls through.
     case ash::SearchResultDisplayType::kTile:
       return kTileIconSize;
     case ash::SearchResultDisplayType::kList:
