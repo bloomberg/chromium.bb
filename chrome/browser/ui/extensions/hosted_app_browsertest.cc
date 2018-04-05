@@ -517,6 +517,47 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, MAYBE_ShouldShowLocationBarForHTTPSApp) {
       app_browser_, "http://www.example.com/blah", true);
 }
 
+// Check that location bar is not shown for apps hosted within extensions pages.
+// This simulates a case where the user has manually navigated to a page hosted
+// within an extension, then added it as a bookmark app.
+// Regression test for https://crbug.com/828233.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForExtensionPage) {
+  // Test only applies for bookmark apps.
+  if (app_type() != AppType::BOOKMARK_APP)
+    return;
+
+  // Note: This involves the creation of *two* extensions: The first is a
+  // regular (non-app) extension with a popup page. The second is a bookmark app
+  // created from the popup page URL (allowing the extension's popup page to be
+  // loaded in a window).
+
+  // Install the extension that has the popup page.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
+  base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
+
+  // Install the bookmark app that links to the extension's popup page.
+  GURL popup_url("chrome-extension://" + last_loaded_extension_id() +
+                 "/popup.html");
+  // TODO(mgiuca): Abstract this logic to share code with InstallPWA (which does
+  // almost the same thing, but also sets a scope).
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = popup_url;
+  app_ = InstallBookmarkApp(web_app_info);
+
+  ui_test_utils::UrlLoadObserver url_observer(
+      popup_url, content::NotificationService::AllSources());
+  app_browser_ = LaunchAppBrowser(app_);
+  url_observer.Wait();
+
+  CHECK(app_browser_);
+  CHECK(app_browser_ != browser());
+
+  // Navigate to the app's launch page; the location bar should not be visible,
+  // because extensions pages are secure.
+  NavigateAndCheckForLocationBar(app_browser_, popup_url.spec(), false);
+}
+
 // Check that the location bar is shown correctly for apps that specify start
 // URLs without the 'www.' prefix.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForAppWithoutWWW) {
