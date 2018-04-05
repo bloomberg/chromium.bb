@@ -3789,6 +3789,9 @@ crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/dou
 crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-on-play-button.html [ Skip ]
 crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
 
+# Test failing on WebKit Trusty
+crbug.com/829228 [ Linux Debug ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-backwards.html [ Failure ]
+
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
 crbug.com/807838 external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
