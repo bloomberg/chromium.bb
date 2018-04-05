@@ -41,6 +41,9 @@ class ArcOemCryptoBridge : public KeyedService,
   void OnBootstrapMojoConnection(mojom::OemCryptoServiceRequest request,
                                  bool result);
   void ConnectToDaemon(mojom::OemCryptoServiceRequest request);
+  void FinishConnectingToDaemon(
+      mojom::OemCryptoServiceRequest request,
+      mojom::ProtectedBufferManagerPtr gpu_buffer_manager);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   arc_oemcrypto::mojom::OemCryptoHostDaemonPtr oemcrypto_host_daemon_ptr_;
