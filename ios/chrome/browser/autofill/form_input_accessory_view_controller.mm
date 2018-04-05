@@ -460,7 +460,8 @@ NSArray* FindDescendantToolbarItemsForActionName(
     return;
   }
 
-  if ((params.type == "blur" || params.type == "change")) {
+  if (params.type == "blur" || params.type == "change" ||
+      params.type == "form_changed") {
     return;
   }
 
