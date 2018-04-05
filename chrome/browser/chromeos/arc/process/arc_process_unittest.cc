@@ -122,12 +122,17 @@ TEST(ArcProcess, TestIsImportant) {
   EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
                           kIsNotFocused, 0)
                    .IsImportant());
+
+  // Custom ARC protected processes.
+  EXPECT_TRUE(ArcProcess(0, 0, "com.google.android.apps.work.clouddpc.arc",
+                         mojom::ProcessState::SERVICE, kIsNotFocused, 0)
+                  .IsImportant());
 }
 
 TEST(ArcProcess, TestIsKernelKillable) {
   constexpr bool kIsNotFocused = false;
 
-  // Only PERSISITENT* processes are protected from the kernel OOM killer.
+  // PERSISITENT* processes are protected from the kernel OOM killer.
   EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT,
                           kIsNotFocused, 0)
                    .IsKernelKillable());
@@ -189,6 +194,11 @@ TEST(ArcProcess, TestIsKernelKillable) {
   EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
                          kIsNotFocused, 0)
                   .IsKernelKillable());
+
+  // Set of custom processes that are protected from the kernel OOM killer.
+  EXPECT_FALSE(ArcProcess(0, 0, "com.google.android.apps.work.clouddpc.arc",
+                          mojom::ProcessState::SERVICE, kIsNotFocused, 0)
+                   .IsKernelKillable());
 }
 
 // Tests operator<<() does not crash and returns non-empty result, at least.

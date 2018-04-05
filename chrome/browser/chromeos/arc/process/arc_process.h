@@ -53,6 +53,9 @@ class ArcProcess {
   bool IsKernelKillable() const;
 
  private:
+  // Returns true if this is ARC protected process which we don't allow to kill.
+  bool IsArcProtected() const;
+
   base::ProcessId nspid_;
   base::ProcessId pid_;
   std::string process_name_;
