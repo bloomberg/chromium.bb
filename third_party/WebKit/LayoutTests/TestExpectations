@@ -4001,6 +4001,10 @@ crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-enviro
 # Disabled after r548309.  TODO(thomasanderson): Reenable these tests
 crbug.com/787020 virtual/gpu/fast/canvas/canvas-zero-length-lineCap.html [ Pass Failure ]
 crbug.com/787020 virtual/threaded/http/tests/devtools/tracing/timeline-js/compile-script.js [ Pass Failure ]
+crbug.com/787020 external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html [ Pass Failure ]
+crbug.com/787020 external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-003.html [ Pass Failure ]
+crbug.com/787020 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-003.html [ Pass Failure ]
+crbug.com/787020 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html [ Pass Failure ]
 
 # These Web Authentication API would require either real hardware, or
 # virtual simulation thereof (work in progress, see: https://crbug.com/785955).
