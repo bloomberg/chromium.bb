@@ -2908,7 +2908,8 @@ TEST_F(WindowSelectorTest, ShadowBounds) {
 }
 
 // Verify that attempting to drag with a secondary finger works as expected.
-TEST_F(WindowSelectorTest, DraggingWithTwoFingers) {
+// Flaky, see https://crbug.com/827435.
+TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
