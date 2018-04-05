@@ -136,10 +136,10 @@ class FakeProofVerifier : public ProofVerifier {
 };
 
 int main(int argc, char* argv[]) {
-  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_client");
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
   const base::CommandLine::StringVector& urls = line->GetArgs();
+  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_client");
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
