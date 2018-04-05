@@ -83,7 +83,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
 
   // Skip handling ARC++ windows.
   if (strncmp(window_app_id->c_str(), kArcAppIdPrefix,
-              sizeof(kArcAppIdPrefix)) == 0)
+              sizeof(kArcAppIdPrefix) - 1) == 0)
     return;
 
   // Skip when this window has been handled. This can happen when the window
