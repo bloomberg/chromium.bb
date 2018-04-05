@@ -783,6 +783,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/hit-test-gap-betwe
 crbug.com/812457 virtual/layout_ng_experimental/fast/multicol/huge-column-count.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/huge-column-gap-crash.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/image-inside-nested-blocks-with-border.html [ Failure ]
+crbug.com/829181 virtual/layout_ng_experimental/fast/multicol/infinitely-tall-content-in-outer-crash.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/inline-block-baseline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/inline-getclientrects.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/inner-multicol-in-second-column.html [ Failure ]
