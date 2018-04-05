@@ -18,24 +18,29 @@ namespace {
 class URLSearchParamsIterationSource final
     : public PairIterable<String, String>::IterationSource {
  public:
-  URLSearchParamsIterationSource(Vector<std::pair<String, String>> params)
+  explicit URLSearchParamsIterationSource(URLSearchParams* params)
       : params_(params), current_(0) {}
 
   bool Next(ScriptState*,
             String& key,
             String& value,
             ExceptionState&) override {
-    if (current_ >= params_.size())
+    if (current_ >= params_->Params().size())
       return false;
 
-    key = params_[current_].first;
-    value = params_[current_].second;
+    key = params_->Params()[current_].first;
+    value = params_->Params()[current_].second;
     current_++;
     return true;
   }
 
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(params_);
+    PairIterable<String, String>::IterationSource::Trace(visitor);
+  }
+
  private:
-  Vector<std::pair<String, String>> params_;
+  Member<URLSearchParams> params_;
   size_t current_;
 };
 
@@ -253,7 +258,7 @@ scoped_refptr<EncodedFormData> URLSearchParams::ToEncodedFormData() const {
 PairIterable<String, String>::IterationSource* URLSearchParams::StartIteration(
     ScriptState*,
     ExceptionState&) {
-  return new URLSearchParamsIterationSource(params_);
+  return new URLSearchParamsIterationSource(this);
 }
 
 }  // namespace blink
