@@ -60,8 +60,8 @@ const CGFloat kBackgroundGreyScale = 0.98;
   _contentContainer.backgroundColor =
       [UIColor colorWithWhite:kBackgroundGreyScale alpha:1];
 
-  UIImageView* shadow = [[UIImageView alloc]
-      initWithImage:StretchableImageNamed(@"popup_menu_shadow")];
+  UIImageView* shadow =
+      [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];
   [_contentContainer addSubview:shadow];
   shadow.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraintsToSidesWithInsets(
