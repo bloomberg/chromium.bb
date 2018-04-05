@@ -92,12 +92,12 @@ def main():
   print options
   print extra_options_list
 
-  is_os = (sys.platform == 'darwin')
-  if is_os:
+  is_ios = (sys.platform == 'darwin')
+  if is_ios:
     target_os = 'ios'
     test_target = 'cronet_test'
     unit_target = 'cronet_unittests_ios'
-    gn_args = 'is_cronet_build=true is_component_build=false ' \
+    gn_args = 'is_cronet_build=true enable_reporting=false ' \
         'use_xcode_clang=true ios_deployment_target="9.0" '
     gn_extra = '--ide=xcode'
     if options.iphoneos:
@@ -113,7 +113,7 @@ def main():
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
     unit_target = 'cronet_unittests_android'
-    gn_args = 'use_errorprone_java_compiler=true '
+    gn_args = 'use_errorprone_java_compiler=true enable_reporting=true '
     gn_extra = ''
     out_dir_suffix = ''
     if options.x86:
@@ -131,7 +131,6 @@ def main():
       'disable_file_support=true disable_ftp_support=true '+ \
       'disable_brotli_filter=false ' + \
       'use_platform_icu_alternatives=true '+ \
-      'enable_reporting=false '+ \
       'is_component_build=false ' + \
       'use_crash_key_stubs=true ' + \
       'ignore_elf32_limitations=true use_partition_alloc=false ' + \
@@ -156,7 +155,7 @@ def main():
     return run ('git pull --rebase && gclient sync')
   if (options.command=='build'):
     return build(out_dir, test_target, extra_options)
-  if (not is_os):
+  if (not is_ios):
     if (options.command=='install'):
       return install(out_dir)
     if (options.command=='proguard'):

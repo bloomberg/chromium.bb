@@ -1829,7 +1829,7 @@
     'cronet': {
       'gn_args': ('disable_file_support=true disable_ftp_support=true '
                   'enable_websockets=false use_platform_icu_alternatives=true '
-                  'use_partition_alloc=false enable_reporting=false '
+                  'use_partition_alloc=false enable_reporting=true '
                   'include_transport_security_state_preload_list=false '
                   'use_crash_key_stubs=true '
                   'clang_use_default_sample_profile=false'),
