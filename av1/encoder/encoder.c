@@ -4685,6 +4685,12 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->allow_warped_motion =
       cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
 
+  // TODO(sarahparker, debargha): Find a proper way to turn off
+  // show_existing_frame if the frame is an S-frame or E-frame.
+  // Until then just fail with an assert. The ErrorResilienceTestLarge
+  // parameters need to be chosen such that the assert does not trigger.
+  assert(IMPLIES(cm->error_resilient_mode, !cm->show_existing_frame));
+
   // Reset the frame packet stamp index.
   if (cm->frame_type == KEY_FRAME) cm->current_video_frame = 0;
 
@@ -5048,7 +5054,12 @@ static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   } else {
     av1_rc_get_one_pass_vbr_params(cpi);
   }
-  return encode_frame_to_data_rate(cpi, size, dest, skip_adapt, frame_flags);
+  if (encode_frame_to_data_rate(cpi, size, dest, skip_adapt, frame_flags) !=
+      AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+  check_show_existing_frame(cpi);
+  return AOM_CODEC_OK;
 }
 
 static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,

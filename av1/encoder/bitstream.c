@@ -3010,10 +3010,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         if (!cm->frame_refs_short_signaling)
           aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                                REF_FRAMES_LOG2);
-        if (frame_is_sframe(cm)) {
-          assert(cm->ref_frame_sign_bias[ref_frame] == 0);
-        }
-
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int i = get_ref_frame_map_idx(cpi, ref_frame);
           int frame_id_len = cm->seq_params.frame_id_length;
