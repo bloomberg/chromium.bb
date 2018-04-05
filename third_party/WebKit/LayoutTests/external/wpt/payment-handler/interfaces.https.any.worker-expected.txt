@@ -29,5 +29,6 @@ PASS PaymentInstruments interface: operation clear()
 PASS Unscopable handled correctly for clear() on PaymentInstruments
 PASS CanMakePaymentEvent interface: existence and properties of interface object
 PASS PaymentRequestEvent interface: existence and properties of interface object
+PASS ExtendableEvent interface: existence and properties of interface object
 Harness: the test ran to completion.
 

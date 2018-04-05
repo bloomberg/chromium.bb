@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 135 tests; 125 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 135 tests; 127 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Navigator interface: attribute mediaDevices
 PASS Unscopable handled correctly for mediaDevices property on Navigator
@@ -74,10 +74,10 @@ PASS MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraint
 PASS Unscopable handled correctly for applyConstraints(MediaTrackConstraints) on MediaStreamTrack
 FAIL MediaStreamTrack interface: attribute onoverconstrained assert_true: The prototype object must have a property "onoverconstrained" expected true got false
 PASS Unscopable handled correctly for onoverconstrained property on MediaStreamTrack
-FAIL MediaStreamTrackEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrackEvent interface: existence and properties of interface object
 PASS MediaStreamTrackEvent interface object length
 PASS MediaStreamTrackEvent interface object name
-FAIL MediaStreamTrackEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrackEvent interface: existence and properties of interface prototype object
 PASS MediaStreamTrackEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS MediaStreamTrackEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS MediaStreamTrackEvent interface: attribute track
