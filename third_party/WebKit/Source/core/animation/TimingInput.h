@@ -13,9 +13,6 @@ namespace blink {
 
 class Document;
 class ExceptionState;
-class KeyframeAnimationOptions;
-class KeyframeEffectOptions;
-class UnrestrictedDoubleOrString;
 class UnrestrictedDoubleOrKeyframeAnimationOptions;
 class UnrestrictedDoubleOrKeyframeEffectOptions;
 
@@ -23,43 +20,31 @@ class CORE_EXPORT TimingInput {
   STATIC_ONLY(TimingInput);
 
  public:
-  static bool Convert(const UnrestrictedDoubleOrKeyframeEffectOptions&,
-                      Timing& timing_output,
-                      Document*,
-                      ExceptionState&);
-  static bool Convert(const UnrestrictedDoubleOrKeyframeAnimationOptions&,
-                      Timing& timing_output,
-                      Document*,
-                      ExceptionState&);
-  static bool Convert(const KeyframeEffectOptions& timing_input,
-                      Timing& timing_output,
-                      Document*,
-                      ExceptionState&);
-  static bool Convert(const KeyframeAnimationOptions& timing_input,
-                      Timing& timing_output,
-                      Document*,
-                      ExceptionState&);
+  // Implements steps 3 and 4 of the KeyframeEffect constructor, converting
+  // the 'options' parameter into timing information.
+  //
+  // https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect
+  static Timing Convert(const UnrestrictedDoubleOrKeyframeEffectOptions&,
+                        Document*,
+                        ExceptionState&);
 
-  static bool Convert(double duration, Timing& timing_output, ExceptionState&);
+  // Implements step 2 of the Animatable::animate() method, converting the
+  // 'options' parameter into timing information.
+  //
+  // https://drafts.csswg.org/web-animations-1/#dom-animatable-animate
+  static Timing Convert(const UnrestrictedDoubleOrKeyframeAnimationOptions&,
+                        Document*,
+                        ExceptionState&);
 
-  static void SetStartDelay(Timing&, double start_delay);
-  static void SetEndDelay(Timing&, double end_delay);
-  static void SetFillMode(Timing&, const String& fill_mode);
-  static bool SetIterationStart(Timing&,
-                                double iteration_start,
-                                ExceptionState&);
-  static bool SetIterationCount(Timing&,
-                                double iteration_count,
-                                ExceptionState&);
-  static bool SetIterationDuration(Timing&,
-                                   const UnrestrictedDoubleOrString&,
-                                   ExceptionState&);
-  static void SetPlaybackRate(Timing&, double playback_rate);
-  static void SetPlaybackDirection(Timing&, const String& direction);
-  static bool SetTimingFunction(Timing&,
-                                const String& timing_function_string,
-                                Document*,
-                                ExceptionState&);
+  // Implements the procedure to 'update the timing properties of an animation
+  // effect'.
+  //
+  // Returns true if any property in the timing properties was changed, false if
+  // the input resulted in no change.
+  //
+  // https://drafts.csswg.org/web-animations-1/#update-the-timing-properties-of-an-animation-effect
+  template <class TimingInput>
+  static bool Update(Timing&, const TimingInput&, Document*, ExceptionState&);
 };
 
 }  // namespace blink

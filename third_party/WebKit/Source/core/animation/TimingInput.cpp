@@ -7,205 +7,216 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
 #include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationInputHelpers.h"
+#include "core/animation/EffectTiming.h"
 #include "core/animation/KeyframeEffectOptions.h"
+#include "core/animation/OptionalEffectTiming.h"
 
 namespace blink {
-
-void TimingInput::SetStartDelay(Timing& timing, double start_delay) {
-  if (std::isfinite(start_delay))
-    timing.start_delay = start_delay / 1000;
-  else
-    timing.start_delay = Timing::Defaults().start_delay;
+namespace {
+Timing::FillMode ConvertFillMode(const String& fill_mode) {
+  if (fill_mode == "none")
+    return Timing::FillMode::NONE;
+  if (fill_mode == "backwards")
+    return Timing::FillMode::BACKWARDS;
+  if (fill_mode == "both")
+    return Timing::FillMode::BOTH;
+  if (fill_mode == "forwards")
+    return Timing::FillMode::FORWARDS;
+  DCHECK_EQ(fill_mode, "auto");
+  return Timing::FillMode::AUTO;
 }
 
-void TimingInput::SetEndDelay(Timing& timing, double end_delay) {
-  if (std::isfinite(end_delay))
-    timing.end_delay = end_delay / 1000;
-  else
-    timing.end_delay = Timing::Defaults().end_delay;
+Timing::PlaybackDirection ConvertPlaybackDirection(const String& direction) {
+  if (direction == "reverse")
+    return Timing::PlaybackDirection::REVERSE;
+  if (direction == "alternate")
+    return Timing::PlaybackDirection::ALTERNATE_NORMAL;
+  if (direction == "alternate-reverse")
+    return Timing::PlaybackDirection::ALTERNATE_REVERSE;
+  DCHECK_EQ(direction, "normal");
+  return Timing::PlaybackDirection::NORMAL;
 }
 
-void TimingInput::SetFillMode(Timing& timing, const String& fill_mode) {
-  if (fill_mode == "none") {
-    timing.fill_mode = Timing::FillMode::NONE;
-  } else if (fill_mode == "backwards") {
-    timing.fill_mode = Timing::FillMode::BACKWARDS;
-  } else if (fill_mode == "both") {
-    timing.fill_mode = Timing::FillMode::BOTH;
-  } else if (fill_mode == "forwards") {
-    timing.fill_mode = Timing::FillMode::FORWARDS;
-  } else {
-    timing.fill_mode = Timing::Defaults().fill_mode;
+Timing ConvertEffectTiming(const EffectTiming& timing_input,
+                           Document* document,
+                           ExceptionState& exception_state) {
+  Timing timing_output;
+  TimingInput::Update(timing_output, timing_input, document, exception_state);
+  if (!exception_state.HadException()) {
+    timing_output.AssertValid();
   }
+  return timing_output;
 }
 
-bool TimingInput::SetIterationStart(Timing& timing,
-                                    double iteration_start,
-                                    ExceptionState& exception_state) {
-  DCHECK(std::isfinite(iteration_start));
-  if (std::isnan(iteration_start) || iteration_start < 0) {
-    exception_state.ThrowTypeError("iterationStart must be non-negative.");
-    return false;
+template <class V>
+bool UpdateValueIfChanged(V& lhs, const V& rhs) {
+  if (lhs != rhs) {
+    lhs = rhs;
+    return true;
   }
-  timing.iteration_start = iteration_start;
-  return true;
+  return false;
 }
 
-bool TimingInput::SetIterationCount(Timing& timing,
-                                    double iteration_count,
-                                    ExceptionState& exception_state) {
-  if (std::isnan(iteration_count) || iteration_count < 0) {
-    exception_state.ThrowTypeError("iterationCount must be non-negative.");
-    return false;
-  }
-  timing.iteration_count = iteration_count;
-  return true;
-}
+}  // namespace
 
-bool TimingInput::SetIterationDuration(
-    Timing& timing,
-    const UnrestrictedDoubleOrString& iteration_duration,
+Timing TimingInput::Convert(
+    const UnrestrictedDoubleOrKeyframeEffectOptions& options,
+    Document* document,
     ExceptionState& exception_state) {
-  static const char* error_message = "duration must be non-negative or auto.";
+  if (options.IsNull()) {
+    return Timing::Defaults();
+  }
 
-  if (iteration_duration.IsUnrestrictedDouble()) {
-    double duration_number = iteration_duration.GetAsUnrestrictedDouble();
-    if (std::isnan(duration_number) || duration_number < 0) {
+  if (options.IsKeyframeEffectOptions()) {
+    return ConvertEffectTiming(options.GetAsKeyframeEffectOptions(), document,
+                               exception_state);
+  }
+
+  DCHECK(options.IsUnrestrictedDouble());
+
+  // https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect
+  // If options is a double,
+  //   Let timing input be a new EffectTiming object with all members set to
+  //   their default values and duration set to options.
+  EffectTiming timing_input;
+  timing_input.setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
+      options.GetAsUnrestrictedDouble()));
+  return ConvertEffectTiming(timing_input, document, exception_state);
+}
+
+Timing TimingInput::Convert(
+    const UnrestrictedDoubleOrKeyframeAnimationOptions& options,
+    Document* document,
+    ExceptionState& exception_state) {
+  if (options.IsNull()) {
+    return Timing::Defaults();
+  }
+
+  if (options.IsKeyframeAnimationOptions()) {
+    return ConvertEffectTiming(options.GetAsKeyframeAnimationOptions(),
+                               document, exception_state);
+  }
+
+  DCHECK(options.IsUnrestrictedDouble());
+
+  // https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect
+  // If options is a double,
+  //   Let timing input be a new EffectTiming object with all members set to
+  //   their default values and duration set to options.
+  EffectTiming timing_input;
+  timing_input.setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
+      options.GetAsUnrestrictedDouble()));
+  return ConvertEffectTiming(timing_input, document, exception_state);
+}
+
+template <class InputTiming>
+bool TimingInput::Update(Timing& timing,
+                         const InputTiming& input,
+                         Document* document,
+                         ExceptionState& exception_state) {
+  // 1. If the iterationStart member of input is present and less than zero,
+  // throw a TypeError and abort this procedure.
+  if (input.hasIterationStart() && input.iterationStart() < 0) {
+    exception_state.ThrowTypeError("iterationStart must be non-negative");
+    return false;
+  }
+
+  // 2. If the iterations member of input is present, and less than zero or is
+  // the value NaN, throw a TypeError and abort this procedure.
+  if (input.hasIterations() &&
+      (std::isnan(input.iterations()) || input.iterations() < 0)) {
+    exception_state.ThrowTypeError("iterationCount must be non-negative");
+    return false;
+  }
+
+  // 3. If the duration member of input is present, and less than zero or is the
+  // value NaN, throw a TypeError and abort this procedure.
+  //
+  // We also throw if the value is a string but not 'auto', as per
+  // https://github.com/w3c/csswg-drafts/issues/247 .
+  if (input.hasDuration()) {
+    const char* error_message = "duration must be non-negative or auto";
+    if (input.duration().IsUnrestrictedDouble()) {
+      double duration = input.duration().GetAsUnrestrictedDouble();
+      if (std::isnan(duration) || duration < 0) {
+        exception_state.ThrowTypeError(error_message);
+        return false;
+      }
+    } else if (input.duration().GetAsString() != "auto") {
       exception_state.ThrowTypeError(error_message);
       return false;
     }
-    timing.iteration_duration = duration_number / 1000;
-    return true;
   }
 
-  if (iteration_duration.GetAsString() != "auto") {
-    exception_state.ThrowTypeError(error_message);
-    return false;
+  // 4. If the easing member of input is present but cannot be parsed using the
+  // <timing-function> production  [CSS-TIMING-1], throw a TypeError and abort
+  // this procedure.
+  scoped_refptr<TimingFunction> timing_function;
+  if (input.hasEasing()) {
+    timing_function = AnimationInputHelpers::ParseTimingFunction(
+        input.easing(), document, exception_state);
+    if (!timing_function) {
+      DCHECK(exception_state.HadException());
+      return false;
+    }
   }
 
-  timing.iteration_duration = Timing::Defaults().iteration_duration;
-  return true;
-}
-
-void TimingInput::SetPlaybackRate(Timing& timing, double playback_rate) {
-  if (std::isfinite(playback_rate))
-    timing.playback_rate = playback_rate;
-  else
-    timing.playback_rate = Timing::Defaults().playback_rate;
-}
-
-void TimingInput::SetPlaybackDirection(Timing& timing,
-                                       const String& direction) {
-  if (direction == "reverse") {
-    timing.direction = Timing::PlaybackDirection::REVERSE;
-  } else if (direction == "alternate") {
-    timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
-  } else if (direction == "alternate-reverse") {
-    timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
-  } else {
-    timing.direction = Timing::Defaults().direction;
+  // 5. Assign each member present in input to the corresponding timing property
+  // of effect as follows:
+  bool changed = false;
+  if (input.hasDelay()) {
+    DCHECK(std::isfinite(input.delay()));
+    changed |= UpdateValueIfChanged(timing.start_delay, input.delay() / 1000);
   }
-}
-
-bool TimingInput::SetTimingFunction(Timing& timing,
-                                    const String& timing_function_string,
-                                    Document* document,
-                                    ExceptionState& exception_state) {
-  if (scoped_refptr<TimingFunction> timing_function =
-          AnimationInputHelpers::ParseTimingFunction(
-              timing_function_string, document, exception_state)) {
+  if (input.hasEndDelay()) {
+    DCHECK(std::isfinite(input.endDelay()));
+    changed |= UpdateValueIfChanged(timing.end_delay, input.endDelay() / 1000);
+  }
+  if (input.hasFill()) {
+    changed |=
+        UpdateValueIfChanged(timing.fill_mode, ConvertFillMode(input.fill()));
+  }
+  if (input.hasIterationStart()) {
+    changed |=
+        UpdateValueIfChanged(timing.iteration_start, input.iterationStart());
+  }
+  if (input.hasIterations()) {
+    changed |= UpdateValueIfChanged(timing.iteration_count, input.iterations());
+  }
+  if (input.hasDuration()) {
+    double old_duration = timing.iteration_duration;
+    if (input.duration().IsUnrestrictedDouble()) {
+      timing.iteration_duration =
+          input.duration().GetAsUnrestrictedDouble() / 1000;
+    } else {
+      timing.iteration_duration = NullValue();
+    }
+    // TODO(crbug.com/791086): This check can be simplified once we use
+    // WTF::Optional for timing.iteration_duration.
+    changed |= (timing.iteration_duration != old_duration &&
+                !(IsNull(timing.iteration_duration) && IsNull(old_duration)));
+  }
+  if (input.hasDirection()) {
+    changed |= UpdateValueIfChanged(
+        timing.direction, ConvertPlaybackDirection(input.direction()));
+  }
+  if (timing_function) {
+    // We need to compare the timing functions by underlying value to see if
+    // they have really changed, but update the scoped_refptr, so cant use
+    // UpdateValueIfChanged.
+    changed |= (*timing.timing_function != *timing_function);
     timing.timing_function = timing_function;
-    return true;
   }
-  return false;
+
+  return changed;
 }
 
-bool TimingInput::Convert(
-    const UnrestrictedDoubleOrKeyframeEffectOptions& options,
-    Timing& timing_output,
-    Document* document,
-    ExceptionState& exception_state) {
-  if (options.IsKeyframeEffectOptions()) {
-    return Convert(options.GetAsKeyframeEffectOptions(), timing_output,
-                   document, exception_state);
-  } else if (options.IsUnrestrictedDouble()) {
-    return Convert(options.GetAsUnrestrictedDouble(), timing_output,
-                   exception_state);
-  } else if (options.IsNull()) {
-    return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool TimingInput::Convert(
-    const UnrestrictedDoubleOrKeyframeAnimationOptions& options,
-    Timing& timing_output,
-    Document* document,
-    ExceptionState& exception_state) {
-  if (options.IsKeyframeAnimationOptions()) {
-    return Convert(options.GetAsKeyframeAnimationOptions(), timing_output,
-                   document, exception_state);
-  } else if (options.IsUnrestrictedDouble()) {
-    return Convert(options.GetAsUnrestrictedDouble(), timing_output,
-                   exception_state);
-  } else if (options.IsNull()) {
-    return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool TimingInput::Convert(const KeyframeEffectOptions& timing_input,
-                          Timing& timing_output,
-                          Document* document,
-                          ExceptionState& exception_state) {
-  SetStartDelay(timing_output, timing_input.delay());
-  SetEndDelay(timing_output, timing_input.endDelay());
-  SetFillMode(timing_output, timing_input.fill());
-
-  if (!SetIterationStart(timing_output, timing_input.iterationStart(),
-                         exception_state))
-    return false;
-
-  if (!SetIterationCount(timing_output, timing_input.iterations(),
-                         exception_state))
-    return false;
-
-  if (!SetIterationDuration(timing_output, timing_input.duration(),
-                            exception_state))
-    return false;
-
-  SetPlaybackRate(timing_output, 1.0);
-  SetPlaybackDirection(timing_output, timing_input.direction());
-
-  if (!SetTimingFunction(timing_output, timing_input.easing(), document,
-                         exception_state))
-    return false;
-
-  timing_output.AssertValid();
-
-  return true;
-}
-
-bool TimingInput::Convert(const KeyframeAnimationOptions& timing_input,
-                          Timing& timing_output,
-                          Document* document,
-                          ExceptionState& exception_state) {
-  // The "id" field isn't used, so upcast to KeyframeEffectOptions.
-  const KeyframeEffectOptions* const timing_input_ptr = &timing_input;
-  return Convert(*timing_input_ptr, timing_output, document, exception_state);
-}
-
-bool TimingInput::Convert(double duration,
-                          Timing& timing_output,
-                          ExceptionState& exception_state) {
-  DCHECK(timing_output == Timing::Defaults());
-  return SetIterationDuration(
-      timing_output,
-      UnrestrictedDoubleOrString::FromUnrestrictedDouble(duration),
-      exception_state);
-}
+// Export the OptionalEffectTiming version for AnimationEffect::updateTiming.
+template CORE_EXPORT bool TimingInput::Update(Timing&,
+                                              const OptionalEffectTiming&,
+                                              Document*,
+                                              ExceptionState&);
 
 }  // namespace blink

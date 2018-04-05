@@ -8,13 +8,13 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationEffectTiming.h"
-#include "core/animation/ComputedTimingProperties.h"
+#include "core/animation/ComputedEffectTiming.h"
 #include "core/animation/EffectModel.h"
 #include "core/animation/ElementAnimation.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/OptionalEffectTiming.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSKeyframeRule.h"
@@ -96,7 +96,7 @@ void InspectorAnimationAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
 
 static std::unique_ptr<protocol::Animation::AnimationEffect>
 BuildObjectForAnimationEffect(KeyframeEffect* effect, bool is_transition) {
-  ComputedTimingProperties computed_timing = effect->getComputedTiming();
+  ComputedEffectTiming computed_timing = effect->getComputedTiming();
   double delay = computed_timing.delay();
   double duration = computed_timing.duration().GetAsUnrestrictedDouble();
   String easing = effect->SpecifiedTiming().timing_function->ToString();
@@ -392,17 +392,18 @@ Response InspectorAnimationAgent::setTiming(const String& animation_id,
     new_frames[1]->SetOffset(delay / (delay + duration));
     effect->Model()->SetFrames(new_frames);
 
-    AnimationEffectTiming* timing = effect->timing();
     UnrestrictedDoubleOrString unrestricted_duration;
     unrestricted_duration.SetUnrestrictedDouble(duration + delay);
-    timing->setDuration(unrestricted_duration, exception_state);
+    OptionalEffectTiming timing;
+    timing.setDuration(unrestricted_duration);
+    effect->updateTiming(timing, exception_state);
   } else {
-    AnimationEffectTiming* timing =
-        ToAnimationEffectTiming(animation->effect()->timing());
+    OptionalEffectTiming timing;
     UnrestrictedDoubleOrString unrestricted_duration;
     unrestricted_duration.SetUnrestrictedDouble(duration);
-    timing->setDuration(unrestricted_duration, exception_state);
-    timing->setDelay(delay);
+    timing.setDuration(unrestricted_duration);
+    timing.setDelay(delay);
+    animation->effect()->updateTiming(timing, exception_state);
   }
   return Response::OK();
 }

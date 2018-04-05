@@ -25,17 +25,17 @@ test(() => {
   setAnimationProperty('a 1000ms 1500ms forwards, a 2000ms 2500ms backwards, a 3000ms 3500ms both');
   var animations = getAnimations();
   assert_equals(animations.length, 3);
-  assert_equals(animations[0].effect.timing.duration, 1000);
-  assert_equals(animations[0].effect.timing.delay, 1500);
-  assert_equals(animations[0].effect.timing.fill, 'forwards');
+  assert_equals(animations[0].effect.getTiming()['duration'], 1000);
+  assert_equals(animations[0].effect.getTiming()['delay'], 1500);
+  assert_equals(animations[0].effect.getTiming()['fill'], 'forwards');
 
-  assert_equals(animations[1].effect.timing.duration, 2000);
-  assert_equals(animations[1].effect.timing.delay, 2500);
-  assert_equals(animations[1].effect.timing.fill, 'backwards');
+  assert_equals(animations[1].effect.getTiming()['duration'], 2000);
+  assert_equals(animations[1].effect.getTiming()['delay'], 2500);
+  assert_equals(animations[1].effect.getTiming()['fill'], 'backwards');
 
-  assert_equals(animations[2].effect.timing.duration, 3000);
-  assert_equals(animations[2].effect.timing.delay, 3500);
-  assert_equals(animations[2].effect.timing.fill, 'both');
+  assert_equals(animations[2].effect.getTiming()['duration'], 3000);
+  assert_equals(animations[2].effect.getTiming()['delay'], 3500);
+  assert_equals(animations[2].effect.getTiming()['fill'], 'both');
 }, 'Multiple same animation names should start multiple animations.');
 
 test(() => {
@@ -53,13 +53,13 @@ test(() => {
   assert_equals(animations.length, 3);
 
   assert_equals(animations[0].currentTime, 1000);
-  assert_equals(animations[0].effect.timing.duration, 1750);
+  assert_equals(animations[0].effect.getTiming()['duration'], 1750);
 
   assert_equals(animations[1].currentTime, 2000);
-  assert_equals(animations[1].effect.timing.duration, 2750);
+  assert_equals(animations[1].effect.getTiming()['duration'], 2750);
 
   assert_equals(animations[2].currentTime, 3000);
-  assert_equals(animations[2].effect.timing.duration, 3750);
+  assert_equals(animations[2].effect.getTiming()['duration'], 3750);
 }, 'Multiple same animation names should persist with animation timing updates.');
 
 test(() => {
@@ -78,16 +78,16 @@ test(() => {
   assert_equals(animations.length, 4);
 
   assert_equals(animations[0].currentTime, 1000);
-  assert_equals(animations[0].effect.timing.duration, 1500);
+  assert_equals(animations[0].effect.getTiming()['duration'], 1500);
 
   assert_equals(animations[1].currentTime, 2000);
-  assert_equals(animations[1].effect.timing.duration, 2500);
+  assert_equals(animations[1].effect.getTiming()['duration'], 2500);
 
   assert_equals(animations[2].currentTime, 3000);
-  assert_equals(animations[2].effect.timing.duration, 3500);
+  assert_equals(animations[2].effect.getTiming()['duration'], 3500);
 
   assert_equals(animations[3].currentTime, 4000);
-  assert_equals(animations[3].effect.timing.duration, 4500);
+  assert_equals(animations[3].effect.getTiming()['duration'], 4500);
 }, 'Mixed multiple same animation names should persist based on their same name relative position');
 
 test(() => {
@@ -105,13 +105,13 @@ test(() => {
   assert_equals(animations.length, 3);
 
   assert_equals(animations[0].currentTime, 1000);
-  assert_equals(animations[0].effect.timing.duration, 1500);
+  assert_equals(animations[0].effect.getTiming()['duration'], 1500);
 
   assert_equals(animations[1].currentTime, 2000);
-  assert_equals(animations[1].effect.timing.duration, 3500);
+  assert_equals(animations[1].effect.getTiming()['duration'], 3500);
 
   assert_equals(animations[2].currentTime, 0);
-  assert_equals(animations[2].effect.timing.duration, 2500);
+  assert_equals(animations[2].effect.getTiming()['duration'], 2500);
 }, 'Removing same animation names should cancel animations from the end of the name list.');
 
 test(() => {
@@ -128,12 +128,12 @@ test(() => {
   assert_equals(animations.length, 3);
 
   assert_equals(animations[0].currentTime, 1000);
-  assert_equals(animations[0].effect.timing.duration, 3500);
+  assert_equals(animations[0].effect.getTiming()['duration'], 3500);
 
   assert_equals(animations[1].currentTime, 2000);
-  assert_equals(animations[1].effect.timing.duration, 2500);
+  assert_equals(animations[1].effect.getTiming()['duration'], 2500);
 
   assert_equals(animations[2].currentTime, 0);
-  assert_equals(animations[2].effect.timing.duration, 1500);
+  assert_equals(animations[2].effect.getTiming()['duration'], 1500);
 }, 'Adding same animation names should start additional animations from the end of the name list.');
 </script>

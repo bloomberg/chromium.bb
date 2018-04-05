@@ -30,10 +30,28 @@
 
 #include "core/animation/AnimationEffect.h"
 
-#include "core/animation/ComputedTimingProperties.h"
+#include "core/animation/AnimationEffectOwner.h"
+#include "core/animation/ComputedEffectTiming.h"
+#include "core/animation/OptionalEffectTiming.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+class MockAnimationEffectOwner
+    : public GarbageCollectedFinalized<MockAnimationEffectOwner>,
+      public AnimationEffectOwner {
+  USING_GARBAGE_COLLECTED_MIXIN(MockAnimationEffectOwner);
+
+ public:
+  MOCK_CONST_METHOD0(SequenceNumber, unsigned());
+  MOCK_CONST_METHOD0(Playing, bool());
+  MOCK_CONST_METHOD0(IsEventDispatchAllowed, bool());
+  MOCK_CONST_METHOD0(EffectSuppressed, bool());
+  MOCK_METHOD0(SpecifiedTimingChanged, void());
+  MOCK_METHOD0(UpdateIfNecessary, void());
+  MOCK_METHOD0(GetAnimation, Animation*());
+};
 
 class TestAnimationEffectEventDelegate : public AnimationEffect::EventDelegate {
  public:
@@ -731,6 +749,166 @@ TEST(AnimationAnimationEffectTest, TimeToEffectChange) {
   EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_EQ(3.5, animation_node->TakeLocalTime());
   EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
+}
+
+TEST(AnimationAnimationEffectTest, UpdateTiming) {
+  Timing timing;
+  TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
+
+  EXPECT_EQ(0, effect->getTiming().delay());
+  OptionalEffectTiming effect_timing;
+  effect_timing.setDelay(2);
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ(2, effect->getTiming().delay());
+
+  EXPECT_EQ(0, effect->getTiming().endDelay());
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setEndDelay(0.5);
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ(0.5, effect->getTiming().endDelay());
+
+  EXPECT_EQ("auto", effect->getTiming().fill());
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setFill("backwards");
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ("backwards", effect->getTiming().fill());
+
+  EXPECT_EQ(0, effect->getTiming().iterationStart());
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setIterationStart(2);
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ(2, effect->getTiming().iterationStart());
+
+  EXPECT_EQ(1, effect->getTiming().iterations());
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setIterations(10);
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ(10, effect->getTiming().iterations());
+
+  EXPECT_EQ("normal", effect->getTiming().direction());
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setDirection("reverse");
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ("reverse", effect->getTiming().direction());
+
+  EXPECT_EQ("linear", effect->getTiming().easing());
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setEasing("ease-in-out");
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ("ease-in-out", effect->getTiming().easing());
+
+  EXPECT_EQ("auto", effect->getTiming().duration().GetAsString());
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setDuration(
+      UnrestrictedDoubleOrString::FromUnrestrictedDouble(2.5));
+  effect->updateTiming(effect_timing);
+  EXPECT_EQ(2.5, effect->getTiming().duration().GetAsUnrestrictedDouble());
+}
+
+TEST(AnimationAnimationEffectTest, UpdateTimingThrowsWhenExpected) {
+  Timing timing;
+  TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
+
+  DummyExceptionStateForTesting exception_state;
+
+  // iterationStart must be non-negative
+  OptionalEffectTiming effect_timing;
+  effect_timing.setIterationStart(-10);
+  effect->updateTiming(effect_timing, exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+
+  // iterations must be non-negative and non-null.
+  exception_state.ClearException();
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setIterations(-2);
+  effect->updateTiming(effect_timing, exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+
+  exception_state.ClearException();
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setIterations(std::numeric_limits<double>::quiet_NaN());
+  effect->updateTiming(effect_timing, exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+
+  // If it is a number, duration must be non-negative and non-null.
+  exception_state.ClearException();
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setDuration(
+      UnrestrictedDoubleOrString::FromUnrestrictedDouble(-100));
+  effect->updateTiming(effect_timing, exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+
+  exception_state.ClearException();
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
+      std::numeric_limits<double>::quiet_NaN()));
+  effect->updateTiming(effect_timing, exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+
+  // easing must be a valid timing function
+  exception_state.ClearException();
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setEasing("my-custom-timing-function");
+  effect->updateTiming(effect_timing, exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+}
+
+TEST(AnimationAnimationEffectTest, UpdateTimingInformsOwnerOnChange) {
+  Timing timing;
+  TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
+
+  MockAnimationEffectOwner* owner = new MockAnimationEffectOwner();
+  effect->Attach(owner);
+
+  EXPECT_CALL(*owner, SpecifiedTimingChanged()).Times(1);
+
+  OptionalEffectTiming effect_timing;
+  effect_timing.setDelay(5);
+  effect->updateTiming(effect_timing);
+}
+
+TEST(AnimationAnimationEffectTest, UpdateTimingNoChange) {
+  Timing timing;
+  timing.start_delay = 0;
+  timing.end_delay = 5;
+  timing.fill_mode = Timing::FillMode::BOTH;
+  timing.iteration_start = 0.1;
+  timing.iteration_count = 3;
+  timing.iteration_duration = 2;
+  timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
+  timing.timing_function = CubicBezierTimingFunction::Create(1, 1, 0.3, 0.3);
+  TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
+
+  MockAnimationEffectOwner* owner = new MockAnimationEffectOwner();
+  effect->Attach(owner);
+
+  // None of the below calls to updateTime should cause the AnimationEffect to
+  // update, as they all match the existing timing information.
+  EXPECT_CALL(*owner, SpecifiedTimingChanged()).Times(0);
+
+  OptionalEffectTiming effect_timing;
+  effect->updateTiming(effect_timing);
+
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setDelay(0);
+  effect->updateTiming(effect_timing);
+
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setEndDelay(5000);
+  effect_timing.setFill("both");
+  effect_timing.setIterationStart(0.1);
+  effect->updateTiming(effect_timing);
+
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setIterations(3);
+  effect_timing.setDuration(
+      UnrestrictedDoubleOrString::FromUnrestrictedDouble(2000));
+  effect_timing.setDirection("alternate-reverse");
+  effect->updateTiming(effect_timing);
+
+  effect_timing = OptionalEffectTiming();
+  effect_timing.setEasing("cubic-bezier(1, 1, 0.3, 0.3)");
+  effect->updateTiming(effect_timing);
 }
 
 }  // namespace blink

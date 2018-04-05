@@ -31,9 +31,12 @@
 #include "core/animation/AnimationEffect.h"
 
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationEffectTimingReadOnly.h"
-#include "core/animation/ComputedTimingProperties.h"
+#include "core/animation/AnimationInputHelpers.h"
+#include "core/animation/ComputedEffectTiming.h"
+#include "core/animation/EffectTiming.h"
+#include "core/animation/OptionalEffectTiming.h"
 #include "core/animation/TimingCalculations.h"
+#include "core/animation/TimingInput.h"
 
 namespace blink {
 
@@ -100,9 +103,33 @@ void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
     owner_->SpecifiedTimingChanged();
 }
 
+void AnimationEffect::getTiming(EffectTiming& effect_timing) const {
+  effect_timing.setDelay(SpecifiedTiming().start_delay * 1000);
+  effect_timing.setEndDelay(SpecifiedTiming().end_delay * 1000);
+  effect_timing.setFill(Timing::FillModeString(SpecifiedTiming().fill_mode));
+  effect_timing.setIterationStart(SpecifiedTiming().iteration_start);
+  effect_timing.setIterations(SpecifiedTiming().iteration_count);
+  UnrestrictedDoubleOrString duration;
+  if (IsNull(SpecifiedTiming().iteration_duration)) {
+    duration.SetString("auto");
+  } else {
+    duration.SetUnrestrictedDouble(SpecifiedTiming().iteration_duration * 1000);
+  }
+  effect_timing.setDuration(duration);
+  effect_timing.setDirection(
+      Timing::PlaybackDirectionString(SpecifiedTiming().direction));
+  effect_timing.setEasing(SpecifiedTiming().timing_function->ToString());
+}
+
+EffectTiming AnimationEffect::getTiming() const {
+  EffectTiming result;
+  getTiming(result);
+  return result;
+}
+
 void AnimationEffect::getComputedTiming(
-    ComputedTimingProperties& computed_timing) {
-  // ComputedTimingProperties members.
+    ComputedEffectTiming& computed_timing) const {
+  // ComputedEffectTiming members.
   computed_timing.setEndTime(EndTimeInternal() * 1000);
   computed_timing.setActiveDuration(ActiveDurationInternal() * 1000);
 
@@ -120,7 +147,10 @@ void AnimationEffect::getComputedTiming(
     computed_timing.setCurrentIterationToNull();
   }
 
-  // KeyframeEffectOptions members.
+  // For the EffectTiming members, getComputedTiming is equivalent to getTiming
+  // except that the fill and duration must be resolved.
+  //
+  // https://drafts.csswg.org/web-animations-1/#dom-animationeffect-getcomputedtiming
   computed_timing.setDelay(SpecifiedTiming().start_delay * 1000);
   computed_timing.setEndDelay(SpecifiedTiming().end_delay * 1000);
   computed_timing.setFill(Timing::FillModeString(
@@ -137,10 +167,21 @@ void AnimationEffect::getComputedTiming(
   computed_timing.setEasing(SpecifiedTiming().timing_function->ToString());
 }
 
-ComputedTimingProperties AnimationEffect::getComputedTiming() {
-  ComputedTimingProperties result;
+ComputedEffectTiming AnimationEffect::getComputedTiming() const {
+  ComputedEffectTiming result;
   getComputedTiming(result);
   return result;
+}
+
+void AnimationEffect::updateTiming(OptionalEffectTiming& optional_timing,
+                                   ExceptionState& exception_state) {
+  // TODO(crbug.com/827178): Determine whether we should pass a Document in here
+  // (and which) to resolve the CSS secure/insecure context against.
+  if (!TimingInput::Update(timing_, optional_timing, nullptr, exception_state))
+    return;
+  Invalidate();
+  if (owner_)
+    owner_->SpecifiedTimingChanged();
 }
 
 void AnimationEffect::UpdateInheritedTime(double inherited_time,
@@ -271,10 +312,6 @@ const AnimationEffect::CalculatedTiming& AnimationEffect::EnsureCalculated()
 
   owner_->UpdateIfNecessary();
   return calculated_;
-}
-
-AnimationEffectTimingReadOnly* AnimationEffect::timing() {
-  return AnimationEffectTimingReadOnly::Create(this);
 }
 
 Animation* AnimationEffect::GetAnimation() {

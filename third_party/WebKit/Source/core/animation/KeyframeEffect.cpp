@@ -69,9 +69,9 @@ KeyframeEffect* KeyframeEffect::Create(
         element->GetDocument(),
         WebFeature::kAnimationConstructorKeyframeListEffectObjectTiming);
   }
-  Timing timing;
   Document* document = element ? &element->GetDocument() : nullptr;
-  if (!TimingInput::Convert(options, timing, document, exception_state))
+  Timing timing = TimingInput::Convert(options, document, exception_state);
+  if (exception_state.HadException())
     return nullptr;
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
@@ -189,10 +189,6 @@ void KeyframeEffect::setKeyframes(ScriptState* script_state,
 
 bool KeyframeEffect::Affects(const PropertyHandle& property) const {
   return model_->Affects(property);
-}
-
-AnimationEffectTiming* KeyframeEffect::timing() {
-  return AnimationEffectTiming::Create(this);
 }
 
 void KeyframeEffect::NotifySampledEffectRemovedFromEffectStack() {

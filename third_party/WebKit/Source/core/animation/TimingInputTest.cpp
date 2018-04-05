@@ -7,7 +7,8 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8KeyframeAnimationOptions.h"
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
-#include "core/animation/AnimationEffectTiming.h"
+#include "bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
+#include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "core/animation/AnimationTestHelper.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,19 +52,20 @@ Timing AnimationTimingInputTest::ApplyTimingInputNumber(
     KeyframeEffectOptions timing_input_dictionary;
     V8KeyframeEffectOptions::ToImpl(isolate, timing_input,
                                     timing_input_dictionary, exception_state);
-    timing_conversion_success =
-        TimingInput::Convert(timing_input_dictionary, result, GetDocument(),
-                             exception_state) &&
-        !exception_state.HadException();
+    UnrestrictedDoubleOrKeyframeEffectOptions timing_input =
+        UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
+            timing_input_dictionary);
+    result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
   } else {
     KeyframeAnimationOptions timing_input_dictionary;
     V8KeyframeAnimationOptions::ToImpl(
         isolate, timing_input, timing_input_dictionary, exception_state);
-    timing_conversion_success =
-        TimingInput::Convert(timing_input_dictionary, result, GetDocument(),
-                             exception_state) &&
-        !exception_state.HadException();
+    UnrestrictedDoubleOrKeyframeAnimationOptions timing_input =
+        UnrestrictedDoubleOrKeyframeAnimationOptions::
+            FromKeyframeAnimationOptions(timing_input_dictionary);
+    result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
   }
+  timing_conversion_success = !exception_state.HadException();
   return result;
 }
 
@@ -83,19 +85,20 @@ Timing AnimationTimingInputTest::ApplyTimingInputString(
     KeyframeEffectOptions timing_input_dictionary;
     V8KeyframeEffectOptions::ToImpl(isolate, timing_input,
                                     timing_input_dictionary, exception_state);
-    timing_conversion_success =
-        TimingInput::Convert(timing_input_dictionary, result, GetDocument(),
-                             exception_state) &&
-        !exception_state.HadException();
+    UnrestrictedDoubleOrKeyframeEffectOptions timing_input =
+        UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
+            timing_input_dictionary);
+    result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
   } else {
     KeyframeAnimationOptions timing_input_dictionary;
     V8KeyframeAnimationOptions::ToImpl(
         isolate, timing_input, timing_input_dictionary, exception_state);
-    timing_conversion_success =
-        TimingInput::Convert(timing_input_dictionary, result, GetDocument(),
-                             exception_state) &&
-        !exception_state.HadException();
+    UnrestrictedDoubleOrKeyframeAnimationOptions timing_input =
+        UnrestrictedDoubleOrKeyframeAnimationOptions::
+            FromKeyframeAnimationOptions(timing_input_dictionary);
+    result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
   }
+  timing_conversion_success = !exception_state.HadException();
   return result;
 }
 
@@ -436,10 +439,11 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction) {
 TEST_F(AnimationTimingInputTest, TimingInputEmpty) {
   DummyExceptionStateForTesting exception_state;
   Timing control_timing;
-  Timing updated_timing;
-  bool success = TimingInput::Convert(KeyframeEffectOptions(), updated_timing,
-                                      nullptr, exception_state);
-  EXPECT_TRUE(success);
+  UnrestrictedDoubleOrKeyframeEffectOptions timing_input =
+      UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
+          KeyframeEffectOptions());
+  Timing updated_timing =
+      TimingInput::Convert(timing_input, nullptr, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   EXPECT_EQ(control_timing.start_delay, updated_timing.start_delay);
@@ -455,10 +459,11 @@ TEST_F(AnimationTimingInputTest, TimingInputEmpty) {
 TEST_F(AnimationTimingInputTest, TimingInputEmptyKeyframeAnimationOptions) {
   DummyExceptionStateForTesting exception_state;
   Timing control_timing;
-  Timing updated_timing;
-  bool success = TimingInput::Convert(KeyframeAnimationOptions(),
-                                      updated_timing, nullptr, exception_state);
-  EXPECT_TRUE(success);
+  UnrestrictedDoubleOrKeyframeAnimationOptions input_timing =
+      UnrestrictedDoubleOrKeyframeAnimationOptions::
+          FromKeyframeAnimationOptions(KeyframeAnimationOptions());
+  Timing updated_timing =
+      TimingInput::Convert(input_timing, nullptr, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   EXPECT_EQ(control_timing.start_delay, updated_timing.start_delay);
