@@ -29,6 +29,14 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   TabGridConfigurationBottomToolbar = 1,
   TabGridConfigurationFloatingButton,
 };
+
+// Computes the page from the offset and width of |scrollView|.
+TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
+  // TODO(crbug.com/822328) : Fix for RTL.
+  CGFloat pageWidth = scrollView.frame.size.width;
+  float fractionalPage = scrollView.contentOffset.x / pageWidth;
+  return static_cast<TabGridPage>(lround(fractionalPage));
+}
 }  // namespace
 
 @interface TabGridViewController ()<GridViewControllerDelegate,
@@ -169,17 +177,18 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
         self.scrollView.contentSize.width - self.scrollView.frame.size.width;
     CGFloat offset = scrollView.contentOffset.x / offsetWidth;
     self.topToolbar.pageControl.sliderPosition = offset;
-  }
 
-  // Bookkeeping for the current page.
-  // TODO(crbug.com/822328) : Fix for RTL.
-  CGFloat pageWidth = scrollView.frame.size.width;
-  float fractionalPage = scrollView.contentOffset.x / pageWidth;
-  NSUInteger page = lround(fractionalPage);
-  if (page != self.currentPage) {
-    _currentPage = static_cast<TabGridPage>(page);
-    [self configureButtonsForOriginalAndCurrentPage];
+    TabGridPage page = GetPageFromScrollView(scrollView);
+    if (page != _currentPage) {
+      _currentPage = page;
+      [self configureButtonsForOriginalAndCurrentPage];
+    }
   }
+}
+
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
+  _currentPage = GetPageFromScrollView(scrollView);
+  [self configureButtonsForOriginalAndCurrentPage];
 }
 
 #pragma mark - UIScrollViewAccessibilityDelegate
@@ -280,7 +289,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
     _currentPage = currentPage;
   } else {
     [self.scrollView setContentOffset:offset animated:YES];
-    // _currentPage is set in scrollViewDidScroll:
+    // _currentPage is set in scrollViewDidEndScrollingAnimation:
   }
 }
 
