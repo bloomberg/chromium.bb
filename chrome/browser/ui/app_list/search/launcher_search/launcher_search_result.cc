@@ -52,7 +52,7 @@ LauncherSearchResult::~LauncherSearchResult() {
     icon_image_loader_->RemoveObserver(this);
 }
 
-std::unique_ptr<SearchResult> LauncherSearchResult::Duplicate() const {
+std::unique_ptr<ChromeSearchResult> LauncherSearchResult::Duplicate() const {
   LauncherSearchResult* duplicated_result =
       new LauncherSearchResult(item_id_, discrete_value_relevance_, profile_,
                                extension_, icon_image_loader_);

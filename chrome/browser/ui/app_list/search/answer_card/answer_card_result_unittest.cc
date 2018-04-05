@@ -93,7 +93,7 @@ TEST_F(AnswerCardResultTest, Basic) {
   result->Open(ui::EF_NONE);
   EXPECT_EQ(kResultUrl, GetLastOpenedUrl().spec());
 
-  std::unique_ptr<SearchResult> result1 = result->Duplicate();
+  std::unique_ptr<ChromeSearchResult> result1 = result->Duplicate();
 
   EXPECT_EQ(kResultUrl, result1->id());
   EXPECT_EQ(base::ASCIIToUTF16(kResultTitle), result1->title());
@@ -108,7 +108,7 @@ TEST_F(AnswerCardResultTest, NullContents) {
   // Shouldn't crash with null contents.
   std::unique_ptr<AnswerCardResult> result = CreateResult(
       kResultUrl, kResultUrlStripped, base::ASCIIToUTF16(kResultTitle));
-  std::unique_ptr<SearchResult> result1 = result->Duplicate();
+  std::unique_ptr<ChromeSearchResult> result1 = result->Duplicate();
 }
 
 TEST_F(AnswerCardResultTest, EarlyDeleteContents) {

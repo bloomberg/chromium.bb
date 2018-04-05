@@ -11,17 +11,17 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 namespace app_list {
 
 namespace {
 
-const std::string& GetComparableId(const SearchResult& result) {
+const std::string& GetComparableId(const ChromeSearchResult& result) {
   return !result.comparable_id().empty() ? result.comparable_id() : result.id();
 }
 
@@ -29,7 +29,7 @@ const std::string& GetComparableId(const SearchResult& result) {
 
 Mixer::SortData::SortData() : result(nullptr), score(0.0) {}
 
-Mixer::SortData::SortData(SearchResult* result, double score)
+Mixer::SortData::SortData(ChromeSearchResult* result, double score)
     : result(result), score(score) {}
 
 bool Mixer::SortData::operator<(const SortData& other) const {
@@ -137,9 +137,9 @@ void Mixer::MixAndPublish(const KnownResults& known_results,
     std::sort(results.begin() + original_size, results.end());
   }
 
-  std::vector<std::unique_ptr<app_list::SearchResult>> new_results;
+  std::vector<std::unique_ptr<ChromeSearchResult>> new_results;
   for (const SortData& sort_data : results) {
-    std::unique_ptr<app_list::SearchResult> new_result =
+    std::unique_ptr<ChromeSearchResult> new_result =
         sort_data.result->Duplicate();
     new_result->set_relevance(sort_data.score);
     new_results.push_back(std::move(new_result));

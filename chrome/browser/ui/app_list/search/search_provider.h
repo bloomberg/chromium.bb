@@ -12,13 +12,13 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-namespace app_list {
+class ChromeSearchResult;
 
-class SearchResult;
+namespace app_list {
 
 class SearchProvider {
  public:
-  using Results = std::vector<std::unique_ptr<SearchResult>>;
+  using Results = std::vector<std::unique_ptr<ChromeSearchResult>>;
   using ResultChangedCallback = base::Closure;
 
   SearchProvider();
@@ -35,7 +35,7 @@ class SearchProvider {
 
  protected:
   // Interface for the derived class to generate search results.
-  void Add(std::unique_ptr<SearchResult> result);
+  void Add(std::unique_ptr<ChromeSearchResult> result);
 
   // Swaps the internal results with |new_results|.
   // This is useful when multiple results will be added, and the notification is

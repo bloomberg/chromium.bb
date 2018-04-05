@@ -15,12 +15,12 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 
 class AppListModelUpdater;
+class ChromeSearchResult;
 
 namespace app_list {
 
 class History;
 class SearchProvider;
-class SearchResult;
 
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
@@ -33,8 +33,8 @@ class SearchController {
   // TODO(hejq): can we accept a trimmed query here?
   void Start(const base::string16& raw_query);
 
-  void OpenResult(SearchResult* result, int event_flags);
-  void InvokeResultAction(SearchResult* result,
+  void OpenResult(ChromeSearchResult* result, int event_flags);
+  void InvokeResultAction(ChromeSearchResult* result,
                           int action_index,
                           int event_flags);
 

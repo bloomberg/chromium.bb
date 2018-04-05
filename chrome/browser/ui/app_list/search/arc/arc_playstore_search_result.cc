@@ -82,7 +82,8 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
 
 ArcPlayStoreSearchResult::~ArcPlayStoreSearchResult() = default;
 
-std::unique_ptr<SearchResult> ArcPlayStoreSearchResult::Duplicate() const {
+std::unique_ptr<ChromeSearchResult> ArcPlayStoreSearchResult::Duplicate()
+    const {
   std::unique_ptr<ArcPlayStoreSearchResult> result =
       std::make_unique<ArcPlayStoreSearchResult>(data_.Clone(), profile_,
                                                  list_controller_);

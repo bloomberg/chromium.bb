@@ -42,7 +42,7 @@ void AnswerCardResult::OnContentsDestroying() {
   contents_ = nullptr;
 }
 
-std::unique_ptr<SearchResult> AnswerCardResult::Duplicate() const {
+std::unique_ptr<ChromeSearchResult> AnswerCardResult::Duplicate() const {
   return std::make_unique<AnswerCardResult>(
       profile_, list_controller_, id(), comparable_id(), title(), contents_);
 }

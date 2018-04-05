@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 
 class AppListControllerDelegate;
@@ -17,7 +17,7 @@ class Profile;
 
 namespace app_list {
 
-class OmniboxResult : public SearchResult {
+class OmniboxResult : public ChromeSearchResult {
  public:
   OmniboxResult(Profile* profile,
                 AppListControllerDelegate* list_controller,
@@ -25,10 +25,10 @@ class OmniboxResult : public SearchResult {
                 const AutocompleteMatch& match);
   ~OmniboxResult() override;
 
-  // SearchResult overrides:
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override;
 
-  std::unique_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
 
  private:
   void UpdateIcon();

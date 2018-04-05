@@ -119,10 +119,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   void UpdateFromMatch(const TokenizedString& title,
                        const TokenizedStringMatch& match);
 
-  // TODO(mukai): Remove this method and really simplify the ownership of
-  // SearchResult. Ideally, SearchResult will be copyable.
-  virtual std::unique_ptr<SearchResult> Duplicate() const = 0;
-
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
 

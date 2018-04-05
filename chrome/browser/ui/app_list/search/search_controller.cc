@@ -9,11 +9,11 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/history.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "ui/app_list/app_list_constants.h"
@@ -42,7 +42,7 @@ void SearchController::Start(const base::string16& raw_query) {
   OnResultsChanged();
 }
 
-void SearchController::OpenResult(SearchResult* result, int event_flags) {
+void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
   // This can happen in certain circumstances due to races. See
   // https://crbug.com/534772
   if (!result)
@@ -54,7 +54,7 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
     history_->AddLaunchEvent(base::UTF16ToUTF8(last_raw_query_), result->id());
 }
 
-void SearchController::InvokeResultAction(SearchResult* result,
+void SearchController::InvokeResultAction(ChromeSearchResult* result,
                                           int action_index,
                                           int event_flags) {
   // TODO(xiyuan): Hook up with user learning.

@@ -8,12 +8,33 @@
 #include <utility>
 
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
+
+namespace {
+
+// TODO(hejq): Get rid of these after refactoring ChromeSearchResult.
+ChromeSearchResult* ConvertToChromeSearchResult(
+    app_list::SearchResult* result) {
+  return static_cast<ChromeSearchResult*>(result);
+}
+
+std::vector<std::unique_ptr<app_list::SearchResult>> ConvertToSearchResults(
+    std::vector<std::unique_ptr<ChromeSearchResult>> results) {
+  std::vector<std::unique_ptr<app_list::SearchResult>> ash_results;
+  for (auto& result : results) {
+    ash_results.push_back(
+        base::WrapUnique<app_list::SearchResult>(result.release()));
+  }
+  return ash_results;
+}
+
+}  // namespace
 
 ChromeAppListModelUpdater::ChromeAppListModelUpdater(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
@@ -139,9 +160,9 @@ void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
 }
 
 void ChromeAppListModelUpdater::PublishSearchResults(
-    std::vector<std::unique_ptr<app_list::SearchResult>> results) {
+    std::vector<std::unique_ptr<ChromeSearchResult>> results) {
   if (!ash_util::IsRunningInMash())
-    search_model_->PublishResults(std::move(results));
+    search_model_->PublishResults(ConvertToSearchResults(std::move(results)));
 }
 
 void ChromeAppListModelUpdater::ActivateChromeItem(const std::string& id,
@@ -335,12 +356,14 @@ void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
     chrome_item->ContextMenuItemSelected(command_id, event_flags);
 }
 
-app_list::SearchResult* ChromeAppListModelUpdater::FindSearchResult(
+ChromeSearchResult* ChromeAppListModelUpdater::FindSearchResult(
     const std::string& result_id) {
-  return search_model_ ? search_model_->FindSearchResult(result_id) : nullptr;
+  return search_model_ ? ConvertToChromeSearchResult(
+                             search_model_->FindSearchResult(result_id))
+                       : nullptr;
 }
 
-app_list::SearchResult* ChromeAppListModelUpdater::GetResultByTitle(
+ChromeSearchResult* ChromeAppListModelUpdater::GetResultByTitle(
     const std::string& title) {
   if (!search_model_)
     return nullptr;
@@ -354,7 +377,7 @@ app_list::SearchResult* ChromeAppListModelUpdater::GetResultByTitle(
         result->result_type() == ash::SearchResultType::kInstalledApp &&
         result->display_type() !=
             ash::SearchResultDisplayType::kRecommendation) {
-      return result.get();
+      return ConvertToChromeSearchResult(result.get());
     }
   }
   return nullptr;

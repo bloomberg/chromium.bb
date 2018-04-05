@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;
@@ -18,16 +18,16 @@ class Profile;
 namespace app_list {
 
 // A "search in webstore" result.
-class SearchWebstoreResult : public SearchResult {
+class SearchWebstoreResult : public ChromeSearchResult {
  public:
   SearchWebstoreResult(Profile* profile,
                        AppListControllerDelegate* controller,
                        const std::string& query);
   ~SearchWebstoreResult() override;
 
-  // SearchResult overrides:
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  std::unique_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
 
  private:
   Profile* profile_;

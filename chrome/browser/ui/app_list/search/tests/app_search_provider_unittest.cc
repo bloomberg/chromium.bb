@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
@@ -52,7 +52,8 @@ constexpr char kKeyboardShortcutHelperInternalName[] =
 
 const base::Time kTestCurrentTime = base::Time::FromInternalValue(100000);
 
-bool MoreRelevant(const SearchResult* result1, const SearchResult* result2) {
+bool MoreRelevant(const ChromeSearchResult* result1,
+                  const ChromeSearchResult* result2) {
   return result1->relevance() > result2->relevance();
 }
 
@@ -79,7 +80,7 @@ class AppSearchProviderTest : public AppListTestBase {
     app_search_->Start(base::UTF8ToUTF16(query));
 
     // Sort results by relevance.
-    std::vector<SearchResult*> sorted_results;
+    std::vector<ChromeSearchResult*> sorted_results;
     for (const auto& result : app_search_->results())
       sorted_results.emplace_back(result.get());
     std::sort(sorted_results.begin(), sorted_results.end(), &MoreRelevant);

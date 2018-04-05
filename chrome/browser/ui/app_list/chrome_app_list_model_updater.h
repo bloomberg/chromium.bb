@@ -50,7 +50,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void UpdateSearchBox(const base::string16& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(
-      std::vector<std::unique_ptr<app_list::SearchResult>> results) override;
+      std::vector<std::unique_ptr<ChromeSearchResult>> results) override;
 
   // Methods only used by ChromeAppListItem that talk to ash directly.
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
@@ -86,9 +86,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;
-  app_list::SearchResult* FindSearchResult(
-      const std::string& result_id) override;
-  app_list::SearchResult* GetResultByTitle(const std::string& title) override;
+  ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
+  ChromeSearchResult* GetResultByTitle(const std::string& title) override;
 
   // Methods for AppListSyncableService:
   void AddItemToOemFolder(

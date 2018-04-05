@@ -99,7 +99,7 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
 
 ArcAppDataSearchResult::~ArcAppDataSearchResult() = default;
 
-std::unique_ptr<SearchResult> ArcAppDataSearchResult::Duplicate() const {
+std::unique_ptr<ChromeSearchResult> ArcAppDataSearchResult::Duplicate() const {
   std::unique_ptr<ArcAppDataSearchResult> result =
       std::make_unique<ArcAppDataSearchResult>(data_.Clone(), profile_,
                                                list_controller_);

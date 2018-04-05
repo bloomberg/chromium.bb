@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 
 class ChromeAppListItem;
 
@@ -64,7 +65,7 @@ class AppListModelUpdater {
   virtual void UpdateSearchBox(const base::string16& text,
                                bool initiated_by_user) {}
   virtual void PublishSearchResults(
-      std::vector<std::unique_ptr<app_list::SearchResult>> results) {}
+      std::vector<std::unique_ptr<ChromeSearchResult>> results) {}
 
   // Item field setters only used by ChromeAppListItem and its derived classes.
   virtual void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) {}
@@ -118,10 +119,9 @@ class AppListModelUpdater {
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
   virtual bool SearchEngineIsGoogle() = 0;
-  virtual app_list::SearchResult* FindSearchResult(
+  virtual ChromeSearchResult* FindSearchResult(
       const std::string& result_id) = 0;
-  virtual app_list::SearchResult* GetResultByTitle(
-      const std::string& title) = 0;
+  virtual ChromeSearchResult* GetResultByTitle(const std::string& title) = 0;
 
   // Methods for handle model updates in ash:
   virtual void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) = 0;

@@ -21,9 +21,6 @@ class TestSearchResult : public SearchResult {
 
   void set_result_id(const std::string& id);
 
-  // SearchResult:
-  std::unique_ptr<SearchResult> Duplicate() const override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSearchResult);
 };
