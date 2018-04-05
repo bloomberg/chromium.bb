@@ -122,27 +122,42 @@ TEST_P(WaylandPointerTest, MotionDragged) {
 TEST_P(WaylandPointerTest, ButtonPress) {
   wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
                         wl_fixed_from_int(200), wl_fixed_from_int(150));
-  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_RIGHT,
-                         WL_POINTER_BUTTON_STATE_PRESSED);
-
   Sync();
 
-  std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_RIGHT,
+                         WL_POINTER_BUTTON_STATE_PRESSED);
+  std::unique_ptr<Event> right_press_event;
+  EXPECT_CALL(delegate_, DispatchEvent(_))
+      .WillOnce(CloneEvent(&right_press_event));
+  Sync();
+  ASSERT_TRUE(right_press_event);
+  ASSERT_TRUE(right_press_event->IsMouseEvent());
+  auto* right_press_mouse_event = right_press_event->AsMouseEvent();
+  EXPECT_EQ(ET_MOUSE_PRESSED, right_press_mouse_event->type());
+  EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON, right_press_mouse_event->button_flags());
+  EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON,
+            right_press_mouse_event->changed_button_flags());
+
+  std::unique_ptr<Event> left_press_event;
+  EXPECT_CALL(delegate_, DispatchEvent(_))
+      .WillOnce(CloneEvent(&left_press_event));
   wl_pointer_send_button(pointer_->resource(), 3, 1003, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
 
   Sync();
 
-  ASSERT_TRUE(event);
-  ASSERT_TRUE(event->IsMouseEvent());
-  auto* mouse_event = event->AsMouseEvent();
-  EXPECT_EQ(ET_MOUSE_PRESSED, mouse_event->type());
+  ASSERT_TRUE(left_press_event);
+  ASSERT_TRUE(left_press_event->IsMouseEvent());
+  auto* left_press_mouse_event = left_press_event->AsMouseEvent();
+  EXPECT_EQ(ET_MOUSE_PRESSED, left_press_mouse_event->type());
   EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
-            mouse_event->button_flags());
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON, mouse_event->changed_button_flags());
-  EXPECT_EQ(gfx::PointF(200, 150), mouse_event->location_f());
-  EXPECT_EQ(gfx::PointF(200, 150), mouse_event->root_location_f());
+            left_press_mouse_event->button_flags());
+  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON,
+            left_press_mouse_event->changed_button_flags());
+  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON,
+            left_press_mouse_event->changed_button_flags());
+  EXPECT_EQ(gfx::PointF(200, 150), left_press_mouse_event->location_f());
+  EXPECT_EQ(gfx::PointF(200, 150), left_press_mouse_event->root_location_f());
 }
 
 TEST_P(WaylandPointerTest, ButtonRelease) {
