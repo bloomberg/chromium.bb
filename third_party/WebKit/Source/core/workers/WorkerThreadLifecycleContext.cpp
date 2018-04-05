@@ -9,15 +9,15 @@
 namespace blink {
 
 WorkerThreadLifecycleContext::WorkerThreadLifecycleContext() {
-  DCHECK(IsMainThread());
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
 WorkerThreadLifecycleContext::~WorkerThreadLifecycleContext() {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void WorkerThreadLifecycleContext::NotifyContextDestroyed() {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!was_context_destroyed_);
   was_context_destroyed_ = true;
   LifecycleNotifier::NotifyContextDestroyed();
