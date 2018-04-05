@@ -2806,12 +2806,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
                 "web_view/download");
   ASSERT_TRUE(guest_web_contents);
 
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temporary_download_dir;
-  ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
-  DownloadPrefs::FromBrowserContext(guest_web_contents->GetBrowserContext())
-      ->SetDownloadPath(temporary_download_dir.GetPath());
-
   std::unique_ptr<content::DownloadTestObserver> completion_observer(
       new content::DownloadTestObserverTerminal(
           content::BrowserContext::GetDownloadManager(
@@ -2951,12 +2945,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
 
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temporary_download_dir;
-  ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
-  DownloadPrefs::FromBrowserContext(web_contents->GetBrowserContext())
-      ->SetDownloadPath(temporary_download_dir.GetPath());
-
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(
           web_contents->GetBrowserContext());
@@ -3013,6 +3001,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
 
   completion_observer->WaitForFinished();
 
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::set<std::string> cookies;
   for (auto* download : downloads) {
     ASSERT_EQ(download::DownloadItem::COMPLETE, download->GetState());
@@ -3039,12 +3028,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temporary_download_dir;
-  ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
-  DownloadPrefs::FromBrowserContext(web_contents->GetBrowserContext())
-      ->SetDownloadPath(temporary_download_dir.GetPath());
 
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(
@@ -3086,10 +3069,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   // Wait for both downloads to be stored.
   history_waiter.WaitForStored(2);
 
-  // Leak the temporary download directory. We'll retake ownership in the next
-  // browser session.
-  temporary_download_dir.Take();
-
   content::EnsureCookiesFlushed(profile());
 }
 
@@ -3104,11 +3083,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
 
   DownloadHistoryWaiter history_waiter(browser_context);
   history_waiter.WaitForHistoryLoad();
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temporary_download_dir;
-  ASSERT_TRUE(temporary_download_dir.Set(
-      DownloadPrefs::FromBrowserContext(browser_context)->DownloadPath()));
 
   content::DownloadManager::DownloadVector saved_downloads;
   download_manager->GetAllDownloads(&saved_downloads);
@@ -3149,8 +3123,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
 
   for (auto* download : downloads) {
     ASSERT_TRUE(download->CanResume());
-    ASSERT_TRUE(temporary_download_dir.GetPath().IsParent(
-        download->GetTargetFilePath()));
     ASSERT_TRUE(download->GetFullPath().empty());
     EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
@@ -3170,6 +3142,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
     std::swap(succeeded_download, failed_download);
 
   ASSERT_EQ(download::DownloadItem::COMPLETE, succeeded_download->GetState());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(base::PathExists(succeeded_download->GetTargetFilePath()));
   std::string content;
   ASSERT_TRUE(base::ReadFileToString(succeeded_download->GetTargetFilePath(),

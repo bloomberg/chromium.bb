@@ -78,8 +78,6 @@ class WebstoreInstallerTest : public ExtensionBrowserTest {
   std::string unverified_domain_;
   std::string test_gallery_url_;
 
-  base::ScopedTempDir download_directory_;
-
   std::unique_ptr<extensions::ScopedTestDialogAutoConfirm>
       install_auto_confirm_;
 

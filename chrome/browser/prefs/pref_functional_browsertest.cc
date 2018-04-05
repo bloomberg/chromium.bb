@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -54,16 +53,15 @@ class PrefsFunctionalTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir new_download_dir;
-  ASSERT_TRUE(new_download_dir.CreateUniqueTempDir());
 
+  base::FilePath new_download_dir =
+      DownloadPrefs(browser()->profile()).DownloadPath().AppendASCII("subdir");
   base::FilePath downloaded_pkg =
-      new_download_dir.GetPath().AppendASCII("a_zip_file.zip");
+      new_download_dir.AppendASCII("a_zip_file.zip");
 
   // Set pref to download in new_download_dir.
   browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory, new_download_dir.GetPath());
+      prefs::kDownloadDefaultDirectory, new_download_dir);
 
   // Create a downloads observer.
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(
@@ -72,6 +70,8 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
       browser(), embedded_test_server()->GetURL("/downloads/a_zip_file.zip"));
   // Waits for the download to complete.
   downloads_observer->WaitForFinished();
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(downloaded_pkg));
 }
 

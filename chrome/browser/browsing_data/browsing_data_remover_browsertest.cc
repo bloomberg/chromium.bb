@@ -97,12 +97,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void DownloadAnItem() {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    base::ScopedTempDir downloads_directory;
-    ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_directory.GetPath());
-
     // Start a download.
     content::DownloadManager* download_manager =
         content::BrowserContext::GetDownloadManager(browser()->profile());

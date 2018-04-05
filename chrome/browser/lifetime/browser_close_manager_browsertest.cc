@@ -965,41 +965,11 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
 
-INSTANTIATE_TEST_CASE_P(BrowserCloseManagerBrowserTest,
-                        BrowserCloseManagerBrowserTest,
-                        testing::Bool());
-
-class BrowserCloseManagerWithDownloadsBrowserTest :
-  public BrowserCloseManagerBrowserTest {
- public:
-  BrowserCloseManagerWithDownloadsBrowserTest() {}
-  virtual ~BrowserCloseManagerWithDownloadsBrowserTest() {}
-
-  void SetUpOnMainThread() override {
-    BrowserCloseManagerBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(scoped_download_directory_.CreateUniqueTempDir());
-  }
-
-  void SetDownloadPathForProfile(Profile* profile) {
-    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile);
-    download_prefs->SetDownloadPath(download_path());
-  }
-
-  const base::FilePath& download_path() const {
-    return scoped_download_directory_.GetPath();
-  }
-
- private:
-  base::ScopedTempDir scoped_download_directory_;
-};
-
 // Mac has its own in-progress download prompt in app_controller_mac.mm, so
 // BrowserCloseManager should simply close all browsers. If there are no
 // browsers, it should not crash.
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
-                       TestWithDownloads) {
-  SetDownloadPathForProfile(browser()->profile());
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
 
   RepeatedNotificationObserver close_observer(
@@ -1019,10 +989,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 #else  // defined(OS_MACOSX)
 
 // Test shutdown with a DANGEROUS_URL download undecided.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
-    TestWithDangerousUrlDownload) {
-  SetDownloadPathForProfile(browser()->profile());
-
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       TestWithDangerousUrlDownload) {
   // Set up the fake delegate that forces the download to be malicious.
   std::unique_ptr<TestDownloadManagerDelegate> test_delegate(
       new TestDownloadManagerDelegate(browser()->profile()));
@@ -1060,9 +1028,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 }
 
 // Test shutdown with a download in progress.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
-                       TestWithDownloads) {
-  SetDownloadPathForProfile(browser()->profile());
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   content::TestNavigationObserver navigation_observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
@@ -1088,10 +1054,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 }
 
 // Test shutdown with a download in progress in an off-the-record profile.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
                        TestWithOffTheRecordDownloads) {
   Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile();
-  SetDownloadPathForProfile(otr_profile);
   Browser* otr_browser = CreateBrowser(otr_profile);
   {
     RepeatedNotificationObserver close_observer(
@@ -1124,10 +1089,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 // browser is opened and closed. While there are active downloads, closing the
 // incognito window shouldn't block on the active downloads which belong to the
 // parent profile.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
                        TestWithOffTheRecordWindowAndRegularDownload) {
   Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile();
-  SetDownloadPathForProfile(otr_profile);
   Browser* otr_browser = CreateBrowser(otr_profile);
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
 
@@ -1172,7 +1136,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 
 // Test shutdown with a download in progress from one profile, where the only
 // open windows are for another profile.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
                        TestWithDownloadsFromDifferentProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* other_profile = nullptr;
@@ -1188,8 +1152,6 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   profile_manager->RegisterTestingProfile(other_profile, true, false);
   Browser* other_profile_browser = CreateBrowser(other_profile);
 
-  SetDownloadPathForProfile(browser()->profile());
-  SetDownloadPathForProfile(other_profile);
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   {
     RepeatedNotificationObserver close_observer(
@@ -1228,9 +1190,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 
 // Fails on ChromeOS and Linux, times out on Win. crbug.com/749098
 // Test shutdown with downloads in progress and beforeunload handlers.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
                        DISABLED_TestBeforeUnloadAndDownloads) {
-  SetDownloadPathForProfile(browser()->profile());
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/beforeunload.html")));
@@ -1257,8 +1218,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 
 #endif  // defined(OS_MACOSX)
 
-INSTANTIATE_TEST_CASE_P(BrowserCloseManagerWithDownloadsBrowserTest,
-                        BrowserCloseManagerWithDownloadsBrowserTest,
+INSTANTIATE_TEST_CASE_P(BrowserCloseManagerBrowserTest,
+                        BrowserCloseManagerBrowserTest,
                         testing::Bool());
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)

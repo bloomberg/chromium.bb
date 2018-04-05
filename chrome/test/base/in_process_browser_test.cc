@@ -227,6 +227,11 @@ void InProcessBrowserTest::SetUp() {
   ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
       &quota_settings_);
 
+  // Redirect the default download directory to a temporary directory.
+  ASSERT_TRUE(default_download_dir_.CreateUniqueTempDir());
+  CHECK(PathService::Override(chrome::DIR_DEFAULT_DOWNLOADS,
+                              default_download_dir_.GetPath()));
+
   BrowserTestBase::SetUp();
 }
 

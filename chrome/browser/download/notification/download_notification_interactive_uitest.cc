@@ -124,28 +124,9 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
-
-    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
-    ASSERT_TRUE(SetDownloadsDirectory(browser()));
   }
 
  protected:
-  // Must be called after browser creation. Assumes that |downloads_directory_|
-  // is created and sets its path to be used for downloads by |browser|.
-  // Returning false indicates a failure of the function, and should be
-  // asserted in the caller.
-  bool SetDownloadsDirectory(Browser* browser) {
-    if (!browser)
-      return false;
-
-    browser->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_directory_.GetPath());
-    browser->profile()->GetPrefs()->SetFilePath(
-        prefs::kSaveFileDefaultDirectory, downloads_directory_.GetPath());
-
-    return true;
-  }
-
   content::DownloadManager* GetDownloadManager(Browser* browser) {
     return content::BrowserContext::GetDownloadManager(browser->profile());
   }
@@ -162,9 +143,6 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::unique_ptr<NotificationDisplayServiceTester> incognito_display_service_;
-
-  // Location of the downloads directory for these tests
-  base::ScopedTempDir downloads_directory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationTestBase);
@@ -201,8 +179,6 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
   void PrepareIncognitoBrowser() {
     incognito_browser_ = CreateIncognitoBrowser();
     Profile* incognito_profile = incognito_browser_->profile();
-
-    ASSERT_TRUE(SetDownloadsDirectory(incognito_browser_));
 
     std::unique_ptr<TestChromeDownloadManagerDelegate> incognito_test_delegate;
     incognito_test_delegate.reset(

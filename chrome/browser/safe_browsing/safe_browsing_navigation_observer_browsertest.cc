@@ -34,8 +34,8 @@
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
-using download::DownloadItem;
 using content::DownloadManager;
+using download::DownloadItem;
 
 namespace safe_browsing {
 
@@ -200,14 +200,6 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
     if (!browser())
       return false;
 
-    if (!downloads_directory_.CreateUniqueTempDir())
-      return false;
-
-    // Set up default download path.
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_directory_.GetPath());
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kSaveFileDefaultDirectory, downloads_directory_.GetPath());
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                  false);
     content::DownloadManager* manager =
@@ -472,9 +464,6 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
  protected:
   SafeBrowsingNavigationObserverManager* observer_manager_;
   SafeBrowsingNavigationObserver* observer_;
-
- private:
-  base::ScopedTempDir downloads_directory_;
 };
 
 // Type download URL into address bar and start download on the same page.

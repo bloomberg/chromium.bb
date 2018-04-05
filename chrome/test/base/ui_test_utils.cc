@@ -356,12 +356,6 @@ int FindInPage(WebContents* tab,
 }
 
 void DownloadURL(Browser* browser, const GURL& download_url) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir downloads_directory;
-  ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
-  browser->profile()->GetPrefs()->SetFilePath(prefs::kDownloadDefaultDirectory,
-                                              downloads_directory.GetPath());
-
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser->profile());
   std::unique_ptr<content::DownloadTestObserver> observer(

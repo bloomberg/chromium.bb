@@ -235,11 +235,6 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
       (*it)->SetServerURLForTest(dm_url_.spec());
       (*it)->UpdateHeader(kTestPolicyHeader);
     }
-
-    // Set up temp directory for downloads.
-    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_directory_.GetPath());
   }
 
   void TearDownOnMainThread() override {
@@ -271,9 +266,6 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
   std::unique_ptr<TestDispatcherHostDelegate> dispatcher_host_delegate_;
 
  private:
-  // Location of the downloads directory for tests that use one.
-  base::ScopedTempDir downloads_directory_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegateBrowserTest);
 };
 

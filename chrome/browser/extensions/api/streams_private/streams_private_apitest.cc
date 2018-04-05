@@ -153,14 +153,8 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
   }
 
   void InitializeDownloadSettings() {
-    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(browser());
-    ASSERT_TRUE(downloads_dir_.CreateUniqueTempDir());
 
-    // Setup default downloads directory to the scoped tmp directory created for
-    // the test.
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_dir_.GetPath());
     // Ensure there are no prompts for download during the test.
     browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
@@ -237,7 +231,6 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
   std::string test_extension_id_;
   // The HTTP server used in the tests.
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
-  base::ScopedTempDir downloads_dir_;
 };
 
 // Tests that navigating to a resource with a MIME type handleable by an
@@ -393,7 +386,9 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, MAYBE_DirectDownload) {
 
   // The download's target file path.
   base::FilePath target_path =
-      downloads_dir_.GetPath().Append(FILE_PATH_LITERAL("download_target.txt"));
+      DownloadPrefs(browser()->profile())
+          .DownloadPath()
+          .Append(FILE_PATH_LITERAL("download_target.txt"));
 
   // Set the downloads parameters.
   content::WebContents* web_contents =
@@ -402,6 +397,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, MAYBE_DirectDownload) {
   std::unique_ptr<DownloadUrlParameters> params(
       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
+
   params->set_file_path(target_path);
 
   // Start download of the URL with a path "/text_path.txt" on the test server.

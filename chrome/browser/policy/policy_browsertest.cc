@@ -464,8 +464,9 @@ void CheckURLIsBlocked(Browser* browser, const std::string& spec) {
 
 // Downloads a file named |file| and expects it to be saved to |dir|, which
 // must be empty.
-void DownloadAndVerifyFile(
-    Browser* browser, const base::FilePath& dir, const base::FilePath& file) {
+void DownloadAndVerifyFile(Browser* browser,
+                           const base::FilePath& dir,
+                           const base::FilePath& file) {
   net::EmbeddedTestServer embedded_test_server;
   base::FilePath test_data_directory;
   GetTestDataDirectory(&test_data_directory);
@@ -1556,33 +1557,30 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_WebStoreIconHidden) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   // Verifies that the download directory can be forced by policy.
 
-  // Set the initial download directory.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir initial_dir;
-  ASSERT_TRUE(initial_dir.CreateUniqueTempDir());
-  browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory, initial_dir.GetPath());
   // Don't prompt for the download location during this test.
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kPromptForDownload, false);
 
+  base::FilePath initial_dir =
+      DownloadPrefs(browser()->profile()).DownloadPath();
+
   // Verify that downloads end up on the default directory.
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  DownloadAndVerifyFile(browser(), initial_dir.GetPath(), file);
-  base::DieFileDie(initial_dir.GetPath().Append(file), false);
+  DownloadAndVerifyFile(browser(), initial_dir, file);
+  base::DieFileDie(initial_dir.Append(file), false);
 
   // Override the download directory with the policy and verify a download.
-  base::ScopedTempDir forced_dir;
-  ASSERT_TRUE(forced_dir.CreateUniqueTempDir());
+  base::FilePath forced_dir = initial_dir.AppendASCII("forced");
+
   PolicyMap policies;
   policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(forced_dir.GetPath().value()),
-               nullptr);
+               std::make_unique<base::Value>(forced_dir.value()), nullptr);
   UpdateProviderPolicy(policies);
-  DownloadAndVerifyFile(browser(), forced_dir.GetPath(), file);
+  DownloadAndVerifyFile(browser(), forced_dir, file);
   // Verify that the first download location wasn't affected.
-  EXPECT_FALSE(base::PathExists(initial_dir.GetPath().Append(file)));
+  EXPECT_FALSE(base::PathExists(initial_dir.Append(file)));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
@@ -2073,13 +2071,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   const GURL install_source_url(
       URLRequestMockHTTPJob::GetMockUrl("extensions/*"));
   const GURL referrer_url(URLRequestMockHTTPJob::GetMockUrl("policy/*"));
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir download_directory;
-  ASSERT_TRUE(download_directory.CreateUniqueTempDir());
-  DownloadPrefs* download_prefs =
-      DownloadPrefs::FromBrowserContext(browser()->profile());
-  download_prefs->SetDownloadPath(download_directory.GetPath());
 
   const GURL download_page_url(URLRequestMockHTTPJob::GetMockUrl(
       "policy/extension_install_sources_test.html"));

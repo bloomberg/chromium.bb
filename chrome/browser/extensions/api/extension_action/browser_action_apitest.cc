@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
@@ -68,19 +69,6 @@ void ExecuteExtensionAction(Browser* browser, const Extension* extension) {
   ExtensionActionRunner::GetForWebContents(
       browser->tab_strip_model()->GetActiveWebContents())
       ->RunAction(extension, true);
-}
-
-std::unique_ptr<base::ScopedTempDir> CreateAndSetDownloadsDirectory(
-    PrefService* pref_service) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  std::unique_ptr<base::ScopedTempDir> dir(new base::ScopedTempDir);
-
-  if (!dir->CreateUniqueTempDir())
-    return nullptr;
-
-  pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, dir->GetPath());
-  pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, dir->GetPath());
-  return dir;
 }
 
 // An ImageSkia source that will do nothing (i.e., have a blank skia). We need
@@ -1028,14 +1016,6 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
 // TODO(lukasza): https://crbug.com/650694: Add a "Get" flavour of the test once
 // the download works both for GET and POST requests.
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
-  // Override the default downloads directory, so that the test can cleanup
-  // after itself.  This section is based on CreateAndSetDownloadsDirectory
-  // method defined in a few other source files with tests.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  std::unique_ptr<base::ScopedTempDir> downloads_directory =
-      CreateAndSetDownloadsDirectory(browser()->profile()->GetPrefs());
-  ASSERT_TRUE(downloads_directory);
-
   // Setup monitoring of the downloads.
   content::DownloadTestObserverTerminal downloads_observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
@@ -1054,8 +1034,12 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
   EXPECT_EQ(0u, downloads_observer.NumDangerousDownloadsSeen());
   EXPECT_EQ(1u, downloads_observer.NumDownloadsSeenInState(
                     download::DownloadItem::COMPLETE));
-  EXPECT_TRUE(base::PathExists(downloads_directory->GetPath().AppendASCII(
-      "download-test3-attachment.gif")));
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath downloads_directory =
+      DownloadPrefs(browser()->profile()).DownloadPath();
+  EXPECT_TRUE(base::PathExists(
+      downloads_directory.AppendASCII("download-test3-attachment.gif")));
 
   // The test verification below is applicable only to scenarios where the
   // download shelf is supported - on ChromeOS, instead of the download shelf,

@@ -10,7 +10,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/api/downloads_internal/downloads_internal_api.h"
@@ -71,8 +71,8 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using download::DownloadItem;
 using content::DownloadManager;
+using download::DownloadItem;
 
 namespace errors = download_extension_errors;
 
@@ -323,7 +323,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     GoOnTheRecord();
-    CreateAndSetDownloadsDirectory();
     current_browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
     events_listener_.reset(new DownloadsEventsListener());
@@ -388,8 +387,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   std::string GetFilename(const char* path) {
-    std::string result =
-        downloads_directory_.GetPath().AppendASCII(path).AsUTF8Unsafe();
+    std::string result = downloads_directory().AppendASCII(path).AsUTF8Unsafe();
 #if defined(OS_WIN)
     for (std::string::size_type next = result.find("\\");
          next != std::string::npos;
@@ -592,8 +590,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
     return base::StringPrintf("[%d]", download_item->GetId());
   }
 
-  const base::FilePath& downloads_directory() {
-    return downloads_directory_.GetPath();
+  base::FilePath downloads_directory() {
+    return DownloadPrefs(browser()->profile()).DownloadPath();
   }
 
   DownloadsEventsListener* events_listener() { return events_listener_.get(); }
@@ -611,13 +609,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
     }
   }
 
-  void CreateAndSetDownloadsDirectory() {
-    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
-    current_browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_directory_.GetPath());
-  }
-
-  base::ScopedTempDir downloads_directory_;
   const Extension* extension_;
   Browser* incognito_browser_;
   Browser* current_browser_;
