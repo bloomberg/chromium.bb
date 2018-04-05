@@ -1,7 +1,6 @@
 include_rules = [
   "+chrome/grit",
   "+chrome/installer/util",
-  "+chrome/profiling",
   "+chrome/services/file_util/file_util_service.h",
   "+chrome/services/file_util/public/mojom",
   "+chrome/services/media_gallery_util/media_gallery_util_service.h",
@@ -18,6 +17,7 @@ include_rules = [
   "+chrome/services/wifi_util_win/wifi_util_win_service.h",
   "+chrome/services/wifi_util_win/public/mojom",
   "+components/crash/core/common/crash_keys.h",
+  "+components/services/heap_profiling/heap_profiling_service.h",
   "+components/services/heap_profiling/public",
   "+components/services/font/font_service_app.h",
   "+components/services/patch",

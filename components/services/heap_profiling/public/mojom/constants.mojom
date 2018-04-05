@@ -4,4 +4,4 @@
 
 module profiling.mojom;
 
-const string kServiceName = "profiling";
+const string kServiceName = "heap_profiling";

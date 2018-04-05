@@ -386,7 +386,7 @@ static_library("test_support") {
 
 chrome_packaged_services = [
   ":chrome_manifest",
-  "//chrome/profiling:manifest",
+  "//components/services/heap_profiling:manifest",
   "//components/services/patch:manifest",
   "//components/services/unzip:manifest",
   "//chrome/services/file_util:manifest",

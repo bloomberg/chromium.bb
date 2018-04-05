@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/profiling/profiling_service.h"
+#include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/patch/patch_service.h"
 #include "components/services/patch/public/interfaces/constants.mojom.h"
@@ -193,7 +193,7 @@ void ChromeContentUtilityClient::RegisterServices(
   service_manager::EmbeddedServiceInfo profiling_info;
   profiling_info.task_runner = content::ChildThread::Get()->GetIOTaskRunner();
   profiling_info.factory =
-      base::Bind(&profiling::ProfilingService::CreateService);
+      base::Bind(&profiling::HeapProfilingService::CreateService);
   services->emplace(profiling::mojom::kServiceName, profiling_info);
 
 #if !defined(OS_ANDROID)

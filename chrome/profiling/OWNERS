@@ -1,5 +1,0 @@
-ajwong@chromium.org
-erikchen@chromium.org
-
-per-file profiling_manifest.json=set noparent
-per-file profiling_manifest.json=file://ipc/SECURITY_OWNERS
