@@ -30,10 +30,13 @@ group("test_scripts_shared") {
   ]
 }
 
-group("run_gtest_perf_test") {
+group("run_perf_test") {
   data = [
     "//testing/scripts/common.py",
     "//testing/scripts/run_gtest_perf_test.py",
+    "//testing/scripts/run_performance_tests.py",
+    "//testing/scripts/run_performance_tests_wrapper.py",
+    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
     "//tools/perf/generate_legacy_perf_dashboard_json.py",
   ]
 

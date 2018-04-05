@@ -1146,16 +1146,7 @@
   "load_library_perf_tests": {
     "label": "//chrome/test:load_library_perf_tests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_perf_test.py",
-    "args": [
-      "load_library_perf_tests",
-      "--test-launcher-print-test-stdio=always"
-    ],
-  },
-  "load_library_perf_tests_v2": {
-    "label": "//chrome/test:load_library_perf_tests_v2",
-    "type": "script",
-    "script": "//testing/scripts/run_performance_tests.py",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
     "args": [
       "load_library_perf_tests",
       "--test-launcher-print-test-stdio=always"
@@ -1195,7 +1186,7 @@
   "angle_perftests": {
     "label": "//chrome/test:angle_perftests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
     "args": [
       "angle_perftests",
       "--test-launcher-print-test-stdio=always",
@@ -1216,7 +1207,7 @@
   "performance_browser_tests": {
     "label": "//chrome/test:performance_browser_tests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
     "args": [
       "performance_browser_tests",
       "--test-launcher-print-test-stdio=always",

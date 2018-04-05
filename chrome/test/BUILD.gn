@@ -2136,13 +2136,8 @@ group("telemetry_perf_tests_experimental") {
     "//tools/perf/:perf_experimental",
   ]
 
-  data = [
-    # Needed for isolate script to execute.
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
-    "//testing/scripts/run_gtest_perf_test.py",
-    "//testing/scripts/run_performance_tests.py",
-    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+  data_deps = [
+    "//testing:run_perf_test",
   ]
 }
 
@@ -2154,10 +2149,8 @@ group("performance_test_suite") {
     "//chrome/test:telemetry_perf_tests",
   ]
 
-  data = [
-    "//testing/scripts/run_performance_tests.py",
-    "//testing/scripts/run_gtest_perf_test.py",
-    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+  data_deps = [
+    "//testing:run_perf_test",
   ]
 }
 
@@ -2173,19 +2166,12 @@ group("telemetry_perf_webview_tests") {
 
 group("angle_perftests") {
   testonly = true
-  if (is_win || is_linux || is_android) {
-    data_deps = [
-      "//third_party/angle/src/tests:angle_perftests",
-    ]
-  }
-
-  data = [
-    # Needed for isolate script to execute.
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
-    "//testing/scripts/run_gtest_perf_test.py",
-    "//tools/perf/generate_legacy_perf_dashboard_json.py",
+  data_deps = [
+    "//testing:run_perf_test",
   ]
+  if (is_win || is_linux || is_android) {
+    data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
+  }
 }
 
 if (is_mac) {
@@ -5070,12 +5056,10 @@ if (!is_android && !is_chromecast) {
 
     data = [
       "//chrome/test/data/extensions/api_test/",
+    ]
 
-      # Needed for isolate script to execute.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_gtest_perf_test.py",
-      "//tools/perf/generate_legacy_perf_dashboard_json.py",
+    data_deps = [
+      "//testing:run_perf_test",
     ]
 
     if (is_win) {
@@ -5454,47 +5438,6 @@ if (!is_android && !is_fuchsia) {
   }
 
   # Executable to measure time to load libraries.
-  test("load_library_perf_tests_v2") {
-    sources = [
-      "../browser/load_library_perf_test.cc",
-    ]
-
-    # This test deliberately does not depend in chrome's test support targets.
-    # This is a small test and Chrome's test support targets bring in the
-    # world, causing link time to explode. Please don't add more dependencies
-    # here without understanding how it affects link time (and factor them
-    # differently if possible).
-    deps = [
-      "//base/test:test_support_perf",
-      "//media:media_buildflags",
-      "//testing/gtest",
-      "//testing/perf",
-      "//third_party/widevine/cdm:headers",
-    ]
-
-    if (enable_library_cdms) {
-      deps += [ "//media/cdm:cdm_paths" ]
-      data_deps = [
-        "//media/cdm/library_cdm/clear_key_cdm",
-        "//third_party/widevine/cdm",
-      ]
-    }
-
-    data = [
-      # Needed for isolate script to execute.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_gtest_perf_test.py",
-      "//testing/scripts/run_performance_tests.py",
-      "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
-      "//tools/perf/generate_legacy_perf_dashboard_json.py",
-    ]
-
-    # This target should not require the Chrome executable to run.
-    assert_no_deps = [ "//chrome" ]
-  }
-
-  # Executable to measure time to load libraries.
   test("load_library_perf_tests") {
     sources = [
       "../browser/load_library_perf_test.cc",
@@ -5513,23 +5456,17 @@ if (!is_android && !is_fuchsia) {
       "//third_party/widevine/cdm:headers",
     ]
 
+    data_deps = [
+      "//testing:run_perf_test",
+    ]
+
     if (enable_library_cdms) {
       deps += [ "//media/cdm:cdm_paths" ]
-      data_deps = [
+      data_deps += [
         "//media/cdm/library_cdm/clear_key_cdm",
         "//third_party/widevine/cdm",
       ]
     }
-
-    data = [
-      # Needed for isolate script to execute.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_gtest_perf_test.py",
-      "//testing/scripts/run_performance_tests.py",
-      "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
-      "//tools/perf/generate_legacy_perf_dashboard_json.py",
-    ]
 
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
