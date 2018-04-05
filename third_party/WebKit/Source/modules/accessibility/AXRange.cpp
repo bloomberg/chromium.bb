@@ -61,8 +61,8 @@ bool AXRange::IsValid() const {
 
 // static
 AXRange AXRange::RangeOfContents(const AXObject& container) {
-  return AXRange(AXPosition::CreateFirstPositionInContainerObject(container),
-                 AXPosition::CreateLastPositionInContainerObject(container));
+  return AXRange(AXPosition::CreateFirstPositionInObject(container),
+                 AXPosition::CreateLastPositionInObject(container));
 }
 
 bool operator==(const AXRange& a, const AXRange& b) {

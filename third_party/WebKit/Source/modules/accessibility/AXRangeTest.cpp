@@ -33,14 +33,12 @@ TEST_F(AccessibilityTest, CommonAncestorContainerOfRange) {
   const AXObject* button = GetAXObjectByElementId("button");
   ASSERT_NE(nullptr, button);
 
-  EXPECT_EQ(root,
-            AXRange(AXPosition::CreateFirstPositionInContainerObject(*input),
-                    AXPosition::CreateLastPositionInContainerObject(*button))
-                .CommonAncestorContainer());
-  EXPECT_EQ(root,
-            AXRange(AXPosition::CreateFirstPositionInContainerObject(*br),
-                    AXPosition::CreateFirstPositionInContainerObject(*button))
-                .CommonAncestorContainer());
+  EXPECT_EQ(root, AXRange(AXPosition::CreateFirstPositionInObject(*input),
+                          AXPosition::CreateLastPositionInObject(*button))
+                      .CommonAncestorContainer());
+  EXPECT_EQ(root, AXRange(AXPosition::CreateFirstPositionInObject(*br),
+                          AXPosition::CreateFirstPositionInObject(*button))
+                      .CommonAncestorContainer());
   EXPECT_EQ(paragraph, AXRange(AXPosition::CreatePositionBeforeObject(*text1),
                                AXPosition::CreatePositionBeforeObject(*br))
                            .CommonAncestorContainer());
@@ -59,11 +57,10 @@ TEST_F(AccessibilityTest, IsCollapsedRange) {
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, text->RoleValue());
 
   const AXRange paragraph_range(
-      AXPosition::CreateLastPositionInContainerObject(*paragraph),
-      AXPosition::CreateLastPositionInContainerObject(*paragraph));
-  const AXRange text_range(
-      AXPosition::CreateLastPositionInContainerObject(*text),
-      AXPosition::CreateLastPositionInContainerObject(*text));
+      AXPosition::CreateLastPositionInObject(*paragraph),
+      AXPosition::CreateLastPositionInObject(*paragraph));
+  const AXRange text_range(AXPosition::CreateLastPositionInObject(*text),
+                           AXPosition::CreateLastPositionInObject(*text));
   EXPECT_TRUE(paragraph_range.IsCollapsed());
   EXPECT_TRUE(text_range.IsCollapsed());
   EXPECT_FALSE(AXRange::RangeOfContents(*paragraph).IsCollapsed());
@@ -76,9 +73,9 @@ TEST_F(AccessibilityTest, RangeOfContents) {
   ASSERT_NE(nullptr, paragraph);
 
   const AXRange paragraph_range = AXRange::RangeOfContents(*paragraph);
-  EXPECT_EQ(AXPosition::CreateFirstPositionInContainerObject(*paragraph),
+  EXPECT_EQ(AXPosition::CreateFirstPositionInObject(*paragraph),
             paragraph_range.Start());
-  EXPECT_EQ(AXPosition::CreateLastPositionInContainerObject(*paragraph),
+  EXPECT_EQ(AXPosition::CreateLastPositionInObject(*paragraph),
             paragraph_range.End());
 }
 

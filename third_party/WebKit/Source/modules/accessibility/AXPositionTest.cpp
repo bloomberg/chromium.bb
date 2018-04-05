@@ -23,7 +23,7 @@ TEST_F(AccessibilityTest, PositionInText) {
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
-      *(GetAXObjectByElementId("paragraph")->Children().begin());
+      GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
   const auto ax_position =
@@ -40,7 +40,7 @@ TEST_F(AccessibilityTest, PositionBeforeText) {
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
-      *(GetAXObjectByElementId("paragraph")->Children().begin());
+      GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
   const auto ax_position =
@@ -57,7 +57,7 @@ TEST_F(AccessibilityTest, PositionBeforeTextWithFirstLetterCSSRule) {
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
-      *(GetAXObjectByElementId("paragraph")->Children().begin());
+      GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
   const auto ax_position =
@@ -75,7 +75,7 @@ TEST_F(AccessibilityTest, PositionAfterText) {
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
-      *(GetAXObjectByElementId("paragraph")->Children().begin());
+      GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
   const auto ax_position =
@@ -111,8 +111,7 @@ TEST_F(AccessibilityTest, FirstPositionInContainerDiv) {
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
-  const auto ax_position =
-      AXPosition::CreateFirstPositionInContainerObject(*ax_div);
+  const auto ax_position = AXPosition::CreateFirstPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(div, position.AnchorNode());
   EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
@@ -124,8 +123,7 @@ TEST_F(AccessibilityTest, LastPositionInContainerDiv) {
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
-  const auto ax_position =
-      AXPosition::CreateLastPositionInContainerObject(*ax_div);
+  const auto ax_position = AXPosition::CreateLastPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(div, position.AnchorNode());
   EXPECT_TRUE(position.GetPosition().IsAfterChildren());
@@ -144,9 +142,8 @@ TEST_F(AccessibilityTest, AXPositionComparisonOperators) {
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
-  const auto root_first =
-      AXPosition::CreateFirstPositionInContainerObject(*root);
-  const auto root_last = AXPosition::CreateLastPositionInContainerObject(*root);
+  const auto root_first = AXPosition::CreateFirstPositionInObject(*root);
+  const auto root_last = AXPosition::CreateLastPositionInObject(*root);
 
   const AXObject* input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, input);
@@ -202,7 +199,7 @@ TEST_F(AccessibilityTest, PositionInTextWithWhiteSpace) {
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
-      *(GetAXObjectByElementId("paragraph")->Children().begin());
+      GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
   const auto ax_position =
