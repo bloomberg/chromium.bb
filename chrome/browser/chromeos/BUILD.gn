@@ -186,7 +186,6 @@ source_set("chromeos") {
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
-    "//third_party/libusb",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/protobuf:protoc($host_toolchain)",
     "//third_party/re2",
