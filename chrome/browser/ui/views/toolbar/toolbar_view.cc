@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
@@ -303,7 +304,7 @@ void ToolbarView::ShowIntentPickerBubble(
 
     views::Widget* bubble_widget = IntentPickerBubbleView::ShowBubble(
         intent_picker_view, GetWebContents(), app_info,
-        false /* disable_stay_in_chrome */, callback);
+        false /* disable_stay_in_chrome */, std::move(callback));
     if (bubble_widget && intent_picker_view)
       intent_picker_view->OnBubbleWidgetCreated(bubble_widget);
   }

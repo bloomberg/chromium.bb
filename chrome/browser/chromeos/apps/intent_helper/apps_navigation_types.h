@@ -13,8 +13,30 @@
 namespace chromeos {
 
 enum class AppType {
+  // Used for error scenarios and other cases where the app type isn't going to
+  // be used (e.g. not launching an app).
+  INVALID,
+
   // An Android app.
   ARC,
+};
+
+// Describes the possible ways for the intent picker to be closed.
+enum class IntentPickerCloseReason {
+  // There was an error in showing the intent picker.
+  ERROR,
+
+  // The user dismissed the picker without making a choice.
+  DIALOG_DEACTIVATED,
+
+  // A preferred app was found for launch.
+  PREFERRED_APP_FOUND,
+
+  // The user chose to stay in Chrome.
+  STAY_IN_CHROME,
+
+  // The user chose to open an app.
+  OPEN_APP,
 };
 
 enum class AppsNavigationAction {

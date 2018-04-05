@@ -1157,7 +1157,7 @@ void BrowserView::ShowUpdateChromeDialog() {
 void BrowserView::ShowIntentPickerBubble(
     const std::vector<IntentPickerBubbleView::AppInfo>& app_info,
     IntentPickerResponse callback) {
-  toolbar_->ShowIntentPickerBubble(app_info, callback);
+  toolbar_->ShowIntentPickerBubble(app_info, std::move(callback));
 }
 
 void BrowserView::SetIntentPickerViewVisibility(bool visible) {

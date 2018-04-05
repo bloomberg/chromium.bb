@@ -117,6 +117,21 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(const Browser* browser,
 }
 
 // static
+void AppsNavigationThrottle::OnIntentPickerClosed(
+    const GURL& url,
+    const std::string& launch_name,
+    AppType app_type,
+    IntentPickerCloseReason close_reason,
+    bool should_persist) {
+  // Always call the ARC method as it records UMA stats.
+  // TODO(crbug.com/824598) consider cost of losing historical data against
+  // migrating the UMA metric out of the ARC namespace so the name is more
+  // sensible when other app platforms are added.
+  arc::ArcNavigationThrottle::OnIntentPickerClosed(
+      url, launch_name, app_type, close_reason, should_persist);
+}
+
+// static
 bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
     const GURL& previous_url,
     const GURL& current_url) {
@@ -169,11 +184,9 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   if (apps.empty())
     return;
 
-  // TODO(crbug.com/824598): move the IntentPickerResponse callback and
-  // CloseReason enum/UMA to be in this class.
   chrome::QueryAndDisplayArcApps(
       browser, apps,
-      base::Bind(&arc::ArcNavigationThrottle::OnIntentPickerClosed, url));
+      base::BindOnce(&AppsNavigationThrottle::OnIntentPickerClosed, url));
 }
 
 void AppsNavigationThrottle::CancelNavigation() {

@@ -9,12 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
@@ -41,8 +39,8 @@ class IntentPickerLabelButton;
 // outside of the bubble allows the user to dismiss the bubble (and stay in
 // Chrome) without remembering any decision.
 //
-// This class comunicates the user's selection with a callback used by
-// ArcNavigationThrottle.
+// This class communicates the user's selection with a callback supplied by
+// AppsNavigationThrottle.
 //   +--------------------------------+
 //   | Open with                  [x] |
 //   |                                |
@@ -62,16 +60,15 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   using AppInfo = chromeos::IntentPickerAppInfo;
 
   ~IntentPickerBubbleView() override;
-  static views::Widget* ShowBubble(
-      views::View* anchor_view,
-      content::WebContents* web_contents,
-      const std::vector<AppInfo>& app_info,
-      bool disable_stay_in_chrome,
-      const IntentPickerResponse& intent_picker_cb);
+  static views::Widget* ShowBubble(views::View* anchor_view,
+                                   content::WebContents* web_contents,
+                                   const std::vector<AppInfo>& app_info,
+                                   bool disable_stay_in_chrome,
+                                   IntentPickerResponse intent_picker_cb);
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(
       const std::vector<AppInfo>& app_info,
       bool disable_stay_in_chrome,
-      const IntentPickerResponse& intent_picker_cb,
+      IntentPickerResponse intent_picker_cb,
       content::WebContents* web_contents);
   static IntentPickerBubbleView* intent_picker_bubble() {
     return intent_picker_bubble_;
@@ -125,7 +122,9 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // the internal ScrollView.
   IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
   void RunCallback(const std::string& launch_name,
-                   arc::ArcNavigationThrottle::CloseReason close_reason);
+                   chromeos::AppType app_type,
+                   chromeos::IntentPickerCloseReason close_reason,
+                   bool should_persist);
 
   // Accessory for |scroll_view_|'s contents size.
   size_t GetScrollViewSize() const;
@@ -146,7 +145,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
 
   static IntentPickerBubbleView* intent_picker_bubble_;
 
-  // Callback used to respond to ArcNavigationThrottle.
+  // Callback used to respond to AppsNavigationThrottle.
   IntentPickerResponse intent_picker_cb_;
 
   // Pre-select the first app on the list.

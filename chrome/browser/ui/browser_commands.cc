@@ -1234,7 +1234,7 @@ void QueryAndDisplayArcApps(
     const Browser* browser,
     const std::vector<chromeos::IntentPickerAppInfo>& app_info,
     IntentPickerResponse callback) {
-  browser->window()->ShowIntentPickerBubble(app_info, callback);
+  browser->window()->ShowIntentPickerBubble(app_info, std::move(callback));
 }
 
 void SetIntentPickerViewVisibility(Browser* browser, bool visible) {

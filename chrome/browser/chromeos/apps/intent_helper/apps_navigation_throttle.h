@@ -45,6 +45,17 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // bubble in |browser|.
   static void ShowIntentPickerBubble(const Browser* browser, const GURL& url);
 
+  // Called when the intent picker is closed for |url|, with |launch_name| as
+  // the (possibly empty) action to be triggered based on |app_type|.
+  // |close_reason| gives the reason for the picker being closed, and
+  // |should_persist| is true if the user indicated they wish to remember the
+  // choice made.
+  static void OnIntentPickerClosed(const GURL& url,
+                                   const std::string& launch_name,
+                                   AppType app_type,
+                                   IntentPickerCloseReason close_reason,
+                                   bool should_persist);
+
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
                                                  const GURL& current_url);
 

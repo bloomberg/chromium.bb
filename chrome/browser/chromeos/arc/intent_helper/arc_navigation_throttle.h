@@ -28,10 +28,63 @@ namespace arc {
 // traffic initiated on Chrome browser, either on Chrome or an ARC's app.
 class ArcNavigationThrottle {
  public:
+  ArcNavigationThrottle();
+  ~ArcNavigationThrottle();
+
+  // Returns true if the navigation request represented by |handle| should be
+  // deferred while ARC is queried for apps, and if so, |callback| will be run
+  // asynchronously with the action for the navigation. |callback| will not be
+  // run if false is returned.
+  bool ShouldDeferRequest(content::NavigationHandle* handle,
+                          chromeos::AppsNavigationCallback callback);
+
+  // Finds |selected_app_package| from the |app_candidates| array and returns
+  // the index. If the app is not found, returns |app_candidates.size()|.
+  static size_t GetAppIndex(
+      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates,
+      const std::string& selected_app_package);
+
+  // Records intent picker usage statistics as well as whether navigations are
+  // continued or redirected to an app via UMA histograms.
+  static void RecordUma(const std::string& selected_app_package,
+                        chromeos::AppType app_type,
+                        chromeos::IntentPickerCloseReason close_reason,
+                        bool should_persist);
+
+  // TODO(djacobo): Remove this function and instead stop ARC from returning
+  // Chrome as a valid app candidate.
+  // Records true if |app_candidates| contain one or more apps. When this
+  // function is called from OnAppCandidatesReceived, |app_candidates| always
+  // contains Chrome (aka intent helper), but the same function doesn't treat
+  // this as an app.
+  static bool IsAppAvailable(
+      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
+
+  static bool IsAppAvailableForTesting(
+      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
+  static size_t FindPreferredAppForTesting(
+      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
+  static void QueryArcApps(const Browser* browser,
+                           const GURL& url,
+                           chromeos::QueryAppsCallback callback);
+
+  // Called to record UMA for the intent picker, and launch an ARC app if it was
+  // selected by the user.
+  static void OnIntentPickerClosed(const GURL& url,
+                                   const std::string& package_name,
+                                   chromeos::AppType app_type,
+                                   chromeos::IntentPickerCloseReason reason,
+                                   bool should_persist);
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ArcNavigationThrottleTest, TestGetPickerAction);
+  FRIEND_TEST_ALL_PREFIXES(ArcNavigationThrottleTest,
+                           TestGetDestinationPlatform);
+
   // These enums are used to define the buckets for an enumerated UMA histogram
   // and need to be synced with histograms.xml. This enum class should also be
   // treated as append-only.
-  enum class CloseReason : int {
+  enum class PickerAction : int {
     ERROR = 0,
     // DIALOG_DEACTIVATED keeps track of the user dismissing the UI via clicking
     // the close button or clicking outside of the IntentPickerBubbleView
@@ -55,7 +108,7 @@ class ArcNavigationThrottle {
     INVALID = SIZE,
   };
 
-  // As for CloseReason, these define the buckets for an UMA histogram, so this
+  // As for PickerAction, these define the buckets for an UMA histogram, so this
   // must be treated in an append-only fashion. This helps especify where a
   // navigation will continue.
   enum class Platform : int {
@@ -64,53 +117,21 @@ class ArcNavigationThrottle {
     SIZE,
   };
 
-  ArcNavigationThrottle();
-  ~ArcNavigationThrottle();
-
-  // Returns true if the navigation request represented by |handle| should be
-  // deferred while ARC is queried for apps, and if so, |callback| will be run
-  // asynchronously with the action for the navigation. |callback| will not be
-  // run if false is returned.
-  bool ShouldDeferRequest(content::NavigationHandle* handle,
-                          chromeos::AppsNavigationCallback callback);
-
-  // Finds |selected_app_package| from the |app_candidates| array and returns
-  // the index. If the app is not found, returns |app_candidates.size()|.
-  static size_t GetAppIndex(
-      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates,
-      const std::string& selected_app_package);
   // Determines the destination of the current navigation. We know that if the
-  // |close_reason| is either ERROR or DIALOG_DEACTIVATED the navigation MUST
+  // |picker_action| is either ERROR or DIALOG_DEACTIVATED the navigation MUST
   // stay in Chrome, otherwise we can assume the navigation goes to ARC with the
   // exception of the |selected_app_package| being Chrome.
   static Platform GetDestinationPlatform(
       const std::string& selected_app_package,
-      CloseReason close_reason);
-  // Records intent picker usage statistics as well as whether navigations are
-  // continued or redirected to Chrome or ARC respectively, via UMA histograms.
-  static void RecordUma(CloseReason close_reason, Platform platform);
-  // TODO(djacobo): Remove this function and instead stop ARC from returning
-  // Chrome as a valid app candidate.
-  // Records true if |app_candidates| contain one or more apps. When this
-  // function is called from OnAppCandidatesReceived, |app_candidates| always
-  // contains Chrome (aka intent helper), but the same function doesn't treat
-  // this as an app.
-  static bool IsAppAvailable(
-      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
+      PickerAction picker_action);
 
-  static bool IsAppAvailableForTesting(
-      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
-  static size_t FindPreferredAppForTesting(
-      const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
-  static void QueryArcApps(const Browser* browser,
-                           const GURL& url,
-                           chromeos::QueryAppsCallback callback);
-  static void OnIntentPickerClosed(
-      const GURL& url,
-      const std::string& package_name,
-      arc::ArcNavigationThrottle::CloseReason close_reason);
+  // Converts the provided |app_type|, |close_reason| and |should_persist|
+  // boolean to a PickerAction value for recording in UMA.
+  static PickerAction GetPickerAction(
+      chromeos::AppType app_type,
+      chromeos::IntentPickerCloseReason close_reason,
+      bool should_persist);
 
- private:
   // Determines whether we should open a preferred app or show the intent
   // picker. Resume/Cancel the navigation which was put in DEFER. Close the
   // current tab only if we continue the navigation on ARC and the current tab
