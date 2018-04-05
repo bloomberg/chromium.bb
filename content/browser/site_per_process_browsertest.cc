@@ -1707,7 +1707,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
 // nested <iframe>'s after the inner-most frame scrolls into view. The
 // measurements are for two identical pages where one page does not have any
 // OOPIFs while the other has some nested OOPIFs.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
+#if defined(OS_LINUX)
+// crbug.com/827431
+#define MAYBE_ScrollElementIntoView DISABLED_ScrollElementIntoView
+#else
+#define MAYBE_ScrollElementIntoView ScrollElementIntoView
+#endif
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollElementIntoView) {
   const GURL url_a(
       embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
   const GURL url_b(
