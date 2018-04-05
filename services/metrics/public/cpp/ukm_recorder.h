@@ -53,6 +53,10 @@ class WebContentsImpl;
 class PluginServiceImpl;
 }  // namespace content
 
+namespace contextual_suggestions {
+class ContextualSuggestionsUkmEntry;
+}
+
 namespace download {
 class DownloadUkmHelper;
 }
@@ -141,6 +145,7 @@ class METRICS_EXPORT UkmRecorder {
   friend content::CrossSiteDocumentResourceHandler;
   friend content::PluginServiceImpl;
   friend content::WebContentsImpl;
+  friend contextual_suggestions::ContextualSuggestionsUkmEntry;
   friend download::DownloadUkmHelper;
   friend internal::SourceUrlRecorderWebContentsObserver;
   friend internal::SourceUrlRecorderWebStateObserver;
