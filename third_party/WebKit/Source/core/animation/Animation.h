@@ -80,7 +80,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     kFinished
   };
 
-  static Animation* Create(AnimationEffect*, AnimationTimeline*);
+  static Animation* Create(AnimationEffect*,
+                           AnimationTimeline*,
+                           ExceptionState& = ASSERT_NO_EXCEPTION);
 
   // Web Animations API IDL constructors.
   static Animation* Create(ExecutionContext*,
