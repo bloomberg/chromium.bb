@@ -7,5 +7,5 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 466x22
           text run at (0,0) width 466: "Test of unqualifed :hover selector in quirks parsing mode"
       LayoutBlockFlow {P} at (0,41.72) size 784x20
-        LayoutText {#text} at (0,0) size 616x19
-          text run at (0,0) width 616: "Moving the mouse anywhere over the document should result no change to the background color."
+        LayoutText {#text} at (0,0) size 615x19
+          text run at (0,0) width 615: "Moving the mouse anywhere over the document should result no change to the background color."

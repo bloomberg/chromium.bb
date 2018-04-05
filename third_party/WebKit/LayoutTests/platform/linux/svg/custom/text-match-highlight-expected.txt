@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x421
   LayoutBlockFlow {HTML} at (0,0) size 800x421
     LayoutBlockFlow {BODY} at (8,8) size 784x405
-      LayoutText {#text} at (0,0) size 448x19
-        text run at (0,0) width 448: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
+      LayoutText {#text} at (0,0) size 449x19
+        text run at (0,0) width 449: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
       LayoutInline {SPAN} at (0,0) size 44x19
-        LayoutText {#text} at (448,0) size 44x19
-          text run at (448,0) width 44: "findme"
-      LayoutText {#text} at (492,0) size 743x39
-        text run at (492,0) width 135: "\". The 6th higlighted "
-        text run at (627,0) width 116: "instance should be"
+        LayoutText {#text} at (449,0) size 44x19
+          text run at (449,0) width 44: "findme"
+      LayoutText {#text} at (493,0) size 744x39
+        text run at (493,0) width 135: "\". The 6th higlighted "
+        text run at (628,0) width 116: "instance should be"
         text run at (0,20) width 41: "active."
       LayoutBR {BR} at (41,20) size 0x19
       LayoutBR {BR} at (0,40) size 0x19

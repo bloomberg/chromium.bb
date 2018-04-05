@@ -22,11 +22,11 @@ layer at (0,0) size 800x256
         LayoutInline {EM} at (0,0) size 113x19
           LayoutText {#text} at (0,60) size 113x19
             text run at (0,60) width 113: "aligned on the left"
-        LayoutText {#text} at (113,60) size 98x19
-          text run at (113,60) width 98: " of the window."
+        LayoutText {#text} at (113,60) size 99x19
+          text run at (113,60) width 99: " of the window."
       LayoutBlockFlow {DIV} at (0,152) size 196x80 [bgcolor=#00FFFF]
         LayoutText {#text} at (392,0) size 404x79
           text run at (392,0) width 12: "X"
           text run at (0,20) width 169: "The X on the previous line"
           text run at (0,40) width 184: "should be centered across the"
-          text run at (0,60) width 54: "window."
+          text run at (0,60) width 55: "window."

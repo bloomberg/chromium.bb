@@ -7,5 +7,5 @@ layer at (0,0) size 800x52
         LayoutInline {A} at (0,0) size 313x19 [color=#008000]
           LayoutText {#text} at (0,0) size 313x19
             text run at (0,0) width 313: "Whatever you do to this link, it should stay green."
-        LayoutText {#text} at (313,0) size 197x19
-          text run at (313,0) width 197: " (hover, focus, activate, follow)"
+        LayoutText {#text} at (313,0) size 196x19
+          text run at (313,0) width 196: " (hover, focus, activate, follow)"

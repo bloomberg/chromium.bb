@@ -6,16 +6,16 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 104x19
           text run at (0,0) width 104: "This is a test for "
-        LayoutInline {I} at (0,0) size 750x39
-          LayoutInline {A} at (0,0) size 348x19 [color=#0000EE]
-            LayoutText {#text} at (104,0) size 348x19
-              text run at (104,0) width 348: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9316"
-          LayoutText {#text} at (452,0) size 750x39
-            text run at (452,0) width 4: " "
-            text run at (456,0) width 294: "REGRESSION: text field width shrinks on first"
-            text run at (0,20) width 59: "keystroke"
-        LayoutText {#text} at (59,20) size 4x19
-          text run at (59,20) width 4: "."
+        LayoutInline {I} at (0,0) size 749x39
+          LayoutInline {A} at (0,0) size 347x19 [color=#0000EE]
+            LayoutText {#text} at (104,0) size 347x19
+              text run at (104,0) width 347: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9316"
+          LayoutText {#text} at (451,0) size 749x39
+            text run at (451,0) width 4: " "
+            text run at (455,0) width 294: "REGRESSION: text field width shrinks on first"
+            text run at (0,20) width 58: "keystroke"
+        LayoutText {#text} at (58,20) size 4x19
+          text run at (58,20) width 4: "."
 layer at (8,64) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,56) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,74) size 784x0

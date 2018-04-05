@@ -6,7 +6,7 @@ layer at (0,0) size 800x328
       LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 782x39
           text run at (0,0) width 782: "Transform inside nested reflections should be applied correctly. You should see four rotated green boxes, as mirror images of"
-          text run at (0,20) width 69: "each other."
+          text run at (0,20) width 68: "each other."
 layer at (28,76) size 122x232
   LayoutBlockFlow {DIV} at (20,60) size 122x232 [border: (1px solid #000000)]
 layer at (39,87) size 102x102

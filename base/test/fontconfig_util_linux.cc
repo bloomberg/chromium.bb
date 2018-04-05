@@ -52,18 +52,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Impact.ttf</glob>
     </acceptfont>
     <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf</glob>
     </acceptfont>
     <acceptfont>
@@ -84,7 +72,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
     </edit>
   </match>
 
-  <!-- TODO(thomasanderson): Remove once Tinos is added to GCS fonts. -->
+  <!-- TODO(thomasanderson): Figure out why this is necessary. -->
   <match target="pattern">
     <test name="family" compare="eq">
       <string>Tinos</string>
@@ -95,9 +83,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
     <edit name="hintstyle" mode="assign">
       <const>hintslight</const>
     </edit>
-    <edit name="family" mode="assign">
-      <string>Times New Roman</string>
-    </edit>
   </match>
 
   <match target="pattern">
@@ -105,7 +90,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>Times</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Times New Roman</string>
+      <string>Tinos</string>
     </edit>
   </match>
 
@@ -128,7 +113,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
   </match>
 
   <!-- Some layout tests specify Helvetica as a family and we need to make sure
-       that we don't fallback to Times New Roman for them -->
+       that we don't fallback to Tinos for them -->
   <match target="pattern">
     <test qual="any" name="family">
       <string>Helvetica</string>
@@ -152,7 +137,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>serif</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Times New Roman</string>
+      <string>Tinos</string>
     </edit>
   </match>
 
@@ -206,7 +191,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>Monaco</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Times New Roman</string>
+      <string>Tinos</string>
     </edit>
   </match>
 
@@ -234,6 +219,15 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
     </test>
     <edit name="family" mode="assign">
       <string>Gelasio</string>
+    </edit>
+  </match>
+
+  <match target="pattern">
+    <test qual="any" name="family">
+      <string>Times New Roman</string>
+    </test>
+    <edit name="family" mode="assign">
+      <string>Tinos</string>
     </edit>
   </match>
 
@@ -357,7 +351,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>SubpixelPositioning</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Times New Roman</string>
+      <string>Tinos</string>
     </edit>
   </match>
 
@@ -376,7 +370,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>SlightHintedTimesNewRoman</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Times New Roman</string>
+      <string>Tinos</string>
     </edit>
     <edit name="hintstyle" mode="assign">
       <const>hintslight</const>

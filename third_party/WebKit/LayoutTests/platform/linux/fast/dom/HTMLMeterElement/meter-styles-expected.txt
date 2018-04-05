@@ -137,5 +137,5 @@ layer at (0,0) size 800x483
           LayoutBlockFlow {DIV} at (0,0) size 80x16
             LayoutBlockFlow {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (5,5) size 35x6
-        LayoutText {#text} at (80,0) size 165x19
-          text run at (80,0) width 165: " has \"padding\" on the bar."
+        LayoutText {#text} at (80,0) size 164x19
+          text run at (80,0) width 164: " has \"padding\" on the bar."

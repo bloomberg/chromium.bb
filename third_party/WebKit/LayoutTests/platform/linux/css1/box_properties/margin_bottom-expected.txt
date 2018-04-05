@@ -68,11 +68,11 @@ layer at (0,0) size 785x1822 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 294x19
             text run at (0,0) width 294: "This list item has no special styles applied to it."
       LayoutBlockFlow {P} at (0,898.25) size 769x60 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 760x59
+        LayoutText {#text} at (0,0) size 759x59
           text run at (0,0) width 748: "This paragraph has a bottom margin of -10px, which should cause elements after it to be shifted \"upward\" on the page,"
           text run at (0,20) width 123: "and no top margin. "
-          text run at (123,20) width 488: "No other styles have been applied to it besides a light blue background color. "
-          text run at (611,20) width 149: "In all other respects, the"
+          text run at (123,20) width 487: "No other styles have been applied to it besides a light blue background color. "
+          text run at (610,20) width 149: "In all other respects, the"
           text run at (0,40) width 166: "element should be normal."
       LayoutBlockFlow {P} at (0,948.25) size 769x20 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 203x19
@@ -84,9 +84,9 @@ layer at (0,0) size 785x1822 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x816
           LayoutTableRow {TR} at (0,0) size 767x28
             LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 767x788
             LayoutTableCell {TD} at (0,408) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -135,11 +135,11 @@ layer at (0,0) size 785x1822 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutText {#text} at (0,0) size 294x19
                     text run at (0,0) width 294: "This list item has no special styles applied to it."
               LayoutBlockFlow {P} at (4,693.75) size 747x60 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 717x59
+                LayoutText {#text} at (0,0) size 716x59
                   text run at (0,0) width 710: "This paragraph has a bottom margin of -10px, which should cause elements after it to be shifted \"upward\" on the"
                   text run at (0,20) width 161: "page, and no top margin. "
-                  text run at (161,20) width 488: "No other styles have been applied to it besides a light blue background color. "
-                  text run at (649,20) width 68: "In all other"
+                  text run at (161,20) width 487: "No other styles have been applied to it besides a light blue background color. "
+                  text run at (648,20) width 68: "In all other"
                   text run at (0,40) width 247: "respects, the element should be normal."
               LayoutBlockFlow {P} at (4,743.75) size 747x20 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 203x19

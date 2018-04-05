@@ -24,27 +24,27 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [13, 520, 408, 80],
+          "rect": [14, 520, 407, 80],
           "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
-          "rect": [13, 241, 407, 139],
+          "rect": [14, 241, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 181, 407, 79],
+          "rect": [14, 181, 406, 79],
           "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "geometry"
         },
         {
@@ -59,27 +59,27 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 80, 355, 120],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [14, 461, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [14, 460, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [14, 421, 355, 39],
           "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 420, 355, 39],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 80, 354, 120],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 461, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 460, 354, 59],
           "reason": "geometry"
         },
         {
@@ -177,11 +177,11 @@
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'but generally, just as she had got its neck'",
+      "object": "InlineTextBox 'but generally, just as she had got its'",
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'nicely straightened\n'",
+      "object": "InlineTextBox 'neck nicely straightened\n'",
       "reason": "geometry"
     },
     {

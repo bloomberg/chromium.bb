@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Should have green background'",
-          "rect": [8, 8, 198, 19],
+          "rect": [8, 8, 197, 19],
           "reason": "geometry"
         }
       ]

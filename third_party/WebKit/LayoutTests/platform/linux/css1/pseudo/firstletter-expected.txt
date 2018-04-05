@@ -22,9 +22,9 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {<pseudo:first-letter>} at (0,0) size 10x19 [color=#800000]
           LayoutTextFragment (anonymous) at (0,0) size 10x19
             text run at (0,0) width 10: "T"
-        LayoutTextFragment {#text} at (10,0) size 764x59
+        LayoutTextFragment {#text} at (10,0) size 763x59
           text run at (10,0) width 434: "he first letter of this paragraph, and only that one, should be maroon. "
-          text run at (444,0) width 320: "If this precise combination does not occur, then the"
+          text run at (444,0) width 319: "If this precise combination does not occur, then the"
           text run at (0,20) width 187: "user agent has failed this test. "
           text run at (187,20) width 574: "Remember that in order to ensure a complete test, the paragraph must be displayed on more"
           text run at (0,40) width 85: "than one line."
@@ -32,11 +32,11 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {<pseudo:first-letter>} at (0,0) size 20x36 [color=#800000]
           LayoutTextFragment (anonymous) at (0,0) size 20x36
             text run at (0,0) width 20: "T"
-        LayoutTextFragment {#text} at (20,13) size 757x63
+        LayoutTextFragment {#text} at (20,13) size 756x63
           text run at (20,13) width 611: "he first letter of this paragraph, and only that one, should be a larger font size, as well as maroon. "
           text run at (631,13) width 84: "If this precise"
-          text run at (0,37) width 423: "combination does not occur, then the user agent has failed this test. "
-          text run at (423,37) width 334: "Remember that in order to ensure a complete test, the"
+          text run at (0,37) width 422: "combination does not occur, then the user agent has failed this test. "
+          text run at (422,37) width 334: "Remember that in order to ensure a complete test, the"
           text run at (0,57) width 325: "paragraph must be displayed on more than one line."
       LayoutBlockFlow {P} at (0,300) size 769x106
         LayoutInline {<pseudo:first-letter>} at (0,0) size 76x64 [color=#800000]
@@ -52,9 +52,9 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 767x311
           LayoutTableRow {TR} at (0,0) size 767x28
             LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 767x283
             LayoutTableCell {TD} at (0,155) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -64,9 +64,9 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 10x19 [color=#800000]
                   LayoutTextFragment (anonymous) at (0,0) size 10x19
                     text run at (0,0) width 10: "T"
-                LayoutTextFragment {#text} at (10,0) size 741x59
+                LayoutTextFragment {#text} at (10,0) size 740x59
                   text run at (10,0) width 434: "he first letter of this paragraph, and only that one, should be maroon. "
-                  text run at (444,0) width 297: "If this precise combination does not occur, then"
+                  text run at (444,0) width 296: "If this precise combination does not occur, then"
                   text run at (0,20) width 210: "the user agent has failed this test. "
                   text run at (210,20) width 518: "Remember that in order to ensure a complete test, the paragraph must be displayed"
                   text run at (0,40) width 141: "on more than one line."
@@ -74,11 +74,11 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 20x36 [color=#800000]
                   LayoutTextFragment (anonymous) at (0,0) size 20x36
                     text run at (0,0) width 20: "T"
-                LayoutTextFragment {#text} at (20,13) size 734x63
+                LayoutTextFragment {#text} at (20,13) size 733x63
                   text run at (20,13) width 611: "he first letter of this paragraph, and only that one, should be a larger font size, as well as maroon. "
                   text run at (631,13) width 84: "If this precise"
-                  text run at (0,37) width 423: "combination does not occur, then the user agent has failed this test. "
-                  text run at (423,37) width 311: "Remember that in order to ensure a complete test,"
+                  text run at (0,37) width 422: "combination does not occur, then the user agent has failed this test. "
+                  text run at (422,37) width 311: "Remember that in order to ensure a complete test,"
                   text run at (0,57) width 348: "the paragraph must be displayed on more than one line."
               LayoutBlockFlow {P} at (4,173) size 747x106
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 76x64 [color=#800000]

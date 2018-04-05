@@ -4,17 +4,17 @@ layer at (0,0) size 800x1026 backgroundClip at (0,0) size 800x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 800x1026
     LayoutBlockFlow {BODY} at (8,16) size 784x1002
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 51x19
-          text run at (0,0) width 51: "Test for "
-        LayoutInline {I} at (0,0) size 722x19
-          LayoutInline {A} at (0,0) size 293x19 [color=#0000EE]
-            LayoutText {#text} at (51,0) size 293x19
-              text run at (51,0) width 293: "http://bugs.webkit.org/show_bug.cgi?id=5399"
-          LayoutText {#text} at (344,0) size 429x19
+        LayoutText {#text} at (0,0) size 52x19
+          text run at (0,0) width 52: "Test for "
+        LayoutInline {I} at (0,0) size 717x19
+          LayoutInline {A} at (0,0) size 292x19 [color=#0000EE]
+            LayoutText {#text} at (52,0) size 292x19
+              text run at (52,0) width 292: "http://bugs.webkit.org/show_bug.cgi?id=5399"
+          LayoutText {#text} at (344,0) size 425x19
             text run at (344,0) width 4: " "
-            text run at (348,0) width 425: "no-repeat on negatively positioned background images are ignored"
-        LayoutText {#text} at (773,0) size 4x19
-          text run at (773,0) width 4: "."
+            text run at (348,0) width 421: "no-repeat on negatively positioned background images are ignored"
+        LayoutText {#text} at (769,0) size 4x19
+          text run at (769,0) width 4: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 454x19
           text run at (0,0) width 454: "Element with background image starting at (-13, -13) with no-repeat set:"

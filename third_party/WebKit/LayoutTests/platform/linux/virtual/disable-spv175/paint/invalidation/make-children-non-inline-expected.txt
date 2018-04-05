@@ -34,22 +34,22 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 264, 111, 19],
+          "rect": [8, 264, 110, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 164, 111, 19],
+          "rect": [8, 164, 110, 19],
           "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 144, 80, 19],
+          "rect": [8, 144, 79, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 144, 80, 19],
+          "rect": [8, 144, 79, 19],
           "reason": "disappeared"
         },
         {
@@ -84,12 +84,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 124, 45, 19],
+          "rect": [8, 124, 44, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 124, 45, 19],
+          "rect": [8, 124, 44, 19],
           "reason": "disappeared"
         },
         {
@@ -104,12 +104,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 64, 38, 19],
+          "rect": [8, 64, 39, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 64, 38, 19],
+          "rect": [8, 64, 39, 19],
           "reason": "disappeared"
         },
         {

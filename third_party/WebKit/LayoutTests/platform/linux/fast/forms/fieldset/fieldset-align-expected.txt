@@ -35,8 +35,8 @@ layer at (0,0) size 785x1411 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutTextControl {INPUT} at (0,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,300.38) size 769x20
-        LayoutText {#text} at (0,0) size 147x19
-          text run at (0,0) width 147: "Legend align test, RTL"
+        LayoutText {#text} at (0,0) size 146x19
+          text run at (0,0) width 146: "Legend align test, RTL"
       LayoutBlockFlow (anonymous) at (0,336.38) size 769x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
@@ -104,8 +104,8 @@ layer at (0,0) size 785x1411 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutTextControl {INPUT} at (0,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1010.75) size 769x20
-        LayoutText {#text} at (0,0) size 309x19
-          text run at (0,0) width 309: "Legend align test with margin and padding, RTL"
+        LayoutText {#text} at (0,0) size 308x19
+          text run at (0,0) width 308: "Legend align test with margin and padding, RTL"
       LayoutBlockFlow (anonymous) at (0,1046.75) size 769x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0

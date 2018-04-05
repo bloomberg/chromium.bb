@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 165x19
-          text run at (0,0) width 165: "Tests: the colspan attribute"
-        LayoutBR {BR} at (165,15) size 0x0
+        LayoutText {#text} at (0,0) size 166x19
+          text run at (0,0) width 166: "Tests: the colspan attribute"
+        LayoutBR {BR} at (166,15) size 0x0
       LayoutBlockFlow {P} at (0,36) size 784x80
         LayoutText {#text} at (0,0) size 73x19
           text run at (0,0) width 73: "Conditions:"
@@ -27,8 +27,8 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,238) size 270x76 [border: (1px outset #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 270x20
-          LayoutText {#text} at (28,0) size 214x19
-            text run at (28,0) width 214: "Testing Default and Regular Input"
+          LayoutText {#text} at (27,0) size 216x19
+            text run at (27,0) width 216: "Testing Default and Regular Input"
         LayoutTableSection {TBODY} at (1,21) size 268x54
           LayoutTableRow {TR} at (0,2) size 268x24
             LayoutTableCell {TD} at (2,2) size 32x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]

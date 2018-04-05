@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Find-in-page 'findme', then click here)'",
-          "rect": [18, 130, 250, 39],
+          "rect": [18, 130, 251, 39],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'To be changed: findme (Manual testing:'",
-          "rect": [18, 130, 250, 39],
+          "rect": [18, 130, 251, 39],
           "reason": "disappeared"
         },
         {

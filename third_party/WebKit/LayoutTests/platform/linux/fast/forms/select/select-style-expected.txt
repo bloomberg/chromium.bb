@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 554x19
+      LayoutText {#text} at (0,0) size 553x19
         text run at (0,0) width 250: "This tests that styled popups look right. "
-        text run at (250,0) width 304: "(Aqua for now- later, we will honor the styling)."
-      LayoutBR {BR} at (554,15) size 0x0
+        text run at (250,0) width 303: "(Aqua for now- later, we will honor the styling)."
+      LayoutBR {BR} at (553,15) size 0x0
       LayoutMenuList {SELECT} at (0,20) size 44x20 [bgcolor=#FF0000] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 42x18
           LayoutText (anonymous) at (4,1) size 22x16

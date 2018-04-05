@@ -39,12 +39,12 @@ layer at (0,0) size 800x1077 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {UL} at (0,363) size 759x100 [bgcolor=#808080]
         LayoutListItem {LI} at (40,0) size 719x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (21,0) size 698x19
-            text run at (21,0) width 698: "The right margin on this unordered list has been set to 25 pixels, and the background color has been set to gray."
+          LayoutText {#text} at (20,0) size 699x19
+            text run at (20,0) width 699: "The right margin on this unordered list has been set to 25 pixels, and the background color has been set to gray."
         LayoutListItem {LI} at (40,20) size 694x60 [bgcolor=#FFFFFF]
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (38,0) size 693x59
-            text run at (38,0) width 656: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
+          LayoutText {#text} at (39,0) size 693x59
+            text run at (39,0) width 655: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
             text run at (1,20) width 60: "checked. "
             text run at (61,20) width 633: "This list item has its right margin also set to 25 pixels, which should combine with the list's margin to"
             text run at (230,40) width 464: "make 50 pixels of margin, and its background-color has been set to white."
@@ -56,19 +56,19 @@ layer at (0,0) size 800x1077 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (581,0) size 203x19
           text run at (581,0) width 203: "This element has a class of zero."
       LayoutBlockFlow {P} at (0,515) size 794x60 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 778x59
+        LayoutText {#text} at (0,0) size 777x59
           text run at (0,0) width 767: "This paragraph has a right margin of -10px, which should cause it to be wider than it might otherwise be, and it has a light"
           text run at (0,20) width 114: "blue background. "
-          text run at (114,20) width 386: "In all other respects, however, the element should be normal. "
-          text run at (500,20) width 278: "No styles have been applied to it besides the"
-          text run at (0,40) width 303: "negative right margin and the background color."
+          text run at (114,20) width 385: "In all other respects, however, the element should be normal. "
+          text run at (499,20) width 278: "No styles have been applied to it besides the"
+          text run at (0,40) width 302: "negative right margin and the background color."
       LayoutTable {TABLE} at (0,591) size 784x470 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x468
           LayoutTableRow {TR} at (0,0) size 782x28
             LayoutTableCell {TD} at (0,0) size 782x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 782x440
             LayoutTableCell {TD} at (0,234) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -95,11 +95,11 @@ layer at (0,0) size 800x1077 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                   LayoutText {#text} at (33,0) size 664x39
                     text run at (33,0) width 664: "The right margin on this unordered list has been set to 25 pixels, and the background color has been set to"
-                    text run at (667,20) width 30: "gray."
+                    text run at (666,20) width 31: "gray."
                 LayoutListItem {LI} at (40,40) size 672x60 [bgcolor=#FFFFFF]
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-                  LayoutText {#text} at (16,0) size 656x59
-                    text run at (16,0) width 656: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
+                  LayoutText {#text} at (17,0) size 655x59
+                    text run at (17,0) width 655: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
                     text run at (43,20) width 60: "checked. "
                     text run at (103,20) width 569: "This list item has its right margin also set to 25 pixels, which should combine with the list's"
                     text run at (144,40) width 528: "margin to make 50 pixels of margin, and its background-color has been set to white."
@@ -114,8 +114,8 @@ layer at (0,0) size 800x1077 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 767x59
                   text run at (0,0) width 767: "This paragraph has a right margin of -10px, which should cause it to be wider than it might otherwise be, and it has a light"
                   text run at (0,20) width 114: "blue background. "
-                  text run at (114,20) width 386: "In all other respects, however, the element should be normal. "
-                  text run at (500,20) width 255: "No styles have been applied to it besides"
-                  text run at (0,40) width 326: "the negative right margin and the background color."
+                  text run at (114,20) width 385: "In all other respects, however, the element should be normal. "
+                  text run at (499,20) width 255: "No styles have been applied to it besides"
+                  text run at (0,40) width 325: "the negative right margin and the background color."
 layer at (8,153) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,145) size 784x2 [border: (1px inset #EEEEEE)]

@@ -19,6 +19,6 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (359,0) size 4x19
           chunk 1 text run 1 at (359.00,15.00) startOffset 0 endOffset 1 width 4.00: " "
         LayoutSVGTSpan {tspan} at (0,-15) size 363x49
-          LayoutSVGInlineText {#text} at (0,15) size 71x19
-            chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 9 width 71.00: "Bug 11909"
+          LayoutSVGInlineText {#text} at (0,15) size 70x19
+            chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 9 width 70.00: "Bug 11909"
         LayoutSVGInlineText {#text} at (0,0) size 0x0

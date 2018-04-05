@@ -4,8 +4,8 @@ layer at (0,0) size 785x3662 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x3661.50
     LayoutBlockFlow {BODY} at (8,21.44) size 769x3624.06
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 247x36
-          text run at (0,0) width 247: "HTML Test Index"
+        LayoutText {#text} at (0,0) size 246x36
+          text run at (0,0) width 246: "HTML Test Index"
       LayoutBlockFlow {P} at (0,58.44) size 769x20
         LayoutText {#text} at (0,0) size 310x19
           text run at (0,0) width 310: "The HTML tests are available in several variants."
@@ -284,11 +284,11 @@ layer at (0,0) size 785x3662 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (122,0) width 30: " (#1)"
         LayoutListItem {LI} at (40,20) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutInline {A} at (0,0) size 142x19 [color=#0000EE]
-            LayoutText {#text} at (0,0) size 142x19
-              text run at (0,0) width 142: "Type element selectors"
-          LayoutText {#text} at (142,0) size 30x19
-            text run at (142,0) width 30: " (#2)"
+          LayoutInline {A} at (0,0) size 143x19 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 143x19
+              text run at (0,0) width 143: "Type element selectors"
+          LayoutText {#text} at (143,0) size 30x19
+            text run at (143,0) width 30: " (#2)"
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutInline {A} at (0,0) size 164x19 [color=#0000EE]
@@ -350,8 +350,8 @@ layer at (0,0) size 785x3662 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutInline {A} at (0,0) size 295x19 [color=#0000EE]
             LayoutText {#text} at (0,0) size 295x19
               text run at (0,0) width 295: "Substring matching attribute selector (contains)"
-          LayoutText {#text} at (295,0) size 38x19
-            text run at (295,0) width 38: " (#11)"
+          LayoutText {#text} at (295,0) size 37x19
+            text run at (295,0) width 37: " (#11)"
         LayoutListItem {LI} at (40,220) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutInline {A} at (0,0) size 140x19 [color=#0000EE]

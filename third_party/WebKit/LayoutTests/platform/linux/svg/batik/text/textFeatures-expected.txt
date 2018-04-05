@@ -12,47 +12,47 @@ layer at (0,0) size 450x500
           chunk 1 (middle anchor) text run 1 at (151.50,50.00) startOffset 0 endOffset 21 width 147.00: "Text Element Features"
       LayoutSVGContainer {g} at (45,73) size 347x412
         LayoutSVGText {text} at (45,73) size 326x34 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (45,87) size 105x17
-            chunk 1 text run 1 at (45.00,100.00) startOffset 0 endOffset 16 width 105.00: "Text can change "
+          LayoutSVGInlineText {#text} at (45,87) size 106x17
+            chunk 1 text run 1 at (45.00,100.00) startOffset 0 endOffset 16 width 106.00: "Text can change "
           LayoutSVGTSpan {tspan} at (45,73) size 326x34
-            LayoutSVGInlineText {#text} at (150,73) size 54x34
-              chunk 1 text run 1 at (150.00,100.00) startOffset 0 endOffset 5 width 54.00: "size,"
-          LayoutSVGInlineText {#text} at (204,87) size 4x17
-            chunk 1 text run 1 at (204.00,100.00) startOffset 0 endOffset 1 width 4.00: " "
+            LayoutSVGInlineText {#text} at (151,73) size 54x34
+              chunk 1 text run 1 at (151.00,100.00) startOffset 0 endOffset 5 width 54.00: "size,"
+          LayoutSVGInlineText {#text} at (205,87) size 4x17
+            chunk 1 text run 1 at (205.00,100.00) startOffset 0 endOffset 1 width 4.00: " "
           LayoutSVGTSpan {tspan} at (45,73) size 326x34
-            LayoutSVGInlineText {#text} at (208,83) size 74x22
-              chunk 1 text run 1 at (208.00,100.00) startOffset 0 endOffset 9 width 74.00: "typeface,"
-          LayoutSVGInlineText {#text} at (282,87) size 4x17
-            chunk 1 text run 1 at (282.00,100.00) startOffset 0 endOffset 1 width 4.00: " "
+            LayoutSVGInlineText {#text} at (209,83) size 74x22
+              chunk 1 text run 1 at (209.00,100.00) startOffset 0 endOffset 9 width 74.00: "typeface,"
+          LayoutSVGInlineText {#text} at (283,87) size 4x17
+            chunk 1 text run 1 at (283.00,100.00) startOffset 0 endOffset 1 width 4.00: " "
           LayoutSVGTSpan {tspan} at (45,73) size 326x34
-            LayoutSVGInlineText {#text} at (286,87) size 36x17
-              chunk 1 text run 1 at (286.00,100.00) startOffset 0 endOffset 6 width 36.00: "color,"
+            LayoutSVGInlineText {#text} at (287,87) size 35x17
+              chunk 1 text run 1 at (287.00,100.00) startOffset 0 endOffset 6 width 35.00: "color,"
           LayoutSVGInlineText {#text} at (322,87) size 21x17
             chunk 1 text run 1 at (322.00,100.00) startOffset 0 endOffset 1 width 4.00: " "
             chunk 1 text run 1 at (326.00,100.00) startOffset 0 endOffset 3 width 17.00: "or "
           LayoutSVGTSpan {tspan} at (45,73) size 326x34
-            LayoutSVGInlineText {#text} at (342,87) size 29x17
+            LayoutSVGInlineText {#text} at (343,87) size 28x17
               chunk 1 text run 1 at (343.00,100.00) startOffset 0 endOffset 5 width 28.00: "style"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (45,112) size 175x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (45,112) size 175x17
             chunk 1 text run 1 at (45.00,125.00) startOffset 0 endOffset 29 width 175.00: "within a single text element."
-        LayoutSVGText {text} at (45,161) size 341x18 contains 1 chunk(s)
+        LayoutSVGText {text} at (45,161) size 340x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (45,162) size 151x17
             chunk 1 text run 1 at (45.00,175.00) startOffset 0 endOffset 25 width 151.00: "Styling features include "
-          LayoutSVGTSpan {tspan} at (45,161) size 341x18
+          LayoutSVGTSpan {tspan} at (45,161) size 340x18
             LayoutSVGInlineText {#text} at (196,161) size 47x17
               chunk 1 text run 1 at (196.00,175.00) startOffset 0 endOffset 7 width 47.00: "weight,"
           LayoutSVGInlineText {#text} at (243,162) size 4x17
             chunk 1 text run 1 at (243.00,175.00) startOffset 0 endOffset 1 width 4.00: " "
-          LayoutSVGTSpan {tspan} at (45,161) size 341x18
-            LayoutSVGInlineText {#text} at (245,162) size 53x17
-              chunk 1 text run 1 at (247.00,175.00) startOffset 0 endOffset 8 width 51.00: "posture,"
-          LayoutSVGInlineText {#text} at (298,162) size 31x17
-            chunk 1 text run 1 at (298.00,175.00) startOffset 0 endOffset 5 width 31.00: " and "
-          LayoutSVGTSpan {tspan} at (45,161) size 341x18
-            LayoutSVGInlineText {#text} at (329,162) size 57x17
-              chunk 1 text run 1 at (329.00,175.00) startOffset 0 endOffset 9 width 57.00: "typeface."
+          LayoutSVGTSpan {tspan} at (45,161) size 340x18
+            LayoutSVGInlineText {#text} at (246,162) size 51x17
+              chunk 1 text run 1 at (247.00,175.00) startOffset 0 endOffset 8 width 50.00: "posture,"
+          LayoutSVGInlineText {#text} at (297,162) size 31x17
+            chunk 1 text run 1 at (297.00,175.00) startOffset 0 endOffset 5 width 31.00: " and "
+          LayoutSVGTSpan {tspan} at (45,161) size 340x18
+            LayoutSVGInlineText {#text} at (328,162) size 57x17
+              chunk 1 text run 1 at (328.00,175.00) startOffset 0 endOffset 9 width 57.00: "typeface."
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGRect {rect} at (45,200) size 202.50x50 [fill={[type=SOLID] [color=#1E90FF]}] [x=45.00] [y=200.00] [width=202.50] [height=50.00]
         LayoutSVGText {text} at (45,212) size 316x17 contains 1 chunk(s)
@@ -138,9 +138,9 @@ layer at (0,0) size 450x500
             LayoutSVGInlineText {#text} at (339,387) size 51x17
               chunk 1 text run 1 at (339.00,400.00) startOffset 0 endOffset 8 width 51.00: "mitered."
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGText {text} at (45,437) size 159x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (45,437) size 159x17
-            chunk 1 text run 1 at (45.00,450.00) startOffset 0 endOffset 25 width 159.00: "Text elements also can be"
+        LayoutSVGText {text} at (45,437) size 160x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (45,437) size 160x17
+            chunk 1 text run 1 at (45.00,450.00) startOffset 0 endOffset 25 width 160.00: "Text elements also can be"
         LayoutSVGText {text} at (45,462) size 154x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (45,462) size 154x17
             chunk 1 text run 1 at (45.00,475.00) startOffset 0 endOffset 25 width 154.00: "filtered and transformed."

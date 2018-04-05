@@ -134,12 +134,12 @@ layer at (340,240) size 80x80
   LayoutImage (positioned) {IMG} at (0,0) size 80x80
 layer at (440,240) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
-    LayoutText {#text} at (0,0) size 24x19
-      text run at (0,0) width 24: "p11"
+    LayoutText {#text} at (0,0) size 23x19
+      text run at (0,0) width 23: "p11"
 layer at (540,240) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (200,0) size 80x80
-    LayoutText {#text} at (0,0) size 24x19
-      text run at (0,0) width 24: "p11"
+    LayoutText {#text} at (0,0) size 23x19
+      text run at (0,0) width 23: "p11"
 layer at (340,340) size 300x100
   LayoutBlockFlow (positioned) {DIV} at (340,340) size 300x100
 layer at (340,340) size 80x80

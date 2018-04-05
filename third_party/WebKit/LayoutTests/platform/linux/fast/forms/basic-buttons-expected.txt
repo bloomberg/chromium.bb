@@ -4,15 +4,15 @@ layer at (0,0) size 800x355
   LayoutBlockFlow {HTML} at (0,0) size 800x355
     LayoutBlockFlow {BODY} at (8,8) size 784x339
       LayoutBlockFlow (anonymous) at (0,0) size 784x80
-        LayoutText {#text} at (0,0) size 536x19
-          text run at (0,0) width 536: "Tests for basic button rendering. Creates a table with seven columns and seven rows. "
-        LayoutBR {BR} at (536,0) size 0x19
+        LayoutText {#text} at (0,0) size 537x19
+          text run at (0,0) width 537: "Tests for basic button rendering. Creates a table with seven columns and seven rows. "
+        LayoutBR {BR} at (537,0) size 0x19
         LayoutText {#text} at (0,20) size 511x19
           text run at (0,20) width 511: "Creates two different types of buttons, one with an image (a red dot) and another "
         LayoutBR {BR} at (511,20) size 0x19
-        LayoutText {#text} at (0,40) size 647x19
-          text run at (0,40) width 647: "with text (\"foo\") and then uses six different paddings to make sure each of the buttons render properly. "
-        LayoutBR {BR} at (647,40) size 0x19
+        LayoutText {#text} at (0,40) size 648x19
+          text run at (0,40) width 648: "with text (\"foo\") and then uses six different paddings to make sure each of the buttons render properly. "
+        LayoutBR {BR} at (648,40) size 0x19
         LayoutBR {BR} at (0,60) size 0x19
       LayoutTable {TABLE} at (0,80) size 684x259
         LayoutTableSection {TBODY} at (0,0) size 684x259

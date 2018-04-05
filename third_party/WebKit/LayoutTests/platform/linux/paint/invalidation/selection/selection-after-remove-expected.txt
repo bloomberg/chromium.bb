@@ -69,12 +69,12 @@
         },
         {
           "object": "InlineTextBox ' world'",
-          "rect": [70, 158, 42, 20],
+          "rect": [70, 158, 41, 20],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'world'",
-          "rect": [74, 79, 38, 19],
+          "rect": [74, 79, 37, 19],
           "reason": "appeared"
         },
         {

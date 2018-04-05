@@ -143,8 +143,8 @@ hidden layer at (550,138) size 122x26
       text run at (2,2) width 35: "failed"
 layer at (10,218) size 130x40
   LayoutBlockFlow (relative positioned) {DIV} at (2,2) size 130x40
-    LayoutText {#text} at (0,0) size 115x39
-      text run at (0,0) width 115: "11 green box with"
+    LayoutText {#text} at (0,0) size 114x39
+      text run at (0,0) width 114: "11 green box with"
       text run at (0,20) width 57: "word ok:"
 hidden layer at (10,258) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]

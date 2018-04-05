@@ -27,15 +27,15 @@ layer at (8,108) size 100x20 scrollWidth 110
   LayoutBlockFlow {DIV} at (0,100) size 100x20
     LayoutText {#text} at (0,0) size 110x19
       text run at (0,0) width 110: "markEndSpelling"
-layer at (8,128) size 100x20 scrollWidth 119
+layer at (8,128) size 100x20 scrollWidth 120
   LayoutBlockFlow {DIV} at (0,120) size 100x20
-    LayoutText {#text} at (0,0) size 119x19
-      text run at (0,0) width 119: "markAllTextMatch"
-layer at (8,148) size 100x20 scrollWidth 128
+    LayoutText {#text} at (0,0) size 120x19
+      text run at (0,0) width 120: "markAllTextMatch"
+layer at (8,148) size 100x20 scrollWidth 129
   LayoutBlockFlow {DIV} at (0,140) size 100x20
-    LayoutText {#text} at (0,0) size 128x19
-      text run at (0,0) width 128: "markStartTextMatch"
-layer at (8,168) size 100x20 scrollWidth 125
+    LayoutText {#text} at (0,0) size 129x19
+      text run at (0,0) width 129: "markStartTextMatch"
+layer at (8,168) size 100x20 scrollWidth 126
   LayoutBlockFlow {DIV} at (0,160) size 100x20
-    LayoutText {#text} at (0,0) size 125x19
-      text run at (0,0) width 125: "markEndTextMatch"
+    LayoutText {#text} at (0,0) size 126x19
+      text run at (0,0) width 126: "markEndTextMatch"

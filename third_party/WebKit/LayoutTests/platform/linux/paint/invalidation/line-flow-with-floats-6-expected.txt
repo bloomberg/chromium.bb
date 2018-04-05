@@ -19,87 +19,87 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'a ridge or furrow in the way wherever\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'begin again, it was very'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'getting up and walking off to other parts of\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'getting up and walking off to other parts of\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'hedgehog to, and, as the doubled-up\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'hedgehog to, and, as the doubled-up\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'in the act of crawling away: besides all\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'provoking to find that the hedgehog had\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'she wanted to send the'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'soldiers were always'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'soldiers were always'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'soon came to the conclusion that it was a very\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'soon came to the conclusion that it was a very\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'the ground, Alice'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'the ground, Alice'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'this, there was generally'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'unrolled itself, and was'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "geometry"
         },
         {

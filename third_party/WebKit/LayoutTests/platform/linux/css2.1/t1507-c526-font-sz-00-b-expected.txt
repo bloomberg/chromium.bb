@@ -51,9 +51,9 @@ layer at (0,0) size 800x334
             text run at (362,6) width 253: "This sentence should be back to normal."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (10,277) size 764x37 [color=#000080]
-        LayoutText {#text} at (0,0) size 458x36
-          text run at (0,0) width 458: "This sentence should be very large. "
+        LayoutText {#text} at (0,0) size 457x36
+          text run at (0,0) width 457: "This sentence should be very large. "
         LayoutInline {SPAN} at (0,0) size 253x19
-          LayoutText {#text} at (458,13) size 253x19
-            text run at (458,13) width 253: "This sentence should be back to normal."
+          LayoutText {#text} at (457,13) size 253x19
+            text run at (457,13) width 253: "This sentence should be back to normal."
         LayoutText {#text} at (0,0) size 0x0

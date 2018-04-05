@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutSVGContainer {switch} at (30,20) size 420x130
         LayoutSVGContainer {g} at (30,20) size 420x130
           LayoutSVGRect {rect} at (30,20) size 420x130 [fill={[type=SOLID] [color=#FF0000]}] [x=30.00] [y=20.00] [width=420.00] [height=130.00]
-          LayoutSVGText {text} at (85.80,82.59) size 308.39x22.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (85.80,82.59) size 308.39x22.19
-              chunk 1 (middle anchor) text run 1 at (85.80,100.00) startOffset 0 endOffset 35 width 308.40: "This viewer does more than SVG Tiny"
+          LayoutSVGText {text} at (85.50,82.59) size 309x22.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (85.50,82.59) size 309x22.19
+              chunk 1 (middle anchor) text run 1 at (85.50,100.00) startOffset 0 endOffset 35 width 309.00: "This viewer does more than SVG Tiny"
       LayoutSVGContainer {switch} at (30,20) size 420x130 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,140.00)}]
         LayoutSVGContainer {g} at (30,20) size 420x130
           LayoutSVGRect {rect} at (30,20) size 420x130 [fill={[type=SOLID] [color=#00FF00]}] [x=30.00] [y=20.00] [width=420.00] [height=130.00]

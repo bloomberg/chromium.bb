@@ -24,7 +24,7 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [8, 108, 99, 39],
+          "rect": [8, 108, 98, 39],
           "reason": "disappeared"
         }
       ]

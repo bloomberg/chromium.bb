@@ -1,0 +1,16 @@
+Tests the Timeline instrumentation for CompileScript event.
+
+v8.compile Properties:
+{
+    data : {
+        columnNumber : 0
+        lineNumber : 0
+        streamed : <boolean>
+        url : 
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: undefined
+

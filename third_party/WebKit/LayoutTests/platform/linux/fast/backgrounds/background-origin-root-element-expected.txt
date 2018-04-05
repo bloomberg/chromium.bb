@@ -6,5 +6,5 @@ layer at (16,16) size 768x248
       LayoutBlockFlow {P} at (19,19) size 660x140
         LayoutText {#text} at (0,0) size 651x59
           text run at (0,0) width 651: "The HTML box, the one with a blue border should be fully filled with lime green. The BODY box, the"
-          text run at (0,20) width 646: "one with black border, should also be fully filled with lime green. The lime green color should not spill"
-          text run at (0,40) width 172: "out outside the blue border."
+          text run at (0,20) width 645: "one with black border, should also be fully filled with lime green. The lime green color should not spill"
+          text run at (0,40) width 171: "out outside the blue border."

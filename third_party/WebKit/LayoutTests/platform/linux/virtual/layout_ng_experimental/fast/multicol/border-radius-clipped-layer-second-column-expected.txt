@@ -4,8 +4,8 @@ layer at (0,0) size 800x248
   LayoutNGBlockFlow {HTML} at (0,0) size 800x248
     LayoutNGBlockFlow {BODY} at (8,16) size 784x224
       LayoutNGBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 718x39
-          text run at (0,0) width 718: "The word 'PASS' should be seen below on the right hand side, inside a rounded box with black border and yellow"
+        LayoutText {#text} at (0,0) size 719x39
+          text run at (0,0) width 719: "The word 'PASS' should be seen below on the right hand side, inside a rounded box with black border and yellow"
           text run at (0,20) width 79: "background."
 layer at (8,72) size 784x168
   LayoutNGBlockFlow {DIV} at (0,56) size 784x168

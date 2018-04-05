@@ -29,77 +29,77 @@
         },
         {
           "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
-          "rect": [137, 128, 637, 99],
+          "rect": [138, 128, 636, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [137, 128, 637, 99],
+          "rect": [138, 128, 636, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
-          "rect": [137, 128, 637, 99],
+          "rect": [138, 128, 636, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-          "rect": [137, 128, 637, 99],
+          "rect": [138, 128, 636, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [137, 128, 637, 99],
+          "rect": [138, 128, 636, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [147, 128, 636, 99],
+          "rect": [148, 128, 635, 99],
           "reason": "disappeared"
         },
         {

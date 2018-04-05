@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
         LayoutBlockFlow (anonymous) at (4,48.89) size 776x227.19
           LayoutBlockFlow {H3} at (0,0) size 776x227.19 [border: (2px solid #FF0000)]
             LayoutBlockFlow (anonymous) at (4,4) size 768x26
-              LayoutInline {I} at (0,0) size 39x25
-                LayoutText {#text} at (0,0) size 39x25
-                  text run at (0,0) width 39: "Two"
+              LayoutInline {I} at (0,0) size 38x25
+                LayoutText {#text} at (0,0) size 38x25
+                  text run at (0,0) width 38: "Two"
             LayoutBlockFlow (anonymous) at (4,55.63) size 768x141.94
               LayoutBlockFlow {H3} at (0,0) size 768x141.94 [border: (2px solid #FF0000)]
                 LayoutBlockFlow (anonymous) at (4,4) size 760x31

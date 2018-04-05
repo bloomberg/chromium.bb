@@ -52,28 +52,28 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (-79.50,15.00) startOffset 0 endOffset 26 width 159.00: "referenced text via <tref>"
       LayoutSVGContainer {g} at (-46.50,-28) size 93x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,225.00)}]
         LayoutSVGText {text} at (-43,-28) size 86x35 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-43,-27) size 26x34
+          LayoutSVGInlineText {#text} at (-43,-27) size 25x34
             chunk 1 (middle anchor) text run 1 at (-43.00,0.00) startOffset 0 endOffset 2 width 25.00: "sa"
           LayoutSVGTSpan {tspan} at (-43,-28) size 86x35
             LayoutSVGInlineText {#text} at (-18,-28) size 25x35
               chunk 1 (middle anchor) text run 1 at (-18.00,0.00) startOffset 0 endOffset 1 width 25.00: "m"
-          LayoutSVGInlineText {#text} at (6,-27) size 37x34
+          LayoutSVGInlineText {#text} at (7,-27) size 36x34
             chunk 1 (middle anchor) text run 1 at (7.00,0.00) startOffset 0 endOffset 3 width 36.00: "ple"
         LayoutSVGText {text} at (-46.50,0) size 93x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-46.50,0) size 93x19
             chunk 1 (middle anchor) text run 1 at (-46.50,15.00) startOffset 0 endOffset 14 width 93.00: "use of <tspan>"
-      LayoutSVGContainer {g} at (-81,-27) size 161x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,225.00)}]
+      LayoutSVGContainer {g} at (-80,-27) size 160x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,225.00)}]
         LayoutSVGContainer {g} at (-42,-27) size 84x34
           LayoutSVGContainer {use} at (-42,-27) size 84x34
             LayoutSVGText {text} at (-42,-27) size 84x34 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (-42,-27) size 84x34
                 chunk 1 (middle anchor) text run 1 at (-42.00,0.00) startOffset 0 endOffset 6 width 84.00: "sample"
-        LayoutSVGText {text} at (-81,0) size 161x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-81,0) size 161x19
+        LayoutSVGText {text} at (-80,0) size 160x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-80,0) size 160x19
             chunk 1 (middle anchor) text run 1 at (-80.00,15.00) startOffset 0 endOffset 25 width 160.00: "predefined text via <use>"
-      LayoutSVGText {text} at (144.50,267) size 161x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (144.50,267) size 161x17
-          chunk 1 (middle anchor) text run 1 at (144.50,280.00) startOffset 0 endOffset 25 width 161.00: "Text Rendering Properties"
+      LayoutSVGText {text} at (144,267) size 162x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (144,267) size 162x17
+          chunk 1 (middle anchor) text run 1 at (144.00,280.00) startOffset 0 endOffset 25 width 162.00: "Text Rendering Properties"
       LayoutSVGContainer {g} at (-76,-7) size 152x41 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,305.00)}]
         LayoutSVGContainer {g} at (-42,-27) size 84x34 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(0.00,0.00)}]
           LayoutSVGContainer {use} at (-42,-27) size 84x34

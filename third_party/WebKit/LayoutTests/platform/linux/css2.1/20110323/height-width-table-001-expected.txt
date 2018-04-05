@@ -7,11 +7,11 @@ layer at (0,0) size 800x160 layerType: foreground only
   LayoutBlockFlow {HTML} at (0,0) size 800x160
     LayoutBlockFlow {BODY} at (8,16) size 784x136
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 293x19
-          text run at (0,0) width 293: "Test passes if there is a filled green square and "
+        LayoutText {#text} at (0,0) size 294x19
+          text run at (0,0) width 294: "Test passes if there is a filled green square and "
         LayoutInline {STRONG} at (0,0) size 44x19
-          LayoutText {#text} at (293,0) size 44x19
-            text run at (293,0) width 44: "no red"
-        LayoutText {#text} at (337,0) size 4x19
-          text run at (337,0) width 4: "."
+          LayoutText {#text} at (294,0) size 44x19
+            text run at (294,0) width 44: "no red"
+        LayoutText {#text} at (338,0) size 4x19
+          text run at (338,0) width 4: "."
       LayoutTable {DIV} at (0,36) size 100x100 [bgcolor=#008000] [border: (25px solid #008000)]

@@ -3,21 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,-15) size 200x165
-      LayoutSVGText {text} at (0,-15) size 164x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,-15) size 164x19
+      LayoutSVGText {text} at (0,-15) size 163x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,-15) size 163x19
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 25 width 163.00: "Referenced character data"
       LayoutSVGPath {path} at (100,140) size 100x10 [fill={[type=SOLID] [color=#000000]}] [data="M 100 150 L 150 140 L 200 150"]
-    LayoutSVGText {text} at (100,35) size 78x19 contains 1 chunk(s)
-      LayoutSVGInline {a} at (100,35) size 78x19
-        LayoutSVGTSpan {tspan} at (100,35) size 78x19
-          LayoutSVGInlineText {#text} at (100,35) size 78x19
+    LayoutSVGText {text} at (100,35) size 77x19 contains 1 chunk(s)
+      LayoutSVGInline {a} at (100,35) size 77x19
+        LayoutSVGTSpan {tspan} at (100,35) size 77x19
+          LayoutSVGInlineText {#text} at (100,35) size 77x19
             chunk 1 text run 1 at (100.00,50.00) startOffset 0 endOffset 13 width 77.00: "tspan in link"
     LayoutSVGText {text} at (0,0) size 0x0
       LayoutSVGInline {a} at (0,0) size 0x0
-    LayoutSVGText {text} at (97.05,125.28) size 100.02x28.63 contains 1 chunk(s)
-      LayoutSVGInline {a} at (97.05,125.28) size 100.02x28.63
-        LayoutSVGTextPath {textPath} at (97.05,125.28) size 100.02x28.63
-          LayoutSVGInlineText {#text} at (97.05,125.28) size 100.02x28.63
+    LayoutSVGText {text} at (97.05,125.28) size 99.03x28.63 contains 1 chunk(s)
+      LayoutSVGInline {a} at (97.05,125.28) size 99.03x28.63
+        LayoutSVGTextPath {textPath} at (97.05,125.28) size 99.03x28.63
+          LayoutSVGInlineText {#text} at (97.05,125.28) size 99.03x28.63
             chunk 1 text run 1 at (101.96,149.61) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 text run 2 at (107.35,148.53) startOffset 1 endOffset 2 width 7.00: "e"
             chunk 1 text run 3 at (114.71,147.06) startOffset 2 endOffset 3 width 8.00: "x"

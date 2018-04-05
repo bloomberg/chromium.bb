@@ -19,22 +19,22 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'about all the stuff'",
-          "rect": [8, 264, 111, 19],
+          "rect": [8, 264, 110, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'about all the stuff'",
-          "rect": [8, 164, 111, 19],
+          "rect": [8, 164, 110, 19],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'write a book'",
-          "rect": [8, 144, 80, 19],
+          "rect": [8, 144, 79, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'write a book'",
-          "rect": [8, 144, 80, 19],
+          "rect": [8, 144, 79, 19],
           "reason": "disappeared"
         },
         {
@@ -69,12 +69,12 @@
         },
         {
           "object": "InlineTextBox 'I could'",
-          "rect": [8, 124, 45, 19],
+          "rect": [8, 124, 44, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'I could'",
-          "rect": [8, 124, 45, 19],
+          "rect": [8, 124, 44, 19],
           "reason": "disappeared"
         },
         {
@@ -89,12 +89,12 @@
         },
         {
           "object": "InlineTextBox 'Word,'",
-          "rect": [8, 64, 38, 19],
+          "rect": [8, 64, 39, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Word,'",
-          "rect": [8, 64, 38, 19],
+          "rect": [8, 64, 39, 19],
           "reason": "disappeared"
         },
         {

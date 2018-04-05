@@ -44,7 +44,7 @@ crbug.com/805292 hittesting/image-with-clip-path.html [ Skip ]
 crbug.com/537409 virtual/spv2/ [ Skip ]
 # End whitlelisted paint invalidation tests
 crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
-crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
+crbug.com/596780 [ Mac Win ] virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
 
 # Re-add this once it rebaselines.
 # crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
@@ -3506,7 +3506,6 @@ crbug.com/755405 [ Android ] fast/css/invalid-percentage-property.html [ Failure
 crbug.com/755405 [ Android ] fast/css/line-height-font-order.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css/nth-child-dynamic.html [ Failure ]
 crbug.com/755405 [ Android ] fast/events/reveal-link-when-focused.html [ Failure ]
-crbug.com/755405 [ Android ] virtual/mouseevent_fractional/fast/events/reveal-link-when-focused.html [ Failure ]
 crbug.com/755405 [ Android ] fast/layers/normal-flow-hit-test.html [ Failure ]
 crbug.com/755405 [ Android ] fast/layers/opacity-transforms.html [ Failure ]
 crbug.com/755405 [ Android ] fast/selectors/018.html [ Failure ]

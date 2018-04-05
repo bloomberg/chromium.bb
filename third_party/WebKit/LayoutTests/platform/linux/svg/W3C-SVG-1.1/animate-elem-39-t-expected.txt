@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.9 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (159.30,10.59) size 163.19x18.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (159.30,10.59) size 163.19x18.59
+    LayoutSVGText {text} at (159.30,10.59) size 161.39x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (159.30,10.59) size 161.39x18.59
         chunk 1 (middle anchor) text run 1 at (159.30,25.00) startOffset 0 endOffset 23 width 161.40: "<animate> on xlink:href"
     LayoutSVGContainer {g} at (16.81,60) size 440.09x214.19
       LayoutSVGContainer {g} at (-22.50,-7.39) size 45x22.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,90.00)}]

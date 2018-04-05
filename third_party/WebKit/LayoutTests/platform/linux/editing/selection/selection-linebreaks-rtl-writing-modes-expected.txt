@@ -36,8 +36,8 @@ layer at (264,98) size 226x226
       LayoutBlockFlow {HTML} at (0,0) size 200x168.44
         LayoutBlockFlow {BODY} at (8,18.72) size 184x141.72
           LayoutBlockFlow {H3} at (0,0) size 184x23
-            LayoutText {#text} at (0,0) size 40x22
-              text run at (0,0) width 40: "RTL"
+            LayoutText {#text} at (0,0) size 39x22
+              text run at (0,0) width 39: "RTL"
           LayoutBlockFlow {DIV} at (0,41.72) size 184x100
             LayoutText {#text} at (163,0) size 21x19
               text run at (163,0) width 21: "foo"
@@ -74,8 +74,8 @@ layer at (18,344) size 226x226
       LayoutBlockFlow {HTML} at (0,0) size 200x89.44
         LayoutBlockFlow {BODY} at (8,18.72) size 184x62.72
           LayoutBlockFlow {H3} at (0,0) size 184x23
-            LayoutText {#text} at (0,0) size 145x22
-              text run at (0,0) width 145: "vertical-lr & RTL"
+            LayoutText {#text} at (0,0) size 144x22
+              text run at (0,0) width 144: "vertical-lr & RTL"
           LayoutBlockFlow {DIV} at (0,41.72) size 100x21
             LayoutText {#text} at (0,0) size 19x21
               text run at (0,0) width 21: "foo"
@@ -112,8 +112,8 @@ layer at (510,344) size 226x226
       LayoutBlockFlow {HTML} at (0,0) size 200x89.44
         LayoutBlockFlow {BODY} at (8,18.72) size 184x62.72
           LayoutBlockFlow {H3} at (0,0) size 184x23
-            LayoutText {#text} at (0,0) size 145x22
-              text run at (0,0) width 145: "vertical-rl & RTL"
+            LayoutText {#text} at (0,0) size 144x22
+              text run at (0,0) width 144: "vertical-rl & RTL"
           LayoutBlockFlow {DIV} at (0,41.72) size 100x21
             LayoutText {#text} at (0,0) size 19x21
               text run at (0,0) width 21: "foo"

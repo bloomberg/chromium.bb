@@ -4,14 +4,14 @@ layer at (0,0) size 1600x356
   LayoutBlockFlow {HTML} at (0,0) size 1600x356
     LayoutBlockFlow {BODY} at (16,16) size 1568x324
       LayoutBlockFlow (anonymous) at (0,0) size 1568x37
-        LayoutText {#text} at (0,0) size 59x36
-          text run at (0,0) width 59: "LTR"
+        LayoutText {#text} at (0,0) size 58x36
+          text run at (0,0) width 58: "LTR"
       LayoutBlockFlow (anonymous) at (0,81) size 1568x37
         LayoutText {#text} at (0,0) size 59x36
           text run at (0,0) width 59: "RTL"
       LayoutBlockFlow (anonymous) at (0,162) size 1568x37
-        LayoutText {#text} at (0,0) size 368x36
-          text run at (0,0) width 368: "LTR (text-overflow:ellipses)"
+        LayoutText {#text} at (0,0) size 367x36
+          text run at (0,0) width 367: "LTR (text-overflow:ellipses)"
       LayoutBlockFlow (anonymous) at (0,243) size 1568x37
         LayoutText {#text} at (0,0) size 368x36
           text run at (0,0) width 368: "RTL (text-overflow:ellipses)"

@@ -6,14 +6,14 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 207x19
           text run at (0,0) width 207: "This tests for regressions against "
-        LayoutInline {I} at (0,0) size 542x19
-          LayoutInline {A} at (0,0) size 348x19 [color=#0000EE]
-            LayoutText {#text} at (207,0) size 348x19
-              text run at (207,0) width 348: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7943"
-          LayoutText {#text} at (555,0) size 194x19
-            text run at (555,0) width 194: " Layer outline does not repaint"
-        LayoutText {#text} at (749,0) size 4x19
-          text run at (749,0) width 4: "."
+        LayoutInline {I} at (0,0) size 540x19
+          LayoutInline {A} at (0,0) size 347x19 [color=#0000EE]
+            LayoutText {#text} at (207,0) size 347x19
+              text run at (207,0) width 347: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7943"
+          LayoutText {#text} at (554,0) size 193x19
+            text run at (554,0) width 193: " Layer outline does not repaint"
+        LayoutText {#text} at (747,0) size 4x19
+          text run at (747,0) width 4: "."
 layer at (8,44) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,36) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (18,194) size 100x100 clip at (19,195) size 98x98

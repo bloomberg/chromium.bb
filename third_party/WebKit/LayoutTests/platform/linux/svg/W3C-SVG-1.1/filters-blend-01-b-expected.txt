@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (4.80,5) size 145.20x98
+    LayoutSVGContainer {g} at (5,5) size 145x98
       LayoutSVGImage {image} at (40,5) size 100x98
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="BlendNormal"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
@@ -39,9 +39,9 @@ layer at (0,0) size 800x600
         [filter="BlendDarken"] LayoutSVGResourceFilter {filter} at (30,75) size 120x10
       LayoutSVGRect {rect} at (30,88) size 120x10 [opacity=0.50] [fill={[type=SOLID] [color=#0000FF]}] [x=30.00] [y=88.00] [width=120.00] [height=10.00]
         [filter="BlendLighten"] LayoutSVGResourceFilter {filter} at (30,88) size 120x10
-      LayoutSVGContainer {g} at (4.80,10.59) size 25.20x86
-        LayoutSVGText {text} at (4.80,10.59) size 21.80x8 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (4.80,10.59) size 21.80x8
+      LayoutSVGContainer {g} at (5,10.59) size 25x86
+        LayoutSVGText {text} at (5,10.59) size 21.59x8 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,10.59) size 21.59x8
             chunk 1 text run 1 at (5.00,17.00) startOffset 0 endOffset 6 width 21.60: "Normal"
         LayoutSVGText {text} at (5,23.59) size 25x8 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (5,23.59) size 25x8

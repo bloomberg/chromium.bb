@@ -4,9 +4,9 @@ layer at (0,0) size 800x235
   LayoutBlockFlow {HTML} at (0,0) size 800x235
     LayoutBlockFlow {BODY} at (8,16) size 784x211
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 775x39
-          text run at (0,0) width 626: "Test passes if, when the text area below is focused for editing, the text insertion caret is either white "
-          text run at (626,0) width 149: "or some other color that"
+        LayoutText {#text} at (0,0) size 776x39
+          text run at (0,0) width 627: "Test passes if, when the text area below is focused for editing, the text insertion caret is either white "
+          text run at (627,0) width 149: "or some other color that"
           text run at (0,20) width 224: "contrasts well with the background."
       LayoutBlockFlow {P} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 432x19
