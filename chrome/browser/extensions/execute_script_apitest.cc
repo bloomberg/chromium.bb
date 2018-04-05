@@ -5,6 +5,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 
 class ExecuteScriptApiTest : public ExtensionApiTest {
@@ -108,6 +110,33 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, InjectIntoSubframesOnLoad) {
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, RemovedFrames) {
   ASSERT_TRUE(RunExtensionTest("executescript/removed_frames")) << message_;
+}
+
+// Ensure that an extension can inject a script in a file frame provided it has
+// access to file urls enabled and the necessary host permissions.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, InjectScriptInFileFrameAllowed) {
+  // Navigate to a file url. The extension will subsequently try to inject a
+  // script into it.
+  base::FilePath test_file =
+      test_data_dir_.DirName().AppendASCII("test_file.txt");
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
+
+  SetCustomArg("ALLOWED");
+  ASSERT_TRUE(RunExtensionTest("executescript/file_access")) << message_;
+}
+
+// Ensure that an extension can't inject a script in a file frame if it doesn't
+// have file access.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, InjectScriptInFileFrameDenied) {
+  // Navigate to a file url. The extension will subsequently try to inject a
+  // script into it.
+  base::FilePath test_file =
+      test_data_dir_.DirName().AppendASCII("test_file.txt");
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
+
+  SetCustomArg("DENIED");
+  ASSERT_TRUE(RunExtensionTestNoFileAccess("executescript/file_access"))
+      << message_;
 }
 
 // If tests time out because it takes too long to run them, then this value can
