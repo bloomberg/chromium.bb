@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x584
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 676x19
-          text run at (0,0) width 676: "This tests modifying a selection created with a double click. The new selection should use word granularity."
+        LayoutText {#text} at (0,0) size 677x19
+          text run at (0,0) width 677: "This tests modifying a selection created with a double click. The new selection should use word granularity."
       LayoutNGBlockFlow {P} at (0,36) size 784x40 [color=#008000]
-        LayoutText {#text} at (0,0) size 781x39
-          text run at (0,0) width 781: "This test does not run interactively. It uses the testRunners eventSender to do mouse clicks. To run it manually, triple click on"
+        LayoutText {#text} at (0,0) size 784x39
+          text run at (0,0) width 784: "This test does not run interactively. It uses the testRunners eventSender to do mouse clicks. To run it manually, triple click on"
           text run at (0,20) width 705: "the second line in the box below (anywhere after \"whitespace:pre\"). The triple click should select the entire line."
       LayoutBlockFlow {DIV} at (0,92) size 784x60
         LayoutBlockFlow {DIV} at (0,0) size 784x60 [border: (1px solid #0000FF)]

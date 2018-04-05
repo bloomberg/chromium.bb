@@ -4,8 +4,8 @@ layer at (0,0) size 800x220
   LayoutNGBlockFlow {HTML} at (0,0) size 800x220
     LayoutNGBlockFlow {BODY} at (8,16) size 784x196
       LayoutNGBlockFlow {P} at (0,0) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 755x19
-          text run at (0,0) width 755: "There should be eight numbered lines below, all identical except for the numbering, which should match the description."
+        LayoutText {#text} at (0,0) size 756x19
+          text run at (0,0) width 756: "There should be eight numbered lines below, all identical except for the numbering, which should match the description."
       LayoutNGListItem {DIV} at (0,36) size 784x20 [color=#000080]
         LayoutInline (anonymous) at (0,0) size 16x19
           LayoutText (anonymous) at (0,0) size 16x19
@@ -25,8 +25,8 @@ layer at (0,0) size 800x220
             text run at (94,0) width 81: "be line three."
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,96) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 170x19
-          text run at (0,0) width 170: "4. This should be line four."
+        LayoutText {#text} at (0,0) size 169x19
+          text run at (0,0) width 169: "4. This should be line four."
       LayoutNGBlockFlow {DIV} at (0,116) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 168x19
           text run at (0,0) width 168: "5. This should be line five."

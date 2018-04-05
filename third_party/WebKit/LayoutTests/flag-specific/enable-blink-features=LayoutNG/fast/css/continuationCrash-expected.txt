@@ -30,8 +30,8 @@ layer at (0,0) size 800x600
           LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "3. "
-          LayoutText {#text} at (0,0) size 264x19
-            text run at (0,0) width 264: "(The ouline will not be updated correctly.)"
+          LayoutText {#text} at (0,0) size 265x19
+            text run at (0,0) width 265: "(The ouline will not be updated correctly.)"
         LayoutNGListItem {LI} at (40,60) size 744x20
           LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
@@ -60,8 +60,8 @@ layer at (0,0) size 800x600
           LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "8. "
-          LayoutText {#text} at (0,0) size 201x19
-            text run at (0,0) width 201: "2. 3. will not crash Safari either."
+          LayoutText {#text} at (0,0) size 200x19
+            text run at (0,0) width 200: "2. 3. will not crash Safari either."
         LayoutNGBlockFlow (anonymous) at (40,160) size 744x22
           LayoutButton {INPUT} at (0,0) size 144x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             LayoutNGBlockFlow (anonymous) at (8,3) size 128x16

@@ -4,8 +4,8 @@ layer at (0,0) size 785x660 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutNGBlockFlow {HTML} at (0,0) size 785x660
     LayoutNGBlockFlow {BODY} at (8,16) size 769x636
       LayoutNGBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 415x19
-          text run at (0,0) width 415: "The blue text should not go past the 50% mark on the ruler below."
+        LayoutText {#text} at (0,0) size 416x19
+          text run at (0,0) width 416: "The blue text should not go past the 50% mark on the ruler below."
       LayoutNGBlockFlow {DIV} at (0,36) size 384.50x560 [color=#0000FF]
         LayoutText {#text} at (0,0) size 377x559
           text run at (0,0) width 377: "a bit of dummy text a bit of dummy text a bit of dummy text"

@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x576
       LayoutNGBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 751x39
-          text run at (0,0) width 751: "Test that search field text is vertically centered if the search field is taller than the text. In each of the following pairs of a"
+        LayoutText {#text} at (0,0) size 752x39
+          text run at (0,0) width 752: "Test that search field text is vertically centered if the search field is taller than the text. In each of the following pairs of a"
           text run at (0,20) width 581: "search field and a text field, the vertical position of the text should be the same in both fields."
       LayoutNGBlockFlow {P} at (0,56) size 784x45
         LayoutTextControl {INPUT} at (0,0) size 183x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

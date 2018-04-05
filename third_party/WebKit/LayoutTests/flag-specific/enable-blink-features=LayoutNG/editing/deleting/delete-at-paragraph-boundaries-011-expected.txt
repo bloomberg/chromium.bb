@@ -13,11 +13,11 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 59x26
             text run at (0,0) width 59: "Tests:"
           LayoutBR {BR} at (59,0) size 0x0
-          LayoutText {#text} at (0,27) size 623x27
-            text run at (0,27) width 623: "Delete at the end of document when there is a BR following a P."
-          LayoutBR {BR} at (623,27) size 0x0
-          LayoutText {#text} at (0,55) size 442x27
-            text run at (0,55) width 442: "This is a test case for rdar://problem/4110366"
+          LayoutText {#text} at (0,27) size 622x27
+            text run at (0,27) width 622: "Delete at the end of document when there is a BR following a P."
+          LayoutBR {BR} at (622,27) size 0x0
+          LayoutText {#text} at (0,55) size 441x27
+            text run at (0,55) width 441: "This is a test case for rdar://problem/4110366"
         LayoutNGBlockFlow {DIV} at (14,113) size 756x111
           LayoutText {#text} at (0,0) size 183x26
             text run at (0,0) width 183: "Expected Results:"
