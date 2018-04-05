@@ -17,7 +17,7 @@ namespace {
 base::Version GetVersionForSimulation() {
   // TODO(asvitkine): Get the version that will be used on restart instead of
   // the current version.
-  return base::Version(version_info::GetVersionNumber());
+  return version_info::GetVersion();
 }
 
 }  // namespace

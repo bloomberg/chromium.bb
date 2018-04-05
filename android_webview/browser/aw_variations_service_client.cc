@@ -16,7 +16,7 @@ namespace {
 // on a thread where IO is allowed.
 base::Version GetVersionForSimulation() {
   base::AssertBlockingAllowed();
-  return base::Version(version_info::GetVersionNumber());
+  return version_info::GetVersion();
 }
 
 }  // namespace

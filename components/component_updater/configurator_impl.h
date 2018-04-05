@@ -52,7 +52,7 @@ class ConfiguratorImpl {
   std::vector<GURL> PingUrl() const;
 
   // Version of the application. Used to compare the component manifests.
-  base::Version GetBrowserVersion() const;
+  const base::Version& GetBrowserVersion() const;
 
   // Returns the OS's long name like "Windows", "Mac OS X", etc.
   std::string GetOSLongName() const;

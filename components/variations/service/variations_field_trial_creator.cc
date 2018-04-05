@@ -187,12 +187,12 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  const base::Version current_version(version_info::GetVersionNumber());
+  const base::Version& current_version = version_info::GetVersion();
   if (!current_version.IsValid())
     return false;
+
   std::unique_ptr<ClientFilterableState> client_filterable_state =
       GetClientFilterableStateForVersion(current_version);
-
   VariationsSeed seed;
   bool run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode() &&
                           LoadSafeSeed(&seed, client_filterable_state.get());

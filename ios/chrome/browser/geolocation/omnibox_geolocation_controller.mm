@@ -469,7 +469,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
   if (!previousVersion.IsValid())
     return YES;
 
-  base::Version currentVersion(version_info::GetVersionNumber());
+  const base::Version& currentVersion = version_info::GetVersion();
   DCHECK(currentVersion.IsValid());
   return currentVersion.components()[0] != previousVersion.components()[0];
 }
