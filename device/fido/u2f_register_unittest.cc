@@ -729,8 +729,7 @@ TEST_F(U2fRegisterTest, TestAttestedCredentialData) {
           u2f_parsing_utils::kEs256, GetTestRegisterResponse());
   base::Optional<AttestedCredentialData> attested_data =
       AttestedCredentialData::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse(), std::vector<uint8_t>(16) /* aaguid */,
-          std::move(public_key));
+          GetTestRegisterResponse(), std::move(public_key));
 
   EXPECT_EQ(GetTestAttestedCredentialDataBytes(),
             attested_data->SerializeAsBytes());
@@ -743,8 +742,7 @@ TEST_F(U2fRegisterTest, TestAuthenticatorData) {
           u2f_parsing_utils::kEs256, GetTestRegisterResponse());
   base::Optional<AttestedCredentialData> attested_data =
       AttestedCredentialData::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse(), std::vector<uint8_t>(16) /* aaguid */,
-          std::move(public_key));
+          GetTestRegisterResponse(), std::move(public_key));
 
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
@@ -766,8 +764,7 @@ TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
           u2f_parsing_utils::kEs256, GetTestRegisterResponse());
   base::Optional<AttestedCredentialData> attested_data =
       AttestedCredentialData::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse(), std::vector<uint8_t>(16) /* aaguid */,
-          std::move(public_key));
+          GetTestRegisterResponse(), std::move(public_key));
 
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
