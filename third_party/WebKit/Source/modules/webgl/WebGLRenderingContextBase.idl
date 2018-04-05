@@ -708,5 +708,5 @@ typedef unrestricted float GLclampf;
     [RuntimeEnabled=OffscreenCanvas, CallWith=ScriptState, RaisesException] Promise commit();
 
     // WebXR Device API support
-    [RuntimeEnabled=WebXR, SecureContext, CallWith=ScriptState] Promise setCompatibleXRDevice(XRDevice device);
+    [OriginTrialEnabled=WebXR, SecureContext, CallWith=ScriptState] Promise setCompatibleXRDevice(XRDevice device);
 };

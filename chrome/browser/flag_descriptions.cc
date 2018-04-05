@@ -760,8 +760,8 @@ const char kFramebustingDescription[] =
 
 const char kGamepadExtensionsName[] = "Gamepad Extensions";
 const char kGamepadExtensionsDescription[] =
-    "Enabling this option allows web applications to access experimental "
-    "extensions to the Gamepad APIs.";
+    "Enables experimental extensions to the Gamepad APIs, and exposes VR "
+    "controllers as Gamepads for WebVR";
 
 const char kGpuRasterizationMsaaSampleCountName[] =
     "GPU rasterization MSAA sample count.";
@@ -1777,16 +1777,22 @@ const char kWebrtcStunOriginDescription[] =
 
 const char kWebvrName[] = "WebVR";
 const char kWebvrDescription[] =
-    "Allow web applications to access experimental "
-    "Virtual Reality functionality via the WebVR 1.1 API. This feature will "
-    "eventually be replaced by the WebXR Device API. Warning: Enabling this "
-    "will also allow WebVR content on insecure origins to access these "
-    "powerful APIs, and may pose a security risk.";
+    "Enables access to experimental Virtual Reality functionality via the "
+    "WebVR 1.1 API. This feature will eventually be replaced by the WebXR "
+    "Device API. Warning: Enabling this will also allow WebVR content on "
+    "insecure origins to access these powerful APIs, and may pose a security "
+    "risk. Controllers are exposed as Gamepads and Gamepad Extensions are "
+    "enabled.";
 
 const char kWebXrName[] = "WebXR Device API";
 const char kWebXrDescription[] =
-    "Allow web applications to access experimental APIs to interact with "
-    "Virtual Reality (VR) and Augmented Reality (AR) devices.";
+    "Enables access to experimental APIs to interact with Virtual Reality (VR) "
+    "and Augmented Reality (AR) devices.";
+
+const char kWebXrGamepadSupportName[] = "WebXR Gamepad Support";
+const char kWebXrGamepadSupportDescription[] =
+    "Expose VR controllers as Gamepads for use with the WebXR Device API. Each "
+    "XRInputSource will have a corresponding Gamepad instance";
 
 const char kWebXrOrientationSensorDeviceName[] =
     "WebXR orientation sensor device";

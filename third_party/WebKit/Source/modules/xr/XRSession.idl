@@ -5,7 +5,7 @@
 // https://immersive-web.github.io/webxr/spec/latest/#xrsession-interface
 [
     SecureContext,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRSession : EventTarget {
   readonly attribute XRDevice device;
   readonly attribute boolean exclusive;

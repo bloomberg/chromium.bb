@@ -140,6 +140,10 @@ void WebRuntimeFeatures::EnableGamepadExtensions(bool enable) {
   RuntimeEnabledFeatures::SetGamepadExtensionsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebXRGamepadSupport(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRGamepadSupportEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableGenericSensor(bool enable) {
   RuntimeEnabledFeatures::SetSensorEnabled(enable);
 }

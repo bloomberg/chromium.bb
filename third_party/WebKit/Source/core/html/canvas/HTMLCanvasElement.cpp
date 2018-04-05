@@ -258,7 +258,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
       CanvasRenderingContext::ContextTypeFromId(type);
 
   // Unknown type.
-  if (context_type == CanvasRenderingContext::kContextTypeCount)
+  if (context_type == CanvasRenderingContext::kContextTypeCount ||
+      (context_type == CanvasRenderingContext::kContextXRPresent &&
+       !OriginTrials::webXREnabled(&GetDocument())))
     return nullptr;
 
   // Log the aliased context type used.

@@ -5,7 +5,7 @@
 // https://immersive-web.github.io/webxr/spec/latest/#xrcoordinatesystem-interface
 [
     SecureContext,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRCoordinateSystem {
   Float32Array? getTransformTo(XRCoordinateSystem other);
 };

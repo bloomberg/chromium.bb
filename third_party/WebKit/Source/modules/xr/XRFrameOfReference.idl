@@ -12,7 +12,7 @@ enum XRFrameOfReferenceType {
 
 [
     SecureContext,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRFrameOfReference : XRCoordinateSystem {
   readonly attribute XRStageBounds? bounds;
   readonly attribute double emulatedHeight;

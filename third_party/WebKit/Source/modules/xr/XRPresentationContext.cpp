@@ -5,6 +5,7 @@
 #include "modules/xr/XRPresentationContext.h"
 
 #include "bindings/modules/v8/rendering_context.h"
+#include "core/origin_trials/origin_trials.h"
 
 namespace blink {
 
@@ -23,7 +24,7 @@ void XRPresentationContext::SetCanvasGetContextResult(
 CanvasRenderingContext* XRPresentationContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs) {
-  if (!RuntimeEnabledFeatures::WebXREnabled())
+  if (!OriginTrials::webXREnabled(host->GetTopExecutionContext()))
     return nullptr;
   return new XRPresentationContext(host, attrs);
 }

@@ -148,12 +148,10 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
     return kContextWebgl;
   if (id == "webgl2")
     return kContextWebgl2;
-  if (id == "bitmaprenderer") {
+  if (id == "bitmaprenderer")
     return kContextImageBitmap;
-  }
-  if (id == "xrpresent" && RuntimeEnabledFeatures::WebXREnabled()) {
+  if (id == "xrpresent")
     return kContextXRPresent;
-  }
   return kContextTypeCount;
 }
 

@@ -5,7 +5,7 @@
 // https://immersive-web.github.io/webxr/spec/latest/#xrpresentationcontext-interface
 [
     SecureContext,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRPresentationContext {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;

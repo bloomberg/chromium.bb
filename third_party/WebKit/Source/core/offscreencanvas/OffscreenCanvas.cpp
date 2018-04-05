@@ -19,6 +19,7 @@
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/canvas/ImageData.h"
 #include "core/imagebitmap/ImageBitmap.h"
+#include "core/origin_trials/origin_trials.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "platform/graphics/CanvasResourceProvider.h"
@@ -168,7 +169,9 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       CanvasRenderingContext::ContextTypeFromId(id);
 
   // Unknown type.
-  if (context_type == CanvasRenderingContext::kContextTypeCount)
+  if (context_type == CanvasRenderingContext::kContextTypeCount ||
+      (context_type == CanvasRenderingContext::kContextXRPresent &&
+       !OriginTrials::webXREnabled(execution_context)))
     return nullptr;
 
   CanvasRenderingContextFactory* factory =
