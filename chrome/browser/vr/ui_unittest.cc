@@ -116,6 +116,12 @@ void VerifyButtonColor(DiscButton* button,
   EXPECT_EQ(button->background()->center_color(), background_color);
 }
 
+void VerifyNoHitTestableElementInSubtree(UiElement* element) {
+  EXPECT_FALSE(element->IsHitTestable());
+  for (auto& child : element->children())
+    VerifyNoHitTestableElementInSubtree(child.get());
+}
+
 }  // namespace
 
 TEST_F(UiTest, WebVrToastStateTransitions) {
@@ -1280,8 +1286,7 @@ TEST_F(UiTest, ResetRepositioner) {
 TEST_F(UiTest, ControllerHitTest) {
   CreateScene(kNotInCct, kNotInWebVr);
   auto* controller = scene_->GetUiElementByName(kControllerRoot);
-  for (auto& child : *controller)
-    EXPECT_FALSE(child.IsHitTestable());
+  VerifyNoHitTestableElementInSubtree(controller);
 }
 
 TEST_F(UiTest, BrowsingRootBounds) {

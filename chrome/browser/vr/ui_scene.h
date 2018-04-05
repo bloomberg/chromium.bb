@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -56,9 +55,9 @@ class UiScene {
 
   typedef std::vector<const UiElement*> Elements;
 
-  Elements GetVisibleElementsToDraw() const;
-  Elements GetVisibleWebVrOverlayElementsToDraw() const;
-  Elements GetPotentiallyVisibleElements() const;
+  std::vector<UiElement*>& GetAllElements();
+  Elements GetVisibleElementsToDraw();
+  Elements GetVisibleWebVrOverlayElementsToDraw();
 
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }
@@ -83,6 +82,8 @@ class UiScene {
   // of bindings so that we can do a single pass and update everything and
   // easily compute dirtiness.
   bool is_dirty_ = false;
+
+  std::vector<UiElement*> all_elements_;
 
   SkiaSurfaceProvider* provider_ = nullptr;
 

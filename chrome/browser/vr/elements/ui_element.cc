@@ -113,9 +113,13 @@ void UiElement::SetType(UiElementType type) {
 }
 
 UiElement* UiElement::GetDescendantByType(UiElementType type) {
-  for (auto& descendant : *this) {
-    if (descendant.type() == type)
-      return &descendant;
+  if (type_ == type)
+    return this;
+
+  for (auto& child : children_) {
+    auto* result = child->GetDescendantByType(type);
+    if (result)
+      return result;
   }
   return nullptr;
 }
@@ -596,11 +600,15 @@ gfx::SizeF UiElement::stale_size() const {
 }
 
 void UiElement::AddChild(std::unique_ptr<UiElement> child) {
+  for (UiElement* current = this; current; current = current->parent())
+    current->set_descendants_updated(true);
   child->parent_ = this;
   children_.push_back(std::move(child));
 }
 
 std::unique_ptr<UiElement> UiElement::RemoveChild(UiElement* to_remove) {
+  for (UiElement* current = this; current; current = current->parent())
+    current->set_descendants_updated(true);
   DCHECK_EQ(this, to_remove->parent_);
   to_remove->parent_ = nullptr;
   size_t old_size = children_.size();
@@ -621,11 +629,15 @@ void UiElement::AddBinding(std::unique_ptr<BindingBase> binding) {
   bindings_.push_back(std::move(binding));
 }
 
-void UiElement::UpdateBindings() {
+void UiElement::UpdateBindingsRecursive() {
   updated_bindings_this_frame_ = false;
   for (auto& binding : bindings_) {
     if (binding->Update())
       updated_bindings_this_frame_ = true;
+  }
+  set_update_phase(UiElement::kUpdatedBindings);
+  for (auto& child : children_) {
+    child->UpdateBindingsRecursive();
   }
 }
 
