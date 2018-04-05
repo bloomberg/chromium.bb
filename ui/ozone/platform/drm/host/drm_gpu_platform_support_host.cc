@@ -115,7 +115,8 @@ void DrmGpuPlatformSupportHost::RemoveGpuThreadObserver(
 }
 
 bool DrmGpuPlatformSupportHost::IsConnected() {
-  return host_id_ >= 0 && channel_established_;
+  base::AutoLock auto_lock(host_id_lock_);
+  return host_id_ >= 0;
 }
 
 void DrmGpuPlatformSupportHost::OnGpuServiceLaunched(
@@ -139,27 +140,23 @@ void DrmGpuPlatformSupportHost::OnGpuProcessLaunched(
   DCHECK(!ui_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("drm", "DrmGpuPlatformSupportHost::OnGpuProcessLaunched",
                "host_id", host_id);
-  host_id_ = host_id;
-  send_runner_ = std::move(send_runner);
-  send_callback_ = send_callback;
-
-  for (GpuThreadObserver& observer : gpu_thread_observers_)
-    observer.OnGpuProcessLaunched();
 
   ui_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&DrmGpuPlatformSupportHost::OnChannelEstablished,
-                     weak_ptr_));
+                     weak_ptr_, host_id, std::move(send_runner),
+                     std::move(send_callback)));
 }
 
 void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
   TRACE_EVENT1("drm", "DrmGpuPlatformSupportHost::OnChannelDestroyed",
                "host_id", host_id);
-
   if (host_id_ == host_id) {
+    {
+      base::AutoLock auto_lock(host_id_lock_);
+      host_id_ = -1;
+    }
     cursor_->ResetDrmCursorProxy();
-    host_id_ = -1;
-    channel_established_ = false;
     send_runner_ = nullptr;
     send_callback_.Reset();
     for (GpuThreadObserver& observer : gpu_thread_observers_)
@@ -200,9 +197,22 @@ void DrmGpuPlatformSupportHost::UnRegisterHandlerForDrmDisplayHostManager() {
   display_manager_ = nullptr;
 }
 
-void DrmGpuPlatformSupportHost::OnChannelEstablished() {
+void DrmGpuPlatformSupportHost::OnChannelEstablished(
+    int host_id,
+    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+    const base::Callback<void(IPC::Message*)>& send_callback) {
+  DCHECK(ui_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("drm", "DrmGpuPlatformSupportHost::OnChannelEstablished");
-  channel_established_ = true;
+
+  send_runner_ = std::move(send_runner);
+  send_callback_ = send_callback;
+  {
+    base::AutoLock auto_lock(host_id_lock_);
+    host_id_ = host_id;
+  }
+
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
+    observer.OnGpuProcessLaunched();
 
   for (GpuThreadObserver& observer : gpu_thread_observers_)
     observer.OnGpuThreadReady();
@@ -278,22 +288,8 @@ bool DrmGpuPlatformSupportHost::GpuRelinquishDisplayControl() {
 
 bool DrmGpuPlatformSupportHost::GpuAddGraphicsDevice(const base::FilePath& path,
                                                      base::ScopedFD fd) {
-  IPC::Message* message = new OzoneGpuMsg_AddGraphicsDevice(
-      path, base::FileDescriptor(std::move(fd)));
-
-  // This function may be called from two places:
-  // - DrmDisplayHostManager::OnGpuProcessLaunched() invoked synchronously
-  //   by GpuProcessHost::Init() on IO thread, which is the same thread as
-  //   |send_runner_|. In this case we can synchronously send the IPC;
-  // - DrmDisplayHostManager::OnAddGraphicsDevice() on UI thread. In this
-  //   case we need to post the send task to IO thread.
-  if (send_runner_ && send_runner_->BelongsToCurrentThread()) {
-    DCHECK(!send_callback_.is_null());
-    send_callback_.Run(message);
-    return true;
-  }
-
-  return Send(message);
+  return Send(new OzoneGpuMsg_AddGraphicsDevice(
+      path, base::FileDescriptor(std::move(fd))));
 }
 
 bool DrmGpuPlatformSupportHost::GpuRemoveGraphicsDevice(

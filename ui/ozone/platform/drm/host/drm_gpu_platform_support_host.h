@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
@@ -99,7 +100,10 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                               const gfx::Rect& bounds) override;
 
  private:
-  void OnChannelEstablished();
+  void OnChannelEstablished(
+      int host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+      const base::Callback<void(IPC::Message*)>& send_callback);
   bool OnMessageReceivedForDrmDisplayHostManager(const IPC::Message& message);
   void OnUpdateNativeDisplays(
       const std::vector<DisplaySnapshot_Params>& displays);
@@ -117,7 +121,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                        const std::vector<OverlayCheckReturn_Params>& returns);
 
   int host_id_ = -1;
-  bool channel_established_ = false;
+  base::Lock host_id_lock_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
