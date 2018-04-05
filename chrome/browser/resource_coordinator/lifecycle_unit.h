@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
+#include "content/public/browser/visibility.h"
 
 namespace resource_coordinator {
 
@@ -83,6 +84,9 @@ class LifecycleUnit {
 
   // Returns the current state of this LifecycleUnit.
   virtual State GetState() const = 0;
+
+  // Returns the current visibility of this LifecycleUnit.
+  virtual content::Visibility GetVisibility() const = 0;
 
   // Returns the last time that the visibility of the LifecycleUnit changed.
   virtual base::TimeTicks GetLastVisibilityChangeTime() const = 0;

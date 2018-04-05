@@ -110,6 +110,11 @@ LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
   return SortKey(last_focused_time_);
 }
 
+content::Visibility TabLifecycleUnitSource::TabLifecycleUnit::GetVisibility()
+    const {
+  return GetWebContents()->GetVisibility();
+}
+
 bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
   // Can't freeze tabs that are already discarded or frozen.
   // TODO(fmeawad): Don't freeze already frozen tabs.
