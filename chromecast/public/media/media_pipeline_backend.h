@@ -154,6 +154,11 @@ class MediaPipelineBackend {
     static int64_t GetMinimumBufferedTime(const AudioConfig& config)
         __attribute__((__weak__));
 
+    // Returns true if the audio decoder requires that encrypted buffers be
+    // decrypted before being passed to PushBuffer().
+    CHROMECAST_EXPORT static bool RequiresDecryption()
+        __attribute__((__weak__));
+
    protected:
     ~AudioDecoder() override {}
   };

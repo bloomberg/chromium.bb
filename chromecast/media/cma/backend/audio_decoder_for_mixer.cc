@@ -57,6 +57,11 @@ const int64_t kNoPendingOutput = -1;
 
 }  // namespace
 
+// static
+bool MediaPipelineBackend::AudioDecoder::RequiresDecryption() {
+  return true;
+}
+
 AudioDecoderForMixer::RateShifterInfo::RateShifterInfo(float playback_rate)
     : rate(playback_rate), input_frames(0), output_frames(0) {}
 
