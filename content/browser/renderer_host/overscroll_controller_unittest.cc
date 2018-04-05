@@ -11,6 +11,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/test/test_overscroll_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {
 
@@ -39,15 +40,31 @@ class OverscrollControllerTest : public ::testing::Test {
     return controller_->WillHandleEvent(*current_event_);
   }
 
+  // Creates and sends a gesture event to the overscroll controller. Returns
+  // |true| if the event is consumed by the overscroll controller.
+  bool SimulateGestureEvent(blink::WebInputEvent::Type type,
+                            blink::WebGestureDevice source_device) {
+    DCHECK(!current_event_);
+    current_event_ = std::make_unique<blink::WebGestureEvent>(
+        SyntheticWebGestureEventBuilder::Build(type, source_device));
+    return controller_->WillHandleEvent(*current_event_);
+  }
+
   // Creates and sends a gesture-scroll-update event to the overscroll
   // controller. Returns |true| if the event is consumed by the overscroll
   // controller.
   bool SimulateGestureScrollUpdate(float dx,
                                    float dy,
-                                   blink::WebGestureDevice device) {
+                                   blink::WebGestureDevice device,
+                                   bool inertial_update) {
     DCHECK(!current_event_);
-    current_event_ = std::make_unique<blink::WebGestureEvent>(
+    auto event = std::make_unique<blink::WebGestureEvent>(
         SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, dy, 0, device));
+    if (inertial_update) {
+      event->data.scroll_update.inertial_phase =
+          blink::WebGestureEvent::kMomentumPhase;
+    }
+    current_event_ = std::move(event);
     return controller_->WillHandleEvent(*current_event_);
   }
 
@@ -88,8 +105,8 @@ TEST_F(OverscrollControllerTest, MouseWheelConsumedPreventsOverscroll) {
   // passing the start threshold, no overscroll should happen.
   EXPECT_FALSE(SimulateMouseWheel(10, 0));
   SimulateAck(false);
-  EXPECT_FALSE(
-      SimulateGestureScrollUpdate(10, 0, blink::kWebGestureDeviceTouchpad));
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      10, 0, blink::kWebGestureDeviceTouchpad, false));
   SimulateAck(false);
   EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
   EXPECT_EQ(OverscrollSource::NONE, controller_source());
@@ -111,13 +128,43 @@ TEST_F(OverscrollControllerTest, MouseWheelConsumedPreventsOverscroll) {
   // marked as processed.
   EXPECT_FALSE(SimulateMouseWheel(100, 0));
   SimulateAck(false);
-  EXPECT_FALSE(
-      SimulateGestureScrollUpdate(100, 0, blink::kWebGestureDeviceTouchpad));
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      100, 0, blink::kWebGestureDeviceTouchpad, false));
   SimulateAck(false);
   EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
   EXPECT_EQ(OverscrollSource::NONE, controller_source());
   EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+}
+
+// Verifying the inertial scroll event completes overscroll. After that we will
+// ignore the following inertial scroll events until new sequence start.
+TEST_F(OverscrollControllerTest,
+       InertialGestureScrollUpdateCompletesOverscroll) {
+  EXPECT_FALSE(SimulateGestureEvent(blink::WebInputEvent::kGestureScrollBegin,
+                                    blink::kWebGestureDeviceTouchpad));
+  SimulateAck(false);
+
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      200, 0, blink::kWebGestureDeviceTouchpad, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_EAST, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, controller_source());
+  EXPECT_EQ(OVERSCROLL_EAST, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Inertial update event complete the overscroll action.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      100, 0, blink::kWebGestureDeviceTouchpad, true));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_EAST, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, controller_source());
+  EXPECT_EQ(OVERSCROLL_EAST, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_EAST, delegate()->completed_mode());
+
+  // Next Inertial update event would be consumed by overscroll controller.
+  EXPECT_TRUE(SimulateGestureScrollUpdate(
+      100, 0, blink::kWebGestureDeviceTouchpad, true));
 }
 
 }  // namespace content
