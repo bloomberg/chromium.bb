@@ -115,6 +115,27 @@ enum ContainerCpuRestrictionState {
   NUM_CONTAINER_CPU_RESTRICTION_STATES = 2,
 };
 
+enum class ArcContainerStopReason {
+  // The ARC container is crashed.
+  CRASH = 0,
+
+  // Stopped by the user request, e.g. disabling ARC.
+  USER_REQUEST = 1,
+
+  // Session manager is shut down. So, ARC is also shut down along with it.
+  SESSION_MANAGER_SHUTDOWN = 2,
+
+  // Browser was shut down. ARC is also shut down along with it.
+  BROWSER_SHUTDOWN = 3,
+
+  // Disk space is too small to upgrade ARC.
+  LOW_DISK_SPACE = 4,
+
+  // Failed to upgrade ARC mini container into full container.
+  // Note that this will be used if the reason is other than low-disk-space.
+  UPGRADE_FAILURE = 5,
+};
+
 }  // namespace login_manager
 
 #endif  // SYSTEM_API_DBUS_LOGIN_MANAGER_DBUS_CONSTANTS_H_
