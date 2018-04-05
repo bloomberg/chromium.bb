@@ -40,5 +40,5 @@ std::string CreateCrostiniAppId(const std::string& window_app_id) {
 
 bool IsCrostiniAppId(const std::string& app_id) {
   return strncmp(app_id.c_str(), kCrostiniAppIdPrefix,
-                 sizeof(kCrostiniAppIdPrefix)) == 0;
+                 sizeof(kCrostiniAppIdPrefix) - 1) == 0;
 }
