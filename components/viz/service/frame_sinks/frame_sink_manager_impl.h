@@ -149,8 +149,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   const HitTestManager* hit_test_manager() { return &hit_test_manager_; }
 
-  void OnClientConnectionLost(const FrameSinkId& frame_sink_id);
-
   void SubmitHitTestRegionList(
       const SurfaceId& surface_id,
       uint64_t frame_index,

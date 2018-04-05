@@ -39,8 +39,6 @@ class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
                                const SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
 
-  CompositorFrameSinkSupport* support() const { return support_.get(); }
-
  private:
   void OnClientConnectionLost();
 
