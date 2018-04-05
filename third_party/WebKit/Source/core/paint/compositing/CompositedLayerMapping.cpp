@@ -1311,7 +1311,7 @@ LayoutPoint CompositedLayerMapping::FrameOwnerContentsLocation() const {
 
   HTMLFrameOwnerElement* owner = ToHTMLFrameOwnerElement(frame->Owner());
   LayoutObject* ownerLayoutObject = owner->GetLayoutObject();
-  if (!ownerLayoutObject->HasLayer())
+  if (!ownerLayoutObject || !ownerLayoutObject->HasLayer())
     return LayoutPoint();
 
   PaintLayer* ownerLayer = ToLayoutBoxModelObject(ownerLayoutObject)->Layer();
