@@ -47,9 +47,11 @@ class SplitViewControllerTest : public AshTestBase {
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   }
 
-  aura::Window* CreateWindow(const gfx::Rect& bounds) {
-    aura::Window* window = CreateTestWindowInShellWithDelegate(
-        new SplitViewTestWindowDelegate, -1, bounds);
+  aura::Window* CreateWindow(
+      const gfx::Rect& bounds,
+      aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL) {
+    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
+        new SplitViewTestWindowDelegate, type, -1, bounds);
     return window;
   }
 
@@ -707,6 +709,36 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitView) {
   EXPECT_EQ(window2.get(), wm::GetActiveWindow());
 }
 
+// Verify that if a window with a transient child which is not snappable is
+// activated, and the the overview tray is long pressed, we will enter splitview
+// with the transient parent snapped.
+TEST_F(SplitViewControllerTest, LongPressEntersSplitViewWithTransientChild) {
+  // Add two windows with one being a transient child of the first.
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> parent(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> child(
+      CreateWindow(bounds, aura::client::WINDOW_TYPE_POPUP));
+  ::wm::AddTransientChild(parent.get(), child.get());
+  ::wm::ActivateWindow(parent.get());
+  ::wm::ActivateWindow(child.get());
+
+  // Verify that long press on the overview button will not enter split view
+  // mode, as there needs to be two non-transient child windows.
+  LongPressOnOverivewButtonTray();
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+
+  // Add a third window. Focus the transient child.
+  std::unique_ptr<aura::Window> third_window(CreateWindow(bounds));
+  ::wm::ActivateWindow(third_window.get());
+  ::wm::ActivateWindow(parent.get());
+  ::wm::ActivateWindow(child.get());
+
+  // Verify that long press will snap the focused transient child's parent.
+  LongPressOnOverivewButtonTray();
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(split_view_controller()->GetDefaultSnappedWindow(), parent.get());
+}
+
 TEST_F(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> left_window(CreateWindow(bounds));
@@ -786,10 +818,10 @@ TEST_F(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
   // Verify split view is not activated when long press occurs in overview mode
   // and the most recent window is unsnappable.
   ToggleOverview();
-  ASSERT_TRUE(Shell::Get()->mru_window_tracker()->BuildMruWindowList().size() >
-              0);
+  ASSERT_TRUE(
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList().size() > 0);
   ASSERT_EQ(unsnappable_window.get(),
-            Shell::Get()->mru_window_tracker()->BuildMruWindowList()[0]);
+            Shell::Get()->mru_window_tracker()->BuildWindowForCycleList()[0]);
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
 }
