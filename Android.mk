@@ -6,15 +6,8 @@ ifeq ($(strip $(BOARD_USES_MINIGBM)), true)
 MINIGBM_GRALLOC_MK := $(call my-dir)/Android.gralloc.mk
 LOCAL_PATH := $(call my-dir)
 intel_drivers := i915 i965
-include $(CLEAR_VARS)
 
-SUBDIRS := cros_gralloc
-
-LOCAL_SHARED_LIBRARIES := \
-	libcutils \
-	libdrm
-
-LOCAL_SRC_FILES := \
+MINIGBM_SRC := \
 	amdgpu.c \
 	drv.c \
 	evdi.c \
@@ -36,23 +29,42 @@ LOCAL_SRC_FILES := \
 	virtio_dumb.c \
 	virtio_virgl.c
 
-include $(MINIGBM_GRALLOC_MK)
-
-LOCAL_CPPFLAGS += -std=c++14 -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64
-LOCAL_CFLAGS += -Wall -Wsign-compare -Wpointer-arith \
+MINIGBM_CPPFLAGS := -std=c++14 -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64
+MINIGBM_CFLAGS := -Wall -Wsign-compare -Wpointer-arith \
 		-Wcast-qual -Wcast-align \
 		-D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64
 
 ifneq ($(filter $(intel_drivers), $(BOARD_GPU_DRIVERS)),)
-LOCAL_CPPFLAGS += -DDRV_I915
-LOCAL_CFLAGS += -DDRV_I915
+MINIGBM_CPPFLAGS += -DDRV_I915
+MINIGBM_CFLAGS += -DDRV_I915
 LOCAL_SHARED_LIBRARIES += libdrm_intel
 endif
 
 ifneq ($(filter virgl, $(BOARD_GPU_DRIVERS)),)
-LOCAL_CPPFLAGS += -DDRV_VIRGL
-LOCAL_CFLAGS += -DDRV_VIRGL
+MINIGBM_CPPFLAGS += -DDRV_VIRGL
+MINIGBM_CFLAGS += -DDRV_VIRGL
 endif
+
+ifneq ($(filter meson, $(BOARD_GPU_DRIVERS)),)
+MINIGBM_CPPFLAGS += -DDRV_MESON
+MINIGBM_CFLAGS += -DDRV_MESON
+endif
+
+
+include $(CLEAR_VARS)
+
+SUBDIRS := cros_gralloc
+
+LOCAL_SHARED_LIBRARIES := \
+	libcutils \
+	libdrm
+
+LOCAL_SRC_FILES := $(MINIGBM_SRC)
+
+include $(MINIGBM_GRALLOC_MK)
+
+LOCAL_CFLAGS := $(MINIGBM_CFLAGS)
+LOCAL_CPPFLAGS := $(MINIGBM_CPPFLAGS)
 
 LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_TAGS := optional
@@ -62,6 +74,20 @@ LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := $(TARGET_SHLIB_SUFFIX)
 LOCAL_SHARED_LIBRARIES += libnativewindow libsync liblog
+include $(BUILD_SHARED_LIBRARY)
+
+
+include $(CLEAR_VARS)
+LOCAL_SHARED_LIBRARIES := libcutils
+LOCAL_STATIC_LIBRARIES := libdrm
+
+LOCAL_SRC_FILES += $(MINIGBM_SRC) gbm.c gbm_helpers.c
+
+LOCAL_CFLAGS := $(MINIGBM_CFLAGS)
+LOCAL_CPPFLAGS := $(MINIGBM_CPPFLAGS)
+
+LOCAL_MODULE := libminigbm
+LOCAL_MODULE_TAGS := optional
 include $(BUILD_SHARED_LIBRARY)
 
 endif
