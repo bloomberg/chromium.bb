@@ -20,6 +20,21 @@ namespace content_suggestions {
 class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
  public:
   void SetAsIPad() {
+    UITraitCollection* horizontalRegular = [UITraitCollection
+        traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular];
+    UITraitCollection* verticalRegular = [UITraitCollection
+        traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassRegular];
+    customTraitCollection_ =
+        [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+          verticalRegular, horizontalRegular
+        ]];
+
+    trait_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
+        [UIWindow class], @selector(traitCollection),
+        ^UITraitCollection*(id self) {
+          return customTraitCollection_;
+        });
+
     device_type_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIDevice class], @selector(userInterfaceIdiom),
         ^UIUserInterfaceIdiom(id self) {
@@ -27,6 +42,21 @@ class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
         });
   }
   void SetAsIPhone() {
+    UITraitCollection* horizontalCompact = [UITraitCollection
+        traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
+    UITraitCollection* verticalCompact = [UITraitCollection
+        traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassCompact];
+    customTraitCollection_ =
+        [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+          verticalCompact, horizontalCompact
+        ]];
+
+    trait_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
+        [UIWindow class], @selector(traitCollection),
+        ^UITraitCollection*(id self) {
+          return customTraitCollection_;
+        });
+
     device_type_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIDevice class], @selector(userInterfaceIdiom),
         ^UIUserInterfaceIdiom(id self) {
@@ -49,6 +79,8 @@ class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
   }
 
  private:
+  UITraitCollection* customTraitCollection_;
+  std::unique_ptr<ScopedBlockSwizzler> trait_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> device_type_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> orientation_swizzler_;
 };
@@ -57,22 +89,26 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, centeredTilesMarginIPhone6) {
   // Setup.
   SetAsIPhone();
 
-  // Action.
-  CGFloat result = centeredTilesMarginForWidth(374);
-
-  // Tests.
-  EXPECT_EQ(17, result);
+  if (IsUIRefreshPhase1Enabled()) {
+    CGFloat result = centeredTilesMarginForWidth(375);
+    EXPECT_EQ(28, result);
+  } else {
+    CGFloat result = centeredTilesMarginForWidth(374);
+    EXPECT_EQ(17, result);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, centeredTilesMarginIPad) {
   // Setup.
   SetAsIPad();
 
-  // Action.
-  CGFloat result = centeredTilesMarginForWidth(700);
-
-  // Tests.
-  EXPECT_EQ(168, result);
+  if (IsUIRefreshPhase1Enabled()) {
+    CGFloat result = centeredTilesMarginForWidth(767);
+    EXPECT_EQ(209, result);
+  } else {
+    CGFloat result = centeredTilesMarginForWidth(700);
+    EXPECT_EQ(168, result);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPad) {
@@ -86,8 +122,8 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPad) {
 
   // Test.
   if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_EQ(68, height);
-    EXPECT_EQ(48, topMargin);
+    EXPECT_EQ(120, height);
+    EXPECT_EQ(162, topMargin);
   } else {
     EXPECT_EQ(120, height);
     EXPECT_EQ(82, topMargin);
@@ -108,7 +144,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhonePortrait) {
 
   // Test.
   if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_EQ(68, heightLogo);
+    EXPECT_EQ(120, heightLogo);
     EXPECT_EQ(60, heightNoLogo);
     EXPECT_EQ(48, topMargin);
   } else {
@@ -132,7 +168,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhoneLandscape) {
 
   // Test.
   if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_EQ(68, heightLogo);
+    EXPECT_EQ(120, heightLogo);
     EXPECT_EQ(60, heightNoLogo);
     EXPECT_EQ(48, topMargin);
   } else {
@@ -158,8 +194,8 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPad) {
   // Test.
   if (IsUIRefreshPhase1Enabled()) {
     EXPECT_EQ(32, topMargin);
-    EXPECT_EQ(343, resultWidth);
-    EXPECT_EQ(343, resultWidthLargeIPad);
+    EXPECT_EQ(432, resultWidth);
+    EXPECT_EQ(432, resultWidthLargeIPad);
   } else {
     EXPECT_EQ(82, topMargin);
     EXPECT_EQ(width - 2 * margin, resultWidth);
@@ -215,10 +251,10 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPad) {
 
   // Action, tests.
   if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_EQ(214, heightForLogoHeader(YES, YES, YES));
-    EXPECT_EQ(238, heightForLogoHeader(YES, NO, YES));
-    EXPECT_EQ(214, heightForLogoHeader(YES, YES, NO));
-    EXPECT_EQ(238, heightForLogoHeader(YES, NO, NO));
+    EXPECT_EQ(380, heightForLogoHeader(YES, YES, YES));
+    EXPECT_EQ(404, heightForLogoHeader(YES, NO, YES));
+    EXPECT_EQ(380, heightForLogoHeader(YES, YES, NO));
+    EXPECT_EQ(404, heightForLogoHeader(YES, NO, NO));
   } else {
     EXPECT_EQ(350, heightForLogoHeader(YES, YES, YES));
     EXPECT_EQ(374, heightForLogoHeader(YES, NO, YES));
@@ -233,10 +269,10 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
 
   // Action, tests.
   if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_EQ(214, heightForLogoHeader(YES, YES, YES));
-    EXPECT_EQ(214, heightForLogoHeader(YES, NO, YES));
-    EXPECT_EQ(214, heightForLogoHeader(YES, YES, NO));
-    EXPECT_EQ(214, heightForLogoHeader(YES, NO, NO));
+    EXPECT_EQ(266, heightForLogoHeader(YES, YES, YES));
+    EXPECT_EQ(266, heightForLogoHeader(YES, NO, YES));
+    EXPECT_EQ(266, heightForLogoHeader(YES, YES, NO));
+    EXPECT_EQ(266, heightForLogoHeader(YES, NO, NO));
   } else {
     EXPECT_EQ(274, heightForLogoHeader(YES, YES, YES));
     EXPECT_EQ(274, heightForLogoHeader(YES, NO, YES));
