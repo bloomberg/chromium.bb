@@ -31,8 +31,8 @@
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_signin_promo_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -178,8 +178,9 @@ const int kRelativeTimeMaxHours = 4;
   [model addSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
   [model setSectionIdentifier:SectionIdentifierRecentlyClosedTabs
                  collapsedKey:kRecentlyClosedCollapsedKey];
-  TableViewTextHeaderFooterItem* header = [[TableViewTextHeaderFooterItem alloc]
-      initWithType:ItemTypeRecentlyClosedHeader];
+  TableViewDisclosureHeaderFooterItem* header =
+      [[TableViewDisclosureHeaderFooterItem alloc]
+          initWithType:ItemTypeRecentlyClosedHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_RECENTLY_CLOSED);
   [model setHeader:header
       forSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
@@ -283,8 +284,8 @@ const int kRelativeTimeMaxHours = 4;
     NSString* sessionCollapsedKey = base::SysUTF8ToNSString(session->tag);
     [model setSectionIdentifier:sessionIdentifier
                    collapsedKey:sessionCollapsedKey];
-    TableViewTextHeaderFooterItem* header =
-        [[TableViewTextHeaderFooterItem alloc]
+    TableViewDisclosureHeaderFooterItem* header =
+        [[TableViewDisclosureHeaderFooterItem alloc]
             initWithType:ItemTypeSessionHeader];
     header.text = base::SysUTF8ToNSString(session->name);
     header.subtitleText = l10n_util::GetNSStringF(
@@ -374,8 +375,9 @@ const int kRelativeTimeMaxHours = 4;
   [model addSectionWithIdentifier:SectionIdentifierOtherDevices];
   [model setSectionIdentifier:SectionIdentifierOtherDevices
                  collapsedKey:kOtherDeviceCollapsedKey];
-  TableViewTextHeaderFooterItem* header = [[TableViewTextHeaderFooterItem alloc]
-      initWithType:ItemTypeRecentlyClosedHeader];
+  TableViewDisclosureHeaderFooterItem* header =
+      [[TableViewDisclosureHeaderFooterItem alloc]
+          initWithType:ItemTypeRecentlyClosedHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
   [model setHeader:header
       forSectionWithIdentifier:SectionIdentifierOtherDevices];
@@ -776,8 +778,9 @@ const int kRelativeTimeMaxHours = 4;
         sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
     UITableViewHeaderFooterView* headerView =
         [self.tableView headerViewForSection:section];
-    TableViewTextHeaderFooterView* headerTextView =
-        base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerView);
+    TableViewDisclosureHeaderFooterView* headerTextView =
+        base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
+            headerView);
     [headerTextView animateHighlight];
   }
 }
@@ -832,8 +835,9 @@ const int kRelativeTimeMaxHours = 4;
         sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
     UITableViewHeaderFooterView* headerView =
         [self.tableView headerViewForSection:section];
-    TableViewTextHeaderFooterView* headerTextView =
-        base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerView);
+    TableViewDisclosureHeaderFooterView* headerTextView =
+        base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
+            headerView);
     [headerTextView animateHighlight];
 
     web::ContextMenuParams params;
