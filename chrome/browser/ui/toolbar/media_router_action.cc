@@ -11,11 +11,11 @@
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/media_router/media_router_dialog_controller_impl_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,7 +26,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 
-using media_router::MediaRouterDialogControllerImpl;
+using media_router::MediaRouterDialogControllerImplBase;
 
 namespace {
 
@@ -226,7 +226,7 @@ void MediaRouterAction::OnDialogShown() {
 }
 
 void MediaRouterAction::RegisterWithDialogController() {
-  MediaRouterDialogControllerImpl* controller =
+  MediaRouterDialogControllerImplBase* controller =
       GetMediaRouterDialogController();
 
   if (!controller)
@@ -252,12 +252,12 @@ void MediaRouterAction::UpdateDialogState() {
     OnDialogHidden();
 }
 
-MediaRouterDialogControllerImpl*
+MediaRouterDialogControllerImplBase*
 MediaRouterAction::GetMediaRouterDialogController() {
   DCHECK(delegate_);
   content::WebContents* web_contents = delegate_->GetCurrentWebContents();
   DCHECK(web_contents);
-  return MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
+  return MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
       web_contents);
 }
 

@@ -19,6 +19,7 @@
 
 namespace media_router {
 
+class MediaRouterDialogControllerWebUIImpl;
 class MediaRouterUI;
 struct IssueInfo;
 
@@ -170,7 +171,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   // Checks that a Media Router dialog is shown for |web_contents|, and returns
   // its controller.
-  MediaRouterDialogControllerImpl* GetControllerForShownDialog(
+  MediaRouterDialogControllerWebUIImpl* GetControllerForShownDialog(
       content::WebContents* web_contents);
 
   // Returns the active WebContents for the current window.

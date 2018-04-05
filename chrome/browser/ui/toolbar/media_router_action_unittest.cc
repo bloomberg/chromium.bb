@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/media_router_action.h"
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_webui_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -22,7 +24,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 using content::WebContents;
-using media_router::MediaRouterDialogControllerImpl;
+using media_router::MediaRouterDialogControllerWebUIImpl;
 
 class MockToolbarActionViewDelegate : public ToolbarActionViewDelegate {
  public:
@@ -58,14 +60,14 @@ class TestMediaRouterAction : public MediaRouterAction {
   }
 
   void SetMediaRouterDialogController(
-      MediaRouterDialogControllerImpl* controller) {
+      MediaRouterDialogControllerWebUIImpl* controller) {
     DCHECK(controller);
     controller_ = controller;
   }
 
  private:
   // MediaRouterAction:
-  MediaRouterDialogControllerImpl* GetMediaRouterDialogController()
+  MediaRouterDialogControllerWebUIImpl* GetMediaRouterDialogController()
       override {
     return controller_;
   }
@@ -73,7 +75,7 @@ class TestMediaRouterAction : public MediaRouterAction {
     return platform_delegate_;
   }
 
-  MediaRouterDialogControllerImpl* controller_;
+  MediaRouterDialogControllerWebUIImpl* controller_;
   MediaRouterActionPlatformDelegate* platform_delegate_;
 };
 
@@ -318,9 +320,9 @@ TEST_F(MediaRouterActionUnitTest, IconPressedState) {
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
-  MediaRouterDialogControllerImpl::CreateForWebContents(initiator);
-  MediaRouterDialogControllerImpl* dialog_controller =
-      MediaRouterDialogControllerImpl::FromWebContents(initiator);
+  MediaRouterDialogControllerWebUIImpl::CreateForWebContents(initiator);
+  MediaRouterDialogControllerWebUIImpl* dialog_controller =
+      MediaRouterDialogControllerWebUIImpl::FromWebContents(initiator);
   ASSERT_TRUE(dialog_controller);
 
   // Sets the controller to use for TestMediaRouterAction.

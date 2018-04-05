@@ -12,13 +12,13 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/media_router/media_router_dialog_controller_impl_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/views/media_router/app_menu_test_api.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -79,7 +79,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   }
 
   MediaRouterAction* GetMediaRouterAction() {
-    return MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
+    return MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
                browser()->tab_strip_model()->GetActiveWebContents())
         ->action();
   }

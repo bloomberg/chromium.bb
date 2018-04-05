@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -27,7 +28,7 @@ struct VectorIcon;
 }
 
 namespace media_router {
-class MediaRouterDialogControllerImpl;
+class MediaRouterDialogControllerImplBase;
 }  // namespace media_router
 
 // The class for the Media Router component action that will be shown in
@@ -86,8 +87,9 @@ class MediaRouterAction : public ToolbarActionViewController,
   void OnDialogShown();
 
  private:
-  // Registers |this| with the MediaRouterDialogControllerImpl associated with
-  // |delegate_|'s current WebContents if |this| is not shown in overflow mode.
+  // Registers |this| with the MediaRouterDialogControllerImplBase associated
+  // with |delegate_|'s current WebContents if |this| is not shown in overflow
+  // mode.
   void RegisterWithDialogController();
 
   // Called when a new browser window is opened or when |delegate_| is swapped
@@ -96,12 +98,12 @@ class MediaRouterAction : public ToolbarActionViewController,
   // on a per-tab basis.
   void UpdateDialogState();
 
-  // Returns a reference to the MediaRouterDialogControllerImpl associated with
-  // |delegate_|'s current WebContents. Guaranteed to be non-null.
+  // Returns a reference to the MediaRouterDialogControllerImplBase associated
+  // with |delegate_|'s current WebContents. Guaranteed to be non-null.
   // |delegate_| and its current WebContents must not be null.
   // Marked virtual for tests.
-  virtual media_router::MediaRouterDialogControllerImpl*
-      GetMediaRouterDialogController();
+  virtual media_router::MediaRouterDialogControllerImplBase*
+  GetMediaRouterDialogController();
 
   // Overridden by tests.
   virtual MediaRouterActionPlatformDelegate* GetPlatformDelegate();
