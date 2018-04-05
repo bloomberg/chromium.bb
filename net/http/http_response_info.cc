@@ -191,6 +191,8 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     ssl_info.connection_status = connection_status;
   }
 
+  // Signed Certificate Timestamps are no longer persisted to the cache, so
+  // ignore them when reading them out.
   if (flags & RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS) {
     int num_scts;
     if (!iter.ReadInt(&num_scts))
@@ -201,11 +203,6 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
       uint16_t status;
       if (!sct.get() || !iter.ReadUInt16(&status))
         return false;
-      if (!net::ct::IsValidSCTStatus(status))
-        return false;
-      ssl_info.signed_certificate_timestamps.push_back(
-          SignedCertificateTimestampAndStatus(
-              sct, static_cast<ct::SCTVerifyStatus>(status)));
     }
   }
 
@@ -305,8 +302,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     flags |= RESPONSE_INFO_USE_HTTP_AUTHENTICATION;
   if (unused_since_prefetch)
     flags |= RESPONSE_INFO_UNUSED_SINCE_PREFETCH;
-  if (!ssl_info.signed_certificate_timestamps.empty())
-    flags |= RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS;
   if (ssl_info.pkp_bypassed)
     flags |= RESPONSE_INFO_PKP_BYPASSED;
 
@@ -335,15 +330,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
       pickle->WriteInt(ssl_info.security_bits);
     if (ssl_info.connection_status != 0)
       pickle->WriteInt(ssl_info.connection_status);
-    if (!ssl_info.signed_certificate_timestamps.empty()) {
-      pickle->WriteInt(ssl_info.signed_certificate_timestamps.size());
-      for (SignedCertificateTimestampAndStatusList::const_iterator it =
-           ssl_info.signed_certificate_timestamps.begin(); it !=
-           ssl_info.signed_certificate_timestamps.end(); ++it) {
-        it->sct->Persist(pickle);
-        pickle->WriteUInt16(static_cast<uint16_t>(it->status));
-      }
-    }
   }
 
   if (vary_data.is_valid())
