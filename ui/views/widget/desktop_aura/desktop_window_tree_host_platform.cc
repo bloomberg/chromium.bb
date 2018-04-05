@@ -271,9 +271,7 @@ bool DesktopWindowTreeHostPlatform::IsMinimized() const {
 }
 
 bool DesktopWindowTreeHostPlatform::HasCapture() const {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return platform_window()->HasCapture();
 }
 
 void DesktopWindowTreeHostPlatform::SetAlwaysOnTop(bool always_on_top) {

@@ -39,6 +39,10 @@ void PlatformWindowCast::SetBounds(const gfx::Rect& bounds) {
 void PlatformWindowCast::SetTitle(const base::string16& title) {
 }
 
+bool PlatformWindowCast::HasCapture() const {
+  return false;
+}
+
 PlatformImeController* PlatformWindowCast::GetPlatformImeController() {
   return nullptr;
 }

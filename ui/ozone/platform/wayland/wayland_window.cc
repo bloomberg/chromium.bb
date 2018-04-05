@@ -12,6 +12,7 @@
 #include "ui/events/event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v5.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v6.h"
 
@@ -55,6 +56,8 @@ WaylandWindow::~WaylandWindow() {
     PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
     connection_->RemoveWindow(surface_.id());
   }
+  if (has_pointer_focus_)
+    connection_->pointer()->reset_window_with_pointer_focus();
 }
 
 // static
@@ -134,11 +137,19 @@ void WaylandWindow::SetTitle(const base::string16& title) {
 }
 
 void WaylandWindow::SetCapture() {
+  // Wayland does implicit grabs, and doesn't allow for explicit grabs. The
+  // exception to that seems to be popups, which can do a grab during show. Need
+  // to evaluate under what circumstances we need this.
   NOTIMPLEMENTED();
 }
 
 void WaylandWindow::ReleaseCapture() {
+  // See comment in SetCapture() for details on wayland and grabs.
   NOTIMPLEMENTED();
+}
+
+bool WaylandWindow::HasCapture() const {
+  return has_implicit_grab_;
 }
 
 void WaylandWindow::ToggleFullscreen() {
@@ -267,14 +278,21 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
   else
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
 
-  if (old_state != state_)
-    delegate_->OnWindowStateChanged(state_);
+  // Update state before notifying delegate.
+  const bool did_active_change = is_active_ != is_activated;
+  is_active_ = is_activated;
 
   // Rather than call SetBounds here for every configure event, just save the
   // most recent bounds, and have WaylandConnection call ApplyPendingBounds
   // when it has finished processing events. We may get many configure events
   // in a row during an interactive resize, and only the last one matters.
   SetPendingBounds(width, height);
+
+  if (old_state != state_)
+    delegate_->OnWindowStateChanged(state_);
+
+  if (did_active_change)
+    delegate_->OnActivationChanged(is_active_);
 }
 
 void WaylandWindow::OnCloseRequest() {

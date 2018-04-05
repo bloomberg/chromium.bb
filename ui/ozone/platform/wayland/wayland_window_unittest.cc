@@ -323,13 +323,18 @@ TEST_P(WaylandWindowTest, CanDispatchMouseEventDefault) {
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventFocus) {
+  // set_pointer_focus(true) requires a WaylandPointer.
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_POINTER);
+  Sync();
+  ASSERT_TRUE(connection_->pointer());
   window_->set_pointer_focus(true);
   EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event_));
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventUnfocus) {
-  window_->set_pointer_focus(true);
-  EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event_));
+  EXPECT_FALSE(window_->has_pointer_focus());
+  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event_));
 }
 
 ACTION_P(CloneEvent, ptr) {
@@ -350,6 +355,35 @@ TEST_P(WaylandWindowTest, DispatchEvent) {
   EXPECT_EQ(mouse_event->button_flags(), test_mouse_event_.button_flags());
   EXPECT_EQ(mouse_event->changed_button_flags(),
             test_mouse_event_.changed_button_flags());
+}
+
+TEST_P(WaylandWindowTest, HasCaptureUpdatedOnPointerEvents) {
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_POINTER);
+
+  Sync();
+
+  wl::MockPointer* pointer = server_.seat()->pointer_.get();
+  ASSERT_TRUE(pointer);
+
+  wl_pointer_send_enter(pointer->resource(), 1, surface_->resource(), 0, 0);
+  Sync();
+  EXPECT_FALSE(window_->HasCapture());
+
+  wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_LEFT,
+                         WL_POINTER_BUTTON_STATE_PRESSED);
+  Sync();
+  EXPECT_TRUE(window_->HasCapture());
+
+  wl_pointer_send_motion(pointer->resource(), 1003, wl_fixed_from_int(400),
+                         wl_fixed_from_int(500));
+  Sync();
+  EXPECT_TRUE(window_->HasCapture());
+
+  wl_pointer_send_button(pointer->resource(), 4, 1004, BTN_LEFT,
+                         WL_POINTER_BUTTON_STATE_RELEASED);
+  Sync();
+  EXPECT_FALSE(window_->HasCapture());
 }
 
 TEST_P(WaylandWindowTest, ConfigureEvent) {
@@ -383,6 +417,26 @@ TEST_P(WaylandWindowTest, ConfigureEventWithNulledSize) {
   // xdg_toplevel in xdg_shell_v6 and by xdg_surface_ in xdg_shell_v5.
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 800, 600));
   EXPECT_CALL(*xdg_surface_, AckConfigure(14));
+}
+
+TEST_P(WaylandWindowTest, OnActivationChanged) {
+  EXPECT_FALSE(window_->is_active());
+
+  {
+    wl_array states;
+    InitializeWlArrayWithActivatedState(&states);
+    EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
+    SendConfigureEvent(0, 0, 1, &states);
+    Sync();
+    EXPECT_TRUE(window_->is_active());
+  }
+
+  wl_array states;
+  wl_array_init(&states);
+  EXPECT_CALL(delegate_, OnActivationChanged(Eq(false)));
+  SendConfigureEvent(0, 0, 2, &states);
+  Sync();
+  EXPECT_FALSE(window_->is_active());
 }
 
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,

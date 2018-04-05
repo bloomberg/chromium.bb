@@ -224,6 +224,10 @@ void X11WindowBase::SetCapture() {}
 
 void X11WindowBase::ReleaseCapture() {}
 
+bool X11WindowBase::HasCapture() const {
+  return false;
+}
+
 void X11WindowBase::ToggleFullscreen() {
   ui::SetWMSpecState(xwindow_, !IsFullscreen(),
                      gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"), x11::None);

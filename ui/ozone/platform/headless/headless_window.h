@@ -32,6 +32,7 @@ class HeadlessWindow : public PlatformWindow {
   void PrepareForShutdown() override;
   void SetCapture() override;
   void ReleaseCapture() override;
+  bool HasCapture() const override;
   void ToggleFullscreen() override;
   void Maximize() override;
   void Minimize() override;

@@ -43,12 +43,20 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   // Set whether this window has pointer focus and should dispatch mouse events.
   void set_pointer_focus(bool focus) { has_pointer_focus_ = focus; }
+  bool has_pointer_focus() const { return has_pointer_focus_; }
 
   // Set whether this window has keyboard focus and should dispatch key events.
   void set_keyboard_focus(bool focus) { has_keyboard_focus_ = focus; }
 
   // Set whether this window has touch focus and should dispatch touch events.
   void set_touch_focus(bool focus) { has_touch_focus_ = focus; }
+
+  // Set whether this window has an implicit grab (often referred to as capture
+  // in Chrome code). Implicit grabs happen while a pointer is down.
+  void set_has_implicit_grab(bool value) { has_implicit_grab_ = value; }
+  bool has_implicit_grab() const { return has_implicit_grab_; }
+
+  bool is_active() const { return is_active_; }
 
   // PlatformWindow
   void Show() override;
@@ -60,6 +68,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   void SetTitle(const base::string16& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
+  bool HasCapture() const override;
   void ToggleFullscreen() override;
   void Maximize() override;
   void Minimize() override;
@@ -113,9 +122,12 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   bool has_pointer_focus_ = false;
   bool has_keyboard_focus_ = false;
   bool has_touch_focus_ = false;
+  bool has_implicit_grab_ = false;
 
   // Stores current states of the window.
   ui::PlatformWindowState state_;
+
+  bool is_active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };
