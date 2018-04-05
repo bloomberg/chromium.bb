@@ -306,3 +306,31 @@ TEST_F(ProblematicProgramsUpdaterTest, WhitelistMatchingCertificateSubject) {
   auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
   ASSERT_EQ(0u, program_names.size());
 }
+
+// Registered modules are defined as either a shell extension or an IME.
+TEST_F(ProblematicProgramsUpdaterTest, IgnoreRegisteredModules) {
+  AddProblematicProgram(dll1_, L"Shell Extension", Option::ADD_REGISTRY_ENTRY);
+  AddProblematicProgram(dll2_, L"Input Method Editor",
+                        Option::ADD_REGISTRY_ENTRY);
+
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
+
+  // Set the respective bit for registered modules.
+  auto module_data1 = CreateLoadedModuleInfoData();
+  module_data1.module_types |= ModuleInfoData::kTypeShellExtension;
+  auto module_data2 = CreateLoadedModuleInfoData();
+  module_data2.module_types |= ModuleInfoData::kTypeIme;
+
+  // Simulate the modules loading into the process.
+  problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
+                                                 module_data1);
+  problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll2_, 0, 0, 0),
+                                                 module_data2);
+  problematic_programs_updater->OnModuleDatabaseIdle();
+
+  EXPECT_FALSE(ProblematicProgramsUpdater::HasCachedPrograms());
+  auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
+  ASSERT_EQ(0u, program_names.size());
+}
