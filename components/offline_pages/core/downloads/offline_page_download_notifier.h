@@ -33,6 +33,11 @@ struct OfflinePageDownloadNotifier {
 
   // Reports that |item| has been canceled.
   virtual void NotifyDownloadCanceled(const OfflineItem& item) = 0;
+
+  // Suppresses the download complete notification
+  // depending on flags and origin.
+  virtual bool MaybeSuppressNotification(const std::string& origin,
+                                         const OfflineItem& item) = 0;
 };
 
 }  // namespace offline_pages

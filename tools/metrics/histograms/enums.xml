@@ -26093,6 +26093,7 @@ from previous Chrome versions.
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1466990325" label="CrosCompUpdates:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
+  <int value="-1463489219" label="OfflinePagesCTSuppressNotifications:enabled"/>
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
   <int value="-1460462432" label="disable-media-source"/>
@@ -27021,6 +27022,7 @@ from previous Chrome versions.
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="777667507" label="DesktopPWAsLinkCapturing:enabled"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
+  <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>

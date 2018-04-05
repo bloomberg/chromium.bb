@@ -29,6 +29,7 @@ enum class LastNotificationType {
   DOWNLOAD_PAUSED,
   DOWNLOAD_INTERRUPTED,
   DOWNLOAD_CANCELED,
+  DOWNLOAD_SUPPRESSED,
 };
 
 class TestNotifier : public OfflinePageDownloadNotifier {
@@ -43,6 +44,8 @@ class TestNotifier : public OfflinePageDownloadNotifier {
   void NotifyDownloadPaused(const OfflineItem& item) override;
   void NotifyDownloadInterrupted(const OfflineItem& item) override;
   void NotifyDownloadCanceled(const OfflineItem& item) override;
+  bool MaybeSuppressNotification(const std::string& origin,
+                                 const OfflineItem& item) override;
 
   void Reset();
 
@@ -52,9 +55,14 @@ class TestNotifier : public OfflinePageDownloadNotifier {
 
   OfflineItem* offline_item() const { return offline_item_.get(); }
 
+  void SetShouldSuppressNotification(bool should_suppress) {
+    should_suppress_notification_ = should_suppress;
+  }
+
  private:
   LastNotificationType last_notification_type_;
   std::unique_ptr<OfflineItem> offline_item_;
+  bool should_suppress_notification_ = false;
 };
 
 TestNotifier::TestNotifier()
@@ -92,9 +100,17 @@ void TestNotifier::NotifyDownloadCanceled(const OfflineItem& item) {
   offline_item_.reset(new OfflineItem(item));
 }
 
+bool TestNotifier::MaybeSuppressNotification(const std::string& origin,
+                                             const OfflineItem& item) {
+  last_notification_type_ = LastNotificationType::DOWNLOAD_SUPPRESSED;
+  offline_item_.reset(new OfflineItem(item));
+  return should_suppress_notification_;
+}
+
 void TestNotifier::Reset() {
   last_notification_type_ = LastNotificationType::NONE;
   offline_item_.reset(nullptr);
+  should_suppress_notification_ = false;
 }
 
 }  // namespace
@@ -140,7 +156,7 @@ TEST_F(DownloadNotifyingObserverTest, OnAddedAsAvailable) {
   EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
-TEST_F(DownloadNotifyingObserverTest, OnAddedAsOffling) {
+TEST_F(DownloadNotifyingObserverTest, OnAddedAsOfflining) {
   SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
                           kTestCreationTime, kTestUserRequested);
   request.set_request_state(SavePageRequest::RequestState::OFFLINING);
@@ -202,6 +218,19 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedSuccess) {
   observer()->OnCompleted(request,
                           RequestNotifier::BackgroundSavePageResult::SUCCESS);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_SUCCESSFUL,
+            notifier()->last_notification_type());
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
+}
+
+TEST_F(DownloadNotifyingObserverTest, OnCompletedSuccess_SuppressNotification) {
+  SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
+                          kTestCreationTime, kTestUserRequested);
+  notifier()->SetShouldSuppressNotification(true);
+  observer()->OnCompleted(request,
+                          RequestNotifier::BackgroundSavePageResult::SUCCESS);
+  EXPECT_EQ(LastNotificationType::DOWNLOAD_SUPPRESSED,
             notifier()->last_notification_type());
   EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
   EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
