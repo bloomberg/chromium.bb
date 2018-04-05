@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/overlay_window.h"
+#include "chrome/browser/overlay/overlay_window.h"
 
 // static
-std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create() {
+std::unique_ptr<OverlayWindow> OverlayWindow::Create() {
   return nullptr;
 }

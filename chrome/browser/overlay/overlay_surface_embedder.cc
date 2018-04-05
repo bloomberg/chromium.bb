@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/picture_in_picture/overlay_surface_embedder.h"
+#include "chrome/browser/overlay/overlay_surface_embedder.h"
 
 #include "ui/compositor/layer.h"
-
-namespace content {
 
 OverlaySurfaceEmbedder::OverlaySurfaceEmbedder(OverlayWindow* window)
     : window_(window) {
@@ -36,5 +34,3 @@ void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
       cc::DeadlinePolicy::UseDefaultDeadline(),
       true /* stretch_content_to_fill_bounds */);
 }
-
-}  // namespace content
