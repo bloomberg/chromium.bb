@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/arc/arc_util.h"
 
 namespace arc {
@@ -18,11 +19,12 @@ namespace {
 // Adds a suffix to the name based on the account type.
 std::string GetHistogramName(const std::string& base_name,
                              const Profile* profile) {
+  if (IsRobotAccountMode())
+    return base_name + "RobotAccount";
+  if (profile->IsChild())
+    return base_name + "Child";
   return base_name +
-         (IsRobotAccountMode()
-              ? "RobotAccount"
-              : (policy_util::IsAccountManaged(profile) ? "Managed"
-                                                        : "Unmanaged"));
+         (policy_util::IsAccountManaged(profile) ? "Managed" : "Unmanaged");
 }
 
 }  // namespace
