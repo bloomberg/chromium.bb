@@ -6921,7 +6921,10 @@ class NoRequireCTDelegate
   NoRequireCTDelegate() {}
   ~NoRequireCTDelegate() override = default;
 
-  CTRequirementLevel IsCTRequiredForHost(const std::string& hostname) override {
+  CTRequirementLevel IsCTRequiredForHost(
+      const std::string& hostname,
+      const net::X509Certificate* chain,
+      const net::HashValueVector& hashes) override {
     return CTRequirementLevel::NOT_REQUIRED;
   }
 };

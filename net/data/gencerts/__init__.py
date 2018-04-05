@@ -250,6 +250,12 @@ class Certificate(object):
     return self.config.get_section('req_ext')
 
 
+  def get_subject(self):
+    """Returns the configuration section responsible for the subject of the
+    certificate. This can be used to alter the subject to be more complex."""
+    return self.config.get_section('req_dn')
+
+
   def get_path(self, suffix):
     """Forms a path to an output file for this certificate, containing the
     indicated suffix. The certificate's name will be used as its basis."""

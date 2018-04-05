@@ -218,8 +218,10 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
 
 class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
  public:
-  MOCK_METHOD1(IsCTRequiredForHost,
-               CTRequirementLevel(const std::string& hostname));
+  MOCK_METHOD3(IsCTRequiredForHost,
+               CTRequirementLevel(const std::string& hostname,
+                                  const X509Certificate* chain,
+                                  const HashValueVector& hashes));
 };
 
 void CompareCertificateChainWithList(
@@ -2237,7 +2239,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
     MockRequireCTDelegate always_require_delegate;
-    EXPECT_CALL(always_require_delegate, IsCTRequiredForHost(_))
+    EXPECT_CALL(always_require_delegate, IsCTRequiredForHost(_, _, _))
         .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
     state.SetRequireCTDelegate(&always_require_delegate);
     EXPECT_EQ(
@@ -2291,7 +2293,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
     MockRequireCTDelegate never_require_delegate;
-    EXPECT_CALL(never_require_delegate, IsCTRequiredForHost(_))
+    EXPECT_CALL(never_require_delegate, IsCTRequiredForHost(_, _, _))
         .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
     state.SetRequireCTDelegate(&never_require_delegate);
     EXPECT_EQ(
@@ -2331,7 +2333,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
     MockRequireCTDelegate default_require_ct_delegate;
-    EXPECT_CALL(default_require_ct_delegate, IsCTRequiredForHost(_))
+    EXPECT_CALL(default_require_ct_delegate, IsCTRequiredForHost(_, _, _))
         .WillRepeatedly(Return(CTRequirementLevel::DEFAULT));
     state.SetRequireCTDelegate(&default_require_ct_delegate);
     EXPECT_EQ(
@@ -3115,7 +3117,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCTAndDelegate) {
   // A connection to an Expect-CT host, which also requires CT by the delegate,
   // should be closed and reported.
   MockRequireCTDelegate always_require_delegate;
-  EXPECT_CALL(always_require_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(always_require_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
   state.SetRequireCTDelegate(&always_require_delegate);
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
@@ -3171,7 +3173,7 @@ TEST_F(TransportSecurityStateTest,
   // A connection to an Expect-CT host, which is exempted from the CT
   // requirements by the delegate, should be reported but not closed.
   MockRequireCTDelegate never_require_delegate;
-  EXPECT_CALL(never_require_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(never_require_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
   state.SetRequireCTDelegate(&never_require_delegate);
   EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,

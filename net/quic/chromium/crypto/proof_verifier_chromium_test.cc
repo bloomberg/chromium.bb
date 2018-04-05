@@ -62,8 +62,10 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
 
 class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
  public:
-  MOCK_METHOD1(IsCTRequiredForHost,
-               CTRequirementLevel(const std::string& host));
+  MOCK_METHOD3(IsCTRequiredForHost,
+               CTRequirementLevel(const std::string& host,
+                                  const X509Certificate* chain,
+                                  const HashValueVector& hashes));
 };
 
 // Proof source callback which saves the signature into |signature|.
@@ -597,10 +599,10 @@ TEST_F(ProofVerifierChromiumTest, CTIsRequired) {
   // Set up CT.
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
   EXPECT_CALL(ct_policy_enforcer_, CheckCompliance(_, _, _))
@@ -649,10 +651,10 @@ TEST_F(ProofVerifierChromiumTest, CTIsRequiredHistogramNonCompliant) {
   // Set up CT.
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
   EXPECT_CALL(ct_policy_enforcer_, CheckCompliance(_, _, _))
@@ -696,10 +698,10 @@ TEST_F(ProofVerifierChromiumTest, CTIsRequiredHistogramCompliant) {
   // Set up CT.
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
   EXPECT_CALL(ct_policy_enforcer_, CheckCompliance(_, _, _))
@@ -805,10 +807,10 @@ TEST_F(ProofVerifierChromiumTest, PKPAndCTBothTested) {
   // Set up CT.
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
   EXPECT_CALL(ct_policy_enforcer_, CheckCompliance(_, _, _))
@@ -917,7 +919,7 @@ TEST_F(ProofVerifierChromiumTest, CTRequirementsFlagNotMet) {
   // Set up CT.
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
   EXPECT_CALL(ct_policy_enforcer_, CheckCompliance(_, _, _))
@@ -959,7 +961,7 @@ TEST_F(ProofVerifierChromiumTest, CTRequirementsFlagMet) {
   // Set up CT.
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
   EXPECT_CALL(ct_policy_enforcer_, CheckCompliance(_, _, _))

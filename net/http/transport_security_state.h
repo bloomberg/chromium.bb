@@ -84,8 +84,14 @@ class NET_EXPORT TransportSecurityState {
     // Called by the TransportSecurityState, allows the Delegate to override
     // the default handling of Certificate Transparency requirements, if
     // desired.
+    // |hostname| contains the host being contacted, serving the certificate
+    // |chain|, with the set of hashesh |hashes|. Note that |hashes| and
+    // |chain| are not guaranteed to be in the same order - that is, the first
+    // hash in |hashes| is NOT guaranteed to be for the leaf cert in |chain|.
     virtual CTRequirementLevel IsCTRequiredForHost(
-        const std::string& hostname) = 0;
+        const std::string& hostname,
+        const X509Certificate* chain,
+        const HashValueVector& hashes) = 0;
 
    protected:
     virtual ~RequireCTDelegate() = default;

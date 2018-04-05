@@ -52,6 +52,7 @@
 using net::test::IsError;
 using net::test::IsOk;
 using net::test::TestServerPushDelegate;
+using testing::_;
 
 namespace net {
 
@@ -84,7 +85,10 @@ base::TimeTicks InstantaneousReads() {
 
 class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
  public:
-  MOCK_METHOD1(IsCTRequiredForHost, CTRequirementLevel(const SpdyString& host));
+  MOCK_METHOD3(IsCTRequiredForHost,
+               CTRequirementLevel(const std::string& host,
+                                  const X509Certificate* chain,
+                                  const HashValueVector& hashes));
 };
 
 }  // namespace
@@ -6553,9 +6557,10 @@ TEST(CanPoolTest, CanNotPoolWithBadCTWhenCTRequired) {
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   MockRequireCTDelegate require_ct_delegate;
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org", _, _))
       .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("mail.example.org"))
+  EXPECT_CALL(require_ct_delegate,
+              IsCTRequiredForHost("mail.example.org", _, _))
       .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
 
   TransportSecurityState tss;
@@ -6579,9 +6584,10 @@ TEST(CanPoolTest, CanPoolWithBadCTWhenCTNotRequired) {
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   MockRequireCTDelegate require_ct_delegate;
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org", _, _))
       .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("mail.example.org"))
+  EXPECT_CALL(require_ct_delegate,
+              IsCTRequiredForHost("mail.example.org", _, _))
       .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
 
   TransportSecurityState tss;
@@ -6605,9 +6611,10 @@ TEST(CanPoolTest, CanPoolWithGoodCTWhenCTRequired) {
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
   MockRequireCTDelegate require_ct_delegate;
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org", _, _))
       .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("mail.example.org"))
+  EXPECT_CALL(require_ct_delegate,
+              IsCTRequiredForHost("mail.example.org", _, _))
       .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
 
   TransportSecurityState tss;

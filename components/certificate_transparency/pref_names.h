@@ -17,6 +17,30 @@ extern const char kCTRequiredHosts[];
 // otherwise be required (e.g. as part of security policy).
 extern const char kCTExcludedHosts[];
 
+// The set of subjectPublicKeyInfo hashes in the form of
+// <hash-name>"/"<base64-hash-value>. If a certificate matches this SPKI, then
+// Certificate Transparency information is allowed to be absent if one of the
+// following conditions are met:
+// 1) The matching certificate is a CA certificate (basicConstraints CA:TRUE)
+//    that has a nameConstraints extension with a permittedSubtrees that
+//    contains one or more directoryName entries, the directoryName has
+//    one or more organizationName attributes, and the leaf certificate also
+//    contains one or more organizationName attributes in the Subject.
+// 2) The matching certificate contains one or more organizationName
+//    attributes in the Subject, and those attributes are identical in
+//    ordering, number of values, and byte-for-byte equality of values.
+extern const char kCTExcludedSPKIs[];
+
+// The set of subjectPublicKeyInfo hashes in the form of
+// <hash-name>"/"<base64-hash-value>. If a certificate matches this SPKI, then
+// Certificate Transparency information is allowed to be absent if:
+// 1) The SPKI listed is a known as a publicly trusted root
+//    (see //net/data/ssl/root_stores)
+// 2) The SPKI listed is not actively trusted in the current version of the
+//    ChromiumOS or Android root stores.
+//    (see '"legacy": true' in root_stores.json)
+extern const char kCTExcludedLegacySPKIs[];
+
 }  // namespace prefs
 }  // namespace certificate_transparency
 
