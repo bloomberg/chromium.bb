@@ -534,25 +534,25 @@ int GLES2Util::ElementsPerGroup(int format, int type) {
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
     case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
-       return 1;
+      return 1;
     default:
-       break;
-    }
+      break;
+  }
 
-    switch (format) {
+  switch (format) {
     case GL_RGB:
     case GL_RGB_INTEGER:
     case GL_SRGB_EXT:
-       return 3;
+      return 3;
     case GL_LUMINANCE_ALPHA:
     case GL_RG_EXT:
     case GL_RG_INTEGER:
-       return 2;
+      return 2;
     case GL_RGBA:
     case GL_RGBA_INTEGER:
     case GL_BGRA_EXT:
     case GL_SRGB_ALPHA_EXT:
-       return 4;
+      return 4;
     case GL_ALPHA:
     case GL_LUMINANCE:
     case GL_DEPTH_COMPONENT:
@@ -563,9 +563,9 @@ int GLES2Util::ElementsPerGroup(int format, int type) {
     case GL_DEPTH_STENCIL_OES:
     case GL_RED_EXT:
     case GL_RED_INTEGER:
-       return 1;
+      return 1;
     default:
-       return 0;
+      return 0;
   }
 }
 

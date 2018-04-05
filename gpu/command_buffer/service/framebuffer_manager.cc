@@ -872,8 +872,8 @@ bool Framebuffer::HasAlphaMRT() const {
       const Attachment* attachment = GetAttachment(draw_buffers_[i]);
       if (!attachment)
         continue;
-      if ((GLES2Util::GetChannelsForFormat(
-               attachment->internal_format()) & 0x0008) != 0)
+      if ((GLES2Util::GetChannelsForFormat(attachment->internal_format()) &
+           GLES2Util::kAlpha) != 0)
         return true;
     }
   }
