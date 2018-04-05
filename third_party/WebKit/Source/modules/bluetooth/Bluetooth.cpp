@@ -164,13 +164,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
       "implementation-status.md"));
 #endif
 
-  // If the Relevant settings object is not a secure context, reject promise
-  // with a SecurityError and abort these steps.
-  String error_message;
-  if (!context->IsSecureContext(error_message)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, error_message));
-  }
+  CHECK(context->IsSecureContext());
 
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
