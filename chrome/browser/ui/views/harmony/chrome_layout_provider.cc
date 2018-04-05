@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/material_refresh_layout_provider.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 namespace {
@@ -37,6 +38,9 @@ ChromeLayoutProvider* ChromeLayoutProvider::Get() {
 // static
 std::unique_ptr<views::LayoutProvider>
 ChromeLayoutProvider::CreateLayoutProvider() {
+  if (ui::MaterialDesignController::GetMode() ==
+      ui::MaterialDesignController::MATERIAL_REFRESH)
+    return std::make_unique<MaterialRefreshLayoutProvider>();
   return ui::MaterialDesignController::IsSecondaryUiMaterial()
              ? std::make_unique<HarmonyLayoutProvider>()
              : std::make_unique<ChromeLayoutProvider>();
