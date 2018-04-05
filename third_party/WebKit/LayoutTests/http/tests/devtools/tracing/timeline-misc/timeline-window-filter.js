@@ -11,26 +11,24 @@
   var timeline = UI.panels.timeline;
   var overviewPane = timeline._overviewPane;
 
-  PerformanceTestRunner.loadTimeline(PerformanceTestRunner.timelineData()).then(onTimelineLoaded);
+  await PerformanceTestRunner.loadTimeline(PerformanceTestRunner.timelineData());
 
-  function onTimelineLoaded() {
-    overviewPane._update();
-    TestRunner.addResult('OverviewPane:');
-    overviewPane._overviewCalculator.setDisplayWidth(450);
-    dumpDividers(overviewPane._overviewCalculator);
-    TestRunner.addResult('');
+  overviewPane._update();
+  TestRunner.addResult('OverviewPane:');
+  overviewPane._overviewCalculator.setDisplayWidth(450);
+  dumpDividers(overviewPane._overviewCalculator);
+  TestRunner.addResult('');
 
-    dumpFlameChartRecordsCountForRange(0, 1);
-    dumpFlameChartRecordsCountForRange(0.25, 0.75);
-    dumpFlameChartRecordsCountForRange(0.33, 0.66);
+  dumpFlameChartRecordsCountForRange(0, 1);
+  dumpFlameChartRecordsCountForRange(0.25, 0.75);
+  dumpFlameChartRecordsCountForRange(0.33, 0.66);
 
-    overviewPane._overviewGrid.setWindow(0.1, 0.9);
+  overviewPane._overviewGrid.setWindow(0.1, 0.9);
 
-    TestRunner.addResult('--------------------------------------------------------');
-    var selectionData = timeline._currentModelSelectionData();
-    TestRunner.addResult('time range = ' + selectionData.windowStartTime + ' - ' + selectionData.windowEndTime);
-    TestRunner.completeTest();
-  }
+  TestRunner.addResult('--------------------------------------------------------');
+  var selectionData = timeline._currentModelSelectionData();
+  TestRunner.addResult('time range = ' + selectionData.windowStartTime + ' - ' + selectionData.windowEndTime);
+  TestRunner.completeTest();
 
   function dumpFlameChartRecordsCountForRange(windowLeft, windowRight) {
     var mainView = timeline._flameChart._mainFlameChart;
@@ -44,7 +42,7 @@
   }
 
   function dumpDividers(calculator) {
-    var times = PerfUI.TimelineGrid.calculateDividerOffsets(calculator)
+    var times = PerfUI.TimelineGrid.calculateGridOffsets(calculator)
                     .offsets.map(offset => offset.time - calculator.zeroTime());
     TestRunner.addResult('divider offsets: [' + times.join(', ') + ']. We are expecting round numbers.');
   }
