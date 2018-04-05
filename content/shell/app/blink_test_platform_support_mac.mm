@@ -42,6 +42,10 @@ void SetDefaultsToLayoutTestValues(void) {
              forKey:@"NSScrollAnimationEnabled"];
   [defaults setObject:@"Always"
                forKey:@"AppleShowScrollBars"];
+
+  // Disable AppNap since layout tests do not always meet the requirements to
+  // avoid "napping" which will cause test timeouts. http://crbug.com/811525.
+  [defaults setBool:YES forKey:@"NSAppSleepDisabled"];
 }
 
 }  // namespace
