@@ -206,6 +206,8 @@ necessary bugs.
 * Assign severity, impact, milestone, and component labels
 * CC Apple friends (if you don't know who they are, ping awhalley@)
 * Label **ExternalDependency**
+* File the bug at [bugs.webkit.org](https://bugs.webkit.org) or with
+  product-security@apple.com.
 
 ### Find An Owner To Fix The Bug
 
