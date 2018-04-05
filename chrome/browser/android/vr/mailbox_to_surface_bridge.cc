@@ -304,12 +304,6 @@ void MailboxToSurfaceBridge::GenSyncToken(gpu::SyncToken* out_sync_token) {
   gl_->GenSyncTokenCHROMIUM(out_sync_token->GetData());
 }
 
-void MailboxToSurfaceBridge::WaitSyncToken(const gpu::SyncToken& sync_token) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
-  DCHECK(IsConnected());
-  gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-}
-
 void MailboxToSurfaceBridge::WaitForClientGpuFence(gfx::GpuFence* gpu_fence) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsConnected());
