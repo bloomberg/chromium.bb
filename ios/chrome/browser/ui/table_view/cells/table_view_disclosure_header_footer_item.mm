@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -13,17 +13,14 @@
 #error "This file requires ARC support."
 #endif
 
-
-@implementation TableViewTextHeaderFooterItem
+@implementation TableViewDisclosureHeaderFooterItem
 @synthesize subtitleText = _subtitleText;
 @synthesize text = _text;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [TableViewTextHeaderFooterView class];
-    self.accessibilityTraits |=
-        UIAccessibilityTraitButton | UIAccessibilityTraitHeader;
+    self.cellClass = [TableViewDisclosureHeaderFooterView class];
   }
   return self;
 }
@@ -35,78 +32,80 @@
   // Set the contentView backgroundColor, not the header's.
   headerFooter.contentView.backgroundColor = styler.tableViewBackgroundColor;
 
-  TableViewTextHeaderFooterView* header =
-      base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
-  header.textLabel.text = self.text;
+  TableViewDisclosureHeaderFooterView* header =
+      base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
+          headerFooter);
+  header.titleLabel.text = self.text;
   header.subtitleLabel.text = self.subtitleText;
-  header.accessibilityLabel = self.text;
 }
 
 @end
 
-#pragma mark - TableViewTextHeaderFooter
+#pragma mark - TableViewDisclosureHeaderFooterView
 
-@interface TableViewTextHeaderFooterView ()
+@interface TableViewDisclosureHeaderFooterView ()
 // Animator that handles all cell animations.
 @property(strong, nonatomic) UIViewPropertyAnimator* cellAnimator;
 @end
 
-@implementation TableViewTextHeaderFooterView
+@implementation TableViewDisclosureHeaderFooterView
 @synthesize cellAnimator = _cellAnimator;
 @synthesize subtitleLabel = _subtitleLabel;
-@synthesize textLabel = _textLabel;
+@synthesize titleLabel = _titleLabel;
 
 - (instancetype)initWithReuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithReuseIdentifier:reuseIdentifier];
   if (self) {
     // Labels, set font sizes using dynamic type.
-    _textLabel = [[UILabel alloc] init];
-    _textLabel.font =
+    _titleLabel = [[UILabel alloc] init];
+    _titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     _subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    _subtitleLabel.textColor = [UIColor lightGrayColor];
 
     // Vertical StackView.
     UIStackView* verticalStack = [[UIStackView alloc]
-        initWithArrangedSubviews:@[ _textLabel, _subtitleLabel ]];
+        initWithArrangedSubviews:@[ _titleLabel, _subtitleLabel ]];
     verticalStack.axis = UILayoutConstraintAxisVertical;
     verticalStack.spacing = kTableViewVerticalLabelStackSpacing;
-    verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // Container View.
-    UIView* containerView = [[UIView alloc] init];
-    containerView.translatesAutoresizingMaskIntoConstraints = NO;
+    // Disclosure ImageView.
+    UIImageView* disclosureImageView = [[UIImageView alloc]
+        initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
+    [disclosureImageView
+        setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                          forAxis:UILayoutConstraintAxisHorizontal];
+
+    // Horizontal StackView.
+    UIStackView* horizontalStack = [[UIStackView alloc]
+        initWithArrangedSubviews:@[ verticalStack, disclosureImageView ]];
+    horizontalStack.axis = UILayoutConstraintAxisHorizontal;
+    horizontalStack.spacing = kTableViewCellViewSpacing;
+    horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
+    horizontalStack.alignment = UIStackViewAlignmentCenter;
 
     // Add subviews to View Hierarchy.
-    [containerView addSubview:verticalStack];
-    [self.contentView addSubview:containerView];
+    [self.contentView addSubview:horizontalStack];
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
-      // Container Constraints.
-      [containerView.leadingAnchor
+      // Horizontal Stack Constraints.
+      [horizontalStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewCellViewSpacing],
-      [containerView.trailingAnchor
+      [horizontalStack.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewCellViewSpacing],
-      [containerView.topAnchor
+      [horizontalStack.topAnchor
           constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
                                       constant:kTableViewCellViewSpacing],
-      [containerView.bottomAnchor
+      [horizontalStack.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
                                    constant:-kTableViewCellViewSpacing],
-      [containerView.centerYAnchor
-          constraintEqualToAnchor:self.contentView.centerYAnchor],
-      // Vertical StackView Constraints.
-      [verticalStack.leadingAnchor
-          constraintEqualToAnchor:containerView.leadingAnchor],
-      [verticalStack.topAnchor constraintEqualToAnchor:containerView.topAnchor],
-      [verticalStack.bottomAnchor
-          constraintEqualToAnchor:containerView.bottomAnchor],
-      [verticalStack.trailingAnchor
-          constraintEqualToAnchor:containerView.trailingAnchor],
+      [horizontalStack.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor]
     ]];
   }
   return self;
@@ -122,7 +121,7 @@
                   UIColorFromRGB(kTableViewHighlightedCellColor,
                                  kTableViewHighlightedCellColorAlpha);
             }];
-  __weak TableViewTextHeaderFooterView* weakSelf = self;
+  __weak TableViewDisclosureHeaderFooterView* weakSelf = self;
   [self.cellAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     weakSelf.contentView.backgroundColor = originalBackgroundColor;
   }];
