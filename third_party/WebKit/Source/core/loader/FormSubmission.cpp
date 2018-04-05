@@ -34,6 +34,7 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/forms/FormData.h"
+#include "core/html/forms/FormDataEvent.h"
 #include "core/html/forms/HTMLFormControlElement.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/html/forms/HTMLInputElement.h"
@@ -225,6 +226,11 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                 copied_attributes.AcceptCharset(), document.Encoding());
   FormData* dom_form_data =
       FormData::Create(data_encoding.EncodingForFormSubmission());
+
+  // TODO(tkent): We might move the event dispatching later than the
+  // ListedElements iteration.
+  if (RuntimeEnabledFeatures::FormDataEventEnabled())
+    form->DispatchEvent(FormDataEvent::Create(*dom_form_data));
 
   if (submit_button)
     submit_button->SetActivatedSubmit(true);

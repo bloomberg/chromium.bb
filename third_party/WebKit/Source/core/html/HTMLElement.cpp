@@ -375,6 +375,7 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
       {onfocusAttr, kNoWebFeature, EventTypeNames::focus, nullptr},
       {onfocusinAttr, kNoWebFeature, EventTypeNames::focusin, nullptr},
       {onfocusoutAttr, kNoWebFeature, EventTypeNames::focusout, nullptr},
+      {onformdataAttr, kNoWebFeature, EventTypeNames::formdata, nullptr},
       {ongotpointercaptureAttr, kNoWebFeature,
        EventTypeNames::gotpointercapture, nullptr},
       {oninputAttr, kNoWebFeature, EventTypeNames::input, nullptr},

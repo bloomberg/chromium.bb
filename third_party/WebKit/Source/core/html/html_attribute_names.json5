@@ -222,6 +222,7 @@
     "onfocus",
     "onfocusin",
     "onfocusout",
+    "onformdata",
     "ongotpointercapture",
     "onhashchange",
     "oninput",
