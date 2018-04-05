@@ -5574,6 +5574,11 @@
           ]
         },
         {
+          "enumerant" : "NonUniformEXT",
+          "value" : 5300,
+          "capabilities" : [ "ShaderNonUniformEXT" ]
+        },
+        {
           "enumerant" : "HlslCounterBufferGOOGLE",
           "value" : 5634,
           "parameters" : [
@@ -6602,6 +6607,90 @@
           "value" : 5265,
           "capabilities" : [ "Shader" ],
           "extensions" : [ "SPV_EXT_fragment_fully_covered" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "ShaderNonUniformEXT",
+          "value" : 5301,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "RuntimeDescriptorArrayEXT",
+          "value" : 5302,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "InputAttachmentArrayDynamicIndexingEXT",
+          "value" : 5303,
+          "capabilities" : [ "InputAttachment" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "UniformTexelBufferArrayDynamicIndexingEXT",
+          "value" : 5304,
+          "capabilities" : [ "SampledBuffer" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "StorageTexelBufferArrayDynamicIndexingEXT",
+          "value" : 5305,
+          "capabilities" : [ "ImageBuffer" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "UniformBufferArrayNonUniformIndexingEXT",
+          "value" : 5306,
+          "capabilities" : [ "ShaderNonUniformEXT" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "SampledImageArrayNonUniformIndexingEXT",
+          "value" : 5307,
+          "capabilities" : [ "ShaderNonUniformEXT" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "StorageBufferArrayNonUniformIndexingEXT",
+          "value" : 5308,
+          "capabilities" : [ "ShaderNonUniformEXT" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "StorageImageArrayNonUniformIndexingEXT",
+          "value" : 5309,
+          "capabilities" : [ "ShaderNonUniformEXT" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "InputAttachmentArrayNonUniformIndexingEXT",
+          "value" : 5310,
+          "capabilities" : [ "InputAttachment", "ShaderNonUniformEXT" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "UniformTexelBufferArrayNonUniformIndexingEXT",
+          "value" : 5311,
+          "capabilities" : [ "SampledBuffer", "ShaderNonUniformEXT" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "StorageTexelBufferArrayNonUniformIndexingEXT",
+          "value" : 5312,
+          "capabilities" : [ "ImageBuffer", "ShaderNonUniformEXT" ],
+          "extensions" : [ "SPV_EXT_descriptor_indexing" ],
           "version" : "None"
         },
         {
