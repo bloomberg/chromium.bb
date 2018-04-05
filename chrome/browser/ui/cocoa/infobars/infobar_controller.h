@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 
 class InfoBarCocoa;
-@class InfoBarGradientView;
+@class InfoBarBackgroundView;
 
 namespace infobars {
 class InfoBarDelegate;
@@ -26,7 +26,7 @@ class InfoBarDelegate;
   base::WeakPtr<InfoBarCocoa> infobar_;
 
  @protected
-  IBOutlet InfoBarGradientView* infoBarView_;
+  IBOutlet InfoBarBackgroundView* infoBarView_;
   IBOutlet NSImageView* image_;
   IBOutlet NSTextField* labelPlaceholder_;
   IBOutlet NSButton* okButton_;
