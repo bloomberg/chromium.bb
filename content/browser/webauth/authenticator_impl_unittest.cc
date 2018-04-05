@@ -45,12 +45,14 @@ using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
 using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
 using webauth::mojom::PublicKeyCredentialCreationOptions;
 using webauth::mojom::PublicKeyCredentialCreationOptionsPtr;
+using webauth::mojom::PublicKeyCredentialDescriptor;
 using webauth::mojom::PublicKeyCredentialParameters;
 using webauth::mojom::PublicKeyCredentialParametersPtr;
 using webauth::mojom::PublicKeyCredentialRequestOptions;
 using webauth::mojom::PublicKeyCredentialRequestOptionsPtr;
 using webauth::mojom::PublicKeyCredentialRpEntity;
 using webauth::mojom::PublicKeyCredentialRpEntityPtr;
+using webauth::mojom::PublicKeyCredentialType;
 using webauth::mojom::PublicKeyCredentialUserEntity;
 using webauth::mojom::PublicKeyCredentialUserEntityPtr;
 
@@ -651,6 +653,44 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+}
+
+TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
+  device::test::ScopedVirtualFidoDevice virtual_device_;
+  TestServiceManagerContext smc_;
+  // 255 is the maximum size of a U2F credential ID. We also test one greater
+  // (256) to ensure that nothing untoward happens.
+  const std::vector<size_t> kSizes = {255, 256};
+
+  for (size_t size : kSizes) {
+    SCOPED_TRACE(size);
+
+    SimulateNavigation(GURL(kTestOrigin1));
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    auto credential = PublicKeyCredentialDescriptor::New();
+    credential->type = PublicKeyCredentialType::PUBLIC_KEY;
+    credential->id.resize(size);
+
+    const bool should_be_valid = size < 256;
+    if (should_be_valid) {
+      ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+          credential->id, kTestRelyingPartyId));
+    }
+
+    options->allow_credentials.emplace_back(std::move(credential));
+
+    TestGetAssertionCallback cb;
+    authenticator->GetAssertion(std::move(options), cb.callback());
+    cb.WaitForCallback();
+
+    if (should_be_valid) {
+      EXPECT_EQ(AuthenticatorStatus::SUCCESS, cb.status());
+    } else {
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+    }
+  }
 }
 
 enum class IndividualAttestation {
