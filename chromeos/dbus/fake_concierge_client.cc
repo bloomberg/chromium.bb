@@ -41,6 +41,13 @@ void FakeConciergeClient::StartContainer(
   std::move(callback).Run(base::nullopt);
 }
 
+void FakeConciergeClient::LaunchContainerApplication(
+    const vm_tools::concierge::LaunchContainerApplicationRequest& request,
+    DBusMethodCallback<vm_tools::concierge::LaunchContainerApplicationResponse>
+        callback) {
+  std::move(callback).Run(base::nullopt);
+}
+
 void FakeConciergeClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

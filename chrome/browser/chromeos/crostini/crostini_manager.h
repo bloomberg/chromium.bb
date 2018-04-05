@@ -24,6 +24,7 @@ enum class ConciergeClientResult {
   CLIENT_ERROR,
   DISK_TYPE_ERROR,
   CONTAINER_START_FAILED,
+  LAUNCH_CONTAINER_APPLICATION_FAILED,
   UNKNOWN_ERROR,
 };
 
@@ -46,6 +47,9 @@ class CrostiniManager {
   using StopVmCallback = base::OnceCallback<void(ConciergeClientResult result)>;
   // The type of the callback for CrostiniManager::StartContainer.
   using StartContainerCallback =
+      base::OnceCallback<void(ConciergeClientResult result)>;
+  // The type of the callback for CrostiniManager::LaunchContainerApplication.
+  using LaunchContainerApplicationCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
 
   // Starts the Concierge service. |callback| is called after the method call
@@ -90,6 +94,16 @@ class CrostiniManager {
                       std::string container_username,
                       StartContainerCallback callback);
 
+  // Asynchronously launches an app as specified by its desktop file id.
+  // |callback| is called with SUCCESS when the relevant process is started or
+  // LAUNCH_CONTAINER_APPLICATION_FAILED if there was an error somewhere.
+  //
+  // TODO(nverne): Start the VM and Container if not already running.
+  void LaunchContainerApplication(std::string vm_name,
+                                  std::string container_name,
+                                  std::string desktop_file_id,
+                                  LaunchContainerApplicationCallback callback);
+
   // Returns the singleton instance of CrostiniManager.
   static CrostiniManager* GetInstance();
 
@@ -125,6 +139,13 @@ class CrostiniManager {
   void OnStartContainer(
       StartContainerCallback callback,
       base::Optional<vm_tools::concierge::StartContainerResponse> response);
+
+  // Callback for CrostiniManager::LaunchContainerApplication. We don't use
+  // the result of this currently so it doesn't take a callback.
+  void OnLaunchContainerApplication(
+      LaunchContainerApplicationCallback callback,
+      base::Optional<vm_tools::concierge::LaunchContainerApplicationResponse>
+          response);
 
   // Helper for CrostiniManager::CreateDiskImage. Separated so it can be run
   // off the main thread.

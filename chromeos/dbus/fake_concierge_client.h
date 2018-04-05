@@ -44,6 +44,14 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
       DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback)
       override;
 
+  // Fake version of the method that launches an application inside a running
+  // Container. |callback| is called after the method call finishes.
+  void LaunchContainerApplication(
+      const vm_tools::concierge::LaunchContainerApplicationRequest& request,
+      DBusMethodCallback<
+          vm_tools::concierge::LaunchContainerApplicationResponse> callback)
+      override;
+
   // Fake version of the method that waits for the Concierge service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(

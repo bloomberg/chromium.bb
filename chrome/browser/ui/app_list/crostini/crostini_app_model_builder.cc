@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 
 #include "ash/resources/grit/ash_resources.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
 #include "components/crx_file/id_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -28,4 +31,17 @@ void CrostiniAppModelBuilder::BuildModel() {
       kCrostiniTerminalAppName,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_CROSTINI_TERMINAL)));
+
+  chromeos::CrostiniRegistryService* registry_service =
+      chromeos::CrostiniRegistryServiceFactory::GetForProfile(profile());
+  for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
+    std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
+        registration = registry_service->GetRegistration(app_id);
+    DCHECK(registration);
+    // TODO(timloh): Use a real icon and a localized name
+    InsertApp(std::make_unique<CrostiniAppItem>(
+        profile(), GetSyncItem(app_id), app_id, registration->name,
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_LOGO_CROSTINI_TERMINAL)));
+  }
 }

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
 
+#include "base/bind.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 #include "ui/gfx/image/image_skia.h"
@@ -34,12 +38,19 @@ const char* CrostiniAppItem::GetItemType() const {
 }
 
 void CrostiniAppItem::Activate(int event_flags) {
-  // TODO(813699): launch the app if needed e.g. like
-  // chrome/browser/ui/app_list/arc/arc_app_utils.cc
-  // if (!crostini::LaunchApp(profile(), id(), event_flags,
-  //                    GetController()->GetAppListDisplayId())) {
-  //   return;
-  // }
+  chromeos::CrostiniRegistryService* registry_service =
+      chromeos::CrostiniRegistryServiceFactory::GetForProfile(profile());
+  std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
+      registration = registry_service->GetRegistration(id());
+  if (registration) {
+    // TODO(timloh): Store the VM and container names in the registration
+    // TODO(timloh): Do something if launching failed, as otherwise the app
+    // launcher remains open and there's no feedback.
+    crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
+        "termina", "penguin", registration->desktop_file_id,
+        base::BindOnce([](crostini::ConciergeClientResult result) {}));
+    return;
+  }
 
   CrostiniInstallerView::Show(this, profile());
 }

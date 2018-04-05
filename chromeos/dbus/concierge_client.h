@@ -43,6 +43,14 @@ class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::StartContainerResponse>
           callback) = 0;
 
+  // Launches an application inside a running Container.
+  // |callback| is called after the method call finishes.
+  virtual void LaunchContainerApplication(
+      const vm_tools::concierge::LaunchContainerApplicationRequest& request,
+      DBusMethodCallback<
+          vm_tools::concierge::LaunchContainerApplicationResponse>
+          callback) = 0;
+
   // Registers |callback| to run when the Concierge service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.
