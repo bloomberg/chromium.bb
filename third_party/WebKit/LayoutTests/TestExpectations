@@ -3353,6 +3353,11 @@ crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/capti
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/captions2.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/fillrect_gradient.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Failure Pass ]
 
 crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 
