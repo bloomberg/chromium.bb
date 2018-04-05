@@ -48,7 +48,12 @@ void NotificationPlatformBridgeChromeOs::Display(
 void NotificationPlatformBridgeChromeOs::Close(
     Profile* profile,
     const std::string& notification_id) {
-  impl_->Close(profile, notification_id);
+  // TODO(estade): we need |is_incognito| here.
+  const std::string profile_notification_id =
+      ProfileNotification::GetProfileNotificationId(
+          notification_id, NotificationUIManager::GetProfileID(profile));
+
+  impl_->Close(nullptr, profile_notification_id);
 }
 
 void NotificationPlatformBridgeChromeOs::GetDisplayed(
