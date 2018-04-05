@@ -150,7 +150,6 @@ void XRFrameProvider::OnPresentationProviderConnectionError() {
     pending_exclusive_session_resolver_->Reject(exception);
     pending_exclusive_session_resolver_ = nullptr;
   }
-
   presentation_provider_.reset();
   if (vsync_connection_failed_)
     return;
@@ -321,7 +320,7 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
   }
 }
 
-void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer) {
+void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
   DCHECK(layer);
   DCHECK(layer->session() == exclusive_session_);
   DCHECK(presentation_provider_);
@@ -329,6 +328,14 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer) {
   TRACE_EVENT1("gpu", "XRFrameProvider::SubmitWebGLLayer", "frame", frame_id_);
 
   WebGLRenderingContextBase* webgl_context = layer->context();
+
+  if (!was_changed) {
+    // Just tell the device side that there was no submitted frame instead
+    // of executing the implicit end-of-frame submit.
+    frame_transport_->FrameSubmitMissing(presentation_provider_.get(),
+                                         webgl_context->ContextGL(), frame_id_);
+    return;
+  }
 
   frame_transport_->FramePreImage(webgl_context->ContextGL());
 

@@ -66,6 +66,16 @@ void XRFrameTransport::CallPreviousFrameCallback() {
   }
 }
 
+void XRFrameTransport::FrameSubmitMissing(
+    device::mojom::blink::VRPresentationProvider* vr_presentation_provider,
+    gpu::gles2::GLES2Interface* gl,
+    int16_t vr_frame_id) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  gpu::SyncToken sync_token;
+  gl->GenSyncTokenCHROMIUM(sync_token.GetData());
+  vr_presentation_provider->SubmitFrameMissing(vr_frame_id, sync_token);
+}
+
 void XRFrameTransport::FrameSubmit(
     device::mojom::blink::VRPresentationProvider* vr_presentation_provider,
     gpu::gles2::GLES2Interface* gl,

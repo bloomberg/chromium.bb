@@ -61,6 +61,8 @@ class MailboxToSurfaceBridge {
 
   void GenSyncToken(gpu::SyncToken* out_sync_token);
 
+  void WaitSyncToken(const gpu::SyncToken& sync_token);
+
   // Copies a GpuFence from the local context to the GPU process,
   // and issues a server wait for it.
   void WaitForClientGpuFence(gfx::GpuFence*);

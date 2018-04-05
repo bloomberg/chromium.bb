@@ -329,7 +329,10 @@ void XRSession::OnFrame(
     AutoReset<bool> resolving(&resolving_frame_, true);
     callback_collection_.ExecuteCallbacks(this, presentation_frame);
 
-    frame_base_layer->OnFrameEnd();
+    // The session might have ended in the middle of the frame. Only call
+    // OnFrameEnd if it's still valid.
+    if (!ended_)
+      frame_base_layer->OnFrameEnd();
   }
 }
 

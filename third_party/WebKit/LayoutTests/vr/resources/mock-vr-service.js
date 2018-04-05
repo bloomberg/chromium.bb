@@ -43,6 +43,10 @@ class MockVRDisplay {
     return this.presentation_provider_.submit_frame_count_;
   }
 
+  getMissingFrameCount() {
+    return this.presentation_provider_.missing_frame_count_;
+  }
+
   forceActivate(reason) {
     this.displayClient_.onActivate(reason);
   }
@@ -69,12 +73,17 @@ class MockVRPresentationProvider {
     this.binding_ = new mojo.Binding(device.mojom.VRPresentationProvider, this);
     this.pose_ = null;
     this.submit_frame_count_ = 0;
+    this.missing_frame_count_ = 0;
   }
 
   bind(client, request) {
     this.submitFrameClient_ = client;
     this.binding_.close();
     this.binding_.bind(request);
+  }
+
+  submitFrameMissing(frameId, syncToken) {
+    this.missing_frame_count_++;
   }
 
   submitFrame(frameId, mailboxHolder, timeWaited) {

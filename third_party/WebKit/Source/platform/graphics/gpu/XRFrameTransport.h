@@ -53,6 +53,10 @@ class PLATFORM_EXPORT XRFrameTransport final
                    int16_t vr_frame_id,
                    bool needs_copy);
 
+  void FrameSubmitMissing(device::mojom::blink::VRPresentationProvider*,
+                          gpu::gles2::GLES2Interface*,
+                          int16_t vr_frame_id);
+
   virtual void Trace(blink::Visitor*);
 
  private:

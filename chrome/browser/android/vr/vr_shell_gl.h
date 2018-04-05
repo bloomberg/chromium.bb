@@ -175,8 +175,11 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void OnVSync(base::TimeTicks frame_time);
 
+  bool IsSubmitFrameExpected(int16_t frame_index);
+
   // VRPresentationProvider
   void GetVSync(GetVSyncCallback callback) override;
+  void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;
   void SubmitFrame(int16_t frame_index,
                    const gpu::MailboxHolder& mailbox,
                    base::TimeDelta time_waited) override;
