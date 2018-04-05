@@ -46,6 +46,7 @@ enum CookieLoadProblem {
   COOKIE_LOAD_PROBLEM_DECRYPT_FAILED = 0,
   COOKIE_LOAD_PROBLEM_DECRYPT_TIMEOUT = 1,
   COOKIE_LOAD_PROBLEM_NON_CANONICAL = 2,
+  COOKIE_LOAD_PROBLEM_OPEN_DB = 3,
   COOKIE_LOAD_PROBLEM_LAST_ENTRY
 };
 
@@ -318,7 +319,7 @@ class SQLitePersistentCookieStore::Backend
   std::unique_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
 
-  typedef std::list<PendingOperation*> PendingOperationsList;
+  typedef std::list<std::unique_ptr<PendingOperation>> PendingOperationsList;
   PendingOperationsList pending_;
   PendingOperationsList::size_type num_pending_;
   // Guard |cookies_|, |pending_|, |num_pending_|.
@@ -744,7 +745,8 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
                  base::Unretained(this)));
 
   if (!db_->Open(path_)) {
-    NOTREACHED() << "Unable to open cookie DB.";
+    DLOG(ERROR) << "Unable to open cookie DB.";
+    RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_OPEN_DB);
     if (corruption_detected_)
       db_->Raze();
     meta_table_.Reset();
@@ -753,7 +755,8 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   }
 
   if (!EnsureDatabaseVersion() || !InitTable(db_.get())) {
-    NOTREACHED() << "Unable to open cookie DB.";
+    DLOG(ERROR) << "Unable to open cookie DB.";
+    RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_OPEN_DB);
     if (corruption_detected_)
       db_->Raze();
     meta_table_.Reset();
@@ -1228,7 +1231,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   PendingOperationsList::size_type num_pending;
   {
     base::AutoLock locked(lock_);
-    pending_.push_back(po.release());
+    pending_.push_back(std::move(po));
     num_pending = ++num_pending_;
   }
 
@@ -1296,7 +1299,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
   for (PendingOperationsList::iterator it = ops.begin(); it != ops.end();
        ++it) {
     // Free the cookies as we commit them to the database.
-    std::unique_ptr<PendingOperation> po(*it);
+    std::unique_ptr<PendingOperation> po(std::move(*it));
     switch (po->op()) {
       case PendingOperation::COOKIE_ADD:
         add_smt.Reset(true);

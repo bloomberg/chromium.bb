@@ -1222,4 +1222,26 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   EXPECT_EQ("subdomain.gopheriffic.com", get_callback.cookies()[0].Domain());
 };
 
+TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
+  // Test to make sure we don't leak pending operations when initialization
+  // fails really hard. To inject the failure, we put a directory where the
+  // database file ought to be. This test relies on an external leak checker
+  // (e.g. lsan) to actual catch thing.
+  ASSERT_TRUE(
+      base::CreateDirectory(temp_dir_.GetPath().Append(kCookieFilename)));
+  Create(false, false, true /* want current thread to invoke cookie monster */);
+  std::unique_ptr<CookieMonster> cookie_monster =
+      std::make_unique<CookieMonster>(store_.get());
+
+  ResultSavingCookieCallback<bool> set_cookie_callback;
+  cookie_monster->SetCookieWithOptionsAsync(
+      GURL("http://www.example.com/"), "A=B; max-age=3600", CookieOptions(),
+      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+                     base::Unretained(&set_cookie_callback)));
+  set_cookie_callback.WaitUntilDone();
+  EXPECT_TRUE(set_cookie_callback.result());
+
+  // Things should commit once going out of scope.
+}
+
 }  // namespace net
