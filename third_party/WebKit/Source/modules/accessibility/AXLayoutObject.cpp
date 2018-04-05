@@ -566,6 +566,9 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (layout_object_->IsBR())
     return false;
 
+  if (CanSetFocusAttribute())
+    return false;
+
   if (IsLink())
     return false;
 
@@ -660,27 +663,12 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (RoleValue() == kTimeRole)
     return false;
 
-  if (RoleValue() == kProgressIndicatorRole) {
+  if (RoleValue() == kProgressIndicatorRole)
     return false;
-  }
 
   // if this element has aria attributes on it, it should not be ignored.
   if (SupportsARIAAttributes())
     return false;
-
-  // <span> tags are inline tags and not meant to convey information if they
-  // have no other aria information on them. If we don't ignore them, they may
-  // emit signals expected to come from their parent. In addition, because
-  // included spans are GroupRole objects, and GroupRole objects are often
-  // containers with meaningful information, the inclusion of a span can have
-  // the side effect of causing the immediate parent accessible to be ignored.
-  // This is especially problematic for platforms which have distinct roles for
-  // textual block elements.
-  if (IsHTMLSpanElement(node)) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
-    return true;
-  }
 
   if (IsImage())
     return false;
@@ -714,10 +702,14 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
       !GetAttribute(altAttr).IsEmpty() || !GetAttribute(titleAttr).IsEmpty())
     return false;
 
-  // Don't ignore generic focusable elements like <div tabindex=0>
-  // unless they're completely empty, with no children.
-  if (IsGenericFocusableElement() && node->hasChildren())
-    return false;
+  // <span> tags are inline tags and not meant to convey information if they
+  // have no other ARIA information on them. If we don't ignore them, they may
+  // emit signals expected to come from their parent.
+  if (IsHTMLSpanElement(node)) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
+    return true;
+  }
 
   // Positioned elements and scrollable containers are important for
   // determining bounding boxes.

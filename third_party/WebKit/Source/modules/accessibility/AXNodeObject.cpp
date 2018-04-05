@@ -606,41 +606,6 @@ bool AXNodeObject::IsTextControl() const {
   }
 }
 
-bool AXNodeObject::IsGenericFocusableElement() const {
-  if (!CanSetFocusAttribute())
-    return false;
-
-  // If it's a control, it's not generic.
-  if (IsControl())
-    return false;
-
-  // If it has an aria role, it's not generic.
-  if (aria_role_ != kUnknownRole)
-    return false;
-
-  // If the content editable attribute is set on this element, that's the reason
-  // it's focusable, and existing logic should handle this case already - so
-  // it's not a generic focusable element.
-
-  if (HasContentEditableAttributeSet())
-    return false;
-
-  // The web area and body element are both focusable, but existing logic
-  // handles these cases already, so we don't need to include them here.
-  if (RoleValue() == kWebAreaRole)
-    return false;
-  if (IsHTMLBodyElement(GetNode()))
-    return false;
-
-  // An SVG root is focusable by default, but it's probably not interactive, so
-  // don't include it. It can still be made accessible by giving it an ARIA
-  // role.
-  if (RoleValue() == kSVGRootRole)
-    return false;
-
-  return true;
-}
-
 AXObject* AXNodeObject::MenuButtonForMenu() const {
   Element* menu_item = MenuItemElementForMenu();
 
