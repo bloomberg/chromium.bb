@@ -1320,6 +1320,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/VrFirstRunActivity.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrIntentUtils.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrModalPresenter.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrPopupWindow.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrToast.java",
