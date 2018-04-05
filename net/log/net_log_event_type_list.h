@@ -3096,50 +3096,6 @@ EVENT_TYPE(DATA_REDUCTION_PROXY_FALLBACK)
 //  }
 EVENT_TYPE(DATA_REDUCTION_PROXY_CONFIG_REQUEST)
 
-// -----------------------------------------------------------------------------
-// Safe Browsing related events
-// -----------------------------------------------------------------------------
-
-// The start/end of an async URL check by Safe Browsing. Will only show up if
-// it can't be classified as "safe" synchronously.
-//
-// The BEGIN phase contains the following parameters:
-//  {
-//    "url": <The URL being checked>,
-//  }
-//
-// The END phase contains the following parameters:
-//  {
-//    "result": <"safe", "unsafe", or "request_canceled">
-//  }
-EVENT_TYPE(SAFE_BROWSING_CHECKING_URL)
-
-// The start/end of some portion of the SAFE_BROWSING_CHECKING_URL during which
-// the request is delayed due to that check.
-//
-// The BEGIN phase contains the following parameters:
-//  {
-//    "url": <The URL being checked>,
-//    "defer_reason" : < "at_start", "at_response", "redirect",
-//                       "resumed_redirect", "unchecked_redirect">
-//  }
-EVENT_TYPE(SAFE_BROWSING_DEFERRED)
-
-// The start/end of a Safe Browsing ping being sent.
-//
-// The BEGIN phase contains the following parameters:
-//  {
-//    "url": <The URL the ping is going to, which identifies the type of ping
-//            that is being sent (eg: ThreatReport, SafeBrowsingHit)>
-//    "data": <The base64 encoding of the payload sent with the ping>
-//
-// The END phase contains the following parameters:
-//  {
-//    "status": <The integer status of the report transmission. Corresponds to
-//               URLRequestStatus::Status>
-//    "error": <The error code returned by the server, 0 indicating success>
-EVENT_TYPE(SAFE_BROWSING_PING)
-
 // Marks start of UploadDataStream that is logged on initialization.
 // The END phase contains the following parameters:
 // {

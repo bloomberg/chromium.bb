@@ -18,7 +18,6 @@
 #include "components/safe_browsing/db/hit_report.h"
 #include "components/safe_browsing/db/util.h"
 #include "content/public/browser/permission_type.h"
-#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -86,8 +85,6 @@ class BasePingManager : public net::URLFetcherDelegate {
   // Track outstanding SafeBrowsing report fetchers for clean up.
   // We add both "hit" and "detail" fetchers in this set.
   Reports safebrowsing_reports_;
-
-  net::NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(BasePingManager);
 };
