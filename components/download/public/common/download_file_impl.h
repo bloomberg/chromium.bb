@@ -103,7 +103,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     // Registers the callback that will be called when data is ready.
     void RegisterDataReadyCallback(
         const mojo::SimpleWatcher::ReadyCallback& callback);
-    // Clears the callback that is registed when data is ready.
+    // Clears the callback that is registered when data is ready.
     void ClearDataReadyCallback();
 
     // Gets the status of the input stream when the stream completes.
