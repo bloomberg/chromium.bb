@@ -191,10 +191,14 @@ class ProfileSyncServiceTest : public ::testing::Test {
     std::string account_id =
         account_tracker()->SeedAccountInfo(kGaiaId, kEmail);
     auth_service()->UpdateCredentials(account_id, "oauth2_login_token");
+#if defined(OS_CHROMEOS)
+    signin_manager()->SignIn(account_id);
+#else
+    signin_manager()->SignIn(kGaiaId, kEmail, "password");
+#endif
   }
 
   void CreateService(ProfileSyncService::StartBehavior behavior) {
-    signin_manager()->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
     component_factory_ = profile_sync_service_bundle_.component_factory();
     ProfileSyncServiceBundle::SyncClientBuilder builder(
         &profile_sync_service_bundle_);
@@ -318,9 +322,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
 #if defined(OS_CHROMEOS)
-  SigninManagerBase* signin_manager()
+  FakeSigninManagerBase* signin_manager()
 #else
-  SigninManager* signin_manager()
+  FakeSigninManager* signin_manager()
 #endif
   // Opening brace is outside of macro to avoid confusing lint.
   {

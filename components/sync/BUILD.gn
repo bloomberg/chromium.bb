@@ -561,6 +561,7 @@ jumbo_static_library("sync") {
     "//components/version_info",
     "//crypto",
     "//google_apis",
+    "//services/identity/public/cpp",
     "//sql",
     "//third_party/cacheinvalidation",
     "//third_party/crc32c",

@@ -29,6 +29,7 @@
 #include "ios/chrome/browser/services/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
@@ -105,6 +106,7 @@ IOSChromeProfileSyncServiceFactory::IOSChromeProfileSyncServiceFactory()
   DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(ios::TemplateURLServiceFactory::GetInstance());
   DependsOn(ios::WebDataServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
   DependsOn(IOSChromePasswordStoreFactory::GetInstance());
   DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
@@ -121,11 +123,6 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
-  SigninManagerBase* signin =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state);
-  SigninClient* signin_client =
-      SigninClientFactory::GetForBrowserState(browser_state);
-
   // Always create the GCMProfileService instance such that we can listen to
   // the profile notifications and purge the GCM store when the profile is
   // being signed out.
@@ -136,9 +133,12 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
   ProfileSyncService::InitParams init_params;
-  init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(signin);
+  init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
+      IdentityManagerFactory::GetForBrowserState(browser_state),
+      ios::SigninManagerFactory::GetForBrowserState(browser_state));
   init_params.signin_scoped_device_id_callback = base::BindRepeating(
-      &SigninClient::GetSigninScopedDeviceId, base::Unretained(signin_client));
+      &SigninClient::GetSigninScopedDeviceId,
+      base::Unretained(SigninClientFactory::GetForBrowserState(browser_state)));
   init_params.oauth2_token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;

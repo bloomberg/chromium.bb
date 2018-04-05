@@ -19,4 +19,5 @@ include_rules = [
   "+google/cacheinvalidation",
   "+net",
   "+policy",
+  "+services/identity/public/cpp",
 ]

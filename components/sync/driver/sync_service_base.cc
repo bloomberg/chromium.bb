@@ -85,7 +85,7 @@ bool SyncServiceBase::HasObserver(const SyncServiceObserver* observer) const {
 
 AccountInfo SyncServiceBase::GetAuthenticatedAccountInfo() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return signin_ ? signin_->GetOriginal()->GetAuthenticatedAccountInfo()
+  return signin_ ? signin_->GetSigninManager()->GetAuthenticatedAccountInfo()
                  : AccountInfo();
 }
 

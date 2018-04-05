@@ -21,6 +21,7 @@
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace history {
 class HistoryService;
@@ -132,6 +133,8 @@ class ProfileSyncServiceBundle {
 
   FakeSigninManagerType* signin_manager() { return &signin_manager_; }
 
+  identity::IdentityManager* identity_manager() { return &identity_manager_; }
+
   AccountTrackerService* account_tracker() { return &account_tracker_; }
 
   syncer::SyncApiComponentFactoryMock* component_factory() {
@@ -160,6 +163,7 @@ class ProfileSyncServiceBundle {
   AccountTrackerService account_tracker_;
   FakeSigninManagerType signin_manager_;
   FakeProfileOAuth2TokenService auth_service_;
+  identity::IdentityManager identity_manager_;
   syncer::SyncApiComponentFactoryMock component_factory_;
   testing::NiceMock<sync_sessions::MockSyncSessionsClient>
       sync_sessions_client_;
