@@ -35,6 +35,7 @@ video::-webkit-media-controls {
   justify-content: flex-end;
   align-items: center;
   font-size: 14px;
+  will-change: transform;
 }
 
 audio::-webkit-media-controls-enclosure,
