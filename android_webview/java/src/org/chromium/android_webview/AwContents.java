@@ -864,6 +864,7 @@ public class AwContents implements SmartClipProvider {
             WindowAndroid windowAndroid) {
         mContentViewCore = ContentViewCore.create(mContext, PRODUCT_VERSION, webContents,
                 viewDelegate, internalDispatcher, windowAndroid);
+        mContentViewCore.setHideKeyboardOnBlur(false);
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
         controller.setActionModeCallback(
                 new AwActionModeCallback(mContext, this, controller.getActionModeCallbackHelper()));
@@ -3480,7 +3481,7 @@ public class AwContents implements SmartClipProvider {
         public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
             if (isDestroyedOrNoOperation(NO_WARN)) return;
             mContainerViewFocused = focused;
-            mContentViewCore.onFocusChanged(focused, false /* hideKeyboardOnBlur */);
+            mContentViewCore.onViewFocusChanged(focused);
         }
 
         @Override

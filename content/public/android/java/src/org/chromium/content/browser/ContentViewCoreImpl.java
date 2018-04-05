@@ -35,7 +35,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.device.gamepad.GamepadList;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
@@ -73,14 +72,19 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // A ViewAndroidDelegate that delegates to the current container view.
     private ViewAndroidDelegate mViewAndroidDelegate;
 
-    // TODO(mthiesse): Clean up the focus code here, this boolean doesn't actually reflect view
-    // focus. It reflects a combination of both view focus and resumed state.
+    // Whether the container view has view-level focus.
     private Boolean mHasViewFocus;
 
-    // This is used in place of window focus, as we can't actually use window focus due to issues
-    // where content expects to be focused while a popup steals window focus.
+    // This is used in place of window focus on the container view, as we can't actually use window
+    // focus due to issues where content expects to be focused while a popup steals window focus.
     // See https://crbug.com/686232 for more context.
     private boolean mPaused;
+
+    // Whether we consider this CVC to have input focus. This is computed through mHasViewFocus and
+    // mPaused. See the comments on mPaused for how this doesn't exactly match Android's notion of
+    // input focus and why we need to do this.
+    private Boolean mHasInputFocus;
+    private boolean mHideKeyboardOnBlur;
 
     // The list of observers that are notified when ContentViewCore changes its WindowAndroid.
     private final ObserverList<WindowAndroidChangedObserver> mWindowAndroidChangedObservers =
@@ -389,14 +393,16 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     @Override
     public void onPause() {
+        if (mPaused) return;
         mPaused = true;
-        onFocusChanged(false, true);
+        onFocusChanged();
     }
 
     @Override
     public void onResume() {
+        if (!mPaused) return;
         mPaused = false;
-        onFocusChanged(ViewUtils.hasFocus(getContainerView()), true);
+        onFocusChanged();
     }
 
     @Override
@@ -408,12 +414,20 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     }
 
     @Override
-    public void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {
+    public void onViewFocusChanged(boolean gainFocus) {
         if (mHasViewFocus != null && mHasViewFocus == gainFocus) return;
-        // TODO(mthiesse): Clean this up. mHasViewFocus isn't view focus really, it's a combination
-        // of view focus and resumed state.
-        if (gainFocus && mPaused) return;
         mHasViewFocus = gainFocus;
+        onFocusChanged();
+    }
+
+    private void onFocusChanged() {
+        // Wait for view focus to be set before propagating focus changes.
+        if (mHasViewFocus == null) return;
+
+        // See the comments on mPaused for why we use it to compute input focus.
+        boolean hasInputFocus = mHasViewFocus && !mPaused;
+        if (mHasInputFocus != null && mHasInputFocus == hasInputFocus) return;
+        mHasInputFocus = hasInputFocus;
 
         if (mWebContents == null) {
             // CVC is on its way to destruction. The rest needs not running as all the states
@@ -422,12 +436,12 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             return;
         }
 
-        getImeAdapter().onViewFocusChanged(gainFocus, hideKeyboardOnBlur);
+        getImeAdapter().onViewFocusChanged(mHasInputFocus, mHideKeyboardOnBlur);
         getJoystick().setScrollEnabled(
-                gainFocus && !getSelectionPopupController().isFocusedNodeEditable());
+                mHasInputFocus && !getSelectionPopupController().isFocusedNodeEditable());
 
         SelectionPopupControllerImpl controller = getSelectionPopupController();
-        if (gainFocus) {
+        if (mHasInputFocus) {
             controller.restoreSelectionPopupsIfNecessary();
         } else {
             getImeAdapter().cancelRequestToScrollFocusedEditableNodeIntoView();
@@ -442,7 +456,12 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
                 controller.clearSelection();
             }
         }
-        if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
+        if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, mHasInputFocus);
+    }
+
+    @Override
+    public void setHideKeyboardOnBlur(boolean hideKeyboardOnBlur) {
+        mHideKeyboardOnBlur = hideKeyboardOnBlur;
     }
 
     @Override

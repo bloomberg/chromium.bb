@@ -86,7 +86,10 @@ public class TestContentViewCore implements ContentViewCore {
     public void onResume() {}
 
     @Override
-    public void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {}
+    public void onViewFocusChanged(boolean gainFocus) {}
+
+    @Override
+    public void setHideKeyboardOnBlur(boolean hideKeyboardOnBlur) {}
 
     @Override
     public void scrollBy(float dxPix, float dyPix) {}
