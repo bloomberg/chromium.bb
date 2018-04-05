@@ -171,7 +171,8 @@ class UkmServiceTest : public testing::Test {
 }  // namespace
 
 TEST_F(UkmServiceTest, EnableDisableSchedule) {
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   EXPECT_FALSE(task_runner_->HasPendingTask());
   service.Initialize();
   EXPECT_FALSE(task_runner_->HasPendingTask());
@@ -188,7 +189,8 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
                                 {{"WhitelistEntries", "PageLoad"}});
 
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -214,7 +216,8 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
 }
 
 TEST_F(UkmServiceTest, SourceSerialization) {
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -245,7 +248,8 @@ TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
   ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
                                 {{"WhitelistEntries", "foo,bar"}});
 
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -313,7 +317,8 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
   ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
                                 {{"WhitelistEntries", "PageLoad"}});
 
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   ASSERT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -336,7 +341,8 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
                                 {{"WhitelistEntries", "PageLoad"}});
 
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
 
   metrics::TestMetricsProvider* provider = new metrics::TestMetricsProvider();
@@ -371,7 +377,8 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
 }
 
 TEST_F(UkmServiceTest, LogsRotation) {
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -416,7 +423,8 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
                                 {{"WhitelistEntries", "PageLoad"}});
 
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -477,7 +485,8 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
         {{"RecordInitialUrl", should_record_initial_url ? "true" : "false"}});
 
     ClearPrefs();
-    UkmService service(&prefs_, &client_);
+    UkmService service(&prefs_, &client_,
+                       true /* restrict_to_whitelisted_entries */);
     TestRecordingHelper recorder(&service);
     EXPECT_EQ(GetPersistedLogCount(), 0);
     service.Initialize();
@@ -518,7 +527,8 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
          {"WhitelistEntries", "FakeEntry"}});
 
     ClearPrefs();
-    UkmService service(&prefs_, &client_);
+    UkmService service(&prefs_, &client_,
+                       true /* restrict_to_whitelisted_entries */);
     TestRecordingHelper recorder(&service);
     EXPECT_EQ(GetPersistedLogCount(), 0);
     service.Initialize();
@@ -560,7 +570,8 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
 
 TEST_F(UkmServiceTest, RecordSessionId) {
   ClearPrefs();
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -586,7 +597,8 @@ TEST_F(UkmServiceTest, SourceSize) {
                                 {{"MaxSources", "2"}});
 
   ClearPrefs();
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -611,7 +623,8 @@ TEST_F(UkmServiceTest, SourceSize) {
 }
 
 TEST_F(UkmServiceTest, PurgeMidUpload) {
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -638,7 +651,8 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
                                 {{"WhitelistEntries", "EntryA,EntryB"}});
 
   ClearPrefs();
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -684,7 +698,8 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
 }
 
 TEST_F(UkmServiceTest, SourceURLLength) {
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -720,7 +735,8 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
           restrict_to_whitelisted_source_ids ? "true" : "false"}});
 
     ClearPrefs();
-    UkmService service(&prefs_, &client_);
+    UkmService service(&prefs_, &client_,
+                       true /* restrict_to_whitelisted_entries */);
     TestRecordingHelper recorder(&service);
     EXPECT_EQ(0, GetPersistedLogCount());
     service.Initialize();
@@ -838,7 +854,8 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
 
   for (const auto& test : test_cases) {
     ClearPrefs();
-    UkmService service(&prefs_, &client_);
+    UkmService service(&prefs_, &client_,
+                       true /* restrict_to_whitelisted_entries */);
     TestRecordingHelper recorder(&service);
 
     ASSERT_EQ(GetPersistedLogCount(), 0);
@@ -923,7 +940,8 @@ TEST_F(UkmServiceTest, NonWhitelistedCarryoverUrls) {
 
   for (const auto& test : test_cases) {
     ClearPrefs();
-    UkmService service(&prefs_, &client_);
+    UkmService service(&prefs_, &client_,
+                       true /* restrict_to_whitelisted_entries */);
     TestRecordingHelper recorder(&service);
 
     EXPECT_EQ(GetPersistedLogCount(), 0);
@@ -1014,7 +1032,8 @@ TEST_F(UkmServiceTest, SupportedSchemes) {
 
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE, {});
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   service.SetIsWebstoreExtensionCallback(
       base::BindRepeating(&TestIsWebstoreExtension));
@@ -1071,7 +1090,8 @@ TEST_F(UkmServiceTest, SupportedSchemesNoExtensions) {
 
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE, {});
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
 
   EXPECT_EQ(GetPersistedLogCount(), 0);
@@ -1108,7 +1128,8 @@ TEST_F(UkmServiceTest, SupportedSchemesNoExtensions) {
 }
 
 TEST_F(UkmServiceTest, SanitizeUrlAuthParams) {
-  UkmService service(&prefs_, &client_);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -1146,7 +1167,8 @@ TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
   for (const auto& test : test_cases) {
     ClearPrefs();
 
-    UkmService service(&prefs_, &client_);
+    UkmService service(&prefs_, &client_,
+                       true /* restrict_to_whitelisted_entries */);
     TestRecordingHelper recorder(&service);
     service.SetIsWebstoreExtensionCallback(
         base::BindRepeating(&TestIsWebstoreExtension));
