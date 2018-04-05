@@ -17,20 +17,9 @@ namespace {
 
 class ImageDataTest : public testing::Test {};
 
-// Under asan_clang_phone, the test crashes after the memory allocation
-// is not successful. It is probably related to the value of
-// allocator_may_return_null on trybots, which in this case causes ASAN
-// to terminate the process instead of returning null.
-// crbug.com/704948
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_CreateImageDataTooBig DISABLED_CreateImageDataTooBig
-#else
-#define MAYBE_CreateImageDataTooBig CreateImageDataTooBig
-#endif
-
 // This test passes if it does not crash. If the required memory is not
 // allocated to the ImageData, then an exception must raise.
-TEST_F(ImageDataTest, MAYBE_CreateImageDataTooBig) {
+TEST_F(ImageDataTest, CreateImageDataTooBig) {
   DummyExceptionStateForTesting exception_state;
   ImageData* too_big_image_data =
       ImageData::Create(32767, 32767, exception_state);
@@ -529,6 +518,5 @@ TEST_F(ImageDataTest, ImageDataTooBigToAllocateDoesNotCrash) {
   EXPECT_EQ(image_data, nullptr);
 }
 
-#undef MAYBE_CreateImageDataTooBig
 }  // namespace
 }  // namespace blink
