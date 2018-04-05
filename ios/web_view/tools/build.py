@@ -19,7 +19,7 @@ def target_dir_name(build_config, target_device):
     build_config: A string describing the build configuration. Ex: 'Debug'
     target_device: A string describing the target device. Ex: 'simulator'
   """
-  return '%s-iphone%s' % (build_config, target_device)
+  return '%s-%s' % (build_config, target_device)
 
 def build(build_config, target_device, extra_gn_options, extra_ninja_options):
   """Generates and builds ChromeWebView.framework.
@@ -36,7 +36,7 @@ def build(build_config, target_device, extra_gn_options, extra_ninja_options):
     The return code of generating ninja if it is non-zero, else the return code
       of the ninja build command.
   """
-  if target_device == 'os':
+  if target_device == 'iphoneos':
     target_cpu = 'arm'
     additional_cpu = 'arm64'
   else:
@@ -133,7 +133,7 @@ def package_framework(build_config,
   return 0
 
 def package_all_frameworks(out_dir, output_name, extra_gn_options,
-                           extra_ninja_options):
+                           build_configs, target_devices, extra_ninja_options):
   """Builds ChromeWebView.framework.
 
   Builds Release and Debug versions of ChromeWebView.framework for both
@@ -143,6 +143,8 @@ def package_all_frameworks(out_dir, output_name, extra_gn_options,
     out_dir: A string to the path which all build products will be copied.
     extra_gn_options: A string of gn args (space separated key=value items) to
       be appended to the gn gen command.
+    build_configs: A list of configs to build.
+    target_devices: A list of devices to target.
     extra_ninja_options: A string of gn options to be appended to the ninja
       command.
 
@@ -154,11 +156,8 @@ def package_all_frameworks(out_dir, output_name, extra_gn_options,
   # Package all builds in the output directory
   os.makedirs(out_dir)
 
-  configurations = [('Debug', 'simulator'),
-                    ('Debug', 'os'),
-                    ('Release', 'simulator'),
-                    ('Release', 'os')]
-  for build_config, target_device in configurations:
+  configs_and_devices = [(a,b) for a in build_configs for b in target_devices]
+  for build_config, target_device in configs_and_devices:
     if package_framework(build_config,
                          target_device,
                          out_dir,
@@ -192,6 +191,14 @@ def main():
                       help='Combines Cronet and ChromeWebView as 1 framework.')
   parser.add_argument('--enable_sync', action='store_true',
                       help='Enables public API for ChromeSync.')
+  build_configs = ['Debug', 'Release']
+  target_devices = ['iphonesimulator', 'iphoneos']
+  parser.add_argument('--build_configs', nargs='+', default=build_configs,
+                      choices=build_configs,
+                      help='Specify which configs to build.')
+  parser.add_argument('--target_devices', nargs='+', default=target_devices,
+                      choices=target_devices,
+                      help='Specify which devices to target.')
 
   options, extra_options = parser.parse_known_args()
   print 'Options:', options
@@ -222,6 +229,8 @@ def main():
   extra_gn_options += 'ios_web_view_output_name="%s" ' % output_name
 
   return package_all_frameworks(out_dir, output_name, extra_gn_options,
+                                set(options.build_configs),
+                                set(options.target_devices),
                                 options.ninja_args)
 
 if __name__ == '__main__':
