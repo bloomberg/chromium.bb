@@ -10,12 +10,14 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -100,8 +102,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ActiveTab) {
 }
 
 // Tests the behavior of activeTab and its relation to an extension's ability to
-// xhr file urls.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, XHRFileURLs) {
+// xhr file urls and inject scripts in file frames.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ExtensionTestMessageListener background_page_ready("ready",
@@ -122,6 +124,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, XHRFileURLs) {
       req.onload = function() {
         if (req.responseText === 'Hello!')
           window.domAutomationController.send('true');
+
+        // Even for a successful request, the status code might be 0. Ensure
+        // that onloadend is not subsequently called if the request is
+        // successful.
+        req.onloadend = null;
       };
 
       // We track 'onloadend' to detect failures instead of 'onerror', since for
@@ -145,29 +152,90 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, XHRFileURLs) {
     return result == "true";
   };
 
+  auto can_script_tab = [this, &extension_id](int tab_id) {
+    constexpr char script[] = R"(
+      var tabID = %d;
+      chrome.tabs.executeScript(
+          tabID, {code: 'console.log("injected");'}, function() {
+            const expectedError = 'Cannot access contents of the page. ' +
+                'Extension manifest must request permission to access the ' +
+                'respective host.';
+
+            if (chrome.runtime.lastError &&
+                expectedError != chrome.runtime.lastError.message) {
+              window.domAutomationController.send(
+                  'unexpected error: ' + chrome.runtime.lastError.message);
+            } else {
+              window.domAutomationController.send(
+                  chrome.runtime.lastError ? 'false' : 'true');
+            }
+          });
+    )";
+
+    std::string result = ExecuteScriptInBackgroundPage(
+        extension_id, base::StringPrintf(script, tab_id));
+    EXPECT_TRUE(result == "true" || result == "false") << result;
+    return result == "true";
+  };
+
+  auto get_active_tab_id = [this]() {
+    SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    if (!session_tab_helper) {
+      ADD_FAILURE();
+      return extension_misc::kUnknownTabId;
+    }
+    return session_tab_helper->session_id().id();
+  };
+
+  // Navigate to two file urls (the extension's manifest.json and background.js
+  // in this case).
+  GURL file_url_1 =
+      net::FilePathToFileURL(extension->path().AppendASCII("manifest.json"));
+  ui_test_utils::NavigateToURL(browser(), file_url_1);
+
+  // Assigned to |inactive_tab_id| since we open another foreground tab
+  // subsequently.
+  int inactive_tab_id = get_active_tab_id();
+  EXPECT_NE(extension_misc::kUnknownTabId, inactive_tab_id);
+
+  GURL file_url_2 =
+      net::FilePathToFileURL(extension->path().AppendASCII("background.js"));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), file_url_2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  int active_tab_id = get_active_tab_id();
+  EXPECT_NE(extension_misc::kUnknownTabId, active_tab_id);
+
+  EXPECT_NE(inactive_tab_id, active_tab_id);
+
   // By default the extension should have file access enabled. However, since it
   // does not have host permissions to the localhost on the file scheme, it
-  // should not be able to xhr file urls.
+  // should not be able to xhr file urls. For the same reason, it should not be
+  // able to execute script in the two tabs.
   EXPECT_TRUE(util::AllowFileAccess(extension_id, profile()));
   EXPECT_FALSE(can_xhr_file_urls());
-
-  // Navigate to a file url (the extension's manifest.json in this case).
-  GURL manifest_file_url =
-      net::FilePathToFileURL(extension->path().AppendASCII("manifest.json"));
-  ui_test_utils::NavigateToURL(browser(), manifest_file_url);
+  EXPECT_FALSE(can_script_tab(active_tab_id));
+  EXPECT_FALSE(can_script_tab(inactive_tab_id));
 
   // First don't grant the tab permission. Verify that the extension can't xhr
-  // file urls.
+  // file urls and can't script the two tabs.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ExtensionActionRunner::GetForWebContents(web_contents)
       ->RunAction(extension, false /*grant_tab_permissions*/);
   EXPECT_FALSE(can_xhr_file_urls());
+  EXPECT_FALSE(can_script_tab(active_tab_id));
+  EXPECT_FALSE(can_script_tab(inactive_tab_id));
 
-  // Now grant the tab permission. Ensure the extension can now xhr file urls.
+  // Now grant the tab permission. Ensure the extension can now xhr file urls
+  // and script the active tab. It should still not be able to script the
+  // background tab.
   ExtensionActionRunner::GetForWebContents(web_contents)
       ->RunAction(extension, true /*grant_tab_permissions*/);
   EXPECT_TRUE(can_xhr_file_urls());
+  EXPECT_TRUE(can_script_tab(active_tab_id));
+  EXPECT_FALSE(can_script_tab(inactive_tab_id));
 
   // Revoke extension's access to file urls. This will cause the extension to
   // reload, invalidating the |extension| pointer. Re-initialize the |extension|
@@ -183,10 +251,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, XHRFileURLs) {
   EXPECT_TRUE(background_page_ready.WaitUntilSatisfied());
 
   // Grant the tab permission for the active url to the extension. Ensure it
-  // still can't xhr file urls (since it does not have file access).
+  // still can't xhr file urls and script the active tab (since it does not
+  // have file access).
   ExtensionActionRunner::GetForWebContents(web_contents)
       ->RunAction(extension, true /*grant_tab_permissions*/);
   EXPECT_FALSE(can_xhr_file_urls());
+  EXPECT_FALSE(can_script_tab(active_tab_id));
+  EXPECT_FALSE(can_script_tab(inactive_tab_id));
 }
 
 }  // namespace

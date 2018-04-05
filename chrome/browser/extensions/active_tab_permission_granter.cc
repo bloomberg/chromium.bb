@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -116,7 +117,14 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   if (should_grant_active_tab &&
       (permissions_data->HasWithheldImpliedAllHosts() ||
        permissions_data->HasAPIPermission(APIPermission::kActiveTab))) {
-    new_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
+    // Gate activeTab for file urls on extensions having explicit access to file
+    // urls.
+    int valid_schemes = UserScript::ValidUserScriptSchemes();
+    if (!util::AllowFileAccess(extension->id(),
+                               web_contents()->GetBrowserContext())) {
+      valid_schemes &= ~URLPattern::SCHEME_FILE;
+    }
+    new_hosts.AddOrigin(valid_schemes,
                         web_contents()->GetVisibleURL().GetOrigin());
     new_apis.insert(APIPermission::kTab);
   }
