@@ -89,7 +89,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return true when JPEG encode is supported.
   static bool IsJpegEncodeSupported();
 
-  // Create |num_surfaces| backing surfaces in driver for VASurfaces of
+  // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size|. Returns true when successful, with the
   // created IDs in |va_surfaces| to be managed and later wrapped in
   // VASurfaces.
@@ -102,7 +102,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                               size_t num_surfaces,
                               std::vector<VASurfaceID>* va_surfaces);
 
-  // Free all memory allocated in CreateSurfaces.
+  // Creates a VA Context associated with the set of |va_surfaces| of |size|.
+  bool CreateContext(unsigned int va_format,
+                     const gfx::Size& size,
+                     const std::vector<VASurfaceID>& va_surfaces);
+
+  // Frees all memory allocated in CreateSurfaces.
   virtual void DestroySurfaces();
 
   // Create a VASurface for |pixmap|. The ownership of the surface is
