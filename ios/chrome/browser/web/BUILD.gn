@@ -121,6 +121,7 @@ js_compile_bundle("chrome_bundle_main_frame") {
   sources = [
     "//components/autofill/ios/browser/resources/autofill_controller.js",
     "//components/autofill/ios/fill/resources/fill.js",
+    "//ios/chrome/browser/passwords/resources/password_controller.js",
     "resources/chrome_bundle_main_frame.js",
     "resources/print.js",
   ]

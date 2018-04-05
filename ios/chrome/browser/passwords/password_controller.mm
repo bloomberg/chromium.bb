@@ -268,7 +268,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   std::unique_ptr<PasswordManagerDriver> passwordManagerDriver_;
   std::unique_ptr<CredentialManager> credentialManager_;
 
-  __weak JsPasswordManager* passwordJsManager_;
+  JsPasswordManager* passwordJsManager_;
 
   AccountSelectFillData fillData_;
 
@@ -327,12 +327,11 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     passwordManager_.reset(new PasswordManager(passwordManagerClient_.get()));
     passwordManagerDriver_.reset(new IOSChromePasswordManagerDriver(self));
 
-    passwordJsManager_ = base::mac::ObjCCastStrict<JsPasswordManager>(
-        [webState_->GetJSInjectionReceiver()
-            instanceOfClass:[JsPasswordManager class]]);
     webStateObserverBridge_ =
         std::make_unique<web::WebStateObserverBridge>(self);
     webState_->AddObserver(webStateObserverBridge_.get());
+    passwordJsManager_ = [[JsPasswordManager alloc]
+        initWithReceiver:webState_->GetJSInjectionReceiver()];
     sentRequestToStore_ = NO;
 
     if (base::FeatureList::IsEnabled(features::kCredentialManager)) {

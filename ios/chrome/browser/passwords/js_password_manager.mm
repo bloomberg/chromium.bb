@@ -22,32 +22,39 @@ NSString* JSONEscape(NSString* JSONString) {
 }
 }  // namespace
 
-@interface JsPasswordManager ()
-// Injects a script that does two things:
-// 1. Injects password controller JavaScript in the page.
-// 2. Extracts the _submitted_ password form data from the DOM on the page.
-// The result is returned in |completionHandler|.
-// |completionHandler| cannot be nil.
-- (void)evaluateExtraScript:(NSString*)script
-          completionHandler:(void (^)(NSString*))completionHandler;
-@end
+@implementation JsPasswordManager {
+  // The injection receiver used to evaluate JavaScript.
+  CRWJSInjectionReceiver* _receiver;
+}
 
-@implementation JsPasswordManager
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
+  DCHECK(receiver);
+  self = [super init];
+  if (self) {
+    _receiver = receiver;
+  }
+  return self;
+}
 
 - (void)findPasswordFormsWithCompletionHandler:
     (void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
-  [self evaluateExtraScript:@"__gCrWeb.findPasswordForms()"
-          completionHandler:completionHandler];
+  [_receiver executeJavaScript:@"__gCrWeb.passwords.findPasswordForms()"
+             completionHandler:^(id result, NSError*) {
+               completionHandler(base::mac::ObjCCastStrict<NSString>(result));
+             }];
 }
 
 - (void)extractForm:(NSString*)formName
       completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
-  NSString* extra =
-      [NSString stringWithFormat:@"__gCrWeb.getPasswordFormDataAsString(%@)",
-                                 JSONEscape(formName)];
-  [self evaluateExtraScript:extra completionHandler:completionHandler];
+  NSString* extra = [NSString
+      stringWithFormat:@"__gCrWeb.passwords.getPasswordFormDataAsString(%@)",
+                       JSONEscape(formName)];
+  [_receiver executeJavaScript:extra
+             completionHandler:^(id result, NSError*) {
+               completionHandler(base::mac::ObjCCastStrict<NSString>(result));
+             }];
 }
 
 - (void)fillPasswordForm:(NSString*)JSONString
@@ -56,30 +63,13 @@ NSString* JSONEscape(NSString* JSONString) {
        completionHandler:(void (^)(BOOL))completionHandler {
   DCHECK(completionHandler);
   NSString* script = [NSString
-      stringWithFormat:@"__gCrWeb.fillPasswordForm(%@, %@, %@)", JSONString,
-                       JSONEscape(username), JSONEscape(password)];
-  [self executeJavaScript:script completionHandler:^(id result, NSError*) {
-    completionHandler([result isEqual:@YES]);
-  }];
+      stringWithFormat:@"__gCrWeb.passwords.fillPasswordForm(%@, %@, %@)",
+                       JSONString, JSONEscape(username), JSONEscape(password)];
+  [_receiver executeJavaScript:script
+             completionHandler:^(id result, NSError*) {
+               completionHandler([result isEqual:@YES]);
+             }];
 }
 
-#pragma mark -
-#pragma mark ProtectedMethods
-
-- (NSString*)scriptPath {
-  return @"password_controller";
-}
-
-#pragma mark -
-#pragma mark Private
-
-- (void)evaluateExtraScript:(NSString*)script
-          completionHandler:(void (^)(NSString*))completionHandler {
-  DCHECK(completionHandler);
-  NSString* JS = [[self injectionContent] stringByAppendingString:script];
-  [self executeJavaScript:JS completionHandler:^(id result, NSError*) {
-    completionHandler(base::mac::ObjCCastStrict<NSString>(result));
-  }];
-}
 
 @end

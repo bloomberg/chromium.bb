@@ -7,4 +7,5 @@ goog.provide('__crWeb.chromeBundleMainFrame');
 
 goog.require('__crWeb.autofill');
 goog.require('__crWeb.fill');
+goog.require('__crWeb.passwords');
 goog.require('__crWeb.print');
