@@ -718,10 +718,10 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
     : profile_(profile),
       verify_quality_(verify_quality),
       decoder_(new FFmpegVideoDecoder(&media_log_)),
-      decode_cb_(
-          base::Bind(&VideoFrameQualityValidator::DecodeDone, AsWeakPtr())),
-      eos_decode_cb_(
-          base::Bind(&VideoFrameQualityValidator::FlushDone, AsWeakPtr())),
+      decode_cb_(base::BindRepeating(&VideoFrameQualityValidator::DecodeDone,
+                                     AsWeakPtr())),
+      eos_decode_cb_(base::BindRepeating(&VideoFrameQualityValidator::FlushDone,
+                                         AsWeakPtr())),
       flush_complete_cb_(flush_complete_cb),
       decode_error_cb_(decode_error_cb),
       decoder_state_(UNINITIALIZED) {
@@ -751,10 +751,10 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
 
   decoder_->Initialize(
       config, false, nullptr,
-      base::Bind(&VideoFrameQualityValidator::InitializeCB,
-                 base::Unretained(this)),
-      base::Bind(&VideoFrameQualityValidator::VerifyOutputFrame,
-                 base::Unretained(this)),
+      base::BindRepeating(&VideoFrameQualityValidator::InitializeCB,
+                          base::Unretained(this)),
+      base::BindRepeating(&VideoFrameQualityValidator::VerifyOutputFrame,
+                          base::Unretained(this)),
       VideoDecoder::WaitingForDecryptionKeyCB());
 }
 
@@ -1401,15 +1401,18 @@ VEAClient::VEAClient(TestStream* test_stream,
   if (!g_fake_encoder) {
     stream_validator_ = StreamValidator::Create(
         test_stream_->requested_profile,
-        base::Bind(&VEAClient::HandleEncodedFrame, base::Unretained(this)));
+        base::BindRepeating(&VEAClient::HandleEncodedFrame,
+                            base::Unretained(this)));
     CHECK(stream_validator_);
     // VideoFrameQualityValidator is required to generate frame stats as well as
     // validating encoder quality.
     if (verify_output_ || !g_env->frame_stats_path().empty()) {
       quality_validator_.reset(new VideoFrameQualityValidator(
           test_stream_->requested_profile, verify_output_,
-          base::Bind(&VEAClient::DecodeCompleted, base::Unretained(this)),
-          base::Bind(&VEAClient::DecodeFailed, base::Unretained(this))));
+          base::BindRepeating(&VEAClient::DecodeCompleted,
+                              base::Unretained(this)),
+          base::BindRepeating(&VEAClient::DecodeFailed,
+                              base::Unretained(this))));
     }
   }
 
@@ -1513,8 +1516,8 @@ void VEAClient::DestroyEncoder() {
 
   if (io_thread_.IsRunning()) {
     encode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VEAClient::DestroyEncodeOnSeparateThread,
-                              client_weak_factory_for_io_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&VEAClient::DestroyEncodeOnSeparateThread,
+                                  client_weak_factory_for_io_.GetWeakPtr()));
     io_thread_.Stop();
   } else {
     DestroyEncodeOnSeparateThread();
@@ -1633,7 +1636,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
     input_timer_.reset(new base::RepeatingTimer());
     input_timer_->Start(
         FROM_HERE, base::TimeDelta::FromSeconds(1) / current_framerate_,
-        base::Bind(&VEAClient::OnInputTimer, base::Unretained(this)));
+        base::BindRepeating(&VEAClient::OnInputTimer, base::Unretained(this)));
   } else {
     while (inputs_at_client_.size() <
            num_required_input_buffers_ + kNumExtraInputFrames)
@@ -1659,9 +1662,10 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
                                      base::TimeDelta timestamp) {
   ASSERT_TRUE(encode_task_runner_->BelongsToCurrentThread());
   vea_client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VEAClient::BitstreamBufferReadyOnVeaClientThread,
-                            base::Unretained(this), bitstream_buffer_id,
-                            payload_size, key_frame, timestamp));
+      FROM_HERE,
+      base::BindOnce(&VEAClient::BitstreamBufferReadyOnVeaClientThread,
+                     base::Unretained(this), bitstream_buffer_id, payload_size,
+                     key_frame, timestamp));
 }
 
 void VEAClient::BitstreamBufferReadyOnVeaClientThread(
@@ -1739,8 +1743,8 @@ void VEAClient::SetStreamParameters(unsigned int bitrate,
   LOG_ASSERT(current_framerate_ > 0UL);
   encode_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoEncodeAccelerator::RequestEncodingParametersChange,
-                 encoder_weak_factory_->GetWeakPtr(), bitrate, framerate));
+      base::BindOnce(&VideoEncodeAccelerator::RequestEncodingParametersChange,
+                     encoder_weak_factory_->GetWeakPtr(), bitrate, framerate));
   DVLOG(1) << "Switched parameters to " << current_requested_bitrate_
            << " bps @ " << current_framerate_ << " FPS";
 }
@@ -1786,9 +1790,9 @@ scoped_refptr<VideoFrame> VEAClient::PrepareInputFrame(off_t position,
 
   scoped_refptr<VideoFrame> frame = CreateFrame(position);
   EXPECT_TRUE(frame);
-  frame->AddDestructionObserver(
-      BindToCurrentLoop(base::Bind(&VEAClient::InputNoLongerNeededCallback,
-                                   base::Unretained(this), next_input_id_)));
+  frame->AddDestructionObserver(BindToCurrentLoop(
+      base::BindOnce(&VEAClient::InputNoLongerNeededCallback,
+                     base::Unretained(this), next_input_id_)));
 
   LOG_ASSERT(inputs_at_client_.insert(next_input_id_).second);
 
@@ -1851,9 +1855,9 @@ void VEAClient::FeedEncoderWithOneInput() {
   }
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoEncodeAccelerator::Encode,
-                            encoder_weak_factory_->GetWeakPtr(), video_frame,
-                            force_keyframe));
+      FROM_HERE, base::BindOnce(&VideoEncodeAccelerator::Encode,
+                                encoder_weak_factory_->GetWeakPtr(),
+                                video_frame, force_keyframe));
   ++num_frames_submitted_to_encoder_;
   if (num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
     encode_task_runner_->PostTask(
@@ -1883,8 +1887,8 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
 
   encode_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoEncodeAccelerator::UseOutputBitstreamBuffer,
-                 encoder_weak_factory_->GetWeakPtr(), bitstream_buffer));
+      base::BindOnce(&VideoEncodeAccelerator::UseOutputBitstreamBuffer,
+                     encoder_weak_factory_->GetWeakPtr(), bitstream_buffer));
 }
 
 bool VEAClient::HandleEncodedFrame(bool keyframe) {
@@ -1935,7 +1939,8 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
       if (g_env->run_at_fps() && input_timer_)
         input_timer_->Start(
             FROM_HERE, base::TimeDelta::FromSeconds(1) / current_framerate_,
-            base::Bind(&VEAClient::OnInputTimer, base::Unretained(this)));
+            base::BindRepeating(&VEAClient::OnInputTimer,
+                                base::Unretained(this)));
     }
   } else if (num_encoded_frames_ == num_frames_to_encode_) {
     LogPerf();
@@ -2248,11 +2253,11 @@ void VEANoInputClient::RequireBitstreamBuffers(
                                                output_size);
 
   // Timer is used to make sure there is no output frame in 100ms.
-  timer_.reset(new base::Timer(FROM_HERE,
-                               base::TimeDelta::FromMilliseconds(100),
-                               base::Bind(&VEANoInputClient::SetState,
+  timer_.reset(
+      new base::Timer(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
+                      base::BindRepeating(&VEANoInputClient::SetState,
                                           base::Unretained(this), CS_FINISHED),
-                               false));
+                      false));
   timer_->Reset();
 }
 
@@ -2395,8 +2400,8 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
         verify_output_timestamp));
 
     vea_client_thread.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VEAClient::CreateEncoder,
-                              base::Unretained(clients.back().get())));
+        FROM_HERE, base::BindOnce(&VEAClient::CreateEncoder,
+                                  base::Unretained(clients.back().get())));
   }
 
   // All encoders must pass through states in this order.
@@ -2422,8 +2427,8 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
 
   for (size_t i = 0; i < num_concurrent_encoders; ++i) {
     vea_client_thread.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VEAClient::DestroyEncoder,
-                              base::Unretained(clients[i].get())));
+        FROM_HERE, base::BindOnce(&VEAClient::DestroyEncoder,
+                                  base::Unretained(clients[i].get())));
   }
 
   // This ensures all tasks have finished.
@@ -2446,8 +2451,8 @@ void SimpleTestFunc() {
   ASSERT_TRUE(vea_client_thread.Start());
 
   vea_client_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestClient::CreateEncoder, base::Unretained(client.get())));
+      FROM_HERE, base::BindOnce(&TestClient::CreateEncoder,
+                                base::Unretained(client.get())));
 
   // Encoder must pass through states in this order.
   enum ClientState state_transitions[] = {CS_INITIALIZED, CS_ENCODING,
@@ -2461,8 +2466,8 @@ void SimpleTestFunc() {
   }
 
   vea_client_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestClient::DestroyEncoder, base::Unretained(client.get())));
+      FROM_HERE, base::BindOnce(&TestClient::DestroyEncoder,
+                                base::Unretained(client.get())));
 
   // This ensures all tasks have finished.
   vea_client_thread.Stop();
