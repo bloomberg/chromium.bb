@@ -104,6 +104,10 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
   explicit SpeechRecognitionEngine(net::URLRequestContextGetter* context);
   ~SpeechRecognitionEngine() override;
 
+  // Sets the URL requests are sent to for tests.
+  static void set_web_service_base_url_for_tests(
+      const char* base_url_for_tests);
+
   void SetConfig(const Config& config);
   void StartRecognition();
   void EndRecognition();

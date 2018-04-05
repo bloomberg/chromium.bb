@@ -27,10 +27,15 @@ namespace test_server {
 // handle only **one** request with the matching |relative_url|. In the case of
 // multiple ControllableHttpResponses for the same path, they're used in the
 // order they were created.
+//
+// If |relative_url_is_prefix| is true, |relative_url| is only compared agaisnt
+// the start of the URL being requested, which allows matching against (possibly
+// variable) query strings, for instance.
 class ControllableHttpResponse {
  public:
   ControllableHttpResponse(EmbeddedTestServer* embedded_test_server,
-                           const std::string& relative_path);
+                           const std::string& relative_url,
+                           bool relative_url_is_prefix = false);
   ~ControllableHttpResponse();
 
   // These method are intented to be used in order.
@@ -44,6 +49,9 @@ class ControllableHttpResponse {
   // 3) Notify there are no more data to be sent and close the socket.
   void Done();
 
+  // Returns the HttpRequest after a call to WaitForRequest.
+  const HttpRequest* http_request() const { return http_request_.get(); }
+
  private:
   class Interceptor;
 
@@ -52,13 +60,15 @@ class ControllableHttpResponse {
   void OnRequest(scoped_refptr<base::SingleThreadTaskRunner>
                      embedded_test_server_task_runner,
                  const SendBytesCallback& send,
-                 const SendCompleteCallback& done);
+                 const SendCompleteCallback& done,
+                 std::unique_ptr<HttpRequest> http_request);
 
   static std::unique_ptr<HttpResponse> RequestHandler(
       base::WeakPtr<ControllableHttpResponse> controller,
       scoped_refptr<base::SingleThreadTaskRunner> controller_task_runner,
       bool* available,
       const std::string& relative_url,
+      bool relative_url_is_prefix,
       const HttpRequest& request);
 
   State state_ = State::WAITING_FOR_REQUEST;
@@ -66,6 +76,8 @@ class ControllableHttpResponse {
   scoped_refptr<base::SingleThreadTaskRunner> embedded_test_server_task_runner_;
   SendBytesCallback send_;
   SendCompleteCallback done_;
+  std::unique_ptr<HttpRequest> http_request_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ControllableHttpResponse> weak_ptr_factory_;

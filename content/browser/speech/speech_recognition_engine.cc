@@ -38,6 +38,9 @@ const char kWebServiceBaseUrl[] =
 const char kDownstreamUrl[] = "/down?";
 const char kUpstreamUrl[] = "/up?";
 
+// Used to override |kWebServiceBaseUrl| when non-null, only set in tests.
+const char* web_service_base_url_for_tests = nullptr;
+
 // This matches the maximum maxAlternatives value supported by the server.
 const uint32_t kMaxMaxAlternatives = 30;
 
@@ -104,6 +107,11 @@ SpeechRecognitionEngine::SpeechRecognitionEngine(
 
 SpeechRecognitionEngine::~SpeechRecognitionEngine() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void SpeechRecognitionEngine::set_web_service_base_url_for_tests(
+    const char* base_url_for_tests) {
+  web_service_base_url_for_tests = base_url_for_tests;
 }
 
 void SpeechRecognitionEngine::SetConfig(const Config& config) {
@@ -330,13 +338,17 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
         config_.preamble->sample_depth * 8));
   }
 
+  const char* web_service_base_url = !web_service_base_url_for_tests
+                                         ? kWebServiceBaseUrl
+                                         : web_service_base_url_for_tests;
+
   // Setup downstream fetcher.
   std::vector<std::string> downstream_args;
   downstream_args.push_back(
       "key=" + net::EscapeQueryParamValue(google_apis::GetAPIKey(), true));
   downstream_args.push_back("pair=" + request_key);
   downstream_args.push_back("output=pb");
-  GURL downstream_url(std::string(kWebServiceBaseUrl) +
+  GURL downstream_url(std::string(web_service_base_url) +
                       std::string(kDownstreamUrl) +
                       base::JoinString(downstream_args, "&"));
 
@@ -432,7 +444,8 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
     upstream_args.push_back(
         "audioFormat=" + net::EscapeQueryParamValue(audio_format, true));
   }
-  GURL upstream_url(std::string(kWebServiceBaseUrl) +
+
+  GURL upstream_url(std::string(web_service_base_url) +
                     std::string(kUpstreamUrl) +
                     base::JoinString(upstream_args, "&"));
 
