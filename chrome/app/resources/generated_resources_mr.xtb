@@ -1796,7 +1796,7 @@
 <translation id="3752582316358263300">ठीक आहे...</translation>
 <translation id="3752673729237782832">माझी डिव्हाइसेस</translation>
 <translation id="3755411799582650620">आपला <ph name="PHONE_NAME" /> आता हे <ph name="DEVICE_TYPE" /> देखील अनलॉॅक करू शकतो.</translation>
-<translation id="375636864092143889">साइट आपला मायक्रोफोन वापरत आहे</translation>
+<translation id="375636864092143889">साइट तुमचा मायक्रोफोन वापरत आहे</translation>
 <translation id="3758201569871381925">कृपया आपले Hotrod डिव्‍हाइस चालू असल्‍याचे आणि टीव्‍हीशी कनेक्‍ट केल्‍याचे सुनिश्‍चित करा.</translation>
 <translation id="375841316537350618">प्रॉक्सी स्क्रिप्ट डाउनलोड करत आहे...</translation>
 <translation id="3758842566811519622">कुकीज सेट केल्या</translation>
@@ -3574,7 +3574,7 @@
 <translation id="661719348160586794">आपले सेव्ह केलेले पासवर्ड येथे दिसून येतील.</translation>
 <translation id="6618097958368085618">तरीही राहू द्या</translation>
 <translation id="6619058681307408113">लाइन प्रिंटर डिमन (LPD)</translation>
-<translation id="661907246513853610">साइट आपले स्थान ट्रॅक करू शकते</translation>
+<translation id="661907246513853610">साइट तुमचे स्थान ट्रॅक करू शकते</translation>
 <translation id="6619801788773578757">कियोस्क अॅप्लिकेशन जोडा</translation>
 <translation id="6619990499523117484">आपल्या पिन ची पुष्टी करा</translation>
 <translation id="662080504995468778">यावर रहा</translation>
@@ -3668,7 +3668,6 @@
           हे चित्र Chromebook च्या साइन इन स्क्रीन आणि लॉक स्क्रीनवर दिसेल.</translation>
 <translation id="6769712124046837540">प्रिंटर जोडणे...</translation>
 <translation id="6771503742377376720">एक प्रमाणन अधिकृतता आहे</translation>
-<translation id="6773575010135450071">अधिक क्रिया...</translation>
 <translation id="6777817260680419853">रीडिरेक्‍ट ब्लॉक केले</translation>
 <translation id="6778959797435875428">साइट सशब्द करा</translation>
 <translation id="677965093459947883">खूप लहान</translation>
@@ -3962,7 +3961,7 @@
 <translation id="7254951428499890870">आपण निदान मोडमध्ये "<ph name="APP_NAME" />" लाँच करू इच्छिता याची आपल्याला खात्री आहे?</translation>
 <translation id="7255220508626648026">कास्ट करीत आहे: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">लागू करा</translation>
-<translation id="7256069762010468647">साइट आपला कॅमेरा वापरत आहे</translation>
+<translation id="7256069762010468647">साइट तुमचा कॅमेरा वापरत आहे</translation>
 <translation id="7256405249507348194">अपरिचित एरर: <ph name="DESC" /></translation>
 <translation id="7256710573727326513">टॅबमध्ये उघडा</translation>
 <translation id="7257666756905341374">आपण कॉपी आणि पेस्ट करता तो डेटा वाचा</translation>
@@ -4198,7 +4197,6 @@
 <translation id="7629827748548208700">टॅब: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;नेहमी या प्रकारच्या फायली उघडा</translation>
 <translation id="7632948528260659758">खालील कियोस्‍क अ‍ॅप्स अद्यतनांसाठी अयशस्‍वी झाले आहेत:</translation>
-<translation id="7634373849852678655">पूर्णस्क्रीन मधून निर्गमन करण्यासाठी अॅप बटण दाबा</translation>
 <translation id="7639178625568735185">समजले!</translation>
 <translation id="764017888128728">आपण जतन केलेल्या संकेतशब्दासह <ph name="PASSWORD_MANAGER_BRAND" /> स्वयंचलितपणे आपल्याला पात्र असलेल्या साइटमध्ये साइन इन करते.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
@@ -4990,7 +4988,7 @@
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8908902564709148335">चेतावणी: आपण या संगणकावर --स्क्रिप्‍ट-आवश्‍यक-क्रिया ध्वज सक्षम केला आहे, जो या विस्‍ताराच्या क्षमता मर्यादित करतो. तथापि, अन्य डिव्‍हाइसेस कदाचित या ध्वजास समर्थन देत नाही किंवा त्यांच्यावर तो सक्षम केलेला नसेल. या डिव्‍हाइसेसवर, हा विस्तार हे देखील करू शकतो:</translation>
 <translation id="8909233240676134608">मशीन डोमेनशी जोडू शकत नाही. सर्व्हर नमूद केलेल्या Kerberos एंक्रिप्शन प्रकारांना सपोर्ट करत नाही. एंक्रिप्शन सेटिंग्जसाठी "अधिक पर्याय" पहा.</translation>
-<translation id="8909833622202089127">साइट आपले स्थान ट्रॅक करत आहे</translation>
+<translation id="8909833622202089127">साइट तुमचे स्थान ट्रॅक करत आहे</translation>
 <translation id="8910146161325739742">आपली स्क्रीन शेअर करा</translation>
 <translation id="8910222113987937043">आपल्या बुकमार्क, इतिहास आणि अन्य सेटिंग्जसाठी बदल यापुढे आपल्या Google खात्यासह संकालित केले जाणार नाहीत. तथापि, आपला विद्यमान डेटा आपल्या Google खात्यामध्ये संग्रहित केलेला असेल आणि <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> वर व्यवस्थापित केला जाऊ शकतो.</translation>
 <translation id="8912793549644936705">पसरवा</translation>

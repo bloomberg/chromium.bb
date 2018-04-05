@@ -2069,7 +2069,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4181841719683918333">Языки</translation>
 <translation id="4184885522552335684">Перетащите дисплей на новое место</translation>
 <translation id="4193154014135846272">Документ Google</translation>
-<translation id="4194570336751258953">Включить функцию tap-to-click (нажатие коротким прикосновением)</translation>
+<translation id="4194570336751258953">Включить нажатие от прикосновения</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4195814663415092787">Ранее открытые вкладки</translation>
 <translation id="4197674956721858839">Архивировать выбранные элементы</translation>
@@ -3672,7 +3672,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
           Это изображение появится на экране входа и блокировки Chromebook.</translation>
 <translation id="6769712124046837540">Добавление принтера...</translation>
 <translation id="6771503742377376720">Является центром сертификации</translation>
-<translation id="6773575010135450071">Ещё</translation>
 <translation id="6777817260680419853">Попытка переадресации заблокирована</translation>
 <translation id="6778959797435875428">Включить звук на сайтах</translation>
 <translation id="677965093459947883">Очень мелкий</translation>
@@ -4203,7 +4202,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7629827748548208700">Вкладка: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">Всегда открывать файлы этого типа</translation>
 <translation id="7632948528260659758">Не удалось обновить следующие киоск-приложения:</translation>
-<translation id="7634373849852678655">Нажмите кнопку приложения, чтобы выйти из полноэкранного режима</translation>
 <translation id="7639178625568735185">Готово!</translation>
 <translation id="764017888128728">С помощью <ph name="PASSWORD_MANAGER_BRAND" /> вы будете автоматически входить на сайты, для которых сохранили пароли.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (владелец)</translation>

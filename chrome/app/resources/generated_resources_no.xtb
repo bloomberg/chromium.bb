@@ -3662,7 +3662,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
           Dette bildet vises på låse- og påloggingsskjermen på Chromebooken.</translation>
 <translation id="6769712124046837540">Legger til skriver …</translation>
 <translation id="6771503742377376720">Er en sertifiseringsinstans</translation>
-<translation id="6773575010135450071">Flere handlinger</translation>
 <translation id="6777817260680419853">Viderekobling er blokkert</translation>
 <translation id="6778959797435875428">Slå på lyden for nettsteder</translation>
 <translation id="677965093459947883">Veldig liten</translation>
@@ -4185,7 +4184,6 @@ Når du installerer <ph name="APP_NAME" />, blir det lastet ned <ph name="DOWNLO
 <translation id="7629827748548208700">Fane: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">Åpne &amp;alltid filer av denne typen</translation>
 <translation id="7632948528260659758">Kunne ikke oppdatere de følgende kioskappene:</translation>
-<translation id="7634373849852678655">Trykk på appknappen for å avslutte fullskjermvisningen</translation>
 <translation id="7639178625568735185">Skjønner!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> logger deg på kvalifiserte nettsteder automatisk med passord du har lagret.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>

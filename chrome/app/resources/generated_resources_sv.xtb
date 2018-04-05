@@ -3670,7 +3670,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
           Den här bilden visas på inloggnings- och låsskärmen på Chromebook.</translation>
 <translation id="6769712124046837540">Lägger till skrivare ...</translation>
 <translation id="6771503742377376720">Är en certifikatutfärdare</translation>
-<translation id="6773575010135450071">Fler åtgärder ...</translation>
 <translation id="6777817260680419853">Omdirigeringen blockerades</translation>
 <translation id="6778959797435875428">Ta fram dolda webbplatser</translation>
 <translation id="677965093459947883">Mycket liten</translation>
@@ -4200,7 +4199,6 @@ När du installerar <ph name="APP_NAME" /> laddas <ph name="DOWNLOAD_SIZE" /> da
 <translation id="7629827748548208700">Flik: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">Öppna &amp;alltid filer av denna typ</translation>
 <translation id="7632948528260659758">Det gick inte att uppdatera följande kioskappar:</translation>
-<translation id="7634373849852678655">Tryck på appknappen om du vill lämna helskärmsläget</translation>
 <translation id="7639178625568735185">Uppfattat!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> loggar automatiskt in på godkända webbplatser med de lösenord du sparat.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ägare)</translation>

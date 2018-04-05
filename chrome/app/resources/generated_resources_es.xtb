@@ -3668,7 +3668,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
           Esta imagen se mostrará en la pantalla de bloqueo y en la de inicio de sesión del Chromebook.</translation>
 <translation id="6769712124046837540">Añadiendo impresora...</translation>
 <translation id="6771503742377376720">Es una entidad emisora de certificados.</translation>
-<translation id="6773575010135450071">Más acciones...</translation>
 <translation id="6777817260680419853">Redirección bloqueada</translation>
 <translation id="6778959797435875428">Activar sonido de sitios web</translation>
 <translation id="677965093459947883">Muy pequeño</translation>
@@ -4198,7 +4197,6 @@ Al instalar <ph name="APP_NAME" />, se descargarán <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7629827748548208700">Pestaña: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Abrir siempre archivos de este tipo</translation>
 <translation id="7632948528260659758">No se han podido actualizar las siguientes aplicaciones de kiosco:</translation>
-<translation id="7634373849852678655">Pulsa el botón Aplicación para salir del modo de pantalla completa</translation>
 <translation id="7639178625568735185">¡Listo!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> inicia sesión automáticamente en los sitios web en los que se pueda iniciar sesión con las contraseñas que hayas guardado.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario)</translation>

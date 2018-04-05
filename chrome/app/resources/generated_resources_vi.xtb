@@ -3672,7 +3672,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
           Hình ảnh này sẽ hiển thị trên màn hình khóa và màn hình đăng nhập của Chromebook.</translation>
 <translation id="6769712124046837540">Đang thêm máy in...</translation>
 <translation id="6771503742377376720">Là Tổ chức phát hành chứng chỉ</translation>
-<translation id="6773575010135450071">Thêm tác vụ...</translation>
 <translation id="6777817260680419853">Đã chặn chuyển hướng</translation>
 <translation id="6778959797435875428">Bật tiếng các trang web</translation>
 <translation id="677965093459947883">Rất nhỏ</translation>
@@ -4203,7 +4202,6 @@ Việc cài đặt <ph name="APP_NAME" /> sẽ tải xuống <ph name="DOWNLOAD_
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Luôn Mở Loại Tệp Này</translation>
 <translation id="7632948528260659758">Không cập nhật được các ứng dụng kiosk sau:</translation>
-<translation id="7634373849852678655">Nhấn vào nút Ứng dụng để thoát khỏi chế độ toàn màn hình</translation>
 <translation id="7639178625568735185">Bỏ qua!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> tự động đăng nhập bạn vào các trang web đủ điều kiện bằng mật khẩu bạn đã lưu.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (chủ sở hữu)</translation>

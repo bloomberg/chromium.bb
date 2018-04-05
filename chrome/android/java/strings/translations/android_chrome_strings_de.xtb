@@ -247,7 +247,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3303414029551471755">Inhalt herunterladen?</translation>
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3341058695485821946">Sie können sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
-<translation id="3350687908700087792">Alle Inkognitotabs schließen</translation>
+<translation id="3350687908700087792">Alle Inkognito-Tabs schließen</translation>
 <translation id="3365671512111106261">Nicht verfügbar, wenn der Datensparmodus aktiviert ist</translation>
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
@@ -686,7 +686,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7366340029385295517">Übertragung an <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7400730245189251663">Weitere Informationen zu <ph name="TOPIC" /></translation>
 <translation id="7403691278183511381">Eindruck beim ersten Ausführen von Chrome</translation>
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7423538860840206698">Es dürfen keine Dateien aus der Zwischenablage abgerufen werden</translation>

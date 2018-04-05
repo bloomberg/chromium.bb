@@ -3246,7 +3246,7 @@
 <translation id="6105158702728922449">আপনার ক্যামেরা এবং মাইক্রোফোন ব্যবহার করুন৷</translation>
 <translation id="6105877918873366097">শেষবার অ্যাক্সেস করা হয়েছে</translation>
 <translation id="6107012941649240045">একে ইস্যু করা হয়েছিল</translation>
-<translation id="6112294629795967147">আকার পরিবর্তন করতে স্পর্শ করুন</translation>
+<translation id="6112294629795967147">সাইজ পরিবর্তন করতে টাচ করুন</translation>
 <translation id="6112952769866305444">ব্যক্তি <ph name="PROFILE_NAME" />, <ph name="USERNAME" /> এর সম্পাদনা করুন</translation>
 <translation id="6115424132962100663">ফিরে যেতে |<ph name="SHORTCUT" />| টিপুন</translation>
 <translation id="6116338172782435947">ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি দেখতে</translation>
@@ -3633,7 +3633,7 @@
 <translation id="6718273304615422081">জিপ করা হচ্ছে...</translation>
 <translation id="671928215901716392">স্ক্রিন লক করুন</translation>
 <translation id="67211069045302358">এই সাইটের সেটিংস রিসেট করবেন?</translation>
-<translation id="6721678857435001674">আপনার নিরাপত্তা কী তৈরি এবং মডেলটি দেখুন</translation>
+<translation id="6721678857435001674">আপনার নিরাপত্তা কী-এর কোম্পানির নাম এবং মডেলটি দেখুন</translation>
 <translation id="6721972322305477112">&amp;File</translation>
 <translation id="672213144943476270">দয়া করে অতিথি হিসাবে ব্রাউজ করার আগে আপনার প্রোফাইলটি আনলক করুন।</translation>
 <translation id="6723354935081862304">Google দস্তাবেজ এবং অন্য ক্লাউড গন্তব্যস্থল প্রিন্ট করুন৷ Google ক্লাউড প্রিন্টে প্রিন্ট করতে <ph name="BEGIN_LINK" />প্রবেশ করুন<ph name="END_LINK" /> করুন৷</translation>
@@ -3667,7 +3667,6 @@
           এই ফটোটি Chromebook সাইন-ইন স্ক্রিন এবং লক স্ক্রিনে প্রদর্শিত হবে।</translation>
 <translation id="6769712124046837540">প্রিন্টার যোগ করা হচ্ছে...</translation>
 <translation id="6771503742377376720">একটি শংসাপত্রের কর্তৃপক্ষ</translation>
-<translation id="6773575010135450071">আরও অ্যাকশন...</translation>
 <translation id="6777817260680419853">রিডাইরেক্ট ব্লক করা হয়েছে</translation>
 <translation id="6778959797435875428">সাইটগুলি আনমিউট করুন</translation>
 <translation id="677965093459947883">অতি ক্ষুদ্র</translation>
@@ -4197,7 +4196,6 @@
 <translation id="7629827748548208700">ট্যাব: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;সর্বদা এই ধরনের ফাইল খুলুন</translation>
 <translation id="7632948528260659758">নিম্নলিখিত kiosk অ্যাপ্লিকেশানগুলি আপডেট হতে ব্যর্থ হয়েছে:</translation>
-<translation id="7634373849852678655">ফুলস্ক্রিন থেকে বেরিয়ে যাওয়ার জন্য অ্যাপ বোতামটি টিপুন</translation>
 <translation id="7639178625568735185">বুঝেছি!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> স্বয়ংক্রিয়ভাবে আপনার সংরক্ষণ করা পাসওয়ার্ড দিয়ে উপযুক্ত সাইটগুলিতে আপনাকে প্রবেশ করায়।</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (মালিক)</translation>

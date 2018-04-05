@@ -3667,7 +3667,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
           Dieses Bild wird auf dem Anmelde- und dem Sperrbildschirm Ihres Chromebooks angezeigt.</translation>
 <translation id="6769712124046837540">Drucker wird hinzugefügt...</translation>
 <translation id="6771503742377376720">Ist eine Zertifizierungsstelle</translation>
-<translation id="6773575010135450071">Weitere Aktionen...</translation>
 <translation id="6777817260680419853">Weiterleitung blockiert</translation>
 <translation id="6778959797435875428">Stummschaltung für Websites aufheben</translation>
 <translation id="677965093459947883">Sehr klein</translation>
@@ -4201,7 +4200,6 @@ Bei der Installation von "<ph name="APP_NAME" />" werden <ph name="DOWNLOAD_SIZE
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">Dateien dieses Typs &amp;immer öffnen</translation>
 <translation id="7632948528260659758">Die folgenden Kiosk-Apps konnten nicht aktualisiert werden:</translation>
-<translation id="7634373849852678655">Zum Beenden des Vollbilds auf die App-Taste drücken</translation>
 <translation id="7639178625568735185">Fertig</translation>
 <translation id="764017888128728">Mit <ph name="PASSWORD_MANAGER_BRAND" /> werden Sie mit Ihren gespeicherten Passwörtern automatisch auf allen entsprechenden Websites angemeldet.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (Eigentümer)</translation>

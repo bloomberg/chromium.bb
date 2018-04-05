@@ -3671,7 +3671,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
           Lalabas ang larawang ito sa screen sa pag-sign in at lock screen ng Chromebook.</translation>
 <translation id="6769712124046837540">Idinaragdag ang printer...</translation>
 <translation id="6771503742377376720">Ay isang Certificate Authority</translation>
-<translation id="6773575010135450071">Higit pang mga pagkilos...</translation>
 <translation id="6777817260680419853">Na-block ang pag-redirect</translation>
 <translation id="6778959797435875428">I-unmute ang mga site</translation>
 <translation id="677965093459947883">Napakaliit</translation>
@@ -4202,7 +4201,6 @@ Mada-download ang <ph name="DOWNLOAD_SIZE" /> ng data kapag na-install ang <ph n
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Palaging Magbukas ng Mga File na Ganitong Uri</translation>
 <translation id="7632948528260659758">Hindi na-update ang mga sumusunod na kiosk app:</translation>
-<translation id="7634373849852678655">Pindutin ang App button para lumabas sa fullscreen</translation>
 <translation id="7639178625568735185">Nakuha ko!</translation>
 <translation id="764017888128728">Awtomatiko kang sina-sign in ng <ph name="PASSWORD_MANAGER_BRAND" /> sa mga kwalipikadong site gamit ang mga password na na-save mo.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (may-ari)</translation>

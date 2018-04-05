@@ -531,7 +531,7 @@
 <translation id="2529700525201305165">Piira kasutajaid, kes saavad logida sisse rakendusse <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Sunniviisiliselt installitud rakenduste ja laienduste loendi seadistamine</translation>
 <translation id="253135976343875019">Tegevusetuse hoiatuse viivitus vahelduvvoolutoite kasutamisel</translation>
-<translation id="2536283449105918306">Lubab kaitse vahekaardi all tehtavate toimingute eest</translation>
+<translation id="2536283449105918306">Lubab uute vahelehtede avamise vastase kaitse</translation>
 <translation id="2552966063069741410">Ajavöönd</translation>
 <translation id="2562339630163277285">Määrab otsingumootori URL-i, mida kasutatakse vahetute otsingutulemuste esitamiseks. URL peab sisaldama stringi <ph name="SEARCH_TERM_MARKER" />, mis asendatakse päringu tegemisel kasutaja sisestatud tekstiga.
 
@@ -2677,11 +2677,11 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
 <translation id="9098553063150791878">HTTP autentimise reeglid</translation>
 <translation id="9105265795073104888">Androidi rakendustele muudetakse kättesaadavaks ainult puhverserveri seadistuse valikute alamkomplekt. Androidi rakenduste jaoks on puhverserveri kasutamine vabatahtlik. Te ei saa puhverserveri kasutamist sundida.</translation>
-<translation id="9110615239151047025">Lubab kaitse vahekaardi all tehtavate toimingute eest, mis blokeerib vahekaardi all tehtavate toimingutena tuvastatud navigeerimised.
+<translation id="9110615239151047025">Lubab uute vahelehtede avamise vastase kaitse, mis blokeerib uute vahelehtede avamisega seotud navigeerimised.
 
-      Vahekaardi all tehtavate toimingute selgituse leiate saidilt https://www.chromestatus.com/features/5675755719622656.
-      Kui selle reegli väärtuseks on määratud Tõene, blokeeritakse navigeerimised, mille teenus <ph name="PRODUCT_NAME" /> tuvastab vahekaardi all tehtavate toimingutena.
-      Kui selle reegli väärtuseks on määratud Väär, lubab teenus <ph name="PRODUCT_NAME" /> saitidele vahekaardi all tehtavate toimingutena tuvastatud navigeerimised.
+      Uute vahelehtede avamise selgituse leiate saidilt https://www.chromestatus.com/features/5675755719622656.
+      Kui selle reegli väärtuseks on määratud Tõene, blokeeritakse navigeerimised, mille teenus <ph name="PRODUCT_NAME" /> tuvastab uute vahelehtede avamisena.
+      Kui selle reegli väärtuseks on määratud Väär, lubab teenus <ph name="PRODUCT_NAME" /> saitidele uute vahelehtede avamise.
       Vaikimisi on selle reegli väärtuseks määratud Tõene.</translation>
 <translation id="9112727953998243860">Ettevõtte printerite konfiguratsioonifail</translation>
 <translation id="9112897538922695510">Lubab teil registreerida protokollitöötlejate loendi. See saab olla ainult soovitatud reegel. Atribuut |protocol| tuleb määrata skeemile (nagu „mailto”) ja atribuut |url| tuleb määrata skeemi käsitleva rakenduse URL-i mustrile. Muster võib sisaldada märgendit „%s”, mis asendatakse sellisel juhul käsitletava URL-iga.

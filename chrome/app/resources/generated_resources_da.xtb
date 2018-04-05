@@ -3672,7 +3672,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
           Dette billede vises på loginskærmen og låseskærmen på Chromebook-enheden.</translation>
 <translation id="6769712124046837540">Tilføjer printer...</translation>
 <translation id="6771503742377376720">Er en certificeringsautoritet</translation>
-<translation id="6773575010135450071">Flere handlinger...</translation>
 <translation id="6777817260680419853">Omdirigeringen blev blokeret</translation>
 <translation id="6778959797435875428">Slå lyden til på websites</translation>
 <translation id="677965093459947883">Meget lille</translation>
@@ -4203,7 +4202,6 @@ Installationen af <ph name="APP_NAME" /> downloader <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7629827748548208700">Fane: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Åbn altid filer af denne type</translation>
 <translation id="7632948528260659758">Følgende kioskapps kan ikke opdateres:</translation>
-<translation id="7634373849852678655">Tryk på App-knappen for at afslutte fuld skærm</translation>
 <translation id="7639178625568735185">Forstået</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> logger dig automatisk ind på kvalificerede websites med adgangskoder, du har gemt.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>

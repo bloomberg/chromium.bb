@@ -3672,7 +3672,6 @@
           この画像は Chromebook のログイン画面とロック画面に表示されます。</translation>
 <translation id="6769712124046837540">プリンタの追加...</translation>
 <translation id="6771503742377376720">認証局である</translation>
-<translation id="6773575010135450071">その他の操作...</translation>
 <translation id="6777817260680419853">リダイレクトがブロックされました</translation>
 <translation id="6778959797435875428">複数のサイトのミュートを解除</translation>
 <translation id="677965093459947883">極小</translation>
@@ -4205,7 +4204,6 @@
 <translation id="7629827748548208700">タブ:<ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">この種類のファイルは常に開く(&amp;A)</translation>
 <translation id="7632948528260659758">次のキオスクアプリを更新できませんでした:</translation>
-<translation id="7634373849852678655">全画面表示を終了するにはアプリボタンを押します</translation>
 <translation id="7639178625568735185">完了</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> では、保存したパスワードを使って対象となるサイトへの自動ログインが行われます。</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>

@@ -3671,7 +3671,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
           Ta će se slika prikazivati na zaslonu za prijavu i zaključanom zaslonu Chromebooka.</translation>
 <translation id="6769712124046837540">Dodavanje pisača...</translation>
 <translation id="6771503742377376720">jest tijelo za izdavanje certifikata</translation>
-<translation id="6773575010135450071">Više radnji...</translation>
 <translation id="6777817260680419853">Preusmjeravanje je blokirano</translation>
 <translation id="6778959797435875428">Prestani zanemarivati web-lokacije</translation>
 <translation id="677965093459947883">Vrlo mali</translation>
@@ -4201,7 +4200,6 @@ Instaliranjem aplikacije <ph name="APP_NAME" /> preuzet će se <ph name="DOWNLOA
 <translation id="7629827748548208700">Kartica: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Uvijek otvori ovu vrstu datoteka</translation>
 <translation id="7632948528260659758">Ažuriranje sljedećih kiosk aplikacija nije uspjelo:</translation>
-<translation id="7634373849852678655">Pritisnite gumb aplikacije za izlazak iz cijelog zaslona</translation>
 <translation id="7639178625568735185">Shvaćam!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> može upotrijebiti spremljene zaporke kako bi vas automatski prijavio na web-lokacije koje ispunjavaju uvjete.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlasnik)</translation>
