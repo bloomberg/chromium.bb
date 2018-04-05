@@ -221,9 +221,11 @@ MHTMLParser::MHTMLParser(scoped_refptr<const SharedBuffer> data)
 HeapVector<Member<ArchiveResource>> MHTMLParser::ParseArchive() {
   MIMEHeader* header = MIMEHeader::ParseHeader(&line_reader_);
   HeapVector<Member<ArchiveResource>> resources;
-  if (!ParseArchiveWithHeader(header, resources))
+  if (ParseArchiveWithHeader(header, resources)) {
+    creation_date_ = header->Date();
+  } else {
     resources.clear();
-  creation_date_ = header->Date();
+  }
   return resources;
 }
 

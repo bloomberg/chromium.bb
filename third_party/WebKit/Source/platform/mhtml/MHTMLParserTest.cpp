@@ -390,7 +390,7 @@ TEST_F(MHTMLParserTest, DateParsing_InvalidDate) {
 }
 
 TEST_F(MHTMLParserTest, DateParsing_ValidDate) {
-  // Missing encoding is treated as binary.
+  // Valid date is used.
   const char mhtml_data[] =
       "From: <Saved by Blink>\r\n"
       "Subject: Test Subject\r\n"
@@ -413,6 +413,16 @@ TEST_F(MHTMLParserTest, DateParsing_ValidDate) {
   ASSERT_TRUE(WTF::Time::FromUTCExploded(
       {2017, 3 /* March */, 5 /* Friday */, 1, 22, 44, 17, 0}, &expected_time));
   EXPECT_EQ(expected_time, creation_time);
+}
+
+TEST_F(MHTMLParserTest, MissingBoundary) {
+  // No "boundary" parameter in the content type header means that parsing will
+  // be a failure and the header will be |nullptr|.
+  const char mhtml_data[] = "Content-Type: multipart/false\r\n";
+
+  HeapVector<Member<ArchiveResource>> resources =
+      ParseArchive(mhtml_data, sizeof(mhtml_data));
+  EXPECT_EQ(0U, resources.size());
 }
 
 }  // namespace blink
