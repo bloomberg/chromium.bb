@@ -5,75 +5,90 @@
 #ifndef DEVICE_FIDO_FIDO_REQUEST_HANDLER_H_
 #define DEVICE_FIDO_FIDO_REQUEST_HANDLER_H_
 
-#include <functional>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
+#include "device/fido/fido_request_handler_base.h"
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/strings/string_piece_forward.h"
-#include "device/fido/fido_discovery.h"
+#include "base/optional.h"
+#include "device/fido/fido_constants.h"
+#include "device/fido/fido_device.h"
 #include "device/fido/u2f_transport_protocol.h"
-
-namespace service_manager {
-class Connector;
-};  // namespace service_manager
 
 namespace device {
 
-class FidoDevice;
-class FidoTask;
-
-// Base class that handles device discovery/removal. Each FidoRequestHandler is
-// owned by FidoRequestManager and its lifetime is equivalent to that of a
-// single WebAuthn request. For each authenticator, the per-device work is
-// carried out by one FidoTask instance, which is constructed on DeviceAdded(),
-// and destroyed either on DeviceRemoved() or CancelOutgoingTaks().
+// Handles receiving response form potentially multiple connected authenticators
+// and relaying response to the relying party.
+template <class Response>
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandler
-    : public FidoDiscovery::Observer {
+    : public FidoRequestHandlerBase {
  public:
-  using TaskMap = std::map<std::string, std::unique_ptr<FidoTask>, std::less<>>;
+  using CompletionCallback =
+      base::OnceCallback<void(FidoReturnCode status_code,
+                              base::Optional<Response> response_data)>;
 
   FidoRequestHandler(service_manager::Connector* connector,
-                     const base::flat_set<U2fTransportProtocol>& transports);
-  ~FidoRequestHandler() override;
+                     const base::flat_set<U2fTransportProtocol>& transports,
+                     CompletionCallback completion_callback)
+      : FidoRequestHandlerBase(connector, transports),
+        completion_callback_(std::move(completion_callback)) {}
+  ~FidoRequestHandler() override {
+    if (!is_complete())
+      CancelOngoingTasks();
+  }
 
-  // Triggers cancellation of all per-device FidoTasks, except for the device
-  // with |exclude_device_id|, if one is provided. Cancelled tasks are
-  // immediately removed from |ongoing_tasks_|.
-  //
-  // This function is invoked either when:
-  //  (a) the entire WebAuthn API request is canceled or,
-  //  (b) a successful response or "invalid state error" is received from the
-  //  any one of the connected authenticators, in which case all other
-  //  per-device tasks are cancelled.
-  // https://w3c.github.io/webauthn/#iface-pkcredential
-  void CancelOngoingTasks(base::StringPiece exclude_device_id = nullptr);
-
-  void set_is_complete(bool is_complete = true) { is_complete_ = is_complete; }
-  bool is_complete() const { return is_complete_; }
+  bool is_complete() const { return completion_callback_.is_null(); }
 
  protected:
-  // Creates a new FidoTask that asynchronously starts a device request.
-  virtual std::unique_ptr<FidoTask> CreateTaskForNewDevice(FidoDevice*) = 0;
+  // Converts device response code received from CTAP1/CTAP2 device into
+  // FidoReturnCode and passes response data to webauth::mojom::Authenticator.
+  void OnDeviceResponse(FidoDevice* device,
+                        CtapDeviceResponseCode device_response_code,
+                        base::Optional<Response> response_data) {
+    if (is_complete()) {
+      DVLOG(2)
+          << "Response from authenticator received after request is complete.";
+      return;
+    }
 
-  TaskMap& ongoing_tasks() { return ongoing_tasks_; }
+    const auto return_code = ConvertDeviceResponseCodeToFidoReturnCode(
+        device_response_code, response_data.has_value());
+    if (!return_code) {
+      ongoing_tasks().erase(device->GetId());
+      return;
+    }
+
+    // Once response has been passed to the relying party, cancel all other on
+    // going requests.
+    CancelOngoingTasks(device->GetId());
+    std::move(completion_callback_).Run(*return_code, std::move(response_data));
+  }
 
  private:
-  // FidoDiscovery::Observer
-  void DiscoveryStarted(FidoDiscovery* discovery, bool success) final;
-  void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) final;
-  void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) final;
+  static base::Optional<FidoReturnCode>
+  ConvertDeviceResponseCodeToFidoReturnCode(
+      CtapDeviceResponseCode device_response_code,
+      bool response_has_value) {
+    switch (device_response_code) {
+      case CtapDeviceResponseCode::kSuccess:
+        return response_has_value
+                   ? base::make_optional(FidoReturnCode::kSuccess)
+                   : base::nullopt;
+      // These errors are only returned after the user interacted with the
+      // device.
+      case CtapDeviceResponseCode::kCtap2ErrInvalidCredential:
+      case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
+      case CtapDeviceResponseCode::kCtap2ErrNotAllowed:
+        return FidoReturnCode::kConditionsNotSatisfied;
+      default:
+        return base::nullopt;
+    }
+  }
 
-  // Set to true when the first user presence verified response has been
-  // received from one of the connected authenticators. This guarantees that at
-  // most one response is sent to the relying party.
-  bool is_complete_ = false;
-  TaskMap ongoing_tasks_;
-  std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
+  CompletionCallback completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandler);
 };

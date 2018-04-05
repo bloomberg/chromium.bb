@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_request_handler.h"
+#include "device/fido/fido_request_handler_base.h"
 
 #include <utility>
 
@@ -13,7 +13,7 @@
 
 namespace device {
 
-FidoRequestHandler::FidoRequestHandler(
+FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
     const base::flat_set<U2fTransportProtocol>& transports) {
   for (const auto transport : transports) {
@@ -29,9 +29,9 @@ FidoRequestHandler::FidoRequestHandler(
   }
 }
 
-FidoRequestHandler::~FidoRequestHandler() = default;
+FidoRequestHandlerBase::~FidoRequestHandlerBase() = default;
 
-void FidoRequestHandler::CancelOngoingTasks(
+void FidoRequestHandlerBase::CancelOngoingTasks(
     base::StringPiece exclude_device_id) {
   for (auto task_it = ongoing_tasks_.begin();
        task_it != ongoing_tasks_.end();) {
@@ -46,17 +46,17 @@ void FidoRequestHandler::CancelOngoingTasks(
   }
 }
 
-void FidoRequestHandler::DiscoveryStarted(FidoDiscovery* discovery,
-                                          bool success) {}
+void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
+                                              bool success) {}
 
-void FidoRequestHandler::DeviceAdded(FidoDiscovery* discovery,
-                                     FidoDevice* device) {
+void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
+                                         FidoDevice* device) {
   DCHECK(!base::ContainsKey(ongoing_tasks(), device->GetId()));
   ongoing_tasks_.emplace(device->GetId(), CreateTaskForNewDevice(device));
 }
 
-void FidoRequestHandler::DeviceRemoved(FidoDiscovery* discovery,
-                                       FidoDevice* device) {
+void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
+                                           FidoDevice* device) {
   // Device connection has been lost or device has already been removed.
   // Thus, calling CancelTask() is not necessary.
   DCHECK(base::ContainsKey(ongoing_tasks_, device->GetId()));

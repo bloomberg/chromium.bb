@@ -24,7 +24,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
  public:
   CtapGetAssertionRequest(std::string rp_id,
                           std::vector<uint8_t> client_data_hash);
+  CtapGetAssertionRequest(const CtapGetAssertionRequest& that);
   CtapGetAssertionRequest(CtapGetAssertionRequest&& that);
+  CtapGetAssertionRequest& operator=(const CtapGetAssertionRequest& other);
   CtapGetAssertionRequest& operator=(CtapGetAssertionRequest&& other);
   ~CtapGetAssertionRequest();
 
@@ -71,8 +73,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list_;
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;
-
-  DISALLOW_COPY_AND_ASSIGN(CtapGetAssertionRequest);
 };
 
 }  // namespace device
