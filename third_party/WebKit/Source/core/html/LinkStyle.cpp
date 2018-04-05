@@ -374,7 +374,7 @@ void LinkStyle::Process() {
     }
   }
 
-  if (!owner_->LoadLink(params))
+  if (!sheet_ && !owner_->LoadLink(params))
     return;
 
   if (LoadStylesheetIfNeeded(params.href, charset, params.type) == kNotNeeded &&
