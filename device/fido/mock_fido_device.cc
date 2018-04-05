@@ -16,8 +16,9 @@
 
 namespace device {
 
+// Matcher to compare the fist byte of the incoming requests.
 MATCHER_P(IsCtap2Command, expected_command, "") {
-  return !arg.empty() && (arg[0] == static_cast<uint8_t>(expected_command));
+  return !arg.empty() && arg[0] == base::strict_cast<uint8_t>(expected_command);
 }
 
 MockFidoDevice::MockFidoDevice() : weak_factory_(this) {}
@@ -48,28 +49,6 @@ void MockFidoDevice::WrongData(const std::vector<uint8_t>& command,
       apdu::ApduResponse(std::vector<uint8_t>(),
                          apdu::ApduResponse::Status::SW_WRONG_DATA)
           .GetEncodedResponse());
-}
-
-// static
-void MockFidoDevice::NoErrorGetInfo(const std::vector<uint8_t>& command,
-                                    DeviceCallback& cb) {
-  std::move(cb).Run(std::vector<uint8_t>(
-      std::begin(test_data::kTestAuthenticatorGetInfoResponse),
-      std::end(test_data::kTestAuthenticatorGetInfoResponse)));
-}
-
-// static
-void MockFidoDevice::CtapDeviceError(const std::vector<uint8_t>& command,
-                                     DeviceCallback& cb) {
-  std::move(cb).Run(base::nullopt);
-}
-
-// static
-void MockFidoDevice::NoErrorMakeCredential(const std::vector<uint8_t>& command,
-                                           DeviceCallback& cb) {
-  std::move(cb).Run(
-      std::vector<uint8_t>(std::begin(test_data::kTestMakeCredentialResponse),
-                           std::end(test_data::kTestMakeCredentialResponse)));
 }
 
 // static
@@ -135,13 +114,37 @@ void MockFidoDevice::ExpectCtap2CommandAndRespondWith(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::BindOnce(std::move(cb), std::move(data)), delay);
   };
+
   EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_))
       .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
 }
 
-void MockFidoDevice::ExpectCtap2CommandWithoutResponse(
+void MockFidoDevice::ExpectRequestAndRespondWith(
+    base::span<const uint8_t> request,
+    base::Optional<base::span<const uint8_t>> response,
+    base::TimeDelta delay) {
+  auto data = u2f_parsing_utils::MaterializeOrNull(response);
+  auto send_response = [ data(std::move(data)), delay ](DeviceCallback & cb) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::BindOnce(std::move(cb), std::move(data)), delay);
+  };
+
+  auto request_as_vector = u2f_parsing_utils::Materialize(request);
+  EXPECT_CALL(*this,
+              DeviceTransactPtr(std::move(request_as_vector), ::testing::_))
+      .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
+}
+
+void MockFidoDevice::ExpectCtap2CommandAndDoNotRespond(
     CtapRequestCommand command) {
   EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_));
+}
+
+void MockFidoDevice::ExpectRequestAndDoNotRespond(
+    base::span<const uint8_t> request) {
+  auto request_as_vector = u2f_parsing_utils::Materialize(request);
+  EXPECT_CALL(*this,
+              DeviceTransactPtr(std::move(request_as_vector), ::testing::_));
 }
 
 base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
