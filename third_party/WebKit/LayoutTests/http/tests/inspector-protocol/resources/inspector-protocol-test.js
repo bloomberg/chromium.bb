@@ -77,6 +77,8 @@ var TestRunner = class {
   }
 
   url(relative) {
+    if (relative.startsWith('http://') || relative.startsWith('https://'))
+      return relative;
     return this._baseURL + relative;
   }
 

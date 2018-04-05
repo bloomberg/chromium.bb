@@ -87,6 +87,7 @@ static const char kPageAgentScriptsToEvaluateOnLoad[] =
     "pageAgentScriptsToEvaluateOnLoad";
 static const char kScreencastEnabled[] = "screencastEnabled";
 static const char kLifecycleEventsEnabled[] = "lifecycleEventsEnabled";
+static const char kBypassCSPEnabled[] = "bypassCSPEnabled";
 }
 
 namespace {
@@ -458,6 +459,8 @@ InspectorPageAgent::InspectorPageAgent(
 void InspectorPageAgent::Restore() {
   if (state_->booleanProperty(PageAgentState::kPageAgentEnabled, false))
     enable();
+  if (state_->booleanProperty(PageAgentState::kBypassCSPEnabled, false))
+    setBypassCSP(true);
 }
 
 Response InspectorPageAgent::enable() {
@@ -749,6 +752,13 @@ void InspectorPageAgent::searchInResource(
                 optional_case_sensitive.fromMaybe(false),
                 optional_is_regex.fromMaybe(false),
                 WTF::Passed(std::move(callback))));
+}
+
+Response InspectorPageAgent::setBypassCSP(bool enabled) {
+  LocalFrame* frame = inspected_frames_->Root();
+  frame->GetSettings()->SetBypassCSP(enabled);
+  state_->setBoolean(PageAgentState::kBypassCSPEnabled, enabled);
+  return Response::OK();
 }
 
 Response InspectorPageAgent::setDocumentContent(const String& frame_id,

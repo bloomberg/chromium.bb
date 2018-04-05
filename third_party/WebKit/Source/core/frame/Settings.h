@@ -70,6 +70,9 @@ class CORE_EXPORT Settings {
   void SetTextAutosizingEnabled(bool);
   bool TextAutosizingEnabled() const { return text_autosizing_enabled_; }
 
+  void SetBypassCSP(bool enabled) { bypass_csp_ = enabled; }
+  bool BypassCSP() const { return bypass_csp_; }
+
   // Only set by Layout Tests, and only used if textAutosizingEnabled() returns
   // true.
   void SetTextAutosizingWindowSizeOverride(const IntSize&);
@@ -105,6 +108,7 @@ class CORE_EXPORT Settings {
   // use counter via the shadow page. Once blink side use counter is removed,
   // this flag is no longer needed (crbug.com/811948).
   bool is_shadow_page_;
+  bool bypass_csp_ = false;
 
   SETTINGS_MEMBER_VARIABLES
 

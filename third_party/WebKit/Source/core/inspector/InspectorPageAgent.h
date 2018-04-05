@@ -135,6 +135,8 @@ class CORE_EXPORT InspectorPageAgent final
                         std::unique_ptr<SearchInResourceCallback>) override;
   protocol::Response setDocumentContent(const String& frame_id,
                                         const String& html) override;
+  protocol::Response setBypassCSP(bool enabled) override;
+
   protocol::Response startScreencast(Maybe<String> format,
                                      Maybe<int> quality,
                                      Maybe<int> max_width,
