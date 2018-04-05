@@ -102,6 +102,7 @@ public class AndroidPaymentApp
     @Nullable
     private URI mCanDedupedApplicationId;
     private boolean mIsReadyToPayQueried;
+    private boolean mIsServiceConnected;
 
     /**
      * Builds the point of interaction with a locally installed 3rd party native Android payment
@@ -160,6 +161,7 @@ public class AndroidPaymentApp
         mServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
+                mIsServiceConnected = true;
                 IsReadyToPayService isReadyToPayService =
                         IsReadyToPayService.Stub.asInterface(service);
                 if (isReadyToPayService == null) {
@@ -170,7 +172,9 @@ public class AndroidPaymentApp
             }
 
             @Override
-            public void onServiceDisconnected(ComponentName name) {}
+            public void onServiceDisconnected(ComponentName name) {
+                mIsServiceConnected = false;
+            }
         };
 
         mIsReadyToPayIntent.putExtras(buildExtras(null /* id */, null /* merchantName */,
@@ -194,7 +198,10 @@ public class AndroidPaymentApp
 
     private void respondToGetInstrumentsQuery(final PaymentInstrument instrument) {
         if (mServiceConnection != null) {
-            ContextUtils.getApplicationContext().unbindService(mServiceConnection);
+            if (mIsServiceConnected) {
+                ContextUtils.getApplicationContext().unbindService(mServiceConnection);
+                mIsServiceConnected = false;
+            }
             mServiceConnection = null;
         }
 
