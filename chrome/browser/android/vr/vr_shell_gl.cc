@@ -189,6 +189,8 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       webvr_js_wait_time_(kWebVRSlidingAverageSize),
       webvr_acquire_time_(kWebVRSlidingAverageSize),
       webvr_submit_time_(kWebVRSlidingAverageSize),
+      ui_processing_time_(kWebVRSlidingAverageSize),
+      ui_controller_update_time_(kWebVRSlidingAverageSize),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
@@ -1059,12 +1061,20 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   }
 
   // Update the render position of all UI elements (including desktop).
+  TRACE_EVENT_BEGIN0("gpu", "SceneUpdate");
+  base::TimeTicks scene_start = base::TimeTicks::Now();
   bool scene_changed =
       ui_->scene()->OnBeginFrame(current_time, render_info_primary_.head_pose);
 
   // WebVR handles controller input in OnVsync.
-  if (!ShouldDrawWebVr())
+  base::TimeDelta controller_time = base::TimeDelta();
+  if (!ShouldDrawWebVr()) {
+    TRACE_EVENT0("gpu", "Controller");
+    base::TimeTicks controller_start = base::TimeTicks::Now();
     UpdateController(render_info_primary_, current_time);
+    controller_time = base::TimeTicks::Now() - controller_start;
+    ui_controller_update_time_.AddSample(controller_time);
+  }
 
   bool textures_changed = ui_->scene()->UpdateTextures();
 
@@ -1082,6 +1092,11 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
                                              kRedrawSceneAngleDeltaDegrees);
 
   bool dirty = ShouldDrawWebVr() || head_moved || redraw_needed;
+
+  base::TimeDelta scene_time = base::TimeTicks::Now() - scene_start;
+  // Don't double-count the controller time that was part of the scene time.
+  ui_processing_time_.AddSample(scene_time - controller_time);
+  TRACE_EVENT_END0("gpu", "SceneUpdate");
 
   if (!dirty && ui_->SkipsRedrawWhenNotDirty())
     return;
@@ -1138,6 +1153,8 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   if (ShouldDrawWebVr()) {
     overlay_elements = ui_->scene()->GetVisibleWebVrOverlayElementsToDraw();
   }
+
+  TRACE_COUNTER1("gpu", "VR overlay element count", overlay_elements.size());
 
   if (!overlay_elements.empty() && ShouldDrawWebVr()) {
     // WebVR content may use an arbitray size buffer. We need to draw browser UI
@@ -1380,6 +1397,10 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   vr_ui_fps_meter_.AddFrame(base::TimeTicks::Now());
   DVLOG(1) << "fps: " << vr_ui_fps_meter_.GetFPS();
   TRACE_COUNTER1("gpu", "VR UI FPS", vr_ui_fps_meter_.GetFPS());
+  TRACE_COUNTER2("gpu", "VR UI timing (us)", "scene update",
+                 ui_processing_time_.GetAverage().InMicroseconds(),
+                 "controller",
+                 ui_controller_update_time_.GetAverage().InMicroseconds());
 
   if (ShouldDrawWebVr()) {
     // We finished processing a frame, this may make pending WebVR
@@ -1578,9 +1599,13 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // rendering as WebVR uses the gamepad api. To ensure we always handle input
     // like app button presses, update the controller here, but not in
     // DrawFrame.
+    TRACE_EVENT0("gpu", "Controller");
+    base::TimeTicks controller_start = base::TimeTicks::Now();
     device::GvrDelegate::GetGvrPoseWithNeckModel(
         gvr_api_.get(), &render_info_primary_.head_pose);
     UpdateController(render_info_primary_, frame_time);
+    ui_controller_update_time_.AddSample(base::TimeTicks::Now() -
+                                         controller_start);
   } else {
     DrawFrame(-1, frame_time);
   }
