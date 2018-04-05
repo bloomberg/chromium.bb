@@ -24,6 +24,14 @@ import tempfile
 import time
 
 
+SUPPORTED_JSON_RESULT_FORMATS = {
+  'chartjson': 'The standard JSON output format for Telemetry.',
+  'printedjson': ('The JSON output format generated from parsing stdout from '
+                 'a test. This is the format used by tests that use '
+                 '//testing/perf/perf_test.h'),
+}
+
+
 class TempDir():
   """Context manager for temp dirs since Python 2 doesn't have one."""
   def __enter__(self):
@@ -97,6 +105,10 @@ def ParseArgsAndAssertValid():
                            'bisecting flaky metrics that fluctuate between '
                            'good/bad values, but can significantly increase '
                            'bisect time.')
+  parser.add_argument('--expected-json-result-format', default='chartjson',
+                      help='The data format the JSON results from the test are '
+                           'expected to be in. Supported values are: ' +
+                           (', '.join(SUPPORTED_JSON_RESULT_FORMATS.keys())))
 
   parser.add_argument_group('swarming arguments')
   parser.add_argument('--swarming-server', required=True,
@@ -143,6 +155,12 @@ def ParseArgsAndAssertValid():
         '--num-attempts-before-marking-good set to invalid value %d' %
         args.num_attempts_before_marking_good)
 
+  # Make sure the provided data format is supported.
+  if args.expected_json_result_format not in SUPPORTED_JSON_RESULT_FORMATS:
+    raise RuntimeError(
+        '--expected-json-result-format set to invalid value %s' %
+        args.expected_json_result_format)
+
   return (args, unknown_args)
 
 
@@ -178,6 +196,9 @@ def VerifyInput(args, unknown_args):
   if args.num_attempts_before_marking_good > 1:
     print ('Each revision must be found to be good %d times before actually '
            'being marked as good' % args.num_attempts_before_marking_good)
+  print 'The data format that will be expected is %s: %s' % (
+      args.expected_json_result_format,
+      SUPPORTED_JSON_RESULT_FORMATS[args.expected_json_result_format])
   print '======'
   print 'The test target %s will be built to %s' % (args.build_target,
                                                     args.build_output_dir)
@@ -315,15 +336,20 @@ def GetSwarmingResult(args, unknown_args, output_dir):
   with open(
       os.path.join(output_dir, '0', 'perftest-output.json'), 'r') as infile:
     perf_results = json.load(infile)
-    all_results = perf_results.get(unicode('charts'), {}).get(
-        unicode(args.metric), {}).get(unicode(args.story), {}).get(
-        unicode('values'), [])
+    all_results = []
+    if args.expected_json_result_format == 'chartjson':
+      all_results = perf_results.get(unicode('charts'), {}).get(
+          unicode(args.metric), {}).get(unicode(args.story), {}).get(
+          unicode('values'), [])
+    elif args.expected_json_result_format == 'printedjson':
+      all_results = perf_results.get(args.metric, {}).get('traces', {}).get(
+          args.story, [])
     if len(all_results) == 0:
       raise RuntimeError('Got no results for the story/metric combo. '
                          'Is there a typo in one of them?')
     result = all_results[0]
     print 'Got result %s' % str(result)
-  return result
+  return float(result)
 
 
 def RunBisectStep(args, unknown_args, revision, output_dir):
