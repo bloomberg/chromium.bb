@@ -92,22 +92,22 @@ void WaylandPointer::Button(void* data,
                             uint32_t button,
                             uint32_t state) {
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  int flag;
+  int changed_button;
   switch (button) {
     case BTN_LEFT:
-      flag = EF_LEFT_MOUSE_BUTTON;
+      changed_button = EF_LEFT_MOUSE_BUTTON;
       break;
     case BTN_MIDDLE:
-      flag = EF_MIDDLE_MOUSE_BUTTON;
+      changed_button = EF_MIDDLE_MOUSE_BUTTON;
       break;
     case BTN_RIGHT:
-      flag = EF_RIGHT_MOUSE_BUTTON;
+      changed_button = EF_RIGHT_MOUSE_BUTTON;
       break;
     case BTN_BACK:
-      flag = EF_BACK_MOUSE_BUTTON;
+      changed_button = EF_BACK_MOUSE_BUTTON;
       break;
     case BTN_FORWARD:
-      flag = EF_FORWARD_MOUSE_BUTTON;
+      changed_button = EF_FORWARD_MOUSE_BUTTON;
       break;
     default:
       return;
@@ -116,17 +116,19 @@ void WaylandPointer::Button(void* data,
   EventType type;
   if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
     type = ET_MOUSE_PRESSED;
-    pointer->flags_ |= flag;
+    pointer->flags_ |= changed_button;
     pointer->connection_->set_serial(serial);
   } else {
     type = ET_MOUSE_RELEASED;
-    pointer->flags_ &= ~flag;
+    pointer->flags_ &= ~changed_button;
   }
 
-  int flags = pointer->GetFlagsWithKeyboardModifiers() | flag;
+  // MouseEvent's flags should contain the button that was released too.
+  const int flags = pointer->GetFlagsWithKeyboardModifiers() | changed_button;
   MouseEvent event(type, gfx::Point(), gfx::Point(),
                    base::TimeTicks() + base::TimeDelta::FromMilliseconds(time),
-                   flags, flag);
+                   flags, changed_button);
+
   event.set_location_f(pointer->location_);
   event.set_root_location_f(pointer->location_);
   pointer->callback_.Run(&event);
