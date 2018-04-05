@@ -1488,6 +1488,9 @@
       default_value: "Vector<GridTrackSize>(1, GridTrackSize(Length(kAuto)))",
       type_name: "Vector<GridTrackSize>",
       converter: "ConvertGridTrackSizeList",
+      keywords: ["auto", "min-content", "max-content"],
+      typedom_types: ["Keyword", "Length", "Percentage", "Flex"],
+      separator: " "
     },
     {
       name: "grid-auto-flow",
@@ -1499,6 +1502,8 @@
       type_name: "GridAutoFlow",
       computed_style_custom_functions: ["getter"],
       converter: "ConvertGridAutoFlow",
+      keywords: ["row", "column"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "grid-auto-rows",
@@ -1509,6 +1514,9 @@
       default_value: "Vector<GridTrackSize>(1, GridTrackSize(Length(kAuto)))",
       type_name: "Vector<GridTrackSize>",
       converter: "ConvertGridTrackSizeList",
+      keywords: ["auto", "min-content", "max-content"],
+      typedom_types: ["Keyword", "Length", "Percentage", "Flex"],
+      separator: " "
     },
     {
       name: "grid-column-end",
@@ -1518,6 +1526,8 @@
       include_paths: ["core/style/GridPosition.h"],
       default_value: "GridPosition()",
       type_name: "GridPosition",
+      keywords: ["auto"],
+      typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
     },
     {
@@ -1528,6 +1538,8 @@
       include_paths: ["core/style/GridPosition.h"],
       default_value: "GridPosition()",
       type_name: "GridPosition",
+      keywords: ["auto"],
+      typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
     },
     {
@@ -1538,6 +1550,8 @@
       include_paths: ["core/style/GridPosition.h"],
       default_value: "GridPosition()",
       type_name: "GridPosition",
+      keywords: ["auto"],
+      typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
     },
     {
@@ -1548,12 +1562,16 @@
       include_paths: ["core/style/GridPosition.h"],
       default_value: "GridPosition()",
       type_name: "GridPosition",
+      keywords: ["auto"],
+      typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
     },
     {
       name: "grid-template-areas",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "grid-template-columns",
@@ -1565,6 +1583,8 @@
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
       custom_apply_functions_all: true,
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "grid-template-rows",
@@ -1576,6 +1596,8 @@
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
       custom_apply_functions_all: true,
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "height",

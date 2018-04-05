@@ -53,6 +53,17 @@ const CSSValue* StyleValueToCSSValue(
   // TODO(https://crbug.com/545324): Move this into a method on
   // CSSProperty when there are more of these cases.
   switch (property_id) {
+    case CSSPropertyGridAutoFlow: {
+      // level 1 only accepts single keywords
+      const auto* value = style_value.ToCSSValue();
+      // single keywords are wrapped in a list.
+      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword()) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*style_value.ToCSSValue());
+        return list;
+      }
+      break;
+    }
     case CSSPropertyTextDecorationLine: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();

@@ -46,6 +46,13 @@ bool IsCSSStyleValuePercentage(const CSSStyleValue& value) {
     MatchesPercentage();
 }
 
+bool IsCSSStyleValueFlex(const CSSStyleValue& value) {
+  if (!value.IsNumericValue())
+    return false;
+  return static_cast<const CSSNumericValue&>(value).Type().
+    MatchesBaseType(CSSNumericValueType::BaseType::kFlex);
+}
+
 bool IsCSSStyleValueImage(const CSSStyleValue& value) {
   return value.GetType() == CSSStyleValue::kURLImageType;
 }
