@@ -14,9 +14,8 @@ import org.chromium.content.browser.PopupController;
 import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
-import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -60,8 +59,8 @@ public class SelectPopup implements HideablePopup {
      * @param view Container view.
      */
     public static SelectPopup create(Context context, WebContents webContents, View view) {
-        SelectPopup selectPopup = WebContentsUserData.fromWebContents(
-                webContents, SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
+        SelectPopup selectPopup =
+                webContents.getOrSetUserData(SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
         assert selectPopup != null && !selectPopup.initialized();
         selectPopup.init(context, view);
         return selectPopup;
@@ -75,7 +74,7 @@ public class SelectPopup implements HideablePopup {
      *         {@link #create()} is not called yet.
      */
     public static SelectPopup fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(webContents, SelectPopup.class, null);
+        return webContents.getOrSetUserData(SelectPopup.class, null);
     }
 
     /**

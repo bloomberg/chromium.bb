@@ -47,13 +47,12 @@ import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
-import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.WindowAndroid;
@@ -197,7 +196,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      */
     public static SelectionPopupControllerImpl create(
             Context context, WindowAndroid window, WebContents webContents, View view) {
-        SelectionPopupControllerImpl controller = WebContentsUserData.fromWebContents(webContents,
+        SelectionPopupControllerImpl controller = webContents.getOrSetUserData(
                 SelectionPopupControllerImpl.class, UserDataFactoryLazyHolder.INSTANCE);
         assert controller != null && !controller.initialized();
         controller.init(context, window, view, true);
@@ -212,8 +211,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      *         {@link #create()} is not called yet.
      */
     public static SelectionPopupControllerImpl fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(
-                webContents, SelectionPopupControllerImpl.class, null);
+        return webContents.getOrSetUserData(SelectionPopupControllerImpl.class, null);
     }
 
     /**

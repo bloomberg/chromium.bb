@@ -34,11 +34,10 @@ import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.accessibility.captioning.CaptioningController;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
-import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 
 import java.util.ArrayList;
@@ -142,7 +141,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     public static WebContentsAccessibilityImpl create(Context context, ViewGroup containerView,
             WebContents webContents, String productVersion) {
-        WebContentsAccessibilityImpl wcax = WebContentsUserData.fromWebContents(webContents,
+        WebContentsAccessibilityImpl wcax = webContents.getOrSetUserData(
                 WebContentsAccessibilityImpl.class, UserDataFactoryLazyHolder.INSTANCE);
         assert wcax != null && !wcax.initialized();
         wcax.init(context, containerView, productVersion);
@@ -150,8 +149,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     public static WebContentsAccessibilityImpl fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(
-                webContents, WebContentsAccessibilityImpl.class, null);
+        return webContents.getOrSetUserData(WebContentsAccessibilityImpl.class, null);
     }
 
     protected WebContentsAccessibilityImpl(WebContents webContents) {
