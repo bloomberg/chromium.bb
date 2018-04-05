@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -20,6 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/toolbar/test_toolbar_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -197,11 +199,12 @@ class OmniboxViewViewsTest : public ChromeViewsTestBase {
     return test_api_->GetRenderText()->cursor_enabled();
   }
 
- private:
+ protected:
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
 
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TemplateURLServiceFactoryTestUtil util_;
@@ -390,7 +393,7 @@ TEST_F(OmniboxViewViewsTest, Emphasis) {
 }
 
 TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
-  toolbar_model()->set_text(base::ASCIIToUTF16("permanent text"));
+  toolbar_model()->set_formatted_full_url(base::ASCIIToUTF16("permanent text"));
   omnibox_view()->model()->ResetDisplayUrls();
   omnibox_view()->RevertAll();
 
@@ -414,4 +417,80 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   omnibox_textfield()->OnBlur();
   EXPECT_EQ(base::ASCIIToUTF16("permanent text"), omnibox_view()->text());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+}
+
+class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
+ protected:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
+
+    OmniboxViewViewsTest::SetUp();
+
+    toolbar_model()->set_formatted_full_url(
+        base::ASCIIToUTF16("https://example.com"));
+    toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+    omnibox_view()->model()->ResetDisplayUrls();
+    omnibox_view()->RevertAll();
+
+    ExpectElidedUrlDisplayed();
+  }
+
+  void ExpectFullUrlDisplayed() {
+    EXPECT_EQ(base::ASCIIToUTF16("https://example.com"),
+              omnibox_view()->text());
+    EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
+  }
+
+  void ExpectElidedUrlDisplayed() {
+    EXPECT_EQ(base::ASCIIToUTF16("example.com"), omnibox_view()->text());
+    EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+  }
+
+  // Used to access members that are marked private in views::TextField.
+  views::View* omnibox_textfield_view() { return omnibox_view(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, StayElidedOnFocus) {
+  // We should not unelide on focus.
+  omnibox_textfield()->OnFocus();
+
+  EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
+  ExpectElidedUrlDisplayed();
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
+  omnibox_textfield()->OnFocus();
+  EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
+
+  omnibox_view()->SelectAll(true);
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+  ExpectElidedUrlDisplayed();
+
+  // Right key should unelide and move the cursor to the end.
+  omnibox_textfield_view()->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, 0));
+  ExpectFullUrlDisplayed();
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(19U, start);
+  EXPECT_EQ(19U, end);
+
+  // Blur and restore the elided URL.
+  omnibox_textfield()->OnBlur();
+  omnibox_textfield()->OnFocus();
+  omnibox_view()->SelectAll(true);
+  ExpectElidedUrlDisplayed();
+
+  // Left key should unelide and move the cursor to the beginning of the elided
+  // part.
+  omnibox_textfield_view()->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_LEFT, 0));
+  ExpectFullUrlDisplayed();
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(8U, start);
+  EXPECT_EQ(8U, end);
 }

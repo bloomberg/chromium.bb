@@ -34,7 +34,12 @@ class TestToolbarModel : public ToolbarModel {
   bool ShouldDisplayURL() const override;
   bool IsOfflinePage() const override;
 
-  void set_text(const base::string16& text) { text_ = text; }
+  void set_formatted_full_url(const base::string16& url) {
+    formatted_full_url_ = url;
+  }
+  void set_url_for_display(const base::string16& url) {
+    url_for_display_ = url;
+  }
   void set_url(const GURL& url) { url_ = url; }
   void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
@@ -49,7 +54,8 @@ class TestToolbarModel : public ToolbarModel {
   void set_offline_page(bool offline_page) { offline_page_ = offline_page; }
 
  private:
-  base::string16 text_;
+  base::string16 formatted_full_url_;
+  base::string16 url_for_display_;
   GURL url_;
   security_state::SecurityLevel security_level_ = security_state::NONE;
   const gfx::VectorIcon* icon_ = nullptr;

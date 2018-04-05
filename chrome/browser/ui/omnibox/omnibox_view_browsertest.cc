@@ -354,7 +354,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       browser()->swap_toolbar_models(&toolbar_model);
     }
 
-    test_toolbar_model_->set_text(text);
+    test_toolbar_model_->set_formatted_full_url(text);
     omnibox_view->Update();
   }
 
