@@ -4,26 +4,17 @@
 
 #include "ipc/ipc_mojo_bootstrap.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
+#include <utility>
 
-#include "base/base_paths.h"
-#include "base/files/file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_test_base.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#endif
 
 namespace {
 
@@ -65,7 +56,10 @@ class PeerPidReceiver : public IPC::mojom::Channel {
       MessageExpectation message_expectation = MessageExpectation::kNotExpected)
       : binding_(this, std::move(request)),
         on_peer_pid_set_(on_peer_pid_set),
-        message_expectation_(message_expectation) {}
+        message_expectation_(message_expectation) {
+    binding_.set_connection_error_handler(disconnect_run_loop_.QuitClosure());
+  }
+
   ~PeerPidReceiver() override {
     bool expected_message =
         message_expectation_ != MessageExpectation::kNotExpected;
@@ -97,19 +91,15 @@ class PeerPidReceiver : public IPC::mojom::Channel {
 
   int32_t peer_pid() const { return peer_pid_; }
 
-  void RunUntilDisconnect() {
-    base::RunLoop run_loop;
-    binding_.set_connection_error_handler(run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  void RunUntilDisconnect() { disconnect_run_loop_.Run(); }
 
  private:
   mojo::AssociatedBinding<IPC::mojom::Channel> binding_;
   const base::Closure on_peer_pid_set_;
   MessageExpectation message_expectation_;
   int32_t peer_pid_ = -1;
-
   bool received_message_ = false;
+  base::RunLoop disconnect_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerPidReceiver);
 };
@@ -165,8 +155,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   return 0;
 }
 
-// TODO(https://crbug.com/826450): Fix flakiness and re-enable.
-TEST_F(IPCMojoBootstrapTest, DISABLED_ReceiveEmptyMessage) {
+TEST_F(IPCMojoBootstrapTest, ReceiveEmptyMessage) {
   base::MessageLoop message_loop;
   Connection connection(
       IPC::MojoBootstrap::Create(
