@@ -206,16 +206,8 @@ void TouchActionFilter::ResetTouchAction() {
 
 void TouchActionFilter::OnSetWhiteListedTouchAction(
     cc::TouchAction white_listed_touch_action) {
-  // For multiple fingers, we take the intersection of the touch actions for all
-  // fingers that have gone down during this action.  In the majority of
-  // real-world scenarios the touch action for all fingers will be the same.
-  // This is left as implementation because of the relationship of gestures
-  // (which are off limits for the spec).  We believe the following are
-  // desirable properties of this choice:
-  // 1. Not sensitive to finger touch order.  Behavior of putting two fingers
-  //    down "at once" will be deterministic.
-  // 2. Only subtractive - eg. can't trigger scrolling on an element that
-  //    otherwise has scrolling disabling by the addition of a finger.
+  // We use '&' here to account for the multiple-finger case, which is the same
+  // as OnSetTouchAction.
   white_listed_touch_action_ &= white_listed_touch_action;
 }
 
