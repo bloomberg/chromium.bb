@@ -44,14 +44,13 @@ void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   if (o.IsRequired())
     dst->AddState(ax::mojom::State::kRequired);
 
-  if (o.IsSelected() != blink::kWebAXSelectedStateUndefined)
-    dst->AddState(ax::mojom::State::kSelectable);
-
   if (o.IsEditable())
     dst->AddState(ax::mojom::State::kEditable);
 
-  if (o.IsSelected() == blink::kWebAXSelectedStateTrue)
-    dst->AddState(ax::mojom::State::kSelected);
+  if (o.IsSelected() != blink::kWebAXSelectedStateUndefined) {
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                          o.IsSelected() == blink::kWebAXSelectedStateTrue);
+  }
 
   if (o.IsRichlyEditable())
     dst->AddState(ax::mojom::State::kRichlyEditable);

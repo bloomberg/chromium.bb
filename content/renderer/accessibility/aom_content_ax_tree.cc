@@ -24,6 +24,8 @@ ax::mojom::BoolAttribute GetCorrespondingAXAttribute(
       return ax::mojom::BoolAttribute::kBusy;
     case blink::WebAOMBoolAttribute::AOM_ATTR_MODAL:
       return ax::mojom::BoolAttribute::kModal;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_SELECTED:
+      return ax::mojom::BoolAttribute::kSelected;
     default:
       return ax::mojom::BoolAttribute::kNone;
   }
@@ -111,8 +113,6 @@ ax::mojom::State GetCorrespondingStateFlag(blink::WebAOMBoolAttribute attr) {
       return ax::mojom::State::kMultiselectable;
     case blink::WebAOMBoolAttribute::AOM_ATTR_REQUIRED:
       return ax::mojom::State::kRequired;
-    case blink::WebAOMBoolAttribute::AOM_ATTR_SELECTED:
-      return ax::mojom::State::kSelected;
     default:
       return ax::mojom::State::kNone;
   }

@@ -1001,6 +1001,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::BoolAttribute::kClipsChildren:
         result += " clips_children=" + value;
         break;
+      case ax::mojom::BoolAttribute::kSelected:
+        result += " selected=" + value;
+        break;
       case ax::mojom::BoolAttribute::kNone:
         break;
     }

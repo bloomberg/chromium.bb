@@ -1,4 +1,4 @@
 rootWebArea
 ++tabList horizontal
-++++tab selectable name='Tab 1'
-++++tab selectable name='Tab 2'
+++++tab name='Tab 1' selected=false
+++++tab name='Tab 2' selected=false

@@ -74,7 +74,7 @@ AXTreeUpdate AXPlatformNodeTest::BuildTextFieldWithSelectionRange(
   text_field_node.id = 1;
   text_field_node.role = ax::mojom::Role::kTextField;
   text_field_node.AddState(ax::mojom::State::kEditable);
-  text_field_node.AddState(ax::mojom::State::kSelected);
+  text_field_node.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   text_field_node.AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
                                   start);
   text_field_node.AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, stop);
@@ -108,7 +108,8 @@ AXTreeUpdate AXPlatformNodeTest::BuildContentEditableWithSelectionRange(
   content_editable_node.id = 1;
   content_editable_node.role = ax::mojom::Role::kGroup;
   content_editable_node.AddState(ax::mojom::State::kRichlyEditable);
-  content_editable_node.AddState(ax::mojom::State::kSelected);
+  content_editable_node.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                                         true);
   content_editable_node.AddBoolAttribute(
       ax::mojom::BoolAttribute::kEditableRoot, true);
   content_editable_node.SetValue("How now brown cow.");

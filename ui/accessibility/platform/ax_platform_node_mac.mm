@@ -516,7 +516,8 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     // Since tabs use the Radio Button role on Mac, the standard way to set
     // them is via the value attribute rather than the selected attribute.
     if (node_->GetData().role == ax::mojom::Role::kTab)
-      return !node_->GetData().HasState(ax::mojom::State::kSelected);
+      return !node_->GetData().GetBoolAttribute(
+          ax::mojom::BoolAttribute::kSelected);
 
     return restriction != ax::mojom::Restriction::kReadOnly;
   }
@@ -721,7 +722,8 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 // Misc attributes.
 
 - (NSNumber*)AXSelected {
-  return @(node_->GetData().HasState(ax::mojom::State::kSelected));
+  return
+      @(node_->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 }
 
 - (NSString*)AXPlaceholderValue {

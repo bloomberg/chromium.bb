@@ -431,9 +431,8 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
                              model_->child_count());
 
-  node_data->AddState(ax::mojom::State::kSelectable);
-  if (IsSelected())
-    node_data->AddState(ax::mojom::State::kSelected);
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                              IsSelected());
   if (is_hovered_)
     node_data->AddState(ax::mojom::State::kHovered);
 }

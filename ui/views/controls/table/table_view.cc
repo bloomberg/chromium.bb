@@ -463,9 +463,9 @@ void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->role = ax::mojom::Role::kRow;
     node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                                selection_model_.active());
-    if (selection_model_.IsSelected(selection_model_.active())) {
-      node_data->AddState(ax::mojom::State::kSelected);
-    }
+    node_data->AddBoolAttribute(
+        ax::mojom::BoolAttribute::kSelected,
+        selection_model_.IsSelected(selection_model_.active()));
 
     // Generate accessible name from column headers and selected cell text.
     std::vector<base::string16> name_parts;

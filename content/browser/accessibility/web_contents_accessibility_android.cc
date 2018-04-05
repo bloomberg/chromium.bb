@@ -1083,7 +1083,7 @@ void WebContentsAccessibilityAndroid::OnAutofillPopupDisplayed(
   ax_node_data.SetName("Autofill");
   ax_node_data.SetRestriction(ax::mojom::Restriction::kReadOnly);
   ax_node_data.AddState(ax::mojom::State::kFocusable);
-  ax_node_data.AddState(ax::mojom::State::kSelectable);
+  ax_node_data.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
   g_autofill_popup_proxy_node_ax_node->SetData(ax_node_data);
   g_autofill_popup_proxy_node->Init(root_manager_,
                                     g_autofill_popup_proxy_node_ax_node);

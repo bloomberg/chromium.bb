@@ -69,10 +69,8 @@ class AutofillPopupChildView : public views::View {
     } else {
       // Options are selectable.
       node_data->role = ax::mojom::Role::kMenuItem;
-      if (is_selected_) {
-        node_data->AddState(ax::mojom::State::kSelected);
-      }
-      node_data->AddState(ax::mojom::State::kSelectable);
+      node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                                  is_selected_);
     }
 
     node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size_);

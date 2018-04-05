@@ -219,8 +219,6 @@
     protected,
     required,
     richlyEditable,
-    selectable,
-    selected,
     vertical,
     visited
   };
@@ -758,6 +756,9 @@
 
     // Indicates node text is line through.
     boolean lineThrough;
+
+    // Indicates whether this node is selected, unselected, or neither.
+    boolean? selected;
 
     //
     // Walking the tree.

@@ -986,9 +986,9 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_HAS_POPUP);
 #endif
 #endif
-  if (data.HasState(ax::mojom::State::kSelected))
+  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
-  if (data.HasState(ax::mojom::State::kSelectable))
+  if (data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
 
   // Checked state

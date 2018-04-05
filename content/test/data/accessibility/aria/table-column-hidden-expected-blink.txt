@@ -1,33 +1,33 @@
 rootWebArea
 ++grid ariaColumnCount=4 tableRowCount=3 tableColumnCount=3 cellIds=columnHeader,columnHeader,columnHeader,cell,cell,cell,cell,cell,cell
-++++row selectable
-++++++columnHeader selectable name='Month' ariaCellColumnIndex=1 ariaCellRowIndex=1
+++++row selected=false
+++++++columnHeader name='Month' ariaCellColumnIndex=1 ariaCellRowIndex=1 selected=false
 ++++++++staticText name='Month'
 ++++++++++inlineTextBox name='Month'
-++++++columnHeader selectable name='Day' ariaCellColumnIndex=2 ariaCellRowIndex=1
+++++++columnHeader name='Day' ariaCellColumnIndex=2 ariaCellRowIndex=1 selected=false
 ++++++++staticText name='Day'
 ++++++++++inlineTextBox name='Day'
-++++++columnHeader selectable name='Weather' ariaCellColumnIndex=4 ariaCellRowIndex=1
+++++++columnHeader name='Weather' ariaCellColumnIndex=4 ariaCellRowIndex=1 selected=false
 ++++++++staticText name='Weather'
 ++++++++++inlineTextBox name='Weather'
-++++row selectable
-++++++cell selectable name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2
+++++row selected=false
+++++++cell name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2 selected=false
 ++++++++staticText name='January'
 ++++++++++inlineTextBox name='January'
-++++++cell selectable name='01' ariaCellColumnIndex=2 ariaCellRowIndex=2
+++++++cell name='01' ariaCellColumnIndex=2 ariaCellRowIndex=2 selected=false
 ++++++++staticText name='01'
 ++++++++++inlineTextBox name='01'
-++++++cell selectable name='Sunny' ariaCellColumnIndex=4 ariaCellRowIndex=2
+++++++cell name='Sunny' ariaCellColumnIndex=4 ariaCellRowIndex=2 selected=false
 ++++++++staticText name='Sunny'
 ++++++++++inlineTextBox name='Sunny'
-++++row selectable
-++++++cell selectable name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2
+++++row selected=false
+++++++cell name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2 selected=false
 ++++++++staticText name='January'
 ++++++++++inlineTextBox name='January'
-++++++cell selectable name='02' ariaCellColumnIndex=2 ariaCellRowIndex=2
+++++++cell name='02' ariaCellColumnIndex=2 ariaCellRowIndex=2 selected=false
 ++++++++staticText name='02'
 ++++++++++inlineTextBox name='02'
-++++++cell selectable name='Rainy' ariaCellColumnIndex=4 ariaCellRowIndex=2
+++++++cell name='Rainy' ariaCellColumnIndex=4 ariaCellRowIndex=2 selected=false
 ++++++++staticText name='Rainy'
 ++++++++++inlineTextBox name='Rainy'
 ++++column

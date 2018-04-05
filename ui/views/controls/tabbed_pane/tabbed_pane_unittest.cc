@@ -226,8 +226,8 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
     EXPECT_EQ(ax::mojom::Role::kTab, data.role);
     EXPECT_EQ(DefaultTabTitle(),
               data.GetString16Attribute(ax::mojom::StringAttribute::kName));
-    EXPECT_TRUE(data.HasState(ax::mojom::State::kSelectable));
-    EXPECT_EQ(i == 0, data.HasState(ax::mojom::State::kSelected));
+    EXPECT_EQ(i == 0,
+              data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
   }
 
   ui::AXActionData action;

@@ -884,7 +884,8 @@ var boolAttributes = [
     'containerLiveBusy',
     'liveAtomic',
     'modal',
-    'scrollable'
+    'scrollable',
+    'selected'
 ];
 
 var intAttributes = [

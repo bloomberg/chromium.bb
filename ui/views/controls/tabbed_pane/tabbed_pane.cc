@@ -286,9 +286,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 void Tab::GetAccessibleNodeData(ui::AXNodeData* data) {
   data->role = ax::mojom::Role::kTab;
   data->SetName(title()->text());
-  data->AddState(ax::mojom::State::kSelectable);
-  if (selected())
-    data->AddState(ax::mojom::State::kSelected);
+  data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
 }
 
 bool Tab::HandleAccessibleAction(const ui::AXActionData& action_data) {

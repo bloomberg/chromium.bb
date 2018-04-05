@@ -226,7 +226,6 @@ Output.STATE_INFO_ = {
   expanded: {on: {msgId: 'aria_expanded_true'}},
   multiselectable: {on: {msgId: 'aria_multiselectable_true'}},
   required: {on: {msgId: 'aria_required_true'}},
-  selected: {on: {msgId: 'aria_selected_true'}},
   visited: {on: {msgId: 'visited_state'}}
 };
 
@@ -325,7 +324,8 @@ Output.RULES = {
       speak: `$name $cellIndexText $node(tableColumnHeader)
           $state $description`,
       braille: `$state
-          $name $cellIndexText $node(tableColumnHeader) $description`
+          $name $cellIndexText $node(tableColumnHeader) $description
+          $if($selected, @aria_selected_true)`
     },
     checkBox: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
@@ -390,7 +390,11 @@ Output.RULES = {
     },
     listBoxOption: {
       speak: `$state $name $role @describe_index($posInSet, $setSize)
-          $description $restriction`
+          $description $restriction
+          $nif($selected, @aria_selected_false)`,
+      braille: `$state $name $role @describe_index($posInSet, $setSize)
+          $description $restriction
+          $if($selected, @aria_selected_true, @aria_selected_false)`
     },
     listMarker: {speak: `$name`},
     menu: {
@@ -418,6 +422,10 @@ Output.RULES = {
     },
     menuListOption: {
       speak: `$name $role @describe_index($posInSet, $setSize) $state
+          $nif($selected, @aria_selected_false)
+          $restriction $description`,
+      braille: `$name $role @describe_index($posInSet, $setSize) $state
+          $if($selected, @aria_selected_true, @aria_selected_false)
           $restriction $description`
     },
     paragraph: {speak: `$nameOrDescendants`},
@@ -434,10 +442,14 @@ Output.RULES = {
     },
     rootWebArea: {enter: `$name`, speak: `$if($name, $name, $docUrl)`},
     region: {speak: `$state $nameOrTextContent $description $roleDescription`},
-    row: {enter: `$node(tableRowHeader)`},
+    row: {
+      enter: `$node(tableRowHeader)`,
+      speak: `$name $node(activeDescendant) $value $state $restriction $role
+          $if($selected, @aria_selected_true) $description`
+    },
     rowHeader: {
       speak: `$nameOrTextContent $description $roleDescription
-        $state`
+        $state $if($selected, @aria_selected_true)`
     },
     staticText: {speak: `$name=`},
     switch: {
@@ -448,7 +460,8 @@ Output.RULES = {
     },
     tab: {
       speak: `@describe_tab($name) $roleDescription $description
-          @describe_index($posInSet, $setSize) $state $restriction `,
+          @describe_index($posInSet, $setSize) $state $restriction
+          $if($selected, @aria_selected_true)`,
     },
     table: {
       enter: `@table_summary($name,
@@ -490,6 +503,7 @@ Output.RULES = {
           @describe_depth($hierarchicalLevel)`,
       speak: `$name
           $role $description $state $restriction
+          $nif($selected, @aria_selected_false)
           @describe_index($posInSet, $setSize)
           @describe_depth($hierarchicalLevel)`
     },
@@ -633,8 +647,23 @@ Output.isTruthy = function(node, attrib) {
     // These attributes default to false for empty strings.
     case 'roleDescription':
       return !!node.roleDescription;
+    case 'selected':
+      return node.selected === true;
     default:
       return node[attrib] !== undefined || node.state[attrib];
+  }
+};
+
+/**
+ * represents something 'falsey', e.g.: for selected:
+ * node.selected === false
+ */
+Output.isFalsey = function(node, attrib) {
+  switch (attrib) {
+    case 'selected':
+      return node.selected === false;
+    default:
+      return !Output.isTruthy(node, attrib);
   }
 };
 
@@ -1324,9 +1353,6 @@ Output.prototype = {
               resolvedInfo.msgId + '_brl' :
               resolvedInfo.msgId;
           var msg = Msgs.getMsg(msgId);
-          if (token == StateType.SELECTED)
-            options.annotation.push(new Output.SelectionSpan(
-                buff.length, buff.length + msg.length));
           this.append_(buff, msg, options);
         } else if (token == 'posInSet') {
           if (node.posInSet !== undefined)
@@ -1345,7 +1371,14 @@ Output.prototype = {
             var attrib = cond.value.slice(1);
             if (Output.isTruthy(node, attrib))
               this.format_(node, cond.nextSibling, buff);
-            else
+            else if (Output.isFalsey(node, attrib))
+              this.format_(node, cond.nextSibling.nextSibling, buff);
+          } else if (token == 'nif') {
+            var cond = tree.firstChild;
+            var attrib = cond.value.slice(1);
+            if (Output.isFalsey(node, attrib))
+              this.format_(node, cond.nextSibling, buff);
+            else if (Output.isTruthy(node, attrib))
               this.format_(node, cond.nextSibling.nextSibling, buff);
           } else if (token == 'earcon') {
             // Ignore unless we're generating speech output.

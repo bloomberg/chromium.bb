@@ -289,7 +289,7 @@ bool BrowserAccessibilityAndroid::IsScrollable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsSelected() const {
-  return HasState(ax::mojom::State::kSelected);
+  return GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 }
 
 bool BrowserAccessibilityAndroid::IsSlider() const {

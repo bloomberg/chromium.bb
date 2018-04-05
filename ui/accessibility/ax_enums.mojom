@@ -241,8 +241,6 @@ enum State {
   kProtected,
   kRequired,
   kRichlyEditable,
-  kSelectable,
-  kSelected,
    // Grows vertically, e.g. menu or combo box.
   kVertical,
   kVisited,
@@ -504,6 +502,14 @@ enum FloatAttribute {
   kFontSize,
 };
 
+// These attributes can take three states:
+// true, false, or undefined/unset.
+//
+// Some attributes are only ever true or unset. In these cases, undefined is
+// equivalent to false. In other attributes, all three states have meaning.
+//
+// Finally, note that different tree sources can use all three states for a
+// given attribute, while another tree source only uses two.
 enum BoolAttribute {
   kNone,
    // Generic busy state, does not have to be on a live region.
@@ -536,6 +542,9 @@ enum BoolAttribute {
    // Indicates that this node clips its children, i.e. may have
    // overflow: hidden or clip children by default.
   kClipsChildren,
+
+  // Indicates whether this node is selected or unselected.
+  kSelected,
 };
 
 enum IntListAttribute {

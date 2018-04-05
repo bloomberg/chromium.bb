@@ -852,7 +852,8 @@ STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
   for (int i = 0; i < delegate_->GetChildCount(); ++i) {
     auto* node = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
-    if (node && node->GetData().HasState(ax::mojom::State::kSelected))
+    if (node &&
+        node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
       selected_nodes.emplace_back(node);
   }
 
@@ -1448,7 +1449,8 @@ STDMETHODIMP AXPlatformNodeWin::get_nSelectedChildren(LONG* cell_count) {
   for (int r = 0; r < rows; ++r) {
     for (int c = 0; c < columns; ++c) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (cell && cell->GetData().HasState(ax::mojom::State::kSelected))
+      if (cell &&
+          cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
         result++;
     }
   }
@@ -1475,7 +1477,8 @@ STDMETHODIMP AXPlatformNodeWin::get_nSelectedColumns(LONG* column_count) {
     bool selected = true;
     for (int r = 0; r < rows && selected == true; ++r) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (!cell || !(cell->GetData().HasState(ax::mojom::State::kSelected)))
+      if (!cell || !(cell->GetData().GetBoolAttribute(
+                       ax::mojom::BoolAttribute::kSelected)))
         selected = false;
     }
     if (selected)
@@ -1505,7 +1508,8 @@ STDMETHODIMP AXPlatformNodeWin::get_nSelectedRows(LONG* row_count) {
     bool selected = true;
     for (int c = 0; c < columns && selected == true; ++c) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (!cell || !(cell->GetData().HasState(ax::mojom::State::kSelected)))
+      if (!cell || !(cell->GetData().GetBoolAttribute(
+                       ax::mojom::BoolAttribute::kSelected)))
         selected = false;
     }
     if (selected)
@@ -1615,7 +1619,8 @@ STDMETHODIMP AXPlatformNodeWin::get_selectedChildren(LONG max_children,
   for (int r = 0; r < rows; ++r) {
     for (int c = 0; c < columns; ++c) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (cell && cell->GetData().HasState(ax::mojom::State::kSelected))
+      if (cell &&
+          cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
         // index is row index * column count + column index.
         results.push_back(r * columns + c);
     }
@@ -1644,7 +1649,8 @@ STDMETHODIMP AXPlatformNodeWin::get_selectedColumns(LONG max_columns,
     bool selected = true;
     for (int r = 0; r < row_count && selected == true; ++r) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (!cell || !(cell->GetData().HasState(ax::mojom::State::kSelected)))
+      if (!cell || !(cell->GetData().GetBoolAttribute(
+                       ax::mojom::BoolAttribute::kSelected)))
         selected = false;
     }
     if (selected)
@@ -1672,7 +1678,8 @@ STDMETHODIMP AXPlatformNodeWin::get_selectedRows(LONG max_rows,
     bool selected = true;
     for (int c = 0; c < column_count && selected == true; ++c) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (!cell || !(cell->GetData().HasState(ax::mojom::State::kSelected)))
+      if (!cell || !(cell->GetData().GetBoolAttribute(
+                       ax::mojom::BoolAttribute::kSelected)))
         selected = false;
     }
     if (selected)
@@ -1709,7 +1716,8 @@ STDMETHODIMP AXPlatformNodeWin::get_isColumnSelected(LONG column,
 
   for (int r = 0; r < rows; ++r) {
     AXPlatformNodeBase* cell = GetTableCell(r, column);
-    if (!cell || !(cell->GetData().HasState(ax::mojom::State::kSelected)))
+    if (!cell || !(cell->GetData().GetBoolAttribute(
+                     ax::mojom::BoolAttribute::kSelected)))
       return S_OK;
   }
 
@@ -1732,7 +1740,8 @@ STDMETHODIMP AXPlatformNodeWin::get_isRowSelected(LONG row,
 
   for (int c = 0; c < columns; ++c) {
     AXPlatformNodeBase* cell = GetTableCell(row, c);
-    if (!cell || !(cell->GetData().HasState(ax::mojom::State::kSelected)))
+    if (!cell || !(cell->GetData().GetBoolAttribute(
+                     ax::mojom::BoolAttribute::kSelected)))
       return S_OK;
   }
 
@@ -1756,7 +1765,8 @@ STDMETHODIMP AXPlatformNodeWin::get_isSelected(LONG row,
     return S_FALSE;
 
   AXPlatformNodeBase* cell = GetTableCell(row, column);
-  if (cell && cell->GetData().HasState(ax::mojom::State::kSelected))
+  if (cell &&
+      cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     *is_selected = true;
 
   return S_OK;
@@ -1873,7 +1883,8 @@ STDMETHODIMP AXPlatformNodeWin::get_selectedCells(IUnknown*** cells,
   for (int r = 0; r < rows; ++r) {
     for (int c = 0; c < columns; ++c) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (cell && cell->GetData().HasState(ax::mojom::State::kSelected))
+      if (cell &&
+          cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
         selected.push_back(cell);
     }
   }
@@ -3393,7 +3404,7 @@ bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
 
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kMenuListOption:
-      if (data.HasState(ax::mojom::State::kSelectable))
+      if (data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
         return true;
       break;
 
@@ -3473,10 +3484,10 @@ int AXPlatformNodeWin::MSAAState() {
   // TODO(dougt) unhandled ux::ax::mojom::State::kRequired
   // TODO(dougt) unhandled ux::ax::mojom::State::kRichlyEditable
 
-  if (data.HasState(ax::mojom::State::kSelectable))
+  if (data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     msaa_state |= STATE_SYSTEM_SELECTABLE;
 
-  if (data.HasState(ax::mojom::State::kSelected))
+  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     msaa_state |= STATE_SYSTEM_SELECTED;
 
   // TODO(dougt) unhandled VERTICAL
@@ -3533,7 +3544,7 @@ int AXPlatformNodeWin::MSAAState() {
   // to focus. This helps NVDA read the selected option as it changes.
   if ((data.role == ax::mojom::Role::kListBoxOption ||
        data.role == ax::mojom::Role::kMenuItem) &&
-      data.HasState(ax::mojom::State::kSelected)) {
+      data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
     AXPlatformNodeBase* container = FromNativeViewAccessible(GetParent());
     if (container && container->GetParent() == focus) {
       ui::AXNodeData container_data = container->GetData();

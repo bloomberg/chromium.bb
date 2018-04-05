@@ -217,8 +217,10 @@ TEST_F(OmniboxResultViewTest, AccessibleNodeData) {
   result_view()->SetMatch(match);
   ui::AXNodeData result_node_data;
   result_view()->GetAccessibleNodeData(&result_node_data);
-  EXPECT_TRUE(result_node_data.HasState(ax::mojom::State::kSelectable));
-  EXPECT_FALSE(result_node_data.HasState(ax::mojom::State::kSelected));
+  EXPECT_TRUE(
+      result_node_data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  EXPECT_FALSE(
+      result_node_data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
   EXPECT_EQ(result_node_data.role, ax::mojom::Role::kListBoxOption);
   EXPECT_EQ(
       result_node_data.GetString16Attribute(ax::mojom::StringAttribute::kName),
@@ -230,10 +232,12 @@ TEST_F(OmniboxResultViewTest, AccessibleNodeData) {
             6);
 
   // Select it and check selected state.
+  ui::AXNodeData result_after_click;
   result_view()->OnMousePressed(
       CreateEvent(ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON));
-  result_view()->GetAccessibleNodeData(&result_node_data);
-  EXPECT_TRUE(result_node_data.HasState(ax::mojom::State::kSelected));
+  result_view()->GetAccessibleNodeData(&result_after_click);
+  EXPECT_TRUE(
+      result_after_click.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 
   // Check accessibility of list box.
   ui::AXNodeData popup_node_data;

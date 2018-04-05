@@ -141,16 +141,6 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
           AddEvent(container, Event::ROW_COUNT_CHANGED);
       }
       break;
-    case ax::mojom::State::kSelected: {
-      AddEvent(node, Event::SELECTED_CHANGED);
-      ui::AXNode* container = node;
-      while (container &&
-             !ui::IsContainerWithSelectableChildrenRole(container->data().role))
-        container = container->parent();
-      if (container)
-        AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
-      break;
-    }
     case ax::mojom::State::kIgnored: {
       ui::AXNode* unignored_parent = node->GetUnignoredParent();
       if (unignored_parent)
@@ -250,6 +240,17 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
                                               ax::mojom::BoolAttribute attr,
                                               bool new_value) {
   DCHECK_EQ(tree_, tree);
+
+  if (attr == ax::mojom::BoolAttribute::kSelected) {
+    AddEvent(node, Event::SELECTED_CHANGED);
+    ui::AXNode* container = node;
+    while (container &&
+           !ui::IsContainerWithSelectableChildrenRole(container->data().role))
+      container = container->parent();
+    if (container)
+      AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
+    return;
+  }
 
   AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
 }

@@ -2,24 +2,24 @@ rootWebArea focusable
 ++genericContainer
 ++++popUpButton collapsed focusable haspopup
 ++++++menuListPopup invisible
-++++++++menuListOption focusable selectable selected name='Placeholder option'
-++++++++menuListOption focusable invisible selectable name='Option 1'
-++++++++menuListOption focusable invisible selectable name='Option 2'
+++++++++menuListOption focusable name='Placeholder option' selected=true
+++++++++menuListOption focusable invisible name='Option 1' selected=false
+++++++++menuListOption focusable invisible name='Option 2' selected=false
 ++++popUpButton collapsed focusable haspopup
 ++++++menuListPopup invisible
-++++++++menuListOption focusable invisible selectable name='Option 1'
-++++++++menuListOption focusable selectable selected name='Option 2'
-++++++++menuListOption focusable invisible selectable name='Option 3'
+++++++++menuListOption focusable invisible name='Option 1' selected=false
+++++++++menuListOption focusable name='Option 2' selected=true
+++++++++menuListOption focusable invisible name='Option 3' selected=false
 ++++popUpButton collapsed focusable haspopup required
 ++++++menuListPopup invisible
-++++++++menuListOption focusable selectable selected name='Option 1'
-++++++++menuListOption focusable invisible selectable name='Option 2'
-++++++++menuListOption focusable invisible selectable name='Option 3'
+++++++++menuListOption focusable name='Option 1' selected=true
+++++++++menuListOption focusable invisible name='Option 2' selected=false
+++++++++menuListOption focusable invisible name='Option 3' selected=false
 ++++listBox focusable multiselectable
-++++++listBoxOption focusable selectable name='Option 1' setSize=3 posInSet=1
-++++++listBoxOption focusable selectable name='Option 2' setSize=3 posInSet=2
-++++++listBoxOption focusable selectable name='Option 3' setSize=3 posInSet=3
+++++++listBoxOption focusable name='Option 1' setSize=3 posInSet=1 selected=false
+++++++listBoxOption focusable name='Option 2' setSize=3 posInSet=2 selected=false
+++++++listBoxOption focusable name='Option 3' setSize=3 posInSet=3 selected=false
 ++++listBox focusable
-++++++listBoxOption focusable selectable name='Option 1' setSize=3 posInSet=1
-++++++listBoxOption focusable selectable name='Option 2' setSize=3 posInSet=2
-++++++listBoxOption focusable selectable name='Option 3' setSize=3 posInSet=3
+++++++listBoxOption focusable name='Option 1' setSize=3 posInSet=1 selected=false
+++++++listBoxOption focusable name='Option 2' setSize=3 posInSet=2 selected=false
+++++++listBoxOption focusable name='Option 3' setSize=3 posInSet=3 selected=false
