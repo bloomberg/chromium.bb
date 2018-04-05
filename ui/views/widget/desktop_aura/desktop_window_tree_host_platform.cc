@@ -241,9 +241,7 @@ void DesktopWindowTreeHostPlatform::Deactivate() {
 }
 
 bool DesktopWindowTreeHostPlatform::IsActive() const {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return is_active_;
 }
 
 void DesktopWindowTreeHostPlatform::Maximize() {
@@ -416,6 +414,7 @@ void DesktopWindowTreeHostPlatform::OnCloseRequest() {
 }
 
 void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
+  is_active_ = active;
   aura::WindowTreeHostPlatform::OnActivationChanged(active);
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
