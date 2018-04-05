@@ -1,8 +1,8 @@
 # Tools for Analyzing Chrome's Binary Size
 
-These tools currently focus on Android. They somewhat work with Linux builds,
-but not as well. As for Windows, some great tools already exist and are
-documented here:
+These tools currently focus on supporting Android. They somewhat work with
+Linux builds. As for Windows, some great tools already exist and are documented
+here:
 
  * https://www.chromium.org/developers/windows-binary-sizes
 
@@ -73,12 +73,16 @@ between milestones.
 
 `.size` files are gzipped plain text files that contain:
 
-1. A list of .so section sizes, as reported by `readelf -S`,
-1. Metadata (GN args, filenames, timestamps, git revision, build id),
+1. A list of section sizes, including:
+   * .so sections as reported by `readelf -S`
+   * .pak and .dex sections for apk files
+1. Metadata (apk size, GN args, filenames, timestamps, git revision, build id),
 1. A list of symbols, including name, address, size,
-  padding (caused by alignment), and associated `.o` / `.cc` files.
+  padding (caused by alignment), and associated source/object files.
 
 #### How are Symbols Collected?
+
+##### Native Symbols
 
 1. Symbol list is Extracted from linker `.map` file.
    * Map files contain some unique pieces of information compared to `nm` output,
@@ -102,6 +106,46 @@ between milestones.
   set to `{shared}/$SYMBOL_COUNT`. This collapsing is done only for symbols owned
   by a large number of paths.
 
+##### Pak Symbols
+
+1. Grit creates a mapping between numeric id and textual id for grd files.
+   * A side effect of pak whitelist generation is a mapping of `.cc` to numeric
+     id.
+   * A complete per-apk mapping of numeric id to textual id is stored in the
+     `output_dir/size-info` dir.
+1. `supersize` uses these two mappings to find associated source files for the
+  pak entries found in all of the apk's `.pak` files.
+   * Pak entries with the same name are merged into a single symbol.
+     * This is the case of pak files for translations.
+   * The original grd file paths are stored in the full name of each symbol.
+
+##### Dex Symbols
+
+1. Java compile targets create a mapping between java fully qualified names
+  (FQN) and source files.
+   * For `.java` files the FQN of the public class is mapped to the file.
+   * For `.srcjar` files the FQN of the public class is mapped to the `.srcjar`
+     file path.
+   * A complete per-apk class FQN to source mapping is stored in the
+     `output_dir/size-info` dir.
+1. The `apkanalyzer` sdk tool is used to find the size and FQN of entries in
+  the dex file.
+   * If a proguard `.mapping` file is available, that is used to get back the
+     original FQN.
+1. The output from `apkanalyzer` is used by `supersize` along with the mapping
+  file to find associated source files for the dex entries found in all of the
+  apk's `.dex` files.
+
+##### Common Symbols
+
+1. Shared bytes are stored in symbols with names starting with `Overhead: `.
+   * Elf file, dex file, pak files, apk files all have compression overhead.
+   * These are treated as padding-only symbols to de-emphasize them in diffs.
+   * It is expected that these symbols have minor fluctuations since they are
+     affected by changes in compressibility.
+1. All other files in an apk have one symbol each under the `.other` section
+  with their corresponding path in the apk as their associated path.
+
 #### What Other Processing Happens?
 
 1. Path normalization:
@@ -122,7 +166,7 @@ between milestones.
      * `template_name`: Name without argument parameters.
      * `full_name`: Name with all parameters.
 
-1. Clustering
+1. Clustering:
    * Compiler & linker optimizations can cause symbols to be broken into
      multiple parts to become candidates for inlining ("partial inlining").
    * These symbols are sometimes suffixed with "`[clone]`" (removed by
@@ -132,8 +176,17 @@ between milestones.
    * Clustering is done by default on `SizeInfo.symbols`. To view unclustered
      symbols, use `SizeInfo.raw_symbols`.
 
-1. Diffing
+1. Diffing:
    * Some heuristics for matching up before/after symbols.
+
+1. Simulated compression:
+   * Only some `.pak` files are compressed and others are kept uncompressed.
+   * To get a reasonable idea of actual impact to final apk size, we use a
+     constant compression factor for all the compressed `.pak` files.
+     * This prevents swings in compressed sizes for all symbols when new
+       entries are added or old entries are removed.
+     * The constant is chosen so that it minimizes overall discrepancy with
+       actual total compressed sizes.
 
 #### Is Super Size a Generic Tool?
 
@@ -142,7 +195,8 @@ a generic tool is not a goal. Some examples of existing Chrome-specific logic:
 
  * Assumes `.ninja` build rules are available.
  * Heuristic for locating `.so` given `.apk`.
- * Roadmap includes `.pak` file analysis.
+ * Requires `size-info` dir in output directory to analyze `.pak` and `.dex`
+   files.
 
 ### Usage: archive
 
@@ -235,12 +289,6 @@ Example session:
 ### Roadmap
 
 1. [Better Linux support](https://bugs.chromium.org/p/chromium/issues/detail?id=717550) (clang+lld+lto vs gcc+gold).
-1. More `archive` features:
-    * Find out more about 0xffffffffffffffff addresses, and why such large
-      gaps exist after them. ([crbug/709050](https://bugs.chromium.org/p/chromium/issues/detail?id=709050))
-    * Collect .pak file information (using .o.whitelist files)
-    * Collect java symbol information
-    * Collect .apk entry information
 1. More `console` features:
    * Add `SplitByName()` - Like `GroupByName()`, but recursive.
    * A canned query, that does what ShowGlobals does (as described in [Windows Binary Sizes](https://www.chromium.org/developers/windows-binary-sizes)).
