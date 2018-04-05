@@ -1836,15 +1836,23 @@ static void decode_tile(AV1Decoder *pbi, int tile_row, int tile_col) {
   const uint8_t *p_end = aom_reader_find_end(&td->bit_reader);
   const uint8_t *p = p_begin + nb_bytes;
 
-  if (p > p_end) cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+  if (p > p_end) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Decode failed. Frame data is corrupted.");
+  }
 
   uint8_t last_byte = p[-1];
   uint8_t pattern = 128 >> ((nb_bits - 1) & 7);
-  if ((last_byte & (2 * pattern - 1)) != pattern)
-    cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+  if ((last_byte & (2 * pattern - 1)) != pattern) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Decode failed. Frame data is corrupted.");
+  }
 
   while (p < p_end) {
-    if (*p != 0) cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    if (*p != 0) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Decode failed. Frame data is corrupted.");
+    }
     p++;
   }
 }
