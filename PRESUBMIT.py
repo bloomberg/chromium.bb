@@ -552,7 +552,7 @@ _BANNED_CPP_FUNCTIONS = (
         'net::URLFetcher may still be used in binaries that do not embed',
         'content.',
       ),
-      True,
+      False,
       (
         r'^ios[\\\/].*\.(cc|h)$',
         r'.*[\\\/]ios[\\\/].*\.(cc|h)$',
