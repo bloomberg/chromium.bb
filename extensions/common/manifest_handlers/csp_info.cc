@@ -136,15 +136,10 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
     return false;
   }
-  std::string sanitized_csp;
-  if (extension->manifest_version() >= 2) {
-    std::vector<InstallWarning> warnings;
-    content_security_policy =
-        SanitizeContentSecurityPolicy(content_security_policy,
-                                      GetValidatorOptions(extension),
-                                      &warnings);
-    extension->AddInstallWarnings(warnings);
-  }
+  std::vector<InstallWarning> warnings;
+  content_security_policy = SanitizeContentSecurityPolicy(
+      content_security_policy, GetValidatorOptions(extension), &warnings);
+  extension->AddInstallWarnings(warnings);
 
   extension->SetManifestData(
       keys::kContentSecurityPolicy,
