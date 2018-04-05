@@ -159,7 +159,15 @@ def gen_commit_msg(logs, cmdline, rolls, reviewers, bug):
   return commit_msg
 
 
-def finalize(commit_msg, deps_path, deps_content, rolls):
+def get_full_dir(root, dependency, is_relative):
+  """Return the full path to the dependency."""
+  root_dir = root
+  if not is_relative:
+    root_dir = os.path.dirname(root_dir)
+  return os.path.normpath(os.path.join(root_dir, dependency))
+
+
+def finalize(commit_msg, deps_path, deps_content, rolls, is_relative):
   """Edits the DEPS file, commits it, then uploads a CL."""
   print('Commit message:')
   print('\n'.join('    ' + i for i in commit_msg.splitlines()))
@@ -173,8 +181,7 @@ def finalize(commit_msg, deps_path, deps_content, rolls):
   # Pull the dependency to the right revision. This is surprising to users
   # otherwise.
   for dependency, (_head, roll_to) in sorted(rolls.iteritems()):
-    full_dir = os.path.normpath(
-        os.path.join(os.path.dirname(root), dependency))
+    full_dir = get_full_dir(root, dependency, is_relative)
     check_call(['git', 'checkout', '--quiet', roll_to], cwd=full_dir)
 
 
@@ -230,10 +237,10 @@ def main():
     # git fetch.
     deps_path, deps_content = get_deps(root)
     gclient_dict = gclient_eval.Parse(deps_content, True, True, deps_path)
+    is_relative = gclient_dict.get('use_relative_paths', False)
     rolls = {}
     for dependency in dependencies:
-      full_dir = os.path.normpath(
-          os.path.join(os.path.dirname(root), dependency))
+      full_dir = get_full_dir(root, dependency, is_relative)
       if not os.path.isdir(full_dir):
         raise Error('Directory not found: %s (%s)' % (dependency, full_dir))
       head, roll_to = calculate_roll(
@@ -249,8 +256,7 @@ def main():
 
     logs = []
     for dependency, (head, roll_to) in sorted(rolls.iteritems()):
-      full_dir = os.path.normpath(
-          os.path.join(os.path.dirname(root), dependency))
+      full_dir = get_full_dir(root, dependency, is_relative)
       log = generate_commit_message(
           full_dir, dependency, head, roll_to, args.no_log, args.log_limit)
       logs.append(log)
@@ -259,7 +265,7 @@ def main():
     deps_content = gclient_eval.RenderDEPSFile(gclient_dict)
 
     commit_msg = gen_commit_msg(logs, cmdline, rolls, reviewers, args.bug)
-    finalize(commit_msg, deps_path, deps_content, rolls)
+    finalize(commit_msg, deps_path, deps_content, rolls, is_relative)
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
     return 2 if isinstance(e, AlreadyRolledError) else 1
