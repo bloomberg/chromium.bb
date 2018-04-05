@@ -4410,19 +4410,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)prepareForToolsMenuPresentationByCoordinator:
     (ToolsMenuCoordinator*)coordinator {
-  DCHECK(_browserState);
-  DCHECK(self.visible || self.dismissingModal);
-
-  // Dismiss the omnibox (if open).
-  [self.dispatcher cancelOmniboxEdit];
-  // Dismiss the soft keyboard (if open).
-  [[_model currentTab].webController dismissKeyboard];
-  // Dismiss Find in Page focus.
-  [self updateFindBar:NO shouldFocus:NO];
-
-  if (self.incognitoTabTipBubblePresenter.isUserEngaged) {
-    base::RecordAction(UserMetricsAction("NewIncognitoTabTipTargetSelected"));
-  }
+  [self.dispatcher
+      prepareForPopupMenuPresentation:PopupMenuCommandTypeToolsMenu];
 }
 
 - (ToolsMenuConfiguration*)menuConfigurationForToolsMenuCoordinator:
@@ -4830,6 +4819,30 @@ bubblePresenterForFeature:(const base::Feature&)feature
                referrer:web::Referrer()
              transition:ui::PAGE_TRANSITION_LINK
       rendererInitiated:NO];
+}
+
+- (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {
+  DCHECK(_browserState);
+  DCHECK(self.visible || self.dismissingModal);
+
+  // Dismiss the omnibox (if open).
+  [self.dispatcher cancelOmniboxEdit];
+  // Dismiss the soft keyboard (if open).
+  [[_model currentTab].webController dismissKeyboard];
+  // Dismiss Find in Page focus.
+  [self updateFindBar:NO shouldFocus:NO];
+
+  switch (type) {
+    case PopupMenuCommandTypeToolsMenu:
+      if (self.incognitoTabTipBubblePresenter.isUserEngaged) {
+        base::RecordAction(
+            UserMetricsAction("NewIncognitoTabTipTargetSelected"));
+      }
+      break;
+    case PopupMenuCommandTypeDefault:
+      // Do nothing.
+      break;
+  }
 }
 
 #pragma mark - ToolbarOwner (Public)
@@ -5530,9 +5543,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)prepareForTabHistoryPresentation {
-  DCHECK(self.visible || self.dismissingModal);
-  [[self.tabModel currentTab].webController dismissKeyboard];
-  [self.dispatcher cancelOmniboxEdit];
+  [self.dispatcher prepareForPopupMenuPresentation:PopupMenuCommandTypeDefault];
 }
 
 #pragma mark - CaptivePortalDetectorTabHelperDelegate

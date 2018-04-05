@@ -7,6 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
+// Type of a popup menu command.
+typedef NS_ENUM(NSInteger, PopupMenuCommandType) {
+  PopupMenuCommandTypeToolsMenu,
+  PopupMenuCommandTypeDefault,
+};
+
 // Commands for the popup menu.
 @protocol PopupMenuCommands
 

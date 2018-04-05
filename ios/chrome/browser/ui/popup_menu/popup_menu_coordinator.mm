@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
@@ -19,6 +20,15 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Returns the corresponding command type for a Popup menu |type|.
+PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
+  if (type == PopupMenuTypeToolsMenu)
+    return PopupMenuCommandTypeToolsMenu;
+  return PopupMenuCommandTypeDefault;
+}
+}  // namespace
 
 @interface PopupMenuCoordinator ()<PopupMenuCommands>
 
@@ -70,7 +80,9 @@
   label.text = @"Back";
   viewController.view = label;
   // TODO(crbug.com/804779): Use the Navigation menu instead of a label.
-  [self presentPopupForContent:viewController fromNamedGuide:kBackButtonGuide];
+  [self presentPopupForContent:viewController
+                        ofType:PopupMenuTypeNavigationBackward
+                fromNamedGuide:kBackButtonGuide];
 }
 
 - (void)showNavigationHistoryForwardPopupMenu {
@@ -82,6 +94,7 @@
   viewController.view = label;
   // TODO(crbug.com/804779): Use the Navigation menu instead of a label.
   [self presentPopupForContent:viewController
+                        ofType:PopupMenuTypeNavigationForward
                 fromNamedGuide:kForwardButtonGuide];
 }
 
@@ -103,6 +116,7 @@
   self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
 
   [self presentPopupForContent:tableViewController
+                        ofType:PopupMenuTypeToolsMenu
                 fromNamedGuide:kToolsMenuGuide];
 }
 
@@ -123,6 +137,7 @@
   self.mediator.popupMenu = tableViewController;
 
   [self presentPopupForContent:tableViewController
+                        ofType:PopupMenuTypeTabGrid
                 fromNamedGuide:kTabSwitcherGuide];
 }
 
@@ -133,7 +148,9 @@
   label.text = @"Search";
   viewController.view = label;
   // TODO(crbug.com/821560): Use the search menu instead of a label.
-  [self presentPopupForContent:viewController fromNamedGuide:nil];
+  [self presentPopupForContent:viewController
+                        ofType:PopupMenuTypeSearch
+                fromNamedGuide:nil];
 }
 
 - (void)dismissPopupMenu {
@@ -151,10 +168,17 @@
 
 #pragma mark - Private
 
-// Presents the |content| with an animation starting from |guideName|.
+// Presents the |content| of type |type| with an animation starting from
+// |guideName|.
 - (void)presentPopupForContent:(UIViewController*)content
+                        ofType:(PopupMenuType)type
                 fromNamedGuide:(GuideName*)guideName {
   DCHECK(!self.presenter);
+  id<BrowserCommands> callableDispatcher =
+      static_cast<id<BrowserCommands>>(self.dispatcher);
+  [callableDispatcher
+      prepareForPopupMenuPresentation:CommandTypeFromPopupType(type)];
+
   self.presenter = [[PopupMenuPresenter alloc] init];
   self.presenter.baseViewController = self.baseViewController;
   self.presenter.commandHandler = self;

@@ -14,6 +14,7 @@
 // achieved through the required ToolsMenuConfiguration object, but some
 // optional minor elements such as bookmark highlights are also independently
 // configurable.
+// TODO(crbug.com/800266): Remove this protocol.
 @protocol ToolsMenuConfigurationProvider<NSObject>
 // Returns a ToolsMenuConfiguration object describing the desired configuration
 // of the tools menu.
