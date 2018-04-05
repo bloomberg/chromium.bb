@@ -72,16 +72,18 @@ namespace {
 
 constexpr const char kExampleURL[] = "http://example.org/";
 constexpr const char kExampleURL2[] = "http://example.com/";
-constexpr const char kAppDotComManifest[] = R"( { "name": "Hosted App",
-  "version": "1",
-  "manifest_version": 2,
-  "app": {
-    "launch": {
-      "web_url": "%s"
-    },
-    "urls": ["*://app.com/"]
-  }
-} )";
+constexpr const char kAppDotComManifest[] =
+    "{"
+    "  \"name\": \"Hosted App\","
+    "  \"version\": \"1\","
+    "  \"manifest_version\": 2,"
+    "  \"app\": {"
+    "    \"launch\": {"
+    "      \"web_url\": \"%s\""
+    "    },"
+    "    \"urls\": [\"*://app.com/\"]"
+    "  }"
+    "}";
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
