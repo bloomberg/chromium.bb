@@ -356,11 +356,10 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     store->LoadImmediately();
 
   if (is_active_directory) {
-    std::unique_ptr<ActiveDirectoryPolicyManager> manager =
-        ActiveDirectoryPolicyManager::CreateForUserPolicy(
-            account_id, policy_refresh_timeout,
-            base::BindOnce(&chrome::AttemptUserExit), std::move(store),
-            std::move(external_data_manager));
+    auto manager = std::make_unique<UserActiveDirectoryPolicyManager>(
+        account_id, policy_refresh_timeout,
+        base::BindOnce(&chrome::AttemptUserExit), std::move(store),
+        std::move(external_data_manager));
     manager->Init(
         SchemaRegistryServiceFactory::GetForContext(profile)->registry());
 
