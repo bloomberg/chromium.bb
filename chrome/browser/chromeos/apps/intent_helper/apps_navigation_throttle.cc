@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -180,12 +182,12 @@ AppsNavigationThrottle::WillRedirectRequest() {
 void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     const Browser* browser,
     const GURL& url,
-    const std::vector<IntentPickerAppInfo>& apps) {
+    std::vector<IntentPickerAppInfo> apps) {
   if (apps.empty())
     return;
 
   chrome::QueryAndDisplayArcApps(
-      browser, apps,
+      browser, std::move(apps),
       base::BindOnce(&AppsNavigationThrottle::OnIntentPickerClosed, url));
 }
 
@@ -199,7 +201,7 @@ void AppsNavigationThrottle::CancelNavigation() {
 
 void AppsNavigationThrottle::OnDeferredRequestProcessed(
     AppsNavigationAction action,
-    const std::vector<IntentPickerAppInfo>& apps) {
+    std::vector<IntentPickerAppInfo> apps) {
   if (action == AppsNavigationAction::CANCEL) {
     // We found a preferred ARC app to open; cancel the navigation and don't do
     // anything else.
@@ -210,7 +212,7 @@ void AppsNavigationThrottle::OnDeferredRequestProcessed(
   content::NavigationHandle* handle = navigation_handle();
   ShowIntentPickerBubbleForApps(
       chrome::FindBrowserWithWebContents(handle->GetWebContents()),
-      handle->GetURL(), apps);
+      handle->GetURL(), std::move(apps));
 
   // We are about to resume the navigation, which will destroy this object.
   ui_displayed_ = false;

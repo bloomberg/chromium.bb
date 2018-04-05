@@ -358,8 +358,8 @@ void OnAppIconsReceived(
   auto show_bubble_cb = base::Bind(ShowIntentPickerBubble());
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
-  show_bubble_cb.Run(nullptr /* anchor_view */, web_contents, app_info,
-                     !IsChromeAnAppCandidate(handlers),
+  show_bubble_cb.Run(nullptr /* anchor_view */, web_contents,
+                     std::move(app_info), !IsChromeAnAppCandidate(handlers),
                      base::Bind(OnIntentPickerClosed, render_process_host_id,
                                 routing_id, url, base::Passed(&handlers)));
 }

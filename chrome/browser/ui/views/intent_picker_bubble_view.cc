@@ -69,7 +69,7 @@ views::Separator* CreateHorizontalSeparator() {
 class IntentPickerLabelButton : public views::LabelButton {
  public:
   IntentPickerLabelButton(views::ButtonListener* listener,
-                          gfx::Image* icon,
+                          const gfx::Image* icon,
                           const std::string& launch_name,
                           const std::string& display_name)
       : LabelButton(listener,
@@ -112,7 +112,7 @@ IntentPickerBubbleView* IntentPickerBubbleView::intent_picker_bubble_ = nullptr;
 views::Widget* IntentPickerBubbleView::ShowBubble(
     views::View* anchor_view,
     content::WebContents* web_contents,
-    const std::vector<AppInfo>& app_info,
+    std::vector<AppInfo> app_info,
     bool disable_stay_in_chrome,
     IntentPickerResponse intent_picker_cb) {
   if (intent_picker_bubble_) {
@@ -129,9 +129,9 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
     return nullptr;
   }
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  intent_picker_bubble_ =
-      new IntentPickerBubbleView(app_info, std::move(intent_picker_cb),
-                                 web_contents, disable_stay_in_chrome);
+  intent_picker_bubble_ = new IntentPickerBubbleView(
+      std::move(app_info), std::move(intent_picker_cb), web_contents,
+      disable_stay_in_chrome);
   intent_picker_bubble_->set_margins(gfx::Insets());
 
   if (anchor_view) {
@@ -163,13 +163,13 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
 
 // static
 std::unique_ptr<IntentPickerBubbleView>
-IntentPickerBubbleView::CreateBubbleView(const std::vector<AppInfo>& app_info,
+IntentPickerBubbleView::CreateBubbleView(std::vector<AppInfo> app_info,
                                          bool disable_stay_in_chrome,
                                          IntentPickerResponse intent_picker_cb,
                                          content::WebContents* web_contents) {
-  std::unique_ptr<IntentPickerBubbleView> bubble(
-      new IntentPickerBubbleView(app_info, std::move(intent_picker_cb),
-                                 web_contents, disable_stay_in_chrome));
+  std::unique_ptr<IntentPickerBubbleView> bubble(new IntentPickerBubbleView(
+      std::move(app_info), std::move(intent_picker_cb), web_contents,
+      disable_stay_in_chrome));
   bubble->Init();
   return bubble;
 }
@@ -224,7 +224,7 @@ void IntentPickerBubbleView::Init() {
 
   size_t i = 0;
   size_t to_erase = app_info_.size();
-  for (AppInfo app_info : app_info_) {
+  for (const auto& app_info : app_info_) {
     if (arc::ArcIntentHelperBridge::IsIntentHelperPackage(
             app_info.launch_name)) {
       to_erase = i;
@@ -302,7 +302,7 @@ base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
 }
 
 IntentPickerBubbleView::IntentPickerBubbleView(
-    const std::vector<AppInfo>& app_info,
+    std::vector<AppInfo> app_info,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents,
     bool disable_stay_in_chrome)
@@ -312,7 +312,7 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       intent_picker_cb_(std::move(intent_picker_cb)),
       selected_app_tag_(0),
       scroll_view_(nullptr),
-      app_info_(app_info),
+      app_info_(std::move(app_info)),
       remember_selection_checkbox_(nullptr),
       disable_stay_in_chrome_(disable_stay_in_chrome) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);

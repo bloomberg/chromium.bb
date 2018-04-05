@@ -6,13 +6,18 @@
 
 namespace chromeos {
 
-IntentPickerAppInfo::IntentPickerAppInfo(AppType app_type,
-                                         const gfx::Image& img,
-                                         const std::string& launch,
-                                         const std::string& name)
-    : type(app_type), icon(img), launch_name(launch), display_name(name) {}
+IntentPickerAppInfo::IntentPickerAppInfo(AppType type,
+                                         const gfx::Image& icon,
+                                         const std::string& launch_name,
+                                         const std::string& display_name)
+    : type(type),
+      icon(icon),
+      launch_name(launch_name),
+      display_name(display_name) {}
 
-IntentPickerAppInfo::IntentPickerAppInfo(const IntentPickerAppInfo& app_info) =
-    default;
+IntentPickerAppInfo::IntentPickerAppInfo(IntentPickerAppInfo&& other) = default;
+
+IntentPickerAppInfo& IntentPickerAppInfo::operator=(
+    IntentPickerAppInfo&& other) = default;
 
 }  // namespace chromeos

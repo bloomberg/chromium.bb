@@ -293,7 +293,7 @@ bool ToolbarView::IsAppMenuFocused() {
 
 #if defined(OS_CHROMEOS)
 void ToolbarView::ShowIntentPickerBubble(
-    const std::vector<IntentPickerBubbleView::AppInfo>& app_info,
+    std::vector<IntentPickerBubbleView::AppInfo> app_info,
     IntentPickerResponse callback) {
   IntentPickerView* intent_picker_view = location_bar()->intent_picker_view();
   if (intent_picker_view) {
@@ -303,7 +303,7 @@ void ToolbarView::ShowIntentPickerBubble(
     }
 
     views::Widget* bubble_widget = IntentPickerBubbleView::ShowBubble(
-        intent_picker_view, GetWebContents(), app_info,
+        intent_picker_view, GetWebContents(), std::move(app_info),
         false /* disable_stay_in_chrome */, std::move(callback));
     if (bubble_widget && intent_picker_view)
       intent_picker_view->OnBubbleWidgetCreated(bubble_widget);
