@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/reading_list/number_badge_view.h"
 #import "ios/chrome/browser/ui/reading_list/text_badge_view.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 
@@ -18,13 +19,14 @@
 #endif
 
 namespace {
+const int kEnabledColor = 0x1A73E8;
 const CGFloat kImageLength = 28;
 const CGFloat kCellHeight = 44;
 const CGFloat kInnerMargin = 11;
 const CGFloat kMargin = 15;
 const CGFloat kTopMargin = 8;
 const CGFloat kTopMarginBadge = 14;
-}
+}  // namespace
 
 @implementation PopupMenuToolsItem
 
@@ -236,8 +238,8 @@ const CGFloat kTopMarginBadge = 14;
 - (void)setUserInteractionEnabled:(BOOL)userInteractionEnabled {
   [super setUserInteractionEnabled:userInteractionEnabled];
   if (userInteractionEnabled) {
-    self.titleLabel.textColor = self.tintColor;
-    self.imageView.tintColor = self.tintColor;
+    self.titleLabel.textColor = UIColorFromRGB(kEnabledColor);
+    self.imageView.tintColor = UIColorFromRGB(kEnabledColor);
   } else {
     self.titleLabel.textColor = [[self class] disabledColor];
     self.imageView.tintColor = [[self class] disabledColor];
