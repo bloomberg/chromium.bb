@@ -6,6 +6,7 @@
 
 #include <d3d11_1.h>
 
+#include "base/debug/alias.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "third_party/khronos/EGL/eglext.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -236,6 +237,8 @@ bool CopyingGLImageDXGI::Initialize() {
 
   HRESULT hr = d3d11_device_->CreateTexture2D(
       &desc, nullptr, decoder_copy_texture_.GetAddressOf());
+  // TODO(sunnyps): Remove after fixing https://crbug.com/794735
+  base::debug::Alias(&hr);
   CHECK(SUCCEEDED(hr));
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
