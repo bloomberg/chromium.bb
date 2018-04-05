@@ -60,8 +60,10 @@ int32_t LoadSessionId(PrefService* pref_service) {
 }  // namespace
 
 UkmService::UkmService(PrefService* pref_service,
-                       metrics::MetricsServiceClient* client)
+                       metrics::MetricsServiceClient* client,
+                       bool restrict_to_whitelist_entries)
     : pref_service_(pref_service),
+      restrict_to_whitelist_entries_(restrict_to_whitelist_entries),
       client_id_(0),
       session_id_(0),
       report_count_(0),
@@ -249,6 +251,10 @@ void UkmService::BuildAndStoreLog() {
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
   reporting_service_.ukm_log_store()->StoreLog(serialized_log);
+}
+
+bool UkmService::ShouldRestrictToWhitelistedEntries() const {
+  return restrict_to_whitelist_entries_;
 }
 
 }  // namespace ukm

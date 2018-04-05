@@ -587,7 +587,11 @@ void ChromeMetricsServiceClient::Initialize() {
 
   if (IsMetricsReportingForceEnabled() ||
       base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
-    ukm_service_.reset(new ukm::UkmService(local_state, this));
+    // We only need to restrict to whitelisted Entries if metrics reporting
+    // is not forced.
+    bool restrict_to_whitelist_entries = !IsMetricsReportingForceEnabled();
+    ukm_service_.reset(
+        new ukm::UkmService(local_state, this, restrict_to_whitelist_entries));
     ukm_service_->SetIsWebstoreExtensionCallback(
         base::BindRepeating(&IsWebstoreExtension));
     RegisterUKMProviders();

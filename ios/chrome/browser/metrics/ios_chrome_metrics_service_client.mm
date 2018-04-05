@@ -176,8 +176,13 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_ = std::make_unique<metrics::MetricsService>(
       metrics_state_manager_, this, local_state);
 
+  // Always restrict on iOS.
+  // TODO(crbug.com/828878): Use the flag to set this.
+  bool restrict_to_whitelist_entries = true;
+
   if (base::FeatureList::IsEnabled(ukm::kUkmFeature))
-    ukm_service_ = std::make_unique<ukm::UkmService>(local_state, this);
+    ukm_service_ = std::make_unique<ukm::UkmService>(
+        local_state, this, restrict_to_whitelist_entries);
 
   // Register metrics providers.
   metrics_service_->RegisterMetricsProvider(
