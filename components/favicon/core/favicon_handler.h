@@ -14,6 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/core/favicon_url.h"
@@ -275,8 +276,9 @@ class FaviconHandler {
 
   // Return the current candidate if any.
   const FaviconCandidate* current_candidate() const {
-    return current_candidate_index_ < candidates_.size()
-               ? &candidates_[current_candidate_index_]
+    DCHECK(final_candidates_);
+    return current_candidate_index_ < final_candidates_->size()
+               ? &final_candidates_.value()[current_candidate_index_]
                : nullptr;
   }
 
@@ -318,11 +320,11 @@ class FaviconHandler {
   bool redownload_icons_;
 
   // Requests to the renderer to download a manifest.
-  base::CancelableCallback<Delegate::ManifestDownloadCallback::RunType>
+  base::CancelableOnceCallback<Delegate::ManifestDownloadCallback::RunType>
       manifest_download_request_;
 
   // Requests to the renderer to download favicons.
-  base::CancelableCallback<Delegate::ImageDownloadCallback::RunType>
+  base::CancelableOnceCallback<Delegate::ImageDownloadCallback::RunType>
       image_download_request_;
 
   // The combination of the supported icon types.
@@ -348,7 +350,8 @@ class FaviconHandler {
   std::vector<FaviconURL> non_manifest_original_candidates_;
 
   // The prioritized favicon candidates from the page back from the renderer.
-  std::vector<FaviconCandidate> candidates_;
+  // Populated by OnGotFinalIconURLCandidates().
+  base::Optional<std::vector<FaviconCandidate>> final_candidates_;
 
   // The icon URL and the icon type of the favicon in the most recent
   // FaviconDriver::OnFaviconAvailable() notification.
