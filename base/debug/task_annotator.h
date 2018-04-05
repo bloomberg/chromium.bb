@@ -18,6 +18,13 @@ namespace debug {
 // such as task origins, queueing durations and memory usage.
 class BASE_EXPORT TaskAnnotator {
  public:
+  class ObserverForTesting {
+   public:
+    // Invoked just before RunTask() in the scope in which the task is about to
+    // be executed.
+    virtual void BeforeRunTask(const PendingTask* pending_task) = 0;
+  };
+
   TaskAnnotator();
   ~TaskAnnotator();
 
@@ -40,6 +47,14 @@ class BASE_EXPORT TaskAnnotator {
   uint64_t GetTaskTraceID(const PendingTask& task) const;
 
  private:
+  friend class TaskAnnotatorBacktraceIntegrationTest;
+
+  // Registers an ObserverForTesting that will be invoked by all TaskAnnotators'
+  // RunTask(). This registration and the implementation of BeforeRunTask() are
+  // responsible to ensure thread-safety.
+  static void RegisterObserverForTesting(ObserverForTesting* observer);
+  static void ClearObserverForTesting();
+
   DISALLOW_COPY_AND_ASSIGN(TaskAnnotator);
 };
 

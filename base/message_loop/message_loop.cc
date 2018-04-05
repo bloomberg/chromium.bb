@@ -343,7 +343,6 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
 
 void MessageLoop::RunTask(PendingTask* pending_task) {
   DCHECK(task_execution_allowed_);
-  current_pending_task_ = pending_task;
 
   // Execute the task and assume the worst: It is probably not reentrant.
   task_execution_allowed_ = false;
@@ -357,8 +356,6 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
     observer.DidProcessTask(*pending_task);
 
   task_execution_allowed_ = true;
-
-  current_pending_task_ = nullptr;
 }
 
 bool MessageLoop::DeferOrRunPendingTask(PendingTask pending_task) {
