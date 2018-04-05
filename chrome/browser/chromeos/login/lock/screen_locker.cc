@@ -123,7 +123,9 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   bool session_started() const { return session_started_; }
 
   // SessionManagerClient::StubDelegate overrides:
-  void LockScreenForStub() override { ScreenLocker::HandleLockScreenRequest(); }
+  void LockScreenForStub() override {
+    ScreenLocker::HandleShowLockScreenRequest();
+  }
 
   // NotificationObserver overrides:
   void Observe(int type,
@@ -148,7 +150,7 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   // UserAddingScreen::Observer overrides:
   void OnUserAddingFinished() override {
     UserAddingScreen::Get()->RemoveObserver(this);
-    ScreenLocker::HandleLockScreenRequest();
+    ScreenLocker::HandleShowLockScreenRequest();
   }
 
  private:
@@ -488,8 +490,8 @@ void ScreenLocker::ShutDownClass() {
 }
 
 // static
-void ScreenLocker::HandleLockScreenRequest() {
-  VLOG(1) << "Received LockScreen request from session manager";
+void ScreenLocker::HandleShowLockScreenRequest() {
+  VLOG(1) << "Received ShowLockScreen request from session manager";
   DCHECK(g_screen_lock_observer);
   if (UserAddingScreen::Get()->IsRunning()) {
     VLOG(1) << "Waiting for user adding screen to stop";

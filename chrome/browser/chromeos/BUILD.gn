@@ -221,6 +221,9 @@ source_set("chromeos") {
     "//ui/wm/public",
     "//url",
   ]
+  data_deps = [
+    ":dbus_service_files",
+  ]
 
   allow_circular_includes_from = [ "//chrome/browser/extensions" ]
 
@@ -1749,6 +1752,15 @@ source_set("chromeos") {
   if (use_cras) {
     defines = [ "USE_CRAS" ]
   }
+}
+
+copy("dbus_service_files") {
+  sources = [
+    "dbus/org.chromium.ScreenLockService.conf",
+  ]
+  outputs = [
+    "$root_out_dir/dbus/{{source_file_part}}",
+  ]
 }
 
 static_library("arc_test_support") {
