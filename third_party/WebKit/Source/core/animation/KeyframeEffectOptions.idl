@@ -4,7 +4,7 @@
 
 // https://drafts.csswg.org/web-animations/#the-keyframeeffectoptions-dictionary
 
-dictionary KeyframeEffectOptions : AnimationEffectTimingProperties {
+dictionary KeyframeEffectOptions : EffectTiming {
     // TODO(alancutter): Implement iterationComposite
   CompositeOperation composite = "replace";
 };

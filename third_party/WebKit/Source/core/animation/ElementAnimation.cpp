@@ -36,9 +36,9 @@ Animation* ElementAnimation::animate(
   if (exception_state.HadException())
     return nullptr;
 
-  Timing timing;
-  if (!TimingInput::Convert(options, timing, &element.GetDocument(),
-                            exception_state))
+  Timing timing =
+      TimingInput::Convert(options, &element.GetDocument(), exception_state);
+  if (exception_state.HadException())
     return nullptr;
 
   Animation* animation = animateInternal(element, effect, timing);

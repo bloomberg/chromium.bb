@@ -31,6 +31,7 @@
 #ifndef AnimationEffect_h
 #define AnimationEffect_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
 #include "core/animation/Timing.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -41,8 +42,9 @@ namespace blink {
 
 class Animation;
 class AnimationEffectOwner;
-class AnimationEffectTimingReadOnly;
-class ComputedTimingProperties;
+class EffectTiming;
+class ComputedEffectTiming;
+class OptionalEffectTiming;
 
 enum TimingUpdateReason {
   kTimingUpdateOnDemand,
@@ -111,12 +113,22 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   double EndTimeInternal() const;
 
   const Timing& SpecifiedTiming() const { return timing_; }
-  virtual AnimationEffectTimingReadOnly* timing();
   void UpdateSpecifiedTiming(const Timing&);
   EventDelegate* GetEventDelegate() { return event_delegate_; }
 
-  void getComputedTiming(ComputedTimingProperties&);
-  ComputedTimingProperties getComputedTiming();
+  void getTiming(EffectTiming&) const;
+  EffectTiming getTiming() const;
+  void getComputedTiming(ComputedEffectTiming&) const;
+  ComputedEffectTiming getComputedTiming() const;
+  void updateTiming(OptionalEffectTiming&,
+                    ExceptionState& = ASSERT_NO_EXCEPTION);
+
+  // Attach/Detach the AnimationEffect from its owning animation.
+  virtual void Attach(AnimationEffectOwner* owner) { owner_ = owner; }
+  virtual void Detach() {
+    DCHECK(owner_);
+    owner_ = nullptr;
+  }
 
   const Animation* GetAnimationForTesting() const { return GetAnimation(); }
 
@@ -134,13 +146,6 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     return event_delegate_ && event_delegate_->RequiresIterationEvents(*this);
   }
   void ClearEventDelegate() { event_delegate_ = nullptr; }
-
-  virtual void Attach(AnimationEffectOwner* owner) { owner_ = owner; }
-
-  virtual void Detach() {
-    DCHECK(owner_);
-    owner_ = nullptr;
-  }
 
   double RepeatedDuration() const;
 

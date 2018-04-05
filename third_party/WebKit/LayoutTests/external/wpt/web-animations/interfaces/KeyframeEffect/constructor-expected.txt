@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-Found 167 tests; 144 PASS, 23 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 167 tests; 154 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A KeyframeEffect can be constructed with no frames
-FAIL easing values are parsed correctly when passed to the KeyframeEffect constructor in KeyframeEffectOptions effect.getTiming is not a function
+PASS easing values are parsed correctly when passed to the KeyframeEffect constructor in KeyframeEffectOptions
 PASS Invalid easing values are correctly rejected when passed to the KeyframeEffect constructor in KeyframeEffectOptions
 FAIL composite values are parsed correctly when passed to the KeyframeEffect constructor in property-indexed keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
 FAIL composite values are parsed correctly when passed to the KeyframeEffect constructor in regular keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
@@ -139,16 +139,16 @@ PASS KeyframeEffect constructor throws with a keyframe sequence with an invalid 
 PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid composite value
 PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid composite value as one of the array values
 PASS KeyframeEffect constructor throws with keyframes with an invalid composite value
-FAIL A KeyframeEffect constructed without any KeyframeEffectOptions object effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by an empty KeyframeEffectOptions object effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by a normal KeyframeEffectOptions object effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by a double value effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by +Infinity effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by an Infinity duration effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by an auto duration effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by an Infinity iterations effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by an auto fill effect.getTiming is not a function
-FAIL A KeyframeEffect constructed by a forwards fill effect.getTiming is not a function
+FAIL A KeyframeEffect constructed without any KeyframeEffectOptions object assert_equals: default iterationComposite expected (string) "replace" but got (undefined) undefined
+PASS A KeyframeEffect constructed by an empty KeyframeEffectOptions object
+PASS A KeyframeEffect constructed by a normal KeyframeEffectOptions object
+PASS A KeyframeEffect constructed by a double value
+PASS A KeyframeEffect constructed by +Infinity
+PASS A KeyframeEffect constructed by an Infinity duration
+PASS A KeyframeEffect constructed by an auto duration
+PASS A KeyframeEffect constructed by an Infinity iterations
+PASS A KeyframeEffect constructed by an auto fill
+PASS A KeyframeEffect constructed by a forwards fill
 PASS Invalid KeyframeEffect option by -Infinity
 PASS Invalid KeyframeEffect option by NaN
 PASS Invalid KeyframeEffect option by a negative value

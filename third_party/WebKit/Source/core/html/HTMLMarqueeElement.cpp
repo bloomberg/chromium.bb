@@ -31,6 +31,7 @@
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/KeyframeEffectOptions.h"
+#include "core/animation/OptionalEffectTiming.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/animation/TimingInput.h"
 #include "core/css/CSSPropertyValueSet.h"
@@ -294,10 +295,11 @@ void HTMLMarqueeElement::ContinueAnimation() {
 
   StringKeyframeEffectModel* effect_model = CreateEffectModel(parameters);
   Timing timing;
-  timing.fill_mode = Timing::FillMode::FORWARDS;
-  TimingInput::SetIterationDuration(
-      timing, UnrestrictedDoubleOrString::FromUnrestrictedDouble(duration),
-      ASSERT_NO_EXCEPTION);
+  OptionalEffectTiming effect_timing;
+  effect_timing.setFill("forwards");
+  effect_timing.setDuration(
+      UnrestrictedDoubleOrString::FromUnrestrictedDouble(duration));
+  TimingInput::Update(timing, effect_timing, nullptr, ASSERT_NO_EXCEPTION);
 
   KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(mover_, effect_model, timing);

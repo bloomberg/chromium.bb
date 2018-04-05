@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/CompositorAnimations.h"
 
 namespace blink {
@@ -92,8 +91,6 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
     model_ = model;
   }
   Priority GetPriority() const { return priority_; }
-
-  AnimationEffectTiming* timing() override;
 
   void NotifySampledEffectRemovedFromEffectStack();
 

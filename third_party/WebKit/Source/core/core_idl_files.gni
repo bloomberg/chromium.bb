@@ -38,8 +38,6 @@ core_idl_files =
     get_path_info([
                     "animation/Animation.idl",
                     "animation/AnimationEffect.idl",
-                    "animation/AnimationEffectTiming.idl",
-                    "animation/AnimationEffectTimingReadOnly.idl",
                     "animation/AnimationTimeline.idl",
                     "animation/DocumentTimeline.idl",
                     "animation/KeyframeEffect.idl",
@@ -554,13 +552,14 @@ core_callback_function_idl_files =
 
 core_dictionary_idl_files =
     get_path_info([
-                    "animation/AnimationEffectTimingProperties.idl",
                     "animation/BaseKeyframe.idl",
                     "animation/BasePropertyIndexedKeyframe.idl",
-                    "animation/ComputedTimingProperties.idl",
+                    "animation/ComputedEffectTiming.idl",
                     "animation/DocumentTimelineOptions.idl",
+                    "animation/EffectTiming.idl",
                     "animation/KeyframeAnimationOptions.idl",
                     "animation/KeyframeEffectOptions.idl",
+                    "animation/OptionalEffectTiming.idl",
                     "animation/ScrollTimelineOptions.idl",
                     "css/CSSStyleSheetInit.idl",
                     "css/FontFaceDescriptors.idl",
