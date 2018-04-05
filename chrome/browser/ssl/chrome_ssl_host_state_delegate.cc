@@ -340,7 +340,7 @@ void ChromeSSLHostStateDelegate::Clear(
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, base::Time(),
-          pattern_filter);
+          base::Time::Max(), pattern_filter);
 }
 
 content::SSLHostStateDelegate::CertJudgment

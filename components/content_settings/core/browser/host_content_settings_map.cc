@@ -629,8 +629,10 @@ base::Time HostContentSettingsMap::GetSettingLastModifiedDate(
 void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
     ContentSettingsType content_type,
     base::Time begin_time,
+    base::Time end_time,
     const PatternSourcePredicate& pattern_predicate) {
-  if (pattern_predicate.is_null() && begin_time.is_null()) {
+  if (pattern_predicate.is_null() && begin_time.is_null() &&
+      (end_time.is_null() || end_time.is_max())) {
     ClearSettingsForOneType(content_type);
     return;
   }
@@ -645,7 +647,8 @@ void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
         base::Time last_modified = provider->GetWebsiteSettingLastModified(
             setting.primary_pattern, setting.secondary_pattern, content_type,
             std::string());
-        if (last_modified >= begin_time) {
+        if (last_modified >= begin_time &&
+            (last_modified < end_time || end_time.is_null())) {
           provider->SetWebsiteSetting(setting.primary_pattern,
                                       setting.secondary_pattern, content_type,
                                       std::string(), nullptr);

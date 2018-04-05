@@ -349,6 +349,7 @@ void PasswordProtectionService::CleanUpExpiredVerdicts() {
     if (cache_dictionary->size() == 0u) {
       content_settings_->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
+          base::Time::Max(),
           base::Bind(&OriginMatchPrimaryPattern, primary_pattern_url));
     } else if (has_expired_password_on_focus_entry ||
                has_expired_password_reuse_entry) {
@@ -605,7 +606,7 @@ void PasswordProtectionService::RemoveContentSettingsOnURLsDeleted(
             url_key, LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
     content_settings_->ClearSettingsForOneTypeWithPredicate(
         CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
-        base::Bind(&OriginMatchPrimaryPattern, url_key));
+        base::Time::Max(), base::Bind(&OriginMatchPrimaryPattern, url_key));
   }
 }
 

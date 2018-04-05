@@ -175,6 +175,7 @@ void MediaEngagementService::ClearDataBetweenTime(
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
+          base::Time::Max(),
           base::Bind(&MediaEngagementTimeFilterAdapter, this, delete_begin,
                      delete_end));
 }
@@ -286,6 +287,7 @@ void MediaEngagementService::Clear(const GURL& url) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
+          base::Time::Max(),
           base::Bind(&MediaEngagementFilterAdapter, base::ConstRef(url)));
 }
 
