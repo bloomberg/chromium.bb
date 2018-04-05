@@ -1570,6 +1570,11 @@
                   '|media/muxers/'\
                   '|services/video_capture/',
     },
+    'video_gpu': {
+      'filepath': 'content/renderer/media/|'\
+                  'media/capture/video/|'\
+                  'media/gpu/',
+    },
     'views': {
       # Applies to all files and subdirs within this directory.
       'filepath': '^ui/views/',
@@ -2330,9 +2335,9 @@
                  'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
-    'video': ['posciak+watch@chromium.org',
-              'acourbot+watch@chromium.org'],
+    'video': ['posciak+watch@chromium.org'],
     'video_capture': ['chfremer+watch@chromium.org'],
+    'video_gpu': ['acourbot+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['blakeo+virtualkb@chromium.org',
                          'dfaden+virtualkb@google.com',
