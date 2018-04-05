@@ -78,8 +78,12 @@ void CompositorFrameSinkImpl::DidDeleteSharedBitmap(const SharedBitmapId& id) {
 }
 
 void CompositorFrameSinkImpl::OnClientConnectionLost() {
-  support_->frame_sink_manager()->OnClientConnectionLost(
-      support_->frame_sink_id());
+  // The client that owns this CompositorFrameSink is either shutting down or
+  // has done something invalid and the connection to the client was terminated.
+  // Destroy |this| to free up resources as it's no longer useful.
+  FrameSinkId frame_sink_id = support_->frame_sink_id();
+  support_->frame_sink_manager()->DestroyCompositorFrameSink(frame_sink_id,
+                                                             base::DoNothing());
 }
 
 }  // namespace viz

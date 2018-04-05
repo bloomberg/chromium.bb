@@ -68,7 +68,6 @@ class MockFrameSinkManagerClient : public mojom::FrameSinkManagerClient {
   // mojom::FrameSinkManagerClient:
   MOCK_METHOD1(OnSurfaceCreated, void(const SurfaceId&));
   MOCK_METHOD1(OnFirstSurfaceActivation, void(const SurfaceInfo&));
-  void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override {}
   void OnAggregatedHitTestRegionListUpdated(
       const FrameSinkId& frame_sink_id,
       mojo::ScopedSharedBufferHandle active_handle,

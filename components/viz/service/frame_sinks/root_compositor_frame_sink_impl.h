@@ -42,8 +42,6 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   ~RootCompositorFrameSinkImpl() override;
 
-  CompositorFrameSinkSupport* support() const { return support_.get(); }
-
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
   void SetDisplayColorMatrix(const gfx::Transform& color_matrix) override;

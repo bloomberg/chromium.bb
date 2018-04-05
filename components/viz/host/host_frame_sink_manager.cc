@@ -397,11 +397,6 @@ void HostFrameSinkManager::OnFirstSurfaceActivation(
     frame_sink_data.client->OnFirstSurfaceActivation(surface_info);
 }
 
-void HostFrameSinkManager::OnClientConnectionClosed(
-    const FrameSinkId& frame_sink_id) {
-  // TODO(kylechar): Notify observers.
-}
-
 void HostFrameSinkManager::OnAggregatedHitTestRegionListUpdated(
     const FrameSinkId& frame_sink_id,
     mojo::ScopedSharedBufferHandle active_handle,

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 #define COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 
+#include "base/callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,6 +16,10 @@ class MockCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
  public:
   MockCompositorFrameSinkClient();
   ~MockCompositorFrameSinkClient() override;
+
+  void set_connection_error_handler(base::OnceClosure error_handler) {
+    binding_.set_connection_error_handler(std::move(error_handler));
+  }
 
   // Returns a CompositorFrameSinkClientPtr bound to this object.
   mojom::CompositorFrameSinkClientPtr BindInterfacePtr();

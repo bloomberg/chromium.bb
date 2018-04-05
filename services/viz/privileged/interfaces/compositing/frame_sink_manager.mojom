@@ -147,10 +147,6 @@ interface FrameSinkManagerClient {
   // SurfaceId activates for the first time.
   OnFirstSurfaceActivation(SurfaceInfo surface_info);
 
-  // The CompositorFrameSink pipe for |frame_sink_id| was closed. The client
-  // cannot submit any CompositorFrames to viz after this occurs.
-  OnClientConnectionClosed(FrameSinkId frame_sink_id);
-
   // Sends |active_handle| and |idle_handle| along with their sizes to the
   // client when they are allocated or resized.
   OnAggregatedHitTestRegionListUpdated(FrameSinkId frame_sink_id,
