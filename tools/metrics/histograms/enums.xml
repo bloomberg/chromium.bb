@@ -7737,6 +7737,14 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="User disabled"/>
 </enum>
 
+<enum name="CrosComponentManagerError">
+  <int value="0" label="NONE"/>
+  <int value="1" label="UNKNOWN_COMPONENT"/>
+  <int value="2" label="INSTALL_FAILURE"/>
+  <int value="3" label="MOUNT_FAILURE"/>
+  <int value="4" label="COMPATIBILITY_CHECK_FAILED"/>
+</enum>
+
 <enum name="CrosDisksArchiveType">
   <int value="0" label="Unknown"/>
   <int value="1" label="ZIP"/>
