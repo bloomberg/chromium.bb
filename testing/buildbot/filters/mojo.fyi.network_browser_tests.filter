@@ -23,8 +23,6 @@
 -PKPModelClientTest.PKPEnforced
 -PlatformAppBrowserTest.AppWindowAdjustBoundsToBeVisibleOnScreen
 -PlatformAppBrowserTest.CreateAndCloseAppWindow
--PlatformAppDevToolsBrowserTest.ReOpenedWithID
--PlatformAppDevToolsBrowserTest.ReOpenedWithURL
 -PolicyTest.DefaultCookiesSetting
 -PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
