@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/ozone/platform/wayland/wayland_window.h"
+
 #include <wayland-server-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
@@ -14,7 +16,6 @@
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
-#include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 
 using ::testing::Eq;
@@ -28,18 +29,18 @@ namespace ui {
 class WaylandWindowTest : public WaylandTest {
  public:
   WaylandWindowTest()
-      : test_mouse_event(ET_MOUSE_PRESSED,
-                         gfx::Point(10, 15),
-                         gfx::Point(10, 15),
-                         ui::EventTimeStampFromSeconds(123456),
-                         EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
-                         EF_LEFT_MOUSE_BUTTON) {}
+      : test_mouse_event_(ET_MOUSE_PRESSED,
+                          gfx::Point(10, 15),
+                          gfx::Point(10, 15),
+                          ui::EventTimeStampFromSeconds(123456),
+                          EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
+                          EF_LEFT_MOUSE_BUTTON) {}
 
   void SetUp() override {
     WaylandTest::SetUp();
 
-    xdg_surface = surface_->xdg_surface.get();
-    ASSERT_TRUE(xdg_surface);
+    xdg_surface_ = surface_->xdg_surface.get();
+    ASSERT_TRUE(xdg_surface_);
   }
 
  protected:
@@ -47,26 +48,26 @@ class WaylandWindowTest : public WaylandTest {
                           int height,
                           uint32_t serial,
                           struct wl_array* states) {
-    if (!xdg_surface->xdg_toplevel) {
-      xdg_surface_send_configure(xdg_surface->resource(), width, height, states,
-                                 serial);
+    if (!xdg_surface_->xdg_toplevel) {
+      xdg_surface_send_configure(xdg_surface_->resource(), width, height,
+                                 states, serial);
       return;
     }
 
     // In xdg_shell_v6, both surfaces send serial configure event and toplevel
     // surfaces send other data like states, heights and widths.
-    zxdg_surface_v6_send_configure(xdg_surface->resource(), serial);
-    ASSERT_TRUE(xdg_surface->xdg_toplevel);
-    zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel->resource(),
+    zxdg_surface_v6_send_configure(xdg_surface_->resource(), serial);
+    ASSERT_TRUE(xdg_surface_->xdg_toplevel);
+    zxdg_toplevel_v6_send_configure(xdg_surface_->xdg_toplevel->resource(),
                                     width, height, states);
   }
 
-  // Depending on a shell version, xdg_surface or xdg_toplevel surface should
+  // Depending on a shell version, xdg_surface_ or xdg_toplevel surface should
   // get the mock calls. This method decided, which surface to use.
   wl::MockXdgSurface* GetXdgSurface() {
     if (GetParam() == kXdgShellV5)
-      return xdg_surface;
-    return xdg_surface->xdg_toplevel.get();
+      return xdg_surface_;
+    return xdg_surface_->xdg_toplevel.get();
   }
 
   void SetWlArrayWithState(uint32_t state, wl_array* states) {
@@ -80,9 +81,9 @@ class WaylandWindowTest : public WaylandTest {
     SetWlArrayWithState(XDG_SURFACE_STATE_ACTIVATED, states);
   }
 
-  wl::MockXdgSurface* xdg_surface;
+  wl::MockXdgSurface* xdg_surface_;
 
-  MouseEvent test_mouse_event;
+  MouseEvent test_mouse_event_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandWindowTest);
@@ -211,8 +212,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
   // Thus, using a toplevel object in XdgV6 case is not right thing. Use a
   // surface here instead.
-  EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, current_bounds.width(),
-                                              current_bounds.height()));
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, current_bounds.width(),
+                                               current_bounds.height()));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
@@ -238,8 +239,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
   // Thus, using a toplevel object in XdgV6 case is not right thing. Use a
   // surface here instead.
-  EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, current_bounds.width(),
-                                              current_bounds.height()));
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, current_bounds.width(),
+                                               current_bounds.height()));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
@@ -282,8 +283,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
   // Thus, using a toplevel object in XdgV6 case is not right thing. Use a
   // surface here instead.
-  EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, current_bounds.width(),
-                                              current_bounds.height()));
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, current_bounds.width(),
+                                               current_bounds.height()));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
@@ -304,7 +305,7 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
 
   // First case is when Wayland sends a configure event with 0,0 height and
   // widht.
-  EXPECT_CALL(*xdg_surface,
+  EXPECT_CALL(*xdg_surface_,
               SetWindowGeometry(0, 0, new_bounds.width(), new_bounds.height()))
       .Times(2);
   SendConfigureEvent(0, 0, 2, &states);
@@ -318,17 +319,17 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventDefault) {
-  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event));
+  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event_));
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventFocus) {
   window_->set_pointer_focus(true);
-  EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event));
+  EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event_));
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventUnfocus) {
-  window_->set_pointer_focus(false);
-  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event));
+  window_->set_pointer_focus(true);
+  EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event_));
 }
 
 ACTION_P(CloneEvent, ptr) {
@@ -338,16 +339,17 @@ ACTION_P(CloneEvent, ptr) {
 TEST_P(WaylandWindowTest, DispatchEvent) {
   std::unique_ptr<Event> event;
   EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
-  window_->DispatchEvent(&test_mouse_event);
+  window_->DispatchEvent(&test_mouse_event_);
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
   auto* mouse_event = event->AsMouseEvent();
-  EXPECT_EQ(mouse_event->location_f(), test_mouse_event.location_f());
-  EXPECT_EQ(mouse_event->root_location_f(), test_mouse_event.root_location_f());
-  EXPECT_EQ(mouse_event->time_stamp(), test_mouse_event.time_stamp());
-  EXPECT_EQ(mouse_event->button_flags(), test_mouse_event.button_flags());
+  EXPECT_EQ(mouse_event->location_f(), test_mouse_event_.location_f());
+  EXPECT_EQ(mouse_event->root_location_f(),
+            test_mouse_event_.root_location_f());
+  EXPECT_EQ(mouse_event->time_stamp(), test_mouse_event_.time_stamp());
+  EXPECT_EQ(mouse_event->button_flags(), test_mouse_event_.button_flags());
   EXPECT_EQ(mouse_event->changed_button_flags(),
-            test_mouse_event.changed_button_flags());
+            test_mouse_event_.changed_button_flags());
 }
 
 TEST_P(WaylandWindowTest, ConfigureEvent) {
@@ -361,11 +363,11 @@ TEST_P(WaylandWindowTest, ConfigureEvent) {
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(gfx::Rect(0, 0, 1500, 1000))));
   // Responding to a configure event, the window geometry in here must respect
   // the sizing negotiations specified by the configure event.
-  // |xdg_surface| must receive the following calls in both xdg_shell_v5 and
+  // |xdg_surface_| must receive the following calls in both xdg_shell_v5 and
   // xdg_shell_v6. Other calls like SetTitle or SetMaximized are recieved by
-  // xdg_toplevel in xdg_shell_v6 and by xdg_surface in xdg_shell_v5.
-  EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, 1500, 1000)).Times(1);
-  EXPECT_CALL(*xdg_surface, AckConfigure(13));
+  // xdg_toplevel in xdg_shell_v6 and by xdg_surface_ in xdg_shell_v5.
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 1500, 1000)).Times(1);
+  EXPECT_CALL(*xdg_surface_, AckConfigure(13));
 }
 
 TEST_P(WaylandWindowTest, ConfigureEventWithNulledSize) {
@@ -376,11 +378,11 @@ TEST_P(WaylandWindowTest, ConfigureEventWithNulledSize) {
   // call back with desired sizes. In this case, that's the actual size of
   // the window.
   SendConfigureEvent(0, 0, 14, &states);
-  // |xdg_surface| must receive the following calls in both xdg_shell_v5 and
+  // |xdg_surface_| must receive the following calls in both xdg_shell_v5 and
   // xdg_shell_v6. Other calls like SetTitle or SetMaximized are recieved by
-  // xdg_toplevel in xdg_shell_v6 and by xdg_surface in xdg_shell_v5.
-  EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, 800, 600));
-  EXPECT_CALL(*xdg_surface, AckConfigure(14));
+  // xdg_toplevel in xdg_shell_v6 and by xdg_surface_ in xdg_shell_v5.
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 800, 600));
+  EXPECT_CALL(*xdg_surface_, AckConfigure(14));
 }
 
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
