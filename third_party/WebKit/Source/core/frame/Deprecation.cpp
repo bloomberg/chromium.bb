@@ -358,11 +358,15 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
     case WebFeature::kApplicationCacheManifestSelectInsecureOrigin:
     case WebFeature::kApplicationCacheAPIInsecureOrigin:
-      return {"ApplicationCacheAPIInsecureOrigin", kUnknown,
-              "Use of the Application Cache is deprecated on insecure origins. "
-              "Support will be removed in the future. You should consider "
-              "switching your application to a secure origin, such as HTTPS. "
-              "See https://goo.gl/rStTGz for more details."};
+      return {
+          "ApplicationCacheAPIInsecureOrigin", kM69,
+          String::Format(
+              "Application Cache is deprecated in non-secure contexts, and "
+              "will be restricted to secure contexts in %s. Please consider "
+              "migrating your application to HTTPS, and eventually shifting "
+              "over to Service Workers. See https://goo.gl/rStTGz for more "
+              "details.",
+              MilestoneString(kM69))};
 
     case WebFeature::kNotificationInsecureOrigin:
     case WebFeature::kNotificationAPIInsecureOriginIframe:

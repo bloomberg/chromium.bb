@@ -354,9 +354,15 @@ def exposed(member, interface):
 # [SecureContext]
 def secure_context(member, interface):
     """Returns C++ code that checks whether an interface/method/attribute/etc. is exposed
-    to the current context."""
+    to the current context. Requires that the surrounding code defines an 'isSecureContext'
+    variable prior to this check."""
     if 'SecureContext' in member.extended_attributes or 'SecureContext' in interface.extended_attributes:
-        return 'executionContext->IsSecureContext()'
+        conditions = ['isSecureContext']
+        if 'SecureContext' in member.extended_attributes and member.extended_attributes['SecureContext'] is not None:
+            conditions.append('!%s' % runtime_enabled_function(member.extended_attributes['SecureContext']))
+        if 'SecureContext' in interface.extended_attributes and interface.extended_attributes['SecureContext'] is not None:
+            conditions.append('!%s' % runtime_enabled_function(interface.extended_attributes['SecureContext']))
+        return ' || '.join(conditions)
     return None
 
 

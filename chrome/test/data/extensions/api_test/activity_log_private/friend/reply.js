@@ -112,7 +112,7 @@ function doWebRequestModifications() {
       headers = [];
     }
     headers = headers.filter(
-        function(x) {return x['name'] != 'Cache-Control'});
+        function(x) {return x['name'] != 'Cache-Control';});
     headers.push({'name': 'X-Test-Response-Header',
                   'value': 'Inserted'});
     headers.push({'name': 'Set-Cookie',
@@ -316,9 +316,6 @@ function executeDOMChangesOnTabUpdated() {
           'store.removeItem("foo"); ' +
           'store.clear();';
 
-  // Accesses the HTML5 ApplicationCache API from inside a content script.
-  code += 'var appCache = window.applicationCache;';
-
   // Accesses the HTML5 WebDatabase API from inside a content script.
   code += 'var db = openDatabase("testdb", "1.0", "test database", ' +
           '                      1024 * 1024);';
@@ -379,7 +376,7 @@ function executeDOMFullscreen() {
   appendCompleted('Switching to fullscreen...');
   $('status').webkitRequestFullscreen();
   setTimeout(
-      function() {document.webkitExitFullscreen(); window.close()}, 100);
+      function() {document.webkitExitFullscreen(); window.close();}, 100);
 }
 
 // Opens the extensions options page and then runs the executeDOMFullscreen
@@ -435,7 +432,7 @@ if (window.location.pathname !== '/options.html') {
 
 // Convenience functions for the manual run mode.
 function $(o) {
-  return document.getElementById(o);
+  return document.querySelector('#' + o);
 }
 
 var completed = 0;

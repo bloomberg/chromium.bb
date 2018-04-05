@@ -581,11 +581,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {# This macro installs |attributes_to_install| on v8::Object/v8::Function, not on v8::ObjectTemplate/v8::FunctionTemplate. #}
-{% macro install_conditional_attributes(secure_context_test_result, attributes_to_install) %}
+{% macro install_conditional_attributes(attributes_to_install) %}
 {% for exposed_test, exposed_attribute_list in attributes_to_install | groupby('exposed_test') %}
 {% filter exposed(exposed_test) %}
 {% for secure_context_test, secure_context_attribute_list in exposed_attribute_list | groupby('secure_context_test') %}
-{% filter secure_context(secure_context_test, secure_context_test_result) %}
+{% filter secure_context(secure_context_test) %}
 {% for feature_name, attribute_list in secure_context_attribute_list | groupby('runtime_enabled_feature_name') %}
 {% filter runtime_enabled(feature_name) %}
 static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
@@ -607,11 +607,11 @@ V8DOMConfiguration::InstallAccessors(
 
 
 {##############################################################################}
-{% macro install_conditional_interface_objects(secure_context_test_result, attributes_to_install) %}
+{% macro install_conditional_interface_objects(attributes_to_install) %}
 {% for exposed_test, exposed_attribute_list in attributes_to_install | groupby('exposed_test') %}
 {% filter exposed(exposed_test) %}
 {% for secure_context_test, secure_context_attribute_list in exposed_attribute_list | groupby('secure_context_test') %}
-{% filter secure_context(secure_context_test, secure_context_test_result) %}
+{% filter secure_context(secure_context_test) %}
 {% for feature_name, attribute_list in secure_context_attribute_list | groupby('runtime_enabled_feature_name') %}
 {% filter runtime_enabled(feature_name) %}
 static const V8DOMConfiguration::AttributeConfiguration attribute_configurations[] = {

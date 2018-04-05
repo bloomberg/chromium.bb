@@ -820,11 +820,6 @@ DOMImplementation& Document::implementation() {
   return *implementation_;
 }
 
-bool Document::HasAppCacheManifest() const {
-  return IsHTMLHtmlElement(documentElement()) &&
-         documentElement()->hasAttribute(manifestAttr);
-}
-
 Location* Document::location() const {
   if (!GetFrame())
     return nullptr;

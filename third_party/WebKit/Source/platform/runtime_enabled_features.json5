@@ -983,6 +983,10 @@
       status: "experimental",
     },
     {
+      name: "RestrictAppCacheToSecureContexts",
+      status: "experimental",
+    },
+    {
       name: "RestrictCanRequestURLCharacterSet",
       status: "stable",
     },

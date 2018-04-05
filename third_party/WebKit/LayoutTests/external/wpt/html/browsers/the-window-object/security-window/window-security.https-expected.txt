@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 126 tests; 125 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Window Security testing
 PASS A SecurityError exception must be thrown when window.applicationCache is accessed from a different origin.
 PASS A SecurityError exception must be thrown when window.devicePixelRatio is accessed from a different origin.

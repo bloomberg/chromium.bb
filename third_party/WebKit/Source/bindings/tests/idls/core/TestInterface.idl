@@ -127,6 +127,8 @@
     [SecureContext] attribute boolean secureContextAttribute;
     [SecureContext,RuntimeEnabled=SecureFeature] void secureContextRuntimeEnabledMethod();
     [SecureContext,RuntimeEnabled=SecureFeature] attribute boolean secureContextRuntimeEnabledAttribute;
+    [SecureContext=SecureContextnessFeature] void secureContextnessRuntimeEnabledMethod();
+    [SecureContext=SecureContextnessFeature] attribute boolean secureContextnessRuntimeEnabledAttribute;
     [SecureContext,Exposed=Window] void secureContextWindowExposedMethod();
     [SecureContext,Exposed=Window] attribute boolean secureContextWindowExposedAttribute;
     [SecureContext,Exposed=Worker] void secureContextWorkerExposedMethod();

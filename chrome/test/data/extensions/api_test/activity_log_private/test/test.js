@@ -271,8 +271,6 @@ var domExpectedActivity = [
     'Storage.getItem',
     'Storage.removeItem',
     'Storage.clear',
-    // Cache access
-    'Window.applicationCache',
     // Web database access
     'Window.openDatabase',
     // Canvas access

@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 166 tests; 157 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Value Properties of the Global Object
 PASS Value Property: NaN
 PASS Value Property: Infinity

@@ -460,6 +460,18 @@ Standard: [SecureContext](https://heycam.github.io/webidl/#SecureContext)
 
 Summary: Interfaces and interface members with a `SecureContext` attribute are exposed only inside ["Secure Contexts"](https://w3c.github.io/webappsec-secure-contexts/).
 
+**Non-standard:** Blink supports adding a value to the `SecureContext` attribute, which specifies a runtime-enabled flag used to control whether or not the restriction applies. This is intended for use when deprecating legacy APIs, and should not be used for new APIs.
+
+For example: we intend to lock `window.applicationCache` to secure contexts, but need to do so in a way that allows some subset of users (enterprises) to opt out. We can do so by defining a `RestrictAppCacheToSecureContexts` runtime flag, and specifying it in IDL as follows:
+
+```webidl
+interface Window {
+  ...
+  [SecureContext=RestrictAppCacheToSecureContexts] readonly attribute ApplicationCache applicationCache;
+  ...
+}
+```
+
 ### [TreatNullAs] _(a,p)_
 
 Standard: [TreatNullAs](https://heycam.github.io/webidl/#TreatNullAs)

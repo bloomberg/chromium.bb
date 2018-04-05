@@ -25,11 +25,14 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebFeature.h"
 #include "core/html_names.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -70,6 +73,16 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
       !GetDocument().Parser()->DocumentWasLoadedAsPartOfNavigation())
     return;
   const AtomicString& manifest = FastGetAttribute(manifestAttr);
+
+  if (RuntimeEnabledFeatures::RestrictAppCacheToSecureContextsEnabled() &&
+      !GetDocument().IsSecureContext()) {
+    if (!manifest.IsEmpty()) {
+      Deprecation::CountDeprecation(
+          GetDocument(), WebFeature::kApplicationCacheAPIInsecureOrigin);
+    }
+    return;
+  }
+
   if (manifest.IsEmpty())
     document_loader->GetApplicationCacheHost()->SelectCacheWithoutManifest();
   else

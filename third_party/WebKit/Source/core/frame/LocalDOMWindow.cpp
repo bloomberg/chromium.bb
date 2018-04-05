@@ -594,6 +594,10 @@ FrameConsole* LocalDOMWindow::GetFrameConsole() const {
 ApplicationCache* LocalDOMWindow::applicationCache() const {
   if (!IsCurrentlyDisplayedInFrame())
     return nullptr;
+  if (!isSecureContext()) {
+    Deprecation::CountDeprecation(
+        GetFrame(), WebFeature::kApplicationCacheAPIInsecureOrigin);
+  }
   if (!application_cache_)
     application_cache_ = ApplicationCache::Create(GetFrame());
   return application_cache_.Get();
