@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<title>media controls picture in picture button for a video element with only audio</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../media-file.js"></script>
+<script src="../../media-controls.js"></script>
+<script src="../../controls/picture-in-picture.js"></script>
+<body>
+<script>
+async_test(t => {
+    enablePictureInPictureForTest(t);
+
+    var video = document.createElement('video');
+    video.setAttribute('controls', '');
+    video.src = '../../content/test.wav';
+    document.body.appendChild(video);
+
+    video.onloadeddata = t.step_func_done(function() {
+        assertPictureInPictureButtonNotVisible(video);
+    });
+
+    video.onloadedmetadata = t.step_func(function() {
+        assertPictureInPictureButtonNotVisible(video);
+    });
+});
+</script>
+</body>
