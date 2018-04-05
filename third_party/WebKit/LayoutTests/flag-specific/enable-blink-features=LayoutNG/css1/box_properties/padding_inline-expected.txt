@@ -19,37 +19,37 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 203x19
           text run at (0,0) width 203: "This element has a class of zero."
       LayoutNGBlockFlow {P} at (0,167) size 769x120 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 475x19
-          text run at (0,0) width 475: "This element is unstyled save for a background color of gray. It contains an "
-        LayoutInline {SPAN} at (0,0) size 746x89 [bgcolor=#00FFFF]
-          LayoutText {#text} at (500,0) size 143x19
-            text run at (500,0) width 143: "inline element of class "
+        LayoutText {#text} at (0,0) size 476x19
+          text run at (0,0) width 476: "This element is unstyled save for a background color of gray. It contains an "
+        LayoutInline {SPAN} at (0,0) size 747x89 [bgcolor=#00FFFF]
+          LayoutText {#text} at (501,0) size 143x19
+            text run at (501,0) width 143: "inline element of class "
           LayoutInline {TT} at (0,0) size 24x16
-            LayoutText {#text} at (643,3) size 24x16
-              text run at (643,3) width 24: "one"
-          LayoutText {#text} at (667,0) size 746x39
-            text run at (667,0) width 79: ", giving it an"
+            LayoutText {#text} at (644,3) size 24x16
+              text run at (644,3) width 24: "one"
+          LayoutText {#text} at (668,0) size 747x39
+            text run at (668,0) width 79: ", giving it an"
             text run at (0,20) width 238: "aqua background and a 25px padding"
-        LayoutText {#text} at (263,20) size 765x99
+        LayoutText {#text} at (263,20) size 764x99
           text run at (263,20) width 497: ". Padding on inline elements does not affect line-height calculations, so all lines"
           text run at (0,40) width 719: "in this element should have the same line-height. There may be implementation-specific limits on how much of the"
-          text run at (0,60) width 765: "padding the user agent is able to display above and below each line. However, there should be at least 25px of padding to"
+          text run at (0,60) width 764: "padding the user agent is able to display above and below each line. However, there should be at least 25px of padding to"
           text run at (0,80) width 753: "the left side of the inline box in the first line it appears, and 25px of padding to the right side of the inline element box in"
           text run at (0,100) width 182: "the last line where it appears."
       LayoutNGBlockFlow {P} at (0,303) size 769x20 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 203x19
           text run at (0,0) width 203: "This element has a class of zero."
       LayoutNGBlockFlow {P} at (0,339) size 769x60 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 475x19
-          text run at (0,0) width 475: "This element is unstyled save for a background color of gray. It contains an "
-        LayoutInline {SPAN} at (0,0) size 755x39 [bgcolor=#00FFFF]
-          LayoutText {#text} at (475,0) size 143x19
-            text run at (475,0) width 143: "inline element of class "
+        LayoutText {#text} at (0,0) size 476x19
+          text run at (0,0) width 476: "This element is unstyled save for a background color of gray. It contains an "
+        LayoutInline {SPAN} at (0,0) size 756x39 [bgcolor=#00FFFF]
+          LayoutText {#text} at (476,0) size 143x19
+            text run at (476,0) width 143: "inline element of class "
           LayoutInline {TT} at (0,0) size 24x16
-            LayoutText {#text} at (618,3) size 24x16
-              text run at (618,3) width 24: "two"
-          LayoutText {#text} at (642,0) size 755x39
-            text run at (642,0) width 113: ", giving it an aqua"
+            LayoutText {#text} at (619,3) size 24x16
+              text run at (619,3) width 24: "two"
+          LayoutText {#text} at (643,0) size 756x39
+            text run at (643,0) width 113: ", giving it an aqua"
             text run at (0,20) width 474: "background and no padding, since negative padding values are not allowed"
         LayoutText {#text} at (474,20) size 748x39
           text run at (474,20) width 274: ". Padding on inline elements does not affect"
@@ -61,9 +61,9 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 767x340
           LayoutTableRow {TR} at (0,0) size 767x28
             LayoutNGTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 767x312
             LayoutNGTableCell {TD} at (0,170) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,146) size 4x19
@@ -73,37 +73,37 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 203x19
                   text run at (0,0) width 203: "This element has a class of zero."
               LayoutNGBlockFlow {P} at (4,40) size 747x120 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 475x19
-                  text run at (0,0) width 475: "This element is unstyled save for a background color of gray. It contains an "
-                LayoutInline {SPAN} at (0,0) size 746x89 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (500,0) size 143x19
-                    text run at (500,0) width 143: "inline element of class "
+                LayoutText {#text} at (0,0) size 476x19
+                  text run at (0,0) width 476: "This element is unstyled save for a background color of gray. It contains an "
+                LayoutInline {SPAN} at (0,0) size 747x89 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (501,0) size 143x19
+                    text run at (501,0) width 143: "inline element of class "
                   LayoutInline {TT} at (0,0) size 24x16
-                    LayoutText {#text} at (643,3) size 24x16
-                      text run at (643,3) width 24: "one"
-                  LayoutText {#text} at (667,0) size 746x39
-                    text run at (667,0) width 79: ", giving it an"
+                    LayoutText {#text} at (644,3) size 24x16
+                      text run at (644,3) width 24: "one"
+                  LayoutText {#text} at (668,0) size 747x39
+                    text run at (668,0) width 79: ", giving it an"
                     text run at (0,20) width 238: "aqua background and a 25px padding"
                 LayoutText {#text} at (263,20) size 729x99
                   text run at (263,20) width 464: ". Padding on inline elements does not affect line-height calculations, so all"
                   text run at (0,40) width 729: "lines in this element should have the same line-height. There may be implementation-specific limits on how much of"
-                  text run at (0,60) width 717: "the padding the user agent is able to display above and below each line. However, there should be at least 25px of"
+                  text run at (0,60) width 716: "the padding the user agent is able to display above and below each line. However, there should be at least 25px of"
                   text run at (0,80) width 727: "padding to the left side of the inline box in the first line it appears, and 25px of padding to the right side of the inline"
                   text run at (0,100) width 279: "element box in the last line where it appears."
               LayoutNGBlockFlow {P} at (4,176) size 747x20 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 203x19
                   text run at (0,0) width 203: "This element has a class of zero."
               LayoutNGBlockFlow {P} at (4,212) size 747x60 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 475x19
-                  text run at (0,0) width 475: "This element is unstyled save for a background color of gray. It contains an "
-                LayoutInline {SPAN} at (0,0) size 721x39 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (475,0) size 143x19
-                    text run at (475,0) width 143: "inline element of class "
+                LayoutText {#text} at (0,0) size 476x19
+                  text run at (0,0) width 476: "This element is unstyled save for a background color of gray. It contains an "
+                LayoutInline {SPAN} at (0,0) size 722x39 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (476,0) size 143x19
+                    text run at (476,0) width 143: "inline element of class "
                   LayoutInline {TT} at (0,0) size 24x16
-                    LayoutText {#text} at (618,3) size 24x16
-                      text run at (618,3) width 24: "two"
-                  LayoutText {#text} at (642,0) size 721x39
-                    text run at (642,0) width 79: ", giving it an"
+                    LayoutText {#text} at (619,3) size 24x16
+                      text run at (619,3) width 24: "two"
+                  LayoutText {#text} at (643,0) size 722x39
+                    text run at (643,0) width 79: ", giving it an"
                     text run at (0,20) width 508: "aqua background and no padding, since negative padding values are not allowed"
                 LayoutText {#text} at (508,20) size 743x39
                   text run at (508,20) width 235: ". Padding on inline elements does not"

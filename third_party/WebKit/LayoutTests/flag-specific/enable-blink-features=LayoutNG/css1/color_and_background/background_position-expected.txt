@@ -42,18 +42,18 @@ layer at (0,0) size 785x1573 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (488,240) width 0: " "
           text run at (0,256) width 0: " "
       LayoutNGBlockFlow {P} at (0,339) size 769x20
-        LayoutText {#text} at (0,0) size 503x19
-          text run at (0,0) width 503: "This document should have a single, small green image in its upper right corner."
+        LayoutText {#text} at (0,0) size 502x19
+          text run at (0,0) width 502: "This document should have a single, small green image in its upper right corner."
       LayoutNGBlockFlow {P} at (0,375) size 769x60 [bgcolor=#00FFFF]
         LayoutText {#text} at (0,0) size 768x59
           text run at (0,0) width 735: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be"
           text run at (0,20) width 768: "fixed at the center of the paragraph. The background color will make it easier to determine the edges of the paragraph, and"
-          text run at (0,40) width 262: "therefore allow you to calculate its center."
+          text run at (0,40) width 261: "therefore allow you to calculate its center."
       LayoutNGBlockFlow {P} at (0,451) size 769x60 [bgcolor=#00FFFF]
         LayoutText {#text} at (0,0) size 768x59
           text run at (0,0) width 735: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be"
           text run at (0,20) width 768: "fixed at the center of the paragraph. The background color will make it easier to determine the edges of the paragraph, and"
-          text run at (0,40) width 262: "therefore allow you to calculate its center."
+          text run at (0,40) width 261: "therefore allow you to calculate its center."
       LayoutNGBlockFlow {P} at (0,527) size 769x60 [bgcolor=#00FFFF]
         LayoutText {#text} at (0,0) size 749x59
           text run at (0,0) width 730: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the"
@@ -68,7 +68,7 @@ layer at (0,0) size 785x1573 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 768x59
           text run at (0,0) width 768: "This paragraph should have a single, small green image exactly at the left center; that is, the left center of the image should"
           text run at (0,20) width 713: "be fixed at the left center of the paragraph. The background color will make it easier to determine the edges of the"
-          text run at (0,40) width 360: "paragraph, and therefore allow you to calculate its center."
+          text run at (0,40) width 359: "paragraph, and therefore allow you to calculate its center."
       LayoutNGBlockFlow {P} at (0,755) size 769x60 [bgcolor=#00FFFF]
         LayoutText {#text} at (0,0) size 761x59
           text run at (0,0) width 749: "This paragraph should have a single, small green image positioned 75% of the way across the element, and 25% down."
@@ -84,27 +84,27 @@ layer at (0,0) size 785x1573 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x628
           LayoutTableRow {TR} at (0,0) size 767x28
             LayoutNGTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 767x600
             LayoutNGTableCell {TD} at (0,314) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,290) size 4x19
                 text run at (4,290) width 4: " "
             LayoutNGTableCell {TD} at (12,28) size 755x600 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {P} at (4,4) size 747x20
-                LayoutText {#text} at (0,0) size 503x19
-                  text run at (0,0) width 503: "This document should have a single, small green image in its upper right corner."
+                LayoutText {#text} at (0,0) size 502x19
+                  text run at (0,0) width 502: "This document should have a single, small green image in its upper right corner."
               LayoutNGBlockFlow {P} at (4,40) size 747x60 [bgcolor=#00FFFF]
                 LayoutText {#text} at (0,0) size 741x59
                   text run at (0,0) width 735: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be"
                   text run at (0,20) width 741: "fixed at the center of the paragraph. The background color will make it easier to determine the edges of the paragraph,"
-                  text run at (0,40) width 289: "and therefore allow you to calculate its center."
+                  text run at (0,40) width 288: "and therefore allow you to calculate its center."
               LayoutNGBlockFlow {P} at (4,116) size 747x60 [bgcolor=#00FFFF]
                 LayoutText {#text} at (0,0) size 741x59
                   text run at (0,0) width 735: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be"
                   text run at (0,20) width 741: "fixed at the center of the paragraph. The background color will make it easier to determine the edges of the paragraph,"
-                  text run at (0,40) width 289: "and therefore allow you to calculate its center."
+                  text run at (0,40) width 288: "and therefore allow you to calculate its center."
               LayoutNGBlockFlow {P} at (4,192) size 747x60 [bgcolor=#00FFFF]
                 LayoutText {#text} at (0,0) size 730x59
                   text run at (0,0) width 730: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the"
@@ -119,7 +119,7 @@ layer at (0,0) size 785x1573 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 736x59
                   text run at (0,0) width 722: "This paragraph should have a single, small green image exactly at the left center; that is, the left center of the image"
                   text run at (0,20) width 736: "should be fixed at the left center of the paragraph. The background color will make it easier to determine the edges of"
-                  text run at (0,40) width 383: "the paragraph, and therefore allow you to calculate its center."
+                  text run at (0,40) width 382: "the paragraph, and therefore allow you to calculate its center."
               LayoutNGBlockFlow {P} at (4,420) size 747x80 [bgcolor=#00FFFF]
                 LayoutText {#text} at (0,0) size 705x79
                   text run at (0,0) width 705: "This paragraph should have a single, small green image positioned 75% of the way across the element, and 25%"

@@ -24,27 +24,27 @@ layer at (0,0) size 785x1391 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (0,0) size 384.50x384.50
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {P} at (0,609.50) size 769x20
-        LayoutText {#text} at (0,0) size 671x19
-          text run at (0,0) width 671: "The square above should be half as wide as the image's parent element (either the BODY or the table cell)."
+        LayoutText {#text} at (0,0) size 670x19
+          text run at (0,0) width 670: "The square above should be half as wide as the image's parent element (either the BODY or the table cell)."
       LayoutNGBlockFlow {P} at (0,645.50) size 384.50x100
         LayoutText {#text} at (0,0) size 382x79
           text run at (0,0) width 382: "This paragraph should be half the width of its parent element"
-          text run at (0,20) width 379: "(either the BODY or the table, which should itself be half as"
-          text run at (0,40) width 366: "wide as the BODY element). This is extra text included to"
+          text run at (0,20) width 378: "(either the BODY or the table, which should itself be half as"
+          text run at (0,40) width 365: "wide as the BODY element). This is extra text included to"
           text run at (0,60) width 246: "ensure that this will be a fair test of the "
         LayoutInline {CODE} at (0,0) size 40x16
           LayoutText {#text} at (246,63) size 40x16
             text run at (246,63) width 40: "width"
-        LayoutText {#text} at (286,60) size 372x39
+        LayoutText {#text} at (286,60) size 373x39
           text run at (286,60) width 57: " property"
-          text run at (0,80) width 372: "without the need for the user to resize the viewing window."
+          text run at (0,80) width 373: "without the need for the user to resize the viewing window."
       LayoutTable {TABLE} at (0,761.50) size 384x613 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 382x611
           LayoutTableRow {TR} at (0,0) size 382x28
             LayoutNGTableCell {TD} at (0,0) size 382x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 382x583
             LayoutNGTableCell {TD} at (0,305) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,281) size 4x19
@@ -62,7 +62,7 @@ layer at (0,0) size 785x1391 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutNGBlockFlow {P} at (4,303) size 362x40
                 LayoutText {#text} at (0,0) size 348x39
                   text run at (0,0) width 348: "The square above should be half as wide as the image's"
-                  text run at (0,20) width 319: "parent element (either the BODY or the table cell)."
+                  text run at (0,20) width 318: "parent element (either the BODY or the table cell)."
               LayoutNGBlockFlow {P} at (4,359) size 181x220
                 LayoutText {#text} at (0,0) size 177x179
                   text run at (0,0) width 160: "This paragraph should be"
@@ -70,16 +70,16 @@ layer at (0,0) size 785x1391 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,40) width 167: "element (either the BODY"
                   text run at (0,60) width 163: "or the table, which should"
                   text run at (0,80) width 169: "itself be half as wide as the"
-                  text run at (0,100) width 155: "BODY element). This is"
+                  text run at (0,100) width 154: "BODY element). This is"
                   text run at (0,120) width 177: "extra text included to ensure"
                   text run at (0,140) width 174: "that this will be a fair test of"
                   text run at (0,160) width 23: "the "
                 LayoutInline {CODE} at (0,0) size 40x16
                   LayoutText {#text} at (23,163) size 40x16
                     text run at (23,163) width 40: "width"
-                LayoutText {#text} at (63,160) size 172x59
+                LayoutText {#text} at (63,160) size 173x59
                   text run at (63,160) width 109: " property without"
                   text run at (0,180) width 144: "the need for the user to"
-                  text run at (0,200) width 172: "resize the viewing window."
+                  text run at (0,200) width 173: "resize the viewing window."
 layer at (8,105) size 769x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,97) size 769x2 [border: (1px inset #EEEEEE)]

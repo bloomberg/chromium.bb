@@ -48,8 +48,8 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {TT} at (0,0) size 96x16
           LayoutText {#text} at (348,3) size 96x16
             text run at (348,3) width 96: "border-style"
-        LayoutText {#text} at (444,0) size 321x19
-          text run at (444,0) width 321: " was not set, and it should not be offset in any way."
+        LayoutText {#text} at (444,0) size 322x19
+          text run at (444,0) width 322: " was not set, and it should not be offset in any way."
       LayoutNGBlockFlow {P} at (0,495) size 769x46 [border: (3px double #800000)]
         LayoutText {#text} at (3,3) size 535x19
           text run at (3,3) width 535: "This paragraph should have a medium maroon double border around it, even though "
@@ -76,8 +76,8 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x119
           LayoutTableRow {TR} at (0,5) size 767x46
             LayoutNGTableCell {TD} at (5,5) size 757x46 [border: (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (3,3) size 711x39
-                text run at (3,3) width 711: "Every cell in this table should have a 2-pixel solid green border. This is also true of the table-testing section in the"
+              LayoutText {#text} at (3,3) size 710x39
+                text run at (3,3) width 710: "Every cell in this table should have a 2-pixel solid green border. This is also true of the table-testing section in the"
                 text run at (3,23) width 175: "second half of the test page."
           LayoutTableRow {TR} at (0,56) size 767x58
             LayoutNGTableCell {TD} at (5,72) size 194x26 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
@@ -100,9 +100,9 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x655
           LayoutTableRow {TR} at (0,0) size 767x30
             LayoutNGTableCell {TD} at (0,0) size 767x30 [bgcolor=#C0C0C0] [border: (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (5,5) size 159x19
-                  text run at (5,5) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (5,5) size 161x19
+                  text run at (5,5) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,30) size 767x625
             LayoutNGTableCell {TD} at (0,327) size 14x30 [bgcolor=#C0C0C0] [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (5,302) size 4x19
@@ -132,7 +132,7 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (348,3) width 96: "border-style"
                 LayoutText {#text} at (444,0) size 732x39
                   text run at (444,0) width 288: " was not set, and it should not be offset in any"
-                  text run at (0,20) width 29: "way."
+                  text run at (0,20) width 30: "way."
               LayoutNGBlockFlow {P} at (5,309) size 743x46 [border: (3px double #800000)]
                 LayoutText {#text} at (3,3) size 535x19
                   text run at (3,3) width 535: "This paragraph should have a medium maroon double border around it, even though "
@@ -159,8 +159,8 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutTableSection {TBODY} at (1,1) size 741x119
                   LayoutTableRow {TR} at (0,5) size 741x46
                     LayoutNGTableCell {TD} at (5,5) size 731x46 [border: (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
-                      LayoutText {#text} at (3,3) size 711x39
-                        text run at (3,3) width 711: "Every cell in this table should have a 2-pixel solid green border. This is also true of the table-testing section in the"
+                      LayoutText {#text} at (3,3) size 710x39
+                        text run at (3,3) width 710: "Every cell in this table should have a 2-pixel solid green border. This is also true of the table-testing section in the"
                         text run at (3,23) width 175: "second half of the test page."
                   LayoutTableRow {TR} at (0,56) size 741x58
                     LayoutNGTableCell {TD} at (5,72) size 187x26 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]

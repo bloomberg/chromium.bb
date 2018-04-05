@@ -4,16 +4,16 @@ layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x584
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 51x19
-          text run at (0,0) width 51: "Test for "
-        LayoutInline {I} at (0,0) size 728x19
-          LayoutInline {A} at (0,0) size 348x19 [color=#0000EE]
-            LayoutText {#text} at (51,0) size 348x19
-              text run at (51,0) width 348: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9124"
-          LayoutText {#text} at (399,0) size 380x19
-            text run at (399,0) width 380: " Drop shadow obscures \"add more stuff\" bubble at live.com"
-        LayoutText {#text} at (779,0) size 4x19
-          text run at (779,0) width 4: "."
+        LayoutText {#text} at (0,0) size 52x19
+          text run at (0,0) width 52: "Test for "
+        LayoutInline {I} at (0,0) size 724x19
+          LayoutInline {A} at (0,0) size 347x19 [color=#0000EE]
+            LayoutText {#text} at (52,0) size 347x19
+              text run at (52,0) width 347: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9124"
+          LayoutText {#text} at (399,0) size 377x19
+            text run at (399,0) width 377: " Drop shadow obscures \"add more stuff\" bubble at live.com"
+        LayoutText {#text} at (776,0) size 4x19
+          text run at (776,0) width 4: "."
 layer at (8,44) size 784x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,36) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,54) size 784x0

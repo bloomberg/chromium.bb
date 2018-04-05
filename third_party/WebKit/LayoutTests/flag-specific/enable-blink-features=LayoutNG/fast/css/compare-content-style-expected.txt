@@ -5,29 +5,29 @@ layer at (0,0) size 800x256
     LayoutNGBlockFlow {BODY} at (8,8) size 784x232
       LayoutNGBlockFlow {DIV} at (0,0) size 784x120
         LayoutNGBlockFlow {DIV} at (0,0) size 784x20
-          LayoutInline {<pseudo:before>} at (0,0) size 37x19
-            LayoutTextFragment (anonymous) at (0,0) size 37x19
-              text run at (0,0) width 37: "PASS"
+          LayoutInline {<pseudo:before>} at (0,0) size 38x19
+            LayoutTextFragment (anonymous) at (0,0) size 38x19
+              text run at (0,0) width 38: "PASS"
         LayoutNGBlockFlow {DIV} at (0,20) size 784x20
-          LayoutInline {<pseudo:before>} at (0,0) size 37x19
-            LayoutTextFragment (anonymous) at (0,0) size 37x19
-              text run at (0,0) width 37: "PASS"
+          LayoutInline {<pseudo:before>} at (0,0) size 38x19
+            LayoutTextFragment (anonymous) at (0,0) size 38x19
+              text run at (0,0) width 38: "PASS"
         LayoutNGBlockFlow {DIV} at (0,40) size 784x20
-          LayoutInline {<pseudo:before>} at (0,0) size 37x19
-            LayoutTextFragment (anonymous) at (0,0) size 37x19
-              text run at (0,0) width 37: "PASS"
+          LayoutInline {<pseudo:before>} at (0,0) size 38x19
+            LayoutTextFragment (anonymous) at (0,0) size 38x19
+              text run at (0,0) width 38: "PASS"
         LayoutNGBlockFlow {DIV} at (0,60) size 784x20
-          LayoutInline {<pseudo:before>} at (0,0) size 37x19
-            LayoutTextFragment (anonymous) at (0,0) size 37x19
-              text run at (0,0) width 37: "PASS"
+          LayoutInline {<pseudo:before>} at (0,0) size 38x19
+            LayoutTextFragment (anonymous) at (0,0) size 38x19
+              text run at (0,0) width 38: "PASS"
         LayoutNGBlockFlow {DIV} at (0,80) size 784x20
-          LayoutInline {<pseudo:before>} at (0,0) size 37x19
-            LayoutTextFragment (anonymous) at (0,0) size 37x19
-              text run at (0,0) width 37: "PASS"
+          LayoutInline {<pseudo:before>} at (0,0) size 38x19
+            LayoutTextFragment (anonymous) at (0,0) size 38x19
+              text run at (0,0) width 38: "PASS"
         LayoutNGBlockFlow {DIV} at (0,100) size 784x20
-          LayoutInline {<pseudo:before>} at (0,0) size 37x19
-            LayoutTextFragment (anonymous) at (0,0) size 37x19
-              text run at (0,0) width 37: "PASS"
+          LayoutInline {<pseudo:before>} at (0,0) size 38x19
+            LayoutTextFragment (anonymous) at (0,0) size 38x19
+              text run at (0,0) width 38: "PASS"
       LayoutNGBlockFlow {DIV} at (0,136) size 784x96
         LayoutNGBlockFlow {P} at (0,0) size 784x20
           LayoutInline {A} at (0,0) size 671x19 [color=#0000EE]
@@ -38,8 +38,8 @@ layer at (0,0) size 800x256
             LayoutNGListMarker (anonymous) at (-16,0) size 16x20
               LayoutText (anonymous) at (0,0) size 16x19
                 text run at (0,0) width 16: "1. "
-            LayoutText {#text} at (0,0) size 343x19
-              text run at (0,0) width 343: "All lines above should be \"PASS\" on initial page load."
+            LayoutText {#text} at (0,0) size 344x19
+              text run at (0,0) width 344: "All lines above should be \"PASS\" on initial page load."
           LayoutNGListItem {LI} at (40,20) size 744x20
             LayoutNGListMarker (anonymous) at (-16,0) size 16x20
               LayoutText (anonymous) at (0,0) size 16x19
@@ -50,5 +50,5 @@ layer at (0,0) size 800x256
             LayoutNGListMarker (anonymous) at (-16,0) size 16x20
               LayoutText (anonymous) at (0,0) size 16x19
                 text run at (0,0) width 16: "3. "
-            LayoutText {#text} at (0,0) size 245x19
-              text run at (0,0) width 245: "All lines above should still be \"PASS\"."
+            LayoutText {#text} at (0,0) size 246x19
+              text run at (0,0) width 246: "All lines above should still be \"PASS\"."

@@ -1,0 +1,414 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 224, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 208, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 192, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 176, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 160, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 144, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 128, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 112, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 96, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 80, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 64, 31, 9],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [24, 240, 31, 6],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    }
+  ]
+}
+

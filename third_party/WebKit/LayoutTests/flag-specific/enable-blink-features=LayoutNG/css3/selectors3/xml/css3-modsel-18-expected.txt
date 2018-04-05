@@ -17,18 +17,18 @@ layer at (0,0) size 800x286
       LayoutText {#text} at (187,20) size 4x19
         text run at (187,20) width 4: ":"
     LayoutNGBlockFlow {address} at (0,72) size 800x20
-      LayoutText {#text} at (0,0) size 161x19
-        text run at (0,0) width 161: "The background color of "
+      LayoutText {#text} at (0,0) size 160x19
+        text run at (0,0) width 160: "The background color of "
       LayoutInline {a} at (0,0) size 114x19 [color=#0000EE]
-        LayoutText {#text} at (161,0) size 80x19
-          text run at (161,0) width 80: "this anchor ("
+        LayoutText {#text} at (160,0) size 80x19
+          text run at (160,0) width 80: "this anchor ("
         LayoutInline {strong} at (0,0) size 29x19
-          LayoutText {#text} at (241,0) size 29x19
-            text run at (241,0) width 29: "here"
-        LayoutText {#text} at (270,0) size 5x19
-          text run at (270,0) width 5: ")"
-      LayoutText {#text} at (275,0) size 387x19
-        text run at (275,0) width 387: " should turn to green when the pointing device hovers over it."
+          LayoutText {#text} at (240,0) size 29x19
+            text run at (240,0) width 29: "here"
+        LayoutText {#text} at (269,0) size 5x19
+          text run at (269,0) width 5: ")"
+      LayoutText {#text} at (274,0) size 386x19
+        text run at (274,0) width 386: " should turn to green when the pointing device hovers over it."
     LayoutTable {table} at (0,92) size 278x194
       LayoutTableSection {tbody} at (0,0) size 278x194
         LayoutTableRow {tr} at (0,5) size 278x22

@@ -7,12 +7,12 @@ layer at (0,0) size 800x80
         LayoutText {#text} at (0,0) size 494x19
           text run at (0,0) width 494: "This paragraph should have green background because its language is \"en-gb\""
       LayoutNGBlockFlow {ADDRESS} at (0,36) size 784x20 [bgcolor=#00FF00]
-        LayoutInline {SPAN} at (0,0) size 156x19
-          LayoutText {#text} at (0,0) size 156x19
-            text run at (0,0) width 156: "This address should also"
-        LayoutText {#text} at (156,0) size 4x19
-          text run at (156,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 506x19
-          LayoutText {#text} at (160,0) size 506x19
-            text run at (160,0) width 506: "have green background because the language of the inner SPANs is not French."
+        LayoutInline {SPAN} at (0,0) size 155x19
+          LayoutText {#text} at (0,0) size 155x19
+            text run at (0,0) width 155: "This address should also"
+        LayoutText {#text} at (155,0) size 4x19
+          text run at (155,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 503x19
+          LayoutText {#text} at (159,0) size 503x19
+            text run at (159,0) width 503: "have green background because the language of the inner SPANs is not French."
         LayoutText {#text} at (0,0) size 0x0
