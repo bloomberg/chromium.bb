@@ -3172,9 +3172,27 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.chrome_try,
   )
 
+  _active_tot_chromium_pfq_informational_boards = frozenset([
+      'amd64-generic',
+      'daisy',
+  ])
+
   site_config.AddForBoards(
       'tot-chromium-pfq-informational',
-      boards_dict['all_full_boards'] & _chrome_boards,
+      _active_tot_chromium_pfq_informational_boards,
+      external_board_configs,
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.build_external_chrome,
+      important=False,
+      internal=False,
+      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      overlays=constants.PUBLIC_OVERLAYS,
+      active_waterfall=waterfall.WATERFALL_SWARMING)
+
+  site_config.AddForBoards(
+      'tot-chromium-pfq-informational',
+      (boards_dict['all_full_boards'] & _chrome_boards -
+       _active_tot_chromium_pfq_informational_boards),
       external_board_configs,
       site_config.templates.chromium_pfq_informational,
       site_config.templates.build_external_chrome,

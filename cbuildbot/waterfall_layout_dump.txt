@@ -3564,3 +3564,7 @@ zoombini-tot-chrome-pfq-informational-tryjob (gce_beefy)
 zoombini-tot-chromium-pfq-informational-tryjob (gce_beefy)
 zoombini-unittest-stress (gce_beefy)
 
+== go/legoland ==
+amd64-generic-tot-chromium-pfq-informational (baremetal)
+daisy-tot-chromium-pfq-informational (gce_beefy)
+

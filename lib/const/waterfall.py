@@ -14,7 +14,7 @@ WATERFALL_BRANCH = 'chromeos.branch'
 WATERFALL_CHROMIUM = 'chromiumos.chromium'
 WATERFALL_CHROME = 'chromeos.chrome'
 # Used for all swarming builds.
-WATERFALL_SWARMING = 'chromeos.swarming'
+WATERFALL_SWARMING = 'go/legoland'
 
 # These waterfalls should send email reports regardless of cidb connection.
 EMAIL_WATERFALLS = (
