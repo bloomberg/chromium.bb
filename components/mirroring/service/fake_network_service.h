@@ -88,6 +88,11 @@ class MockNetworkContext final : public network::mojom::NetworkContext {
       const std::string& profile_id,
       network::mojom::NetworkConditionsPtr conditions) override {}
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
+  void SetCTPolicy(
+      const std::vector<std::string>& required_hosts,
+      const std::vector<std::string>& excluded_hosts,
+      const std::vector<std::string>& excluded_spkis,
+      const std::vector<std::string>& excluded_legacy_spkis) override {}
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,

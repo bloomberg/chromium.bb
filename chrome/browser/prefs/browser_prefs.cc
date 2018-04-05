@@ -70,7 +70,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/certificate_transparency/ct_policy_manager.h"
+#include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/feature_engagement/buildflags.h"
@@ -488,7 +488,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   autofill::AutofillManager::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
-  certificate_transparency::CTPolicyManager::RegisterPrefs(registry);
+  certificate_transparency::prefs::RegisterPrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
   chrome_browser_net::Predictor::RegisterProfilePrefs(registry);

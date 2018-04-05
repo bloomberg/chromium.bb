@@ -39,4 +39,14 @@ interface NetworkServiceTest {
       string host_pattern,
       CertVerifyResult verify_result,
       int32 rv) => ();
+
+  // Toggles requiring CT for testing
+  enum ShouldRequireCT {
+    RESET = 0,
+    REQUIRE = 1,
+    DONT_REQUIRE = 2,
+  };
+
+  [Sync]
+  SetShouldRequireCT(ShouldRequireCT required) => ();
 };

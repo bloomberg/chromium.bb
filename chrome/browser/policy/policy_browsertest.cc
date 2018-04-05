@@ -155,16 +155,20 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
+#include "content/public/test/network_service_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -200,6 +204,10 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -728,6 +736,37 @@ class PolicyTest : public InProcessBrowserTest {
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(!enabled), nullptr);
     UpdateProviderPolicy(policies);
+  }
+
+  void SetShouldRequireCTForTesting(bool* required) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      network::mojom::NetworkServiceTestPtr network_service_test;
+      content::ServiceManagerConnection::GetForProcess()
+          ->GetConnector()
+          ->BindInterface(content::mojom::kNetworkServiceName,
+                          &network_service_test);
+      network::mojom::NetworkServiceTest::ShouldRequireCT required_ct;
+      if (!required) {
+        required_ct =
+            network::mojom::NetworkServiceTest::ShouldRequireCT::RESET;
+      } else {
+        required_ct =
+            *required
+                ? network::mojom::NetworkServiceTest::ShouldRequireCT::REQUIRE
+                : network::mojom::NetworkServiceTest::ShouldRequireCT::
+                      DONT_REQUIRE;
+      }
+
+      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+      network_service_test->SetShouldRequireCT(required_ct);
+      return;
+    }
+
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &net::TransportSecurityState::SetShouldRequireCTForTesting,
+            required));
   }
 
 #if defined(OS_CHROMEOS)
@@ -3762,23 +3801,14 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothPolicyTest, Block) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest,
                        CertificateTransparencyEnforcementDisabledForUrls) {
-  // Cleanup any globals even if the test fails.
-  base::ScopedClosureRunner cleanup(base::Bind(
-      base::IgnoreResult(&BrowserThread::PostTask), BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&net::TransportSecurityState::SetShouldRequireCTForTesting,
-                 nullptr)));
-
   net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
   https_server_ok.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server_ok.Start());
 
   // Require CT for all hosts (in the absence of policy).
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(net::TransportSecurityState::SetShouldRequireCTForTesting,
-                     base::Owned(new bool(true))));
+  bool required = true;
+  SetShouldRequireCTForTesting(&required);
 
   ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
 
@@ -3805,6 +3835,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
                std::move(disabled_urls), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
+
+  SetShouldRequireCTForTesting(nullptr);
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/simple.html"));

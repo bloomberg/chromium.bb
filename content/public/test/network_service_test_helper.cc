@@ -20,6 +20,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/network_context.h"
@@ -91,6 +92,22 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
       MockCertVerifierAddResultForCertAndHostCallback callback) override {
     mock_cert_verifier_->AddResultForCertAndHost(cert, host_pattern,
                                                  verify_result, rv);
+    std::move(callback).Run();
+  }
+
+  void SetShouldRequireCT(ShouldRequireCT required,
+                          SetShouldRequireCTCallback callback) override {
+    if (required == NetworkServiceTest::ShouldRequireCT::RESET) {
+      net::TransportSecurityState::SetShouldRequireCTForTesting(nullptr);
+      std::move(callback).Run();
+      return;
+    }
+
+    bool ct = true;
+    if (NetworkServiceTest::ShouldRequireCT::DONT_REQUIRE == required)
+      ct = false;
+
+    net::TransportSecurityState::SetShouldRequireCTForTesting(&ct);
     std::move(callback).Run();
   }
 

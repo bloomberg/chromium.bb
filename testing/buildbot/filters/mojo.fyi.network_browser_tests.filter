@@ -43,6 +43,12 @@
 -WebViewTests/WebViewTest.DownloadPermission/0
 -WebViewTests/WebViewTest.DownloadPermission/1
 
+# Need a test interface API that allows us to check on the CT status.
+# Then in ssl_browsertest.cc we can use that instead of the direct
+# call to the transport_security_state()
+-SSLUITest.CertificateTransparencyEnforcementDisabledForUrls/0
+-SSLUITest.CertificateTransparencyEnforcementDisabledForUrls/1
+
 # Redirects to chrome-extension:// should be blocked unless the resource is
 # webaccessible.  https://crbug.com/821586
 -ProcessManagerBrowserTest.ServerRedirectToNonWebAccessibleResource
@@ -102,7 +108,6 @@
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
 -LoadImageBrowserTest.LoadImage
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
--PolicyTest.CertificateTransparencyEnforcementDisabledForUrls
 -PolicyTest.ExtensionInstallSources
 -PolicyTest.ForceGoogleSafeSearch
 -ProfileBrowserTest.SendHPKPReport
