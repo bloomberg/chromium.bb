@@ -27,7 +27,19 @@ namespace device {
 
 class NetworkLocationProvider : public LocationProvider {
  public:
-  // Cache of recently resolved locations. Public for tests.
+  // To ensure the last-used position estimate can be preserved when the network
+  // location provider is torn down, a delegate manages the state of the cached
+  // position estimate outside of this provider.
+  class LastPositionCache {
+   public:
+    virtual ~LastPositionCache() = default;
+    virtual void SetLastNetworkPosition(
+        const mojom::Geoposition& new_position) = 0;
+    virtual const mojom::Geoposition& GetLastNetworkPosition() = 0;
+  };
+
+  // Cache of recently resolved locations, keyed by the set of unique WiFi APs
+  // used in the network query. Public for tests.
   class DEVICE_GEOLOCATION_EXPORT PositionCache {
    public:
     // The maximum size of the cache of positions.
@@ -64,7 +76,8 @@ class NetworkLocationProvider : public LocationProvider {
 
   DEVICE_GEOLOCATION_EXPORT NetworkLocationProvider(
       scoped_refptr<net::URLRequestContextGetter> context,
-      const std::string& api_key);
+      const std::string& api_key,
+      LastPositionCache* last_position_cache);
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation
@@ -101,8 +114,9 @@ class NetworkLocationProvider : public LocationProvider {
   // The timestamp for the latest wifi data update.
   base::Time wifi_timestamp_;
 
-  // The current best position estimate.
-  mojom::Geoposition position_;
+  // A delegate to manage the current best network position estimate. Must not
+  // be nullptr.
+  LastPositionCache* const last_position_delegate_;
 
   LocationProvider::LocationProviderUpdateCallback
       location_provider_update_callback_;

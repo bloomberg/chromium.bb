@@ -46,6 +46,7 @@ class MockWlanApi : public WifiDataProviderCommon::WlanApiInterface {
 class MockPollingPolicy : public WifiPollingPolicy {
  public:
   MockPollingPolicy() {
+    ON_CALL(*this, InitialInterval()).WillByDefault(Return(0));
     ON_CALL(*this, PollingInterval()).WillByDefault(Return(1));
     ON_CALL(*this, NoWifiInterval()).WillByDefault(Return(1));
     // We are not interested in calls to UpdatePollingInterval() method.
@@ -54,25 +55,28 @@ class MockPollingPolicy : public WifiPollingPolicy {
 
   // WifiPollingPolicy implementation.
   MOCK_METHOD1(UpdatePollingInterval, void(bool));
+  MOCK_METHOD0(InitialInterval, int());
   MOCK_METHOD0(PollingInterval, int());
   MOCK_METHOD0(NoWifiInterval, int());
 };
 
 class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
  public:
-  WifiDataProviderCommonWithMock()
-      : wlan_api_(new MockWlanApi), polling_policy_(new MockPollingPolicy) {}
+  WifiDataProviderCommonWithMock() : wlan_api_(new MockWlanApi) {}
 
   // WifiDataProviderCommon
   std::unique_ptr<WlanApiInterface> CreateWlanApi() override {
     return std::move(wlan_api_);
   }
   std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy() override {
-    return std::move(polling_policy_);
+    auto policy = std::make_unique<MockPollingPolicy>();
+    // Save a pointer to the MockPollingPolicy.
+    polling_policy_ = policy.get();
+    return std::move(policy);
   }
 
   std::unique_ptr<MockWlanApi> wlan_api_;
-  std::unique_ptr<MockPollingPolicy> polling_policy_;
+  MockPollingPolicy* polling_policy_ = nullptr;
 
  private:
   ~WifiDataProviderCommonWithMock() override = default;
@@ -88,16 +92,22 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         wifi_data_callback_(base::DoNothing()),
         provider_(new WifiDataProviderCommonWithMock),
-        wlan_api_(provider_->wlan_api_.get()),
-        polling_policy_(provider_->polling_policy_.get()) {}
+        wlan_api_(provider_->wlan_api_.get()) {}
 
   void SetUp() override {
+    // Initialize WifiPollingPolicy early so we can watch for calls to mocked
+    // functions.
+    WifiPollingPolicy::Initialize(provider_->CreatePollingPolicy());
+    if (WifiPollingPolicy::IsInitialized())
+      polling_policy_ = provider_->polling_policy_;
+
     provider_->AddCallback(&wifi_data_callback_);
   }
 
   void TearDown() override {
     provider_->RemoveCallback(&wifi_data_callback_);
     provider_->StopDataProvider();
+    WifiPollingPolicy::Shutdown();
   }
 
  protected:
@@ -106,7 +116,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
   const scoped_refptr<WifiDataProviderCommonWithMock> provider_;
 
   MockWlanApi* const wlan_api_;
-  MockPollingPolicy* const polling_policy_;
+  MockPollingPolicy* polling_policy_ = nullptr;
 };
 
 TEST_F(GeolocationWifiDataProviderCommonTest, CreateDestroy) {
@@ -118,6 +128,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, CreateDestroy) {
 
 TEST_F(GeolocationWifiDataProviderCommonTest, NoWifi) {
   base::RunLoop run_loop;
+  EXPECT_CALL(*polling_policy_, InitialInterval()).Times(1);
   EXPECT_CALL(*polling_policy_, NoWifiInterval()).Times(AtLeast(1));
   EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
       .WillOnce(InvokeWithoutArgs([&run_loop]() {
@@ -131,6 +142,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, NoWifi) {
 
 TEST_F(GeolocationWifiDataProviderCommonTest, IntermittentWifi) {
   base::RunLoop run_loop;
+  EXPECT_CALL(*polling_policy_, InitialInterval()).Times(1);
   EXPECT_CALL(*polling_policy_, PollingInterval()).Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, NoWifiInterval()).Times(1);
   EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
@@ -149,6 +161,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, IntermittentWifi) {
 TEST_F(GeolocationWifiDataProviderCommonTest, DoAnEmptyScan) {
   base::RunLoop run_loop;
 
+  EXPECT_CALL(*polling_policy_, InitialInterval()).Times(1);
   EXPECT_CALL(*polling_policy_, PollingInterval()).Times(AtLeast(1));
   EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
       .WillOnce(InvokeWithoutArgs([&run_loop]() {
@@ -169,6 +182,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoAnEmptyScan) {
 TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
   base::RunLoop run_loop;
 
+  EXPECT_CALL(*polling_policy_, InitialInterval()).Times(1);
   EXPECT_CALL(*polling_policy_, PollingInterval()).Times(AtLeast(1));
   AccessPointData single_access_point;
   single_access_point.channel = 2;

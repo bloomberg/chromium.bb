@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "device/geolocation/network_location_provider.h"
 #include "device/geolocation/public/cpp/geoposition.h"
+#include "device/geolocation/wifi_polling_policy.h"
 
 namespace device {
 
@@ -33,7 +34,10 @@ LocationArbitrator::LocationArbitrator(
       is_permission_granted_(false),
       is_running_(false) {}
 
-LocationArbitrator::~LocationArbitrator() = default;
+LocationArbitrator::~LocationArbitrator() {
+  // Release the global wifi polling policy state.
+  WifiPollingPolicy::Shutdown();
+}
 
 bool LocationArbitrator::HasPermissionBeenGrantedForTest() const {
   return is_permission_granted_;
@@ -43,6 +47,15 @@ void LocationArbitrator::OnPermissionGranted() {
   is_permission_granted_ = true;
   for (const auto& provider : providers_)
     provider->OnPermissionGranted();
+}
+
+void LocationArbitrator::SetLastNetworkPosition(
+    const mojom::Geoposition& position) {
+  last_network_position_ = position;
+}
+
+const mojom::Geoposition& LocationArbitrator::GetLastNetworkPosition() {
+  return last_network_position_;
 }
 
 void LocationArbitrator::StartProvider(bool enable_high_accuracy) {
@@ -156,7 +169,8 @@ LocationArbitrator::NewNetworkLocationProvider(
   // Android uses its own SystemLocationProvider.
   return nullptr;
 #else
-  return std::make_unique<NetworkLocationProvider>(std::move(context), api_key);
+  return std::make_unique<NetworkLocationProvider>(std::move(context), api_key,
+                                                   this);
 #endif
 }
 
