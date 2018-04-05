@@ -3672,7 +3672,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
           Cette photo s'affichera sur l'écran de connexion et l'écran de verrouillage du Chromebook.</translation>
 <translation id="6769712124046837540">Ajout d'une imprimante en cours…</translation>
 <translation id="6771503742377376720">Est une autorité de certification</translation>
-<translation id="6773575010135450071">Plus d'actions…</translation>
 <translation id="6777817260680419853">Redirection bloquée</translation>
 <translation id="6778959797435875428">Réactiver le son des sites</translation>
 <translation id="677965093459947883">Très petite</translation>
@@ -4203,7 +4202,6 @@ Notez que la taille du téléchargement de l'application <ph name="APP_NAME" /> 
 <translation id="7629827748548208700">Onglet : <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Toujours ouvrir les fichiers de ce type</translation>
 <translation id="7632948528260659758">Échec de la mise à jour des applications kiosque suivantes :</translation>
-<translation id="7634373849852678655">Appuyez sur le bouton "Application" pour quitter le mode plein écran</translation>
 <translation id="7639178625568735185">OK</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> vous connecte automatiquement aux sites éligibles avec les mots de passe que vous avez enregistrés.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>

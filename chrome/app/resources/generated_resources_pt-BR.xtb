@@ -3673,7 +3673,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
           Essa imagem será exibida na tela de login e na tela de bloqueio do Chromebook.</translation>
 <translation id="6769712124046837540">Adicionando impressora...</translation>
 <translation id="6771503742377376720">É uma Autoridade de certificação</translation>
-<translation id="6773575010135450071">Mais ações...</translation>
 <translation id="6777817260680419853">Redirecionamento bloqueado</translation>
 <translation id="6778959797435875428">Parar de ignorar sites</translation>
 <translation id="677965093459947883">Muito pequeno</translation>
@@ -4205,7 +4204,6 @@ A instalação do <ph name="APP_NAME" /> faz o download de <ph name="DOWNLOAD_SI
 <translation id="7629827748548208700">Guia: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Sempre abrir arquivos deste tipo</translation>
 <translation id="7632948528260659758">Os seguintes aplicativos de quiosque tiveram falha na atualização:</translation>
-<translation id="7634373849852678655">Pressione o botão do app para sair da tela cheia</translation>
 <translation id="7639178625568735185">Entendi.</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> conecta você automaticamente a sites qualificados com as senhas que você salvou.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>

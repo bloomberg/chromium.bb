@@ -3670,7 +3670,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
           Aquesta foto es mostrarà a la pantalla d'inici de sessió i a la pantalla de bloqueig de Chromebook.</translation>
 <translation id="6769712124046837540">S'està afegint la impressora...</translation>
 <translation id="6771503742377376720">És una entitat emissora de certificats</translation>
-<translation id="6773575010135450071">Més accions...</translation>
 <translation id="6777817260680419853">S'ha bloquejat la redirecció</translation>
 <translation id="6778959797435875428">Activa el so dels llocs web</translation>
 <translation id="677965093459947883">Molt petita</translation>
@@ -4193,7 +4192,6 @@ En instal·lar <ph name="APP_NAME" />, s'utilitzaran <ph name="DOWNLOAD_SIZE" />
 <translation id="7629827748548208700">Pestanya: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">Obre &amp;sempre els fitxers d'aquest tipus</translation>
 <translation id="7632948528260659758">No s'han pogut actualitzar les aplicacions següents del quiosc:</translation>
-<translation id="7634373849852678655">Prem el botó Aplicació per sortir de la pantalla completa</translation>
 <translation id="7639178625568735185">D'acord</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> us inicia la sessió automàticament als llocs que compleixen els requisits amb les contrasenyes que heu desat.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietari)</translation>

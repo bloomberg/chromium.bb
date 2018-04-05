@@ -3667,7 +3667,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
           Questa immagine verrà mostrata nelle schermate di accesso e di blocco del Chromebook.</translation>
 <translation id="6769712124046837540">Aggiunta della stampante...</translation>
 <translation id="6771503742377376720">È un'autorità di certificazione</translation>
-<translation id="6773575010135450071">Altre azioni...</translation>
 <translation id="6777817260680419853">Reindirizzamento bloccato</translation>
 <translation id="6778959797435875428">Riattiva l'audio dei siti</translation>
 <translation id="677965093459947883">Molto piccole</translation>
@@ -4189,7 +4188,6 @@ L'installazione dell'app <ph name="APP_NAME" /> scaricherà <ph name="DOWNLOAD_S
 <translation id="7629827748548208700">Scheda: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Apri sempre file di questo tipo</translation>
 <translation id="7632948528260659758">Le seguenti app kiosk non sono state aggiornate:</translation>
-<translation id="7634373849852678655">Premi il pulsante App per uscire dalla modalità a schermo intero</translation>
 <translation id="7639178625568735185">Ok.</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> ti consente di accedere automaticamente ai siti idonei con le password salvate.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>

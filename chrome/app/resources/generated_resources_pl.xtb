@@ -3671,7 +3671,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
           Obraz pojawi się na ekranie blokady i ekranie logowania do Chromebooka.</translation>
 <translation id="6769712124046837540">Dodaję drukarkę...</translation>
 <translation id="6771503742377376720">Jest urzędem certyfikacji</translation>
-<translation id="6773575010135450071">Więcej czynności...</translation>
 <translation id="6777817260680419853">Przekierowanie zostało zablokowane</translation>
 <translation id="6778959797435875428">Zakończ wyciszanie stron</translation>
 <translation id="677965093459947883">Bardzo mała</translation>
@@ -4194,7 +4193,6 @@ Zainstalowanie aplikacji <ph name="APP_NAME" /> wymaga pobrania <ph name="DOWNLO
 <translation id="7629827748548208700">Karta: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Zawsze otwieraj pliki tego typu</translation>
 <translation id="7632948528260659758">Nie udało się zaktualizować tych aplikacji kiosku:</translation>
-<translation id="7634373849852678655">Naciśnij przycisk aplikacji, by wyjść z trybu pełnoekranowego</translation>
 <translation id="7639178625568735185">Rozumiem</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> automatycznie loguje Cię w odpowiednich witrynach przy użyciu zapisanych wcześniej haseł.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (właściciel)</translation>

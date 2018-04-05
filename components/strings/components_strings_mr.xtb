@@ -141,7 +141,7 @@
 <translation id="1974060860693918893">प्रगत</translation>
 <translation id="1978555033938440688">फर्मवेयर आवृत्ती</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{आणि 1 अधिक}one{आणि # अधिक}other{आणि # अधिक}}</translation>
-<translation id="2003709556000175978">आता आपला पासवर्ड रिसेट करा</translation>
+<translation id="2003709556000175978">आता तुमचा पासवर्ड रीसेट करा</translation>
 <translation id="2025186561304664664">प्रॉक्सी स्वयंचलित ‍कॉन्फिगरेशनवर सेट करण्‍यात आली.</translation>
 <translation id="2030481566774242610">आपल्याला असे म्हणायचे होते <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी आणि फायरवॉल तपासणे<ph name="END_LINK" /></translation>
@@ -149,7 +149,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 सूचना}one{# सूचना}other{# सूचना}}</translation>
 <translation id="2079545284768500474">पूर्ववत करा</translation>
 <translation id="20817612488360358">सिस्टम प्रॉक्सी सेटिंग्ज वापरण्‍यास सेट करण्‍यात आल्या परंतु एक सुस्पष्‍ट प्रॉक्सी कॉन्फिगरेशन देखील निर्दिष्‍ट करण्‍यात आले.</translation>
-<translation id="2084558088529668945">तुम्ही साइटवर एंटर केलेला पासवर्ड <ph name="ORG_NAME" /> ने व्यवस्थापित केलेला नाही. तुमचा पासवर्ड संरक्षित करण्यासाठी, अन्य अ‍ॅप्स आणि साइट तुमचा पासवर्ड पुन्हा वापरू नका.</translation>
+<translation id="2084558088529668945">तुम्ही साइटवर एंटर केलेला पासवर्ड <ph name="ORG_NAME" /> ने व्यवस्थापित केलेला नाही. तुमचा पासवर्ड संरक्षित करण्यासाठी, अन्य अ‍ॅप्स आणि साइटवर तुमचा पासवर्ड पुन्हा वापरू नका.</translation>
 <translation id="2091887806945687916">ध्वनी</translation>
 <translation id="2094505752054353250">डोमेन जुळत नाही</translation>
 <translation id="2096368010154057602">विभाग</translation>

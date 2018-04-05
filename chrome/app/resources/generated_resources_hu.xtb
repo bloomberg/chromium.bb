@@ -3673,7 +3673,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
           Ez a kép lesz látható a Chromebook bejelentkezési és lezárási képernyőjén.</translation>
 <translation id="6769712124046837540">Nyomtató hozzáadása...</translation>
 <translation id="6771503742377376720">Tanúsítványkibocsátó</translation>
-<translation id="6773575010135450071">További műveletek…</translation>
 <translation id="6777817260680419853">Átirányítás letiltva</translation>
 <translation id="6778959797435875428">Webhelyek némításának feloldása</translation>
 <translation id="677965093459947883">Nagyon kicsi</translation>
@@ -4204,7 +4203,6 @@ A(z) <ph name="APP_NAME" /> telepítésével <ph name="DOWNLOAD_SIZE" /> adatot 
 <translation id="7629827748548208700">Lap: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Az ilyen típusú fájlokat mindig nyissa meg</translation>
 <translation id="7632948528260659758">A következő kioszkalkalmazások frissítése nem sikerült:</translation>
-<translation id="7634373849852678655">A teljes képernyős megjelenítésből való kilépéshez nyomja meg az Alkalmazás gombot</translation>
 <translation id="7639178625568735185">Sikerült!</translation>
 <translation id="764017888128728">A <ph name="PASSWORD_MANAGER_BRAND" /> segítségével automatikusan bejelentkezhet adott webhelyekre a mentett jelszavaival.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (tulajdonos)</translation>

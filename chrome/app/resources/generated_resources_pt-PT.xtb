@@ -3674,7 +3674,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
           Esta imagem irá aparecer no ecrã de início de sessão e no ecrã de bloqueio do Chromebook.</translation>
 <translation id="6769712124046837540">A adicionar impressora…</translation>
 <translation id="6771503742377376720">É uma autoridade de certificação</translation>
-<translation id="6773575010135450071">Mais ações...</translation>
 <translation id="6777817260680419853">Redirecionamento bloqueado</translation>
 <translation id="6778959797435875428">Reativar som dos sites</translation>
 <translation id="677965093459947883">Muito pequeno</translation>
@@ -4205,7 +4204,6 @@ A instalação da aplicação <ph name="APP_NAME" /> implica uma transferência 
 <translation id="7629827748548208700">Separador: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Abrir Sempre Ficheiros Deste Tipo</translation>
 <translation id="7632948528260659758">A atualização das seguintes aplicações quiosque falhou:</translation>
-<translation id="7634373849852678655">Prima o botão Aplicação para sair do ecrã inteiro.</translation>
 <translation id="7639178625568735185">Entendido!</translation>
 <translation id="764017888128728">O <ph name="PASSWORD_MANAGER_BRAND" /> inicia automaticamente sessão em sites elegíveis com as palavras-passe que guardou.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
