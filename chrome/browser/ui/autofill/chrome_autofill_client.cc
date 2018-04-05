@@ -51,6 +51,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -428,10 +429,14 @@ void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
 
 bool ChromeAutofillClient::IsAutofillSupported() {
   // VR browsing does not support popups at the moment.
-  if (vr::VrTabHelper::IsInVr(web_contents())) {
+#if defined(OS_ANDROID)
+  if (vr::VrTabHelper::IsInVr(web_contents()) &&
+      !base::FeatureList::IsEnabled(
+          chrome::android::kVrBrowsingNativeAndroidUi)) {
     vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kAutofill);
     return false;
   }
+#endif
 
   return true;
 }
