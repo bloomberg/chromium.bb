@@ -26,8 +26,7 @@ MINIGBM_SRC := \
 	udl.c \
 	vc4.c \
 	vgem.c \
-	virtio_dumb.c \
-	virtio_virgl.c
+	virtio_gpu.c
 
 MINIGBM_CPPFLAGS := -std=c++14 -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64
 MINIGBM_CFLAGS := -Wall -Wsign-compare -Wpointer-arith \
@@ -38,11 +37,6 @@ ifneq ($(filter $(intel_drivers), $(BOARD_GPU_DRIVERS)),)
 MINIGBM_CPPFLAGS += -DDRV_I915
 MINIGBM_CFLAGS += -DDRV_I915
 LOCAL_SHARED_LIBRARIES += libdrm_intel
-endif
-
-ifneq ($(filter virgl, $(BOARD_GPU_DRIVERS)),)
-MINIGBM_CPPFLAGS += -DDRV_VIRGL
-MINIGBM_CFLAGS += -DDRV_VIRGL
 endif
 
 ifneq ($(filter meson, $(BOARD_GPU_DRIVERS)),)

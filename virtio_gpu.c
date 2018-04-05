@@ -4,8 +4,6 @@
  * found in the LICENSE file.
  */
 
-#ifdef DRV_VIRGL
-
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,11 +22,21 @@
 #endif
 #define PIPE_TEXTURE_2D 2
 
+#define MESA_LLVMPIPE_TILE_ORDER 6
+#define MESA_LLVMPIPE_TILE_SIZE (1 << MESA_LLVMPIPE_TILE_ORDER)
+
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
+static const uint32_t dumb_texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
+							DRM_FORMAT_YVU420_ANDROID };
+
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_RG88 };
+
+struct virtio_gpu_priv {
+	int has_3d;
+};
 
 static uint32_t translate_format(uint32_t drm_fourcc, uint32_t plane)
 {
@@ -52,19 +60,21 @@ static uint32_t translate_format(uint32_t drm_fourcc, uint32_t plane)
 	}
 }
 
-static int virtio_gpu_init(struct driver *drv)
+static int virtio_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				 uint64_t use_flags)
 {
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &LINEAR_METADATA, BO_USE_RENDER_MASK);
+	width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
+	height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
 
-	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
+	/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
+	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
+		height = bo->height;
 
-	return drv_modify_linear_combinations(drv);
+	return drv_dumb_bo_create(bo, width, height, format, use_flags);
 }
 
-static int virtio_gpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-				uint64_t use_flags)
+static int virtio_virgl_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				  uint64_t use_flags)
 {
 	int ret;
 	ssize_t plane;
@@ -127,7 +137,7 @@ fail:
 	return ret;
 }
 
-static void *virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
+static void *virtio_virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	struct drm_virtgpu_map gem_map;
@@ -146,10 +156,82 @@ static void *virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t
 		    gem_map.offset);
 }
 
+static int virtio_gpu_init(struct driver *drv)
+{
+	int ret;
+	struct virtio_gpu_priv *priv;
+	struct drm_virtgpu_getparam args;
+
+	priv = calloc(1, sizeof(*priv));
+	drv->priv = priv;
+
+	memset(&args, 0, sizeof(args));
+	args.param = VIRTGPU_PARAM_3D_FEATURES;
+	args.value = (uint64_t)(uintptr_t)&priv->has_3d;
+	ret = drmIoctl(drv->fd, DRM_IOCTL_VIRTGPU_GETPARAM, &args);
+	if (ret) {
+		drv_log("virtio 3D acceleration is not available\n");
+		/* Be paranoid */
+		priv->has_3d = 0;
+	}
+
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &LINEAR_METADATA, BO_USE_RENDER_MASK);
+
+	if (priv->has_3d)
+		drv_add_combinations(drv, texture_source_formats,
+				     ARRAY_SIZE(texture_source_formats), &LINEAR_METADATA,
+				     BO_USE_TEXTURE_MASK);
+	else
+		drv_add_combinations(drv, dumb_texture_source_formats,
+				     ARRAY_SIZE(dumb_texture_source_formats), &LINEAR_METADATA,
+				     BO_USE_TEXTURE_MASK);
+
+	return drv_modify_linear_combinations(drv);
+}
+
+static void virtio_gpu_close(struct driver *drv)
+{
+	free(drv->priv);
+	drv->priv = NULL;
+}
+
+static int virtio_gpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				uint64_t use_flags)
+{
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+	if (priv->has_3d)
+		return virtio_virgl_bo_create(bo, width, height, format, use_flags);
+	else
+		return virtio_dumb_bo_create(bo, width, height, format, use_flags);
+}
+
+static int virtio_gpu_bo_destroy(struct bo *bo)
+{
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+	if (priv->has_3d)
+		return drv_gem_bo_destroy(bo);
+	else
+		return drv_dumb_bo_destroy(bo);
+}
+
+static void *virtio_gpu_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
+{
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+	if (priv->has_3d)
+		return virtio_virgl_bo_map(bo, vma, plane, map_flags);
+	else
+		return drv_dumb_bo_map(bo, vma, plane, map_flags);
+}
+
 static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 {
 	int ret;
 	struct drm_virtgpu_3d_transfer_from_host xfer;
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+
+	if (!priv->has_3d)
+		return 0;
 
 	memset(&xfer, 0, sizeof(xfer));
 	xfer.bo_handle = mapping->vma->handle;
@@ -172,6 +254,10 @@ static int virtio_gpu_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	int ret;
 	struct drm_virtgpu_3d_transfer_to_host xfer;
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+
+	if (!priv->has_3d)
+		return 0;
 
 	if (!(mapping->vma->map_flags & BO_MAP_WRITE))
 		return 0;
@@ -199,22 +285,23 @@ static uint32_t virtio_gpu_resolve_format(uint32_t format, uint64_t use_flags)
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
+	case DRM_FORMAT_FLEX_YCbCr_420_888:
+		return DRM_FORMAT_YVU420;
 	default:
 		return format;
 	}
 }
 
-struct backend backend_virtio_gpu = {
+const struct backend backend_virtio_gpu = {
 	.name = "virtio_gpu",
 	.init = virtio_gpu_init,
+	.close = virtio_gpu_close,
 	.bo_create = virtio_gpu_bo_create,
-	.bo_destroy = drv_gem_bo_destroy,
+	.bo_destroy = virtio_gpu_bo_destroy,
 	.bo_import = drv_prime_bo_import,
-	.bo_map = virgl_bo_map,
+	.bo_map = virtio_gpu_bo_map,
 	.bo_unmap = drv_bo_munmap,
 	.bo_invalidate = virtio_gpu_bo_invalidate,
 	.bo_flush = virtio_gpu_bo_flush,
 	.resolve_format = virtio_gpu_resolve_format,
 };
-
-#endif
