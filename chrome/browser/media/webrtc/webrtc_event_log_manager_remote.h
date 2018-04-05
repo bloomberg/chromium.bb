@@ -9,13 +9,13 @@
 #include <set>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_uploader.h"
 
-// TODO(eladalon): Prevent uploading of logs when Chrome shutdown imminent.
-// https://crbug.com/775415
+// TODO(crbug.com/775415): Avoid uploading logs when Chrome shutdown imminent.
 
 class WebRtcRemoteEventLogManager final
     : public LogFileWriter,
@@ -78,6 +78,16 @@ class WebRtcRemoteEventLogManager final
   // True is returned if and only if |message| was written in its entirety to
   // an active log.
   bool EventLogWrite(const PeerConnectionKey& key, const std::string& message);
+
+  // Clear PENDING WebRTC event logs associated with a given browser context,
+  // in a  given time range, then post |reply| back to the thread from which
+  // the method was originally invoked (which can be any thread).
+  // Log files currently being written are not interrupted.
+  // Active uploads are not interrupted.
+  // TODO(crbug.com/775415): Allow interrupting active uploads.
+  void ClearCacheForBrowserContext(BrowserContextId browser_context_id,
+                                   const base::Time& delete_begin,
+                                   const base::Time& delete_end);
 
   // An implicit PeerConnectionRemoved() on all of the peer connections that
   // were associated with the renderer process.
@@ -178,6 +188,17 @@ class WebRtcRemoteEventLogManager final
   // this check is not too expensive.
   void PrunePendingLogs();
 
+  // Removes pending logs whose last modification date was between at or later
+  // than |delete_begin|, and earlier than |delete_end|.
+  // If a null time-point is given as either |delete_begin| or |delete_begin|,
+  // it is treated as "beginning-of-time" or "end-of-time", respectively.
+  // If |browser_context_id| is set, only logs associated with it are considered
+  // for removal; otherwise, all logs are considered.
+  void RemovePendingLogs(const base::Time& delete_begin,
+                         const base::Time& delete_end,
+                         base::Optional<BrowserContextId> browser_context_id =
+                             base::Optional<BrowserContextId>());
+
   // Return |true| if and only if we can start another active log (with respect
   // to limitations on the numbers active and pending logs).
   bool AdditionalActiveLogAllowed(BrowserContextId browser_context_id) const;
@@ -185,11 +206,11 @@ class WebRtcRemoteEventLogManager final
   // Initiating a new upload is only allowed when there are no active peer
   // connection which might be adversely affected by the bandwidth consumption
   // of the upload.
+
   // This can be overridden by a command line flag - see
   // kWebRtcRemoteEventLogUploadNoSuppression.
-  // TODO(eladalon): Add support for pausing/resuming an upload when peer
-  // connections are added/removed after an upload was already initiated.
-  // https://crbug.com/775415
+  // TODO(crbug.com/775415): Add support for pausing/resuming an upload when
+  // peer connections are added/removed after an upload was already initiated.
   bool UploadingAllowed() const;
 
   // If no upload is in progress, and if uploading is currently permissible,
