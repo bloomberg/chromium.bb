@@ -1906,8 +1906,7 @@ void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
 #if COLLECT_RD_STATS == 1
 
-static void get_mean(const int16_t *diff, int stride, int w, int h,
-                     double *mean) {
+static double get_mean(const int16_t *diff, int stride, int w, int h) {
   double sum = 0.0;
   for (int j = 0; j < h; ++j) {
     for (int i = 0; i < w; ++i) {
@@ -1915,7 +1914,73 @@ static void get_mean(const int16_t *diff, int stride, int w, int h,
     }
   }
   assert(w > 0 && h > 0);
-  *mean = sum / (w * h);
+  return sum / (w * h);
+}
+
+static double get_sse_norm(const int16_t *diff, int stride, int w, int h) {
+  double sum = 0.0;
+  for (int j = 0; j < h; ++j) {
+    for (int i = 0; i < w; ++i) {
+      const int err = diff[j * stride + i];
+      sum += err * err;
+    }
+  }
+  assert(w > 0 && h > 0);
+  return sum / (w * h);
+}
+
+static double get_sad_norm(const int16_t *diff, int stride, int w, int h) {
+  double sum = 0.0;
+  for (int j = 0; j < h; ++j) {
+    for (int i = 0; i < w; ++i) {
+      sum += abs(diff[j * stride + i]);
+    }
+  }
+  assert(w > 0 && h > 0);
+  return sum / (w * h);
+}
+
+static void get_2x2_normalized_sses_and_sads(
+    const AV1_COMP *const cpi, BLOCK_SIZE tx_bsize, const uint8_t *const src,
+    int src_stride, const uint8_t *const dst, int dst_stride,
+    const int16_t *const src_diff, int diff_stride, double *const sse_norm_arr,
+    double *const sad_norm_arr) {
+  const BLOCK_SIZE tx_bsize_half = subsize_lookup[PARTITION_SPLIT][tx_bsize];
+  if (tx_bsize_half == BLOCK_INVALID) {  // manually calculate stats
+    const int half_width = block_size_wide[tx_bsize] / 2;
+    const int half_height = block_size_high[tx_bsize] / 2;
+    for (int row = 0; row < 2; ++row) {
+      for (int col = 0; col < 2; ++col) {
+        const int16_t *const this_src_diff =
+            src_diff + row * half_height * diff_stride + col * half_width;
+        sse_norm_arr[row * 2 + col] =
+            get_sse_norm(this_src_diff, diff_stride, half_width, half_height);
+        sad_norm_arr[row * 2 + col] =
+            get_sad_norm(this_src_diff, diff_stride, half_width, half_height);
+      }
+    }
+  } else {  // use function pointers to calculate stats
+    const int half_width = block_size_wide[tx_bsize_half];
+    const int half_height = block_size_high[tx_bsize_half];
+    const int num_samples_half = half_width * half_height;
+    for (int row = 0; row < 2; ++row) {
+      for (int col = 0; col < 2; ++col) {
+        const uint8_t *const this_src =
+            src + row * half_height * src_stride + col * half_width;
+        const uint8_t *const this_dst =
+            dst + row * half_height * dst_stride + col * half_width;
+
+        unsigned int this_sse;
+        cpi->fn_ptr[tx_bsize_half].vf(this_src, src_stride, this_dst,
+                                      dst_stride, &this_sse);
+        sse_norm_arr[row * 2 + col] = (double)this_sse / num_samples_half;
+
+        const unsigned int this_sad = cpi->fn_ptr[tx_bsize_half].sdf(
+            this_src, src_stride, this_dst, dst_stride);
+        sad_norm_arr[row * 2 + col] = (double)this_sad / num_samples_half;
+      }
+    }
+  }
 }
 
 static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -1926,7 +1991,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   FILE *fout = fopen(output_file, "a");
   if (!fout) return;
 
-  const BLOCK_SIZE fake_bsize = txsize_to_bsize[tx_size];
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
   const MACROBLOCKD *const xd = &x->e_mbd;
   const int plane = 0;
   struct macroblock_plane *const p = &x->plane[plane];
@@ -1941,6 +2006,8 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const double rate_norm = (double)rd_stats->rate / num_samples;
   const double dist_norm = (double)rd_stats->dist / num_samples;
 
+  fprintf(fout, "%g %g", rate_norm, dist_norm);
+
   const int src_stride = p->src.stride;
   const uint8_t *const src =
       &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
@@ -1948,35 +2015,51 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const uint8_t *const dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   unsigned int sse;
-  cpi->fn_ptr[fake_bsize].vf(src, src_stride, dst, dst_stride, &sse);
+  cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
   const double sse_norm = (double)sse / num_samples;
 
-  const TX_TYPE_1D tx_type_1d_row = htx_tab[tx_type];
-  const TX_TYPE_1D tx_type_1d_col = vtx_tab[tx_type];
+  const unsigned int sad =
+      cpi->fn_ptr[tx_bsize].sdf(src, src_stride, dst, dst_stride);
+  const double sad_norm = (double)sad / num_samples;
 
-  fprintf(fout, "%g %g %g %d %d %d %d %d", rate_norm, dist_norm, sse_norm,
-          q_step, tx_size_wide[tx_size], tx_size_high[tx_size], tx_type_1d_row,
-          tx_type_1d_col);
-
-  int model_rate;
-  int64_t model_dist;
-  model_rd_from_sse(cpi, xd, fake_bsize, plane, sse, &model_rate, &model_dist);
-  const double model_rate_norm = (double)model_rate / num_samples;
-  const double model_dist_norm = (double)model_dist / num_samples;
-  fprintf(fout, " %g %g", model_rate_norm, model_dist_norm);
+  fprintf(fout, " %g %g", sse_norm, sad_norm);
 
   const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *const src_diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-  double mean;
-  get_mean(src_diff, txw, txw, txh, &mean);
+
+  double sse_norm_arr[4], sad_norm_arr[4];
+  get_2x2_normalized_sses_and_sads(cpi, tx_bsize, src, src_stride, dst,
+                                   dst_stride, src_diff, diff_stride,
+                                   sse_norm_arr, sad_norm_arr);
+  for (int i = 0; i < 4; ++i) {
+    fprintf(fout, " %g", sse_norm_arr[i]);
+  }
+  for (int i = 0; i < 4; ++i) {
+    fprintf(fout, " %g", sad_norm_arr[i]);
+  }
+
+  const TX_TYPE_1D tx_type_1d_row = htx_tab[tx_type];
+  const TX_TYPE_1D tx_type_1d_col = vtx_tab[tx_type];
+
+  fprintf(fout, " %d %d %d %d %d", q_step, tx_size_wide[tx_size],
+          tx_size_high[tx_size], tx_type_1d_row, tx_type_1d_col);
+
+  int model_rate;
+  int64_t model_dist;
+  model_rd_from_sse(cpi, xd, tx_bsize, plane, sse, &model_rate, &model_dist);
+  const double model_rate_norm = (double)model_rate / num_samples;
+  const double model_dist_norm = (double)model_dist / num_samples;
+  fprintf(fout, " %g %g", model_rate_norm, model_dist_norm);
+
+  const double mean = get_mean(src_diff, txw, txw, txh);
   double hor_corr, vert_corr;
   get_horver_correlation(src_diff, txw, txw, txh, &hor_corr, &vert_corr);
   fprintf(fout, " %g %g %g", mean, hor_corr, vert_corr);
 
   double hdist[4] = { 0 }, vdist[4] = { 0 };
-  get_energy_distribution_fine(cpi, fake_bsize, src, src_stride, dst,
-                               dst_stride, 1, hdist, vdist);
+  get_energy_distribution_fine(cpi, tx_bsize, src, src_stride, dst, dst_stride,
+                               1, hdist, vdist);
   fprintf(fout, " %g %g %g %g %g %g %g %g", hdist[0], hdist[1], hdist[2],
           hdist[3], vdist[0], vdist[1], vdist[2], vdist[3]);
 
