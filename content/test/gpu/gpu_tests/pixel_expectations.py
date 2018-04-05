@@ -139,3 +139,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha', ['android'], bug=972546)
     self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
               ['android'], bug=972546)
+
+    # TODO(hubbe): Temporary supression for rebaseline
+    self.Fail('Pixel_Video_VP9', bug=754986)
