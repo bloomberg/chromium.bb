@@ -425,7 +425,12 @@ class FakeFaviconService {
     base::Closure bound_callback =
         base::Bind(callback, results_[page_or_icon_url]);
 
-    if (page_or_icon_url != manual_callback_url_) {
+    // In addition to checking the URL against |manual_callback_url_|, we also
+    // defer responses if there are already pending responses (i.e. a previous
+    // lookup matched |manual_callback_url_|), because requests to the history
+    // should be executed sequentially.
+    if (page_or_icon_url != manual_callback_url_ &&
+        !HasPendingManualCallback()) {
       return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
                                FROM_HERE, bound_callback);
     }
@@ -1289,6 +1294,42 @@ TEST_F(FaviconHandlerTest, RemoveFaviconViaJavascript) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Tests that there is not crash and SetFavicons() is called with the
+// appropriate icon URL in the following scenario:
+// - The database initially has a cached but expired icon for the page.
+// - Initial favicon candidates are received fast, before the history lookup
+//   completes.
+// - Before the history lookup completes, favicon candidates are updated via
+//   javascript to include a different set of icons.
+TEST_F(FaviconHandlerTest,
+       UpdateIconsViaJavascriptAfterFastCandidatesAndExpiredIcon) {
+  EXPECT_CALL(favicon_service_, DeleteFaviconMappings(_, _)).Times(0);
+  EXPECT_CALL(favicon_service_, SetFavicons(_, kIconURL64x64, _, _));
+
+  // Initial database contains a cached by expired icon for |kPageURL|.
+  favicon_service_.fake()->Store(
+      kPageURL, kIconURL16x16,
+      CreateRawBitmapResult(kIconURL16x16, kTouchIcon, /*expired=*/true));
+
+  // Initial candidates are received before the history lookup for |kPageURL| is
+  // finished.
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
+  std::unique_ptr<FaviconHandler> handler =
+      RunHandlerWithSimpleFaviconCandidates(URLVector{kIconURL16x16});
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+  // Update candidates, now containing a different set of icons.
+  handler->OnUpdateCandidates(
+      kPageURL, {FaviconURL(kIconURL64x64, kFavicon, kEmptySizes)},
+      /*manifest_url=*/GURL());
+  base::RunLoop().RunUntilIdle();
+  // Complete the history lookup for |kPageURL| now.
+  ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(favicon_service_.fake()->db_requests(), ElementsAre(kPageURL));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL64x64));
+}
+
 // Test the favicon which is selected when the web page provides several
 // favicons and none of the favicons are cached in history.
 // The goal of this test is to be more of an integration test than
@@ -1833,6 +1874,90 @@ TEST_F(FaviconHandlerManifestsEnabledTest,
   EXPECT_THAT(favicon_service_.fake()->db_requests(),
               ElementsAre(kPageURL, kManifestURL));
   EXPECT_THAT(delegate_.downloads(), IsEmpty());
+}
+
+// Believed to fix crbug.com/544560.
+// Tests that there is not crash and SetFavicons() is called with the
+// appropriate icon URL in the following scenario:
+// - The database initially has a cached but expired icon for the page.
+// - Initial favicon candidates are received fast, before the history lookup
+//   completes. There is no manifest URL initially.
+// - Before the history lookup completes, favicon candidates are updated via
+//   javascript to include a manifest URL.
+// - The manifest lists at least one icon.
+TEST_F(FaviconHandlerManifestsEnabledTest,
+       AddManifestWithIconsViaJavascriptAfterFastCandidatesAndExpiredIcon) {
+  EXPECT_CALL(favicon_service_, DeleteFaviconMappings(_, _)).Times(0);
+  EXPECT_CALL(favicon_service_, SetFavicons(_, kManifestURL, _, _));
+
+  // Initial database contains a cached by expired icon for |kPageURL|.
+  favicon_service_.fake()->Store(
+      kPageURL, kIconURL16x16,
+      CreateRawBitmapResult(kIconURL16x16, kTouchIcon, /*expired=*/true));
+
+  // Manifest with icons.
+  const std::vector<favicon::FaviconURL> kManifestIcons = {
+      FaviconURL(kIconURL64x64, kWebManifestIcon, kEmptySizes),
+  };
+  delegate_.fake_manifest_downloader().Add(kManifestURL, kManifestIcons);
+
+  // Initial load does NOT contain a manifest. Regular candidates are received
+  // before the history lookup for |kPageURL| is finished.
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
+  std::unique_ptr<FaviconHandler> handler =
+      RunHandlerWithSimpleTouchIconCandidates({kIconURL16x16},
+                                              /*manifest_url=*/GURL());
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+  // Update candidates, now containing a manifest URL.
+  handler->OnUpdateCandidates(
+      kPageURL, {FaviconURL(kIconURL16x16, kTouchIcon, kEmptySizes)},
+      kManifestURL);
+  base::RunLoop().RunUntilIdle();
+  // Complete the history lookup for |kPageURL| now.
+  ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(favicon_service_.fake()->db_requests(),
+              ElementsAre(kPageURL, kManifestURL));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kManifestURL, kIconURL64x64));
+}
+
+// Believed to fix crbug.com/544560.
+// Same as the test above with the difference that the manifest contains no
+// icons.
+TEST_F(FaviconHandlerManifestsEnabledTest,
+       AddManifestWithoutIconsViaJavascriptAfterFastCandidatesAndExpiredIcon) {
+  EXPECT_CALL(favicon_service_, DeleteFaviconMappings(_, _)).Times(0);
+  EXPECT_CALL(favicon_service_, SetFavicons(_, kIconURL16x16, _, _));
+
+  // Initial database contains a cached by expired icon for |kPageURL|.
+  favicon_service_.fake()->Store(
+      kPageURL, kIconURL16x16,
+      CreateRawBitmapResult(kIconURL16x16, kTouchIcon, /*expired=*/true));
+
+  // Manifest without icons.
+  delegate_.fake_manifest_downloader().Add(kManifestURL,
+                                           std::vector<favicon::FaviconURL>());
+
+  // Initial load does NOT contain a manifest. Regular candidates are received
+  // before the history lookup for |kPageURL| is finished.
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
+  std::unique_ptr<FaviconHandler> handler =
+      RunHandlerWithSimpleTouchIconCandidates({kIconURL16x16},
+                                              /*manifest_url=*/GURL());
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+  // Update candidates, now containing a manifest URL.
+  handler->OnUpdateCandidates(
+      kPageURL, {FaviconURL(kIconURL16x16, kTouchIcon, kEmptySizes)},
+      kManifestURL);
+  base::RunLoop().RunUntilIdle();
+  // Complete the history lookup for |kPageURL| now.
+  ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(favicon_service_.fake()->db_requests(),
+              ElementsAre(kPageURL, kManifestURL));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kManifestURL, kIconURL16x16));
 }
 
 // Test that a favicon corresponding to a web manifest is reported when there is
