@@ -141,7 +141,7 @@ int RealOnMoreData(base::TimeDelta /* delay */,
 }  // namespace
 
 std::ostream& operator<<(std::ostream& os, const AudioParameters& params) {
-  using namespace std;
+  using std::endl;
   os << endl << "format: " << FormatToString(params.format()) << endl
      << "channel layout: " << LayoutToString(params.channel_layout()) << endl
      << "sample rate: " << params.sample_rate() << endl
