@@ -1,28 +1,20 @@
 'use strict';
-bluetooth_test(() => {
-  let val = new Uint8Array([1]);
-  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['health_thermometer']}],
-      optionalServices: [request_disconnection_service_uuid]
-    }))
-    .then(device => device.gatt.connect())
-    .then(gattServer => {
-      let measurement_interval;
-      return gattServer.getPrimaryService('health_thermometer')
-        .then(ht=> ht.getCharacteristic('measurement_interval'))
-        .then(mi => measurement_interval = mi)
-        .then(() => get_request_disconnection(gattServer))
-        .then(requestDisconnection => requestDisconnection())
-        .then(() => assert_promise_rejects_with_message(
-          measurement_interval.CALLS([
+const test_desc = 'Device disconnects before FUNCTION_NAME. ' +
+    'Reject with NetworkError.';
+const expected = new DOMException('GATT Server is disconnected. Cannot ' +
+    'perform GATT operations. (Re)connect first with `device.gatt.connect`.',
+    'NetworkError')
+let device, characteristic, fake_peripheral;
+
+bluetooth_test(() => getMeasurementIntervalCharacteristic()
+    .then(_ => ({device, characteristic, fake_peripheral} = _))
+    .then(() => simulateGATTDisconnectionAndWait(device, fake_peripheral))
+    .then(() => assert_promise_rejects_with_message(
+          characteristic.CALLS([
             readValue()|
-            writeValue(val)|
+            writeValue(new Uint8Array(1 /*length */))|
             startNotifications()|
-            stopNotifications()]),
-          new DOMException(
-            'GATT Server is disconnected. Cannot perform GATT operations. ' +
-            '(Re)connect first with `device.gatt.connect`.',
-            'NetworkError')));
-    });
-}, 'Device disconnects before FUNCTION_NAME. Reject with NetworkError.');
+            stopNotifications()
+          ]),
+          expected)),
+    test_desc);
