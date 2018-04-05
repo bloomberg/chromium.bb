@@ -1922,6 +1922,10 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     const RD_STATS *const rd_stats, int blk_row,
                                     int blk_col, BLOCK_SIZE plane_bsize,
                                     TX_SIZE tx_size, TX_TYPE tx_type) {
+  const char output_file[] = "tu_stats.txt";
+  FILE *fout = fopen(output_file, "a");
+  if (!fout) return;
+
   const BLOCK_SIZE fake_bsize = txsize_to_bsize[tx_size];
   const MACROBLOCKD *const xd = &x->e_mbd;
   const int plane = 0;
@@ -1950,7 +1954,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const TX_TYPE_1D tx_type_1d_row = htx_tab[tx_type];
   const TX_TYPE_1D tx_type_1d_col = vtx_tab[tx_type];
 
-  fprintf(stderr, "%g %g %g %d %d %d %d %d", rate_norm, dist_norm, sse_norm,
+  fprintf(fout, "%g %g %g %d %d %d %d %d", rate_norm, dist_norm, sse_norm,
           q_step, tx_size_wide[tx_size], tx_size_high[tx_size], tx_type_1d_row,
           tx_type_1d_col);
 
@@ -1959,7 +1963,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   model_rd_from_sse(cpi, xd, fake_bsize, plane, sse, &model_rate, &model_dist);
   const double model_rate_norm = (double)model_rate / num_samples;
   const double model_dist_norm = (double)model_dist / num_samples;
-  fprintf(stderr, " %g %g", model_rate_norm, model_dist_norm);
+  fprintf(fout, " %g %g", model_rate_norm, model_dist_norm);
 
   const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *const src_diff =
@@ -1968,15 +1972,16 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   get_mean(src_diff, txw, txw, txh, &mean);
   double hor_corr, vert_corr;
   get_horver_correlation(src_diff, txw, txw, txh, &hor_corr, &vert_corr);
-  fprintf(stderr, " %g %g %g", mean, hor_corr, vert_corr);
+  fprintf(fout, " %g %g %g", mean, hor_corr, vert_corr);
 
   double hdist[4] = { 0 }, vdist[4] = { 0 };
   get_energy_distribution_fine(cpi, fake_bsize, src, src_stride, dst,
                                dst_stride, 1, hdist, vdist);
-  fprintf(stderr, " %g %g %g %g %g %g %g %g", hdist[0], hdist[1], hdist[2],
+  fprintf(fout, " %g %g %g %g %g %g %g %g", hdist[0], hdist[1], hdist[2],
           hdist[3], vdist[0], vdist[1], vdist[2], vdist[3]);
 
-  fprintf(stderr, "\n");
+  fprintf(fout, "\n");
+  fclose(fout);
 }
 
 #endif  // COLLECT_RD_STATS == 1
