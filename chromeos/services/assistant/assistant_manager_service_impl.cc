@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/services/assistant/service.h"
@@ -154,9 +155,13 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
       &os_major_version, &os_minor_version, &os_bugfix_version);
 
   std::string user_agent;
-  base::StringAppendF(&user_agent, "Mozilla/5.0 (X11; CrOS %s %d.%d.%d)",
+  base::StringAppendF(&user_agent,
+                      "Mozilla/5.0 (X11; CrOS %s %d.%d.%d; %s) "
+                      "AppleWebKit/%d.%d (KHTML, like Gecko)",
                       base::SysInfo::OperatingSystemArchitecture().c_str(),
-                      os_major_version, os_minor_version, os_bugfix_version);
+                      os_major_version, os_minor_version, os_bugfix_version,
+                      base::SysInfo::GetLsbReleaseBoard().c_str(),
+                      WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
 
   if (!arc_version.empty()) {
     base::StringAppendF(&user_agent, " ARC/%s", arc_version.c_str());

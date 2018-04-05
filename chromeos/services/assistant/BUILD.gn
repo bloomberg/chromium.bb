@@ -21,6 +21,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//build/util:webkit_version",
     "//chromeos",
     "//chromeos/assistant:buildflags",
     "//chromeos/services/assistant/public/mojom",
