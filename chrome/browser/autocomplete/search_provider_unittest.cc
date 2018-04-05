@@ -3587,9 +3587,21 @@ TEST_F(SearchProviderTest, AnswersCache) {
   // Inject a scored result, which will trigger answer retrieval.
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
   SearchSuggestionParser::SuggestResult suggest_result(
-      query, AutocompleteMatchType::SEARCH_HISTORY, 0, query, base::string16(),
-      base::string16(), base::string16(), base::string16(), nullptr,
-      std::string(), std::string(), false, 1200, false, false, query);
+      query, AutocompleteMatchType::SEARCH_HISTORY,
+      /*subtype_identifier=*/0,
+      /*match_contents=*/query,
+      /*match_contents_prefix=*/base::string16(),
+      /*annotation=*/base::string16(),
+      /*answer_contents=*/base::string16(),
+      /*answer_type=*/base::string16(),
+      /*answer=*/nullptr,
+      /*suggest_query_params=*/std::string(),
+      /*deletion_url=*/std::string(),
+      /*from_keyword_provider=*/false,
+      /*relevance=*/1200,
+      /*relevance_from_server=*/false,
+      /*should_prefetch=*/false,
+      /*input_text=*/query);
   QueryForInput(ASCIIToUTF16("weather l"), false, false);
   provider_->transformed_default_history_results_.push_back(suggest_result);
   answer = provider_->FindAnswersPrefetchData();

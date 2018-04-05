@@ -149,9 +149,20 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // mode.  They also assume the caller knows what it's doing and we set
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, type, 0, suggestion, base::string16(), base::string16(),
-      base::string16(), base::string16(), nullptr, std::string(), std::string(),
-      from_keyword_provider, 0, false, false, base::string16());
+      suggestion, type,
+      /*subtype_identifier=*/0,
+      /*match_contents=*/suggestion,
+      /*match_contents_prefix=*/base::string16(),
+      /*annotation=*/base::string16(),
+      /*answer_contents=*/base::string16(),
+      /*answer_type=*/base::string16(),
+      /*answer=*/nullptr,
+      /*suggest_query_params=*/std::string(),
+      /*deletion_url=*/std::string(), from_keyword_provider,
+      /*relevance=*/0,
+      /*relevance_from_server=*/false,
+      /*should_prefetch=*/false,
+      /*input_text=*/base::string16());
   suggest_result.set_received_after_last_keystroke(false);
   return CreateSearchSuggestion(nullptr, AutocompleteInput(),
                                 from_keyword_provider, suggest_result,
@@ -170,7 +181,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   const TemplateURL* template_url =
       match.GetTemplateURL(client_->GetTemplateURLService(), false);
-  // This may be NULL if the template corresponding to the keyword has been
+  // This may be nullptr if the template corresponding to the keyword has been
   // deleted or there is no keyword set.
   if (template_url != nullptr) {
     client_->DeleteMatchingURLsForKeywordFromHistory(template_url->id(),
