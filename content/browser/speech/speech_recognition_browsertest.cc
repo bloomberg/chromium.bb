@@ -11,11 +11,15 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
@@ -25,58 +29,66 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/mock_google_streaming_server.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_input_controller_factory.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;
 
 namespace content {
 
-class SpeechRecognitionBrowserTest :
-    public ContentBrowserTest,
-    public MockGoogleStreamingServer::Delegate,
-    public media::TestAudioInputControllerDelegate {
+namespace {
+
+std::string MakeGoodResponse() {
+  proto::SpeechRecognitionEvent proto_event;
+  proto_event.set_status(proto::SpeechRecognitionEvent::STATUS_SUCCESS);
+  proto::SpeechRecognitionResult* proto_result = proto_event.add_result();
+  SpeechRecognitionResult result;
+  result.hypotheses.push_back(SpeechRecognitionHypothesis(
+      base::UTF8ToUTF16("Pictures of the moon"), 1.0F));
+  proto_result->set_final(!result.is_provisional);
+  for (size_t i = 0; i < result.hypotheses.size(); ++i) {
+    proto::SpeechRecognitionAlternative* proto_alternative =
+        proto_result->add_alternative();
+    const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[i];
+    proto_alternative->set_confidence(hypothesis.confidence);
+    proto_alternative->set_transcript(base::UTF16ToUTF8(hypothesis.utterance));
+  }
+
+  std::string msg_string;
+  proto_event.SerializeToString(&msg_string);
+
+  // Prepend 4 byte prefix length indication to the protobuf message as
+  // envisaged by the google streaming recognition webservice protocol.
+  uint32_t prefix =
+      base::HostToNet32(base::checked_cast<uint32_t>(msg_string.size()));
+  msg_string.insert(0, reinterpret_cast<char*>(&prefix), sizeof(prefix));
+  return msg_string;
+}
+
+}  // namespace
+
+class SpeechRecognitionBrowserTest
+    : public ContentBrowserTest,
+      public media::TestAudioInputControllerDelegate {
  public:
   enum StreamingServerState {
     kIdle,
     kTestAudioControllerOpened,
-    kClientConnected,
-    kClientAudioUpload,
-    kClientAudioUploadComplete,
     kTestAudioControllerClosed,
-    kClientDisconnected
   };
-
-  // MockGoogleStreamingServerDelegate methods.
-  void OnClientConnected() override {
-    ASSERT_EQ(kTestAudioControllerOpened, streaming_server_state_);
-    streaming_server_state_ = kClientConnected;
-  }
-
-  void OnClientAudioUpload() override {
-    if (streaming_server_state_ == kClientConnected)
-      streaming_server_state_ = kClientAudioUpload;
-  }
-
-  void OnClientAudioUploadComplete() override {
-    ASSERT_EQ(kTestAudioControllerClosed, streaming_server_state_);
-    streaming_server_state_ = kClientAudioUploadComplete;
-  }
-
-  void OnClientDisconnected() override {
-    ASSERT_EQ(kClientAudioUploadComplete, streaming_server_state_);
-    streaming_server_state_ = kClientDisconnected;
-  }
 
   // media::TestAudioInputControllerDelegate methods.
   void TestAudioControllerOpened(
       media::TestAudioInputController* controller) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     ASSERT_EQ(kIdle, streaming_server_state_);
     streaming_server_state_ = kTestAudioControllerOpened;
     const int capture_packet_interval_ms =
@@ -91,11 +103,17 @@ class SpeechRecognitionBrowserTest :
 
   void TestAudioControllerClosed(
       media::TestAudioInputController* controller) override {
-    ASSERT_EQ(kClientAudioUpload, streaming_server_state_);
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    ASSERT_EQ(kTestAudioControllerOpened, streaming_server_state_);
     streaming_server_state_ = kTestAudioControllerClosed;
-    mock_streaming_server_->MockGoogleStreamingServer::SimulateResult(
-        GetGoodSpeechResult());
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&SpeechRecognitionBrowserTest::SendResponse,
+                       base::Unretained(this)));
   }
+
+  void SendResponse() {}
 
   // Helper methods used by test fixtures.
   GURL GetTestUrlFromFragment(const std::string& fragment) {
@@ -117,7 +135,6 @@ class SpeechRecognitionBrowserTest :
     test_audio_input_controller_factory_.set_delegate(this);
     media::AudioInputController::set_factory_for_testing(
         &test_audio_input_controller_factory_);
-    mock_streaming_server_.reset(new MockGoogleStreamingServer(this));
     streaming_server_state_ = kIdle;
 
     ASSERT_TRUE(SpeechRecognitionManagerImpl::GetInstance());
@@ -139,7 +156,6 @@ class SpeechRecognitionBrowserTest :
     audio_manager_->Shutdown();
 
     test_audio_input_controller_factory_.set_delegate(nullptr);
-    mock_streaming_server_.reset();
   }
 
  private:
@@ -191,17 +207,10 @@ class SpeechRecognitionBrowserTest :
     }
   }
 
-  SpeechRecognitionResult GetGoodSpeechResult() {
-    SpeechRecognitionResult result;
-    result.hypotheses.push_back(SpeechRecognitionHypothesis(
-        base::UTF8ToUTF16("Pictures of the moon"), 1.0F));
-    return result;
-  }
-
   std::unique_ptr<media::MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   StreamingServerState streaming_server_state_;
-  std::unique_ptr<MockGoogleStreamingServer> mock_streaming_server_;
+
   media::TestAudioInputControllerFactory test_audio_input_controller_factory_;
 };
 
@@ -223,11 +232,53 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, DISABLED_Precheck) {
 #define MAYBE_OneShotRecognition OneShotRecognition
 #endif
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, MAYBE_OneShotRecognition) {
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), GetTestUrlFromFragment("oneshot"), 2);
+  // Set up a test server, with two response handlers.
+  net::test_server::ControllableHttpResponse upstream_response(
+      embedded_test_server(), "/foo/up?", true /* relative_url_is_prefix */);
+  net::test_server::ControllableHttpResponse downstream_response(
+      embedded_test_server(), "/foo/down?", true /* relative_url_is_prefix */);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Use a base path that doesn't end in a slash to mimic the default URL.
+  std::string web_service_base_url =
+      embedded_test_server()->base_url().spec() + "foo";
+  SpeechRecognitionEngine::set_web_service_base_url_for_tests(
+      web_service_base_url.c_str());
 
-  EXPECT_EQ(kClientDisconnected, streaming_server_state());
+  // Need to watch for two navigations. Can't use
+  // NavigateToURLBlockUntilNavigationsComplete so that the
+  // ControllableHttpResponses can be used to wait for the test server to see
+  // the network requests, and response to them.
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+  shell()->LoadURL(GetTestUrlFromFragment("oneshot"));
+
+  // Wait for the upstream HTTP request to be completely received, and return an
+  // empty response.
+  upstream_response.WaitForRequest();
+  EXPECT_FALSE(upstream_response.http_request()->content.empty());
+  EXPECT_EQ(net::test_server::METHOD_POST,
+            upstream_response.http_request()->method);
+  EXPECT_EQ("chunked",
+            upstream_response.http_request()->headers.at("Transfer-Encoding"));
+  EXPECT_EQ("audio/x-flac; rate=16000",
+            upstream_response.http_request()->headers.at("Content-Type"));
+  upstream_response.Send("HTTP/1.1 200 OK\r\n\r\n");
+  upstream_response.Done();
+
+  // Wait for the downstream HTTP request to be received, and response with a
+  // valid response.
+  downstream_response.WaitForRequest();
+  EXPECT_EQ(net::test_server::METHOD_GET,
+            downstream_response.http_request()->method);
+  downstream_response.Send("HTTP/1.1 200 OK\r\n\r\n" + MakeGoodResponse());
+  downstream_response.Done();
+
+  navigation_observer.Wait();
+
+  EXPECT_EQ(kTestAudioControllerClosed, streaming_server_state());
   EXPECT_EQ("goodresult1", GetPageFragment());
+
+  // Remove reference to URL string that's on the stack.
+  SpeechRecognitionEngine::set_web_service_base_url_for_tests(nullptr);
 }
 
 }  // namespace content

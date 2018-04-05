@@ -198,8 +198,6 @@ jumbo_static_library("test_support") {
     "gpu_browsertest_helpers.h",
     "mock_background_sync_controller.cc",
     "mock_background_sync_controller.h",
-    "mock_google_streaming_server.cc",
-    "mock_google_streaming_server.h",
     "mock_keyboard.cc",
     "mock_keyboard.h",
     "mock_keyboard_driver_win.cc",
@@ -365,10 +363,6 @@ jumbo_static_library("test_support") {
   ]
 
   if (is_android) {
-    sources -= [
-      "mock_google_streaming_server.cc",
-      "mock_google_streaming_server.h",
-    ]
     deps += [
       "//content/shell:android_shell_descriptors",
       "//mojo/android:libsystem_java",
@@ -1054,6 +1048,7 @@ test("content_browsertests") {
       "../browser/speech/speech_recognition_browsertest.cc",
       "../browser/zoom_browsertest.cc",
     ]
+    deps += [ "//content/browser/speech/proto" ]
   }
 
   # HID support is not available without udev.
