@@ -45,12 +45,6 @@ class MockFidoDevice : public FidoDevice {
                            DeviceCallback& cb);
   static void WrongData(const std::vector<uint8_t>& command,
                         DeviceCallback& cb);
-  static void NoErrorGetInfo(const std::vector<uint8_t>& command,
-                             DeviceCallback& cb);
-  static void CtapDeviceError(const std::vector<uint8_t>& command,
-                              DeviceCallback& cb);
-  static void NoErrorMakeCredential(const std::vector<uint8_t>& command,
-                                    DeviceCallback& cb);
   static void NoErrorSign(const std::vector<uint8_t>& command,
                           DeviceCallback& cb);
   static void NoErrorRegister(const std::vector<uint8_t>& command,
@@ -68,7 +62,12 @@ class MockFidoDevice : public FidoDevice {
       CtapRequestCommand command,
       base::Optional<base::span<const uint8_t>> response,
       base::TimeDelta delay = base::TimeDelta());
-  void ExpectCtap2CommandWithoutResponse(CtapRequestCommand command);
+  void ExpectRequestAndRespondWith(
+      base::span<const uint8_t> request,
+      base::Optional<base::span<const uint8_t>> response,
+      base::TimeDelta delay = base::TimeDelta());
+  void ExpectCtap2CommandAndDoNotRespond(CtapRequestCommand command);
+  void ExpectRequestAndDoNotRespond(base::span<const uint8_t> request);
 
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 

@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -23,8 +22,7 @@ namespace device {
 // Handles receiving response form potentially multiple connected authenticators
 // and relaying response to the relying party.
 template <class Response>
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandler
-    : public FidoRequestHandlerBase {
+class FidoRequestHandler : public FidoRequestHandlerBase {
  public:
   using CompletionCallback =
       base::OnceCallback<void(FidoReturnCode status_code,

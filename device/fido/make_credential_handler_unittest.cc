@@ -6,92 +6,96 @@
 #include <utility>
 
 #include "base/test/scoped_task_environment.h"
-#include "device/fido/authenticator_get_assertion_response.h"
-#include "device/fido/ctap_get_assertion_request.h"
+#include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_device.h"
 #include "device/fido/fido_response_test_data.h"
-#include "device/fido/get_assertion_request_handler.h"
+#include "device/fido/make_credential_request_handler.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/u2f_transport_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
 
 namespace device {
 
 namespace {
 
 constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
+constexpr uint8_t kUserId[] = {0x01, 0x02, 0x03};
 constexpr char kRpId[] = "google.com";
 
-using TestGetAssertionRequestCallback = test::StatusAndValueCallbackReceiver<
+using TestMakeCredentialRequestCallback = test::StatusAndValueCallbackReceiver<
     FidoReturnCode,
-    base::Optional<AuthenticatorGetAssertionResponse>>;
+    base::Optional<AuthenticatorMakeCredentialResponse>>;
 
 }  // namespace
 
-class FidoGetAssertionHandlerTest : public ::testing::Test {
+class FidoMakeCredentialHandlerTest : public ::testing::Test {
  public:
   void ForgeNextHidDiscovery() {
     discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
   }
 
-  std::unique_ptr<GetAssertionRequestHandler> CreateGetAssertionHandler() {
+  std::unique_ptr<MakeCredentialRequestHandler> CreateMakeCredentialHandler() {
     ForgeNextHidDiscovery();
+    PublicKeyCredentialRpEntity rp(kRpId);
+    PublicKeyCredentialUserEntity user(u2f_parsing_utils::Materialize(kUserId));
+    PublicKeyCredentialParams credential_params({{kU2fCredentialType}});
 
-    CtapGetAssertionRequest request_param(
-        kRpId, u2f_parsing_utils::Materialize(kClientDataHash));
-    request_param.SetAllowList(
-        {{kU2fCredentialType, u2f_parsing_utils::Materialize(
-                                  test_data::kTestGetAssertionCredentialId)}});
+    auto request_parameter = CtapMakeCredentialRequest(
+        u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),
+        std::move(user), std::move(credential_params));
 
-    return std::make_unique<GetAssertionRequestHandler>(
-        nullptr /* connector */,
+    return std::make_unique<MakeCredentialRequestHandler>(
+        nullptr,
         base::flat_set<U2fTransportProtocol>(
             {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
-        std::move(request_param), get_assertion_cb_.callback());
+        std::move(request_parameter), AuthenticatorSelectionCriteria(),
+        cb_.callback());
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
-
-  TestGetAssertionRequestCallback& get_assertion_callback() {
-    return get_assertion_cb_;
-  }
+  TestMakeCredentialRequestCallback& callback() { return cb_; }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
-  TestGetAssertionRequestCallback get_assertion_cb_;
+  TestMakeCredentialRequestCallback cb_;
 };
 
-TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionRequestOnSingleDevice) {
-  auto request_handler = CreateGetAssertionHandler();
+TEST_F(FidoMakeCredentialHandlerTest, TestMakeCredentialRequestHandler) {
+  auto request_handler = CreateMakeCredentialHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
-  auto device = std::make_unique<MockFidoDevice>();
 
+  auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo,
       test_data::kTestAuthenticatorGetInfoResponse);
   device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetAssertion,
-      test_data::kTestGetAssertionResponse);
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      test_data::kTestMakeCredentialResponse);
 
   discovery()->AddDevice(std::move(device));
-  get_assertion_callback().WaitForCallback();
-
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
-  EXPECT_TRUE(get_assertion_callback().value());
+  callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
   EXPECT_TRUE(request_handler->is_complete());
 }
 
 // Test a scenario where the connected authenticator is a U2F device. Request
 // be silently dropped and request should remain in incomplete state.
-TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionIncorrectGetInfoResponse) {
-  auto request_handler = CreateGetAssertionHandler();
+TEST_F(FidoMakeCredentialHandlerTest,
+       TestMakeCredentialIncorrectGetInfoResponse) {
+  auto request_handler = CreateMakeCredentialHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<MockFidoDevice>();

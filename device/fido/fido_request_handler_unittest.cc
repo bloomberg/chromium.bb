@@ -4,17 +4,18 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/test/scoped_task_environment.h"
-#include "device/fido/authenticator_make_credential_response.h"
-#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_device.h"
+#include "device/fido/fido_request_handler.h"
 #include "device/fido/fido_response_test_data.h"
-#include "device/fido/make_credential_request_handler.h"
+#include "device/fido/fido_task.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/u2f_transport_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,14 +25,82 @@ namespace device {
 
 namespace {
 
-constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
-constexpr uint8_t kUserId[] = {0x01, 0x02, 0x03};
-constexpr char kRpId[] = "google.com";
+using FakeTaskCallback =
+    base::OnceCallback<void(CtapDeviceResponseCode status_code,
+                            base::Optional<std::vector<uint8_t>>)>;
+using FakeHandlerCallback = base::OnceCallback<void(
+    FidoReturnCode status_code,
+    base::Optional<std::vector<uint8_t>> response_data)>;
+using FakeHandlerCallbackReceiver =
+    test::StatusAndValueCallbackReceiver<FidoReturnCode,
+                                         base::Optional<std::vector<uint8_t>>>;
 
-using TestMakeCredentialRequestCallback =
-    ::device::test::StatusAndValueCallbackReceiver<
-        FidoReturnCode,
-        base::Optional<AuthenticatorMakeCredentialResponse>>;
+// Fake FidoTask implementation that treats all response from FidoDevice as
+// success if the response is a non-empty vector and sends an empty byte array
+// to the device when StartTask() is invoked.
+class FakeFidoTask : public FidoTask {
+ public:
+  FakeFidoTask(FidoDevice* device, FakeTaskCallback callback)
+      : FidoTask(device), callback_(std::move(callback)), weak_factory_(this) {}
+  ~FakeFidoTask() override = default;
+
+  void StartTask() override {
+    device()->DeviceTransact(std::vector<uint8_t>(),
+                             base::BindOnce(&FakeFidoTask::CompletionCallback,
+                                            weak_factory_.GetWeakPtr()));
+  }
+
+  // Fake callback that treats all response with non-empty |device_response| as
+  // a successful response, empty (not base::nullopt) response as an UP-verified
+  // error, and base::nullopt as a device processing error.
+  // TODO(hongjunchoi): Change criteria for deciding when to return success,
+  // UP-verified error, or processing error for readability.
+  void CompletionCallback(
+      base::Optional<std::vector<uint8_t>> device_response) {
+    if (!device_response) {
+      std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                               base::nullopt);
+      return;
+    }
+
+    device_response->empty()
+        ? std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNotAllowed,
+                                   base::nullopt)
+        : std::move(callback_).Run(CtapDeviceResponseCode::kSuccess,
+                                   std::vector<uint8_t>());
+  }
+
+ private:
+  FakeTaskCallback callback_;
+  base::WeakPtrFactory<FakeFidoTask> weak_factory_;
+};
+
+class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
+ public:
+  FakeFidoRequestHandler(const base::flat_set<U2fTransportProtocol>& protocols,
+                         FakeHandlerCallback callback)
+      : FidoRequestHandler(nullptr /* connector */,
+                           protocols,
+                           std::move(callback)),
+        weak_factory_(this) {}
+  ~FakeFidoRequestHandler() override = default;
+
+  std::unique_ptr<FidoTask> CreateTaskForNewDevice(
+      FidoDevice* device) override {
+    return std::make_unique<FakeFidoTask>(
+        device, base::BindOnce(&FakeFidoRequestHandler::OnDeviceResponse,
+                               weak_factory_.GetWeakPtr(), device));
+  }
+
+ private:
+  FakeHandlerCallback callback_;
+  base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_;
+};
+
+std::vector<uint8_t> CreateFakeSuccessDeviceResponse() {
+  return std::vector<uint8_t>{
+      base::strict_cast<uint8_t>(CtapDeviceResponseCode::kSuccess)};
+}
 
 }  // namespace
 
@@ -41,47 +110,34 @@ class FidoRequestHandlerTest : public ::testing::Test {
     discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
   }
 
-  std::unique_ptr<MakeCredentialRequestHandler> CreateMakeCredentialHandler() {
+  std::unique_ptr<FakeFidoRequestHandler> CreateFakeHandler() {
     ForgeNextHidDiscovery();
-    PublicKeyCredentialRpEntity rp(kRpId);
-    PublicKeyCredentialUserEntity user(u2f_parsing_utils::Materialize(kUserId));
-    PublicKeyCredentialParams credential_params({{kU2fCredentialType}});
-
-    auto request_parameter = CtapMakeCredentialRequest(
-        u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),
-        std::move(user), std::move(credential_params));
-
-    return std::make_unique<MakeCredentialRequestHandler>(
-        nullptr,
+    return std::make_unique<FakeFidoRequestHandler>(
         base::flat_set<U2fTransportProtocol>(
             {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
-        std::move(request_parameter), AuthenticatorSelectionCriteria(),
         cb_.callback());
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
-  TestMakeCredentialRequestCallback& callback() { return cb_; }
+  FakeHandlerCallbackReceiver& callback() { return cb_; }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
-  TestMakeCredentialRequestCallback cb_;
+  FakeHandlerCallbackReceiver cb_;
 };
 
-TEST_F(FidoRequestHandlerTest, TestMakeCredentialRequestHandler) {
-  auto request_handler = CreateMakeCredentialHandler();
+TEST_F(FidoRequestHandlerTest, TestSingleDeviceSuccess) {
+  auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
-  device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential,
-      test_data::kTestMakeCredentialResponse);
+  // Device returns success (non-empty vector) response.
+  device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                      CreateFakeSuccessDeviceResponse());
 
   discovery()->AddDevice(std::move(device));
   callback().WaitForCallback();
@@ -93,24 +149,22 @@ TEST_F(FidoRequestHandlerTest, TestMakeCredentialRequestHandler) {
 // cancel request has been sent either from the user or from the relying party
 // (i.e. FidoRequestHandler object is destroyed.) Upon destruction, cancel
 // command must be invoked to all connected authenticators.
-TEST_F(FidoRequestHandlerTest, TestCancelRequest) {
-  auto request_handler = CreateMakeCredentialHandler();
+TEST_F(FidoRequestHandlerTest, TestAuthenticatorHandlerReset) {
+  auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device0 = std::make_unique<MockFidoDevice>();
   device0->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
-  device0->ExpectCtap2CommandWithoutResponse(
-      CtapRequestCommand::kAuthenticatorGetInfo);
-  device0->ExpectCtap2CommandWithoutResponse(
+  device0->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
+  device0->ExpectCtap2CommandAndDoNotRespond(
       CtapRequestCommand::kAuthenticatorCancel);
 
   auto device1 = std::make_unique<MockFidoDevice>();
   device1->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
-  device1->ExpectCtap2CommandWithoutResponse(
-      CtapRequestCommand::kAuthenticatorGetInfo);
-  device1->ExpectCtap2CommandWithoutResponse(
+  device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
+  device1->ExpectCtap2CommandAndDoNotRespond(
       CtapRequestCommand::kAuthenticatorCancel);
 
   discovery()->AddDevice(std::move(device0));
@@ -122,29 +176,24 @@ TEST_F(FidoRequestHandlerTest, TestCancelRequest) {
 // Test a scenario where 2 devices are connected and a response is received from
 // only a single device(device1) and the remaining device hangs.
 TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {
-  auto request_handler = CreateMakeCredentialHandler();
+  auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   // Represents a connected device that hangs without a response.
   auto device0 = std::make_unique<MockFidoDevice>();
+  device0->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
-  device0->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device0->ExpectCtap2CommandWithoutResponse(
-      CtapRequestCommand::kAuthenticatorMakeCredential);
-  device0->ExpectCtap2CommandWithoutResponse(
+  // Device is unresponsive and cancel command is invoked afterwards.
+  device0->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
+  device0->ExpectCtap2CommandAndDoNotRespond(
       CtapRequestCommand::kAuthenticatorCancel);
 
   // Represents a connected device that response successfully.
   auto device1 = std::make_unique<MockFidoDevice>();
+  device1->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
-  device1->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device1->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential,
-      test_data::kTestMakeCredentialResponse);
+  device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeSuccessDeviceResponse());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
@@ -154,37 +203,35 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {
   EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
 }
 
-// Test a scenario where 2 devices respond successfully with small time delay.
-// Only the first received response should be passed on to the relying party,
-// and cancel request should be sent to the other authenticator.
+// Test a scenario where 2 devices respond successfully with small time
+// delay. Only the first received response should be passed on to the relying
+// party, and cancel request should be sent to the other authenticator.
 TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
-  auto request_handler = CreateMakeCredentialHandler();
+  auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   // Represents a connected device that responds successfully after small time
   // delay.
   auto device0 = std::make_unique<MockFidoDevice>();
+  device0->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
-  device0->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device0->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential,
-      test_data::kTestMakeCredentialResponse,
-      base::TimeDelta::FromMicroseconds(1));
+  // Device responds successfully after short delay.
+  device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeSuccessDeviceResponse(),
+                                       base::TimeDelta::FromMicroseconds(1));
 
   // Represents a device that returns a success response after a longer time
   // delay.
   auto device1 = std::make_unique<MockFidoDevice>();
+  device1->set_supported_protocol(ProtocolVersion::kCtap);
+
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
-  device1->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device1->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential,
-      test_data::kTestMakeCredentialResponse,
-      base::TimeDelta::FromMicroseconds(10));
-  device1->ExpectCtap2CommandWithoutResponse(
+  // Returns success response after long delay.
+  device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeSuccessDeviceResponse(),
+                                       base::TimeDelta::FromMicroseconds(10));
+  // Cancel command is invoked after receiving response from |device0|.
+  device1->ExpectCtap2CommandAndDoNotRespond(
       CtapRequestCommand::kAuthenticatorCancel);
 
   discovery()->AddDevice(std::move(device0));
@@ -203,45 +250,35 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
 // failures, the first received response should be passed on to the relying
 // party and cancel command should be sent to the remaining device.
 TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
-  auto request_handler = CreateMakeCredentialHandler();
+  auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   // Represents a connected device that immediately responds with processing
   // error.
   auto device0 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
-  device0->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device0->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential, base::nullopt);
+  // Responds with base::nullopt which represents a processing error.
+  device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(), base::nullopt);
 
   // Represents a device that returns UP verified failure response after a small
   // time delay.
   auto device1 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
-  device1->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device1->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential,
-      std::vector<uint8_t>{base::strict_cast<uint8_t>(
-          CtapDeviceResponseCode::kCtap2ErrInvalidCredential)},
-      base::TimeDelta::FromMicroseconds(1));
+  device1->ExpectRequestAndRespondWith(
+      std::vector<uint8_t>(),
+      // Responds with an empty vector that represents a UP-verified error.
+      std::vector<uint8_t>(), base::TimeDelta::FromMicroseconds(1));
 
   // Represents a device that returns UP verified failure response after a big
   // time delay.
   auto device2 = std::make_unique<MockFidoDevice>();
+  device2->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device2, GetId()).WillRepeatedly(testing::Return("device2"));
-  device2->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
-  device2->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential,
-      std::vector<uint8_t>{base::strict_cast<uint8_t>(
-          CtapDeviceResponseCode::kCtap2ErrInvalidCredential)},
-      base::TimeDelta::FromMicroseconds(10));
-  device2->ExpectCtap2CommandWithoutResponse(
+  device2->ExpectRequestAndRespondWith(
+      std::vector<uint8_t>(),
+      // Responds with an empty vector that represents a UP-verified error.
+      std::vector<uint8_t>(), base::TimeDelta::FromMicroseconds(10));
+  device2->ExpectCtap2CommandAndDoNotRespond(
       CtapRequestCommand::kAuthenticatorCancel);
 
   discovery()->AddDevice(std::move(device0));
