@@ -2948,7 +2948,6 @@ TEST_F(WindowSelectorTest, DraggingWithTwoFingers) {
   // Verify the first window moves on drag.
   gfx::Point last_center_point = item1->target_bounds().CenterPoint();
   generator.MoveTouchIdBy(kTouchId1, 40, 40);
-  RunAllPendingInMessageLoop();
   EXPECT_NE(last_center_point, item1->target_bounds().CenterPoint());
   EXPECT_EQ(original_bounds2.CenterPoint(),
             item2->target_bounds().CenterPoint());
