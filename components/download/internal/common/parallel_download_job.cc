@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/public/common/parallel_download_job.h"
+#include "components/download/internal/common/parallel_download_job.h"
 
 #include <algorithm>
 
@@ -10,9 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_stats.h"
-#include "components/download/public/common/parallel_download_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace download {

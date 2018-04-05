@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_IMPL_H_
-#define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_IMPL_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_ITEM_IMPL_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_ITEM_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -16,24 +16,24 @@
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace content {
+namespace download {
 
 class DownloadManager;
 
-class MockDownloadItemImpl : public download::DownloadItemImpl {
+class MockDownloadItemImpl : public DownloadItemImpl {
  public:
   // Use history constructor for minimal base object.
-  explicit MockDownloadItemImpl(download::DownloadItemImplDelegate* delegate);
+  explicit MockDownloadItemImpl(DownloadItemImplDelegate* delegate);
   ~MockDownloadItemImpl() override;
 
   MOCK_METHOD5(OnDownloadTargetDetermined,
                void(const base::FilePath&,
                     TargetDisposition,
-                    download::DownloadDangerType,
+                    DownloadDangerType,
                     const base::FilePath&,
-                    download::DownloadInterruptReason));
-  MOCK_METHOD1(AddObserver, void(download::DownloadItem::Observer*));
-  MOCK_METHOD1(RemoveObserver, void(download::DownloadItem::Observer*));
+                    DownloadInterruptReason));
+  MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
+  MOCK_METHOD1(RemoveObserver, void(DownloadItem::Observer*));
   MOCK_METHOD0(UpdateObservers, void());
   MOCK_METHOD0(CanShowInFolder, bool());
   MOCK_METHOD0(CanOpenDownload, bool());
@@ -50,17 +50,15 @@ class MockDownloadItemImpl : public download::DownloadItemImpl {
   }
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   void Start(
-      std::unique_ptr<download::DownloadFile> download_file,
-      std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
-      const download::DownloadCreateInfo& create_info,
+      std::unique_ptr<DownloadFile> download_file,
+      std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+      const DownloadCreateInfo& create_info,
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       net::URLRequestContextGetter* url_request_context_getter) override {
     MockStart(download_file.get(), req_handle.get());
   }
 
-  MOCK_METHOD2(MockStart,
-               void(download::DownloadFile*,
-                    download::DownloadRequestHandleInterface*));
+  MOCK_METHOD2(MockStart, void(DownloadFile*, DownloadRequestHandleInterface*));
 
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
@@ -73,8 +71,7 @@ class MockDownloadItemImpl : public download::DownloadItemImpl {
   MOCK_CONST_METHOD0(GetTargetFilePath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetDisposition, TargetDisposition());
   MOCK_METHOD2(OnContentCheckCompleted,
-               void(download::DownloadDangerType,
-                    download::DownloadInterruptReason));
+               void(DownloadDangerType, DownloadInterruptReason));
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetUrlChain, const std::vector<GURL>&());
   MOCK_METHOD1(SetTotalBytes, void(int64_t));
@@ -103,7 +100,7 @@ class MockDownloadItemImpl : public download::DownloadItemImpl {
   MOCK_CONST_METHOD0(GetOpenWhenComplete, bool());
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
-  MOCK_CONST_METHOD0(GetDangerType, download::DownloadDangerType());
+  MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetForcedFilePath, const base::FilePath&());
@@ -115,12 +112,13 @@ class MockDownloadItemImpl : public download::DownloadItemImpl {
   MOCK_CONST_METHOD0(GetLastAccessTime, base::Time());
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
-  MOCK_CONST_METHOD0(GetLastReason, download::DownloadInterruptReason());
+  MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, base::FilePath());
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   // May be called when vlog is on.
   std::string DebugString(bool verbose) const override { return std::string(); }
 };
-}  // namespace content
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_IMPL_H_
+}  // namespace download
+
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_ITEM_IMPL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/public/common/download_worker.h"
+#include "components/download/internal/common/download_worker.h"
 
 #include "base/message_loop/message_loop.h"
 #include "components/download/public/common/download_create_info.h"

@@ -694,7 +694,6 @@ jumbo_source_set("browser") {
     "dom_storage/session_storage_namespace_impl.h",
     "download/byte_stream_input_stream.cc",
     "download/byte_stream_input_stream.h",
-    "download/download_item_factory.h",
     "download/download_item_utils.cc",
     "download/download_manager_impl.cc",
     "download/download_manager_impl.h",

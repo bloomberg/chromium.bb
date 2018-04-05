@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/public/common/parallel_download_utils.h"
+#include "components/download/internal/common/parallel_download_utils.h"
 
 #include <map>
 #include <memory>
@@ -13,7 +13,7 @@
 #include "components/download/public/common/download_file_impl.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/mock_input_stream.h"
-#include "components/download/public/common/parallel_download_utils.h"
+#include "components/download/public/common/parallel_download_configs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

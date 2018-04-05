@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/public/common/save_package_download_job.h"
+#include "components/download/internal/common/save_package_download_job.h"
 
 namespace download {
 

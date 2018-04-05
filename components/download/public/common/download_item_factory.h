@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// The DownloadItemFactory is used to produce different download::DownloadItems.
+// The DownloadItemFactory is used to produce different DownloadItems.
 // It is separate from the DownloadManager to allow download manager
 // unit tests to control the items produced.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_FACTORY_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_FACTORY_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_FACTORY_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_FACTORY_H_
 
 #include <stdint.h>
 
@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_item.h"
 
 class GURL;
@@ -24,20 +25,18 @@ class FilePath;
 }  // namespace base
 
 namespace download {
+
 struct DownloadCreateInfo;
 class DownloadItemImpl;
 class DownloadItemImplDelegate;
 class DownloadRequestHandleInterface;
-}  // namespace download
 
-namespace content {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadItemFactory {
+ public:
+  virtual ~DownloadItemFactory();
 
-class DownloadItemFactory {
-public:
-  virtual ~DownloadItemFactory() {}
-
-  virtual download::DownloadItemImpl* CreatePersistedItem(
-      download::DownloadItemImplDelegate* delegate,
+  virtual DownloadItemImpl* CreatePersistedItem(
+      DownloadItemImplDelegate* delegate,
       const std::string& guid,
       uint32_t download_id,
       const base::FilePath& current_path,
@@ -56,30 +55,28 @@ public:
       int64_t received_bytes,
       int64_t total_bytes,
       const std::string& hash,
-      download::DownloadItem::DownloadState state,
-      download::DownloadDangerType danger_type,
-      download::DownloadInterruptReason interrupt_reason,
+      DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<download::DownloadItem::ReceivedSlice>&
-          received_slices) = 0;
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
 
-  virtual download::DownloadItemImpl* CreateActiveItem(
-      download::DownloadItemImplDelegate* delegate,
+  virtual DownloadItemImpl* CreateActiveItem(
+      DownloadItemImplDelegate* delegate,
       uint32_t download_id,
-      const download::DownloadCreateInfo& info) = 0;
+      const DownloadCreateInfo& info) = 0;
 
-  virtual download::DownloadItemImpl* CreateSavePageItem(
-      download::DownloadItemImplDelegate* delegate,
+  virtual DownloadItemImpl* CreateSavePageItem(
+      DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<download::DownloadRequestHandleInterface>
-          request_handle) = 0;
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle) = 0;
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_FACTORY_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_FACTORY_H_

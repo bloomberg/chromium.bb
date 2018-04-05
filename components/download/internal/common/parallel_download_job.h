@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_PARALLEL_DOWNLOAD_JOB_H_
-#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_PARALLEL_DOWNLOAD_JOB_H_
+#ifndef COMPONENTS_DOWNLOAD_INTERNAL_COMMON_PARALLEL_DOWNLOAD_JOB_H_
+#define COMPONENTS_DOWNLOAD_INTERNAL_COMMON_PARALLEL_DOWNLOAD_JOB_H_
 
 #include <memory>
 #include <unordered_map>
@@ -11,9 +11,10 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/download/internal/common/download_job_impl.h"
+#include "components/download/internal/common/download_worker.h"
 #include "components/download/public/common/download_export.h"
-#include "components/download/public/common/download_job_impl.h"
-#include "components/download/public/common/download_worker.h"
+#include "components/download/public/common/parallel_download_configs.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -121,4 +122,4 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
 
 }  //  namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_PARALLEL_DOWNLOAD_JOB_H_
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_COMMON_PARALLEL_DOWNLOAD_JOB_H_

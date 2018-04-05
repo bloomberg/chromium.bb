@@ -29,6 +29,7 @@
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item_factory.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_stats.h"
@@ -40,7 +41,6 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/byte_stream_input_stream.h"
-#include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/url_downloader.h"
@@ -255,7 +255,7 @@ void BeginResourceDownload(
           download_manager, std::move(downloader)));
 }
 
-class DownloadItemFactoryImpl : public DownloadItemFactory {
+class DownloadItemFactoryImpl : public download::DownloadItemFactory {
  public:
   DownloadItemFactoryImpl() {}
   ~DownloadItemFactoryImpl() override {}
@@ -835,9 +835,8 @@ void DownloadManagerImpl::ResumeInterruptedDownload(
   BeginDownloadInternal(std::move(params), nullptr, id, storage_partition);
 }
 
-
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
-    std::unique_ptr<DownloadItemFactory> item_factory) {
+    std::unique_ptr<download::DownloadItemFactory> item_factory) {
   item_factory_ = std::move(item_factory);
 }
 

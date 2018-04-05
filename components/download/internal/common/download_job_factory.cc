@@ -7,12 +7,12 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "components/download/internal/common/download_job_impl.h"
+#include "components/download/internal/common/parallel_download_job.h"
+#include "components/download/internal/common/parallel_download_utils.h"
+#include "components/download/internal/common/save_package_download_job.h"
 #include "components/download/public/common/download_item.h"
-#include "components/download/public/common/download_job_impl.h"
 #include "components/download/public/common/download_stats.h"
-#include "components/download/public/common/parallel_download_job.h"
-#include "components/download/public/common/parallel_download_utils.h"
-#include "components/download/public/common/save_package_download_job.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace download {
