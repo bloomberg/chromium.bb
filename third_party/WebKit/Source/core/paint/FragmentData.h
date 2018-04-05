@@ -172,7 +172,7 @@ class CORE_EXPORT FragmentData {
   // from the ancestor before applying any local CSS properties,
   // but includes paint offset transform.
   PropertyTreeState PreEffectProperties() const {
-    return PropertyTreeState(PreTransform(), ClipPathClip(), PreEffect());
+    return PropertyTreeState(PreTransform(), PreClip(), PreEffect());
   }
 
   // This is the complete set of property nodes that can be used to
@@ -198,7 +198,7 @@ class CORE_EXPORT FragmentData {
 
   const TransformPaintPropertyNode* PreTransform() const;
   const TransformPaintPropertyNode* PostScrollTranslation() const;
-  const ClipPaintPropertyNode* ClipPathClip() const;
+  const ClipPaintPropertyNode* PreClip() const;
   const ClipPaintPropertyNode* PostOverflowClip() const;
   const EffectPaintPropertyNode* PreEffect() const;
   const EffectPaintPropertyNode* PreFilter() const;
