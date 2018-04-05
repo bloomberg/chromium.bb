@@ -5,78 +5,66 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_USB_CHOOSER_DIALOG_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_USB_CHOOSER_DIALOG_ANDROID_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
-#include "device/usb/public/mojom/chooser_service.mojom.h"
-#include "device/usb/usb_service.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 
 namespace content {
 class RenderFrameHost;
 }
 
-namespace device {
-class UsbDevice;
-}
-
 // Represents a way to ask the user to select a USB device from a list of
 // options.
-class UsbChooserDialogAndroid : public device::UsbService::Observer {
+class UsbChooserDialogAndroid : public ChooserController::View {
  public:
-  UsbChooserDialogAndroid(
-      std::vector<device::mojom::UsbDeviceFilterPtr> filters,
+  // Creates and shows the dialog. Will return nullptr if the dialog was not
+  // displayed. Otherwise |on_close| will be called when the user closes the
+  // dialog.
+  static std::unique_ptr<UsbChooserDialogAndroid> Create(
       content::RenderFrameHost* render_frame_host,
-      device::mojom::UsbChooserService::GetPermissionCallback callback);
+      std::unique_ptr<ChooserController> controller,
+      base::OnceClosure on_close);
+
+  explicit UsbChooserDialogAndroid(
+      std::unique_ptr<ChooserController> controller,
+      base::OnceClosure on_close);
   ~UsbChooserDialogAndroid() override;
 
-  // device::UsbService::Observer:
-  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
-  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
+  // ChooserController::View implementation
+  void OnOptionsInitialized() override;
+  void OnOptionAdded(size_t index) override;
+  void OnOptionRemoved(size_t index) override;
+  void OnOptionUpdated(size_t index) override;
+  void OnAdapterEnabledChanged(bool enabled) override;
+  void OnRefreshStateChanged(bool refreshing) override;
 
   // Report the dialog's result.
   void OnItemSelected(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,
-                      const base::android::JavaParamRef<jstring>& device_id);
+                      const base::android::JavaParamRef<jstring>& item_id);
   void OnDialogCancelled(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
-
   void LoadUsbHelpPage(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  void GotUsbDeviceList(
-      const std::vector<scoped_refptr<device::UsbDevice>>& devices);
-
-  // Called when the user selects the USB device with |guid| from the chooser
-  // dialog.
-  void Select(const std::string& guid);
   // Called when the chooser dialog is closed.
   void Cancel();
 
-  void AddDeviceToChooserDialog(scoped_refptr<device::UsbDevice> device) const;
-  void RemoveDeviceFromChooserDialog(
-      scoped_refptr<device::UsbDevice> device) const;
+  std::unique_ptr<ChooserController> controller_;
+  base::OnceClosure on_close_;
 
-  void OpenUrl(const std::string& url);
-
-  bool DisplayDevice(scoped_refptr<device::UsbDevice> device) const;
-
-  content::RenderFrameHost* const render_frame_host_;
-  device::mojom::UsbChooserService::GetPermissionCallback callback_;
-  ScopedObserver<device::UsbService, device::UsbService::Observer>
-      usb_service_observer_;
-  std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
-
-  std::vector<scoped_refptr<device::UsbDevice>> devices_;
+  // The Java dialog code expects items to have unique string IDs while the
+  // ChooserController code refers to devices by their position in the list.
+  int next_item_id_ = 0;
+  std::vector<std::string> item_id_map_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_;
-  base::WeakPtrFactory<UsbChooserDialogAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbChooserDialogAndroid);
 };
