@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -39,7 +38,7 @@ const char kActivatePageRequest[] = "/json/activate/%s";
 const char kBrowserTargetSocket[] = "/devtools/browser";
 const int kPollingIntervalMs = 1000;
 
-const char kPageReloadCommand[] = "Page.reload";
+const char kPageReloadCommand[] = "{'method': 'Page.reload', id: 1}";
 
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 
@@ -56,12 +55,10 @@ static void ScheduleTaskDefault(const base::Closure& task) {
 class ProtocolCommand
     : public AndroidDeviceManager::AndroidWebSocket::Delegate {
  public:
-  ProtocolCommand(
-      scoped_refptr<AndroidDeviceManager::Device> device,
-      const std::string& socket,
-      const std::string& target_path,
-      const std::string& command,
-      const base::Closure callback);
+  ProtocolCommand(scoped_refptr<AndroidDeviceManager::Device> device,
+                  const std::string& socket,
+                  const std::string& target_path,
+                  const std::string& command);
 
  private:
   void OnSocketOpened() override;
@@ -70,7 +67,6 @@ class ProtocolCommand
   ~ProtocolCommand() override;
 
   const std::string command_;
-  const base::Closure callback_;
   std::unique_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolCommand);
@@ -80,12 +76,9 @@ ProtocolCommand::ProtocolCommand(
     scoped_refptr<AndroidDeviceManager::Device> device,
     const std::string& socket,
     const std::string& target_path,
-    const std::string& command,
-    const base::Closure callback)
+    const std::string& command)
     : command_(command),
-      callback_(callback),
-      web_socket_(device->CreateWebSocket(socket, target_path, this)) {
-}
+      web_socket_(device->CreateWebSocket(socket, target_path, this)) {}
 
 void ProtocolCommand::OnSocketOpened() {
   web_socket_->SendFrame(command_);
@@ -100,8 +93,6 @@ void ProtocolCommand::OnSocketClosed() {
 }
 
 ProtocolCommand::~ProtocolCommand() {
-  if (!callback_.is_null())
-    callback_.Run();
 }
 
 // AgentHostDelegate ----------------------------------------------------------
@@ -185,11 +176,6 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate {
   base::TimeTicks GetLastActivityTime() override;
   void SendMessageToBackend(content::DevToolsExternalAgentProxy* proxy,
                             const std::string& message) override;
-
-  void SendProtocolCommand(const std::string& target_path,
-                           const std::string& method,
-                           std::unique_ptr<base::DictionaryValue> params,
-                           const base::Closure callback);
 
   scoped_refptr<AndroidDeviceManager::Device> device_;
   std::string browser_id_;
@@ -344,8 +330,10 @@ bool AgentHostDelegate::Activate() {
 }
 
 void AgentHostDelegate::Reload() {
-  SendProtocolCommand(target_path_, kPageReloadCommand, nullptr,
-                      base::Closure());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (target_path_.empty())
+    return;
+  new ProtocolCommand(device_, browser_id_, target_path_, kPageReloadCommand);
 }
 
 bool AgentHostDelegate::Close() {
@@ -367,20 +355,6 @@ void AgentHostDelegate::SendMessageToBackend(
   if (it == proxies_.end())
     return;
   it->second->SendMessageToBackend(message);
-}
-
-void AgentHostDelegate::SendProtocolCommand(
-    const std::string& target_path,
-    const std::string& method,
-    std::unique_ptr<base::DictionaryValue> params,
-    const base::Closure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (target_path.empty())
-    return;
-  new ProtocolCommand(
-      device_, browser_id_, target_path,
-      DevToolsProtocol::SerializeCommand(1, method, std::move(params)),
-      callback);
 }
 
 }  // namespace

@@ -32,7 +32,6 @@
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
-#include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/profiles/profile.h"
