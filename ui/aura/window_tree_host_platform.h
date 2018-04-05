@@ -48,6 +48,10 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   WindowTreeHostPlatform();
   explicit WindowTreeHostPlatform(std::unique_ptr<WindowPort> window_port);
 
+  // Creates a ui::PlatformWindow appropriate for the current platform and
+  // installs it at as the PlatformWindow for this WindowTreeHostPlatform.
+  void CreateAndSetDefaultPlatformWindow();
+
   void SetPlatformWindow(std::unique_ptr<ui::PlatformWindow> window);
   ui::PlatformWindow* platform_window() { return platform_window_.get(); }
 

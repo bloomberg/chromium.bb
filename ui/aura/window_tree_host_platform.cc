@@ -44,18 +44,7 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
     : WindowTreeHostPlatform() {
   bounds_ = bounds;
   CreateCompositor();
-#if defined(USE_OZONE)
-  platform_window_ =
-      ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
-#elif defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, bounds));
-#elif defined(OS_ANDROID)
-  platform_window_.reset(new ui::PlatformWindowAndroid(this));
-#elif defined(USE_X11)
-  platform_window_.reset(new ui::X11Window(this, bounds));
-#else
-  NOTIMPLEMENTED();
-#endif
+  CreateAndSetDefaultPlatformWindow();
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform()
@@ -66,6 +55,21 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(
     : WindowTreeHost(std::move(window_port)),
       widget_(gfx::kNullAcceleratedWidget),
       current_cursor_(ui::CursorType::kNull) {}
+
+void WindowTreeHostPlatform::CreateAndSetDefaultPlatformWindow() {
+#if defined(USE_OZONE)
+  platform_window_ =
+      ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds_);
+#elif defined(OS_WIN)
+  platform_window_.reset(new ui::WinWindow(this, bounds_));
+#elif defined(OS_ANDROID)
+  platform_window_.reset(new ui::PlatformWindowAndroid(this));
+#elif defined(USE_X11)
+  platform_window_.reset(new ui::X11Window(this, bounds_));
+#else
+  NOTIMPLEMENTED();
+#endif
+}
 
 void WindowTreeHostPlatform::SetPlatformWindow(
     std::unique_ptr<ui::PlatformWindow> window) {
@@ -149,12 +153,10 @@ void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
   float new_scale = ui::GetScaleFactorForNativeView(window());
   gfx::Rect old_bounds = bounds_;
   bounds_ = new_bounds;
-  if (bounds_.origin() != old_bounds.origin()) {
+  if (bounds_.origin() != old_bounds.origin())
     OnHostMovedInPixels(bounds_.origin());
-  }
-  if (bounds_.size() != old_bounds.size() || current_scale != new_scale) {
+  if (bounds_.size() != old_bounds.size() || current_scale != new_scale)
     OnHostResizedInPixels(bounds_.size());
-  }
 }
 
 void WindowTreeHostPlatform::OnDamageRect(const gfx::Rect& damage_rect) {
@@ -190,7 +192,9 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   widget_ = widget;
-  WindowTreeHost::OnAcceleratedWidgetAvailable();
+  // This may be called before the Compositor has been created.
+  if (compositor())
+    WindowTreeHost::OnAcceleratedWidgetAvailable();
 }
 
 void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {

@@ -31,14 +31,22 @@ DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
 
 void DesktopWindowTreeHostPlatform::SetBoundsInDIP(
     const gfx::Rect& bounds_in_dip) {
+  DCHECK_NE(0, device_scale_factor());
   SetBoundsInPixels(
       gfx::ConvertRectToPixel(device_scale_factor(), bounds_in_dip));
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
+  CreateAndSetDefaultPlatformWindow();
+  // TODO(sky): this should be |params.force_software_compositing|, figure out
+  // why it has to be true now.
+  const bool use_software_compositing = true;
+  CreateCompositor(viz::FrameSinkId(), use_software_compositing);
+  aura::WindowTreeHost::OnAcceleratedWidgetAvailable();
+  InitHost();
   if (!params.bounds.IsEmpty())
     SetBoundsInDIP(params.bounds);
-  InitHost();
+  window()->Show();
 }
 
 void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
@@ -59,7 +67,7 @@ std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostPlatform::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
@@ -94,8 +102,10 @@ aura::WindowTreeHost* DesktopWindowTreeHostPlatform::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostPlatform::ShowWindowWithState(
     ui::WindowShowState show_state) {
-  if (compositor())
+  if (compositor()) {
     platform_window()->Show();
+    compositor()->SetVisible(true);
+  }
 
   switch (show_state) {
     case ui::SHOW_STATE_MAXIMIZED:
@@ -137,7 +147,7 @@ void DesktopWindowTreeHostPlatform::ShowMaximizedWithBounds(
 
 bool DesktopWindowTreeHostPlatform::IsVisible() const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return true;
 }
 
@@ -149,11 +159,11 @@ void DesktopWindowTreeHostPlatform::SetSize(const gfx::Size& size) {
 }
 
 void DesktopWindowTreeHostPlatform::StackAbove(aura::Window* window) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::StackAtTop() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::CenterWindow(const gfx::Size& size) {
@@ -178,7 +188,7 @@ void DesktopWindowTreeHostPlatform::CenterWindow(const gfx::Size& size) {
 void DesktopWindowTreeHostPlatform::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   *bounds = gfx::Rect(0, 0, 640, 840);
   *show_state = ui::SHOW_STATE_NORMAL;
 }
@@ -200,7 +210,7 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetRestoredBounds() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return gfx::Rect(0, 0, 640, 840);
 }
 
@@ -217,22 +227,22 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetWorkAreaBoundsInScreen() const {
 
 void DesktopWindowTreeHostPlatform::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::Activate() {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::Deactivate() {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool DesktopWindowTreeHostPlatform::IsActive() const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
@@ -250,25 +260,25 @@ void DesktopWindowTreeHostPlatform::Restore() {
 
 bool DesktopWindowTreeHostPlatform::IsMaximized() const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool DesktopWindowTreeHostPlatform::IsMinimized() const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool DesktopWindowTreeHostPlatform::HasCapture() const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void DesktopWindowTreeHostPlatform::SetAlwaysOnTop(bool always_on_top) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool DesktopWindowTreeHostPlatform::IsAlwaysOnTop() const {
@@ -279,7 +289,7 @@ bool DesktopWindowTreeHostPlatform::IsAlwaysOnTop() const {
 void DesktopWindowTreeHostPlatform::SetVisibleOnAllWorkspaces(
     bool always_visible) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool DesktopWindowTreeHostPlatform::IsVisibleOnAllWorkspaces() const {
@@ -290,13 +300,13 @@ bool DesktopWindowTreeHostPlatform::IsVisibleOnAllWorkspaces() const {
 bool DesktopWindowTreeHostPlatform::SetWindowTitle(
     const base::string16& title) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void DesktopWindowTreeHostPlatform::ClearNativeFocus() {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 Widget::MoveLoopResult DesktopWindowTreeHostPlatform::RunMoveLoop(
@@ -304,19 +314,19 @@ Widget::MoveLoopResult DesktopWindowTreeHostPlatform::RunMoveLoop(
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return Widget::MOVE_LOOP_CANCELED;
 }
 
 void DesktopWindowTreeHostPlatform::EndMoveLoop() {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 NonClientFrameView* DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {
@@ -335,54 +345,54 @@ void DesktopWindowTreeHostPlatform::FrameTypeChanged() {}
 
 void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool DesktopWindowTreeHostPlatform::IsFullscreen() const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::SetWindowIcons(
     const gfx::ImageSkia& window_icon,
     const gfx::ImageSkia& app_icon) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::InitModalType(ui::ModalType modal_type) {
   // TODO: needs PlatformWindow support (alternatively, remove as
   // DesktopWindowTreeHostX11 doesn't support at all).
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DesktopWindowTreeHostPlatform::FlashFrame(bool flash_frame) {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool DesktopWindowTreeHostPlatform::IsAnimatingClosed() const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool DesktopWindowTreeHostPlatform::IsTranslucentWindowOpacitySupported()
     const {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void DesktopWindowTreeHostPlatform::SizeConstraintsChanged() {
   // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUpdateWindowTransparency() const {
@@ -415,4 +425,5 @@ void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {
   return native_widget_delegate_->AsWidget();
 }
+
 }  // namespace views
