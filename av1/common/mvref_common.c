@@ -658,17 +658,6 @@ static void setup_ref_mv_list(
                     max_col_offset, &processed_cols);
   }
 
-  const int col_offset = -(MVREF_ROW_COLS << 1) + 1 + col_adj;
-
-  if (abs(col_offset) <= abs(max_col_offset) &&
-      abs(col_offset) > processed_cols)
-    scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
-                  refmv_count, col_match_count, dummy_newmv_count,
-#if USE_CUR_GM_REFMV
-                  gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
-                  max_col_offset, &processed_cols);
-
   ref_match_count[ref_frame] =
       (row_match_count[ref_frame] > 0) + (col_match_count[ref_frame] > 0);
 
