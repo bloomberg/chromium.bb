@@ -1381,7 +1381,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppsIgnoreDefaultZoom) {
   // made it through.
   ExtensionTestMessageListener launched_listener("Launched", false);
   LaunchPlatformApp(extension);
-  launched_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // Now check that the app window's default zoom, and actual zoom level,
   // have not been changed from the default.

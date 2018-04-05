@@ -203,7 +203,7 @@ void ExtensionMessageBubbleBrowserTest::TestUninstallDangerousExtension() {
                         .AppendASCII("proxy")
                         .AppendASCII("register"));
   // Wait for it to complete.
-  listener.WaitUntilSatisfied();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   // Create a second browser with the extension installed - the bubble will be
   // set to show.

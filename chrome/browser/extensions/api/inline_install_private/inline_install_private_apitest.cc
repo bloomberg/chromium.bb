@@ -29,7 +29,7 @@ class InlineInstallPrivateApiTestBase : public WebstoreInstallerTest {
     ExtensionTestMessageListener ready_listener("ready", true);
     ExtensionTestMessageListener success_listener("success", false);
     LoadExtension(test_driver_path);
-    ready_listener.WaitUntilSatisfied();
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
     ready_listener.Reply(testName);
     ASSERT_TRUE(success_listener.WaitUntilSatisfied());
   }

@@ -785,7 +785,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   LoadAndLaunchPlatformApp("app_icon", "Launched");
 
   // Create panel window.
-  ready_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createPanelWindow");
   ready_listener.Reset();
   // Default app icon + extension icon updates.
@@ -793,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   const gfx::ImageSkia app_item_image = test_observer.last_app_icon();
 
   // Set panel window icon.
-  ready_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("setPanelWindowIcon");
   ready_listener.Reset();
   // Custom icon update.
@@ -801,28 +801,28 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   const gfx::ImageSkia panel_item_image = test_observer.last_app_icon();
 
   // Create non-shelf window.
-  ready_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createNonShelfWindow");
   ready_listener.Reset();
   // Default app icon + extension icon updates.
   test_observer.WaitForIconUpdates(2);
 
   // Create shelf window.
-  ready_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createShelfWindow");
   ready_listener.Reset();
   // Default app icon + extension icon updates.
   test_observer.WaitForIconUpdates(2);
 
   // Set shelf window icon.
-  ready_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("setShelfWindowIcon");
   ready_listener.Reset();
   // Custom icon update.
   test_observer.WaitForIconUpdate();
 
   // Create shelf window with custom icon on init.
-  ready_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createShelfWindowWithCustomIcon");
   ready_listener.Reset();
   // Default app icon + extension icon + custom icon updates.
@@ -863,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   EXPECT_EQ(11, test_observer.icon_updates());
 
   // Exit.
-  ready_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("exit");
   ready_listener.Reset();
 }

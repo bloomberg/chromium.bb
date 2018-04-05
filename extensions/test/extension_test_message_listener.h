@@ -97,7 +97,7 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   // message, or waits until it arrives.
   // Returns false if the wait is interrupted and we still haven't gotten the
   // message, or if the message was equal to |failure_message_|.
-  bool WaitUntilSatisfied();
+  bool WaitUntilSatisfied() WARN_UNUSED_RESULT;
 
   // Send the given message as a reply. It is only valid to call this after
   // WaitUntilSatisfied has returned true, and if will_reply is true.
