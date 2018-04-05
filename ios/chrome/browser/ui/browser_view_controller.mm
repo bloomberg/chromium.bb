@@ -5440,13 +5440,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
       ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
 }
 
-#pragma mark - LogoAnimationControllerOwnerOwner (Public)
+#pragma mark - VoiceSearchPresenter (Public)
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
   return [self currentLogoAnimationControllerOwner];
 }
 
-#pragma mark - LogoAnimationControllerOwnerOwner helpers
+#pragma mark - VoiceSearchPresenter helpers
 
 // The LogoAnimationControllerOwner to be used for the next logo transition
 // animation.

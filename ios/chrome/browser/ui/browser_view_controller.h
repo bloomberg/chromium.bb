@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/url_loader.h"
-#import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
+#import "ios/public/provider/chrome/browser/voice/voice_search_presenter.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
@@ -37,12 +37,11 @@ class ChromeBrowserState;
 
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.
-@interface BrowserViewController
-    : UIViewController<LogoAnimationControllerOwnerOwner,
-                       SyncPresenter,
-                       ToolbarCoordinatorDelegate,
-                       ToolbarOwner,
-                       UrlLoader>
+@interface BrowserViewController : UIViewController<SyncPresenter,
+                                                    ToolbarCoordinatorDelegate,
+                                                    ToolbarOwner,
+                                                    UrlLoader,
+                                                    VoiceSearchPresenter>
 
 // Initializes a new BVC from its nib. |model| must not be nil. The
 // webUsageSuspended property for this BVC will be based on |model|, and future
