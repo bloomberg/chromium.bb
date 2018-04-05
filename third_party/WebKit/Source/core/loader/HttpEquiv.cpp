@@ -9,6 +9,7 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -66,6 +67,8 @@ void HttpEquiv::ProcessHttpEquivContentSecurityPolicy(
     const AtomicString& equiv,
     const AtomicString& content) {
   if (document.ImportLoader())
+    return;
+  if (document.GetSettings() && document.GetSettings()->BypassCSP())
     return;
   if (EqualIgnoringASCIICase(equiv, "content-security-policy")) {
     document.GetContentSecurityPolicy()->DidReceiveHeader(

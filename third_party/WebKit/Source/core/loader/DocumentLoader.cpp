@@ -601,14 +601,17 @@ void DocumentLoader::ResponseReceived(
 
   content_security_policy_ = ContentSecurityPolicy::Create();
   content_security_policy_->SetOverrideURLForSelf(response.Url());
-  content_security_policy_->DidReceiveHeaders(
-      ContentSecurityPolicyResponseHeaders(response));
+  if (!frame_->GetSettings()->BypassCSP()) {
+    content_security_policy_->DidReceiveHeaders(
+        ContentSecurityPolicyResponseHeaders(response));
+  }
   if (!content_security_policy_->AllowAncestors(frame_, response.Url())) {
     CancelLoadAfterCSPDenied(response);
     return;
   }
 
-  if (RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
+  if (!frame_->GetSettings()->BypassCSP() &&
+      RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
       !GetFrameLoader().RequiredCSP().IsEmpty()) {
     const SecurityOrigin* parent_security_origin =
         frame_->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin();
