@@ -97,6 +97,7 @@ component("network_service") {
 
   deps = [
     "//base",
+    "//components/certificate_transparency",
     "//components/cookie_config",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",

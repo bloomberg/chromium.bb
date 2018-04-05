@@ -5,8 +5,14 @@
 #ifndef COMPONENTS_CERTIFICATE_TRANSPARENCY_PREF_NAMES_H_
 #define COMPONENTS_CERTIFICATE_TRANSPARENCY_PREF_NAMES_H_
 
+class PrefRegistrySimple;
+
 namespace certificate_transparency {
 namespace prefs {
+
+// Registers the preferences related to Certificate Transparency policy
+// in the given pref registry.
+void RegisterPrefs(PrefRegistrySimple* registry);
 
 // The set of hosts (as URLBlacklist-syntax filters) for which Certificate
 // Transparency is required to be present.

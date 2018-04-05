@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -19,9 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "components/certificate_transparency/pref_names.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
 #include "crypto/sha2.h"
@@ -166,16 +164,15 @@ bool AreCertsSameOrganization(const net::RDNSequence& leaf_rdn_sequence,
 class CTPolicyManager::CTDelegate
     : public net::TransportSecurityState::RequireCTDelegate {
  public:
-  explicit CTDelegate(
-      scoped_refptr<base::SequencedTaskRunner> network_task_runner);
+  explicit CTDelegate();
   ~CTDelegate() override = default;
 
-  // Called on the prefs task runner. Updates the CTDelegate to require CT
+  // Updates the CTDelegate to require CT
   // for |required_hosts|, and exclude |excluded_hosts| from CT policies.
-  void UpdateFromPrefs(const base::ListValue* required_hosts,
-                       const base::ListValue* excluded_hosts,
-                       const base::ListValue* excluded_spkis,
-                       const base::ListValue* excluded_legacy_spkis);
+  void UpdateCTPolicies(const std::vector<std::string>& required_hosts,
+                        const std::vector<std::string>& excluded_hosts,
+                        const std::vector<std::string>& excluded_spkis,
+                        const std::vector<std::string>& excluded_legacy_spkis);
 
   // RequireCTDelegate implementation
   // Called on the network task runner.
@@ -203,33 +200,32 @@ class CTPolicyManager::CTDelegate
                  const net::HashValueVector& hashes,
                  bool* ct_required) const;
 
-  // Called on the |network_task_runner_|. Updates the |url_matcher_| to
+  // Updates the |url_matcher_| to
   // require CT for |required_hosts| and exclude |excluded_hosts|, both
   // of which are Lists of Strings which are URLBlacklist filters, and
   // updates |excluded_spkis| and |excluded_legacy_spkis| to exclude CT for
   // those SPKIs, which are encoded as strings using net::HashValue::ToString.
-  void Update(base::ListValue required_hosts,
-              base::ListValue excluded_hosts,
-              base::ListValue excluded_spkis,
-              base::ListValue excluded_legacy_spkis);
+  void Update(const std::vector<std::string>& required_hosts,
+              const std::vector<std::string>& excluded_hosts,
+              const std::vector<std::string>& excluded_spkis,
+              const std::vector<std::string>& excluded_legacy_spkis);
 
   // Parses the filters from |host_patterns|, adding them as filters to
   // |filters_| (with |ct_required| indicating whether or not CT is required
   // for that host), and updating |*conditions| with the corresponding
   // URLMatcher::Conditions to match the host.
   void AddFilters(bool ct_required,
-                  const base::ListValue& host_patterns,
+                  const std::vector<std::string>& host_patterns,
                   url_matcher::URLMatcherConditionSet::Vector* conditions);
 
   // Parses the SPKIs from |list|, setting |*hashes| to the sorted set of all
   // valid SPKIs.
-  void ParseSpkiHashes(const base::ListValue& list,
+  void ParseSpkiHashes(const std::vector<std::string> list,
                        net::HashValueVector* hashes) const;
 
   // Returns true if |lhs| has greater precedence than |rhs|.
   bool FilterTakesPrecedence(const Filter& lhs, const Filter& rhs) const;
 
-  scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
   std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
   url_matcher::URLMatcherConditionSet::ID next_id_;
   std::map<url_matcher::URLMatcherConditionSet::ID, Filter> filters_;
@@ -241,24 +237,15 @@ class CTPolicyManager::CTDelegate
   DISALLOW_COPY_AND_ASSIGN(CTDelegate);
 };
 
-CTPolicyManager::CTDelegate::CTDelegate(
-    scoped_refptr<base::SequencedTaskRunner> network_task_runner)
-    : network_task_runner_(std::move(network_task_runner)),
-      url_matcher_(new url_matcher::URLMatcher),
-      next_id_(0) {}
+CTPolicyManager::CTDelegate::CTDelegate()
+    : url_matcher_(new url_matcher::URLMatcher), next_id_(0) {}
 
-void CTPolicyManager::CTDelegate::UpdateFromPrefs(
-    const base::ListValue* required_hosts,
-    const base::ListValue* excluded_hosts,
-    const base::ListValue* excluded_spkis,
-    const base::ListValue* excluded_legacy_spkis) {
-  network_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CTDelegate::Update, base::Unretained(this),
-                     base::ListValue(required_hosts->GetList()),
-                     base::ListValue(excluded_hosts->GetList()),
-                     base::ListValue(excluded_spkis->GetList()),
-                     base::ListValue(excluded_legacy_spkis->GetList())));
+void CTPolicyManager::CTDelegate::UpdateCTPolicies(
+    const std::vector<std::string>& required_hosts,
+    const std::vector<std::string>& excluded_hosts,
+    const std::vector<std::string>& excluded_spkis,
+    const std::vector<std::string>& excluded_legacy_spkis) {
+  Update(required_hosts, excluded_hosts, excluded_spkis, excluded_legacy_spkis);
 }
 
 net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel
@@ -266,7 +253,6 @@ CTPolicyManager::CTDelegate::IsCTRequiredForHost(
     const std::string& hostname,
     const net::X509Certificate* chain,
     const net::HashValueVector& hashes) {
-  DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   bool ct_required = false;
   if (MatchHostname(hostname, &ct_required) ||
@@ -394,12 +380,10 @@ bool CTPolicyManager::CTDelegate::MatchSPKI(const net::X509Certificate* chain,
 }
 
 void CTPolicyManager::CTDelegate::Update(
-    base::ListValue required_hosts,
-    base::ListValue excluded_hosts,
-    base::ListValue excluded_spkis,
-    base::ListValue excluded_legacy_spkis) {
-  DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
-
+    const std::vector<std::string>& required_hosts,
+    const std::vector<std::string>& excluded_hosts,
+    const std::vector<std::string>& excluded_spkis,
+    const std::vector<std::string>& excluded_legacy_spkis) {
   url_matcher_.reset(new url_matcher::URLMatcher);
   filters_.clear();
   next_id_ = 0;
@@ -429,13 +413,9 @@ void CTPolicyManager::CTDelegate::Update(
 
 void CTPolicyManager::CTDelegate::AddFilters(
     bool ct_required,
-    const base::ListValue& hosts,
+    const std::vector<std::string>& hosts,
     url_matcher::URLMatcherConditionSet::Vector* conditions) {
-  for (const base::Value& host : hosts) {
-    if (!host.is_string())
-      continue;
-    std::string pattern = host.GetString();
-
+  for (const auto& pattern : hosts) {
     Filter filter;
     filter.ct_required = ct_required;
 
@@ -493,14 +473,12 @@ void CTPolicyManager::CTDelegate::AddFilters(
 }
 
 void CTPolicyManager::CTDelegate::ParseSpkiHashes(
-    const base::ListValue& list,
+    const std::vector<std::string> list,
     net::HashValueVector* hashes) const {
   hashes->clear();
-  for (const base::Value& value : list.GetList()) {
-    if (!value.is_string())
-      continue;
+  for (const auto& value : list) {
     net::HashValue hash;
-    if (!hash.FromString(value.GetString())) {
+    if (!hash.FromString(value)) {
       continue;
     }
     hashes->push_back(std::move(hash));
@@ -523,68 +501,21 @@ bool CTPolicyManager::CTDelegate::FilterTakesPrecedence(
   return false;
 }
 
-// static
-void CTPolicyManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kCTRequiredHosts);
-  registry->RegisterListPref(prefs::kCTExcludedHosts);
-  registry->RegisterListPref(prefs::kCTExcludedSPKIs);
-  registry->RegisterListPref(prefs::kCTExcludedLegacySPKIs);
-}
-
-CTPolicyManager::CTPolicyManager(
-    PrefService* pref_service,
-    scoped_refptr<base::SequencedTaskRunner> network_task_runner)
-    : delegate_(new CTDelegate(std::move(network_task_runner))),
-      weak_factory_(this) {
-  pref_change_registrar_.Init(pref_service);
-  pref_change_registrar_.Add(
-      prefs::kCTRequiredHosts,
-      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kCTExcludedHosts,
-      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kCTExcludedSPKIs,
-      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kCTExcludedLegacySPKIs,
-      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
-                          base::Unretained(this)));
-
-  ScheduleUpdate();
-}
+CTPolicyManager::CTPolicyManager() : delegate_(new CTDelegate()) {}
 
 CTPolicyManager::~CTPolicyManager() {}
 
-void CTPolicyManager::Shutdown() {
-  // Cancel any pending updates, since the preferences are going away.
-  weak_factory_.InvalidateWeakPtrs();
-  pref_change_registrar_.RemoveAll();
+void CTPolicyManager::UpdateCTPolicies(
+    const std::vector<std::string>& required_hosts,
+    const std::vector<std::string>& excluded_hosts,
+    const std::vector<std::string>& excluded_spkis,
+    const std::vector<std::string>& excluded_legacy_spkis) {
+  delegate_->UpdateCTPolicies(required_hosts, excluded_hosts, excluded_spkis,
+                              excluded_legacy_spkis);
 }
 
 net::TransportSecurityState::RequireCTDelegate* CTPolicyManager::GetDelegate() {
   return delegate_.get();
-}
-
-void CTPolicyManager::ScheduleUpdate() {
-  // Cancel any pending updates, and schedule a new update. If this method
-  // is called again, this pending update will be cancelled because the weak
-  // pointer is invalidated, and the new update will take precedence.
-  weak_factory_.InvalidateWeakPtrs();
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CTPolicyManager::Update, weak_factory_.GetWeakPtr()));
-}
-
-void CTPolicyManager::Update() {
-  delegate_->UpdateFromPrefs(
-      pref_change_registrar_.prefs()->GetList(prefs::kCTRequiredHosts),
-      pref_change_registrar_.prefs()->GetList(prefs::kCTExcludedHosts),
-      pref_change_registrar_.prefs()->GetList(prefs::kCTExcludedSPKIs),
-      pref_change_registrar_.prefs()->GetList(prefs::kCTExcludedLegacySPKIs));
 }
 
 }  // namespace certificate_transparency

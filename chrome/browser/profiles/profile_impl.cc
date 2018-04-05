@@ -97,6 +97,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/domain_reliability/monitor.h"
@@ -572,6 +573,21 @@ void ProfileImpl::DoFinalInit() {
       base::Bind(&ProfileImpl::UpdateIsEphemeralInStorage,
                  base::Unretained(this)));
 
+  // When any of the following CT preferences change, we schedule an update
+  // to aggregate the actual update using a |ct_policy_update_timer_|.
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTRequiredHosts,
+      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedHosts,
+      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedSPKIs,
+      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedLegacySPKIs,
+      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
+
   media_device_id_salt_ = new MediaDeviceIDSalt(prefs_.get());
 
   // It would be nice to use PathService for fetching this directory, but
@@ -683,6 +699,8 @@ void ProfileImpl::DoFinalInit() {
 #endif
 
   content::URLDataSource::Add(this, new PrefsInternalsSource(this));
+
+  ScheduleUpdateCTPolicy();
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -1352,6 +1370,36 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
   }
+}
+
+std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
+  std::vector<std::string> strings;
+  for (const base::Value& value : *list) {
+    DCHECK(value.is_string());
+    strings.push_back(value.GetString());
+  }
+  return strings;
+}
+
+void ProfileImpl::ScheduleUpdateCTPolicy() {
+  ct_policy_update_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0),
+                                this, &ProfileImpl::UpdateCTPolicy);
+}
+
+void ProfileImpl::UpdateCTPolicy() {
+  const base::ListValue* ct_required =
+      prefs_->GetList(certificate_transparency::prefs::kCTRequiredHosts);
+  const base::ListValue* ct_excluded =
+      prefs_->GetList(certificate_transparency::prefs::kCTExcludedHosts);
+  const base::ListValue* ct_excluded_spkis =
+      prefs_->GetList(certificate_transparency::prefs::kCTExcludedSPKIs);
+  const base::ListValue* ct_excluded_legacy_spkis =
+      prefs_->GetList(certificate_transparency::prefs::kCTExcludedLegacySPKIs);
+
+  GetDefaultStoragePartition(this)->GetNetworkContext()->SetCTPolicy(
+      TranslateStringArray(ct_required), TranslateStringArray(ct_excluded),
+      TranslateStringArray(ct_excluded_spkis),
+      TranslateStringArray(ct_excluded_legacy_spkis));
 }
 
 // Gets the media cache parameters from the command line. |cache_path| will be

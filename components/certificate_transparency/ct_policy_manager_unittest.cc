@@ -27,15 +27,6 @@ namespace certificate_transparency {
 
 namespace {
 
-std::unique_ptr<base::ListValue> ListValueFromStrings(
-    const std::vector<const char*>& strings) {
-  std::unique_ptr<base::ListValue> result(new base::ListValue);
-  for (auto* const str : strings) {
-    result->AppendString(str);
-  }
-  return result;
-}
-
 class CTPolicyManagerTest : public ::testing::Test {
  public:
   CTPolicyManagerTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
@@ -51,7 +42,6 @@ class CTPolicyManagerTest : public ::testing::Test {
 
  protected:
   base::TestMessageLoop message_loop_;
-  TestingPrefServiceSimple pref_service_;
   scoped_refptr<net::X509Certificate> cert_;
   net::HashValueVector hashes_;
 };
@@ -59,38 +49,34 @@ class CTPolicyManagerTest : public ::testing::Test {
 // Treat the preferences as a black box as far as naming, but ensure that
 // preferences get registered.
 TEST_F(CTPolicyManagerTest, RegistersPrefs) {
-  auto registered_prefs = std::distance(pref_service_.registry()->begin(),
-                                        pref_service_.registry()->end());
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  auto newly_registered_prefs = std::distance(pref_service_.registry()->begin(),
-                                              pref_service_.registry()->end());
+  TestingPrefServiceSimple pref_service;
+  auto registered_prefs = std::distance(pref_service.registry()->begin(),
+                                        pref_service.registry()->end());
+  certificate_transparency::prefs::RegisterPrefs(pref_service.registry());
+  auto newly_registered_prefs = std::distance(pref_service.registry()->begin(),
+                                              pref_service.registry()->end());
   EXPECT_NE(registered_prefs, newly_registered_prefs);
 }
 
 TEST_F(CTPolicyManagerTest, DelegateChecksRequired) {
   using CTRequirementLevel =
       net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
-  // Register preferences and set up initial state
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  CTPolicyManager manager(&pref_service_, message_loop_.task_runner());
-  base::RunLoop().RunUntilIdle();
+  CTPolicyManager manager;
 
   net::TransportSecurityState::RequireCTDelegate* delegate =
       manager.GetDelegate();
   ASSERT_TRUE(delegate);
 
-  // No preferences should yield the default results.
+  // No required host set yet.
   EXPECT_EQ(CTRequirementLevel::DEFAULT,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 
-  // Now set a preference, pump the message loop, and ensure things are now
-  // reflected.
-  pref_service_.SetManagedPref(
-      prefs::kCTRequiredHosts,
-      ListValueFromStrings(std::vector<const char*>{"google.com"}));
-  base::RunLoop().RunUntilIdle();
+  // Add a required host
+  manager.UpdateCTPolicies(
+      std::vector<std::string>{"google.com"}, std::vector<std::string>(),
+      std::vector<std::string>(), std::vector<std::string>());
 
-  // The new preferences should take effect.
+  // The new setting should take effect.
   EXPECT_EQ(CTRequirementLevel::REQUIRED,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 }
@@ -98,27 +84,22 @@ TEST_F(CTPolicyManagerTest, DelegateChecksRequired) {
 TEST_F(CTPolicyManagerTest, DelegateChecksExcluded) {
   using CTRequirementLevel =
       net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
-  // Register preferences and set up initial state
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  CTPolicyManager manager(&pref_service_, message_loop_.task_runner());
-  base::RunLoop().RunUntilIdle();
+  CTPolicyManager manager;
 
   net::TransportSecurityState::RequireCTDelegate* delegate =
       manager.GetDelegate();
   ASSERT_TRUE(delegate);
 
-  // No preferences should yield the default results.
+  // No setting should yield the default results.
   EXPECT_EQ(CTRequirementLevel::DEFAULT,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 
-  // Now set a preference, pump the message loop, and ensure things are now
-  // reflected.
-  pref_service_.SetManagedPref(
-      prefs::kCTExcludedHosts,
-      ListValueFromStrings(std::vector<const char*>{"google.com"}));
-  base::RunLoop().RunUntilIdle();
+  // Add a excluded host
+  manager.UpdateCTPolicies(
+      std::vector<std::string>(), std::vector<std::string>{"google.com"},
+      std::vector<std::string>(), std::vector<std::string>());
 
-  // The new preferences should take effect.
+  // The new setting should take effect.
   EXPECT_EQ(CTRequirementLevel::NOT_REQUIRED,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 }
@@ -126,29 +107,25 @@ TEST_F(CTPolicyManagerTest, DelegateChecksExcluded) {
 TEST_F(CTPolicyManagerTest, IgnoresInvalidEntries) {
   using CTRequirementLevel =
       net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
-  // Register preferences and set up initial state
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  CTPolicyManager manager(&pref_service_, message_loop_.task_runner());
-  base::RunLoop().RunUntilIdle();
+  CTPolicyManager manager;
 
   net::TransportSecurityState::RequireCTDelegate* delegate =
       manager.GetDelegate();
   ASSERT_TRUE(delegate);
 
-  // No preferences should yield the default results.
+  // No setting should yield the default results.
   EXPECT_EQ(CTRequirementLevel::DEFAULT,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 
-  // Now setup invalid preferences (that is, that fail to be parsable as
+  // Now setup invalid state (that is, that fail to be parsable as
   // URLs).
-  pref_service_.SetManagedPref(
-      prefs::kCTRequiredHosts,
-      ListValueFromStrings(std::vector<const char*>{
+  manager.UpdateCTPolicies(
+      std::vector<std::string>{
           "file:///etc/fstab", "file://withahost/etc/fstab",
           "file:///c|/Windows", "*", "https://*", "example.com",
-          "https://example.test:invalid_port",
-      }));
-  base::RunLoop().RunUntilIdle();
+          "https://example.test:invalid_port"},
+      std::vector<std::string>(), std::vector<std::string>(),
+      std::vector<std::string>());
 
   // Wildcards are ignored (both * and https://*).
   EXPECT_EQ(CTRequirementLevel::DEFAULT,
@@ -172,16 +149,13 @@ TEST_F(CTPolicyManagerTest, IgnoresInvalidEntries) {
 TEST_F(CTPolicyManagerTest, AppliesPriority) {
   using CTRequirementLevel =
       net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
-  // Register preferences and set up initial state
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  CTPolicyManager manager(&pref_service_, message_loop_.task_runner());
-  base::RunLoop().RunUntilIdle();
+  CTPolicyManager manager;
 
   net::TransportSecurityState::RequireCTDelegate* delegate =
       manager.GetDelegate();
   ASSERT_TRUE(delegate);
 
-  // No preferences should yield the default results.
+  // No setting should yield the default results.
   EXPECT_EQ(CTRequirementLevel::DEFAULT,
             delegate->IsCTRequiredForHost("example.com", cert_.get(), hashes_));
   EXPECT_EQ(
@@ -205,16 +179,12 @@ TEST_F(CTPolicyManagerTest, AppliesPriority) {
 
   // Set up policies that exclude it for a domain and all of its subdomains,
   // but then require it for a specific host.
-  pref_service_.SetManagedPref(
-      prefs::kCTExcludedHosts,
-      ListValueFromStrings(std::vector<const char*>{
-          "example.com", ".sub.example.com", ".sub.accounts.example.com",
-          "test.example.com"}));
-  pref_service_.SetManagedPref(
-      prefs::kCTRequiredHosts,
-      ListValueFromStrings(std::vector<const char*>{
-          "sub.example.com", "accounts.example.com", "test.example.com"}));
-  base::RunLoop().RunUntilIdle();
+  manager.UpdateCTPolicies(
+      std::vector<std::string>{"sub.example.com", "accounts.example.com",
+                               "test.example.com"},
+      std::vector<std::string>{"example.com", ".sub.example.com",
+                               ".sub.accounts.example.com", "test.example.com"},
+      std::vector<std::string>(), std::vector<std::string>());
 
   EXPECT_EQ(CTRequirementLevel::NOT_REQUIRED,
             delegate->IsCTRequiredForHost("example.com", cert_.get(), hashes_));
@@ -244,74 +214,11 @@ TEST_F(CTPolicyManagerTest, AppliesPriority) {
       delegate->IsCTRequiredForHost("test.example.com", cert_.get(), hashes_));
 }
 
-// Ensure that the RequireCTDelegate is still valid and usable after Shutdown
-// has been called. Preferences should no longer sync, but the old results
-// should still be returned.
-TEST_F(CTPolicyManagerTest, UsableAfterShutdown) {
-  using CTRequirementLevel =
-      net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
-  // Register preferences and set up initial state
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  CTPolicyManager manager(&pref_service_, message_loop_.task_runner());
-  base::RunLoop().RunUntilIdle();
-
-  net::TransportSecurityState::RequireCTDelegate* delegate =
-      manager.GetDelegate();
-  ASSERT_TRUE(delegate);
-
-  // No preferences should yield the default results.
-  EXPECT_EQ(CTRequirementLevel::DEFAULT,
-            delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
-
-  // Now set a preference, pump the message loop, and ensure things are now
-  // reflected.
-  pref_service_.SetManagedPref(
-      prefs::kCTRequiredHosts,
-      ListValueFromStrings(std::vector<const char*>{"google.com"}));
-  base::RunLoop().RunUntilIdle();
-
-  // The new preferences should take effect.
-  EXPECT_EQ(CTRequirementLevel::REQUIRED,
-            delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
-
-  // Shut down the preferences, which should unregister any observers.
-  manager.Shutdown();
-  base::RunLoop().RunUntilIdle();
-
-  // Update the preferences again, which should do nothing; the
-  // RequireCTDelegate should continue to be valid and return the old results.
-  EXPECT_EQ(CTRequirementLevel::REQUIRED,
-            delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
-  EXPECT_EQ(CTRequirementLevel::DEFAULT,
-            delegate->IsCTRequiredForHost("example.com", cert_.get(), hashes_));
-  EXPECT_EQ(
-      CTRequirementLevel::DEFAULT,
-      delegate->IsCTRequiredForHost("sub.example.com", cert_.get(), hashes_));
-  pref_service_.SetManagedPref(
-      prefs::kCTRequiredHosts,
-      ListValueFromStrings(std::vector<const char*>{"sub.example.com"}));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(CTRequirementLevel::REQUIRED,
-            delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
-  EXPECT_EQ(CTRequirementLevel::DEFAULT,
-            delegate->IsCTRequiredForHost("example.com", cert_.get(), hashes_));
-  EXPECT_EQ(
-      CTRequirementLevel::DEFAULT,
-      delegate->IsCTRequiredForHost("sub.example.com", cert_.get(), hashes_));
-
-  // And it should still be possible to get the delegate, even after calling
-  // Shutdown().
-  EXPECT_TRUE(manager.GetDelegate());
-}
-
 TEST_F(CTPolicyManagerTest, SupportsOrgRestrictions) {
   using CTRequirementLevel =
       net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
 
-  // Register preferences and set up initial state
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  CTPolicyManager manager(&pref_service_, message_loop_.task_runner());
-  base::RunLoop().RunUntilIdle();
+  CTPolicyManager manager;
 
   net::TransportSecurityState::RequireCTDelegate* delegate =
       manager.GetDelegate();
@@ -432,25 +339,20 @@ TEST_F(CTPolicyManagerTest, SupportsOrgRestrictions) {
           net::x509_util::DupCryptoBuffer(leaf->cert_buffer()),
           std::move(intermediates));
     }
-    std::unique_ptr<base::ListValue> excluded_spkis =
-        std::make_unique<base::ListValue>();
-    pref_service_.SetManagedPref(prefs::kCTExcludedSPKIs,
-                                 std::move(excluded_spkis));
-    base::RunLoop().RunUntilIdle();
+    manager.UpdateCTPolicies(
+        std::vector<std::string>(), std::vector<std::string>(),
+        std::vector<std::string>(), std::vector<std::string>());
 
     // There should be no existing settings.
     EXPECT_EQ(CTRequirementLevel::DEFAULT,
               delegate->IsCTRequiredForHost("google.com", leaf.get(), hashes));
 
-    // Update the preference
-    excluded_spkis = std::make_unique<base::ListValue>();
-    excluded_spkis->AppendString(test.spki.ToString());
+    manager.UpdateCTPolicies(std::vector<std::string>(),
+                             std::vector<std::string>(),
+                             std::vector<std::string>{test.spki.ToString()},
+                             std::vector<std::string>());
 
-    pref_service_.SetManagedPref(prefs::kCTExcludedSPKIs,
-                                 std::move(excluded_spkis));
-    base::RunLoop().RunUntilIdle();
-
-    // The new preferences should take effect.
+    // The new setting should take effect.
     EXPECT_EQ(test.expected,
               delegate->IsCTRequiredForHost("google.com", leaf.get(), hashes));
   }
@@ -459,11 +361,7 @@ TEST_F(CTPolicyManagerTest, SupportsOrgRestrictions) {
 TEST_F(CTPolicyManagerTest, SupportsLegacyCaRestrictions) {
   using CTRequirementLevel =
       net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
-
-  // Register preferences and set up initial state
-  CTPolicyManager::RegisterPrefs(pref_service_.registry());
-  CTPolicyManager manager(&pref_service_, message_loop_.task_runner());
-  base::RunLoop().RunUntilIdle();
+  CTPolicyManager manager;
 
   net::TransportSecurityState::RequireCTDelegate* delegate =
       manager.GetDelegate();
@@ -479,29 +377,30 @@ TEST_F(CTPolicyManagerTest, SupportsLegacyCaRestrictions) {
 
   hashes_.push_back(net::HashValue(legacy_spki));
 
-  // No preferences should yield the default results.
+  // No setting should yield the default results.
   EXPECT_EQ(CTRequirementLevel::DEFAULT,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 
-  // Setting a preference to a non-legacy CA should not work.
+  // Setting to a non-legacy CA should not work.
   std::string leaf_hash_string = hashes_.front().ToString();
-  pref_service_.SetManagedPref(
-      prefs::kCTExcludedLegacySPKIs,
-      ListValueFromStrings(std::vector<const char*>{leaf_hash_string.c_str()}));
-  base::RunLoop().RunUntilIdle();
+  manager.UpdateCTPolicies(
+      std::vector<std::string>(), std::vector<std::string>(),
+      std::vector<std::string>(), std::vector<std::string>{leaf_hash_string});
 
-  // The new preference should have no effect, because the hash for |cert_|
+  // This setting should have no effect, because the hash for |cert_|
   // is not a legacy CA hash.
   EXPECT_EQ(CTRequirementLevel::DEFAULT,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 
-  // Now set the preference to a truly legacy CA, and create a chain that
+  // Now set to a truly legacy CA, and create a chain that
   // contains that legacy CA hash.
   std::string legacy_ca_hash_string = hashes_.back().ToString();
-  pref_service_.SetManagedPref(prefs::kCTExcludedLegacySPKIs,
-                               ListValueFromStrings(std::vector<const char*>{
-                                   legacy_ca_hash_string.c_str()}));
-  base::RunLoop().RunUntilIdle();
+
+  manager.UpdateCTPolicies(std::vector<std::string>(),
+                           std::vector<std::string>(),
+                           std::vector<std::string>(),
+                           std::vector<std::string>{legacy_ca_hash_string});
+
   EXPECT_EQ(CTRequirementLevel::NOT_REQUIRED,
             delegate->IsCTRequiredForHost("google.com", cert_.get(), hashes_));
 }

@@ -51,7 +51,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/about_handler/about_protocol_handler.h"
-#include "components/certificate_transparency/ct_policy_manager.h"
 #include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -546,11 +545,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
         policy::PolicyCertServiceFactory::CreateForProfile(profile);
   }
 #endif
-
-  // The CTPolicyManager shares the same constraints of needing to be cleaned
-  // up on the UI thread.
-  ct_policy_manager_.reset(new certificate_transparency::CTPolicyManager(
-      pref_service, io_task_runner));
 
   if (!IsOffTheRecord()) {
     // Add policy headers for non-incognito requests.
@@ -1284,9 +1278,6 @@ void ProfileIOData::Init(
   main_request_context_->transport_security_state()->SetExpectCTReporter(
       expect_ct_reporter_.get());
 
-  main_request_context_->transport_security_state()->SetRequireCTDelegate(
-      ct_policy_manager_->GetDelegate());
-
   resource_context_->host_resolver_ =
       io_thread_globals->system_request_context->host_resolver();
   resource_context_->request_context_ = main_request_context_;
@@ -1441,8 +1432,6 @@ void ProfileIOData::ShutdownOnUIThread(
   safe_browsing_enabled_.Destroy();
   safe_browsing_whitelist_domains_.Destroy();
   network_prediction_options_.Destroy();
-  if (ct_policy_manager_)
-    ct_policy_manager_->Shutdown();
   incognito_availibility_pref_.Destroy();
 #if BUILDFLAG(ENABLE_PLUGINS)
   always_open_pdf_externally_.Destroy();

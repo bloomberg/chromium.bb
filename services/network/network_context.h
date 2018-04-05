@@ -37,6 +37,10 @@ class StaticHttpUserAgentSettings;
 class URLRequestContext;
 }  // namespace net
 
+namespace certificate_transparency {
+class CTPolicyManager;
+}
+
 namespace network {
 class NetworkService;
 class ResourceScheduler;
@@ -120,6 +124,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;
+  void SetCTPolicy(
+      const std::vector<std::string>& required_hosts,
+      const std::vector<std::string>& excluded_hosts,
+      const std::vector<std::string>& excluded_spkis,
+      const std::vector<std::string>& excluded_legacy_spkis) override;
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override;
   void CreateTCPServerSocket(
@@ -220,6 +229,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // TODO(yhirano): Consult with switches::kDisableResourceScheduler.
   constexpr static bool enable_resource_scheduler_ = true;
+
+  std::unique_ptr<certificate_transparency::CTPolicyManager> ct_policy_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

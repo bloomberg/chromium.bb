@@ -55,7 +55,6 @@ class LoadingPredictorObserver;
 }
 
 namespace certificate_transparency {
-class CTPolicyManager;
 class TreeStateTracker;
 }
 
@@ -627,8 +626,6 @@ class ProfileIOData {
   // URLRequestContextStorage), and must be disconnected from it before it's
   // destroyed.
   mutable std::unique_ptr<net::ReportSender> certificate_report_sender_;
-  mutable std::unique_ptr<certificate_transparency::CTPolicyManager>
-      ct_policy_manager_;
 
   mutable std::unique_ptr<net::URLRequestContext> extensions_request_context_;
   // One URLRequestContext per isolated app for main and media requests.

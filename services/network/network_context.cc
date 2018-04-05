@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "components/certificate_transparency/ct_policy_manager.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -157,6 +158,12 @@ NetworkContext::~NetworkContext() {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
+
+  if (GetURLRequestContext() &&
+      GetURLRequestContext()->transport_security_state()) {
+    GetURLRequestContext()->transport_security_state()->SetRequireCTDelegate(
+        nullptr);
+  }
 }
 
 std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
@@ -523,6 +530,20 @@ void NetworkContext::SetAcceptLanguage(const std::string& new_accept_language) {
   // calls ApplyContextParamsToBuilder.
   DCHECK(user_agent_settings_);
   user_agent_settings_->set_accept_language(new_accept_language);
+}
+
+void NetworkContext::SetCTPolicy(
+    const std::vector<std::string>& required_hosts,
+    const std::vector<std::string>& excluded_hosts,
+    const std::vector<std::string>& excluded_spkis,
+    const std::vector<std::string>& excluded_legacy_spkis) {
+  if (!ct_policy_manager_) {
+    ct_policy_manager_.reset(new certificate_transparency::CTPolicyManager());
+    GetURLRequestContext()->transport_security_state()->SetRequireCTDelegate(
+        ct_policy_manager_->GetDelegate());
+  }
+  ct_policy_manager_->UpdateCTPolicies(required_hosts, excluded_hosts,
+                                       excluded_spkis, excluded_legacy_spkis);
 }
 
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,
