@@ -67,11 +67,11 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using download::DownloadItem;
 using content::DownloadManager;
 using content::RenderFrameHost;
 using content::RenderProcessHost;
 using content::WebContents;
+using download::DownloadItem;
 using testing::ContainsRegex;
 using testing::HasSubstr;
 
@@ -293,15 +293,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     embedded_test_server()->StartAcceptingConnections();
 
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
-    ASSERT_TRUE(save_dir_.CreateUniqueTempDir());
     InProcessBrowserTest::SetUp();
-  }
-
-  void SetUpOnMainThread() override {
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, save_dir_.GetPath());
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kSaveFileDefaultDirectory, save_dir_.GetPath());
   }
 
   GURL NavigateToMockURL(const std::string& prefix) {
@@ -318,8 +310,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
                                content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     std::string extension =
         (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML) ? ".mht" : ".htm";
-    *full_file_name = save_dir_.GetPath().AppendASCII(prefix + extension);
-    *dir = save_dir_.GetPath().AppendASCII(prefix + "_files");
+    *full_file_name = GetSaveDir().AppendASCII(prefix + extension);
+    *dir = GetSaveDir().AppendASCII(prefix + "_files");
   }
 
   WebContents* GetCurrentTab(Browser* browser) const {
@@ -401,11 +393,12 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     return test_dir_.Append(base::FilePath(kTestDir)).AppendASCII(file_name);
   }
 
+  base::FilePath GetSaveDir() {
+    return DownloadPrefs(browser()->profile()).DownloadPath();
+  }
+
   // Path to directory containing test data.
   base::FilePath test_dir_;
-
-  // Temporary directory we will save pages to.
-  base::ScopedTempDir save_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SavePageBrowserTest);
@@ -597,10 +590,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   GURL url = NavigateToMockURL("b");
 
-  base::FilePath full_file_name = save_dir_.GetPath().AppendASCII(
+  base::FilePath full_file_name = GetSaveDir().AppendASCII(
       std::string("Test page for saving page feature") + kAppendedExtension);
-  base::FilePath dir = save_dir_.GetPath().AppendASCII(
-      "Test page for saving page feature_files");
+  base::FilePath dir =
+      GetSaveDir().AppendASCII("Test page for saving page feature_files");
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
       history::DownloadState::COMPLETE));

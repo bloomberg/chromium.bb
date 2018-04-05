@@ -8,7 +8,7 @@ chrome.test.runTests([
         chrome.test.callbackPass(function(volumeList) {
           // Drive is not exposed in kiosk session.
           chrome.test.assertEq(1, volumeList.length);
-          chrome.test.assertEq('downloads:Downloads', volumeList[0].volumeId);
+          chrome.test.assertTrue(/^downloads:.*/.test(volumeList[0].volumeId));
           chrome.test.assertTrue(volumeList[0].writable);
         }));
   }

@@ -266,14 +266,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIEndToEnd) {
 
 // Regression test for crbug.com/592273.
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIAfterDownload) {
-  // Set up a temporary directory for downloads, so that we don't leak the
-  // downloaded file.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir downloads_dir;
-  ASSERT_TRUE(downloads_dir.CreateUniqueTempDir());
-  browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory, downloads_dir.GetPath());
-
   // Set up a test server, so we have some URL to download.
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   test_server.ServeFilesFromSourceDirectory("chrome/test/data");

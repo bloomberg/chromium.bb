@@ -63,7 +63,7 @@ var expectedVolume3 = {
 };
 
 var expectedDownloadsVolume = {
-  volumeId: /^downloads:Downloads[^\/]*$/,
+  volumeId: /^downloads:[^\/]*$/,
   volumeLabel: '',
   volumeType: 'downloads',
   isReadOnly: false,

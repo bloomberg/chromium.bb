@@ -255,6 +255,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // We use hardcoded quota settings to have a consistent testing environment.
   storage::QuotaSettings quota_settings_;
 
+  // Use a default download directory to make sure downloads don't end up in the
+  // system default location.
+  base::ScopedTempDir default_download_dir_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
 #if defined(OS_MACOSX)
