@@ -606,11 +606,6 @@
       "sync_integration_tests"
     ]
   },
-  "Linux Builder Jumbo": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "Linux Tests": {
     "gtest_tests": [
       {
@@ -2650,6 +2645,11 @@
   "linux-gcc-rel": {
     "additional_compile_targets": [
       "empty_main"
+    ]
+  },
+  "linux64-jumbo-rel": {
+    "additional_compile_targets": [
+      "all"
     ]
   }
 }

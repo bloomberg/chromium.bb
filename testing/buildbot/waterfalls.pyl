@@ -1435,7 +1435,7 @@
           'scripts': 'check_network_annotations_script',
         }
       },
-      'Linux Builder Jumbo': {
+      'linux64-jumbo-rel': {
         'additional_compile_targets': [
           'all'
         ]
