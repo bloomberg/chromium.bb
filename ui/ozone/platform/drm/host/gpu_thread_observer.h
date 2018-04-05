@@ -7,20 +7,19 @@
 
 namespace ui {
 
-// Observes the channel state.
+// Observes the channel state. All calls should happen on the same thread that
+// OzonePlatform::InitializeForUI() is called on. This can be the browser UI
+// thread or the WS thread for mus/mash.
 class GpuThreadObserver {
  public:
   virtual ~GpuThreadObserver() {}
 
   // Called when the GPU process is launched.
-  // This is called from browser IO thread.
   virtual void OnGpuProcessLaunched() = 0;
   // Called when a GPU thread implementation has become available.
-  // This is called from browser UI thread.
   virtual void OnGpuThreadReady() = 0;
   // Called when the GPU thread implementation has ceased to be
   // available.
-  // This is called from browser UI thread.
   virtual void OnGpuThreadRetired() = 0;
 };
 
