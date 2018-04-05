@@ -257,7 +257,9 @@ void OnIntentPickerClosed(int render_process_host_id,
                           const GURL& url,
                           std::vector<mojom::IntentHandlerInfoPtr> handlers,
                           const std::string& selected_app_package,
-                          ArcNavigationThrottle::CloseReason close_reason) {
+                          chromeos::AppType app_type,
+                          chromeos::IntentPickerCloseReason reason,
+                          bool should_persist) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If the user selected an app to continue the navigation, confirm that the
@@ -273,18 +275,13 @@ void OnIntentPickerClosed(int render_process_host_id,
         arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
   }
 
-  if (!instance) {
-    close_reason = ArcNavigationThrottle::CloseReason::ERROR;
-  } else if (close_reason == ArcNavigationThrottle::CloseReason::
-                                 ARC_APP_PREFERRED_PRESSED ||
-             close_reason ==
-                 ArcNavigationThrottle::CloseReason::ARC_APP_PRESSED ||
-             close_reason ==
-                 ArcNavigationThrottle::CloseReason::CHROME_PREFERRED_PRESSED ||
-             close_reason ==
-                 ArcNavigationThrottle::CloseReason::CHROME_PRESSED) {
+  if (!instance)
+    reason = chromeos::IntentPickerCloseReason::ERROR;
+
+  if (reason == chromeos::IntentPickerCloseReason::OPEN_APP ||
+      reason == chromeos::IntentPickerCloseReason::STAY_IN_CHROME) {
     if (selected_app_index == handlers.size()) {
-      close_reason = ArcNavigationThrottle::CloseReason::ERROR;
+      reason = chromeos::IntentPickerCloseReason::ERROR;
     } else {
       // The user has made a selection. Clear g_last_* variables.
       g_last_url.Get() = GURL();
@@ -292,54 +289,49 @@ void OnIntentPickerClosed(int render_process_host_id,
     }
   }
 
-  switch (close_reason) {
-    case ArcNavigationThrottle::CloseReason::ARC_APP_PREFERRED_PRESSED: {
+  switch (reason) {
+    case chromeos::IntentPickerCloseReason::OPEN_APP:
+      // Only ARC apps are offered in the external protocol intent picker, so if
+      // the user decided to open in app the type must be ARC.
+      DCHECK_EQ(chromeos::AppType::ARC, app_type);
       DCHECK(arc_service_manager);
-      if (ARC_GET_INSTANCE_FOR_METHOD(
-              arc_service_manager->arc_bridge_service()->intent_helper(),
-              AddPreferredPackage)) {
-        instance->AddPreferredPackage(
-            handlers[selected_app_index]->package_name);
+
+      if (should_persist) {
+        if (ARC_GET_INSTANCE_FOR_METHOD(
+                arc_service_manager->arc_bridge_service()->intent_helper(),
+                AddPreferredPackage)) {
+          instance->AddPreferredPackage(
+              handlers[selected_app_index]->package_name);
+        }
       }
-      FALLTHROUGH;
-    }
-    case ArcNavigationThrottle::CloseReason::ARC_APP_PRESSED: {
+
       // Launch the selected app.
       HandleUrl(render_process_host_id, routing_id, url, false, handlers,
                 selected_app_index, nullptr);
       break;
-    }
-    case ArcNavigationThrottle::CloseReason::CHROME_PREFERRED_PRESSED:
-    case ArcNavigationThrottle::CloseReason::CHROME_PRESSED: {
-      LOG(ERROR) << "Chrome is not a valid option for external protocol URLs";
-      FALLTHROUGH;
-    }
-    case ArcNavigationThrottle::CloseReason::OBSOLETE_ALWAYS_PRESSED:
-    case ArcNavigationThrottle::CloseReason::OBSOLETE_JUST_ONCE_PRESSED:
-    case ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND:
-    case ArcNavigationThrottle::CloseReason::INVALID: {
+    case chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND:
+      // We shouldn't be here if a preferred app was found.
       NOTREACHED();
       return;  // no UMA recording.
-    }
-    case ArcNavigationThrottle::CloseReason::ERROR: {
+    case chromeos::IntentPickerCloseReason::STAY_IN_CHROME:
+      LOG(ERROR) << "Chrome is not a valid option for external protocol URLs";
+      NOTREACHED();
+      return;  // no UMA recording.
+    case chromeos::IntentPickerCloseReason::ERROR:
       LOG(ERROR) << "IntentPickerBubbleView returned CloseReason::ERROR: "
                  << "instance=" << instance
                  << ", selected_app_index=" << selected_app_index
                  << ", handlers.size=" << handlers.size();
       FALLTHROUGH;
-    }
-    case ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED: {
+    case chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED:
       // The user didn't select any ARC activity.
       OnIntentPickerDialogDeactivated(render_process_host_id, routing_id,
                                       handlers);
       break;
-    }
   }
 
-  ArcNavigationThrottle::Platform platform =
-      ArcNavigationThrottle::GetDestinationPlatform(selected_app_package,
-                                                    close_reason);
-  ArcNavigationThrottle::RecordUma(close_reason, platform);
+  ArcNavigationThrottle::RecordUma(selected_app_package, app_type, reason,
+                                   should_persist);
 }
 
 // Called when ARC returned activity icons for the |handlers|.
@@ -408,8 +400,9 @@ void OnUrlHandlerList(int render_process_host_id,
                 handlers, handlers.size(), &result)) {
     if (result == GetActionResult::HANDLE_URL_IN_ARC) {
       ArcNavigationThrottle::RecordUma(
-          ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND,
-          ArcNavigationThrottle::Platform::ARC);
+          std::string(), chromeos::AppType::ARC,
+          chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND,
+          false /* should_persist */);
     }
     return;  // the |url| has been handled.
   }

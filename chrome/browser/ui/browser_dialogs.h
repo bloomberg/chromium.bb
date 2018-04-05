@@ -312,14 +312,16 @@ void ShowChromeCleanerRebootPrompt(
 
 #if defined(OS_CHROMEOS)
 
-// This callback informs the package name of the app selected by the user, along
-// with the reason why the Bubble was closed. The string param must have a valid
-// package name, except when the CloseReason is ERROR or DIALOG_DEACTIVATED, for
-// these cases we return a dummy value which won't be used at all and has no
-// significance.
+// This callback informs the launch name and type of the app selected by the
+// user, along with the reason why the Bubble was closed and whether the
+// decision should be persisted. When the reason is ERROR or DIALOG_DEACTIVATED,
+// the values of the launch name, app type, and persistence boolean are all
+// ignored.
 using IntentPickerResponse =
-    base::Callback<void(const std::string&,
-                        arc::ArcNavigationThrottle::CloseReason)>;
+    base::OnceCallback<void(const std::string&,
+                            chromeos::AppType,
+                            chromeos::IntentPickerCloseReason,
+                            bool should_persist)>;
 
 // TODO(djacobo): Decide whether or not refactor as base::RepeatableCallback.
 // Return a pointer to the IntentPickerBubbleView::ShowBubble method, which in
@@ -332,7 +334,7 @@ using BubbleShowPtr =
                        content::WebContents*,
                        const std::vector<chromeos::IntentPickerAppInfo>&,
                        bool disable_display_in_chrome,
-                       const IntentPickerResponse&);
+                       IntentPickerResponse);
 
 BubbleShowPtr ShowIntentPickerBubble();
 
