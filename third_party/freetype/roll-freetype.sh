@@ -17,10 +17,12 @@ addtrybots() {
   git commit --amend -m"$OLD_MSG" -m"CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_chromium_msan_rel_ng"
 }
 
-addpdfiumbug() {
-  STEP="add pdfium bug" &&
+addotherprojectbugs() {
+  STEP="add pdfium and chromiumos bugs" &&
   OLD_MSG=$(git show -s --format=%B HEAD) &&
-  git commit --amend -m"$OLD_MSG" -m"PDFium-Issue: pdfium:"
+  git commit --amend -m"$OLD_MSG" -m"
+PDFium-Issue: pdfium:
+ChromiumOS-Issue: chromium:"
 }
 
 checkmodules() {
@@ -55,7 +57,7 @@ commit() {
 rolldeps "$@" &&
 previousrev &&
 addtrybots &&
-addpdfiumbug &&
+addotherprojectbugs &&
 checkmodules &&
 mergeinclude ftoption.h &&
 mergeinclude ftconfig.h &&
