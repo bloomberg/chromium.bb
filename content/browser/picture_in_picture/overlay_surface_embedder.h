@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
-#define CHROME_BROWSER_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
+#ifndef CONTENT_BROWSER_PICTURE_IN_PICTURE_OVERLAY_SURFACE_EMBEDDER_H_
+#define CONTENT_BROWSER_PICTURE_IN_PICTURE_OVERLAY_SURFACE_EMBEDDER_H_
 
 #include <memory>
 
-#include "chrome/browser/overlay/overlay_window.h"
+#include "content/public/browser/overlay_window.h"
 
 namespace viz {
 class SurfaceId;
 }
+
+namespace content {
 
 // Embed a surface into the OverlayWindow to show content. Responsible for
 // setting up the surface layers that contain content to show on the
@@ -34,4 +36,6 @@ class OverlaySurfaceEmbedder {
   DISALLOW_COPY_AND_ASSIGN(OverlaySurfaceEmbedder);
 };
 
-#endif  // CHROME_BROWSER_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_PICTURE_IN_PICTURE_OVERLAY_SURFACE_EMBEDDER_H_

@@ -205,6 +205,7 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -4153,6 +4154,22 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
                           base::BindOnce(&LaunchURL, url, web_contents_getter,
                                          page_transition, has_user_gesture));
   return true;
+}
+
+std::unique_ptr<content::OverlayWindow>
+ChromeContentBrowserClient::CreateWindowForPictureInPicture() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  // Note: content::OverlayWindow::Create() is defined by platform-specific
+  // implementation in chrome/browser/ui/views. This layering hack, which goes
+  // through //content and ContentBrowserClient, allows us to work around the
+  // dependency constraints that disallow directly calling
+  // chrome/browser/ui/views code either from here or from other code in
+  // chrome/browser.
+  return content::OverlayWindow::Create();
+#endif
+
+  return nullptr;
 }
 
 // Static; handles rewriting Web UI URLs.

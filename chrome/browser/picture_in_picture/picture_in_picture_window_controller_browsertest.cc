@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/picture_in_picture/picture_in_picture_window_controller.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/overlay/overlay_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/viz/common/surfaces/surface_id.h"
+#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents.h"
 
 class PictureInPictureWindowControllerBrowserTest
@@ -18,16 +19,16 @@ class PictureInPictureWindowControllerBrowserTest
 
   void SetUpWindowController(content::WebContents* web_contents) {
     pip_window_controller_ =
-        PictureInPictureWindowController::GetOrCreateForWebContents(
+        content::PictureInPictureWindowController::GetOrCreateForWebContents(
             web_contents);
   }
 
-  PictureInPictureWindowController* window_controller() {
+  content::PictureInPictureWindowController* window_controller() {
     return pip_window_controller_;
   }
 
  private:
-  PictureInPictureWindowController* pip_window_controller_ = nullptr;
+  content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);
 };
