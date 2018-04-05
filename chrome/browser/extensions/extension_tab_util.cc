@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -352,10 +352,13 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   tab_object->highlighted = tab_strip && tab_strip->IsTabSelected(tab_index);
   tab_object->pinned = tab_strip && tab_strip->IsTabPinned(tab_index);
   tab_object->audible = std::make_unique<bool>(contents->WasRecentlyAudible());
+  auto* tab_lifeycle_unit_external =
+      resource_coordinator::TabLifecycleUnitExternal::FromWebContents(contents);
   tab_object->discarded =
-      g_browser_process->GetTabManager()->IsTabDiscarded(contents);
+      tab_lifeycle_unit_external && tab_lifeycle_unit_external->IsDiscarded();
   tab_object->auto_discardable =
-      g_browser_process->GetTabManager()->IsTabAutoDiscardable(contents);
+      !tab_lifeycle_unit_external ||
+      tab_lifeycle_unit_external->IsAutoDiscardable();
   tab_object->muted_info = CreateMutedInfo(contents);
   tab_object->incognito = contents->GetBrowserContext()->IsOffTheRecord();
   gfx::Size contents_size = contents->GetContainerBounds().size();

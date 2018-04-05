@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
@@ -1460,10 +1461,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithId) {
           discard.get(), base::StringPrintf("[%u]", tab_id), browser())));
 
   // Confirms that TabManager sees the tab as discarded.
-  resource_coordinator::TabManager* tab_manager =
-      g_browser_process->GetTabManager();
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(web_contents));
+  EXPECT_TRUE(resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+                  web_contents)
+                  ->IsDiscarded());
 
   // Make sure the returned tab is the one discarded and its discarded state is
   // correct.
@@ -1507,8 +1508,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithInvalidId) {
       discard.get(), base::StringPrintf("[%u]", tab_invalid_id), browser());
 
   // Discarded state should still be false as no tab was discarded.
-  EXPECT_FALSE(g_browser_process->GetTabManager()->IsTabDiscarded(
-      browser()->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_FALSE(resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+                   browser()->tab_strip_model()->GetWebContentsAt(1))
+                   ->IsDiscarded());
 
   // Check error message.
   EXPECT_TRUE(base::MatchPattern(error, keys::kTabNotFoundError));
@@ -1537,7 +1539,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
 
   // Confirms that TabManager sees the tab as discarded.
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_TRUE(g_browser_process->GetTabManager()->IsTabDiscarded(web_contents));
+  EXPECT_TRUE(resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+                  web_contents)
+                  ->IsDiscarded());
 
   // Make sure the returned tab is the one discarded and its discarded state is
   // correct.
@@ -1567,10 +1571,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardNoTabProtection) {
       utils::RunFunctionAndReturnError(discard.get(), "[]", browser());
 
   // Discarded state should be false for both tabs as no tab was discarded.
-  EXPECT_FALSE(g_browser_process->GetTabManager()->IsTabDiscarded(
-      browser()->tab_strip_model()->GetWebContentsAt(1)));
-  EXPECT_FALSE(g_browser_process->GetTabManager()->IsTabDiscarded(
-      browser()->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+                   browser()->tab_strip_model()->GetWebContentsAt(1))
+                   ->IsDiscarded());
+  EXPECT_FALSE(resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+                   browser()->tab_strip_model()->GetWebContentsAt(0))
+                   ->IsDiscarded());
 
   // Check error message.
   EXPECT_TRUE(base::MatchPattern(error, keys::kCannotFindTabToDiscard));

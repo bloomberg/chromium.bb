@@ -15,7 +15,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -236,10 +236,6 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
   // audio indicator in the tab strip.
   entry.SetWasRecentlyAudible(web_contents->WasRecentlyAudible());
 
-  resource_coordinator::TabManager* tab_manager =
-      g_browser_process->GetTabManager();
-  DCHECK(tab_manager);
-
   PopulatePageTransitionMetrics(&entry, tab_metrics.page_transition);
   entry
       .SetHasBeforeUnloadHandler(
@@ -247,9 +243,10 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
               blink::kBeforeUnloadHandler))
       .SetHasFormEntry(
           web_contents->GetPageImportanceSignals().had_form_interaction)
-      // TODO(michaelpg): This dependency should be reversed during the
-      // resource_coordinator refactor: https://crbug.com/775644.
-      .SetIsExtensionProtected(!tab_manager->IsTabAutoDiscardable(web_contents))
+      .SetIsExtensionProtected(
+          !resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+               web_contents)
+               ->IsAutoDiscardable())
       .SetIsPinned(tab_strip_model->IsTabPinned(index))
       .SetNavigationEntryCount(web_contents->GetController().GetEntryCount())
       .SetSequenceId(++sequence_id_)

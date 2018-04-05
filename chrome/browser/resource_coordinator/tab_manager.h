@@ -98,9 +98,6 @@ class TabManager : public LifecycleUnitObserver,
   // vector after a LifecycleUnit has been destroyed.
   LifecycleUnitVector GetSortedLifecycleUnits();
 
-  // Returns true if |contents| is currently discarded.
-  bool IsTabDiscarded(content::WebContents* contents) const;
-
   // Discards a tab to free the memory occupied by its renderer. The tab still
   // exists in the tab-strip; clicking on it will reload it. If the |reason| is
   // urgent, an aggressive fast-kill will be attempted if the sudden termination
@@ -137,13 +134,6 @@ class TabManager : public LifecycleUnitObserver,
   // https://crbug.com/775644
   void AddObserver(TabLifecycleObserver* observer);
   void RemoveObserver(TabLifecycleObserver* observer);
-
-  // Returns the auto-discardable state of the tab. When true, the tab is
-  // eligible to be automatically discarded when critical memory pressure hits,
-  // otherwise the tab is ignored and will never be automatically discarded.
-  // Note that this property doesn't block the discarding of the tab via other
-  // methods (about:discards for instance).
-  bool IsTabAutoDiscardable(content::WebContents* contents) const;
 
   // Sets/clears the auto-discardable state of the tab.
   void SetTabAutoDiscardableState(int32_t tab_id, bool state);

@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -986,8 +987,6 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int i = 0; i < tab_strip->count(); ++i) {
       WebContents* web_contents = tab_strip->GetWebContentsAt(i);
-      resource_coordinator::TabManager* tab_manager =
-          g_browser_process->GetTabManager();
 
       if (index > -1 && i != index)
         continue;
@@ -1016,13 +1015,17 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
         continue;
       }
 
+      auto* tab_lifecycle_unit_external =
+          resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+              web_contents);
+
       if (!MatchesBool(params->query_info.discarded.get(),
-                       tab_manager->IsTabDiscarded(web_contents))) {
+                       tab_lifecycle_unit_external->IsDiscarded())) {
         continue;
       }
 
       if (!MatchesBool(params->query_info.auto_discardable.get(),
-                       tab_manager->IsTabAutoDiscardable(web_contents))) {
+                       tab_lifecycle_unit_external->IsAutoDiscardable())) {
         continue;
       }
 
