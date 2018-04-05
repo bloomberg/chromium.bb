@@ -62,16 +62,19 @@ class AdaptiveScreenBrightnessManagerTest : public testing::Test {
       : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>(
             base::TestMockTimeTaskRunner::Type::kBoundToThread)),
         scoped_context_(task_runner_.get()) {
+    auto logger = std::make_unique<TestingAdaptiveScreenBrightnessUkmLogger>();
+    ukm_logger_ = logger.get();
+
     fake_power_manager_client_.Init(nullptr);
     viz::mojom::VideoDetectorObserverPtr observer;
-    std::unique_ptr<base::RepeatingTimer> periodic_timer =
-        std::make_unique<base::RepeatingTimer>();
+    auto periodic_timer = std::make_unique<base::RepeatingTimer>();
     periodic_timer->SetTaskRunner(task_runner_);
     screen_brightness_manager_ =
         std::make_unique<AdaptiveScreenBrightnessManager>(
-            &ukm_logger_, &user_activity_detector_, &fake_power_manager_client_,
-            nullptr, nullptr, mojo::MakeRequest(&observer),
-            std::move(periodic_timer), task_runner_->GetMockClock(),
+            std::move(logger), &user_activity_detector_,
+            &fake_power_manager_client_, nullptr, nullptr,
+            mojo::MakeRequest(&observer), std::move(periodic_timer),
+            task_runner_->GetMockClock(),
             std::make_unique<FakeBootClock>(task_runner_,
                                             base::TimeDelta::FromSeconds(10)));
   }
@@ -79,6 +82,8 @@ class AdaptiveScreenBrightnessManagerTest : public testing::Test {
   ~AdaptiveScreenBrightnessManagerTest() override = default;
 
  protected:
+  TestingAdaptiveScreenBrightnessUkmLogger* ukm_logger() { return ukm_logger_; }
+
   void ReportUserActivity(const ui::Event* const event) {
     screen_brightness_manager_->OnUserActivity(event);
   }
@@ -127,7 +132,6 @@ class AdaptiveScreenBrightnessManagerTest : public testing::Test {
     task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
   }
 
-  TestingAdaptiveScreenBrightnessUkmLogger ukm_logger_;
   const gfx::Point kEventLocation = gfx::Point(90, 90);
   const ui::MouseEvent kMouseEvent = ui::MouseEvent(ui::ET_MOUSE_MOVED,
                                                     kEventLocation,
@@ -144,6 +148,7 @@ class AdaptiveScreenBrightnessManagerTest : public testing::Test {
   ui::UserActivityDetector user_activity_detector_;
   chromeos::FakePowerManagerClient fake_power_manager_client_;
   std::unique_ptr<AdaptiveScreenBrightnessManager> screen_brightness_manager_;
+  TestingAdaptiveScreenBrightnessUkmLogger* ukm_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(AdaptiveScreenBrightnessManagerTest);
 };
@@ -158,7 +163,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, PeriodicLogging) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(1U, screen_brightness_events.size());
 
   const ScreenBrightnessEvent::Features& features =
@@ -184,7 +189,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, BrightnessChange) {
       20.0f, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(3U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Event& event =
       screen_brightness_events[0].event();
@@ -208,7 +213,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, NoUserEvents) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   // This counts logging events, not user events.
   ASSERT_EQ(1U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
@@ -226,7 +231,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, NullUserActivity) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(1U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
@@ -243,7 +248,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, OneUserEvent) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(1U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
@@ -264,7 +269,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, TwoUserEventsSameActivity) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(1U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
@@ -285,7 +290,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, TwoUserEventsDifferentActivities) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(1U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
@@ -319,7 +324,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest,
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(1U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
@@ -340,7 +345,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, VideoStartStop) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(2U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
@@ -397,7 +402,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, VideoStartStopWithUserEvents) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(3U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
@@ -469,7 +474,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, UserEventCounts) {
   FireTimer();
 
   const std::vector<ScreenBrightnessEvent>& screen_brightness_events =
-      ukm_logger_.screen_brightness_events();
+      ukm_logger()->screen_brightness_events();
   ASSERT_EQ(1U, screen_brightness_events.size());
   const ScreenBrightnessEvent::Features& features =
       screen_brightness_events[0].features();
