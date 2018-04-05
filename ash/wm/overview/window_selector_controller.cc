@@ -180,7 +180,7 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     split_view_controller->EndSplitView();
     if (IsSelecting())
       ToggleOverview();
-    wm::ActivateWindow(active_window);
+    ::wm::ActivateWindow(active_window);
     base::RecordAction(
         base::UserMetricsAction("Tablet_LongPressOverviewButtonExitSplitView"));
     return;
@@ -188,11 +188,16 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
 
   WindowSelectorItem* item_to_snap = nullptr;
   if (!IsSelecting()) {
+    // The current active window may be a transient child.
     aura::Window* active_window = wm::GetActiveWindow();
+    while (active_window && ::wm::GetTransientParent(active_window))
+      active_window = ::wm::GetTransientParent(active_window);
+
     // Do nothing if there are no active windows or less than two windows to
     // work with.
     if (!active_window ||
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList().size() < 2u) {
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList().size() <
+            2u) {
       return;
     }
 

@@ -566,7 +566,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Only window in MRU list can be snapped.
+  // Only windows in MRU list can be snapped.
   if (!base::ContainsValue(
           Shell::Get()->mru_window_tracker()->BuildMruWindowList(),
           gained_active)) {
