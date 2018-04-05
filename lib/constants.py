@@ -612,6 +612,7 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'nyan_blaze-no-vmtest-pre-cq',    # arm32        kernel 3.10
     'reef-no-vmtest-pre-cq',          # apollolake   kernel 4.4   vulkan
     'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
+    'whirlwind-no-vmtest-pre-cq',     # brillo
     'zako-no-vmtest-pre-cq',          # haswell      kernel 3.8
 ]
 
