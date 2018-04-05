@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_OVERLAY_WINDOW_H_
-#define CONTENT_PUBLIC_BROWSER_OVERLAY_WINDOW_H_
+#ifndef CHROME_BROWSER_OVERLAY_OVERLAY_WINDOW_H_
+#define CHROME_BROWSER_OVERLAY_OVERLAY_WINDOW_H_
 
 #include <memory>
 
@@ -16,8 +16,6 @@ class Rect;
 namespace ui {
 class Layer;
 }
-
-namespace content {
 
 // This window will always float above other windows. The intention is to show
 // content perpetually while the user is still interacting with the other
@@ -44,6 +42,4 @@ class OverlayWindow {
   DISALLOW_COPY_AND_ASSIGN(OverlayWindow);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_PUBLIC_BROWSER_OVERLAY_WINDOW_H_
+#endif  // CHROME_BROWSER_OVERLAY_OVERLAY_WINDOW_H_

@@ -5,14 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OVERLAY_OVERLAY_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_OVERLAY_OVERLAY_WINDOW_VIEWS_H_
 
-#include "content/public/browser/overlay_window.h"
+#include "chrome/browser/overlay/overlay_window.h"
 
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 
-// The Chrome desktop implementation of OverlayWindow. This will only be
-// implemented in views, which will support all desktop platforms.
-class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
+// The Views implementation of OverlayWindow.
+class OverlayWindowViews : public OverlayWindow, public views::Widget {
  public:
   OverlayWindowViews();
   ~OverlayWindowViews() override;
