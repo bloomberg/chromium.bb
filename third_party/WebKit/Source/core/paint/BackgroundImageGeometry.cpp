@@ -87,7 +87,11 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
       // If one of the values is auto we have to use the appropriate
       // scale to maintain our aspect ratio.
       if (layer_width.IsAuto() && !layer_height.IsAuto()) {
-        if (image_intrinsic_size.Height()) {
+        if (image->ImageHasRelativeSize()) {
+          // Spec says that auto should be 100% in the absence of
+          // an intrinsic ratio or size.
+          tile_size.SetWidth(positioning_area_size.Width());
+        } else if (image_intrinsic_size.Height()) {
           LayoutUnit adjusted_width = image_intrinsic_size.Width() *
                                       tile_size.Height() /
                                       image_intrinsic_size.Height();
@@ -96,7 +100,11 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
           tile_size.SetWidth(adjusted_width);
         }
       } else if (!layer_width.IsAuto() && layer_height.IsAuto()) {
-        if (image_intrinsic_size.Width()) {
+        if (image->ImageHasRelativeSize()) {
+          // Spec says that auto should be 100% in the absence of
+          // an intrinsic ratio or size.
+          tile_size.SetHeight(positioning_area_size.Height());
+        } else if (image_intrinsic_size.Width()) {
           LayoutUnit adjusted_height = image_intrinsic_size.Height() *
                                        tile_size.Width() /
                                        image_intrinsic_size.Width();
