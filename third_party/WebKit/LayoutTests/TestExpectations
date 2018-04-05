@@ -3994,6 +3994,10 @@ crbug.com/827209 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
 
+# Disabled after r548309.  TODO(thomasanderson): Reenable these tests
+crbug.com/787020 virtual/gpu/fast/canvas/canvas-zero-length-lineCap.html [ Pass Failure ]
+crbug.com/787020 virtual/threaded/http/tests/devtools/tracing/timeline-js/compile-script.js [ Pass Failure ]
+
 # These Web Authentication API would require either real hardware, or
 # virtual simulation thereof (work in progress, see: https://crbug.com/785955).
 crbug.com/826936 external/wpt/webauthn/createcredential-badargs-authnrselection.https.html [ Pass Timeout ]
