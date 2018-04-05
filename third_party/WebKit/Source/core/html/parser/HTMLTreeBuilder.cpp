@@ -2678,6 +2678,8 @@ void HTMLTreeBuilder::ProcessTokenInForeignContent(AtomicHTMLToken* token) {
         tree_.OpenElements()->PopUntilForeignContentScopeMarker();
         ProcessStartTag(token);
         return;
+      } else if (token->GetName() == scriptTag) {
+        script_to_process_start_position_ = parser_->GetTextPosition();
       }
       const AtomicString& current_namespace =
           adjusted_current_node->NamespaceURI();
