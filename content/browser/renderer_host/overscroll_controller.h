@@ -97,8 +97,7 @@ class CONTENT_EXPORT OverscrollController {
 
   // Returns true if the event indicates that the in-progress overscroll gesture
   // can now be completed.
-  bool DispatchEventCompletesAction(
-      const blink::WebInputEvent& event) const;
+  bool DispatchEventCompletesAction(const blink::WebInputEvent& event) const;
 
   // Returns true to indicate that dispatching the event should reset the
   // overscroll gesture status.
@@ -157,6 +156,11 @@ class CONTENT_EXPORT OverscrollController {
   OverscrollControllerDelegate* delegate_ = nullptr;
 
   bool wheel_scroll_latching_enabled_;
+
+  // A inertial scroll (fling) event may complete an overscroll gesture and
+  // navigate to a new page, but the inertial scroll can continue to generate
+  // scroll-update events. These events need to be ignored.
+  bool ignore_following_inertial_events_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollController);
 };
