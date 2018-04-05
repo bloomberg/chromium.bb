@@ -836,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   ExtensionTestMessageListener app_window_loaded_listener("appWindowLoaded",
                                                           false);
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
-  app_window_loaded_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(app_window_loaded_listener.WaitUntilSatisfied());
 
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   ASSERT_TRUE(app_profile);

@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
       LoadExtension(test_data_dir_.AppendASCII("trigger_actions").
                         AppendASCII("page_action_popup"));
   ASSERT_TRUE(page_action_extension);
-  listener.WaitUntilSatisfied();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(page_action_extension->id(),
             browser_actions_bar()->GetExtensionId(0));

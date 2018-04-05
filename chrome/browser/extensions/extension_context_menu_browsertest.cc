@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   ExtensionTestMessageListener listener1("test1 create finished", false);
   ui_test_utils::NavigateToURL(browser(),
                                GURL(extension->GetResourceURL("test1.html")));
-  listener1.WaitUntilSatisfied();
+  EXPECT_TRUE(listener1.WaitUntilSatisfied());
 
   GURL url("http://www.google.com/");
   std::unique_ptr<TestRenderViewContextMenu> menu(
@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   ExtensionTestMessageListener listener2("test2 create finished", false);
   ui_test_utils::NavigateToURL(browser(),
                                GURL(extension->GetResourceURL("test2.html")));
-  listener2.WaitUntilSatisfied();
+  EXPECT_TRUE(listener2.WaitUntilSatisfied());
   menu =
       TestRenderViewContextMenu::Create(GetWebContents(), url, GURL(), GURL());
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(

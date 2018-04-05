@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                                                        false);
   LoadExtension(data_dir.AppendASCII("script_a_com"));
   LoadExtension(data_dir.AppendASCII("background_page_iframe"));
-  iframe_loaded_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(iframe_loaded_listener.WaitUntilSatisfied());
   EXPECT_FALSE(content_script_listener.was_satisfied());
 }
 

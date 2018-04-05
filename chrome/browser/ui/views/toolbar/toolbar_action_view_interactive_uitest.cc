@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   EXPECT_FALSE(app_menu_button->IsMenuShowing());
 
   // And the extension should have been activated.
-  listener.WaitUntilSatisfied();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
 // TODO(jonross): determine cause of new flake, and restore previous MAYBE
@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   EXPECT_TRUE(ui_test_utils::SendMouseEventsSync(
       ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP));
-  listener.WaitUntilSatisfied();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   ExtensionActionViewController* view_controller =
       static_cast<ExtensionActionViewController*>(

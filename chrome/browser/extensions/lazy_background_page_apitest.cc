@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInBackgroundPage) {
     ExtensionTestMessageListener nacl_module_loaded("nacl_module_loaded",
                                                     false);
     BrowserActionTestUtil::Create(browser())->Press(0);
-    nacl_module_loaded.WaitUntilSatisfied();
+    EXPECT_TRUE(nacl_module_loaded.WaitUntilSatisfied());
     content::RunAllTasksUntilIdle();
     EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
   }

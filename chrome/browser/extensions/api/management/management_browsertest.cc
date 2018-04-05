@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   ASSERT_TRUE(registry->disabled_extensions().is_empty());
   const Extension* extension = InstallExtension(v1_path, 1);
   ASSERT_TRUE(extension);
-  listener1.WaitUntilSatisfied();
+  EXPECT_TRUE(listener1.WaitUntilSatisfied());
   ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
   ASSERT_EQ("1.0", extension->VersionString());
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   extensions::TestExtensionRegistryObserver install_observer(registry);
   service->updater()->CheckNow(params);
   install_observer.WaitForExtensionWillBeInstalled();
-  listener2.WaitUntilSatisfied();
+  EXPECT_TRUE(listener2.WaitUntilSatisfied());
   ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(
       "ogjcoiohnmldgjemafoockdghcjciccf", false);
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   const size_t disabled_size_before = registry->disabled_extensions().size();
   const Extension* extension = InstallExtension(v1_path, 1);
   ASSERT_TRUE(extension);
-  listener1.WaitUntilSatisfied();
+  EXPECT_TRUE(listener1.WaitUntilSatisfied());
   DisableExtension(extension->id());
   ASSERT_EQ(disabled_size_before + 1, registry->disabled_extensions().size());
   ASSERT_EQ(enabled_size_before, registry->enabled_extensions().size());
@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // When we enabled it, it should then make the callback.
   ASSERT_FALSE(listener2.was_satisfied());
   EnableExtension(extension->id());
-  listener2.WaitUntilSatisfied();
+  EXPECT_TRUE(listener2.WaitUntilSatisfied());
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
   ASSERT_TRUE(base::ContainsKey(notification_listener.updates(),

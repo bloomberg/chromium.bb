@@ -268,7 +268,7 @@ testing::AssertionResult ActiveScriptTester::Verify() {
   // If the extension has permission, we should be able to simply wait for it
   // to execute.
   if (requires_consent_ == DOES_NOT_REQUIRE_CONSENT) {
-    inject_success_listener_->WaitUntilSatisfied();
+    EXPECT_TRUE(inject_success_listener_->WaitUntilSatisfied());
     return testing::AssertionSuccess();
   }
 
@@ -286,7 +286,7 @@ testing::AssertionResult ActiveScriptTester::Verify() {
   runner->RunAction(extension_, true);
 
   // Now, the extension should be able to inject the script.
-  inject_success_listener_->WaitUntilSatisfied();
+  EXPECT_TRUE(inject_success_listener_->WaitUntilSatisfied());
 
   // The extension should no longer want to run.
   wants_to_run = WantsToRun();
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
                                        false /* won't reply */));
   inject_success_listener.set_extension_id(extension1->id());
   action_runner->RunAction(extension1, true);
-  inject_success_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(inject_success_listener.WaitUntilSatisfied());
 }
 
 // Test that granting the extension all urls permission allows it to run on

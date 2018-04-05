@@ -185,7 +185,7 @@ testing::AssertionResult RequestContentScriptAPITest::CreateAndLoadExtension(
   extension_ = extension;
 
   // Wait for rules to be setup before navigating to trigger script injection.
-  injection_setup_listener.WaitUntilSatisfied();
+  EXPECT_TRUE(injection_setup_listener.WaitUntilSatisfied());
 
   return testing::AssertionSuccess();
 }
