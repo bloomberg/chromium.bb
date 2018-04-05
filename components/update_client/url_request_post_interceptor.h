@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -29,6 +30,8 @@ class HttpRequestHeaders;
 
 namespace update_client {
 
+class URLRequestMockJob;
+
 // Intercepts requests to a file path, counts them, and captures the body of
 // the requests. Optionally, for each request, it can return a canned response
 // from a given file. The class maintains a queue of expectations, and returns
@@ -38,6 +41,11 @@ class URLRequestPostInterceptor
     : public base::RefCountedThreadSafe<URLRequestPostInterceptor> {
  public:
   using InterceptedRequest = std::pair<std::string, net::HttpRequestHeaders>;
+
+  // Called when the job associated with the url request which is intercepted
+  // by this object has been created.
+  using UrlJobRequestReadyCallback = base::OnceCallback<void()>;
+
   // Allows a generic string maching interface when setting up expectations.
   class RequestMatcher {
    public:
@@ -79,9 +87,26 @@ class URLRequestPostInterceptor
   // Resets the state of the interceptor so that new expectations can be set.
   void Reset();
 
-  class Delegate;
+  // Prevents the intercepted request from starting, as a way to simulate
+  // the effects of a very slow network. Call this function before the actual
+  // network request occurs.
+  void Pause();
+
+  // Allows a previously paused request to continue.
+  void Resume();
+
+  // Sets a callback to be invoked when the request job associated with
+  // an intercepted request is created. This allows the test execution to
+  // synchronize with network tasks running on the IO thread and avoid polling
+  // using idle run loops. A paused request can be resumed after this callback
+  // has been invoked.
+  void url_job_request_ready_callback(
+      UrlJobRequestReadyCallback url_job_request_ready_callback);
 
  private:
+  class Delegate;
+  class URLRequestMockJob;
+
   friend class URLRequestPostInterceptorFactory;
   friend class base::RefCountedThreadSafe<URLRequestPostInterceptor>;
 
@@ -117,6 +142,12 @@ class URLRequestPostInterceptor
 
   // Contains the expectations which this interceptor tries to match.
   base::queue<Expectation> expectations_;
+
+  URLRequestMockJob* request_job_ = nullptr;
+
+  bool is_paused_ = false;
+
+  UrlJobRequestReadyCallback url_job_request_ready_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestPostInterceptor);
 };

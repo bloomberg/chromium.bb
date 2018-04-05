@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -24,15 +25,24 @@
 namespace update_client {
 
 // Returns a canned response.
-class URLRequestMockJob : public net::URLRequestSimpleJob {
+class URLRequestPostInterceptor::URLRequestMockJob
+    : public net::URLRequestSimpleJob {
  public:
-  URLRequestMockJob(net::URLRequest* request,
+  URLRequestMockJob(scoped_refptr<URLRequestPostInterceptor> interceptor,
+                    net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,
                     int response_code,
                     const std::string& response_body)
       : net::URLRequestSimpleJob(request, network_delegate),
+        interceptor_(interceptor),
         response_code_(response_code),
         response_body_(response_body) {}
+
+  void Start() override {
+    if (interceptor_->is_paused_)
+      return;
+    net::URLRequestSimpleJob::Start();
+  }
 
  protected:
   void GetResponseInfo(net::HttpResponseInfo* info) override {
@@ -54,6 +64,8 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
 
  private:
   ~URLRequestMockJob() override {}
+
+  scoped_refptr<URLRequestPostInterceptor> interceptor_;
 
   int response_code_;
   std::string response_body_;
@@ -138,6 +150,25 @@ void URLRequestPostInterceptor::Reset() {
   base::queue<Expectation>().swap(expectations_);
 }
 
+void URLRequestPostInterceptor::Pause() {
+  base::AutoLock auto_lock(interceptor_lock_);
+  is_paused_ = true;
+}
+
+void URLRequestPostInterceptor::Resume() {
+  base::AutoLock auto_lock(interceptor_lock_);
+  is_paused_ = false;
+  io_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&URLRequestMockJob::Start,
+                                           base::Unretained(request_job_)));
+}
+
+void URLRequestPostInterceptor::url_job_request_ready_callback(
+    UrlJobRequestReadyCallback url_job_request_ready_callback) {
+  base::AutoLock auto_lock(interceptor_lock_);
+  url_job_request_ready_callback_ = std::move(url_job_request_ready_callback);
+}
+
 class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
  public:
   Delegate(const std::string& scheme,
@@ -214,8 +245,15 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
         const std::string response_body(expectation.second.response_body);
         interceptor->expectations_.pop();
         ++interceptor->hit_count_;
-        return new URLRequestMockJob(request, network_delegate, response_code,
-                                     response_body);
+        interceptor->request_job_ =
+            new URLRequestMockJob(interceptor, request, network_delegate,
+                                  response_code, response_body);
+        if (interceptor->url_job_request_ready_callback_) {
+          io_task_runner_->PostTask(
+              FROM_HERE,
+              std::move(interceptor->url_job_request_ready_callback_));
+        }
+        return interceptor->request_job_;
       }
     }
 
