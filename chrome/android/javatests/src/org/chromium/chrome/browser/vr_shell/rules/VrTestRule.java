@@ -15,4 +15,14 @@ public interface VrTestRule {
      * Get the VrActivityRestriction.SupportedActivity that this rule is restricted to running in.
      */
     public SupportedActivity getRestriction();
+
+    /**
+     * Whether the head tracking mode has been changed.
+     */
+    public boolean isTrackerDirty();
+
+    /**
+     * Tells the rule that the head tracking mode has been changed.
+     */
+    public void setTrackerDirty();
 }
