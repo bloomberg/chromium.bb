@@ -21,6 +21,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -690,7 +691,11 @@ class ExtensionPrefs : public KeyedService {
       const base::Optional<int>& dnr_ruleset_checksum,
       prefs::DictionaryValueUpdate* extension_dict) const;
 
-  void InitExtensionControlledPrefs(ExtensionPrefValueMap* value_map);
+  void InitExtensionControlledPrefs();
+
+  // Loads preferences for the given |extension_id| into the pref value map.
+  void LoadExtensionControlledPrefs(const ExtensionId& extension_id,
+                                    ExtensionPrefsScope scope);
 
   // Helper function to complete initialization of the values in
   // |extension_dict| for an extension install. Also see
