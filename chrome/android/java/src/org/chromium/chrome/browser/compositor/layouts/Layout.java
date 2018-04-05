@@ -142,6 +142,16 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * Adds a {@link SceneOverlay} that can be shown in this layout to the first position in the
+     * scene overlay list, meaning it will be drawn behind all other overlays.
+     * @param overlay The {@link SceneOverlay} to be added.
+     */
+    void addSceneOverlayToBack(SceneOverlay overlay) {
+        assert !mSceneOverlays.contains(overlay);
+        mSceneOverlays.add(0, overlay);
+    }
+
+    /**
      * Adds a {@link SceneOverlay} that can potentially be shown on top of this {@link Layout}.  The
      * {@link SceneOverlay}s added to this {@link Layout} will be cascaded in the order they are
      * added.  The {@link SceneOverlay} added first will become the content of the
