@@ -1062,6 +1062,15 @@ void FrameFetchContext::CountDeprecation(WebFeature feature) const {
   Deprecation::CountDeprecation(GetFrame(), feature);
 }
 
+bool FrameFetchContext::ShouldBlockWebSocketByMixedContentCheck(
+    const KURL& url) const {
+  if (IsDetached()) {
+    // TODO(yhirano): Implement the detached case.
+    return false;
+  }
+  return !MixedContentChecker::IsWebSocketAllowed(GetFrame(), url);
+}
+
 bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     WebURLRequest::RequestContext request_context,
     network::mojom::RequestContextFrameType frame_type,

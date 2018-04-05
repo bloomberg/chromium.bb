@@ -53,6 +53,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual SubresourceFilter* GetSubresourceFilter() const = 0;
   virtual void CountUsage(WebFeature) const = 0;
   virtual void CountDeprecation(WebFeature) const = 0;
+  virtual bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const = 0;
 
   void AddWarningConsoleMessage(const String&, LogSource) const override;
   void AddErrorConsoleMessage(const String&, LogSource) const override;

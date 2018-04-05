@@ -50,6 +50,7 @@ class KURL;
 class ResourceResponse;
 class SecurityOrigin;
 class SourceLocation;
+class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 class WebWorkerFetchContext;
 
@@ -81,11 +82,10 @@ class CORE_EXPORT MixedContentChecker final {
                                        const KURL&,
                                        SecurityViolationReportingPolicy);
 
-  static bool ShouldBlockWebSocket(
-      LocalFrame*,
-      const KURL&,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport);
+  static bool IsWebSocketAllowed(LocalFrame*, const KURL&);
+  static bool IsWebSocketAllowed(WorkerGlobalScope*,
+                                 WebWorkerFetchContext*,
+                                 const KURL&);
 
   static bool IsMixedContent(const SecurityOrigin*, const KURL&);
   static bool IsMixedFormAction(LocalFrame*,
@@ -135,7 +135,7 @@ class CORE_EXPORT MixedContentChecker final {
                                      WebURLRequest::RequestContext,
                                      bool allowed,
                                      std::unique_ptr<SourceLocation>);
-  static void LogToConsoleAboutWebSocket(LocalFrame*,
+  static void LogToConsoleAboutWebSocket(ExecutionContext*,
                                          const KURL&,
                                          const KURL&,
                                          bool allowed);
