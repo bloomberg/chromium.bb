@@ -17,14 +17,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
+#include "base/test/bind_test_util.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "net/http/http_status_code.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/report_sender.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 
@@ -36,79 +36,12 @@ const char kDummyHttpsReportUri[] = "https://example.test";
 const char kDummyReport[] = "a dummy report";
 const uint32_t kServerPublicKeyTestVersion = 16;
 
-void ErrorCallback(bool* called,
-                   const GURL& report_uri,
-                   int net_error,
-                   int http_response_code) {
-  EXPECT_NE(net::OK, net_error);
-  EXPECT_EQ(-1, http_response_code);
-  *called = true;
-}
-
-void SuccessCallback(bool* called) {
-  *called = true;
-}
-
-// A mock ReportSender that keeps track of the last report
-// sent.
-class MockCertificateReportSender : public net::ReportSender {
- public:
-  MockCertificateReportSender()
-      : net::ReportSender(nullptr, TRAFFIC_ANNOTATION_FOR_TESTS) {}
-  ~MockCertificateReportSender() override {}
-
-  void Send(const GURL& report_uri,
-            base::StringPiece content_type,
-            base::StringPiece report,
-            const base::Callback<void()>& success_callback,
-            const base::Callback<void(const GURL&, int, int)>& error_callback)
-      override {
-    latest_report_uri_ = report_uri;
-    report.CopyToString(&latest_report_);
-    content_type.CopyToString(&latest_content_type_);
-  }
-
-  const GURL& latest_report_uri() const { return latest_report_uri_; }
-
-  const std::string& latest_report() const { return latest_report_; }
-
-  const std::string& latest_content_type() const {
-    return latest_content_type_;
-  }
-
- private:
-  GURL latest_report_uri_;
-  std::string latest_report_;
-  std::string latest_content_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCertificateReportSender);
-};
-
-// A test network delegate that allows the user to specify a callback to
-// be run whenever a net::URLRequest is destroyed.
-class TestCertificateReporterNetworkDelegate : public net::NetworkDelegateImpl {
- public:
-  TestCertificateReporterNetworkDelegate()
-      : url_request_destroyed_callback_(base::DoNothing()) {}
-
-  void set_url_request_destroyed_callback(const base::Closure& callback) {
-    url_request_destroyed_callback_ = callback;
-  }
-
-  // net::NetworkDelegateImpl:
-  void OnURLRequestDestroyed(net::URLRequest* request) override {
-    url_request_destroyed_callback_.Run();
-  }
-
- private:
-  base::Closure url_request_destroyed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCertificateReporterNetworkDelegate);
-};
-
 class ErrorReporterTest : public ::testing::Test {
  public:
-  ErrorReporterTest() {
+  ErrorReporterTest()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {
     memset(server_private_key_, 1, sizeof(server_private_key_));
     X25519_public_from_private(server_public_key_, server_private_key_);
   }
@@ -120,44 +53,57 @@ class ErrorReporterTest : public ::testing::Test {
   uint8_t server_public_key_[32];
   uint8_t server_private_key_[32];
 
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ErrorReporterTest);
 };
 
 // Test that ErrorReporter::SendExtendedReportingReport sends
 // an encrypted or plaintext extended reporting report as appropriate.
 TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
+  GURL latest_report_uri;
+  std::string latest_report;
+  std::string latest_content_type;
+
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        latest_report_uri = request.url;
+        request.headers.GetHeader(net::HttpRequestHeaders::kContentType,
+                                  &latest_content_type);
+        auto body = request.request_body;
+        CHECK_EQ(1u, body->elements()->size());
+        auto& element = body->elements()->at(0);
+        CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+        latest_report = std::string(element.bytes(), element.length());
+      }));
+
   // Data should not be encrypted when sent to an HTTPS URL.
-  MockCertificateReportSender* mock_report_sender =
-      new MockCertificateReportSender();
-  GURL https_url(kDummyHttpsReportUri);
-  CertificateErrorReporter https_reporter(https_url, server_public_key_,
-                                          kServerPublicKeyTestVersion,
-                                          base::WrapUnique(mock_report_sender));
+  const GURL https_url(kDummyHttpsReportUri);
+  CertificateErrorReporter https_reporter(test_shared_loader_factory_,
+                                          https_url, server_public_key_,
+                                          kServerPublicKeyTestVersion);
   https_reporter.SendExtendedReportingReport(
-      kDummyReport, base::Callback<void()>(),
-      base::Callback<void(const GURL&, int, int)>());
-  EXPECT_EQ(mock_report_sender->latest_report_uri(), https_url);
-  EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
+      kDummyReport, base::OnceCallback<void()>(),
+      base::OnceCallback<void(int, int)>());
+  EXPECT_EQ(latest_report_uri, https_url);
+  EXPECT_EQ(latest_report, kDummyReport);
 
   // Data should be encrypted when sent to an HTTP URL.
-  MockCertificateReportSender* http_mock_report_sender =
-      new MockCertificateReportSender();
   const GURL http_url(kDummyHttpReportUri);
-  CertificateErrorReporter http_reporter(
-      http_url, server_public_key_, kServerPublicKeyTestVersion,
-      base::WrapUnique(http_mock_report_sender));
+  CertificateErrorReporter http_reporter(test_shared_loader_factory_, http_url,
+                                         server_public_key_,
+                                         kServerPublicKeyTestVersion);
   http_reporter.SendExtendedReportingReport(
-      kDummyReport, base::Callback<void()>(),
-      base::Callback<void(const GURL&, int, int)>());
+      kDummyReport, base::OnceCallback<void()>(),
+      base::OnceCallback<void(int, int)>());
 
-  EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
-  EXPECT_EQ("application/octet-stream",
-            http_mock_report_sender->latest_content_type());
+  EXPECT_EQ(latest_report_uri, http_url);
+  EXPECT_EQ("application/octet-stream", latest_content_type);
 
   std::string uploaded_report;
   encrypted_messages::EncryptedMessage encrypted_report;
-  ASSERT_TRUE(encrypted_report.ParseFromString(
-      http_mock_report_sender->latest_report()));
+  ASSERT_TRUE(encrypted_report.ParseFromString(latest_report));
   EXPECT_EQ(kServerPublicKeyTestVersion,
             encrypted_report.server_public_key_version());
   EXPECT_EQ(
@@ -177,54 +123,37 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
 
 // Tests that an UMA histogram is recorded if a report fails to send.
 TEST_F(ErrorReporterTest, ErroredRequestCallsCallback) {
-  net::URLRequestFailedJob::AddUrlHandler();
-
   base::RunLoop run_loop;
-  net::TestURLRequestContext context(true);
-  TestCertificateReporterNetworkDelegate test_delegate;
-  test_delegate.set_url_request_destroyed_callback(run_loop.QuitClosure());
-  context.set_network_delegate(&test_delegate);
-  context.Init();
 
-  const GURL report_uri(
-      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
-  CertificateErrorReporter reporter(&context, report_uri);
+  const GURL report_uri("http://foo.com/bar");
 
-  bool error_callback_called = false;
-  bool success_callback_called = false;
+  test_url_loader_factory_.AddResponse(
+      report_uri, network::ResourceResponseHead(), std::string(),
+      network::URLLoaderCompletionStatus(net::ERR_CONNECTION_FAILED));
+
+  CertificateErrorReporter reporter(test_shared_loader_factory_, report_uri);
+
   reporter.SendExtendedReportingReport(
-      kDummyReport, base::Bind(&SuccessCallback, &success_callback_called),
-      base::Bind(&ErrorCallback, &error_callback_called));
+      kDummyReport, base::BindLambdaForTesting([&]() { FAIL(); }),
+      base::BindLambdaForTesting(
+          [&](int net_error, int http_response_code) { run_loop.Quit(); }));
   run_loop.Run();
-
-  EXPECT_TRUE(error_callback_called);
-  EXPECT_FALSE(success_callback_called);
 }
 
 // Tests that an UMA histogram is recorded if a report is successfully sent.
 TEST_F(ErrorReporterTest, SuccessfulRequestCallsCallback) {
-  net::URLRequestMockDataJob::AddUrlHandler();
-
   base::RunLoop run_loop;
-  net::TestURLRequestContext context(true);
-  TestCertificateReporterNetworkDelegate test_delegate;
-  test_delegate.set_url_request_destroyed_callback(run_loop.QuitClosure());
-  context.set_network_delegate(&test_delegate);
-  context.Init();
 
-  const GURL report_uri(
-      net::URLRequestMockDataJob::GetMockHttpUrl("some data", 1));
-  CertificateErrorReporter reporter(&context, report_uri);
+  const GURL report_uri("http://foo.com/bar");
+  test_url_loader_factory_.AddResponse(report_uri.spec(), "some data");
 
-  bool error_callback_called = false;
-  bool success_callback_called = false;
+  CertificateErrorReporter reporter(test_shared_loader_factory_, report_uri);
+
   reporter.SendExtendedReportingReport(
-      kDummyReport, base::Bind(&SuccessCallback, &success_callback_called),
-      base::Bind(&ErrorCallback, &error_callback_called));
+      kDummyReport, base::BindLambdaForTesting([&]() { run_loop.Quit(); }),
+      base::BindLambdaForTesting(
+          [&](int net_error, int http_response_code) { FAIL(); }));
   run_loop.Run();
-
-  EXPECT_FALSE(error_callback_called);
-  EXPECT_TRUE(success_callback_called);
 }
 
 }  // namespace

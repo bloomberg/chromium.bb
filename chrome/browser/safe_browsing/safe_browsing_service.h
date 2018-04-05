@@ -210,12 +210,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   std::unique_ptr<StateSubscription> RegisterStateCallback(
       const base::Callback<void(void)>& callback);
 
-  // Adds a listener for when SafeBrowsingService starts shutting down.
-  // The callbacks run on the UI thread, and give the subscribers an opportunity
-  // to clean up any references they hold to SafeBrowsingService.
-  std::unique_ptr<ShutdownSubscription> RegisterShutdownCallback(
-      const base::Callback<void(void)>& callback);
-
   // Sends serialized download report to backend.
   virtual void SendSerializedDownloadReport(const std::string& report);
 
@@ -349,10 +343,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Callbacks when SafeBrowsing state might have changed.
   // Should only be accessed on the UI thread.
   base::CallbackList<void(void)> state_callback_list_;
-
-  // Callbacks when SafeBrowsing service starts shutting down.
-  // Should only be accessed on the UI thread.
-  base::CallbackList<void(void)> shutdown_callback_list_;
 
   // The UI manager handles showing interstitials.  Accessed on both UI and IO
   // thread.

@@ -176,7 +176,6 @@ void SafeBrowsingService::Initialize() {
 
 void SafeBrowsingService::ShutDown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  shutdown_callback_list_.Notify();
 
   // Remove Profile creation/destruction observers.
   profiles_registrar_.RemoveAll();
@@ -544,13 +543,6 @@ SafeBrowsingService::RegisterStateCallback(
     const base::Callback<void(void)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return state_callback_list_.Add(callback);
-}
-
-std::unique_ptr<SafeBrowsingService::ShutdownSubscription>
-SafeBrowsingService::RegisterShutdownCallback(
-    const base::Callback<void(void)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return shutdown_callback_list_.Add(callback);
 }
 
 void SafeBrowsingService::RefreshState() {

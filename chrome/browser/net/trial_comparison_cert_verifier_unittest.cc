@@ -181,21 +181,16 @@ class TrialComparisonCertVerifierTest : public testing::Test {
         net::X509Certificate::FORMAT_AUTO);
     ASSERT_TRUE(cert_chain_2_);
 
-    reporting_service_test_helper_.SetUpInterceptor();
+    reporting_service_test_helper_ =
+        base::MakeRefCounted<CertificateReportingServiceTestHelper>();
     CertificateReportingServiceFactory::GetInstance()
         ->SetReportEncryptionParamsForTesting(
             reporting_service_test_helper()->server_public_key(),
             reporting_service_test_helper()->server_public_key_version());
+    CertificateReportingServiceFactory::GetInstance()
+        ->SetURLLoaderFactoryForTesting(reporting_service_test_helper_);
     reporting_service_test_helper()->SetFailureMode(
         certificate_reporting_test_utils::REPORTS_SUCCESSFUL);
-
-    url_request_context_getter_ =
-        base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            (content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO)));
-
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        url_request_context_getter_.get());
 
     sb_service_ = base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>(
         // Doesn't matter, just need to choose one.
@@ -236,7 +231,7 @@ class TrialComparisonCertVerifierTest : public testing::Test {
   }
 
   CertificateReportingServiceTestHelper* reporting_service_test_helper() {
-    return &reporting_service_test_helper_;
+    return reporting_service_test_helper_.get();
   }
 
   CertificateReportingService* service() const {
@@ -252,12 +247,12 @@ class TrialComparisonCertVerifierTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
 
-  CertificateReportingServiceTestHelper reporting_service_test_helper_;
+  scoped_refptr<CertificateReportingServiceTestHelper>
+      reporting_service_test_helper_;
 };
 
 TEST_F(TrialComparisonCertVerifierTest, NotOptedIn) {

@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ssl/certificate_error_reporter.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class PrefService;
 class Profile;
@@ -26,8 +26,8 @@ namespace base {
 class Clock;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
@@ -41,16 +41,11 @@ class SafeBrowsingService;
 //
 // Lifetime and dependencies:
 //
-// CertificateReportingService uses the url request context from SafeBrowsing
+// CertificateReportingService uses the URLLoaderFactory from SafeBrowsing
 // service. SafeBrowsingService is created before CertificateReportingService,
-// but is also shut down before any KeyedService is shut down. This means that
-// CertificateReportingService cannot depend on SafeBrowsing's url request being
-// available at all times, and it should know when SafeBrowsing shuts down. It
-// does this by subscribing to SafeBrowsingService shut downs when it's
-// created. When SafeBrowsingService shuts down, CertificateReportingService
-// also shuts down.
+// but is also shut down before any KeyedService is shut down.
 //
-// This class also observes SafeBrowsing preference changes to enable/disable
+// This class observes SafeBrowsing preference changes to enable/disable
 // reporting. It does this by subscribing to changes in SafeBrowsing and
 // extended reporting preferences.
 class CertificateReportingService : public KeyedService {
@@ -142,6 +137,9 @@ class CertificateReportingService : public KeyedService {
     // Getter and setters for testing:
     size_t inflight_report_count_for_testing() const;
     BoundedReportList* GetQueueForTesting() const;
+    // Sets a closure that is called when there are no more inflight reports.
+    void SetClosureWhenNoInflightReportsForTesting(
+        const base::Closure& closure);
 
    private:
     void SendInternal(const Report& report);
@@ -149,7 +147,6 @@ class CertificateReportingService : public KeyedService {
     // non-HTTP 200 response code. See
     // TransportSecurityState::ReportSenderInterface for parameters.
     void ErrorCallback(int report_id,
-                       const GURL& url,
                        int net_error,
                        int http_response_code);
     // Called when a report upload is successful.
@@ -167,6 +164,8 @@ class CertificateReportingService : public KeyedService {
 
     std::map<int, Report> inflight_reports_;
 
+    base::Closure no_in_flight_reports_;
+
     base::WeakPtrFactory<Reporter> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Reporter);
@@ -177,7 +176,7 @@ class CertificateReportingService : public KeyedService {
 
   CertificateReportingService(
       safe_browsing::SafeBrowsingService* safe_browsing_service,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
       uint8_t server_public_key[/* 32 */],
       uint32_t server_public_key_version,
@@ -208,39 +207,17 @@ class CertificateReportingService : public KeyedService {
   static GURL GetReportingURLForTesting();
 
  private:
-  void InitializeOnIOThread(
-      bool enabled,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      size_t max_queued_report_count,
-      base::TimeDelta max_report_age,
-      base::Clock* const clock,
-      uint8_t* server_public_key,
-      uint32_t server_public_key_version);
-
-  // Resets the reporter on the IO thread. Changes in SafeBrowsing or extended
-  // reporting enabled states cause the reporter to be reset.
-  // If |enabled| is false or |url_request_context_getter| is null, report is
-  // set to null, effectively cancelling all in flight uploads and clearing the
+  // Resets the reporter. Changes in SafeBrowsing or extended reporting enabled
+  // states cause the reporter to be reset. If |enabled| is false, report is set
+  // to null, effectively cancelling all in flight uploads and clearing the
   // pending reports queue.
-  void ResetOnIOThread(bool enabled,
-                       net::URLRequestContext* url_request_context,
-                       size_t max_queued_report_count,
-                       base::TimeDelta max_report_age,
-                       base::Clock* const clock,
-                       uint8_t* server_public_key,
-                       uint32_t server_public_key_version);
+  void Reset(bool enabled);
 
   void OnPreferenceChanged();
 
   const PrefService& pref_service_;
-  net::URLRequestContext* url_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<Reporter> reporter_;
-
-  // Subscription for url request context shutdowns. When this subscription is
-  // notified, it means SafeBrowsingService is shutting down, and this service
-  // must also shut down.
-  std::unique_ptr<base::CallbackList<void(void)>::Subscription>
-      safe_browsing_service_shutdown_subscription_;
 
   // Subscription for state changes. When this subscription is notified, it
   // means SafeBrowsingService is enabled/disabled or one of the preferences
