@@ -52,7 +52,7 @@ const TransformPaintPropertyNode* FragmentData::PostScrollTranslation() const {
   return LocalBorderBoxProperties().Transform();
 }
 
-const ClipPaintPropertyNode* FragmentData::ClipPathClip() const {
+const ClipPaintPropertyNode* FragmentData::PreClip() const {
   if (const auto* properties = PaintProperties()) {
     if (properties->ClipPathClip()) {
       // SPv1 composited clip-path has an alternative clip tree structure.

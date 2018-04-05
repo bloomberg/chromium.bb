@@ -555,22 +555,13 @@ void PaintLayerClipper::InitializeCommonClipRectState(
                                         .FirstFragment()
                                         .LocalBorderBoxProperties();
 
-  auto* ancestor_properties =
-      context.root_layer->GetLayoutObject().FirstFragment().PaintProperties();
-  if (!ancestor_properties)
-    return;
-
+  const auto& ancestor_fragment_data =
+      context.root_layer->GetLayoutObject().FirstFragment();
   if (context.ShouldRespectRootLayerClip()) {
-    const auto* ancestor_css_clip = ancestor_properties->CssClip();
-    if (ancestor_css_clip) {
-      DCHECK_EQ(destination_property_tree_state.Clip(),
-                ancestor_css_clip);
-      destination_property_tree_state.SetClip(ancestor_css_clip->Parent());
-    }
-  } else if (const auto* clip =
-                 ancestor_properties->OverflowOrInnerBorderRadiusClip()) {
-    DCHECK_EQ(destination_property_tree_state.Clip(), clip->Parent());
-    destination_property_tree_state.SetClip(clip);
+    destination_property_tree_state.SetClip(ancestor_fragment_data.PreClip());
+  } else {
+    destination_property_tree_state.SetClip(
+        ancestor_fragment_data.PostOverflowClip());
   }
 }
 
