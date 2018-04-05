@@ -114,14 +114,14 @@ class MockExecutive(object):
     def run_command(self,
                     args,
                     cwd=None,
+                    env=None,
                     input=None,  # pylint: disable=redefined-builtin
-                    timeout_seconds=False,
+                    timeout_seconds=None,
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
-                    decode_output=False,
-                    env=None,
-                    debug_logging=False):
+                    decode_output=True,
+                    debug_logging=True):
         self._append_call(args, cwd=cwd, input=input, env=env)
 
         assert isinstance(args, list) or isinstance(args, tuple)
@@ -150,10 +150,13 @@ class MockExecutive(object):
             script_error = ScriptError(script_args=args, exit_code=self._exit_code, output=self._output)
             error_handler(script_error)
 
+        output = self._output
         if return_stderr:
-            return self._output + self._stderr
+            output += self._stderr
+        if decode_output and type(output) is not unicode:
+            output = output.decode('utf-8')
 
-        return self._output
+        return output
 
     def cpu_count(self):
         return 2
