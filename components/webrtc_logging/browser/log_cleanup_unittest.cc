@@ -73,4 +73,6 @@ TEST_F(WebRtcLogCleanupTest, DeleteOldAndRecentWebRtcLogFiles) {
   VerifyFiles(1);
 }
 
+// TODO(crbug.com/826251): Write tests for the index file.
+
 }  // namespace webrtc_logging
