@@ -424,6 +424,9 @@ public class Tab
      */
     private @Nullable String mTrustedCdnPublisherUrl;
 
+    /** The current browser controls constraints. -1 if not set. */
+    private @BrowserControlsState int mBrowserConstrolsConstraints = -1;
+
     private GestureStateListener createGestureStateListener() {
         return new GestureStateListener() {
             @Override
@@ -2832,6 +2835,12 @@ public class Tab
             @BrowserControlsState int current, boolean animate) {
         if (mNativeTabAndroid == 0) return;
         nativeUpdateBrowserControlsState(mNativeTabAndroid, constraints, current, animate);
+
+        if (constraints == mBrowserConstrolsConstraints) return;
+        mBrowserConstrolsConstraints = constraints;
+        for (TabObserver observer : mObservers) {
+            observer.onBrowserControlsConstraintsUpdated(this, constraints);
+        }
     }
 
     /**
