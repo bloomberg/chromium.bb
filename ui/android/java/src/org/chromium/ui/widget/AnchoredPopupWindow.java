@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 
@@ -186,7 +187,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
         mRectProvider.startObserving(this);
 
         updatePopupLayout();
-        mPopupWindow.showAtLocation(mRootView, Gravity.TOP | Gravity.START, mX, mY);
+        showPopupWindow();
     }
 
     /**
@@ -436,7 +437,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
             try {
                 mIgnoreDismissal = true;
                 mPopupWindow.dismiss();
-                mPopupWindow.showAtLocation(mRootView, Gravity.TOP | Gravity.START, mX, mY);
+                showPopupWindow();
             } finally {
                 mIgnoreDismissal = false;
             }
@@ -534,5 +535,14 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
             value = max;
         }
         return value;
+    }
+
+    private void showPopupWindow() {
+        try {
+            mPopupWindow.showAtLocation(mRootView, Gravity.TOP | Gravity.START, mX, mY);
+        } catch (WindowManager.BadTokenException e) {
+            // Intentionally ignore BadTokenException. This can happen in a real edge case where
+            // parent.getWindowToken is not valid. See http://crbug.com/826052.
+        }
     }
 }
