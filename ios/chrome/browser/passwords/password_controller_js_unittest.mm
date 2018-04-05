@@ -22,10 +22,8 @@ class PasswordControllerJsTest
     : public web::WebJsTest<web::WebTestWithWebState> {
  public:
   PasswordControllerJsTest()
-      : web::WebJsTest<web::WebTestWithWebState>(@[
-          @"chrome_bundle_all_frames", @"chrome_bundle_main_frame",
-          @"password_controller"
-        ]) {}
+      : web::WebJsTest<web::WebTestWithWebState>(
+            @[ @"chrome_bundle_all_frames", @"chrome_bundle_main_frame" ]) {}
 };
 
 // IDs used in the Username and Password <input> elements.
@@ -77,10 +75,11 @@ TEST_F(PasswordControllerJsTest,
   NSString* const username = @"john.doe@gmail.com";
   NSString* const password = @"super!secret";
   LoadHtmlAndInject(GAIASignInForm(formAction, username, YES));
-  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
-                        @"__gCrWeb.fillPasswordForm(%@, '%@', '%@', '%@')",
-                        GAIASignInFormData(formAction), username, password,
-                        formAction));
+  EXPECT_NSEQ(
+      @YES,
+      ExecuteJavaScriptWithFormat(
+          @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%@')",
+          GAIASignInFormData(formAction), username, password, formAction));
   // Verifies that the sign-in form has been filled with username/password.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
                                       @[ kEmailInputID, kPasswordInputID ],
@@ -97,10 +96,11 @@ TEST_F(PasswordControllerJsTest,
   NSString* const username2 = @"jean.dubois@gmail.com";
   NSString* const password = @"super!secret";
   LoadHtmlAndInject(GAIASignInForm(formAction, username1, YES));
-  EXPECT_NSEQ(@NO, ExecuteJavaScriptWithFormat(
-                       @"__gCrWeb.fillPasswordForm(%@, '%@', '%@', '%@')",
-                       GAIASignInFormData(formAction), username2, password,
-                       formAction));
+  EXPECT_NSEQ(
+      @NO,
+      ExecuteJavaScriptWithFormat(
+          @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%@')",
+          GAIASignInFormData(formAction), username2, password, formAction));
   // Verifies that the sign-in form has not been filled.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
                                       @[ kEmailInputID, kPasswordInputID ],
@@ -117,10 +117,11 @@ TEST_F(PasswordControllerJsTest,
   NSString* const username2 = @"jane.doe@gmail.com";
   NSString* const password = @"super!secret";
   LoadHtmlAndInject(GAIASignInForm(formAction, username1, NO));
-  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
-                        @"__gCrWeb.fillPasswordForm(%@, '%@', '%@', '%@')",
-                        GAIASignInFormData(formAction), username2, password,
-                        formAction));
+  EXPECT_NSEQ(
+      @YES,
+      ExecuteJavaScriptWithFormat(
+          @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%@')",
+          GAIASignInFormData(formAction), username2, password, formAction));
   // Verifies that the sign-in form has been filled with the new username
   // and password.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
@@ -154,8 +155,8 @@ TEST_F(PasswordControllerJsTest,
           @"\"max_length\":524288,\"is_checkable\":false,\"value\":\"\","
           @"\"label\":\"Password:\"}]}]",
           base_url.c_str()];
-  EXPECT_NSEQ(result,
-              ExecuteJavaScriptWithFormat(@"__gCrWeb.findPasswordForms()"));
+  EXPECT_NSEQ(result, ExecuteJavaScriptWithFormat(
+                          @"__gCrWeb.passwords.findPasswordForms()"));
 };
 
 // Check that multiple password forms are identified and serialized correctly.
@@ -198,8 +199,8 @@ TEST_F(PasswordControllerJsTest,
           @"\"label\":\"Password:\"}]}]",
           base_url.c_str(), base_url.c_str()];
 
-  EXPECT_NSEQ(result,
-              ExecuteJavaScriptWithFormat(@"__gCrWeb.findPasswordForms()"));
+  EXPECT_NSEQ(result, ExecuteJavaScriptWithFormat(
+                          @"__gCrWeb.passwords.findPasswordForms()"));
 };
 
 // Test serializing of password forms.
@@ -231,7 +232,8 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
   EXPECT_NSEQ(
       result,
       ExecuteJavaScriptWithFormat(
-          @"__gCrWeb.stringify(__gCrWeb.getPasswordFormData(%@))", parameter));
+          @"__gCrWeb.stringify(__gCrWeb.passwords.getPasswordFormData(%@))",
+          parameter));
 };
 
 // Check that if a form action is not set then the action is parsed to the
@@ -258,8 +260,8 @@ TEST_F(PasswordControllerJsTest, FormActionIsNotSet) {
           @"autocomplete\":true,\"is_focusable\":true,\"max_length\":524288,"
           @"\"is_checkable\":false,\"value\":\"\",\"label\":\"Password:\"}]}]",
           base_url.c_str(), base_url.c_str()];
-  EXPECT_NSEQ(result,
-              ExecuteJavaScriptWithFormat(@"__gCrWeb.findPasswordForms()"));
+  EXPECT_NSEQ(result, ExecuteJavaScriptWithFormat(
+                          @"__gCrWeb.passwords.findPasswordForms()"));
 };
 
 // Checks that a touchend event from a button which contains in a password form
@@ -274,9 +276,9 @@ TEST_F(PasswordControllerJsTest, TouchendAsSubmissionIndicator) {
        "</form>"
        "</body></html>");
 
-  // Call __gCrWeb.findPasswordForms in order to set an event handler on the
-  // button touchend event.
-  ExecuteJavaScriptWithFormat(@"__gCrWeb.findPasswordForms()");
+  // Call __gCrWeb.passwords.findPasswordForms in order to set an event handler
+  // on the button touchend event.
+  ExecuteJavaScriptWithFormat(@"__gCrWeb.passwords.findPasswordForms()");
 
   // Replace __gCrWeb.message.invokeOnHost with mock method for checking of call
   // arguments.
@@ -348,7 +350,7 @@ TEST_F(PasswordControllerJsTest, OriginsAreDifferentInPathes) {
                     page_origin.c_str(), form_fill_data_origin.c_str()];
   EXPECT_NSEQ(@YES,
               ExecuteJavaScriptWithFormat(
-                  @"__gCrWeb.fillPasswordForm(%@, '%@', '%@', '%s')",
+                  @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%s')",
                   form_fill_data, username, password, page_origin.c_str()));
   // Verifies that the sign-in form has been filled with username/password.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",

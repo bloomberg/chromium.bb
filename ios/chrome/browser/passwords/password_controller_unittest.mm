@@ -1127,6 +1127,11 @@ TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   TestChromeBrowserState::Builder builder;
   std::unique_ptr<TestChromeBrowserState> browser_state(builder.Build());
   MockWebState web_state;
+  id mock_js_injection_receiver =
+      [OCMockObject mockForClass:[CRWJSInjectionReceiver class]];
+  [[mock_js_injection_receiver expect] executeJavaScript:[OCMArg any]
+                                       completionHandler:[OCMArg any]];
+  web_state.SetJSInjectionReceiver(mock_js_injection_receiver);
   ON_CALL(web_state, GetBrowserState())
       .WillByDefault(testing::Return(browser_state.get()));
 

@@ -6,16 +6,14 @@
 #define IOS_CHROME_BROWSER_PASSWORDS_JS_PASSWORD_MANAGER_H_
 
 #include "base/ios/block_types.h"
-#import "ios/web/public/web_state/js/crw_js_injection_manager.h"
-
-@class CRWJSInjectionReceiver;
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
 // Loads the JavaScript file, password_controller.js, which contains password
 // form parsing and autofill functions. It will be evaluated on a page that
 // is known to have at least one password form (see hasPasswordField_ in
 // password_controller.js) It returns contents of those password forms and also
 // registers functions that are later used to autofill them.
-@interface JsPasswordManager : CRWJSInjectionManager
+@interface JsPasswordManager : NSObject
 
 // Finds any password forms on the web page.
 // |completionHandler| is then called with the JSON string result (which can
@@ -47,6 +45,12 @@
             withUsername:(NSString*)username
                 password:(NSString*)password
        completionHandler:(void (^)(BOOL))completionHandler;
+
+// Designated initializer. |receiver| should not be nil.
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 
