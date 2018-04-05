@@ -1550,7 +1550,13 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
   FPDF_RenderPageBitmap(bitmap, page_to_print->GetPrintPage(), page_rect.x(),
                         page_rect.y(), page_rect.width(), page_rect.height(),
                         print_settings.orientation,
-                        FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
+                        FPDF_PRINTING | FPDF_NO_CATCH);
+
+  // Draw the forms.
+  FPDF_FFLDraw(form_, bitmap, page_to_print->GetPrintPage(), page_rect.x(),
+               page_rect.y(), page_rect.width(), page_rect.height(),
+               print_settings.orientation,
+               FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
 
   unsigned char* bitmap_data =
       static_cast<unsigned char*>(FPDFBitmap_GetBuffer(bitmap));
