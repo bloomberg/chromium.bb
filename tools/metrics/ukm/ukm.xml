@@ -573,6 +573,69 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ContextualSuggestions">
+  <owner>donnd@chromium.org</owner>
+  <owner>fgorski@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Metrics related to Contextual Suggestions shown in the Chrome Assistive
+    Surface, aka EoC shown in CAS.  These metrics are recorded each time the
+    Contextual Suggestions UI is dismissed. Each record always contains a value
+    for every metric known at the time of the implementation.
+  </summary>
+  <metric name="AnyDownloaded">
+    <summary>
+      Emits an integer in the range 0-1 to indicate whether the user downloaded
+      any suggestions.
+    </summary>
+  </metric>
+  <metric name="AnySuggestionTaken">
+    <summary>
+      Emits an integer in the range 0-1 to indicate whether any suggestion link
+      was taken.
+    </summary>
+  </metric>
+  <metric name="ClosedFromPeek">
+    <summary>
+      Emits an integer in the range 0-1 to indicate whether the peeking sheet
+      was closed by tapping on the close button.
+    </summary>
+  </metric>
+  <metric name="EverOpened">
+    <summary>
+      Emits an integer in the range 0-1 to indicate whether the sheet was ever
+      opened.
+    </summary>
+  </metric>
+  <metric name="FetchState">
+    <summary>
+      Emits an integer in the range 0-7 to indicate the ending state of the data
+      fetcher and results returned.  A value of 0 indicates not-started, a 7
+      indicates fetch-completed with suggestions.  See the code for details.
+    </summary>
+  </metric>
+  <metric name="ShowDurationBucketMin">
+    <summary>
+      Emits an integer in the range 0-N to indicate the duration that the sheet
+      was shown before a positive or negative action was taken.  A value of 0
+      indicates that the UI was never shown.  A value greater than 0 indicates
+      that some user interaction occurred taking at least the indicated number
+      of milliseconds, but less than twice that amount. This exponential
+      bucketing is done for privacy reasons, and uses the UKM
+      GetExponentialBucketMin method with a value of 2.0 for spacing.
+    </summary>
+  </metric>
+  <metric name="TriggerEvent">
+    <summary>
+      Emits an integer in the range 0-1 to indicate whether the peeking sheet
+      was ever triggered and how it was triggered. A value of 0 indicates
+      never-shown, a 1 indicates peeked in response to a reverse-scroll (the
+      only trigger currently supported).
+    </summary>
+  </metric>
+</event>
+
 <event name="CPUUsageMeasurement">
   <owner>matthalp@google.com</owner>
   <owner>oysteine@chromium.org</owner>
