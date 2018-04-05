@@ -1907,12 +1907,15 @@ TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
 
   // GSUs and GPUs in one sequence should be coalesced into 1 GSU and 1 GPU.
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::kGesturePinchBegin);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -7);
   HandleGestureEvent(WebInputEvent::kGesturePinchUpdate, 2.0f, 13, 10);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -6);
+  HandleGestureEvent(WebInputEvent::kGesturePinchEnd);
   HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
+  HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
   HandleGestureEvent(WebInputEvent::kGesturePinchBegin);
   HandleGestureEvent(WebInputEvent::kGesturePinchUpdate, 0.2f, 2, 20);
   HandleGestureEvent(WebInputEvent::kGesturePinchUpdate, 10.0f, 1, 10);
@@ -1920,37 +1923,46 @@ TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
   HandleGestureEvent(WebInputEvent::kGesturePinchUpdate, 0.25f, 3, 30);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
   HandleGestureEvent(WebInputEvent::kGesturePinchEnd);
+  HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
 
   // Only the first GSB was dispatched.
-  EXPECT_EQ(7ul, event_queue().size());
+  EXPECT_EQ(11ul, event_queue().size());
   EXPECT_EQ(1ul, event_disposition_recorder_.size());
 
-  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
+  EXPECT_EQ(WebInputEvent::kGesturePinchBegin,
             event_queue()[0]->event().GetType());
-  EXPECT_EQ(
-      -35,
-      ToWebGestureEvent(event_queue()[0]->event()).data.scroll_update.delta_y);
-  EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
             event_queue()[1]->event().GetType());
   EXPECT_EQ(
-      2.0f,
-      ToWebGestureEvent(event_queue()[1]->event()).data.pinch_update.scale);
-  EXPECT_EQ(WebInputEvent::kGestureScrollEnd,
+      -35,
+      ToWebGestureEvent(event_queue()[1]->event()).data.scroll_update.delta_y);
+  EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
             event_queue()[2]->event().GetType());
-  EXPECT_EQ(WebInputEvent::kGesturePinchBegin,
+  EXPECT_EQ(
+      2.0f,
+      ToWebGestureEvent(event_queue()[2]->event()).data.pinch_update.scale);
+  EXPECT_EQ(WebInputEvent::kGesturePinchEnd,
             event_queue()[3]->event().GetType());
-  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureScrollEnd,
             event_queue()[4]->event().GetType());
+  EXPECT_EQ(WebInputEvent::kGestureScrollBegin,
+            event_queue()[5]->event().GetType());
+  EXPECT_EQ(WebInputEvent::kGesturePinchBegin,
+            event_queue()[6]->event().GetType());
+  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
+            event_queue()[7]->event().GetType());
   EXPECT_EQ(
       -85,
-      ToWebGestureEvent(event_queue()[4]->event()).data.scroll_update.delta_y);
+      ToWebGestureEvent(event_queue()[7]->event()).data.scroll_update.delta_y);
   EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
-            event_queue()[5]->event().GetType());
+            event_queue()[8]->event().GetType());
   EXPECT_EQ(
       0.5f,
-      ToWebGestureEvent(event_queue()[5]->event()).data.pinch_update.scale);
+      ToWebGestureEvent(event_queue()[8]->event()).data.pinch_update.scale);
   EXPECT_EQ(WebInputEvent::kGesturePinchEnd,
-            event_queue()[6]->event().GetType());
+            event_queue()[9]->event().GetType());
+  EXPECT_EQ(WebInputEvent::kGestureScrollEnd,
+            event_queue()[10]->event().GetType());
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
@@ -1970,6 +1982,10 @@ TEST_P(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_, true))
       .Times(::testing::AtLeast(1));
 
+  EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
+  EXPECT_CALL(mock_input_handler_, PinchGestureUpdate(testing::_, testing::_));
+  EXPECT_CALL(mock_input_handler_, PinchGestureEnd(testing::_, testing::_));
+
   trace_analyzer::Start("*");
   // Simulate scroll.
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
@@ -1980,10 +1996,12 @@ TEST_P(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
 
   // Simulate scroll and pinch.
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::kGesturePinchBegin);
   HandleGestureEvent(WebInputEvent::kGesturePinchUpdate, 10.0f, 1, 10);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
   HandleGestureEvent(WebInputEvent::kGesturePinchUpdate, 2.0f, 1, 10);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -30);
+  HandleGestureEvent(WebInputEvent::kGesturePinchEnd);
   HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
 
   // Dispatch all events.
@@ -2001,8 +2019,8 @@ TEST_P(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
       trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_NESTABLE_ASYNC_END);
   analyzer->FindEvents(end_query, &end_events);
 
-  EXPECT_EQ(5ul, begin_events.size());
-  EXPECT_EQ(5ul, end_events.size());
+  EXPECT_EQ(7ul, begin_events.size());
+  EXPECT_EQ(7ul, end_events.size());
   EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
             end_events[0]->GetKnownArgAsInt("type"));
   EXPECT_EQ(3, end_events[0]->GetKnownArgAsInt("coalesced_count"));
@@ -2011,15 +2029,19 @@ TEST_P(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
 
   EXPECT_EQ(WebInputEvent::kGestureScrollBegin,
             end_events[2]->GetKnownArgAsInt("type"));
+  EXPECT_EQ(WebInputEvent::kGesturePinchBegin,
+            end_events[3]->GetKnownArgAsInt("type"));
   // Original scroll and pinch updates will be stored in the coalesced
   // PinchUpdate of the <ScrollUpdate, PinchUpdate> pair.
   // The ScrollUpdate of the pair doesn't carry original events and won't be
   // traced.
   EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
-            end_events[3]->GetKnownArgAsInt("type"));
-  EXPECT_EQ(4, end_events[3]->GetKnownArgAsInt("coalesced_count"));
-  EXPECT_EQ(WebInputEvent::kGestureScrollEnd,
             end_events[4]->GetKnownArgAsInt("type"));
+  EXPECT_EQ(4, end_events[4]->GetKnownArgAsInt("coalesced_count"));
+  EXPECT_EQ(WebInputEvent::kGesturePinchEnd,
+            end_events[5]->GetKnownArgAsInt("type"));
+  EXPECT_EQ(WebInputEvent::kGestureScrollEnd,
+            end_events[6]->GetKnownArgAsInt("type"));
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
