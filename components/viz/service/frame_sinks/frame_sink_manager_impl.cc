@@ -561,4 +561,35 @@ void FrameSinkManagerImpl::RemoveObserver(FrameSinkObserver* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
+std::vector<FrameSinkId> FrameSinkManagerImpl::GetCreatedFrameSinkIds() const {
+  std::vector<FrameSinkId> frame_sink_ids;
+  for (auto& map_entry : support_map_)
+    frame_sink_ids.push_back(map_entry.first);
+  return frame_sink_ids;
+}
+
+std::vector<FrameSinkId> FrameSinkManagerImpl::GetRegisteredFrameSinkIds()
+    const {
+  std::vector<FrameSinkId> frame_sink_ids;
+  for (auto& map_entry : surface_manager_.valid_frame_sink_labels())
+    frame_sink_ids.push_back(map_entry.first);
+  return frame_sink_ids;
+}
+
+base::flat_set<FrameSinkId> FrameSinkManagerImpl::GetChildrenByParent(
+    const FrameSinkId& parent_frame_sink_id) const {
+  auto it = frame_sink_source_map_.find(parent_frame_sink_id);
+  if (it != frame_sink_source_map_.end())
+    return it->second.children;
+  return {};
+}
+
+const CompositorFrameSinkSupport* FrameSinkManagerImpl::GetFrameSinkForId(
+    const FrameSinkId& frame_sink_id) const {
+  auto it = support_map_.find(frame_sink_id);
+  if (it != support_map_.end())
+    return it->second;
+  return nullptr;
+}
+
 }  // namespace viz
