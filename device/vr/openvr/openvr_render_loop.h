@@ -35,6 +35,7 @@ class OpenVRRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   base::WeakPtr<OpenVRRenderLoop> GetWeakPtr();
 
   // VRPresentationProvider overrides:
+  void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;
   void SubmitFrame(int16_t frame_index,
                    const gpu::MailboxHolder& mailbox,
                    base::TimeDelta time_waited) override;

@@ -35,7 +35,7 @@ class XRFrameProvider final
 
   void OnNonExclusiveVSync(double timestamp);
 
-  void SubmitWebGLLayer(XRWebGLLayer*);
+  void SubmitWebGLLayer(XRWebGLLayer*, bool was_changed);
   void UpdateWebGLLayerViewports(XRWebGLLayer*);
 
   void Dispose();

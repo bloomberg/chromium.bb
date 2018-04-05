@@ -244,27 +244,6 @@ void VRDisplay::RequestVSync() {
   if (pending_presenting_vsync_)
     return;
 
-  // The logic here is a bit subtle. We get called from one of the following
-  // four contexts:
-  //
-  // (a) from requestAnimationFrame if outside an animating context (i.e. the
-  //     first rAF call from inside a getVRDisplays() promise)
-  //
-  // (b) from requestAnimationFrame in an animating context if the JS code
-  //     calls rAF after submitFrame.
-  //
-  // (c) from submitFrame if that is called after rAF.
-  //
-  // (d) from ProcessScheduledAnimations if a rAF callback finishes without
-  //     submitting a frame.
-  //
-  // These cases are mutually exclusive which prevents duplicate GetVSync
-  // calls. Case (a) only applies outside an animating context
-  // (in_animation_frame_ is false), and (b,c,d) all require an animating
-  // context. While in an animating context, submitFrame is called either
-  // before rAF (b), after rAF (c), or not at all (d). If rAF isn't called at
-  // all, there won't be future frames.
-
   pending_magic_window_vsync_ = false;
   pending_presenting_vsync_ = true;
   vr_presentation_provider_->GetVSync(
@@ -281,13 +260,8 @@ int VRDisplay::requestAnimationFrame(V8FrameRequestCallback* callback) {
     return 0;
   pending_vrdisplay_raf_ = true;
 
-  // We want to delay the GetVSync call while presenting to ensure it doesn't
-  // arrive earlier than frame submission, but other than that we want to call
-  // it as early as possible. See comments inside RequestVSync() for more
-  // details on the applicable cases.
-  if (!is_presenting_ || !in_animation_frame_ || did_submit_this_frame_) {
-    RequestVSync();
-  }
+  RequestVSync();
+
   FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
       FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
   frame_callback->SetUseLegacyTimeBase(false);
@@ -756,8 +730,6 @@ void VRDisplay::submitFrame() {
   // Reset our frame id, since anything we'd want to do (resizing/etc) can
   // no-longer happen to this frame.
   vr_frame_id_ = -1;
-  // If we were deferring a rAF-triggered vsync request, do this now.
-  RequestVSync();
 
   // If preserveDrawingBuffer is false, must clear now. Normally this
   // happens as part of compositing, but that's not active while
@@ -908,10 +880,19 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
     pending_vrdisplay_raf_ = false;
     did_submit_this_frame_ = false;
     scripted_animation_controller_->ServiceScriptedAnimations(timestamp);
-    // requestAnimationFrame may have deferred RequestVSync, call it now to
-    // cover the case where no frame was submitted, or where presentation ended
-    // while servicing the scripted animation.
-    RequestVSync();
+    // If presenting and the script didn't call SubmitFrame, let the device
+    // side know so that it can cleanly reuse resources and make appropriate
+    // timing decisions. Note that is_presenting_ could become false during
+    // an animation loop due to reentrant mojo processing in SubmitFrame,
+    // so there's no guarantee that this is called for the last animating
+    // frame. That's OK since the sync token placed by FrameSubmitMissing
+    // is only intended to separate frames while presenting.
+    if (is_presenting_ && !did_submit_this_frame_) {
+      DCHECK(frame_transport_);
+      DCHECK(context_gl_);
+      frame_transport_->FrameSubmitMissing(vr_presentation_provider_.get(),
+                                           context_gl_, vr_frame_id_);
+    }
   }
   if (pending_pose_)
     frame_pose_ = std::move(pending_pose_);
