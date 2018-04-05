@@ -2376,6 +2376,8 @@ domain Emulation
     returns
       # Absolute timestamp at which virtual time was first enabled (milliseconds since epoch).
       Runtime.Timestamp virtualTimeBase
+      # Absolute timestamp at which virtual time was first enabled (up time in milliseconds). 
+      number virtualTimeTicksBase
 
   # Resizes the frame/viewport of the page. Note that this does not affect the frame's container
   # (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported
@@ -2426,11 +2428,17 @@ experimental domain HeadlessExperimental
   command beginFrame
     parameters
       # Timestamp of this BeginFrame (milliseconds since epoch). If not set, the current time will
-      # be used.
+      # be used unless frameTicks is specified.
       optional Runtime.Timestamp frameTime
+      # Timestamp of this BeginFrame in Renderer TimeTicks (milliseconds of uptime). If not set,
+      # the current time will be used unless frameTime is specified.
+      optional number frameTimeTicks
       # Deadline of this BeginFrame (milliseconds since epoch). If not set, the deadline will be
-      # calculated from the frameTime and interval.
+      # calculated from the frameTime and interval unless deadlineTicks is specified.
       optional Runtime.Timestamp deadline
+      # Deadline of this BeginFrame in Renderer TimeTicks  (milliseconds of uptime). If not set,
+      # the deadline will be calculated from the frameTime and interval unless deadline is specified.
+      optional number deadlineTicks
       # The interval between BeginFrames that is reported to the compositor, in milliseconds.
       # Defaults to a 60 frames/second interval, i.e. about 16.666 milliseconds.
       optional number interval

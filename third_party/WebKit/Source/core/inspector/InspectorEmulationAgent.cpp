@@ -102,11 +102,12 @@ void InspectorEmulationAgent::Restore() {
 
     // Reinstate the stored policy.
     double virtual_time_base_ms;
+    double virtual_time_ticks_base_ms;
     setVirtualTimePolicy(
         virtual_time_policy, budget_remaining, starvation_count,
         virtual_time_policy == protocol::Emulation::VirtualTimePolicyEnum::
                                    PauseIfNetworkFetchesPending,
-        &virtual_time_base_ms);
+        &virtual_time_base_ms, &virtual_time_ticks_base_ms);
   }
 }
 
@@ -173,7 +174,8 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     Maybe<double> virtual_time_budget_ms,
     protocol::Maybe<int> max_virtual_time_task_starvation_count,
     protocol::Maybe<bool> wait_for_navigation,
-    double* virtual_time_base_ms) {
+    double* virtual_time_base_ms,
+    double* virtual_time_ticks_base_ms) {
   state_->setString(EmulationAgentState::kVirtualTimePolicy, policy);
 
   PendingVirtualTimePolicy new_policy;
@@ -221,10 +223,13 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
 
   if (virtual_time_base_ticks_.is_null()) {
     *virtual_time_base_ms = 0;
+    *virtual_time_ticks_base_ms = 0;
   } else {
     WTF::TimeDelta virtual_time_base_delta =
         virtual_time_base_ticks_ - WTF::TimeTicks::UnixEpoch();
     *virtual_time_base_ms = virtual_time_base_delta.InMillisecondsF();
+    *virtual_time_ticks_base_ms =
+        (virtual_time_base_ticks_ - WTF::TimeTicks()).InMillisecondsF();
   }
 
   return Response::OK();

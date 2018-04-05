@@ -110,7 +110,7 @@ class HEADLESS_EXPORT VirtualTimeController
   virtual void RemoveObserver(Observer* observer);
 
   // Returns the time that virtual time offsets are relative to.
-  virtual base::Time GetVirtualTimeBase() const;
+  virtual base::TimeTicks GetVirtualTimeBase() const;
 
   // Returns the current virtual time offset. Only accurate while virtual time
   // is paused.
@@ -118,7 +118,7 @@ class HEADLESS_EXPORT VirtualTimeController
 
   // Returns the current virtual time stamp. Only accurate while virtual time
   // is paused.
-  base::Time GetCurrentVirtualTime() const {
+  base::TimeTicks GetCurrentVirtualTime() const {
     return GetVirtualTimeBase() + GetCurrentVirtualTimeOffset();
   }
 
@@ -157,7 +157,7 @@ class HEADLESS_EXPORT VirtualTimeController
   base::TimeDelta total_elapsed_time_offset_;
   base::TimeDelta last_budget_;
   // Initial virtual time that virtual time offsets are relative to.
-  base::Time virtual_time_base_;
+  base::TimeTicks virtual_time_base_;
 
   struct RepeatingTaskOrdering {
     bool operator()(RepeatingTask* a, RepeatingTask* b) const {

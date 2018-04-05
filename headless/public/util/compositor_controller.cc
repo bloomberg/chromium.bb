@@ -70,8 +70,8 @@ class CompositorController::AnimationBeginFrameTask
     // Display needs to be updated for first BeginFrame. Otherwise, the
     // RenderWidget's surface may not be created and the root surface may block
     // waiting for it forever.
-    update_display |= compositor_controller_->last_begin_frame_time_ ==
-                      base::Time::UnixEpoch();
+    update_display |=
+        compositor_controller_->last_begin_frame_time_ == base::TimeTicks();
 
     compositor_controller_->PostBeginFrame(
         base::BindOnce(&AnimationBeginFrameTask::BeginFrameComplete,
@@ -156,16 +156,17 @@ void CompositorController::BeginFrame(
 
     // Use virtual time for frame time, so that rendering of animations etc. is
     // aligned with virtual time progression.
-    base::Time frame_time = virtual_time_controller_->GetCurrentVirtualTime();
+    base::TimeTicks frame_time =
+        virtual_time_controller_->GetCurrentVirtualTime();
     if (frame_time <= last_begin_frame_time_) {
       // Frame time cannot go backwards or stop, so we issue another BeginFrame
       // with a small time offset from the last BeginFrame's time instead.
       frame_time =
           last_begin_frame_time_ + base::TimeDelta::FromMicroseconds(1);
     }
-    params_builder.SetFrameTime(frame_time.ToJsTime());
+    params_builder.SetFrameTimeTicks(
+        (frame_time - base::TimeTicks()).InMillisecondsF());
     DCHECK_GT(frame_time, last_begin_frame_time_);
-    DCHECK_GT(frame_time.ToJsTime(), last_begin_frame_time_.ToJsTime());
     last_begin_frame_time_ = frame_time;
 
     params_builder.SetInterval(

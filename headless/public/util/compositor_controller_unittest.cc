@@ -42,7 +42,7 @@ class TestVirtualTimeController : public VirtualTimeController {
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD1(SetResumeDeferrer, void(ResumeDeferrer* deferrer));
 
-  MOCK_CONST_METHOD0(GetVirtualTimeBase, base::Time());
+  MOCK_CONST_METHOD0(GetVirtualTimeBase, base::TimeTicks());
   MOCK_CONST_METHOD0(GetCurrentVirtualTimeOffset, base::TimeDelta());
 };
 
@@ -88,16 +88,17 @@ class CompositorControllerTest : public ::testing::Test {
   }
 
   void ExpectVirtualTime(double base, double offset) {
-    auto base_time = base::Time::FromJsTime(base);
+    auto base_time_ticks =
+        base::TimeTicks() + base::TimeDelta::FromMillisecondsD(base);
     auto offset_delta = base::TimeDelta::FromMilliseconds(offset);
     EXPECT_CALL(*virtual_time_controller_, GetVirtualTimeBase())
-        .WillOnce(Return(base_time));
+        .WillOnce(Return(base_time_ticks));
     EXPECT_CALL(*virtual_time_controller_, GetCurrentVirtualTimeOffset())
         .WillOnce(Return(offset_delta));
 
     // Next BeginFrame's time should be the virtual time provided it has
     // progressed.
-    base::Time virtual_time = base_time + offset_delta;
+    base::TimeTicks virtual_time = base_time_ticks + offset_delta;
     if (virtual_time > next_begin_frame_time_)
       next_begin_frame_time_ = virtual_time;
   }
@@ -107,11 +108,12 @@ class CompositorControllerTest : public ::testing::Test {
                             screenshot_params = nullptr) {
     last_command_id_ += 2;
     base::DictionaryValue params;
-    auto builder =
-        std::move(headless_experimental::BeginFrameParams::Builder()
-                      .SetFrameTime(next_begin_frame_time_.ToJsTime())
-                      .SetInterval(kAnimationFrameInterval.InMillisecondsF())
-                      .SetNoDisplayUpdates(no_display_updates));
+    auto builder = std::move(
+        headless_experimental::BeginFrameParams::Builder()
+            .SetFrameTimeTicks(
+                (next_begin_frame_time_ - base::TimeTicks()).InMillisecondsF())
+            .SetInterval(kAnimationFrameInterval.InMillisecondsF())
+            .SetNoDisplayUpdates(no_display_updates));
     if (screenshot_params)
       builder.SetScreenshot(std::move(screenshot_params));
     // Subsequent BeginFrames should have a later timestamp.
@@ -169,8 +171,8 @@ class CompositorControllerTest : public ::testing::Test {
   TestVirtualTimeController::RepeatingTask* task_ = nullptr;
   TestVirtualTimeController::Observer* observer_ = nullptr;
   TestVirtualTimeController::ResumeDeferrer* deferrer_ = nullptr;
-  base::Time next_begin_frame_time_ =
-      base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1);
+  base::TimeTicks next_begin_frame_time_ =
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(1);
 };
 
 TEST_F(CompositorControllerTest, CaptureScreenshot) {
