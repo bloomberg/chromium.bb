@@ -123,7 +123,7 @@ TODO(awong): Write about options to script and the flame graph.
 Heap dumps provide extremely detailed data about object allocations and is
 useful for finding code locations that are generating a large number of live
 allocations. Data is tracked and recorded using the [Out-of-process Heap
-Profiler (OOPHP)](../../src/chrome/profiling/README.md).
+Profiler (OOPHP)](../../src/components/services/heap_profiling/README.md).
 
 For the Browser and GPU process, this often quickly finds objects that leak over
 time.
@@ -138,10 +138,11 @@ looking similar due to the nature of DOM node allocation.
     `VirtualAlloc()`) will not be tracked.
   * Utility processes are currently not profiled.
   * Allocations are only recorded after the
-    [ProfilingService](../../src/chrome/profiling/profiling_service.h) has spun up the
-    profiling process and created a connection to the target process. The ProfilingService
-    is a mojo service that can be configured to start early in browser startup
-    but it still takes time to spin up and early allocations are thus lost.
+    [HeapProfilingService](../../src/components/services/heap_profiling/heap_profiling_service.h)
+    has spun up the profiling process and created a connection to the target
+    process. The HeapProfilingService is a mojo service that can be configured to
+    start early in browser startup but it still takes time to spin up and early
+    allocations are thus lost.
 
 ### Instructions
 #### <a name="configure-oophp"></a>Configuration and setup

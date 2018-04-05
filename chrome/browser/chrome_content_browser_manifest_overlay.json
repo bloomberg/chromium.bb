@@ -51,7 +51,7 @@
         "patch": [ "patch_file" ],
         "pdf_compositor": [ "compositor" ],
         "profile_import": [ "import" ],
-        "profiling": [ "profiling", "heap_profiler" ],
+        "heap_profiling": [ "profiling", "heap_profiler" ],
         "proxy_resolver": [ "factory" ],
         "preferences": [ "pref_client", "pref_control" ],
         "removable_storage_writer": [ "removable_storage_writer" ],
