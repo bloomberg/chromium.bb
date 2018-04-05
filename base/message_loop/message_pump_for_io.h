@@ -36,7 +36,7 @@ using MessagePumpForIO = MessagePumpFuchsia;
 #elif defined(OS_POSIX)
 using MessagePumpForIO = MessagePumpLibevent;
 #else
-#error Platform doesn't define MessagePumpForIO
+#error Platform does not define MessagePumpForIO
 #endif
 
 }  // namespace base
