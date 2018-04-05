@@ -149,6 +149,44 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 
   webkit_event.pointer_type =
       EventPointerTypeToWebPointerType(event.pointer_details().pointer_type);
+
+  switch (event.scroll_event_phase()) {
+    case ui::ScrollEventPhase::kNone:
+      webkit_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
+      break;
+    case ui::ScrollEventPhase::kBegan:
+      webkit_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+      break;
+    case ui::ScrollEventPhase::kUpdate:
+      webkit_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+      break;
+    case ui::ScrollEventPhase::kEnd:
+      webkit_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  switch (event.momentum_phase()) {
+    case ui::EventMomentumPhase::NONE:
+      webkit_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseNone;
+      break;
+    case ui::EventMomentumPhase::BEGAN:
+      webkit_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseBegan;
+      break;
+    case ui::EventMomentumPhase::MAY_BEGIN:
+      webkit_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseMayBegin;
+      break;
+    case ui::EventMomentumPhase::INERTIAL_UPDATE:
+      webkit_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseChanged;
+      break;
+    case ui::EventMomentumPhase::END:
+      webkit_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseEnded;
+      break;
+    default:
+      NOTREACHED();
+  }
+
   return webkit_event;
 }
 

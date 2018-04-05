@@ -37,6 +37,8 @@ struct EnumTraits<ui::mojom::EventMomentumPhase, ui::EventMomentumPhase> {
     switch (input) {
       case ui::EventMomentumPhase::NONE:
         return ui::mojom::EventMomentumPhase::NONE;
+      case ui::EventMomentumPhase::BEGAN:
+        return ui::mojom::EventMomentumPhase::BEGAN;
       case ui::EventMomentumPhase::MAY_BEGIN:
         return ui::mojom::EventMomentumPhase::MAY_BEGIN;
       case ui::EventMomentumPhase::INERTIAL_UPDATE:
@@ -54,6 +56,9 @@ struct EnumTraits<ui::mojom::EventMomentumPhase, ui::EventMomentumPhase> {
       case ui::mojom::EventMomentumPhase::NONE:
         *out = ui::EventMomentumPhase::NONE;
         return true;
+      case ui::mojom::EventMomentumPhase::BEGAN:
+        *out = ui::EventMomentumPhase::BEGAN;
+        return true;
       case ui::mojom::EventMomentumPhase::MAY_BEGIN:
         *out = ui::EventMomentumPhase::MAY_BEGIN;
         return true;
@@ -62,6 +67,44 @@ struct EnumTraits<ui::mojom::EventMomentumPhase, ui::EventMomentumPhase> {
         return true;
       case ui::mojom::EventMomentumPhase::END:
         *out = ui::EventMomentumPhase::END;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
+struct EnumTraits<ui::mojom::ScrollEventPhase, ui::ScrollEventPhase> {
+  static ui::mojom::ScrollEventPhase ToMojom(ui::ScrollEventPhase input) {
+    switch (input) {
+      case ui::ScrollEventPhase::kNone:
+        return ui::mojom::ScrollEventPhase::kNone;
+      case ui::ScrollEventPhase::kBegan:
+        return ui::mojom::ScrollEventPhase::kBegan;
+      case ui::ScrollEventPhase::kUpdate:
+        return ui::mojom::ScrollEventPhase::kUpdate;
+      case ui::ScrollEventPhase::kEnd:
+        return ui::mojom::ScrollEventPhase::kEnd;
+    }
+    NOTREACHED();
+    return ui::mojom::ScrollEventPhase::kNone;
+  }
+
+  static bool FromMojom(ui::mojom::ScrollEventPhase input,
+                        ui::ScrollEventPhase* out) {
+    switch (input) {
+      case ui::mojom::ScrollEventPhase::kNone:
+        *out = ui::ScrollEventPhase::kNone;
+        return true;
+      case ui::mojom::ScrollEventPhase::kBegan:
+        *out = ui::ScrollEventPhase::kBegan;
+        return true;
+      case ui::mojom::ScrollEventPhase::kUpdate:
+        *out = ui::ScrollEventPhase::kUpdate;
+        return true;
+      case ui::mojom::ScrollEventPhase::kEnd:
+        *out = ui::ScrollEventPhase::kEnd;
         return true;
     }
     NOTREACHED();

@@ -25,10 +25,20 @@
 
 namespace content {
 
-class DirectManipulationBrowserTest : public ContentBrowserTest {
+class DirectManipulationBrowserTest : public ContentBrowserTest,
+                                      public testing::WithParamInterface<bool> {
  public:
   DirectManipulationBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kPrecisionTouchpad);
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kPrecisionTouchpad,
+           features::kPrecisionTouchpadScrollPhase},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kPrecisionTouchpad},
+          {features::kPrecisionTouchpadScrollPhase});
+    }
   }
 
   ~DirectManipulationBrowserTest() override {}
@@ -74,8 +84,12 @@ class DirectManipulationBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationBrowserTest);
 };
 
+INSTANTIATE_TEST_CASE_P(WithScrollEventPhase,
+                        DirectManipulationBrowserTest,
+                        testing::Bool());
+
 // Ensure the AnimationObserver destroy when hwnd reparent to other hwnd.
-IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest, HWNDReparent) {
+IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, HWNDReparent) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10)
     return;
 
@@ -112,13 +126,16 @@ class EventLogger : public ui::EventRewriter {
   EventLogger() {}
   ~EventLogger() override {}
 
-  ui::Event* LastEvent() const { return last_event_.get(); }
+  std::unique_ptr<ui::Event> ReleaseLastEvent() {
+    return std::move(last_event_);
+  }
 
  private:
   // ui::EventRewriter
   ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
       std::unique_ptr<ui::Event>* new_event) override {
+    DCHECK(!last_event_);
     last_event_ = ui::Event::Clone(event);
     return ui::EVENT_REWRITE_CONTINUE;
   }
@@ -136,7 +153,7 @@ class EventLogger : public ui::EventRewriter {
 };
 
 // Check DirectManipulation events convert to ui::event correctly.
-IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest, EventConvert) {
+IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10)
     return;
 
@@ -157,19 +174,128 @@ IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest, EventConvert) {
 
   {
     target->ApplyPanGestureScroll(1, 2);
-    ui::Event* event = event_logger.LastEvent();
-    EXPECT_TRUE(event);
-    EXPECT_EQ(ui::ET_MOUSEWHEEL, event->type());
-    ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
-    EXPECT_EQ(1, wheel_event->x_offset());
-    EXPECT_EQ(2, wheel_event->y_offset());
-    EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+    ASSERT_TRUE(event);
+
+    if (GetParam()) {
+      EXPECT_EQ(ui::ET_SCROLL, event->type());
+      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+      EXPECT_EQ(1, scroll_event->x_offset());
+      EXPECT_EQ(2, scroll_event->y_offset());
+      EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
+      EXPECT_EQ(ui::ScrollEventPhase::kUpdate,
+                scroll_event->scroll_event_phase());
+    } else {
+      EXPECT_EQ(ui::ET_MOUSEWHEEL, event->type());
+      ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
+      EXPECT_EQ(1, wheel_event->x_offset());
+      EXPECT_EQ(2, wheel_event->y_offset());
+      EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
+    }
+  }
+
+  {
+    target->ApplyPanGestureFling(1, 2);
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+    ASSERT_TRUE(event);
+
+    if (GetParam()) {
+      EXPECT_EQ(ui::ET_SCROLL, event->type());
+      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+      EXPECT_EQ(1, scroll_event->x_offset());
+      EXPECT_EQ(2, scroll_event->y_offset());
+      EXPECT_EQ(ui::EventMomentumPhase::INERTIAL_UPDATE,
+                scroll_event->momentum_phase());
+      EXPECT_EQ(ui::ScrollEventPhase::kNone,
+                scroll_event->scroll_event_phase());
+    } else {
+      EXPECT_EQ(ui::ET_MOUSEWHEEL, event->type());
+      ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
+      EXPECT_EQ(1, wheel_event->x_offset());
+      EXPECT_EQ(2, wheel_event->y_offset());
+      EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
+    }
+  }
+
+  {
+    target->ApplyPanGestureScrollBegin(1, 2);
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+
+    if (GetParam()) {
+      ASSERT_TRUE(event);
+      EXPECT_EQ(ui::ET_SCROLL, event->type());
+      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+      EXPECT_EQ(1, scroll_event->x_offset());
+      EXPECT_EQ(2, scroll_event->y_offset());
+      EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
+      EXPECT_EQ(ui::ScrollEventPhase::kBegan,
+                scroll_event->scroll_event_phase());
+    } else {
+      EXPECT_EQ(ui::ET_MOUSEWHEEL, event->type());
+      ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
+      EXPECT_EQ(1, wheel_event->x_offset());
+      EXPECT_EQ(2, wheel_event->y_offset());
+      EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
+    }
+  }
+
+  {
+    target->ApplyPanGestureScrollEnd();
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+
+    if (GetParam()) {
+      ASSERT_TRUE(event);
+      EXPECT_EQ(ui::ET_SCROLL, event->type());
+      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+      EXPECT_EQ(0, scroll_event->x_offset());
+      EXPECT_EQ(0, scroll_event->y_offset());
+      EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
+      EXPECT_EQ(ui::ScrollEventPhase::kEnd, scroll_event->scroll_event_phase());
+    } else {
+      ASSERT_FALSE(event);
+    }
+  }
+
+  {
+    target->ApplyPanGestureFlingBegin();
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+
+    if (GetParam()) {
+      ASSERT_TRUE(event);
+      EXPECT_EQ(ui::ET_SCROLL, event->type());
+      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+      EXPECT_EQ(0, scroll_event->x_offset());
+      EXPECT_EQ(0, scroll_event->y_offset());
+      EXPECT_EQ(ui::EventMomentumPhase::BEGAN, scroll_event->momentum_phase());
+      EXPECT_EQ(ui::ScrollEventPhase::kNone,
+                scroll_event->scroll_event_phase());
+    } else {
+      ASSERT_FALSE(event);
+    }
+  }
+
+  {
+    target->ApplyPanGestureFlingEnd();
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+
+    if (GetParam()) {
+      ASSERT_TRUE(event);
+      EXPECT_EQ(ui::ET_SCROLL, event->type());
+      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+      EXPECT_EQ(0, scroll_event->x_offset());
+      EXPECT_EQ(0, scroll_event->y_offset());
+      EXPECT_EQ(ui::EventMomentumPhase::END, scroll_event->momentum_phase());
+      EXPECT_EQ(ui::ScrollEventPhase::kNone,
+                scroll_event->scroll_event_phase());
+    } else {
+      ASSERT_FALSE(event);
+    }
   }
 
   {
     target->ApplyPinchZoomBegin();
-    ui::Event* event = event_logger.LastEvent();
-    EXPECT_TRUE(event);
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+    ASSERT_TRUE(event);
     EXPECT_EQ(ui::ET_GESTURE_PINCH_BEGIN, event->type());
     ui::GestureEvent* gesture_event = event->AsGestureEvent();
     EXPECT_EQ(ui::GestureDeviceType::DEVICE_TOUCHPAD,
@@ -178,8 +304,8 @@ IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest, EventConvert) {
 
   {
     target->ApplyPinchZoomScale(1.1f);
-    ui::Event* event = event_logger.LastEvent();
-    EXPECT_TRUE(event);
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+    ASSERT_TRUE(event);
     EXPECT_EQ(ui::ET_GESTURE_PINCH_UPDATE, event->type());
     ui::GestureEvent* gesture_event = event->AsGestureEvent();
     EXPECT_EQ(ui::GestureDeviceType::DEVICE_TOUCHPAD,
@@ -189,8 +315,8 @@ IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest, EventConvert) {
 
   {
     target->ApplyPinchZoomEnd();
-    ui::Event* event = event_logger.LastEvent();
-    EXPECT_TRUE(event);
+    std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
+    ASSERT_TRUE(event);
     EXPECT_EQ(ui::ET_GESTURE_PINCH_END, event->type());
     ui::GestureEvent* gesture_event = event->AsGestureEvent();
     EXPECT_EQ(ui::GestureDeviceType::DEVICE_TOUCHPAD,

@@ -138,6 +138,9 @@ struct ScrollData {
   // For non-fling events, provides momentum information (e.g. for the case
   // where the device provides continuous event updates during a fling).
   EventMomentumPhase momentum_phase;
+
+  // Provides phase information if device can provide.
+  ScrollEventPhase scroll_event_phase;
 };
 
 struct Event {
