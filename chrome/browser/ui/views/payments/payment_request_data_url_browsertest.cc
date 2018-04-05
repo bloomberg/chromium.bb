@@ -24,12 +24,19 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestDataUrlTest, SecurityError) {
       "'1.00'}}})).show(); } catch(e) { "
       "document.getElementById('result').innerHTML = e; }\">Data URL "
       "Test</button><div id='result'></div></body></html>");
+
+  // PaymentRequest should not be defined in non-secure context.
+  bool result = true;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetActiveWebContents(),
+      "window.domAutomationController.send('PaymentRequest' in window);",
+      &result));
+  ASSERT_FALSE(result);
+
   ASSERT_TRUE(content::ExecuteScript(
       GetActiveWebContents(),
       "(function() { document.getElementById('buy').click(); })();"));
-  ExpectBodyContains(
-      {"SecurityError: Failed to construct 'PaymentRequest': Must be in a "
-       "secure context"});
+  ExpectBodyContains({"PaymentRequest is not defined"});
 }
 
 }  // namespace payments

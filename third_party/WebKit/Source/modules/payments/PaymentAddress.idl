@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/browser-payment-api/#paymentaddress-interface
+// https://w3c.github.io/payment-request/#paymentaddress-interface
 
 [
     RuntimeEnabled=PaymentRequest,
+    SecureContext,
     Exposed=Window
 ] interface PaymentAddress {
     serializer = {attribute};
-    readonly attribute DOMString country;
-    readonly attribute FrozenArray<DOMString> addressLine;
-    readonly attribute DOMString region;
     readonly attribute DOMString city;
+    readonly attribute DOMString country;
     readonly attribute DOMString dependentLocality;
-    readonly attribute DOMString postalCode;
-    readonly attribute DOMString sortingCode;
     readonly attribute DOMString languageCode;
     readonly attribute DOMString organization;
-    readonly attribute DOMString recipient;
     readonly attribute DOMString phone;
+    readonly attribute DOMString postalCode;
+    readonly attribute DOMString recipient;
+    readonly attribute DOMString region;
+    readonly attribute DOMString sortingCode;
+    readonly attribute FrozenArray<DOMString> addressLine;
 };

@@ -33,7 +33,6 @@ public class PaymentRequestBlobUrlTest {
         mPaymentRequestTestRule.openPageAndClickNode("buy");
         mPaymentRequestTestRule.assertWaitForPageScaleFactorMatch(2);
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"SecurityError: Failed to construct 'PaymentRequest': "
-                        + "Must be in a secure context"});
+                new String[] {"PaymentRequest is not defined"});
     }
 }

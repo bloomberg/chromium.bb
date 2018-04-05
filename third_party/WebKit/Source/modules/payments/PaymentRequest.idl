@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/browser-payment-api/#paymentrequest-interface
+// https://w3c.github.io/payment-request/#paymentrequest-interface
 // http://crbug.com/587995
 
 [
@@ -10,6 +10,7 @@
     Constructor(sequence<PaymentMethodData> methodData, PaymentDetailsInit details, optional PaymentOptions options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
+    SecureContext,
     Exposed=Window,
     ActiveScriptWrappable
 ] interface PaymentRequest : EventTarget {
