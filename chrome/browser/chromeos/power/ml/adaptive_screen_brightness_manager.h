@@ -52,7 +52,7 @@ class AdaptiveScreenBrightnessManager
       base::TimeDelta::FromSeconds(20);
 
   AdaptiveScreenBrightnessManager(
-      AdaptiveScreenBrightnessUkmLogger* ukm_logger,
+      std::unique_ptr<AdaptiveScreenBrightnessUkmLogger> ukm_logger,
       ui::UserActivityDetector* detector,
       chromeos::PowerManagerClient* power_manager_client,
       AccessibilityManager* accessibility_manager,
@@ -63,6 +63,9 @@ class AdaptiveScreenBrightnessManager
       std::unique_ptr<BootClock> boot_clock);
 
   ~AdaptiveScreenBrightnessManager() override;
+
+  // Returns a new instance of AdaptiveScreenBrightnessManager.
+  static std::unique_ptr<AdaptiveScreenBrightnessManager> CreateInstance();
 
   // ui::UserActivityObserver overrides:
   void OnUserActivity(const ui::Event* event) override;
@@ -108,7 +111,7 @@ class AdaptiveScreenBrightnessManager
   // Timer to trigger periodically for logging data.
   const std::unique_ptr<base::RepeatingTimer> periodic_timer_;
 
-  AdaptiveScreenBrightnessUkmLogger* const ukm_logger_;
+  const std::unique_ptr<AdaptiveScreenBrightnessUkmLogger> ukm_logger_;
 
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
       user_activity_observer_;
