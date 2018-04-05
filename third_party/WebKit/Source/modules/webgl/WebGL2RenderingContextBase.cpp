@@ -5889,6 +5889,8 @@ WebGL2RenderingContextBase::GetUnpackPixelStoreParams(
 
 void WebGL2RenderingContextBase::
     DrawingBufferClientRestorePixelUnpackBufferBinding() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   ContextGL()->BindBuffer(GL_PIXEL_UNPACK_BUFFER,
@@ -5897,6 +5899,8 @@ void WebGL2RenderingContextBase::
 
 void WebGL2RenderingContextBase::
     DrawingBufferClientRestorePixelPackBufferBinding() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
   ContextGL()->BindBuffer(GL_PIXEL_PACK_BUFFER,
@@ -5905,6 +5909,8 @@ void WebGL2RenderingContextBase::
 
 void WebGL2RenderingContextBase::
     DrawingBufferClientRestorePixelPackParameters() {
+  if (destruction_in_progress_)
+    return;
   if (!ContextGL())
     return;
 
