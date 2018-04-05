@@ -321,9 +321,6 @@ void ServiceWorkerNavigationLoader::StartResponse(
   // We have a non-redirect response. Send the headers to the client.
   CommitResponseHeaders();
 
-  // S13nServiceWorker without NetworkService:
-  // TODO(shimazu): Wait to respond body until ProceedWithResponse().
-
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
     stream_waiter_ = std::make_unique<StreamWaiter>(
@@ -372,9 +369,9 @@ void ServiceWorkerNavigationLoader::FollowRedirect() {
 }
 
 void ServiceWorkerNavigationLoader::ProceedWithResponse() {
-  // TODO(arthursonzogni): Implement this for navigation requests if the
-  // ServiceWorker service is enabled before the Network Service.
-  NOTREACHED();
+  // ServiceWorkerNavigationLoader doesn't need to wait for
+  // ProceedWithResponse() since it doesn't use MojoAsyncResourceHandler to load
+  // the resource request.
 }
 
 void ServiceWorkerNavigationLoader::SetPriority(net::RequestPriority priority,
