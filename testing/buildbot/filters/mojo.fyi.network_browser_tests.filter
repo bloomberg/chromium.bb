@@ -7,6 +7,7 @@
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 -DomainReliabilityBrowserTest.Upload
+-DownloadTest.DownloadDangerousBlobData
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
@@ -41,6 +42,8 @@
 -WebViewTests/WebViewTest.ClearDataCache/1
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
+-WebViewTests/WebViewTest.DownloadPermission/0
+-WebViewTests/WebViewTest.DownloadPermission/1
 
 # Redirects to chrome-extension:// should be blocked unless the resource is
 # webaccessible.  https://crbug.com/821586

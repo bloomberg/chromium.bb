@@ -2901,8 +2901,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeDataUrl) {
   ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
 }
 
-// A request for a non-existent resource should result in an aborted navigation,
-// and the old site staying current.
+// A request for a non-existent same-origin resource should result in a
+// DownloadItem that's created in an interrupted state.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
   GURL download_url =
       embedded_test_server()->GetURL("/download/does-not-exist");
@@ -2910,15 +2910,16 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
       std::string("/download/download-attribute.html?target=") +
       download_url.spec());
 
-  auto observer = std::make_unique<content::TestNavigationObserver>(
-      shell()->web_contents(), 2);
-  NavigateToURL(shell(), document_url);
-  observer->Wait();
-  EXPECT_FALSE(observer->last_navigation_succeeded());
+  download::DownloadItem* download =
+      StartDownloadAndReturnItem(shell(), document_url);
+  WaitForInterrupt(download);
+
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+            download->GetLastReason());
 }
 
-// A request that fails before it gets a response from the server should also
-// result in the old page staying current.
+// A cross-origin request that fails before it gets a response from the server
+// should result in the old page staying current.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
   SetupErrorInjectionDownloads();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
