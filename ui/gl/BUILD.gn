@@ -216,7 +216,7 @@ component("gl") {
       }
     }
 
-    if (is_posix) {
+    if (is_posix || is_fuchsia) {
       # Windows has USE_EGL but doesn't support base::FileDescriptor
       sources += [
         "gl_fence_android_native_fence_sync.cc",
