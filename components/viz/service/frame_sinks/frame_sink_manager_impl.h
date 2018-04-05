@@ -169,6 +169,18 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void AddObserver(FrameSinkObserver* obs);
   void RemoveObserver(FrameSinkObserver* obs);
 
+  // Returns ids of all FrameSinks that were created.
+  std::vector<FrameSinkId> GetCreatedFrameSinkIds() const;
+  // Returns ids of all FrameSinks that were registered.
+  std::vector<FrameSinkId> GetRegisteredFrameSinkIds() const;
+
+  // Returns children of a FrameSink that has |parent_frame_sink_id|.
+  // Returns an empty set if a parent doesn't have any children.
+  base::flat_set<FrameSinkId> GetChildrenByParent(
+      const FrameSinkId& parent_frame_sink_id) const;
+  const CompositorFrameSinkSupport* GetFrameSinkForId(
+      const FrameSinkId& frame_sink_id) const;
+
  private:
   friend class FrameSinkManagerTest;
 
