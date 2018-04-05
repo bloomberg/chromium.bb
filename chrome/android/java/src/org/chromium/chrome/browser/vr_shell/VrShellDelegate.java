@@ -525,6 +525,18 @@ public class VrShellDelegate
         requestToExitVr(listener, UiUnsupportedMode.GENERIC_UNSUPPORTED_FEATURE);
     }
 
+    public static void requestToExitVrAndRunOnSuccess(Runnable onSuccess) {
+        requestToExitVr(new OnExitVrRequestListener() {
+            @Override
+            public void onSucceeded() {
+                onSuccess.run();
+            }
+
+            @Override
+            public void onDenied() {}
+        });
+    }
+
     public static void requestToExitVr(
             OnExitVrRequestListener listener, @UiUnsupportedMode int reason) {
         // If we're not in VR, just say that we've successfully exited VR.

@@ -72,7 +72,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.location.LocationUtils;
@@ -825,26 +824,16 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
             // Expand/collapse the displayed URL title.
             mUrlTitle.toggleTruncation();
         } else if (view == mConnectionMessage) {
-            // TODO(crbug.com/819883): Port the connection info popup to VR.
-            // TODO(crbug.com/826749): Track how often users encounter this via UMA.
-            if (VrShellDelegate.isInVr()) {
-                VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
-                    @Override
-                    public void onSucceeded() {
-                        showConnectionInfoPopup();
-                    }
-
-                    @Override
-                    public void onDenied() {}
-                });
-            } else {
-                runAfterDismiss(new Runnable() {
-                    @Override
-                    public void run() {
-                        showConnectionInfoPopup();
-                    }
-                });
-            }
+            runAfterDismiss(() -> {
+                // TODO(crbug.com/819883): Port the connection info popup to VR.
+                // TODO(crbug.com/826749): Track how often users encounter this via UMA.
+                if (VrShellDelegate.isInVr()) {
+                    VrShellDelegate.requestToExitVrAndRunOnSuccess(
+                            PageInfoPopup.this ::showConnectionInfoPopup);
+                } else {
+                    showConnectionInfoPopup();
+                }
+            });
         } else if (view.getId() == R.id.page_info_permission_row) {
             final Object intentOverride = view.getTag(R.id.permission_intent_override);
 
