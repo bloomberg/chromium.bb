@@ -2511,6 +2511,14 @@ void RendererSchedulerImpl::RemoveTaskTimeObserver(
   helper_.RemoveTaskTimeObserver(task_time_observer);
 }
 
+bool RendererSchedulerImpl::ContainsLocalMainFrame() {
+  for (auto* page_scheduler : main_thread_only().page_schedulers) {
+    if (page_scheduler->IsMainFrameLocal())
+      return true;
+  }
+  return false;
+}
+
 void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
     base::TimeDelta queueing_time,
     bool is_disjoint_window) {
@@ -2528,7 +2536,7 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
     }
   }
 
-  if (!is_disjoint_window)
+  if (!is_disjoint_window || !ContainsLocalMainFrame())
     return;
 
   UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
@@ -2550,6 +2558,9 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
 void RendererSchedulerImpl::OnReportFineGrainedExpectedQueueingTime(
     const char* split_description,
     base::TimeDelta queueing_time) {
+  if (!ContainsLocalMainFrame())
+    return;
+
   base::UmaHistogramCustomCounts(
       split_description, queueing_time.InMicroseconds(),
       kMinExpectedQueueingTimeBucket, kMaxExpectedQueueingTimeBucket,

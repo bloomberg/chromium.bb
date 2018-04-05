@@ -35,6 +35,9 @@ class PLATFORM_EXPORT PageScheduler {
   // service workers, shared workers, or fetch keep-alive.
   // If true, then the scheduler should not freeze relevant task queues.
   virtual void SetKeepActive(bool) = 0;
+  // Whether the main frame of this page is local or not (remote).
+  virtual bool IsMainFrameLocal() const = 0;
+  virtual void SetIsMainFrameLocal(bool) = 0;
 
   // Creates a new FrameScheduler. The caller is responsible for deleting
   // it. All tasks executed by the frame scheduler will be attributed to

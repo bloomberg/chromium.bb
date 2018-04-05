@@ -103,6 +103,7 @@ PageSchedulerImpl::PageSchedulerImpl(PageScheduler::Delegate* delegate,
       reported_background_throttling_since_navigation_(false),
       has_active_connection_(false),
       nested_runloop_(false),
+      is_main_frame_local_(false),
       background_time_budget_pool_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
@@ -145,6 +146,14 @@ void PageSchedulerImpl::SetPageFrozen(bool frozen) {
 void PageSchedulerImpl::SetKeepActive(bool keep_active) {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetKeepActive(keep_active);
+}
+
+bool PageSchedulerImpl::IsMainFrameLocal() const {
+  return is_main_frame_local_;
+}
+
+void PageSchedulerImpl::SetIsMainFrameLocal(bool is_local) {
+  is_main_frame_local_ = is_local;
 }
 
 std::unique_ptr<FrameSchedulerImpl> PageSchedulerImpl::CreateFrameSchedulerImpl(

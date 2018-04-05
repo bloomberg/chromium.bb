@@ -282,7 +282,9 @@ void Page::SetMainFrame(Frame* main_frame) {
   // remote frames.
   // FIXME: Unfortunately we can't assert on this at the moment, because this
   // is called in the base constructor for both LocalFrame and RemoteFrame,
-  // when the vtables for the derived classes have not yet been setup.
+  // when the vtables for the derived classes have not yet been setup. Once this
+  // is fixed, also call  page_scheduler_->SetIsMainFrameLocal() from here
+  // instead of from the callers of this method.
   main_frame_ = main_frame;
 }
 
@@ -787,6 +789,8 @@ PageScheduler* Page::GetPageScheduler() const {
 
 void Page::SetPageScheduler(std::unique_ptr<PageScheduler> page_scheduler) {
   page_scheduler_ = std::move(page_scheduler);
+  // The scheduler should be set before the main frame.
+  DCHECK(!main_frame_);
 }
 
 void Page::ReportIntervention(const String& text) {

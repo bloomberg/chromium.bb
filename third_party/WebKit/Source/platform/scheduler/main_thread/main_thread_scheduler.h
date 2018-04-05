@@ -319,6 +319,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   void SetStoppedInBackground(bool) const;
 
+  bool ContainsLocalMainFrame();
+
   struct TaskQueuePolicy {
     // Default constructor of TaskQueuePolicy should match behaviour of a
     // newly-created task queue.

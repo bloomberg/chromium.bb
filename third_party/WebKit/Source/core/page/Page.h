@@ -33,7 +33,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
-#include "core/page/Page.h"
 #include "core/page/PageAnimator.h"
 #include "core/page/PageLifecycleState.h"
 #include "core/page/PageVisibilityNotifier.h"
@@ -148,6 +147,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // PluginsChangedObservers.
   static void ResetPluginData();
 
+  // When this method is called, page_scheduler_->SetIsMainFrameLocal should
+  // also be called to update accordingly.
+  // TODO(npm): update the |page_scheduler_| directly in this method.
   void SetMainFrame(Frame*);
   Frame* MainFrame() const { return main_frame_; }
   // Escape hatch for existing code that assumes that the root frame is
