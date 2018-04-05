@@ -77,6 +77,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
                                 bool is_reload,
                                 bool is_main_frame) override;
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const WTF::String& name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   void OnFirstMeaningfulPaint() override;
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;

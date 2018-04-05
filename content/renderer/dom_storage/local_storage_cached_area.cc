@@ -162,8 +162,9 @@ bool LocalStorageCachedArea::SetItem(const base::string16& key,
         String16ToUint8Vector(old_nullable_value.string(), is_session_storage);
 
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
-  virtual_time_pauser.PauseVirtualTime(true);
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser(
+          "LocalStorageCachedArea");
+  virtual_time_pauser.PauseVirtualTime();
   leveldb_->Put(String16ToUint8Vector(key, is_session_storage),
                 String16ToUint8Vector(value, is_session_storage),
                 optional_old_value, PackSource(page_url, storage_area_id),
@@ -194,8 +195,9 @@ void LocalStorageCachedArea::RemoveItem(const base::string16& key,
     optional_old_value = String16ToUint8Vector(old_value, is_session_storage);
 
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
-  virtual_time_pauser.PauseVirtualTime(true);
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser(
+          "LocalStorageCachedArea");
+  virtual_time_pauser.PauseVirtualTime();
   leveldb_->Delete(String16ToUint8Vector(key, is_session_storage),
                    optional_old_value, PackSource(page_url, storage_area_id),
                    base::BindOnce(&LocalStorageCachedArea::OnRemoveItemComplete,
@@ -211,8 +213,9 @@ void LocalStorageCachedArea::Clear(const GURL& page_url,
   ignore_all_mutations_ = true;
 
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
-  virtual_time_pauser.PauseVirtualTime(true);
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser(
+          "LocalStorageCachedArea");
+  virtual_time_pauser.PauseVirtualTime();
   leveldb_->DeleteAll(PackSource(page_url, storage_area_id),
                       base::BindOnce(&LocalStorageCachedArea::OnClearComplete,
                                      weak_factory_.GetWeakPtr(),

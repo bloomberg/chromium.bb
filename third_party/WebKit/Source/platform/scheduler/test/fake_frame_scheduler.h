@@ -122,6 +122,7 @@ class FakeFrameScheduler : public FrameScheduler {
   }
   PageScheduler* GetPageScheduler() const override { return page_scheduler_; }
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const WTF::String& name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
     return WebScopedVirtualTimePauser();
   }

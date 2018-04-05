@@ -5,6 +5,7 @@
 #include "public/platform/WebScopedVirtualTimePauser.h"
 
 #include "base/trace_event/trace_event.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/scheduler/main_thread/main_thread_scheduler.h"
 
 namespace blink {
@@ -14,9 +15,11 @@ WebScopedVirtualTimePauser::WebScopedVirtualTimePauser()
 
 WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
     scheduler::RendererSchedulerImpl* scheduler,
-    VirtualTaskDuration duration)
+    VirtualTaskDuration duration,
+    const WebString& name)
     : duration_(duration),
       scheduler_(scheduler),
+      debug_name_(name),
       trace_id_(WebScopedVirtualTimePauser::next_trace_id_++) {}
 
 WebScopedVirtualTimePauser::~WebScopedVirtualTimePauser() {
@@ -30,6 +33,7 @@ WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
   paused_ = other.paused_;
   duration_ = other.duration_;
   scheduler_ = std::move(other.scheduler_);
+  debug_name_ = std::move(other.debug_name_);
   other.scheduler_ = nullptr;
   trace_id_ = other.trace_id_;
 }
@@ -42,27 +46,32 @@ WebScopedVirtualTimePauser& WebScopedVirtualTimePauser::operator=(
   paused_ = other.paused_;
   duration_ = other.duration_;
   scheduler_ = std::move(other.scheduler_);
+  debug_name_ = std::move(other.debug_name_);
   trace_id_ = other.trace_id_;
   other.scheduler_ = nullptr;
   return *this;
 }
 
-void WebScopedVirtualTimePauser::PauseVirtualTime(bool paused) {
-  if (paused == paused_ || !scheduler_)
+void WebScopedVirtualTimePauser::PauseVirtualTime() {
+  if (paused_ || !scheduler_)
     return;
 
-  paused_ = paused;
-  if (paused_) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-        "renderer.scheduler", "WebScopedVirtualTimePauser::PauseVirtualTime",
-        trace_id_);
-    virtual_time_when_paused_ = scheduler_->IncrementVirtualTimePauseCount();
-  } else {
-    TRACE_EVENT_NESTABLE_ASYNC_END0(
-        "renderer.scheduler", "WebScopedVirtualTimePauser::PauseVirtualTime",
-        trace_id_);
-    DecrementVirtualTimePauseCount();
-  }
+  paused_ = true;
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "renderer.scheduler", "WebScopedVirtualTimePauser::PauseVirtualTime",
+      trace_id_, "name", debug_name_.Latin1());
+  virtual_time_when_paused_ = scheduler_->IncrementVirtualTimePauseCount();
+}
+
+void WebScopedVirtualTimePauser::UnpauseVirtualTime() {
+  if (!paused_ || !scheduler_)
+    return;
+
+  paused_ = false;
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "renderer.scheduler", "WebScopedVirtualTimePauser::PauseVirtualTime",
+      trace_id_);
+  DecrementVirtualTimePauseCount();
 }
 
 void WebScopedVirtualTimePauser::DecrementVirtualTimePauseCount() {

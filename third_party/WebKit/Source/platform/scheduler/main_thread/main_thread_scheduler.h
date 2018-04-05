@@ -138,6 +138,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       base::TimeDelta main_thread_responsiveness_threshold) override;
   void SetRendererProcessType(RendererProcessType type) override;
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const char* name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
 
   // AutoAdvancingVirtualTimeDomain::Observer implementation:

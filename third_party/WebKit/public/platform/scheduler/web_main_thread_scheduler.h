@@ -223,6 +223,7 @@ class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
   // the WebScopedVirtualTimePauser returned by this method is initially
   // unpaused.
   virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const char* name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration =
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant) = 0;
 

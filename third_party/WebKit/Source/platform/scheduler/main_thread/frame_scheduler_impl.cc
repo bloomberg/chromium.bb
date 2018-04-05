@@ -443,8 +443,9 @@ void FrameSchedulerImpl::DidCommitProvisionalLoad(
 }
 
 WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
+    const WTF::String& name,
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
-  return WebScopedVirtualTimePauser(renderer_scheduler_, duration);
+  return WebScopedVirtualTimePauser(renderer_scheduler_, duration, name);
 }
 
 void FrameSchedulerImpl::DidOpenActiveConnection() {

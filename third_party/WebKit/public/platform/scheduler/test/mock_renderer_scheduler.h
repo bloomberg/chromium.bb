@@ -69,8 +69,9 @@ class MockRendererScheduler : public WebMainThreadScheduler {
   MOCK_METHOD1(SetRAILModeObserver, void(RAILModeObserver*));
   MOCK_METHOD1(MainThreadSeemsUnresponsive, bool(base::TimeDelta));
   MOCK_METHOD1(SetRendererProcessType, void(RendererProcessType));
-  MOCK_METHOD1(CreateWebScopedVirtualTimePauser,
+  MOCK_METHOD2(CreateWebScopedVirtualTimePauser,
                WebScopedVirtualTimePauser(
+                   const char* name,
                    WebScopedVirtualTimePauser::VirtualTaskDuration));
 
  private:

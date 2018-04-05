@@ -168,6 +168,7 @@ class EmptyFrameScheduler final : public FrameScheduler {
   }
   PageScheduler* GetPageScheduler() const override { return nullptr; }
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const String&,
       WebScopedVirtualTimePauser::VirtualTaskDuration) {
     return WebScopedVirtualTimePauser();
   }

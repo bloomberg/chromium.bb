@@ -1444,7 +1444,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
     }
   }
 
-  resource->VirtualTimePauser().PauseVirtualTime(false);
+  resource->VirtualTimePauser().UnpauseVirtualTime();
   Context().DispatchDidFinishLoading(
       resource->Identifier(), finish_time, encoded_data_length,
       resource->GetResponse().DecodedBodyLength(), blocked_cross_site_document);
@@ -1470,7 +1470,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   bool is_internal_request = resource->Options().initiator_info.name ==
                              FetchInitiatorTypeNames::internal;
 
-  resource->VirtualTimePauser().PauseVirtualTime(false);
+  resource->VirtualTimePauser().UnpauseVirtualTime();
   Context().DispatchDidFail(
       resource->LastResourceRequest().Url(), resource->Identifier(), error,
       resource->GetResponse().EncodedDataLength(), is_internal_request);
@@ -1519,8 +1519,9 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     if (Context().GetFrameScheduler()) {
       WebScopedVirtualTimePauser virtual_time_pauser =
           Context().GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
+              resource->Url().GetString(),
               WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-      virtual_time_pauser.PauseVirtualTime(true);
+      virtual_time_pauser.PauseVirtualTime();
       resource->VirtualTimePauser() = std::move(virtual_time_pauser);
     }
     Context().DispatchWillSendRequest(resource->Identifier(), request, response,

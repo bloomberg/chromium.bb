@@ -532,16 +532,17 @@ TEST_F(PageSchedulerImplTest,
   {
     WebScopedVirtualTimePauser virtual_time_pauser =
         frame_scheduler->CreateWebScopedVirtualTimePauser(
+            "test",
             WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
     EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-    virtual_time_pauser.PauseVirtualTime(true);
+    virtual_time_pauser.PauseVirtualTime();
     EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-    virtual_time_pauser.PauseVirtualTime(false);
+    virtual_time_pauser.UnpauseVirtualTime();
     EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-    virtual_time_pauser.PauseVirtualTime(true);
+    virtual_time_pauser.PauseVirtualTime();
     EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
   }
 
@@ -563,8 +564,9 @@ void PauseAndUnpauseVirtualTime(RendererSchedulerImpl* scheduler,
   {
     WebScopedVirtualTimePauser virtual_time_pauser =
         frame_scheduler->CreateWebScopedVirtualTimePauser(
+            "test",
             WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-    virtual_time_pauser.PauseVirtualTime(true);
+    virtual_time_pauser.PauseVirtualTime();
   }
 
   *unpaused = scheduler->GetVirtualTimeDomain()->Now();
@@ -630,21 +632,21 @@ TEST_F(PageSchedulerImplTest,
 
   WebScopedVirtualTimePauser virtual_time_pauser1 =
       frame_scheduler->CreateWebScopedVirtualTimePauser(
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   WebScopedVirtualTimePauser virtual_time_pauser2 =
       frame_scheduler->CreateWebScopedVirtualTimePauser(
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
 
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  virtual_time_pauser1.PauseVirtualTime(true);
-  virtual_time_pauser2.PauseVirtualTime(true);
+  virtual_time_pauser1.PauseVirtualTime();
+  virtual_time_pauser2.PauseVirtualTime();
   EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  virtual_time_pauser2.PauseVirtualTime(false);
+  virtual_time_pauser2.UnpauseVirtualTime();
   EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  virtual_time_pauser1.PauseVirtualTime(false);
+  virtual_time_pauser1.UnpauseVirtualTime();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 }
 
