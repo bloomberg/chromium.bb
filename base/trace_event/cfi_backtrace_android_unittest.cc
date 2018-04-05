@@ -91,7 +91,7 @@ TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
   unwinder->ParseCFITables();
 
   CFIBacktraceAndroid::CFIRow cfi_row = {0};
-  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x00, &cfi_row));
+  EXPECT_FALSE(unwinder->FindCFIRowForPC(0x01, &cfi_row));
   EXPECT_FALSE(unwinder->FindCFIRowForPC(0x100, &cfi_row));
   EXPECT_FALSE(unwinder->FindCFIRowForPC(0x1502, &cfi_row));
   EXPECT_FALSE(unwinder->FindCFIRowForPC(0x3000, &cfi_row));
@@ -123,6 +123,73 @@ TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
   EXPECT_EQ(kRow5, cfi_row);
   EXPECT_TRUE(unwinder->FindCFIRowForPC(0x2210, &cfi_row));
   EXPECT_EQ(kRow5, cfi_row);
+
+  // Test if cache is used on the future calls to Find, all addresses should
+  // have different hash. Resetting the memory map to make sure it is never
+  // accessed in Find().
+  unwinder->cfi_mmap_.reset(new MemoryMappedFile());
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1002, &cfi_row));
+  EXPECT_EQ(kRow1, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1003, &cfi_row));
+  EXPECT_EQ(kRow1, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1008, &cfi_row));
+  EXPECT_EQ(kRow2, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1009, &cfi_row));
+  EXPECT_EQ(kRow2, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1039, &cfi_row));
+  EXPECT_EQ(kRow2, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1080, &cfi_row));
+  EXPECT_EQ(kRow3, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x1100, &cfi_row));
+  EXPECT_EQ(kRow3, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x2050, &cfi_row));
+  EXPECT_EQ(kRow4, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x2208, &cfi_row));
+  EXPECT_EQ(kRow5, cfi_row);
+  EXPECT_TRUE(unwinder->FindCFIRowForPC(0x2210, &cfi_row));
+  EXPECT_EQ(kRow5, cfi_row);
+}
+
+TEST(CFIBacktraceAndroidTest, TestCFICache) {
+  // Use ASSERT macros in this function since they are in loop and using EXPECT
+  // prints too many failures.
+  CFIBacktraceAndroid::CFICache cache;
+  CFIBacktraceAndroid::CFIRow cfi;
+
+  // Empty cache should not find anything.
+  EXPECT_FALSE(cache.Find(1, &cfi));
+
+  // Insert 1 - 2*kLimit
+  for (size_t i = 1; i <= 2 * cache.kLimit; ++i) {
+    CFIBacktraceAndroid::CFIRow val = {4 * i, 2 * i};
+    cache.Add(i, val);
+    ASSERT_TRUE(cache.Find(i, &cfi));
+    ASSERT_EQ(cfi, val);
+
+    // Inserting more than kLimit items evicts |i - cache.kLimit| from cache.
+    if (i >= cache.kLimit)
+      ASSERT_FALSE(cache.Find(i - cache.kLimit, &cfi));
+  }
+  // Cache contains kLimit+1 - 2*kLimit.
+
+  // Check that 1 - kLimit cannot be found.
+  for (size_t i = 1; i <= cache.kLimit; ++i) {
+    ASSERT_FALSE(cache.Find(i, &cfi));
+  }
+
+  // Check if kLimit+1 - 2*kLimit still exists in cache.
+  for (size_t i = cache.kLimit + 1; i <= 2 * cache.kLimit; ++i) {
+    CFIBacktraceAndroid::CFIRow val = {4 * i, 2 * i};
+    ASSERT_TRUE(cache.Find(i, &cfi));
+    ASSERT_EQ(cfi, val);
+  }
+
+  // Insert 2*kLimit+1, will evict kLimit.
+  cfi = {1, 1};
+  cache.Add(2 * cache.kLimit + 1, cfi);
+  EXPECT_TRUE(cache.Find(2 * cache.kLimit + 1, &cfi));
+  EXPECT_FALSE(cache.Find(cache.kLimit + 1, &cfi));
+  // Cache contains kLimit+1 - 2*kLimit.
 }
 
 }  // namespace trace_event

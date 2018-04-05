@@ -8,7 +8,6 @@
 #include <sys/types.h>
 
 #include "base/android/apk_assets.h"
-#include "base/debug/stack_trace.h"
 
 #if !defined(ARCH_CPU_ARMEL)
 #error This file should not be built for this architecture.
@@ -120,7 +119,9 @@ CFIBacktraceAndroid* CFIBacktraceAndroid::GetInstance() {
   return instance;
 }
 
-CFIBacktraceAndroid::CFIBacktraceAndroid() {
+CFIBacktraceAndroid::CFIBacktraceAndroid()
+    : thread_local_cfi_cache_(
+          [](void* ptr) { delete static_cast<CFICache*>(ptr); }) {
   Initialize();
 }
 
@@ -171,8 +172,7 @@ void CFIBacktraceAndroid::ParseCFITables() {
   unw_data_start_addr_ = unw_index_indices_col_ + unw_index_row_count_;
 }
 
-size_t CFIBacktraceAndroid::Unwind(const void** out_trace,
-                                   size_t max_depth) const {
+size_t CFIBacktraceAndroid::Unwind(const void** out_trace, size_t max_depth) {
   // This function walks the stack using the call frame information to find the
   // return addresses of all the functions that belong to current binary in call
   // stack. For each function the CFI table defines the offset of the previous
@@ -209,9 +209,13 @@ size_t CFIBacktraceAndroid::Unwind(const void** out_trace,
   return depth;
 }
 
-bool CFIBacktraceAndroid::FindCFIRowForPC(
-    uintptr_t func_addr,
-    CFIBacktraceAndroid::CFIRow* cfi) const {
+bool CFIBacktraceAndroid::FindCFIRowForPC(uintptr_t func_addr,
+                                          CFIBacktraceAndroid::CFIRow* cfi) {
+  auto* cache = GetThreadLocalCFICache();
+  *cfi = {0};
+  if (cache->Find(func_addr, cfi))
+    return true;
+
   // Consider each column of UNW_INDEX table as arrays of uintptr_t (function
   // addresses) and uint16_t (indices). Define start and end iterator on the
   // first column array (addresses) and use std::lower_bound() to binary search
@@ -220,7 +224,6 @@ bool CFIBacktraceAndroid::FindCFIRowForPC(
       unw_index_function_col_ + unw_index_row_count_;
   const uintptr_t* found =
       std::lower_bound(unw_index_function_col_, unw_index_fn_end, func_addr);
-  *cfi = {0};
 
   // If found is start, then the given function is not in the table. If the
   // given pc is start of a function then we cannot unwind.
@@ -280,7 +283,31 @@ bool CFIBacktraceAndroid::FindCFIRowForPC(
   *cfi = {cfi_row.cfa_offset(), ra_offset};
   DCHECK(cfi->cfa_offset);
   DCHECK(cfi->ra_offset);
+
+  // safe to update since the cache is thread local.
+  cache->Add(func_addr, *cfi);
   return true;
+}
+
+CFIBacktraceAndroid::CFICache* CFIBacktraceAndroid::GetThreadLocalCFICache() {
+  auto* cache = static_cast<CFICache*>(thread_local_cfi_cache_.Get());
+  if (!cache) {
+    cache = new CFICache();
+    thread_local_cfi_cache_.Set(cache);
+  }
+  return cache;
+}
+
+void CFIBacktraceAndroid::CFICache::Add(uintptr_t address, CFIRow cfi) {
+  cache_[address % kLimit] = {address, cfi};
+}
+
+bool CFIBacktraceAndroid::CFICache::Find(uintptr_t address, CFIRow* cfi) {
+  if (cache_[address % kLimit].address == address) {
+    *cfi = cache_[address % kLimit].cfi;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace trace_event

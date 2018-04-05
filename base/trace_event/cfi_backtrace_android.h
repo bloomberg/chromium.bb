@@ -14,6 +14,7 @@
 #include "base/debug/debugging_buildflags.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/gtest_prod_util.h"
+#include "base/threading/thread_local_storage.h"
 
 namespace base {
 namespace trace_event {
@@ -40,16 +41,17 @@ class BASE_EXPORT CFIBacktraceAndroid {
 
   // Returns the program counters by unwinding stack in the current thread in
   // order of latest call frame first. Unwinding works only if
-  // can_unwind_stack_frames() returns true. This function does not allocate
-  // memory from heap. For each stack frame, this method searches through the
+  // can_unwind_stack_frames() returns true. This function allocates memory from
+  // heap for caches. For each stack frame, this method searches through the
   // unwind table mapped in memory to find the unwind information for function
   // and walks the stack to find all the return address. This only works until
   // the last function call from the chrome.so. We do not have unwind
   // information to unwind beyond any frame outside of chrome.so. Calls to
   // Unwind() are thread safe and lock free, once Initialize() returns success.
-  size_t Unwind(const void** out_trace, size_t max_depth) const;
+  size_t Unwind(const void** out_trace, size_t max_depth);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CFIBacktraceAndroidTest, TestCFICache);
   FRIEND_TEST_ALL_PREFIXES(CFIBacktraceAndroidTest, TestFindCFIRow);
   FRIEND_TEST_ALL_PREFIXES(CFIBacktraceAndroidTest, TestUnwinding);
 
@@ -62,11 +64,42 @@ class BASE_EXPORT CFIBacktraceAndroid {
     // The offset of the call frame address of previous function from the
     // current stack pointer. Rule for unwinding SP: SP_prev = SP_cur +
     // cfa_offset.
-    size_t cfa_offset = 0;
+    uint16_t cfa_offset = 0;
     // The offset of location of return address from the previous call frame
     // address. Rule for unwinding PC: PC_prev = * (SP_prev - ra_offset).
-    size_t ra_offset = 0;
+    uint16_t ra_offset = 0;
   };
+
+  // A simple cache that stores entries in table using prime modulo hashing.
+  // This cache with 500 entries already gives us 95% hit rate, and fits in a
+  // single system page (usually 4KiB). Using a thread local cache for each
+  // thread gives us 30% improvements on performance of heap profiling.
+  class CFICache {
+   public:
+    // Add new item to the cache. It replaces an existing item with same hash.
+    // Constant time operation.
+    void Add(uintptr_t address, CFIRow cfi);
+
+    // Finds the given address and fills |cfi| with the info for the address.
+    // returns true if found, otherwise false. Assumes |address| is never 0.
+    bool Find(uintptr_t address, CFIRow* cfi);
+
+   private:
+    FRIEND_TEST_ALL_PREFIXES(CFIBacktraceAndroidTest, TestCFICache);
+
+    // Size is the highest prime which fits the cache in a single system page,
+    // usually 4KiB. A prime is chosen to make sure addresses are hashed evenly.
+    static const int kLimit = 509;
+
+    struct AddrAndCFI {
+      uintptr_t address;
+      CFIRow cfi;
+    };
+    AddrAndCFI cache_[kLimit] = {};
+  };
+
+  static_assert(sizeof(CFIBacktraceAndroid::CFICache) < 4096,
+                "The cache does not fit in a single page.");
 
   CFIBacktraceAndroid();
   ~CFIBacktraceAndroid();
@@ -86,7 +119,9 @@ class BASE_EXPORT CFIBacktraceAndroid {
 
   // Finds the CFI row for the given |func_addr| in terms of offset from
   // the start of the current binary.
-  bool FindCFIRowForPC(uintptr_t func_addr, CFIRow* out) const;
+  bool FindCFIRowForPC(uintptr_t func_addr, CFIRow* out);
+
+  CFICache* GetThreadLocalCFICache();
 
   // Details about the memory mapped region which contains the libchrome.so
   // library file.
@@ -111,6 +146,8 @@ class BASE_EXPORT CFIBacktraceAndroid {
   const uint16_t* unw_data_start_addr_ = nullptr;
 
   bool can_unwind_stack_frames_ = false;
+
+  ThreadLocalStorage::Slot thread_local_cfi_cache_;
 };
 
 }  // namespace trace_event
