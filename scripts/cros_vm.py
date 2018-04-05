@@ -67,6 +67,9 @@ class VM(object):
     self.stop = opts.stop
     self.cmd = opts.args[1:] if opts.cmd else None
 
+    self.cache_dir = os.path.abspath(opts.cache_dir)
+    assert os.path.isdir(self.cache_dir), "Cache directory doesn't exist"
+
     self.vm_dir = opts.vm_dir
     if not self.vm_dir:
       self.vm_dir = os.path.join(osutils.GetGlobalTempDir(),
@@ -109,8 +112,7 @@ class VM(object):
     """Cleanup vm_dir."""
     osutils.RmDir(self.vm_dir, ignore_missing=True, sudo=self.use_sudo)
 
-  @staticmethod
-  def _GetCachePath(cache_name):
+  def _GetCachePath(self, cache_name):
     """Return path to cache.
 
     Args:
@@ -119,7 +121,7 @@ class VM(object):
     Returns:
       File path of cache.
     """
-    return os.path.join(path_util.GetCacheDir(),
+    return os.path.join(self.cache_dir,
                         cros_chrome_sdk.COMMAND_NAME,
                         cache_name)
 
@@ -469,6 +471,9 @@ class VM(object):
                         help='ssh port to communicate with VM.')
     sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
     parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
+    parser.add_argument('--cache-dir', type=str,
+                        default=path_util.GetCacheDir(),
+                        help='Cache directory to use.')
     parser.add_argument('--vm-dir', type=str,
                         help='Temp VM directory to use.')
     parser.add_argument('--dry-run', action='store_true', default=False,
