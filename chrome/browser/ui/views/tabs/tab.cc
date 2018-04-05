@@ -1151,7 +1151,7 @@ void Tab::UpdateIconVisibility() {
 
       // If all 3 icons are visible, we add an extra left padding for favicon.
       // See comment for |extra_padding_before_content_|.
-      if (!showing_close_button_ || !showing_alert_indicator_)
+      if (!showing_alert_indicator_)
         extra_padding = 0;
 
       showing_icon_ =
@@ -1169,9 +1169,17 @@ void Tab::UpdateIconVisibility() {
       if (!showing_icon_ || !showing_alert_indicator_)
         extra_padding = 0;
 
-      showing_close_button_ =
-          !force_hide_close_button &&
-          close_button_width + extra_padding <= available_width;
+      // For an inactive tab, the close button will be visible only when
+      // it is not forced to hide and the total width can accomodate all 3
+      // icons. When favicon or alert button is not visible, its space
+      // will be occupied by the title of this tab.
+      int title_width =
+          (!showing_icon_ + !showing_alert_indicator_) * favicon_width;
+      if (!force_hide_close_button &&
+          (title_width + close_button_width + extra_padding <=
+           available_width)) {
+        showing_close_button_ = true;
+      }
 
       // If no other controls are visible, show favicon even though we
       // don't have enough space. We'll clip the favicon in PaintChildren().
