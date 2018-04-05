@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
@@ -129,6 +130,10 @@ enum TestIndicies {
   kOldButPinned,
   kInternalPage,
 };
+
+bool IsTabDiscarded(content::WebContents* web_contents) {
+  return TabLifecycleUnitExternal::FromWebContents(web_contents)->IsDiscarded();
+}
 
 }  // namespace
 
@@ -434,20 +439,20 @@ TEST_F(TabManagerTest, MAYBE_DiscardTabWithNonVisibleTabs) {
     tab_manager_->DiscardTab(DiscardReason::kProactive);
 
   // Active tab in a visible window should not be discarded.
-  EXPECT_FALSE(tab_manager_->IsTabDiscarded(tab_strip1->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip1->GetWebContentsAt(0)));
 
   // Non-active tabs should be discarded.
-  EXPECT_TRUE(tab_manager_->IsTabDiscarded(tab_strip1->GetWebContentsAt(1)));
-  EXPECT_TRUE(tab_manager_->IsTabDiscarded(tab_strip2->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(tab_strip1->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(tab_strip2->GetWebContentsAt(1)));
 
 #if defined(OS_CHROMEOS)
   // On ChromeOS, a non-visible tab should be discarded even if it's active in
   // its tab strip.
-  EXPECT_TRUE(tab_manager_->IsTabDiscarded(tab_strip2->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(tab_strip2->GetWebContentsAt(0)));
 #else
   // On other platforms, an active tab is never discarded, even if it's not
   // visible.
-  EXPECT_FALSE(tab_manager_->IsTabDiscarded(tab_strip2->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip2->GetWebContentsAt(0)));
 #endif  // defined(OS_CHROMEOS)
 
   // Tabs with a committed URL must be closed explicitly to avoid DCHECK errors.

@@ -260,11 +260,6 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
   return sorted_lifecycle_units;
 }
 
-bool TabManager::IsTabDiscarded(content::WebContents* contents) const {
-  auto* lifecycle_unit = TabLifecycleUnitExternal::FromWebContents(contents);
-  return lifecycle_unit && lifecycle_unit->IsDiscarded();
-}
-
 void TabManager::DiscardTab(DiscardReason reason) {
   if (reason == DiscardReason::kUrgent)
     stats_collector_->RecordWillDiscardUrgently(GetNumAliveTabs());
@@ -327,11 +322,6 @@ void TabManager::AddObserver(TabLifecycleObserver* observer) {
 
 void TabManager::RemoveObserver(TabLifecycleObserver* observer) {
   TabLifecycleUnitExternal::RemoveTabLifecycleObserver(observer);
-}
-
-bool TabManager::IsTabAutoDiscardable(content::WebContents* contents) const {
-  auto* lifecycle_unit = TabLifecycleUnitExternal::FromWebContents(contents);
-  return !lifecycle_unit || lifecycle_unit->IsAutoDiscardable();
 }
 
 void TabManager::SetTabAutoDiscardableState(int32_t tab_id, bool state) {
@@ -477,7 +467,7 @@ base::TimeDelta TabManager::GetTimeToPurge(
 bool TabManager::ShouldPurgeNow(content::WebContents* content) const {
   if (GetWebContentsData(content)->is_purged())
     return false;
-  if (IsTabDiscarded(content))
+  if (TabLifecycleUnitExternal::FromWebContents(content)->IsDiscarded())
     return false;
 
   base::TimeDelta time_passed =
@@ -880,7 +870,7 @@ int TabManager::GetNumAliveTabs() const {
     TabStripModel* tab_strip_model = browser->tab_strip_model();
     for (int index = 0; index < tab_strip_model->count(); ++index) {
       content::WebContents* contents = tab_strip_model->GetWebContentsAt(index);
-      if (!IsTabDiscarded(contents))
+      if (!TabLifecycleUnitExternal::FromWebContents(contents)->IsDiscarded())
         ++tab_count;
     }
   }

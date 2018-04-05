@@ -110,6 +110,10 @@ bool ObserveNavEntryCommitted(const GURL& expected_url,
              ->entry->GetURL() == expected_url;
 }
 
+bool IsTabDiscarded(content::WebContents* web_contents) {
+  return TabLifecycleUnitExternal::FromWebContents(web_contents)->IsDiscarded();
+}
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
@@ -180,32 +184,32 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   // and was not selected.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   EXPECT_EQ(3, tsm->count());
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Run discard again, make sure it kills the second tab.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   EXPECT_EQ(3, tsm->count());
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Kill the third tab. It should not kill the last tab, since it is active
   // tab.
   EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Kill the third tab after making second tab active.
   tsm->ActivateTabAt(1, true);
 
   EXPECT_EQ(1, tsm->active_index());
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
   FastForwardAfterDiscardProtectionTime();
   tab_manager->DiscardTabImpl(DiscardReason::kProactive);
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Force creation of the FindBarController.
   browser()->GetFindBarController();
@@ -221,9 +225,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   EXPECT_EQ(browser()->GetFindBarController()->web_contents(),
             tsm->GetActiveWebContents());
   EXPECT_EQ(0, tsm->active_index());
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Select the third tab. It should reload.
   WindowedNotificationObserver reload2(
@@ -232,9 +236,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   chrome::SelectNumberedTab(browser(), 2);
   reload2.Wait();
   EXPECT_EQ(2, tsm->active_index());
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Navigate the third tab back twice.  We used to crash here due to
   // crbug.com/121373.
@@ -262,7 +266,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 // Test that the MemoryPressureListener event is properly triggering a tab
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
-  TabManager* tab_manager = g_browser_process->GetTabManager();
   TabStripModel* tsm = browser()->tab_strip_model();
 
   // Get two tabs open.
@@ -287,14 +290,14 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   ASSERT_EQ(tsm->count(), 2);
   FastForwardAfterDiscardProtectionTime();
 
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
 
   // Nothing should happen with a moderate memory pressure event.
   base::MemoryPressureListener::NotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
 
   // A critical memory pressure event should discard a tab.
   base::MemoryPressureListener::NotifyMemoryPressure(
@@ -308,11 +311,11 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
     base::PlatformThread::Sleep(
         base::TimeDelta::FromMilliseconds(kIntervalTimeInMS));
     base::RunLoop().RunUntilIdle();
-    if (tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)))
+    if (IsTabDiscarded(tsm->GetWebContentsAt(0)))
       break;
   }
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
 }
 
 #endif
@@ -536,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
 
   // Now it should be able to discard the tab.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, PurgeBackgroundRenderer) {
@@ -1090,34 +1093,28 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
 // On ChromeOS, active tabs are discarded if their window is non-visible. On
 // other platforms, they are never discarded.
 #if defined(OS_CHROMEOS)
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(
-      browser1->tab_strip_model()->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(
-      browser2->tab_strip_model()->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(
-      browser3->tab_strip_model()->GetWebContentsAt(0)));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(
-      browser4->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(browser1->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      IsTabDiscarded(browser2->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      IsTabDiscarded(browser3->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(0)));
 #else
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(
-      browser1->tab_strip_model()->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(
-      browser2->tab_strip_model()->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(
-      browser3->tab_strip_model()->GetWebContentsAt(0)));
-  EXPECT_FALSE(tab_manager->IsTabDiscarded(
-      browser4->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      IsTabDiscarded(browser1->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      IsTabDiscarded(browser2->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      IsTabDiscarded(browser3->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(0)));
 #endif
 
   // Non-active tabs can be discarded on all platforms.
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(
-      browser1->tab_strip_model()->GetWebContentsAt(1)));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(
-      browser2->tab_strip_model()->GetWebContentsAt(1)));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(
-      browser3->tab_strip_model()->GetWebContentsAt(1)));
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(
-      browser4->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(browser1->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(browser2->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(browser3->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(1)));
 }
 
 }  // namespace resource_coordinator
