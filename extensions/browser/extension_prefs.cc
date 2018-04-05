@@ -238,28 +238,6 @@ bool IsBlacklistBitSet(const base::DictionaryValue* ext) {
   return ext->GetBoolean(kPrefBlacklist, &bool_value) && bool_value;
 }
 
-void LoadExtensionControlledPrefs(ExtensionPrefs* prefs,
-                                  ExtensionPrefValueMap* value_map,
-                                  const std::string& extension_id,
-                                  ExtensionPrefsScope scope) {
-  std::string scope_string;
-  if (!pref_names::ScopeToPrefName(scope, &scope_string))
-    return;
-  std::string key = extension_id + "." + scope_string;
-
-  const base::DictionaryValue* source_dict =
-      prefs->pref_service()->GetDictionary(pref_names::kExtensions);
-  const base::DictionaryValue* preferences = NULL;
-  if (!source_dict->GetDictionary(key, &preferences))
-    return;
-
-  for (base::DictionaryValue::Iterator iter(*preferences); !iter.IsAtEnd();
-       iter.Advance()) {
-    value_map->SetExtensionPref(
-        extension_id, iter.key(), scope, iter.value().DeepCopy());
-  }
-}
-
 // Whether SetAlertSystemFirstRun() should always return true, so that alerts
 // are triggered, even in first run.
 bool g_run_alerts_in_first_run_for_testing = false;
@@ -1597,7 +1575,7 @@ void ExtensionPrefs::InitPrefStore() {
     update.Get();
   }
 
-  InitExtensionControlledPrefs(extension_pref_value_map_);
+  InitExtensionControlledPrefs();
 
   extension_pref_value_map_->NotifyInitializationCompleted();
 }
@@ -1861,8 +1839,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     extension_dict->Remove(kPrefDoNotSync, NULL);
 }
 
-void ExtensionPrefs::InitExtensionControlledPrefs(
-    ExtensionPrefValueMap* value_map) {
+void ExtensionPrefs::InitExtensionControlledPrefs() {
   TRACE_EVENT0("browser,startup",
                "ExtensionPrefs::InitExtensionControlledPrefs")
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitExtensionControlledPrefsTime");
@@ -1876,26 +1853,44 @@ void ExtensionPrefs::InitExtensionControlledPrefs(
     base::Time install_time = GetInstallTime(*extension_id);
     bool is_enabled = !IsExtensionDisabled(*extension_id);
     bool is_incognito_enabled = IsIncognitoEnabled(*extension_id);
-    value_map->RegisterExtension(
+    extension_pref_value_map_->RegisterExtension(
         *extension_id, install_time, is_enabled, is_incognito_enabled);
 
     for (auto& observer : observer_list_)
       observer.OnExtensionRegistered(*extension_id, install_time, is_enabled);
 
     // Set regular extension controlled prefs.
-    LoadExtensionControlledPrefs(
-        this, value_map, *extension_id, kExtensionPrefsScopeRegular);
+    LoadExtensionControlledPrefs(*extension_id, kExtensionPrefsScopeRegular);
     // Set incognito extension controlled prefs.
-    LoadExtensionControlledPrefs(this,
-                                 value_map,
-                                 *extension_id,
+    LoadExtensionControlledPrefs(*extension_id,
                                  kExtensionPrefsScopeIncognitoPersistent);
     // Set regular-only extension controlled prefs.
-    LoadExtensionControlledPrefs(
-        this, value_map, *extension_id, kExtensionPrefsScopeRegularOnly);
+    LoadExtensionControlledPrefs(*extension_id,
+                                 kExtensionPrefsScopeRegularOnly);
 
     for (auto& observer : observer_list_)
       observer.OnExtensionPrefsLoaded(*extension_id, this);
+  }
+}
+
+void ExtensionPrefs::LoadExtensionControlledPrefs(
+    const ExtensionId& extension_id,
+    ExtensionPrefsScope scope) {
+  std::string scope_string;
+  if (!pref_names::ScopeToPrefName(scope, &scope_string))
+    return;
+  std::string key = extension_id + "." + scope_string;
+
+  const base::DictionaryValue* source_dict =
+      pref_service()->GetDictionary(pref_names::kExtensions);
+  const base::DictionaryValue* preferences = NULL;
+  if (!source_dict->GetDictionary(key, &preferences))
+    return;
+
+  for (base::DictionaryValue::Iterator iter(*preferences); !iter.IsAtEnd();
+       iter.Advance()) {
+    extension_pref_value_map_->SetExtensionPref(extension_id, iter.key(), scope,
+                                                iter.value().DeepCopy());
   }
 }
 
