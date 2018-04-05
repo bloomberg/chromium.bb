@@ -18,4 +18,4 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (0,0) size 40x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,25.00)}]
         LayoutSVGContainer {use} at (0,0) size 40x40
           LayoutSVGRect {rect} at (0,0) size 40x40 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=40.00] [height=40.00]
-caret: position 47 of child 0 {#text} of child 1 {text} of child 1 {g} of child 3 {g} of child 3 {g} of child 1 {svg} of document
+caret: position 47 of child 0 {#text} of child 1 {text} of child 3 {g} of child 3 {g} of child 3 {g} of child 1 {svg} of document
