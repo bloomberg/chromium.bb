@@ -386,7 +386,7 @@ public class OfflinePageUtils {
             // If the page is not in a public location, we must publish it before sharing it.
             if (offlinePageBridge.isInPrivateDirectory(offlinePath)) {
                 publishThenShareInternalPage(
-                        activity, tab.getProfile(), offlinePageBridge, offlinePage, shareCallback);
+                        activity, offlinePageBridge, offlinePage, shareCallback);
                 return;
             }
 
@@ -447,14 +447,13 @@ public class OfflinePageUtils {
      * @param offlinePage Page to publish and share.
      * @param shareCallback The callback to be used to send the ShareParams.
      */
-    public static void publishThenShareInternalPage(final Activity activity, Profile profile,
+    public static void publishThenShareInternalPage(final Activity activity,
             OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage,
             final Callback<ShareParams> shareCallback) {
         Callback<String> publishPageCallback =
                 new PublishPageCallback(activity, offlinePage, shareCallback);
-        offlinePageBridge.publishInternalPage(profile, offlinePage.getOfflineId(),
-                offlinePage.getTitle(), offlinePage.getUrl(), offlinePage.getFilePath(),
-                offlinePage.getFileSize(), publishPageCallback);
+        offlinePageBridge.publishInternalPageByOfflineId(
+                offlinePage.getOfflineId(), publishPageCallback);
     }
 
     /**

@@ -319,6 +319,14 @@ void OfflinePageModelTaskified::GetPageByOfflineId(
   task_queue_.AddTask(std::move(task));
 }
 
+void OfflinePageModelTaskified::GetPageByGuid(
+    const std::string& guid,
+    const SingleOfflinePageItemCallback& callback) {
+  auto task =
+      GetPagesTask::CreateTaskMatchingGuid(store_.get(), callback, guid);
+  task_queue_.AddTask(std::move(task));
+}
+
 void OfflinePageModelTaskified::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const MultipleOfflinePageItemCallback& callback) {

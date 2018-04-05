@@ -283,7 +283,7 @@ public class DownloadManagerUi
 
     @Override
     public void shareItem(DownloadHistoryItemWrapper item) {
-        startShareIntent(DownloadUtils.createShareIntent(CollectionUtil.newArrayList(item)));
+        shareItems(CollectionUtil.newArrayList(item));
     }
 
     /**
@@ -369,7 +369,7 @@ public class DownloadManagerUi
             RecordHistogram.recordCount100Histogram(
                     "Android.DownloadManager.Menu.Share.SelectedCount", items.size());
 
-            startShareIntent(DownloadUtils.createShareIntent(items));
+            shareItems(items);
             return true;
         } else if (item.getItemId() == R.id.info_menu_id) {
             boolean showInfo = !mHistoryAdapter.shouldShowStorageInfoHeader();
@@ -542,5 +542,13 @@ public class DownloadManagerUi
     private static void recordMenuActionHistogram(@MenuAction int action) {
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.DownloadManager.Menu.Action", action, MENU_ACTION_BOUNDARY);
+    }
+
+    private void shareItems(final List<DownloadHistoryItemWrapper> items) {
+        boolean done = DownloadUtils.prepareForSharing(items, (newFilePathMap) -> {
+            startShareIntent(DownloadUtils.createShareIntent(items, newFilePathMap));
+        });
+
+        if (done) startShareIntent(DownloadUtils.createShareIntent(items, null));
     }
 }

@@ -128,15 +128,16 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
                      const base::android::JavaParamRef<jstring>& j_origin,
                      jboolean user_requested);
 
-  void PublishInternalPage(
+  void PublishInternalPageByOfflineId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_profile,
       const jlong j_offline_id,
-      const base::android::JavaParamRef<jstring>& j_title,
-      const base::android::JavaParamRef<jstring>& j_url,
-      const base::android::JavaParamRef<jstring>& j_file_path,
-      const jlong j_size,
+      const base::android::JavaParamRef<jobject>& j_published_callback);
+
+  void PublishInternalPageByGuid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_guid,
       const base::android::JavaParamRef<jobject>& j_published_callback);
 
   jboolean IsShowingOfflinePreview(
@@ -249,6 +250,10 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   base::android::ScopedJavaLocalRef<jobject> CreateClientId(
       JNIEnv* env,
       const ClientId& clientId) const;
+
+  void PublishInternalArchive(
+      const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
+      const OfflinePageItem* offline_page);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   // Not owned.

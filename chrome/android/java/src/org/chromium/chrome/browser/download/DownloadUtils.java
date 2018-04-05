@@ -17,6 +17,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
@@ -67,8 +69,10 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -306,13 +310,16 @@ public class DownloadUtils {
     /**
      * Creates an Intent to share {@code items} with another app by firing an Intent to Android.
      *
-     * Sharing a DownloadItem shares the file itself, while sharing an OfflinePageItem shares the
-     * URL.
+     * Sharing a DownloadItem shares the file itself. Sharing an OfflinePageItem shares the archive
+     * file if the sharing is enabled. Otherwise, the URL is shared.
      *
      * @param items Items to share.
+     * @param newOfflineFilePathMap Map of id to new file path for those offline pages that are
+     *        published before sharing.
      * @return      Intent that can be used to share the items.
      */
-    public static Intent createShareIntent(List<DownloadHistoryItemWrapper> items) {
+    public static Intent createShareIntent(
+            List<DownloadHistoryItemWrapper> items, Map<String, String> newOfflineFilePathMap) {
         Intent shareIntent = new Intent();
         String intentAction;
         ArrayList<Uri> itemUris = new ArrayList<Uri>();
@@ -326,13 +333,34 @@ public class DownloadUtils {
         for (int i = 0; i < items.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = items.get(i);
 
-            if (wrappedItem.isOfflinePage() && !OfflinePageBridge.isPageSharingEnabled()) {
+            boolean shareUrl = false;
+            File file = null;
+            if (wrappedItem.isOfflinePage()) {
+                if (OfflinePageBridge.isPageSharingEnabled()) {
+                    if (newOfflineFilePathMap != null) {
+                        OfflineItemWrapper wrappedOfflineItem = (OfflineItemWrapper) wrappedItem;
+                        String newFilePath = newOfflineFilePathMap.get(wrappedOfflineItem.getId());
+                        if (newFilePath != null) {
+                            file = new File(newFilePath);
+                        }
+                    }
+                } else {
+                    // Share the URL, instead of the file, when the offline page sharing is
+                    // disabled.
+                    shareUrl = true;
+                }
+            }
+
+            if (shareUrl) {
                 if (offlinePagesString.length() != 0) {
                     offlinePagesString.append("\n");
                 }
                 offlinePagesString.append(wrappedItem.getUrl());
             } else {
-                itemUris.add(getUriForItem(wrappedItem.getFile()));
+                if (file == null) {
+                    file = wrappedItem.getFile();
+                }
+                itemUris.add(getUriForItem(file));
             }
 
             if (selectedItemsFilterType != wrappedItem.getFilterType()) {
@@ -391,7 +419,7 @@ public class DownloadUtils {
 
         if (itemUris.size() == 1 && offlinePagesString.length() == 0) {
             // Sharing a downloaded item or an offline page.
-            shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(items.get(0).getFile()));
+            shareIntent.putExtra(Intent.EXTRA_STREAM, itemUris.get(0));
         } else {
             shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, itemUris);
         }
@@ -407,6 +435,72 @@ public class DownloadUtils {
         recordShareHistograms(items.size(), selectedItemsFilterType);
 
         return shareIntent;
+    }
+
+    /**
+     * Performs all the necessary work needed to share download items. For offline pages, we may
+     * need to publish the internal archive file to public location first.
+     *
+     * @param items Items to share.
+     * @return True if the work is done or not needed and the sharing can start immediately.
+     *         False if the asynchronous work is in progress. After it is done, |callback| will be
+     *         invoked to inform the result.
+     */
+    public static boolean prepareForSharing(
+            List<DownloadHistoryItemWrapper> items, Callback<Map<String, String>> callback) {
+        if (!OfflinePageBridge.isPageSharingEnabled()) return true;
+
+        OfflinePageBridge offlinePageBridge =
+                OfflinePageBridge.getForProfile(Profile.getLastUsedProfile().getOriginalProfile());
+
+        // If the sharing of offline pages is enabled, we need to publish the archive files if they
+        // are still located in the internal directory.
+        List<OfflineItemWrapper> offlinePagesToPublish = new ArrayList<OfflineItemWrapper>();
+        for (int i = 0; i < items.size(); i++) {
+            DownloadHistoryItemWrapper wrappedItem = items.get(i);
+            if (wrappedItem.isOfflinePage()) {
+                OfflineItemWrapper wrappedOfflineItem = (OfflineItemWrapper) wrappedItem;
+                if (offlinePageBridge.isInPrivateDirectory(wrappedOfflineItem.getFilePath())) {
+                    offlinePagesToPublish.add(wrappedOfflineItem);
+                }
+            }
+        }
+
+        if (offlinePagesToPublish.isEmpty()) return true;
+
+        publishOfflinePagesForSharing(offlinePageBridge, offlinePagesToPublish, callback);
+        return false;
+    }
+
+    static void publishOfflinePagesForSharing(OfflinePageBridge offlinePageBridge,
+            List<OfflineItemWrapper> offlinePages, Callback<Map<String, String>> callback) {
+        // TODO(jianli): Check and request permission.
+        publishOfflinePageForSharing(
+                offlinePageBridge, offlinePages, 0, new HashMap<String, String>(), callback);
+    }
+
+    static void publishOfflinePageForSharing(OfflinePageBridge offlinePageBridge,
+            final List<OfflineItemWrapper> offlinePages, final int index,
+            final Map<String, String> newFilePathMap, Callback<Map<String, String>> callback) {
+        assert index < offlinePages.size();
+
+        final OfflineItemWrapper wrappedItem = offlinePages.get(index);
+        assert wrappedItem.isOfflinePage();
+
+        offlinePageBridge.publishInternalPageByGuid(wrappedItem.getId(), (newFilePath) -> {
+            if (!newFilePath.isEmpty()) {
+                newFilePathMap.put(wrappedItem.getId(), newFilePath);
+            }
+
+            int nextIndex = index + 1;
+            if (nextIndex >= offlinePages.size()) {
+                callback.onResult(newFilePathMap);
+                return;
+            }
+
+            publishOfflinePageForSharing(
+                    offlinePageBridge, offlinePages, nextIndex, newFilePathMap, callback);
+        });
     }
 
     /**

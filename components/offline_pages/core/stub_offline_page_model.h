@@ -52,6 +52,8 @@ class StubOfflinePageModel : public OfflinePageModel {
   void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) override;
+  void GetPageByGuid(const std::string& guid,
+                     const SingleOfflinePageItemCallback& callback) override;
   void GetPagesByURL(const GURL& url,
                      URLSearchMode url_search_mode,
                      const MultipleOfflinePageItemCallback& callback) override;

@@ -659,36 +659,64 @@ void OfflinePageBridge::SavePageLater(
       params, base::Bind(&SavePageLaterCallback, j_callback_ref));
 }
 
-void OfflinePageBridge::PublishInternalPage(
+void OfflinePageBridge::PublishInternalPageByOfflineId(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_profile,
     const jlong j_offline_id,
-    const base::android::JavaParamRef<jstring>& j_title,
-    const base::android::JavaParamRef<jstring>& j_url,
-    const base::android::JavaParamRef<jstring>& j_file_path,
-    const jlong j_file_size,
     const base::android::JavaParamRef<jobject>& j_published_callback) {
   ScopedJavaGlobalRef<jobject> j_published_callback_ref;
   j_published_callback_ref.Reset(env, j_published_callback);
 
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(profile);
-  DCHECK(offline_page_model != nullptr);
-  // Since we only need base functionaity of the OfflinePageArchiver, we don't
-  // need to pass a web_contents to the Archiver constructor.
-  std::unique_ptr<OfflinePageArchiver> archiver(new OfflinePageMHTMLArchiver());
-  GURL url = GURL(ConvertJavaStringToUTF8(env, j_url));
-  base::FilePath file_path(ConvertJavaStringToUTF8(env, j_file_path));
-  ClientId client_id;  // Use an empty client id.
-  OfflinePageItem offline_page(url, (int64_t)j_offline_id, client_id, file_path,
-                               j_file_size);
-  offline_page.title = ConvertJavaStringToUTF16(env, j_title);
+      OfflinePageModelFactory::GetForBrowserContext(browser_context_);
+  DCHECK(offline_page_model);
 
+  offline_page_model->GetPageByOfflineId(
+      j_offline_id,
+      base::Bind(&OfflinePageBridge::PublishInternalArchive,
+                 weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref));
+}
+
+void OfflinePageBridge::PublishInternalPageByGuid(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_guid,
+    const base::android::JavaParamRef<jobject>& j_published_callback) {
+  ScopedJavaGlobalRef<jobject> j_published_callback_ref;
+  j_published_callback_ref.Reset(env, j_published_callback);
+
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(browser_context_);
+  DCHECK(offline_page_model);
+
+  offline_page_model->GetPageByGuid(
+      ConvertJavaStringToUTF8(env, j_guid),
+      base::Bind(&OfflinePageBridge::PublishInternalArchive,
+                 weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref));
+}
+
+void OfflinePageBridge::PublishInternalArchive(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const OfflinePageItem* offline_page) {
+  if (!offline_page) {
+    PublishPageDone(j_callback_obj, base::FilePath(), false /*success*/);
+    return;
+  }
+
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(browser_context_);
+  DCHECK(offline_page_model);
+
+  // If it has already been published, bail out.
+  if (!offline_page_model->IsArchiveInInternalDir(offline_page->file_path)) {
+    PublishPageDone(j_callback_obj, offline_page->file_path, true /*success*/);
+    return;
+  }
+
+  std::unique_ptr<OfflinePageArchiver> archiver(new OfflinePageMHTMLArchiver());
   offline_page_model->PublishInternalArchive(
-      offline_page, std::move(archiver),
-      base::BindOnce(&PublishPageDone, std::move(j_published_callback_ref)));
+      *offline_page, std::move(archiver),
+      base::BindOnce(&PublishPageDone, std::move(j_callback_obj)));
 }
 
 ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflinePageHeaderForReload(
