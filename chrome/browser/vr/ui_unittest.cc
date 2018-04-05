@@ -118,55 +118,32 @@ void VerifyButtonColor(DiscButton* button,
 
 }  // namespace
 
-TEST_F(UiTest, ToastStateTransitions) {
+TEST_F(UiTest, WebVrToastStateTransitions) {
   // Tests toast not showing when directly entering VR though WebVR
   // presentation.
   CreateScene(kNotInCct, kInWebVr);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   CreateScene(kNotInCct, kNotInWebVr);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
-
-  ui_->SetFullscreen(true);
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel());
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(false);
-  // TODO(crbug.com/787582): we should not show the fullscreen toast again when
-  // returning to fullscreen mode after presenting webvr.
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
-
-  ui_->SetFullscreen(false);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(true);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(false);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
-TEST_F(UiTest, ToastTransience) {
+TEST_F(UiTest, WebVrToastTransience) {
   CreateScene(kNotInCct, kNotInWebVr);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-
-  ui_->SetFullscreen(true);
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
-  EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds +
-                                                   kSmallDelaySeconds)));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
@@ -211,7 +188,6 @@ TEST_F(UiTest, PlatformToast) {
 
 TEST_F(UiTest, CaptureToasts) {
   CreateScene(kNotInCct, kNotInWebVr);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   for (auto& spec : GetIndicatorSpecs()) {
     for (int i = 0; i < 3; ++i) {
@@ -529,7 +505,6 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   visible_in_fullscreen.insert(kContentQuadShadow);
   visible_in_fullscreen.insert(kBackplane);
   visible_in_fullscreen.insert(kCloseButton);
-  visible_in_fullscreen.insert(kExclusiveScreenToast);
   visible_in_fullscreen.insert(kController);
   visible_in_fullscreen.insert(kControllerTouchpadButton);
   visible_in_fullscreen.insert(kControllerAppButton);
