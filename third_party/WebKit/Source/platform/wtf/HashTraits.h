@@ -85,6 +85,8 @@ struct GenericHashTraitsBase<false, T> {
 
   static const WeakHandlingFlag kWeakHandlingFlag =
       IsWeak<T>::value ? kWeakHandling : kNoWeakHandling;
+
+  static constexpr bool kCanHaveDeletedValue = true;
 };
 
 // Default integer traits disallow both 0 and -1 as keys (max value instead of

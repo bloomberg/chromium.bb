@@ -230,6 +230,7 @@ class PLATFORM_EXPORT HeapAllocator {
       DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       // No weak handling for write barriers. Modifying weakly reachable objects
       // strongifies them for the current cycle.
+      DCHECK(!Traits::kCanHaveDeletedValue || !Traits::IsDeletedValue(*object));
       TraceCollectionIfEnabled<
           WTF::kNoWeakHandling, T, Traits>::Trace(thread_state
                                                       ->CurrentVisitor(),
@@ -254,6 +255,8 @@ class PLATFORM_EXPORT HeapAllocator {
       // No weak handling for write barriers. Modifying weakly reachable objects
       // strongifies them for the current cycle.
       while (len-- > 0) {
+        DCHECK(!Traits::kCanHaveDeletedValue ||
+               !Traits::IsDeletedValue(*array));
         TraceCollectionIfEnabled<
             WTF::kNoWeakHandling, T, Traits>::Trace(thread_state
                                                         ->CurrentVisitor(),
