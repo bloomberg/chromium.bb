@@ -266,7 +266,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void ActivateViewportIntersectionMonitoring(bool activate) override;
   void UpdateRemotePlaybackCompatibility(bool is_compatible) override;
 
-  // Test helper methods for exercising media suspension.
+  // Test helper methods for exercising media suspension. Once called, when
+  // |target_state| is reached or exceeded the stale flag will be set when
+  // computing the play state, which will trigger suspend if the player is
+  // paused; see UpdatePlayState_ComputePlayState() for the exact details.
   void ForceStaleStateForTesting(ReadyState target_state) override;
   bool IsSuspendedForTesting() override;
 
