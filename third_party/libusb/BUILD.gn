@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(!is_android && !is_ios)
+# libusb is only used by //device/usb on Windows and macOS.
+assert(is_win || is_mac)
 
 import("//build/config/features.gni")
 
@@ -22,6 +23,10 @@ config("libusb_warnings") {
 }
 
 static_library("libusb") {
+  visibility = [
+    "//device:device_unittests",
+    "//device/usb",
+  ]
   sources = [
     "src/config.h",
     "src/libusb/core.c",
