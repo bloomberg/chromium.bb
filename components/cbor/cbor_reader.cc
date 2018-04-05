@@ -236,6 +236,8 @@ base::Optional<CBORValue> CBORReader::DecodeToSimpleValue(
   // Since |header.additional_info| <= 24, ReadVariadicLengthInteger also
   // provides this bound for |header.value|.
   CHECK_LE(header.value, 255u);
+  // |SimpleValue| is an enum class and so the underlying type is specified to
+  // be |int|. So this cast is safe.
   CBORValue::SimpleValue possibly_unsupported_simple_value =
       static_cast<CBORValue::SimpleValue>(static_cast<int>(header.value));
   switch (possibly_unsupported_simple_value) {
