@@ -39,8 +39,7 @@ TouchActionFilter::TouchActionFilter()
       drop_current_tap_ending_event_(false),
       allow_current_double_tap_event_(true),
       force_enable_zoom_(false),
-      allowed_touch_action_(cc::kTouchActionAuto),
-      white_listed_touch_action_(cc::kTouchActionAuto) {}
+      allowed_touch_action_(cc::kTouchActionAuto) {}
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   if (gesture_event->SourceDevice() != blink::kWebGestureDeviceTouchscreen)
@@ -192,8 +191,11 @@ void TouchActionFilter::ReportAndResetTouchAction() {
   // Report how often the effective touch action computed by blink is or is
   // not equivalent to the whitelisted touch action computed by the
   // compositor.
-  UMA_HISTOGRAM_BOOLEAN("TouchAction.EquivalentEffectiveAndWhiteListed",
-                        allowed_touch_action_ == white_listed_touch_action_);
+  if (white_listed_touch_action_.has_value()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "TouchAction.EquivalentEffectiveAndWhiteListed",
+        allowed_touch_action_ == white_listed_touch_action_.value());
+  }
   ResetTouchAction();
 }
 
@@ -201,14 +203,19 @@ void TouchActionFilter::ResetTouchAction() {
   // Note that resetting the action mid-sequence is tolerated. Gestures that had
   // their begin event(s) suppressed will be suppressed until the next sequence.
   allowed_touch_action_ = cc::kTouchActionAuto;
-  white_listed_touch_action_ = cc::kTouchActionAuto;
+  white_listed_touch_action_.reset();
 }
 
 void TouchActionFilter::OnSetWhiteListedTouchAction(
     cc::TouchAction white_listed_touch_action) {
   // We use '&' here to account for the multiple-finger case, which is the same
   // as OnSetTouchAction.
-  white_listed_touch_action_ &= white_listed_touch_action;
+  if (white_listed_touch_action_.has_value()) {
+    white_listed_touch_action_ =
+        white_listed_touch_action_.value() & white_listed_touch_action;
+  } else {
+    white_listed_touch_action_ = white_listed_touch_action;
+  }
 }
 
 bool TouchActionFilter::ShouldSuppressManipulation(
