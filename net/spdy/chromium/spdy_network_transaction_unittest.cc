@@ -7217,6 +7217,47 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   helper.VerifyDataConsumed();
 }
 
+TEST_F(SpdyNetworkTransactionTest, WebSocketNegotiatesHttp2) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("wss://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_TRUE(HostPortPair::FromURL(request_.url)
+                  .Equals(HostPortPair::FromURL(request.url)));
+  request.extra_headers.SetHeader("Connection", "Upgrade");
+  request.extra_headers.SetHeader("Upgrade", "websocket");
+  request.extra_headers.SetHeader("Origin", "http://www.example.org");
+  request.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  helper.RunPreTestSetup();
+
+  StaticSocketDataProvider data(nullptr, 0, nullptr, 0);
+
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
+  ssl_provider->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Force socket to use HTTP/1.1, the default protocol without ALPN.
+  ssl_provider->next_proto = kProtoHTTP2;
+  ssl_provider->ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  helper.AddDataWithSSLSocketDataProvider(&data, std::move(ssl_provider));
+
+  HttpNetworkTransaction* trans = helper.trans();
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+  trans->SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request, callback.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback.WaitForResult();
+  ASSERT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+
+  helper.VerifyDataConsumed();
+}
+
 // Plaintext WebSocket over HTTP/2 is not implemented, see
 // https://crbug.com/684681.
 TEST_F(SpdyNetworkTransactionTest, PlaintextWebSocketOverHttp2Proxy) {
