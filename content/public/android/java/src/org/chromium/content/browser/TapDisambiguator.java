@@ -14,10 +14,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.PopupZoomer.OnTapListener;
 import org.chromium.content.browser.PopupZoomer.OnVisibilityChangedListener;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
-import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 
 /**
  * Class that handles tap disambiguation feature.  When a tap lands ambiguously
@@ -38,8 +37,8 @@ public class TapDisambiguator implements ImeEventObserver, PopupController.Hidea
 
     public static TapDisambiguator create(
             Context context, WebContents webContents, ViewGroup containerView) {
-        TapDisambiguator tabDismabiguator = WebContentsUserData.fromWebContents(
-                webContents, TapDisambiguator.class, UserDataFactoryLazyHolder.INSTANCE);
+        TapDisambiguator tabDismabiguator = webContents.getOrSetUserData(
+                TapDisambiguator.class, UserDataFactoryLazyHolder.INSTANCE);
         assert tabDismabiguator != null;
         assert !tabDismabiguator.initialized();
 
@@ -48,7 +47,7 @@ public class TapDisambiguator implements ImeEventObserver, PopupController.Hidea
     }
 
     public static TapDisambiguator fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(webContents, TapDisambiguator.class, null);
+        return webContents.getOrSetUserData(TapDisambiguator.class, null);
     }
 
     /**

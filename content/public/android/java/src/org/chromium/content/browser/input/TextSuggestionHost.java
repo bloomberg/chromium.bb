@@ -15,9 +15,8 @@ import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
-import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -54,8 +53,8 @@ public class TextSuggestionHost
      */
     public static TextSuggestionHost create(
             Context context, WebContents webContents, WindowAndroid windowAndroid, View view) {
-        TextSuggestionHost host = WebContentsUserData.fromWebContents(
-                webContents, TextSuggestionHost.class, UserDataFactoryLazyHolder.INSTANCE);
+        TextSuggestionHost host = webContents.getOrSetUserData(
+                TextSuggestionHost.class, UserDataFactoryLazyHolder.INSTANCE);
         assert host != null;
         assert !host.initialized();
         host.init(context, windowAndroid, view);
@@ -70,7 +69,7 @@ public class TextSuggestionHost
      *         {@link #create()} is not called yet.
      */
     public static TextSuggestionHost fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(webContents, TextSuggestionHost.class, null);
+        return webContents.getOrSetUserData(TextSuggestionHost.class, null);
     }
 
     /**

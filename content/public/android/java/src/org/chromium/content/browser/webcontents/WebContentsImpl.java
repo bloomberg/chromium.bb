@@ -37,6 +37,7 @@ import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
@@ -734,41 +735,37 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         return mRenderCoordinates;
     }
 
-    /**
-     * Sets {@link WebContentsUserData} object in {@code UserDataMap}.
-     * <p>
-     * Note: This should be only called by {@link WebContentsUserData}.
-     * @param key Key of the generic object to set (its class instance).
-     * @param data The wrapper {@link WebContentsUserData} of the generic object to store.
-     */
-    void setUserData(Class key, WebContentsUserData data) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getOrSetUserData(Class key, UserDataFactory<T> userDataFactory) {
         Map<Class, WebContentsUserData> userDataMap = getUserDataMap();
+
+        // Map can be null after WebView gets gc'ed on its way to destruction.
         if (userDataMap == null) {
             Log.e(TAG, "UserDataMap can't be found");
-            return;
+            return null;
         }
-        assert !userDataMap.containsKey(key); // Do not allow duplicated Data
-        userDataMap.put(key, data);
+
+        WebContentsUserData data = userDataMap.get(key);
+        if (data == null && userDataFactory != null) {
+            assert !userDataMap.containsKey(key); // Do not allow duplicated Data
+
+            T object = userDataFactory.create(this);
+            assert key.isInstance(object);
+            userDataMap.put(key, new WebContentsUserData(object));
+            // Retrieves from the map again to return null in case |setUserData| fails
+            // to store the object.
+            data = userDataMap.get(key);
+        }
+        // Casting Object to T is safe since we make sure the object was of type T upon creation.
+        return data != null ? (T) data.getObject() : null;
     }
 
     /**
-     * Gets {@link WebContentsUserData} object from {@code UserDataMap}.
-     * <p>
-     * Note: This should be only called by {@link WebContentsUserData}.
-     * @param key Key of the generic object wrapped in {@link WebContentsUserData}.
-     * @return The {@link WebContentUserData} wrapping the object associated with the key.
-     */
-    WebContentsUserData getUserData(Class key) {
-        Map<Class, WebContentsUserData> userDataMap = getUserDataMap();
-        return userDataMap != null ? userDataMap.get(key) : null;
-    }
-
-    /**
-     * Note: This should be only called by {@link WebContentsUserData}.
      * @return {@code UserDataMap} that contains internal user data. {@code null} if
      *         the map is already gc'ed.
      */
-    Map<Class, WebContentsUserData> getUserDataMap() {
+    private Map<Class, WebContentsUserData> getUserDataMap() {
         WebContentsInternals internals = mInternalsHolder.get();
         if (internals == null) return null;
         return ((WebContentsInternalsImpl) internals).userDataMap;

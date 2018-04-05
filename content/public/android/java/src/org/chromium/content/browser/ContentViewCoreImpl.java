@@ -26,12 +26,11 @@ import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
-import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.device.gamepad.GamepadList;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -103,7 +102,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
      *                    {@code null} if none exists.
      */
     public static ContentViewCoreImpl fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(webContents, ContentViewCoreImpl.class, null);
+        return webContents.getOrSetUserData(ContentViewCoreImpl.class, null);
     }
 
     /**
@@ -152,8 +151,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     public static ContentViewCoreImpl create(Context context, String productVersion,
             WebContents webContents, ViewAndroidDelegate viewDelegate,
             InternalAccessDelegate internalDispatcher, WindowAndroid windowAndroid) {
-        ContentViewCoreImpl core = WebContentsUserData.fromWebContents(
-                webContents, ContentViewCoreImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        ContentViewCoreImpl core = webContents.getOrSetUserData(
+                ContentViewCoreImpl.class, UserDataFactoryLazyHolder.INSTANCE);
         assert core != null;
         assert !core.initialized();
         core.initialize(context, productVersion, viewDelegate, internalDispatcher, windowAndroid);

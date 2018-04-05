@@ -41,12 +41,11 @@ import org.chromium.blink_public.web.WebTextInputMode;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.picker.InputDialogContainer;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
-import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.InputMethodManagerWrapper;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.ime.TextInputType;
 
@@ -173,8 +172,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
      */
     public static ImeAdapterImpl create(
             WebContents webContents, View containerView, InputMethodManagerWrapper wrapper) {
-        ImeAdapterImpl imeAdapter = WebContentsUserData.fromWebContents(
-                webContents, ImeAdapterImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        ImeAdapterImpl imeAdapter = webContents.getOrSetUserData(
+                ImeAdapterImpl.class, UserDataFactoryLazyHolder.INSTANCE);
         assert imeAdapter != null && !imeAdapter.initialized();
         imeAdapter.init(containerView, wrapper);
         return imeAdapter;
@@ -192,7 +191,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
      *         {@link #create()} is not called yet.
      */
     public static ImeAdapterImpl fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(webContents, ImeAdapterImpl.class, null);
+        return webContents.getOrSetUserData(ImeAdapterImpl.class, null);
     }
 
     /**
