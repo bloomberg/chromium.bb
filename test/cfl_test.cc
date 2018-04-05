@@ -487,8 +487,7 @@ const subsample_lbd_param subsample_lbd_sizes_avx2[] = {
 const subsample_hbd_param subsample_hbd_sizes_avx2[] = {
   ALL_CFL_TX_SIZES_SUBSAMPLE(
       cfl_get_luma_subsampling_420_hbd_avx2,
-      cfl_get_luma_subsampling_422_hbd_c,  // TODO(ltrudeau) replace with
-      // 422 when SIMD is available
+      cfl_get_luma_subsampling_422_hbd_avx2,
       cfl_get_luma_subsampling_420_hbd_avx2)  // TODO(ltrudeau) replace with
                                               // 444 when SIMD is available
 };

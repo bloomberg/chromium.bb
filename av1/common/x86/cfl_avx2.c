@@ -188,6 +188,39 @@ static void cfl_luma_subsampling_420_hbd_avx2(const uint16_t *input,
 
 CFL_GET_SUBSAMPLE_FUNCTION_AVX2(420, hbd)
 
+/**
+ * Adds 2 pixels (in a 2x1 grid) and multiplies them by 4. Resulting in a more
+ * precise version of a box filter 4:2:2 pixel subsampling in Q3.
+ *
+ * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the
+ * active area is specified using width and height.
+ *
+ * Note: We don't need to worry about going over the active area, as long as we
+ * stay inside the CfL prediction buffer.
+ *
+ */
+static void cfl_luma_subsampling_422_hbd_avx2(const uint16_t *input,
+                                              int input_stride,
+                                              int16_t *pred_buf_q3, int width,
+                                              int height) {
+  (void)width;  // Forever 32
+  __m256i *row = (__m256i *)pred_buf_q3;
+  const __m256i *row_end = row + height * CFL_BUF_LINE_I256;
+  do {
+    __m256i top = _mm256_loadu_si256((__m256i *)input);
+    __m256i top_1 = _mm256_loadu_si256((__m256i *)(input + 16));
+    __m256i hsum = _mm256_hadd_epi16(top, top_1);
+    hsum = _mm256_permute4x64_epi64(hsum, _MM_SHUFFLE(3, 1, 2, 0));
+    hsum = _mm256_slli_epi16(hsum, 2);
+
+    _mm256_storeu_si256(row, hsum);
+
+    input += input_stride;
+  } while ((row += CFL_BUF_LINE_I256) < row_end);
+}
+
+CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, hbd)
+
 static INLINE __m256i predict_unclipped(const __m256i *input, __m256i alpha_q12,
                                         __m256i alpha_sign, __m256i dc_q0) {
   __m256i ac_q3 = _mm256_loadu_si256(input);
