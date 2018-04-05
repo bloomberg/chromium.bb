@@ -18,6 +18,6 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {BLOCKQUOTE} at (0,60) size 784x20 [color=#0000FF] [border: none (2px solid #0000FF)]
           LayoutBR {BR} at (12,0) size 0x19
         LayoutBlockFlow {BLOCKQUOTE} at (0,80) size 784x20 [color=#0000FF] [border: none (2px solid #0000FF)]
-          LayoutText {#text} at (12,0) size 81x19
-            text run at (12,0) width 81: "Hello World."
+          LayoutText {#text} at (12,0) size 82x19
+            text run at (12,0) width 82: "Hello World."
 caret: position 3 of child 0 {#text} of child 2 {DIV} of body

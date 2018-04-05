@@ -4,8 +4,8 @@ layer at (0,0) size 800x215
   LayoutNGBlockFlow {HTML} at (0,0) size 800x215
     LayoutNGBlockFlow {BODY} at (8,16) size 784x191
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 764x19
-          text run at (0,0) width 764: "Test passes if, when the text area below is focused for editing, the text insertion caret is green, like the text in that textarea."
+        LayoutText {#text} at (0,0) size 765x19
+          text run at (0,0) width 765: "Test passes if, when the text area below is focused for editing, the text insertion caret is green, like the text in that textarea."
       LayoutNGBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 432x19
           text run at (0,0) width 432: "The shape of the caret, and whether it flashes, are not part of the test."

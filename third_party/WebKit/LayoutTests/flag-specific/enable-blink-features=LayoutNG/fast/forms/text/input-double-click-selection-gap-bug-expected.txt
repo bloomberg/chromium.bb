@@ -4,8 +4,8 @@ layer at (0,0) size 800x548
   LayoutNGBlockFlow {HTML} at (0,0) size 800x548
     LayoutNGBlockFlow {BODY} at (8,16) size 784x524
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 414x19
-          text run at (0,0) width 414: "The top table was resized while the field\x{2019}s contents were selected."
+        LayoutText {#text} at (0,0) size 413x19
+          text run at (0,0) width 413: "The top table was resized while the field\x{2019}s contents were selected."
       LayoutTable {TABLE} at (0,36) size 225x244
         LayoutTableSection {TBODY} at (0,0) size 225x244
           LayoutTableRow {TR} at (0,2) size 225x240

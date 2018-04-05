@@ -4,15 +4,15 @@ layer at (0,0) size 800x355
   LayoutNGBlockFlow {HTML} at (0,0) size 800x355
     LayoutNGBlockFlow {BODY} at (8,8) size 784x339
       LayoutNGBlockFlow (anonymous) at (0,0) size 784x80
-        LayoutText {#text} at (0,0) size 532x19
-          text run at (0,0) width 532: "Tests for basic button rendering. Creates a table with seven columns and seven rows."
-        LayoutBR {BR} at (532,0) size 0x0
+        LayoutText {#text} at (0,0) size 533x19
+          text run at (0,0) width 533: "Tests for basic button rendering. Creates a table with seven columns and seven rows."
+        LayoutBR {BR} at (533,0) size 0x0
         LayoutText {#text} at (0,20) size 507x19
           text run at (0,20) width 507: "Creates two different types of buttons, one with an image (a red dot) and another"
         LayoutBR {BR} at (507,20) size 0x0
-        LayoutText {#text} at (0,40) size 643x19
-          text run at (0,40) width 643: "with text (\"foo\") and then uses six different paddings to make sure each of the buttons render properly."
-        LayoutBR {BR} at (643,40) size 0x0
+        LayoutText {#text} at (0,40) size 644x19
+          text run at (0,40) width 644: "with text (\"foo\") and then uses six different paddings to make sure each of the buttons render properly."
+        LayoutBR {BR} at (644,40) size 0x0
         LayoutBR {BR} at (0,60) size 0x0
       LayoutTable {TABLE} at (0,80) size 684x259
         LayoutTableSection {TBODY} at (0,0) size 684x259
