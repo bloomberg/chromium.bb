@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sync_socket.h"
@@ -82,11 +81,7 @@ void SyncWithAllThreads() {
   // New tasks might be posted while we are syncing, but in every iteration at
   // least one task will be run. 20 iterations should be enough for our code.
   for (int i = 0; i < 20; ++i) {
-    {
-      base::MessageLoop::ScopedNestableTaskAllower allower(
-          base::MessageLoop::current());
-      base::RunLoop().RunUntilIdle();
-    }
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
     SyncWith(BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
     SyncWith(media::AudioManager::Get()->GetWorkerTaskRunner());
   }
