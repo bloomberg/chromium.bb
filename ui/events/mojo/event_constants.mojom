@@ -67,10 +67,20 @@ enum WheelMode {
   SCALING,
 };
 
+// Phase information used for a ScrollEvent.
+// These values match ui::ScrollEventPhase in ui/events/event_constants.h
+enum ScrollEventPhase {
+  kNone,
+  kBegan,
+  kUpdate,
+  kEnd,
+};
+
 // Momentum phase information used for a ScrollEvent.
 // These values match ui::EventMomentumPhase in ui/events/event_constants.h
 enum EventMomentumPhase {
   NONE,
+  BEGAN,
   MAY_BEGIN,
   INERTIAL_UPDATE,
   END,

@@ -239,17 +239,27 @@ class MockDirectManipulationContent
   DISALLOW_COPY_AND_ASSIGN(MockDirectManipulationContent);
 };
 
-enum class Gesture { kScroll, kScale, kScaleBegin, kScaleEnd };
+enum class EventGesture {
+  kScrollBegin,
+  kScroll,
+  kScrollEnd,
+  kFlingBegin,
+  kFling,
+  kFlingEnd,
+  kScaleBegin,
+  kScale,
+  kScaleEnd,
+};
 
 struct Event {
-  explicit Event(float scale) : gesture_(Gesture::kScale), scale_(scale) {}
+  explicit Event(float scale) : gesture_(EventGesture::kScale), scale_(scale) {}
 
-  Event(float scroll_x, float scroll_y)
-      : gesture_(Gesture::kScroll), scroll_x_(scroll_x), scroll_y_(scroll_y) {}
+  Event(EventGesture gesture, float scroll_x, float scroll_y)
+      : gesture_(gesture), scroll_x_(scroll_x), scroll_y_(scroll_y) {}
 
-  explicit Event(Gesture gesture) : gesture_(gesture) {}
+  explicit Event(EventGesture gesture) : gesture_(gesture) {}
 
-  Gesture gesture_;
+  EventGesture gesture_;
   float scale_ = 0;
   float scroll_x_ = 0;
   float scroll_y_ = 0;
@@ -266,15 +276,35 @@ class MockWindowEventTarget : public WindowEventTarget {
   }
 
   void ApplyPinchZoomBegin() override {
-    events_.push_back(Event(Gesture::kScaleBegin));
+    events_.push_back(Event(EventGesture::kScaleBegin));
   }
 
   void ApplyPinchZoomEnd() override {
-    events_.push_back(Event(Gesture::kScaleEnd));
+    events_.push_back(Event(EventGesture::kScaleEnd));
   }
 
   void ApplyPanGestureScroll(int scroll_x, int scroll_y) override {
-    events_.push_back(Event(scroll_x, scroll_y));
+    events_.push_back(Event(EventGesture::kScroll, scroll_x, scroll_y));
+  }
+
+  void ApplyPanGestureFling(int scroll_x, int scroll_y) override {
+    events_.push_back(Event(EventGesture::kFling, scroll_x, scroll_y));
+  }
+
+  void ApplyPanGestureScrollBegin(int scroll_x, int scroll_y) override {
+    events_.push_back(Event(EventGesture::kScrollBegin, scroll_x, scroll_y));
+  }
+
+  void ApplyPanGestureFlingBegin() override {
+    events_.push_back(Event(EventGesture::kFlingBegin));
+  }
+
+  void ApplyPanGestureFlingEnd() override {
+    events_.push_back(Event(EventGesture::kFlingEnd));
+  }
+
+  void ApplyPanGestureScrollEnd() override {
+    events_.push_back(Event(EventGesture::kScrollEnd));
   }
 
   std::vector<Event> GetEvents() {
@@ -400,11 +430,12 @@ TEST_F(DirectManipulationUnitTest, ReceiveSimplePanTransform) {
   if (!GetDirectManipulationHelper())
     return;
 
+  ViewportStatusChanged(DIRECTMANIPULATION_RUNNING, DIRECTMANIPULATION_READY);
   ContentUpdated(1, 10, 0);
-  std::vector<Event> events = GetEvents();
 
+  std::vector<Event> events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
   EXPECT_EQ(10, events[0].scroll_x_);
   EXPECT_EQ(0, events[0].scroll_y_);
 
@@ -412,35 +443,84 @@ TEST_F(DirectManipulationUnitTest, ReceiveSimplePanTransform) {
   ContentUpdated(1, 15, 0);
 
   events = GetEvents();
-
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScroll, events[0].gesture_);
   EXPECT_EQ(5, events[0].scroll_x_);
   EXPECT_EQ(0, events[0].scroll_y_);
+
+  ViewportStatusChanged(DIRECTMANIPULATION_READY, DIRECTMANIPULATION_RUNNING);
+
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kScrollEnd, events[0].gesture_);
+}
+
+TEST_F(DirectManipulationUnitTest, ReceivePanFling) {
+  if (!GetDirectManipulationHelper())
+    return;
+
+  ViewportStatusChanged(DIRECTMANIPULATION_RUNNING, DIRECTMANIPULATION_READY);
+  ContentUpdated(1, 10, 0);
+
+  std::vector<Event> events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
+  EXPECT_EQ(10, events[0].scroll_x_);
+  EXPECT_EQ(0, events[0].scroll_y_);
+
+  // For next update, should only apply the difference.
+  ContentUpdated(1, 15, 0);
+
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(5, events[0].scroll_x_);
+  EXPECT_EQ(0, events[0].scroll_y_);
+
+  // Fling Begin.
+  ViewportStatusChanged(DIRECTMANIPULATION_INERTIA, DIRECTMANIPULATION_RUNNING);
+
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFlingBegin, events[0].gesture_);
+
+  ContentUpdated(1, 20, 0);
+
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFling, events[0].gesture_);
+  EXPECT_EQ(5, events[0].scroll_x_);
+  EXPECT_EQ(0, events[0].scroll_y_);
+
+  ViewportStatusChanged(DIRECTMANIPULATION_READY, DIRECTMANIPULATION_INERTIA);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFlingEnd, events[0].gesture_);
 }
 
 TEST_F(DirectManipulationUnitTest, ReceiveSimpleScaleTransform) {
   if (!GetDirectManipulationHelper())
     return;
 
+  ViewportStatusChanged(DIRECTMANIPULATION_RUNNING, DIRECTMANIPULATION_READY);
   ContentUpdated(1.1f, 0, 0);
   std::vector<Event> events = GetEvents();
   EXPECT_EQ(2u, events.size());
-  EXPECT_EQ(Gesture::kScaleBegin, events[0].gesture_);
-  EXPECT_EQ(Gesture::kScale, events[1].gesture_);
+  EXPECT_EQ(EventGesture::kScaleBegin, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScale, events[1].gesture_);
   EXPECT_EQ(1.1f, events[1].scale_);
 
   // For next update, should only apply the difference.
   ContentUpdated(1.21f, 0, 0);
   events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScale, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScale, events[0].gesture_);
   EXPECT_EQ(1.1f, events[0].scale_);
 
   ViewportStatusChanged(DIRECTMANIPULATION_READY, DIRECTMANIPULATION_RUNNING);
   events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScaleEnd, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScaleEnd, events[0].gesture_);
 }
 
 TEST_F(DirectManipulationUnitTest, ReceiveScrollTransformLessThanOne) {
@@ -448,6 +528,7 @@ TEST_F(DirectManipulationUnitTest, ReceiveScrollTransformLessThanOne) {
     return;
 
   // Scroll offset less than 1, should not apply.
+  ViewportStatusChanged(DIRECTMANIPULATION_RUNNING, DIRECTMANIPULATION_READY);
   ContentUpdated(1, 0.1f, 0);
   std::vector<Event> events = GetEvents();
   EXPECT_EQ(0u, events.size());
@@ -461,7 +542,7 @@ TEST_F(DirectManipulationUnitTest, ReceiveScrollTransformLessThanOne) {
   ContentUpdated(1, 1.2f, 0);
   events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
   EXPECT_EQ(1, events[0].scroll_x_);
   EXPECT_EQ(0, events[0].scroll_y_);
 
@@ -474,7 +555,7 @@ TEST_F(DirectManipulationUnitTest, ReceiveScrollTransformLessThanOne) {
   ContentUpdated(1, 3.0f, 0);
   events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScroll, events[0].gesture_);
   EXPECT_EQ(2, events[0].scroll_x_);
   EXPECT_EQ(0, events[0].scroll_y_);
 }
@@ -485,6 +566,7 @@ TEST_F(DirectManipulationUnitTest,
     return;
 
   // Scale factor less than float point error, ignore.
+  ViewportStatusChanged(DIRECTMANIPULATION_RUNNING, DIRECTMANIPULATION_READY);
   ContentUpdated(1.000001f, 0, 0);
   std::vector<Event> events = GetEvents();
   EXPECT_EQ(0u, events.size());
@@ -493,8 +575,8 @@ TEST_F(DirectManipulationUnitTest,
   ContentUpdated(1.00001f, 0, 0);
   events = GetEvents();
   EXPECT_EQ(2u, events.size());
-  EXPECT_EQ(Gesture::kScaleBegin, events[0].gesture_);
-  EXPECT_EQ(Gesture::kScale, events[1].gesture_);
+  EXPECT_EQ(EventGesture::kScaleBegin, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScale, events[1].gesture_);
   EXPECT_EQ(1.00001f, events[1].scale_);
 
   // Scale factor difference less than float point error, ignore.
@@ -506,13 +588,13 @@ TEST_F(DirectManipulationUnitTest,
   ContentUpdated(1.000021f, 0, 0);
   events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScale, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScale, events[0].gesture_);
   EXPECT_EQ(1.000021f / 1.00001f, events[0].scale_);
 
   ViewportStatusChanged(DIRECTMANIPULATION_READY, DIRECTMANIPULATION_RUNNING);
   events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScaleEnd, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScaleEnd, events[0].gesture_);
 }
 
 TEST_F(DirectManipulationUnitTest, InSameSequenceReceiveBothScrollAndScale) {
@@ -526,14 +608,117 @@ TEST_F(DirectManipulationUnitTest, InSameSequenceReceiveBothScrollAndScale) {
   ContentUpdated(1.0f, 5, 0);
   std::vector<Event> events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
 
   // Second event comes with scale factor. Now the scroll offset only noise.
   ContentUpdated(1.00001f, 5, 0);
   events = GetEvents();
+  EXPECT_EQ(3u, events.size());
+  EXPECT_EQ(EventGesture::kScrollEnd, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScaleBegin, events[1].gesture_);
+  EXPECT_EQ(EventGesture::kScale, events[2].gesture_);
+}
+
+TEST_F(DirectManipulationUnitTest, InSameSequenceReceiveScaleAfterFling) {
+  if (!GetDirectManipulationHelper())
+    return;
+
+  // Direct Manipulation maybe give pinch event after fling. In this case, we
+  // should end the current sequence first.
+
+  // First event is a scroll event.
+  ContentUpdated(1.0f, 5, 0);
+  std::vector<Event> events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
+
+  // Fling Begin.
+  ViewportStatusChanged(DIRECTMANIPULATION_INERTIA, DIRECTMANIPULATION_RUNNING);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFlingBegin, events[0].gesture_);
+
+  ContentUpdated(1, 10, 0);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFling, events[0].gesture_);
+
+  // Event comes with scale factor. Now the scroll offset only noise.
+  ViewportStatusChanged(DIRECTMANIPULATION_RUNNING, DIRECTMANIPULATION_INERTIA);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFlingEnd, events[0].gesture_);
+
+  ContentUpdated(1.00001f, 10, 0);
+  events = GetEvents();
   EXPECT_EQ(2u, events.size());
-  EXPECT_EQ(Gesture::kScaleBegin, events[0].gesture_);
-  EXPECT_EQ(Gesture::kScale, events[1].gesture_);
+  EXPECT_EQ(EventGesture::kScaleBegin, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScale, events[1].gesture_);
+}
+
+TEST_F(DirectManipulationUnitTest, InSameSequenceReceiveScrollAfterFling) {
+  if (!GetDirectManipulationHelper())
+    return;
+
+  // Direct Manipulation maybe give scroll event after fling. In this case, we
+  // should end the current sequence first.
+
+  // First event is a scroll event.
+  ContentUpdated(1.0f, 5, 0);
+  std::vector<Event> events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
+
+  // Fling Begin.
+  ViewportStatusChanged(DIRECTMANIPULATION_INERTIA, DIRECTMANIPULATION_RUNNING);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFlingBegin, events[0].gesture_);
+
+  ContentUpdated(1, 10, 0);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFling, events[0].gesture_);
+
+  // Fling back to Scroll.
+  ViewportStatusChanged(DIRECTMANIPULATION_RUNNING, DIRECTMANIPULATION_INERTIA);
+  ContentUpdated(1, 15, 0);
+  events = GetEvents();
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(EventGesture::kFlingEnd, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScrollBegin, events[1].gesture_);
+}
+
+TEST_F(DirectManipulationUnitTest,
+       ReceiveScaleAfterFlingWithoutViewportStatusChanged) {
+  if (!GetDirectManipulationHelper())
+    return;
+
+  // We never see this when testing, but still what to test it.
+
+  ContentUpdated(1.0f, 5, 0);
+  std::vector<Event> events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
+
+  // Fling Begin.
+  ViewportStatusChanged(DIRECTMANIPULATION_INERTIA, DIRECTMANIPULATION_RUNNING);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFlingBegin, events[0].gesture_);
+
+  ContentUpdated(1, 10, 0);
+  events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(EventGesture::kFling, events[0].gesture_);
+
+  // Event comes with scale factor. But no ViewportStatusChanged.
+  ContentUpdated(1.00001f, 10, 0);
+  events = GetEvents();
+  EXPECT_EQ(3u, events.size());
+  EXPECT_EQ(EventGesture::kFlingEnd, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScaleBegin, events[1].gesture_);
+  EXPECT_EQ(EventGesture::kScale, events[2].gesture_);
 }
 
 TEST_F(DirectManipulationUnitTest,
@@ -562,7 +747,7 @@ TEST_F(DirectManipulationUnitTest, HiDPIScroll) {
   ContentUpdated(1.0f, 50, 0);
   std::vector<Event> events = GetEvents();
   EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(Gesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(EventGesture::kScrollBegin, events[0].gesture_);
   EXPECT_EQ(5, events[0].scroll_x_);
 }
 

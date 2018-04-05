@@ -70,6 +70,10 @@ bool IsUsingWMPointerForTouch() {
 // Enables DirectManipulation API for processing Precision Touchpad events.
 const base::Feature kPrecisionTouchpad{"PrecisionTouchpad",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables Swipe left/right to navigation back/forward API for processing
+// Precision Touchpad events.
+const base::Feature kPrecisionTouchpadScrollPhase{
+    "PrecisionTouchpadScrollPhase", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 // Used to have ash run in its own process. This implicitly turns on the

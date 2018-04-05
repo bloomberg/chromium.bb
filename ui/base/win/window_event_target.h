@@ -105,6 +105,20 @@ class UI_BASE_EXPORT WindowEventTarget {
   // pixel precison scroll offset.
   virtual void ApplyPanGestureScroll(int scroll_x, int scroll_y) = 0;
 
+  // Calls ApplyPanGestureFling() for pan inertia gesture, scroll_x and scroll_y
+  // are pixel precison scroll offset.
+  virtual void ApplyPanGestureFling(int scroll_x, int scroll_y) = 0;
+
+  // Pan gesture phase. The sequencing expected of these events.
+  // The sequence of calls is ApplyPanGestureScrollBegin(), any number of calls
+  // to ApplyPanGestureScroll(), ApplyPanGestureScrollEnd(),
+  // ApplyPanGestureFlingBegin(), any number of calls to ApplyPanGestureFling(),
+  // and finally ApplyPanGestureFlingEnd().
+  virtual void ApplyPanGestureScrollBegin(int scroll_x, int scroll_y) = 0;
+  virtual void ApplyPanGestureScrollEnd() = 0;
+  virtual void ApplyPanGestureFlingBegin() = 0;
+  virtual void ApplyPanGestureFlingEnd() = 0;
+
  protected:
   WindowEventTarget();
   virtual ~WindowEventTarget();

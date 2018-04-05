@@ -168,12 +168,40 @@ enum EventPhase {
   EP_POSTDISPATCH
 };
 
+// Phase information used for a ScrollEvent. ScrollEventPhase is for scroll
+// stream from user gesture, EventMomentumPhase is for inertia scroll stream
+// after user gesture.
+enum class ScrollEventPhase {
+  // Event has no phase information. eg. the Event is not in a scroll stream.
+  kNone,
+
+  // Event is the beginning of a scroll event stream.
+  kBegan,
+
+  // Event is a scroll event with phase information.
+  kUpdate,
+
+  // Event is the end of the current scroll event stream.
+  kEnd,
+};
+
 // Momentum phase information used for a ScrollEvent.
 enum class EventMomentumPhase {
   // Event is a non-momentum update to an event stream already begun.
   NONE,
 
   // Event is the beginning of an event stream that may result in momentum.
+  // BEGAN vs MAY_BEGIN:
+  // - BEGAN means we already know the inertia scroll stream must happen after
+  //   BEGAN event. On Windows touchpad, we sent this when receive the first
+  //   inertia scroll event or Direct Manipulation state change to INERTIA.
+  // - MAY_BEGIN means the inertia scroll stream may happen after MAY_BEGIN
+  //   event. On Mac, we send this when receive releaseTouches, but we do not
+  //   know the inertia scroll stream will happen or not at that time.
+  BEGAN,
+
+  // Event maybe the beginning of an event stream that may result in momentum.
+  // This state used on Mac.
   MAY_BEGIN,
 
   // Event is an update while in a momentum phase. A "begin" event for the

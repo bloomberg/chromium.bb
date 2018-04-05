@@ -248,6 +248,10 @@ const int kTouchDownContextResetTimeout = 500;
 // same location as the cursor.
 const int kSynthesizedMouseMessagesTimeDifference = 500;
 
+bool IsPrecisionTouchpadNavigationGestureEnabled() {
+  return base::FeatureList::IsEnabled(features::kPrecisionTouchpadScrollPhase);
+}
+
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -1098,7 +1102,11 @@ void HWNDMessageHandler::ApplyPinchZoomEnd() {
   delegate_->HandleGestureEvent(&event);
 }
 
-void HWNDMessageHandler::ApplyPanGestureScroll(int scroll_x, int scroll_y) {
+void HWNDMessageHandler::ApplyPanGestureEvent(
+    int scroll_x,
+    int scroll_y,
+    ui::EventMomentumPhase momentum_phase,
+    ui::ScrollEventPhase phase) {
   gfx::Vector2d offset{scroll_x, scroll_y};
 
   POINT root_location = {0};
@@ -1110,11 +1118,59 @@ void HWNDMessageHandler::ApplyPanGestureScroll(int scroll_x, int scroll_y) {
   gfx::Point cursor_location(location);
   gfx::Point cursor_root_location(root_location);
 
-  ui::MouseWheelEvent wheel_event(
-      offset, cursor_location, cursor_root_location, base::TimeTicks::Now(),
-      ui::EF_PRECISION_SCROLLING_DELTA, ui::EF_NONE);
+  if (IsPrecisionTouchpadNavigationGestureEnabled()) {
+    ui::ScrollEvent event(ui::ET_SCROLL, cursor_location, ui::EventTimeForNow(),
+                          ui::EF_NONE, scroll_x, scroll_y, scroll_x, scroll_y,
+                          2, momentum_phase, phase);
+    delegate_->HandleScrollEvent(&event);
+  } else {
+    ui::MouseWheelEvent wheel_event(
+        offset, cursor_location, cursor_root_location, base::TimeTicks::Now(),
+        ui::EF_PRECISION_SCROLLING_DELTA, ui::EF_NONE);
+    delegate_->HandleMouseEvent(&wheel_event);
+  }
+}
 
-  delegate_->HandleMouseEvent(&wheel_event);
+void HWNDMessageHandler::ApplyPanGestureScroll(int scroll_x, int scroll_y) {
+  ApplyPanGestureEvent(scroll_x, scroll_y, ui::EventMomentumPhase::NONE,
+                       ui::ScrollEventPhase::kUpdate);
+}
+
+void HWNDMessageHandler::ApplyPanGestureFling(int scroll_x, int scroll_y) {
+  ApplyPanGestureEvent(scroll_x, scroll_y,
+                       ui::EventMomentumPhase::INERTIAL_UPDATE,
+                       ui::ScrollEventPhase::kNone);
+}
+
+void HWNDMessageHandler::ApplyPanGestureScrollBegin(int scroll_x,
+                                                    int scroll_y) {
+  // Phase information will be ingored in ApplyPanGestureEvent().
+  ApplyPanGestureEvent(scroll_x, scroll_y, ui::EventMomentumPhase::NONE,
+                       ui::ScrollEventPhase::kBegan);
+}
+
+void HWNDMessageHandler::ApplyPanGestureScrollEnd() {
+  if (!IsPrecisionTouchpadNavigationGestureEnabled())
+    return;
+
+  ApplyPanGestureEvent(0, 0, ui::EventMomentumPhase::NONE,
+                       ui::ScrollEventPhase::kEnd);
+}
+
+void HWNDMessageHandler::ApplyPanGestureFlingBegin() {
+  if (!IsPrecisionTouchpadNavigationGestureEnabled())
+    return;
+
+  ApplyPanGestureEvent(0, 0, ui::EventMomentumPhase::BEGAN,
+                       ui::ScrollEventPhase::kNone);
+}
+
+void HWNDMessageHandler::ApplyPanGestureFlingEnd() {
+  if (!IsPrecisionTouchpadNavigationGestureEnabled())
+    return;
+
+  ApplyPanGestureEvent(0, 0, ui::EventMomentumPhase::END,
+                       ui::ScrollEventPhase::kNone);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -54,7 +54,7 @@ class DirectManipulationHandler
   DirectManipulationHandler();
   ~DirectManipulationHandler() override;
 
-  enum class Gesture { kNone, kScroll, kPinch };
+  enum class Gesture { kNone, kScroll, kFling, kPinch };
 
   void TransitionToState(Gesture gesture);
 
@@ -72,11 +72,12 @@ class DirectManipulationHandler
 
   DirectManipulationHelper* helper_ = nullptr;
   WindowEventTarget* event_target_ = nullptr;
+  float device_scale_factor_ = 1.0f;
   float last_scale_ = 1.0f;
   int last_x_offset_ = 0;
   int last_y_offset_ = 0;
   bool first_ready_ = false;
-  float device_scale_factor_ = 1.0f;
+  bool should_send_scroll_begin_ = false;
 
   // Current recognized gesture from Direct Manipulation.
   Gesture gesture_state_ = Gesture::kNone;
