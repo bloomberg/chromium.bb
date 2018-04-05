@@ -22,11 +22,16 @@ class ContentVerifierIOData
     : public base::RefCountedThreadSafe<ContentVerifierIOData> {
  public:
   struct ExtensionData {
+    // Set of images file paths used within the browser process.
     std::unique_ptr<std::set<base::FilePath>> browser_image_paths;
+    // Set of file paths used as background scripts, pages or content scripts.
+    std::unique_ptr<std::set<base::FilePath>> background_or_content_paths;
     base::Version version;
 
-    ExtensionData(std::unique_ptr<std::set<base::FilePath>> browser_image_paths,
-                  const base::Version& version);
+    ExtensionData(
+        std::unique_ptr<std::set<base::FilePath>> browser_image_paths,
+        std::unique_ptr<std::set<base::FilePath>> background_or_content_paths,
+        const base::Version& version);
     ~ExtensionData();
   };
 

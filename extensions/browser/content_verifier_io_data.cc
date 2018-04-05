@@ -12,10 +12,11 @@ namespace extensions {
 
 ContentVerifierIOData::ExtensionData::ExtensionData(
     std::unique_ptr<std::set<base::FilePath>> browser_image_paths,
-    const base::Version& version) {
-  this->browser_image_paths = std::move(browser_image_paths);
-  this->version = version;
-}
+    std::unique_ptr<std::set<base::FilePath>> background_or_content_paths,
+    const base::Version& version)
+    : browser_image_paths(std::move(browser_image_paths)),
+      background_or_content_paths(std::move(background_or_content_paths)),
+      version(version) {}
 
 ContentVerifierIOData::ContentVerifierIOData() {
 }
