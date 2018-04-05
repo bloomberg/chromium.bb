@@ -17,9 +17,9 @@
     "  Dependent configs: all_dependent_configs, public_configs\n"
 #define DEPS_VARS \
     "  Deps: data_deps, deps, public_deps\n"
-#define GENERAL_TARGET_VARS \
-    "  General: check_includes, configs, data, inputs, output_name,\n" \
-    "           output_extension, public, sources, testonly, visibility\n"
+#define GENERAL_TARGET_VARS                                                  \
+  "  General: check_includes, configs, data, friend, inputs, output_name,\n" \
+  "           output_extension, public, sources, testonly, visibility\n"
 
 namespace functions {
 

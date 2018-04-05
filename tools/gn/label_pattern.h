@@ -46,6 +46,10 @@ class LabelPattern {
   // Returns true if this pattern matches the given label.
   bool Matches(const Label& label) const;
 
+  // Returns true if any of the patterns in the vector match the label.
+  static bool VectorMatches(const std::vector<LabelPattern>& patterns,
+                            const Label& label);
+
   // Returns a string representation of this pattern.
   std::string Describe() const;
 

@@ -348,3 +348,35 @@ TEST_F(HeaderCheckerTest, SourceFileForInclude_FileNotFound) {
   EXPECT_TRUE(source_file.is_null());
   EXPECT_FALSE(err.has_error());
 }
+
+TEST_F(HeaderCheckerTest, Friend) {
+  // Note: we have a public dependency chain A -> B -> C set up already.
+  InputFile input_file(SourceFile("//some_file.cc"));
+  input_file.SetContents(std::string());
+  LocationRange range;  // Dummy value.
+
+  // Add a private header on C.
+  SourceFile c_private("//c_private.h");
+  c_.sources().push_back(c_private);
+  c_.set_all_headers_public(false);
+
+  // List A as a friend of C.
+  Err err;
+  c_.friends().push_back(
+      LabelPattern::GetPattern(SourceDir("//"), Value(nullptr, "//a:*"), &err));
+  ASSERT_FALSE(err.has_error());
+
+  // Must be after setting everything up for it to find the files.
+  scoped_refptr<HeaderChecker> checker(
+      new HeaderChecker(setup_.build_settings(), targets_));
+
+  // B should not be allowed to include C's private header.
+  err = Err();
+  EXPECT_FALSE(checker->CheckInclude(&b_, input_file, c_private, range, &err));
+  EXPECT_TRUE(err.has_error());
+
+  // A should be able to because of the friend declaration.
+  err = Err();
+  EXPECT_TRUE(checker->CheckInclude(&a_, input_file, c_private, range, &err));
+  EXPECT_FALSE(err.has_error()) << err.message();
+}

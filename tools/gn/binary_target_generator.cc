@@ -47,6 +47,9 @@ void BinaryTargetGenerator::DoRun() {
   if (!FillPublic())
     return;
 
+  if (!FillFriends())
+    return;
+
   if (!FillCheckIncludes())
     return;
 
@@ -75,6 +78,15 @@ bool BinaryTargetGenerator::FillCompleteStaticLib() {
     if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
       return false;
     target_->set_complete_static_lib(value->boolean_value());
+  }
+  return true;
+}
+
+bool BinaryTargetGenerator::FillFriends() {
+  const Value* value = scope_->GetValue(variables::kFriend, true);
+  if (value) {
+    return ExtractListOfLabelPatterns(*value, scope_->GetSourceDir(),
+                                      &target_->friends(), err_);
   }
   return true;
 }

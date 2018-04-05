@@ -54,11 +54,7 @@ void Visibility::SetPrivate(const SourceDir& current_dir) {
 }
 
 bool Visibility::CanSeeMe(const Label& label) const {
-  for (const auto& pattern : patterns_) {
-    if (pattern.Matches(label))
-      return true;
-  }
-  return false;
+  return LabelPattern::VectorMatches(patterns_, label);
 }
 
 std::string Visibility::Describe(int indent, bool include_brackets) const {

@@ -111,6 +111,14 @@ bool TargetLabelsMatchExceptToolchain(const Target* a, const Target* b) {
          a->label().name() == b->label().name();
 }
 
+// Returns true if the target |annotation_on| includes a friend annotation
+// that allows |is_marked_friend| as a friend.
+bool FriendMatches(const Target* annotation_on,
+                   const Target* is_marked_friend) {
+  return LabelPattern::VectorMatches(annotation_on->friends(),
+                                     is_marked_friend->label());
+}
+
 }  // namespace
 
 HeaderChecker::HeaderChecker(const BuildSettings* build_settings,
@@ -354,8 +362,9 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     return true;
 
   // For all targets containing this file, we require that at least one be
-  // a direct or public dependency of the current target, and that the header
-  // is public within the target.
+  // a direct or public dependency of the current target, and either (1) the
+  // header is public within the target, or (2) there is a friend definition
+  // whitelisting the includor.
   //
   // If there is more than one target containing this header, we may encounter
   // some error cases before finding a good one. This error stores the previous
@@ -378,14 +387,17 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
 
       found_dependency = true;
 
-      if (target.is_public && is_permitted_chain) {
+      bool effectively_public =
+          target.is_public || FriendMatches(to_target, from_target);
+
+      if (effectively_public && is_permitted_chain) {
         // This one is OK, we're done.
         last_error = Err();
         break;
       }
 
       // Diagnose the error.
-      if (!target.is_public) {
+      if (!effectively_public) {
         // Danger: must call CreatePersistentRange to put in Err.
         last_error = Err(CreatePersistentRange(source_file, range),
                          "Including a private header.",
