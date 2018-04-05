@@ -529,28 +529,33 @@ LayoutRectOutsets BackgroundImageGeometry::ComputeDestRectAdjustment(
   //     respective box, but for padding-box we also try to force alignment
   //     with the inner border.
   //
-  //   * for border-box, we can modufy individual edges iff the border fully
+  //   * for border-box, we can modify individual edges iff the border fully
   //     obscures the background.
   //
-  // It it unsafe to derive dest from border information if the layer is not
-  // painted as part of a regular background phase (e.g. paint_phase == kMask)
-  // or in the presence of non-SrcOver compositing.
-  // Also, if coordinate_offset_by_paint_rect_ is set, we're dealing with a
-  // LayoutView - for which dest_rect is overflowing (expanded to cover the
-  // whole canvas).
-  // Finally, table cells using the table background should not adjust
-  // based on borders.
-  bool allow_border_derived_adjustment =
-      ShouldPaintSelfBlockBackground(paint_phase) &&
-      fill_layer.Composite() == CompositeOperator::kCompositeSourceOver &&
-      !coordinate_offset_by_paint_rect_ && !painting_table_cell_;
+  // It it unsafe to derive dest from border information when any of the
+  // following is true:
+  // * the layer is not painted as part of a regular background phase
+  //  (e.g.paint_phase == kMask)
+  // * non-SrcOver compositing is active
+  // * coordinate_offset_by_paint_rect_ is set, meaning we're dealing with a
+  //   LayoutView - for which dest_rect is overflowing (expanded to cover
+  //   the whole canvas).
+  // * We are painting table cells using the table background
+  // * There is a border image, because it may not be opaque or may be outset.
+  bool disallow_border_derived_adjustment =
+      !ShouldPaintSelfBlockBackground(paint_phase) ||
+      fill_layer.Composite() != CompositeOperator::kCompositeSourceOver ||
+      coordinate_offset_by_paint_rect_ || painting_table_cell_ ||
+      positioning_box_.StyleRef().BorderImage().GetImage();
   switch (fill_layer.Clip()) {
     case EFillBox::kContent:
       dest_adjust += positioning_box_.PaddingOutsets();
       dest_adjust += positioning_box_.BorderBoxOutsets();
       break;
     case EFillBox::kPadding:
-      if (allow_border_derived_adjustment) {
+      if (disallow_border_derived_adjustment) {
+        dest_adjust = positioning_box_.BorderBoxOutsets();
+      } else {
         FloatRect inner_border_rect =
             positioning_box_.StyleRef()
                 .GetRoundedInnerBorderFor(positioning_rect)
@@ -561,12 +566,10 @@ LayoutRectOutsets BackgroundImageGeometry::ComputeDestRectAdjustment(
                              LayoutUnit(inner_border_rect.MaxX()));
         dest_adjust.SetBottom(dest_rect.MaxY() -
                               LayoutUnit(inner_border_rect.MaxY()));
-      } else {
-        dest_adjust = positioning_box_.BorderBoxOutsets();
       }
       break;
     case EFillBox::kBorder: {
-      if (!allow_border_derived_adjustment)
+      if (disallow_border_derived_adjustment)
         break;
 
       BorderEdge edges[4];
