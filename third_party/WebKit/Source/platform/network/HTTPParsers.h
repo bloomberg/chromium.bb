@@ -53,9 +53,8 @@ enum ContentTypeOptionsDisposition {
   kContentTypeOptionsNosniff
 };
 
-// Be sure to update the behavior of
-// XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's
-// content or ordering.
+// Be aware that some behavior may depend on this enum's ordering, with
+// higher values taking precedence over lower ones.
 enum ReflectedXSSDisposition {
   kReflectedXSSUnset = 0,
   kAllowReflectedXSS,
@@ -112,11 +111,19 @@ PLATFORM_EXPORT double ParseDate(const String&);
 //   are trimmed.
 PLATFORM_EXPORT AtomicString ExtractMIMETypeFromMediaType(const AtomicString&);
 
+// Given an X-XSS-Protection value like "1; mode=block; report=/foo", combine
+// the first positional parameter and the "mode" into the result code, and
+// return the "report" as report_url, if present. Return kReflectedXSSInvalid
+// on bad syntax, setting |failure_reason| and |failure_position|, otherwise
+// set |failure_position| to the start of the "report" URL, if present (since
+// it is not validated here, and the caller may need that position information
+// to construct an error message).
 PLATFORM_EXPORT ReflectedXSSDisposition
 ParseXSSProtectionHeader(const String& header,
                          String& failure_reason,
                          unsigned& failure_position,
                          String& report_url);
+
 PLATFORM_EXPORT CacheControlHeader
 ParseCacheControlDirectives(const AtomicString& cache_control_header,
                             const AtomicString& pragma_header);

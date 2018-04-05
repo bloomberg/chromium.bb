@@ -34,30 +34,6 @@ if ($cgi->param('disable-protection')) {
     if ($cgi->param('malformed-header') == 1) {
         print "X-XSS-Protection: 12345678901234567\n";
     }
-    if ($cgi->param('malformed-header') == 2) {
-        print "X-XSS-Protection: red\n";
-    }
-    if ($cgi->param('malformed-header') == 3) {
-        print "X-XSS-Protection: 1; mode=purple\n";
-    }
-    if ($cgi->param('malformed-header') == 4) {
-        print "X-XSS-Protection: 1; mode=block-a-block-block\n";
-    }
-    if ($cgi->param('malformed-header') == 5) {
-        print "X-XSS-Protection: 1; mode=block; report\n";
-    }
-    if ($cgi->param('malformed-header') == 6) {
-        print "X-XSS-Protection: 1; report= ;\n";
-    }
-    if ($cgi->param('malformed-header') == 7) {
-        print "X-XSS-Protection: 1; red\n";
-    }
-    if ($cgi->param('malformed-header') == 8) {
-        print "X-XSS-Protection: 1; mode=block; report=/fail; mode=block;\n";
-    }
-    if ($cgi->param('malformed-header') == 9) {
-        print "X-XSS-Protection: 1; mode=block; report=/fail; report=/fail;\n";
-    }
 } else {
     print "X-XSS-Protection: 1\n";
 }
