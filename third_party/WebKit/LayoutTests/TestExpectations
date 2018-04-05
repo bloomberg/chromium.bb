@@ -2285,6 +2285,10 @@ crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
+crbug.com/829567 [ Linux Win ] fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+crbug.com/829567 [ Linux Win ] virtual/mouseevent_fractional/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+crbug.com/829567 [ Linux Win ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-001a.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-abspos-child-002.html [ Failure ]
