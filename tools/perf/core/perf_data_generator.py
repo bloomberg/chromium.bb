@@ -913,7 +913,9 @@ NON_TELEMETRY_BENCHMARKS = {
         'Internals>GPU', False),
     'tracing_perftests': BenchmarkMetadata(
         'kkraynov@chromium.org, primiano@chromium.org', None, False),
-    'load_library_perf_tests': BenchmarkMetadata(None, None, False),
+    'load_library_perf_tests': BenchmarkMetadata(
+        'xhwang@chromium.org, crouleau@chromium.org',
+        'Internals>Media>Encrypted', False),
     'media_perftests': BenchmarkMetadata('crouleau@chromium.org', None, False),
     'performance_browser_tests': BenchmarkMetadata(
         'miu@chromium.org', None, False),
