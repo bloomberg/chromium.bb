@@ -2,14 +2,14 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (99.30,1.59) size 310.70x333.41
+    LayoutSVGContainer {g} at (98.98,1.59) size 311.02x333.41
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (99.30,1.59) size 282x29.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (99.30,1.59) size 129x29.39
-          chunk 1 (middle anchor) text run 1 at (99.30,25.00) startOffset 0 endOffset 12 width 129.00: "Text Cursor "
-        LayoutSVGInline {a} at (99.30,1.59) size 282x29.39
-          LayoutSVGInlineText {#text} at (228.30,1.59) size 153x29.39
-            chunk 1 (middle anchor) text run 1 at (228.30,25.00) startOffset 0 endOffset 14 width 152.40: "Pointer Cursor"
+      LayoutSVGText {text} at (98.98,1.59) size 282x29.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (98.98,1.59) size 129.59x29.39
+          chunk 1 (middle anchor) text run 1 at (99.00,25.00) startOffset 0 endOffset 12 width 129.60: "Text Cursor "
+        LayoutSVGInline {a} at (98.98,1.59) size 282x29.39
+          LayoutSVGInlineText {#text} at (228.59,1.59) size 152.39x29.39
+            chunk 1 (middle anchor) text run 1 at (228.60,25.00) startOffset 0 endOffset 14 width 152.40: "Pointer Cursor"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGRect {rect} at (120,40) size 240x236 [stroke={[type=SOLID] [color=#666666] [stroke width=3.00]}] [x=120.00] [y=40.00] [width=240.00] [height=236.00]
       LayoutSVGContainer {g} at (148,70) size 184x176

@@ -24,7 +24,7 @@
         },
         {
           "object": "InlineTextBox 'Passed'",
-          "rect": [90, 115, 44, 19],
+          "rect": [90, 115, 43, 19],
           "reason": "appeared"
         }
       ]

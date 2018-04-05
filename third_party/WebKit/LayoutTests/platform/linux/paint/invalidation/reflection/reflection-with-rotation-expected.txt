@@ -24,12 +24,12 @@
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "rect": [23, 51, 71, 109],
+          "rect": [23, 51, 72, 110],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'FAIL'",
-          "rect": [23, 51, 68, 108],
+          "rect": [23, 51, 69, 109],
           "reason": "disappeared"
         }
       ]

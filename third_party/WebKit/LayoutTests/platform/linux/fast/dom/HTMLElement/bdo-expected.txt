@@ -4,16 +4,16 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 109x19
-          text run at (0,0) width 109: "Tests: the bdo tag"
+        LayoutText {#text} at (0,0) size 110x19
+          text run at (0,0) width 110: "Tests: the bdo tag"
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 328x19
           text run at (0,0) width 328: "The bdo element overrides the default text direction."
       LayoutBlockFlow {P} at (0,72) size 784x40
-        LayoutText {#text} at (0,0) size 762x39
-          text run at (0,0) width 727: "If successful, the first sentence would be backward, and the second sentence regular. There should then be an extra "
-          text run at (727,0) width 35: "blank"
-          text run at (0,20) width 696: "line, followed by a line reading only \"A,\" and finally, a sentence where only the word \"umbrella\" is backward."
+        LayoutText {#text} at (0,0) size 761x39
+          text run at (0,0) width 726: "If successful, the first sentence would be backward, and the second sentence regular. There should then be an extra "
+          text run at (726,0) width 35: "blank"
+          text run at (0,20) width 697: "line, followed by a line reading only \"A,\" and finally, a sentence where only the word \"umbrella\" is backward."
       LayoutBlockFlow (anonymous) at (0,138) size 784x120
         LayoutBR {BR} at (0,0) size 0x19
         LayoutInline {BDO} at (0,0) size 221x19

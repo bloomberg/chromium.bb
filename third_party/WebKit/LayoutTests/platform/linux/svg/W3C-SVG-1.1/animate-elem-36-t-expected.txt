@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutSVGInlineText {#text} at (10,304) size 287.39x45.59
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 287.40: "$Revision: 1.11 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (126.30,10.59) size 227.39x18.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (126.30,10.59) size 227.39x18.59
-        chunk 1 (middle anchor) text run 1 at (126.30,25.00) startOffset 0 endOffset 32 width 227.40: "<animateTransform> on structure,"
+    LayoutSVGText {text} at (126.59,10.59) size 226.80x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (126.59,10.59) size 226.80x18.59
+        chunk 1 (middle anchor) text run 1 at (126.60,25.00) startOffset 0 endOffset 32 width 226.80: "<animateTransform> on structure,"
     LayoutSVGText {text} at (136.80,30.59) size 206.39x18.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (136.80,30.59) size 206.39x18.59
         chunk 1 (middle anchor) text run 1 at (136.80,45.00) startOffset 0 endOffset 30 width 206.40: "hyperlinking and text elements"

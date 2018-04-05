@@ -5,12 +5,12 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
     LayoutBlockFlow {BODY} at (8,16) size 769x1780
       LayoutBlockFlow {DIV} at (0,0) size 769x864
         LayoutBlockFlow {P} at (0,0) size 769x20
-          LayoutText {#text} at (684,0) size 85x19
-            text run at (684,0) width 85: "Right To Left"
+          LayoutText {#text} at (683,0) size 86x19
+            text run at (683,0) width 86: "Right To Left"
         LayoutBlockFlow {P} at (0,36) size 769x20
-          LayoutText {#text} at (445,0) size 324x19
-            text run at (445,0) width 4 RTL: "."
-            text run at (449,0) width 320: "Well-formed pair of unicode bidi control characters"
+          LayoutText {#text} at (444,0) size 325x19
+            text run at (444,0) width 4 RTL: "."
+            text run at (448,0) width 321: "Well-formed pair of unicode bidi control characters"
         LayoutBlockFlow {DIV} at (0,72) size 769x20
           LayoutText {#text} at (756,0) size 13x19
             text run at (756,0) width 0 RTL: "\x{202C}"
@@ -119,10 +119,10 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (753,0) width 0 RTL: "\x{202C}"
             text run at (753,0) width 16: "12"
         LayoutBlockFlow {DIV} at (0,764) size 769x20
-          LayoutText {#text} at (753,0) size 16x19
-            text run at (753,0) width 0 RTL: "\x{202A}"
-            text run at (753,0) width 0 RTL: "\x{202C}"
-            text run at (753,0) width 16: "\x{660}\x{661}"
+          LayoutText {#text} at (751,0) size 18x19
+            text run at (751,0) width 0 RTL: "\x{202A}"
+            text run at (751,0) width 0 RTL: "\x{202C}"
+            text run at (751,0) width 18: "\x{660}\x{661}"
         LayoutBlockFlow {DIV} at (0,784) size 769x20
           LayoutText {#text} at (749,0) size 20x19
             text run at (749,0) width 0 RTL: "\x{202A}"
@@ -136,16 +136,16 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (747,0) width 22: "abc\x{202C}"
             text run at (769,0) width 0 RTL: "\x{202A}"
         LayoutBlockFlow {DIV} at (0,844) size 769x20
-          LayoutText {#text} at (754,0) size 15x19
-            text run at (754,0) width 0 RTL: "\x{202A}"
-            text run at (754,0) width 15 RTL: "\x{5D0}\x{5D1}\x{202C}"
+          LayoutText {#text} at (751,0) size 18x19
+            text run at (751,0) width 0 RTL: "\x{202A}"
+            text run at (751,0) width 18 RTL: "\x{5D0}\x{5D1}\x{202C}"
       LayoutBlockFlow {DIV} at (0,880) size 769x864
         LayoutBlockFlow {P} at (0,0) size 769x20
-          LayoutText {#text} at (0,0) size 85x19
-            text run at (0,0) width 85: "Left To Right"
+          LayoutText {#text} at (0,0) size 86x19
+            text run at (0,0) width 86: "Left To Right"
         LayoutBlockFlow {P} at (0,36) size 769x20
-          LayoutText {#text} at (0,0) size 324x19
-            text run at (0,0) width 324: "Well-formed pair of unicode bidi control characters."
+          LayoutText {#text} at (0,0) size 325x19
+            text run at (0,0) width 325: "Well-formed pair of unicode bidi control characters."
         LayoutBlockFlow {DIV} at (0,72) size 769x20
           LayoutText {#text} at (0,0) size 13x19
             text run at (0,0) width 5 RTL: "!"
@@ -241,10 +241,10 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 16: "12\x{202C}"
             text run at (16,0) width 0: "\x{202A}"
         LayoutBlockFlow {DIV} at (0,764) size 769x20
-          LayoutText {#text} at (0,0) size 16x19
-            text run at (0,0) width 16: "\x{660}\x{661}"
-            text run at (16,0) width 0: "\x{202C}"
-            text run at (16,0) width 0: "\x{202A}"
+          LayoutText {#text} at (0,0) size 18x19
+            text run at (0,0) width 18: "\x{660}\x{661}"
+            text run at (18,0) width 0: "\x{202C}"
+            text run at (18,0) width 0: "\x{202A}"
         LayoutBlockFlow {DIV} at (0,784) size 769x20
           LayoutText {#text} at (0,0) size 20x19
             text run at (0,0) width 20 RTL: "\x{683}\x{684}"
@@ -259,14 +259,14 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 22: "abc\x{202C}"
             text run at (22,0) width 0: "\x{202A}"
         LayoutBlockFlow {DIV} at (0,844) size 769x20
-          LayoutText {#text} at (0,0) size 15x19
-            text run at (0,0) width 15 RTL: "\x{5D0}\x{5D1}"
-            text run at (15,0) width 0: "\x{202C}"
-            text run at (15,0) width 0: "\x{202A}"
+          LayoutText {#text} at (0,0) size 18x19
+            text run at (0,0) width 18 RTL: "\x{5D0}\x{5D1}"
+            text run at (18,0) width 0: "\x{202C}"
+            text run at (18,0) width 0: "\x{202A}"
       LayoutBlockFlow {UL} at (0,1760) size 769x20
         LayoutListItem {LI} at (40,0) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (0,0) size 705x19
-            text run at (0,0) width 705: "test id=test: the right-most character of rendering result of <PDF>abc<PDF> in RTL block should be c: Success"
+          LayoutText {#text} at (0,0) size 704x19
+            text run at (0,0) width 704: "test id=test: the right-most character of rendering result of <PDF>abc<PDF> in RTL block should be c: Success"
 selection start: position 3 of child 0 {#text} of child 20 {DIV} of child 1 {DIV} of body
 selection end:   position 4 of child 0 {#text} of child 20 {DIV} of child 1 {DIV} of body

@@ -10,8 +10,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 59: "Item One"
         LayoutListItem {LI} at (40,20) size 744x20
           LayoutListMarker (anonymous) at (-14.50,7.50) size 7.50x7.50
-          LayoutText {#text} at (0,0) size 60x19
-            text run at (0,0) width 60: "Item Two"
+          LayoutText {#text} at (0,0) size 61x19
+            text run at (0,0) width 61: "Item Two"
         LayoutListItem {LI} at (40,40) size 744x20
           LayoutListMarker (anonymous) at (-14.50,7.50) size 7.50x7.50
           LayoutText {#text} at (0,0) size 69x19

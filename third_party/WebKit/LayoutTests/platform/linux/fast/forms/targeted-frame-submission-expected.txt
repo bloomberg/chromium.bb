@@ -10,10 +10,10 @@ layer at (0,0) size 800x600
               text run at (0,0) width 26: "form"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,38) size 784x40
-        LayoutText {#text} at (0,0) size 759x39
-          text run at (0,0) width 282: "This tests Targeted frame submission works. "
-          text run at (282,0) width 477: "If the test is successful, the text \"SUCCESS\" should be shown in the iframe"
-          text run at (0,20) width 41: "below."
+        LayoutText {#text} at (0,0) size 760x39
+          text run at (0,0) width 283: "This tests Targeted frame submission works. "
+          text run at (283,0) width 477: "If the test is successful, the text \"SUCCESS\" should be shown in the iframe"
+          text run at (0,20) width 42: "below."
       LayoutBlockFlow (anonymous) at (0,78) size 784x154
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,86) size 304x154

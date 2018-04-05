@@ -15,8 +15,8 @@ layer at (0,0) size 800x600
           text run at (0,32) width 0: " "
       LayoutBlockFlow {P} at (0,115) size 784x40 [bgcolor=#808080]
         LayoutText {#text} at (0,0) size 541x19
-          text run at (0,0) width 387: "This element is unstyled save for a background color of gray. "
-          text run at (387,0) width 154: "However, it contains an "
+          text run at (0,0) width 388: "This element is unstyled save for a background color of gray. "
+          text run at (388,0) width 153: "However, it contains an "
         LayoutInline {SPAN} at (0,0) size 192x19 [bgcolor=#00FFFF]
           LayoutText {#text} at (541,0) size 143x19
             text run at (541,0) width 143: "inline element of class "
@@ -33,8 +33,8 @@ layer at (0,0) size 800x600
           text run at (548,20) width 232: " line in which the inline box appears."
       LayoutBlockFlow {P} at (0,171) size 784x60 [bgcolor=#808080]
         LayoutText {#text} at (0,0) size 541x19
-          text run at (0,0) width 387: "This element is unstyled save for a background color of gray. "
-          text run at (387,0) width 154: "However, it contains an "
+          text run at (0,0) width 388: "This element is unstyled save for a background color of gray. "
+          text run at (388,0) width 153: "However, it contains an "
         LayoutInline {SPAN} at (0,0) size 167x19 [bgcolor=#00FFFF]
           LayoutText {#text} at (541,0) size 143x19
             text run at (541,0) width 143: "inline element of class "
@@ -54,9 +54,9 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x172
           LayoutTableRow {TR} at (0,0) size 782x28
             LayoutTableCell {TD} at (0,0) size 782x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 782x144
             LayoutTableCell {TD} at (0,86) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -64,8 +64,8 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (12,28) size 770x144 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 762x60 [bgcolor=#808080]
                 LayoutText {#text} at (0,0) size 541x19
-                  text run at (0,0) width 387: "This element is unstyled save for a background color of gray. "
-                  text run at (387,0) width 154: "However, it contains an "
+                  text run at (0,0) width 388: "This element is unstyled save for a background color of gray. "
+                  text run at (388,0) width 153: "However, it contains an "
                 LayoutInline {SPAN} at (0,0) size 192x19 [bgcolor=#00FFFF]
                   LayoutText {#text} at (541,0) size 143x19
                     text run at (541,0) width 143: "inline element of class "
@@ -83,8 +83,8 @@ layer at (0,0) size 800x600
                   text run at (0,40) width 80: "box appears."
               LayoutBlockFlow {P} at (4,80) size 762x60 [bgcolor=#808080]
                 LayoutText {#text} at (0,0) size 541x19
-                  text run at (0,0) width 387: "This element is unstyled save for a background color of gray. "
-                  text run at (387,0) width 154: "However, it contains an "
+                  text run at (0,0) width 388: "This element is unstyled save for a background color of gray. "
+                  text run at (388,0) width 153: "However, it contains an "
                 LayoutInline {SPAN} at (0,0) size 167x19 [bgcolor=#00FFFF]
                   LayoutText {#text} at (541,0) size 143x19
                     text run at (541,0) width 143: "inline element of class "

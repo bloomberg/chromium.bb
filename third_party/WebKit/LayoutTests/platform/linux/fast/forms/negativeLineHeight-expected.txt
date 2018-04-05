@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
           text run at (0,0) width 666: "The textarea below should have standard line-height because textareas should ignore negative line-heights"
         LayoutBR {BR} at (666,15) size 0x0
       LayoutBlockFlow {P} at (0,36) size 784x245
-        LayoutText {#text} at (0,0) size 85x19
-          text run at (0,0) width 85: "TEXTAREA"
-        LayoutBR {BR} at (85,15) size 0x0
+        LayoutText {#text} at (0,0) size 86x19
+          text run at (0,0) width 86: "TEXTAREA"
+        LayoutBR {BR} at (86,15) size 0x0
         LayoutText {#text} at (400,205) size 4x19
           text run at (400,205) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0

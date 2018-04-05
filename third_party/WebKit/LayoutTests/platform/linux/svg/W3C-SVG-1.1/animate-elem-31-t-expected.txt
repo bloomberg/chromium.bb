@@ -28,9 +28,9 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (385,133.80) size 63x20.39 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (385,133.80) size 63x20.39
         chunk 1 text run 1 at (385.00,150.00) startOffset 0 endOffset 10 width 63.00: "visibility"
-    LayoutSVGText {text} at (5,209.80) size 397.19x31.80 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,209.80) size 397.19x31.80
-        chunk 1 text run 1 at (5.00,235.00) startOffset 0 endOffset 36 width 397.20: "Test of display attribute animation."
+    LayoutSVGText {text} at (5,209.80) size 397.80x31.80 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,209.80) size 397.80x31.80
+        chunk 1 text run 1 at (5.00,235.00) startOffset 0 endOffset 36 width 397.80: "Test of display attribute animation."
     LayoutSVGText {text} at (5,248.80) size 396x20.39 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (5,248.80) size 396x20.39
         chunk 1 text run 1 at (5.00,265.00) startOffset 0 endOffset 55 width 396.00: "Circles with same color should be visible at same time."

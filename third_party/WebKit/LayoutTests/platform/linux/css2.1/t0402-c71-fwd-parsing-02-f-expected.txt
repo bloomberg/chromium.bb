@@ -38,8 +38,8 @@ layer at (0,0) size 800x592
             text run at (0,0) width 163: "This line should be green."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {ADDRESS} at (0,324) size 784x20
-        LayoutText {#text} at (0,0) size 163x19
-          text run at (0,0) width 163: "This line should be green."
+        LayoutText {#text} at (0,0) size 162x19
+          text run at (0,0) width 162: "This line should be green."
       LayoutBlockFlow {P} at (0,360) size 784x20
         LayoutInline {SPAN} at (0,0) size 163x19
           LayoutText {#text} at (0,0) size 163x19

@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 784x39
-          text run at (0,0) width 784: "Results that match WinIE are two columns on the right that say \"after\" every time, except for the last row which should have"
+        LayoutText {#text} at (0,0) size 783x39
+          text run at (0,0) width 783: "Results that match WinIE are two columns on the right that say \"after\" every time, except for the last row which should have"
           text run at (0,20) width 158: "nothing in either column."
       LayoutBlockFlow {P} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 711x19

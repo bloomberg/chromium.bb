@@ -19,22 +19,22 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Passed'",
-          "rect": [8, 136, 44, 17],
+          "rect": [8, 136, 43, 17],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Test'",
-          "rect": [8, 136, 44, 17],
+          "rect": [8, 136, 43, 17],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Failed'",
-          "rect": [8, 136, 40, 17],
+          "rect": [8, 136, 39, 17],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'Test'",
-          "rect": [8, 136, 40, 17],
+          "rect": [8, 136, 39, 17],
           "reason": "disappeared"
         }
       ]

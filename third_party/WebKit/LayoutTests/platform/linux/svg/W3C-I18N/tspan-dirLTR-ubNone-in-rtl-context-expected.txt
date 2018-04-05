@@ -3,15 +3,15 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (20,133.19) size 390x85.81
-      LayoutSVGText {text} at (99.48,133.19) size 261x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (277.69,133.19) size 82.80x21
-          chunk 1 (middle anchor) text run 1 at (277.70,150.00) startOffset 0 endOffset 14 width 82.80 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
-        LayoutSVGTSpan {tspan} at (99.48,133.19) size 261x21
-          LayoutSVGInlineText {#text} at (110.89,133.19) size 166.80x21
-            chunk 1 (middle anchor) text run 1 at (110.90,150.00) startOffset 0 endOffset 8 width 44.40 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
-            chunk 1 (middle anchor) text run 1 at (155.30,150.00) startOffset 0 endOffset 13 width 122.40: "dirLTR ubNone"
-        LayoutSVGInlineText {#text} at (99.48,133.19) size 11.39x21
-          chunk 1 (middle anchor) text run 1 at (99.50,150.00) startOffset 0 endOffset 2 width 11.40 RTL: "\"!"
+      LayoutSVGText {text} at (82.09,133.19) size 295.80x21.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (266.30,133.19) size 111.59x21.59
+          chunk 1 (middle anchor) text run 1 at (266.30,150.00) startOffset 0 endOffset 14 width 111.60 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
+        LayoutSVGTSpan {tspan} at (82.09,133.19) size 295.80x21.59
+          LayoutSVGInlineText {#text} at (93.48,133.19) size 172.80x21.59
+            chunk 1 (middle anchor) text run 1 at (93.50,150.00) startOffset 0 endOffset 8 width 50.40 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
+            chunk 1 (middle anchor) text run 1 at (143.90,150.00) startOffset 0 endOffset 13 width 122.40: "dirLTR ubNone"
+        LayoutSVGInlineText {#text} at (82.09,133.19) size 11.39x21
+          chunk 1 (middle anchor) text run 1 at (82.10,150.00) startOffset 0 endOffset 2 width 11.40 RTL: "\"!"
       LayoutSVGText {text} at (20,171) size 85.19x11.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (20,171) size 85.19x11.39
           chunk 1 text run 1 at (20.00,180.00) startOffset 0 endOffset 18 width 85.20: "Reference graphic:"

@@ -4,13 +4,13 @@ layer at (0,0) size 785x915 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x914.56
     LayoutBlockFlow {BODY} at (8,21.44) size 769x868.13
       LayoutBlockFlow {H1} at (0,0) size 769x74
-        LayoutText {#text} at (0,0) size 750x73
-          text run at (0,0) width 750: "Problem: Safari improperly handles generated content"
+        LayoutText {#text} at (0,0) size 748x73
+          text run at (0,0) width 748: "Problem: Safari improperly handles generated content"
           text run at (0,37) width 716: "in certain cases when used with multiple class names"
       LayoutBlockFlow {P} at (0,95.44) size 769x40
-        LayoutInline {EM} at (0,0) size 755x39
-          LayoutText {#text} at (0,0) size 755x39
-            text run at (0,0) width 755: "When referencing an element by two class names simultaneously, Safari won't generate content (using :before or :after)"
+        LayoutInline {EM} at (0,0) size 751x39
+          LayoutText {#text} at (0,0) size 751x39
+            text run at (0,0) width 751: "When referencing an element by two class names simultaneously, Safari won't generate content (using :before or :after)"
             text run at (0,20) width 119: "within the element."
       LayoutBlockFlow {P} at (0,151.44) size 769x40
         LayoutText {#text} at (0,0) size 123x19
@@ -28,18 +28,18 @@ layer at (0,0) size 785x915 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {CODE} at (0,0) size 24x16
           LayoutText {#text} at (348,3) size 24x16
             text run at (348,3) width 24: "one"
-        LayoutText {#text} at (372,0) size 82x19
-          text run at (372,0) width 82: ". Within that "
+        LayoutText {#text} at (372,0) size 81x19
+          text run at (372,0) width 81: ". Within that "
         LayoutInline {CODE} at (0,0) size 24x16
-          LayoutText {#text} at (454,3) size 24x16
-            text run at (454,3) width 24: "div"
-        LayoutText {#text} at (478,0) size 76x19
-          text run at (478,0) width 76: ", we have a "
+          LayoutText {#text} at (453,3) size 24x16
+            text run at (453,3) width 24: "div"
+        LayoutText {#text} at (477,0) size 76x19
+          text run at (477,0) width 76: ", we have a "
         LayoutInline {CODE} at (0,0) size 8x16
-          LayoutText {#text} at (554,3) size 8x16
-            text run at (554,3) width 8: "p"
-        LayoutText {#text} at (562,0) size 741x39
-          text run at (562,0) width 179: " (paragraph) tag, after which"
+          LayoutText {#text} at (553,3) size 8x16
+            text run at (553,3) width 8: "p"
+        LayoutText {#text} at (561,0) size 740x39
+          text run at (561,0) width 179: " (paragraph) tag, after which"
           text run at (0,20) width 501: "we'd like to insert generated content. One way to do so would be the following:"
       LayoutBlockFlow {PRE} at (20,207.44) size 749x16 [color=#FF0000]
         LayoutInline {CODE} at (0,0) size 456x16
@@ -60,9 +60,9 @@ layer at (0,0) size 785x915 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (288,0) width 39: "within"
         LayoutText {#text} at (327,0) size 269x19
           text run at (327,0) width 269: " the classed element \x{2014} generating content "
-        LayoutInline {EM} at (0,0) size 763x39
-          LayoutText {#text} at (596,0) size 763x39
-            text run at (596,0) width 167: "before or after the element"
+        LayoutInline {EM} at (0,0) size 762x39
+          LayoutText {#text} at (596,0) size 762x39
+            text run at (596,0) width 166: "before or after the element"
             text run at (0,20) width 29: "itself"
         LayoutText {#text} at (29,20) size 75x19
           text run at (29,20) width 75: " works fine:"

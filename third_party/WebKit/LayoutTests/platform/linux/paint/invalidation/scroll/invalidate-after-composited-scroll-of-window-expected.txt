@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [8, 4908, 539, 19],
+          "rect": [8, 4908, 540, 19],
           "reason": "appeared"
         },
         {

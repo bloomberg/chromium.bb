@@ -31,8 +31,8 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 99x20
             LayoutText {#text} at (0,48) size 99x20
               text run at (0,48) width 99: "For this test: "
-          LayoutText {#text} at (99,48) size 176x20
-            text run at (99,48) width 176: "Test typing after a table."
+          LayoutText {#text} at (99,48) size 177x20
+            text run at (99,48) width 177: "Test typing after a table."
         LayoutBlockFlow (anonymous) at (20,89) size 744x21
           LayoutBR {BR} at (0,0) size 0x20
         LayoutBlockFlow {DIV} at (20,110) size 744x90
@@ -46,8 +46,8 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 99x20
             LayoutText {#text} at (0,69) size 99x20
               text run at (0,69) width 99: "For this test: "
-          LayoutText {#text} at (99,69) size 435x20
-            text run at (99,69) width 435: "Typed text should appear after (on the line below) the table."
+          LayoutText {#text} at (99,69) size 436x20
+            text run at (99,69) width 436: "Typed text should appear after (on the line below) the table."
       LayoutBlockFlow {DIV} at (0,230) size 784x114 [border: (2px solid #008000)]
         LayoutTable {TABLE} at (2,2) size 46x82 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 44x80

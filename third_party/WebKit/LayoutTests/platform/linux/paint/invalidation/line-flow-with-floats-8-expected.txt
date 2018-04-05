@@ -24,182 +24,182 @@
         },
         {
           "object": "InlineTextBox 'a ridge or furrow in the way wherever\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'a ridge or furrow in the way wherever\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'begin again, it was very'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'begin again, it was very'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'getting up and walking off to other parts of\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'getting up and walking off to other parts of\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'hedgehog to, and, as the doubled-up\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'hedgehog to, and, as the doubled-up\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'in the act of crawling away: besides all\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'in the act of crawling away: besides all\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'provoking to find that the hedgehog had\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'provoking to find that the hedgehog had\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'she wanted to send the'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'she wanted to send the'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'soldiers were always'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'soldiers were always'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'soon came to the conclusion that it was a very\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'soon came to the conclusion that it was a very\n'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'the ground, Alice'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'the ground, Alice'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'this, there was generally'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'this, there was generally'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'unrolled itself, and was'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'unrolled itself, and was'",
-          "rect": [13, 240, 407, 139],
+          "rect": [14, 240, 406, 139],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox ' twist itself round and'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox ' twist itself round and'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'could not help bursting out\n'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'could not help bursting out\n'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'head down, and was going to\n'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'head down, and was going to\n'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'laughing: and when she had got its'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'laughing: and when she had got its'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'look up in her face, with\n'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'look up in her face, with\n'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'such a puzzled expression that she'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'such a puzzled expression that she'",
-          "rect": [14, 180, 407, 79],
+          "rect": [14, 180, 406, 79],
           "reason": "disappeared"
         },
         {
@@ -213,36 +213,6 @@
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox ' was in a furious'",
-          "rect": [13, 440, 357, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about once in a'",
-          "rect": [13, 440, 357, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'minute.\n'",
-          "rect": [13, 440, 357, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'passion, and went\n'",
-          "rect": [13, 440, 357, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and shouting \u2018Off'",
-          "rect": [13, 440, 357, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'with his head!\u2019 or \u2018Off with\n'",
-          "rect": [13, 440, 357, 79],
-          "reason": "appeared"
-        },
-        {
           "object": "InlineTextBox 'difficult'",
           "rect": [65, 360, 356, 39],
           "reason": "disappeared"
@@ -253,129 +223,34 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing'",
-          "rect": [14, 80, 355, 119],
+          "object": "InlineTextBox ' was in a furious'",
+          "rect": [14, 440, 355, 79],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'away,\n'",
-          "rect": [14, 80, 355, 119],
+          "object": "InlineTextBox 'her head!\u2019 about once in a'",
+          "rect": [14, 440, 355, 79],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'away,\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'but generally, just as she had got its neck'",
-          "rect": [14, 80, 355, 119],
+          "object": "InlineTextBox 'minute.\n'",
+          "rect": [14, 440, 355, 79],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'but generally, just as she had got its neck'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs'",
-          "rect": [14, 80, 355, 119],
+          "object": "InlineTextBox 'passion, and went\n'",
+          "rect": [14, 440, 355, 79],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked'",
-          "rect": [14, 80, 355, 119],
+          "object": "InlineTextBox 'stamping about, and shouting \u2018Off'",
+          "rect": [14, 440, 355, 79],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'hanging down,\n'",
-          "rect": [14, 80, 355, 119],
+          "object": "InlineTextBox 'with his head!\u2019 or \u2018Off with\n'",
+          "rect": [14, 440, 355, 79],
           "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'hanging down,\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'hedgehog a blow with its head, it\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'hedgehog a blow with its head, it\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'her\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'her\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'nicely straightened\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'nicely straightened\n'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'out, and was going to give the'",
-          "rect": [14, 80, 355, 119],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'out, and was going to give the'",
-          "rect": [14, 80, 355, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'about once in a minute.\n'",
-          "rect": [14, 460, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019'",
-          "rect": [14, 460, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [14, 460, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and'",
-          "rect": [14, 460, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'was in a furious passion, and went\n'",
-          "rect": [14, 460, 355, 59],
-          "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'a very short time '",
@@ -395,6 +270,131 @@
         {
           "object": "InlineTextBox 'quarrelling all the while, and fighting'",
           "rect": [14, 420, 355, 39],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'away,\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'away,\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'but generally, just as she had got its'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'but generally, just as she had got its'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hanging down,\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'hanging down,\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hedgehog a blow with its head, it\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'hedgehog a blow with its head, it\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'her\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'her\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'neck nicely straightened\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'neck nicely straightened\n'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'out, and was going to give the'",
+          "rect": [14, 80, 354, 119],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'out, and was going to give the'",
+          "rect": [14, 80, 354, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'about once in a minute.\n'",
+          "rect": [14, 460, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019'",
+          "rect": [14, 460, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "rect": [14, 460, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "rect": [14, 460, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'was in a furious passion, and went\n'",
+          "rect": [14, 460, 354, 59],
           "reason": "disappeared"
         },
         {
@@ -493,11 +493,11 @@
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'but generally, just as she had got its neck'",
+      "object": "InlineTextBox 'but generally, just as she had got its'",
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'nicely straightened\n'",
+      "object": "InlineTextBox 'neck nicely straightened\n'",
       "reason": "geometry"
     },
     {

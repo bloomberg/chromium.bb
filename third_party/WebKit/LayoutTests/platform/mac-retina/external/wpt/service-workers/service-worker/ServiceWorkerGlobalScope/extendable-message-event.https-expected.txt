@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL Post an extendable message from a top-level client assert_equals: event `source` property `focused` expected true but got false
+PASS Post an extendable message from a nested client
+PASS Post loopback extendable messages
+PASS Post extendable messages among service workers
+Harness: the test ran to completion.
+

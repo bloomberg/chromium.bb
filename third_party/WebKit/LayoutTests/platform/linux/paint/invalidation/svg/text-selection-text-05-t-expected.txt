@@ -28,24 +28,14 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [352, 12, 131, 36],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [519, 12, 130, 36],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [186, 12, 130, 36],
-          "reason": "appeared"
-        },
-        {
           "object": "InlineTextBox 'text-anchor'",
           "rect": [519, 12, 129, 36],
           "reason": "selection"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [519, 12, 129, 36],
+          "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'text-anchor'",
@@ -53,9 +43,19 @@
           "reason": "selection"
         },
         {
+          "object": "LayoutSVGText text",
+          "rect": [352, 12, 129, 36],
+          "reason": "appeared"
+        },
+        {
           "object": "InlineTextBox 'text-anchor'",
           "rect": [186, 12, 128, 36],
           "reason": "selection"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [186, 12, 128, 36],
+          "reason": "appeared"
         },
         {
           "object": "InlineTextBox '1'",

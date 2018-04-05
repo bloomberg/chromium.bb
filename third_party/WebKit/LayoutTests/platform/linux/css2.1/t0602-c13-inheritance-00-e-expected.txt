@@ -20,14 +20,14 @@ layer at (0,0) size 800x160
             text run at (0,0) width 34: "PASS"
         LayoutText {#text} at (34,0) size 4x19
           text run at (34,0) width 4: " "
-        LayoutInline {STRONG} at (0,0) size 37x19
-          LayoutText {#text} at (38,0) size 37x19
-            text run at (38,0) width 37: "FAIL"
+        LayoutInline {STRONG} at (0,0) size 38x19
+          LayoutText {#text} at (38,0) size 38x19
+            text run at (38,0) width 38: "FAIL"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,108) size 784x20
-        LayoutText {#text} at (0,0) size 41x19
-          text run at (0,0) width 41: "PASS "
+        LayoutText {#text} at (0,0) size 42x19
+          text run at (0,0) width 42: "PASS "
         LayoutInline {DFN} at (0,0) size 32x19 [color=#FFFFFF]
-          LayoutText {#text} at (41,0) size 32x19
-            text run at (41,0) width 32: "FAIL"
+          LayoutText {#text} at (42,0) size 32x19
+            text run at (42,0) width 32: "FAIL"
         LayoutText {#text} at (0,0) size 0x0

@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (61.39,10) size 16.80x288 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (61.39,10) size 16.80x288
             chunk 1 (vertical) text run 1 at (65.00,10.00) startOffset 0 endOffset 1 height 15.60: "T"
-            chunk 1 (vertical) text run 2 at (65.00,17.80) startOffset 1 endOffset 2 height 15.60: "e"
+            chunk 1 (vertical) text run 2 at (65.00,17.20) startOffset 1 endOffset 2 height 15.60: "e"
             chunk 1 (vertical) text run 3 at (65.00,23.20) startOffset 2 endOffset 3 height 15.60: "x"
             chunk 1 (vertical) text run 4 at (65.00,30.40) startOffset 3 endOffset 4 height 15.60: "t"
             chunk 1 (vertical) text run 5 at (65.00,34.00) startOffset 4 endOffset 5 height 15.60: " "

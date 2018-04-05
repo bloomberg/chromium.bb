@@ -19,9 +19,9 @@ layer at (0,0) size 800x600
         chunk 1 text run 1 at (0.00,33.00) startOffset 0 endOffset 25 width 175.80: "no markers and no dashes."
     LayoutSVGPath {path} at (30,40) size 50x50 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#008000]}] [data="M 30 40 L 80 40 L 80 90 L 30 90 Z"]
     LayoutSVGEllipse {circle} at (160,40) size 40x40 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=LINEAR-GRADIENT] [id="grad"]}] [cx=180.00] [cy=60.00] [r=20.00]
-    LayoutSVGText {text} at (0,95.59) size 293.39x18.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,95.59) size 293.39x18.59
-        chunk 1 text run 1 at (0.00,110.00) startOffset 0 endOffset 45 width 293.40: "The circle should be opaque green, no filter,"
-    LayoutSVGText {text} at (0,115.59) size 110.39x18.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,115.59) size 110.39x18.59
-        chunk 1 text run 1 at (0.00,130.00) startOffset 0 endOffset 17 width 110.40: "green stop color."
+    LayoutSVGText {text} at (0,95.59) size 294x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,95.59) size 294x18.59
+        chunk 1 text run 1 at (0.00,110.00) startOffset 0 endOffset 45 width 294.00: "The circle should be opaque green, no filter,"
+    LayoutSVGText {text} at (0,115.59) size 111x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,115.59) size 111x18.59
+        chunk 1 text run 1 at (0.00,130.00) startOffset 0 endOffset 17 width 111.00: "green stop color."

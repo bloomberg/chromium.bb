@@ -24,17 +24,17 @@
         },
         {
           "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 108, 179, 104],
+          "rect": [112, 108, 178, 104],
           "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
-          "rect": [112, 193, 179, 19],
+          "rect": [112, 193, 178, 19],
           "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [291, 108, 100, 100],
+          "rect": [290, 108, 100, 100],
           "reason": "geometry"
         },
         {

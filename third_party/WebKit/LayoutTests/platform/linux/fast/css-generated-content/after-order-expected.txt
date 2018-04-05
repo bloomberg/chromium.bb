@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x582
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutInline {EM} at (0,0) size 629x19
-          LayoutText {#text} at (0,0) size 629x19
-            text run at (0,0) width 629: "When an :after rule has multiple pieces of content, older versions of Safari display them backwards."
+        LayoutInline {EM} at (0,0) size 628x19
+          LayoutText {#text} at (0,0) size 628x19
+            text run at (0,0) width 628: "When an :after rule has multiple pieces of content, older versions of Safari display them backwards."
       LayoutBlockFlow {DIV} at (10,36) size 764x52 [border: (1px solid #000000)]
         LayoutText {#text} at (11,21) size 44x19
           text run at (11,21) width 44: "Inline: "

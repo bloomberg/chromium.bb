@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (50,73) size 84.59x34.19 contains 1 chunk(s)
           LayoutSVGInline {a} at (50,73) size 84.59x34.19
             LayoutSVGInlineText {#text} at (50,73) size 84.59x34.19
-              chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 7 width 84.00: "Visited"
-        LayoutSVGText {text} at (250,73) size 117x34.19 contains 1 chunk(s)
-          LayoutSVGInline {a} at (250,73) size 117x34.19
-            LayoutSVGInlineText {#text} at (250,73) size 117x34.19
+              chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 7 width 84.60: "Visited"
+        LayoutSVGText {text} at (250,73) size 116.39x34.19 contains 1 chunk(s)
+          LayoutSVGInline {a} at (250,73) size 116.39x34.19
+            LayoutSVGInlineText {#text} at (250,73) size 116.39x34.19
               chunk 1 text run 1 at (250.00,100.00) startOffset 0 endOffset 9 width 116.40: "Unvisited"
         LayoutSVGText {text} at (50,143) size 119.39x34.19 contains 1 chunk(s)
           LayoutSVGInline {a} at (50,143) size 119.39x34.19

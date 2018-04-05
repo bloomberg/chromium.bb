@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (35.39,5.80) size 409.61x293.39
+    LayoutSVGContainer {g} at (36,5.80) size 409x293.39
       LayoutSVGText {text} at (50,5.80) size 315x13.19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (50,5.80) size 315x13.19
           chunk 1 text run 1 at (50.00,16.00) startOffset 0 endOffset 69 width 315.00: "Link test of the 'view' element and its attributes, 2 of 2, external."
@@ -38,8 +38,8 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (340,101.59) size 66x18.59
           chunk 1 text run 1 at (340.00,116.00) startOffset 0 endOffset 9 width 66.00: "Rectangle"
       LayoutSVGRect {rect} at (292,29) size 141x91 [stroke={[type=SOLID] [color=#000000]}] [x=292.00] [y=29.00] [width=141.00] [height=91.00]
-      LayoutSVGText {text} at (301.39,121) size 122.39x11.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (301.39,121) size 122.39x11.39
+      LayoutSVGText {text} at (302,121) size 121.80x11.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (302,121) size 121.80x11.39
           chunk 1 text run 1 at (302.00,130.00) startOffset 0 endOffset 29 width 121.80: "No view attributes except id."
       LayoutSVGEllipse {ellipse} at (298,219) size 144x64 [fill={[type=SOLID] [color=#0000FF]}] [cx=370.00] [cy=251.00] [rx=72.00] [ry=32.00]
       LayoutSVGText {text} at (355,280.59) size 46.80x18.59 contains 1 chunk(s)
@@ -54,20 +54,20 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (70,101.59) size 40.19x18.59
           chunk 1 text run 1 at (70.00,116.00) startOffset 0 endOffset 6 width 40.20: "Circle"
       LayoutSVGRect {rect} at (36,29) size 98x91 [stroke={[type=SOLID] [color=#000000]}] [x=36.00] [y=29.00] [width=98.00] [height=91.00]
-      LayoutSVGText {text} at (36,119) size 105x11.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (36,119) size 105x11.39
+      LayoutSVGText {text} at (36,119) size 104.39x11.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (36,119) size 104.39x11.39
           chunk 1 text run 1 at (36.00,128.00) startOffset 0 endOffset 21 width 104.40: "viewBox & non-uniform"
-      LayoutSVGText {text} at (35.39,128) size 89.39x11.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (35.39,128) size 89.39x11.39
+      LayoutSVGText {text} at (36,128) size 88.80x11.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (36,128) size 88.80x11.39
           chunk 1 text run 1 at (36.00,137.00) startOffset 0 endOffset 19 width 88.80: "preserveAspectRatio"
       LayoutSVGPath {polygon} at (39,211) size 95x72 [fill={[type=SOLID] [color=#008000]}] [points="87 211 134 238 116 283 57 283 39 238 87 211"]
       LayoutSVGText {text} at (65,280.59) size 55.80x18.59 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (65,280.59) size 55.80x18.59
           chunk 1 text run 1 at (65.00,295.00) startOffset 0 endOffset 7 width 55.80: "Polygon"
       LayoutSVGRect {rect} at (36,208) size 100x89 [stroke={[type=SOLID] [color=#000000]}] [x=36.00] [y=208.00] [width=100.00] [height=89.00]
-      LayoutSVGText {text} at (46,188) size 80.39x11.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (46,188) size 80.39x11.39
-          chunk 1 text run 1 at (46.00,197.00) startOffset 0 endOffset 18 width 80.40: "viewTarget, should"
+      LayoutSVGText {text} at (46,188) size 81x11.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (46,188) size 81x11.39
+          chunk 1 text run 1 at (46.00,197.00) startOffset 0 endOffset 18 width 81.00: "viewTarget, should"
       LayoutSVGText {text} at (46,197) size 76.80x11.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (46,197) size 76.80x11.39
           chunk 1 text run 1 at (46.00,206.00) startOffset 0 endOffset 17 width 76.80: "highlight polygon"

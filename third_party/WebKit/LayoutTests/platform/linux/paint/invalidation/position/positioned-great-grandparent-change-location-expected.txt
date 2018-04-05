@@ -29,12 +29,12 @@
         },
         {
           "object": "InlineTextBox 'Target'",
-          "rect": [100, 200, 40, 19],
+          "rect": [100, 200, 41, 19],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'Target'",
-          "rect": [100, 100, 40, 19],
+          "rect": [100, 100, 41, 19],
           "reason": "geometry"
         }
       ]

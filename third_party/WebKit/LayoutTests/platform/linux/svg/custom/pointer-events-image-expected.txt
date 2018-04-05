@@ -2,13 +2,13 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGText {text} at (110,5) size 107x19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (110,5) size 107x19
-        chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 107.00: "Visibility: visible"
-    LayoutSVGText {text} at (340,5) size 109x19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (340,5) size 109x19
-        chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 109.00: "Visibility: hidden"
-    LayoutSVGContainer {g} at (-1,30) size 550x563
+    LayoutSVGText {text} at (110,5) size 106x19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (110,5) size 106x19
+        chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 106.00: "Visibility: visible"
+    LayoutSVGText {text} at (340,5) size 108x19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (340,5) size 108x19
+        chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 108.00: "Visibility: hidden"
+    LayoutSVGContainer {g} at (0,30) size 549x563
       LayoutSVGText {text} at (0,45) size 27x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,45) size 27x19
           chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 4 width 27.00: "auto"
@@ -44,8 +44,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (504,35) size 28x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (504,35) size 28x19
           chunk 1 text run 1 at (504.00,50.00) startOffset 0 endOffset 4 width 28.00: "miss"
-      LayoutSVGText {text} at (0,102) size 89x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,102) size 89x19
+      LayoutSVGText {text} at (0,102) size 88x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,102) size 88x19
           chunk 1 text run 1 at (0.00,117.00) startOffset 0 endOffset 14 width 88.00: "visiblePainted"
       LayoutSVGImage {image} at (100,87) size 50x50
       LayoutSVGText {text} at (105,92) size 27x19 contains 1 chunk(s)
@@ -184,8 +184,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (504,263) size 28x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (504,263) size 28x19
           chunk 1 text run 1 at (504.00,278.00) startOffset 0 endOffset 4 width 28.00: "miss"
-      LayoutSVGText {text} at (-1,330) size 48x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (-1,330) size 48x19
+      LayoutSVGText {text} at (0,330) size 46x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,330) size 46x19
           chunk 1 text run 1 at (0.00,345.00) startOffset 0 endOffset 7 width 46.00: "painted"
       LayoutSVGImage {image} at (100,315) size 50x50
       LayoutSVGText {text} at (105,320) size 27x19 contains 1 chunk(s)

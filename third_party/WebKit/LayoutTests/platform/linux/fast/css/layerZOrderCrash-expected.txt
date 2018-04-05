@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow (relative positioned) {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 618x19
-          text run at (0,0) width 618: "To reproduce this bug outside of DumpRenderTree, click the link below. If broken, we will crash. "
-        LayoutBR {BR} at (618,15) size 0x0
+        LayoutText {#text} at (0,0) size 619x19
+          text run at (0,0) width 619: "To reproduce this bug outside of DumpRenderTree, click the link below. If broken, we will crash. "
+        LayoutBR {BR} at (619,15) size 0x0
 layer at (8,28) size 58x96
   LayoutTable (relative positioned) {TABLE} at (0,20) size 58x96
     LayoutTableSection {TBODY} at (0,0) size 58x96

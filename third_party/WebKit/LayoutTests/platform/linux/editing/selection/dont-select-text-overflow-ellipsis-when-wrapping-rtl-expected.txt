@@ -10,10 +10,10 @@ layer at (0,0) size 800x104
         LayoutBlockFlow {DT} at (0,22) size 384x22
           LayoutText {#text} at (0,0) size 212x21
             text run at (0,0) width 212: "Lorem ipsum dolor sit amet"
-layer at (208,52) size 344x22 scrollX 874.00 scrollWidth 1218
+layer at (208,52) size 344x22 scrollX 873.00 scrollWidth 1217
   LayoutBlockFlow {DD} at (0,0) size 344x22
-    LayoutText {#text} at (-874,0) size 1218x21
-      text run at (-874,0) width 5 RTL: "."
-      text run at (-869,0) width 1213: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua"
+    LayoutText {#text} at (-873,0) size 1217x21
+      text run at (-873,0) width 5 RTL: "."
+      text run at (-868,0) width 1212: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua"
 selection start: position 0 of child 0 {#text} of child 1 {DD} of child 2 {DL} of body
 selection end:   position 10 of child 0 {#text} of child 3 {DT} of child 2 {DL} of body

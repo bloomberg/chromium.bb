@@ -4,8 +4,8 @@ layer at (0,0) size 800x273
   LayoutBlockFlow {HTML} at (0,0) size 800x273
     LayoutBlockFlow {BODY} at (8,16) size 784x249
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 522x19
-          text run at (0,0) width 522: "Testing masks on compositing layers. Left and right columns should look the same."
+        LayoutText {#text} at (0,0) size 523x19
+          text run at (0,0) width 523: "Testing masks on compositing layers. Left and right columns should look the same."
       LayoutBlockFlow (anonymous) at (0,36) size 784x213
         LayoutText {#text} at (208,193) size 4x19
           text run at (208,193) width 4: " "

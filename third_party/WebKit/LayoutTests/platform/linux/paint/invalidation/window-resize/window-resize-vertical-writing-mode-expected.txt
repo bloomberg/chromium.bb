@@ -24,7 +24,7 @@
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [10, 7, 920, 213],
+          "rect": [10, 8, 920, 212],
           "reason": "paint property change"
         },
         {
@@ -162,7 +162,7 @@
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [10, 7, 920, 213],
+          "rect": [10, 8, 920, 212],
           "reason": "paint property change"
         }
       ],
@@ -295,12 +295,12 @@
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [10, 7, 390, 213],
+          "rect": [10, 8, 390, 212],
           "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [39, 7, 352, 563],
+          "rect": [39, 8, 352, 562],
           "reason": "paint property change"
         }
       ]
@@ -383,52 +383,52 @@
         },
         {
           "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [439, 7, 352, 563],
+          "rect": [439, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [439, 7, 352, 563],
+          "rect": [439, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [439, 7, 352, 563],
+          "rect": [439, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [439, 7, 352, 563],
+          "rect": [439, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'NNNN'",
-          "rect": [439, 7, 352, 563],
+          "rect": [439, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [39, 7, 352, 563],
+          "rect": [39, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [39, 7, 352, 563],
+          "rect": [39, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [39, 7, 352, 563],
+          "rect": [39, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [39, 7, 352, 563],
+          "rect": [39, 8, 352, 562],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'NNNN'",
-          "rect": [39, 7, 352, 563],
+          "rect": [39, 8, 352, 562],
           "reason": "geometry"
         }
       ]

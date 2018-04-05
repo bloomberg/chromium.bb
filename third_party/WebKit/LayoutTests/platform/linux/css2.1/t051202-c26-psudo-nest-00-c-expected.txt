@@ -42,7 +42,7 @@ layer at (0,0) size 800x479
           LayoutText {#text} at (464,190) size 24x19
             text run at (464,190) width 24: "teal"
         LayoutText {#text} at (488,190) size 779x59
-          text run at (488,190) width 274: ". If this precise combination does not occur,"
+          text run at (488,190) width 273: ". If this precise combination does not occur,"
           text run at (0,210) width 410: "then the user agent has failed this test. Remember that in order to "
           text run at (410,210) width 369: "ensure a complete test, the paragraph must be displayed on"
           text run at (0,230) width 36: "more "
@@ -57,8 +57,8 @@ layer at (0,0) size 800x479
           LayoutText {#text} at (131,13) size 108x19
             text run at (131,13) width 108: "two characters"
         LayoutText {#text} at (239,13) size 446x19
-          text run at (239,13) width 117: " in this paragraph "
-          text run at (356,13) width 329: "(a double-quote mark and a capital 'T') should be "
+          text run at (239,13) width 118: " in this paragraph "
+          text run at (357,13) width 328: "(a double-quote mark and a capital 'T') should be "
         LayoutInline {STRONG} at (0,0) size 88x19
           LayoutText {#text} at (685,13) size 88x19
             text run at (685,13) width 44: "200% "
@@ -112,9 +112,9 @@ layer at (0,0) size 800x479
         LayoutText {#text} at (686,0) size 778x59
           text run at (686,0) width 22: ". If "
           text run at (708,0) width 70: "this precise"
-          text run at (0,20) width 329: "combination does not occur, then the user agent has "
-          text run at (329,20) width 409: "failed this test. Remember that in order to ensure a complete test, "
-          text run at (738,20) width 19: "the"
+          text run at (0,20) width 328: "combination does not occur, then the user agent has "
+          text run at (328,20) width 409: "failed this test. Remember that in order to ensure a complete test, "
+          text run at (737,20) width 19: "the"
           text run at (0,40) width 386: "paragraph must be displayed on more than one line. (TEST3)"
       LayoutBlockFlow {DIV} at (0,435) size 784x20
         LayoutText {#text} at (0,0) size 166x19

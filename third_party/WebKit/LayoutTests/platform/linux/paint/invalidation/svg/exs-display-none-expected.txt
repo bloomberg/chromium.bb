@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [50, 50, 572, 82],
+          "rect": [50, 52, 571, 84],
           "reason": "appeared"
         }
       ]

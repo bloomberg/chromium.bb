@@ -13,9 +13,9 @@ layer at (0,0) size 800x600
       LayoutSVGInlineText {#text} at (194.39,172.59) size 91.19x22.19
         chunk 1 (middle anchor) text run 1 at (194.40,190.00) startOffset 0 endOffset 9 width 91.20: "min & max"
     LayoutSVGContainer {g} at (-25.80,13) size 281.80x235.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,30.00)}]
-      LayoutSVGContainer {g} at (-145.80,-12) size 146.41x215.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
-        LayoutSVGText {text} at (-86.39,-12) size 87x15.59 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-86.39,-12) size 87x15.59
+      LayoutSVGContainer {g} at (-145.80,-12) size 145.80x215.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
+        LayoutSVGText {text} at (-86.39,-12) size 86.39x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-86.39,-12) size 86.39x15.59
             chunk 1 (end anchor) text run 1 at (-86.40,0.00) startOffset 0 endOffset 14 width 86.40: "no max / media"
         LayoutSVGText {text} at (-105,13) size 105x15.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-105,13) size 105x15.59

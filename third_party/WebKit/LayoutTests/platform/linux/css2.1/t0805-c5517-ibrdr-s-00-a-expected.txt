@@ -17,7 +17,7 @@ layer at (0,0) size 800x160
             text run at (5,0) width 134: "Orange and grooved."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,108) size 784x20
-        LayoutInline {SPAN} at (0,0) size 69x19
-          LayoutText {#text} at (0,0) size 69x19
-            text run at (0,0) width 69: "No border."
+        LayoutInline {SPAN} at (0,0) size 68x19
+          LayoutText {#text} at (0,0) size 68x19
+            text run at (0,0) width 68: "No border."
         LayoutText {#text} at (0,0) size 0x0
