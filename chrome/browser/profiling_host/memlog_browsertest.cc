@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/services/heap_profiling/public/cpp/switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -43,30 +44,30 @@ class MemlogBrowserTest : public InProcessBrowserTest,
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
     if (GetParam().start_profiling_with_command_line_flag) {
       if (GetParam().mode == ProfilingProcessHost::Mode::kAllRenderers) {
-        command_line->AppendSwitchASCII(switches::kMemlog,
-                                        switches::kMemlogModeAllRenderers);
+        command_line->AppendSwitchASCII(
+            heap_profiling::kMemlog, heap_profiling::kMemlogModeAllRenderers);
       } else if (GetParam().mode == ProfilingProcessHost::Mode::kAll) {
-        command_line->AppendSwitchASCII(switches::kMemlog,
-                                        switches::kMemlogModeAll);
+        command_line->AppendSwitchASCII(heap_profiling::kMemlog,
+                                        heap_profiling::kMemlogModeAll);
       } else {
         NOTREACHED();
       }
 
       if (GetParam().stack_mode == mojom::StackMode::PSEUDO) {
-        command_line->AppendSwitchASCII(switches::kMemlogStackMode,
-                                        switches::kMemlogStackModePseudo);
+        command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
+                                        heap_profiling::kMemlogStackModePseudo);
       } else if (GetParam().stack_mode ==
                  mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
         command_line->AppendSwitchASCII(
-            switches::kMemlogStackMode,
-            switches::kMemlogStackModeNativeWithThreadNames);
+            heap_profiling::kMemlogStackMode,
+            heap_profiling::kMemlogStackModeNativeWithThreadNames);
       } else if (GetParam().stack_mode ==
                  mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES) {
-        command_line->AppendSwitchASCII(switches::kMemlogStackMode,
-                                        switches::kMemlogStackModeNative);
+        command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
+                                        heap_profiling::kMemlogStackModeNative);
       } else if (GetParam().stack_mode == mojom::StackMode::MIXED) {
-        command_line->AppendSwitchASCII(switches::kMemlogStackMode,
-                                        switches::kMemlogStackModeMixed);
+        command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
+                                        heap_profiling::kMemlogStackModeMixed);
       } else {
         NOTREACHED();
       }

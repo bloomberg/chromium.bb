@@ -79,6 +79,7 @@
 #include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
+#include "components/services/heap_profiling/public/cpp/switches.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_switches.h"
@@ -972,30 +973,30 @@ const FeatureEntry::Choice kEnableHeapProfilingChoices[] = {
 const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeMinimal,
-     switches::kMemlog, switches::kMemlogModeMinimal},
+     heap_profiling::kMemlog, heap_profiling::kMemlogModeMinimal},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeAll,
-     switches::kMemlog, switches::kMemlogModeAll},
+     heap_profiling::kMemlog, heap_profiling::kMemlogModeAll},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeBrowser,
-     switches::kMemlog, switches::kMemlogModeBrowser},
+     heap_profiling::kMemlog, heap_profiling::kMemlogModeBrowser},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeGpu,
-     switches::kMemlog, switches::kMemlogModeGpu},
+     heap_profiling::kMemlog, heap_profiling::kMemlogModeGpu},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeAllRenderers,
-     switches::kMemlog, switches::kMemlogModeAllRenderers},
+     heap_profiling::kMemlog, heap_profiling::kMemlogModeAllRenderers},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeManual,
-     switches::kMemlog, switches::kMemlogModeManual},
+     heap_profiling::kMemlog, heap_profiling::kMemlogModeManual},
 };
 
 const FeatureEntry::Choice kOOPHPStackModeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
-    {flag_descriptions::kOOPHPStackModeNative, switches::kMemlogStackMode,
-     switches::kMemlogStackModeNative},
+    {flag_descriptions::kOOPHPStackModeNative, heap_profiling::kMemlogStackMode,
+     heap_profiling::kMemlogStackModeNative},
     {flag_descriptions::kOOPHPStackModeNativeWithThreadNames,
-     switches::kMemlogStackMode,
-     switches::kMemlogStackModeNativeWithThreadNames},
-    {flag_descriptions::kOOPHPStackModePseudo, switches::kMemlogStackMode,
-     switches::kMemlogStackModePseudo},
-    {flag_descriptions::kOOPHPStackModeMixed, switches::kMemlogStackMode,
-     switches::kMemlogStackModeMixed},
+     heap_profiling::kMemlogStackMode,
+     heap_profiling::kMemlogStackModeNativeWithThreadNames},
+    {flag_descriptions::kOOPHPStackModePseudo, heap_profiling::kMemlogStackMode,
+     heap_profiling::kMemlogStackModePseudo},
+    {flag_descriptions::kOOPHPStackModeMixed, heap_profiling::kMemlogStackMode,
+     heap_profiling::kMemlogStackModeMixed},
 };
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
@@ -3191,11 +3192,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOutOfProcessHeapProfilingKeepSmallAllocations,
      flag_descriptions::
          kOutOfProcessHeapProfilingKeepSmallAllocationsDescription,
-     kOsAll, SINGLE_VALUE_TYPE(switches::kMemlogKeepSmallAllocations)},
+     kOsAll, SINGLE_VALUE_TYPE(heap_profiling::kMemlogKeepSmallAllocations)},
 
     {"memlog-sampling", flag_descriptions::kOutOfProcessHeapProfilingSampling,
      flag_descriptions::kOutOfProcessHeapProfilingSamplingDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kMemlogSampling)},
+     SINGLE_VALUE_TYPE(heap_profiling::kMemlogSampling)},
 
     {"memlog-stack-mode", flag_descriptions::kOOPHPStackModeName,
      flag_descriptions::kOOPHPStackModeDescription, kOsAll,

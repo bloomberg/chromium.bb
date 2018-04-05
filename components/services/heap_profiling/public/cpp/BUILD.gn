@@ -12,6 +12,8 @@ static_library("cpp") {
     "sender_pipe_posix.cc",
     "sender_pipe_win.cc",
     "stream.h",
+    "switches.cc",
+    "switches.h",
   ]
 
   public_deps = [

@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/services/heap_profiling/public/cpp/sender_pipe.h"
+#include "components/services/heap_profiling/public/cpp/switches.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -272,21 +273,21 @@ void ProfilingProcessHost::AddClientToProfilingService(
 ProfilingProcessHost::Mode ProfilingProcessHost::GetModeForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  if (cmdline->HasSwitch(switches::kMemlog) ||
+  if (cmdline->HasSwitch(heap_profiling::kMemlog) ||
       base::FeatureList::IsEnabled(kOOPHeapProfilingFeature)) {
     if (cmdline->HasSwitch(switches::kEnableHeapProfiling)) {
       // PartitionAlloc doesn't support chained allocation hooks so we can't
       // run both heap profilers at the same time.
       LOG(ERROR) << "--" << switches::kEnableHeapProfiling
-                 << " specified with --" << switches::kMemlog
+                 << " specified with --" << heap_profiling::kMemlog
                  << "which are not compatible. Memlog will be disabled.";
       return Mode::kNone;
     }
 
     std::string mode;
     // Respect the commandline switch above the field trial.
-    if (cmdline->HasSwitch(switches::kMemlog)) {
-      mode = cmdline->GetSwitchValueASCII(switches::kMemlog);
+    if (cmdline->HasSwitch(heap_profiling::kMemlog)) {
+      mode = cmdline->GetSwitchValueASCII(heap_profiling::kMemlog);
     } else {
       mode = base::GetFieldTrialParamValueByFeature(
           kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureMode);
@@ -296,8 +297,8 @@ ProfilingProcessHost::Mode ProfilingProcessHost::GetModeForStartup() {
   }
   return Mode::kNone;
 #else
-  LOG_IF(ERROR, cmdline->HasSwitch(switches::kMemlog))
-      << "--" << switches::kMemlog
+  LOG_IF(ERROR, cmdline->HasSwitch(heap_profiling::kMemlog))
+      << "--" << heap_profiling::kMemlog
       << " specified but it will have no effect because the use_allocator_shim "
       << "is not available in this build.";
   return Mode::kNone;
@@ -307,22 +308,22 @@ ProfilingProcessHost::Mode ProfilingProcessHost::GetModeForStartup() {
 // static
 ProfilingProcessHost::Mode ProfilingProcessHost::ConvertStringToMode(
     const std::string& mode) {
-  if (mode == switches::kMemlogModeAll)
+  if (mode == heap_profiling::kMemlogModeAll)
     return Mode::kAll;
-  if (mode == switches::kMemlogModeAllRenderers)
+  if (mode == heap_profiling::kMemlogModeAllRenderers)
     return Mode::kAllRenderers;
-  if (mode == switches::kMemlogModeManual)
+  if (mode == heap_profiling::kMemlogModeManual)
     return Mode::kManual;
-  if (mode == switches::kMemlogModeMinimal)
+  if (mode == heap_profiling::kMemlogModeMinimal)
     return Mode::kMinimal;
-  if (mode == switches::kMemlogModeBrowser)
+  if (mode == heap_profiling::kMemlogModeBrowser)
     return Mode::kBrowser;
-  if (mode == switches::kMemlogModeGpu)
+  if (mode == heap_profiling::kMemlogModeGpu)
     return Mode::kGpu;
-  if (mode == switches::kMemlogModeRendererSampling)
+  if (mode == heap_profiling::kMemlogModeRendererSampling)
     return Mode::kRendererSampling;
   DLOG(ERROR) << "Unsupported value: \"" << mode << "\" passed to --"
-              << switches::kMemlog;
+              << heap_profiling::kMemlog;
   return Mode::kNone;
 }
 
@@ -332,8 +333,8 @@ profiling::mojom::StackMode ProfilingProcessHost::GetStackModeForStartup() {
   std::string stack_mode;
 
   // Respect the commandline switch above the field trial.
-  if (cmdline->HasSwitch(switches::kMemlogStackMode)) {
-    stack_mode = cmdline->GetSwitchValueASCII(switches::kMemlogStackMode);
+  if (cmdline->HasSwitch(heap_profiling::kMemlogStackMode)) {
+    stack_mode = cmdline->GetSwitchValueASCII(heap_profiling::kMemlogStackMode);
   } else {
     stack_mode = base::GetFieldTrialParamValueByFeature(
         kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureStackMode);
@@ -345,23 +346,23 @@ profiling::mojom::StackMode ProfilingProcessHost::GetStackModeForStartup() {
 // static
 mojom::StackMode ProfilingProcessHost::ConvertStringToStackMode(
     const std::string& input) {
-  if (input == switches::kMemlogStackModeNative)
+  if (input == heap_profiling::kMemlogStackModeNative)
     return profiling::mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
-  if (input == switches::kMemlogStackModeNativeWithThreadNames)
+  if (input == heap_profiling::kMemlogStackModeNativeWithThreadNames)
     return profiling::mojom::StackMode::NATIVE_WITH_THREAD_NAMES;
-  if (input == switches::kMemlogStackModePseudo)
+  if (input == heap_profiling::kMemlogStackModePseudo)
     return profiling::mojom::StackMode::PSEUDO;
-  if (input == switches::kMemlogStackModeMixed)
+  if (input == heap_profiling::kMemlogStackModeMixed)
     return profiling::mojom::StackMode::MIXED;
   DLOG(ERROR) << "Unsupported value: \"" << input << "\" passed to --"
-              << switches::kMemlogStackMode;
+              << heap_profiling::kMemlogStackMode;
   return profiling::mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
 }
 
 // static
 bool ProfilingProcessHost::GetShouldSampleForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kMemlogSampling))
+  if (cmdline->HasSwitch(heap_profiling::kMemlogSampling))
     return true;
 
   return base::GetFieldTrialParamByFeatureAsBool(
@@ -372,9 +373,9 @@ bool ProfilingProcessHost::GetShouldSampleForStartup() {
 // static
 uint32_t ProfilingProcessHost::GetSamplingRateForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kMemlogSamplingRate)) {
+  if (cmdline->HasSwitch(heap_profiling::kMemlogSamplingRate)) {
     std::string rate_as_string =
-        cmdline->GetSwitchValueASCII(switches::kMemlogSamplingRate);
+        cmdline->GetSwitchValueASCII(heap_profiling::kMemlogSamplingRate);
     int rate_as_int = 1;
     if (!base::StringToInt(rate_as_string, &rate_as_int)) {
       LOG(ERROR) << "Could not parse sampling rate: " << rate_as_string;
@@ -690,7 +691,7 @@ void ProfilingProcessHost::LaunchAsService() {
   // Set some state for heap dumps.
   bool keep_small_allocations =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMemlogKeepSmallAllocations);
+          heap_profiling::kMemlogKeepSmallAllocations);
   SetKeepSmallAllocations(keep_small_allocations);
 
   // Grab a HeapProfiler InterfacePtr and pass that to memory instrumentation.

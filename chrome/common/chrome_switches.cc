@@ -454,24 +454,6 @@ const char kMakeDefaultBrowser[]            = "make-default-browser";
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 
-// Enables the out-of-process memory logging.
-const char kMemlog[] = "memlog";
-const char kMemlogKeepSmallAllocations[] = "memlog-keep-small-allocations";
-const char kMemlogModeAll[] = "all";
-const char kMemlogModeAllRenderers[] = "all-renderers";
-const char kMemlogModeBrowser[] = "browser";
-const char kMemlogModeGpu[] = "gpu";
-const char kMemlogModeManual[] = "manual";
-const char kMemlogModeMinimal[] = "minimal";
-const char kMemlogModeRendererSampling[] = "renderer-sampling";
-const char kMemlogSampling[] = "memlog-sampling";
-const char kMemlogSamplingRate[] = "memlog-sampling-rate";
-const char kMemlogStackMode[] = "memlog-stack-mode";
-const char kMemlogStackModeMixed[] = "mixed";
-const char kMemlogStackModeNative[] = "native";
-const char kMemlogStackModeNativeWithThreadNames[] = "native-with-thread-names";
-const char kMemlogStackModePseudo[] = "pseudo";
-
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";
