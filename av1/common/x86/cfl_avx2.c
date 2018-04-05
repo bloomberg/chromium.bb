@@ -221,6 +221,24 @@ static void cfl_luma_subsampling_422_hbd_avx2(const uint16_t *input,
 
 CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, hbd)
 
+static void cfl_luma_subsampling_444_hbd_avx2(const uint16_t *input,
+                                              int input_stride,
+                                              int16_t *pred_buf_q3, int width,
+                                              int height) {
+  (void)width;  // Forever 32
+  __m256i *row = (__m256i *)pred_buf_q3;
+  const __m256i *row_end = row + height * CFL_BUF_LINE_I256;
+  do {
+    __m256i top = _mm256_loadu_si256((__m256i *)input);
+    __m256i top_1 = _mm256_loadu_si256((__m256i *)(input + 16));
+    _mm256_storeu_si256(row, _mm256_slli_epi16(top, 3));
+    _mm256_storeu_si256(row + 1, _mm256_slli_epi16(top_1, 3));
+    input += input_stride;
+  } while ((row += CFL_BUF_LINE_I256) < row_end);
+}
+
+CFL_GET_SUBSAMPLE_FUNCTION_AVX2(444, hbd)
+
 static INLINE __m256i predict_unclipped(const __m256i *input, __m256i alpha_q12,
                                         __m256i alpha_sign, __m256i dc_q0) {
   __m256i ac_q3 = _mm256_loadu_si256(input);
