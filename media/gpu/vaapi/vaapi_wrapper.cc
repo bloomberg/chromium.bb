@@ -746,19 +746,25 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
   }
 
   // And create a context associated with them.
-  va_res = vaCreateContext(va_display_, va_config_id_, size.width(),
-                           size.height(), VA_PROGRESSIVE, &va_surface_ids_[0],
-                           va_surface_ids_.size(), &va_context_id_);
+  const bool success = CreateContext(va_format, size, va_surface_ids_);
+  if (success)
+    *va_surfaces = va_surface_ids_;
+  else
+    DestroySurfaces_Locked();
+  return success;
+}
+
+bool VaapiWrapper::CreateContext(unsigned int va_format,
+                                 const gfx::Size& size,
+                                 const std::vector<VASurfaceID>& va_surfaces) {
+  VAStatus va_res = vaCreateContext(
+      va_display_, va_config_id_, size.width(), size.height(), VA_PROGRESSIVE,
+      &va_surface_ids_[0], va_surface_ids_.size(), &va_context_id_);
 
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
-  if (va_res != VA_STATUS_SUCCESS) {
-    DestroySurfaces_Locked();
-    return false;
-  }
-
-  *va_surfaces = va_surface_ids_;
-  va_surface_format_ = va_format;
-  return true;
+  if (va_res == VA_STATUS_SUCCESS)
+    va_surface_format_ = va_format;
+  return va_res == VA_STATUS_SUCCESS;
 }
 
 void VaapiWrapper::DestroySurfaces() {
