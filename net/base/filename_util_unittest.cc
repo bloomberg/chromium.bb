@@ -284,7 +284,8 @@ TEST(FilenameUtilTest, FileURLConversion) {
   EXPECT_FALSE(FileURLToFilePath(GURL("filefoobar"), &output));
 }
 
-TEST(FilenameUtilTest, GenerateSafeFileName) {
+// Flaky, see http://crbug.com/828954.
+TEST(FilenameUtilTest, DISABLED_GenerateSafeFileName) {
   const struct {
     const char* mime_type;
     const base::FilePath::CharType* filename;
