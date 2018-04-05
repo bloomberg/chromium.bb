@@ -69,10 +69,14 @@ static unsigned NextSequenceNumber() {
 }
 
 Animation* Animation::Create(AnimationEffect* effect,
-                             AnimationTimeline* timeline) {
+                             AnimationTimeline* timeline,
+                             ExceptionState& exception_state) {
   if (!timeline || !timeline->IsDocumentTimeline()) {
     // FIXME: Support creating animations without a timeline.
-    NOTREACHED();
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Animations can currently only be "
+                                      "created with a non-null "
+                                      "DocumentTimeline");
     return nullptr;
   }
 
@@ -95,7 +99,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
 
   Document* document = ToDocument(execution_context);
-  return Create(effect, &document->Timeline());
+  return Create(effect, &document->Timeline(), exception_state);
 }
 
 Animation* Animation::Create(ExecutionContext* execution_context,
@@ -108,7 +112,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
     return Create(execution_context, effect, exception_state);
   }
 
-  return Create(effect, timeline);
+  return Create(effect, timeline, exception_state);
 }
 
 Animation::Animation(ExecutionContext* execution_context,
