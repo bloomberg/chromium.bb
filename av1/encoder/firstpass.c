@@ -3153,21 +3153,9 @@ void av1_ref_frame_map_idx_updates(AV1_COMP *cpi, int gf_frame_index) {
   int ref_fb_idx_prev[REF_FRAMES];
   int ref_fb_idx_curr[REF_FRAMES];
 
-  ref_fb_idx_prev[LAST_FRAME - LAST_FRAME] =
-      cpi->ref_fb_idx[LAST_FRAME - LAST_FRAME];
-  ref_fb_idx_prev[LAST2_FRAME - LAST_FRAME] =
-      cpi->ref_fb_idx[LAST2_FRAME - LAST_FRAME];
-  ref_fb_idx_prev[LAST3_FRAME - LAST_FRAME] =
-      cpi->ref_fb_idx[LAST3_FRAME - LAST_FRAME];
-  ref_fb_idx_prev[GOLDEN_FRAME - LAST_FRAME] =
-      cpi->ref_fb_idx[GOLDEN_FRAME - 1];
-  ref_fb_idx_prev[BWDREF_FRAME - LAST_FRAME] =
-      cpi->ref_fb_idx[BWDREF_FRAME - 1];
-  ref_fb_idx_prev[ALTREF2_FRAME - LAST_FRAME] =
-      cpi->ref_fb_idx[ALTREF2_FRAME - 1];
-  ref_fb_idx_prev[ALTREF_FRAME - LAST_FRAME] =
-      cpi->ref_fb_idx[ALTREF_FRAME - 1];
-  ref_fb_idx_prev[REF_FRAMES - LAST_FRAME] = cpi->ref_fb_idx[REF_FRAMES - 1];
+  for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
+    ref_fb_idx_prev[ref_frame] = cpi->ref_fb_idx[ref_frame];
+  }
 
   // Update map index for each reference frame
   for (int ref_idx = 0; ref_idx < REF_FRAMES; ++ref_idx) {
@@ -3175,21 +3163,9 @@ void av1_ref_frame_map_idx_updates(AV1_COMP *cpi, int gf_frame_index) {
     ref_fb_idx_curr[ref_idx] = ref_fb_idx_prev[ref_frame - LAST_FRAME];
   }
 
-  cpi->ref_fb_idx[LAST_FRAME - LAST_FRAME] =
-      ref_fb_idx_curr[LAST_FRAME - LAST_FRAME];
-  cpi->ref_fb_idx[LAST2_FRAME - LAST_FRAME] =
-      ref_fb_idx_curr[LAST2_FRAME - LAST_FRAME];
-  cpi->ref_fb_idx[LAST3_FRAME - LAST_FRAME] =
-      ref_fb_idx_curr[LAST3_FRAME - LAST_FRAME];
-  cpi->ref_fb_idx[GOLDEN_FRAME - 1] =
-      ref_fb_idx_curr[GOLDEN_FRAME - LAST_FRAME];
-  cpi->ref_fb_idx[BWDREF_FRAME - 1] =
-      ref_fb_idx_curr[BWDREF_FRAME - LAST_FRAME];
-  cpi->ref_fb_idx[ALTREF2_FRAME - 1] =
-      ref_fb_idx_curr[ALTREF2_FRAME - LAST_FRAME];
-  cpi->ref_fb_idx[ALTREF_FRAME - 1] =
-      ref_fb_idx_curr[ALTREF_FRAME - LAST_FRAME];
-  cpi->ref_fb_idx[REF_FRAMES - 1] = ref_fb_idx_curr[REF_FRAMES - LAST_FRAME];
+  for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
+    cpi->ref_fb_idx[ref_frame] = ref_fb_idx_curr[ref_frame];
+  }
 }
 
 // Define the reference buffers that will be updated post encode.
