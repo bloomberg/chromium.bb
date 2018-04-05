@@ -297,7 +297,6 @@ static INLINE void cfl_luma_subsampling_444_hbd_ssse3(const uint16_t *input,
   } while (pred_buf_q3 < end);
 }
 
-CFL_SUBSAMPLE_FUNCTIONS(ssse3, 444, hbd)
 CFL_GET_SUBSAMPLE_FUNCTION(ssse3)
 
 static INLINE __m128i predict_unclipped(const __m128i *input, __m128i alpha_q12,

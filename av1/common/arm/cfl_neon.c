@@ -230,6 +230,37 @@ static void cfl_luma_subsampling_422_hbd_neon(const uint16_t *input,
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
 }
 
+static void cfl_luma_subsampling_444_hbd_neon(const uint16_t *input,
+                                              int input_stride,
+                                              int16_t *pred_buf_q3, int width,
+                                              int height) {
+  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  do {
+    if (width == 4) {
+      const int16x4_t top = vreinterpret_s16_u16(vld1_u16(input));
+      vst1_s16(pred_buf_q3, vshl_n_s16(top, 3));
+    } else if (width == 8) {
+      const int16x8_t top = vreinterpretq_s16_u16(vld1q_u16(input));
+      vst1q_s16(pred_buf_q3, vshlq_n_s16(top, 3));
+    } else if (width == 16) {
+      const uint16x8x2_t top = vld2q_u16(input);
+      int16x8x2_t results;
+      results.val[0] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[0]), 3);
+      results.val[1] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[1]), 3);
+      vst2q_s16(pred_buf_q3, results);
+    } else {
+      const uint16x8x4_t top = vld4q_u16(input);
+      int16x8x4_t results;
+      results.val[0] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[0]), 3);
+      results.val[1] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[1]), 3);
+      results.val[2] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[2]), 3);
+      results.val[3] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[3]), 3);
+      vst4q_s16(pred_buf_q3, results);
+    }
+    input += input_stride;
+  } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+}
+
 CFL_GET_SUBSAMPLE_FUNCTION(neon)
 
 static INLINE void subtract_average_neon(int16_t *pred_buf, int width,
