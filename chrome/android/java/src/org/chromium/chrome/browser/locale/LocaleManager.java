@@ -31,6 +31,9 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.ui.base.PageTransition;
 
@@ -304,8 +307,29 @@ public class LocaleManager {
             return;
         }
 
-        showPromoDialog(dialogCreator);
+        if (VrIntentUtils.isVrIntent(activity.getIntent()) || VrShellDelegate.isInVr()) {
+            showPromoDialogForVr(dialogCreator, activity);
+        } else {
+            showPromoDialog(dialogCreator);
+        }
         mSearchEnginePromoShownThisSession = true;
+    }
+
+    private void showPromoDialogForVr(Callable<PromoDialog> dialogCreator, Activity activity) {
+        VrShellDelegate.requestToExitVrForSearchEnginePromoDialog(new OnExitVrRequestListener() {
+            @Override
+            public void onSucceeded() {
+                showPromoDialog(dialogCreator);
+            }
+
+            @Override
+            public void onDenied() {
+                // We need to make sure that the dialog shows up even if user denied to
+                // leave VR.
+                VrShellDelegate.forceExitVrImmediately();
+                showPromoDialog(dialogCreator);
+            }
+        }, activity);
     }
 
     private void showPromoDialog(Callable<PromoDialog> dialogCreator) {

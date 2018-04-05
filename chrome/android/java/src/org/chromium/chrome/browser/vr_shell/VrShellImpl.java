@@ -908,8 +908,14 @@ public class VrShellImpl
     }
 
     @Override
-    public void requestToExitVr(@UiUnsupportedMode int reason) {
-        if (mNativeVrShell != 0) nativeRequestToExitVr(mNativeVrShell, reason);
+    public void requestToExitVr(@UiUnsupportedMode int reason, boolean showExitPromptBeforeDoff) {
+        if (mNativeVrShell == 0) return;
+        if (showExitPromptBeforeDoff) {
+            nativeRequestToExitVr(mNativeVrShell, reason);
+        } else {
+            nativeLogUnsupportedModeUserMetric(mNativeVrShell, reason);
+            mDelegate.onExitVrRequestResult(true);
+        }
     }
 
     @CalledByNative
