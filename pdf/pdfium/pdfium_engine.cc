@@ -1973,6 +1973,9 @@ bool PDFiumEngine::OnMiddleMouseDown(const pp::MouseInputEvent& event) {
   if (IsLinkArea(area))
     return true;
 
+  // Switch to hand cursor when panning.
+  client_->UpdateCursor(PP_CURSORTYPE_HAND);
+
   // Prevent middle mouse button from selecting texts.
   return false;
 }
@@ -2098,9 +2101,12 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
     }
   }
 
-  // Prevent middle mouse button from selecting texts.
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
+  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
+    // Update the cursor when panning stops.
+    client_->UpdateCursor(DetermineCursorType(area, form_type));
+    // Prevent middle mouse button from selecting texts.
     return false;
+  }
 
   if (page_index != -1) {
     double page_x;
