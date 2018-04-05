@@ -9,10 +9,14 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/constants.h"
+#include "extensions/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
+#endif
 
 namespace {
 
@@ -21,6 +25,7 @@ base::string16 CreateTitle(content::RenderFrameHost* render_frame_host,
                            int title_string_id_extension) {
   url::Origin origin = render_frame_host->GetLastCommittedOrigin();
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (origin.scheme() == extensions::kExtensionScheme) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -37,6 +42,7 @@ base::string16 CreateTitle(content::RenderFrameHost* render_frame_host,
       }
     }
   }
+#endif
 
   return l10n_util::GetStringFUTF16(
       title_string_id_origin,

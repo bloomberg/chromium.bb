@@ -9,38 +9,28 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "device/usb/public/mojom/chooser_service.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "chrome/browser/usb/web_usb_chooser_service.h"
 
+class UsbChooserController;
 class UsbChooserDialogAndroid;
-
-namespace content {
-class RenderFrameHost;
-}
 
 // Implementation of the public device::usb::ChooserService interface.
 // This interface can be used by a webpage to request permission from user
 // to access a certain device.
-class WebUsbChooserServiceAndroid : public device::mojom::UsbChooserService {
+class WebUsbChooserServiceAndroid : public WebUsbChooserService {
  public:
   explicit WebUsbChooserServiceAndroid(
       content::RenderFrameHost* render_frame_host);
-
   ~WebUsbChooserServiceAndroid() override;
 
-  // device::usb::ChooserService:
-  void GetPermission(
-      std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-      GetPermissionCallback callback) override;
-
-  void Bind(mojo::InterfaceRequest<device::mojom::UsbChooserService> request);
+  // WebUsbChooserService implementation
+  void ShowChooser(std::unique_ptr<UsbChooserController> controller) override;
 
  private:
-  content::RenderFrameHost* const render_frame_host_;
-  mojo::BindingSet<device::mojom::UsbChooserService> bindings_;
-  std::vector<std::unique_ptr<UsbChooserDialogAndroid>>
-      usb_chooser_dialog_android_;
+  void OnDialogClosed();
+
+  // Only a single dialog can be shown at a time.
+  std::unique_ptr<UsbChooserDialogAndroid> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbChooserServiceAndroid);
 };
