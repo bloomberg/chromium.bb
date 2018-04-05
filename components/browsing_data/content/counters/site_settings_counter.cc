@@ -39,6 +39,7 @@ void SiteSettingsCounter::Count() {
   std::set<std::string> hosts;
   int empty_host_pattern = 0;
   base::Time period_start = GetPeriodStart();
+  base::Time period_end = GetPeriodEnd();
   auto* registry = content_settings::ContentSettingsRegistry::GetInstance();
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType type = info->website_settings_info()->type();
@@ -53,7 +54,7 @@ void SiteSettingsCounter::Count() {
         base::Time last_modified = map_->GetSettingLastModifiedDate(
             content_setting.primary_pattern, content_setting.secondary_pattern,
             type);
-        if (last_modified >= period_start) {
+        if (last_modified >= period_start && last_modified < period_end) {
           if (content_setting.primary_pattern.GetHost().empty())
             empty_host_pattern++;
           else
@@ -67,7 +68,8 @@ void SiteSettingsCounter::Count() {
   for (const auto& zoom_level : zoom_map_->GetAllZoomLevels()) {
     // zoom_level with non-empty scheme are only used for some internal
     // features and not stored in preferences. They are not counted.
-    if (zoom_level.last_modified >= period_start && zoom_level.scheme.empty()) {
+    if (zoom_level.last_modified >= period_start &&
+        zoom_level.last_modified < period_end && zoom_level.scheme.empty()) {
       hosts.insert(zoom_level.host);
     }
   }

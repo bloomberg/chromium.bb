@@ -1517,7 +1517,7 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
 
   // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
-      CONTENT_SETTINGS_TYPE_COOKIES, base::Time(),
+      CONTENT_SETTINGS_TYPE_COOKIES, base::Time(), base::Time::Max(),
       base::Bind(&MatchPrimaryPattern, pattern2));
   host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &host_settings);
@@ -1562,7 +1562,7 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   ContentSettingsPattern http_pattern =
       ContentSettingsPattern::FromURLNoWildcard(url3_origin_only);
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
-      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, base::Time(),
+      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, base::Time(), base::Time::Max(),
       base::Bind(&MatchPrimaryPattern, http_pattern));
   // Verify we only have one, and it's url1.
   host_content_settings_map->GetSettingsForOneType(
@@ -1575,49 +1575,71 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
 TEST_F(HostContentSettingsMapTest, ClearSettingsWithTimePredicate) {
   TestingProfile profile;
   auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  base::Time now = base::Time::Now();
+  base::Time back_1_hour = now - base::TimeDelta::FromHours(1);
+  base::Time back_30_days = now - base::TimeDelta::FromDays(30);
+  base::Time back_31_days = now - base::TimeDelta::FromDays(31);
 
   base::SimpleTestClock test_clock;
-  test_clock.SetNow(base::Time::Now());
+  test_clock.SetNow(now);
   map->SetClockForTesting(&test_clock);
 
   ContentSettingsForOneType host_settings;
 
   GURL url1("https://www.google.com/");
   GURL url2("https://maps.google.com/");
+  GURL url3("https://photos.google.com");
 
   // Add setting for url1.
   map->SetContentSettingDefaultScope(url1, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
-  // Make sure that the timestamp for url1 is different from |t|.
-  test_clock.Advance(base::TimeDelta::FromSeconds(1));
-  base::Time t = test_clock.Now();
-
   // Add setting for url2.
+  test_clock.SetNow(back_1_hour);
   map->SetContentSettingDefaultScope(url2, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
-  // Verify we have two pattern and the default.
+  // Add setting for url3 with the timestamp of 31 days old.
+  test_clock.SetNow(back_31_days);
+  map->SetContentSettingDefaultScope(url3, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                     std::string(), CONTENT_SETTING_BLOCK);
+
+  // Verify we have three pattern and the default.
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+                             &host_settings);
+  EXPECT_EQ(4u, host_settings.size());
+
+  // Clear all settings since |now|.
+  map->ClearSettingsForOneTypeWithPredicate(
+      CONTENT_SETTINGS_TYPE_POPUPS, now, base::Time::Max(),
+      HostContentSettingsMap::PatternSourcePredicate());
+
+  // Verify we have two pattern (url2, url3) and the default.
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
                              &host_settings);
   EXPECT_EQ(3u, host_settings.size());
+  EXPECT_EQ("https://maps.google.com:443",
+            host_settings[0].primary_pattern.ToString());
+  EXPECT_EQ("https://photos.google.com:443",
+            host_settings[1].primary_pattern.ToString());
+  EXPECT_EQ("*", host_settings[2].primary_pattern.ToString());
 
-  // Clear all settings since |t|.
+  // Clear all settings since the beginning of time to 30 days old.
   map->ClearSettingsForOneTypeWithPredicate(
-      CONTENT_SETTINGS_TYPE_POPUPS, t,
+      CONTENT_SETTINGS_TYPE_POPUPS, base::Time(), back_30_days,
       HostContentSettingsMap::PatternSourcePredicate());
 
-  // Verify we only have one pattern (url1) and the default.
+  // Verify we only have one pattern (url2) and the default.
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
                              &host_settings);
   EXPECT_EQ(2u, host_settings.size());
-  EXPECT_EQ("https://www.google.com:443",
+  EXPECT_EQ("https://maps.google.com:443",
             host_settings[0].primary_pattern.ToString());
   EXPECT_EQ("*", host_settings[1].primary_pattern.ToString());
 
   // Clear all settings since the beginning of time.
   map->ClearSettingsForOneTypeWithPredicate(
-      CONTENT_SETTINGS_TYPE_POPUPS, base::Time(),
+      CONTENT_SETTINGS_TYPE_POPUPS, base::Time(), base::Time::Max(),
       HostContentSettingsMap::PatternSourcePredicate());
 
   // Verify we only have the default setting.

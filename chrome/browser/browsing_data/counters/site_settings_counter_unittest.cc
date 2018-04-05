@@ -108,6 +108,13 @@ TEST_F(SiteSettingsCounterTest, CountWithTimePeriod) {
       GURL("http://maps.google.com"), GURL("http://maps.google.com"),
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_ALLOW);
 
+  // Create a setting at Now()-31days.
+  test_clock.SetNow(base::Time::Now() - base::TimeDelta::FromDays(31));
+  map()->SetContentSettingDefaultScope(GURL("http://www.google.com"),
+                                       GURL("http://www.google.com"),
+                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                       std::string(), CONTENT_SETTING_ALLOW);
+
   test_clock.SetNow(base::Time::Now());
   browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(
@@ -119,6 +126,9 @@ TEST_F(SiteSettingsCounterTest, CountWithTimePeriod) {
   // Both settings were created during the last day.
   SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_DAY);
   EXPECT_EQ(2, GetResult());
+  // One of the settings was created 31days ago.
+  SetDeletionPeriodPref(browsing_data::TimePeriod::OLDER_THAN_30_DAYS);
+  EXPECT_EQ(1, GetResult());
 }
 
 // Tests that the counter doesn't count website settings

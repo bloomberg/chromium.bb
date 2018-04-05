@@ -260,10 +260,11 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // If |pattern_predicate| is null, this method is equivalent to the above.
   // Otherwise, it only deletes exceptions matched by |pattern_predicate| that
-  // were modified at or after |begin_time|.
+  // were modified at or after |begin_time| and before |end_time|.
   void ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType content_type,
       base::Time begin_time,
+      base::Time end_time,
       const PatternSourcePredicate& pattern_predicate);
 
   // RefcountedKeyedService implementation.
