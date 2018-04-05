@@ -24,8 +24,12 @@ class TimeTicks;
     (void (^)(NSDictionary*))foundElementHandler NS_DESIGNATED_INITIALIZER;
 
 // Calls the |foundElementHandler| from the receiver's initializer with
-// |response| as the parameter.
+// |response| as the parameter. This method has no effect if |invalidate| has
+// been called.
 - (void)runHandlerWithResponse:(NSDictionary*)response;
+// Removes the stored |foundElementHandler| from the receiver's initializer.
+// |runHandlerWithResponse:| will have no effect if called after |invalidate|.
+- (void)invalidate;
 
 @end
 

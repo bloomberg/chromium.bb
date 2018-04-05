@@ -388,7 +388,10 @@ struct ContextMenuInfo {
 
 - (void)cancelContextMenuDisplay {
   _contextMenuNeedsDisplay = NO;
-  [_pendingElementFetchRequests removeAllObjects];
+  for (HTMLElementFetchRequest* fetchRequest in _pendingElementFetchRequests
+           .allValues) {
+    [fetchRequest invalidate];
+  }
 }
 
 #pragma mark -
