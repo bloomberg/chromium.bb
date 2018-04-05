@@ -175,10 +175,15 @@ class ChannelWin : public Channel,
                      DWORD bytes_transfered,
                      DWORD error) override {
     if (error != ERROR_SUCCESS) {
-      if (context == &write_context_)
+      if (context == &write_context_) {
+        {
+          base::AutoLock lock(write_lock_);
+          reject_writes_ = true;
+        }
         OnWriteError(Error::kDisconnected);
-      else
+      } else {
         OnError(Error::kDisconnected);
+      }
     } else if (context == &connect_context_) {
       DCHECK(is_connect_pending_);
       is_connect_pending_ = false;
