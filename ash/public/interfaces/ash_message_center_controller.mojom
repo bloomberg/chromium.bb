@@ -8,6 +8,7 @@ import "ui/gfx/image/mojo/image.mojom";
 import "ui/message_center/public/mojo/notification.mojom";
 import "ui/message_center/public/mojo/notifier_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // A struct that contains information for presenting a notifier in a settings
 // panel.
@@ -33,8 +34,12 @@ struct NotifierUiData {
 interface AshMessageCenterController {
   SetClient(associated AshMessageCenterClient client);
 
-  ShowClientNotification(message_center.mojom.Notification notification);
+  // Shows a notification. |display_token| will be used to reference this
+  // notification for AshMessageCenterClient::Close().
+  ShowClientNotification(message_center.mojom.Notification notification,
+                         mojo_base.mojom.UnguessableToken display_token);
 
+  // Closes a notification by the notification ID.
   CloseClientNotification(string id);
 
   UpdateNotifierIcon(message_center.mojom.NotifierId notifier_id,
@@ -54,7 +59,8 @@ interface AshMessageCenterController {
 // the client.
 interface AshMessageCenterClient {
   // Called when a notification previously displayed by the client is closed.
-  HandleNotificationClosed(string id, bool by_user);
+  HandleNotificationClosed(mojo_base.mojom.UnguessableToken display_token,
+                           bool by_user);
 
   // Called when the body of a notification is clicked.
   HandleNotificationClicked(string id);

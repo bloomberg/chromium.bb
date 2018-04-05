@@ -38,7 +38,8 @@ class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
   }
 
   // mojom::AshMessageCenterClient:
-  void HandleNotificationClosed(const std::string& id, bool by_user) override {}
+  void HandleNotificationClosed(const base::UnguessableToken& token,
+                                bool by_user) override {}
   void HandleNotificationClicked(const std::string& id) override {}
   void HandleNotificationButtonClicked(
       const std::string& id,

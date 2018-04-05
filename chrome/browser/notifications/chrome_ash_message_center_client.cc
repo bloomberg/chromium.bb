@@ -6,6 +6,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/i18n/string_compare.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/arc_application_notifier_controller_chromeos.h"
 #include "chrome/browser/notifications/extension_notifier_controller.h"
@@ -19,6 +20,9 @@ using ash::mojom::NotifierUiDataPtr;
 using message_center::NotifierId;
 
 namespace {
+
+// The singleton instance, which is tracked to allow access from tests.
+ChromeAshMessageCenterClient* g_chrome_ash_message_center_client = nullptr;
 
 // All notifier actions are performed on the notifiers for the currently active
 // profile, so this just returns the active profile.
@@ -51,6 +55,9 @@ class NotifierComparator {
 ChromeAshMessageCenterClient::ChromeAshMessageCenterClient(
     NotificationPlatformBridgeDelegate* delegate)
     : delegate_(delegate), binding_(this) {
+  DCHECK(!g_chrome_ash_message_center_client);
+  g_chrome_ash_message_center_client = this;
+
   // May be null in unit tests.
   auto* connection = content::ServiceManagerConnection::GetForProcess();
   if (connection) {
@@ -77,7 +84,10 @@ ChromeAshMessageCenterClient::ChromeAshMessageCenterClient(
           new arc::ArcApplicationNotifierControllerChromeOS(this))));
 }
 
-ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {}
+ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
+  DCHECK_EQ(this, g_chrome_ash_message_center_client);
+  g_chrome_ash_message_center_client = nullptr;
+}
 
 // The unused variables here will not be a part of the future
 // NotificationPlatformBridge interface.
@@ -86,7 +96,18 @@ void ChromeAshMessageCenterClient::Display(
     Profile* /* profile */,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
-  controller_->ShowClientNotification(notification);
+  // Remove any previous mapping to |notification.id()| before inserting a new
+  // one.
+  base::EraseIf(
+      displayed_notifications_,
+      [notification](
+          const std::pair<base::UnguessableToken, std::string>& pair) {
+        return pair.second == notification.id();
+      });
+
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  displayed_notifications_[token] = notification.id();
+  controller_->ShowClientNotification(notification, token);
 }
 
 // The unused variable here will not be a part of the future
@@ -113,9 +134,13 @@ void ChromeAshMessageCenterClient::SetReadyCallback(
 }
 
 void ChromeAshMessageCenterClient::HandleNotificationClosed(
-    const std::string& id,
+    const base::UnguessableToken& display_token,
     bool by_user) {
-  delegate_->HandleNotificationClosed(id, by_user);
+  auto entry = displayed_notifications_.find(display_token);
+  if (entry != displayed_notifications_.end()) {
+    delegate_->HandleNotificationClosed(entry->second, by_user);
+    displayed_notifications_.erase(entry);
+  }
 }
 
 void ChromeAshMessageCenterClient::HandleNotificationClicked(
@@ -179,4 +204,9 @@ void ChromeAshMessageCenterClient::OnNotifierEnabledChanged(
   // May be null in unit tests.
   if (controller_)
     controller_->NotifierEnabledChanged(notifier_id, enabled);
+}
+
+// static
+void ChromeAshMessageCenterClient::FlushForTesting() {
+  g_chrome_ash_message_center_client->binding_.FlushForTesting();
 }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_CHROME_ASH_MESSAGE_CENTER_CLIENT_H_
 
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
 #include "chrome/browser/notifications/notifier_controller.h"
@@ -37,7 +38,8 @@ class ChromeAshMessageCenterClient : public NotificationPlatformBridge,
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
 
   // ash::mojom::AshMessageCenterClient:
-  void HandleNotificationClosed(const std::string& id, bool by_user) override;
+  void HandleNotificationClosed(const base::UnguessableToken& display_token,
+                                bool by_user) override;
   void HandleNotificationClicked(const std::string& id) override;
   void HandleNotificationButtonClicked(
       const std::string& id,
@@ -55,8 +57,19 @@ class ChromeAshMessageCenterClient : public NotificationPlatformBridge,
   void OnNotifierEnabledChanged(const message_center::NotifierId& notifier_id,
                                 bool enabled) override;
 
+  // Flushs |binding_|.
+  static void FlushForTesting();
+
  private:
   NotificationPlatformBridgeDelegate* delegate_;
+
+  // A mapping from display token to notification ID. The display token is
+  // generated each time a notification is shown (even if a notification is
+  // displayed more than once). This allows |this| to drop out-of-order
+  // HandleNotificationClosed() calls (i.e. those that arrive after the
+  // notification has already been re-displayed/updated and refer to an earlier
+  // notification).
+  std::map<base::UnguessableToken, std::string> displayed_notifications_;
 
   // Notifier source for each notifier type.
   std::map<message_center::NotifierId::NotifierType,

@@ -8,6 +8,7 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
+#include "base/unguessable_token.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -44,11 +45,14 @@ class AshClientNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
   AshClientNotificationDelegate(const std::string& notification_id,
+                                const base::UnguessableToken& display_token,
                                 mojom::AshMessageCenterClient* client)
-      : notification_id_(notification_id), client_(client) {}
+      : notification_id_(notification_id),
+        display_token_(display_token),
+        client_(client) {}
 
   void Close(bool by_user) override {
-    client_->HandleNotificationClosed(notification_id_, by_user);
+    client_->HandleNotificationClosed(display_token_, by_user);
   }
 
   void Click(const base::Optional<int>& button_index,
@@ -72,7 +76,12 @@ class AshClientNotificationDelegate
  private:
   ~AshClientNotificationDelegate() override = default;
 
-  std::string notification_id_;
+  // The ID of the notification.
+  const std::string notification_id_;
+
+  // The token that was generated for the ShowClientNotification() call.
+  const base::UnguessableToken display_token_;
+
   mojom::AshMessageCenterClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(AshClientNotificationDelegate);
@@ -139,12 +148,14 @@ void MessageCenterController::SetClient(
 }
 
 void MessageCenterController::ShowClientNotification(
-    const message_center::Notification& notification) {
+    const message_center::Notification& notification,
+    const base::UnguessableToken& display_token) {
   DCHECK(client_.is_bound());
   auto message_center_notification =
       std::make_unique<message_center::Notification>(notification);
-  message_center_notification->set_delegate(base::WrapRefCounted(
-      new AshClientNotificationDelegate(notification.id(), client_.get())));
+  message_center_notification->set_delegate(
+      base::WrapRefCounted(new AshClientNotificationDelegate(
+          notification.id(), display_token, client_.get())));
   MessageCenter::Get()->AddNotification(std::move(message_center_notification));
 }
 
