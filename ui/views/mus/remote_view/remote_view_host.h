@@ -23,24 +23,31 @@ class RemoteViewHost : public views::NativeViewHost {
   RemoteViewHost();
   ~RemoteViewHost() override;
 
-  // Creates an aura::window to embed the remote contents and attach to it when
-  // the embed succeeds. |embed_token| is the token obtained from the WindowTree
-  // embed API (ScheduleEmbed/ForExistingClient). |embed_flags| are the
-  // embedding flags (see window_tree_constants.mojom). |callback| is an
-  // optional callback invoked with the embed result.
+  // Embeds the remote contents after this view is added to a widget.
+  // |embed_token| is the token obtained from the WindowTree embed API
+  // (ScheduleEmbed/ForExistingClient). |embed_flags| are the embedding flags
+  // (see window_tree_constants.mojom). |callback| is an optional callback
+  // invoked with the embed result.
+  // Note that |callback| should not be used to add the view to a widget because
+  // the actual embedding only happens after the view is added.
   using EmbedCallback = base::OnceCallback<void(bool success)>;
   void EmbedUsingToken(const base::UnguessableToken& embed_token,
                        int embed_flags,
                        EmbedCallback callback);
 
  private:
+  // Creates the embedding aura::Window and attach to it.
+  void CreateEmbeddingRoot();
+
   // Invoked after the embed operation.
-  void OnEmbedResult(const base::UnguessableToken& token,
-                     EmbedCallback callback,
-                     bool success);
+  void OnEmbedResult(bool success);
 
   // views::NativeViewHost:
   void AddedToWidget() override;
+
+  base::UnguessableToken embed_token_;
+  int embed_flags_ = 0;
+  EmbedCallback embed_callback_;
 
   std::unique_ptr<aura::Window> embedding_root_;
   base::WeakPtrFactory<RemoteViewHost> weak_ptr_factory_{this};

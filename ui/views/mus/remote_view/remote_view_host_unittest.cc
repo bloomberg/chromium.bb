@@ -87,13 +87,13 @@ TEST_F(RemoteViewHostTest, BadEmbed) {
 
   // Ownership will be passed to |widget| later.
   RemoteViewHost* host = new RemoteViewHost();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(host);
+  EXPECT_FALSE(host->native_view());
 
   // Embed fails with unknown token.
   EXPECT_FALSE(Embed(host, unknown_token));
 
-  // |host| is not attached before and after adding to a widget.
-  EXPECT_FALSE(host->native_view());
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(host);
+  // |host| is not attached after adding to a widget.
   EXPECT_FALSE(host->native_view());
 }
 
@@ -117,29 +117,6 @@ TEST_F(RemoteViewHostTest, AddToWidgetBeforeEmbed) {
   EXPECT_TRUE(host->native_view());
 }
 
-// Tests when RemoveViewHost is added to a widget while embedding.
-TEST_F(RemoteViewHostTest, AddToWidgetWhileEmbedding) {
-  const base::UnguessableToken token = base::UnguessableToken::Create();
-  window_tree()->AddScheduledEmbedToken(token);
-
-  // Ownership will be passed to |widget| later.
-  RemoteViewHost* host = new RemoteViewHost();
-
-  // |host| is not attached because embed operation is not performed.
-  EXPECT_FALSE(host->native_view());
-
-  base::RunLoop run_loop;
-  std::unique_ptr<views::Widget> widget;
-  host->EmbedUsingToken(
-      token, 0u /* no flags */,
-      base::BindOnce(&RemoteViewHostTest::CreateTestWidgetWhileEmbeddingHelper,
-                     base::Unretained(this), &run_loop, host, &widget));
-  run_loop.Run();
-
-  // |host| is attached to the embedding window.
-  EXPECT_TRUE(host->native_view());
-}
-
 // Tests when RemoveViewHost is added to a widget after embedding.
 TEST_F(RemoteViewHostTest, AddToWidgetAfterEmbed) {
   const base::UnguessableToken token = base::UnguessableToken::Create();
@@ -148,12 +125,26 @@ TEST_F(RemoteViewHostTest, AddToWidgetAfterEmbed) {
   // Ownership will be passed to |widget| later.
   RemoteViewHost* host = new RemoteViewHost();
 
-  // Embed succeeds.
-  EXPECT_TRUE(Embed(host, token));
+  // Request embedding but it will be deferred until added to a widget.
+  base::RunLoop run_loop;
+  bool embed_result = false;
+  host->EmbedUsingToken(
+      token, 0u /* no flags */,
+      base::BindOnce(
+          [](base::RunLoop* run_loop, bool* result, bool success) {
+            *result = success;
+            run_loop->Quit();
+          },
+          &run_loop, &embed_result));
 
-  // |host| is attached after adding to a widget.
+  // |host| is not attached before adding to a widget.
   EXPECT_FALSE(host->native_view());
+
+  // Add to a widget and wait for embed to finish.
   std::unique_ptr<views::Widget> widget = CreateTestWidget(host);
+  run_loop.Run();
+
+  // |host| is attached after added to a widget.
   EXPECT_TRUE(host->native_view());
 }
 
