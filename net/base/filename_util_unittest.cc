@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
+#include "build/build_config.h"
 #include "net/base/mime_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -284,79 +285,64 @@ TEST(FilenameUtilTest, FileURLConversion) {
   EXPECT_FALSE(FileURLToFilePath(GURL("filefoobar"), &output));
 }
 
-// Flaky, see http://crbug.com/828954.
-TEST(FilenameUtilTest, DISABLED_GenerateSafeFileName) {
+TEST(FilenameUtilTest, GenerateSafeFileName) {
   const struct {
+    int line;
     const char* mime_type;
-    const base::FilePath::CharType* filename;
-    const base::FilePath::CharType* expected_filename;
+    const char* filename;
+    const char* expected_filename;
   } safe_tests[] = {
+    {__LINE__, "text/html", "bar.htm", "bar.htm"},
+    {__LINE__, "text/html", "bar.html", "bar.html"},
+    {__LINE__, "application/x-chrome-extension", "bar", "bar.crx"},
+    {__LINE__, "image/png", "bar.html", "bar.html"},
+    {__LINE__, "text/html", "bar.exe", "bar.exe"},
+    {__LINE__, "image/gif", "bar.exe", "bar.exe"},
+    {__LINE__, "text/html", "google.com", "google.com"},
+    // Allow extension synonyms.
+    {__LINE__, "image/jpeg", "bar.jpg", "bar.jpg"},
+    {__LINE__, "image/jpeg", "bar.jpeg", "bar.jpeg"},
+
 #if defined(OS_WIN)
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\bar.htm"),
-     FILE_PATH_LITERAL("C:\\foo\\bar.htm")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\bar.html"),
-     FILE_PATH_LITERAL("C:\\foo\\bar.html")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\bar"),
-     FILE_PATH_LITERAL("C:\\foo\\bar.htm")},
-    {"image/png", FILE_PATH_LITERAL("C:\\bar.html"),
-     FILE_PATH_LITERAL("C:\\bar.html")},
-    {"image/png", FILE_PATH_LITERAL("C:\\bar"),
-     FILE_PATH_LITERAL("C:\\bar.png")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
-     FILE_PATH_LITERAL("C:\\foo\\bar.exe")},
-    {"image/gif", FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
-     FILE_PATH_LITERAL("C:\\foo\\bar.exe")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\google.com"),
-     FILE_PATH_LITERAL("C:\\foo\\google.com")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\con.htm"),
-     FILE_PATH_LITERAL("C:\\foo\\_con.htm")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\con"),
-     FILE_PATH_LITERAL("C:\\foo\\_con.htm")},
-    {"text/html",
-     FILE_PATH_LITERAL("C:\\foo\\harmless.{not-really-this-may-be-a-guid}"),
-     FILE_PATH_LITERAL("C:\\foo\\harmless.download")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\harmless.local"),
-     FILE_PATH_LITERAL("C:\\foo\\harmless.download")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\harmless.lnk"),
-     FILE_PATH_LITERAL("C:\\foo\\harmless.download")},
-    {"text/html", FILE_PATH_LITERAL("C:\\foo\\harmless.{mismatched-"),
-     FILE_PATH_LITERAL("C:\\foo\\harmless.{mismatched-")},
-    // Allow extension synonyms.
-    {"image/jpeg", FILE_PATH_LITERAL("C:\\foo\\bar.jpg"),
-     FILE_PATH_LITERAL("C:\\foo\\bar.jpg")},
-    {"image/jpeg", FILE_PATH_LITERAL("C:\\foo\\bar.jpeg"),
-     FILE_PATH_LITERAL("C:\\foo\\bar.jpeg")},
-#else   // !defined(OS_WIN)
-    {"text/html", FILE_PATH_LITERAL("/foo/bar.htm"),
-     FILE_PATH_LITERAL("/foo/bar.htm")},
-    {"text/html", FILE_PATH_LITERAL("/foo/bar.html"),
-     FILE_PATH_LITERAL("/foo/bar.html")},
-    {"text/html", FILE_PATH_LITERAL("/foo/bar"),
-     FILE_PATH_LITERAL("/foo/bar.html")},
-    {"image/png", FILE_PATH_LITERAL("/bar.html"),
-     FILE_PATH_LITERAL("/bar.html")},
-    {"image/png", FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("/bar.png")},
-    {"image/gif", FILE_PATH_LITERAL("/foo/bar.exe"),
-     FILE_PATH_LITERAL("/foo/bar.exe")},
-    {"text/html", FILE_PATH_LITERAL("/foo/google.com"),
-     FILE_PATH_LITERAL("/foo/google.com")},
-    {"text/html", FILE_PATH_LITERAL("/foo/con.htm"),
-     FILE_PATH_LITERAL("/foo/con.htm")},
-    {"text/html", FILE_PATH_LITERAL("/foo/con"),
-     FILE_PATH_LITERAL("/foo/con.html")},
-    // Allow extension synonyms.
-    {"image/jpeg", FILE_PATH_LITERAL("/bar.jpg"),
-     FILE_PATH_LITERAL("/bar.jpg")},
-    {"image/jpeg", FILE_PATH_LITERAL("/bar.jpeg"),
-     FILE_PATH_LITERAL("/bar.jpeg")},
+    // Device names
+    {__LINE__, "text/html", "con.htm", "_con.htm"},
+    {__LINE__, "text/html", "lpt1.htm", "_lpt1.htm"},
+    {__LINE__, "application/x-chrome-extension", "con", "_con.crx"},
+
+    // Looks like foo.{GUID} which get treated as namespace mounts on Windows.
+    {__LINE__, "text/html", "harmless.{not-really-this-may-be-a-guid}",
+     "harmless.download"},
+    {__LINE__, "text/html", "harmless.{mismatched-", "harmless.{mismatched-"},
+
+    // Dangerous extensions
+    {__LINE__, "text/html", "harmless.local", "harmless.download"},
+    {__LINE__, "text/html", "harmless.lnk", "harmless.download"},
+#else   // OS_WIN
+    // On Posix, none of the above set is particularly dangerous.
+    {__LINE__, "text/html", "con.htm", "con.htm"},
+    {__LINE__, "text/html", "lpt1.htm", "lpt1.htm"},
+    {__LINE__, "application/x-chrome-extension", "con", "con.crx"},
+    {__LINE__, "text/html", "harmless.{not-really-this-may-be-a-guid}",
+     "harmless.{not-really-this-may-be-a-guid}"},
+    {__LINE__, "text/html", "harmless.{mismatched-", "harmless.{mismatched-"},
+    {__LINE__, "text/html", "harmless.local", "harmless.local"},
+    {__LINE__, "text/html", "harmless.lnk", "harmless.lnk"},
 #endif  // !defined(OS_WIN)
   };
 
-  for (size_t i = 0; i < arraysize(safe_tests); ++i) {
-    base::FilePath file_path(safe_tests[i].filename);
-    GenerateSafeFileName(safe_tests[i].mime_type, false, &file_path);
-    EXPECT_EQ(safe_tests[i].expected_filename, file_path.value())
-        << "Iteration " << i;
+#if defined(OS_WIN)
+  base::FilePath base_path(L"C:\\foo");
+#else
+  base::FilePath base_path("/foo");
+#endif
+
+  for (const auto& test : safe_tests) {
+    base::FilePath file_path = base_path.AppendASCII(test.filename);
+    base::FilePath expected_path =
+        base_path.AppendASCII(test.expected_filename);
+    GenerateSafeFileName(test.mime_type, false, &file_path);
+    EXPECT_EQ(expected_path.value(), file_path.value())
+        << "Test case at line " << test.line;
   }
 }
 
