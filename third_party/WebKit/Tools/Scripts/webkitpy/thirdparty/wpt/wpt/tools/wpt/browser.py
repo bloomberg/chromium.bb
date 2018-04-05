@@ -65,28 +65,9 @@ class Firefox(Browser):
     """
 
     product = "firefox"
-    binary = "firefox/firefox"
-    platform_ini = "firefox/platform.ini"
+    binary = "browsers/firefox/firefox"
+    platform_ini = "browsers/firefox/platform.ini"
     requirements = "requirements_firefox.txt"
-
-    def platform_string(self):
-        platform = {
-            "Linux": "linux",
-            "Windows": "win",
-            "Darwin": "mac"
-        }.get(uname[0])
-
-        if platform is None:
-            raise ValueError("Unable to construct a valid Firefox package name for current platform")
-
-        if platform == "linux":
-            bits = "-%s" % uname[4]
-        elif platform == "win":
-            bits = "64" if uname[4] == "x86_64" else "32"
-        else:
-            bits = ""
-
-        return "%s%s" % (platform, bits)
 
     def platform_string_geckodriver(self):
         platform = {
@@ -105,40 +86,87 @@ class Firefox(Browser):
 
         return "%s%s" % (platform, bits)
 
-    def latest_nightly_listing(self):
-        resp = get("https://archive.mozilla.org/pub/firefox/nightly/latest-mozilla-central/")
-        resp.raise_for_status()
-        return resp.text
-
-    def get_nightly_link(self, index, platform):
-        pattern = re.compile("<a[^>]*>(firefox-(\d+)\.\d(?:\w\d)?.en-US.%s\.tar\.bz2)" % platform)
-        max_version = None
-        for match in pattern.finditer(index):
-            try:
-                version = int(match.group(2))
-            except ValueError:
-                continue
-            if max_version is None or version > max_version[0]:
-                max_version = (version, match.group(1))
-        if not max_version:
-            raise ValueError("Failed to find version to download")
-        return ("https://archive.mozilla.org/pub/firefox/nightly/latest-mozilla-central/%s" %
-                max_version[1])
-
     def install(self, dest=None):
         """Install Firefox."""
+
+        from mozdownload import FactoryScraper
+        import mozinstall
+
+        platform = {
+            "Linux": "linux",
+            "Windows": "win",
+            "Darwin": "mac"
+        }.get(uname[0])
+
+        if platform is None:
+            raise ValueError("Unable to construct a valid Firefox package name for current platform")
+
         if dest is None:
-            dest = os.getcwd()
+            # os.getcwd() doesn't include the venv path
+            dest = os.path.join(os.getcwd(), "_venv")
 
-        nightly_link = self.get_nightly_link(self.latest_nightly_listing(),
-                                             self.platform_string())
-        resp = get(nightly_link)
-        resp.raise_for_status()
-        untar(resp.raw, dest=dest)
-        return find_executable("firefox", os.path.join(dest, "firefox"))
+        dest = os.path.join(dest, "browsers")
 
-    def find_binary(self):
-        return find_executable("firefox")
+        filename = FactoryScraper("daily", branch="mozilla-central", destination=dest).download()
+
+        try:
+            mozinstall.install(filename, dest)
+        except mozinstall.mozinstall.InstallError as e:
+            if platform == "mac" and os.path.exists(os.path.join(dest, "Firefox Nightly.app")):
+                # mozinstall will fail if nightly is already installed in the venv because
+                # mac installation uses shutil.copy_tree
+                mozinstall.uninstall(os.path.join(dest, "Firefox Nightly.app"))
+                mozinstall.install(filename, dest)
+            else:
+                raise
+
+        os.remove(filename)
+        return self.find_binary_path(dest)
+
+    def find_binary_path(self, path=None):
+        """Looks for the firefox binary in the virtual environment"""
+
+        platform = {
+            "Linux": "linux",
+            "Windows": "win",
+            "Darwin": "mac"
+        }.get(uname[0])
+
+        if path is None:
+            #os.getcwd() doesn't include the venv path
+            path = os.path.join(os.getcwd(), "_venv", "browsers")
+
+        binary = None
+
+        if platform == "linux":
+            binary = find_executable("firefox", os.path.join(path, "firefox"))
+        elif platform == "win":
+            import mozinstall
+            binary = mozinstall.get_binary(path, "firefox")
+        elif platform == "mac":
+            binary = find_executable("firefox", os.path.join(path, "Firefox Nightly.app", "Contents", "MacOS"))
+
+        return binary
+
+    def find_binary(self, venv_path=None):
+        if venv_path is None:
+            venv_path = os.path.join(os.getcwd(), venv_path)
+
+        binary = self.find_binary_path(os.path.join(venv_path, "browsers"))
+
+        if not binary and uname[0] == "Darwin":
+            macpaths = ["/Applications/FirefoxNightly.app/Contents/MacOS",
+                        os.path.expanduser("~/Applications/FirefoxNightly.app/Contents/MacOS"),
+                        "/Applications/Firefox Developer Edition.app/Contents/MacOS",
+                        os.path.expanduser("~/Applications/Firefox Developer Edition.app/Contents/MacOS"),
+                        "/Applications/Firefox.app/Contents/MacOS",
+                        os.path.expanduser("~/Applications/Firefox.app/Contents/MacOS")]
+            return find_executable("firefox", os.pathsep.join(macpaths))
+
+        if binary is None:
+            return find_executable("firefox")
+
+        return binary
 
     def find_certutil(self):
         path = find_executable("certutil")
@@ -431,8 +459,37 @@ class Servo(Browser):
     product = "servo"
     requirements = "requirements_servo.txt"
 
+    def platform_components(self):
+        platform = {
+            "Linux": "linux",
+            "Windows": "win",
+            "Darwin": "mac"
+        }.get(uname[0])
+
+        if platform is None:
+            raise ValueError("Unable to construct a valid Servo package for current platform")
+
+        if platform == "linux":
+            extension = ".tar.gz"
+            decompress = untar
+        elif platform == "win" or platform == "mac":
+            raise ValueError("Unable to construct a valid Servo package for current platform")
+
+        return (platform, extension, decompress)
+
     def install(self, dest=None):
-        raise NotImplementedError
+        """Install latest Browser Engine."""
+        if dest is None:
+            dest = os.pwd
+
+        platform, extension, decompress = self.platform_components()
+        url = "https://download.servo.org/nightly/%s/servo-latest%s" % (platform, extension)
+
+        decompress(get(url).raw, dest=dest)
+        path = find_executable("servo", os.path.join(dest, "servo"))
+        st = os.stat(path)
+        os.chmod(path, st.st_mode | stat.S_IEXEC)
+        return path
 
     def find_binary(self):
         return find_executable("servo")
@@ -444,7 +501,9 @@ class Servo(Browser):
         raise NotImplementedError
 
     def version(self, root):
-        return None
+        """Retrieve the release version of the installed browser."""
+        output = call(self.binary, "--version")
+        return re.search(r"[0-9\.]+( [a-z]+)?$", output.strip()).group(0)
 
 
 class Sauce(Browser):
@@ -463,6 +522,27 @@ class Sauce(Browser):
         raise NotImplementedError
 
     def install_webdriver(self, dest=None):
+        raise NotImplementedError
+
+    def version(self, root):
+        return None
+
+class WebKit(Browser):
+    """WebKit-specific interface."""
+
+    product = "webkit"
+    requirements = "requirements_webkit.txt"
+
+    def install(self, dest=None):
+        raise NotImplementedError
+
+    def find_binary(self, path=None):
+        return None
+
+    def find_webdriver(self):
+        return None
+
+    def install_webdriver(self):
         raise NotImplementedError
 
     def version(self, root):
