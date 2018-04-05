@@ -617,10 +617,13 @@ public class VrShellDelegate
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
 
-        if (sInstance != null) sInstance.swapHostActivity(activity);
+        if (sInstance != null && !sInstance.mInternalIntentUsedToStartVr) {
+            sInstance.swapHostActivity(activity, false /* disableVrMode */);
+            // If the user has launched Chrome from the launcher, rather than resuming from the
+            // dashboard, we don't want to launch into presentation.
+            sInstance.exitWebVRAndClearState();
+        }
 
-        // If we're already in VR, nothing to do here.
-        if (sInstance != null && sInstance.mInVr) return;
         if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
 
         // We add a black overlay view so that we can show black while the VR UI is loading.
@@ -1016,16 +1019,9 @@ public class VrShellDelegate
                 if (activity == mActivity) onStart();
                 break;
             case ActivityState.RESUMED:
-                if (mInVr && activity != mActivity) {
-                    if (mShowingDaydreamDoff) {
-                        onExitVrResult(true);
-                    } else {
-                        shutdownVr(true /* disableVrMode */, false /* stayingInChrome */);
-                    }
-                }
                 if (!activitySupportsPresentation(activity)) return;
                 if (!(activity instanceof ChromeActivity)) return;
-                swapHostActivity((ChromeActivity) activity);
+                swapHostActivity((ChromeActivity) activity, true /* disableVrMode */);
                 onResume();
                 break;
             default:
@@ -1035,9 +1031,10 @@ public class VrShellDelegate
 
     // Called when an activity that supports VR is resumed, and attaches VrShellDelegate to that
     // activity.
-    private void swapHostActivity(ChromeActivity activity) {
+    private void swapHostActivity(ChromeActivity activity, boolean disableVrMode) {
         assert mActivity != null;
         if (mActivity == activity) return;
+        if (mInVr) shutdownVr(disableVrMode, false /* stayingInChrome */);
         mActivity = activity;
         mListeningForWebVrActivateBeforePause = false;
         if (mVrDaydreamApi != null) mVrDaydreamApi.close();
@@ -1196,8 +1193,8 @@ public class VrShellDelegate
 
         addVrViews();
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode || mAutopresentWebVr;
-        mVrShell.initializeNative(mActivity.getActivityTab(), webVrMode, mAutopresentWebVr,
-                mActivity instanceof CustomTabActivity);
+        mVrShell.initializeNative(
+                webVrMode, mAutopresentWebVr, mActivity instanceof CustomTabActivity);
         mVrShell.setWebVrModeEnabled(webVrMode);
 
         // We're entering VR, but not in WebVr mode.
@@ -1237,19 +1234,19 @@ public class VrShellDelegate
     }
 
     private void onVrIntent() {
-        if (mInVr) return;
-
         if (USE_HIDE_ANIMATION) mNeedsAnimationCancel = true;
-        mEnterVrOnStartup = true;
+        mInVrAtChromeLaunch = true;
+
+        assert !mInternalIntentUsedToStartVr;
+        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
+
+        if (mInVr) return;
 
         // TODO(mthiesse): Assuming we've gone through DON flow saves ~2 seconds on VR entry. See
         // the comments in enterVr(). This may not always be the case in the future, but for now
         // it's a reasonable assumption.
         mDonSucceeded = true;
-        mInVrAtChromeLaunch = true;
-
-        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
-
+        mEnterVrOnStartup = true;
         if (!mPaused) enterVrAfterDon();
     }
 
@@ -1506,6 +1503,13 @@ public class VrShellDelegate
         mVrShell.requestToExitVr(reason);
     }
 
+    private void exitWebVRAndClearState() {
+        exitWebVRPresent();
+        mAutopresentWebVr = false;
+        mRequestedWebVr = false;
+        mListeningForWebVrActivateBeforePause = false;
+    }
+
     @CalledByNative
     /* package */ void exitWebVRPresent() {
         if (!mInVr) return;
@@ -1606,8 +1610,6 @@ public class VrShellDelegate
 
         if (mEnterVrOnStartup) {
             // This means that Chrome was started with a VR intent, so we should enter VR.
-            // TODO(crbug.com/776235): The launcher should ensure that the DON flow has been run
-            // prior to starting Chrome.
             assert !mProbablyInDon;
             if (DEBUG_LOGS) Log.i(TAG, "onResume: entering VR mode for VR intent");
             enterVrAfterDon();
@@ -1662,10 +1664,6 @@ public class VrShellDelegate
         // are safe.
         if (mInVr) mVrShell.pause();
         if (mShowingDaydreamDoff || mProbablyInDon) return;
-
-        // TODO(mthiesse): When the user resumes Chrome in a 2D context, we don't want to tear down
-        // VR UI, so for now, exit VR.
-        shutdownVr(true /* disableVrMode */, false /* stayingInChrome */);
     }
 
     protected void onPause() {
@@ -1675,10 +1673,6 @@ public class VrShellDelegate
         mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
         unregisterDaydreamIntent(mVrDaydreamApi);
         if (mVrSupportLevel == VrSupportLevel.VR_NOT_AVAILABLE) return;
-
-        // TODO(ymalik): We should be able to remove this if we handle it for multi-window in
-        // {@link onMultiWindowModeChanged} since we're calling it in onStop.
-        if (!mInVr && !mProbablyInDon) cancelPendingVrEntry();
 
         // When the active web page has a vrdisplayactivate event handler,
         // mListeningForWebVrActivate should be set to true, which means a vrdisplayactive event
@@ -1699,12 +1693,12 @@ public class VrShellDelegate
         if (maybeCloseVrCct()) return;
         mStopped = false;
         if (mDonSucceeded) setWindowModeForVr();
+        if (mInVr && !mVrDaydreamApi.isInVrSession()) shutdownVr(true, false);
     }
 
     private void onStop() {
         if (DEBUG_LOGS) Log.i(TAG, "onStop");
         mStopped = true;
-        if (!mProbablyInDon) cancelPendingVrEntry();
         assert !mCancellingEntryAnimation;
     }
 
@@ -1890,10 +1884,10 @@ public class VrShellDelegate
      */
     /* package */ Runnable getVrCloseButtonListener() {
         if (mCloseButtonListener != null) return mCloseButtonListener;
-        final boolean startedForAutopresentation = mAutopresentWebVr;
         mCloseButtonListener = new Runnable() {
             @Override
             public void run() {
+                boolean startedForAutopresentation = mAutopresentWebVr;
                 // Avoid launching DD home when we shutdown VR.
                 mAutopresentWebVr = false;
 
