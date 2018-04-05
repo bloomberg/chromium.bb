@@ -2012,7 +2012,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // nothing if the document has already loaded.
   if (_loadPhase == web::PAGE_LOADED)
     return;
-  [self loadCompleteWithSuccess:YES forNavigation:navigation];
+
+  web::NavigationContextImpl* context =
+      [_navigationStates contextForNavigation:navigation];
+  BOOL success = !context || !context->GetError();
+  [self loadCompleteWithSuccess:success forNavigation:navigation];
 }
 
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess
@@ -4697,7 +4701,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
         // of session restoration. It is now safe to update the navigation
         // item URL to the original app-specific URL.
         item->SetURL(originalURL);
-      } else if (item->GetURL() != originalURL) {
+      } else if (item->GetVirtualURL() != originalURL) {
         // The |didFinishNavigation| callback can arrive after another
         // navigation has started. Abort in this case.
         return;
@@ -4731,29 +4735,34 @@ registerLoadRequestForURL:(const GURL&)requestURL
       }
     }
 
-    // Handle state transitions for retrying a previously failed navigation.
-    switch (errorRetryState) {
-      case web::ErrorRetryState::kDisplayingErrorForFailedNavigation:
-        DCHECK(context->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK);
-        if (item->GetURL() == webViewURL) {
-          // Shortcut: if WebView already has the original URL (can happen when
-          // WebKit renders page from cache after after repeated back/forward
-          // navigations), skip kNavigatingToFailedNavigationItem state and just
-          // reload the page.
+    // Handle state transitions for retrying a previously failed navigation to a
+    // web URL. App-specific URLs should never fail to load so should not change
+    // the error retry state.
+    if (!web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
+      switch (errorRetryState) {
+        case web::ErrorRetryState::kDisplayingErrorForFailedNavigation:
+          DCHECK(context->GetPageTransition() &
+                 ui::PAGE_TRANSITION_FORWARD_BACK);
+          if (item->GetURL() == webViewURL) {
+            // Shortcut: if WebView already has the original URL (can happen
+            // when WebKit renders page from cache after after repeated
+            // back/forward navigations), skip kNavigatingToFailedNavigationItem
+            // state and just reload the page.
+            [self handleRetryFailedNavigationItem:item];
+          } else {
+            [self handleNavigationToFailedNavigationItem:item];
+          }
+          break;
+        case web::ErrorRetryState::kNavigatingToFailedNavigationItem:
           [self handleRetryFailedNavigationItem:item];
-        } else {
-          [self handleNavigationToFailedNavigationItem:item];
-        }
-        break;
-      case web::ErrorRetryState::kNavigatingToFailedNavigationItem:
-        [self handleRetryFailedNavigationItem:item];
-        break;
-      case web::ErrorRetryState::kRetryFailedNavigationItem:
-        item->SetErrorRetryState(web::ErrorRetryState::kNoNavigationError);
-        break;
-      case web::ErrorRetryState::kNoNavigationError:
-      case web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
-        break;
+          break;
+        case web::ErrorRetryState::kRetryFailedNavigationItem:
+          item->SetErrorRetryState(web::ErrorRetryState::kNoNavigationError);
+          break;
+        case web::ErrorRetryState::kNoNavigationError:
+        case web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
+          break;
+      }
     }
   }
 
