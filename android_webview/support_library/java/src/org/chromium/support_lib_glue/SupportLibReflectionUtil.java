@@ -20,10 +20,8 @@ public class SupportLibReflectionUtil {
      * Changing the signature of this method will break existing WebView Support Library versions!
      */
     @UsedByReflection("WebView Support Library")
-    public static InvocationHandler createWebViewProviderFactory(
-            /* SupportLibraryInfo */ InvocationHandler supportLibraryInfo) {
-        final SupportLibWebViewChromiumFactory factory =
-                new SupportLibWebViewChromiumFactory(supportLibraryInfo);
-        return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(factory);
+    public static InvocationHandler createWebViewProviderFactory() {
+        return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                new SupportLibWebViewChromiumFactory());
     }
 }
