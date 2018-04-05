@@ -43,11 +43,11 @@ void CrostiniAppItem::Activate(int event_flags) {
   std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
       registration = registry_service->GetRegistration(id());
   if (registration) {
-    // TODO(timloh): Store the VM and container names in the registration
     // TODO(timloh): Do something if launching failed, as otherwise the app
     // launcher remains open and there's no feedback.
     crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
-        "termina", "penguin", registration->desktop_file_id,
+        registration->vm_name, registration->container_name,
+        registration->desktop_file_id,
         base::BindOnce([](crostini::ConciergeClientResult result) {}));
     return;
   }

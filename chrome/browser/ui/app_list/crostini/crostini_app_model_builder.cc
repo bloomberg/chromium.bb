@@ -38,9 +38,14 @@ void CrostiniAppModelBuilder::BuildModel() {
     std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
         registration = registry_service->GetRegistration(app_id);
     DCHECK(registration);
-    // TODO(timloh): Use a real icon and a localized name
+    if (registration->no_display)
+      continue;
+    const std::string& localized_name =
+        chromeos::CrostiniRegistryService::Registration::Localize(
+            registration->name);
+    // TODO(timloh): Use a real icon
     InsertApp(std::make_unique<CrostiniAppItem>(
-        profile(), GetSyncItem(app_id), app_id, registration->name,
+        profile(), GetSyncItem(app_id), app_id, localized_name,
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_LOGO_CROSTINI_TERMINAL)));
   }
