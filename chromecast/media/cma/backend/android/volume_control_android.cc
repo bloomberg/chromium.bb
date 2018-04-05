@@ -23,7 +23,9 @@
 #include "chromecast/base/serializers.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "jni/VolumeControl_jni.h"
+#if BUILDFLAG(ENABLE_VOLUME_TABLES_ACCESS)
 #include "jni/VolumeMap_jni.h"
+#endif
 
 namespace chromecast {
 namespace media {
@@ -166,8 +168,10 @@ void VolumeControlAndroid::InitializeOnThread() {
 
   for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
                     AudioContentType::kCommunication}) {
+#if BUILDFLAG(ENABLE_VOLUME_TABLES_ACCESS)
     Java_VolumeMap_dumpVolumeTables(base::android::AttachCurrentThread(),
                                     static_cast<int>(type));
+#endif
     volumes_[type] =
         Java_VolumeControl_getVolume(base::android::AttachCurrentThread(),
                                      j_volume_control_, static_cast<int>(type));
