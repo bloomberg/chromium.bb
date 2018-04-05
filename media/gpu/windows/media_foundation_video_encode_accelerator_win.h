@@ -26,9 +26,8 @@ namespace media {
 // Media Foundation implementation of the VideoEncodeAccelerator interface for
 // Windows.
 // This class saves the task runner on which it is constructed and runs client
-// callbacks using that same task runner. If TryToSetupEncodeOnSeparateThread()
-// is called, it uses the given |encode_task_runner| instead to return encoded
-// data. This class has DCHECKs to makes sure that methods are called in the
+// callbacks using that same task runner.
+// This class has DCHECKs to makes sure that methods are called in the
 // correct task runners. It starts an internal encoder thread on which
 // VideoEncodeAccelerator implementation tasks are posted.
 class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
@@ -52,10 +51,6 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
-  bool TryToSetupEncodeOnSeparateThread(
-      const base::WeakPtr<Client>& encode_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& encode_task_runner)
-      override;
 
   // Preload dlls required for encoding. Returns true if all required dlls are
   // correctly loaded.
@@ -99,7 +94,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
   // Copies EncodeOutput into a BitstreamBuffer and returns it to the
-  // |encode_client_|.
+  // |main_client_|.
   void ReturnBitstreamBuffer(
       std::unique_ptr<EncodeOutput> encode_output,
       std::unique_ptr<MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef>
@@ -152,12 +147,6 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   base::WeakPtr<Client> main_client_;
   std::unique_ptr<base::WeakPtrFactory<Client>> main_client_weak_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_client_task_runner_;
-
-  // Used to run client callback BitstreamBufferReady() on
-  // |encode_client_task_runner_| if given by
-  // TryToSetupEncodeOnSeparateThread().
-  base::WeakPtr<Client> encode_client_;
-  scoped_refptr<base::SingleThreadTaskRunner> encode_client_task_runner_;
 
   // This thread services tasks posted from the VEA API entry points by the
   // GPU child thread and CompressionCallback() posted from device thread.
