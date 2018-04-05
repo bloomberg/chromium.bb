@@ -1183,18 +1183,18 @@ void RenderWidgetCompositor::WillBeginMainFrame() {
 void RenderWidgetCompositor::DidBeginMainFrame() {}
 
 void RenderWidgetCompositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
-  compositor_deps_->GetRendererScheduler()->WillBeginFrame(args);
+  compositor_deps_->GetWebMainThreadScheduler()->WillBeginFrame(args);
   double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();
   delegate_->BeginMainFrame(frame_time_sec);
 }
 
 void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {
-  compositor_deps_->GetRendererScheduler()->BeginFrameNotExpectedSoon();
+  compositor_deps_->GetWebMainThreadScheduler()->BeginFrameNotExpectedSoon();
 }
 
 void RenderWidgetCompositor::BeginMainFrameNotExpectedUntil(
     base::TimeTicks time) {
-  compositor_deps_->GetRendererScheduler()->BeginMainFrameNotExpectedUntil(
+  compositor_deps_->GetWebMainThreadScheduler()->BeginMainFrameNotExpectedUntil(
       time);
 }
 
@@ -1253,7 +1253,7 @@ void RenderWidgetCompositor::WillCommit() {
 
 void RenderWidgetCompositor::DidCommit() {
   delegate_->DidCommitCompositorFrame();
-  compositor_deps_->GetRendererScheduler()->DidCommitFrameToCompositor();
+  compositor_deps_->GetWebMainThreadScheduler()->DidCommitFrameToCompositor();
 }
 
 void RenderWidgetCompositor::DidCommitAndDrawFrame() {

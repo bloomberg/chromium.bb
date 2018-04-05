@@ -159,8 +159,9 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
     dummy_task_runner_handle.reset(
         new base::ThreadTaskRunnerHandle(dummy_task_runner));
   }
-  renderer_scheduler_ = blink::scheduler::CreateRendererSchedulerForTests();
-  web_thread_ = renderer_scheduler_->CreateMainThread();
+  main_thread_scheduler_ =
+      blink::scheduler::CreateWebMainThreadSchedulerForTests();
+  web_thread_ = main_thread_scheduler_->CreateMainThread();
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
 
   // Initialize mojo firstly to enable Blink initialization to use it.
@@ -197,8 +198,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   url_loader_factory_.reset();
   mock_clipboard_.reset();
-  if (renderer_scheduler_)
-    renderer_scheduler_->Shutdown();
+  if (main_thread_scheduler_)
+    main_thread_scheduler_->Shutdown();
 }
 
 blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {

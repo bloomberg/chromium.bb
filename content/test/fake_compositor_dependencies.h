@@ -30,7 +30,8 @@ class FakeCompositorDependencies : public CompositorDependencies {
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() override;
-  blink::scheduler::RendererScheduler* GetRendererScheduler() override;
+  blink::scheduler::WebMainThreadScheduler* GetWebMainThreadScheduler()
+      override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsThreadedAnimationEnabled() override;
   bool IsScrollAnimatorEnabled() override;

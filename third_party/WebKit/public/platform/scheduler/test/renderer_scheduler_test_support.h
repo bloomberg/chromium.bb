@@ -17,11 +17,11 @@ namespace blink {
 
 namespace scheduler {
 
-class RendererScheduler;
+class WebMainThreadScheduler;
 
-std::unique_ptr<RendererScheduler> CreateRendererSchedulerForTests();
+std::unique_ptr<WebMainThreadScheduler> CreateWebMainThreadSchedulerForTests();
 
-void RunIdleTasksForTesting(RendererScheduler* scheduler,
+void RunIdleTasksForTesting(WebMainThreadScheduler* scheduler,
                             const base::Closure& callback);
 
 // Returns a SequencedTaskRunner. This implementation is same as

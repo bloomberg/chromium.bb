@@ -132,7 +132,7 @@ class RenderThreadImplForTest : public RenderThreadImpl {
  public:
   RenderThreadImplForTest(
       const InProcessChildThreadParams& params,
-      std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
+      std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler,
       scoped_refptr<base::SingleThreadTaskRunner>& test_task_counter,
       base::MessageLoop* unowned_message_loop)
       : RenderThreadImpl(params,
@@ -248,8 +248,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
     // in RenderThreadImpl::Init().
     cmd->AppendSwitch(switches::kIgnoreGpuBlacklist);
 
-    std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
-        blink::scheduler::RendererScheduler::Create();
+    std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+        main_thread_scheduler =
+            blink::scheduler::WebMainThreadScheduler::Create();
     scoped_refptr<base::SingleThreadTaskRunner> test_task_counter(
         test_task_counter_.get());
 
@@ -258,7 +259,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     thread_ = new RenderThreadImplForTest(
         InProcessChildThreadParams(io_task_runner, &invitation,
                                    child_connection_->service_token()),
-        std::move(renderer_scheduler), test_task_counter,
+        std::move(main_thread_scheduler), test_task_counter,
         main_message_loop_.get());
     cmd->InitFromArgv(old_argv);
 

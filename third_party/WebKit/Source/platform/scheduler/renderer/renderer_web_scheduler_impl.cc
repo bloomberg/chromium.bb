@@ -52,7 +52,8 @@ base::TimeTicks RendererWebSchedulerImpl::MonotonicallyIncreasingVirtualTime()
   return renderer_scheduler_->GetActiveTimeDomain()->Now();
 }
 
-RendererScheduler* RendererWebSchedulerImpl::GetRendererSchedulerForTest() {
+WebMainThreadScheduler*
+RendererWebSchedulerImpl::GetWebMainThreadSchedulerForTest() {
   return renderer_scheduler_;
 }
 

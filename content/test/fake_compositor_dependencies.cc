@@ -59,8 +59,8 @@ FakeCompositorDependencies::GetCompositorImplThreadTaskRunner() {
   return nullptr;  // Currently never threaded compositing in unit tests.
 }
 
-blink::scheduler::RendererScheduler*
-FakeCompositorDependencies::GetRendererScheduler() {
+blink::scheduler::WebMainThreadScheduler*
+FakeCompositorDependencies::GetWebMainThreadScheduler() {
   return &renderer_scheduler_;
 }
 

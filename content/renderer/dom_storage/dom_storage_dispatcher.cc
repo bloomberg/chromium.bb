@@ -199,7 +199,7 @@ DOMStorageCachedArea* DomStorageDispatcher::ProxyImpl::OpenCachedArea(
   }
   scoped_refptr<DOMStorageCachedArea> area = new DOMStorageCachedArea(
       namespace_id, origin, this,
-      content::RenderThreadImpl::current()->GetRendererScheduler());
+      content::RenderThreadImpl::current()->GetWebMainThreadScheduler());
   cached_areas_[key] = CachedAreaHolder(area.get(), 1);
   return area.get();
 }

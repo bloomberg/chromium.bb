@@ -174,7 +174,7 @@ class SynchronousCompositorFilter;
 class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
-      public blink::scheduler::RendererScheduler::RAILModeObserver,
+      public blink::scheduler::WebMainThreadScheduler::RAILModeObserver,
       public ChildMemoryCoordinatorDelegate,
       public base::MemoryCoordinatorClient,
       public mojom::Renderer,
@@ -185,7 +185,8 @@ class CONTENT_EXPORT RenderThreadImpl
                                   base::MessageLoop* unowned_message_loop);
   static RenderThreadImpl* Create(
       std::unique_ptr<base::MessageLoop> main_message_loop,
-      std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler);
+      std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+          main_thread_scheduler);
   static RenderThreadImpl* current();
   static mojom::RenderMessageFilter* current_render_message_filter();
   static RendererBlinkPlatformImpl* current_blink_platform_impl();
@@ -258,13 +259,14 @@ class CONTENT_EXPORT RenderThreadImpl
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() override;
-  blink::scheduler::RendererScheduler* GetRendererScheduler() override;
+  blink::scheduler::WebMainThreadScheduler* GetWebMainThreadScheduler()
+      override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsThreadedAnimationEnabled() override;
   bool IsScrollAnimatorEnabled() override;
   std::unique_ptr<cc::UkmRecorderFactory> CreateUkmRecorderFactory() override;
 
-  // blink::scheduler::RendererScheduler::RAILModeObserver implementation.
+  // blink::scheduler::WebMainThreadScheduler::RAILModeObserver implementation.
   void OnRAILModeChanged(v8::RAILMode rail_mode) override;
 
   // viz::mojom::CompositingModeWatcher implementation.
@@ -534,12 +536,12 @@ class CONTENT_EXPORT RenderThreadImpl
  protected:
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
-      std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
+      std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler,
       const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
       base::MessageLoop* unowned_message_loop);
   RenderThreadImpl(
       std::unique_ptr<base::MessageLoop> main_message_loop,
-      std::unique_ptr<blink::scheduler::RendererScheduler> scheduler);
+      std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler);
 
  private:
   void OnProcessFinalRelease() override;
@@ -634,7 +636,8 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;
   std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   std::unique_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
-  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+      main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
   std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;

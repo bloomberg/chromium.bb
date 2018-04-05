@@ -44,9 +44,9 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override
       WARN_UNUSED_RESULT;
   void AddPendingNavigation(
-      scheduler::RendererScheduler::NavigatingFrameType type) override {}
+      scheduler::WebMainThreadScheduler::NavigatingFrameType type) override {}
   void RemovePendingNavigation(
-      scheduler::RendererScheduler::NavigatingFrameType type) override {}
+      scheduler::WebMainThreadScheduler::NavigatingFrameType type) override {}
 
   // Returns TimeTicks::Now() by default.
   base::TimeTicks MonotonicallyIncreasingVirtualTime() const override;

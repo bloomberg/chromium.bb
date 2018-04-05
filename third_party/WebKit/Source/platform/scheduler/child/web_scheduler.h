@@ -17,10 +17,11 @@ namespace blink {
 
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
-// TODO(skyostil): Replace this class with RendererScheduler.
+// TODO(skyostil): Replace this class with WebMainThreadScheduler.
 class PLATFORM_EXPORT WebScheduler {
  public:
-  using RendererPauseHandle = scheduler::RendererScheduler::RendererPauseHandle;
+  using RendererPauseHandle =
+      scheduler::WebMainThreadScheduler::RendererPauseHandle;
 
   virtual ~WebScheduler() = default;
 
@@ -70,19 +71,19 @@ class PLATFORM_EXPORT WebScheduler {
   virtual std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) = 0;
 
-  // Pauses the scheduler. See RendererScheduler::PauseRenderer for details.
-  // May only be called from the main thread.
+  // Pauses the scheduler. See WebMainThreadScheduler::PauseRenderer for
+  // details. May only be called from the main thread.
   virtual std::unique_ptr<RendererPauseHandle> PauseScheduler()
       WARN_UNUSED_RESULT = 0;
 
   // Tells the scheduler that a navigation task is pending.
   // TODO(alexclarke): Long term should this be a task trait?
   virtual void AddPendingNavigation(
-      scheduler::RendererScheduler::NavigatingFrameType) = 0;
+      scheduler::WebMainThreadScheduler::NavigatingFrameType) = 0;
 
   // Tells the scheduler that a navigation task is no longer pending.
   virtual void RemovePendingNavigation(
-      scheduler::RendererScheduler::NavigatingFrameType) = 0;
+      scheduler::WebMainThreadScheduler::NavigatingFrameType) = 0;
 
   // Returns the current time recognized by the scheduler, which may perhaps
   // be based on a real or virtual time domain. Used by Timer.
@@ -90,10 +91,11 @@ class PLATFORM_EXPORT WebScheduler {
 
   // Test helpers.
 
-  // Return a reference to an underlying RendererScheduler object.
-  // Can be null if there is no underlying RendererScheduler
+  // Return a reference to an underlying WebMainThreadScheduler object.
+  // Can be null if there is no underlying WebMainThreadScheduler
   // (e.g. worker threads).
-  virtual scheduler::RendererScheduler* GetRendererSchedulerForTest() {
+  virtual scheduler::WebMainThreadScheduler*
+  GetWebMainThreadSchedulerForTest() {
     return nullptr;
   }
 };

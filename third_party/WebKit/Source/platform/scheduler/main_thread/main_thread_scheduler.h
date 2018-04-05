@@ -55,7 +55,7 @@ class TaskQueueThrottler;
 
 // TODO(yutak): Rename this class to MainThreadScheduler.
 class PLATFORM_EXPORT RendererSchedulerImpl
-    : public RendererScheduler,
+    : public WebMainThreadScheduler,
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
@@ -283,7 +283,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   base::WeakPtr<RendererSchedulerImpl> GetWeakPtr();
 
  protected:
-  // RendererScheduler implementation.
+  // WebMainThreadScheduler implementation.
   // Use *TaskQueue internally.
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;

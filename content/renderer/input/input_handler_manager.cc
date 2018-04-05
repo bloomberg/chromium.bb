@@ -22,7 +22,7 @@
 
 using blink::WebInputEvent;
 using ui::InputHandlerProxy;
-using blink::scheduler::RendererScheduler;
+using blink::scheduler::WebMainThreadScheduler;
 
 namespace content {
 
@@ -50,11 +50,11 @@ InputHandlerManager::InputHandlerManager(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     InputHandlerManagerClient* client,
     SynchronousInputHandlerProxyClient* sync_handler_client,
-    blink::scheduler::RendererScheduler* renderer_scheduler)
+    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
     : task_runner_(task_runner),
       client_(client),
       synchronous_handler_proxy_client_(sync_handler_client),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       weak_ptr_factory_(this) {
   DCHECK(client_);
   client_->SetInputHandlerManager(this);
@@ -244,15 +244,15 @@ void InputHandlerManager::DidHandleInputEventAndOverscroll(
       InputEventDispositionToAck(event_disposition);
   switch (input_event_ack_state) {
     case INPUT_EVENT_ACK_STATE_CONSUMED:
-      renderer_scheduler_->DidHandleInputEventOnCompositorThread(
-          *input_event,
-          RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+      main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
+          *input_event, WebMainThreadScheduler::InputEventState::
+                            EVENT_CONSUMED_BY_COMPOSITOR);
       break;
     case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
     case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
-      renderer_scheduler_->DidHandleInputEventOnCompositorThread(
-          *input_event,
-          RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+      main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
+          *input_event, WebMainThreadScheduler::InputEventState::
+                            EVENT_FORWARDED_TO_MAIN_THREAD);
       break;
     default:
       break;
@@ -271,7 +271,7 @@ void InputHandlerManager::DidStopFlinging(int routing_id) {
 }
 
 void InputHandlerManager::DidAnimateForInput() {
-  renderer_scheduler_->DidAnimateForInputOnCompositorThread();
+  main_thread_scheduler_->DidAnimateForInputOnCompositorThread();
 }
 
 void InputHandlerManager::DidStartScrollingViewport(int routing_id) {

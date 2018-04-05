@@ -126,11 +126,11 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     }
 
     size_t num_events_handled = 1 + blocking_coalesced_callbacks_.size();
-    if (queue->renderer_scheduler_) {
+    if (queue->main_thread_scheduler_) {
       // TODO(dtapuska): Change the scheduler API to take into account number of
       // events processed.
       for (size_t i = 0; i < num_events_handled; ++i) {
-        queue->renderer_scheduler_->DidHandleInputEventOnMainThread(
+        queue->main_thread_scheduler_->DidHandleInputEventOnMainThread(
             event(), ack_result == INPUT_EVENT_ACK_STATE_CONSUMED
                          ? blink::WebInputEventResult::kHandledApplication
                          : blink::WebInputEventResult::kNotHandled);
@@ -207,7 +207,7 @@ MainThreadEventQueue::SharedState::~SharedState() {}
 MainThreadEventQueue::MainThreadEventQueue(
     MainThreadEventQueueClient* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    blink::scheduler::RendererScheduler* renderer_scheduler,
+    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler,
     bool allow_raf_aligned_input)
     : client_(client),
       last_touch_start_forced_nonblocking_due_to_fling_(false),
@@ -219,7 +219,7 @@ MainThreadEventQueue::MainThreadEventQueue(
       needs_low_latency_(false),
       allow_raf_aligned_input_(allow_raf_aligned_input),
       main_task_runner_(main_task_runner),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       use_raf_fallback_timer_(true) {
   if (enable_non_blocking_due_to_main_thread_responsiveness_flag_) {
     std::string group = base::FieldTrialList::FindFullName(
@@ -295,7 +295,7 @@ void MainThreadEventQueue::HandleEvent(
     if (enable_non_blocking_due_to_main_thread_responsiveness_flag_ &&
         touch_event->dispatch_type == blink::WebInputEvent::kBlocking) {
       bool passive_due_to_unresponsive_main =
-          renderer_scheduler_->MainThreadSeemsUnresponsive(
+          main_thread_scheduler_->MainThreadSeemsUnresponsive(
               main_thread_responsiveness_threshold_);
       if (passive_due_to_unresponsive_main) {
         touch_event->dispatch_type = blink::WebInputEvent::

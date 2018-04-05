@@ -14,7 +14,7 @@
 namespace blink {
 namespace scheduler {
 
-class FakeRendererScheduler : public RendererScheduler {
+class FakeRendererScheduler : public WebMainThreadScheduler {
  public:
   FakeRendererScheduler();
   ~FakeRendererScheduler() override;

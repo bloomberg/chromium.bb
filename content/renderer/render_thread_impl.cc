@@ -673,20 +673,22 @@ RenderThreadImpl* RenderThreadImpl::Create(
     const InProcessChildThreadParams& params,
     base::MessageLoop* unowned_message_loop) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
-  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
-      blink::scheduler::RendererScheduler::Create();
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+      main_thread_scheduler =
+          blink::scheduler::WebMainThreadScheduler::Create();
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
-  return new RenderThreadImpl(params, std::move(renderer_scheduler),
+  return new RenderThreadImpl(params, std::move(main_thread_scheduler),
                               test_task_counter, unowned_message_loop);
 }
 
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
     std::unique_ptr<base::MessageLoop> main_message_loop,
-    std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler) {
+    std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+        main_thread_scheduler) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   return new RenderThreadImpl(std::move(main_message_loop),
-                              std::move(renderer_scheduler));
+                              std::move(main_thread_scheduler));
 }
 
 // static
@@ -733,7 +735,7 @@ RenderThreadImpl::DeprecatedGetMainTaskRunner() {
 // the browser
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
-    std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
+    std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler,
     const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
     base::MessageLoop* unowned_message_loop)
     : ChildThreadImpl(
@@ -743,7 +745,7 @@ RenderThreadImpl::RenderThreadImpl(
               .ConnectToBrowser(true)
               .IPCTaskRunner(scheduler ? scheduler->IPCTaskRunner() : nullptr)
               .Build()),
-      renderer_scheduler_(std::move(scheduler)),
+      main_thread_scheduler_(std::move(scheduler)),
       main_message_loop_(unowned_message_loop),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this),
@@ -757,14 +759,14 @@ RenderThreadImpl::RenderThreadImpl(
 // which means that we need to make the render thread pump UI events.
 RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> owned_message_loop,
-    std::unique_ptr<blink::scheduler::RendererScheduler> scheduler)
+    std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler)
     : ChildThreadImpl(
           Options::Builder()
               .AutoStartServiceManagerConnection(false)
               .ConnectToBrowser(true)
               .IPCTaskRunner(scheduler ? scheduler->IPCTaskRunner() : nullptr)
               .Build()),
-      renderer_scheduler_(std::move(scheduler)),
+      main_thread_scheduler_(std::move(scheduler)),
       owned_message_loop_(std::move(owned_message_loop)),
       main_message_loop_(owned_message_loop_.get()),
       categorized_worker_pool_(new CategorizedWorkerPool()),
@@ -827,7 +829,7 @@ void RenderThreadImpl::Init(
           GetChannel()->ipc_task_runner_refptr()));
 
   notification_dispatcher_ = new NotificationDispatcher(
-      thread_safe_sender(), GetRendererScheduler()->IPCTaskRunner());
+      thread_safe_sender(), GetWebMainThreadScheduler()->IPCTaskRunner());
   AddFilter(notification_dispatcher_->GetFilter());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
@@ -851,7 +853,7 @@ void RenderThreadImpl::Init(
   registry->AddInterface(
       base::BindRepeating(&AppCacheDispatcher::Bind,
                           base::Unretained(appcache_dispatcher())),
-      GetRendererScheduler()->IPCTaskRunner());
+      GetWebMainThreadScheduler()->IPCTaskRunner());
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
   file_system_dispatcher_.reset(new FileSystemDispatcher());
@@ -1182,11 +1184,11 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     }
   }
 
-  std::unique_ptr<blink::scheduler::RendererScheduler::RendererPauseHandle>
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler::RendererPauseHandle>
       renderer_paused_handle;
 
   if (pumping_events) {
-    renderer_paused_handle = renderer_scheduler_->PauseRenderer();
+    renderer_paused_handle = main_thread_scheduler_->PauseRenderer();
     WebView::WillEnterModalLoop();
   }
 
@@ -1329,7 +1331,7 @@ void RenderThreadImpl::InitializeCompositorThread() {
     input_event_filter_ = compositor_input_event_filter;
     input_handler_manager_.reset(new InputHandlerManager(
         compositor_task_runner_, input_handler_manager_client,
-        synchronous_input_handler_proxy_client, renderer_scheduler_.get()));
+        synchronous_input_handler_proxy_client, main_thread_scheduler_.get()));
   }
 }
 
@@ -1347,7 +1349,7 @@ void RenderThreadImpl::InitializeWebKit(
 #endif
 
   blink_platform_impl_.reset(
-      new RendererBlinkPlatformImpl(renderer_scheduler_.get()));
+      new RendererBlinkPlatformImpl(main_thread_scheduler_.get()));
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
   GetContentClient()
       ->renderer()
@@ -1357,10 +1359,10 @@ void RenderThreadImpl::InitializeWebKit(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
-  renderer_scheduler_->SetRAILModeObserver(this);
+  main_thread_scheduler_->SetRAILModeObserver(this);
 
   main_thread_compositor_task_runner_ =
-      renderer_scheduler_->CompositorTaskRunner();
+      main_thread_scheduler_->CompositorTaskRunner();
 
   main_input_callback_.Reset(
       base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
@@ -1389,7 +1391,7 @@ void RenderThreadImpl::InitializeWebKit(
 
   RenderMediaClient::Initialize();
 
-  idle_timer_.SetTaskRunner(GetRendererScheduler()->DefaultTaskRunner());
+  idle_timer_.SetTaskRunner(GetWebMainThreadScheduler()->DefaultTaskRunner());
 
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
@@ -1400,10 +1402,10 @@ void RenderThreadImpl::InitializeWebKit(
   }
 
   service_worker_message_filter_ = new ServiceWorkerMessageFilter(
-      thread_safe_sender(), GetRendererScheduler()->IPCTaskRunner());
+      thread_safe_sender(), GetWebMainThreadScheduler()->IPCTaskRunner());
   AddFilter(service_worker_message_filter_->GetFilter());
 
-  renderer_scheduler_->SetStoppingWhenBackgroundedEnabled(
+  main_thread_scheduler_->SetStoppingWhenBackgroundedEnabled(
       GetContentClient()->renderer()->AllowStoppingWhenProcessBackgrounded());
 
   SkGraphics::SetResourceCacheSingleAllocationByteLimit(
@@ -1682,7 +1684,7 @@ int32_t RenderThreadImpl::GetClientId() {
 
 void RenderThreadImpl::SetRendererProcessType(
     blink::scheduler::RendererProcessType type) {
-  renderer_scheduler_->SetRendererProcessType(type);
+  main_thread_scheduler_->SetRendererProcessType(type);
 }
 
 bool RenderThreadImpl::OnMessageReceived(const IPC::Message& msg) {
@@ -1747,8 +1749,9 @@ gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
   return gpu_->gpu_memory_buffer_manager();
 }
 
-blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
-  return renderer_scheduler_.get();
+blink::scheduler::WebMainThreadScheduler*
+RenderThreadImpl::GetWebMainThreadScheduler() {
+  return main_thread_scheduler_.get();
 }
 
 std::unique_ptr<viz::SyntheticBeginFrameSource>
@@ -1828,7 +1831,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void RenderThreadImpl::SetSchedulerKeepActive(bool keep_active) {
-  renderer_scheduler_->SetSchedulerKeepActive(keep_active);
+  main_thread_scheduler_->SetSchedulerKeepActive(keep_active);
 }
 
 void RenderThreadImpl::SetProcessBackgrounded(bool backgrounded) {
@@ -1838,22 +1841,22 @@ void RenderThreadImpl::SetProcessBackgrounded(bool backgrounded) {
     timer_slack = base::TIMER_SLACK_MAXIMUM;
   main_message_loop_->SetTimerSlack(timer_slack);
 
-  renderer_scheduler_->SetRendererBackgrounded(backgrounded);
+  main_thread_scheduler_->SetRendererBackgrounded(backgrounded);
   if (backgrounded) {
     needs_to_record_first_active_paint_ = false;
-    GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+    GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
                        base::Unretained(this), "5min",
                        process_foregrounded_count_),
         base::TimeDelta::FromMinutes(5));
-    GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+    GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
                        base::Unretained(this), "10min",
                        process_foregrounded_count_),
         base::TimeDelta::FromMinutes(10));
-    GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+    GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
                        base::Unretained(this), "15min",
@@ -1880,19 +1883,19 @@ void RenderThreadImpl::ProcessPurgeAndSuspend() {
     return;
 
   purge_and_suspend_memory_metrics_ = memory_metrics;
-  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           &RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
           base::Unretained(this), "30min", process_foregrounded_count_),
       base::TimeDelta::FromMinutes(30));
-  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           &RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
           base::Unretained(this), "60min", process_foregrounded_count_),
       base::TimeDelta::FromMinutes(60));
-  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           &RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
@@ -2305,7 +2308,7 @@ void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderViewImpl::Create(compositor_deps, std::move(params),
                          RenderWidget::ShowCallback(),
-                         GetRendererScheduler()->DefaultTaskRunner());
+                         GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
@@ -2365,9 +2368,9 @@ void RenderThreadImpl::OnNetworkQualityChanged(
 void RenderThreadImpl::SetWebKitSharedTimersSuspended(bool suspend) {
 #if defined(OS_ANDROID)
   if (suspend) {
-    renderer_scheduler_->PauseTimersForAndroidWebView();
+    main_thread_scheduler_->PauseTimersForAndroidWebView();
   } else {
-    renderer_scheduler_->ResumeTimersForAndroidWebView();
+    main_thread_scheduler_->ResumeTimersForAndroidWebView();
   }
   webkit_shared_timer_suspended_ = suspend;
 #else
@@ -2448,7 +2451,7 @@ void RenderThreadImpl::OnPurgeMemory() {
   if (!GetRendererMemoryMetrics(&metrics))
     return;
 
-  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&RenderThreadImpl::RecordPurgeMemory,
                      base::Unretained(this), std::move(metrics)),
@@ -2570,7 +2573,7 @@ void RenderThreadImpl::OnRendererHidden() {
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
-  renderer_scheduler_->SetRendererHidden(true);
+  main_thread_scheduler_->SetRendererHidden(true);
   ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
 }
 
@@ -2578,7 +2581,7 @@ void RenderThreadImpl::OnRendererVisible() {
   blink::MainThreadIsolate()->IsolateInForegroundNotification();
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
-  renderer_scheduler_->SetRendererHidden(false);
+  main_thread_scheduler_->SetRendererHidden(false);
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }
 
@@ -2648,7 +2651,7 @@ void RenderThreadImpl::OnRendererInterfaceRequest(
     mojom::RendererAssociatedRequest request) {
   DCHECK(!renderer_binding_.is_bound());
   renderer_binding_.Bind(std::move(request),
-                         GetRendererScheduler()->IPCTaskRunner());
+                         GetWebMainThreadScheduler()->IPCTaskRunner());
 }
 
 bool RenderThreadImpl::NeedsToRecordFirstActivePaint(

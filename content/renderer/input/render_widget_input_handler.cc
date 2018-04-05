@@ -320,7 +320,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (RenderThreadImpl::current()) {
     swap_latency_info.set_expected_queueing_time_on_dispatch(
         RenderThreadImpl::current()
-            ->GetRendererScheduler()
+            ->GetWebMainThreadScheduler()
             ->MostRecentExpectedQueueingTime());
   }
 
