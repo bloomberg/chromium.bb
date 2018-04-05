@@ -581,8 +581,11 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
   if (contents_ &&
       !contents_->GetVisibleURL().SchemeIs(extensions::kExtensionScheme)) {
     // Null in tests. OnDidPerformInstallableCheck is called via a testing API.
+    // TODO(crbug.com/829232) ensure this is consistent with other calls to
+    // GetData.
     if (installable_manager_) {
       InstallableParams params;
+      params.check_eligibility = true;
       params.valid_primary_icon = true;
       params.valid_manifest = true;
       // Do not wait for a service worker if it doesn't exist.
