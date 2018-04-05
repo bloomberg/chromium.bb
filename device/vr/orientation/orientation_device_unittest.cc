@@ -22,9 +22,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/scoped_screen_override.h"
 #include "ui/gfx/geometry/quaternion.h"
 
 namespace device {
+
+using display::test::ScopedScreenOverride;
 
 namespace {
 
@@ -88,7 +91,8 @@ class VROrientationDeviceTest : public testing::Test {
 
     fake_screen_ = std::make_unique<FakeScreen>();
 
-    display::Screen::SetScreenInstance(fake_screen_.get());
+    scoped_screen_override_ =
+        std::make_unique<ScopedScreenOverride>(fake_screen_.get());
 
     scoped_task_environment_.RunUntilIdle();
   }
@@ -198,6 +202,7 @@ class VROrientationDeviceTest : public testing::Test {
   mojom::SensorClientPtr sensor_client_ptr_;
 
   std::unique_ptr<FakeScreen> fake_screen_;
+  std::unique_ptr<ScopedScreenOverride> scoped_screen_override_;
 
   DISALLOW_COPY_AND_ASSIGN(VROrientationDeviceTest);
 };

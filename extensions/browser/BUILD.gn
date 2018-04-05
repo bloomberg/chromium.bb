@@ -467,6 +467,7 @@ source_set("browser_tests") {
     "//services/device/public/cpp/hid",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
+    "//ui/display:test_support",
   ]
 
   if (is_mac) {
