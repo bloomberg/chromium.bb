@@ -81,6 +81,7 @@ class PLATFORM_EXPORT Visitor {
   // Member version of the one-argument templated trace method.
   template <typename T>
   void Trace(const Member<T>& t) {
+    DCHECK(!t.IsHashTableDeletedValue());
     Trace(t.Get());
   }
 
@@ -155,6 +156,8 @@ class PLATFORM_EXPORT Visitor {
 
     if (!t.Get())
       return;
+
+    DCHECK(!t.IsHashTableDeletedValue());
     VisitWeak(const_cast<void*>(reinterpret_cast<const void*>(t.Get())),
               reinterpret_cast<void**>(
                   const_cast<typename std::remove_const<T>::type**>(t.Cell())),

@@ -236,8 +236,6 @@ class Object : public GarbageCollected<Object> {
 // =============================================================================
 
 TEST(IncrementalMarkingTest, EnableDisableBarrier) {
-  Object* object = Object::Create();
-  BasePage* page = PageFromObject(object);
   EXPECT_FALSE(ThreadState::Current()->IsIncrementalMarking());
   ThreadState::Current()->EnableIncrementalMarkingBarrier();
   EXPECT_TRUE(ThreadState::Current()->IsIncrementalMarking());

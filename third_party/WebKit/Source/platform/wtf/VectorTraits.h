@@ -64,6 +64,10 @@ struct VectorTraitsBase {
   };
   // We don't support weak handling in vectors.
   static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
+
+  // Vectors do not support deleting values.
+  static constexpr bool kCanHaveDeletedValue = false;
+  static bool IsDeletedValue(T value) { return false; }
 };
 
 template <typename T>
@@ -142,6 +146,10 @@ struct VectorTraits<std::pair<First, Second>> {
   };
   // We don't support weak handling in vectors.
   static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
+
+  // Vectors do not support deleting values.
+  static constexpr bool kCanHaveDeletedValue = false;
+  static bool IsDeletedValue(std::pair<First, Second> value) { return false; }
 };
 
 }  // namespace WTF
