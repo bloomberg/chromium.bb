@@ -6231,10 +6231,10 @@ static int estimate_wedge_sign(const AV1_COMP *cpi, const MACROBLOCK *x,
                           pred1 + bh / 2 * stride1 + bw / 2, stride0,
                           &esq[1][3]);
 
-  tl = (int64_t)(esq[0][0] + esq[0][1] + esq[0][2]) -
-       (int64_t)(esq[1][0] + esq[1][1] + esq[1][2]);
-  br = (int64_t)(esq[1][3] + esq[1][1] + esq[1][2]) -
-       (int64_t)(esq[0][3] + esq[0][1] + esq[0][2]);
+  tl = ((int64_t)esq[0][0] + esq[0][1] + esq[0][2]) -
+       ((int64_t)esq[1][0] + esq[1][1] + esq[1][2]);
+  br = ((int64_t)esq[1][3] + esq[1][1] + esq[1][2]) -
+       ((int64_t)esq[0][3] + esq[0][1] + esq[0][2]);
   return (tl + br > 0);
 }
 
