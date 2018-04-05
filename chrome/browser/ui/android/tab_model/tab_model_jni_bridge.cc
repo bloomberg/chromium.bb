@@ -72,7 +72,7 @@ void TabModelJniBridge::TabAddedToModel(JNIEnv* env,
   // the window id.
   TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
   if (tab)
-    tab->SetWindowSessionID(GetSessionId().id());
+    tab->SetWindowSessionID(GetSessionId());
 }
 
 int TabModelJniBridge::GetTabCount() const {

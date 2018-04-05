@@ -17,5 +17,5 @@ jint JNI_SessionTabHelper_IdForTab(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   CHECK(web_contents);
-  return SessionTabHelper::IdForTab(web_contents);
+  return SessionTabHelper::IdForTab(web_contents).id();
 }

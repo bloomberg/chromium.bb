@@ -232,7 +232,7 @@ Task::Type TaskManagerImpl::GetType(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->GetType();
 }
 
-int TaskManagerImpl::GetTabId(TaskId task_id) const {
+SessionID TaskManagerImpl::GetTabId(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->GetTabId();
 }
 

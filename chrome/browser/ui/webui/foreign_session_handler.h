@@ -30,9 +30,6 @@ namespace browser_sync {
 class ForeignSessionHandler : public content::WebUIMessageHandler,
                               public syncer::SyncServiceObserver {
  public:
-  // Invalid value, used to note that we don't have a tab or window number.
-  static const int kInvalidId = -1;
-
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
@@ -43,13 +40,13 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
 
   static void OpenForeignSessionTab(content::WebUI* web_ui,
                                     const std::string& session_string_value,
-                                    SessionID::id_type window_num,
-                                    SessionID::id_type tab_id,
+                                    int window_num,
+                                    SessionID tab_id,
                                     const WindowOpenDisposition& disposition);
 
   static void OpenForeignSessionWindows(content::WebUI* web_ui,
                                         const std::string& session_string_value,
-                                        SessionID::id_type window_num);
+                                        int window_num);
 
   // Returns a pointer to the current session model associator or NULL.
   static sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(

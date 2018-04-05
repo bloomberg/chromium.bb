@@ -184,9 +184,9 @@ Browser* FindBrowserWithProfile(Profile* profile) {
   return FindBrowserWithTabbedOrAnyType(profile, false, false);
 }
 
-Browser* FindBrowserWithID(SessionID::id_type desired_id) {
+Browser* FindBrowserWithID(SessionID desired_id) {
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->session_id().id() == desired_id)
+    if (browser->session_id() == desired_id)
       return browser;
   }
   return NULL;

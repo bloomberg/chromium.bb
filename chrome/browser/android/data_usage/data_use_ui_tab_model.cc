@@ -21,6 +21,21 @@ const uint32_t kDefaultMaxNavigationEventsBuffered = 100;
 
 namespace android {
 
+DataUseUITabModel::DataUseUINavigationEvent::DataUseUINavigationEvent(
+    SessionID tab_id,
+    DataUseTabModel::TransitionType transition_type,
+    GURL url,
+    std::string package)
+    : tab_id(tab_id),
+      transition_type(transition_type),
+      url(url),
+      package(package) {}
+
+DataUseUITabModel::DataUseUINavigationEvent::DataUseUINavigationEvent(
+    const DataUseUINavigationEvent&) = default;
+
+DataUseUITabModel::DataUseUINavigationEvent::~DataUseUINavigationEvent() {}
+
 DataUseUITabModel::DataUseUITabModel()
     : data_use_ui_navigations_(new std::vector<DataUseUINavigationEvent>()),
       weak_factory_(this) {
@@ -37,10 +52,10 @@ DataUseUITabModel::~DataUseUITabModel() {
 void DataUseUITabModel::ReportBrowserNavigation(
     const GURL& gurl,
     ui::PageTransition page_transition,
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     content::NavigationEntry* navigation_entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_LE(0, tab_id);
+  DCHECK(tab_id.is_valid());
   DCHECK_EQ(navigation_entry->GetURL(), gurl);
 
   DataUseTabModel::TransitionType transition_type;
@@ -59,9 +74,9 @@ void DataUseUITabModel::ReportBrowserNavigation(
   }
 }
 
-void DataUseUITabModel::ReportTabClosure(SessionID::id_type tab_id) {
+void DataUseUITabModel::ReportTabClosure(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_LE(0, tab_id);
+  DCHECK(tab_id.is_valid());
   if (data_use_tab_model_)
     data_use_tab_model_->OnTabCloseEvent(tab_id);
 
@@ -73,12 +88,12 @@ void DataUseUITabModel::ReportTabClosure(SessionID::id_type tab_id) {
 }
 
 void DataUseUITabModel::ReportCustomTabInitialNavigation(
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     const std::string& package_name,
     const std::string& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (tab_id <= 0)
+  if (!tab_id.is_valid())
     return;
 
   if (data_use_ui_navigations_) {
@@ -116,7 +131,7 @@ base::WeakPtr<DataUseUITabModel> DataUseUITabModel::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void DataUseUITabModel::NotifyTrackingStarting(SessionID::id_type tab_id) {
+void DataUseUITabModel::NotifyTrackingStarting(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Do not show tracking started UI for custom tabs with package match.
@@ -135,7 +150,7 @@ void DataUseUITabModel::NotifyTrackingStarting(SessionID::id_type tab_id) {
   RemoveTabEvent(tab_id, DATA_USE_TRACKING_ENDED);
 }
 
-void DataUseUITabModel::NotifyTrackingEnding(SessionID::id_type tab_id) {
+void DataUseUITabModel::NotifyTrackingEnding(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!data_use_tab_model_->IsCustomTabPackageMatch(tab_id));
 
@@ -154,8 +169,7 @@ void DataUseUITabModel::NotifyTrackingEnding(SessionID::id_type tab_id) {
   RemoveTabEvent(tab_id, DATA_USE_CONTINUE_CLICKED);
 }
 
-bool DataUseUITabModel::CheckAndResetDataUseTrackingStarted(
-    SessionID::id_type tab_id) {
+bool DataUseUITabModel::CheckAndResetDataUseTrackingStarted(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -168,7 +182,7 @@ bool DataUseUITabModel::CheckAndResetDataUseTrackingStarted(
 bool DataUseUITabModel::WouldDataUseTrackingEnd(
     const std::string& url,
     int page_transition,
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     const content::NavigationEntry* navigation_entry) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -199,8 +213,7 @@ bool DataUseUITabModel::WouldDataUseTrackingEnd(
       tab_id, transition_type, GURL(url), navigation_entry);
 }
 
-void DataUseUITabModel::UserClickedContinueOnDialogBox(
-    SessionID::id_type tab_id) {
+void DataUseUITabModel::UserClickedContinueOnDialogBox(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -210,8 +223,7 @@ void DataUseUITabModel::UserClickedContinueOnDialogBox(
   MaybeCreateTabEvent(tab_id, DATA_USE_CONTINUE_CLICKED);
 }
 
-bool DataUseUITabModel::CheckAndResetDataUseTrackingEnded(
-    SessionID::id_type tab_id) {
+bool DataUseUITabModel::CheckAndResetDataUseTrackingEnded(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -221,13 +233,13 @@ bool DataUseUITabModel::CheckAndResetDataUseTrackingEnded(
   return RemoveTabEvent(tab_id, DATA_USE_TRACKING_ENDED);
 }
 
-bool DataUseUITabModel::MaybeCreateTabEvent(SessionID::id_type tab_id,
+bool DataUseUITabModel::MaybeCreateTabEvent(SessionID tab_id,
                                             DataUseTrackingEvent event) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return tab_events_.insert(std::make_pair(tab_id, event)).second;
 }
 
-bool DataUseUITabModel::RemoveTabEvent(SessionID::id_type tab_id,
+bool DataUseUITabModel::RemoveTabEvent(SessionID tab_id,
                                        DataUseTrackingEvent event) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -309,7 +321,7 @@ void DataUseUITabModel::OnDataUseTabModelReady() {
 }
 
 void DataUseUITabModel::BufferNavigationEvent(
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     DataUseTabModel::TransitionType transition,
     const GURL& url,
     const std::string& package) {

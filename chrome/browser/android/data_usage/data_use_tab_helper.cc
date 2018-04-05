@@ -44,8 +44,8 @@ void DataUseTabHelper::DidFinishNavigation(
   android::DataUseUITabModel* data_use_ui_tab_model =
       android::DataUseUITabModelFactory::GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
-  if (!data_use_ui_tab_model || tab_id < 0)
+  SessionID tab_id = SessionTabHelper::IdForTab(web_contents());
+  if (!data_use_ui_tab_model || !tab_id.is_valid())
     return;
 
   // The last committed navigation entry should correspond to the current
@@ -74,7 +74,7 @@ void DataUseTabHelper::FrameDeleted(
   android::DataUseUITabModel* data_use_ui_tab_model =
       android::DataUseUITabModelFactory::GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
-  if (data_use_ui_tab_model && tab_id >= 0)
+  SessionID tab_id = SessionTabHelper::IdForTab(web_contents());
+  if (data_use_ui_tab_model && tab_id.is_valid())
     data_use_ui_tab_model->ReportTabClosure(tab_id);
 }

@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
   ASSERT_TRUE(action);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   action->SetIsVisible(tab_id, true);
   extensions::ExtensionActionAPI* extension_action_api =
       extensions::ExtensionActionAPI::Get(profile());

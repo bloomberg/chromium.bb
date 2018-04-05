@@ -645,7 +645,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       popup_open,
       dropdown_ignored ? 0 : index,
       !pasted_text.empty(),
-      -1,  // don't yet know tab ID; set later if appropriate
+      SessionID::InvalidValue(), // don't know tab ID; set later if appropriate
       ClassifyPage(),
       elapsed_time_since_user_first_modified_omnibox,
       match.allowed_to_be_default_match ? match.inline_autocompletion.length() :
@@ -664,7 +664,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     // If we know the destination is being opened in the current tab,
     // we can easily get the tab ID.  (If it's being opened in a new
     // tab, we don't know the tab ID yet.)
-    log.tab_id = client_->GetSessionID().id();
+    log.tab_id = client_->GetSessionID();
   }
   autocomplete_controller()->AddProvidersInfo(&log.providers_info);
   client_->OnURLOpenedFromOmnibox(&log);

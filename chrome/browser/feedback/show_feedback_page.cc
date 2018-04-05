@@ -25,7 +25,7 @@ void ShowFeedbackPage(Browser* browser,
                       const std::string& extra_diagnostics) {
   GURL page_url;
   if (browser) {
-    page_url = GetTargetTabUrl(browser->session_id().id(),
+    page_url = GetTargetTabUrl(browser->session_id(),
                                browser->tab_strip_model()->active_index());
   }
 

@@ -381,9 +381,7 @@ void RequestContentScript::InstructRenderProcessToInject(
   content::RenderFrameHost* render_frame_host = contents->GetMainFrame();
   render_frame_host->Send(new ExtensionMsg_ExecuteDeclarativeScript(
       render_frame_host->GetRoutingID(),
-      SessionTabHelper::IdForTab(contents),
-      extension->id(),
-      script_.id(),
+      SessionTabHelper::IdForTab(contents).id(), extension->id(), script_.id(),
       contents->GetLastCommittedURL()));
 }
 

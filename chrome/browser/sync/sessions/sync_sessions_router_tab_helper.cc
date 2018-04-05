@@ -74,8 +74,7 @@ void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
 
 void SyncSessionsRouterTabHelper::SetSourceTabIdForChild(
     content::WebContents* child_contents) {
-  SessionID source_tab_id = SessionID::FromSerializedValue(
-      SessionTabHelper::IdForTab(web_contents()));
+  SessionID source_tab_id = SessionTabHelper::IdForTab(web_contents());
   if (child_contents &&
       SyncSessionsRouterTabHelper::FromWebContents(child_contents) &&
       child_contents != web_contents() && source_tab_id.is_valid()) {

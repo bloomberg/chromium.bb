@@ -204,7 +204,7 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   // Make sure either we have been granted permission to capture through an
   // extension icon click or our extension is whitelisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
-          SessionTabHelper::IdForTab(target_contents),
+          SessionTabHelper::IdForTab(target_contents).id(),
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&

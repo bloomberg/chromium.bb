@@ -87,7 +87,7 @@ class TaskManagerViewTest : public InProcessBrowserTest {
   }
 
   // Looks up a tab based on its tab ID.
-  content::WebContents* FindWebContentsByTabId(SessionID::id_type tab_id) {
+  content::WebContents* FindWebContentsByTabId(SessionID tab_id) {
     auto& all_tabs = AllTabContentses();
     auto tab_id_matches = [tab_id](content::WebContents* web_contents) {
       return SessionTabHelper::IdForTab(web_contents) == tab_id;
@@ -100,7 +100,7 @@ class TaskManagerViewTest : public InProcessBrowserTest {
   // Returns the current TaskManagerTableModel index for a particular tab. Don't
   // cache this value, since it can change whenever the message loop runs.
   int FindRowForTab(content::WebContents* tab) {
-    int32_t tab_id = SessionTabHelper::IdForTab(tab);
+    SessionID tab_id = SessionTabHelper::IdForTab(tab);
     std::unique_ptr<TaskManagerTester> tester =
         TaskManagerTester::Create(base::Closure());
     for (int i = 0; i < tester->GetRowCount(); ++i) {

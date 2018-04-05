@@ -176,7 +176,8 @@ TEST_F(LoadingPredictorTest, TestMainFrameResponseCancelsHint) {
   predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
   EXPECT_EQ(1UL, predictor_->active_hints_.size());
 
-  auto summary = CreateURLRequestSummary(12, url.spec());
+  auto summary =
+      CreateURLRequestSummary(SessionID::FromSerializedValue(12), url.spec());
   predictor_->OnMainFrameResponse(summary);
   EXPECT_TRUE(predictor_->active_hints_.empty());
 }
@@ -184,7 +185,7 @@ TEST_F(LoadingPredictorTest, TestMainFrameResponseCancelsHint) {
 TEST_F(LoadingPredictorTest, TestMainFrameRequestCancelsStaleNavigations) {
   const std::string url = kUrl;
   const std::string url2 = kUrl2;
-  const int tab_id = 12;
+  const SessionID tab_id = SessionID::FromSerializedValue(12);
   const auto& active_navigations = predictor_->active_navigations_;
   const auto& active_hints = predictor_->active_hints_;
 
@@ -207,7 +208,7 @@ TEST_F(LoadingPredictorTest, TestMainFrameRequestCancelsStaleNavigations) {
 TEST_F(LoadingPredictorTest, TestMainFrameResponseClearsNavigations) {
   const std::string url = kUrl;
   const std::string redirected = kUrl2;
-  const int tab_id = 12;
+  const SessionID tab_id = SessionID::FromSerializedValue(12);
   const auto& active_navigations = predictor_->active_navigations_;
   const auto& active_hints = predictor_->active_hints_;
 
@@ -240,7 +241,7 @@ TEST_F(LoadingPredictorTest, TestMainFrameResponseClearsNavigations) {
 
 TEST_F(LoadingPredictorTest, TestMainFrameRequestDoesntCancelExternalHint) {
   const GURL url = GURL(kUrl);
-  const int tab_id = 12;
+  const SessionID tab_id = SessionID::FromSerializedValue(12);
   const auto& active_navigations = predictor_->active_navigations_;
   auto& active_hints = predictor_->active_hints_;
 

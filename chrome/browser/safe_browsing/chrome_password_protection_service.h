@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/sessions/core/session_id.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "ui/base/ui_features.h"
 #include "url/origin.h"
@@ -153,7 +154,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this
   // info into |frame|.
   void FillReferrerChain(const GURL& event_url,
-                         int event_tab_id,
+                         SessionID event_tab_id,
                          LoginReputationClientRequest::Frame* frame) override;
 
   bool IsExtendedReporting() override;

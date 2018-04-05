@@ -266,8 +266,8 @@ void TabAndroid::DeleteFrozenNavigationEntries(
       env, weak_java_tab_.get(env), reinterpret_cast<intptr_t>(&predicate));
 }
 
-void TabAndroid::SetWindowSessionID(SessionID::id_type window_id) {
-  session_window_id_.set_id(window_id);
+void TabAndroid::SetWindowSessionID(SessionID window_id) {
+  session_window_id_ = window_id;
 
   if (!web_contents())
     return;
@@ -415,7 +415,7 @@ void TabAndroid::InitWebContents(
   AttachTabHelpers(web_contents_.get());
   WebContentsObserver::Observe(web_contents_.get());
 
-  SetWindowSessionID(session_window_id_.id());
+  SetWindowSessionID(session_window_id_);
 
   session_tab_id_.set_id(
       SessionTabHelper::FromWebContents(web_contents())->session_id().id());

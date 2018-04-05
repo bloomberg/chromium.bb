@@ -28,7 +28,7 @@ const DataUse::MainFrameGlobalRequestID
 DataUse::DataUse(const GURL& url,
                  const base::TimeTicks& request_start,
                  const GURL& site_for_cookies,
-                 int32_t tab_id,
+                 SessionID tab_id,
                  net::NetworkChangeNotifier::ConnectionType connection_type,
                  const std::string& mcc_mnc,
                  int64_t tx_bytes,

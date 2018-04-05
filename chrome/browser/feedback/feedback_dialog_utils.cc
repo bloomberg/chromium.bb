@@ -21,7 +21,7 @@
 
 namespace chrome {
 
-GURL GetTargetTabUrl(int session_id, int index) {
+GURL GetTargetTabUrl(SessionID session_id, int index) {
   Browser* browser = chrome::FindBrowserWithID(session_id);
   // Sanity checks.
   if (!browser || index >= browser->tab_strip_model()->count())

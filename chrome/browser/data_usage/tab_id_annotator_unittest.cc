@@ -53,7 +53,8 @@ class TabIdAnnotatorTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Synthesizes a DataUse object with the given |tab_id|.
-std::unique_ptr<DataUse> CreateDataUse(int32_t tab_id, int render_process_id) {
+std::unique_ptr<DataUse> CreateDataUse(SessionID tab_id,
+                                       int render_process_id) {
   auto data_use = std::unique_ptr<DataUse>(new DataUse(
       GURL("http://foo.com"), base::TimeTicks(), GURL(), tab_id,
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 100, 100));
@@ -92,7 +93,7 @@ void ExpectDataUseAndQuit(base::RunLoop* ui_run_loop,
 void TestAnnotateOnIOThread(base::RunLoop* ui_run_loop,
                             int render_process_id,
                             int render_frame_id,
-                            int32_t expected_tab_id) {
+                            SessionID expected_tab_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(ui_run_loop);
 
@@ -113,9 +114,10 @@ void TestAnnotateOnIOThread(base::RunLoop* ui_run_loop,
         content::PREVIEWS_OFF, nullptr);
   }
 
-  // An invalid tab ID to check that the annotator always sets the tab ID. -2 is
-  // used because a tab ID of -1 is a valid value that means "no tab was found".
-  const int32_t kInvalidTabId = -2;
+  // An invalid tab ID to check that the annotator always sets the tab ID. An
+  // arbitrary number is used because SessionID::InvalidValue() means "no tab
+  // was found".
+  const SessionID kInvalidTabId = SessionID::FromSerializedValue(123456);
 
   // Annotate two separate DataUse objects to ensure that repeated annotations
   // for the same URLRequest work properly.
@@ -140,21 +142,21 @@ TEST_F(TabIdAnnotatorTest, AnnotateWithNoRenderFrame) {
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&TestAnnotateOnIOThread, &ui_run_loop,
                      -1 /* render_process_id */, -1 /* render_frame_id */,
-                     -1 /* expected_tab_id */));
+                     SessionID::InvalidValue() /* expected_tab_id */));
   ui_run_loop.Run();
 }
 
 TEST_F(TabIdAnnotatorTest, AnnotateWithRenderFrameAndNoTab) {
   base::RunLoop ui_run_loop;
   // |web_contents()| isn't a tab, so it shouldn't have a tab ID.
-  EXPECT_EQ(-1, SessionTabHelper::IdForTab(web_contents()));
+  EXPECT_FALSE(SessionTabHelper::IdForTab(web_contents()).is_valid());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&TestAnnotateOnIOThread, &ui_run_loop,
                      web_contents()->GetMainFrame()->GetProcess()->GetID(),
                      web_contents()->GetMainFrame()->GetRoutingID(),
-                     -1 /* expected_tab_id */));
+                     SessionID::InvalidValue() /* expected_tab_id */));
   ui_run_loop.Run();
 }
 
@@ -162,9 +164,9 @@ TEST_F(TabIdAnnotatorTest, AnnotateWithRenderFrameAndTab) {
   base::RunLoop ui_run_loop;
   // Make |web_contents()| into a tab.
   SessionTabHelper::CreateForWebContents(web_contents());
-  int32_t expected_tab_id = SessionTabHelper::IdForTab(web_contents());
+  SessionID expected_tab_id = SessionTabHelper::IdForTab(web_contents());
   // |web_contents()| is a tab, so it should have a tab ID.
-  EXPECT_NE(-1, expected_tab_id);
+  EXPECT_TRUE(expected_tab_id.is_valid());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

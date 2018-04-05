@@ -253,7 +253,7 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
   EXPECT_EQ(kGoogle, web_contents->GetVisibleURL());
 
   SessionTabHelper::CreateForWebContents(web_contents);
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   browser()->tab_strip_model()->AppendWebContents(web_contents, true);
 
   scoped_refptr<TabsUpdateFunction> function = new TabsUpdateFunction();

@@ -73,7 +73,7 @@ base::HistogramBase::Sample GetDelaySample(const base::TimeDelta& delay) {
 // Synthesizes a fake std::unique_ptr<DataUse> with the given |url|, |tab_id|,
 // |tx_bytes| and |rx_bytes|, using arbitrary values for all other fields.
 std::unique_ptr<DataUse> CreateDataUseWithURLAndTab(const GURL& url,
-                                                    int32_t tab_id,
+                                                    SessionID tab_id,
                                                     int64_t tx_bytes,
                                                     int64_t rx_bytes) {
   return std::unique_ptr<DataUse>(
@@ -89,13 +89,14 @@ std::unique_ptr<DataUse> CreateDataUseWithURLAndTab(const GURL& url,
 std::unique_ptr<DataUse> CreateDataUseWithURL(const GURL& url,
                                               int64_t tx_bytes,
                                               int64_t rx_bytes) {
-  return CreateDataUseWithURLAndTab(url, 10, tx_bytes, rx_bytes);
+  return CreateDataUseWithURLAndTab(url, SessionID::FromSerializedValue(10),
+                                    tx_bytes, rx_bytes);
 }
 
 // Synthesizes a fake std::unique_ptr<DataUse> with the given |tab_id|,
 // |tx_bytes|
 // and |rx_bytes|, using arbitrary values for all other fields.
-std::unique_ptr<DataUse> CreateDataUseWithTab(int32_t tab_id,
+std::unique_ptr<DataUse> CreateDataUseWithTab(SessionID tab_id,
                                               int64_t tx_bytes,
                                               int64_t rx_bytes) {
   return CreateDataUseWithURLAndTab(GURL("http://example.com"), tab_id,
@@ -795,6 +796,9 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeCombinedDataUse) {
 }
 
 TEST_F(TrafficStatsAmortizerTest, ConcurrentTabsHistogram) {
+  SessionID kTabId1 = SessionID::FromSerializedValue(1);
+  SessionID kTabId2 = SessionID::FromSerializedValue(2);
+
   SkipFirstAmortizationRun();
 
   {
@@ -802,17 +806,17 @@ TEST_F(TrafficStatsAmortizerTest, ConcurrentTabsHistogram) {
     base::HistogramTester histogram_tester;
     amortizer()->SetNextTrafficStats(true, 0, 0);
     amortizer()->AmortizeDataUse(
-        CreateDataUseWithTab(1, 50, 500),
-        ExpectDataUseCallback(CreateDataUseWithTab(1, 100, 1000)));
+        CreateDataUseWithTab(kTabId1, 50, 500),
+        ExpectDataUseCallback(CreateDataUseWithTab(kTabId1, 100, 1000)));
     amortizer()->AmortizeDataUse(
-        CreateDataUseWithTab(2, 100, 1000),
-        ExpectDataUseCallback(CreateDataUseWithTab(2, 200, 2000)));
+        CreateDataUseWithTab(kTabId2, 100, 1000),
+        ExpectDataUseCallback(CreateDataUseWithTab(kTabId2, 200, 2000)));
     amortizer()->AmortizeDataUse(
-        CreateDataUseWithTab(1, 50, 500),
-        ExpectDataUseCallback(CreateDataUseWithTab(1, 100, 1000)));
+        CreateDataUseWithTab(kTabId1, 50, 500),
+        ExpectDataUseCallback(CreateDataUseWithTab(kTabId1, 100, 1000)));
     amortizer()->AmortizeDataUse(
-        CreateDataUseWithTab(2, 100, 1000),
-        ExpectDataUseCallback(CreateDataUseWithTab(2, 200, 2000)));
+        CreateDataUseWithTab(kTabId2, 100, 1000),
+        ExpectDataUseCallback(CreateDataUseWithTab(kTabId2, 200, 2000)));
     amortizer()->SetNextTrafficStats(true, 600, 6000);
     AdvanceTime(kTrafficStatsQueryDelay);
     histogram_tester.ExpectUniqueSample(kConcurrentTabs, 2, 1);
@@ -827,9 +831,10 @@ TEST_F(TrafficStatsAmortizerTest, ConcurrentTabsHistogram) {
     base::HistogramTester histogram_tester;
 
     for (int32_t i = 1; i <= total_tabs; ++i) {
+      SessionID tab_id = SessionID::FromSerializedValue(i);
       amortizer()->AmortizeDataUse(
-          CreateDataUseWithTab(i, 100, 1000),
-          ExpectDataUseCallback(CreateDataUseWithTab(i, 200, 2000)));
+          CreateDataUseWithTab(tab_id, 100, 1000),
+          ExpectDataUseCallback(CreateDataUseWithTab(tab_id, 200, 2000)));
     }
     amortizer()->AddTrafficStats(total_tabs * 200, total_tabs * 2000);
     AdvanceTime(kTrafficStatsQueryDelay);

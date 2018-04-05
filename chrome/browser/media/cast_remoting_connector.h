@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
+#include "components/sessions/core/session_id.h"
 #include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -107,7 +108,7 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   // Main constructor. |tab_id| refers to any remoted content managed
   // by this instance (i.e., any remoted content from one tab/WebContents).
-  CastRemotingConnector(media_router::MediaRouter* router, int32_t tab_id);
+  CastRemotingConnector(media_router::MediaRouter* router, SessionID tab_id);
 
   // Creates a RemotingBridge that implements the requested Remoter service, and
   // binds it to the interface |request|.
@@ -163,7 +164,7 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   media_router::MediaRouter* const media_router_;
 
-  const int32_t tab_id_;
+  const SessionID tab_id_;
 
   // Describes the remoting sink's metadata and the enabled features. The sink's
   // metadata is updated by the mirror service calling OnSinkAvailable() and

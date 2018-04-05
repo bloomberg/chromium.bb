@@ -229,7 +229,7 @@ bool ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
 
 void ChromePasswordProtectionService::FillReferrerChain(
     const GURL& event_url,
-    int event_tab_id,
+    SessionID event_tab_id,
     LoginReputationClientRequest::Frame* frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SafeBrowsingNavigationObserverManager::AttributionResult result =

@@ -117,7 +117,7 @@ NavigationEventList::~NavigationEventList() {}
 NavigationEvent* NavigationEventList::FindNavigationEvent(
     const GURL& target_url,
     const GURL& target_main_frame_url,
-    int target_tab_id) {
+    SessionID target_tab_id) {
   if (target_url.is_empty() && target_main_frame_url.is_empty())
     return nullptr;
 
@@ -132,7 +132,8 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
     auto* nav_event = rit->get();
     // If tab id is not valid, we only compare url, otherwise we compare both.
     if (nav_event->GetDestinationUrl() == search_url &&
-        (target_tab_id == -1 || nav_event->target_tab_id == target_tab_id)) {
+        (!target_tab_id.is_valid() ||
+         nav_event->target_tab_id == target_tab_id)) {
       // If both source_url and source_main_frame_url are empty, and this
       // navigation is not triggered by user, a retargeting navigation probably
       // causes this navigation. In this case, we skip this navigation event and
@@ -165,7 +166,7 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
 
 NavigationEvent* NavigationEventList::FindRetargetingNavigationEvent(
     const GURL& target_url,
-    int target_tab_id) {
+    SessionID target_tab_id) {
   if (target_url.is_empty())
     return nullptr;
 
@@ -347,7 +348,7 @@ void SafeBrowsingNavigationObserverManager::CleanUpStaleNavigationFootprints() {
 SafeBrowsingNavigationObserverManager::AttributionResult
 SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByEventURL(
     const GURL& event_url,
-    int event_tab_id,
+    SessionID event_tab_id,
     int user_gesture_count_limit,
     ReferrerChain* out_referrer_chain) {
   if (!event_url.is_valid())
@@ -383,7 +384,7 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByWebContents(
   if (!last_committed_url.is_valid())
     return INVALID_URL;
   bool has_user_gesture = HasUserGesture(web_contents);
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
   return IdentifyReferrerChainByHostingPage(
       ClearURLRef(last_committed_url), GURL(), tab_id, has_user_gesture,
       user_gesture_count_limit, out_referrer_chain);
@@ -393,7 +394,7 @@ SafeBrowsingNavigationObserverManager::AttributionResult
 SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByHostingPage(
     const GURL& initiating_frame_url,
     const GURL& initiating_main_frame_url,
-    int tab_id,
+    SessionID tab_id,
     bool has_user_gesture,
     int user_gesture_count_limit,
     ReferrerChain* out_referrer_chain) {

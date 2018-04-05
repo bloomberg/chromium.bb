@@ -125,9 +125,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
     TabHelper::CreateForWebContents(web_contents());
   }
 
-  int tab_id() {
-    return SessionTabHelper::IdForTab(web_contents());
-  }
+  int tab_id() { return SessionTabHelper::IdForTab(web_contents()).id(); }
 
   ActiveTabPermissionGranter* active_tab_permission_granter() {
     return extensions::TabHelper::FromWebContents(web_contents())->
@@ -194,7 +192,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
     return extension->permissions_data()->HasAPIPermissionForTab(
-        SessionTabHelper::IdForTab(web_contents), APIPermission::kTab);
+        SessionTabHelper::IdForTab(web_contents).id(), APIPermission::kTab);
   }
 
   // TODO(justinlin): Remove when tabCapture is moved to stable.

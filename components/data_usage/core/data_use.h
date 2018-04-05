@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/time/time.h"
+#include "components/sessions/core/session_id.h"
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
 
@@ -25,7 +26,7 @@ struct DataUse {
   DataUse(const GURL& url,
           const base::TimeTicks& request_start,
           const GURL& site_for_cookies,
-          int32_t tab_id,
+          SessionID tab_id,
           net::NetworkChangeNotifier::ConnectionType connection_type,
           const std::string& mcc_mnc,
           int64_t tx_bytes,
@@ -50,7 +51,7 @@ struct DataUse {
   // be invalid(-1) for the mainframe request since tab cannot be retrieved yet.
   // Could be invalid(-1) if the data use does not belong to a tab, for example
   // chrome-services traffic.
-  int32_t tab_id;
+  SessionID tab_id;
 
   // content::GlobalRequestID of the mainframe request. This is populated only
   // when tab id cannot be retrieved of a mainframe request, and used to

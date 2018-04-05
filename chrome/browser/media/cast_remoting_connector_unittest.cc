@@ -42,7 +42,7 @@ using ::testing::AtLeast;
 
 namespace {
 
-constexpr int32_t kRemotingTabId = 2;
+constexpr SessionID kRemotingTabId = SessionID::FromSerializedValue(2);
 
 RemotingSinkMetadataPtr GetDefaultSinkMetadata() {
   RemotingSinkMetadataPtr metadata = RemotingSinkMetadata::New();
@@ -63,21 +63,21 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
   FakeMediaRouter() : weak_factory_(this) {}
   ~FakeMediaRouter() final {}
 
-  void RegisterRemotingSource(int32_t tab_id,
+  void RegisterRemotingSource(SessionID tab_id,
                               CastRemotingConnector* remoting_source) final {
-    EXPECT_EQ(-1, tab_id_);
+    EXPECT_FALSE(tab_id_.is_valid());
     tab_id_ = tab_id;
     connector_ = remoting_source;
   }
 
-  void UnregisterRemotingSource(int32_t tab_id) final {
+  void UnregisterRemotingSource(SessionID tab_id) final {
     EXPECT_EQ(tab_id, tab_id_);
-    tab_id_ = -1;
+    tab_id_ = SessionID::InvalidValue();
     connector_ = nullptr;
   }
 
   void OnMediaRemoterCreated(
-      int32_t tab_id,
+      SessionID tab_id,
       MirrorServiceRemoterPtr remoter,
       MirrorServiceRemotingSourceRequest remoting_source) {
     if (tab_id != tab_id_)
@@ -89,10 +89,10 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
   }
 
   // Get the registered tab ID.
-  int32_t tab_id() const { return tab_id_; }
+  SessionID tab_id() const { return tab_id_; }
 
  private:
-  int32_t tab_id_ = -1;
+  SessionID tab_id_ = SessionID::InvalidValue();
   CastRemotingConnector* connector_ = nullptr;
 
   base::WeakPtrFactory<FakeMediaRouter> weak_factory_;

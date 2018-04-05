@@ -53,27 +53,27 @@ class DataUseUITabModel : public KeyedService,
   // back-forward navigation history, and should not be null.
   void ReportBrowserNavigation(const GURL& gurl,
                                ui::PageTransition page_transition,
-                               SessionID::id_type tab_id,
+                               SessionID tab_id,
                                content::NavigationEntry* navigation_entry);
 
   // Reports a tab closure for the tab with |tab_id| to the DataUseTabModel on
   // IO thread. The tab could either have been closed or evicted from the memory
   // by Android.
-  void ReportTabClosure(SessionID::id_type tab_id);
+  void ReportTabClosure(SessionID tab_id);
 
   // Reports a custom tab navigation to the DataUseTabModel on the IO thread.
   // Includes the |tab_id|, |url|, and |package_name| for the navigation.
-  void ReportCustomTabInitialNavigation(SessionID::id_type tab_id,
+  void ReportCustomTabInitialNavigation(SessionID tab_id,
                                         const std::string& package_name,
                                         const std::string& url);
 
   // Returns true if data use tracking has been started for the tab with id
   // |tab_id|. Calling this function resets the state of the tab.
-  bool CheckAndResetDataUseTrackingStarted(SessionID::id_type tab_id);
+  bool CheckAndResetDataUseTrackingStarted(SessionID tab_id);
 
   // Returns true if data use tracking has ended for the tab with id |tab_id|.
   // Calling this function resets the state of the tab.
-  bool CheckAndResetDataUseTrackingEnded(SessionID::id_type tab_id);
+  bool CheckAndResetDataUseTrackingEnded(SessionID tab_id);
 
   // Sets the pointer to DataUseTabModel. |data_use_tab_model| is owned by the
   // caller.
@@ -88,14 +88,14 @@ class DataUseUITabModel : public KeyedService,
   bool WouldDataUseTrackingEnd(
       const std::string& url,
       int page_transition,
-      SessionID::id_type tab_id,
+      SessionID tab_id,
       const content::NavigationEntry* navigation_entry) const;
 
   // Notifies that user clicked "Continue" when the dialog box with data use
   // warning was shown. Includes the |tab_id| on which the warning was shown.
   // When the user clicks "Continue", additional UI warnings about exiting data
   // use tracking are not shown to the user.
-  void UserClickedContinueOnDialogBox(SessionID::id_type tab_id);
+  void UserClickedContinueOnDialogBox(SessionID tab_id);
 
   base::WeakPtr<DataUseUITabModel> GetWeakPtr();
 
@@ -119,37 +119,34 @@ class DataUseUITabModel : public KeyedService,
 
   // Contains the details of a single UI navigation event.
   struct DataUseUINavigationEvent {
-    DataUseUINavigationEvent(SessionID::id_type tab_id,
+    DataUseUINavigationEvent(SessionID tab_id,
                              DataUseTabModel::TransitionType transition_type,
                              GURL url,
-                             std::string package)
-        : tab_id(tab_id),
-          transition_type(transition_type),
-          url(url),
-          package(package) {}
+                             std::string package);
+    DataUseUINavigationEvent(const DataUseUINavigationEvent&);
+    ~DataUseUINavigationEvent();
 
-    const SessionID::id_type tab_id;
+    const SessionID tab_id;
     const DataUseTabModel::TransitionType transition_type;
     const GURL url;
     const std::string package;
   };
 
-  typedef std::map<SessionID::id_type, DataUseTrackingEvent> TabEvents;
+  typedef std::map<SessionID, DataUseTrackingEvent> TabEvents;
 
   // DataUseTabModel::TabDataUseObserver implementation:
-  void NotifyTrackingStarting(SessionID::id_type tab_id) override;
-  void NotifyTrackingEnding(SessionID::id_type tab_id) override;
+  void NotifyTrackingStarting(SessionID tab_id) override;
+  void NotifyTrackingEnding(SessionID tab_id) override;
   void OnDataUseTabModelReady() override;
 
   // Creates |event| for tab with id |tab_id| and value |event|, if there is no
   // existing entry for |tab_id|, and returns true. Otherwise, returns false
   // without modifying the entry.
-  bool MaybeCreateTabEvent(SessionID::id_type tab_id,
-                           DataUseTrackingEvent event);
+  bool MaybeCreateTabEvent(SessionID tab_id, DataUseTrackingEvent event);
 
   // Removes event entry for |tab_id|, if the entry is equal to |event|, and
   // returns true. Otherwise, returns false without modifying the entry.
-  bool RemoveTabEvent(SessionID::id_type tab_id, DataUseTrackingEvent event);
+  bool RemoveTabEvent(SessionID tab_id, DataUseTrackingEvent event);
 
   // Converts |page_transition| to page with GURL |gurl| to
   // DataUseTabModel::TransitionType enum. Returns true if conversion was
@@ -161,7 +158,7 @@ class DataUseUITabModel : public KeyedService,
       DataUseTabModel::TransitionType* transition_type) const;
 
   // Buffers the navigation event for later processing.
-  void BufferNavigationEvent(SessionID::id_type tab_id,
+  void BufferNavigationEvent(SessionID tab_id,
                              DataUseTabModel::TransitionType transition,
                              const GURL& url,
                              const std::string& package);

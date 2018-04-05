@@ -45,7 +45,7 @@ class SettingsWindowManager {
 
  private:
   friend struct base::DefaultSingletonTraits<SettingsWindowManager>;
-  typedef std::map<Profile*, SessionID::id_type> ProfileSessionMap;
+  typedef std::map<Profile*, SessionID> ProfileSessionMap;
 
   SettingsWindowManager();
   ~SettingsWindowManager();

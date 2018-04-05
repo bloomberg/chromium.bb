@@ -88,7 +88,7 @@ class MockPasswordProtectionService
 
   MOCK_METHOD3(FillReferrerChain,
                void(const GURL&,
-                    int,
+                    SessionID,
                     safe_browsing::LoginReputationClientRequest::Frame*));
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());

@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/task_manager/providers/task.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
+#include "components/sessions/core/session_id.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -159,7 +160,7 @@ class TaskManagerInterface {
 
   // Gets the unique ID of the tab if the task with |task_id| represents a
   // WebContents of a tab. Returns -1 otherwise.
-  virtual int GetTabId(TaskId task_id) const = 0;
+  virtual SessionID GetTabId(TaskId task_id) const = 0;
 
   // Returns the unique ID of the BrowserChildProcessHost/RenderProcessHost on
   // which the task with |task_id| is running. It is not the PID nor the handle

@@ -213,7 +213,7 @@ void MediaRouterMojoImpl::CreateRoute(
     provider_id = MediaRouteProviderId::EXTENSION;
   }
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
@@ -246,7 +246,7 @@ void MediaRouterMojoImpl::JoinRoute(
     return;
   }
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   auto callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
       presentation_id, *provider_id, incognito, std::move(callbacks), true);
@@ -273,7 +273,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     return;
   }
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
@@ -901,7 +901,7 @@ void MediaRouterMojoImpl::OnMediaRemoterCreated(
     media::mojom::MirrorServiceRemotingSourceRequest source_request) {
   DVLOG_WITH_INSTANCE(1) << __func__ << ": tab_id = " << tab_id;
 
-  auto it = remoting_sources_.find(tab_id);
+  auto it = remoting_sources_.find(SessionID::FromSerializedValue(tab_id));
   if (it == remoting_sources_.end()) {
     LOG(WARNING) << __func__
                  << ": No registered remoting source for tab_id = " << tab_id;

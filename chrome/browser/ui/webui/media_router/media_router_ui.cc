@@ -467,9 +467,9 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   }
 
   initiator_ = initiator;
-  SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator);
-  if (tab_id != -1) {
-    MediaSource mirroring_source(MediaSourceForTab(tab_id));
+  SessionID tab_id = SessionTabHelper::IdForTab(initiator);
+  if (tab_id.is_valid()) {
+    MediaSource mirroring_source(MediaSourceForTab(tab_id.id()));
     query_result_manager_->SetSourcesForCastMode(MediaCastMode::TAB_MIRROR,
                                                  {mirroring_source}, origin);
   }
@@ -618,8 +618,8 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
     GURL url = media_router_file_dialog_->GetLastSelectedFileUrl();
     tab_contents = OpenTabWithUrl(url);
 
-    SessionID::id_type tab_id = SessionTabHelper::IdForTab(tab_contents);
-    source_id = MediaSourceForTab(tab_id).id();
+    SessionID tab_id = SessionTabHelper::IdForTab(tab_contents);
+    source_id = MediaSourceForTab(tab_id.id()).id();
 
     SetLocalFileRouteParameters(sink_id, &origin, url, tab_contents,
                                 &route_response_callbacks, &timeout,

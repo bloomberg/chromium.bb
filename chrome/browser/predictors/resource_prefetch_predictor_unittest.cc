@@ -34,9 +34,12 @@ using testing::StrictMock;
 using testing::UnorderedElementsAre;
 
 namespace predictors {
+namespace {
 
 using RedirectDataMap = std::map<std::string, RedirectData>;
 using OriginDataMap = std::map<std::string, OriginData>;
+
+constexpr SessionID kTabId = SessionID::FromSerializedValue(1);
 
 template <typename T>
 class FakeGlowplugKeyValueTable : public GlowplugKeyValueTable<T> {
@@ -99,6 +102,8 @@ class MockResourcePrefetchPredictorObserver : public TestObserver {
 
   MOCK_METHOD1(OnNavigationLearned, void(const PageRequestSummary& summary));
 };
+
+}  // namespace
 
 class ResourcePrefetchPredictorTest : public testing::Test {
  public:
@@ -248,39 +253,39 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
 // resources and also for number of resources saved.
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   URLRequestSummary main_frame =
-      CreateURLRequestSummary(1, "http://www.google.com");
+      CreateURLRequestSummary(kTabId, "http://www.google.com");
 
   std::vector<URLRequestSummary> resources;
   resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/style1.css",
+      kTabId, "http://www.google.com", "http://google.com/style1.css",
       content::RESOURCE_TYPE_STYLESHEET));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/script1.js",
                                               content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/script2.js",
                                               content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/script1.js",
                                               content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/image1.png",
                                               content::RESOURCE_TYPE_IMAGE));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/image2.png",
                                               content::RESOURCE_TYPE_IMAGE));
   resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/style2.css",
+      kTabId, "http://www.google.com", "http://google.com/style2.css",
       content::RESOURCE_TYPE_STYLESHEET));
 
   auto no_store =
-      CreateURLRequestSummary(1, "http://www.google.com",
+      CreateURLRequestSummary(kTabId, "http://www.google.com",
                               "http://static.google.com/style2-no-store.css",
                               content::RESOURCE_TYPE_STYLESHEET);
   no_store.is_no_store = true;
 
   auto redirected = CreateURLRequestSummary(
-      1, "http://www.google.com", "http://reader.google.com/style.css",
+      kTabId, "http://www.google.com", "http://reader.google.com/style.css",
       content::RESOURCE_TYPE_STYLESHEET);
   redirected.redirect_url = GURL("http://dev.null.google.com/style.css");
 
@@ -330,33 +335,33 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   InitializePredictor();
 
   URLRequestSummary main_frame = CreateURLRequestSummary(
-      1, "http://www.google.com", "http://www.google.com",
+      kTabId, "http://www.google.com", "http://www.google.com",
       content::RESOURCE_TYPE_MAIN_FRAME);
 
   std::vector<URLRequestSummary> resources;
   resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/style1.css",
+      kTabId, "http://www.google.com", "http://google.com/style1.css",
       content::RESOURCE_TYPE_STYLESHEET));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/script1.js",
                                               content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/script2.js",
                                               content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/script1.js",
                                               content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/image1.png",
                                               content::RESOURCE_TYPE_IMAGE));
-  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
                                               "http://google.com/image2.png",
                                               content::RESOURCE_TYPE_IMAGE));
   resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/style2.css",
+      kTabId, "http://www.google.com", "http://google.com/style2.css",
       content::RESOURCE_TYPE_STYLESHEET));
   auto no_store =
-      CreateURLRequestSummary(1, "http://www.google.com",
+      CreateURLRequestSummary(kTabId, "http://www.google.com",
                               "http://static.google.com/style2-no-store.css",
                               content::RESOURCE_TYPE_STYLESHEET);
   no_store.is_no_store = true;
@@ -397,15 +402,15 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   ResetPredictor();
   InitializePredictor();
 
-  URLRequestSummary main_frame =
-      CreateURLRequestSummary(1, "http://www.nike.com", "http://www.nike.com",
-                              content::RESOURCE_TYPE_MAIN_FRAME);
+  URLRequestSummary main_frame = CreateURLRequestSummary(
+      kTabId, "http://www.nike.com", "http://www.nike.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
 
   URLRequestSummary resource1 = CreateURLRequestSummary(
-      1, "http://www.nike.com", "http://nike.com/style1.css",
+      kTabId, "http://www.nike.com", "http://nike.com/style1.css",
       content::RESOURCE_TYPE_STYLESHEET);
   URLRequestSummary resource2 = CreateURLRequestSummary(
-      1, "http://www.nike.com", "http://nike.com/image2.png",
+      kTabId, "http://www.nike.com", "http://nike.com/image2.png",
       content::RESOURCE_TYPE_IMAGE);
 
   auto page_summary = CreatePageRequestSummary(
@@ -439,7 +444,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
 TEST_F(ResourcePrefetchPredictorTest,
        NavigationManyResourcesWithDifferentOrigins) {
   URLRequestSummary main_frame =
-      CreateURLRequestSummary(1, "http://www.google.com");
+      CreateURLRequestSummary(kTabId, "http://www.google.com");
 
   auto gen = [](int i) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", i);
@@ -447,8 +452,9 @@ TEST_F(ResourcePrefetchPredictorTest,
   std::vector<URLRequestSummary> resources;
   const int num_resources = predictor_->config_.max_origins_per_entry + 10;
   for (int i = 1; i <= num_resources; ++i) {
-    resources.push_back(CreateURLRequestSummary(
-        1, "http://www.google.com", gen(i), content::RESOURCE_TYPE_SCRIPT));
+    resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
+                                                gen(i),
+                                                content::RESOURCE_TYPE_SCRIPT));
   }
 
   auto page_summary = CreatePageRequestSummary(

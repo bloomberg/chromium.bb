@@ -34,7 +34,7 @@ struct WindowMetrics {
   bool operator!=(const WindowMetrics& other) { return !operator==(other); }
 
   // ID for the window, unique within the Chrome session.
-  SessionID::id_type window_id;
+  SessionID window_id;
   WindowMetricsEvent::Type type;
   // TODO(michaelpg): Observe the show state and log when it changes.
   WindowMetricsEvent::ShowState show_state;
@@ -68,7 +68,7 @@ void UpdateMetrics(const Browser* browser,
 // Returns a populated WindowMetrics for the browser.
 WindowMetrics CreateMetrics(const Browser* browser, bool is_active) {
   WindowMetrics window_metrics;
-  window_metrics.window_id = browser->session_id().id();
+  window_metrics.window_id = browser->session_id();
 
   switch (browser->type()) {
     case Browser::TYPE_TABBED:
@@ -90,7 +90,7 @@ void LogWindowMetricsUkmEntry(const WindowMetrics& window_metrics) {
     return;
 
   ukm::builders::TabManager_WindowMetrics entry(ukm::AssignNewSourceId());
-  entry.SetWindowId(window_metrics.window_id)
+  entry.SetWindowId(window_metrics.window_id.id())
       .SetIsActive(window_metrics.is_active)
       .SetShowState(window_metrics.show_state)
       .SetType(window_metrics.type);

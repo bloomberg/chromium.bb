@@ -147,8 +147,8 @@ base::string16 Task::GetProfileName() const {
   return base::string16();
 }
 
-int Task::GetTabId() const {
-  return -1;
+SessionID Task::GetTabId() const {
+  return SessionID::InvalidValue();
 }
 
 bool Task::HasParentTask() const {

@@ -40,9 +40,9 @@ class MediaRouterBase : public MediaRouter {
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) override;
 #endif  // !defined(OS_ANDROID)
-  void RegisterRemotingSource(int32_t tab_id,
+  void RegisterRemotingSource(SessionID tab_id,
                               CastRemotingConnector* remoting_source) override;
-  void UnregisterRemotingSource(int32_t tab_id) override;
+  void UnregisterRemotingSource(SessionID tab_id) override;
   base::Value GetState() const override;
 
  protected:
@@ -85,7 +85,8 @@ class MediaRouterBase : public MediaRouter {
   // Stores CastRemotingConnectors that can be connected to the MediaRemoter
   // for media remoting when MediaRemoter is started. The map uses the tab ID
   // as the key.
-  std::unordered_map<int32_t, CastRemotingConnector*> remoting_sources_;
+  std::unordered_map<SessionID, CastRemotingConnector*, SessionID::Hasher>
+      remoting_sources_;
 
  private:
   friend class MediaRouterBaseTest;

@@ -363,7 +363,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
   void IdentifyReferrerChainForDownload(
       DownloadItem* download,
       ReferrerChain* referrer_chain) {
-    int download_tab_id = SessionTabHelper::IdForTab(
+    SessionID download_tab_id = SessionTabHelper::IdForTab(
         content::DownloadItemUtils::GetWebContents(download));
     auto result = observer_manager_->IdentifyReferrerChainByEventURL(
         download->GetURL(), download_tab_id,
@@ -392,7 +392,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
       const GURL& initiating_frame_url,
       content::WebContents* web_contents,
       ReferrerChain* referrer_chain) {
-    int tab_id = SessionTabHelper::IdForTab(web_contents);
+    SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
     bool has_user_gesture = observer_manager_->HasUserGesture(web_contents);
     observer_manager_->OnUserGestureConsumed(web_contents, base::Time::Now());
     EXPECT_LE(observer_manager_->IdentifyReferrerChainByHostingPage(
@@ -453,7 +453,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                                            const GURL& target_url) {
     NavigationEvent* nav_event =
         observer_manager_->navigation_event_list()->FindNavigationEvent(
-            target_url, GURL(), -1);
+            target_url, GURL(), SessionID::InvalidValue());
     if (nav_event) {
       observer_manager_->AddToReferrerChain(referrer_chain, nav_event, GURL(),
                                             ReferrerChainEntry::EVENT_URL);

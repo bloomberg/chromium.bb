@@ -25,7 +25,7 @@ class FakeTask : public Task {
   FakeTask(base::ProcessId process_id,
            Type type,
            const std::string& title,
-           int tab_id)
+           SessionID tab_id)
       : Task(base::ASCIIToUTF16(title),
              "FakeTask",
              nullptr,
@@ -45,14 +45,14 @@ class FakeTask : public Task {
 
   const Task* GetParentTask() const override { return parent_; }
 
-  int GetTabId() const override { return tab_id_; }
+  SessionID GetTabId() const override { return tab_id_; }
 
   void SetParent(Task* parent) { parent_ = parent; }
 
  private:
   Type type_;
   Task* parent_;
-  int tab_id_;
+  SessionID tab_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTask);
 };
@@ -74,7 +74,7 @@ class TaskManagerImplTest : public testing::Test, public TaskManagerObserver {
   FakeTask* AddTask(int pid_offset,
                     Task::Type type,
                     const std::string& title,
-                    int tab_id) {
+                    SessionID tab_id) {
     // Offset based on the current process id, to avoid collisions with the
     // browser process task.
     base::ProcessId process_id = base::GetCurrentProcId() + pid_offset;
@@ -98,31 +98,38 @@ class TaskManagerImplTest : public testing::Test, public TaskManagerObserver {
 };
 
 TEST_F(TaskManagerImplTest, SortingTypes) {
-  AddTask(100, Task::GPU, "Gpu Process", -1);
+  constexpr SessionID kTabId1 = SessionID::FromSerializedValue(10);
+  constexpr SessionID kTabId2 = SessionID::FromSerializedValue(20);
 
-  Task* tab1 = AddTask(200, Task::RENDERER, "Tab One", 10);
-  AddTask(400, Task::EXTENSION, "Extension Subframe: Tab One", 10)
+  AddTask(100, Task::GPU, "Gpu Process", /*tab_id=*/SessionID::InvalidValue());
+
+  Task* tab1 = AddTask(200, Task::RENDERER, "Tab One", kTabId1);
+  AddTask(400, Task::EXTENSION, "Extension Subframe: Tab One", kTabId1)
       ->SetParent(tab1);
-  AddTask(300, Task::RENDERER, "Subframe: Tab One", 10)->SetParent(tab1);
+  AddTask(300, Task::RENDERER, "Subframe: Tab One", kTabId1)->SetParent(tab1);
 
-  Task* tab2 =
-      AddTask(200, Task::RENDERER, "Tab Two: sharing process with Tab One", 20);
+  Task* tab2 = AddTask(200, Task::RENDERER,
+                       "Tab Two: sharing process with Tab One", kTabId2);
 
-  AddTask(301, Task::RENDERER, "Subframe: Tab Two", 20)->SetParent(tab2);
-  AddTask(400, Task::EXTENSION, "Extension Subframe: Tab Two", 20)
+  AddTask(301, Task::RENDERER, "Subframe: Tab Two", kTabId2)->SetParent(tab2);
+  AddTask(400, Task::EXTENSION, "Extension Subframe: Tab Two", kTabId2)
       ->SetParent(tab2);
 
-  AddTask(600, Task::ARC, "ARC", -1);
-  AddTask(800, Task::UTILITY, "Utility One", -1);
-  AddTask(700, Task::UTILITY, "Utility Two", -1);
-  AddTask(1000, Task::GUEST, "Guest", 20);
-  AddTask(900, Task::WORKER, "Worker", -1);
-  AddTask(500, Task::ZYGOTE, "Zygote", -1);
+  AddTask(600, Task::ARC, "ARC", /*tab_id=*/SessionID::InvalidValue());
+  AddTask(800, Task::UTILITY, "Utility One",
+          /*tab_id=*/SessionID::InvalidValue());
+  AddTask(700, Task::UTILITY, "Utility Two",
+          /*tab_id=*/SessionID::InvalidValue());
+  AddTask(1000, Task::GUEST, "Guest", kTabId2);
+  AddTask(900, Task::WORKER, "Worker", /*tab_id=*/SessionID::InvalidValue());
+  AddTask(500, Task::ZYGOTE, "Zygote", /*tab_id=*/SessionID::InvalidValue());
 
-  AddTask(300, Task::RENDERER, "Subframe: Tab One (2)", 10)->SetParent(tab1);
-  AddTask(300, Task::RENDERER, "Subframe: Tab One (third)", 10)
+  AddTask(300, Task::RENDERER, "Subframe: Tab One (2)", kTabId1)
       ->SetParent(tab1);
-  AddTask(300, Task::RENDERER, "Subframe: Tab One (4)", 10)->SetParent(tab1);
+  AddTask(300, Task::RENDERER, "Subframe: Tab One (third)", kTabId1)
+      ->SetParent(tab1);
+  AddTask(300, Task::RENDERER, "Subframe: Tab One (4)", kTabId1)
+      ->SetParent(tab1);
 
   EXPECT_EQ(
       "Browser\n"
@@ -146,49 +153,60 @@ TEST_F(TaskManagerImplTest, SortingTypes) {
 }
 
 TEST_F(TaskManagerImplTest, SortingCycles) {
+  constexpr SessionID kTabId1 = SessionID::FromSerializedValue(10);
+  constexpr SessionID kTabId2 = SessionID::FromSerializedValue(20);
+  constexpr SessionID kTabId3 = SessionID::FromSerializedValue(5);
+  constexpr SessionID kTabId4 = SessionID::FromSerializedValue(30);
+
   // Two tabs, with subframes in the other's process. This induces a cycle in
   // the TaskGroup dependencies, without being a cycle in the Tasks. This can
   // happen in practice.
-  Task* tab1 = AddTask(200, Task::RENDERER, "Tab 1: Process 200", 10);
-  AddTask(300, Task::RENDERER, "Subframe in Tab 1: Process 300", 10)
+  Task* tab1 = AddTask(200, Task::RENDERER, "Tab 1: Process 200", kTabId1);
+  AddTask(300, Task::RENDERER, "Subframe in Tab 1: Process 300", kTabId1)
       ->SetParent(tab1);
-  Task* tab2 = AddTask(300, Task::RENDERER, "Tab 2: Process 300", 20);
-  AddTask(200, Task::RENDERER, "Subframe in Tab 2: Process 200", 20)
+  Task* tab2 = AddTask(300, Task::RENDERER, "Tab 2: Process 300", kTabId2);
+  AddTask(200, Task::RENDERER, "Subframe in Tab 2: Process 200", kTabId2)
       ->SetParent(tab2);
 
   // Simulated GPU process.
-  AddTask(100, Task::GPU, "Gpu Process", -1);
+  AddTask(100, Task::GPU, "Gpu Process", /*tab_id=*/SessionID::InvalidValue());
 
   // Two subframes that list each other as a parent (a true cycle). This
   // shouldn't happen in practice, but we want the sorting code to handle it
   // gracefully.
-  FakeTask* cycle1 = AddTask(501, Task::SANDBOX_HELPER, "Cycle 1", -1);
-  FakeTask* cycle2 = AddTask(500, Task::ARC, "Cycle 2", -1);
+  FakeTask* cycle1 = AddTask(501, Task::SANDBOX_HELPER, "Cycle 1",
+                             /*tab_id=*/SessionID::InvalidValue());
+  FakeTask* cycle2 =
+      AddTask(500, Task::ARC, "Cycle 2", /*tab_id=*/SessionID::InvalidValue());
   cycle1->SetParent(cycle2);
   cycle2->SetParent(cycle1);
 
   // A cycle where both elements are in the same group.
-  FakeTask* cycle3 = AddTask(600, Task::SANDBOX_HELPER, "Cycle 3", -1);
-  FakeTask* cycle4 = AddTask(600, Task::ARC, "Cycle 4", -1);
+  FakeTask* cycle3 = AddTask(600, Task::SANDBOX_HELPER, "Cycle 3",
+                             /*tab_id=*/SessionID::InvalidValue());
+  FakeTask* cycle4 =
+      AddTask(600, Task::ARC, "Cycle 4", /*tab_id=*/SessionID::InvalidValue());
   cycle3->SetParent(cycle4);
   cycle4->SetParent(cycle3);
 
   // Tasks listing a cycle as their parent.
-  FakeTask* lollipop5 = AddTask(701, Task::EXTENSION, "Child of Cycle 3", -1);
+  FakeTask* lollipop5 = AddTask(701, Task::EXTENSION, "Child of Cycle 3",
+                                /*tab_id=*/SessionID::InvalidValue());
   lollipop5->SetParent(cycle3);
-  FakeTask* lollipop6 = AddTask(700, Task::PLUGIN, "Child of Cycle 4", -1);
+  FakeTask* lollipop6 = AddTask(700, Task::PLUGIN, "Child of Cycle 4",
+                                /*tab_id=*/SessionID::InvalidValue());
   lollipop6->SetParent(cycle4);
 
   // A task listing itself as parent.
-  FakeTask* self_cycle = AddTask(800, Task::RENDERER, "Self Cycle", 5);
+  FakeTask* self_cycle = AddTask(800, Task::RENDERER, "Self Cycle", kTabId3);
   self_cycle->SetParent(self_cycle);
 
   // Add a plugin child to tab1 and tab2.
-  AddTask(900, Task::PLUGIN, "Plugin: Tab 2", 20)->SetParent(tab1);
-  AddTask(901, Task::PLUGIN, "Plugin: Tab 1", 10)->SetParent(tab1);
+  AddTask(900, Task::PLUGIN, "Plugin: Tab 2", kTabId2)->SetParent(tab1);
+  AddTask(901, Task::PLUGIN, "Plugin: Tab 1", kTabId1)->SetParent(tab1);
 
   // Finish with a normal renderer task.
-  AddTask(903, Task::RENDERER, "Tab: Normal Renderer", 30);
+  AddTask(903, Task::RENDERER, "Tab: Normal Renderer", kTabId4);
 
   // Cycles should wind up on the bottom of the list.
   EXPECT_EQ(

@@ -42,9 +42,9 @@ namespace {
 const char kFooLabel[] = "foo_label";
 const char kFooPackage[] = "com.foo";
 
-const SessionID::id_type kTabIDFoo = 1;
-const SessionID::id_type kTabIDBar = 2;
-const SessionID::id_type kTabIDBaz = 3;
+const SessionID kTabIDFoo = SessionID::FromSerializedValue(1);
+const SessionID kTabIDBar = SessionID::FromSerializedValue(2);
+const SessionID kTabIDBaz = SessionID::FromSerializedValue(3);
 
 const char kURLFoo[] = "https://www.foo.com/#q=abc";
 const char kURLBar[] = "https://www.bar.com/#q=abc";
@@ -61,8 +61,8 @@ std::unique_ptr<content::NavigationEntry> CreateNavigationEntry(
 // Mock observer to track the calls to start and end tracking events.
 class MockTabDataUseObserver : public DataUseTabModel::TabDataUseObserver {
  public:
-  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
-  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
+  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID tab_id));
+  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID tab_id));
   MOCK_METHOD0(OnDataUseTabModelReady, void());
 };
 
@@ -100,7 +100,7 @@ class DataUseUITabModelTest : public testing::Test {
                                             label);
   }
 
-  void ExpectDataUseTrackingInfo(SessionID::id_type tab_id,
+  void ExpectDataUseTrackingInfo(SessionID tab_id,
                                  const base::TimeTicks& at_time,
                                  const std::string& expected_label,
                                  const std::string& expected_tag) const {
@@ -185,11 +185,9 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
       {ui::PageTransition::PAGE_TRANSITION_RELOAD, kFooLabel},
   };
 
-  SessionID::id_type foo_tab_id = 100;
-
   for (size_t i = 0; i < arraysize(tests); ++i) {
     // Start a new tab.
-    ++foo_tab_id;
+    SessionID foo_tab_id = SessionID::FromSerializedValue(100 + i);
     auto navigation_entry = CreateNavigationEntry(kURLFoo);
     data_use_ui_tab_model()->ReportBrowserNavigation(
         GURL(kURLFoo), tests[i].transition_type, foo_tab_id,
@@ -225,7 +223,7 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
 
   // Start a custom tab with matching package name and verify if tracking
   // started is not being set.
-  const SessionID::id_type bar_tab_id = foo_tab_id + 1;
+  const SessionID bar_tab_id = SessionID::FromSerializedValue(200);
   EXPECT_FALSE(
       data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(bar_tab_id));
   data_use_ui_tab_model()->ReportCustomTabInitialNavigation(
@@ -245,9 +243,9 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
 TEST_F(DataUseUITabModelTest, EntranceExitState) {
   SetUpDataUseUITabModel();
 
-  const SessionID::id_type kFooTabId = 1;
-  const SessionID::id_type kBarTabId = 2;
-  const SessionID::id_type kBazTabId = 3;
+  const SessionID kFooTabId = SessionID::FromSerializedValue(1);
+  const SessionID kBarTabId = SessionID::FromSerializedValue(2);
+  const SessionID kBazTabId = SessionID::FromSerializedValue(3);
 
   // CheckAndResetDataUseTrackingStarted should return true only once.
   data_use_tab_model()->NotifyObserversOfTrackingStarting(kFooTabId);
@@ -322,16 +320,12 @@ TEST_F(DataUseUITabModelTest, EntranceExitState) {
 TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
   SetUpDataUseUITabModel();
 
-  const SessionID::id_type kFooTabId = 1;
-
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
   RegisterURLRegexes(std::vector<std::string>(url_regexes.size(), kFooPackage),
                      url_regexes,
                      std::vector<std::string>(url_regexes.size(), kFooLabel));
-
-  SessionID::id_type foo_tab_id = kFooTabId;
 
   const struct {
     // True if a dialog box was shown to the user. It may not be shown if the
@@ -344,7 +338,7 @@ TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     // Start a new tab.
-    ++foo_tab_id;
+    SessionID foo_tab_id = SessionID::FromSerializedValue(100 + i);
     auto navigation_entry_foo = CreateNavigationEntry(kURLFoo);
     data_use_ui_tab_model()->ReportBrowserNavigation(
         GURL(kURLFoo), ui::PAGE_TRANSITION_GENERATED, foo_tab_id,

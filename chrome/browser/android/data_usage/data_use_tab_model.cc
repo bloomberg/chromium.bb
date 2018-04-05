@@ -75,11 +75,6 @@ enum DataUsageTrackingSessionEndReason {
   END_REASON_MAX = 4
 };
 
-// Returns true if |tab_id| is a valid tab ID.
-bool IsValidTabID(SessionID::id_type tab_id) {
-  return tab_id >= 0;
-}
-
 // Returns various parameters from the values specified in the field trial.
 size_t GetMaxTabEntries() {
   size_t max_tab_entries = kDefaultMaxTabEntries;
@@ -250,13 +245,13 @@ base::WeakPtr<DataUseTabModel> DataUseTabModel::GetWeakPtr() {
 }
 
 void DataUseTabModel::OnNavigationEvent(
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     TransitionType transition,
     const GURL& url,
     const std::string& package,
     content::NavigationEntry* navigation_entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsValidTabID(tab_id));
+  DCHECK(tab_id.is_valid());
   DCHECK(!navigation_entry || (navigation_entry->GetURL() == url));
 
   std::string current_label, new_label;
@@ -286,9 +281,9 @@ void DataUseTabModel::OnNavigationEvent(
   }
 }
 
-void DataUseTabModel::OnTabCloseEvent(SessionID::id_type tab_id) {
+void DataUseTabModel::OnTabCloseEvent(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsValidTabID(tab_id));
+  DCHECK(tab_id.is_valid());
 
   TabEntryMap::iterator tab_entry_iterator = active_tabs_.find(tab_id);
   if (tab_entry_iterator == active_tabs_.end())
@@ -306,7 +301,7 @@ void DataUseTabModel::OnTrackingLabelRemoved(const std::string& label) {
 }
 
 bool DataUseTabModel::GetTrackingInfoForTabAtTime(
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     const base::TimeTicks timestamp,
     TrackingInfo* output_tracking_info) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -314,7 +309,7 @@ bool DataUseTabModel::GetTrackingInfoForTabAtTime(
   output_tracking_info->label = "";
 
   // Data use that cannot be attributed to a tab will not be labeled.
-  if (!IsValidTabID(tab_id))
+  if (!tab_id.is_valid())
     return false;
 
   TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
@@ -334,12 +329,12 @@ bool DataUseTabModel::GetTrackingInfoForTabAtTime(
 }
 
 bool DataUseTabModel::WouldNavigationEventEndTracking(
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     TransitionType transition,
     const GURL& url,
     const content::NavigationEntry* navigation_entry) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsValidTabID(tab_id));
+  DCHECK(tab_id.is_valid());
   std::string current_label, new_label;
   bool is_package_match;
   GetCurrentAndNewLabelForNavigationEvent(
@@ -402,22 +397,20 @@ base::TimeTicks DataUseTabModel::NowTicks() const {
   return tick_clock_->NowTicks();
 }
 
-bool DataUseTabModel::IsCustomTabPackageMatch(SessionID::id_type tab_id) const {
+bool DataUseTabModel::IsCustomTabPackageMatch(SessionID tab_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
   return (tab_entry_iterator != active_tabs_.end()) &&
          tab_entry_iterator->second.is_custom_tab_package_match();
 }
 
-void DataUseTabModel::NotifyObserversOfTrackingStarting(
-    SessionID::id_type tab_id) {
+void DataUseTabModel::NotifyObserversOfTrackingStarting(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (TabDataUseObserver& observer : observers_)
     observer.NotifyTrackingStarting(tab_id);
 }
 
-void DataUseTabModel::NotifyObserversOfTrackingEnding(
-    SessionID::id_type tab_id) {
+void DataUseTabModel::NotifyObserversOfTrackingEnding(SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (TabDataUseObserver& observer : observers_)
     observer.NotifyTrackingEnding(tab_id);
@@ -430,7 +423,7 @@ void DataUseTabModel::NotifyObserversOfDataUseTabModelReady() {
 }
 
 void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     TransitionType transition,
     const GURL& url,
     const std::string& package,
@@ -439,7 +432,7 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
     std::string* new_label,
     bool* is_package_match) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsValidTabID(tab_id));
+  DCHECK(tab_id.is_valid());
 
   TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
   *current_label =
@@ -520,7 +513,7 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
 }
 
 void DataUseTabModel::StartTrackingDataUse(TransitionType transition,
-                                           SessionID::id_type tab_id,
+                                           SessionID tab_id,
                                            const std::string& label,
                                            bool is_custom_tab_package_match) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -550,7 +543,7 @@ void DataUseTabModel::StartTrackingDataUse(TransitionType transition,
 }
 
 void DataUseTabModel::EndTrackingDataUse(TransitionType transition,
-                                         SessionID::id_type tab_id) {
+                                         SessionID tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEntryMap::iterator tab_entry_iterator = active_tabs_.find(tab_id);

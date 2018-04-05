@@ -129,8 +129,8 @@ CastRemotingConnector* CastRemotingConnector::Get(
   if (!connector) {
     // TODO(xjz): Use TabAndroid::GetAndroidId() to get the tab ID when support
     // remoting on Android.
-    const SessionID::id_type tab_id = SessionTabHelper::IdForTab(contents);
-    if (tab_id == -1)
+    const SessionID tab_id = SessionTabHelper::IdForTab(contents);
+    if (!tab_id.is_valid())
       return nullptr;
     connector = new CastRemotingConnector(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
@@ -157,7 +157,7 @@ void CastRemotingConnector::CreateMediaRemoter(
 }
 
 CastRemotingConnector::CastRemotingConnector(media_router::MediaRouter* router,
-                                             int32_t tab_id)
+                                             SessionID tab_id)
     : media_router_(router),
       tab_id_(tab_id),
       active_bridge_(nullptr),

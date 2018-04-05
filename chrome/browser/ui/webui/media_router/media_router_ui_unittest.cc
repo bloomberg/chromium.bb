@@ -462,8 +462,8 @@ TEST_F(MediaRouterUITest, FilterNonDisplayJoinableRoutes) {
 
 TEST_F(MediaRouterUITest, UIMediaRoutesObserverAssignsCurrentCastModes) {
   CreateMediaRouterUI(profile());
-  SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
-  MediaSource media_source_1(MediaSourceForTab(tab_id));
+  SessionID tab_id = SessionTabHelper::IdForTab(web_contents());
+  MediaSource media_source_1(MediaSourceForTab(tab_id.id()));
   MediaSource media_source_2("mediaSource");
   MediaSource media_source_3(MediaSourceForDesktop());
   std::unique_ptr<MediaRouterUI::UIMediaRoutesObserver> observer(

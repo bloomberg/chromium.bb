@@ -205,7 +205,8 @@ void ToolbarActionsBarUnitTest::SetActionWantsToRunOnTab(
     ExtensionAction* action,
     content::WebContents* web_contents,
     bool wants_to_run) {
-  action->SetIsVisible(SessionTabHelper::IdForTab(web_contents), wants_to_run);
+  action->SetIsVisible(SessionTabHelper::IdForTab(web_contents).id(),
+                       wants_to_run);
   extensions::ExtensionActionAPI::Get(profile())->NotifyChange(
       action, web_contents, profile());
 }
