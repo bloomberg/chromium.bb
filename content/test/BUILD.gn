@@ -44,8 +44,6 @@ jumbo_static_library("test_support") {
     "../browser/background_fetch/background_fetch_test_browser_context.h",
     "../browser/background_fetch/mock_background_fetch_delegate.cc",
     "../browser/background_fetch/mock_background_fetch_delegate.h",
-    "../browser/download/mock_download_item_impl.cc",
-    "../browser/download/mock_download_item_impl.h",
     "../browser/media/session/mock_media_session_observer.cc",
     "../browser/media/session/mock_media_session_observer.h",
     "../browser/service_worker/embedded_worker_test_helper.cc",

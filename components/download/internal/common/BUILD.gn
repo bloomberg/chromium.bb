@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 source_set("internal") {
-  visibility = [ "//components/download/public/common:public" ]
+  visibility = [
+    ":for_tests",
+    "//components/download/public/common:public",
+  ]
 
   configs += [
     "//components/download/public/common:components_download_implementation",
@@ -23,17 +26,22 @@ source_set("internal") {
     "download_job.cc",
     "download_job_factory.cc",
     "download_job_impl.cc",
+    "download_job_impl.h",
     "download_response_handler.cc",
     "download_stats.cc",
     "download_task_runner.cc",
     "download_ukm_helper.cc",
     "download_utils.cc",
     "download_worker.cc",
+    "download_worker.h",
     "parallel_download_job.cc",
+    "parallel_download_job.h",
     "parallel_download_utils.cc",
+    "parallel_download_utils.h",
     "rate_estimator.cc",
     "resource_downloader.cc",
     "save_package_download_job.cc",
+    "save_package_download_job.h",
     "stream_handle_input_stream.cc",
     "url_download_handler_factory.cc",
   ]
@@ -54,8 +62,24 @@ source_set("internal") {
   ]
 }
 
+# tests need to access both public and internal sources. So in the component
+# build case, we exclude the internal dependency as it is included in the
+# test_support target under public.
+group("for_tests") {
+  visibility = [ ":unit_tests" ]
+  if (!is_component_build) {
+    public_deps = [
+      ":internal",
+    ]
+  }
+}
+
 source_set("unit_tests") {
   testonly = true
+
+  if (is_component_build) {
+    check_includes = false
+  }
 
   sources = [
     "base_file_unittest.cc",
@@ -69,6 +93,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":for_tests",
     "//base/test:test_support",
     "//components/download/public/common:test_support",
     "//components/ukm:test_support",

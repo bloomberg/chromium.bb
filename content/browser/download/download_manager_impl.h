@@ -34,12 +34,12 @@
 
 namespace download {
 class DownloadFileFactory;
+class DownloadItemFactory;
 class DownloadItemImpl;
 class DownloadRequestHandleInterface;
 }
 
 namespace content {
-class DownloadItemFactory;
 class ResourceContext;
 class StoragePartitionImpl;
 class URLLoaderFactoryGetter;
@@ -145,7 +145,7 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
-      std::unique_ptr<DownloadItemFactory> item_factory);
+      std::unique_ptr<download::DownloadItemFactory> item_factory);
   void SetDownloadFileFactoryForTesting(
       std::unique_ptr<download::DownloadFileFactory> file_factory);
   virtual download::DownloadFileFactory* GetDownloadFileFactoryForTesting();
@@ -282,7 +282,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Factory for creation of downloads items.
-  std::unique_ptr<DownloadItemFactory> item_factory_;
+  std::unique_ptr<download::DownloadItemFactory> item_factory_;
 
   // Factory for the creation of download files.
   std::unique_ptr<download::DownloadFileFactory> file_factory_;

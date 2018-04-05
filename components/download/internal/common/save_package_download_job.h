@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_SAVE_PACKAGE_DOWNLOAD_JOB_H_
-#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_SAVE_PACKAGE_DOWNLOAD_JOB_H_
+#ifndef COMPONENTS_DOWNLOAD_INTERNAL_COMMON_SAVE_PACKAGE_DOWNLOAD_JOB_H_
+#define COMPONENTS_DOWNLOAD_INTERNAL_COMMON_SAVE_PACKAGE_DOWNLOAD_JOB_H_
 
 #include "base/macros.h"
-#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_job.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 
 namespace download {
 
-class COMPONENTS_DOWNLOAD_EXPORT SavePackageDownloadJob : public DownloadJob {
+class SavePackageDownloadJob : public DownloadJob {
  public:
   SavePackageDownloadJob(
       DownloadItem* download_item,
@@ -29,4 +28,4 @@ class COMPONENTS_DOWNLOAD_EXPORT SavePackageDownloadJob : public DownloadJob {
 
 }  //  namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_SAVE_PACKAGE_DOWNLOAD_JOB_H_
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_COMMON_SAVE_PACKAGE_DOWNLOAD_JOB_H_

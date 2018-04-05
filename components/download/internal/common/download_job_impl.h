@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_JOB_IMPL_H_
-#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_JOB_IMPL_H_
+#ifndef COMPONENTS_DOWNLOAD_INTERNAL_COMMON_DOWNLOAD_JOB_IMPL_H_
+#define COMPONENTS_DOWNLOAD_INTERNAL_COMMON_DOWNLOAD_JOB_IMPL_H_
 
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_job.h"
@@ -32,4 +32,4 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJobImpl : public DownloadJob {
 
 }  //  namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_JOB_IMPL_H_
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_COMMON_DOWNLOAD_JOB_IMPL_H_

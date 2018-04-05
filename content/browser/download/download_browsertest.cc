@@ -36,7 +36,7 @@
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_file_impl.h"
 #include "components/download/public/common/download_task_runner.h"
-#include "components/download/public/common/parallel_download_utils.h"
+#include "components/download/public/common/parallel_download_configs.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
