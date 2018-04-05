@@ -1099,7 +1099,8 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   if (is_side_shelf_)
     return;
 
-  const int display_height = GetDisplayNearestView().size().height();
+  const display::Display display = GetDisplayNearestView();
+  const int display_height = display.size().height();
   int target_state_y = 0;
 
   switch (target_state) {
@@ -1114,7 +1115,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
       // The ChromeVox panel as well as the Docked Magnifier viewport affect the
       // workarea of the display. We need to account for that when applist is in
       // fullscreen to avoid being shown below them.
-      target_state_y = GetDisplayNearestView().work_area().y();
+      target_state_y = display.work_area().y() - display.bounds().y();
       break;
 
     case AppListViewState::CLOSED:
@@ -1142,7 +1143,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   }
 
   if (fullscreen_widget_->GetNativeView()->bounds().y() ==
-      GetDisplayNearestView().work_area().bottom()) {
+      display.work_area().bottom()) {
     // If the animation start position is the bottom of the screen activate the
     // fade in animation.
     app_list_main_view_->contents_view()->FadeInOnOpen(
