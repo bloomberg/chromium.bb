@@ -104,6 +104,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   bool got_on_closed_ = false;
 
+  bool is_active_ = false;
+
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostPlatform);
