@@ -2958,14 +2958,6 @@ void UiSceneCreator::CreateToasts() {
   layout->SetTranslate(0, kIndicatorVerticalOffset, kIndicatorDistanceOffset);
   layout->set_margin(kWebVrPermissionMargin);
 
-  auto fullscreen_toast = CreateTextToast(
-      kExclusiveScreenToastTransientParent, kExclusiveScreenToast, model_,
-      l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT_FULLSCREEN));
-  fullscreen_toast->AddBinding(
-      VR_BIND(bool, Model, model_, model->fullscreen_enabled(), UiElement,
-              fullscreen_toast.get(), SetVisibleInLayout(view, value)));
-  layout->AddChild(std::move(fullscreen_toast));
-
   auto platform_toast = CreateTextToast(
       kPlatformToastTransientParent, kPlatformToast, model_, base::string16());
   platform_toast->AddBinding(std::make_unique<Binding<const PlatformToast*>>(

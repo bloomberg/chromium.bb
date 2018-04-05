@@ -109,8 +109,6 @@ enum UiElementName {
   kPermissionDialogBackplane,
   kWebVrUrlToastTransientParent,
   kWebVrUrlToast,
-  kExclusiveScreenToastTransientParent,
-  kExclusiveScreenToast,
   kWebVrExclusiveScreenToast,
   kPlatformToastTransientParent,
   kPlatformToast,
