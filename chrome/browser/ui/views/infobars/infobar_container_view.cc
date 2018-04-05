@@ -63,36 +63,6 @@ InfoBarContainerView::~InfoBarContainerView() {
   RemoveAllInfoBarsForDestruction();
 }
 
-gfx::Size InfoBarContainerView::CalculatePreferredSize() const {
-  gfx::Size size;
-
-  // Iterate over all infobars; the last child is the content shadow.
-  for (int i = 0; i < child_count() - 1; ++i) {
-    const gfx::Size child_size = child_at(i)->GetPreferredSize();
-    size.Enlarge(0, child_size.height());
-    size.SetToMax(child_size);  // Only affects our width.
-  }
-
-  // No need to reserve space for the bottom bar's separator; the shadow is good
-  // enough.
-  size.Enlarge(0, -InfoBarContainerDelegate::kSeparatorLineHeight);
-
-  // Don't reserve space for the bottom shadow here.  Because the shadow paints
-  // to its own layer and this class doesn't, it can paint outside the size
-  // computed here.  Not including the shadow bounds means the browser will
-  // automatically lay out web content beginning below the bottom infobar
-  // (instead of below the shadow), and clicks in the shadow region will go to
-  // the web content instead of the infobars; both of these effects are
-  // desirable.  On the other hand, it also means the browser doesn't know the
-  // shadow is there and could lay out something atop it or size the window too
-  // small for it; but these are unlikely.
-  return size;
-}
-
-const char* InfoBarContainerView::GetClassName() const {
-  return kViewClassName;
-}
-
 void InfoBarContainerView::Layout() {
   int top = 0;
 
@@ -118,9 +88,39 @@ void InfoBarContainerView::Layout() {
                              content_shadow_->GetPreferredSize().height());
 }
 
+const char* InfoBarContainerView::GetClassName() const {
+  return kViewClassName;
+}
+
 void InfoBarContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kGroup;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR_CONTAINER));
+}
+
+gfx::Size InfoBarContainerView::CalculatePreferredSize() const {
+  gfx::Size size;
+
+  // Iterate over all infobars; the last child is the content shadow.
+  for (int i = 0; i < child_count() - 1; ++i) {
+    const gfx::Size child_size = child_at(i)->GetPreferredSize();
+    size.Enlarge(0, child_size.height());
+    size.SetToMax(child_size);  // Only affects our width.
+  }
+
+  // No need to reserve space for the bottom bar's separator; the shadow is good
+  // enough.
+  size.Enlarge(0, -InfoBarContainerDelegate::kSeparatorLineHeight);
+
+  // Don't reserve space for the bottom shadow here.  Because the shadow paints
+  // to its own layer and this class doesn't, it can paint outside the size
+  // computed here.  Not including the shadow bounds means the browser will
+  // automatically lay out web content beginning below the bottom infobar
+  // (instead of below the shadow), and clicks in the shadow region will go to
+  // the web content instead of the infobars; both of these effects are
+  // desirable.  On the other hand, it also means the browser doesn't know the
+  // shadow is there and could lay out something atop it or size the window too
+  // small for it; but these are unlikely.
+  return size;
 }
 
 void InfoBarContainerView::PlatformSpecificAddInfoBar(
