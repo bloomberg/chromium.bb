@@ -61,6 +61,13 @@ bool WillElementBeVisible(const UiElement* element) {
   return WillElementFaceCamera(element);
 }
 
+int NumVisibleInTreeRecursive(const UiElement* element) {
+  int visible = WillElementBeVisible(element) ? 1 : 0;
+  for (auto& child : element->children())
+    visible += NumVisibleInTreeRecursive(child.get());
+  return visible;
+}
+
 }  // namespace
 
 UiTest::UiTest() {}
@@ -133,18 +140,18 @@ void UiTest::VerifyOnlyElementsVisible(
     const std::set<UiElementName>& names) const {
   OnBeginFrame();
   SCOPED_TRACE(trace_context);
-  for (const auto& element : scene_->root_element()) {
-    SCOPED_TRACE(element.DebugName());
-    UiElementName name = element.name();
-    UiElementName owner_name = element.owner_name_for_test();
-    if (element.draw_phase() == kPhaseNone && owner_name == kNone) {
+  for (auto* element : scene_->GetAllElements()) {
+    SCOPED_TRACE(element->DebugName());
+    UiElementName name = element->name();
+    UiElementName owner_name = element->owner_name_for_test();
+    if (element->draw_phase() == kPhaseNone && owner_name == kNone) {
       EXPECT_TRUE(names.find(name) == names.end());
       continue;
     }
     if (name == kNone)
       name = owner_name;
     bool should_be_visible = (names.find(name) != names.end());
-    EXPECT_EQ(WillElementBeVisible(&element), should_be_visible);
+    EXPECT_EQ(WillElementBeVisible(element), should_be_visible);
   }
 }
 
@@ -155,12 +162,7 @@ int UiTest::NumVisibleInTree(UiElementName name) const {
   if (!root) {
     return 0;
   }
-  int visible = 0;
-  for (const auto& element : *root) {
-    if (WillElementBeVisible(&element))
-      visible++;
-  }
-  return visible;
+  return NumVisibleInTreeRecursive(root);
 }
 
 bool UiTest::VerifyIsAnimating(const std::set<UiElementName>& names,

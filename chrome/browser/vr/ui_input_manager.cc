@@ -57,13 +57,15 @@ bool IsScrollEvent(const GestureList& list) {
   return false;
 }
 
-void HitTestElements(UiElement* root_element,
+void HitTestElements(UiScene* scene,
                      ReticleModel* reticle_model,
                      HitTestRequest* request) {
+  auto& all_elements = scene->GetAllElements();
+
   std::vector<const UiElement*> elements;
-  for (auto& element : *root_element) {
-    if (element.IsVisible()) {
-      elements.push_back(&element);
+  for (auto* element : all_elements) {
+    if (element->IsVisible()) {
+      elements.push_back(element);
     }
   }
 
@@ -374,7 +376,7 @@ void UiInputManager::GetVisualTargetElement(
   request.ray_origin = ray_origin;
   request.ray_target = reticle_model->target_point;
   request.max_distance_to_plane = distance_limit;
-  HitTestElements(&scene_->root_element(), reticle_model, &request);
+  HitTestElements(scene_, reticle_model, &request);
 }
 
 void UiInputManager::UpdateQuiescenceState(

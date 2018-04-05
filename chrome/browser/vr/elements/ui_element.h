@@ -19,7 +19,6 @@
 #include "chrome/browser/vr/databinding/binding_base.h"
 #include "chrome/browser/vr/elements/corner_radii.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
-#include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/elements/ui_element_type.h"
 #include "chrome/browser/vr/model/camera_model.h"
@@ -355,7 +354,7 @@ class UiElement : public cc::AnimationTarget {
     return bindings_;
   }
 
-  void UpdateBindings();
+  void UpdateBindingsRecursive();
 
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
@@ -421,23 +420,6 @@ class UiElement : public cc::AnimationTarget {
     return children_;
   }
 
-  typedef ForwardUiElementIterator iterator;
-  typedef ConstForwardUiElementIterator const_iterator;
-  typedef ReverseUiElementIterator reverse_iterator;
-  typedef ConstReverseUiElementIterator const_reverse_iterator;
-
-  iterator begin() { return iterator(this); }
-  iterator end() { return iterator(nullptr); }
-  const_iterator begin() const { return const_iterator(this); }
-  const_iterator end() const { return const_iterator(nullptr); }
-
-  reverse_iterator rbegin() { return reverse_iterator(this); }
-  reverse_iterator rend() { return reverse_iterator(nullptr); }
-  const_reverse_iterator rbegin() const { return const_reverse_iterator(this); }
-  const_reverse_iterator rend() const {
-    return const_reverse_iterator(nullptr);
-  }
-
   void set_update_phase(UpdatePhase phase) { phase_ = phase; }
 
   // This is true for all elements that respect the given view model matrix. If
@@ -485,6 +467,9 @@ class UiElement : public cc::AnimationTarget {
   void set_resizable_by_layout(bool resizable) {
     resizable_by_layout_ = resizable;
   }
+
+  bool descendants_updated() const { return descendants_updated_; }
+  void set_descendants_updated(bool updated) { descendants_updated_ = updated; }
 
  protected:
   Animation& animation() { return animation_; }
@@ -622,6 +607,10 @@ class UiElement : public cc::AnimationTarget {
 
   UiElement* parent_ = nullptr;
   std::vector<std::unique_ptr<UiElement>> children_;
+
+  // This is true if a descendant has been added and the total list has not yet
+  // been collected by the scene.
+  bool descendants_updated_ = false;
 
   std::vector<std::unique_ptr<BindingBase>> bindings_;
 
