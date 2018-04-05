@@ -19,8 +19,6 @@
 
 namespace ash {
 class CustomFrameViewAsh;
-class ImmersiveFullscreenController;
-
 namespace mojom {
 enum class WindowPinType;
 }
@@ -158,13 +156,9 @@ class ClientControlledShellSurface
   // Set if the surface can be maximzied.
   void SetCanMaximize(bool can_maximize);
 
-  // True to enable the auto hide frame mode.
-  void SetAutoHideFrameEnabled(bool enabled);
-
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsInputEnabled(Surface* surface) const override;
-  void OnSetFrame(SurfaceFrameType type) override;
 
   // Overridden from views::WidgetDelegate:
   bool CanMaximize() const override;
@@ -233,7 +227,6 @@ class ClientControlledShellSurface
 
   ash::wm::WindowState* GetWindowState();
   ash::CustomFrameViewAsh* GetFrameView();
-  const ash::CustomFrameViewAsh* GetFrameView() const;
 
   GeometryChangedCallback geometry_changed_callback_;
   int64_t primary_display_id_;
@@ -243,8 +236,6 @@ class ClientControlledShellSurface
 
   double scale_ = 1.0;
   double pending_scale_ = 1.0;
-
-  bool auto_hide_caption_enabled_ = false;
 
   StateChangedCallback state_changed_callback_;
   BoundsChangedCallback bounds_changed_callback_;
@@ -262,9 +253,6 @@ class ClientControlledShellSurface
       ash::mojom::WindowStateType::NORMAL;
 
   bool can_maximize_ = true;
-
-  std::unique_ptr<ash::ImmersiveFullscreenController>
-      immersive_fullscreen_controller_;
 
   std::unique_ptr<ui::CompositorLock> orientation_compositor_lock_;
 
