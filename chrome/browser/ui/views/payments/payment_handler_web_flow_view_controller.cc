@@ -170,9 +170,8 @@ bool PaymentHandlerWebFlowViewController::ShouldShowSecondaryButton() {
 
 std::unique_ptr<views::View>
 PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
-  const GURL origin = web_contents()
-                          ? web_contents()->GetLastCommittedURL().GetOrigin()
-                          : GURL();
+  const GURL origin =
+      web_contents() ? web_contents()->GetVisibleURL().GetOrigin() : GURL();
   std::unique_ptr<views::Background> background = GetHeaderBackground();
   return std::make_unique<ReadOnlyOriginView>(GetSheetTitle(), origin,
                                               background->get_color(), this);
@@ -212,6 +211,14 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
 
 void PaymentHandlerWebFlowViewController::TitleWasSet(
     content::NavigationEntry* entry) {
+  UpdateHeaderView();
+}
+
+void PaymentHandlerWebFlowViewController::DidAttachInterstitialPage() {
+  UpdateHeaderView();
+}
+
+void PaymentHandlerWebFlowViewController::DidDetachInterstitialPage() {
   UpdateHeaderView();
 }
 
