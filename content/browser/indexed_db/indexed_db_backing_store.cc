@@ -715,11 +715,21 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
       PutInt(transaction.get(), data_version_key, db_data_version.Encode());
     }
     if (db_schema_version < 3) {
+      // TODO(dmurph): This migration path did not write the updated schema
+      // version to disk. In consequence, any database that started out as
+      // schema version <= 2 will remain at schema version 2 indefinitely.
+      // Furthermore, this migration path used to call
+      // "base::DeleteFile(blob_path_, true)", so databases stuck at version 2
+      // would lose their stored Blobs on every open call.
+      //
+      // In order to prevent corrupt databases, when upgrading from 2 to 3 this
+      // should either:
+      // 1. Blow away all databases as corrupted (fastest), or
+      // 2. Only blow away databases with BlobEntryKey entries, which can be
+      //    detected in  O(object stores * databases) time.
+      // https://crbug.com/756447, https://crbug.com/829125,
+      // https://crbug.com/829141
       db_schema_version = 3;
-      if (!base::DeleteFile(blob_path_, true)) {
-        INTERNAL_WRITE_ERROR_UNTESTED(SET_UP_METADATA);
-        return IOErrorStatus();
-      }
     }
   }
 
