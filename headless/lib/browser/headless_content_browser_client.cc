@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -30,6 +31,7 @@
 #include "headless/lib/browser/headless_quota_permission_context.h"
 #include "headless/lib/headless_macros.h"
 #include "net/base/url_util.h"
+#include "net/ssl/client_cert_identity.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -319,6 +321,14 @@ void HeadlessContentBrowserClient::AllowCertificateError(
 
     callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
   }
+}
+
+void HeadlessContentBrowserClient::SelectClientCertificate(
+    content::WebContents* web_contents,
+    net::SSLCertRequestInfo* cert_request_info,
+    net::ClientCertIdentityList client_certs,
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
+  delegate->ContinueWithCertificate(nullptr, nullptr);
 }
 
 void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {

@@ -52,6 +52,12 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback) override;
 
+  void SelectClientCertificate(
+      content::WebContents* web_contents,
+      net::SSLCertRequestInfo* cert_request_info,
+      net::ClientCertIdentityList client_certs,
+      std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
+
   void ResourceDispatcherHostCreated() override;
 
   net::NetLog* GetNetLog() override;
