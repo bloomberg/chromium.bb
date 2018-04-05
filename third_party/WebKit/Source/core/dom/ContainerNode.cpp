@@ -714,10 +714,11 @@ void ContainerNode::RemoveBetween(Node* previous_child,
 
   DCHECK_EQ(old_child.parentNode(), this);
 
-  AttachContext context;
-  context.clear_invalidation = true;
-  if (!old_child.NeedsAttach())
+  if (!old_child.NeedsAttach()) {
+    AttachContext context;
+    context.clear_invalidation = true;
     old_child.DetachLayoutTree(context);
+  }
 
   if (next_child)
     next_child->SetPreviousSibling(previous_child);
