@@ -38,7 +38,7 @@ namespace {
 
 // Certificate reports are only sent from official builds, but this flag can be
 // set by tests.
-static bool g_is_fake_official_build_for_testing = false;
+static bool g_is_fake_official_build_for_cert_report_testing = false;
 
 // Returns a pointer to the Profile associated with |web_contents|.
 Profile* GetProfile(content::WebContents* web_contents) {
@@ -78,7 +78,7 @@ CertReportHelper::~CertReportHelper() {
 
 // static
 void CertReportHelper::SetFakeOfficialBuildForTesting() {
-  g_is_fake_official_build_for_testing = true;
+  g_is_fake_official_build_for_cert_report_testing = true;
 }
 
 void CertReportHelper::PopulateExtendedReportingOption(
@@ -204,7 +204,7 @@ bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
 bool CertReportHelper::ShouldReportCertificateError() {
   DCHECK(ShouldShowCertificateReporterCheckbox());
 
-  bool is_official_build = g_is_fake_official_build_for_testing;
+  bool is_official_build = g_is_fake_official_build_for_cert_report_testing;
 #if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
   is_official_build = true;
 #endif

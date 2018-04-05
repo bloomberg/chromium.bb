@@ -31,10 +31,11 @@ static const uint32_t kServerPublicKeyVersion = 1;
 
 static const char kHkdfLabel[] = "certificate report";
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation(
-        "safe_browsing_certificate_error_reporting",
-        R"(
+constexpr net::NetworkTrafficAnnotationTag
+    kSafeBrowsingCertificateErrorReportingTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation(
+            "safe_browsing_certificate_error_reporting",
+            R"(
         semantics {
           sender: "Safe Browsing Extended Reporting"
           description:
@@ -77,8 +78,9 @@ CertificateErrorReporter::CertificateErrorReporter(
           upload_url,
           kServerPublicKey,
           kServerPublicKeyVersion,
-          std::make_unique<net::ReportSender>(request_context,
-                                              kTrafficAnnotation)) {}
+          std::make_unique<net::ReportSender>(
+              request_context,
+              kSafeBrowsingCertificateErrorReportingTrafficAnnotation)) {}
 
 CertificateErrorReporter::CertificateErrorReporter(
     const GURL& upload_url,

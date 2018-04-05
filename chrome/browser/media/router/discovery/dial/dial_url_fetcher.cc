@@ -25,7 +25,7 @@ namespace media_router {
 
 namespace {
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+constexpr net::NetworkTrafficAnnotationTag kDialUrlFetcherTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("dial_url_fetcher", R"(
         semantics {
           sender: "DIAL"
@@ -101,8 +101,8 @@ void DialURLFetcher::Start() {
                         net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
-  loader_ =
-      network::SimpleURLLoader::Create(std::move(request), kTrafficAnnotation);
+  loader_ = network::SimpleURLLoader::Create(std::move(request),
+                                             kDialUrlFetcherTrafficAnnotation);
 
   // Allow the fetcher to retry on 5XX responses and ERR_NETWORK_CHANGED.
   loader_->SetRetryOptions(
