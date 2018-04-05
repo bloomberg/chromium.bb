@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_webui_impl.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
-#include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
 #include "chrome/common/url_constants.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -36,7 +32,7 @@
 #include "url/gurl.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    media_router::MediaRouterDialogControllerImpl);
+    media_router::MediaRouterDialogControllerWebUIImpl);
 
 using content::LoadCommittedDetails;
 using content::NavigationController;
@@ -57,7 +53,7 @@ constexpr const int kWidth = 340;
 class MediaRouterDialogDelegate : public WebDialogDelegate {
  public:
   explicit MediaRouterDialogDelegate(
-      const base::WeakPtr<MediaRouterDialogControllerImpl>& controller)
+      const base::WeakPtr<MediaRouterDialogControllerWebUIImpl>& controller)
       : controller_(controller) {}
   ~MediaRouterDialogDelegate() override {}
 
@@ -67,9 +63,7 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
     return ui::MODAL_TYPE_WINDOW;
   }
 
-  base::string16 GetDialogTitle() const override {
-    return base::string16();
-  }
+  base::string16 GetDialogTitle() const override { return base::string16(); }
 
   GURL GetDialogContentURL() const override {
     return GURL(chrome::kChromeUIMediaRouterURL);
@@ -92,9 +86,7 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
     controller_->UpdateMaxDialogSize();
   }
 
-  std::string GetDialogArgs() const override {
-    return std::string();
-  }
+  std::string GetDialogArgs() const override { return std::string(); }
 
   void OnDialogClosed(const std::string& json_retval) override {
     // We don't delete |this| here because this class is owned
@@ -106,44 +98,35 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
       *out_close_dialog = true;
   }
 
-  bool ShouldShowDialogTitle() const override {
-    return false;
-  }
+  bool ShouldShowDialogTitle() const override { return false; }
 
  private:
   base::WeakPtr<MediaRouterAction> action_;
-  base::WeakPtr<MediaRouterDialogControllerImpl> controller_;
+  base::WeakPtr<MediaRouterDialogControllerWebUIImpl> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogDelegate);
 };
 
-MediaRouterActionController* GetActionController(WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return MediaRouterUIService::Get(profile)->action_controller();
-}
-
 }  // namespace
 
+#if !defined(TOOLKIT_VIEWS)
 // static
-MediaRouterDialogControllerImpl*
-MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
-    WebContents* web_contents) {
-  DCHECK(web_contents);
-  // This call does nothing if the controller already exists.
-  MediaRouterDialogControllerImpl::CreateForWebContents(web_contents);
-  return MediaRouterDialogControllerImpl::FromWebContents(web_contents);
+MediaRouterDialogControllerImplBase*
+MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
+    content::WebContents* web_contents) {
+  return MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
+      web_contents);
 }
+#endif  // !defined(TOOLKIT_VIEWS)
 
-class MediaRouterDialogControllerImpl::DialogWebContentsObserver
+class MediaRouterDialogControllerWebUIImpl::DialogWebContentsObserver
     : public content::WebContentsObserver {
  public:
   DialogWebContentsObserver(
       WebContents* web_contents,
-      MediaRouterDialogControllerImpl* dialog_controller)
+      MediaRouterDialogControllerWebUIImpl* dialog_controller)
       : content::WebContentsObserver(web_contents),
-        dialog_controller_(dialog_controller) {
-  }
+        dialog_controller_(dialog_controller) {}
 
  private:
   void WebContentsDestroyed() override {
@@ -152,8 +135,8 @@ class MediaRouterDialogControllerImpl::DialogWebContentsObserver
     dialog_controller_->Reset();
   }
 
-  void NavigationEntryCommitted(const LoadCommittedDetails& load_details)
-      override {
+  void NavigationEntryCommitted(
+      const LoadCommittedDetails& load_details) override {
     dialog_controller_->OnDialogNavigated(load_details);
   }
 
@@ -162,78 +145,32 @@ class MediaRouterDialogControllerImpl::DialogWebContentsObserver
     dialog_controller_->CloseMediaRouterDialog();
   }
 
-  MediaRouterDialogControllerImpl* const dialog_controller_;
+  MediaRouterDialogControllerWebUIImpl* const dialog_controller_;
 };
 
-MediaRouterDialogControllerImpl::MediaRouterDialogControllerImpl(
-    WebContents* web_contents)
-    : MediaRouterDialogController(web_contents),
-      media_router_dialog_pending_(false),
-      action_controller_(GetActionController(web_contents)),
-      weak_ptr_factory_(this) {
-  DCHECK(action_controller_);
+// static
+MediaRouterDialogControllerWebUIImpl*
+MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  // This call does nothing if the controller already exists.
+  MediaRouterDialogControllerWebUIImpl::CreateForWebContents(web_contents);
+  return MediaRouterDialogControllerWebUIImpl::FromWebContents(web_contents);
 }
 
-MediaRouterDialogControllerImpl::~MediaRouterDialogControllerImpl() {
+MediaRouterDialogControllerWebUIImpl::~MediaRouterDialogControllerWebUIImpl() {
   Reset();
 }
 
-WebContents* MediaRouterDialogControllerImpl::GetMediaRouterDialog() const {
+WebContents* MediaRouterDialogControllerWebUIImpl::GetMediaRouterDialog()
+    const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return dialog_observer_.get() ? dialog_observer_->web_contents() : nullptr;
 }
 
-void MediaRouterDialogControllerImpl::SetMediaRouterAction(
-    const base::WeakPtr<MediaRouterAction>& action) {
-  action_ = action;
-}
+void MediaRouterDialogControllerWebUIImpl::CreateMediaRouterDialog() {
+  MediaRouterDialogControllerImplBase::CreateMediaRouterDialog();
 
-bool MediaRouterDialogControllerImpl::IsShowingMediaRouterDialog() const {
-  return GetMediaRouterDialog() != nullptr;
-}
-
-void MediaRouterDialogControllerImpl::UpdateMaxDialogSize() {
-  WebContents* media_router_dialog = GetMediaRouterDialog();
-  if (!media_router_dialog)
-    return;
-
-  content::WebUI* web_ui = media_router_dialog->GetWebUI();
-  if (web_ui) {
-    MediaRouterUI* media_router_ui =
-        static_cast<MediaRouterUI*>(web_ui->GetController());
-    if (media_router_ui) {
-      Browser* browser = chrome::FindBrowserWithWebContents(initiator());
-      web_modal::WebContentsModalDialogHost* host = nullptr;
-      if (browser)
-        host = browser->window()->GetWebContentsModalDialogHost();
-
-      gfx::Size maxSize = host ?
-          host->GetMaximumDialogSize() :
-          initiator()->GetContainerBounds().size();
-
-      // The max height of the dialog should be 90% of the browser window
-      // height. The width stays fixed.
-      maxSize.Enlarge(0, -0.1 * maxSize.height());
-      media_router_ui->UpdateMaxDialogHeight(maxSize.height());
-    }
-  }
-}
-
-void MediaRouterDialogControllerImpl::CloseMediaRouterDialog() {
-  WebContents* media_router_dialog = GetMediaRouterDialog();
-  if (!media_router_dialog)
-    return;
-
-  content::WebUI* web_ui = media_router_dialog->GetWebUI();
-  if (web_ui) {
-    MediaRouterUI* media_router_ui =
-        static_cast<MediaRouterUI*>(web_ui->GetController());
-    if (media_router_ui)
-      media_router_ui->Close();
-  }
-}
-
-void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   DCHECK(!dialog_observer_.get());
 
   base::Time dialog_creation_time = base::Time::Now();
@@ -257,7 +194,7 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   ConstrainedWebDialogDelegate* constrained_delegate =
       ShowConstrainedWebDialogWithAutoResize(
           profile, web_dialog_delegate, initiator(),
-              gfx::Size(kWidth, kMinHeight), gfx::Size(kWidth, kMaxHeight));
+          gfx::Size(kWidth, kMinHeight), gfx::Size(kWidth, kMaxHeight));
 
   WebContents* media_router_dialog = constrained_delegate->GetWebContents();
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator(),
@@ -283,25 +220,64 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
 
   dialog_observer_ =
       std::make_unique<DialogWebContentsObserver>(media_router_dialog, this);
-
-  // The |action_controller_| must be notified after |action_| to avoid a UI
-  // bug in which the drop shadow is drawn in an incorrect position.
-  if (action_)
-    action_->OnDialogShown();
-  action_controller_->OnDialogShown();
 }
 
-void MediaRouterDialogControllerImpl::Reset() {
-  if (IsShowingMediaRouterDialog()) {
-    if (action_)
-      action_->OnDialogHidden();
-    action_controller_->OnDialogHidden();
+void MediaRouterDialogControllerWebUIImpl::CloseMediaRouterDialog() {
+  WebContents* media_router_dialog = GetMediaRouterDialog();
+  if (!media_router_dialog)
+    return;
+
+  content::WebUI* web_ui = media_router_dialog->GetWebUI();
+  if (web_ui) {
+    MediaRouterUI* media_router_ui =
+        static_cast<MediaRouterUI*>(web_ui->GetController());
+    if (media_router_ui)
+      media_router_ui->Close();
   }
-  MediaRouterDialogController::Reset();
+}
+
+bool MediaRouterDialogControllerWebUIImpl::IsShowingMediaRouterDialog() const {
+  return GetMediaRouterDialog() != nullptr;
+}
+
+void MediaRouterDialogControllerWebUIImpl::Reset() {
+  MediaRouterDialogControllerImplBase::Reset();
   dialog_observer_.reset();
 }
 
-void MediaRouterDialogControllerImpl::OnDialogNavigated(
+void MediaRouterDialogControllerWebUIImpl::UpdateMaxDialogSize() {
+  WebContents* media_router_dialog = GetMediaRouterDialog();
+  if (!media_router_dialog)
+    return;
+
+  content::WebUI* web_ui = media_router_dialog->GetWebUI();
+  if (web_ui) {
+    MediaRouterUI* media_router_ui =
+        static_cast<MediaRouterUI*>(web_ui->GetController());
+    if (media_router_ui) {
+      Browser* browser = chrome::FindBrowserWithWebContents(initiator());
+      web_modal::WebContentsModalDialogHost* host = nullptr;
+      if (browser)
+        host = browser->window()->GetWebContentsModalDialogHost();
+
+      gfx::Size maxSize = host ? host->GetMaximumDialogSize()
+                               : initiator()->GetContainerBounds().size();
+
+      // The max height of the dialog should be 90% of the browser window
+      // height. The width stays fixed.
+      maxSize.Enlarge(0, -0.1 * maxSize.height());
+      media_router_ui->UpdateMaxDialogHeight(maxSize.height());
+    }
+  }
+}
+
+MediaRouterDialogControllerWebUIImpl::MediaRouterDialogControllerWebUIImpl(
+    WebContents* web_contents)
+    : MediaRouterDialogControllerImplBase(web_contents),
+      media_router_dialog_pending_(false),
+      weak_ptr_factory_(this) {}
+
+void MediaRouterDialogControllerWebUIImpl::OnDialogNavigated(
     const content::LoadCommittedDetails& details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   WebContents* media_router_dialog = GetMediaRouterDialog();
@@ -313,7 +289,7 @@ void MediaRouterDialogControllerImpl::OnDialogNavigated(
   DCHECK(media_router_dialog_pending_);
   DCHECK(ui::PageTransitionCoreTypeIs(transition_type,
                                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL) &&
-      nav_type == content::NAVIGATION_TYPE_NEW_PAGE)
+         nav_type == content::NAVIGATION_TYPE_NEW_PAGE)
       << "transition_type: " << transition_type << ", "
       << "nav_type: " << nav_type;
 
@@ -322,7 +298,7 @@ void MediaRouterDialogControllerImpl::OnDialogNavigated(
   PopulateDialog(media_router_dialog);
 }
 
-void MediaRouterDialogControllerImpl::PopulateDialog(
+void MediaRouterDialogControllerWebUIImpl::PopulateDialog(
     content::WebContents* media_router_dialog) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(media_router_dialog);
@@ -335,15 +311,7 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
       media_router_dialog->GetWebUI()->GetController());
   DCHECK(media_router_ui);
 
-  auto start_presentation_context = std::move(start_presentation_context_);
-  PresentationServiceDelegateImpl* delegate =
-      PresentationServiceDelegateImpl::FromWebContents(initiator());
-  if (!start_presentation_context) {
-    media_router_ui->InitWithDefaultMediaSource(initiator(), delegate);
-  } else {
-    media_router_ui->InitWithStartPresentationContext(
-        initiator(), delegate, std::move(start_presentation_context));
-  }
+  InitializeMediaRouterUI(media_router_ui);
 }
 
 }  // namespace media_router

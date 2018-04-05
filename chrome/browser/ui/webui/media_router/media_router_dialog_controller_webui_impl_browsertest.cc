@@ -6,7 +6,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_webui_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -19,13 +19,14 @@ using content::TestNavigationObserver;
 
 namespace media_router {
 
-class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
+class MediaRouterDialogControllerWebUIBrowserTest
+    : public InProcessBrowserTest {
  public:
-  MediaRouterDialogControllerBrowserTest()
+  MediaRouterDialogControllerWebUIBrowserTest()
       : dialog_controller_(nullptr),
         initiator_(nullptr),
         media_router_dialog_(nullptr) {}
-  ~MediaRouterDialogControllerBrowserTest() override {}
+  ~MediaRouterDialogControllerWebUIBrowserTest() override {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -35,9 +36,9 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
 
     initiator_ = browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(initiator_);
-    MediaRouterDialogControllerImpl::CreateForWebContents(initiator_);
+    MediaRouterDialogControllerWebUIImpl::CreateForWebContents(initiator_);
     dialog_controller_ =
-        MediaRouterDialogControllerImpl::FromWebContents(initiator_);
+        MediaRouterDialogControllerWebUIImpl::FromWebContents(initiator_);
     ASSERT_TRUE(dialog_controller_);
 
     // Get the media router dialog for the initiator.
@@ -46,15 +47,16 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(media_router_dialog_);
   }
 
-  MediaRouterDialogControllerImpl* dialog_controller_;
+  MediaRouterDialogControllerWebUIImpl* dialog_controller_;
   WebContents* initiator_;
   WebContents* media_router_dialog_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerWebUIBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest, ShowDialog) {
+IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerWebUIBrowserTest,
+                       ShowDialog) {
   // Waits for the dialog to initialize.
   TestNavigationObserver nav_observer(media_router_dialog_);
   nav_observer.Wait();
@@ -72,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest, ShowDialog) {
   ASSERT_TRUE(media_router_ui);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest, Navigate) {
+IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerWebUIBrowserTest, Navigate) {
   {
     // Wait for the dialog to initialize.
     TestNavigationObserver nav_observer(media_router_dialog_);
@@ -115,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest, Navigate) {
   EXPECT_FALSE(dialog_controller_->GetMediaRouterDialog());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest,
-    RenderProcessHost) {
+IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerWebUIBrowserTest,
+                       RenderProcessHost) {
   // New media router dialog is a constrained window, so the number of
   // tabs is still 1.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -124,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest,
 
   // Crash initiator_'s renderer process.
   content::WebContentsDestroyedWatcher dialog_watcher(media_router_dialog_);
-  content::RenderProcessHostWatcher rph_watcher(initiator_,
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  content::RenderProcessHostWatcher rph_watcher(
+      initiator_, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
   ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
 
