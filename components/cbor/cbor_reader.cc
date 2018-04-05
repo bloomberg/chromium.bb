@@ -225,12 +225,16 @@ base::Optional<CBORValue> CBORReader::DecodeValueToUnsigned(uint64_t value) {
 
 base::Optional<CBORValue> CBORReader::DecodeToSimpleValue(
     const DataItemHeader& header) {
+  // ReadVariadicLengthInteger provides this bound.
+  CHECK_LE(header.additional_info, 27);
   // Floating point numbers are not supported.
-  if (header.additional_info > 24 && header.additional_info < 28) {
+  if (header.additional_info > 24) {
     error_code_ = DecoderError::UNSUPPORTED_FLOATING_POINT_VALUE;
     return base::nullopt;
   }
 
+  // Since |header.additional_info| <= 24, ReadVariadicLengthInteger also
+  // provides this bound for |header.value|.
   CHECK_LE(header.value, 255u);
   CBORValue::SimpleValue possibly_unsupported_simple_value =
       static_cast<CBORValue::SimpleValue>(static_cast<int>(header.value));
