@@ -266,10 +266,6 @@ static INLINE void cfl_luma_subsampling_422_hbd_ssse3(const uint16_t *input,
   } while (pred_buf_m128i < end);
 }
 
-// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 422 SIMD
-// will be implemented
-CFL_SUBSAMPLE_FUNCTIONS(ssse3, 422, hbd)
-
 CFL_GET_SUBSAMPLE_FUNCTION(ssse3)
 
 static INLINE __m128i predict_unclipped(const __m128i *input, __m128i alpha_q12,

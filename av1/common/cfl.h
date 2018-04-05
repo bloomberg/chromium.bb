@@ -149,13 +149,14 @@ void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
     cfl_subsample_##bd##_null,             /* 64x16 (invalid CFL size) */ \
   };
 
-// The RTCD script does not support passing in the an array, so we wrap it in
-// this function.
+// The RTCD script does not support passing in an array, so we wrap it in this
+// function.
 #define CFL_GET_SUBSAMPLE_FUNCTION(arch)  \
   CFL_SUBSAMPLE_FUNCTIONS(arch, 420, lbd) \
   CFL_SUBSAMPLE_FUNCTIONS(arch, 422, lbd) \
   CFL_SUBSAMPLE_FUNCTIONS(arch, 444, lbd) \
-  CFL_SUBSAMPLE_FUNCTIONS(arch, 420, hbd)
+  CFL_SUBSAMPLE_FUNCTIONS(arch, 420, hbd) \
+  CFL_SUBSAMPLE_FUNCTIONS(arch, 422, hbd)
 
 // Null function used for invalid tx_sizes
 static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
