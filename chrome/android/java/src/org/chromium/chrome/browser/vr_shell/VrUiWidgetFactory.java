@@ -22,7 +22,7 @@ public class VrUiWidgetFactory extends UiWidgetFactory {
 
     @Override
     public PopupWindow createPopupWindow(Context context) {
-        return null;
+        return new VrPopupWindow(context, mVrShell);
     }
 
     @Override

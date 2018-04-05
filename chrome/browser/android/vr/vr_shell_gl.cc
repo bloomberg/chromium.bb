@@ -511,7 +511,9 @@ void VrShellGl::EnableAlertDialog(ContentInputForwarder* input_forwarder,
   showing_vr_dialog_ = true;
   vr_dialog_.reset(new VrDialog(width, height));
   vr_dialog_->SetEventForwarder(input_forwarder);
-  ui_->SetAlertDialogEnabled(true, vr_dialog_.get(), width, height);
+  ui_->SetAlertDialogEnabled(true, vr_dialog_.get(),
+                             width / content_tex_buffer_size_.width(),
+                             height / content_tex_buffer_size_.width());
   ScheduleOrCancelWebVrFrameTimeout();
 }
 
@@ -525,7 +527,8 @@ void VrShellGl::DisableAlertDialog() {
 void VrShellGl::SetAlertDialogSize(float width, float height) {
   if (vr_dialog_)
     vr_dialog_->SetSize(width, height);
-  ui_->SetAlertDialogSize(width, height);
+  ui_->SetAlertDialogSize(width / content_tex_buffer_size_.width(),
+                          height / content_tex_buffer_size_.width());
 }
 
 void VrShellGl::SetDialogLocation(float x, float y) {

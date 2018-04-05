@@ -753,7 +753,7 @@ public class VrShellImpl
     public void setDialogSize(int width, int height) {
         nativeSetDialogBufferSize(mNativeVrShell, width, height);
         float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
-        nativeSetAlertDialogSize(mNativeVrShell, width * scale, height * scale);
+        nativeSetAlertDialogSize(mNativeVrShell, width, height);
     }
 
     /**
@@ -762,8 +762,11 @@ public class VrShellImpl
     @Override
     public void setDialogLocation(int x, int y) {
         if (getWebVrModeEnabled()) return;
+        DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
+        float w = mLastContentWidth * primaryDisplay.getDipScale();
+        float h = mLastContentHeight * primaryDisplay.getDipScale();
         float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
-        nativeSetDialogLocation(mNativeVrShell, x * scale, y * scale);
+        nativeSetDialogLocation(mNativeVrShell, x * scale / w, y * scale / h);
     }
 
     @Override
@@ -776,10 +779,9 @@ public class VrShellImpl
      */
     @Override
     public void initVrDialog(int width, int height) {
-        float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
-        nativeSetAlertDialog(mNativeVrShell, width * scale, height * scale);
+        nativeSetAlertDialog(mNativeVrShell, width, height);
         mAndroidDialogGestureTarget =
-                new AndroidUiGestureTarget(mVrUiViewContainer.getInputTarget(), 1.0f / scale,
+                new AndroidUiGestureTarget(mVrUiViewContainer.getInputTarget(), 1.0f,
                         getNativePageScrollRatio(), getTouchSlop());
         nativeSetDialogGestureTarget(mNativeVrShell, mAndroidDialogGestureTarget);
     }
