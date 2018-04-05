@@ -35089,6 +35089,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Default"/>
 </enum>
 
+<enum name="PeerConnectionSdpFormatReceived">
+  <int value="0" label="No tracks"/>
+  <int value="1" label="Simple"/>
+  <int value="2" label="Complex (Plan B)"/>
+  <int value="3" label="Complex (Unified Plan)"/>
+</enum>
+
 <enum name="PeerConnectionSdpSemanticNegotiated">
   <int value="0" label="None"/>
   <int value="1" label="Plan B"/>
