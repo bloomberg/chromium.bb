@@ -1919,7 +1919,8 @@ static void get_mean(const int16_t *diff, int stride, int w, int h,
 }
 
 static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                    const RD_STATS *const rd_stats,
+                                    const RD_STATS *const rd_stats, int blk_row,
+                                    int blk_col, BLOCK_SIZE plane_bsize,
                                     TX_SIZE tx_size, TX_TYPE tx_type) {
   const BLOCK_SIZE fake_bsize = txsize_to_bsize[tx_size];
   const MACROBLOCKD *const xd = &x->e_mbd;
@@ -1936,9 +1937,14 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const double rate_norm = (double)rd_stats->rate / num_samples;
   const double dist_norm = (double)rd_stats->dist / num_samples;
 
+  const int src_stride = p->src.stride;
+  const uint8_t *const src =
+      &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+  const int dst_stride = pd->dst.stride;
+  const uint8_t *const dst =
+      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   unsigned int sse;
-  cpi->fn_ptr[fake_bsize].vf(p->src.buf, p->src.stride, pd->dst.buf,
-                             pd->dst.stride, &sse);
+  cpi->fn_ptr[fake_bsize].vf(src, src_stride, dst, dst_stride, &sse);
   const double sse_norm = (double)sse / num_samples;
 
   const TX_TYPE_1D tx_type_1d_row = htx_tab[tx_type];
@@ -1955,16 +1961,18 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const double model_dist_norm = (double)model_dist / num_samples;
   fprintf(stderr, " %g %g", model_rate_norm, model_dist_norm);
 
-  // TODO(urvang): Check if we need to add an offset to 'src_diff'.
+  const int diff_stride = block_size_wide[plane_bsize];
+  const int16_t *const src_diff =
+      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   double mean;
-  get_mean(p->src_diff, txw, txw, txh, &mean);
+  get_mean(src_diff, txw, txw, txh, &mean);
   double hor_corr, vert_corr;
-  get_horver_correlation(p->src_diff, txw, txw, txh, &hor_corr, &vert_corr);
+  get_horver_correlation(src_diff, txw, txw, txh, &hor_corr, &vert_corr);
   fprintf(stderr, " %g %g %g", mean, hor_corr, vert_corr);
 
   double hdist[4] = { 0 }, vdist[4] = { 0 };
-  get_energy_distribution_fine(cpi, fake_bsize, p->src.buf, p->src.stride,
-                               pd->dst.buf, pd->dst.stride, 1, hdist, vdist);
+  get_energy_distribution_fine(cpi, fake_bsize, src, src_stride, dst,
+                               dst_stride, 1, hdist, vdist);
   fprintf(stderr, " %g %g %g %g %g %g %g %g", hdist[0], hdist[1], hdist[2],
           hdist[3], vdist[0], vdist[1], vdist[2], vdist[3]);
 
@@ -2173,7 +2181,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
 #if COLLECT_RD_STATS == 1
     if (plane == 0) {
-      PrintTransformUnitStats(cpi, x, &this_rd_stats, tx_size, tx_type);
+      PrintTransformUnitStats(cpi, x, &this_rd_stats, blk_row, blk_col,
+                              plane_bsize, tx_size, tx_type);
     }
 #endif  // COLLECT_RD_STATS == 1
 
