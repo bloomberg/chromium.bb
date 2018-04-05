@@ -130,7 +130,13 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Create(
       AutoThread::CreateWithType("ChromotingInputThread", ui_task_runner,
                                  base::MessageLoop::TYPE_IO),
       network_task_runner,
+#if defined(OS_MACOSX)
+      // Mac requires a UI thread for the capturer.
+      AutoThread::CreateWithType("ChromotingCaptureThread", ui_task_runner,
+                                 base::MessageLoop::TYPE_UI),
+#else
       AutoThread::Create("ChromotingCaptureThread", ui_task_runner),
+#endif
       AutoThread::Create("ChromotingEncodeThread", ui_task_runner),
       base::MakeRefCounted<URLRequestContextGetter>(network_task_runner,
                                                     file_task_runner),
