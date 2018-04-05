@@ -96,10 +96,11 @@ otherwise install OpenSSL and ensure that it's on your $PATH.""")
 
 def check_environ(product):
     if product not in ("firefox", "servo"):
-        expected_hosts = {".".join(x)
-                          for x in serve.get_subdomains("web-platform.test").values()}
-        expected_hosts |= {".".join(x)
-                           for x in serve.get_not_subdomains("web-platform.test").values()}
+        config = serve.load_config(os.path.join(wpt_root, "config.default.json"),
+                                   os.path.join(wpt_root, "config.json"))
+        config = serve.normalise_config(config, {})
+        expected_hosts = (set(config["domains"].itervalues()) ^
+                          set(config["not_domains"].itervalues()))
         missing_hosts = set(expected_hosts)
         if platform.uname()[0] != "Windows":
             hosts_path = "/etc/hosts"
@@ -116,13 +117,13 @@ def check_environ(product):
                 if platform.uname()[0] != "Windows":
                     message = """Missing hosts file configuration. Run
 
-python wpt make-hosts-file >> %s
-
-from a shell with Administrator privileges.""" % hosts_path
+./wpt make-hosts-file | sudo tee -a %s""" % hosts_path
                 else:
                     message = """Missing hosts file configuration. Run
 
-./wpt make-hosts-file | sudo tee -a %s""" % hosts_path
+python wpt make-hosts-file >> %s
+
+from a shell with Administrator privileges.""" % hosts_path
                 raise WptrunError(message)
 
 
@@ -150,8 +151,10 @@ class BrowserSetup(object):
         if self.prompt_install(self.name):
             return self.browser.install(venv.path)
 
-    def setup(self, kwargs):
+    def install_requirements(self):
         self.venv.install_requirements(os.path.join(wpt_root, "tools", "wptrunner", self.browser.requirements))
+
+    def setup(self, kwargs):
         self.setup_kwargs(kwargs)
 
 
@@ -161,7 +164,7 @@ class Firefox(BrowserSetup):
 
     def setup_kwargs(self, kwargs):
         if kwargs["binary"] is None:
-            binary = self.browser.find_binary()
+            binary = self.browser.find_binary(self.venv.path)
             if binary is None:
                 raise WptrunError("""Firefox binary not found on $PATH.
 
@@ -350,7 +353,8 @@ class Servo(BrowserSetup):
     browser_cls = browser.Servo
 
     def install(self, venv):
-        raise NotImplementedError
+        if self.prompt_install(self.name):
+            return self.browser.install(venv.path)
 
     def setup_kwargs(self, kwargs):
         if kwargs["binary"] is None:
@@ -359,6 +363,17 @@ class Servo(BrowserSetup):
             if binary is None:
                 raise WptrunError("Unable to find servo binary on the PATH")
             kwargs["binary"] = binary
+
+
+class WebKit(BrowserSetup):
+    name = "webkit"
+    browser_cls = browser.WebKit
+
+    def install(self, venv):
+        raise NotImplementedError
+
+    def setup_kwargs(self, kwargs):
+        pass
 
 
 product_setup = {
@@ -371,6 +386,7 @@ product_setup = {
     "servo": Servo,
     "sauce": Sauce,
     "opera": Opera,
+    "webkit": WebKit,
 }
 
 
@@ -395,6 +411,7 @@ def setup_wptrunner(venv, prompt=True, install=False, **kwargs):
         raise WptrunError("Unsupported product %s" % kwargs["product"])
 
     setup_cls = product_setup[kwargs["product"]](venv, prompt, sub_product)
+    setup_cls.install_requirements()
 
     if install:
         logger.info("Installing browser")
