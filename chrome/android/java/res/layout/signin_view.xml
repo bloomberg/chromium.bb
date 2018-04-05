@@ -28,7 +28,8 @@
                 android:layout_alignParentTop="true"
                 android:adjustViewBounds="true"
                 android:contentDescription="@null"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                chrome:srcCompat="@drawable/signin_header_animation"/>
             <TextView
                 android:id="@+id/signin_title"
                 android:layout_width="wrap_content"

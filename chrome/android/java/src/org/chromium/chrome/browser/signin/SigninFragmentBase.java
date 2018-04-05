@@ -269,6 +269,8 @@ public abstract class SigninFragmentBase
         AccountManagerFacade.get().addObserver(mAccountsChangedObserver);
         mProfileDataCache.addObserver(mProfileDataCacheObserver);
         triggerUpdateAccounts();
+
+        mView.startAnimations();
     }
 
     @Override
@@ -277,6 +279,8 @@ public abstract class SigninFragmentBase
         mResumed = false;
         mProfileDataCache.removeObserver(mProfileDataCacheObserver);
         AccountManagerFacade.get().removeObserver(mAccountsChangedObserver);
+
+        mView.stopAnimations();
     }
 
     private void selectAccount(String accountName, boolean isDefaultAccount) {
