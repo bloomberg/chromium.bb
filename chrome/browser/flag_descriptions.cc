@@ -2941,6 +2941,10 @@ const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
 
+const char kEnableHomeLauncherName[] = "Enable home launcher";
+const char kEnableHomeLauncherDescription[] =
+    "Enable home launcher in tablet mode.";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
