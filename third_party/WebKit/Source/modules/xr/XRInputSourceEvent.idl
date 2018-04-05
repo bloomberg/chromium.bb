@@ -4,7 +4,7 @@
 
 [
     SecureContext,
-    RuntimeEnabled=WebXR,
+    OriginTrialEnabled=WebXR,
     Constructor(DOMString type, XRInputSourceEventInit eventInitDict)
 ] interface XRInputSourceEvent : Event {
   readonly attribute XRPresentationFrame frame;

@@ -40,6 +40,7 @@ CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature
     kFramebustingNeedsSameOriginOrUserGesture;
 CONTENT_EXPORT extern const base::Feature kGamepadExtensions;
+CONTENT_EXPORT extern const base::Feature kWebXrGamepadSupport;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kHeapCompaction;
 CONTENT_EXPORT extern const base::Feature kImageCaptureAPI;

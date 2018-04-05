@@ -7,7 +7,7 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) XRWebGLRenderingContex
 // https://immersive-web.github.io/webxr/spec/latest/#xrwebgllayer-interface
 [
     SecureContext,
-    RuntimeEnabled=WebXR,
+    OriginTrialEnabled=WebXR,
     Constructor(XRSession session, XRWebGLRenderingContext context, optional XRWebGLLayerInit layerInit),
     RaisesException=Constructor
 ] interface XRWebGLLayer : XRLayer {

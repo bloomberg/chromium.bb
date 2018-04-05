@@ -26193,6 +26193,7 @@ from previous Chrome versions.
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
+  <int value="-1237621246" label="WebXRGamepadSupport:disabled"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1234740672" label="UsePdfCompositorServiceForPrint:disabled"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
@@ -26998,6 +26999,7 @@ from previous Chrome versions.
   <int value="723619383" label="TopSitesFromSiteEngagement:enabled"/>
   <int value="724208771" label="TabsInCBD:enabled"/>
   <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
+  <int value="726764779" label="WebXRGamepadSupport:enabled"/>
   <int value="727571565" label="PasswordForceSaving"/>
   <int value="728656094" label="PasswordForceSaving:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>

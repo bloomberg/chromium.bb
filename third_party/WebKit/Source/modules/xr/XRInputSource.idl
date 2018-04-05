@@ -15,7 +15,7 @@ enum XRPointerOrigin {
 
 [
     SecureContext,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRInputSource {
   readonly attribute XRHandedness handedness;
   readonly attribute XRPointerOrigin pointerOrigin;

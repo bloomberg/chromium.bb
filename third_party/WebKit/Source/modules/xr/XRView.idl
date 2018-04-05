@@ -5,7 +5,7 @@
 // https://immersive-web.github.io/webxr/spec/latest/#xrview-interface
 [
     SecureContext,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRView {
   readonly attribute VREye? eye;
   readonly attribute Float32Array projectionMatrix;
