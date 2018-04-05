@@ -197,7 +197,7 @@ if (is_android) {
     # When true, uses the third party libraries from //third_party/android_deps
     # over the ones in other places. (instead of the support library from
     # android_tools for example)
-    enable_android_deps_repository = false
+    enable_android_deps_repository = true
   }
 
   # We need a second declare_args block to make sure we are using the overridden
