@@ -656,13 +656,14 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
 }
 
 TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
-  device::test::ScopedVirtualFidoDevice virtual_device_;
-  TestServiceManagerContext smc_;
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  TestServiceManagerContext service_manager_context;
+
   // 255 is the maximum size of a U2F credential ID. We also test one greater
   // (256) to ensure that nothing untoward happens.
   const std::vector<size_t> kSizes = {255, 256};
 
-  for (size_t size : kSizes) {
+  for (const size_t size : kSizes) {
     SCOPED_TRACE(size);
 
     SimulateNavigation(GURL(kTestOrigin1));
@@ -675,7 +676,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
 
     const bool should_be_valid = size < 256;
     if (should_be_valid) {
-      ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
           credential->id, kTestRelyingPartyId));
     }
 

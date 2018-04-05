@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // typically be a domain, e.g. "example.com").
     //
     // Returns true on success. Will fail if there already exists a credential
-    // with the given ID.
+    // with the given ID or if private-key generation fails.
     bool InjectRegistration(const std::vector<uint8_t>& credential_id,
                             const std::string& relying_party_id);
 
