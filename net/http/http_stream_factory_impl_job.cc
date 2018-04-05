@@ -1057,13 +1057,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
             base::Bind(&NetLogHttpStreamProtoCallback, negotiated_protocol_));
         if (negotiated_protocol_ == kProtoHTTP2) {
           if (is_websocket_) {
-            // If request is WebSocket with no proxy, then HTTP/2 must not have
-            // been advertised in the TLS handshake.  The TLS layer must not
-            // have accepted the server choosing HTTP/2.
-            // TODO(bnc): Change to DCHECK once https://crbug.com/819101 is
-            // fixed.
-            CHECK(!proxy_info_.is_direct());
-
             // WebSocket is not supported over a fresh HTTP/2 connection.
             return ERR_NOT_IMPLEMENTED;
           }
