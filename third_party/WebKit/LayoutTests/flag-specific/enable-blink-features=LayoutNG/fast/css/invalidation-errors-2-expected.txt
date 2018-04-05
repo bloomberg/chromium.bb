@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x576
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutInline {A} at (0,0) size 60x19 [color=#0000EE]
-          LayoutText {#text} at (0,0) size 60x19
-            text run at (0,0) width 60: "bug 7118"
-        LayoutText {#text} at (60,0) size 354x19
-          text run at (60,0) width 354: ": Wrong property values do not get invalidated correctly."
+        LayoutInline {A} at (0,0) size 59x19 [color=#0000EE]
+          LayoutText {#text} at (0,0) size 59x19
+            text run at (0,0) width 59: "bug 7118"
+        LayoutText {#text} at (59,0) size 354x19
+          text run at (59,0) width 354: ": Wrong property values do not get invalidated correctly."
       LayoutNGBlockFlow (anonymous) at (0,36) size 784x0
         LayoutInline {DIV} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0

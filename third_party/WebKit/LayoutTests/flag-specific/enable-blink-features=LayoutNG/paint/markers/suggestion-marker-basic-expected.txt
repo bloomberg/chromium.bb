@@ -5,8 +5,8 @@ layer at (0,0) size 800x460
     LayoutNGBlockFlow {BODY} at (8,8) size 784x0
       LayoutNGBlockFlow (floating) {DIV} at (586,0) size 198x192
         LayoutNGBlockFlow {P} at (0,16) size 198x20
-          LayoutText {#text} at (167,0) size 31x19
-            text run at (167,0) width 31: "RTL"
+          LayoutText {#text} at (168,0) size 30x19
+            text run at (168,0) width 30: "RTL"
         LayoutBlockFlow {DIV} at (0,52) size 198x20
           LayoutText {#text} at (127,0) size 71x19
             text run at (127,0) width 71: "markRtlAll"
@@ -34,8 +34,8 @@ layer at (0,0) size 800x460
               text run at (113,0) width 85: "AcrossNodes"
       LayoutNGBlockFlow (floating) {DIV} at (0,0) size 331x452
         LayoutNGBlockFlow {P} at (0,16) size 331x20
-          LayoutText {#text} at (0,0) size 29x19
-            text run at (0,0) width 29: "LTR"
+          LayoutText {#text} at (0,0) size 30x19
+            text run at (0,0) width 30: "LTR"
         LayoutBlockFlow {DIV} at (0,52) size 331x20
           LayoutText {#text} at (0,0) size 52x19
             text run at (0,0) width 52: "markAll"
@@ -83,8 +83,8 @@ layer at (0,0) size 800x460
           LayoutText {#text} at (0,0) size 262x19
             text run at (0,0) width 262: "overridingSpellingMarkerIntersectingEnd"
         LayoutBlockFlow {DIV} at (0,332) size 331x20
-          LayoutText {#text} at (0,0) size 252x19
-            text run at (0,0) width 252: "notOverridingSpellingMarkersTouching"
+          LayoutText {#text} at (0,0) size 253x19
+            text run at (0,0) width 253: "notOverridingSpellingMarkersTouching"
         LayoutBlockFlow {DIV} at (0,352) size 331x20
           LayoutText {#text} at (0,0) size 274x19
             text run at (0,0) width 274: "overridingCompositionMarkerAtBeginning"
@@ -98,5 +98,5 @@ layer at (0,0) size 800x460
           LayoutText {#text} at (0,0) size 291x19
             text run at (0,0) width 291: "overridingCompositionMarkerIntersectingEnd"
         LayoutBlockFlow {DIV} at (0,432) size 331x20
-          LayoutText {#text} at (0,0) size 281x19
-            text run at (0,0) width 281: "notOverridingCompositionMarkersTouching"
+          LayoutText {#text} at (0,0) size 282x19
+            text run at (0,0) width 282: "notOverridingCompositionMarkersTouching"

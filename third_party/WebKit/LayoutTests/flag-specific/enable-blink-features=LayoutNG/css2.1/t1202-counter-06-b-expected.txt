@@ -67,35 +67,35 @@ layer at (0,0) size 800x100
               text run at (180,0) width 16: "10"
         LayoutText {#text} at (196,0) size 4x19
           text run at (196,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 15x19
+          LayoutInline {<pseudo:before>} at (0,0) size 15x19
+            LayoutCounter (anonymous) at (200,0) size 15x19
+              text run at (200,0) width 15: "11"
+        LayoutText {#text} at (215,0) size 4x19
+          text run at (215,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 16x19
           LayoutInline {<pseudo:before>} at (0,0) size 16x19
-            LayoutCounter (anonymous) at (200,0) size 16x19
-              text run at (200,0) width 16: "11"
-        LayoutText {#text} at (216,0) size 4x19
-          text run at (216,0) width 4: " "
+            LayoutCounter (anonymous) at (219,0) size 16x19
+              text run at (219,0) width 16: "12"
+        LayoutText {#text} at (235,0) size 4x19
+          text run at (235,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 16x19
           LayoutInline {<pseudo:before>} at (0,0) size 16x19
-            LayoutCounter (anonymous) at (220,0) size 16x19
-              text run at (220,0) width 16: "12"
-        LayoutText {#text} at (236,0) size 4x19
-          text run at (236,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 16x19
-          LayoutInline {<pseudo:before>} at (0,0) size 16x19
-            LayoutCounter (anonymous) at (240,0) size 16x19
-              text run at (240,0) width 16: "99"
-        LayoutText {#text} at (256,0) size 4x19
-          text run at (256,0) width 4: " "
+            LayoutCounter (anonymous) at (239,0) size 16x19
+              text run at (239,0) width 16: "99"
+        LayoutText {#text} at (255,0) size 4x19
+          text run at (255,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 24x19
           LayoutInline {<pseudo:before>} at (0,0) size 24x19
-            LayoutCounter (anonymous) at (260,0) size 24x19
-              text run at (260,0) width 24: "100"
-        LayoutText {#text} at (284,0) size 4x19
-          text run at (284,0) width 4: " "
+            LayoutCounter (anonymous) at (259,0) size 24x19
+              text run at (259,0) width 24: "100"
+        LayoutText {#text} at (283,0) size 4x19
+          text run at (283,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 24x19
           LayoutInline {<pseudo:before>} at (0,0) size 24x19
-            LayoutCounter (anonymous) at (288,0) size 24x19
-              text run at (288,0) width 24: "101"
+            LayoutCounter (anonymous) at (287,0) size 24x19
+              text run at (287,0) width 24: "101"
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 312x19
-          text run at (0,0) width 312: "01 02 03 04 05 06 07 08 09 10 11 12 99 100 101"
+        LayoutText {#text} at (0,0) size 311x19
+          text run at (0,0) width 311: "01 02 03 04 05 06 07 08 09 10 11 12 99 100 101"

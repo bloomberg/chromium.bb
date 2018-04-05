@@ -18,39 +18,39 @@ layer at (0,0) size 800x749 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 203x19
           text run at (0,0) width 203: "This element has a class of zero."
       LayoutNGBlockFlow {P} at (0,143) size 784x80 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 479x19
-          text run at (0,0) width 479: "This element is unstyled save for a background color of gray.. It contains an "
-        LayoutInline {SPAN} at (0,0) size 784x39 [bgcolor=#00FFFF]
-          LayoutText {#text} at (504,0) size 143x19
-            text run at (504,0) width 143: "inline element of class "
+        LayoutText {#text} at (0,0) size 480x19
+          text run at (0,0) width 480: "This element is unstyled save for a background color of gray.. It contains an "
+        LayoutInline {SPAN} at (0,0) size 751x39 [bgcolor=#00FFFF]
+          LayoutText {#text} at (505,0) size 143x19
+            text run at (505,0) width 143: "inline element of class "
           LayoutInline {TT} at (0,0) size 24x16
-            LayoutText {#text} at (647,3) size 24x16
-              text run at (647,3) width 24: "one"
-          LayoutText {#text} at (671,0) size 784x39
-            text run at (671,0) width 113: ", giving it an aqua"
-            text run at (0,20) width 197: "background and a 25px margin"
-        LayoutText {#text} at (222,20) size 763x59
-          text run at (222,20) width 539: ". Margins on inline elements does not affect line-height calculations, so all lines in this"
-          text run at (0,40) width 763: "element should have the same line-height. However, there should be a 25px margin to the left side of the inline box in the"
-          text run at (0,60) width 704: "first line it appears, and a 25px margin to the right side of the inline element box in the last line where it appears."
+            LayoutText {#text} at (648,3) size 24x16
+              text run at (648,3) width 24: "one"
+          LayoutText {#text} at (672,0) size 751x39
+            text run at (672,0) width 79: ", giving it an"
+            text run at (0,20) width 231: "aqua background and a 25px margin"
+        LayoutText {#text} at (256,20) size 769x59
+          text run at (256,20) width 513: ". Margins on inline elements does not affect line-height calculations, so all lines in"
+          text run at (0,40) width 765: "this element should have the same line-height. However, there should be a 25px margin to the left side of the inline box in"
+          text run at (0,60) width 727: "the first line it appears, and a 25px margin to the right side of the inline element box in the last line where it appears."
       LayoutNGBlockFlow {P} at (0,239) size 784x20 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 203x19
           text run at (0,0) width 203: "This element has a class of zero."
       LayoutNGBlockFlow {P} at (0,275) size 784x80 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 479x19
-          text run at (0,0) width 479: "This element is unstyled save for a background color of gray.. It contains an "
-        LayoutInline {SPAN} at (0,0) size 749x39 [bgcolor=#00FFFF]
-          LayoutText {#text} at (469,0) size 143x19
-            text run at (469,0) width 143: "inline element of class "
+        LayoutText {#text} at (0,0) size 480x19
+          text run at (0,0) width 480: "This element is unstyled save for a background color of gray.. It contains an "
+        LayoutInline {SPAN} at (0,0) size 750x39 [bgcolor=#00FFFF]
+          LayoutText {#text} at (470,0) size 143x19
+            text run at (470,0) width 143: "inline element of class "
           LayoutInline {TT} at (0,0) size 24x16
-            LayoutText {#text} at (612,3) size 24x16
-              text run at (612,3) width 24: "two"
-          LayoutText {#text} at (636,0) size 749x39
-            text run at (636,0) width 113: ", giving it an aqua"
+            LayoutText {#text} at (613,3) size 24x16
+              text run at (613,3) width 24: "two"
+          LayoutText {#text} at (637,0) size 750x39
+            text run at (637,0) width 113: ", giving it an aqua"
             text run at (0,20) width 202: "background and a -10px margin"
         LayoutText {#text} at (192,20) size 784x59
           text run at (192,20) width 592: ". Margins on inline elements does not affect line-height calculations, so all lines in this element"
-          text run at (0,40) width 782: "should have the same line-height. However, there should be a -10px margin to the left side of the inline box in the first line it"
+          text run at (0,40) width 781: "should have the same line-height. However, there should be a -10px margin to the left side of the inline box in the first line it"
           text run at (0,60) width 642: "appears, and a -10px margin to the right side of the inline element box in the last line where it appears."
       LayoutNGBlockFlow {P} at (0,371) size 784x20 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 203x19
@@ -59,9 +59,9 @@ layer at (0,0) size 800x749 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 782x340
           LayoutTableRow {TR} at (0,0) size 782x28
             LayoutNGTableCell {TD} at (0,0) size 782x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 782x312
             LayoutNGTableCell {TD} at (0,170) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,146) size 4x19
@@ -71,40 +71,40 @@ layer at (0,0) size 800x749 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 203x19
                   text run at (0,0) width 203: "This element has a class of zero."
               LayoutNGBlockFlow {P} at (4,40) size 762x100 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 479x19
-                  text run at (0,0) width 479: "This element is unstyled save for a background color of gray.. It contains an "
-                LayoutInline {SPAN} at (0,0) size 750x39 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (504,0) size 143x19
-                    text run at (504,0) width 143: "inline element of class "
+                LayoutText {#text} at (0,0) size 480x19
+                  text run at (0,0) width 480: "This element is unstyled save for a background color of gray.. It contains an "
+                LayoutInline {SPAN} at (0,0) size 751x39 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (505,0) size 143x19
+                    text run at (505,0) width 143: "inline element of class "
                   LayoutInline {TT} at (0,0) size 24x16
-                    LayoutText {#text} at (647,3) size 24x16
-                      text run at (647,3) width 24: "one"
-                  LayoutText {#text} at (671,0) size 750x39
-                    text run at (671,0) width 79: ", giving it an"
+                    LayoutText {#text} at (648,3) size 24x16
+                      text run at (648,3) width 24: "one"
+                  LayoutText {#text} at (672,0) size 751x39
+                    text run at (672,0) width 79: ", giving it an"
                     text run at (0,20) width 231: "aqua background and a 25px margin"
                 LayoutText {#text} at (256,20) size 753x79
                   text run at (256,20) width 497: ". Margins on inline elements does not affect line-height calculations, so all lines"
-                  text run at (0,40) width 738: "in this element should have the same line-height. However, there should be a 25px margin to the left side of the inline"
+                  text run at (0,40) width 737: "in this element should have the same line-height. However, there should be a 25px margin to the left side of the inline"
                   text run at (0,60) width 715: "box in the first line it appears, and a 25px margin to the right side of the inline element box in the last line where it"
                   text run at (0,80) width 52: "appears."
               LayoutNGBlockFlow {P} at (4,156) size 762x20 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 203x19
                   text run at (0,0) width 203: "This element has a class of zero."
               LayoutNGBlockFlow {P} at (4,192) size 762x80 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 479x19
-                  text run at (0,0) width 479: "This element is unstyled save for a background color of gray.. It contains an "
-                LayoutInline {SPAN} at (0,0) size 749x39 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (469,0) size 143x19
-                    text run at (469,0) width 143: "inline element of class "
+                LayoutText {#text} at (0,0) size 480x19
+                  text run at (0,0) width 480: "This element is unstyled save for a background color of gray.. It contains an "
+                LayoutInline {SPAN} at (0,0) size 750x39 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (470,0) size 143x19
+                    text run at (470,0) width 143: "inline element of class "
                   LayoutInline {TT} at (0,0) size 24x16
-                    LayoutText {#text} at (612,3) size 24x16
-                      text run at (612,3) width 24: "two"
-                  LayoutText {#text} at (636,0) size 749x39
-                    text run at (636,0) width 113: ", giving it an aqua"
+                    LayoutText {#text} at (613,3) size 24x16
+                      text run at (613,3) width 24: "two"
+                  LayoutText {#text} at (637,0) size 750x39
+                    text run at (637,0) width 113: ", giving it an aqua"
                     text run at (0,20) width 202: "background and a -10px margin"
-                LayoutText {#text} at (192,20) size 745x59
+                LayoutText {#text} at (192,20) size 744x59
                   text run at (192,20) width 539: ". Margins on inline elements does not affect line-height calculations, so all lines in this"
-                  text run at (0,40) width 745: "element should have the same line-height. However, there should be a -10px margin to the left side of the inline box in"
+                  text run at (0,40) width 744: "element should have the same line-height. However, there should be a -10px margin to the left side of the inline box in"
                   text run at (0,60) width 732: "the first line it appears, and a -10px margin to the right side of the inline element box in the last line where it appears."
               LayoutNGBlockFlow {P} at (4,288) size 762x20 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 203x19
