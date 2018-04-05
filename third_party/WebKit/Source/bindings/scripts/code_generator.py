@@ -59,13 +59,10 @@ def exposed_if(code, exposed_test):
 
 
 # [SecureContext]
-def secure_context_if(code, secure_context_test, test_result=None):
-    if not secure_context_test:
+def secure_context_if(code, secure_context_test):
+    if secure_context_test is None:
         return code
-    if test_result:
-        return generate_indented_conditional(code, test_result)
-    return generate_indented_conditional(code, 'executionContext && (%s)' % secure_context_test)
-
+    return generate_indented_conditional(code, secure_context_test)
 
 # [OriginTrialEnabled]
 def origin_trial_enabled_if(code, origin_trial_feature_name, execution_context=None):

@@ -737,6 +737,33 @@ static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Va
   impl->setSecureContextRuntimeEnabledAttribute(cppValue);
 }
 
+static void secureContextnessRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->secureContextnessRuntimeEnabledAttribute());
+}
+
+static void secureContextnessRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "secureContextnessRuntimeEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cppValue = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  impl->setSecureContextnessRuntimeEnabledAttribute(cppValue);
+}
+
 static void secureContextWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -1781,6 +1808,12 @@ static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackIn
   impl->secureContextRuntimeEnabledMethod();
 }
 
+static void secureContextnessRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->secureContextnessRuntimeEnabledMethod();
+}
+
 static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
@@ -2705,6 +2738,20 @@ void V8TestInterface::secureContextRuntimeEnabledAttributeAttributeSetterCallbac
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
+void V8TestInterface::secureContextnessRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextnessRuntimeEnabledAttribute_Getter");
+
+  TestInterfaceImplementationV8Internal::secureContextnessRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::secureContextnessRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextnessRuntimeEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8Value = info[0];
+
+  TestInterfaceImplementationV8Internal::secureContextnessRuntimeEnabledAttributeAttributeSetter(v8Value, info);
+}
+
 void V8TestInterface::secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWindowExposedAttribute_Getter");
 
@@ -3213,6 +3260,12 @@ void V8TestInterface::secureContextRuntimeEnabledMethodMethodCallback(const v8::
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextRuntimeEnabledMethod");
 
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledMethodMethod(info);
+}
+
+void V8TestInterface::secureContextnessRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextnessRuntimeEnabledMethod");
+
+  TestInterfaceImplementationV8Internal::secureContextnessRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterface::secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3851,6 +3904,15 @@ void V8TestInterface::InstallConditionalFeatures(
             WTF_ARRAY_LENGTH(accessor_configurations));
       }
     }
+    if (isSecureContext || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
+      static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+          { "secureContextnessRuntimeEnabledAttribute", V8TestInterface::secureContextnessRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::secureContextnessRuntimeEnabledAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+      };
+      V8DOMConfiguration::InstallAccessors(
+          isolate, world, instanceObject, prototypeObject, interfaceObject,
+          signature, accessor_configurations,
+          WTF_ARRAY_LENGTH(accessor_configurations));
+    }
     if (executionContext && (executionContext->IsDocument())) {
       static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
           { "windowExposedAttribute", V8TestInterface::windowExposedAttributeAttributeGetterCallback, V8TestInterface::windowExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
@@ -3982,6 +4044,13 @@ void V8TestInterface::InstallConditionalFeatures(
         for (const auto& methodConfig : secureContextRuntimeEnabledMethodMethodConfiguration)
           V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
       }
+    }
+    if (isSecureContext || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
+      const V8DOMConfiguration::MethodConfiguration secureContextnessRuntimeEnabledMethodMethodConfiguration[] = {
+        {"secureContextnessRuntimeEnabledMethod", V8TestInterface::secureContextnessRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      };
+      for (const auto& methodConfig : secureContextnessRuntimeEnabledMethodMethodConfiguration)
+        V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
     }
     if (isSecureContext) {
       if (executionContext && (executionContext->IsDocument())) {

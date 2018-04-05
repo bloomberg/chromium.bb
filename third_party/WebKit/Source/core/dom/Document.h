@@ -325,9 +325,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Element* documentElement() const { return document_element_.Get(); }
 
-  // Returns whether the Document has an AppCache manifest.
-  bool HasAppCacheManifest() const;
-
   Location* location() const;
 
   Element* CreateElementForBinding(const AtomicString& local_name,

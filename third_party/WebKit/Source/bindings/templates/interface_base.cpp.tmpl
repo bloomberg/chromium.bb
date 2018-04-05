@@ -894,7 +894,7 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
   {% endif %}{# needs secure context #}
   {# Origin-Trial-enabled attributes #}
   {% for attribute in feature.attributes %}
-  {% filter secure_context(attribute.secure_context_test, 'isSecureContext') %}
+  {% filter secure_context(attribute.secure_context_test) %}
   {% if attribute.is_data_type_property %}
   static const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration[] = {
     {{attribute_configuration(attribute) | trim | indent(2)}}
@@ -918,7 +918,7 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
   {% endfor %}
   {# Origin-Trial-enabled methods (no overloads) #}
   {% for method in feature.methods %}
-  {% filter secure_context(method.secure_context_test, 'isSecureContext') %}
+  {% filter secure_context(method.secure_context_test) %}
   {% set method_name = method.name.title().replace('_', '') %}
   static const V8DOMConfiguration::MethodConfiguration method{{method_name}}Configuration[] = {
     {{method_configuration(method) | trim | indent(2)}}
@@ -1009,16 +1009,16 @@ void {{v8_class_or_partial}}::InstallConditionalFeatures(
   {% set attributes_on_instance = conditional_attributes | selectattr('on_instance') | list  %}
   {% if attributes_on_instance or conditional_interface_objects %}
   if (!instanceObject.IsEmpty()) {
-    {{install_conditional_attributes('isSecureContext', attributes_on_instance) | trim | indent(4)}}
-    {{install_conditional_interface_objects('isSecureContext', conditional_interface_objects) | trim | indent(4)}}
+    {{install_conditional_attributes(attributes_on_instance) | trim | indent(4)}}
+    {{install_conditional_interface_objects(conditional_interface_objects) | trim | indent(4)}}
   }
   {% endif %}
 
   {% set attributes_on_prototype = conditional_attributes | selectattr('on_prototype') | list  %}
   {% set attributes_on_interface = conditional_attributes | selectattr('on_interface') | list  %}
   if (!prototypeObject.IsEmpty() || !interfaceObject.IsEmpty()) {
-    {{install_conditional_attributes('isSecureContext', attributes_on_prototype + attributes_on_interface) | trim | indent(4)}}
-    {{install_conditional_methods('isSecureContext') | trim | indent(4)}}
+    {{install_conditional_attributes(attributes_on_prototype + attributes_on_interface) | trim | indent(4)}}
+    {{install_conditional_methods() | trim | indent(4)}}
   }
   {% endif %}{# conditional_attributes or conditional_methods #}
 }

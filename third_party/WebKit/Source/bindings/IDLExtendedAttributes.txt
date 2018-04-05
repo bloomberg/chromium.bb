@@ -95,7 +95,7 @@ RuntimeEnabled=*
 RuntimeCallStatsCounter=*
 SameObject
 SaveSameObject
-SecureContext
+SecureContext=|*
 SetterCallWith=ExecutionContext|ScriptArguments|CurrentWindow|EnteredWindow
 TreatNullAs=NullString|EmptyString
 URL
