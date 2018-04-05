@@ -300,6 +300,30 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
+    winui::Notifications::NotificationSetting setting;
+    if (SUCCEEDED(notifier_->get_Setting(&setting))) {
+      switch (setting) {
+        case winui::Notifications::NotificationSetting_Enabled:
+          break;
+        case winui::Notifications::NotificationSetting_DisabledForApplication:
+          LogDisplayHistogram(DisplayStatus::DISABLED_FOR_APPLICATION);
+          DLOG(ERROR) << "Notification disabled for application";
+          return;
+        case winui::Notifications::NotificationSetting_DisabledForUser:
+          LogDisplayHistogram(DisplayStatus::DISABLED_FOR_USER);
+          DLOG(ERROR) << "Notification disabled for user";
+          return;
+        case winui::Notifications::NotificationSetting_DisabledByGroupPolicy:
+          LogDisplayHistogram(DisplayStatus::DISABLED_BY_GROUP_POLICY);
+          DLOG(ERROR) << "Notification disabled by group policy";
+          return;
+        case winui::Notifications::NotificationSetting_DisabledByManifest:
+          LogDisplayHistogram(DisplayStatus::DISABLED_BY_MANIFEST);
+          DLOG(ERROR) << "Notification disabled by manifest";
+          return;
+      }
+    }
+
     NotificationLaunchId launch_id(notification_type, notification->id(),
                                    profile_id, incognito,
                                    notification->origin_url());
