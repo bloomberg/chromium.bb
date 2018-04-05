@@ -222,7 +222,7 @@ if (CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/aom_dsp/grain_table.h"
       "${AOM_ROOT}/aom_dsp/noise_util.h"
       "${AOM_ROOT}/aom_dsp/noise_util.c"
-      "${AOM_ROOT}/aom_dsp/noise_model.c"
+      "${AOM_ROOT}/aom_dsp/noise_model.h"
       "${AOM_ROOT}/aom_dsp/noise_model.c"
       "${AOM_ROOT}/aom_dsp/psnr.c"
       "${AOM_ROOT}/aom_dsp/psnr.h"
