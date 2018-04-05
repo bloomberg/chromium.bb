@@ -152,10 +152,9 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser);
 void CopyURL(Browser* browser);
 void OpenInChrome(Browser* browser);
 #if defined(OS_CHROMEOS)
-void QueryAndDisplayArcApps(
-    const Browser* browser,
-    const std::vector<chromeos::IntentPickerAppInfo>& app_info,
-    IntentPickerResponse callback);
+void QueryAndDisplayArcApps(const Browser* browser,
+                            std::vector<chromeos::IntentPickerAppInfo> app_info,
+                            IntentPickerResponse callback);
 void SetIntentPickerViewVisibility(Browser* browser, bool visible);
 #endif  // defined(OS_CHROMEOS)
 

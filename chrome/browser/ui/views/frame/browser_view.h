@@ -331,7 +331,7 @@ class BrowserView : public BrowserWindow,
   void ShowUpdateChromeDialog() override;
 #if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
-      const std::vector<IntentPickerBubbleView::AppInfo>& app_info,
+      std::vector<IntentPickerBubbleView::AppInfo> app_info,
       IntentPickerResponse callback) override;
   void SetIntentPickerViewVisibility(bool visible) override;
 #endif  //  defined(OS_CHROMEOS)

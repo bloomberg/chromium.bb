@@ -62,11 +62,11 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   ~IntentPickerBubbleView() override;
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    content::WebContents* web_contents,
-                                   const std::vector<AppInfo>& app_info,
+                                   std::vector<AppInfo> app_info,
                                    bool disable_stay_in_chrome,
                                    IntentPickerResponse intent_picker_cb);
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(
-      const std::vector<AppInfo>& app_info,
+      std::vector<AppInfo> app_info,
       bool disable_stay_in_chrome,
       IntentPickerResponse intent_picker_cb,
       content::WebContents* web_contents);
@@ -100,7 +100,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, ChromeNotInCandidates);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, StayInChromeTest);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, WebContentsTiedToBubble);
-  IntentPickerBubbleView(const std::vector<AppInfo>& app_info,
+  IntentPickerBubbleView(std::vector<AppInfo> app_info,
                          IntentPickerResponse intent_picker_cb,
                          content::WebContents* web_contents,
                          bool disable_display_in_chrome);

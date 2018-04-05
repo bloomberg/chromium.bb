@@ -332,7 +332,7 @@ using IntentPickerResponse =
 using BubbleShowPtr =
     views::Widget* (*)(views::View*,
                        content::WebContents*,
-                       const std::vector<chromeos::IntentPickerAppInfo>&,
+                       std::vector<chromeos::IntentPickerAppInfo>,
                        bool disable_display_in_chrome,
                        IntentPickerResponse);
 

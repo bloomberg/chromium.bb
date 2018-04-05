@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "ui/gfx/image/image.h"
 
 namespace chromeos {
@@ -49,14 +50,14 @@ enum class AppsNavigationAction {
 
 // Represents the data required to display an app in a picker to the user.
 struct IntentPickerAppInfo {
-  IntentPickerAppInfo(AppType app_type,
-                      const gfx::Image& img,
-                      const std::string& launch,
-                      const std::string& name);
+  IntentPickerAppInfo(AppType type,
+                      const gfx::Image& icon,
+                      const std::string& launch_name,
+                      const std::string& display_name);
 
-  // TODO(crbug.com/824598): make this type move-only to avoid unnecessary
-  // copies.
-  IntentPickerAppInfo(const IntentPickerAppInfo& app_info);
+  IntentPickerAppInfo(IntentPickerAppInfo&& other);
+
+  IntentPickerAppInfo& operator=(IntentPickerAppInfo&& other);
 
   // The type of app that this object represents.
   AppType type;
@@ -70,6 +71,8 @@ struct IntentPickerAppInfo {
 
   // The string shown to the user to identify this app in the intent picker.
   std::string display_name;
+
+  DISALLOW_COPY_AND_ASSIGN(IntentPickerAppInfo);
 };
 
 // Callback to allow app-platform-specific code to asynchronously signal what
@@ -77,12 +80,12 @@ struct IntentPickerAppInfo {
 // which can handle the navigation.
 using AppsNavigationCallback =
     base::OnceCallback<void(AppsNavigationAction action,
-                            const std::vector<IntentPickerAppInfo>& apps)>;
+                            std::vector<IntentPickerAppInfo> apps)>;
 
 // Callback to allow app-platform-specific code to asynchronously provide a list
 // of apps which can handle the navigation.
 using QueryAppsCallback =
-    base::OnceCallback<void(const std::vector<IntentPickerAppInfo>& apps)>;
+    base::OnceCallback<void(std::vector<IntentPickerAppInfo> apps)>;
 
 }  // namespace chromeos
 

@@ -63,8 +63,17 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
         OpenURLParams(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
                       ui::PAGE_TRANSITION_TYPED, false));
 
+    std::vector<AppInfo> app_info;
+
+    // AppInfo is move only. Manually create a new app_info array to pass into
+    // the bubble constructor.
+    for (const auto& app : app_info_) {
+      app_info.emplace_back(app.type, app.icon, app.launch_name,
+                            app.display_name);
+    }
+
     bubble_ = IntentPickerBubbleView::CreateBubbleView(
-        app_info_, disable_stay_in_chrome,
+        std::move(app_info), disable_stay_in_chrome,
         base::Bind(&IntentPickerBubbleViewTest::OnBubbleClosed,
                    base::Unretained(this)),
         web_contents);
@@ -118,7 +127,7 @@ TEST_F(IntentPickerBubbleViewTest, LabelsPtrVectorSize) {
   CreateBubbleView(true, false);
   size_t size = app_info_.size();
   size_t chrome_package_repetitions = 0;
-  for (AppInfo app_info : app_info_) {
+  for (const AppInfo& app_info : app_info_) {
     if (arc::ArcIntentHelperBridge::IsIntentHelperPackage(app_info.launch_name))
       ++chrome_package_repetitions;
   }

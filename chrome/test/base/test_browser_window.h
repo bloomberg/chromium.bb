@@ -99,7 +99,7 @@ class TestBrowserWindow : public BrowserWindow {
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
 #if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
-      const std::vector<chromeos::IntentPickerAppInfo>& app_info,
+      std::vector<chromeos::IntentPickerAppInfo> app_info,
       IntentPickerResponse callback) override {}
   void SetIntentPickerViewVisibility(bool visible) override {}
 #endif  // defined(OS_CHROMEOS)

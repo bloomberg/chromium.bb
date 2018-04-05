@@ -72,7 +72,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static void ShowIntentPickerBubbleForApps(
       const Browser* browser,
       const GURL& url,
-      const std::vector<IntentPickerAppInfo>& apps);
+      std::vector<IntentPickerAppInfo> apps);
   void CancelNavigation();
 
   content::NavigationThrottle::ThrottleCheckResult HandleRequest();
@@ -82,7 +82,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // request that the navigation be completely cancelled (e.g. if a preferred
   // app has been opened).
   void OnDeferredRequestProcessed(AppsNavigationAction action,
-                                  const std::vector<IntentPickerAppInfo>& apps);
+                                  std::vector<IntentPickerAppInfo> apps);
 
   // A reference to the starting GURL.
   GURL starting_url_;

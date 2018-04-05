@@ -256,7 +256,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
                           candidate->package_name, candidate->name);
   }
 
-  std::move(callback).Run(app_info);
+  std::move(callback).Run(std::move(app_info));
 }
 
 // static

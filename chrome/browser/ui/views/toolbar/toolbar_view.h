@@ -83,7 +83,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
 #if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
-      const std::vector<IntentPickerBubbleView::AppInfo>& app_info,
+      std::vector<IntentPickerBubbleView::AppInfo> app_info,
       IntentPickerResponse callback);
 #endif  // defined(OS_CHROMEOS)
 

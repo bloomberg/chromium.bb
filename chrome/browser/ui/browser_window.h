@@ -234,7 +234,7 @@ class BrowserWindow : public ui::BaseWindow {
   // display and |callback| gives access so we can redirect the user (if needed)
   // and store UMA metrics.
   virtual void ShowIntentPickerBubble(
-      const std::vector<chromeos::IntentPickerAppInfo>& app_info,
+      std::vector<chromeos::IntentPickerAppInfo> app_info,
       IntentPickerResponse callback) = 0;
   virtual void SetIntentPickerViewVisibility(bool visible) = 0;
 #endif  // defined(OS_CHROMEOS)
