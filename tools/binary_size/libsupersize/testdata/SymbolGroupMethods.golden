@@ -173,7 +173,7 @@ Index | Running Total | Section@Address | PSS | Path
              mojo::MessageReceiver [vtable]
 5)    1166992 (1.5%)  R@0x2cd8550  12             base/page_allocator.cc
              kMethodsAnimationFrameTimeHistogram
-6)    1167048 (1.5%)  R@0x2c176f0  56             third_party/icu/ucnv_ext.c
+6)    1167048 (1.5%)  R@0x2c176f0  56             $root_gen_dir/third_party/icu/ucnv_ext.c
              ChromeMainDelegate [vtable]
 7)    1957008 (2.5%)  *@Group      789960         {no path}
              chrome (count=3)
@@ -206,13 +206,13 @@ Index | Running Total | Section@Address | PSS | Path
              _GLOBAL__sub_I_pacing_sender.cc
 22)  77699921 (99.9%) *@Group      70             base/page_allocator.cc
              extFromUUseMapping (count=2)
-23)  77700369 (99.9%) t@0x28f000   448            third_party/icu/ucnv_ext.c
+23)  77700369 (99.9%) t@0x28f000   448            $root_gen_dir/third_party/icu/ucnv_ext.c
              ucnv_extMatchFromU
-24)  77700397 (99.9%) t@0x28f1c8   28             third_party/icu/ucnv_ext.c
+24)  77700397 (99.9%) t@0x28f1c8   28             $root_gen_dir/third_party/icu/ucnv_ext.c
              _GLOBAL__sub_I_SkDeviceProfile.cpp
-25)  77769521 (100.0%) t@0x28f1e0   69124          third_party/icu/ucnv_ext.c
+25)  77769521 (100.0%) t@0x28f1e0   69124          $root_gen_dir/third_party/icu/ucnv_ext.c
              foo_bar
-26)  77769545 (100.0%) t@0x2a0000   24 (size=48)   third_party/icu/ucnv_ext.c
+26)  77769545 (100.0%) t@0x2a0000   24 (size=48)   $root_gen_dir/third_party/icu/ucnv_ext.c
              BazAlias (num_aliases=2)
 27)  77769548 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              BarAlias (num_aliases=4)
@@ -224,9 +224,9 @@ Index | Running Total | Section@Address | PSS | Path
              ff_cos_131072_fixed
 31)  77769551 (100.0%) b@0x0        131072         third_party/fft_float.cc
              ff_cos_65536
-32)  77769551 (100.0%) b@0x2dffda0  28             third_party/icu/ucnv_ext.c
+32)  77769551 (100.0%) b@0x2dffda0  28             $root_gen_dir/third_party/icu/ucnv_ext.c
              g_chrome_content_browser_client
-33)  77769551 (100.0%) b@0x2dffe80  200            third_party/icu/ucnv_ext.c
+33)  77769551 (100.0%) b@0x2dffe80  200            $root_gen_dir/third_party/icu/ucnv_ext.c
              SaveHistogram::atomic_histogram_pointer
-34)  77769551 (100.0%) b@0x2dffe84  4              third_party/icu/ucnv_ext.c
+34)  77769551 (100.0%) b@0x2dffe84  4              $root_gen_dir/third_party/icu/ucnv_ext.c
              g_AnimationFrameTimeHistogram_clazz

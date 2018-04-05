@@ -261,9 +261,11 @@ class DescriberText(Describer):
         yield '{}@{:<9s}  {}  {}{}'.format(
             sym.section, address, pss_field, sym.name, last_field)
       else:
+        path = sym.source_path or sym.object_path or '{no path}'
+        if sym.generated_source:
+          path = '$root_gen_dir/' + path
         yield '{}@{:<9s}  {} {}'.format(
-            sym.section, address, pss_field,
-            sym.source_path or sym.object_path or '{no path}')
+            sym.section, address, pss_field, path)
         if sym.name:
           yield '    {}{}'.format(sym.name, last_field)
 
