@@ -109,6 +109,8 @@ static_library("protocol") {
     "mouse_input_filter.h",
     "named_message_pipe_handler.cc",
     "named_message_pipe_handler.h",
+    "native_ip_synthesizer.cc",
+    "native_ip_synthesizer.h",
     "negotiating_authenticator_base.cc",
     "negotiating_authenticator_base.h",
     "negotiating_client_authenticator.cc",
