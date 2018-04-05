@@ -563,8 +563,8 @@ extern const char kLeftToRightUrlsDescription[];
 extern const char kLoadMediaRouterComponentExtensionName[];
 extern const char kLoadMediaRouterComponentExtensionDescription[];
 
-extern const char kMediaRouterCastAllowAllIPsName[];
-extern const char kMediaRouterCastAllowAllIPsDescription[];
+extern const char kMacViewsAutofillPopupName[];
+extern const char kMacViewsAutofillPopupDescription[];
 
 extern const char kManualPasswordGenerationName[];
 extern const char kManualPasswordGenerationDescription[];
@@ -584,6 +584,9 @@ extern const char kMaterialDesignIncognitoNTPDescription[];
 
 extern const char kMediaRemotingName[];
 extern const char kMediaRemotingDescription[];
+
+extern const char kMediaRouterCastAllowAllIPsName[];
+extern const char kMediaRouterCastAllowAllIPsDescription[];
 
 extern const char kMemoryAblationName[];
 extern const char kMemoryAblationDescription[];

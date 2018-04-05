@@ -8,7 +8,10 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
+#include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "ui/base/ui_features.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
@@ -48,16 +51,11 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 void AutofillPopupBaseView::DoShow() {
   const bool initialize_widget = !GetWidget();
   if (initialize_widget) {
-    parent_widget_->AddObserver(this);
-    views::FocusManager* focus_manager = parent_widget_->GetFocusManager();
-    focus_manager->RegisterAccelerator(
-        ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE),
-        ui::AcceleratorManager::kNormalPriority,
-        this);
-    focus_manager->RegisterAccelerator(
-        ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE),
-        ui::AcceleratorManager::kNormalPriority,
-        this);
+    // On Mac Cocoa browser, |parent_widget_| is null (the parent is not a
+    // views::Widget).
+    // TODO(crbug.com/826862): Remove |parent_widget_|.
+    if (parent_widget_)
+      parent_widget_->AddObserver(this);
 
     // The widget is destroyed by the corresponding NativeWidget, so we use
     // a weak pointer to hold the reference and don't have to worry about
@@ -65,7 +63,8 @@ void AutofillPopupBaseView::DoShow() {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.delegate = this;
-    params.parent = parent_widget_->GetNativeView();
+    params.parent = parent_widget_ ? parent_widget_->GetNativeView()
+                                   : delegate_->container_view();
     widget->Init(params);
 
     scroll_view_ = new views::ScrollView;
@@ -87,6 +86,13 @@ void AutofillPopupBaseView::DoShow() {
 
   DoUpdateBoundsAndRedrawPopup();
   GetWidget()->Show();
+
+#if defined(OS_MACOSX)
+  mac_bubble_closer_ = std::make_unique<ui::BubbleCloser>(
+      GetWidget()->GetNativeWindow(),
+      base::BindRepeating(&AutofillPopupBaseView::HideController,
+                          base::Unretained(this)));
+#endif
 
   // Showing the widget can change native focus (which would result in an
   // immediate hiding of the popup). Only start observing after shown.
@@ -118,8 +124,9 @@ void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
 }
 
 void AutofillPopupBaseView::RemoveObserver() {
-  parent_widget_->GetFocusManager()->UnregisterAccelerators(this);
-  parent_widget_->RemoveObserver(this);
+  if (parent_widget_)
+    parent_widget_->RemoveObserver(this);
+
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
@@ -134,12 +141,11 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
 
   SetSize(bounds.size());
 
-  // Compute the space available for the popup. It's the space between its top
-  // and the bottom of its parent view, minus some margin space.
-  int available_vertical_space =
-      parent_widget_->GetClientAreaBoundsInScreen().height() -
-      (bounds.y() - parent_widget_->GetClientAreaBoundsInScreen().y()) -
-      kPopupBottomMargin;
+  gfx::Rect clipping_bounds = CalculateClippingBounds();
+
+  int available_vertical_space = clipping_bounds.height() -
+                                 (bounds.y() - clipping_bounds.y()) -
+                                 kPopupBottomMargin;
 
   if (available_vertical_space < bounds.height()) {
     // The available space is not enough for the full popup so clamp the widget
@@ -244,22 +250,6 @@ void AutofillPopupBaseView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-bool AutofillPopupBaseView::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  DCHECK_EQ(accelerator.modifiers(), ui::EF_NONE);
-
-  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
-    HideController();
-    return true;
-  }
-
-  if (accelerator.key_code() == ui::VKEY_RETURN)
-    return delegate_->AcceptSelectedLine();
-
-  NOTREACHED();
-  return false;
-}
-
 void AutofillPopupBaseView::SetSelection(const gfx::Point& point) {
   if (delegate_)
     delegate_->SetSelectionAtPoint(point);
@@ -281,6 +271,20 @@ void AutofillPopupBaseView::ClearSelection() {
 void AutofillPopupBaseView::HideController() {
   if (delegate_)
     delegate_->Hide();
+}
+
+gfx::Rect AutofillPopupBaseView::CalculateClippingBounds() const {
+  if (parent_widget_)
+    return parent_widget_->GetClientAreaBoundsInScreen();
+
+  gfx::NativeWindow window =
+      platform_util::GetTopLevel(delegate_->container_view());
+  Browser* browser = chrome::FindBrowserWithWindow(window);
+  DCHECK(browser);
+
+  // This is not the same as "GetClientAreaBoundsInScreen()", but it gives us
+  // the lower bounds the popup will have to clip to on the screen.
+  return browser->window()->GetBounds();
 }
 
 gfx::NativeView AutofillPopupBaseView::container_view() {

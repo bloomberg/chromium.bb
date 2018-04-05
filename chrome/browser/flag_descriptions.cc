@@ -894,11 +894,10 @@ const char kLoadMediaRouterComponentExtensionName[] =
 const char kLoadMediaRouterComponentExtensionDescription[] =
     "Loads the Media Router component extension at startup.";
 
-const char kMediaRouterCastAllowAllIPsName[] =
-    "Connect to Cast devices on all IP addresses";
-const char kMediaRouterCastAllowAllIPsDescription[] =
-    "Have the Media Router connect to Cast devices on all IP addresses, not "
-    "just RFC1918/RFC4913 private addresses.";
+const char kMacViewsAutofillPopupName[] =
+    "Uses the Views Autofill Popup on Mac";
+const char kMacViewsAutofillPopupDescription[] =
+    "Autofill popup will be shown using the Views toolkit rather than Cocoa.";
 
 const char kManualPasswordGenerationName[] = "Manual password generation.";
 const char kManualPasswordGenerationDescription[] =
@@ -923,6 +922,12 @@ const char kMediaRemotingDescription[] =
     "When Casting a tab to a remote device, enabling this turns on an "
     "optimization that forwards the content bitstream directly to the remote "
     "device when a video is fullscreened.";
+
+const char kMediaRouterCastAllowAllIPsName[] =
+    "Connect to Cast devices on all IP addresses";
+const char kMediaRouterCastAllowAllIPsDescription[] =
+    "Have the Media Router connect to Cast devices on all IP addresses, not "
+    "just RFC1918/RFC4913 private addresses.";
 
 const char kMemoryAblationName[] = "Memory ablation experiment";
 const char kMemoryAblationDescription[] =

@@ -68,11 +68,4 @@ AutofillPopupView* AutofillPopupView::CreateCocoa(
   return new AutofillPopupViewBridge(controller);
 }
 
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-AutofillPopupView* AutofillPopupView::Create(
-    AutofillPopupController* controller) {
-  return CreateCocoa(controller);
-}
-#endif
-
 }  // namespace autofill

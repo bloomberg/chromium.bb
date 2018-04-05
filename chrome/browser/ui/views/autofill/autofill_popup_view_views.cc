@@ -6,7 +6,9 @@
 
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_native_views.h"
@@ -17,7 +19,6 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -317,18 +318,27 @@ void AutofillPopupViewViews::CreateChildViews() {
 
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (views_mode_controller::IsViewsBrowserCocoa())
+#if defined(OS_MACOSX)
+  if (!autofill::IsMacViewsAutofillPopupExperimentEnabled())
     return CreateCocoa(controller);
+
+  // It's possible for the container_view to not be in a window. In that case,
+  // cancel the popup since we can't fully set it up.
+  if (!platform_util::GetTopLevel(controller->container_view()))
+    return nullptr;
 #endif
+
   views::Widget* observing_widget =
       views::Widget::GetTopLevelWidgetForNativeView(
           controller->container_view());
 
+#if !defined(OS_MACOSX)
   // If the top level widget can't be found, cancel the popup since we can't
-  // fully set it up.
+  // fully set it up. On Mac Cocoa browser, |observing_widget| is null
+  // because the parent is not a views::Widget.
   if (!observing_widget)
-    return NULL;
+    return nullptr;
+#endif
 
   if (base::FeatureList::IsEnabled(autofill::kAutofillExpandedPopupViews))
     return new AutofillPopupViewNativeViews(controller, observing_widget);
