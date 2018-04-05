@@ -2320,6 +2320,174 @@ be describing additional metrics about the same event.
   </summary>
 </event>
 
+<event name="ScreenBrightness">
+  <owner>pdyson@chromium.org</owner>
+  <summary>
+    Collects metrics periodically and on screen brightness change.
+  </summary>
+  <metric name="BatteryPercent">
+    <summary>
+      Percentage of battery, rounded down to a multiple of 5%, i.e. [0, 5%) is
+      mapped to 0, [5%, 10%) is mapped to 5 etc.
+    </summary>
+  </metric>
+  <metric name="Brightness">
+    <summary>
+      Screen percentage brightness. between 0 and 100.
+    </summary>
+  </metric>
+  <metric name="DayOfWeek">
+    <summary>
+      An enum representing the of the week that the data was logged, defined in
+      |chromeos::power::ml::ScreenBrightness::Features::ActivityData::
+      DayOfWeek|.
+    </summary>
+  </metric>
+  <metric name="DeviceMode">
+    <summary>
+      An enum representing the mode of the device, defined in
+      |chromeos::power::ml::ScreenBrightness::Feature::EnvData:DeviceMode|
+    </summary>
+  </metric>
+  <metric name="HourOfDay">
+    <summary>
+      The hour of the day when the data is logged. Hours since midnight in the
+      local time zone.
+    </summary>
+  </metric>
+  <metric name="IsAutoclickEnabled">
+    <summary>
+      Boolean value to represent whether the auto click is currently enabled.
+    </summary>
+  </metric>
+  <metric name="IsBrailleDisplayConnected">
+    <summary>
+      Boolean value to represent whether the braille display is currently
+      enabled.
+    </summary>
+  </metric>
+  <metric name="IsCaretHighlightEnabled">
+    <summary>
+      Boolean value to represent whether the caret highlight is currently
+      enabled.
+    </summary>
+  </metric>
+  <metric name="IsCursorHighlightEnabled">
+    <summary>
+      Boolean value to represent whether the cursor highlight is currently
+      enabled.
+    </summary>
+  </metric>
+  <metric name="IsFocusHighlightEnabled">
+    <summary>
+      Boolean value to represent whether the focus highlight is currently
+      enabled.
+    </summary>
+  </metric>
+  <metric name="IsHighContrastEnabled">
+    <summary>
+      Boolean value to represent whether the high contrast is currently enabled.
+    </summary>
+  </metric>
+  <metric name="IsLargeCursorEnabled">
+    <summary>
+      Boolean value to represent whether the large cursor is currently enabled.
+    </summary>
+  </metric>
+  <metric name="IsMagnifierEnabled">
+    <summary>
+      Boolean value to represent whether the full screen magnifier is currently
+      enabled.
+    </summary>
+  </metric>
+  <metric name="IsMonoAudioEnabled">
+    <summary>
+      Boolean value to represent whether the mono audio is currently enabled.
+    </summary>
+  </metric>
+  <metric name="IsSelectToSpeakEnabled">
+    <summary>
+      Boolean value to represent whether select to speak is currently enabled.
+    </summary>
+  </metric>
+  <metric name="IsSpokenFeedbackEnabled">
+    <summary>
+      Boolean value to represent whether the spoken feedback is currently
+      enabled.
+    </summary>
+  </metric>
+  <metric name="IsSwitchAccessEnabled">
+    <summary>
+      Boolean value to represent whether switch access is currently enabled.
+    </summary>
+  </metric>
+  <metric name="IsVideoPlaying">
+    <summary>
+      Boolean value to represent whether video is currently playing.
+    </summary>
+  </metric>
+  <metric name="IsVirtualKeyboardEnabled">
+    <summary>
+      Boolean value to represent whether the virtual keyboard is currently
+      enabled.
+    </summary>
+  </metric>
+  <metric name="LastActivityTimeSec">
+    <summary>
+      Time between the last activity and when the data was logged. A duration
+      timestamp in seconds.
+    </summary>
+  </metric>
+  <metric name="NightLightTemperaturePercent">
+    <summary>
+      The temperature percentage of night light screen color adjustment when
+      night light is on. Ranges from 0 to 100.
+    </summary>
+  </metric>
+  <metric name="NumRecentKeyEvents">
+    <summary>
+      The number of keyboard events in the last hour.
+    </summary>
+  </metric>
+  <metric name="NumRecentMouseEvents">
+    <summary>
+      The number of mouse events in the last hour.
+    </summary>
+  </metric>
+  <metric name="NumRecentStylusEvents">
+    <summary>
+      The number of stylus events in the last hour.
+    </summary>
+  </metric>
+  <metric name="NumRecentTouchEvents">
+    <summary>
+      The number of touch events in the last hour.
+    </summary>
+  </metric>
+  <metric name="OnBattery">
+    <summary>
+      Boolean value to represent whether the device is currently on battery
+      power.
+    </summary>
+  </metric>
+  <metric name="Reason">
+    <summary>
+      The reason that the event is logged. Values are enumerated in
+      |chromeos::power::ml::ScreenBrightness::Event::Reason|.
+    </summary>
+  </metric>
+  <metric name="RecentTimeActiveSec">
+    <summary>
+      How long the user has been active. A duration timestamp in seconds.
+    </summary>
+  </metric>
+  <metric name="SequenceId">
+    <summary>
+      The ID of this event in the current session.
+    </summary>
+  </metric>
+</event>
+
 <event name="Security.SiteEngagement">
   <owner>cthomp@chromium.org</owner>
   <owner>enamelites@google.com</owner>
