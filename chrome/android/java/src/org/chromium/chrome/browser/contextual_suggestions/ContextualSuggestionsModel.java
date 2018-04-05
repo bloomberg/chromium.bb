@@ -12,7 +12,17 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import java.util.Collections;
 
 /** A model for the contextual suggestions UI component. */
-class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
+class ContextualSuggestionsModel
+        extends PropertyObservable<ContextualSuggestionsModel.PropertyKey> {
+    /** Keys uniquely identifying model properties. */
+    static class PropertyKey {
+        static final PropertyKey CLOSE_BUTTON_ON_CLICK_LISTENER = new PropertyKey();
+        static final PropertyKey TITLE = new PropertyKey();
+        static final PropertyKey TOOLBAR_SHADOW_VISIBILITY = new PropertyKey();
+
+        private PropertyKey() {}
+    }
+
     /** A {@link ListObservable} containing the current cluster list. */
     class ClusterListObservable extends ListObservable {
         ClusterList mClusterList = new ClusterList(Collections.emptyList());
@@ -51,7 +61,7 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
     /** @param listener The {@link OnClickListener} for the close button. */
     void setCloseButtonOnClickListener(OnClickListener listener) {
         mCloseButtonOnClickListener = listener;
-        notifyPropertyChanged(new PropertyKey(PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER));
+        notifyPropertyChanged(PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER);
     }
 
     /** @return The {@link OnClickListener} for the close button. */
@@ -62,7 +72,7 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
     /** @param title The title to display in the toolbar. */
     void setTitle(String title) {
         mTitle = title;
-        notifyPropertyChanged(new PropertyKey(PropertyKey.TITLE));
+        notifyPropertyChanged(PropertyKey.TITLE);
     }
 
     /** @return title The title to display in the toolbar. */
@@ -80,7 +90,7 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
     /** @param visible Whether the toolbar shadow should be visible. */
     void setToolbarShadowVisibility(boolean visible) {
         mToolbarShadowVisibility = visible;
-        notifyPropertyChanged(new PropertyKey(PropertyKey.TOOLBAR_SHADOW_VISIBILITY));
+        notifyPropertyChanged(PropertyKey.TOOLBAR_SHADOW_VISIBILITY);
     }
 
     /** @return Whether the toolbar shadow should be visible. */

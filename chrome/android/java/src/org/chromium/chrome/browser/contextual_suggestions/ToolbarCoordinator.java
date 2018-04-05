@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Coordinator for the toolbar sub-component. Responsible for communication with the parent
@@ -18,7 +20,8 @@ import org.chromium.chrome.R;
 class ToolbarCoordinator {
     private final ContextualSuggestionsModel mModel;
     private ToolbarView mToolbarView;
-    private ToolbarModelChangeProcessor mModelChangeProcessor;
+    private PropertyModelChangeProcessor<ContextualSuggestionsModel, ToolbarView, PropertyKey>
+            mModelChangeProcessor;
 
     /**
      * Construct a new {@link ToolbarCoordinator}.
@@ -32,8 +35,14 @@ class ToolbarCoordinator {
         mToolbarView = (ToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.contextual_suggestions_toolbar, parentView, false);
 
-        mModelChangeProcessor = new ToolbarModelChangeProcessor(mToolbarView, mModel);
+        mModelChangeProcessor =
+                new PropertyModelChangeProcessor<>(mModel, mToolbarView, new ToolbarViewBinder());
         mModel.addObserver(mModelChangeProcessor);
+
+        // The ToolbarCoordinator is created dynamically as needed, so the initial model state
+        // needs to be bound on creation.
+        mModelChangeProcessor.onPropertyChanged(mModel, PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER);
+        mModelChangeProcessor.onPropertyChanged(mModel, PropertyKey.TITLE);
     }
 
     /** @return The content {@link View}. */
