@@ -33,7 +33,7 @@ config("libsrtp_config") {
     "HAVE_UINT64_T",
     "HAVE_UINT8_T",
   ]
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     defines += [
       "HAVE_ARPA_INET_H",
       "HAVE_NETINET_IN_H",
