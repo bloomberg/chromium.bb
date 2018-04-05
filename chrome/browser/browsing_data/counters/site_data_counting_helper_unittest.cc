@@ -115,8 +115,8 @@ class SiteDataCountingHelperTest : public testing::Test {
       cookie_store->SetCanonicalCookieAsync(
           net::CanonicalCookie::CreateSanitizedCookie(
               url, "name", "A=1", url.host(), url.path(), time, base::Time(),
-              time, true, false, net::CookieSameSite::DEFAULT_MODE,
-              net::COOKIE_PRIORITY_DEFAULT),
+              time, url.SchemeIsCryptographic(), false,
+              net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
           url.SchemeIsCryptographic(), true /*modify_http_only*/,
           base::BindOnce(&SiteDataCountingHelperTest::DoneOnIOThread,
                          base::Unretained(this)));
@@ -195,7 +195,7 @@ TEST_F(SiteDataCountingHelperTest, LocalStorage) {
 
 TEST_F(SiteDataCountingHelperTest, CookiesAndLocalStorage) {
   base::Time now = base::Time::Now();
-  CreateCookies(now, {"https://example.com", "https://google.com"});
+  CreateCookies(now, {"http://example.com", "https://google.com"});
   CreateLocalStorage(now,
                      {FILE_PATH_LITERAL("https_example.com_443.localstorage"),
                       FILE_PATH_LITERAL("https_bing.com_443.localstorage")});
@@ -204,4 +204,16 @@ TEST_F(SiteDataCountingHelperTest, CookiesAndLocalStorage) {
   CountEntries(base::Time());
   WaitForTasksOnIOThread();
   DCHECK_EQ(3, GetResult());
+}
+
+TEST_F(SiteDataCountingHelperTest, SameHostDifferentScheme) {
+  base::Time now = base::Time::Now();
+  CreateCookies(now, {"http://google.com", "https://google.com"});
+  CreateLocalStorage(now,
+                     {FILE_PATH_LITERAL("https_google.com_443.localstorage"),
+                      FILE_PATH_LITERAL("http_google.com_80.localstorage")});
+  WaitForTasksOnIOThread();
+  CountEntries(base::Time());
+  WaitForTasksOnIOThread();
+  DCHECK_EQ(1, GetResult());
 }

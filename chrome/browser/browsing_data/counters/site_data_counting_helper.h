@@ -68,7 +68,7 @@ class SiteDataCountingHelper {
   base::Time begin_;
   base::Callback<void(int)> completion_callback_;
   int tasks_;
-  std::set<GURL> unique_origins_;
+  std::set<std::string> unique_hosts_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
 };
 
