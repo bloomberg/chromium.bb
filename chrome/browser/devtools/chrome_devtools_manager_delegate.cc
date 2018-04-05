@@ -6,16 +6,14 @@
 
 #include <utility>
 
-#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/chrome_devtools_session.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
-#include "chrome/browser/devtools/devtools_protocol.h"
-#include "chrome/browser/devtools/devtools_protocol_constants.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/protocol/target_handler.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -39,10 +37,6 @@ const char ChromeDevToolsManagerDelegate::kTypeBackgroundPage[] =
     "background_page";
 
 namespace {
-
-const char kLocationsParam[] = "locations";
-const char kHostParam[] = "host";
-const char kPortParam[] = "port";
 
 bool GetExtensionInfo(content::WebContents* wc,
                       std::string* name,
@@ -71,35 +65,23 @@ bool GetExtensionInfo(content::WebContents* wc,
   return false;
 }
 
-std::string ToString(std::unique_ptr<base::DictionaryValue> value) {
-  std::string json;
-  base::JSONWriter::Write(*value, &json);
-  return json;
-}
+ChromeDevToolsManagerDelegate* g_instance;
 
 }  // namespace
 
-class ChromeDevToolsManagerDelegate::HostData {
- public:
-  HostData() {}
-  ~HostData() {}
-
-  RemoteLocations& remote_locations() { return remote_locations_; }
-
-  void set_remote_locations(RemoteLocations& locations) {
-    remote_locations_.swap(locations);
-  }
-
- private:
-  RemoteLocations remote_locations_;
-};
+// static
+ChromeDevToolsManagerDelegate* ChromeDevToolsManagerDelegate::GetInstance() {
+  return g_instance;
+}
 
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate() {
-  content::DevToolsAgentHost::AddObserver(this);
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
 ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
-  content::DevToolsAgentHost::RemoveObserver(this);
+  DCHECK(g_instance == this);
+  g_instance = nullptr;
 }
 
 void ChromeDevToolsManagerDelegate::Inspect(
@@ -111,19 +93,6 @@ bool ChromeDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client,
     base::DictionaryValue* command_dict) {
-  int id = 0;
-  std::string method;
-  base::DictionaryValue* params = nullptr;
-  if (!DevToolsProtocol::ParseCommand(command_dict, &id, &method, &params))
-    return false;
-
-  if (method == chrome::devtools::Target::setRemoteLocations::kName) {
-    auto result = SetRemoteLocations(agent_host, id, params);
-    DCHECK(result);
-    client->DispatchProtocolMessage(agent_host, ToString(std::move(result)));
-    return true;
-  }
-
   DCHECK(sessions_.find(client) != sessions_.end());
   auto response = sessions_[client]->dispatcher()->dispatch(
       protocol::toProtocolValue(command_dict, 1000));
@@ -188,21 +157,6 @@ bool ChromeDevToolsManagerDelegate::HasBundledFrontendResources() {
   return true;
 }
 
-void ChromeDevToolsManagerDelegate::DevToolsAgentHostAttached(
-    content::DevToolsAgentHost* agent_host) {
-  DCHECK(host_data_.find(agent_host) == host_data_.end());
-  host_data_[agent_host].reset(new ChromeDevToolsManagerDelegate::HostData());
-}
-
-void ChromeDevToolsManagerDelegate::DevToolsAgentHostDetached(
-    content::DevToolsAgentHost* agent_host) {
-  // This class is created lazily, so it may not know about some attached hosts.
-  if (host_data_.find(agent_host) != host_data_.end()) {
-    host_data_.erase(agent_host);
-    UpdateDeviceDiscovery();
-  }
-}
-
 void ChromeDevToolsManagerDelegate::DevicesAvailable(
     const DevToolsDeviceDiscovery::CompleteDevices& devices) {
   DevToolsAgentHost::List remote_targets;
@@ -217,8 +171,11 @@ void ChromeDevToolsManagerDelegate::DevicesAvailable(
 
 void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
   RemoteLocations remote_locations;
-  for (const auto& pair : host_data_) {
-    RemoteLocations& locations = pair.second->remote_locations();
+  for (const auto& it : sessions_) {
+    TargetHandler* target_handler = it.second->target_handler();
+    if (!target_handler)
+      continue;
+    RemoteLocations& locations = target_handler->remote_locations();
     remote_locations.insert(locations.begin(), locations.end());
   }
 
@@ -255,44 +212,4 @@ void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
                    base::Unretained(this))));
   }
   remote_locations_.swap(remote_locations);
-}
-
-std::unique_ptr<base::DictionaryValue>
-ChromeDevToolsManagerDelegate::SetRemoteLocations(
-    content::DevToolsAgentHost* agent_host,
-    int command_id,
-    base::DictionaryValue* params) {
-  // Could have been created late.
-  if (host_data_.find(agent_host) == host_data_.end())
-    DevToolsAgentHostAttached(agent_host);
-
-  std::set<net::HostPortPair> tcp_locations;
-  base::ListValue* locations;
-  if (!params->GetList(kLocationsParam, &locations))
-    return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
-                                                         kLocationsParam);
-  for (const auto& item : *locations) {
-    if (!item.is_dict()) {
-      return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
-                                                           kLocationsParam);
-    }
-    const base::DictionaryValue* dictionary =
-        static_cast<const base::DictionaryValue*>(&item);
-    std::string host;
-    if (!dictionary->GetStringWithoutPathExpansion(kHostParam, &host)) {
-      return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
-                                                           kLocationsParam);
-    }
-    int port = 0;
-    if (!dictionary->GetIntegerWithoutPathExpansion(kPortParam, &port)) {
-      return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
-                                                           kLocationsParam);
-    }
-    tcp_locations.insert(net::HostPortPair(host, port));
-  }
-
-  host_data_[agent_host]->set_remote_locations(tcp_locations);
-  UpdateDeviceDiscovery();
-
-  return DevToolsProtocol::CreateSuccessResponse(command_id, nullptr);
 }

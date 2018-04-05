@@ -9,14 +9,14 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/devtools/devtools_protocol.h"
-#include "chrome/browser/devtools/devtools_protocol_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -44,6 +44,74 @@ enum {
   kStatusConnecting = -1,
   kStatusOK = 0,
 };
+
+const char kErrorCodeParam[] = "code";
+const char kErrorParam[] = "error";
+const char kIdParam[] = "id";
+const char kMethodParam[] = "method";
+const char kParamsParam[] = "params";
+
+const char kBindMethod[] = "bind";
+const char kUnbindMethod[] = "unbind";
+const char kAcceptedEvent[] = "accepted";
+const char kPortParam[] = "port";
+const char kConnectionIdParam[] = "connectionId";
+
+static bool ParseNotification(const std::string& json,
+                              std::string* method,
+                              std::unique_ptr<base::DictionaryValue>* params) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  if (!value || !value->is_dict())
+    return false;
+
+  std::unique_ptr<base::DictionaryValue> dict(
+      static_cast<base::DictionaryValue*>(value.release()));
+
+  if (!dict->GetString(kMethodParam, method))
+    return false;
+
+  std::unique_ptr<base::Value> params_value;
+  dict->Remove(kParamsParam, &params_value);
+  if (params_value && params_value->is_dict())
+    params->reset(static_cast<base::DictionaryValue*>(params_value.release()));
+
+  return true;
+}
+
+static bool ParseResponse(const std::string& json,
+                          int* command_id,
+                          int* error_code) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  if (!value || !value->is_dict())
+    return false;
+
+  std::unique_ptr<base::DictionaryValue> dict(
+      static_cast<base::DictionaryValue*>(value.release()));
+
+  if (!dict->GetInteger(kIdParam, command_id))
+    return false;
+
+  *error_code = 0;
+  base::DictionaryValue* error_dict = nullptr;
+  if (dict->GetDictionary(kErrorParam, &error_dict))
+    error_dict->GetInteger(kErrorCodeParam, error_code);
+  return true;
+}
+
+static std::string SerializeCommand(
+    int command_id,
+    const std::string& method,
+    std::unique_ptr<base::DictionaryValue> params) {
+  base::DictionaryValue command;
+  command.SetInteger(kIdParam, command_id);
+  command.SetString(kMethodParam, method);
+  if (params)
+    command.Set(kParamsParam, std::move(params));
+
+  std::string json_command;
+  base::JSONWriter::Write(command, &json_command);
+  return json_command;
+}
 
 net::NetworkTrafficAnnotationTag kPortForwardingControllerTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("port_forwarding_controller_socket",
@@ -74,8 +142,6 @@ net::NetworkTrafficAnnotationTag kPortForwardingControllerTrafficAnnotation =
             "Not implemented, policies defined on Android device will apply "
             "here."
         })");
-
-namespace tethering = ::chrome::devtools::Tethering;
 
 class SocketTunnel {
  public:
@@ -297,10 +363,8 @@ void PortForwardingController::Connection::UpdateForwardingMap(
     const ForwardingMap& new_forwarding_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (connected_) {
-    SerializeChanges(tethering::unbind::kName,
-        new_forwarding_map, forwarding_map_);
-    SerializeChanges(tethering::bind::kName,
-        forwarding_map_, new_forwarding_map);
+    SerializeChanges(kUnbindMethod, new_forwarding_map, forwarding_map_);
+    SerializeChanges(kBindMethod, forwarding_map_, new_forwarding_map);
   }
   forwarding_map_ = new_forwarding_map;
 }
@@ -326,15 +390,15 @@ void PortForwardingController::Connection::SendCommand(
     const std::string& method, int port) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue);
-  if (method == tethering::bind::kName) {
-    params->SetInteger(tethering::bind::kParamPort, port);
+  if (method == kBindMethod) {
+    params->SetInteger(kPortParam, port);
   } else {
-    DCHECK_EQ(tethering::unbind::kName, method);
-    params->SetInteger(tethering::unbind::kParamPort, port);
+    DCHECK_EQ(kUnbindMethod, method);
+    params->SetInteger(kPortParam, port);
   }
   int id = ++command_id_;
 
-  if (method == tethering::bind::kName) {
+  if (method == kBindMethod) {
     pending_responses_[id] =
         base::Bind(&Connection::ProcessBindResponse,
                    base::Unretained(this), port);
@@ -357,15 +421,14 @@ void PortForwardingController::Connection::SendCommand(
 #endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   }
 
-  web_socket_->SendFrame(
-      DevToolsProtocol::SerializeCommand(id, method, std::move(params)));
+  web_socket_->SendFrame(SerializeCommand(id, method, std::move(params)));
 }
 
 bool PortForwardingController::Connection::ProcessResponse(
     const std::string& message) {
   int id = 0;
   int error_code = 0;
-  if (!DevToolsProtocol::ParseResponse(message, &id, &error_code))
+  if (!ParseResponse(message, &id, &error_code))
     return false;
 
   CommandCallbackMap::iterator it = pending_responses_.find(id);
@@ -402,7 +465,7 @@ PortForwardingController::Connection::GetPortStatusMap() {
 void PortForwardingController::Connection::OnSocketOpened() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   connected_ = true;
-  SerializeChanges(tethering::bind::kName, ForwardingMap(), forwarding_map_);
+  SerializeChanges(kBindMethod, ForwardingMap(), forwarding_map_);
 }
 
 void PortForwardingController::Connection::OnSocketClosed() {
@@ -417,17 +480,16 @@ void PortForwardingController::Connection::OnFrameRead(
 
   std::string method;
   std::unique_ptr<base::DictionaryValue> params;
-  if (!DevToolsProtocol::ParseNotification(message, &method, &params))
+  if (!ParseNotification(message, &method, &params))
     return;
 
-  if (method != tethering::accepted::kName || !params)
+  if (method != kAcceptedEvent || !params)
     return;
 
   int port;
   std::string connection_id;
-  if (!params->GetInteger(tethering::accepted::kParamPort, &port) ||
-      !params->GetString(tethering::accepted::kParamConnectionId,
-                         &connection_id))
+  if (!params->GetInteger(kPortParam, &port) ||
+      !params->GetString(kConnectionIdParam, &connection_id))
     return;
 
   std::map<int, std::string>::iterator it = forwarding_map_.find(port);

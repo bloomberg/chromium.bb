@@ -10,25 +10,6 @@ if (!is_android) {
   import("//tools/grit/grit_rule.gni")
 }
 
-action("devtools_protocol_constants") {
-  script = "devtools_protocol_constants_generator.py"
-  deps = [
-    "//third_party/WebKit/Source/core/inspector:protocol_version",
-  ]
-  blink_protocol = "$root_gen_dir/blink/core/inspector/protocol.json"
-  inputs = [
-    blink_protocol,
-  ]
-  outputs = [
-    "$target_gen_dir/devtools_protocol_constants.cc",
-    "$target_gen_dir/devtools_protocol_constants.h",
-  ]
-
-  args = [ "chrome" ]
-  args += rebase_path(outputs, root_build_dir)
-  args += [ rebase_path(blink_protocol, root_build_dir) ]
-}
-
 if (!is_android) {
   _inspector_protocol = "//third_party/inspector_protocol"
   import("$_inspector_protocol/inspector_protocol.gni")
@@ -41,6 +22,8 @@ if (!is_android) {
     "protocol/page.h",
     "protocol/protocol.cc",
     "protocol/protocol.h",
+    "protocol/target.cc",
+    "protocol/target.h",
   ]
 
   if (is_chromeos) {
@@ -100,11 +83,7 @@ if (!is_android) {
 
 static_library("devtools") {
   # Note: new sources and deps should be generally added in (!is_android) below.
-  sources = [
-    "devtools_protocol.cc",
-    "devtools_protocol.h",
-  ]
-  sources += get_target_outputs(":devtools_protocol_constants")
+  sources = []
 
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
@@ -113,7 +92,6 @@ static_library("devtools") {
   ]
 
   deps = [
-    ":devtools_protocol_constants",
     "//base",
     "//content/public/browser",
     "//net",
@@ -211,6 +189,8 @@ static_library("devtools") {
       "protocol/browser_handler.h",
       "protocol/page_handler.cc",
       "protocol/page_handler.h",
+      "protocol/target_handler.cc",
+      "protocol/target_handler.h",
       "protocol_string.cc",
       "protocol_string.h",
     ]

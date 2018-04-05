@@ -17,6 +17,7 @@ class DevToolsAgentHostClient;
 
 class BrowserHandler;
 class PageHandler;
+class TargetHandler;
 class WindowManagerHandler;
 
 class ChromeDevToolsSession : public protocol::FrontendChannel {
@@ -26,6 +27,8 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   ~ChromeDevToolsSession() override;
 
   protocol::UberDispatcher* dispatcher() { return dispatcher_.get(); }
+
+  TargetHandler* target_handler() { return target_handler_.get(); }
 
  private:
   // protocol::FrontendChannel:
@@ -42,6 +45,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   std::unique_ptr<protocol::UberDispatcher> dispatcher_;
   std::unique_ptr<BrowserHandler> browser_handler_;
   std::unique_ptr<PageHandler> page_handler_;
+  std::unique_ptr<TargetHandler> target_handler_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<WindowManagerHandler> window_manager_protocl_handler_;
 #endif
