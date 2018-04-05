@@ -84,7 +84,6 @@ const char kLandingReferrerURLWithQuery[] =
 const char kPageBeforeLandingReferrerURL[] =
     "/safe_browsing/download_protection/navigation_observer/"
     "page_before_landing_referrer.html";
-const char kTestExeURL[] = "/temporary/test.exe";
 
 class DownloadItemCreatedObserver : public DownloadManager::Observer {
  public:
@@ -2124,8 +2123,6 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   GURL hosting_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   TriggerDownloadViaHtml5FileApi();
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
-  GURL filesystem_url(std::string(url::kFileSystemScheme) + ":" +
-                      embedded_test_server()->GetURL(kTestExeURL).spec());
   auto* nav_list = navigation_event_list();
   ASSERT_TRUE(nav_list);
   ASSERT_EQ(1U, nav_list->Size());
@@ -2140,19 +2137,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   VerifyHostToIpMap();
   ReferrerChain referrer_chain;
   IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
-  ASSERT_EQ(2, referrer_chain.size());
-
-  VerifyReferrerChainEntry(
-      filesystem_url,                 // url
-      GURL(),                         // main_frame_url
-      ReferrerChainEntry::EVENT_URL,  // type
-      std::string(),                  // ip_address
-      hosting_url,                    // referrer_url
-      GURL(),                         // referrer_main_frame_url
-      false,                          // is_retargeting
-      std::vector<GURL>(),            // server redirects
-      ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE,
-      referrer_chain.Get(0));
+  ASSERT_EQ(1, referrer_chain.size());
 
   VerifyReferrerChainEntry(hosting_url,  // url
                            GURL(),       // main_frame_url
@@ -2163,7 +2148,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            false,                // is_retargeting
                            std::vector<GURL>(),  // server redirects
                            ReferrerChainEntry::BROWSER_INITIATED,
-                           referrer_chain.Get(1));
+                           referrer_chain.Get(0));
 }
 
 // Verify referrer chain when there are URL fragments.
