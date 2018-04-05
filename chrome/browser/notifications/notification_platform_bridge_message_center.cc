@@ -88,10 +88,11 @@ NotificationPlatformBridgeMessageCenter::
 
 void NotificationPlatformBridgeMessageCenter::Display(
     NotificationHandler::Type notification_type,
-    const std::string& /* profile_id */,
-    bool /* is_incognito */,
+    Profile* profile,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> /* metadata */) {
+  DCHECK_EQ(profile, profile_);
+
   NotificationUIManager* ui_manager =
       g_browser_process->notification_ui_manager();
   if (!ui_manager)
@@ -112,8 +113,10 @@ void NotificationPlatformBridgeMessageCenter::Display(
 }
 
 void NotificationPlatformBridgeMessageCenter::Close(
-    const std::string& /* profile_id */,
+    Profile* profile,
     const std::string& notification_id) {
+  DCHECK_EQ(profile, profile_);
+
   NotificationUIManager* ui_manager =
       g_browser_process->notification_ui_manager();
   if (!ui_manager)
@@ -124,9 +127,10 @@ void NotificationPlatformBridgeMessageCenter::Close(
 }
 
 void NotificationPlatformBridgeMessageCenter::GetDisplayed(
-    const std::string& /* profile_id */,
-    bool /* incognito */,
+    Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
+  DCHECK_EQ(profile, profile_);
+
   auto displayed_notifications = std::make_unique<std::set<std::string>>(
       g_browser_process->notification_ui_manager()->GetAllIdsByProfile(
           NotificationUIManager::GetProfileID(profile_)));

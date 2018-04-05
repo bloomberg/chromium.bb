@@ -15,12 +15,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -271,12 +270,13 @@ MATCHER_P(Calls, member, "") {
 
 }  // namespace
 
-class NotificationPlatformBridgeLinuxTest : public testing::Test {
+class NotificationPlatformBridgeLinuxTest : public BrowserWithTestWindowTest {
  public:
   NotificationPlatformBridgeLinuxTest() = default;
   ~NotificationPlatformBridgeLinuxTest() override = default;
 
   void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
     mock_bus_ = new dbus::MockBus(dbus::Bus::Options());
     mock_notification_proxy_ = new StrictMock<dbus::MockObjectProxy>(
         mock_bus_.get(), kFreedesktopNotificationsName,
@@ -289,6 +289,7 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
     notification_bridge_linux_.reset();
     mock_notification_proxy_ = nullptr;
     mock_bus_ = nullptr;
+    BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
@@ -340,8 +341,6 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
   MOCK_METHOD1(MockableNotificationBridgeReadyCallback, void(bool));
 
-  content::TestBrowserThreadBundle thread_bundle_;
-
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockObjectProxy> mock_notification_proxy_;
 
@@ -368,9 +367,9 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("").GetResult(), nullptr);
-  notification_bridge_linux_->Close("", "");
+  notification_bridge_linux_->Close(profile(), "");
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
@@ -386,7 +385,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
           .SetType(message_center::NOTIFICATION_TYPE_PROGRESS)
           .SetProgress(42)
@@ -406,7 +405,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
           .SetType(message_center::NOTIFICATION_TYPE_MULTIPLE)
           .SetItems(std::vector<message_center::NotificationItem>{
@@ -434,10 +433,10 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeoutsNoPersistence) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("1").SetNeverTimeout(false).GetResult(), nullptr);
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("2").SetNeverTimeout(true).GetResult(), nullptr);
 }
 
@@ -455,7 +454,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest,
   CreateNotificationBridgeLinux(TestParams().SetCapabilities(
       std::vector<std::string>{"actions", "body", "persistence"}));
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("1").GetResult(), nullptr);
 }
 
@@ -493,7 +492,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
           .SetType(message_center::NOTIFICATION_TYPE_IMAGE)
           .SetImage(original_image)
@@ -515,7 +514,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
           .SetMessage(base::ASCIIToUTF16("Body text"))
           .SetOriginUrl(GURL("https://google.com/search?q=test&ie=UTF8"))
@@ -551,7 +550,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, EscapeHtml) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
           .SetMessage(
               base::ASCIIToUTF16("<span id='1' class=\"2\">&#39;</span>"))
@@ -575,10 +574,10 @@ TEST_F(NotificationPlatformBridgeLinuxTest, Silent) {
 
   CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("1").SetSilent(false).GetResult(), nullptr);
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("2").SetSilent(true).GetResult(), nullptr);
 }
 
@@ -614,31 +613,31 @@ TEST_F(NotificationPlatformBridgeLinuxTest, OriginUrlFormat) {
   CreateNotificationBridgeLinux(TestParams().SetCapabilities(
       std::vector<std::string>{"actions", "body"}));
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("1")
           .SetOriginUrl(GURL("https://google.com"))
           .GetResult(),
       nullptr);
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("2")
           .SetOriginUrl(GURL("https://mail.google.com"))
           .GetResult(),
       nullptr);
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("3")
           .SetOriginUrl(GURL("https://123.123.123.123"))
           .GetResult(),
       nullptr);
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("4")
           .SetOriginUrl(GURL("https://a.b.c.co.uk/file.html"))
           .GetResult(),
       nullptr);
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("5")
           .SetOriginUrl(GURL(
               "https://google.com.blahblahblahblahblahblahblah.evilsite.com"))
@@ -664,6 +663,6 @@ TEST_F(NotificationPlatformBridgeLinuxTest,
 
   CreateNotificationBridgeLinux(TestParams().SetServerName("cinnamon"));
   notification_bridge_linux_->Display(
-      NotificationHandler::Type::WEB_PERSISTENT, "", false,
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("").GetResult(), nullptr);
 }

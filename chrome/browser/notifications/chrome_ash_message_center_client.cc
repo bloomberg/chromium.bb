@@ -83,8 +83,7 @@ ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {}
 // NotificationPlatformBridge interface.
 void ChromeAshMessageCenterClient::Display(
     NotificationHandler::Type /*notification_type*/,
-    const std::string& /*profile_id*/,
-    bool /*is_incognito*/,
+    Profile* /* profile */,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   controller_->ShowClientNotification(notification);
@@ -92,7 +91,7 @@ void ChromeAshMessageCenterClient::Display(
 
 // The unused variable here will not be a part of the future
 // NotificationPlatformBridge interface.
-void ChromeAshMessageCenterClient::Close(const std::string& /*profile_id*/,
+void ChromeAshMessageCenterClient::Close(Profile* /* profile */,
                                          const std::string& notification_id) {
   controller_->CloseClientNotification(notification_id);
 }
@@ -100,8 +99,7 @@ void ChromeAshMessageCenterClient::Close(const std::string& /*profile_id*/,
 // The unused variables here will not be a part of the future
 // NotificationPlatformBridge interface.
 void ChromeAshMessageCenterClient::GetDisplayed(
-    const std::string& /*profile_id*/,
-    bool /*incognito*/,
+    Profile* /* profile */,
     GetDisplayedNotificationsCallback callback) const {
   // Right now, this is only used to get web notifications that were created by
   // and have outlived a previous browser process. Ash itself doesn't outlive

@@ -813,8 +813,7 @@ NotificationPlatformBridgeWin::~NotificationPlatformBridgeWin() = default;
 
 void NotificationPlatformBridgeWin::Display(
     NotificationHandler::Type notification_type,
-    const std::string& profile_id,
-    bool is_incognito,
+    Profile* profile,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -828,26 +827,27 @@ void NotificationPlatformBridgeWin::Display(
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::Display, impl_,
-                     notification_type, profile_id, is_incognito,
-                     std::move(notification_copy), std::move(metadata)));
+                     notification_type, GetProfileId(profile),
+                     profile->IsOffTheRecord(), std::move(notification_copy),
+                     std::move(metadata)));
 }
 
-void NotificationPlatformBridgeWin::Close(const std::string& profile_id,
+void NotificationPlatformBridgeWin::Close(Profile* profile,
                                           const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&NotificationPlatformBridgeWinImpl::Close,
-                                impl_, notification_id, profile_id));
+                                impl_, notification_id, GetProfileId(profile)));
 }
 
 void NotificationPlatformBridgeWin::GetDisplayed(
-    const std::string& profile_id,
-    bool incognito,
+    Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::GetDisplayed, impl_,
-                     profile_id, incognito, std::move(callback)));
+                     GetProfileId(profile), profile->IsOffTheRecord(),
+                     std::move(callback)));
 }
 
 void NotificationPlatformBridgeWin::SetReadyCallback(

@@ -8,15 +8,21 @@
 #include <wrl/client.h>
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/mock_itoastnotification.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -26,6 +32,29 @@ namespace winui = ABI::Windows::UI;
 namespace winxml = ABI::Windows::Data::Xml;
 
 namespace {
+
+Profile* CreateTestingProfile(const base::FilePath& path) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  size_t starting_number_of_profiles = profile_manager->GetNumberOfProfiles();
+
+  if (!base::PathExists(path) && !base::CreateDirectory(path))
+    NOTREACHED() << "Could not create directory at " << path.MaybeAsASCII();
+
+  Profile* profile =
+      Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
+  profile_manager->RegisterTestingProfile(profile, true, false);
+  EXPECT_EQ(starting_number_of_profiles + 1,
+            profile_manager->GetNumberOfProfiles());
+  return profile;
+}
+
+Profile* CreateTestingProfile(const std::string& profile_name) {
+  base::FilePath path;
+  PathService::Get(chrome::DIR_USER_DATA, &path);
+  path = path.AppendASCII(profile_name);
+  return CreateTestingProfile(path);
+}
 
 base::string16 GetToastString(const base::string16& notification_id,
                               const base::string16& profile_id,
@@ -286,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
-        "Default" /* profile_id */, false /* incognito */,
+        browser()->profile(),
         base::BindRepeating(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -297,12 +326,16 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   // Add four items (two in each profile, one for each being incognito and one
   // for each that is not).
   bool incognito = true;
+
+  Profile* profile1 = CreateTestingProfile("P1");
   MockIToastNotification item1(GetToastString(L"P1i", L"P1", incognito),
                                L"tag");
   notifications.push_back(&item1);
   MockIToastNotification item2(GetToastString(L"P1reg", L"P1", !incognito),
                                L"tag");
   notifications.push_back(&item2);
+
+  Profile* profile2 = CreateTestingProfile("P2");
   MockIToastNotification item3(GetToastString(L"P2i", L"P2", incognito),
                                L"tag");
   notifications.push_back(&item3);
@@ -314,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
-        "P1" /* profile_id */, true /* incognito */,
+        profile1->GetOffTheRecordProfile(),
         base::BindRepeating(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -327,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
-        "P1" /* profile_id */, false /* incognito */,
+        profile1,
         base::BindRepeating(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -340,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
-        "P2" /* profile_id */, true /* incognito */,
+        profile2->GetOffTheRecordProfile(),
         base::BindRepeating(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -353,25 +386,13 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
-        "P2" /* profile_id */, false /* incognito */,
+        profile2,
         base::BindRepeating(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(1U, displayed_notifications_.size());
     EXPECT_EQ(1U, displayed_notifications_.count("P2reg"));
-  }
-
-  // Query for non-existing profile (should return 0 items).
-  {
-    base::RunLoop run_loop;
-    bridge->GetDisplayed(
-        "NotFound" /* profile_id */, false /* incognito */,
-        base::BindRepeating(
-            &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
-            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_EQ(0U, displayed_notifications_.size());
   }
 
   bridge->SetDisplayedNotificationsForTesting(nullptr);

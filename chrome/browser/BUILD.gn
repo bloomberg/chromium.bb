@@ -833,6 +833,7 @@ jumbo_split_static_library("browser") {
     "notifications/notification_handler.h",
     "notifications/notification_permission_context.cc",
     "notifications/notification_permission_context.h",
+    "notifications/notification_platform_bridge.cc",
     "notifications/notification_platform_bridge.h",
     "notifications/notification_platform_bridge_mac.h",
     "notifications/notification_platform_bridge_mac.mm",
