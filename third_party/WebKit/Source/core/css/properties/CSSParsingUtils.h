@@ -77,9 +77,6 @@ CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange&);
 CSSValue* ConsumeBackgroundBox(CSSParserTokenRange&);
 CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange&);
 CSSValue* ConsumeMaskSourceType(CSSParserTokenRange&);
-CSSValue* ConsumeBackgroundSize(CSSParserTokenRange&,
-                                CSSParserMode,
-                                ParsingStyle);
 bool ConsumeBackgroundPosition(CSSParserTokenRange&,
                                const CSSParserContext&,
                                CSSPropertyParserHelpers::UnitlessQuirk,
@@ -90,7 +87,8 @@ CSSValue* ParseBackgroundBox(CSSParserTokenRange&,
                              const CSSParserLocalContext&);
 CSSValue* ParseBackgroundOrMaskSize(CSSParserTokenRange&,
                                     const CSSParserContext&,
-                                    const CSSParserLocalContext&);
+                                    const CSSParserLocalContext&,
+                                    WTF::Optional<WebFeature> negativeSize);
 bool ParseBackgroundOrMask(bool,
                            CSSParserTokenRange&,
                            const CSSParserContext&,

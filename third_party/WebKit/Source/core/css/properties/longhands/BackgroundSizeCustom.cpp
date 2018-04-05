@@ -6,6 +6,7 @@
 
 #include "core/css/properties/CSSParsingUtils.h"
 #include "core/css/properties/ComputedStyleUtils.h"
+#include "core/frame/WebFeature.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -15,8 +16,8 @@ const CSSValue* BackgroundSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ParseBackgroundOrMaskSize(range, context,
-                                                    local_context);
+  return CSSParsingUtils::ParseBackgroundOrMaskSize(
+      range, context, local_context, WebFeature::kNegativeBackgroundSize);
 }
 
 const CSSValue* BackgroundSize::CSSValueFromComputedStyleInternal(

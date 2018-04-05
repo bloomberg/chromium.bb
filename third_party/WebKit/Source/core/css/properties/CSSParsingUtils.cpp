@@ -792,8 +792,28 @@ CSSValue* ConsumeMaskSourceType(CSSParserTokenRange& range) {
                                                 CSSValueLuminance>(range);
 }
 
+CSSPrimitiveValue* ConsumeLengthOrPercentCountNegative(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    WTF::Optional<WebFeature> negativeSize) {
+  CSSPrimitiveValue* result =
+      ConsumeLengthOrPercent(range, context.Mode(), kValueRangeNonNegative,
+                             CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+  if (result || !negativeSize)
+    return result;
+
+  result =
+      ConsumeLengthOrPercent(range, context.Mode(), kValueRangeAll,
+                             CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+
+  if (result)
+    context.Count(*negativeSize);
+  return result;
+}
+
 CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
-                                CSSParserMode css_parser_mode,
+                                const CSSParserContext& context,
+                                WTF::Optional<WebFeature> negativeSize,
                                 ParsingStyle parsing_style) {
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueContain, CSSValueCover>(
           range.Peek().Id())) {
@@ -803,9 +823,8 @@ CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
   CSSValue* horizontal =
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto>(range);
   if (!horizontal) {
-    horizontal = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
-        range, css_parser_mode, kValueRangeAll,
-        CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+    horizontal =
+        ConsumeLengthOrPercentCountNegative(range, context, negativeSize);
   }
 
   CSSValue* vertical = nullptr;
@@ -813,9 +832,8 @@ CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
     if (range.Peek().Id() == CSSValueAuto) {  // `auto' is the default
       range.ConsumeIncludingWhitespace();
     } else {
-      vertical = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
-          range, css_parser_mode, kValueRangeAll,
-          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      vertical =
+          ConsumeLengthOrPercentCountNegative(range, context, negativeSize);
     }
   } else if (parsing_style == ParsingStyle::kLegacy) {
     // Legacy syntax: "-webkit-background-size: 10px" is equivalent to
@@ -870,12 +888,12 @@ CSSValue* ParseBackgroundBox(CSSParserTokenRange& range,
       ConsumeBackgroundBox, range);
 }
 
-CSSValue* ParseBackgroundOrMaskSize(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext& local_context) {
+CSSValue* ParseBackgroundOrMaskSize(CSSParserTokenRange& range,
+                                    const CSSParserContext& context,
+                                    const CSSParserLocalContext& local_context,
+                                    WTF::Optional<WebFeature> negativeSize) {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      ConsumeBackgroundSize, range, context.Mode(),
+      ConsumeBackgroundSize, range, context, negativeSize,
       local_context.UseAliasParsing() ? ParsingStyle::kLegacy
                                       : ParsingStyle::kNotLegacy);
 }
@@ -904,8 +922,12 @@ CSSValue* ConsumeBackgroundComponent(CSSPropertyID resolved_property,
       return ConsumePositionLonghand<CSSValueTop, CSSValueBottom>(
           range, context.Mode());
     case CSSPropertyBackgroundSize:
+      return ConsumeBackgroundSize(range, context,
+                                   WebFeature::kNegativeBackgroundSize,
+                                   ParsingStyle::kNotLegacy);
     case CSSPropertyWebkitMaskSize:
-      return ConsumeBackgroundSize(range, context.Mode(),
+      return ConsumeBackgroundSize(range, context,
+                                   WebFeature::kNegativeMaskSize,
                                    ParsingStyle::kNotLegacy);
     case CSSPropertyBackgroundColor:
       return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
@@ -972,8 +994,12 @@ bool ParseBackgroundOrMask(bool important,
                    property.IDEquals(CSSPropertyWebkitMaskSize)) {
           if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
             continue;
-          value = ConsumeBackgroundSize(range, context.Mode(),
-                                        ParsingStyle::kNotLegacy);
+          value =
+              ConsumeBackgroundSize(range, context,
+                                    property.IDEquals(CSSPropertyBackgroundSize)
+                                        ? WebFeature::kNegativeBackgroundSize
+                                        : WebFeature::kNegativeMaskSize,
+                                    ParsingStyle::kNotLegacy);
           if (!value ||
               !parsed_longhand[i - 1])  // Position must have been
                                         // parsed in the current layer.
