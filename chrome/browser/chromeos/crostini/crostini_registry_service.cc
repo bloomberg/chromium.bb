@@ -41,6 +41,16 @@ CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
 
 CrostiniRegistryService::~CrostiniRegistryService() = default;
 
+std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
+  const base::DictionaryValue* apps =
+      prefs_->GetDictionary(kCrostiniRegistryPref);
+  std::vector<std::string> result;
+  for (const auto& item : apps->DictItems())
+    result.push_back(item.first);
+
+  return result;
+}
+
 std::unique_ptr<CrostiniRegistryService::Registration>
 CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
   DCHECK(crx_file::id_util::IdIsValid(app_id));

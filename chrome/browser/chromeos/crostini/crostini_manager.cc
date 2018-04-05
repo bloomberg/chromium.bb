@@ -187,6 +187,22 @@ void CrostiniManager::StartContainer(string vm_name,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CrostiniManager::LaunchContainerApplication(
+    string vm_name,
+    string container_name,
+    string desktop_file_id,
+    LaunchContainerApplicationCallback callback) {
+  vm_tools::concierge::LaunchContainerApplicationRequest request;
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_desktop_file_id(std::move(desktop_file_id));
+
+  GetConciergeClient()->LaunchContainerApplication(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnLaunchContainerApplication,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CrostiniManager::OnCreateDiskImage(
     CreateDiskImageCallback callback,
     base::Optional<vm_tools::concierge::CreateDiskImageResponse> reply) {
@@ -262,6 +278,29 @@ void CrostiniManager::OnStartContainer(
     std::move(callback).Run(ConciergeClientResult::CONTAINER_START_FAILED);
     return;
   }
+  std::move(callback).Run(ConciergeClientResult::SUCCESS);
+}
+
+void CrostiniManager::OnLaunchContainerApplication(
+    LaunchContainerApplicationCallback callback,
+    base::Optional<vm_tools::concierge::LaunchContainerApplicationResponse>
+        reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to launch application. Empty response.";
+    std::move(callback).Run(
+        ConciergeClientResult::LAUNCH_CONTAINER_APPLICATION_FAILED);
+    return;
+  }
+  vm_tools::concierge::LaunchContainerApplicationResponse response =
+      reply.value();
+
+  if (!response.success()) {
+    LOG(ERROR) << "Failed to launch application: " << response.failure_reason();
+    std::move(callback).Run(
+        ConciergeClientResult::LAUNCH_CONTAINER_APPLICATION_FAILED);
+    return;
+  }
+
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }
 

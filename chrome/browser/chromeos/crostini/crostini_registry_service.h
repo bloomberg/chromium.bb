@@ -48,6 +48,8 @@ class CrostiniRegistryService : public KeyedService {
   explicit CrostiniRegistryService(Profile* profile);
   ~CrostiniRegistryService() override;
 
+  std::vector<std::string> GetRegisteredAppIds() const;
+
   // Return null if |app_id| is not found in the registry.
   std::unique_ptr<CrostiniRegistryService::Registration> GetRegistration(
       const std::string& app_id) const;
